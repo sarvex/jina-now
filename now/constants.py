@@ -43,26 +43,44 @@ IMAGE_MODEL_QUALITY_MAP = {
 }
 
 
+class DemoDatasets:
+    BEST_ARTWORKS = 'best-artworks'
+    NFT_MONKEY = 'nft-monkey'
+    TLL = 'tll'
+    BIRD_SPECIES = 'bird-species'
+    STANFORD_CARS = 'stanford-cars'
+    DEEP_FASHION = 'deepfashion'
+    NIH_CHEST_XRAYS = 'nih-chest-xrays'
+    GEOLOCATION_GEOGUESSR = 'geolocation-geoguessr'
+    MUSIC_GENRES_SMALL = 'music-genres-small'
+    MUSIC_GENRES_LARGE = 'music-genres-large'
+    ROCK_LYRICS = 'rock-lyrics'
+    POP_LYRICS = 'pop-lyrics'
+    RAP_LYRICS = 'rap-lyrics'
+    INDIE_LYRICS = 'indie-lyrics'
+    METAL_LYRICS = 'metal-lyrics'
+
+
 AVAILABLE_DATASET = {
     Modalities.IMAGE: [
-        'best-artworks',
-        'nft-monkey',
-        'tll',
-        'bird-species',
-        'stanford-cars',
-        'deepfashion',
-        'nih-chest-xrays',
-        'geolocation-geoguessr',
+        DemoDatasets.BEST_ARTWORKS,
+        DemoDatasets.NFT_MONKEY,
+        DemoDatasets.TLL,
+        DemoDatasets.BIRD_SPECIES,
+        DemoDatasets.STANFORD_CARS,
+        DemoDatasets.DEEP_FASHION,
+        DemoDatasets.NIH_CHEST_XRAYS,
+        DemoDatasets.GEOLOCATION_GEOGUESSR,
     ],
     Modalities.MUSIC: [
-        'music-genres-small',
-        'music-genres-large',
+        DemoDatasets.MUSIC_GENRES_SMALL,
+        DemoDatasets.MUSIC_GENRES_LARGE,
     ],
     Modalities.TEXT: [
-        'rock-lyrics',
-        'pop-lyrics',
-        'rap-lyrics',
-        'indie-lyrics',
-        'metal-lyrics',
+        DemoDatasets.ROCK_LYRICS,
+        DemoDatasets.POP_LYRICS,
+        DemoDatasets.RAP_LYRICS,
+        DemoDatasets.INDIE_LYRICS,
+        DemoDatasets.METAL_LYRICS,
     ],
 }
