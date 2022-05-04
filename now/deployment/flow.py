@@ -1,8 +1,10 @@
 import math
 import os.path
 import pathlib
+from collections import namedtuple
 from time import sleep
 
+from docarray import DocumentArray
 from kubernetes import client as k8s_client
 from kubernetes import config
 from tqdm import tqdm
@@ -10,10 +12,14 @@ from yaspin import yaspin
 from yaspin.spinners import Spinners
 
 from now.cloud_manager import is_local_cluster
+from now.constants import Modalities
 from now.deployment.deployment import apply_replace, cmd
+from now.dialog import UserInput
+from now.finetuning.settings import FinetuneSettings
 from now.utils import sigmap
 
 cur_dir = pathlib.Path(__file__).parent.resolve()
+_ExecutorConfig = namedtuple('_ExecutorConfig', 'name, uses, uses_with')
 
 
 def batch(iterable, n=1):
@@ -97,16 +103,37 @@ def deploy_k8s(f, ns, num_pods, tmpdir, kubectl_path):
     return gateway_host, gateway_port, gateway_host_internal, gateway_port_internal
 
 
+def get_executor_config(user_input: UserInput) -> _ExecutorConfig:
+    """
+    Gets the correct Executor running the pre-trained model given the user configuration.
+
+    :param user_input: Configures user input.
+    :return: Small data-transfer-object with information about the executor
+    """
+    hub_prefix = f'jinahub+{"sandbox" if user_input.sandbox else "docekr"}'
+    if (
+        user_input.output_modality == Modalities.IMAGE
+        or user_input.output_modality == Modalities.TEXT
+    ):
+        return _ExecutorConfig(
+            name='clip',
+            uses=f'{hub_prefix}://CLIPEncoder/v0.2.1',
+            uses_with={'pretrained_model_name_or_path': user_input.model_variant},
+        )
+    elif user_input.output_modality == Modalities.MUSIC:
+        return _ExecutorConfig(
+            name='openl3-clip',
+            uses=f'{hub_prefix}://BiModalMusicTextEncoder/v0.0.1',
+            uses_with={},
+        )
+
+
 def deploy_flow(
-    executor_name,
-    output_modality,
-    index,
-    vision_model,
-    final_layer_output_dim,
-    embedding_size,
+    user_input: UserInput,
+    finetune_settings: FinetuneSettings,
+    executor_name: str,
+    index: DocumentArray,
     tmpdir,
-    finetuning,
-    sandbox,
     kubectl_path,
 ):
     from jina import Flow
@@ -119,34 +146,33 @@ def deploy_flow(
         cors=True,
     )
     f = f.add(
-        name='encoder_clip',
-        uses=f'jinahub{"+sandbox" if sandbox else "+docker"}://CLIPEncoder/v0.2.1',
-        uses_with={'pretrained_model_name_or_path': vision_model},
+        **get_executor_config(user_input)._asdict(),
         env={'JINA_LOG_LEVEL': 'DEBUG'},
     )
-    if finetuning:
+    if finetune_settings.perform_finetuning:
         f = f.add(
             name='linear_head',
-            uses=f'jinahub{"+sandbox" if sandbox else "+docker"}://{executor_name}',
+            uses=f'jinahub{"+sandbox" if user_input.sandbox else "+docker"}://{executor_name}',
             uses_with={
-                'final_layer_output_dim': final_layer_output_dim,
-                'embedding_size': embedding_size,
+                'final_layer_output_dim': finetune_settings.pre_trained_embedding_size,
+                'embedding_size': finetune_settings.finetune_layer_size,
+                'bi_modal': finetune_settings.bi_modal,
             },
             env={'JINA_LOG_LEVEL': 'DEBUG'},
         )
     f = f.add(
         name='indexer',
         uses=f'jinahub+docker://MostSimpleIndexer:346e8475359e13d621717ceff7f48c2a',
-        uses_with={'dim': embedding_size, 'metric': 'cosine'},
         uses_metas={'workspace': 'pq_workspace'},
         env={'JINA_LOG_LEVEL': 'DEBUG'},
     )
-    # f.plot('./flow.png', vertical_layout=True)
 
-    if output_modality == 'image':
-        index = [x for x in index if x.text == '']
-    elif output_modality == 'text':
-        index = [x for x in index if x.text != '']
+    if user_input.output_modality == Modalities.IMAGE:
+        index = [x for x in index if not x.text]
+    elif user_input.output_modality == Modalities.TEXT:
+        index = [x for x in index if x.text]
+    elif user_input.output_modality == Modalities.MUSIC:
+        index = [x for x in index if not x.text]
 
     (
         gateway_host,
@@ -156,7 +182,9 @@ def deploy_flow(
     ) = deploy_k8s(
         f,
         ns,
-        2 + (2 if finetuning else 1) * (0 if sandbox else 1),
+        2
+        + (2 if finetune_settings.perform_finetuning else 1)
+        * (0 if user_input.sandbox else 1),
         tmpdir,
         kubectl_path=kubectl_path,
     )

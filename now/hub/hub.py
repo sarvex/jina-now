@@ -10,7 +10,7 @@ from now.utils import copytree, sigmap
 cur_dir = pathlib.Path(__file__).parent.resolve()
 
 
-def push_to_hub(tmpdir):
+def push_to_hub(save_dir: str) -> str:
     """
     We need the trained model as hub executor and pushed into the docker registry of hubble.
     Otherwise, there is no possibility to run the executor on Kubernetes.
@@ -25,14 +25,14 @@ def push_to_hub(tmpdir):
     secret = '93ea59dbd1ee3fe0bdc44252c6e86a87'
     class_name = 'FineTunedLinearHeadEncoder'
     src_path = os.path.join(cur_dir, 'head_encoder')
-    dst_path = os.path.join(tmpdir, 'now/hub/head_encoder')
+    dst_path = save_dir
     copytree(src_path, dst_path)
     bashCommand = f"jina hub push --private {dst_path} -t {name} --force-update {class_name} --secret {secret}"
     with yaspin(
         sigmap=sigmap, text="Push fine-tuned model to Jina Hub", color="green"
     ) as spinner:
-        with open(os.path.join(tmpdir, "NUL"), "w") as fh:
+        with open(os.path.join(save_dir, "NUL"), "w") as fh:
             process = subprocess.Popen(bashCommand.split(), stdout=fh)
-        output, error = process.communicate()
+        _ = process.communicate()
         spinner.ok('⏫ ')
     return f'FineTunedLinearHeadEncoder:{secret}/{name}'

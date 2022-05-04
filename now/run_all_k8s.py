@@ -44,7 +44,7 @@ def stop_now(contexts, active_context, **kwargs):
 
 def run_k8s(os_type: str = 'linux', arch: str = 'x86_64', **kwargs):
 
-    contexts, active_context, is_debug = get_system_state(**kwargs)
+    contexts, active_context, _ = get_system_state(**kwargs)
     if ('cli' in kwargs and kwargs['cli'] == 'stop') or (
         'now' in kwargs and kwargs['now'] == 'stop'
     ):
@@ -66,9 +66,7 @@ def run_k8s(os_type: str = 'linux', arch: str = 'x86_64', **kwargs):
                 gateway_port,
                 gateway_host_internal,
                 gateway_port_internal,
-            ) = run_backend.run(
-                user_input, is_debug, tmpdir, kubectl_path=kwargs['kubectl_path']
-            )
+            ) = run_backend.run(user_input, tmpdir, kubectl_path=kwargs['kubectl_path'])
 
             frontend_host, frontend_port = run_frontend.run(
                 output_modality=user_input.output_modality,
@@ -85,17 +83,18 @@ def run_k8s(os_type: str = 'linux', arch: str = 'x86_64', **kwargs):
                 '' if str(frontend_port) == '80' else f':{frontend_port}'
             )
             print()
-
-            # print(f'✅ Your search case running.\nhost: {node_ip}:30080')
-            # print(f'host: {node_ip}:30080')
             cowsay.cow(f'You made it:\n{url}')
 
 
 if __name__ == '__main__':
     run_k8s(
-        output_modality='music',
-        data='music-genres-small',
+        output_modality='image',
+        data='deepfashion',
+        quality='medium',
+        sandbox=False,
         cluster='new',
         new_cluster_type='local',
         kubectl_path='/usr/local/bin/kubectl',
+        kind_path='/Users/sebastianlettner/.cache/jina-now/kind',
+        proceed=True,
     )

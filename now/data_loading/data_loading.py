@@ -52,7 +52,7 @@ def load_data(user_input: UserInput) -> DocumentArray:
             f'Could not load DocArray. Please check your configuration: {user_input}.'
         )
     da = da.shuffle(seed=42)
-    da = _deep_copy_da(da)
+    da = deep_copy_da(da)
     return da
 
 
@@ -149,7 +149,7 @@ def get_dataset_url(
         return f'{BASE_STORAGE_URL}/{data_folder}/{dataset}.bin'
 
 
-def _deep_copy_da(da: DocumentArray) -> DocumentArray:
+def deep_copy_da(da: DocumentArray) -> DocumentArray:
     new_da = DocumentArray()
     for i, d in enumerate(da):
         new_doc = deepcopy(d)

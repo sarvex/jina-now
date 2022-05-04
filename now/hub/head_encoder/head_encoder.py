@@ -1,6 +1,6 @@
 import pickle
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 
 import numpy as np
 import torch
@@ -9,22 +9,18 @@ from jina import DocumentArray, Executor, requests
 from torch.nn import Linear, Module
 
 
-def get_extended_embedding_if_needed(d, target_dim):
-    emb = d.embedding
-    if emb.shape[0] == target_dim:
-        return emb
-
-    zeros = np.zeros(emb.shape)
-    if d.text:
-        order = (zeros, emb)
+def get_bi_modal_embedding(doc) -> Union[np.ndarray, torch.Tensor]:
+    attributes = [doc.text, doc.blob]
+    if not any(attributes) or all(attributes):
+        raise ValueError(
+            f'Received doc (id={doc.id}) with either no text and blob or both.'
+        )
+    zeros = np.zeros(doc.embedding.shape)
+    if doc.text:
+        order = (zeros, doc.embedding)
     else:
-        order = (emb, zeros)
+        order = (doc.embedding, zeros)
     return np.concatenate(order)
-
-
-def extend_embeddings(da, target_dim):
-    for d in da:
-        d.embedding = get_extended_embedding_if_needed(d, target_dim)
 
 
 class LinearHead(Module):
@@ -52,43 +48,39 @@ def load_mean(mean_path):
 class FineTunedLinearHeadEncoder(Executor):
     def __init__(
         self,
-        final_layer_output_dim,
-        embedding_size,
+        pre_trained_embedding_size,
+        finetune_layer_size,
+        bi_modal=True,
         model_path=None,
         mean_path=None,
         *args,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(*args, **kwargs)
         if not model_path:
             model_path = Path(__file__).parent / 'best_model_ndcg'
-        self.final_layer_output_dim = final_layer_output_dim
-        self.model = LinearHead(final_layer_output_dim, embedding_size, mean_path)
+        self.bi_model = bi_modal
+        self.pre_trained_embedding_size = pre_trained_embedding_size
+        self.model = LinearHead(
+            pre_trained_embedding_size, finetune_layer_size, mean_path
+        )
         self.model.load_state_dict(torch.load(model_path, map_location='cpu'))
 
     @requests
     def encode(self, docs: Optional[DocumentArray], **kwargs):
-        blobs = []
-        texts = []
         for d in docs:
-            blobs.append(d.blob)
-            texts.append(d.text)
-            d.tensor = get_extended_embedding_if_needed(d, self.final_layer_output_dim)
+            if self.bi_model:
+                d.tensor = get_bi_modal_embedding(d)
+            else:
+                assert (
+                    d.embedding is not None
+                ), f'Expected embedding but doc (id={d.id}) has None.'
+                d.tensor = d.embedding
+            d.embedding = None
+
         docs.embed(self.model)
-        for d, blob, text in zip(docs, blobs, texts):
+        for d in docs:
             if type(d.embedding) != np.ndarray:
                 d.embedding = d.embedding.numpy()
-            # TODO why is this working? blob can never be None
-            # if blob != b'':
-            if blob is not None:
-                d.blob = blob
-            elif text:
-                d.text = text
-            else:
-                raise Exception('neither text nor image present')
 
-        # for efficiency, it is in the same executor
-        # for d in docs:
-        #     if d.blob is not None:
-        #         d.convert_image_tensor_to_uri()
         return docs
