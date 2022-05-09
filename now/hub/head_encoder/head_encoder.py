@@ -1,6 +1,6 @@
 import pickle
 from pathlib import Path
-from typing import Optional, Union
+from typing import List, Optional, Union
 
 import numpy as np
 import torch
@@ -24,16 +24,11 @@ def get_bi_modal_embedding(doc) -> Union[np.ndarray, torch.Tensor]:
 
 
 class LinearHead(Module):
-    def __init__(self, final_layer_output_dim, embedding_size, mean_path=None):
+    def __init__(self, final_layer_output_dim, embedding_size):
         super(LinearHead, self).__init__()
         self.linear1 = Linear(final_layer_output_dim, embedding_size, bias=False)
-        mean_path = (
-            mean_path if mean_path else str(Path(__file__).parent)
-        ) + '/mean.bin'
-        self.mean = load_mean(mean_path)
 
     def forward(self, x):
-        x -= self.mean
         x = x.float()
         x = self.linear1(x)
         normalized_embedding = F.normalize(x, p=2, dim=1)  # L2 normalize
@@ -52,7 +47,6 @@ class FineTunedLinearHeadEncoder(Executor):
         finetune_layer_size,
         bi_modal=True,
         model_path=None,
-        mean_path=None,
         *args,
         **kwargs,
     ):
@@ -61,13 +55,12 @@ class FineTunedLinearHeadEncoder(Executor):
             model_path = Path(__file__).parent / 'best_model_ndcg'
         self.bi_model = bi_modal
         self.pre_trained_embedding_size = pre_trained_embedding_size
-        self.model = LinearHead(
-            pre_trained_embedding_size, finetune_layer_size, mean_path
-        )
+        self.model = LinearHead(pre_trained_embedding_size, finetune_layer_size)
         self.model.load_state_dict(torch.load(model_path, map_location='cpu'))
 
     @requests
     def encode(self, docs: Optional[DocumentArray], **kwargs):
+        content_attr = FineTunedLinearHeadEncoder._preserve_content_attribute(docs)
         for d in docs:
             if self.bi_model:
                 d.tensor = get_bi_modal_embedding(d)
@@ -79,8 +72,18 @@ class FineTunedLinearHeadEncoder(Executor):
             d.embedding = None
 
         docs.embed(self.model)
-        for d in docs:
+        for d, text, blob in zip(docs, *content_attr):
             if type(d.embedding) != np.ndarray:
                 d.embedding = d.embedding.numpy()
+            if text:
+                d.text = text
+            if blob:
+                d.blob = blob
 
         return docs
+
+    @staticmethod
+    def _preserve_content_attribute(
+        docs: DocumentArray,
+    ) -> List[Union[List[Optional[str]], List[Optional[bytes]]]]:
+        return [[d.text for d in docs], [d.blob for d in docs]]

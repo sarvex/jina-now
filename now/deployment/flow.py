@@ -110,7 +110,7 @@ def get_executor_config(user_input: UserInput) -> _ExecutorConfig:
     :param user_input: Configures user input.
     :return: Small data-transfer-object with information about the executor
     """
-    hub_prefix = f'jinahub+{"sandbox" if user_input.sandbox else "docekr"}'
+    hub_prefix = f'jinahub+{"sandbox" if user_input.sandbox else "docker"}'
     if (
         user_input.output_modality == Modalities.IMAGE
         or user_input.output_modality == Modalities.TEXT

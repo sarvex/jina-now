@@ -1,6 +1,5 @@
 """ This module is the entry point to the finetuning package."""
 import os
-import pickle
 import tempfile
 import warnings
 from contextlib import contextmanager
@@ -30,7 +29,6 @@ from now.improvements.improvements import show_improvement
 from now.utils import sigmap
 
 _BASE_SAVE_DIR = 'now/hub/head_encoder'
-_EMBEDDING_MEAN_FILENAME = 'mean.bin'
 
 
 def finetune_now(
@@ -58,7 +56,6 @@ def finetune_now(
     finetune_ds = build_finetuning_dataset(dataset, finetune_settings)
 
     with _finetune_dir() as save_dir:
-        _save_mean(finetune_ds.index, save_dir)
 
         finetuned_model_path = _finetune_layer(finetune_ds, finetune_settings, save_dir)
 
@@ -103,9 +100,7 @@ def _finetune_layer(
         if not finetune_settings.bi_modal
         else finetune_settings.pre_trained_embedding_size * 2
     )
-    head = LinearHead(
-        input_size, finetune_settings.finetune_layer_size, mean_path=save_dir
-    )
+    head = LinearHead(input_size, finetune_settings.finetune_layer_size)
 
     finetuner.fit(
         head,
@@ -165,6 +160,15 @@ def _show_finetune_improvements(
     finetune_ds: FinetuneDataset,
     finetuned_model_path: str,
 ):
+    def restore_content_attribute():
+        for doc in finetune_ds.val:
+            index_doc = finetune_ds.index[doc.id]
+            if index_doc.text:
+                doc.text = index_doc.text
+            elif index_doc.blob:
+                doc.blob = index_doc.blob
+
+    restore_content_attribute()
     val_index_image = deepcopy(DocumentArray(d for d in finetune_ds.val if d.blob))
     val_query_image = deepcopy(
         val_index_image.sample(k=finetune_settings.num_val_queries, seed=42)
@@ -191,13 +195,3 @@ def _show_finetune_improvements(
         print(
             f'before-after comparison result is saved in the current working directory as image'
         )
-
-
-def _save_mean(da: DocumentArray, tmpdir: str):
-    mean = da.embeddings.mean(0)
-    save_path = osp(tmpdir, _EMBEDDING_MEAN_FILENAME)
-
-    with open(save_path, 'wb') as f:
-        pickle.dump(mean, f)
-
-    return save_path

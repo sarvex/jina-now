@@ -44,7 +44,7 @@ def build_finetuning_dataset(
 
     ds.val_index = deepcopy(ds.val)
     ds.val_query = deepcopy(
-        ds.val.sample(k=finetune_setting.num_val_queries, seed=_SEED)
+        ds.val_index.sample(k=finetune_setting.num_val_queries, seed=_SEED)
     )
 
     return ds
