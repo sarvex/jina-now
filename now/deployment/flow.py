@@ -122,8 +122,8 @@ def get_executor_config(user_input: UserInput) -> _ExecutorConfig:
         )
     elif user_input.output_modality == Modalities.MUSIC:
         return _ExecutorConfig(
-            name='openl3-clip',
-            uses=f'{hub_prefix}://BiModalMusicTextEncoder/v0.0.1',
+            name='openl3clip',
+            uses=f'{hub_prefix}://BiModalMusicTextEncoder/v1.0.0',
             uses_with={},
         )
 
