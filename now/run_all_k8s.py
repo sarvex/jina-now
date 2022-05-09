@@ -1,12 +1,12 @@
 import tempfile
 
 import cowsay
-from yaspin import yaspin
 
 from now import run_backend, run_frontend
 from now.cloud_manager import setup_cluster
 from now.deployment.deployment import cmd
 from now.dialog import _get_context_names, configure_user_input, maybe_prompt_user
+from now.log.log import yaspin_extended
 from now.system_information import get_system_state
 from now.utils import sigmap
 
@@ -27,14 +27,14 @@ def stop_now(contexts, active_context, **kwargs):
         ]
         cluster = maybe_prompt_user(questions, 'cluster')
     if cluster == 'kind-jina-now':
-        with yaspin(
+        with yaspin_extended(
             sigmap=sigmap, text=f"Remove local cluster {cluster}", color="green"
         ) as spinner:
             cmd(f'{kwargs["kind_path"]} delete clusters jina-now')
             spinner.ok('💀')
         cowsay.cow('local jina NOW cluster removed')
     else:
-        with yaspin(
+        with yaspin_extended(
             sigmap=sigmap, text=f"Remove jina NOW from {cluster}", color="green"
         ) as spinner:
             cmd(f'{kwargs["kubectl_path"]} delete ns nowapi')
@@ -58,7 +58,7 @@ def run_k8s(os_type: str = 'linux', arch: str = 'x86_64', **kwargs):
             **kwargs,
         )
         with tempfile.TemporaryDirectory() as tmpdir:
-            docker_frontend_tag = '0.0.7'
+            docker_frontend_tag = '0.0.10'
 
             setup_cluster(user_input.cluster, user_input.new_cluster_type, **kwargs)
             (

@@ -15,7 +15,6 @@ from typing import Dict, List, Optional, Union
 import cowsay
 from kubernetes import client, config
 from pyfiglet import Figlet
-from yaspin import yaspin
 
 from now.constants import (
     AVAILABLE_DATASET,
@@ -26,9 +25,10 @@ from now.constants import (
     Qualities,
 )
 from now.deployment.deployment import cmd
+from now.log.log import yaspin_extended
 from now.thridparty.PyInquirer import Separator
 from now.thridparty.PyInquirer.prompt import prompt
-from now.utils import sigmap
+from now.utils import ffmpeg_is_installed, gcloud_is_installed, sigmap
 
 cur_dir = pathlib.Path(__file__).parent.resolve()
 NEW_CLUSTER = {'name': '🐣 create new', 'value': 'new'}
@@ -72,29 +72,6 @@ def configure_user_input(**kwargs) -> UserInput:
     return user_input
 
 
-def maybe_prompt_user(questions, attribute, **kwargs):
-    """
-    Checks the `kwargs` for the `attribute` name. If present, the value is returned directly.
-    If not, the user is prompted via the cmd-line using the `questions` argument.
-
-    :param questions: A dictionary that is passed to `PyInquirer.prompt`
-        See docs: https://github.com/CITGuru/PyInquirer#documentation
-    :param attribute: Name of the value to get. Make sure this matches the name in `kwargs`
-
-    :return: A single value of either from `kwargs` or the user cli input.
-    """
-    if kwargs and kwargs.get(attribute) is not None:
-        return kwargs[attribute]
-    else:
-        answer = prompt(questions)
-        if attribute in answer:
-            return answer[attribute]
-        else:
-            print("\n" * 10)
-            cowsay.cow('see you soon 👋')
-            exit(0)
-
-
 def print_headline():
     f = Figlet(font='slant')
     print('Welcome to:')
@@ -115,8 +92,9 @@ def print_headline():
     print()
 
 
-def _configure_output_modality(user_input: UserInput, **kwargs):
-    modality = _prompt_value(
+def _configure_output_modality(user_input: UserInput, **kwargs) -> None:
+    """Asks user questions to set output_modality in user_input"""
+    user_input.output_modality = _prompt_value(
         name='output_modality',
         choices=[
             {'name': '🏞 Image Search', 'value': Modalities.IMAGE},
@@ -131,30 +109,31 @@ def _configure_output_modality(user_input: UserInput, **kwargs):
         prompt_type='list',
         **kwargs,
     )
-    user_input.output_modality = modality
 
 
-def _configure_dataset(user_input: UserInput, **kwargs):
+def _configure_dataset(user_input: UserInput, **kwargs) -> None:
+    """Asks user to set dataset attribute of user_input"""
     if user_input.output_modality == Modalities.IMAGE:
         _configure_dataset_image(user_input, **kwargs)
     elif user_input.output_modality == Modalities.TEXT:
         _configure_dataset_text(user_input, **kwargs)
-    else:
+    elif user_input.output_modality == Modalities.MUSIC:
+        if not ffmpeg_is_installed():
+            _handle_ffmpeg_install_required()
         _configure_dataset_music(user_input, **kwargs)
 
-    dataset = user_input.data
-    if dataset in AVAILABLE_DATASET[user_input.output_modality]:
+    if user_input.data in AVAILABLE_DATASET[user_input.output_modality]:
         user_input.is_custom_dataset = False
     else:
         user_input.is_custom_dataset = True
-        if dataset == 'custom':
+        if user_input.data == 'custom':
             _configure_custom_dataset(user_input, **kwargs)
         else:
-            _parse_custom_data_from_cli(dataset, user_input)
+            _parse_custom_data_from_cli(user_input)
 
 
-def _configure_dataset_image(user_input: UserInput, **kwargs):
-    dataset = _prompt_value(
+def _configure_dataset_image(user_input: UserInput, **kwargs) -> None:
+    user_input.data = _prompt_value(
         name='data',
         prompt_message='What dataset do you want to use?',
         choices=[
@@ -183,27 +162,30 @@ def _configure_dataset_image(user_input: UserInput, **kwargs):
         ],
         **kwargs,
     )
-    user_input.data = dataset
 
 
 def _configure_dataset_text(user_input: UserInput, **kwargs):
-    dataset = _prompt_value(
+    user_input.data = _prompt_value(
         name='data',
         prompt_message='What dataset do you want to use?',
         choices=[
-            {'name': '🎤 rock lyrics (200K docs)', 'value': DemoDatasets.ROCK_LYRICS},
-            {'name': '🎤 pop lyrics (200K docs)', 'value': DemoDatasets.POP_LYRICS},
-            {'name': '🎤 rap lyrics (200K docs)', 'value': DemoDatasets.RAP_LYRICS},
-            {'name': '🎤 indie lyrics (200K docs)', 'value': DemoDatasets.INDIE_LYRICS},
-            {'name': '🎤 metal lyrics (200K docs)', 'value': DemoDatasets.METAL_LYRICS},
+            {'name': '🎤 rock lyrics (200K docs)', 'value': 'rock-lyrics'},
+            {'name': '🎤 pop lyrics (200K docs)', 'value': 'pop-lyrics'},
+            {'name': '🎤 rap lyrics (200K docs)', 'value': 'rap-lyrics'},
+            {'name': '🎤 indie lyrics (200K docs)', 'value': 'indie-lyrics'},
+            {'name': '🎤 metal lyrics (200K docs)', 'value': 'metal-lyrics'},
+            Separator(),
+            {
+                'name': '✨ custom .txt files',
+                'value': 'custom',
+            },
         ],
         **kwargs,
     )
-    user_input.data = dataset
 
 
 def _configure_dataset_music(user_input: UserInput, **kwargs):
-    dataset = _prompt_value(
+    user_input.data = _prompt_value(
         name='data',
         prompt_message='What dataset do you want to use?',
         choices=[
@@ -223,23 +205,11 @@ def _configure_dataset_music(user_input: UserInput, **kwargs):
         ],
         **kwargs,
     )
-    user_input.data = dataset
 
 
-def _configure_sandbox(user_input: UserInput, **kwargs):
-    user_input.sandbox = _prompt_value(
-        name='sandbox',
-        prompt_message='Use Sandbox to save memory? (process data on our servers)',
-        choices=[
-            {'name': '⛔ no', 'value': False},
-            {'name': '✅ yes', 'value': True},
-        ],
-        **kwargs,
-    )
-
-
-def _configure_custom_dataset(user_input: UserInput, **kwargs):
-    custom_dataset_type = _prompt_value(
+def _configure_custom_dataset(user_input: UserInput, **kwargs) -> None:
+    """Asks user questions to setup custom dataset in user_input."""
+    user_input.custom_dataset_type = _prompt_value(
         name='custom_dataset_type',
         prompt_message='How do you want to provide input? (format: https://docarray.jina.ai/)',
         choices=[
@@ -258,23 +228,21 @@ def _configure_custom_dataset(user_input: UserInput, **kwargs):
         ],
         **kwargs,
     )
-
-    user_input.custom_dataset_type = custom_dataset_type
-    if custom_dataset_type == DatasetTypes.DOCARRAY:
+    if user_input.custom_dataset_type == DatasetTypes.DOCARRAY:
         user_input.dataset_secret = _prompt_value(
             name='dataset_secret',
             prompt_message='Please enter your docarray secret.',
             prompt_type='password',
         )
 
-    elif custom_dataset_type == DatasetTypes.URL:
+    elif user_input.custom_dataset_type == DatasetTypes.URL:
         user_input.dataset_url = _prompt_value(
             name='dataset_url',
             prompt_message='Please paste in your url for the docarray.',
             prompt_type='input',
         )
 
-    elif custom_dataset_type == DatasetTypes.PATH:
+    elif user_input.custom_dataset_type == DatasetTypes.PATH:
         user_input.dataset_path = _prompt_value(
             name='dataset_path',
             prompt_message='Please enter the path to the local folder.',
@@ -282,8 +250,10 @@ def _configure_custom_dataset(user_input: UserInput, **kwargs):
         )
 
 
-def _configure_cluster(user_input: UserInput, **kwargs):
-    def configure_new_cluster():
+def _configure_cluster(user_input: UserInput, **kwargs) -> None:
+    """Asks user question to determine cluster for user_input object"""
+
+    def configure_new_cluster() -> None:
         new_cluster_type = _prompt_value(
             name='new_cluster_type',
             choices=[
@@ -338,10 +308,11 @@ def _configure_cluster(user_input: UserInput, **kwargs):
             _configure_cluster(user_input, **kwargs)
 
 
-def _configure_quality(user_input: UserInput, **kwargs):
+def _configure_quality(user_input: UserInput, **kwargs) -> None:
+    """Asks users questions to set quality attribute of user_input"""
     if user_input.output_modality == Modalities.MUSIC:
         return
-    quality = _prompt_value(
+    user_input.quality = _prompt_value(
         name='quality',
         choices=[
             {'name': '🦊 medium (≈3GB mem, 15q/s)', 'value': Qualities.MEDIUM},
@@ -355,15 +326,27 @@ def _configure_quality(user_input: UserInput, **kwargs):
         prompt_type='list',
         **kwargs,
     )
-    if quality == Qualities.MEDIUM:
+    if user_input.quality == Qualities.MEDIUM:
         print('  🚀 you trade-off a bit of quality for having the best speed')
-    elif quality == Qualities.GOOD:
+    elif user_input.quality == Qualities.GOOD:
         print('  ⚖️ you have the best out of speed and quality')
-    elif quality == Qualities.EXCELLENT:
+    elif user_input.quality == Qualities.EXCELLENT:
         print('  ✨ you trade-off speed to having the best quality')
 
-    user_input.quality = quality
-    _, user_input.model_variant = IMAGE_MODEL_QUALITY_MAP[quality]
+    _, user_input.model_variant = IMAGE_MODEL_QUALITY_MAP[user_input.quality]
+
+
+def _configure_sandbox(user_input: UserInput, **kwargs):
+    # user_input.sandbox = _prompt_value(
+    #     name='sandbox',
+    #     prompt_message='Use Sandbox to save memory? (process data on our servers)',
+    #     choices=[
+    #         {'name': '⛔ no', 'value': False},
+    #         {'name': '✅ yes', 'value': True},
+    #     ],
+    #     **kwargs,
+    # )
+    user_input.sandbox = False
 
 
 def _construct_cluster_choices(active_context, contexts):
@@ -372,6 +355,29 @@ def _construct_cluster_choices(active_context, contexts):
     if len(context_names) > 0 and len(context_names[0]) > 0:
         choices = context_names + choices
     return choices
+
+
+def maybe_prompt_user(questions, attribute, **kwargs):
+    """
+    Checks the `kwargs` for the `attribute` name. If present, the value is returned directly.
+    If not, the user is prompted via the cmd-line using the `questions` argument.
+
+    :param questions: A dictionary that is passed to `PyInquirer.prompt`
+        See docs: https://github.com/CITGuru/PyInquirer#documentation
+    :param attribute: Name of the value to get. Make sure this matches the name in `kwargs`
+
+    :return: A single value of either from `kwargs` or the user cli input.
+    """
+    if kwargs and kwargs.get(attribute) is not None:
+        return kwargs[attribute]
+    else:
+        answer = prompt(questions)
+        if attribute in answer:
+            return answer[attribute]
+        else:
+            print("\n" * 10)
+            cowsay.cow('see you soon 👋')
+            exit(0)
 
 
 def _prompt_value(
@@ -408,10 +414,9 @@ def _cluster_running(cluster):
 
 
 def _maybe_install_gke(os_type: str, arch: str):
-    out, _ = cmd('which gcloud')
-    if not out:
+    if not gcloud_is_installed():
         if not os.path.exists(user('~/.cache/jina-now/google-cloud-sdk')):
-            with yaspin(
+            with yaspin_extended(
                 sigmap=sigmap, text='Setting up gcloud', color='green'
             ) as spinner:
                 cmd(
@@ -420,7 +425,8 @@ def _maybe_install_gke(os_type: str, arch: str):
                 spinner.ok('🛠️')
 
 
-def _parse_custom_data_from_cli(data: str, user_input: UserInput):
+def _parse_custom_data_from_cli(user_input: UserInput):
+    data = user_input.data
     try:
         data = os.path.expanduser(data)
     except Exception:
@@ -434,3 +440,22 @@ def _parse_custom_data_from_cli(data: str, user_input: UserInput):
     else:
         user_input.custom_dataset_type = DatasetTypes.DOCARRAY
         user_input.dataset_secret = data
+
+
+def _handle_ffmpeg_install_required():
+    bc_red = '\033[91m'
+    bc_end = '\033[0m'
+    print()
+    print(
+        f"{bc_red}Too use the audio modality you need the ffmpeg audio processing"
+        f" library installed on your system.{bc_end}"
+    )
+    print(
+        f"{bc_red}For MacOS please run 'brew install ffmpeg' and on"
+        f" Linux 'apt-get install ffmpeg libavcodec-extra'.{bc_end}"
+    )
+    print(
+        f"{bc_red}After the installation, restart Jina Now and have fun with music search 🎸!{bc_end}"
+    )
+    cowsay.cow('see you soon 👋')
+    exit(1)

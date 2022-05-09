@@ -3,10 +3,10 @@ import os
 import uuid
 from copy import deepcopy
 from os.path import join as osp
+from pathlib import Path
 from typing import Optional
 
 from docarray import Document, DocumentArray
-from yaspin import yaspin
 
 from now.constants import (
     BASE_STORAGE_URL,
@@ -17,6 +17,7 @@ from now.constants import (
 )
 from now.data_loading.convert_datasets_to_jpeg import to_thumbnail_jpg
 from now.dialog import UserInput
+from now.log.log import yaspin_extended
 from now.utils import download, sigmap
 
 
@@ -69,7 +70,9 @@ def _fetch_da_from_url(
     if not os.path.exists(data_path):
         download(url, data_path)
 
-    with yaspin(sigmap=sigmap, text="Extracting dataset", color="green") as spinner:
+    with yaspin_extended(
+        sigmap=sigmap, text="Extracting dataset", color="green"
+    ) as spinner:
         da = DocumentArray.load_binary(data_path)
         spinner.ok("📂")
     return da
@@ -93,43 +96,86 @@ def _load_from_disk(dataset_path: str, modality: Modalities) -> DocumentArray:
             print(f'Failed to load the binary file provided under path {dataset_path}')
             exit(1)
     elif os.path.isdir(dataset_path):
-        da = DocumentArray.from_files(dataset_path + '/**')
-        convert_fn = None
-        if modality == Modalities.IMAGE:
-
-            def convert_fn(d: Document):
-                try:
-                    d.load_uri_to_image_tensor()
-                    return to_thumbnail_jpg(d)
-                except Exception as e:
-                    return d
-
-        elif modality == Modalities.MUSIC:
-            from pydub import AudioSegment
-
-            def convert_fn(d: Document):
-                try:
-                    AudioSegment.from_file(d.uri)  # checks if file is valid
-                    with open(d.uri, 'rb') as fh:
-                        d.blob = fh.read()
-                    return d
-                except Exception as e:
-                    return d
-
-        if convert_fn is not None:
-            with yaspin(
-                sigmap=sigmap, text="Pre-processing data", color="green"
-            ) as spinner:
-                da.apply(convert_fn)
-                da = DocumentArray(d for d in da if d.blob != b'')
-                spinner.ok('🏭')
-
-        return da
+        with yaspin_extended(
+            sigmap=sigmap, text="Loading and pre-processing data", color="green"
+        ) as spinner:
+            if modality == Modalities.IMAGE:
+                return _load_images_from_folder(dataset_path)
+            elif modality == Modalities.TEXT:
+                return _load_texts_from_folder(dataset_path)
+            elif modality == Modalities.MUSIC:
+                return _load_music_from_folder(dataset_path)
+            spinner.ok('🏭')
     else:
         raise ValueError(
             f'The provided dataset path {dataset_path} does not'
             f' appear to be a valid file or folder on your system.'
         )
+
+
+def _load_images_from_folder(path: str) -> DocumentArray:
+    def convert_fn(d):
+        try:
+            d.load_uri_to_image_tensor()
+            return to_thumbnail_jpg(d)
+        except:
+            return d
+
+    da = DocumentArray.from_files(path + '/**')
+    da.apply(convert_fn)
+    return DocumentArray(d for d in da if d.blob != b'')
+
+
+def _load_music_from_folder(path: str):
+    from pydub import AudioSegment
+
+    def convert_fn(d: Document):
+        try:
+            AudioSegment.from_file(d.uri)  # checks if file is valid
+            with open(d.uri, 'rb') as fh:
+                d.blob = fh.read()
+            return d
+        except Exception as e:
+            return d
+
+    da = DocumentArray.from_files(path + '/**')
+    da.apply(convert_fn)
+    return DocumentArray(d for d in da if d.blob != b'')
+
+
+def _load_texts_from_folder(path: str) -> DocumentArray:
+    import nltk
+
+    nltk.download('punkt', quiet=True)
+    from nltk.tokenize import sent_tokenize
+
+    def convert_fn(d):
+        try:
+            d.load_uri_to_text()
+            d.tags['additional_info'] = str(Path(d.uri).relative_to(path))
+            return d
+        except:
+            return d
+
+    def split_document(d):
+        return DocumentArray(
+            (
+                Document(
+                    mime_type='text',
+                    text=sentence,
+                    tags=d.tags,
+                )
+                for sentence in set(sent_tokenize(d.text.replace('\n', ' ')))
+            )
+        )
+
+    da = DocumentArray.from_files(path + '/*.txt')
+    da.apply(convert_fn)
+
+    ret = DocumentArray()
+    for d in da:
+        ret += split_document(d)
+    return ret
 
 
 def get_dataset_url(
