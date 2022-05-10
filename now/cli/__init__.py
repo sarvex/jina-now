@@ -13,6 +13,8 @@ if len(sys.argv) != 1 and not ('-h' in sys.argv[1:] or '--help' in sys.argv[1:])
     print('Initialising Jina NOW...')
 cur_dir = pathlib.Path(__file__).parents[1].resolve()
 
+os.environ['JINA_CHECK_VERSION'] = 'False'
+
 
 def _get_run_args():
     from now.cli.parser import get_main_parser
