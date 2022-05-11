@@ -1,0 +1,14 @@
+version: "3"
+
+services:
+  bff:
+    build: bff
+    ports:
+      - 8080:8080
+
+  frontend:
+    build: frontend
+    ports:
+      - 8501:8501
+    depends_on:
+      - bff
