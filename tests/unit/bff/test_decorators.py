@@ -4,7 +4,7 @@ import time
 import pytest
 from fastapi import HTTPException
 
-from now.bff.decorators import api_method, async_timed, timed
+from now.bff import api_method, async_timed, timed
 
 
 def test_timed():

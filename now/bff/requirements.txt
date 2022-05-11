@@ -1,1 +1,5 @@
 fastapi
+uvicorn
+uvloop
+pydantic
+jina-now

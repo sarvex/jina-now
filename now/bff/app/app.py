@@ -1,13 +1,12 @@
 import logging.config
 import sys
 
+import app.settings as api_settings
 import uvicorn
+from app import __author__, __email__, __summary__, __title__, __version__
+from app.decorators import api_method, timed
+from app.v1.api import v1_router
 from fastapi import FastAPI
-
-import now.bff.settings as api_settings
-from now.bff import __author__, __email__, __summary__, __title__, __version__
-from now.bff.decorators import api_method, timed
-from now.bff.v1.api import v1_router
 
 logging.config.dictConfig(api_settings.DEFAULT_LOGGING_CONFIG)
 logger = logging.getLogger('bff.app')
@@ -58,6 +57,9 @@ def build_app():
     app.include_router(v1_router, prefix='/api/v1')
 
     return app
+
+
+application = build_app()
 
 
 def run_server():

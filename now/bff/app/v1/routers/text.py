@@ -1,15 +1,14 @@
 from typing import List
 
-from docarray import Document, DocumentArray
-from fastapi import APIRouter
-from jina import Client
-
-from now.bff.v1.models.text import (
+from app.v1.models.text import (
     NowTextIndexRequestModel,
     NowTextResponseModel,
     NowTextSearchRequestModel,
 )
-from now.bff.v1.routers.helper import process_query
+from app.v1.routers.helper import process_query
+from docarray import Document, DocumentArray
+from fastapi import APIRouter
+from jina import Client
 
 router = APIRouter()
 
