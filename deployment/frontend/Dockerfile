@@ -9,6 +9,7 @@ COPY . /
 
 EXPOSE 8051
 
+#ENTRYPOINT ["streamlit", "run", "frontend.py", "--server.enableCORS", "false", "--server.port", "8501", "<node_url>", "31080", "<data>"]
 ENTRYPOINT ["streamlit", "run", "frontend.py", "--server.port", "8501", "<node_url>", "31080", "<data>"]
 # when using below change FROM above as well
 #ENTRYPOINT ["streamlit", "run", "frontend.py", "--server.port", "80", "0.0.0.0", "8080", "<data>"]
