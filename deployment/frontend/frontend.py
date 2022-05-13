@@ -6,9 +6,9 @@ from urllib.request import urlopen
 
 import av
 import numpy as np
+import requests
 import streamlit as st
-from docarray import DocumentArray
-from jina import Client, Document
+from docarray import Document, DocumentArray
 from PIL import Image
 from streamlit_webrtc import ClientSettings, webrtc_streamer
 
@@ -108,34 +108,28 @@ def deploy_streamlit():
         """
 
     def search_by_t(input, server, port, limit=TOP_K):
-        print('initialize client at', server, port)
-        client = Client(host=server, protocol="grpc", port=port)
         print('search text', server, port)
-        response = client.search(
-            Document(text=input),
-            parameters={"limit": limit, 'filter': {}},
-            return_results=True,
-            show_progress=True,
-        )
-
+        data = {'host': server, 'port': port, 'text': input, 'limit': limit}
+        response = requests.post('localhost/api/v1/text/search', json=data)
         return response[0].matches
 
     def search_by_file(document, server, port, limit=TOP_K):
         """
         Wrap file in Jina Document for searching, and do all necessary conversion to make similar to indexed Docs
         """
-        print('connect client to ', server, port)
-        client = Client(host=server, protocol="grpc", port=port)
         query_doc = document
         if query_doc.blob != b'':
             query_doc.convert_blob_to_image_tensor()
         query_doc.set_image_tensor_shape((224, 224))
-        response = client.search(
-            query_doc,
-            parameters={"limit": limit, 'filter': {}},
-            return_results=True,
-            show_progress=True,
-        )
+
+        data = {
+            'host': server,
+            'port': port,
+            'text': query_doc.text,
+            'image': base64.b64encode(query_doc.tensor),
+            'limit': limit,
+        }
+        response = requests.post('localhost/api/v1/image/search', json=data)
 
         return response[0].matches
 

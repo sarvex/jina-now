@@ -1,4 +1,5 @@
-FROM jinaai/jina:3.2.8-py37-standard
+FROM python:3.9
+#FROM jinaai/jina:3.2.8-py37-standard
 
 RUN apt-get update
 RUN apt-get -y install
@@ -9,11 +10,6 @@ COPY . /
 
 EXPOSE 8051
 
-#ENTRYPOINT ["streamlit", "run", "frontend.py", "--server.enableCORS", "false", "--server.port", "8501", "<node_url>", "31080", "<data>"]
-ENTRYPOINT ["streamlit", "run", "frontend.py", "--server.port", "8501", "<node_url>", "31080", "<data>"]
-# when using below change FROM above as well
-#ENTRYPOINT ["streamlit", "run", "frontend.py", "--server.port", "80", "0.0.0.0", "8080", "<data>"]
+ENTRYPOINT ["streamlit", "run", "frontend.py", "--server.port", "8501", "<node_url>", "31080", "<output_modality>", "<data>"]
+#ENTRYPOINT ["streamlit", "run", "frontend.py", "--server.port", "8501", "localhost", "31080", "image", "best-artworks"]
 
-
-
-# might need to add nginx
