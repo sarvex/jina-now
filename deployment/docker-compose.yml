@@ -1,0 +1,19 @@
+version: "3"
+
+services:
+  nginx:
+    image: "jinaaitmpjoschka/now-nginx:latest"
+    ports:
+      - 80:80
+    depends_on:
+      - bff
+      - frontend
+  bff:
+#    build: bff
+    image: "jinaaitmpjoschka/now-bff:latest"
+
+  frontend:
+#    build: frontend
+    image: "jinaaitmpjoschka/now-frontend:latest"
+#    depends_on:
+#      - bff

@@ -3,25 +3,31 @@ import sys
 
 import app.settings as api_settings
 import uvicorn
-from app import __author__, __email__, __summary__, __title__, __version__
 from app.decorators import api_method, timed
 from app.v1.api import v1_router
 from fastapi import FastAPI
+
+from now import __version__
 
 logging.config.dictConfig(api_settings.DEFAULT_LOGGING_CONFIG)
 logger = logging.getLogger('bff.app')
 logger.setLevel(api_settings.DEFAULT_LOGGING_LEVEL)
 
+TITLE = 'Jina NOW'
+DESCRIPTION = 'The Jina NOW service API'
+AUTHOR = 'Jina AI'
+EMAIL = 'hello@jina.ai'
+
 
 def build_app():
     """Build FastAPI app."""
     app = FastAPI(
-        title=__title__,
-        description=__summary__,
+        title=TITLE,
+        description=DESCRIPTION,
         version=__version__,
         contact={
-            'author': __author__,
-            'email': __email__,
+            'author': AUTHOR,
+            'email': EMAIL,
         },
     )
 
@@ -42,8 +48,8 @@ def build_app():
         Root path welcome message.
         """
         return (
-            f'{__title__} v{__version__} 🚀 {__summary__} ✨ '
-            f'author: {__author__} email: {__email__} 📄  '
+            f'{TITLE} v{__version__} 🚀 {DESCRIPTION} ✨ '
+            f'author: {AUTHOR} email: {EMAIL} 📄  '
             'Check out /docs or /redoc for the API documentation!'
         )
 
