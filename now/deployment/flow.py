@@ -138,7 +138,7 @@ def deploy_flow(
         )
     f = f.add(
         name='indexer',
-        uses=f'jinahub+docker://MostSimpleIndexer:346e8475359e13d621717ceff7f48c2a',
+        uses=f'jinahub+docker://SimpleIndexer',
         env={'JINA_LOG_LEVEL': 'DEBUG'},
     )
     # f.plot('./flow.png', vertical_layout=True)
