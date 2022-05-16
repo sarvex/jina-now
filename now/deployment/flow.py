@@ -100,7 +100,8 @@ def deploy_k8s(f, ns, num_pods, tmpdir, kubectl_path):
         # wait for flow to come up
         wait_for_all_pods_in_ns(ns, num_pods)
         spinner.ok("🚀")
-        sleep(3)
+    # work around - first request hangs
+    sleep(3)
     return gateway_host, gateway_port, gateway_host_internal, gateway_port_internal
 
 
@@ -163,8 +164,7 @@ def deploy_flow(
         )
     f = f.add(
         name='indexer',
-        uses=f'jinahub+docker://MostSimpleIndexer:346e8475359e13d621717ceff7f48c2a',
-        uses_metas={'workspace': 'pq_workspace'},
+        uses=f'jinahub+docker://SimpleIndexer',
         env={'JINA_LOG_LEVEL': 'DEBUG'},
     )
 
