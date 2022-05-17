@@ -118,7 +118,7 @@ jobs:
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           application_name: now-bff-frontend
-          environment_name: Nowbfffrontend-env-1
+          environment_name: Nowbfffrontend-env
           # TODO: replace
           #          version_label: ${{ github.event.pull_request.head.sha }}
           version_label: ${{ github.sha }}
@@ -168,6 +168,12 @@ jobs:
       - name: Start deployment containers
         run: |
           docker-compose up -d
+      - name: Check the site
+        id: hello
+        uses: srt32/uptime@master
+        with:
+          url-to-hit: "http://localhost/api/ping"
+          expected-statuses: "200,301"
       - name: Test
         id: test
         run: |
