@@ -112,7 +112,7 @@ def deploy_streamlit():
     def search_by_t(input, server, port, limit=TOP_K):
         print('search text', server, port)
         data = {'host': server, 'port': port, 'text': input, 'limit': limit}
-        response = requests.post('localhost/api/v1/text/search', json=data)
+        response = requests.post('http://localhost/api/v1/text/search', json=data)
         return response[0].matches
 
     def search_by_file(document, server, port, limit=TOP_K):
@@ -131,7 +131,7 @@ def deploy_streamlit():
             'image': base64.b64encode(query_doc.tensor),
             'limit': limit,
         }
-        response = requests.post('localhost/api/v1/image/search', json=data)
+        response = requests.post('http://localhost/api/v1/image/search', json=data)
         return response[0].matches
 
     def convert_file_to_document(query):

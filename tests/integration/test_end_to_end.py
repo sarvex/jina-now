@@ -81,7 +81,7 @@ def test_backend(
             flow_details = json.load(fp)
         request_body['host'] = flow_details['gateway']
     response = requests.post(
-        f'localhost/api/v1/{output_modality}/search', json=request_body
+        f'http://localhost/api/v1/{output_modality}/search', json=request_body
     )
 
     assert response.status_code == 200
