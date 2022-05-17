@@ -95,35 +95,35 @@ jobs:
       - name: Test basic import
         run: python -c 'from now import run_all_k8s'
 
-#  update-deployment-if-required:
-#    runs-on: ubuntu-latest
-#    # TODO: change back
-##    needs: core-test
-#    needs: check-black
-#    steps:
-#      - uses: actions/checkout@v2
-#      - name: Check if deployment has changed
-#        uses: dorny/paths-filter@v2
-#        id: check_has_deployment_changed
-#        with:
-#          filters: |
-#            has_deployment_changed:
-#            - 'deployment/**'
-#      - name: Zip deployment
-#        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
-#        run: zip -r deploy.zip deployment
-#      - name: Deploy to AWS Elastic Beanstalk
-#        uses: einaregilsson/beanstalk-deploy@v20
-#        with:
-#          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#          application_name: now-bff-frontend
-#          environment_name: now-bff-frontend
-#          # TODO: replace
-#          #          version_label: ${{ github.event.pull_request.head.sha }}
-#          version_label: ${{ github.sha }}
-#          region: "eu-west-1"
-#          deployment_package: deploy.zip
+  update-deployment-if-required:
+    runs-on: ubuntu-latest
+    # TODO: change back
+#    needs: core-test
+    needs: check-black
+    steps:
+      - uses: actions/checkout@v2
+      - name: Check if deployment has changed
+        uses: dorny/paths-filter@v2
+        id: check_has_deployment_changed
+        with:
+          filters: |
+            has_deployment_changed:
+            - 'deployment/**'
+      - name: Zip deployment
+        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
+        run: zip -r deploy.zip deployment docker-compose.yml
+      - name: Deploy to AWS Elastic Beanstalk
+        uses: einaregilsson/beanstalk-deploy@v20
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          application_name: now-bff-frontend
+          environment_name: Nowbfffrontend-env-1
+          # TODO: replace
+          #          version_label: ${{ github.event.pull_request.head.sha }}
+          version_label: ${{ github.sha }}
+          region: "eu-west-1"
+          deployment_package: deploy.zip
 
   prep-testbed:
     runs-on: ubuntu-latest

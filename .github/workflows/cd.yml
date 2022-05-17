@@ -96,7 +96,6 @@ jobs:
           region: "eu-west-1"
           deployment_package: deploy.zip
 
-
   prerelease:
     runs-on: ubuntu-latest
     steps:
