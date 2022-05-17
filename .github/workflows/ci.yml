@@ -138,7 +138,7 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
 
   core-test:
-    needs: prep-testbed
+#    needs: prep-testbed
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -168,6 +168,8 @@ jobs:
       - name: Start deployment containers
         run: |
           docker-compose up -d
+      - name: List Docker containers
+        run: docker ps
       - name: Check the site
         id: hello
         uses: srt32/uptime@master
