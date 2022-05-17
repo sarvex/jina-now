@@ -45,12 +45,12 @@ def test_backend(
     else:
         search_text = 'test'
 
-    if cluster == 'local':
-        server = 'localhost'
-        port = 0
+    if new_cluster_type == 'local':
+        host = 'localhost'
+        port = 31080
 
     # Perform end-to-end check via bff
-    data = {'host': server, 'port': port, 'text': search_text, 'limit': 9}
+    data = {'host': host, 'port': port, 'text': search_text, 'limit': 9}
     response = requests.post(f'localhost/api/v1/{output_modality}/search', json=data)
     assert response.status_code == 200
     # Limit param is not respected and hence 20 matches are returned
