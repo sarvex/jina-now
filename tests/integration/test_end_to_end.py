@@ -54,6 +54,7 @@ def test_backend(
     # deactivate sandbox since it is hanging from time to time
     sandbox = False
     kwargs = {
+        'now': 'start',
         'output_modality': output_modality,
         'data': dataset,
         'quality': quality,
