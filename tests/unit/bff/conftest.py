@@ -1,7 +1,7 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from now.bff import build_app
+from deployment.bff.app.app import build_app
 
 data_url = 'https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/jpeg/best-artworks.img10.bin'
 
