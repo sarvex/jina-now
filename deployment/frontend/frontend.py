@@ -130,7 +130,6 @@ def deploy_streamlit():
             'limit': limit,
         }
         response = requests.post('localhost/api/v1/image/search', json=data)
-
         return response[0].matches
 
     def convert_file_to_document(query):

@@ -1,7 +1,7 @@
 from argparse import Namespace
 
 import pytest
-from fastapi.testclient import TestClient
+import requests
 
 from now.cli import cli
 from now.dialog import NEW_CLUSTER
@@ -21,7 +21,6 @@ def test_backend(
     quality: str,
     cluster: str,
     new_cluster_type: str,
-    test_client: TestClient,
 ):
     log.TEST = True
     # sandbox = dataset == 'best-artworks'
@@ -46,20 +45,13 @@ def test_backend(
     else:
         search_text = 'test'
 
+    if cluster == 'local':
+        server = 'localhost'
+        port = 0
+
     # Perform end-to-end check via bff
-    if output_modality == 'image':
-        response = test_client.post(
-            f'/api/v1/image/search',
-            json={'text': search_text, 'limit': 9},  # limit has no effect as of now
-        )
-    elif output_modality == 'text':
-        response = test_client.post(
-            f'/api/v1/text/search',
-            json={'text': search_text, 'limit': 9},  # limit has no effect as of now
-        )
-    else:
-        # add more here when the new modality is added
-        response = None
+    data = {'host': server, 'port': port, 'text': search_text, 'limit': 9}
+    response = requests.post(f'localhost/api/v1/{output_modality}/search', json=data)
     assert response.status_code == 200
     # Limit param is not respected and hence 20 matches are returned
     # Therefore, once the limit is implemented in the CustomIndexer,
