@@ -139,6 +139,7 @@ jobs:
 
   core-test:
 #    needs: prep-testbed
+    needs: check-black
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
