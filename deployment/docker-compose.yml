@@ -3,7 +3,7 @@ version: "3"
 services:
   nginx:
     build: nginx
-#    image: "jinaaitmpjoschka/now-nginx:latest"
+#    image: "jinaai/now-nginx:latest"
     ports:
       - 80:80
     depends_on:
@@ -11,10 +11,9 @@ services:
       - frontend
   bff:
     build: bff
-#    image: "jinaaitmpjoschka/now-bff:latest"
-
+#    image: "jinaai/now-bff:latest"
   frontend:
     build: frontend
-#    image: "jinaaitmpjoschka/now-frontend:latest"
+#    image: "jinaai/now-frontend:latest"
     depends_on:
       - bff

@@ -1,5 +1,4 @@
 FROM python:3.9
-#FROM jinaai/jina:3.2.8-py37-standard
 
 WORKDIR /code
 

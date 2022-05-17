@@ -1,5 +1,4 @@
 FROM python:3.9
-#FROM jinaai/jina:3.2.8-py37-standard
 
 RUN apt-get update
 RUN apt-get -y install
@@ -12,4 +11,3 @@ EXPOSE 8051
 
 ENTRYPOINT ["streamlit", "run", "frontend.py", "--server.port", "8501", "<node_url>", "31080", "<output_modality>", "<data>"]
 #ENTRYPOINT ["streamlit", "run", "frontend.py", "--server.port", "8501", "localhost", "31080", "image", "best-artworks"]
-
