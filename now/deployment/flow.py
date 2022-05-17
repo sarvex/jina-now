@@ -1,6 +1,8 @@
+import json
 import math
 import os.path
 import pathlib
+from os.path import expanduser as user
 from time import sleep
 
 from kubernetes import client as k8s_client
@@ -9,17 +11,18 @@ from tqdm import tqdm
 from yaspin.spinners import Spinners
 
 from now.cloud_manager import is_local_cluster
-from now.deployment.deployment import apply_replace, cmd
-from now.log.log import TEST, yaspin_extended
+from now.constants import JC_SECRET
+from now.deployment.deployment import apply_replace, cmd, deploy_wolf
+from now.log.log import yaspin_extended
 from now.utils import sigmap
 
 cur_dir = pathlib.Path(__file__).parent.resolve()
 
 
-def batch(iterable, n=1):
-    l = len(iterable)
+def batch(data_list, n=1):
+    l = len(data_list)
     for ndx in range(0, l, n):
-        yield iterable[ndx : min(ndx + n, l)]
+        yield data_list[ndx : min(ndx + n, l)]
 
 
 def wait_for_lb(lb_name, ns):
@@ -99,6 +102,29 @@ def deploy_k8s(f, ns, num_pods, tmpdir, kubectl_path):
     return gateway_host, gateway_port, gateway_host_internal, gateway_port_internal
 
 
+def get_custom_env_file(
+    indexer_name,
+    encoder_name,
+    linear_head_name,
+    model,
+    output_dim,
+    embed_size,
+    tmpdir,
+):
+    env_file = os.path.join(tmpdir, 'dot.env')
+    with open(env_file, 'w+') as fp:
+        fp.write(
+            f'ENCODER_NAME={encoder_name}\n'
+            f'CLIP_MODEL_NAME={model}\n'
+            f'LINEAR_HEAD_NAME={linear_head_name}\n'
+            f'OUTPUT_DIM={output_dim}\n'
+            f'EMBED_DIM={embed_size}\n'
+            f'INDEXER_NAME={indexer_name}\n'
+        )
+
+    return env_file
+
+
 def deploy_flow(
     executor_name,
     output_modality,
@@ -110,72 +136,107 @@ def deploy_flow(
     finetuning,
     sandbox,
     kubectl_path,
+    deployment_type,
 ):
     from jina import Flow
     from jina.clients import Client
 
+    suffix = 'docker' if deployment_type == 'remote' else 'docker'
+
+    indexer_name = f'jinahub+{suffix}://DocarrayIndexer'
+    encoder_name = f'jinahub+{suffix}://CLIPEncoder/v0.2.1'
+    executor_name = f'jinahub+{suffix}://{executor_name}'
+
+    env_file = get_custom_env_file(
+        indexer_name,
+        encoder_name,
+        executor_name,
+        vision_model,
+        final_layer_output_dim,
+        embedding_size,
+        tmpdir,
+    )
+
     ns = 'nowapi'
-    f = Flow(
-        name=ns,
-        port_expose=8080,
-        cors=True,
-    )
-    f = f.add(
-        name='encoder_clip',
-        uses=f'jinahub{"+sandbox" if sandbox else "+docker"}://CLIPEncoder/v0.2.1',
-        uses_with={'pretrained_model_name_or_path': vision_model},
-        env={'JINA_LOG_LEVEL': 'DEBUG'},
-    )
-    if finetuning:
-        f = f.add(
-            name='linear_head',
-            uses=f'jinahub{"+sandbox" if sandbox else "+docker"}://{executor_name}',
-            uses_with={
-                'final_layer_output_dim': final_layer_output_dim,
-                'embedding_size': embedding_size,
-            },
-            env={'JINA_LOG_LEVEL': 'DEBUG'},
+    if deployment_type == 'remote':
+        # Deploy it on wolf
+        if finetuning:
+            flow_path = os.path.join(cur_dir, 'flow', 'ft-flow.yml')
+        else:
+            flow_path = os.path.join(cur_dir, 'flow', 'flow.yml')
+        flow = deploy_wolf(path=flow_path, env_file=env_file, name=ns)
+        host = flow.gateway
+        client = Client(host=host)
+
+        # Dump the flow ID and gateway to keep track
+        with open(user(JC_SECRET), 'w') as fp:
+            json.dump({'flow_id': flow.flow_id, 'gateway': host}, fp)
+
+        # host & port
+        gateway_host = 'remote'
+        gateway_port = None
+        gateway_host_internal = host
+        gateway_port_internal = None  # Since host contains protocol
+    else:
+        from dotenv import load_dotenv
+
+        load_dotenv(env_file)
+        if finetuning:
+            f = Flow.load_config(os.path.join(cur_dir, 'flow', 'ft-flow.yml'))
+        else:
+            f = Flow.load_config(os.path.join(cur_dir, 'flow', 'flow.yml'))
+
+        (
+            gateway_host,
+            gateway_port,
+            gateway_host_internal,
+            gateway_port_internal,
+        ) = deploy_k8s(
+            f,
+            ns,
+            2 + (2 if finetuning else 1) * (0 if sandbox else 1),
+            tmpdir,
+            kubectl_path=kubectl_path,
         )
-    f = f.add(
-        name='indexer',
-        uses=f'jinahub+docker://SimpleIndexer',
-        env={'JINA_LOG_LEVEL': 'DEBUG'},
-    )
-    # f.plot('./flow.png', vertical_layout=True)
+        client = Client(host=gateway_host, port=gateway_port)
+
+    # delete the env file
+    if os.path.exists(env_file):
+        os.remove(env_file)
 
     if output_modality == 'image':
         index = [x for x in index if x.text == '']
     elif output_modality == 'text':
         index = [x for x in index if x.text != '']
-
-    (
-        gateway_host,
-        gateway_port,
-        gateway_host_internal,
-        gateway_port_internal,
-    ) = deploy_k8s(
-        f,
-        ns,
-        2 + (2 if finetuning else 1) * (0 if sandbox else 1),
-        tmpdir,
-        kubectl_path=kubectl_path,
-    )
     print(f'▶ indexing {len(index)} documents')
-    client = Client(host=gateway_host, port=gateway_port)
     request_size = 64
 
     progress_bar = (
         x
         for x in tqdm(
-            batch(index, request_size), total=math.ceil(len(index) / request_size)
+            batch(index, request_size),
+            total=math.ceil(len(index) / request_size),
         )
     )
 
     def on_done(res):
-        if not TEST:
+        if 'NOW_CI_RUN' not in os.environ:
             next(progress_bar)
 
-    client.post('/index', request_size=request_size, inputs=index, on_done=on_done)
+    # Keep trying until the services are up and running
+    batches = batch(index, request_size * 5)
+    for b in batches:
+        while True:
+            try:
+                client.post(
+                    '/index',
+                    request_size=request_size,
+                    inputs=b,
+                    on_done=on_done,
+                )
+                break
+            except Exception as e:
+                sleep(1)
 
     print('⭐ Success - your data is indexed')
     return gateway_host, gateway_port, gateway_host_internal, gateway_port_internal

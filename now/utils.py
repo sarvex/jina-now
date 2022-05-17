@@ -6,14 +6,15 @@ import signal
 import stat
 import sys
 from collections import namedtuple
+from typing import Dict
 
 import numpy as np
+import yaml
 from docarray import Document
 from PIL import Image, ImageDraw, ImageFont
 from rich.console import Console
 
 from now.deployment.deployment import which
-from now.log import log
 
 colors = [
     "navy",
@@ -267,7 +268,7 @@ def download(url, filename):
         r.raw.read, decode_content=True
     )  # Decompress if needed
 
-    if log.TEST:
+    if 'NOW_CI_RUN' in os.environ:
         download_file(path, r.raw)
     else:
         with tqdm.wrapattr(r.raw, "read", total=file_size, desc=desc) as r_raw:
@@ -326,6 +327,19 @@ def ffmpeg_is_installed():
 
 def gcloud_is_installed():
     return which("gcloud")
+
+
+def flow_definition(dirpath) -> Dict:
+    with open(dirpath) as f:
+        return yaml.safe_load(f.read())
+
+
+def update_uses_to_sandbox(flow):
+    for idx, executor_dict in enumerate(flow['executors']):
+        uses = executor_dict.get('uses', {})
+        first_part, second_part = uses.split('://')
+        uses = 'jinahub+sandbox://' + second_part
+        flow['executors'][idx]['uses'] = uses
 
 
 sigmap = {signal.SIGINT: my_handler, signal.SIGTERM: my_handler}
