@@ -1,14 +1,15 @@
 from typing import List
 
-from app.v1.models.text import (
+from docarray import Document, DocumentArray
+from fastapi import APIRouter
+from jina import Client
+
+from deployment.bff.app.v1.models.text import (
     NowTextIndexRequestModel,
     NowTextResponseModel,
     NowTextSearchRequestModel,
 )
-from app.v1.routers.helper import process_query
-from docarray import Document, DocumentArray
-from fastapi import APIRouter
-from jina import Client
+from deployment.bff.app.v1.routers.helper import process_query
 
 router = APIRouter()
 

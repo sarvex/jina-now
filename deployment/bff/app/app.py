@@ -1,12 +1,12 @@
 import logging.config
 import sys
 
-import app.settings as api_settings
 import uvicorn
-from app.decorators import api_method, timed
-from app.v1.api import v1_router
 from fastapi import FastAPI
 
+import deployment.bff.app.settings as api_settings
+from deployment.bff.app.decorators import api_method, timed
+from deployment.bff.app.v1.api import v1_router
 from now import __version__
 
 logging.config.dictConfig(api_settings.DEFAULT_LOGGING_CONFIG)

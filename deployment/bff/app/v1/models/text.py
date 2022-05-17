@@ -1,7 +1,12 @@
 from typing import Dict, List, Optional
 
-from app.v1.models.helper import BaseRequestModel, _NamedScore, _StructValueType
 from pydantic import BaseModel, Field
+
+from deployment.bff.app.v1.models.helper import (
+    BaseRequestModel,
+    _NamedScore,
+    _StructValueType,
+)
 
 
 # Request Model
