@@ -6,7 +6,7 @@
         <link rel="canonical" href="https://now.jina.ai/_modules/now/deployment/flow.html" />
 
     <link rel="shortcut icon" href="../../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.04.07"/>
-        <title>now.deployment.flow - NOW 0.0.4 documentation</title>
+        <title>now.deployment.flow - NOW 0.0.5 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?digest=68f4518137b9aefe99b631505a2064c3c42c9852" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../../">
-                <div class="brand">NOW 0.0.4 documentation</div>
+                <div class="brand">NOW 0.0.5 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -271,9 +271,11 @@
                 </div>
                 <article role="main">
                     <h1>Source code for now.deployment.flow</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">math</span>
+<span></span><span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">os.path</span>
 <span class="kn">import</span> <span class="nn">pathlib</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">expanduser</span> <span class="k">as</span> <span class="n">user</span>
 <span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">sleep</span>
 
 <span class="kn">from</span> <span class="nn">kubernetes</span> <span class="kn">import</span> <span class="n">client</span> <span class="k">as</span> <span class="n">k8s_client</span>
@@ -282,17 +284,18 @@
 <span class="kn">from</span> <span class="nn">yaspin.spinners</span> <span class="kn">import</span> <span class="n">Spinners</span>
 
 <span class="kn">from</span> <span class="nn">now.cloud_manager</span> <span class="kn">import</span> <span class="n">is_local_cluster</span>
-<span class="kn">from</span> <span class="nn">now.deployment.deployment</span> <span class="kn">import</span> <span class="n">apply_replace</span><span class="p">,</span> <span class="n">cmd</span>
-<span class="kn">from</span> <span class="nn">now.log.log</span> <span class="kn">import</span> <span class="n">TEST</span><span class="p">,</span> <span class="n">yaspin_extended</span>
+<span class="kn">from</span> <span class="nn">now.constants</span> <span class="kn">import</span> <span class="n">JC_SECRET</span>
+<span class="kn">from</span> <span class="nn">now.deployment.deployment</span> <span class="kn">import</span> <span class="n">apply_replace</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">deploy_wolf</span>
+<span class="kn">from</span> <span class="nn">now.log.log</span> <span class="kn">import</span> <span class="n">yaspin_extended</span>
 <span class="kn">from</span> <span class="nn">now.utils</span> <span class="kn">import</span> <span class="n">sigmap</span>
 
 <span class="n">cur_dir</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
 
 
-<div class="viewcode-block" id="batch"><a class="viewcode-back" href="../../../../api/now.deployment.flow/#now.deployment.flow.batch">[docs]</a><span class="k">def</span> <span class="nf">batch</span><span class="p">(</span><span class="n">iterable</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-    <span class="n">l</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">iterable</span><span class="p">)</span>
+<div class="viewcode-block" id="batch"><a class="viewcode-back" href="../../../../api/now.deployment.flow/#now.deployment.flow.batch">[docs]</a><span class="k">def</span> <span class="nf">batch</span><span class="p">(</span><span class="n">data_list</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="n">l</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data_list</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">ndx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
-        <span class="k">yield</span> <span class="n">iterable</span><span class="p">[</span><span class="n">ndx</span> <span class="p">:</span> <span class="nb">min</span><span class="p">(</span><span class="n">ndx</span> <span class="o">+</span> <span class="n">n</span><span class="p">,</span> <span class="n">l</span><span class="p">)]</span></div>
+        <span class="k">yield</span> <span class="n">data_list</span><span class="p">[</span><span class="n">ndx</span> <span class="p">:</span> <span class="nb">min</span><span class="p">(</span><span class="n">ndx</span> <span class="o">+</span> <span class="n">n</span><span class="p">,</span> <span class="n">l</span><span class="p">)]</span></div>
 
 
 <div class="viewcode-block" id="wait_for_lb"><a class="viewcode-back" href="../../../../api/now.deployment.flow/#now.deployment.flow.wait_for_lb">[docs]</a><span class="k">def</span> <span class="nf">wait_for_lb</span><span class="p">(</span><span class="n">lb_name</span><span class="p">,</span> <span class="n">ns</span><span class="p">):</span>
@@ -372,6 +375,29 @@
     <span class="k">return</span> <span class="n">gateway_host</span><span class="p">,</span> <span class="n">gateway_port</span><span class="p">,</span> <span class="n">gateway_host_internal</span><span class="p">,</span> <span class="n">gateway_port_internal</span></div>
 
 
+<div class="viewcode-block" id="get_custom_env_file"><a class="viewcode-back" href="../../../../api/now.deployment.flow/#now.deployment.flow.get_custom_env_file">[docs]</a><span class="k">def</span> <span class="nf">get_custom_env_file</span><span class="p">(</span>
+    <span class="n">indexer_name</span><span class="p">,</span>
+    <span class="n">encoder_name</span><span class="p">,</span>
+    <span class="n">linear_head_name</span><span class="p">,</span>
+    <span class="n">model</span><span class="p">,</span>
+    <span class="n">output_dim</span><span class="p">,</span>
+    <span class="n">embed_size</span><span class="p">,</span>
+    <span class="n">tmpdir</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="n">env_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">,</span> <span class="s1">'dot.env'</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">env_file</span><span class="p">,</span> <span class="s1">'w+'</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+        <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">'ENCODER_NAME=</span><span class="si">{</span><span class="n">encoder_name</span><span class="si">}</span><span class="se">\n</span><span class="s1">'</span>
+            <span class="sa">f</span><span class="s1">'CLIP_MODEL_NAME=</span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="se">\n</span><span class="s1">'</span>
+            <span class="sa">f</span><span class="s1">'LINEAR_HEAD_NAME=</span><span class="si">{</span><span class="n">linear_head_name</span><span class="si">}</span><span class="se">\n</span><span class="s1">'</span>
+            <span class="sa">f</span><span class="s1">'OUTPUT_DIM=</span><span class="si">{</span><span class="n">output_dim</span><span class="si">}</span><span class="se">\n</span><span class="s1">'</span>
+            <span class="sa">f</span><span class="s1">'EMBED_DIM=</span><span class="si">{</span><span class="n">embed_size</span><span class="si">}</span><span class="se">\n</span><span class="s1">'</span>
+            <span class="sa">f</span><span class="s1">'INDEXER_NAME=</span><span class="si">{</span><span class="n">indexer_name</span><span class="si">}</span><span class="se">\n</span><span class="s1">'</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">env_file</span></div>
+
+
 <div class="viewcode-block" id="deploy_flow"><a class="viewcode-back" href="../../../../api/now.deployment.flow/#now.deployment.flow.deploy_flow">[docs]</a><span class="k">def</span> <span class="nf">deploy_flow</span><span class="p">(</span>
     <span class="n">executor_name</span><span class="p">,</span>
     <span class="n">output_modality</span><span class="p">,</span>
@@ -383,72 +409,107 @@
     <span class="n">finetuning</span><span class="p">,</span>
     <span class="n">sandbox</span><span class="p">,</span>
     <span class="n">kubectl_path</span><span class="p">,</span>
+    <span class="n">deployment_type</span><span class="p">,</span>
 <span class="p">):</span>
     <span class="kn">from</span> <span class="nn">jina</span> <span class="kn">import</span> <span class="n">Flow</span>
     <span class="kn">from</span> <span class="nn">jina.clients</span> <span class="kn">import</span> <span class="n">Client</span>
 
+    <span class="n">suffix</span> <span class="o">=</span> <span class="s1">'docker'</span> <span class="k">if</span> <span class="n">deployment_type</span> <span class="o">==</span> <span class="s1">'remote'</span> <span class="k">else</span> <span class="s1">'docker'</span>
+
+    <span class="n">indexer_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">'jinahub+</span><span class="si">{</span><span class="n">suffix</span><span class="si">}</span><span class="s1">://DocarrayIndexer'</span>
+    <span class="n">encoder_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">'jinahub+</span><span class="si">{</span><span class="n">suffix</span><span class="si">}</span><span class="s1">://CLIPEncoder/v0.2.1'</span>
+    <span class="n">executor_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">'jinahub+</span><span class="si">{</span><span class="n">suffix</span><span class="si">}</span><span class="s1">://</span><span class="si">{</span><span class="n">executor_name</span><span class="si">}</span><span class="s1">'</span>
+
+    <span class="n">env_file</span> <span class="o">=</span> <span class="n">get_custom_env_file</span><span class="p">(</span>
+        <span class="n">indexer_name</span><span class="p">,</span>
+        <span class="n">encoder_name</span><span class="p">,</span>
+        <span class="n">executor_name</span><span class="p">,</span>
+        <span class="n">vision_model</span><span class="p">,</span>
+        <span class="n">final_layer_output_dim</span><span class="p">,</span>
+        <span class="n">embedding_size</span><span class="p">,</span>
+        <span class="n">tmpdir</span><span class="p">,</span>
+    <span class="p">)</span>
+
     <span class="n">ns</span> <span class="o">=</span> <span class="s1">'nowapi'</span>
-    <span class="n">f</span> <span class="o">=</span> <span class="n">Flow</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="n">ns</span><span class="p">,</span>
-        <span class="n">port_expose</span><span class="o">=</span><span class="mi">8080</span><span class="p">,</span>
-        <span class="n">cors</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="n">f</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="s1">'encoder_clip'</span><span class="p">,</span>
-        <span class="n">uses</span><span class="o">=</span><span class="sa">f</span><span class="s1">'jinahub</span><span class="si">{</span><span class="s2">"+sandbox"</span> <span class="k">if</span> <span class="n">sandbox</span> <span class="k">else</span> <span class="s2">"+docker"</span><span class="si">}</span><span class="s1">://CLIPEncoder/v0.2.1'</span><span class="p">,</span>
-        <span class="n">uses_with</span><span class="o">=</span><span class="p">{</span><span class="s1">'pretrained_model_name_or_path'</span><span class="p">:</span> <span class="n">vision_model</span><span class="p">},</span>
-        <span class="n">env</span><span class="o">=</span><span class="p">{</span><span class="s1">'JINA_LOG_LEVEL'</span><span class="p">:</span> <span class="s1">'DEBUG'</span><span class="p">},</span>
-    <span class="p">)</span>
-    <span class="k">if</span> <span class="n">finetuning</span><span class="p">:</span>
-        <span class="n">f</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="s1">'linear_head'</span><span class="p">,</span>
-            <span class="n">uses</span><span class="o">=</span><span class="sa">f</span><span class="s1">'jinahub</span><span class="si">{</span><span class="s2">"+sandbox"</span> <span class="k">if</span> <span class="n">sandbox</span> <span class="k">else</span> <span class="s2">"+docker"</span><span class="si">}</span><span class="s1">://</span><span class="si">{</span><span class="n">executor_name</span><span class="si">}</span><span class="s1">'</span><span class="p">,</span>
-            <span class="n">uses_with</span><span class="o">=</span><span class="p">{</span>
-                <span class="s1">'final_layer_output_dim'</span><span class="p">:</span> <span class="n">final_layer_output_dim</span><span class="p">,</span>
-                <span class="s1">'embedding_size'</span><span class="p">:</span> <span class="n">embedding_size</span><span class="p">,</span>
-            <span class="p">},</span>
-            <span class="n">env</span><span class="o">=</span><span class="p">{</span><span class="s1">'JINA_LOG_LEVEL'</span><span class="p">:</span> <span class="s1">'DEBUG'</span><span class="p">},</span>
+    <span class="k">if</span> <span class="n">deployment_type</span> <span class="o">==</span> <span class="s1">'remote'</span><span class="p">:</span>
+        <span class="c1"># Deploy it on wolf</span>
+        <span class="k">if</span> <span class="n">finetuning</span><span class="p">:</span>
+            <span class="n">flow_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cur_dir</span><span class="p">,</span> <span class="s1">'flow'</span><span class="p">,</span> <span class="s1">'ft-flow.yml'</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">flow_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cur_dir</span><span class="p">,</span> <span class="s1">'flow'</span><span class="p">,</span> <span class="s1">'flow.yml'</span><span class="p">)</span>
+        <span class="n">flow</span> <span class="o">=</span> <span class="n">deploy_wolf</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">flow_path</span><span class="p">,</span> <span class="n">env_file</span><span class="o">=</span><span class="n">env_file</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">ns</span><span class="p">)</span>
+        <span class="n">host</span> <span class="o">=</span> <span class="n">flow</span><span class="o">.</span><span class="n">gateway</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">)</span>
+
+        <span class="c1"># Dump the flow ID and gateway to keep track</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">user</span><span class="p">(</span><span class="n">JC_SECRET</span><span class="p">),</span> <span class="s1">'w'</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">({</span><span class="s1">'flow_id'</span><span class="p">:</span> <span class="n">flow</span><span class="o">.</span><span class="n">flow_id</span><span class="p">,</span> <span class="s1">'gateway'</span><span class="p">:</span> <span class="n">host</span><span class="p">},</span> <span class="n">fp</span><span class="p">)</span>
+
+        <span class="c1"># host &amp; port</span>
+        <span class="n">gateway_host</span> <span class="o">=</span> <span class="s1">'remote'</span>
+        <span class="n">gateway_port</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">gateway_host_internal</span> <span class="o">=</span> <span class="n">host</span>
+        <span class="n">gateway_port_internal</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Since host contains protocol</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">dotenv</span> <span class="kn">import</span> <span class="n">load_dotenv</span>
+
+        <span class="n">load_dotenv</span><span class="p">(</span><span class="n">env_file</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">finetuning</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">Flow</span><span class="o">.</span><span class="n">load_config</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cur_dir</span><span class="p">,</span> <span class="s1">'flow'</span><span class="p">,</span> <span class="s1">'ft-flow.yml'</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">Flow</span><span class="o">.</span><span class="n">load_config</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cur_dir</span><span class="p">,</span> <span class="s1">'flow'</span><span class="p">,</span> <span class="s1">'flow.yml'</span><span class="p">))</span>
+
+        <span class="p">(</span>
+            <span class="n">gateway_host</span><span class="p">,</span>
+            <span class="n">gateway_port</span><span class="p">,</span>
+            <span class="n">gateway_host_internal</span><span class="p">,</span>
+            <span class="n">gateway_port_internal</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="n">deploy_k8s</span><span class="p">(</span>
+            <span class="n">f</span><span class="p">,</span>
+            <span class="n">ns</span><span class="p">,</span>
+            <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="mi">2</span> <span class="k">if</span> <span class="n">finetuning</span> <span class="k">else</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">0</span> <span class="k">if</span> <span class="n">sandbox</span> <span class="k">else</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="n">tmpdir</span><span class="p">,</span>
+            <span class="n">kubectl_path</span><span class="o">=</span><span class="n">kubectl_path</span><span class="p">,</span>
         <span class="p">)</span>
-    <span class="n">f</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="s1">'indexer'</span><span class="p">,</span>
-        <span class="n">uses</span><span class="o">=</span><span class="sa">f</span><span class="s1">'jinahub+docker://SimpleIndexer'</span><span class="p">,</span>
-        <span class="n">env</span><span class="o">=</span><span class="p">{</span><span class="s1">'JINA_LOG_LEVEL'</span><span class="p">:</span> <span class="s1">'DEBUG'</span><span class="p">},</span>
-    <span class="p">)</span>
-    <span class="c1"># f.plot('./flow.png', vertical_layout=True)</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="n">gateway_host</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">gateway_port</span><span class="p">)</span>
+
+    <span class="c1"># delete the env file</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">env_file</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">env_file</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">output_modality</span> <span class="o">==</span> <span class="s1">'image'</span><span class="p">:</span>
         <span class="n">index</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">index</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="s1">''</span><span class="p">]</span>
     <span class="k">elif</span> <span class="n">output_modality</span> <span class="o">==</span> <span class="s1">'text'</span><span class="p">:</span>
         <span class="n">index</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">index</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">text</span> <span class="o">!=</span> <span class="s1">''</span><span class="p">]</span>
-
-    <span class="p">(</span>
-        <span class="n">gateway_host</span><span class="p">,</span>
-        <span class="n">gateway_port</span><span class="p">,</span>
-        <span class="n">gateway_host_internal</span><span class="p">,</span>
-        <span class="n">gateway_port_internal</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">=</span> <span class="n">deploy_k8s</span><span class="p">(</span>
-        <span class="n">f</span><span class="p">,</span>
-        <span class="n">ns</span><span class="p">,</span>
-        <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="mi">2</span> <span class="k">if</span> <span class="n">finetuning</span> <span class="k">else</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">0</span> <span class="k">if</span> <span class="n">sandbox</span> <span class="k">else</span> <span class="mi">1</span><span class="p">),</span>
-        <span class="n">tmpdir</span><span class="p">,</span>
-        <span class="n">kubectl_path</span><span class="o">=</span><span class="n">kubectl_path</span><span class="p">,</span>
-    <span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'▶ indexing </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">index</span><span class="p">)</span><span class="si">}</span><span class="s1"> documents'</span><span class="p">)</span>
-    <span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="n">gateway_host</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">gateway_port</span><span class="p">)</span>
     <span class="n">request_size</span> <span class="o">=</span> <span class="mi">64</span>
 
     <span class="n">progress_bar</span> <span class="o">=</span> <span class="p">(</span>
         <span class="n">x</span>
         <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span>
-            <span class="n">batch</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">request_size</span><span class="p">),</span> <span class="n">total</span><span class="o">=</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">index</span><span class="p">)</span> <span class="o">/</span> <span class="n">request_size</span><span class="p">)</span>
+            <span class="n">batch</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">request_size</span><span class="p">),</span>
+            <span class="n">total</span><span class="o">=</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">index</span><span class="p">)</span> <span class="o">/</span> <span class="n">request_size</span><span class="p">),</span>
         <span class="p">)</span>
     <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">on_done</span><span class="p">(</span><span class="n">res</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">TEST</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s1">'NOW_CI_RUN'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
             <span class="nb">next</span><span class="p">(</span><span class="n">progress_bar</span><span class="p">)</span>
 
-    <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s1">'/index'</span><span class="p">,</span> <span class="n">request_size</span><span class="o">=</span><span class="n">request_size</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="n">index</span><span class="p">,</span> <span class="n">on_done</span><span class="o">=</span><span class="n">on_done</span><span class="p">)</span>
+    <span class="c1"># Keep trying until the services are up and running</span>
+    <span class="n">batches</span> <span class="o">=</span> <span class="n">batch</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">request_size</span> <span class="o">*</span> <span class="mi">5</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">batches</span><span class="p">:</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+                    <span class="s1">'/index'</span><span class="p">,</span>
+                    <span class="n">request_size</span><span class="o">=</span><span class="n">request_size</span><span class="p">,</span>
+                    <span class="n">inputs</span><span class="o">=</span><span class="n">b</span><span class="p">,</span>
+                    <span class="n">on_done</span><span class="o">=</span><span class="n">on_done</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="k">break</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
     <span class="nb">print</span><span class="p">(</span><span class="s1">'⭐ Success - your data is indexed'</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">gateway_host</span><span class="p">,</span> <span class="n">gateway_port</span><span class="p">,</span> <span class="n">gateway_host_internal</span><span class="p">,</span> <span class="n">gateway_port_internal</span></div>
@@ -469,7 +530,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on May 16, 2022.
+                            Last updated on May 17, 2022.
                         </div>
                     </div>
                     <div class="right-details">
