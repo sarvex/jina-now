@@ -10,7 +10,7 @@ from now.log import log
 
 @pytest.mark.parametrize(
     'output_modality, dataset',
-    [('image', 'best-artworks'), ('image', 'deepfashion'), ('text', 'rock-lyrics')],
+    [('image', 'best-artworks'), ('image', 'bird-species'), ('text', 'rock-lyrics')],
 )  # art, rock-lyrics -> no finetuning, fashion -> finetuning
 @pytest.mark.parametrize('quality', ['medium'])
 @pytest.mark.parametrize('cluster', [NEW_CLUSTER['value']])
@@ -64,4 +64,4 @@ def test_backend(
     # Limit param is not respected and hence 20 matches are returned
     # Therefore, once the limit is implemented in the CustomIndexer,
     # we should change the below value to 9
-    assert len(response.json()) == 20
+    assert len(response.json()) == 9
