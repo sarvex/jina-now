@@ -32,17 +32,21 @@ def cleanup(deployment_type, dataset):
 
 @pytest.mark.parametrize(
     'output_modality, dataset',
-    [('image', 'bird-species'), ('image', 'best-artworks'), ('text', 'rock-lyrics')],
+    # [('image', 'bird-species'), ('image', 'best-artworks'), ('text', 'rock-lyrics')],
+    [('image', 'best-artworks')],
 )  # art, rock-lyrics -> no finetuning, fashion -> finetuning
 @pytest.mark.parametrize('quality', ['medium'])
 @pytest.mark.parametrize('cluster', [NEW_CLUSTER['value']])
-@pytest.mark.parametrize('deployment_type', ['local', 'remote'])
+# @pytest.mark.parametrize('deployment_type', ['local', 'remote'])
+@pytest.mark.parametrize('deployment_type', ['remote'])
+@pytest.mark.parametrize('which_api', ['api', 'api/api'])
 def test_backend(
     output_modality: str,
     dataset: str,
     quality: str,
     cluster: str,
     deployment_type: str,
+    which_api: str,
     cleanup,
 ):
     if deployment_type == 'remote' and dataset != 'best-artworks':
@@ -76,12 +80,16 @@ def test_backend(
     if deployment_type == 'local':
         request_body['host'] = 'localhost'
         request_body['port'] = 31080
-    elif deployment_type == 'remote':
+    # elif deployment_type == 'remote':
+    elif deployment_type.startswith('remote'):
         with open(user(JC_SECRET), 'r') as fp:
             flow_details = json.load(fp)
         request_body['host'] = flow_details['gateway']
+    # response = requests.post(
+    #     f'http://localhost/api/v1/{output_modality}/search', json=request_body
+    # )
     response = requests.post(
-        f'http://localhost/api/v1/{output_modality}/search', json=request_body
+        f'http://localhost/{which_api}/v1/{output_modality}/search', json=request_body
     )
 
     assert response.status_code == 200
