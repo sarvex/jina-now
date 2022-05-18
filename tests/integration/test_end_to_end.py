@@ -30,16 +30,23 @@ def cleanup(deployment_type, dataset):
         }
         kwargs = Namespace(**kwargs)
         cli(args=kwargs)
-    print(20 * '#')
+    now = time.time() - start
+    mins = int(now / 60)
+    secs = int(now % 60)
+    print(50 * '#')
     print(
-        f'Time taken to execute {deployment_type} with dataset {dataset}: {start-time.time()}s'
+        f'Time taken to execute `{deployment_type}` deployment with dataset `{dataset}`: {mins}m {secs}s'
     )
-    print(20 * '#')
+    print(50 * '#')
 
 
 @pytest.mark.parametrize(
     'output_modality, dataset',
-    [('image', 'bird-species'), ('image', 'best-artworks'), ('text', 'rock-lyrics')],
+    [
+        ('image', 'bird-species'),
+        ('image', 'best-artworks'),
+        ('text', 'rock-lyrics'),
+    ],
 )  # art, rock-lyrics -> no finetuning, fashion -> finetuning
 @pytest.mark.parametrize('quality', ['medium'])
 @pytest.mark.parametrize('cluster', [NEW_CLUSTER['value']])
