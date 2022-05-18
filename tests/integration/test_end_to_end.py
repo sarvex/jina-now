@@ -91,17 +91,20 @@ def test_backend(
     if deployment_type == 'local':
         request_body['host'] = 'localhost'
         request_body['port'] = 31080
-    # elif deployment_type == 'remote':
-    elif deployment_type.startswith('remote'):
+    elif deployment_type == 'remote':
+        print(f"Getting gateway from flow_details")
         with open(user(JC_SECRET), 'r') as fp:
             flow_details = json.load(fp)
         request_body['host'] = flow_details['gateway']
     # response = requests.post(
     #     f'http://localhost/api/v1/{output_modality}/search', json=request_body
     # )
+
+    print(f"Posting search request")
     response = requests.post(
         f'http://localhost/{which_api}/v1/{output_modality}/search', json=request_body
     )
+    print(f"Received search request with status_code: {response.status_code}")
 
     assert response.status_code == 200
     assert len(response.json()) == 9
