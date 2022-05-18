@@ -1,5 +1,6 @@
 import json
 import os
+import time
 from argparse import Namespace
 from os.path import expanduser as user
 
@@ -15,6 +16,7 @@ from now.run_all_k8s import get_remote_flow_details
 
 @pytest.fixture()
 def cleanup(deployment_type, dataset):
+    start = time.time()
     yield
     if deployment_type == 'remote':
         if dataset == 'best-artworks':
@@ -28,6 +30,11 @@ def cleanup(deployment_type, dataset):
         }
         kwargs = Namespace(**kwargs)
         cli(args=kwargs)
+    print(20 * '#')
+    print(
+        f'Time taken to execute {deployment_type} with dataset {dataset}: {start-time.time()}s'
+    )
+    print(20 * '#')
 
 
 @pytest.mark.parametrize(
