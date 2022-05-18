@@ -224,7 +224,7 @@ def deploy_flow(
             next(progress_bar)
 
     # Keep trying until the services are up and running
-    batches = batch(index, request_size)
+    batches = batch(index, request_size * 5)
     for b in batches:
         while True:
             try:
