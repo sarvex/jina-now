@@ -6,7 +6,7 @@
         <link rel="canonical" href="https://now.jina.ai/_modules/now/run_all_k8s.html" />
 
     <link rel="shortcut icon" href="../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.04.07"/>
-        <title>now.run_all_k8s - NOW 0.0.5 documentation</title>
+        <title>now.run_all_k8s - NOW 0.0.7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=68f4518137b9aefe99b631505a2064c3c42c9852" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../">
-                <div class="brand">NOW 0.0.5 documentation</div>
+                <div class="brand">NOW 0.0.7 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -280,7 +280,7 @@
 
 <span class="kn">from</span> <span class="nn">now</span> <span class="kn">import</span> <span class="n">run_backend</span><span class="p">,</span> <span class="n">run_frontend</span>
 <span class="kn">from</span> <span class="nn">now.cloud_manager</span> <span class="kn">import</span> <span class="n">setup_cluster</span>
-<span class="kn">from</span> <span class="nn">now.constants</span> <span class="kn">import</span> <span class="n">JC_SECRET</span>
+<span class="kn">from</span> <span class="nn">now.constants</span> <span class="kn">import</span> <span class="n">JC_SECRET</span><span class="p">,</span> <span class="n">SURVEY_LINK</span>
 <span class="kn">from</span> <span class="nn">now.deployment.deployment</span> <span class="kn">import</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">terminate_wolf</span>
 <span class="kn">from</span> <span class="nn">now.dialog</span> <span class="kn">import</span> <span class="n">_get_context_names</span><span class="p">,</span> <span class="n">configure_user_input</span><span class="p">,</span> <span class="n">maybe_prompt_user</span>
 <span class="kn">from</span> <span class="nn">now.log.log</span> <span class="kn">import</span> <span class="n">yaspin_extended</span>
@@ -340,52 +340,68 @@
         <span class="n">cowsay</span><span class="o">.</span><span class="n">cow</span><span class="p">(</span><span class="sa">f</span><span class="s1">'nowapi namespace removed from </span><span class="si">{</span><span class="n">cluster</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span></div>
 
 
+<div class="viewcode-block" id="get_task"><a class="viewcode-back" href="../../../api/now.run_all_k8s/#now.run_all_k8s.get_task">[docs]</a><span class="k">def</span> <span class="nf">get_task</span><span class="p">(</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">'cli'</span><span class="p">,</span> <span class="s1">'now'</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">x</span><span class="p">]</span>
+    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">'kwargs do not contain a task'</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="start_now"><a class="viewcode-back" href="../../../api/now.run_all_k8s/#now.run_all_k8s.start_now">[docs]</a><span class="k">def</span> <span class="nf">start_now</span><span class="p">(</span><span class="n">os_type</span><span class="p">,</span> <span class="n">arch</span><span class="p">,</span> <span class="n">contexts</span><span class="p">,</span> <span class="n">active_context</span><span class="p">,</span> <span class="n">is_debug</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">user_input</span> <span class="o">=</span> <span class="n">configure_user_input</span><span class="p">(</span>
+        <span class="n">contexts</span><span class="o">=</span><span class="n">contexts</span><span class="p">,</span>
+        <span class="n">active_context</span><span class="o">=</span><span class="n">active_context</span><span class="p">,</span>
+        <span class="n">os_type</span><span class="o">=</span><span class="n">os_type</span><span class="p">,</span>
+        <span class="n">arch</span><span class="o">=</span><span class="n">arch</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">tmpdir</span><span class="p">:</span>
+        <span class="n">setup_cluster</span><span class="p">(</span><span class="n">user_input</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="p">(</span>
+            <span class="n">gateway_host</span><span class="p">,</span>
+            <span class="n">gateway_port</span><span class="p">,</span>
+            <span class="n">gateway_host_internal</span><span class="p">,</span>
+            <span class="n">gateway_port_internal</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="n">run_backend</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+            <span class="n">user_input</span><span class="p">,</span> <span class="n">is_debug</span><span class="p">,</span> <span class="n">tmpdir</span><span class="p">,</span> <span class="n">kubectl_path</span><span class="o">=</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">'kubectl_path'</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="s1">'NOW_CI_RUN'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+            <span class="c1"># Do not deploy frontend when testing</span>
+            <span class="n">frontend_host</span><span class="p">,</span> <span class="n">frontend_port</span> <span class="o">=</span> <span class="n">run_frontend</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+                <span class="n">output_modality</span><span class="o">=</span><span class="n">user_input</span><span class="o">.</span><span class="n">output_modality</span><span class="p">,</span>
+                <span class="n">dataset</span><span class="o">=</span><span class="n">user_input</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+                <span class="n">gateway_host</span><span class="o">=</span><span class="n">gateway_host</span><span class="p">,</span>
+                <span class="n">gateway_port</span><span class="o">=</span><span class="n">gateway_port</span><span class="p">,</span>
+                <span class="n">gateway_host_internal</span><span class="o">=</span><span class="n">gateway_host_internal</span><span class="p">,</span>
+                <span class="n">gateway_port_internal</span><span class="o">=</span><span class="n">gateway_port_internal</span><span class="p">,</span>
+                <span class="n">docker_frontend_tag</span><span class="o">=</span><span class="n">docker_frontend_tag</span><span class="p">,</span>
+                <span class="n">tmpdir</span><span class="o">=</span><span class="n">tmpdir</span><span class="p">,</span>
+                <span class="n">kubectl_path</span><span class="o">=</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">'kubectl_path'</span><span class="p">],</span>
+            <span class="p">)</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">frontend_host</span><span class="si">}</span><span class="s1">'</span> <span class="o">+</span> <span class="p">(</span>
+                <span class="s1">''</span> <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">frontend_port</span><span class="p">)</span> <span class="o">==</span> <span class="s1">'80'</span> <span class="k">else</span> <span class="sa">f</span><span class="s1">':</span><span class="si">{</span><span class="n">frontend_port</span><span class="si">}</span><span class="s1">'</span>
+            <span class="p">)</span>
+            <span class="nb">print</span><span class="p">()</span>
+
+            <span class="c1"># print(f'✅ Your search case running.\nhost: {node_ip}:30080')</span>
+            <span class="c1"># print(f'host: {node_ip}:30080')</span>
+            <span class="n">cowsay</span><span class="o">.</span><span class="n">cow</span><span class="p">(</span><span class="sa">f</span><span class="s1">'You made it:</span><span class="se">\n</span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="run_k8s"><a class="viewcode-back" href="../../../api/now.run_all_k8s/#now.run_all_k8s.run_k8s">[docs]</a><span class="k">def</span> <span class="nf">run_k8s</span><span class="p">(</span><span class="n">os_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">'linux'</span><span class="p">,</span> <span class="n">arch</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">'x86_64'</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="n">contexts</span><span class="p">,</span> <span class="n">active_context</span><span class="p">,</span> <span class="n">is_debug</span> <span class="o">=</span> <span class="n">get_system_state</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-    <span class="k">if</span> <span class="p">(</span><span class="s1">'cli'</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="ow">and</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">'cli'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'stop'</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span>
-        <span class="s1">'now'</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="ow">and</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">'now'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'stop'</span>
-    <span class="p">):</span>
+    <span class="n">task</span> <span class="o">=</span> <span class="n">get_task</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">task</span> <span class="o">==</span> <span class="s1">'start'</span><span class="p">:</span>
+        <span class="n">start_now</span><span class="p">(</span><span class="n">os_type</span><span class="p">,</span> <span class="n">arch</span><span class="p">,</span> <span class="n">contexts</span><span class="p">,</span> <span class="n">active_context</span><span class="p">,</span> <span class="n">is_debug</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">task</span> <span class="o">==</span> <span class="s1">'stop'</span><span class="p">:</span>
         <span class="n">stop_now</span><span class="p">(</span><span class="n">contexts</span><span class="p">,</span> <span class="n">active_context</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">task</span> <span class="o">==</span> <span class="s1">'survey'</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">webbrowser</span>
+
+        <span class="n">webbrowser</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">SURVEY_LINK</span><span class="p">,</span> <span class="n">new</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">autoraise</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">user_input</span> <span class="o">=</span> <span class="n">configure_user_input</span><span class="p">(</span>
-            <span class="n">contexts</span><span class="o">=</span><span class="n">contexts</span><span class="p">,</span>
-            <span class="n">active_context</span><span class="o">=</span><span class="n">active_context</span><span class="p">,</span>
-            <span class="n">os_type</span><span class="o">=</span><span class="n">os_type</span><span class="p">,</span>
-            <span class="n">arch</span><span class="o">=</span><span class="n">arch</span><span class="p">,</span>
-            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">tmpdir</span><span class="p">:</span>
-            <span class="n">setup_cluster</span><span class="p">(</span><span class="n">user_input</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-            <span class="p">(</span>
-                <span class="n">gateway_host</span><span class="p">,</span>
-                <span class="n">gateway_port</span><span class="p">,</span>
-                <span class="n">gateway_host_internal</span><span class="p">,</span>
-                <span class="n">gateway_port_internal</span><span class="p">,</span>
-            <span class="p">)</span> <span class="o">=</span> <span class="n">run_backend</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
-                <span class="n">user_input</span><span class="p">,</span> <span class="n">is_debug</span><span class="p">,</span> <span class="n">tmpdir</span><span class="p">,</span> <span class="n">kubectl_path</span><span class="o">=</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">'kubectl_path'</span><span class="p">]</span>
-            <span class="p">)</span>
-
-            <span class="k">if</span> <span class="s1">'NOW_CI_RUN'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
-                <span class="c1"># Do not deploy frontend when testing</span>
-                <span class="n">frontend_host</span><span class="p">,</span> <span class="n">frontend_port</span> <span class="o">=</span> <span class="n">run_frontend</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
-                    <span class="n">output_modality</span><span class="o">=</span><span class="n">user_input</span><span class="o">.</span><span class="n">output_modality</span><span class="p">,</span>
-                    <span class="n">dataset</span><span class="o">=</span><span class="n">user_input</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
-                    <span class="n">gateway_host</span><span class="o">=</span><span class="n">gateway_host</span><span class="p">,</span>
-                    <span class="n">gateway_port</span><span class="o">=</span><span class="n">gateway_port</span><span class="p">,</span>
-                    <span class="n">gateway_host_internal</span><span class="o">=</span><span class="n">gateway_host_internal</span><span class="p">,</span>
-                    <span class="n">gateway_port_internal</span><span class="o">=</span><span class="n">gateway_port_internal</span><span class="p">,</span>
-                    <span class="n">docker_frontend_tag</span><span class="o">=</span><span class="n">docker_frontend_tag</span><span class="p">,</span>
-                    <span class="n">tmpdir</span><span class="o">=</span><span class="n">tmpdir</span><span class="p">,</span>
-                    <span class="n">kubectl_path</span><span class="o">=</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">'kubectl_path'</span><span class="p">],</span>
-                <span class="p">)</span>
-                <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">frontend_host</span><span class="si">}</span><span class="s1">'</span> <span class="o">+</span> <span class="p">(</span>
-                    <span class="s1">''</span> <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">frontend_port</span><span class="p">)</span> <span class="o">==</span> <span class="s1">'80'</span> <span class="k">else</span> <span class="sa">f</span><span class="s1">':</span><span class="si">{</span><span class="n">frontend_port</span><span class="si">}</span><span class="s1">'</span>
-                <span class="p">)</span>
-                <span class="nb">print</span><span class="p">()</span>
-
-                <span class="c1"># print(f'✅ Your search case running.\nhost: {node_ip}:30080')</span>
-                <span class="c1"># print(f'host: {node_ip}:30080')</span>
-                <span class="n">cowsay</span><span class="o">.</span><span class="n">cow</span><span class="p">(</span><span class="sa">f</span><span class="s1">'You made it:</span><span class="se">\n</span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s1">'unknown task, </span><span class="si">{</span><span class="n">task</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span></div>
 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">'__main__'</span><span class="p">:</span>
@@ -413,7 +429,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on May 17, 2022.
+                            Last updated on May 18, 2022.
                         </div>
                     </div>
                     <div class="right-details">
