@@ -48,11 +48,6 @@ function git_commit {
     git commit -m "chore(version): the next version will be $NEXT_VER" -m "build($RELEASE_ACTOR): $RELEASE_REASON"
 }
 
-function slack_notif {
-    envsubst < ./.github/slack-pypi.json | curl -X POST -H 'Content-type: application/json' --data "@-" $JINA_SLACK_WEBHOOK
-}
-
-
 function make_release_note {
     ${RELEASENOTE} ${LAST_VER}..HEAD .github/release-template.ejs > ./CHANGELOG.tmp
     head -n10 ./CHANGELOG.tmp
@@ -94,7 +89,6 @@ if [[ $1 == "final" ]]; then
   RELEASE_REASON="$2"
   RELEASE_ACTOR="$3"
   git_commit
-  slack_notif
 elif [[ $1 == 'rc' ]]; then
   printf "this will be a release candidate: \e[1;33m$RELEASE_VER\e[0m\n"
   DOT_RELEASE_VER=$(echo $RELEASE_VER | sed "s/rc/\./")
@@ -111,7 +105,6 @@ elif [[ $1 == 'rc' ]]; then
   RELEASE_REASON="$2"
   RELEASE_ACTOR="$3"
   git_commit
-  slack_notif
 else
   # as a prerelease, pypi update only, no back commit etc.
   COMMITS_SINCE_LAST_VER=$(git rev-list $LAST_VER..HEAD --count)

@@ -7,7 +7,7 @@ import cowsay
 
 from now import run_backend, run_frontend
 from now.cloud_manager import setup_cluster
-from now.constants import JC_SECRET
+from now.constants import JC_SECRET, SURVEY_LINK
 from now.deployment.deployment import cmd, terminate_wolf
 from now.dialog import _get_context_names, configure_user_input, maybe_prompt_user
 from now.log.log import yaspin_extended
@@ -67,52 +67,68 @@ def stop_now(contexts, active_context, **kwargs):
         cowsay.cow(f'nowapi namespace removed from {cluster}')
 
 
+def get_task(kwargs):
+    for x in ['cli', 'now']:
+        if x in kwargs:
+            return kwargs[x]
+    raise Exception('kwargs do not contain a task')
+
+
+def start_now(os_type, arch, contexts, active_context, is_debug, **kwargs):
+    user_input = configure_user_input(
+        contexts=contexts,
+        active_context=active_context,
+        os_type=os_type,
+        arch=arch,
+        **kwargs,
+    )
+    with tempfile.TemporaryDirectory() as tmpdir:
+        setup_cluster(user_input, **kwargs)
+        (
+            gateway_host,
+            gateway_port,
+            gateway_host_internal,
+            gateway_port_internal,
+        ) = run_backend.run(
+            user_input, is_debug, tmpdir, kubectl_path=kwargs['kubectl_path']
+        )
+
+        if 'NOW_CI_RUN' not in os.environ:
+            # Do not deploy frontend when testing
+            frontend_host, frontend_port = run_frontend.run(
+                output_modality=user_input.output_modality,
+                dataset=user_input.data,
+                gateway_host=gateway_host,
+                gateway_port=gateway_port,
+                gateway_host_internal=gateway_host_internal,
+                gateway_port_internal=gateway_port_internal,
+                docker_frontend_tag=docker_frontend_tag,
+                tmpdir=tmpdir,
+                kubectl_path=kwargs['kubectl_path'],
+            )
+            url = f'{frontend_host}' + (
+                '' if str(frontend_port) == '80' else f':{frontend_port}'
+            )
+            print()
+
+            # print(f'✅ Your search case running.\nhost: {node_ip}:30080')
+            # print(f'host: {node_ip}:30080')
+            cowsay.cow(f'You made it:\n{url}')
+
+
 def run_k8s(os_type: str = 'linux', arch: str = 'x86_64', **kwargs):
     contexts, active_context, is_debug = get_system_state(**kwargs)
-    if ('cli' in kwargs and kwargs['cli'] == 'stop') or (
-        'now' in kwargs and kwargs['now'] == 'stop'
-    ):
+    task = get_task(kwargs)
+    if task == 'start':
+        start_now(os_type, arch, contexts, active_context, is_debug, **kwargs)
+    elif task == 'stop':
         stop_now(contexts, active_context, **kwargs)
+    elif task == 'survey':
+        import webbrowser
+
+        webbrowser.open(SURVEY_LINK, new=0, autoraise=True)
     else:
-        user_input = configure_user_input(
-            contexts=contexts,
-            active_context=active_context,
-            os_type=os_type,
-            arch=arch,
-            **kwargs,
-        )
-        with tempfile.TemporaryDirectory() as tmpdir:
-            setup_cluster(user_input, **kwargs)
-            (
-                gateway_host,
-                gateway_port,
-                gateway_host_internal,
-                gateway_port_internal,
-            ) = run_backend.run(
-                user_input, is_debug, tmpdir, kubectl_path=kwargs['kubectl_path']
-            )
-
-            if 'NOW_CI_RUN' not in os.environ:
-                # Do not deploy frontend when testing
-                frontend_host, frontend_port = run_frontend.run(
-                    output_modality=user_input.output_modality,
-                    dataset=user_input.data,
-                    gateway_host=gateway_host,
-                    gateway_port=gateway_port,
-                    gateway_host_internal=gateway_host_internal,
-                    gateway_port_internal=gateway_port_internal,
-                    docker_frontend_tag=docker_frontend_tag,
-                    tmpdir=tmpdir,
-                    kubectl_path=kwargs['kubectl_path'],
-                )
-                url = f'{frontend_host}' + (
-                    '' if str(frontend_port) == '80' else f':{frontend_port}'
-                )
-                print()
-
-                # print(f'✅ Your search case running.\nhost: {node_ip}:30080')
-                # print(f'host: {node_ip}:30080')
-                cowsay.cow(f'You made it:\n{url}')
+        raise Exception(f'unknown task, {task}')
 
 
 if __name__ == '__main__':

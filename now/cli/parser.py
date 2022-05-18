@@ -106,6 +106,15 @@ def set_stop_parser(sp):
     )
 
 
+def set_survey_parser(sp):
+    sp.add_parser(
+        'survey',
+        help='Opens a survey in the browser. Thanks for providing us feedback.',
+        description='Opens a survey in the browser. Thanks for providing us feedback.',
+        formatter_class=_chf,
+    )
+
+
 def get_main_parser():
     """The main parser for Jina NOW
     :return: the parser
@@ -119,6 +128,7 @@ def get_main_parser():
     )
     set_start_parser(sp)
     set_stop_parser(sp)
+    set_survey_parser(sp)
 
     return parser
 

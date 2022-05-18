@@ -1,5 +1,6 @@
 import json
 import os
+import time
 from argparse import Namespace
 from os.path import expanduser as user
 
@@ -15,6 +16,7 @@ from now.run_all_k8s import get_remote_flow_details
 
 @pytest.fixture()
 def cleanup(deployment_type, dataset):
+    start = time.time()
     yield
     if deployment_type == 'remote':
         if dataset == 'best-artworks':
@@ -28,6 +30,14 @@ def cleanup(deployment_type, dataset):
         }
         kwargs = Namespace(**kwargs)
         cli(args=kwargs)
+    now = time.time() - start
+    mins = int(now / 60)
+    secs = int(now % 60)
+    print(50 * '#')
+    print(
+        f'Time taken to execute `{deployment_type}` deployment with dataset `{dataset}`: {mins}m {secs}s'
+    )
+    print(50 * '#')
 
 
 @pytest.mark.parametrize(
@@ -57,6 +67,7 @@ def test_backend(
     # deactivate sandbox since it is hanging from time to time
     sandbox = False
     kwargs = {
+        'now': 'start',
         'output_modality': output_modality,
         'data': dataset,
         'quality': quality,
