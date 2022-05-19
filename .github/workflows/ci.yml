@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       debug_enabled:
-        description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
+        description: 'Run the build with tmate debugging enabled'
         required: false
         default: false
 
@@ -125,9 +125,6 @@ jobs:
         test-path: ${{fromJson(needs.prep-testbed.outputs.matrix)}}
     steps:
       - uses: actions/checkout@v2
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-      - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
@@ -166,6 +163,15 @@ jobs:
           flags: ${{ steps.test.outputs.codecov_flag }}
           fail_ci_if_error: false
 #          token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
+
+  debug-ssh-session:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup tmate session for debugging
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3
+        timeout-minutes: 5
 
   # just for blocking the merge until all parallel core-test are successful
   success-all-test:
