@@ -165,13 +165,13 @@ jobs:
 #          token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
 
   debug-ssh-session:
+    needs: core-test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - name: Setup tmate session for debugging
-        if: ${{ failure() }}
         uses: mxschmitt/action-tmate@v3
-        timeout-minutes: 5
+        timeout-minutes: 2
 
   # just for blocking the merge until all parallel core-test are successful
   success-all-test:

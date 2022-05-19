@@ -96,7 +96,7 @@ def start_now(os_type, arch, contexts, active_context, is_debug, **kwargs):
         if 'NOW_CI_RUN' not in os.environ:
             # Do not deploy frontend when testing
             frontend_host, frontend_port = run_frontend.run(
-                modality=user_input.modality,
+                output_modality=user_input.output_modality,
                 dataset=user_input.data,
                 gateway_host=gateway_host,
                 gateway_port=gateway_port,
@@ -133,7 +133,7 @@ def run_k8s(os_type: str = 'linux', arch: str = 'x86_64', **kwargs):
 
 if __name__ == '__main__':
     run_k8s(
-        modality='music',
+        output_modality='music',
         data='music-genres-small',
         cluster='new',
         deployment_type='local',

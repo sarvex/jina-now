@@ -32,7 +32,9 @@ def load_data(user_input: UserInput) -> DocumentArray:
 
     if not user_input.is_custom_dataset:
         print('⬇  Download DocArray')
-        url = get_dataset_url(user_input.data, user_input.quality, user_input.modality)
+        url = get_dataset_url(
+            user_input.data, user_input.quality, user_input.output_modality
+        )
         da = _fetch_da_from_url(url)
 
     else:
@@ -44,7 +46,7 @@ def load_data(user_input: UserInput) -> DocumentArray:
             da = _fetch_da_from_url(user_input.dataset_url)
         elif user_input.custom_dataset_type == DatasetTypes.PATH:
             print('💿  Loading DocArray from disk')
-            da = _load_from_disk(user_input.dataset_path, user_input.modality)
+            da = _load_from_disk(user_input.dataset_path, user_input.output_modality)
 
     if da is None:
         raise ValueError(
@@ -86,7 +88,7 @@ def _pull_docarray(dataset_secret: str):
         exit(1)
 
 
-def _load_from_disk(dataset_path: str, modality: Modalities) -> DocumentArray:
+def _load_from_disk(dataset_path: str, output_modality: Modalities) -> DocumentArray:
     if os.path.isfile(dataset_path):
         try:
             return DocumentArray.load_binary(dataset_path)
@@ -97,11 +99,11 @@ def _load_from_disk(dataset_path: str, modality: Modalities) -> DocumentArray:
         with yaspin_extended(
             sigmap=sigmap, text="Loading and pre-processing data", color="green"
         ) as spinner:
-            if modality == Modalities.IMAGE:
+            if output_modality == Modalities.IMAGE:
                 return _load_images_from_folder(dataset_path)
-            elif modality == Modalities.TEXT:
+            elif output_modality == Modalities.TEXT:
                 return _load_texts_from_folder(dataset_path)
-            elif modality == Modalities.MUSIC:
+            elif output_modality == Modalities.MUSIC:
                 return _load_music_from_folder(dataset_path)
             spinner.ok('🏭')
     else:
@@ -177,14 +179,14 @@ def _load_texts_from_folder(path: str) -> DocumentArray:
 
 
 def get_dataset_url(
-    dataset: str, model_quality: Optional[Qualities], modality: Modalities
+    dataset: str, model_quality: Optional[Qualities], output_modality: Modalities
 ) -> str:
     data_folder = None
-    if modality == Modalities.IMAGE:
+    if output_modality == Modalities.IMAGE:
         data_folder = 'jpeg'
-    elif modality == Modalities.TEXT:
+    elif output_modality == Modalities.TEXT:
         data_folder = 'text'
-    elif modality == Modalities.MUSIC:
+    elif output_modality == Modalities.MUSIC:
         data_folder = 'music'
 
     if model_quality is not None:

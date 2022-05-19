@@ -41,7 +41,7 @@ def cleanup(deployment_type, dataset):
 
 
 @pytest.mark.parametrize(
-    'modality, dataset',
+    'output_modality, dataset',
     [
         ('image', 'bird-species'),
         ('image', 'best-artworks'),
@@ -52,7 +52,7 @@ def cleanup(deployment_type, dataset):
 @pytest.mark.parametrize('cluster', [NEW_CLUSTER['value']])
 @pytest.mark.parametrize('deployment_type', ['remote'])
 def test_backend(
-    modality: str,
+    output_modality: str,
     dataset: str,
     quality: str,
     cluster: str,
@@ -69,7 +69,7 @@ def test_backend(
     sandbox = False
     kwargs = {
         'now': 'start',
-        'modality': modality,
+        'output_modality': output_modality,
         'data': dataset,
         'quality': quality,
         'sandbox': sandbox,
@@ -94,18 +94,18 @@ def test_backend(
             flow_details = json.load(fp)
         request_body['host'] = flow_details['gateway']
 
-    if modality == 'image':
+    if output_modality == 'image':
         response = test_client.post(
             f'/api/v1/image/search',
             json=request_body,  # limit has no effect as of now
         )
-    elif modality == 'text':
+    elif output_modality == 'text':
         response = test_client.post(
             f'/api/v1/text/search',
             json=request_body,  # limit has no effect as of now
         )
     else:
-        # add more here when the new modality is added
+        # add more here when the new output_modality is added
         response = None
     assert response.status_code == 200
     assert len(response.json()) == 9

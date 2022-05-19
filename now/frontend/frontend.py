@@ -55,7 +55,7 @@ def deploy_streamlit():
         st.write(html, unsafe_allow_html=True)
     setup_session_state()
     print('Run Streamlit with:', sys.argv)
-    _, host, port, modality, data = sys.argv
+    _, host, port, output_modality, data = sys.argv
     da_img = None
     da_txt = None
 
@@ -65,19 +65,19 @@ def deploy_streamlit():
     DATA_DIR = "../data/images/"
 
     if data in ds_set:
-        if modality == 'image':
-            modality_dir = 'jpeg'
-            data_dir = root_data_dir + modality_dir + '/'
+        if output_modality == 'image':
+            output_modality_dir = 'jpeg'
+            data_dir = root_data_dir + output_modality_dir + '/'
             da_img, da_txt = load_data(data_dir + data + '.img10.bin'), load_data(
                 data_dir + data + '.txt10.bin'
             )
-        elif modality == 'text':
+        elif output_modality == 'text':
             # for now deactivated sample images for text
-            modality_dir = 'text'
-            data_dir = root_data_dir + modality_dir + '/'
+            output_modality_dir = 'text'
+            data_dir = root_data_dir + output_modality_dir + '/'
             da_txt = load_data(data_dir + data + '.txt10.bin')
 
-    if modality == 'text':
+    if output_modality == 'text':
         # censor words in text incl. in custom data
         from better_profanity import profanity
 
@@ -167,13 +167,13 @@ def deploy_streamlit():
         '<style>div.st-bf{flex-direction:column;} div.st-ag{font-weight:bold;padding-right:50px;}</style>',
         unsafe_allow_html=True,
     )
-    if modality == 'image':
+    if output_modality == 'image':
         media_type = st.radio(
             '',
             ["Text", "Image", 'Webcam'],
             on_change=clear_match,
         )
-    elif modality == 'text':
+    elif output_modality == 'text':
         media_type = st.radio(
             '',
             ["Image", "Text", 'Webcam'],
@@ -260,7 +260,7 @@ def deploy_streamlit():
         c4, c5, c6 = st.columns(3)
         c7, c8, c9 = st.columns(3)
         all_cs = [c1, c2, c3, c4, c5, c6, c7, c8, c9]
-        # # TODO dirty hack to filter out text. Instead output modality should be passed as parameter
+        # # TODO dirty hack to filter out text. Instead output output_modality should be passed as parameter
         # matches = [m for m in matches if m.tensor is None]
         for m in matches:
             m.scores['cosine'].value = 1 - m.scores['cosine'].value
@@ -271,9 +271,9 @@ def deploy_streamlit():
             if m.scores['cosine'].value > st.session_state.min_confidence
         ]
         for c, match in zip(all_cs, matches):
-            match.mime_type = modality
+            match.mime_type = output_modality
 
-            if modality == 'text':
+            if output_modality == 'text':
                 display_text = profanity.censor(match.text).replace('\n', ' ')
                 body = f"<!DOCTYPE html><html><body><blockquote>{display_text}</blockquote>"
                 if match.tags.get('additional_info'):

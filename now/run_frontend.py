@@ -12,7 +12,7 @@ cur_dir = pathlib.Path(__file__).parent.resolve()
 
 
 def run(
-    modality,
+    output_modality,
     dataset,
     gateway_host,
     gateway_port,
@@ -29,7 +29,7 @@ def run(
         apply_replace(
             f'{cur_dir}/deployment/k8s_frontend-deployment.yml',
             {
-                'modality': modality,
+                'output_modality': output_modality,
                 'data': dataset,
                 'gateway_host': gateway_host_internal,
                 'gateway_port': gateway_port_internal,

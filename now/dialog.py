@@ -36,7 +36,7 @@ AVAILABLE_SOON = 'will be available in upcoming versions'
 
 @dataclass
 class UserInput:
-    modality: Optional[Modalities] = None
+    output_modality: Optional[Modalities] = None
 
     # data related
     data: Optional[str] = None
@@ -62,7 +62,7 @@ def configure_user_input(**kwargs) -> UserInput:
     print_headline()
 
     user_input = UserInput()
-    _configure_modality(user_input, **kwargs)
+    _configure_output_modality(user_input, **kwargs)
     _configure_dataset(user_input, **kwargs)
     _configure_quality(user_input, **kwargs)
     _configure_sandbox(user_input, **kwargs)
@@ -91,10 +91,10 @@ def print_headline():
     print()
 
 
-def _configure_modality(user_input: UserInput, **kwargs) -> None:
-    """Asks user questions to set modality in user_input"""
-    user_input.modality = _prompt_value(
-        name='modality',
+def _configure_output_modality(user_input: UserInput, **kwargs) -> None:
+    """Asks user questions to set output_modality in user_input"""
+    user_input.output_modality = _prompt_value(
+        name='output_modality',
         choices=[
             {'name': '🏞 Image Search', 'value': Modalities.IMAGE},
             {'name': '📝 Text Search (experimental)', 'value': Modalities.TEXT},
@@ -112,16 +112,16 @@ def _configure_modality(user_input: UserInput, **kwargs) -> None:
 
 def _configure_dataset(user_input: UserInput, **kwargs) -> None:
     """Asks user to set dataset attribute of user_input"""
-    if user_input.modality == Modalities.IMAGE:
+    if user_input.output_modality == Modalities.IMAGE:
         _configure_dataset_image(user_input, **kwargs)
-    elif user_input.modality == Modalities.TEXT:
+    elif user_input.output_modality == Modalities.TEXT:
         _configure_dataset_text(user_input, **kwargs)
-    elif user_input.modality == Modalities.MUSIC:
+    elif user_input.output_modality == Modalities.MUSIC:
         if not ffmpeg_is_installed():
             _handle_ffmpeg_install_required()
         _configure_dataset_music(user_input, **kwargs)
 
-    if user_input.data in AVAILABLE_DATASET[user_input.modality]:
+    if user_input.data in AVAILABLE_DATASET[user_input.output_modality]:
         user_input.is_custom_dataset = False
     else:
         user_input.is_custom_dataset = True
@@ -308,7 +308,7 @@ def _configure_cluster(user_input: UserInput, skip=False, **kwargs):
 
 def _configure_quality(user_input: UserInput, **kwargs) -> None:
     """Asks users questions to set quality attribute of user_input"""
-    if user_input.modality == Modalities.MUSIC:
+    if user_input.output_modality == Modalities.MUSIC:
         return
     user_input.quality = _prompt_value(
         name='quality',
@@ -466,7 +466,7 @@ def _handle_ffmpeg_install_required():
     bc_end = '\033[0m'
     print()
     print(
-        f"{bc_red}Too use the audio modality you need the ffmpeg audio processing"
+        f"{bc_red}Too use the audio output_modality you need the ffmpeg audio processing"
         f" library installed on your system.{bc_end}"
     )
     print(
