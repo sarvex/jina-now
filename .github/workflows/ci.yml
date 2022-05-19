@@ -11,21 +11,6 @@ on:
   pull_request:
 
 jobs:
-  test-cases:
-    runs-on: ubuntu-latest
-    steps:
-      - name: test1
-        if: ${{ failure() || (github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled) }}
-        run: echo ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
-      - name: test2
-        if: ${{ !failure() || (github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled) }}
-        run: |
-          echo ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
-      - name: Setup tmate session for debugging
-        if: ${{ failure() || (github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled) }}
-        uses: mxschmitt/action-tmate@v3
-        timeout-minutes: 25
-
   commit-lint:
     runs-on: ubuntu-latest
     steps:
