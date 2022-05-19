@@ -95,35 +95,35 @@ jobs:
       - name: Test basic import
         run: python -c 'from now import run_all_k8s'
 
-  update-deployment-if-required:
-    runs-on: ubuntu-latest
-    # TODO: change back
-#    needs: core-test
-    needs: check-black
-    steps:
-      - uses: actions/checkout@v2
-      - name: Check if deployment has changed
-        uses: dorny/paths-filter@v2
-        id: check_has_deployment_changed
-        with:
-          filters: |
-            has_deployment_changed:
-            - 'deployment/**'
-      - name: Zip deployment
-        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
-        run: zip -r deploy.zip deployment docker-compose.yml
-      - name: Deploy to AWS Elastic Beanstalk
-        uses: einaregilsson/beanstalk-deploy@v20
-        with:
-          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          application_name: now-bff-frontend
-          environment_name: Nowbfffrontend-env
-          # TODO: replace
-          #          version_label: ${{ github.event.pull_request.head.sha }}
-          version_label: ${{ github.sha }}
-          region: "eu-west-1"
-          deployment_package: deploy.zip
+#  update-deployment-if-required:
+#    runs-on: ubuntu-latest
+#    # TODO: change back
+##    needs: core-test
+#    needs: check-black
+#    steps:
+#      - uses: actions/checkout@v2
+#      - name: Check if deployment has changed
+#        uses: dorny/paths-filter@v2
+#        id: check_has_deployment_changed
+#        with:
+#          filters: |
+#            has_deployment_changed:
+#            - 'deployment/**'
+#      - name: Zip deployment
+#        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
+#        run: zip -r deploy.zip deployment docker-compose.yml
+#      - name: Deploy to AWS Elastic Beanstalk
+#        uses: einaregilsson/beanstalk-deploy@v20
+#        with:
+#          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#          application_name: now-bff-frontend
+#          environment_name: Nowbfffrontend-env
+#          # TODO: replace
+#          #          version_label: ${{ github.event.pull_request.head.sha }}
+#          version_label: ${{ github.sha }}
+#          region: "eu-west-1"
+#          deployment_package: deploy.zip
 
   prep-testbed:
     runs-on: ubuntu-latest
@@ -166,13 +166,6 @@ jobs:
           echo ~/.jina/config.json
         env:
           WOLF_TOKEN: ${{ secrets.WOLF_TOKEN }}
-      - name: Start deployment containers
-        run: |
-          docker-compose up -d
-      - name: List Docker containers
-        run: docker ps
-      - name: Ping the site
-        run: curl http://127.0.0.1/api/ping
       - name: Test
         id: test
         run: |
@@ -180,9 +173,6 @@ jobs:
             -v -s -m "not gpu" ${{ matrix.test-path }}
           echo "::set-output name=codecov_flag::now"
         timeout-minutes: 25
-      - name: Stop deployment containers
-        run: |
-          docker-compose down
       - name: Check codecov file
         id: check_files
         uses: andstor/file-existence-action@v1

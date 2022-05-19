@@ -93,8 +93,8 @@ def start_now(os_type, arch, contexts, active_context, is_debug, **kwargs):
             user_input, is_debug, tmpdir, kubectl_path=kwargs['kubectl_path']
         )
 
-        if 'NOW_CI_RUN' not in os.environ:
-            # Do not deploy frontend when testing
+        if gateway_host == 'localhost' or 'NOW_CI_RUN' in os.environ:
+            # only deploy frontend when running locally or when testing
             frontend_host, frontend_port = run_frontend.run(
                 output_modality=user_input.output_modality,
                 dataset=user_input.data,

@@ -4,7 +4,6 @@ from time import sleep
 import requests
 
 from now.deployment.deployment import apply_replace, cmd
-from now.deployment.flow import wait_for_lb
 from now.log.log import yaspin_extended
 from now.utils import sigmap
 
@@ -24,7 +23,7 @@ def run(
 ):
     # deployment
     with yaspin_extended(
-        sigmap=sigmap, text="Deploy frontend", color="green"
+        sigmap=sigmap, text="Deploy frontend and BFF", color="green"
     ) as spinner:
         apply_replace(
             f'{cur_dir}/deployment/k8s_frontend-deployment.yml',
@@ -45,19 +44,18 @@ def run(
             )
             frontend_host = 'http://localhost'
             frontend_port = '30080'
-            # frontend_port = '80'
+            bff_port = '30090'
             while True:
                 try:
-                    url = f"{frontend_host}:{frontend_port}"
-                    requests.get(url)
+                    requests.get(f"{frontend_host}:{frontend_port}")
+                    requests.get(f"{frontend_host}:{bff_port}")
                     break
                 except Exception:
                     sleep(1)
-
-        else:
-            cmd(f'{kubectl_path} apply -f {cur_dir}/deployment/k8s_frontend-svc-lb.yml')
-            frontend_host = f'http://{wait_for_lb("frontend-lb", "nowapi")}'
-            frontend_port = '80'
+        # else:
+        #     cmd(f'{kubectl_path} apply -f {cur_dir}/deployment/k8s_frontend-svc-lb.yml')
+        #     frontend_host = f'http://{wait_for_lb("frontend-lb", "nowapi")}'
+        #     frontend_port = '80'
 
         spinner.ok('🚀')
         return frontend_host, frontend_port
