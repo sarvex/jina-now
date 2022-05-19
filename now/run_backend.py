@@ -140,7 +140,7 @@ def run(user_input: UserInput, is_debug, tmpdir, kubectl_path: str):
         gateway_port_internal,
     ) = deploy_flow(
         executor_name=executor_name,
-        output_modality=user_input.output_modality,
+        modality=user_input.modality,
         index=dataset['index'],
         vision_model=user_input.model_variant,
         final_layer_output_dim=final_layer_output_dim,

@@ -32,9 +32,7 @@ def load_data(user_input: UserInput) -> DocumentArray:
 
     if not user_input.is_custom_dataset:
         print('⬇  Download DocArray')
-        url = get_dataset_url(
-            user_input.data, user_input.quality, user_input.output_modality
-        )
+        url = get_dataset_url(user_input.data, user_input.quality, user_input.modality)
         da = _fetch_da_from_url(url)
 
     else:
@@ -46,7 +44,7 @@ def load_data(user_input: UserInput) -> DocumentArray:
             da = _fetch_da_from_url(user_input.dataset_url)
         elif user_input.custom_dataset_type == DatasetTypes.PATH:
             print('💿  Loading DocArray from disk')
-            da = _load_from_disk(user_input.dataset_path, user_input.output_modality)
+            da = _load_from_disk(user_input.dataset_path, user_input.modality)
 
     if da is None:
         raise ValueError(
@@ -179,14 +177,14 @@ def _load_texts_from_folder(path: str) -> DocumentArray:
 
 
 def get_dataset_url(
-    dataset: str, model_quality: Optional[Qualities], output_modality: Modalities
+    dataset: str, model_quality: Optional[Qualities], modality: Modalities
 ) -> str:
     data_folder = None
-    if output_modality == Modalities.IMAGE:
+    if modality == Modalities.IMAGE:
         data_folder = 'jpeg'
-    elif output_modality == Modalities.TEXT:
+    elif modality == Modalities.TEXT:
         data_folder = 'text'
-    elif output_modality == Modalities.MUSIC:
+    elif modality == Modalities.MUSIC:
         data_folder = 'music'
 
     if model_quality is not None:

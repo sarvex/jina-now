@@ -55,7 +55,7 @@ def deploy_streamlit():
         st.write(html, unsafe_allow_html=True)
     setup_session_state()
     print('Run Streamlit with:', sys.argv)
-    _, host, port, output_modality, data = sys.argv
+    _, host, port, modality, data = sys.argv
     da_img = None
     da_txt = None
 
@@ -65,19 +65,19 @@ def deploy_streamlit():
     DATA_DIR = "../data/images/"
 
     if data in ds_set:
-        if output_modality == 'image':
-            output_modality_dir = 'jpeg'
-            data_dir = root_data_dir + output_modality_dir + '/'
+        if modality == 'image':
+            modality_dir = 'jpeg'
+            data_dir = root_data_dir + modality_dir + '/'
             da_img, da_txt = load_data(data_dir + data + '.img10.bin'), load_data(
                 data_dir + data + '.txt10.bin'
             )
-        elif output_modality == 'text':
+        elif modality == 'text':
             # for now deactivated sample images for text
-            output_modality_dir = 'text'
-            data_dir = root_data_dir + output_modality_dir + '/'
+            modality_dir = 'text'
+            data_dir = root_data_dir + modality_dir + '/'
             da_txt = load_data(data_dir + data + '.txt10.bin')
 
-    if output_modality == 'text':
+    if modality == 'text':
         # censor words in text incl. in custom data
         from better_profanity import profanity
 
@@ -167,13 +167,13 @@ def deploy_streamlit():
         '<style>div.st-bf{flex-direction:column;} div.st-ag{font-weight:bold;padding-right:50px;}</style>',
         unsafe_allow_html=True,
     )
-    if output_modality == 'image':
+    if modality == 'image':
         media_type = st.radio(
             '',
             ["Text", "Image", 'Webcam'],
             on_change=clear_match,
         )
-    elif output_modality == 'text':
+    elif modality == 'text':
         media_type = st.radio(
             '',
             ["Image", "Text", 'Webcam'],
@@ -271,9 +271,9 @@ def deploy_streamlit():
             if m.scores['cosine'].value > st.session_state.min_confidence
         ]
         for c, match in zip(all_cs, matches):
-            match.mime_type = output_modality
+            match.mime_type = modality
 
-            if output_modality == 'text':
+            if modality == 'text':
                 display_text = profanity.censor(match.text).replace('\n', ' ')
                 body = f"<!DOCTYPE html><html><body><blockquote>{display_text}</blockquote>"
                 if match.tags.get('additional_info'):

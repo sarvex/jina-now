@@ -127,7 +127,7 @@ def get_custom_env_file(
 
 def deploy_flow(
     executor_name,
-    output_modality,
+    modality,
     index,
     vision_model,
     final_layer_output_dim,
@@ -204,9 +204,9 @@ def deploy_flow(
     if os.path.exists(env_file):
         os.remove(env_file)
 
-    if output_modality == 'image':
+    if modality == 'image':
         index = [x for x in index if x.text == '']
-    elif output_modality == 'text':
+    elif modality == 'text':
         index = [x for x in index if x.text != '']
     print(f'▶ indexing {len(index)} documents')
     request_size = 64
