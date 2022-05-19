@@ -325,10 +325,6 @@ def ffmpeg_is_installed():
     return which("ffmpeg")
 
 
-def gcloud_is_installed():
-    return which("gcloud")
-
-
 def flow_definition(dirpath) -> Dict:
     with open(dirpath) as f:
         return yaml.safe_load(f.read())

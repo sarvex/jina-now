@@ -93,7 +93,8 @@ def set_start_parser(sp=None):
 
     parser.add_argument(
         '--new-cluster-type',
-        help='Only effective if --cluster=new. Optional are `local` and `gke`.',
+        help='Only effective if --cluster=new. Optional are `local`.',
+        # TODO: Add JCloud option here once it is enabled!
     )
 
 

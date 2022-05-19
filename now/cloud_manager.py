@@ -11,7 +11,6 @@ from kubernetes import client, config
 from now.constants import JC_SECRET
 from now.deployment.deployment import cmd
 from now.dialog import UserInput, maybe_prompt_user
-from now.gke_deploy import create_gke_cluster
 from now.log.log import yaspin_extended
 from now.utils import sigmap
 
@@ -120,8 +119,6 @@ def setup_cluster(
         # It will be directly deployed using the flow.yml
         if user_input.deployment_type == 'local':
             create_local_cluster(kind_path, **kwargs)
-        elif user_input.deployment_type == 'gke':
-            create_gke_cluster()
     elif user_input.deployment_type == 'remote':
         # If it is remote check if a flow is already deployed
         # If it is then ask to re-create and delete the old one
