@@ -48,7 +48,7 @@ def cleanup(deployment_type, dataset):
 @pytest.mark.parametrize('quality', ['medium'])
 @pytest.mark.parametrize('cluster', [NEW_CLUSTER['value']])
 # @pytest.mark.parametrize('deployment_type', ['local', 'remote'])
-@pytest.mark.parametrize('deployment_type', ['remote'])
+@pytest.mark.parametrize('deployment_type', ['local'])
 @pytest.mark.parametrize('which_api', ['api', 'api/api'])
 def test_backend(
     output_modality: str,

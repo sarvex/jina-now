@@ -43,15 +43,17 @@ def run(
             cmd(
                 f'{kubectl_path} apply -f {cur_dir}/deployment/k8s_frontend-svc-node.yml'
             )
+            frontend_host = 'http://localhost'
+            frontend_port = '30080'
+            # frontend_port = '80'
             while True:
                 try:
-                    url = 'http://localhost:30080'
+                    url = f"{frontend_host}:{frontend_port}"
                     requests.get(url)
                     break
                 except Exception:
                     sleep(1)
-            frontend_host = 'http://localhost'
-            frontend_port = '30080'
+
         else:
             cmd(f'{kubectl_path} apply -f {cur_dir}/deployment/k8s_frontend-svc-lb.yml')
             frontend_host = f'http://{wait_for_lb("frontend-lb", "nowapi")}'
