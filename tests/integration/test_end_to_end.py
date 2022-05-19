@@ -41,7 +41,7 @@ def cleanup(deployment_type, dataset):
 
 
 @pytest.mark.parametrize(
-    'output_modality, dataset',
+    'modality, dataset',
     [
         ('image', 'bird-species'),
         ('image', 'best-artworks'),
@@ -52,7 +52,7 @@ def cleanup(deployment_type, dataset):
 @pytest.mark.parametrize('cluster', [NEW_CLUSTER['value']])
 @pytest.mark.parametrize('deployment_type', ['local', 'remote'])
 def test_backend(
-    output_modality: str,
+    modality: str,
     dataset: str,
     quality: str,
     cluster: str,
@@ -69,7 +69,7 @@ def test_backend(
     sandbox = False
     kwargs = {
         'now': 'start',
-        'output_modality': output_modality,
+        'modality': modality,
         'data': dataset,
         'quality': quality,
         'sandbox': sandbox,
