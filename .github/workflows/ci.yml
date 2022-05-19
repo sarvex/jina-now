@@ -157,20 +157,13 @@ jobs:
           echo ~/.jina/config.json
         env:
           WOLF_TOKEN: ${{ secrets.WOLF_TOKEN }}
-      - name: Test
+      - name: Perform core test
         id: test
         run: |
           pytest --suppress-no-test-exit-code --cov=now --cov-report=xml \
             -v -s -m "not gpu" ${{ matrix.test-path }}
           echo "::set-output name=codecov_flag::now"
         timeout-minutes: 25
-      - name: test1
-        if: ${{ failure() || (github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled) }}
-        run: echo ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
-      - name: test2
-        if: ${{ !failure() || (github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled) }}
-        run: |
-          echo ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
       - name: Setup tmate session for debugging
         if: ${{ failure() || (github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled) }}
         uses: mxschmitt/action-tmate@v3
