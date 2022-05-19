@@ -149,6 +149,16 @@ jobs:
             -v -s -m "not gpu" ${{ matrix.test-path }}
           echo "::set-output name=codecov_flag::now"
         timeout-minutes: 25
+      - name: test1
+        if: ${{ failure() }} || ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
+        run: echo ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
+      - name: test2
+        if: ${{ !failure() }} || ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
+        run: echo ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
+      - name: Setup tmate session for debugging
+        if: ${{ failure() }} || ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
+        uses: mxschmitt/action-tmate@v3
+        timeout-minutes: 25
       - name: Check codecov file
         id: check_files
         uses: andstor/file-existence-action@v1
@@ -161,10 +171,6 @@ jobs:
           file: coverage.xml
           flags: ${{ steps.test.outputs.codecov_flag }}
           fail_ci_if_error: false
-      - name: Setup tmate session for debugging
-        if: ${{ failure() }} || ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
-        uses: mxschmitt/action-tmate@v3
-        timeout-minutes: 30
 
   # just for blocking the merge until all parallel core-test are successful
   success-all-test:
