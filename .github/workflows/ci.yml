@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Print author name with an environment variable
-        if: ${{ !failure() }}
+        if: ${{ !failure() }} || ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
         run: echo ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
 #  commit-lint:
 #    runs-on: ubuntu-latest
