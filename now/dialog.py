@@ -94,7 +94,7 @@ def print_headline():
 def _configure_output_modality(user_input: UserInput, **kwargs) -> None:
     """Asks user questions to set output_modality in user_input"""
     user_input.output_modality = _prompt_value(
-        name='output_modality',
+        name='modality',
         choices=[
             {'name': '🏞 Image Search', 'value': Modalities.IMAGE},
             {'name': '📝 Text Search (experimental)', 'value': Modalities.TEXT},
@@ -289,18 +289,17 @@ def _configure_cluster(user_input: UserInput, skip=False, **kwargs):
         pass
 
     if choices is not None:
-        cluster = _prompt_value(
+        user_input.cluster = _prompt_value(
             name='cluster',
             choices=choices,
             prompt_message='Which cluster you want to use to deploy your search engine?',
             prompt_type='list',
             **kwargs,
         )
-        user_input.cluster = cluster
-        if cluster != NEW_CLUSTER['value']:
-            if not _cluster_running(cluster):
+        if user_input.cluster != NEW_CLUSTER['value']:
+            if not _cluster_running(user_input.cluster):
                 print(
-                    f'Cluster {cluster} is not running. Please select a different one.'
+                    f'Cluster {user_input.cluster} is not running. Please select a different one.'
                 )
                 _configure_cluster(user_input, skip=True, **kwargs)
         else:
