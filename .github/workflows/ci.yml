@@ -133,7 +133,7 @@ jobs:
           mkdir -p ~/.jina
           touch ~/.jina/config.json
           echo "{\"auth_token\": \"${WOLF_TOKEN}\"}" > ~/.jina/config.json
-          echo ~/.jina/config.json
+          cat ~/.jina/config.json
         env:
           WOLF_TOKEN: ${{ secrets.WOLF_TOKEN }}
       - name: Test
