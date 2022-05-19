@@ -127,8 +127,8 @@ jobs:
       - uses: actions/checkout@v2
       - name: Print author name with an environment variable
         run: |
-          echo ${{ failure() }} \\
-          echo ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }} \\
+          echo ${{ failure() }}
+          echo ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
           echo ${{ failure() }} || (${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }})
 #      - name: Setup tmate session for debugging
 #        if: ${{ failure() }} || (${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }})
@@ -154,8 +154,8 @@ jobs:
           WOLF_TOKEN: ${{ secrets.WOLF_TOKEN }}
       - name: Print author name with an environment variable
         run: |
-          echo ${{ failure() }} \\
-          echo ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }} \\
+          echo ${{ failure() }}
+          echo ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
           echo ${{ failure() }} || (${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }})
 #      - name: Test
 #        id: test
