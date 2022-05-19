@@ -11,17 +11,17 @@ from now.data_loading.data_loading import get_dataset_url
 
 
 @pytest.mark.parametrize(
-    'output_modality, ds_name',
+    'modality, ds_name',
     [(m, d) for m in Modalities.as_list() for d in AVAILABLE_DATASET[m]],
 )
 @pytest.mark.parametrize('quality', [q for q in Qualities.as_list()])
 def test_dataset_is_available(
     ds_name: str,
-    output_modality: Modalities,
+    modality: Modalities,
     quality: Qualities,
 ):
-    if output_modality == Modalities.MUSIC:  # music has no quality config
+    if modality == Modalities.MUSIC:  # music has no quality config
         quality = None
-    url = get_dataset_url(ds_name, quality, output_modality)
+    url = get_dataset_url(ds_name, quality, modality)
 
     assert requests.head(url).status_code == 200
