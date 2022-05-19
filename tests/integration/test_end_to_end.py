@@ -94,12 +94,12 @@ def test_backend(
             flow_details = json.load(fp)
         request_body['host'] = flow_details['gateway']
 
-    if output_modality == 'image':
+    if modality == 'image':
         response = test_client.post(
             f'/api/v1/image/search',
             json=request_body,  # limit has no effect as of now
         )
-    elif output_modality == 'text':
+    elif modality == 'text':
         response = test_client.post(
             f'/api/v1/text/search',
             json=request_body,  # limit has no effect as of now
