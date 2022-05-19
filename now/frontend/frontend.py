@@ -260,7 +260,7 @@ def deploy_streamlit():
         c4, c5, c6 = st.columns(3)
         c7, c8, c9 = st.columns(3)
         all_cs = [c1, c2, c3, c4, c5, c6, c7, c8, c9]
-        # # TODO dirty hack to filter out text. Instead output output_modality should be passed as parameter
+        # # TODO dirty hack to filter out text. Instead output modality should be passed as parameter
         # matches = [m for m in matches if m.tensor is None]
         for m in matches:
             m.scores['cosine'].value = 1 - m.scores['cosine'].value

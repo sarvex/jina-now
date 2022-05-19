@@ -105,7 +105,7 @@ def test_backend(
             json=request_body,  # limit has no effect as of now
         )
     else:
-        # add more here when the new output_modality is added
+        # add more here when the new modality is added
         response = None
     assert response.status_code == 200
     assert len(response.json()) == 9

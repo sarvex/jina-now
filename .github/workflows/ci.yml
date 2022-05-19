@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       debug_enabled:
-        description: 'Run the build with tmate debugging enabled'
+        description: 'Run the tests with tmate debugging enabled'
         required: false
         default: false
 
@@ -164,7 +164,9 @@ jobs:
           fail_ci_if_error: false
 #          token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
       - name: Setup tmate session for debugging
-        if: ${{ failure() }}
+        if: |
+        ${{ failure() }} ||
+        (${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }})
         uses: mxschmitt/action-tmate@v3
         timeout-minutes: 30
 

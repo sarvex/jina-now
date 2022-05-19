@@ -88,7 +88,7 @@ def _pull_docarray(dataset_secret: str):
         exit(1)
 
 
-def _load_from_disk(dataset_path: str, output_modality: Modalities) -> DocumentArray:
+def _load_from_disk(dataset_path: str, modality: Modalities) -> DocumentArray:
     if os.path.isfile(dataset_path):
         try:
             return DocumentArray.load_binary(dataset_path)
@@ -99,11 +99,11 @@ def _load_from_disk(dataset_path: str, output_modality: Modalities) -> DocumentA
         with yaspin_extended(
             sigmap=sigmap, text="Loading and pre-processing data", color="green"
         ) as spinner:
-            if output_modality == Modalities.IMAGE:
+            if modality == Modalities.IMAGE:
                 return _load_images_from_folder(dataset_path)
-            elif output_modality == Modalities.TEXT:
+            elif modality == Modalities.TEXT:
                 return _load_texts_from_folder(dataset_path)
-            elif output_modality == Modalities.MUSIC:
+            elif modality == Modalities.MUSIC:
                 return _load_music_from_folder(dataset_path)
             spinner.ok('🏭')
     else:

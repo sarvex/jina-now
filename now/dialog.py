@@ -466,7 +466,7 @@ def _handle_ffmpeg_install_required():
     bc_end = '\033[0m'
     print()
     print(
-        f"{bc_red}Too use the audio output_modality you need the ffmpeg audio processing"
+        f"{bc_red}To use the audio modality you need the ffmpeg audio processing"
         f" library installed on your system.{bc_end}"
     )
     print(

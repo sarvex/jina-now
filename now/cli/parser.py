@@ -68,7 +68,7 @@ def set_start_parser(sp=None):
 
     parser.add_argument(
         '--output_modality',
-        help='Select the output_modality you want to develop a search flow for.',
+        help='Select the modality you want to develop a search flow for.',
         type=str,
     )
 
