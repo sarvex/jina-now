@@ -109,6 +109,7 @@ def get_custom_env_file(
     model,
     output_dim,
     embed_size,
+    finetuning,
     tmpdir,
 ):
     env_file = os.path.join(tmpdir, 'dot.env')
@@ -116,11 +117,12 @@ def get_custom_env_file(
         fp.write(
             f'ENCODER_NAME={encoder_name}\n'
             f'CLIP_MODEL_NAME={model}\n'
-            f'LINEAR_HEAD_NAME={linear_head_name}\n'
             f'OUTPUT_DIM={output_dim}\n'
             f'EMBED_DIM={embed_size}\n'
             f'INDEXER_NAME={indexer_name}\n'
         )
+        if finetuning:
+            fp.write(f'LINEAR_HEAD_NAME={linear_head_name}\n')
 
     return env_file
 
@@ -154,6 +156,7 @@ def deploy_flow(
         vision_model,
         final_layer_output_dim,
         embedding_size,
+        finetuning,
         tmpdir,
     )
 
@@ -220,8 +223,7 @@ def deploy_flow(
     )
 
     def on_done(res):
-        if 'NOW_CI_RUN' not in os.environ:
-            next(progress_bar)
+        next(progress_bar)
 
     # Keep trying until the services are up and running
     batches = batch(index, request_size * 5)
@@ -236,6 +238,11 @@ def deploy_flow(
                 )
                 break
             except Exception as e:
+                if 'NOW_CI_RUN' in os.environ:
+                    import traceback
+
+                    print(e)
+                    print(traceback.format_exc())
                 sleep(1)
 
     print('⭐ Success - your data is indexed')

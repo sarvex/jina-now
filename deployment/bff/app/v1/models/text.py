@@ -2,18 +2,19 @@ from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-from now.bff.v1.models.helper import BaseRequestModel, _NamedScore, _StructValueType
+from deployment.bff.app.v1.models.helper import (
+    BaseRequestModel,
+    _NamedScore,
+    _StructValueType,
+)
 
 
 # Request Model
-class NowImageIndexRequestModel(BaseRequestModel):
-    images: List[str] = Field(
-        default=...,
-        description='List of Images to index. Images should be base64encoded in `utf-8` format',
-    )
+class NowTextIndexRequestModel(BaseRequestModel):
+    texts: List[str] = Field(default=..., description='List of Texts to index.')
 
 
-class NowImageSearchRequestModel(BaseRequestModel):
+class NowTextSearchRequestModel(BaseRequestModel):
     text: str = Field(default=None, description='Text query')
     image: str = Field(
         default=None,
@@ -23,14 +24,11 @@ class NowImageSearchRequestModel(BaseRequestModel):
 
 
 # Response Model
-class NowImageResponseModel(BaseModel):
+class NowTextResponseModel(BaseModel):
     id: str = Field(
         default=..., nullable=False, description='Id of the matching result.'
     )
-    blob: Optional[str] = Field(
-        description='Base64 encoded image in `utf-8` str format.'
-    )
-    uri: Optional[str] = Field(description='Uri of the image file.')
+    text: Optional[str] = Field(description='Matching text result.')
     scores: Optional[Dict[str, '_NamedScore']] = Field(
         description='Similarity score with respect to the query.'
     )
@@ -43,4 +41,4 @@ class NowImageResponseModel(BaseModel):
         arbitrary_types_allowed = True
 
 
-NowImageResponseModel.update_forward_refs()
+NowTextResponseModel.update_forward_refs()

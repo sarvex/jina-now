@@ -1,0 +1,5 @@
+fastapi
+uvicorn
+uvloop
+pydantic
+jina[perf]==3.4.2

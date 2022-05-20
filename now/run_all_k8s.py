@@ -14,7 +14,7 @@ from now.log.log import yaspin_extended
 from now.system_information import get_system_state
 from now.utils import sigmap
 
-docker_frontend_tag = '0.0.16'
+docker_bff_frontend_tag = '0.0.32'
 
 
 def get_remote_flow_details():
@@ -93,8 +93,8 @@ def start_now(os_type, arch, contexts, active_context, is_debug, **kwargs):
             user_input, is_debug, tmpdir, kubectl_path=kwargs['kubectl_path']
         )
 
-        if 'NOW_CI_RUN' not in os.environ:
-            # Do not deploy frontend when testing
+        if gateway_host == 'localhost' or 'NOW_CI_RUN' in os.environ:
+            # only deploy frontend when running locally or when testing
             frontend_host, frontend_port = run_frontend.run(
                 output_modality=user_input.output_modality,
                 dataset=user_input.data,
@@ -102,18 +102,25 @@ def start_now(os_type, arch, contexts, active_context, is_debug, **kwargs):
                 gateway_port=gateway_port,
                 gateway_host_internal=gateway_host_internal,
                 gateway_port_internal=gateway_port_internal,
-                docker_frontend_tag=docker_frontend_tag,
+                docker_bff_frontend_tag=docker_bff_frontend_tag,
                 tmpdir=tmpdir,
                 kubectl_path=kwargs['kubectl_path'],
             )
             url = f'{frontend_host}' + (
                 '' if str(frontend_port) == '80' else f':{frontend_port}'
             )
-            print()
-
-            # print(f'✅ Your search case running.\nhost: {node_ip}:30080')
-            # print(f'host: {node_ip}:30080')
-            cowsay.cow(f'You made it:\n{url}')
+        else:
+            url = 'https://jinanowtesting.com'
+        url += (
+            f'/?host='
+            + (gateway_host_internal if gateway_host != 'localhost' else 'gateway')
+            + f'&output_modality={user_input.output_modality}&data={user_input.data}'
+        )
+        if gateway_port_internal:
+            url += f'&port={gateway_port_internal}'
+        print()
+        # cowsay.cow(f'You made it:\n{url}')
+        print(f'Frontend is accessible at:\n{url}')
 
 
 def run_k8s(os_type: str = 'linux', arch: str = 'x86_64', **kwargs):

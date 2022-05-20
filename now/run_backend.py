@@ -66,8 +66,6 @@ def run(user_input: UserInput, is_debug, tmpdir, kubectl_path: str):
 
     finetuning = is_finetuning(user_input.data, dataset)
 
-    if not finetuning:
-        embedding_size = int(final_layer_output_dim / 2)
     dataset = {
         'index': dataset,
         'train': None,
@@ -101,32 +99,34 @@ def run(user_input: UserInput, is_debug, tmpdir, kubectl_path: str):
                 dataset, batch_size, final_layer_output_dim, embedding_size, tmpdir
             )
 
-        with yaspin_extended(
-            sigmap=sigmap, text="Create overview", color="green"
-        ) as spinner:
-            try:
-                with warnings.catch_warnings():
-                    warnings.simplefilter("ignore")
-                    show_improvement(
-                        user_input.data,
-                        user_input.quality,
-                        dataset['val_query_image'],
-                        dataset['val_index_image'],
-                        dataset['val_query'],
-                        dataset['val_index'],
-                        final_layer_output_dim,
-                        embedding_size,
-                        finetuned_model_path,
-                        class_label='finetuner_label',
-                    )
-            except Exception as e:
-                pass
-            spinner.ok('🖼')
-        print(
-            f'before-after comparison result is saved in the current working directory as image'
-        )
+        if 'NOW_CI_RUN' not in os.environ:
+            with yaspin_extended(
+                sigmap=sigmap, text="Create overview", color="green"
+            ) as spinner:
+                try:
+                    with warnings.catch_warnings():
+                        warnings.simplefilter("ignore")
+                        show_improvement(
+                            user_input.data,
+                            user_input.quality,
+                            dataset['val_query_image'],
+                            dataset['val_index_image'],
+                            dataset['val_query'],
+                            dataset['val_index'],
+                            final_layer_output_dim,
+                            embedding_size,
+                            finetuned_model_path,
+                            class_label='finetuner_label',
+                        )
+                except Exception as e:
+                    pass
+                spinner.ok('🖼')
+            print(
+                f'before-after comparison result is saved in the current working directory as image'
+            )
         executor_name = push_to_hub(tmpdir)
     else:
+        embedding_size = int(final_layer_output_dim / 2)
         executor_name = None
     # executor_name = 'FineTunedLinearHeadEncoder:93ea59dbd1ee3fe0bdc44252c6e86a87/
     # linear_head_encoder_2022-02-20_20-35-15'
