@@ -1,6 +1,5 @@
 import base64
 import os
-import sys
 from copy import deepcopy
 from urllib.request import urlopen
 
@@ -54,8 +53,16 @@ def deploy_streamlit():
         html = r'<img width="250" src="data:image/svg+xml;base64,%s"/>' % b64
         st.write(html, unsafe_allow_html=True)
     setup_session_state()
-    print('Run Streamlit with:', sys.argv)
-    _, host, port, output_modality, data = sys.argv
+    query_parameters = st.experimental_get_query_params()
+    print(f"Received query params: {query_parameters}")
+    host = query_parameters.get('host')[0]
+    port = (
+        query_parameters.get('port')[0] if 'port' in query_parameters.keys() else None
+    )
+    output_modality = query_parameters.get('output_modality')[0]
+    data = (
+        query_parameters.get('data')[0] if 'data' in query_parameters.keys() else None
+    )
     da_img = None
     da_txt = None
 
@@ -109,16 +116,22 @@ def deploy_streamlit():
         </style>
         """
 
-    def search_by_t(input, server, port, limit=TOP_K):
-        print('search text', server, port)
-        data = {'host': server, 'port': port, 'text': input, 'limit': limit}
-        response = requests.post('http://localhost/api/v1/text/search', json=data)
-        return response[0].matches
+    def search_by_t(search_text, server, port, limit=TOP_K):
+        print(f'Searching by text: {search_text}')
+        data = {'host': server, 'port': port, 'text': search_text, 'limit': limit}
+        url_host = (
+            'localhost' if server != 'gateway' else 'now-bff'
+        )  # different URL when communicating between Pods
+        response = requests.post(
+            f'http://{url_host}/api/v1/{output_modality}/search', json=data
+        )
+        return DocumentArray.from_json(response.content)
 
     def search_by_file(document, server, port, limit=TOP_K):
         """
         Wrap file in Jina Document for searching, and do all necessary conversion to make similar to indexed Docs
         """
+        print(f"Searching by image")
         query_doc = document
         if query_doc.blob != b'':
             query_doc.convert_blob_to_image_tensor()
@@ -127,12 +140,17 @@ def deploy_streamlit():
         data = {
             'host': server,
             'port': port,
-            'text': query_doc.text,
-            'image': base64.b64encode(query_doc.tensor),
+            # 'text': query_doc.text,
+            'image': base64.b64encode(query_doc.tensor).decode('utf-8'),
             'limit': limit,
         }
-        response = requests.post('http://localhost/api/v1/image/search', json=data)
-        return response[0].matches
+        url_host = (
+            'localhost' if server != 'gateway' else 'now-bff'
+        )  # different URL when communicating between Pods
+        response = requests.post(
+            f'http://{url_host}/api/v1/{output_modality}/search', json=data
+        )
+        return DocumentArray.from_json(response.content)
 
     def convert_file_to_document(query):
         data = query.read()
@@ -194,9 +212,13 @@ def deploy_streamlit():
     elif media_type == "Text":
         query = st.text_input("", key="text_search_box")
         if query:
-            st.session_state.matches = search_by_t(input=query, server=host, port=port)
+            st.session_state.matches = search_by_t(
+                search_text=query, server=host, port=port
+            )
         if st.button("Search", key="text_search"):
-            st.session_state.matches = search_by_t(input=query, server=host, port=port)
+            st.session_state.matches = search_by_t(
+                search_text=query, server=host, port=port
+            )
         if da_txt is not None:
             st.subheader("samples:")
             c1, c2, c3 = st.columns(3)
@@ -205,7 +227,7 @@ def deploy_streamlit():
                 with col:
                     if st.button(doc.content, key=doc.id, on_click=clear_text):
                         st.session_state.matches = search_by_t(
-                            input=doc.content, server=host, port=port
+                            search_text=doc.content, server=host, port=port
                         )
 
     elif media_type == 'Webcam':
@@ -247,8 +269,6 @@ def deploy_streamlit():
         c4, c5, c6 = st.columns(3)
         c7, c8, c9 = st.columns(3)
         all_cs = [c1, c2, c3, c4, c5, c6, c7, c8, c9]
-        # # TODO dirty hack to filter out text. Instead output modality should be passed as parameter
-        # matches = [m for m in matches if m.tensor is None]
         for m in matches:
             m.scores['cosine'].value = 1 - m.scores['cosine'].value
         sorted(matches, key=lambda m: m.scores['cosine'].value, reverse=True)

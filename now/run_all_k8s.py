@@ -109,11 +109,18 @@ def start_now(os_type, arch, contexts, active_context, is_debug, **kwargs):
             url = f'{frontend_host}' + (
                 '' if str(frontend_port) == '80' else f':{frontend_port}'
             )
-            print()
-
-            # print(f'✅ Your search case running.\nhost: {node_ip}:30080')
-            # print(f'host: {node_ip}:30080')
-            cowsay.cow(f'You made it:\n{url}')
+        else:
+            url = 'https://jinanowtesting.com'
+        url += (
+            f'/?host='
+            + (gateway_host_internal if gateway_host != 'localhost' else 'gateway')
+            + f'&output_modality={user_input.output_modality}&data={user_input.data}'
+        )
+        if gateway_port_internal:
+            url += f'&port={gateway_port_internal}'
+        print()
+        # cowsay.cow(f'You made it:\n{url}')
+        print(f'Frontend is accessible at:\n{url}')
 
 
 def run_k8s(os_type: str = 'linux', arch: str = 'x86_64', **kwargs):

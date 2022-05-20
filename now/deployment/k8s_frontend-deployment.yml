@@ -41,6 +41,7 @@ spec:
     spec:
       containers:
         - name: now-bff
+#          image: jinaai/now-bff:{docker_frontend_tag}
           image: jinaaitmpjoschka/now-bff:latest
           imagePullPolicy: Always
           command: ['uvicorn']
