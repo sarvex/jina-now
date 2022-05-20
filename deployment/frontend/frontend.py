@@ -133,15 +133,18 @@ def deploy_streamlit():
         """
         print(f"Searching by image")
         query_doc = document
-        if query_doc.blob != b'':
+        if query_doc.blob == b'':
+            if (query_doc.uri is not None) and query_doc.uri != '':
+                query_doc.load_uri_to_blob()
+            elif query_doc.tensor is not None:
+                query_doc.convert_tensor_to_blob()
             query_doc.convert_blob_to_image_tensor()
-        query_doc.set_image_tensor_shape((224, 224))
 
         data = {
             'host': server,
             'port': port,
             # 'text': query_doc.text,
-            'image': base64.b64encode(query_doc.tensor).decode('utf-8'),
+            'image': base64.b64encode(query_doc.blob).decode('utf-8'),
             'limit': limit,
         }
         url_host = (
