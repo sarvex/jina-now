@@ -58,7 +58,7 @@ jobs:
           pytest --suppress-no-test-exit-code --cov=now --cov-report=xml \
             -v -s -m "not gpu" ${{ matrix.test-path }}
           echo "::set-output name=codecov_flag::now"
-        timeout-minutes: 30
+        timeout-minutes: 45
       - name: Stop deployment containers
         run: |
           docker-compose -f deployment/docker-compose.yml down
