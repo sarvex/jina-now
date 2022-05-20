@@ -150,8 +150,9 @@ def deploy_streamlit():
         url_host = (
             'localhost' if server != 'gateway' else 'now-bff'
         )  # different URL when communicating between Pods
+        api_str = 'api' if server == 'gateway' else 'api/api'
         response = requests.post(
-            f'http://{url_host}/api/v1/{output_modality}/search', json=data
+            f'http://{url_host}/{api_str}/v1/{output_modality}/search', json=data
         )
         return DocumentArray.from_json(response.content)
 
