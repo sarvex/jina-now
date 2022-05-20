@@ -2,4 +2,4 @@ fastapi
 uvicorn
 uvloop
 pydantic
-jina
+jina[perf]==3.4.2
