@@ -206,7 +206,7 @@ jobs:
           pytest --suppress-no-test-exit-code --cov=now --cov-report=xml \
             -v -s -m "not gpu" ${{ matrix.test-path }}
           echo "::set-output name=codecov_flag::now"
-        timeout-minutes: 6
+        timeout-minutes: 30
       - name: Setup tmate session for debugging
         if: success() || failure()
         uses: mxschmitt/action-tmate@v3
