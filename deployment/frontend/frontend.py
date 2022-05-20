@@ -66,9 +66,9 @@ def deploy_streamlit():
     # TODO: fix such that can call 'localhost' instead of 'jinanowtesting'
     # TODO: change Nginx such that api/api isn't required anymore
     if HOST == 'gateway':  # need to call now-bff as we communicate between pods
-        url_host = f"http://now-bff/api/v1/{OUTPUT_MODALITY}/search"
+        URL_HOST = f"http://now-bff/api/v1/{OUTPUT_MODALITY}/search"
     else:
-        url_host = f"https://jinanowtesting.com/api/api/v1/{OUTPUT_MODALITY}/search"
+        URL_HOST = f"https://jinanowtesting.com/api/api/v1/{OUTPUT_MODALITY}/search"
 
     da_img = None
     da_txt = None
@@ -126,7 +126,7 @@ def deploy_streamlit():
     def search_by_t(search_text, limit=TOP_K) -> DocumentArray:
         print(f'Searching by text: {search_text}')
         data = {'host': HOST, 'port': PORT, 'text': search_text, 'limit': limit}
-        response = requests.post(url_host, json=data)
+        response = requests.post(URL_HOST, json=data)
         return DocumentArray.from_json(response.content)
 
     def search_by_file(document, limit=TOP_K) -> DocumentArray:
@@ -148,8 +148,10 @@ def deploy_streamlit():
             'image': base64.b64encode(query_doc.blob).decode('utf-8'),
             'limit': limit,
         }
-        response = requests.post(url_host, json=data)
-        return DocumentArray.from_json(response.content)
+        response = requests.post(URL_HOST, json=data)
+        print(f"response.status_code: {response.status_code}")
+        print(f"response.text:\n{response.text}")
+        return DocumentArray.from_json(response.text)
 
     def convert_file_to_document(query):
         data = query.read()
