@@ -7,9 +7,10 @@ from os.path import expanduser as user
 import pytest
 import requests
 
-from now.cli import cli
+from now.cli import _get_kind_path, _get_kubectl_path, cli
+from now.cloud_manager import create_local_cluster
 from now.constants import JC_SECRET
-from now.deployment.deployment import terminate_wolf
+from now.deployment.deployment import cmd, terminate_wolf
 from now.dialog import NEW_CLUSTER
 from now.run_all_k8s import get_remote_flow_details
 
@@ -72,6 +73,13 @@ def test_backend(
         'deployment_type': deployment_type,
         'proceed': True,
     }
+    # need to create local cluster and namespace to deploy frontend and bff for WOLF deployment
+    if deployment_type == 'remote':
+        kind_path = _get_kind_path()
+        create_local_cluster(kind_path, **kwargs)
+        kubectl_path = _get_kubectl_path()
+        cmd(f'{kubectl_path} create namespace nowapi')
+
     kwargs = Namespace(**kwargs)
     cli(args=kwargs)
 

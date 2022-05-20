@@ -66,8 +66,6 @@ def run(user_input: UserInput, is_debug, tmpdir, kubectl_path: str):
 
     finetuning = is_finetuning(user_input.data, dataset)
 
-    if not finetuning:
-        embedding_size = int(final_layer_output_dim / 2)
     dataset = {
         'index': dataset,
         'train': None,
@@ -128,6 +126,7 @@ def run(user_input: UserInput, is_debug, tmpdir, kubectl_path: str):
             )
         executor_name = push_to_hub(tmpdir)
     else:
+        embedding_size = int(final_layer_output_dim / 2)
         executor_name = None
     # executor_name = 'FineTunedLinearHeadEncoder:93ea59dbd1ee3fe0bdc44252c6e86a87/
     # linear_head_encoder_2022-02-20_20-35-15'

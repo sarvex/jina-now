@@ -1,3 +1,4 @@
+import os
 import pathlib
 from time import sleep
 
@@ -38,7 +39,9 @@ def run(
         )
 
         # remote signifies WOLF - Flow as a service
-        if gateway_host == 'localhost' or gateway_host == 'remote':
+        if gateway_host == 'localhost' or (
+            'NOW_CI_RUN' in os.environ and gateway_host == 'remote'
+        ):
             cmd(
                 f'{kubectl_path} apply -f {cur_dir}/deployment/k8s_frontend-svc-node.yml'
             )
