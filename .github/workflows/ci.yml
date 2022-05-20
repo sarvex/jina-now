@@ -95,7 +95,7 @@ jobs:
       - name: Test basic import
         run: python -c 'from now import run_all_k8s'
 
-  update-bff-frontend-if-required:
+  update-bff-playground-if-required:
     runs-on: ubuntu-latest
     needs: [commit-lint, lint-flake-8, check-black, import-test]
     steps:
@@ -106,35 +106,35 @@ jobs:
         with:
           filters: |
             has_deployment_changed:
-            - 'deployment/frontend/**'
+            - 'deployment/playground/**'
             - 'deployment/bff/**'
-      - name: Get bff and frontend tag
+      - name: Get bff and playground tag
         if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
         run: |
           FILE='now/run_all_k8s.py'
-          BFF_FRONTEND_TAG=$(sed -n '/docker_bff_frontend_tag =/p' $FILE | cut -d \' -f2)
-          echo "BFF_FRONTEND_TAG=$BFF_FRONTEND_TAG" >> $GITHUB_ENV
+          BFF_PLAYGROUND_TAG=$(sed -n '/docker_bff_playground_tag =/p' $FILE | cut -d \' -f2)
+          echo "BFF_PLAYGROUND_TAG=$BFF_PLAYGROUND_TAG" >> $GITHUB_ENV
       - name: Check that tag isn't used already for bff
         if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
         env:
-          IMAGE_TAG: ${{ env.BFF_FRONTEND_TAG }}
+          IMAGE_TAG: ${{ env.BFF_PLAYGROUND_TAG }}
         run: |
           if docker manifest inspect jinaai/now-bff:$IMAGE_TAG; then
-            echo "Docker tag is used already for bff. Please update bff and frontend tag"
+            echo "Docker tag is used already for bff. Please update bff and playground tag"
             exit 1
           else
             echo "Docker tag isn't used already for bff, continue to build..."
           fi
-      - name: Check that tag isn't used already for frontend
+      - name: Check that tag isn't used already for playground
         if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
         env:
-          IMAGE_TAG: ${{ env.BFF_FRONTEND_TAG }}
+          IMAGE_TAG: ${{ env.BFF_PLAYGROUND_TAG }}
         run: |
-          if docker manifest inspect jinaai/now-frontend:$IMAGE_TAG; then
-            echo "Docker tag is used already for frontend. Please update bff and frontend tag"
+          if docker manifest inspect jinaai/now-playground:$IMAGE_TAG; then
+            echo "Docker tag is used already for playground. Please update bff and playground tag"
             exit 1
           else
-            echo "Docker tag isn't used already for frontend, continue to build..."
+            echo "Docker tag isn't used already for playground, continue to build..."
           fi
       - name: Set up Docker Buildx
         if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
@@ -151,18 +151,18 @@ jobs:
         with:
           context: deployment/bff/.
           push: true
-          tags: jinaai/now-bff:${{ env.BFF_FRONTEND_TAG }}
-      - name: Build and push frontend
+          tags: jinaai/now-bff:${{ env.BFF_PLAYGROUND_TAG }}
+      - name: Build and push playground
         if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
         uses: docker/build-push-action@v2
         with:
-          context: deployment/frontend/.
+          context: deployment/playground/.
           push: true
-          tags: jinaai/now-frontend:${{ env.BFF_FRONTEND_TAG }}
+          tags: jinaai/now-playground:${{ env.BFF_PLAYGROUND_TAG }}
 
   prep-testbed:
     runs-on: ubuntu-latest
-    needs: update-bff-frontend-if-required
+    needs: update-bff-playground-if-required
     steps:
       - uses: actions/checkout@v2
       - id: set-matrix

@@ -1,25 +1,25 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: now-frontend
+  name: now-playground
   namespace: nowapi
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: now-frontend
+      app: now-playground
   template:
     metadata:
       labels:
-        app: now-frontend
+        app: now-playground
     spec:
       containers:
-        - name: now-frontend
-          image: jinaai/now-frontend:{docker_bff_frontend_tag}
-#          image: jinaaitmpjoschka/now-frontend:latest
+        - name: now-playground
+          image: jinaai/now-playground:{docker_bff_playground_tag}
+#          image: jinaaitmpjoschka/now-playground:latest
           imagePullPolicy: Always
           command: ["streamlit"]
-          args: ["run", "frontend.py", "--server.port", "80"]
+          args: ["run", "playground.py", "--server.port", "80"]
           ports:
             - containerPort: 80
 ---
@@ -40,7 +40,7 @@ spec:
     spec:
       containers:
         - name: now-bff
-          image: jinaai/now-bff:{docker_bff_frontend_tag}
+          image: jinaai/now-bff:{docker_bff_playground_tag}
 #          image: jinaaitmpjoschka/now-bff:latest
           imagePullPolicy: Always
           command: ['uvicorn']

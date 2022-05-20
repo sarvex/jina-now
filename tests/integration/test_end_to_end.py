@@ -73,7 +73,7 @@ def test_backend(
         'deployment_type': deployment_type,
         'proceed': True,
     }
-    # need to create local cluster and namespace to deploy frontend and bff for WOLF deployment
+    # need to create local cluster and namespace to deploy playground and bff for WOLF deployment
     if deployment_type == 'remote':
         kind_path = _get_kind_path()
         create_local_cluster(kind_path, **kwargs)
