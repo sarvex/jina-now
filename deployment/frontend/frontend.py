@@ -55,14 +55,21 @@ def deploy_streamlit():
     setup_session_state()
     query_parameters = st.experimental_get_query_params()
     print(f"Received query params: {query_parameters}")
-    host = query_parameters.get('host')[0]
-    port = (
+    HOST = query_parameters.get('host')[0]
+    PORT = (
         query_parameters.get('port')[0] if 'port' in query_parameters.keys() else None
     )
-    output_modality = query_parameters.get('output_modality')[0]
-    data = (
+    OUTPUT_MODALITY = query_parameters.get('output_modality')[0]
+    DATA = (
         query_parameters.get('data')[0] if 'data' in query_parameters.keys() else None
     )
+    # TODO: fix such that can call 'localhost' instead of 'jinanowtesting'
+    # TODO: change Nginx such that api/api isn't required anymore
+    if HOST == 'gateway':  # need to call now-bff as we communicate between pods
+        url_host = f"http://now-bff/api/v1/{OUTPUT_MODALITY}/search"
+    else:
+        url_host = f"https://jinanowtesting.com/api/api/v1/{OUTPUT_MODALITY}/search"
+
     da_img = None
     da_txt = None
 
@@ -71,20 +78,20 @@ def deploy_streamlit():
     DEBUG = os.getenv("DEBUG", False)
     DATA_DIR = "../data/images/"
 
-    if data in ds_set:
-        if output_modality == 'image':
+    if DATA in ds_set:
+        if OUTPUT_MODALITY == 'image':
             output_modality_dir = 'jpeg'
             data_dir = root_data_dir + output_modality_dir + '/'
-            da_img, da_txt = load_data(data_dir + data + '.img10.bin'), load_data(
-                data_dir + data + '.txt10.bin'
+            da_img, da_txt = load_data(data_dir + DATA + '.img10.bin'), load_data(
+                data_dir + DATA + '.txt10.bin'
             )
-        elif output_modality == 'text':
+        elif OUTPUT_MODALITY == 'text':
             # for now deactivated sample images for text
             output_modality_dir = 'text'
             data_dir = root_data_dir + output_modality_dir + '/'
-            da_txt = load_data(data_dir + data + '.txt10.bin')
+            da_txt = load_data(data_dir + DATA + '.txt10.bin')
 
-    if output_modality == 'text':
+    if OUTPUT_MODALITY == 'text':
         # censor words in text incl. in custom data
         from better_profanity import profanity
 
@@ -116,18 +123,13 @@ def deploy_streamlit():
         </style>
         """
 
-    def search_by_t(search_text, server, port, limit=TOP_K):
+    def search_by_t(search_text, limit=TOP_K) -> DocumentArray:
         print(f'Searching by text: {search_text}')
-        data = {'host': server, 'port': port, 'text': search_text, 'limit': limit}
-        url_host = (
-            'localhost' if server != 'gateway' else 'now-bff'
-        )  # different URL when communicating between Pods
-        response = requests.post(
-            f'http://{url_host}/api/v1/{output_modality}/search', json=data
-        )
+        data = {'host': HOST, 'port': PORT, 'text': search_text, 'limit': limit}
+        response = requests.post(url_host, json=data)
         return DocumentArray.from_json(response.content)
 
-    def search_by_file(document, server, port, limit=TOP_K):
+    def search_by_file(document, limit=TOP_K) -> DocumentArray:
         """
         Wrap file in Jina Document for searching, and do all necessary conversion to make similar to indexed Docs
         """
@@ -141,21 +143,12 @@ def deploy_streamlit():
             query_doc.convert_blob_to_image_tensor()
 
         data = {
-            'host': server,
-            'port': port,
-            # 'text': query_doc.text,
+            'host': HOST,
+            'port': PORT,
             'image': base64.b64encode(query_doc.blob).decode('utf-8'),
             'limit': limit,
         }
-        url_host = (
-            'localhost' if server != 'gateway' else 'now-bff'
-        )  # different URL when communicating between Pods
-        api_str = 'api' if server == 'gateway' else 'api/api'
-        http_https = 'http' if server == 'gateway' else 'https'
-        response = requests.post(
-            f'{http_https}://{url_host}/{api_str}/v1/{output_modality}/search',
-            json=data,
-        )
+        response = requests.post(url_host, json=data)
         return DocumentArray.from_json(response.content)
 
     def convert_file_to_document(query):
@@ -178,13 +171,13 @@ def deploy_streamlit():
         '<style>div.st-bf{flex-direction:column;} div.st-ag{font-weight:bold;padding-right:50px;}</style>',
         unsafe_allow_html=True,
     )
-    if output_modality == 'image':
+    if OUTPUT_MODALITY == 'image':
         media_type = st.radio(
             '',
             ["Text", "Image", 'Webcam'],
             on_change=clear_match,
         )
-    elif output_modality == 'text':
+    elif OUTPUT_MODALITY == 'text':
         media_type = st.radio(
             '',
             ["Image", "Text", 'Webcam'],
@@ -197,9 +190,7 @@ def deploy_streamlit():
         if query:
             doc = convert_file_to_document(query)
             st.image(doc.blob, width=160)
-            st.session_state.matches = search_by_file(
-                document=doc, server=host, port=port
-            )
+            st.session_state.matches = search_by_file(document=doc)
         if da_img is not None:
             st.subheader("samples:")
             img_cs = st.columns(5)
@@ -209,22 +200,14 @@ def deploy_streamlit():
                     st.image(doc.blob if doc.blob else doc.tensor, width=100)
                 with txt:
                     if st.button('Search', key=doc.id):
-                        st.session_state.matches = search_by_file(
-                            document=doc,
-                            server=host,
-                            port=port,
-                        )
+                        st.session_state.matches = search_by_file(document=doc)
 
     elif media_type == "Text":
         query = st.text_input("", key="text_search_box")
         if query:
-            st.session_state.matches = search_by_t(
-                search_text=query, server=host, port=port
-            )
+            st.session_state.matches = search_by_t(search_text=query)
         if st.button("Search", key="text_search"):
-            st.session_state.matches = search_by_t(
-                search_text=query, server=host, port=port
-            )
+            st.session_state.matches = search_by_t(search_text=query)
         if da_txt is not None:
             st.subheader("samples:")
             c1, c2, c3 = st.columns(3)
@@ -232,9 +215,7 @@ def deploy_streamlit():
             for doc, col in zip(da_txt, [c1, c2, c3, c4, c5, c6]):
                 with col:
                     if st.button(doc.content, key=doc.id, on_click=clear_text):
-                        st.session_state.matches = search_by_t(
-                            search_text=doc.content, server=host, port=port
-                        )
+                        st.session_state.matches = search_by_t(search_text=doc.content)
 
     elif media_type == 'Webcam':
         snapshot = st.button('Snapshot')
@@ -259,9 +240,7 @@ def deploy_streamlit():
                 st.session_state.snap = query
                 doc = Document(tensor=query)
                 doc.convert_image_tensor_to_blob()
-                st.session_state.matches = search_by_file(
-                    document=doc, server=host, port=port
-                )
+                st.session_state.matches = search_by_file(document=doc)
             elif st.session_state.snap is not None:
                 st.image(st.session_state.snap, width=160)
         else:
@@ -284,9 +263,9 @@ def deploy_streamlit():
             if m.scores['cosine'].value > st.session_state.min_confidence
         ]
         for c, match in zip(all_cs, matches):
-            match.mime_type = output_modality
+            match.mime_type = OUTPUT_MODALITY
 
-            if output_modality == 'text':
+            if OUTPUT_MODALITY == 'text':
                 display_text = profanity.censor(match.text).replace('\n', ' ')
                 body = f"<!DOCTYPE html><html><body><blockquote>{display_text}</blockquote>"
                 if match.tags.get('additional_info'):
