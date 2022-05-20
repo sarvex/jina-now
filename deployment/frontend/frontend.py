@@ -125,7 +125,9 @@ def deploy_streamlit():
 
     def search_by_t(search_text, limit=TOP_K) -> DocumentArray:
         print(f'Searching by text: {search_text}')
-        data = {'host': HOST, 'port': PORT, 'text': search_text, 'limit': limit}
+        data = {'host': HOST, 'text': search_text, 'limit': limit}
+        if PORT:
+            data['port'] = PORT
         response = requests.post(URL_HOST, json=data)
         return DocumentArray.from_json(response.content)
 
@@ -144,14 +146,15 @@ def deploy_streamlit():
 
         data = {
             'host': HOST,
-            'port': PORT,
             'image': base64.b64encode(query_doc.blob).decode('utf-8'),
             'limit': limit,
         }
+        if PORT:
+            data['port'] = PORT
         response = requests.post(URL_HOST, json=data)
         print(f"response.status_code: {response.status_code}")
         print(f"response.text:\n{response.text}")
-        return DocumentArray.from_json(response.text)
+        return DocumentArray.from_json(response.content)
 
     def convert_file_to_document(query):
         data = query.read()
