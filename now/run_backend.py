@@ -101,30 +101,31 @@ def run(user_input: UserInput, is_debug, tmpdir, kubectl_path: str):
                 dataset, batch_size, final_layer_output_dim, embedding_size, tmpdir
             )
 
-        with yaspin_extended(
-            sigmap=sigmap, text="Create overview", color="green"
-        ) as spinner:
-            try:
-                with warnings.catch_warnings():
-                    warnings.simplefilter("ignore")
-                    show_improvement(
-                        user_input.data,
-                        user_input.quality,
-                        dataset['val_query_image'],
-                        dataset['val_index_image'],
-                        dataset['val_query'],
-                        dataset['val_index'],
-                        final_layer_output_dim,
-                        embedding_size,
-                        finetuned_model_path,
-                        class_label='finetuner_label',
-                    )
-            except Exception as e:
-                pass
-            spinner.ok('🖼')
-        print(
-            f'before-after comparison result is saved in the current working directory as image'
-        )
+        if 'NOW_CI_RUN' not in os.environ:
+            with yaspin_extended(
+                sigmap=sigmap, text="Create overview", color="green"
+            ) as spinner:
+                try:
+                    with warnings.catch_warnings():
+                        warnings.simplefilter("ignore")
+                        show_improvement(
+                            user_input.data,
+                            user_input.quality,
+                            dataset['val_query_image'],
+                            dataset['val_index_image'],
+                            dataset['val_query'],
+                            dataset['val_index'],
+                            final_layer_output_dim,
+                            embedding_size,
+                            finetuned_model_path,
+                            class_label='finetuner_label',
+                        )
+                except Exception as e:
+                    pass
+                spinner.ok('🖼')
+            print(
+                f'before-after comparison result is saved in the current working directory as image'
+            )
         executor_name = push_to_hub(tmpdir)
     else:
         executor_name = None
