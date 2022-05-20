@@ -223,8 +223,7 @@ def deploy_flow(
     )
 
     def on_done(res):
-        if 'NOW_CI_RUN' not in os.environ:
-            next(progress_bar)
+        next(progress_bar)
 
     # Keep trying until the services are up and running
     batches = batch(index, request_size * 5)
@@ -239,6 +238,11 @@ def deploy_flow(
                 )
                 break
             except Exception as e:
+                if 'NOW_CI_RUN' in os.environ:
+                    import traceback
+
+                    print(e)
+                    print(traceback.format_exc())
                 sleep(1)
 
     print('⭐ Success - your data is indexed')

@@ -2,4 +2,4 @@ fastapi
 uvicorn
 uvloop
 pydantic
-jina-now
+jina

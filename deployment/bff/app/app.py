@@ -7,7 +7,6 @@ from fastapi import FastAPI
 import deployment.bff.app.settings as api_settings
 from deployment.bff.app.decorators import api_method, timed
 from deployment.bff.app.v1.api import v1_router
-from now import __version__
 
 logging.config.dictConfig(api_settings.DEFAULT_LOGGING_CONFIG)
 logger = logging.getLogger('bff.app')
@@ -24,7 +23,6 @@ def build_app():
     app = FastAPI(
         title=TITLE,
         description=DESCRIPTION,
-        version=__version__,
         contact={
             'author': AUTHOR,
             'email': EMAIL,
