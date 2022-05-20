@@ -95,81 +95,9 @@ jobs:
       - name: Test basic import
         run: python -c 'from now import run_all_k8s'
 
-#  update-bff-front-if-required:
-#    runs-on: ubuntu-latest
-#    needs: [commit-lint, lint-flake-8, check-black, import-test]
-#    steps:
-#      - uses: actions/checkout@v2
-#      - name: Check if deployment has changed
-#        uses: dorny/paths-filter@v2
-#        id: check_has_deployment_changed
-#        with:
-#          filters: |
-#            has_deployment_changed:
-#            - 'deployment/frontend/**'
-#            - 'deployment/bff/**'
-##      - name: Set up Python 3.7
-##        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
-##        uses: actions/setup-python@v2
-##        with:
-##          python-version: 3.7
-#      - name: Get bff and frontend tag
-#        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
-#        run: |
-#          FILE='now/run_all_k8s.py'
-#          BFF_FRONTEND_TAG=$(sed -n '/docker_bff_frontend_tag =/p' $FILE | cut -d \' -f2)
-#          echo "BFF_FRONTEND_TAG=$BFF_FRONTEND_TAG" >> $GITHUB_ENV
-#      - name: Check that tag isn't used already for bff
-#        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
-#        env:
-#          IMAGE_TAG: ${{ env.BFF_FRONTEND_TAG }}
-#        run: |
-#          if docker manifest inspect jinaai/now-bff:$IMAGE_TAG; then
-#            echo "Docker tag is used already for bff. Please update bff and frontend tag"
-#            exit 1
-#          else
-#            echo "Docker tag isn't used already for bff, continue to build..."
-#          fi
-#      - name: Check that tag isn't used already for frontend
-#        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
-#        env:
-#          IMAGE_TAG: ${{ env.BFF_FRONTEND_TAG }}
-#        run: |
-#          if docker manifest inspect jinaai/now-frontend:$IMAGE_TAG; then
-#            echo "Docker tag is used already for frontend. Please update bff and frontend tag"
-#            exit 1
-#          else
-#            echo "Docker tag isn't used already for frontend, continue to build..."
-#          fi
-#      - name: Set up Docker Buildx
-#        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
-#        uses: docker/setup-buildx-action@v1
-#      - name: Login to DockerHub
-#        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
-#        uses: docker/login-action@v1
-#        with:
-#          username: ${{ secrets.DOCKER_USERNAME }}
-#          password: ${{ secrets.DOCKER_PASSWORD }}
-#      - name: Build and push bff
-#        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
-#        uses: docker/build-push-action@v2
-#        with:
-#          context: deployment/bff/.
-#          push: true
-#          tags: jinaai/now-bff:${{ env.BFF_FRONTEND_TAG }}
-#      - name: Build and push frontend
-#        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
-#        uses: docker/build-push-action@v2
-#        with:
-#          context: deployment/frontend/.
-#          push: true
-#          tags: jinaai/now-frontend:${{ env.BFF_FRONTEND_TAG }}
-
-  update-deployment-if-required:
+  update-bff-frontend-if-required:
     runs-on: ubuntu-latest
-    # TODO: change back
-#    needs: core-test
-    needs: check-black
+    needs: [commit-lint, lint-flake-8, check-black, import-test]
     steps:
       - uses: actions/checkout@v2
       - name: Check if deployment has changed
@@ -178,27 +106,63 @@ jobs:
         with:
           filters: |
             has_deployment_changed:
-            - 'deployment/**'
-      - name: Zip deployment
+            - 'deployment/frontend/**'
+            - 'deployment/bff/**'
+      - name: Get bff and frontend tag
         if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
-        run: zip -r deploy.zip deployment docker-compose.yml
-      - name: Deploy to AWS Elastic Beanstalk
-        uses: einaregilsson/beanstalk-deploy@v20
+        run: |
+          FILE='now/run_all_k8s.py'
+          BFF_FRONTEND_TAG=$(sed -n '/docker_bff_frontend_tag =/p' $FILE | cut -d \' -f2)
+          echo "BFF_FRONTEND_TAG=$BFF_FRONTEND_TAG" >> $GITHUB_ENV
+      - name: Check that tag isn't used already for bff
+        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
+        env:
+          IMAGE_TAG: ${{ env.BFF_FRONTEND_TAG }}
+        run: |
+          if docker manifest inspect jinaai/now-bff:$IMAGE_TAG; then
+            echo "Docker tag is used already for bff. Please update bff and frontend tag"
+            exit 1
+          else
+            echo "Docker tag isn't used already for bff, continue to build..."
+          fi
+      - name: Check that tag isn't used already for frontend
+        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
+        env:
+          IMAGE_TAG: ${{ env.BFF_FRONTEND_TAG }}
+        run: |
+          if docker manifest inspect jinaai/now-frontend:$IMAGE_TAG; then
+            echo "Docker tag is used already for frontend. Please update bff and frontend tag"
+            exit 1
+          else
+            echo "Docker tag isn't used already for frontend, continue to build..."
+          fi
+      - name: Set up Docker Buildx
+        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
+        uses: docker/setup-buildx-action@v1
+      - name: Login to DockerHub
+        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
+        uses: docker/login-action@v1
         with:
-          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          application_name: now-bff-frontend
-          environment_name: Nowbfffrontend-env
-          # TODO: replace
-          # version_label: ${{ github.sha }}
-          version_label: ${{ github.event.pull_request.head.sha }}
-          region: "eu-west-1"
-          deployment_package: deploy.zip
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build and push bff
+        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
+        uses: docker/build-push-action@v2
+        with:
+          context: deployment/bff/.
+          push: true
+          tags: jinaai/now-bff:${{ env.BFF_FRONTEND_TAG }}
+      - name: Build and push frontend
+        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
+        uses: docker/build-push-action@v2
+        with:
+          context: deployment/frontend/.
+          push: true
+          tags: jinaai/now-frontend:${{ env.BFF_FRONTEND_TAG }}
 
   prep-testbed:
     runs-on: ubuntu-latest
-#    needs: update-bff-front-if-required
-    needs: update-deployment-if-required
+    needs: update-bff-frontend-if-required
     steps:
       - uses: actions/checkout@v2
       - id: set-matrix

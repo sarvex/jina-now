@@ -152,8 +152,6 @@ def deploy_streamlit():
         if PORT:
             data['port'] = PORT
         response = requests.post(URL_HOST, json=data)
-        print(f"response.status_code: {response.status_code}")
-        print(f"response.text:\n{response.text}")
         return DocumentArray.from_json(response.content)
 
     def convert_file_to_document(query):
