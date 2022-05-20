@@ -54,8 +54,7 @@ def build_app():
     @app.on_event('startup')
     def startup():
         logger.info(
-            f'Jina NOW v{__version__} started! '
-            f'Listening to [::]:{api_settings.DEFAULT_PORT}'
+            f'Jina NOW started! ' f'Listening to [::]:{api_settings.DEFAULT_PORT}'
         )
 
     app.include_router(v1_router, prefix='/api/v1')
