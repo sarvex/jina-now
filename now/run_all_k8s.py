@@ -14,7 +14,7 @@ from now.log.log import yaspin_extended
 from now.system_information import get_system_state
 from now.utils import sigmap
 
-docker_bff_frontend_tag = '0.0.32'
+docker_bff_frontend_tag = '0.0.33'
 
 
 def get_remote_flow_details():
