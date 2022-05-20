@@ -15,12 +15,11 @@ spec:
     spec:
       containers:
         - name: now-frontend
-#          image: jinaai/now-frontend:{docker_bff_frontend_tag}
-          image: jinaaitmpjoschka/now-frontend:latest
+          image: jinaai/now-frontend:{docker_bff_frontend_tag}
+#          image: jinaaitmpjoschka/now-frontend:latest
           imagePullPolicy: Always
           command: ["streamlit"]
           args: ["run", "frontend.py", "--server.port", "80"]
-#          args: ["run", "frontend.py", "--server.port", "80", "{gateway_host}", "{gateway_port}", "{output_modality}", "{data}"]
           ports:
             - containerPort: 80
 ---
@@ -41,8 +40,8 @@ spec:
     spec:
       containers:
         - name: now-bff
-#          image: jinaai/now-bff:{docker_bff_frontend_tag}
-          image: jinaaitmpjoschka/now-bff:latest
+          image: jinaai/now-bff:{docker_bff_frontend_tag}
+#          image: jinaaitmpjoschka/now-bff:latest
           imagePullPolicy: Always
           command: ['uvicorn']
           args:  ["deployment.bff.app.app:application", "--host", "0.0.0.0", "--port", "80", "--loop", "uvloop"]
