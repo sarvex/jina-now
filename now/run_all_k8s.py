@@ -14,7 +14,7 @@ from now.log.log import yaspin_extended
 from now.system_information import get_system_state
 from now.utils import sigmap
 
-docker_frontend_tag = '0.0.16'
+docker_bff_frontend_tag = '0.0.16'
 
 
 def get_remote_flow_details():
@@ -102,7 +102,7 @@ def start_now(os_type, arch, contexts, active_context, is_debug, **kwargs):
                 gateway_port=gateway_port,
                 gateway_host_internal=gateway_host_internal,
                 gateway_port_internal=gateway_port_internal,
-                docker_frontend_tag=docker_frontend_tag,
+                docker_bff_frontend_tag=docker_bff_frontend_tag,
                 tmpdir=tmpdir,
                 kubectl_path=kwargs['kubectl_path'],
             )

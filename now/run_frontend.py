@@ -17,7 +17,7 @@ def run(
     gateway_port,
     gateway_host_internal,
     gateway_port_internal,
-    docker_frontend_tag,
+    docker_bff_frontend_tag,
     tmpdir,
     kubectl_path,
 ):
@@ -32,7 +32,7 @@ def run(
                 'data': dataset,
                 'gateway_host': gateway_host_internal,
                 'gateway_port': gateway_port_internal,
-                'docker_frontend_tag': docker_frontend_tag,
+                'docker_bff_frontend_tag': docker_bff_frontend_tag,
             },
             kubectl_path,
         )
@@ -68,6 +68,6 @@ if __name__ == '__main__':
         None,
         'gateway.nowapi.svc.cluster.local',
         '8080',
-        docker_frontend_tag='0.0.2',
+        docker_bff_frontend_tag='0.0.2',
     )
     # 31080

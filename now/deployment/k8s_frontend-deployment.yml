@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: now-frontend
-#          image: jinaai/now-frontend:{docker_frontend_tag}
+#          image: jinaai/now-frontend:{docker_bff_frontend_tag}
           image: jinaaitmpjoschka/now-frontend:latest
           imagePullPolicy: Always
           command: ["streamlit"]
@@ -41,7 +41,7 @@ spec:
     spec:
       containers:
         - name: now-bff
-#          image: jinaai/now-bff:{docker_frontend_tag}
+#          image: jinaai/now-bff:{docker_bff_frontend_tag}
           image: jinaaitmpjoschka/now-bff:latest
           imagePullPolicy: Always
           command: ['uvicorn']
