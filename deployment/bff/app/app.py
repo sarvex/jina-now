@@ -7,7 +7,6 @@ from fastapi import FastAPI
 import deployment.bff.app.settings as api_settings
 from deployment.bff.app.decorators import api_method, timed
 from deployment.bff.app.v1.api import v1_router
-from now.__init__ import __version__
 
 logging.config.dictConfig(api_settings.DEFAULT_LOGGING_CONFIG)
 logger = logging.getLogger('bff.app')
@@ -17,6 +16,7 @@ TITLE = 'Jina NOW'
 DESCRIPTION = 'The Jina NOW service API'
 AUTHOR = 'Jina AI'
 EMAIL = 'hello@jina.ai'
+__version__ = "latest"
 
 
 def build_app():
