@@ -51,7 +51,7 @@ jobs:
           WOLF_TOKEN: ${{ secrets.WOLF_TOKEN }}
       - name: Start deployment containers
         run: |
-          docker-compose -f deployment/docker-compose.yml up -d
+          docker-compose -f docker-compose.yml up -d
       - name: Test
         id: test
         run: |
@@ -65,7 +65,7 @@ jobs:
         timeout-minutes: 30
       - name: Stop deployment containers
         run: |
-          docker-compose -f deployment/docker-compose.yml down
+          docker-compose -f docker-compose.yml down
       - name: Check codecov file
         id: check_files
         uses: andstor/file-existence-action@v1
