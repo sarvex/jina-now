@@ -1,10 +1,10 @@
 import json
-import math
 import os.path
 import pathlib
 from os.path import expanduser as user
 from time import sleep
 
+from docarray import DocumentArray
 from kubernetes import client as k8s_client
 from kubernetes import config
 from tqdm import tqdm
@@ -214,36 +214,27 @@ def deploy_flow(
     print(f'▶ indexing {len(index)} documents')
     request_size = 64
 
-    progress_bar = (
-        x
-        for x in tqdm(
-            batch(index, request_size),
-            total=math.ceil(len(index) / request_size),
-        )
+    # doublecheck that flow is up and running - should be done by wolf/core in the future
+    while True:
+        try:
+            client.post(
+                '/index',
+                inputs=DocumentArray(),
+            )
+            break
+        except Exception as e:
+            if 'NOW_CI_RUN' in os.environ:
+                import traceback
+
+                print(e)
+                print(traceback.format_exc())
+            sleep(1)
+
+    client.post(
+        '/index',
+        request_size=request_size,
+        inputs=tqdm(index),
     )
-
-    def on_done(res):
-        next(progress_bar)
-
-    # Keep trying until the services are up and running
-    batches = batch(index, request_size * 5)
-    for b in batches:
-        while True:
-            try:
-                client.post(
-                    '/index',
-                    request_size=request_size,
-                    inputs=b,
-                    on_done=on_done,
-                )
-                break
-            except Exception as e:
-                if 'NOW_CI_RUN' in os.environ:
-                    import traceback
-
-                    print(e)
-                    print(traceback.format_exc())
-                sleep(1)
 
     print('⭐ Success - your data is indexed')
     return gateway_host, gateway_port, gateway_host_internal, gateway_port_internal
