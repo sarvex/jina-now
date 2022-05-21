@@ -51,17 +51,21 @@ jobs:
           WOLF_TOKEN: ${{ secrets.WOLF_TOKEN }}
       - name: Start deployment containers
         run: |
-          docker-compose -f deployment/docker-compose.yml up -d
+          docker-compose -f docker-compose.yml up -d
       - name: Test
         id: test
         run: |
           pytest --suppress-no-test-exit-code --cov=now --cov-report=xml \
             -v -s -m "not gpu" ${{ matrix.test-path }}
           echo "::set-output name=codecov_flag::now"
-        timeout-minutes: 45
+        timeout-minutes: 25
+      - name: Setup tmate session for debugging
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3
+        timeout-minutes: 30
       - name: Stop deployment containers
         run: |
-          docker-compose -f deployment/docker-compose.yml down
+          docker-compose -f docker-compose.yml down
       - name: Check codecov file
         id: check_files
         uses: andstor/file-existence-action@v1
@@ -74,7 +78,6 @@ jobs:
           file: coverage.xml
           flags: ${{ steps.test.outputs.codecov_flag }}
           fail_ci_if_error: false
-#          token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
 
   prerelease:
     needs: core-test

@@ -285,18 +285,17 @@ def _configure_cluster(user_input: UserInput, skip=False, **kwargs):
         pass
 
     if choices is not None:
-        cluster = _prompt_value(
+        user_input.cluster = _prompt_value(
             name='cluster',
             choices=choices,
             prompt_message='Which cluster you want to use to deploy your search engine?',
             prompt_type='list',
             **kwargs,
         )
-        user_input.cluster = cluster
-        if cluster != NEW_CLUSTER['value']:
-            if not _cluster_running(cluster):
+        if user_input.cluster != NEW_CLUSTER['value']:
+            if not _cluster_running(user_input.cluster):
                 print(
-                    f'Cluster {cluster} is not running. Please select a different one.'
+                    f'Cluster {user_input.cluster} is not running. Please select a different one.'
                 )
                 _configure_cluster(user_input, skip=True, **kwargs)
         else:
@@ -450,7 +449,7 @@ def _handle_ffmpeg_install_required():
     bc_end = '\033[0m'
     print()
     print(
-        f"{bc_red}Too use the audio modality you need the ffmpeg audio processing"
+        f"{bc_red}To use the audio modality you need the ffmpeg audio processing"
         f" library installed on your system.{bc_end}"
     )
     print(
