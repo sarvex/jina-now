@@ -334,12 +334,4 @@ def flow_definition(dirpath) -> Dict:
         return yaml.safe_load(f.read())
 
 
-def update_uses_to_sandbox(flow):
-    for idx, executor_dict in enumerate(flow['executors']):
-        uses = executor_dict.get('uses', {})
-        first_part, second_part = uses.split('://')
-        uses = 'jinahub+sandbox://' + second_part
-        flow['executors'][idx]['uses'] = uses
-
-
 sigmap = {signal.SIGINT: my_handler, signal.SIGTERM: my_handler}

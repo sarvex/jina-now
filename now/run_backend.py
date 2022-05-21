@@ -147,7 +147,6 @@ def run(user_input: UserInput, is_debug, tmpdir, kubectl_path: str):
         embedding_size=embedding_size,
         tmpdir=tmpdir,
         finetuning=finetuning,
-        sandbox=user_input.sandbox,
         kubectl_path=kubectl_path,
         deployment_type=user_input.deployment_type,
     )

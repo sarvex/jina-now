@@ -60,15 +60,11 @@ def test_backend(
         pytest.skip('Too time consuming, hence skipping!')
 
     os.environ['NOW_CI_RUN'] = 'True'
-    # sandbox = dataset == 'best-artworks'
-    # deactivate sandbox since it is hanging from time to time
-    sandbox = False
     kwargs = {
         'now': 'start',
         'output_modality': output_modality,
         'data': dataset,
         'quality': quality,
-        'sandbox': sandbox,
         'cluster': cluster,
         'deployment_type': deployment_type,
         'proceed': True,
