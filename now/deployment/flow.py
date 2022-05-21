@@ -1,10 +1,10 @@
 import json
-import math
 import os.path
 import pathlib
 from os.path import expanduser as user
 from time import sleep
 
+from docarray import DocumentArray
 from kubernetes import client as k8s_client
 from kubernetes import config
 from tqdm import tqdm
@@ -109,6 +109,7 @@ def get_custom_env_file(
     model,
     output_dim,
     embed_size,
+    finetuning,
     tmpdir,
 ):
     env_file = os.path.join(tmpdir, 'dot.env')
@@ -116,13 +117,14 @@ def get_custom_env_file(
         fp.write(
             f'ENCODER_NAME={encoder_name}\n'
             f'CLIP_MODEL_NAME={model}\n'
-            f'LINEAR_HEAD_NAME={linear_head_name}\n'
             f'OUTPUT_DIM={output_dim}\n'
             f'EMBED_DIM={embed_size}\n'
             f'INDEXER_NAME={indexer_name}\n'
         )
+        if finetuning:
+            fp.write(f'LINEAR_HEAD_NAME={linear_head_name}\n')
 
-    return env_file
+    return env_file if env_file else None
 
 
 def deploy_flow(
@@ -134,7 +136,6 @@ def deploy_flow(
     embedding_size,
     tmpdir,
     finetuning,
-    sandbox,
     kubectl_path,
     deployment_type,
 ):
@@ -154,6 +155,7 @@ def deploy_flow(
         vision_model,
         final_layer_output_dim,
         embedding_size,
+        finetuning,
         tmpdir,
     )
 
@@ -181,11 +183,8 @@ def deploy_flow(
         from dotenv import load_dotenv
 
         load_dotenv(env_file)
-        if finetuning:
-            f = Flow.load_config(os.path.join(cur_dir, 'flow', 'ft-flow.yml'))
-        else:
-            f = Flow.load_config(os.path.join(cur_dir, 'flow', 'flow.yml'))
-
+        yaml_name = 'ft-flow.yml' if finetuning else 'flow.yml'
+        f = Flow.load_config(os.path.join(cur_dir, 'flow', yaml_name))
         (
             gateway_host,
             gateway_port,
@@ -194,7 +193,7 @@ def deploy_flow(
         ) = deploy_k8s(
             f,
             ns,
-            2 + (2 if finetuning else 1) * (0 if sandbox else 1),
+            2 + (2 if finetuning else 1),
             tmpdir,
             kubectl_path=kubectl_path,
         )
@@ -211,32 +210,27 @@ def deploy_flow(
     print(f'▶ indexing {len(index)} documents')
     request_size = 64
 
-    progress_bar = (
-        x
-        for x in tqdm(
-            batch(index, request_size),
-            total=math.ceil(len(index) / request_size),
-        )
+    # doublecheck that flow is up and running - should be done by wolf/core in the future
+    while True:
+        try:
+            client.post(
+                '/index',
+                inputs=DocumentArray(),
+            )
+            break
+        except Exception as e:
+            if 'NOW_CI_RUN' in os.environ:
+                import traceback
+
+                print(e)
+                print(traceback.format_exc())
+            sleep(1)
+
+    client.post(
+        '/index',
+        request_size=request_size,
+        inputs=tqdm(index),
     )
-
-    def on_done(res):
-        if 'NOW_CI_RUN' not in os.environ:
-            next(progress_bar)
-
-    # Keep trying until the services are up and running
-    batches = batch(index, request_size * 5)
-    for b in batches:
-        while True:
-            try:
-                client.post(
-                    '/index',
-                    request_size=request_size,
-                    inputs=b,
-                    on_done=on_done,
-                )
-                break
-            except Exception as e:
-                sleep(1)
 
     print('⭐ Success - your data is indexed')
     return gateway_host, gateway_port, gateway_host_internal, gateway_port_internal

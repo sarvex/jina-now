@@ -5,12 +5,12 @@ from docarray import Document, DocumentArray
 from fastapi import APIRouter
 from jina import Client
 
-from now.bff.v1.models.image import (
+from deployment.bff.app.v1.models.image import (
     NowImageIndexRequestModel,
     NowImageResponseModel,
     NowImageSearchRequestModel,
 )
-from now.bff.v1.routers.helper import process_query
+from deployment.bff.app.v1.routers.helper import process_query
 
 router = APIRouter()
 

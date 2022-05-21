@@ -68,6 +68,7 @@ jobs:
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exclude .git,__pycache__,docs/source/conf.py,old,build,dist,tests/,jina/resources/
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --exclude .git,__pycache__,docs/source/conf.py,old,build,dist,tests/,jina/resources/
+
   check-black:
     runs-on: ubuntu-latest
     steps:
@@ -101,9 +102,74 @@ jobs:
       - name: Test basic import
         run: python -c 'from now import run_all_k8s'
 
-  prep-testbed:
+  update-bff-frontend-if-required:
     runs-on: ubuntu-latest
     needs: [commit-lint, lint-flake-8, check-black, import-test]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Check if deployment has changed
+        uses: dorny/paths-filter@v2
+        id: check_has_deployment_changed
+        with:
+          filters: |
+            has_deployment_changed:
+            - 'deployment/frontend/**'
+            - 'deployment/bff/**'
+      - name: Get bff and frontend tag
+        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
+        run: |
+          FILE='now/run_all_k8s.py'
+          BFF_FRONTEND_TAG=$(sed -n '/docker_bff_frontend_tag =/p' $FILE | cut -d \' -f2)
+          echo "BFF_FRONTEND_TAG=$BFF_FRONTEND_TAG" >> $GITHUB_ENV
+      - name: Check that tag isn't used already for bff
+        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
+        env:
+          IMAGE_TAG: ${{ env.BFF_FRONTEND_TAG }}
+        run: |
+          if docker manifest inspect jinaai/now-bff:$IMAGE_TAG; then
+            echo "Docker tag is used already for bff. Please update bff and frontend tag"
+            exit 1
+          else
+            echo "Docker tag isn't used already for bff, continue to build..."
+          fi
+      - name: Check that tag isn't used already for frontend
+        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
+        env:
+          IMAGE_TAG: ${{ env.BFF_FRONTEND_TAG }}
+        run: |
+          if docker manifest inspect jinaai/now-frontend:$IMAGE_TAG; then
+            echo "Docker tag is used already for frontend. Please update bff and frontend tag"
+            exit 1
+          else
+            echo "Docker tag isn't used already for frontend, continue to build..."
+          fi
+      - name: Set up Docker Buildx
+        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
+        uses: docker/setup-buildx-action@v1
+      - name: Login to DockerHub
+        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build and push bff
+        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
+        uses: docker/build-push-action@v2
+        with:
+          context: deployment/bff/.
+          push: true
+          tags: jinaai/now-bff:${{ env.BFF_FRONTEND_TAG }}
+      - name: Build and push frontend
+        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
+        uses: docker/build-push-action@v2
+        with:
+          context: deployment/frontend/.
+          push: true
+          tags: jinaai/now-frontend:${{ env.BFF_FRONTEND_TAG }}
+
+  prep-testbed:
+    runs-on: ubuntu-latest
+    needs: update-bff-frontend-if-required
     steps:
       - uses: actions/checkout@v2
       - id: set-matrix
@@ -112,7 +178,6 @@ jobs:
           echo "::set-output name=matrix::$(bash scripts/get-all-test-paths.sh)"
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
-
 
   core-test:
     needs: prep-testbed
@@ -142,7 +207,7 @@ jobs:
           echo ~/.jina/config.json
         env:
           WOLF_TOKEN: ${{ secrets.WOLF_TOKEN }}
-      - name: Perform core test
+      - name: Test
         id: test
         run: |
           pytest --suppress-no-test-exit-code --cov=now --cov-report=xml \
@@ -165,6 +230,7 @@ jobs:
           file: coverage.xml
           flags: ${{ steps.test.outputs.codecov_flag }}
           fail_ci_if_error: false
+#          token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
 
   # just for blocking the merge until all parallel core-test are successful
   success-all-test:
@@ -179,55 +245,3 @@ jobs:
       - name: Success
         if: ${{ success() }}
         run: echo "All Done"
-
-  check-if-frontend-has-changed:
-    needs: [commit-lint, lint-flake-8, check-black]
-    runs-on: ubuntu-latest
-    outputs:
-      frontend_changed: ${{ steps.check_frontend_changed.outputs.frontend_changed }}
-    steps:
-      - uses: actions/checkout@v2
-      - uses: dorny/paths-filter@v2
-        id: check_frontend_changed
-        with:
-          filters: |
-            frontend_changed:
-              - 'now/frontend/**'
-  dockerize-and-push-frontend:
-    runs-on: ubuntu-latest
-    needs: check-if-frontend-has-changed
-    if: needs.check-if-frontend-has-changed.outputs.frontend_changed == 'true'
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.7
-      - name: Get frontend tag
-        run: |
-          FILE='now/run_all_k8s.py'
-          FRONTEND_TAG=$(sed -n '/docker_frontend_tag =/p' $FILE | cut -d \' -f2)
-          echo "FRONTEND_TAG=$FRONTEND_TAG" >> $GITHUB_ENV
-      - name: Check that tag isn't used already
-        env:
-          IMAGE_TAG: ${{ env.FRONTEND_TAG }}
-        run: |
-          if docker manifest inspect jinaai/now-frontend:$IMAGE_TAG; then
-            echo "Docker tag is used already. Please update frontend tag"
-            exit 1
-          else
-            echo "Docker tag isn't used already, continue to build..."
-          fi
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-      - name: Login to DockerHub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-      - name: Build and push
-        uses: docker/build-push-action@v2
-        with:
-          context: now/frontend/.
-          push: true
-          tags: jinaai/now-frontend:${{ env.FRONTEND_TAG }}

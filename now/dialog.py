@@ -49,7 +49,6 @@ class UserInput:
 
     # model related
     quality: Optional[Qualities] = None
-    sandbox: bool = False
     model_variant: Optional[str] = None
 
     # cluster related
@@ -65,7 +64,6 @@ def configure_user_input(**kwargs) -> UserInput:
     _configure_output_modality(user_input, **kwargs)
     _configure_dataset(user_input, **kwargs)
     _configure_quality(user_input, **kwargs)
-    _configure_sandbox(user_input, **kwargs)
     _configure_cluster(user_input, **kwargs)
 
     return user_input
@@ -250,14 +248,12 @@ def _configure_cluster(user_input: UserInput, skip=False, **kwargs):
             name='deployment_type',
             choices=[
                 {
-                    'name': '📍 Local (Kubernetes in Docker)',
-                    'value': 'local',
-                },
-                {
                     'name': '⛅️ Jina Cloud',
                     'value': 'remote',
-                    'disabled': AVAILABLE_SOON,  # Uncomment this before merging
-                    # Please move this option to the top once it is enabled
+                },
+                {
+                    'name': '📍 Local',
+                    'value': 'local',
                 },
             ],
             prompt_message='Where do you want to deploy your search engine?',
@@ -332,19 +328,6 @@ def _configure_quality(user_input: UserInput, **kwargs) -> None:
         print('  ✨ you trade-off speed to having the best quality')
 
     _, user_input.model_variant = IMAGE_MODEL_QUALITY_MAP[user_input.quality]
-
-
-def _configure_sandbox(user_input: UserInput, **kwargs):
-    # user_input.sandbox = _prompt_value(
-    #     name='sandbox',
-    #     prompt_message='Use Sandbox to save memory? (process data on our servers)',
-    #     choices=[
-    #         {'name': '⛔ no', 'value': False},
-    #         {'name': '✅ yes', 'value': True},
-    #     ],
-    #     **kwargs,
-    # )
-    user_input.sandbox = False
 
 
 def _construct_local_cluster_choices(active_context, contexts):

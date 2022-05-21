@@ -5,11 +5,12 @@ from argparse import Namespace
 from os.path import expanduser as user
 
 import pytest
-from fastapi.testclient import TestClient
+import requests
 
-from now.cli import cli
+from now.cli import _get_kind_path, _get_kubectl_path, cli
+from now.cloud_manager import create_local_cluster
 from now.constants import JC_SECRET
-from now.deployment.deployment import terminate_wolf
+from now.deployment.deployment import cmd, terminate_wolf
 from now.dialog import NEW_CLUSTER
 from now.run_all_k8s import get_remote_flow_details
 
@@ -42,11 +43,7 @@ def cleanup(deployment_type, dataset):
 
 @pytest.mark.parametrize(
     'output_modality, dataset',
-    [
-        ('image', 'bird-species'),
-        ('image', 'best-artworks'),
-        ('text', 'rock-lyrics'),
-    ],
+    [('image', 'bird-species'), ('image', 'best-artworks'), ('text', 'rock-lyrics')],
 )  # art, rock-lyrics -> no finetuning, fashion -> finetuning
 @pytest.mark.parametrize('quality', ['medium'])
 @pytest.mark.parametrize('cluster', [NEW_CLUSTER['value']])
@@ -57,26 +54,28 @@ def test_backend(
     quality: str,
     cluster: str,
     deployment_type: str,
-    test_client: TestClient,
     cleanup,
 ):
     if deployment_type == 'remote' and dataset != 'best-artworks':
         pytest.skip('Too time consuming, hence skipping!')
 
     os.environ['NOW_CI_RUN'] = 'True'
-    # sandbox = dataset == 'best-artworks'
-    # deactivate sandbox since it is hanging from time to time
-    sandbox = False
     kwargs = {
         'now': 'start',
         'output_modality': output_modality,
         'data': dataset,
         'quality': quality,
-        'sandbox': sandbox,
         'cluster': cluster,
         'deployment_type': deployment_type,
         'proceed': True,
     }
+    # need to create local cluster and namespace to deploy frontend and bff for WOLF deployment
+    if deployment_type == 'remote':
+        kind_path = _get_kind_path()
+        create_local_cluster(kind_path, **kwargs)
+        kubectl_path = _get_kubectl_path()
+        cmd(f'{kubectl_path} create namespace nowapi')
+
     kwargs = Namespace(**kwargs)
     cli(args=kwargs)
 
@@ -89,23 +88,18 @@ def test_backend(
 
     # Perform end-to-end check via bff
     request_body = {'text': search_text, 'limit': 9}
-    if deployment_type == 'remote':
+    if deployment_type == 'local':
+        request_body['host'] = 'gateway'
+        request_body['port'] = 8080
+    elif deployment_type == 'remote':
+        print(f"Getting gateway from flow_details")
         with open(user(JC_SECRET), 'r') as fp:
             flow_details = json.load(fp)
         request_body['host'] = flow_details['gateway']
 
-    if output_modality == 'image':
-        response = test_client.post(
-            f'/api/v1/image/search',
-            json=request_body,  # limit has no effect as of now
-        )
-    elif output_modality == 'text':
-        response = test_client.post(
-            f'/api/v1/text/search',
-            json=request_body,  # limit has no effect as of now
-        )
-    else:
-        # add more here when the new modality is added
-        response = None
+    response = requests.post(
+        f'http://localhost:30090/api/v1/{output_modality}/search', json=request_body
+    )
+
     assert response.status_code == 200
     assert len(response.json()) == 9

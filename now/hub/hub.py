@@ -31,6 +31,8 @@ def push_to_hub(tmpdir):
         sigmap=sigmap, text="Push fine-tuned model to Jina Hub", color="green"
     ) as spinner:
         with open(os.path.join(tmpdir, "NUL"), "w") as fh:
+            if 'NOW_CI_RUN' in os.environ:
+                print('bashCommand: ', bashCommand)
             process = subprocess.Popen(bashCommand.split(), stdout=fh)
         output, error = process.communicate()
         print('Push fine tuned', output, error)
