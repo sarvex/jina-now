@@ -124,7 +124,7 @@ def get_custom_env_file(
         if finetuning:
             fp.write(f'LINEAR_HEAD_NAME={linear_head_name}\n')
 
-    return env_file
+    return env_file if env_file else None
 
 
 def deploy_flow(
@@ -136,7 +136,6 @@ def deploy_flow(
     embedding_size,
     tmpdir,
     finetuning,
-    sandbox,
     kubectl_path,
     deployment_type,
 ):
@@ -184,11 +183,8 @@ def deploy_flow(
         from dotenv import load_dotenv
 
         load_dotenv(env_file)
-        if finetuning:
-            f = Flow.load_config(os.path.join(cur_dir, 'flow', 'ft-flow.yml'))
-        else:
-            f = Flow.load_config(os.path.join(cur_dir, 'flow', 'flow.yml'))
-
+        yaml_name = 'ft-flow.yml' if finetuning else 'flow.yml'
+        f = Flow.load_config(os.path.join(cur_dir, 'flow', yaml_name))
         (
             gateway_host,
             gateway_port,
@@ -197,7 +193,7 @@ def deploy_flow(
         ) = deploy_k8s(
             f,
             ns,
-            2 + (2 if finetuning else 1) * (0 if sandbox else 1),
+            2 + (2 if finetuning else 1),
             tmpdir,
             kubectl_path=kubectl_path,
         )
