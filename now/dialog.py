@@ -76,7 +76,7 @@ def print_headline():
     print('Get your search case up and running - end to end.\n')
     print(
         'You can choose between image and text search. \nJina now trains a model, pushes it to the jina hub'
-        ', deploys a flow and a frontend app in the cloud or locally. \nCheckout one of the demo cases or bring '
+        ', deploys a flow and a playground app in the cloud or locally. \nCheckout one of the demo cases or bring '
         'your own data.\n'
     )
     print(

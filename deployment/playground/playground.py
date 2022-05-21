@@ -39,7 +39,7 @@ ds_set = {
 def deploy_streamlit():
     """
     We want to provide the end-to-end experience to the user.
-    Please deploy a streamlit frontend on k8s/local to access the api.
+    Please deploy a streamlit playground on k8s/local to access the api.
     You can get the starting point for the streamlit application from alex.
     """
     # Header
@@ -328,7 +328,7 @@ def load_data(data_path: str) -> DocumentArray:
     if data_path.startswith('http'):
         try:
             # TODO try except is used as workaround
-            # in case load_data is called two times from two frontends it can happen that
+            # in case load_data is called two times from two playgrounds it can happen that
             # one of the calls created the directory right after checking that it does not exist
             # this caused errors. Now the error will be ignored.
             # Can not use `exist=True` because it is not available in py3.7

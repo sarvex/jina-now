@@ -113,8 +113,8 @@ jobs:
         with:
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          application_name: now-bff-frontend
-          environment_name: Nowbfffrontend-env
+          application_name: now-bff-playground
+          environment_name: Nowbffplayground-env
           version_label: ${{ github.sha }}
           region: "eu-west-1"
           deployment_package: deploy.zip

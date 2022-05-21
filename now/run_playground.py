@@ -15,25 +15,23 @@ def run(
     output_modality,
     dataset,
     gateway_host,
-    gateway_port,
     gateway_host_internal,
     gateway_port_internal,
-    docker_bff_frontend_tag,
-    tmpdir,
+    docker_bff_playground_tag,
     kubectl_path,
 ):
     # deployment
     with yaspin_extended(
-        sigmap=sigmap, text="Deploy frontend and BFF", color="green"
+        sigmap=sigmap, text="Deploy playground and BFF", color="green"
     ) as spinner:
         apply_replace(
-            f'{cur_dir}/deployment/k8s_frontend-deployment.yml',
+            f'{cur_dir}/deployment/k8s_playground-deployment.yml',
             {
                 'output_modality': output_modality,
                 'data': dataset,
                 'gateway_host': gateway_host_internal,
                 'gateway_port': gateway_port_internal,
-                'docker_bff_frontend_tag': docker_bff_frontend_tag,
+                'docker_bff_playground_tag': docker_bff_playground_tag,
             },
             kubectl_path,
         )
@@ -43,25 +41,25 @@ def run(
             'NOW_CI_RUN' in os.environ and gateway_host == 'remote'
         ):
             cmd(
-                f'{kubectl_path} apply -f {cur_dir}/deployment/k8s_frontend-svc-node.yml'
+                f'{kubectl_path} apply -f {cur_dir}/deployment/k8s_playground-svc-node.yml'
             )
-            frontend_host = 'http://localhost'
-            frontend_port = '30080'
+            playground_host = 'http://localhost'
+            playground_port = '30080'
             bff_port = '30090'
             while True:
                 try:
-                    requests.get(f"{frontend_host}:{frontend_port}")
-                    requests.get(f"{frontend_host}:{bff_port}")
+                    requests.get(f"{playground_host}:{playground_port}")
+                    requests.get(f"{playground_host}:{bff_port}")
                     break
                 except Exception:
                     sleep(1)
         # else:
-        #     cmd(f'{kubectl_path} apply -f {cur_dir}/deployment/k8s_frontend-svc-lb.yml')
-        #     frontend_host = f'http://{wait_for_lb("frontend-lb", "nowapi")}'
-        #     frontend_port = '80'
+        #     cmd(f'{kubectl_path} apply -f {cur_dir}/deployment/k8s_playground-svc-lb.yml')
+        #     playground_host = f'http://{wait_for_lb("playground-lb", "nowapi")}'
+        #     playground_port = '80'
 
         spinner.ok('🚀')
-        return frontend_host, frontend_port
+        return playground_host, playground_port
 
 
 if __name__ == '__main__':
@@ -71,6 +69,6 @@ if __name__ == '__main__':
         None,
         'gateway.nowapi.svc.cluster.local',
         '8080',
-        docker_bff_frontend_tag='0.0.2',
+        docker_bff_playground_tag='0.0.2',
     )
     # 31080
