@@ -1,5 +1,4 @@
 import json
-import math
 import os.path
 import pathlib
 from os.path import expanduser as user
@@ -215,11 +214,6 @@ def deploy_flow(
     print(f'▶ indexing {len(index)} documents')
     request_size = 64
 
-    batches = tqdm(
-        batch(index, request_size),
-        total=math.ceil(len(index) / request_size),
-    )
-
     # doublecheck that flow is up and running - should be done by wolf/core in the future
     while True:
         try:
@@ -239,7 +233,7 @@ def deploy_flow(
     client.post(
         '/index',
         request_size=request_size,
-        inputs=batches,
+        inputs=tqdm(index),
     )
 
     print('⭐ Success - your data is indexed')
