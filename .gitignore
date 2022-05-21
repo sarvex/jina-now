@@ -6,10 +6,10 @@ now/hub/head_encoder/mean.bin
 
 # png images
 *.png
-# but don't ignore them if it is inside docs / frontend
+# but don't ignore them if it is inside docs / playground
 !docs/*.png
 !docs/**/*.png
-!now/frontend/*.png
+!now/playground/*.png
 
 data/
 jina-now/
