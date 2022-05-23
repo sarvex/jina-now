@@ -4,25 +4,29 @@ import sys
 import uvicorn
 from fastapi import FastAPI
 
-import now.bff.settings as api_settings
-from now.bff import __author__, __email__, __summary__, __title__, __version__
-from now.bff.decorators import api_method, timed
-from now.bff.v1.api import v1_router
+import deployment.bff.app.settings as api_settings
+from deployment.bff.app.decorators import api_method, timed
+from deployment.bff.app.v1.api import v1_router
 
 logging.config.dictConfig(api_settings.DEFAULT_LOGGING_CONFIG)
 logger = logging.getLogger('bff.app')
 logger.setLevel(api_settings.DEFAULT_LOGGING_LEVEL)
 
+TITLE = 'Jina NOW'
+DESCRIPTION = 'The Jina NOW service API'
+AUTHOR = 'Jina AI'
+EMAIL = 'hello@jina.ai'
+__version__ = "latest"
+
 
 def build_app():
     """Build FastAPI app."""
     app = FastAPI(
-        title=__title__,
-        description=__summary__,
-        version=__version__,
+        title=TITLE,
+        description=DESCRIPTION,
         contact={
-            'author': __author__,
-            'email': __email__,
+            'author': AUTHOR,
+            'email': EMAIL,
         },
     )
 
@@ -43,21 +47,23 @@ def build_app():
         Root path welcome message.
         """
         return (
-            f'{__title__} v{__version__} 🚀 {__summary__} ✨ '
-            f'author: {__author__} email: {__email__} 📄  '
+            f'{TITLE} v{__version__} 🚀 {DESCRIPTION} ✨ '
+            f'author: {AUTHOR} email: {EMAIL} 📄  '
             'Check out /docs or /redoc for the API documentation!'
         )
 
     @app.on_event('startup')
     def startup():
         logger.info(
-            f'Jina NOW v{__version__} started! '
-            f'Listening to [::]:{api_settings.DEFAULT_PORT}'
+            f'Jina NOW started! ' f'Listening to [::]:{api_settings.DEFAULT_PORT}'
         )
 
     app.include_router(v1_router, prefix='/api/v1')
 
     return app
+
+
+application = build_app()
 
 
 def run_server():

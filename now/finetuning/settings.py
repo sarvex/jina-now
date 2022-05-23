@@ -1,5 +1,6 @@
 """ This module contains pre-configurations for finetuning on the demo datasets. """
 from dataclasses import dataclass
+from typing import Optional
 
 from docarray import DocumentArray
 
@@ -47,6 +48,7 @@ class FinetuneSettings:
     perform_finetuning: bool
     pre_trained_embedding_size: int
     bi_modal: bool  # atm, bi-modal means text and some blob value
+    finetuned_model_name: Optional[str] = None
 
     batch_size: int = DEFAULT_BATCH_SIZE
     epochs: int = DEFAULT_EPOCHS

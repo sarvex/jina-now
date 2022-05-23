@@ -1,41 +1,81 @@
+import json
+import os
+import time
 from argparse import Namespace
+from os.path import expanduser as user
 
 import pytest
-from fastapi.testclient import TestClient
+import requests
 
-from now.cli import cli
+from now.cli import _get_kind_path, _get_kubectl_path, cli
+from now.cloud_manager import create_local_cluster
+from now.constants import JC_SECRET
+from now.deployment.deployment import cmd, terminate_wolf
 from now.dialog import NEW_CLUSTER
-from now.log import log
+from now.run_all_k8s import get_remote_flow_details
+
+
+@pytest.fixture()
+def cleanup(deployment_type, dataset):
+    start = time.time()
+    yield
+    if deployment_type == 'remote':
+        if dataset == 'best-artworks':
+            flow_id = get_remote_flow_details()['flow_id']
+            terminate_wolf(flow_id)
+    else:
+        kwargs = {
+            'deployment_type': deployment_type,
+            'now': 'stop',
+            'cluster': 'kind-jina-now',
+        }
+        kwargs = Namespace(**kwargs)
+        cli(args=kwargs)
+    now = time.time() - start
+    mins = int(now / 60)
+    secs = int(now % 60)
+    print(50 * '#')
+    print(
+        f'Time taken to execute `{deployment_type}` deployment with dataset `{dataset}`: {mins}m {secs}s'
+    )
+    print(50 * '#')
 
 
 @pytest.mark.parametrize(
     'output_modality, dataset',
-    [('image', 'best-artworks'), ('image', 'bird-species'), ('text', 'rock-lyrics')],
+    [('image', 'bird-species'), ('image', 'best-artworks'), ('text', 'rock-lyrics')],
 )  # art, rock-lyrics -> no finetuning, fashion -> finetuning
 @pytest.mark.parametrize('quality', ['medium'])
 @pytest.mark.parametrize('cluster', [NEW_CLUSTER['value']])
-@pytest.mark.parametrize('new_cluster_type', ['local'])
+@pytest.mark.parametrize('deployment_type', ['local', 'remote'])
 def test_backend(
     output_modality: str,
     dataset: str,
     quality: str,
     cluster: str,
-    new_cluster_type: str,
-    test_client: TestClient,
+    deployment_type: str,
+    cleanup,
 ):
-    log.TEST = True
-    # sandbox = dataset == 'best-artworks'
-    # deactivate sandbox since it is hanging from time to time
-    sandbox = False
+    if deployment_type == 'remote' and dataset != 'best-artworks':
+        pytest.skip('Too time consuming, hence skipping!')
+
+    os.environ['NOW_CI_RUN'] = 'True'
     kwargs = {
+        'now': 'start',
         'output_modality': output_modality,
         'data': dataset,
         'quality': quality,
-        'sandbox': sandbox,
         'cluster': cluster,
-        'new_cluster_type': new_cluster_type,
+        'deployment_type': deployment_type,
         'proceed': True,
     }
+    # need to create local cluster and namespace to deploy playground and bff for WOLF deployment
+    if deployment_type == 'remote':
+        kind_path = _get_kind_path()
+        create_local_cluster(kind_path, **kwargs)
+        kubectl_path = _get_kubectl_path()
+        cmd(f'{kubectl_path} create namespace nowapi')
+
     kwargs = Namespace(**kwargs)
     cli(args=kwargs)
 
@@ -47,21 +87,19 @@ def test_backend(
         search_text = 'test'
 
     # Perform end-to-end check via bff
-    if output_modality == 'image':
-        response = test_client.post(
-            f'/api/v1/image/search',
-            json={'text': search_text, 'limit': 9},  # limit has no effect as of now
-        )
-    elif output_modality == 'text':
-        response = test_client.post(
-            f'/api/v1/text/search',
-            json={'text': search_text, 'limit': 9},  # limit has no effect as of now
-        )
-    else:
-        # add more here when the new modality is added
-        response = None
+    request_body = {'text': search_text, 'limit': 9}
+    if deployment_type == 'local':
+        request_body['host'] = 'gateway'
+        request_body['port'] = 8080
+    elif deployment_type == 'remote':
+        print(f"Getting gateway from flow_details")
+        with open(user(JC_SECRET), 'r') as fp:
+            flow_details = json.load(fp)
+        request_body['host'] = flow_details['gateway']
+
+    response = requests.post(
+        f'http://localhost:30090/api/v1/{output_modality}/search', json=request_body
+    )
+
     assert response.status_code == 200
-    # Limit param is not respected and hence 20 matches are returned
-    # Therefore, once the limit is implemented in the CustomIndexer,
-    # we should change the below value to 9
     assert len(response.json()) == 9

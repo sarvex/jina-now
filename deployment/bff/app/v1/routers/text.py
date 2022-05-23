@@ -4,12 +4,12 @@ from docarray import Document, DocumentArray
 from fastapi import APIRouter
 from jina import Client
 
-from now.bff.v1.models.text import (
+from deployment.bff.app.v1.models.text import (
     NowTextIndexRequestModel,
     NowTextResponseModel,
     NowTextSearchRequestModel,
 )
-from now.bff.v1.routers.helper import process_query
+from deployment.bff.app.v1.routers.helper import process_query
 
 router = APIRouter()
 
@@ -27,7 +27,10 @@ def index(data: NowTextIndexRequestModel):
     for text in data.texts:
         index_docs.append(Document(text=text))
 
-    c = Client(host=data.host, port=data.port)
+    if 'wolf.jina.ai' in data.host:
+        c = Client(host=data.host)
+    else:
+        c = Client(host=data.host, port=data.port)
     c.post('/index', index_docs)
 
 
@@ -43,6 +46,9 @@ def search(data: NowTextSearchRequestModel):
     using human-readable characters - `utf-8`.
     """
     query_doc = process_query(data.text, data.image)
-    c = Client(host=data.host, port=data.port)
+    if 'wolf.jina.ai' in data.host:
+        c = Client(host=data.host)
+    else:
+        c = Client(host=data.host, port=data.port)
     docs = c.post('/search', query_doc, parameters={"limit": data.limit})
     return docs[0].matches.to_dict()

@@ -31,8 +31,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'output_modality': Modalities.MUSIC,
             'data': 'music-genres-small',
             'cluster': 'new',
-            'sandbox': False,
-            'new_cluster_type': 'local',
+            'deployment_type': 'local',
         },
         {},
         UserInput(
@@ -45,8 +44,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'output_modality': Modalities.MUSIC,
             'data': 'music-genres-large',
             'cluster': 'new',
-            'sandbox': False,
-            'new_cluster_type': 'local',
+            'deployment_type': 'local',
         },
         {},
         UserInput(
@@ -59,9 +57,8 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'output_modality': Modalities.IMAGE,
             'data': 'tll',
             'cluster': 'new',
-            'sandbox': False,
             'quality': 'good',
-            'new_cluster_type': 'local',
+            'deployment_type': 'local',
         },
         {},
         UserInput(
@@ -75,9 +72,8 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'output_modality': Modalities.IMAGE,
             'data': 'nih-chest-xrays',
             'cluster': 'new',
-            'sandbox': False,
             'quality': 'medium',
-            'new_cluster_type': 'local',
+            'deployment_type': 'local',
         },
         {},
         UserInput(
@@ -93,9 +89,8 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'custom_dataset_type': 'docarray',
             'dataset_secret': 'xxx',
             'cluster': 'new',
-            'sandbox': False,
             'quality': 'medium',
-            'new_cluster_type': 'local',
+            'deployment_type': 'local',
         },
         {},
         UserInput(
@@ -111,8 +106,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'custom_dataset_type': 'docarray',
             'dataset_secret': 'xxx',
             'cluster': 'new',
-            'sandbox': False,
-            'new_cluster_type': 'local',
+            'deployment_type': 'local',
         },
         {},
         UserInput(
@@ -127,8 +121,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'custom_dataset_type': 'path',
             'dataset_path': 'xxx',
             'cluster': 'new',
-            'sandbox': False,
-            'new_cluster_type': 'local',
+            'deployment_type': 'local',
         },
         {},
         UserInput(
@@ -143,8 +136,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'custom_dataset_type': 'url',
             'dataset_url': 'xxx',
             'cluster': 'new',
-            'sandbox': False,
-            'new_cluster_type': 'local',
+            'deployment_type': 'local',
         },
         {},
         UserInput(
@@ -160,8 +152,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'dataset_secret': 'xxx',
             'quality': 'medium',
             'cluster': 'new',
-            'sandbox': False,
-            'new_cluster_type': 'local',
+            'deployment_type': 'local',
         },
         {},
         UserInput(
@@ -175,9 +166,8 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'output_modality': Modalities.IMAGE,
             'data': 'tll',
             'cluster': 'new',
-            'sandbox': False,
             'quality': 'good',
-            'new_cluster_type': 'gke',
+            'deployment_type': 'gke',
         },
         {'os_type': 'darwin', 'arch': 'x86_64'},
         UserInput(
@@ -190,8 +180,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
         {
             'data': 'music-genres-small',
             'cluster': 'new',
-            'sandbox': False,
-            'new_cluster_type': 'local',
+            'deployment_type': 'local',
         },
         {'output_modality': Modalities.MUSIC},
         UserInput(
@@ -203,8 +192,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
         {
             'data': DemoDatasets.TLL,
             'cluster': 'new',
-            'sandbox': False,
-            'new_cluster_type': 'local',
+            'deployment_type': 'local',
         },
         {'output_modality': Modalities.IMAGE, 'quality': 'good'},
         UserInput(
@@ -217,8 +205,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
         {
             'data': DemoDatasets.ROCK_LYRICS,
             'cluster': 'new',
-            'sandbox': False,
-            'new_cluster_type': 'local',
+            'deployment_type': 'local',
         },
         {'output_modality': Modalities.TEXT, 'quality': 'good'},
         UserInput(
@@ -234,8 +221,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
         {
             'data': DemoDatasets.POP_LYRICS,
             'cluster': 'new',
-            'sandbox': False,
-            'new_cluster_type': 'local',
+            'deployment_type': 'local',
             'quality': 'medium',
         },
         UserInput(
@@ -260,7 +246,6 @@ def test_configure_user_input(
     expected_user_input.__dict__.update(mocked_user_answers)
     expected_user_input.__dict__.update(configure_kwargs)
     mocker.patch('now.dialog.prompt', CmdPromptMock(mocked_user_answers))
-    mocker.patch('now.dialog._maybe_install_gke', lambda os_type, arch: 0)
 
     user_input = configure_user_input(**configure_kwargs)
 

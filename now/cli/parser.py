@@ -87,13 +87,14 @@ def set_start_parser(sp=None):
 
     parser.add_argument(
         '--cluster',
-        help='Reference an existing cluster or select `new` to create a new one.',
+        help='Reference an existing `local` cluster or select `new` to create a new one.',
         type=str,
     )
 
     parser.add_argument(
-        '--new-cluster-type',
-        help='Only effective if --cluster=new. Optional are `local` and `gke`.',
+        '--deployment-type',
+        help='Option is `local`. Select `local` if you want search engine to be deployed on local cluster',
+        type=str,
     )
 
 
@@ -102,6 +103,15 @@ def set_stop_parser(sp):
         'stop',
         help='Stop jina now and remove local cluster.',
         description='Stop jina now and remove local cluster.',
+        formatter_class=_chf,
+    )
+
+
+def set_survey_parser(sp):
+    sp.add_parser(
+        'survey',
+        help='Opens a survey in the browser. Thanks for providing us feedback.',
+        description='Opens a survey in the browser. Thanks for providing us feedback.',
         formatter_class=_chf,
     )
 
@@ -119,6 +129,7 @@ def get_main_parser():
     )
     set_start_parser(sp)
     set_stop_parser(sp)
+    set_survey_parser(sp)
 
     return parser
 

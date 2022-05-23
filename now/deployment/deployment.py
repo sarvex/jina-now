@@ -1,6 +1,16 @@
 import subprocess
 import tempfile
 
+from jcloud.flow import CloudFlow
+
+
+def deploy_wolf(path: str, name: str, env_file: str = None):
+    return CloudFlow(path=path, name=name, env_file=env_file).__enter__()
+
+
+def terminate_wolf(flow_id: str):
+    CloudFlow(flow_id=flow_id).__exit__()
+
 
 def cmd(command, std_output=False, wait=True):
     if isinstance(command, str):

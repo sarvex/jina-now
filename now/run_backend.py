@@ -18,12 +18,9 @@ def run(user_input: UserInput, tmpdir, kubectl_path: str):
 
     finetune_settings = parse_finetune_settings(user_input, dataset)
     if finetune_settings.perform_finetuning:
-        executor_name = finetune_now(
+        finetune_settings.finetuned_model_name = finetune_now(
             user_input, dataset, finetune_settings, kubectl_path
         )
-    else:
-        executor_name = None
-
     (
         gateway_host,
         gateway_port,
@@ -32,7 +29,6 @@ def run(user_input: UserInput, tmpdir, kubectl_path: str):
     ) = deploy_flow(
         user_input=user_input,
         finetune_settings=finetune_settings,
-        executor_name=executor_name,
         index=dataset,
         tmpdir=tmpdir,
         kubectl_path=kubectl_path,

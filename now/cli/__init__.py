@@ -7,6 +7,8 @@ from os.path import expanduser as user
 
 import cpuinfo
 
+from now.deployment.deployment import cmd
+
 warnings.filterwarnings("ignore")
 
 if len(sys.argv) != 1 and not ('-h' in sys.argv[1:] or '--help' in sys.argv[1:]):
@@ -14,6 +16,7 @@ if len(sys.argv) != 1 and not ('-h' in sys.argv[1:] or '--help' in sys.argv[1:])
 cur_dir = pathlib.Path(__file__).parents[1].resolve()
 
 os.environ['JINA_CHECK_VERSION'] = 'False'
+os.environ['JCLOUD_LOGLEVEL'] = 'ERROR'
 
 
 def _get_run_args():
@@ -63,20 +66,25 @@ def _is_latest_version(suppress_on_error=True):
             raise
 
 
-def cli(args=None):
-    """The main entrypoint of the CLI"""
-    if not args:
-        args = _get_run_args()
+def _get_kind_path() -> str:
+    os_type = platform.system().lower()
+    # kind needs no distinction of architecture type
+    kind_path, _ = cmd('which kind')
+    kind_path = kind_path.strip()
+    if not kind_path:
+        if not os.path.exists(user('~/.cache/jina-now/kind')):
+            print('kind not found. Installing kind')
+            cmd(
+                f'/bin/bash {cur_dir}/scripts/install_kind.sh {os_type}',
+                std_output=True,
+            )
+        kind_path = user('~/.cache/jina-now/kind')
+    else:
+        kind_path = kind_path.decode('utf-8')
+    return kind_path
 
-    if '--version' in sys.argv[1:]:
-        from now import __version__
 
-        print(__version__)
-        exit(0)
-
-    from now.deployment.deployment import cmd
-
-    os.environ['JINA_LOG_LEVEL'] = 'CRITICAL'
+def _get_kubectl_path() -> str:
     os_type = platform.system().lower()
     arch = 'x86_64'
     if os_type == 'darwin':
@@ -86,7 +94,6 @@ def cli(args=None):
             arch = platform.machine()
     elif os_type == 'linux':
         arch = platform.machine()
-    args = vars(args)  # Make it a dict from Namespace
 
     # kubectl needs `intel` or `m1` for apple os
     # for linux no need of architecture type
@@ -104,23 +111,34 @@ def cli(args=None):
         kubectl_path = user('~/.cache/jina-now/kubectl')
     else:
         kubectl_path = kubectl_path.decode('utf-8')
+    return kubectl_path
 
-    # kind needs no distinction of architecture type
-    kind_path, _ = cmd('which kind')
-    kind_path = kind_path.strip()
-    if not kind_path:
-        if not os.path.exists(user('~/.cache/jina-now/kind')):
-            print('kind not found. Installing kind')
-            cmd(
-                f'/bin/bash {cur_dir}/scripts/install_kind.sh {os_type}',
-                std_output=True,
-            )
-        kind_path = user('~/.cache/jina-now/kind')
-    else:
-        kind_path = kind_path.decode('utf-8')
 
-    args['kubectl_path'] = kubectl_path
-    args['kind_path'] = kind_path
+def cli(args=None):
+    """The main entrypoint of the CLI"""
+    if not args:
+        args = _get_run_args()
+
+    if '--version' in sys.argv[1:]:
+        from now import __version__
+
+        print(__version__)
+        exit(0)
+
+    os.environ['JINA_LOG_LEVEL'] = 'CRITICAL'
+    os_type = platform.system().lower()
+    arch = 'x86_64'
+    if os_type == 'darwin':
+        if 'm1' in cpuinfo.get_cpu_info().get('brand_raw').lower():
+            arch = 'arm64'
+        else:
+            arch = platform.machine()
+    elif os_type == 'linux':
+        arch = platform.machine()
+    args = vars(args)  # Make it a dict from Namespace
+
+    args['kubectl_path'] = _get_kubectl_path()
+    args['kind_path'] = _get_kind_path()
     from now.run_all_k8s import run_k8s
 
     run_k8s(os_type=os_type, arch=arch, **args)

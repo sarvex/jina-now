@@ -1,0 +1,51 @@
+{
+  "blocks": [
+    {
+      "type": "header",
+      "text": {
+        "type": "plain_text",
+        "text": ":tada: Jina NOW $RELEASE_VER is just released on PyPi!",
+        "emoji": true
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "You can now use `pip install -U jina-now` to upgrade."
+      },
+      "accessory": {
+        "type": "image",
+        "image_url": "https://now.jina.ai/_static/favicon.png",
+        "alt_text": "cute cat"
+      }
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "<https://pypi.org/project/jina-now/|:package: Check out the PyPi release>"
+        }
+      ]
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "<https://github.com/jina-ai/now/blob/master/CHANGELOG.md|:notebook_with_decorative_cover: Read the change log>"
+        }
+      ]
+    },
+    {
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": "<https://github.com/jina-ai/now|:star: Give Jina a star>"
+        }
+      ]
+    }
+  ]
+}

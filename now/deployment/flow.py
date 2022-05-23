@@ -1,7 +1,8 @@
-import math
+import json
 import os.path
 import pathlib
 from collections import namedtuple
+from os.path import expanduser as user
 from time import sleep
 
 from docarray import DocumentArray
@@ -11,21 +12,44 @@ from tqdm import tqdm
 from yaspin.spinners import Spinners
 
 from now.cloud_manager import is_local_cluster
-from now.constants import Modalities
-from now.deployment.deployment import apply_replace, cmd
+from now.constants import JC_SECRET, Modalities
+from now.deployment.deployment import apply_replace, cmd, deploy_wolf
 from now.dialog import UserInput
 from now.finetuning.settings import FinetuneSettings
-from now.log.log import TEST, yaspin_extended
+from now.log.log import yaspin_extended
 from now.utils import sigmap
 
 cur_dir = pathlib.Path(__file__).parent.resolve()
 _ExecutorConfig = namedtuple('_ExecutorConfig', 'name, uses, uses_with')
 
 
-def batch(iterable, n=1):
-    l = len(iterable)
+def get_encoder_config(user_input: UserInput) -> _ExecutorConfig:
+    """
+    Gets the correct Executor running the pre-trained model given the user configuration.
+    :param user_input: Configures user input.
+    :return: Small data-transfer-object with information about the executor
+    """
+    if (
+        user_input.output_modality == Modalities.IMAGE
+        or user_input.output_modality == Modalities.TEXT
+    ):
+        return _ExecutorConfig(
+            name='clip',
+            uses=f'jinahub+docker://CLIPEncoder/v0.2.1',
+            uses_with={'pretrained_model_name_or_path': user_input.model_variant},
+        )
+    elif user_input.output_modality == Modalities.MUSIC:
+        return _ExecutorConfig(
+            name='openl3clip',
+            uses=f'jinahub+docker://BiModalMusicTextEncoder/v1.0.0',
+            uses_with={},
+        )
+
+
+def batch(data_list, n=1):
+    l = len(data_list)
     for ndx in range(0, l, n):
-        yield iterable[ndx : min(ndx + n, l)]
+        yield data_list[ndx : min(ndx + n, l)]
 
 
 def wait_for_lb(lb_name, ns):
@@ -105,106 +129,135 @@ def deploy_k8s(f, ns, num_pods, tmpdir, kubectl_path):
     return gateway_host, gateway_port, gateway_host_internal, gateway_port_internal
 
 
-def get_executor_config(user_input: UserInput) -> _ExecutorConfig:
-    """
-    Gets the correct Executor running the pre-trained model given the user configuration.
+def get_custom_env_file(
+    user_input: UserInput,
+    finetune_settings: FinetuneSettings,
+    tmpdir,
+):
+    suffix = 'docker' if user_input.deployment_type == 'remote' else 'docker'
 
-    :param user_input: Configures user input.
-    :return: Small data-transfer-object with information about the executor
-    """
-    hub_prefix = f'jinahub+{"sandbox" if user_input.sandbox else "docker"}'
-    if (
-        user_input.output_modality == Modalities.IMAGE
-        or user_input.output_modality == Modalities.TEXT
-    ):
-        return _ExecutorConfig(
-            name='clip',
-            uses=f'{hub_prefix}://CLIPEncoder/v0.2.1',
-            uses_with={'pretrained_model_name_or_path': user_input.model_variant},
+    indexer_name = f'jinahub+{suffix}://DocarrayIndexer'
+    encoder_config = get_encoder_config(user_input)
+    linear_head_name = f'jinahub+{suffix}://{finetune_settings.finetuned_model_name}'
+
+    env_file = os.path.join(tmpdir, 'dot.env')
+    with open(env_file, 'w+') as fp:
+        config_string = (
+            f'ENCODER_NAME={encoder_config.uses}\n'
+            f'OUTPUT_DIM={finetune_settings.finetune_layer_size}\n'
+            f'EMBED_DIM={finetune_settings.pre_trained_embedding_size}\n'
+            f'INDEXER_NAME={indexer_name}\n'
         )
-    elif user_input.output_modality == Modalities.MUSIC:
-        return _ExecutorConfig(
-            name='openl3clip',
-            uses=f'{hub_prefix}://BiModalMusicTextEncoder/v1.0.0',
-            uses_with={},
-        )
+        if encoder_config.uses_with.get('pretrained_model_name_or_path'):
+            config_string += f'CLIP_MODEL_NAME={encoder_config.uses_with["pretrained_model_name_or_path"]}'
+        fp.write(config_string)
+        if finetune_settings.perform_finetuning:
+            fp.write(f'LINEAR_HEAD_NAME={linear_head_name}\n')
+
+    return env_file if env_file else None
+
+
+def get_flow_yaml_name(output_modality: Modalities, finetuning: bool) -> str:
+    options = {
+        Modalities.IMAGE: {0: 'flow-clip.yml', 1: 'ft-flow-clip.yml'},
+        Modalities.MUSIC: {1: 'ft-flow-music.yml'},
+        Modalities.TEXT: {0: 'flow-clip.yml'},
+    }
+    return options[output_modality][finetuning]
 
 
 def deploy_flow(
     user_input: UserInput,
     finetune_settings: FinetuneSettings,
-    executor_name: str,
     index: DocumentArray,
-    tmpdir,
-    kubectl_path,
+    tmpdir: str,
+    kubectl_path: str,
 ):
     from jina import Flow
     from jina.clients import Client
 
+    finetuning = finetune_settings.perform_finetuning
+
+    env_file = get_custom_env_file(user_input, finetune_settings, tmpdir)
+
     ns = 'nowapi'
-    f = Flow(
-        name=ns,
-        port_expose=8080,
-        cors=True,
-    )
-    f = f.add(
-        **get_executor_config(user_input)._asdict(),
-        env={'JINA_LOG_LEVEL': 'DEBUG'},
-    )
-    if finetune_settings.perform_finetuning:
-        f = f.add(
-            name='linear_head',
-            uses=f'jinahub{"+sandbox" if user_input.sandbox else "+docker"}://{executor_name}',
-            uses_with={
-                'final_layer_output_dim': finetune_settings.pre_trained_embedding_size,
-                'embedding_size': finetune_settings.finetune_layer_size,
-                'bi_modal': finetune_settings.bi_modal,
-            },
-            env={'JINA_LOG_LEVEL': 'DEBUG'},
+
+    yaml_name = get_flow_yaml_name(user_input.output_modality, finetuning)
+
+    if user_input.deployment_type == 'remote':
+        # Deploy it on wolf
+        # if finetuning:
+        #     flow_path = os.path.join(cur_dir, 'flow', 'ft-flow.yml')
+        # else:
+        #     flow_path = os.path.join(cur_dir, 'flow', 'flow.yml')
+        # yaml_name = get_flow_yaml_name(user_input.output_modality, finetuning)
+
+        flow = deploy_wolf(
+            path=os.path.join(cur_dir, 'flow', yaml_name), env_file=env_file, name=ns
         )
-    f = f.add(
-        name='indexer',
-        uses=f'jinahub+docker://SimpleIndexer',
-        env={'JINA_LOG_LEVEL': 'DEBUG'},
-    )
+        host = flow.gateway
+        client = Client(host=host)
 
-    if user_input.output_modality == Modalities.IMAGE:
-        index = [x for x in index if not x.text]
-    elif user_input.output_modality == Modalities.TEXT:
-        index = [x for x in index if x.text]
-    elif user_input.output_modality == Modalities.MUSIC:
-        index = [x for x in index if not x.text]
+        # Dump the flow ID and gateway to keep track
+        with open(user(JC_SECRET), 'w') as fp:
+            json.dump({'flow_id': flow.flow_id, 'gateway': host}, fp)
 
-    (
-        gateway_host,
-        gateway_port,
-        gateway_host_internal,
-        gateway_port_internal,
-    ) = deploy_k8s(
-        f,
-        ns,
-        2
-        + (2 if finetune_settings.perform_finetuning else 1)
-        * (0 if user_input.sandbox else 1),
-        tmpdir,
-        kubectl_path=kubectl_path,
-    )
+        # host & port
+        gateway_host = 'remote'
+        gateway_port = None
+        gateway_host_internal = host
+        gateway_port_internal = None  # Since host contains protocol
+    else:
+        from dotenv import load_dotenv
+
+        load_dotenv(env_file)
+        f = Flow.load_config(os.path.join(cur_dir, 'flow', yaml_name))
+        (
+            gateway_host,
+            gateway_port,
+            gateway_host_internal,
+            gateway_port_internal,
+        ) = deploy_k8s(
+            f,
+            ns,
+            2 + (2 if finetuning else 1),
+            tmpdir,
+            kubectl_path=kubectl_path,
+        )
+        client = Client(host=gateway_host, port=gateway_port)
+
+    # delete the env file
+    if os.path.exists(env_file):
+        os.remove(env_file)
+
+    if user_input.output_modality == 'image':
+        index = [x for x in index if x.text == '']
+    elif user_input.output_modality == 'text':
+        index = [x for x in index if x.text != '']
     print(f'▶ indexing {len(index)} documents')
-    client = Client(host=gateway_host, port=gateway_port)
     request_size = 64
 
-    progress_bar = (
-        x
-        for x in tqdm(
-            batch(index, request_size), total=math.ceil(len(index) / request_size)
-        )
+    # doublecheck that flow is up and running - should be done by wolf/core in the future
+    while True:
+        try:
+            client.post(
+                '/index',
+                inputs=DocumentArray(),
+            )
+            break
+        except Exception as e:
+            if 'NOW_CI_RUN' in os.environ:
+                import traceback
+
+                print(e)
+                print(traceback.format_exc())
+            sleep(1)
+
+    client.post(
+        '/index',
+        request_size=request_size,
+        inputs=tqdm(index),
     )
-
-    def on_done(res):
-        if not TEST:
-            next(progress_bar)
-
-    client.post('/index', request_size=request_size, inputs=index, on_done=on_done)
 
     print('⭐ Success - your data is indexed')
     return gateway_host, gateway_port, gateway_host_internal, gateway_port_internal

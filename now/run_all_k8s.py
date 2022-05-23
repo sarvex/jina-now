@@ -1,20 +1,35 @@
+import json
+import os
 import tempfile
+from os.path import expanduser as user
 
 import cowsay
 
-from now import run_backend, run_frontend
+from now import run_backend, run_playground
 from now.cloud_manager import setup_cluster
-from now.deployment.deployment import cmd
+from now.constants import JC_SECRET, SURVEY_LINK
+from now.deployment.deployment import cmd, terminate_wolf
 from now.dialog import _get_context_names, configure_user_input, maybe_prompt_user
 from now.log.log import yaspin_extended
 from now.system_information import get_system_state
 from now.utils import sigmap
 
-docker_frontend_tag = '0.0.12'
+docker_bff_playground_tag = '0.0.35'
+
+
+def get_remote_flow_details():
+    with open(user(JC_SECRET), 'r') as fp:
+        flow_details = json.load(fp)
+    return flow_details
 
 
 def stop_now(contexts, active_context, **kwargs):
     choices = _get_context_names(contexts, active_context)
+    # Add remote Flow if it exists
+    if os.path.exists(user(JC_SECRET)):
+        flow_details = get_remote_flow_details()
+        choices += [flow_details['gateway']]
+        flow_id = flow_details['flow_id']
     if len(choices) == 0:
         cowsay.cow('nothing to stop')
         return
@@ -27,7 +42,7 @@ def stop_now(contexts, active_context, **kwargs):
                 'choices': choices,
             }
         ]
-        cluster = maybe_prompt_user(questions, 'cluster')
+        cluster = maybe_prompt_user(questions, 'cluster', **kwargs)
     if cluster == 'kind-jina-now':
         with yaspin_extended(
             sigmap=sigmap, text=f"Remove local cluster {cluster}", color="green"
@@ -35,6 +50,14 @@ def stop_now(contexts, active_context, **kwargs):
             cmd(f'{kwargs["kind_path"]} delete clusters jina-now')
             spinner.ok('💀')
         cowsay.cow('local jina NOW cluster removed')
+    elif 'nowapi' in cluster:
+        with yaspin_extended(
+            sigmap=sigmap, text=f"Remove remote Flow {cluster}", color="green"
+        ) as spinner:
+            terminate_wolf(flow_id)
+            os.remove(user(JC_SECRET))
+            spinner.ok('💀')
+        cowsay.cow(f'remote Flow `{cluster}` removed')
     else:
         with yaspin_extended(
             sigmap=sigmap, text=f"Remove jina NOW from {cluster}", color="green"
@@ -44,57 +67,81 @@ def stop_now(contexts, active_context, **kwargs):
         cowsay.cow(f'nowapi namespace removed from {cluster}')
 
 
-def run_k8s(os_type: str = 'linux', arch: str = 'x86_64', **kwargs):
+def get_task(kwargs):
+    for x in ['cli', 'now']:
+        if x in kwargs:
+            return kwargs[x]
+    raise Exception('kwargs do not contain a task')
 
-    contexts, active_context, _ = get_system_state(**kwargs)
-    if ('cli' in kwargs and kwargs['cli'] == 'stop') or (
-        'now' in kwargs and kwargs['now'] == 'stop'
-    ):
-        stop_now(contexts, active_context, **kwargs)
-    else:
-        user_input = configure_user_input(
-            contexts=contexts,
-            active_context=active_context,
-            os_type=os_type,
-            arch=arch,
-            **kwargs,
-        )
-        with tempfile.TemporaryDirectory() as tmpdir:
-            setup_cluster(user_input.cluster, user_input.new_cluster_type, **kwargs)
-            (
-                gateway_host,
-                gateway_port,
-                gateway_host_internal,
-                gateway_port_internal,
-            ) = run_backend.run(user_input, tmpdir, kubectl_path=kwargs['kubectl_path'])
 
-            frontend_host, frontend_port = run_frontend.run(
+def start_now(os_type, arch, contexts, active_context, is_debug, **kwargs):
+    user_input = configure_user_input(
+        contexts=contexts,
+        active_context=active_context,
+        os_type=os_type,
+        arch=arch,
+        **kwargs,
+    )
+    with tempfile.TemporaryDirectory() as tmpdir:
+        setup_cluster(user_input, **kwargs)
+        (
+            gateway_host,
+            gateway_port,
+            gateway_host_internal,
+            gateway_port_internal,
+        ) = run_backend.run(user_input, tmpdir, kubectl_path=kwargs['kubectl_path'])
+
+        if gateway_host == 'localhost' or 'NOW_CI_RUN' in os.environ:
+            # only deploy playground when running locally or when testing
+            playground_host, playground_port = run_playground.run(
                 output_modality=user_input.output_modality,
                 dataset=user_input.data,
                 gateway_host=gateway_host,
-                gateway_port=gateway_port,
                 gateway_host_internal=gateway_host_internal,
                 gateway_port_internal=gateway_port_internal,
-                docker_frontend_tag=docker_frontend_tag,
-                tmpdir=tmpdir,
+                docker_bff_playground_tag=docker_bff_playground_tag,
                 kubectl_path=kwargs['kubectl_path'],
             )
-            url = f'{frontend_host}' + (
-                '' if str(frontend_port) == '80' else f':{frontend_port}'
+            url = f'{playground_host}' + (
+                '' if str(playground_port) == '80' else f':{playground_port}'
             )
-            print()
-            cowsay.cow(f'You made it:\n{url}')
+        else:
+            url = 'https://jinanowtesting.com'
+        url += (
+            f'/?host='
+            + (gateway_host_internal if gateway_host != 'localhost' else 'gateway')
+            + f'&output_modality={user_input.output_modality}&data={user_input.data}'
+        )
+        if gateway_port_internal:
+            url += f'&port={gateway_port_internal}'
+        print()
+        # cowsay.cow(f'You made it:\n{url}')
+        print(f'Playground is accessible at:\n{url}')
+
+
+def run_k8s(os_type: str = 'linux', arch: str = 'x86_64', **kwargs):
+    contexts, active_context, is_debug = get_system_state(**kwargs)
+    task = get_task(kwargs)
+    if task == 'start':
+        start_now(os_type, arch, contexts, active_context, is_debug, **kwargs)
+    elif task == 'stop':
+        stop_now(contexts, active_context, **kwargs)
+    elif task == 'survey':
+        import webbrowser
+
+        webbrowser.open(SURVEY_LINK, new=0, autoraise=True)
+    else:
+        raise Exception(f'unknown task, {task}')
 
 
 if __name__ == '__main__':
     run_k8s(
-        output_modality='image',
-        data='deepfashion',
-        quality='medium',
-        sandbox=False,
+        output_modality='music',
+        data='music-genres-small',
         cluster='new',
-        new_cluster_type='local',
+        deployment_type='local',
         kubectl_path='/usr/local/bin/kubectl',
         kind_path='/Users/sebastianlettner/.cache/jina-now/kind',
         proceed=True,
+        now='start',
     )

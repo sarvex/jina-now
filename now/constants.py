@@ -84,3 +84,7 @@ AVAILABLE_DATASET = {
         DemoDatasets.METAL_LYRICS,
     ],
 }
+
+JC_SECRET = '~/.cache/jina-now/wolf.json'
+
+SURVEY_LINK = 'https://docs.google.com/forms/d/e/1FAIpQLSex5gMN4wuQc63TriwRqREBfdijwOrATPe7RotcPaT1SSPfEw/viewform?usp=pp_url&entry.1126738320=Jina+NOW+pip+package'

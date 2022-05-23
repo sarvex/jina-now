@@ -4,7 +4,7 @@
 
 
 <br>
-One line to host them all. Bootstrap your image search case in minutes.
+One line to host them all. Bootstrap your image search case in minutes. <a href="https://docs.google.com/forms/d/e/1FAIpQLSex5gMN4wuQc63TriwRqREBfdijwOrATPe7RotcPaT1SSPfEw/viewform?usp=pp_url&entry.1126738320=Jina+NOW+pip+package">Survey</a>
 </p>
 
 <p align=center>
@@ -64,7 +64,6 @@ You can now send requests to the API using the jina client. This case shows a lo
 from jina import Client    
 client = Client(
         host='localhost',
-        protocol="grpc",
         port=31080,
 ) 
 response = client.search(

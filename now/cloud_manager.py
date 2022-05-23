@@ -1,14 +1,16 @@
 import json
+import os.path
 import pathlib
 import warnings
-from typing import Optional
+from os.path import expanduser as user
 
 import cowsay
 import docker
 from kubernetes import client, config
 
+from now.constants import JC_SECRET
 from now.deployment.deployment import cmd
-from now.dialog import maybe_prompt_user
+from now.dialog import UserInput, maybe_prompt_user
 from now.gke_deploy import create_gke_cluster
 from now.log.log import yaspin_extended
 from now.utils import sigmap
@@ -76,21 +78,57 @@ def is_local_cluster(kubectl_path):
     return is_local
 
 
+def check_wolf_deployment(**kwargs):
+    if os.path.exists(user(JC_SECRET)):
+        questions = [
+            {
+                'type': 'list',
+                'name': 'proceed',
+                'message': 'Remote flow already exists. Do you want to '
+                'delete it and create new?',
+                'choices': [
+                    {'name': '⛔ no', 'value': False},
+                    {'name': '✅ yes', 'value': True},
+                ],
+            },
+        ]
+        recreate = maybe_prompt_user(questions, 'proceed', **kwargs)
+        if recreate:
+            with yaspin_extended(
+                sigmap=sigmap,
+                text="Removing existing remote flow",
+                color="green",
+            ) as spinner:
+                with open(user(JC_SECRET), 'r') as fp:
+                    flow_details = json.load(fp)
+                flow_id = flow_details['flow_id']
+                cmd(f'jcloud remove {flow_id}', wait=False)
+                spinner.ok('💀')
+        else:
+            cowsay.cow('see you soon 👋')
+            exit(0)
+
+
 def setup_cluster(
-    cluster_name: Optional[str],
-    provider: str,
+    user_input: UserInput,
     kubectl_path='kubectl',
     kind_path='kind',
     **kwargs,
 ):
-    if cluster_name is not None and cluster_name != 'new':
-        cmd(f'{kubectl_path} config use-context {cluster_name}')
-        ask_existing(kubectl_path)
-    else:
-        if provider == 'local':
+    if user_input.create_new_cluster:
+        # There's no create new cluster for remote
+        # It will be directly deployed using the flow.yml
+        if user_input.deployment_type == 'local':
             create_local_cluster(kind_path, **kwargs)
-        elif provider == 'gke':
+        elif user_input.deployment_type == 'gke':
             create_gke_cluster()
+    elif user_input.deployment_type == 'remote':
+        # If it is remote check if a flow is already deployed
+        # If it is then ask to re-create and delete the old one
+        check_wolf_deployment(**kwargs)
+    else:
+        cmd(f'{kubectl_path} config use-context {user_input.cluster}')
+        ask_existing(kubectl_path)
 
 
 def ask_existing(kubectl_path):

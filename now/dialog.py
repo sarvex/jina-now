@@ -50,13 +50,12 @@ class UserInput:
 
     # model related
     quality: Optional[Qualities] = None
-    sandbox: bool = False
     model_variant: Optional[str] = None
 
     # cluster related
     cluster: Optional[str] = None
     create_new_cluster: Optional[bool] = None
-    new_cluster_type: Optional[str] = None
+    deployment_type: Optional[str] = None
 
 
 def configure_user_input(**kwargs) -> UserInput:
@@ -67,7 +66,6 @@ def configure_user_input(**kwargs) -> UserInput:
     _configure_dataset(user_input, **kwargs)
     _configure_quality(user_input, **kwargs)
     _configure_cluster(user_input, **kwargs)
-    _configure_sandbox(user_input, **kwargs)
 
     return user_input
 
@@ -79,7 +77,7 @@ def print_headline():
     print('Get your search case up and running - end to end.\n')
     print(
         'You can choose between image and text search. \nJina now trains a model, pushes it to the jina hub'
-        ', deploys a flow and a frontend app in the cloud or locally. \nCheckout one of the demo cases or bring '
+        ', deploys a flow and a playground app in the cloud or locally. \nCheckout one of the demo cases or bring '
         'your own data.\n'
     )
     print(
@@ -250,62 +248,66 @@ def _configure_custom_dataset(user_input: UserInput, **kwargs) -> None:
         )
 
 
-def _configure_cluster(user_input: UserInput, **kwargs) -> None:
+def _configure_cluster(user_input: UserInput, skip=False, **kwargs):
     """Asks user question to determine cluster for user_input object"""
 
-    def configure_new_cluster() -> None:
-        new_cluster_type = _prompt_value(
-            name='new_cluster_type',
+    def ask_deployment():
+        user_input.deployment_type = _prompt_value(
+            name='deployment_type',
             choices=[
                 {
-                    'name': '📍 local (Kubernetes in Docker)',
+                    'name': '⛅️ Jina Cloud',
+                    'value': 'remote',
+                },
+                {
+                    'name': '📍 Local',
                     'value': 'local',
                 },
-                {'name': '⛅️ Google Kubernetes Engine', 'value': 'gke'},
-                {
-                    'name': '⛅️ Jina - Flow as a Service',
-                    'disabled': AVAILABLE_SOON,
-                },
-                {
-                    'name': '⛅️ Amazon Elastic Kubernetes Service',
-                    'disabled': AVAILABLE_SOON,
-                },
-                {
-                    'name': '⛅️ Azure Kubernetes Service',
-                    'disabled': AVAILABLE_SOON,
-                },
-                {
-                    'name': '⛅️ DigitalOcean Kubernetes',
-                    'disabled': AVAILABLE_SOON,
-                },
             ],
-            prompt_message='Where do you want to create a new cluster?',
+            prompt_message='Where do you want to deploy your search engine?',
             prompt_type='list',
             **kwargs,
         )
-        user_input.create_new_cluster = True
-        user_input.new_cluster_type = new_cluster_type
-        if user_input.new_cluster_type == 'gke':
+        if user_input.deployment_type == 'gke':
             _maybe_install_gke(**kwargs)
+        elif user_input.deployment_type == 'remote':
+            _maybe_login_wolf()
+            os.environ['JCLOUD_NO_SURVEY'] = '1'
 
-    choices = _construct_cluster_choices(
-        active_context=kwargs.get('active_context'), contexts=kwargs.get('contexts')
-    )
-    cluster = _prompt_value(
-        name='cluster',
-        choices=choices,
-        prompt_message='Where do you want to deploy your search engine?',
-        prompt_type='list',
-        **kwargs,
-    )
-    if cluster == NEW_CLUSTER['value']:
-        user_input.cluster = cluster
-        configure_new_cluster()
+    if not skip:
+        ask_deployment()
+
+    choices = None
+    user_input.create_new_cluster = False
+
+    if user_input.deployment_type == 'local':
+        choices = _construct_local_cluster_choices(
+            active_context=kwargs.get('active_context'), contexts=kwargs.get('contexts')
+        )
+    elif user_input.deployment_type == 'gke':
+        choices = _construct_gke_cluster_choices(
+            active_context=kwargs.get('active_context'), contexts=kwargs.get('contexts')
+        )
     else:
-        user_input.cluster = cluster
-        if not _cluster_running(cluster):
-            print(f'Cluster {cluster} is not running. Please select a different one.')
-            _configure_cluster(user_input, **kwargs)
+        # Do we have any options to show choices here for WOLF?
+        pass
+
+    if choices is not None:
+        user_input.cluster = _prompt_value(
+            name='cluster',
+            choices=choices,
+            prompt_message='Which cluster you want to use to deploy your search engine?',
+            prompt_type='list',
+            **kwargs,
+        )
+        if user_input.cluster != NEW_CLUSTER['value']:
+            if not _cluster_running(user_input.cluster):
+                print(
+                    f'Cluster {user_input.cluster} is not running. Please select a different one.'
+                )
+                _configure_cluster(user_input, skip=True, **kwargs)
+        else:
+            user_input.create_new_cluster = True
 
 
 def _configure_quality(user_input: UserInput, **kwargs) -> None:
@@ -336,23 +338,22 @@ def _configure_quality(user_input: UserInput, **kwargs) -> None:
     _, user_input.model_variant = IMAGE_MODEL_QUALITY_MAP[user_input.quality]
 
 
-def _configure_sandbox(user_input: UserInput, **kwargs):
-    # user_input.sandbox = _prompt_value(
-    #     name='sandbox',
-    #     prompt_message='Use Sandbox to save memory? (process data on our servers)',
-    #     choices=[
-    #         {'name': '⛔ no', 'value': False},
-    #         {'name': '✅ yes', 'value': True},
-    #     ],
-    #     **kwargs,
-    # )
-    user_input.sandbox = False
-
-
-def _construct_cluster_choices(active_context, contexts):
+def _construct_local_cluster_choices(active_context, contexts):
     context_names = _get_context_names(contexts, active_context)
     choices = [NEW_CLUSTER]
+    # filter contexts with `gke`
     if len(context_names) > 0 and len(context_names[0]) > 0:
+        context_names = [context for context in context_names if 'gke' not in context]
+        choices = context_names + choices
+    return choices
+
+
+def _construct_gke_cluster_choices(active_context, contexts):
+    context_names = _get_context_names(contexts, active_context)
+    choices = [NEW_CLUSTER]
+    # filter contexts with `gke`
+    if len(context_names) > 0 and len(context_names[0]) > 0:
+        context_names = [context for context in context_names if 'gke' in context]
         choices = context_names + choices
     return choices
 
@@ -425,6 +426,15 @@ def _maybe_install_gke(os_type: str, arch: str):
                 spinner.ok('🛠️')
 
 
+def _maybe_login_wolf():
+    if not os.path.exists(user('~/.jina/config.json')):
+        with yaspin_extended(
+            sigmap=sigmap, text='Log in to JCloud', color='green'
+        ) as spinner:
+            cmd('jcloud login')
+        spinner.ok('🛠️')
+
+
 def _parse_custom_data_from_cli(user_input: UserInput):
     data = user_input.data
     try:
@@ -447,7 +457,7 @@ def _handle_ffmpeg_install_required():
     bc_end = '\033[0m'
     print()
     print(
-        f"{bc_red}Too use the audio modality you need the ffmpeg audio processing"
+        f"{bc_red}To use the audio modality you need the ffmpeg audio processing"
         f" library installed on your system.{bc_end}"
     )
     print(

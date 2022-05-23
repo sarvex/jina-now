@@ -7,7 +7,7 @@ from docarray import DocumentArray
 from jina import Client, Flow
 from tqdm import tqdm
 
-from now.deployment.flow import batch, deploy_k8s, get_executor_config
+from now.deployment.flow import batch, deploy_k8s, get_encoder_config
 from now.dialog import UserInput
 
 _KS_NAMESPACE = 'embed-now'
@@ -19,7 +19,7 @@ def embed_now(user_input: UserInput, dataset: DocumentArray, kubectl_path: str):
     )
 
     flow = Flow(name=_KS_NAMESPACE, port_expose=8080, cors=True).add(
-        **get_executor_config(user_input)._asdict()
+        **get_encoder_config(user_input)._asdict()
     )
     result = DocumentArray()
     with tempfile.TemporaryDirectory() as tmpdir:
