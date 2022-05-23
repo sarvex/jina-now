@@ -3,6 +3,8 @@ from typing import Dict, List
 
 from docarray import DocumentArray
 
+from now.datasource.datasource import Datasource
+
 
 class AppConfig:
     env: Dict
@@ -49,7 +51,7 @@ class JinaNOWApp:
         return []
 
     @property
-    def get_example_datasets(self) -> List[Datasource]:
+    def get_example_datasource(self) -> List[Datasource]:
         """
         Get a list of example datasets for the app.
 
