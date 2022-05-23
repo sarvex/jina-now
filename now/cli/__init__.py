@@ -101,9 +101,7 @@ def _get_kubectl_path() -> str:
     kubectl_path = kubectl_path.strip()
     if not kubectl_path:
         if not os.path.isfile(user('~/.cache/jina-now/kubectl')):
-            print(
-                'kubectl not found. Installing kubectl as it is required to run Jina Now'
-            )
+            print('kubectl not found. Installing kubectl')
             cmd(
                 f'/bin/bash {cur_dir}/scripts/install_kubectl.sh {os_type} {arch}',
                 std_output=True,
