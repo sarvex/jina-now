@@ -247,7 +247,3 @@ def test_configure_user_input(
     user_input = configure_user_input(**configure_kwargs)
 
     assert user_input == expected_user_input
-
-
-# UserInput(output_modality='image', data='tll', is_custom_dataset=False, custom_dataset_type=None, dataset_secret=None, dataset_url=None, dataset_path=None, quality='good', model_variant='openai/clip-vit-base-patch16', cluster=None, create_new_cluster=False, deployment_type='remote')
-# UserInput(output_modality='image', data='tll', is_custom_dataset=False, custom_dataset_type=None, dataset_secret=None, dataset_url=None, dataset_path=None, quality='good', model_variant='openai/clip-vit-base-patch16', cluster='new', create_new_cluster=True, deployment_type='remote')
