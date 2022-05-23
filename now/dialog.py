@@ -53,7 +53,7 @@ class UserInput:
 
     # cluster related
     cluster: Optional[str] = None
-    create_new_cluster: Optional[bool] = None
+    create_new_cluster: Optional[bool] = False
     deployment_type: Optional[str] = None
 
 
@@ -260,25 +260,19 @@ def _configure_cluster(user_input: UserInput, skip=False, **kwargs):
             prompt_type='list',
             **kwargs,
         )
-        if user_input.deployment_type == 'remote':
-            _maybe_login_wolf()
-            os.environ['JCLOUD_NO_SURVEY'] = '1'
 
     if not skip:
         ask_deployment()
 
-    choices = None
-    user_input.create_new_cluster = False
-
-    if user_input.deployment_type == 'local':
+    if user_input.deployment_type == 'remote':
+        _maybe_login_wolf()
+        os.environ['JCLOUD_NO_SURVEY'] = '1'
+    else:
+        # get all local cluster contexts
         choices = _construct_local_cluster_choices(
             active_context=kwargs.get('active_context'), contexts=kwargs.get('contexts')
         )
-    else:
-        # Do we have any options to show choices here for WOLF?
-        pass
-
-    if choices is not None:
+        # prompt the local cluster context choices to the user
         user_input.cluster = _prompt_value(
             name='cluster',
             choices=choices,

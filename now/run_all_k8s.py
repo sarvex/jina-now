@@ -51,14 +51,10 @@ def stop_now(contexts, active_context, **kwargs):
             spinner.ok('💀')
         cowsay.cow('local jina NOW cluster removed')
     elif 'wolf.jina.ai' in cluster:
-        with yaspin_extended(
-            sigmap=sigmap, text=f"Remove remote Flow {cluster}", color="green"
-        ) as spinner:
-            _result = status_wolf(flow_id)
-            if _result['status'] == 'ALIVE':
-                terminate_wolf(flow_id)
-            os.remove(user(JC_SECRET))
-            spinner.ok('💀')
+        _result = status_wolf(flow_id)
+        if _result['status'] == 'ALIVE':
+            terminate_wolf(flow_id)
+        os.remove(user(JC_SECRET))
         cowsay.cow(f'remote Flow `{cluster}` removed')
     else:
         with yaspin_extended(
