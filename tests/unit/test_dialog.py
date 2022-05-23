@@ -30,7 +30,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'output_modality': Modalities.MUSIC,
             'data': 'music-genres-small',
             'cluster': 'new',
-            'sandbox': False,
             'deployment_type': 'local',
         },
         {},
@@ -44,7 +43,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'output_modality': Modalities.MUSIC,
             'data': 'music-genres-large',
             'cluster': 'new',
-            'sandbox': False,
             'deployment_type': 'local',
         },
         {},
@@ -58,7 +56,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'output_modality': Modalities.IMAGE,
             'data': 'tll',
             'cluster': 'new',
-            'sandbox': False,
             'quality': 'good',
             'deployment_type': 'local',
         },
@@ -74,7 +71,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'output_modality': Modalities.IMAGE,
             'data': 'nih-chest-xrays',
             'cluster': 'new',
-            'sandbox': False,
             'quality': 'medium',
             'deployment_type': 'local',
         },
@@ -92,7 +88,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'custom_dataset_type': 'docarray',
             'dataset_secret': 'xxx',
             'cluster': 'new',
-            'sandbox': False,
             'quality': 'medium',
             'deployment_type': 'local',
         },
@@ -110,7 +105,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'custom_dataset_type': 'docarray',
             'dataset_secret': 'xxx',
             'cluster': 'new',
-            'sandbox': False,
             'deployment_type': 'local',
         },
         {},
@@ -126,7 +120,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'custom_dataset_type': 'path',
             'dataset_path': 'xxx',
             'cluster': 'new',
-            'sandbox': False,
             'deployment_type': 'local',
         },
         {},
@@ -142,7 +135,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'custom_dataset_type': 'url',
             'dataset_url': 'xxx',
             'cluster': 'new',
-            'sandbox': False,
             'deployment_type': 'local',
         },
         {},
@@ -159,7 +151,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'dataset_secret': 'xxx',
             'quality': 'medium',
             'cluster': 'new',
-            'sandbox': False,
             'deployment_type': 'local',
         },
         {},
@@ -174,7 +165,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'output_modality': Modalities.IMAGE,
             'data': 'tll',
             'cluster': 'new',
-            'sandbox': False,
             'quality': 'good',
             'deployment_type': 'gke',
         },
@@ -189,7 +179,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
         {
             'data': 'music-genres-small',
             'cluster': 'new',
-            'sandbox': False,
             'deployment_type': 'local',
         },
         {'output_modality': Modalities.MUSIC},
@@ -202,7 +191,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
         {
             'data': 'tll',
             'cluster': 'new',
-            'sandbox': False,
             'deployment_type': 'local',
         },
         {'output_modality': Modalities.IMAGE, 'quality': 'good'},
@@ -216,7 +204,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
         {
             'data': 'pop-lyrics',
             'cluster': 'new',
-            'sandbox': False,
             'deployment_type': 'local',
         },
         {'output_modality': Modalities.TEXT, 'quality': 'good'},
@@ -233,7 +220,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
         {
             'data': 'pop-lyrics',
             'cluster': 'new',
-            'sandbox': False,
             'deployment_type': 'local',
             'quality': 'medium',
         },
@@ -259,7 +245,6 @@ def test_configure_user_input(
     expected_user_input.__dict__.update(mocked_user_answers)
     expected_user_input.__dict__.update(configure_kwargs)
     mocker.patch('now.dialog.prompt', CmdPromptMock(mocked_user_answers))
-    mocker.patch('now.dialog._maybe_install_gke', lambda os_type, arch: 0)
 
     user_input = configure_user_input(**configure_kwargs)
 

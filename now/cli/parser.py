@@ -67,7 +67,7 @@ def set_start_parser(sp=None):
     )
 
     parser.add_argument(
-        '--modality',
+        '--output_modality',
         help='Select the modality you want to develop a search flow for.',
         type=str,
     )
@@ -87,14 +87,15 @@ def set_start_parser(sp=None):
 
     parser.add_argument(
         '--cluster',
-        help='Reference an existing cluster or select `new` to create a new one.',
+        help='Reference an existing `local` cluster or select `new` to create a new one.',
         type=str,
     )
 
     parser.add_argument(
-        '--new-cluster-type',
-        help='Only effective if --cluster=new. Optional are `local`.',
-        # TODO: Add JCloud option here once it is enabled!
+        '--deployment-type',
+        help='Option is `local` and `remote`. Select `local` if you want search engine to be deployed on local cluster. '
+        'Select `remote` to deploy it on Jina Cloud',
+        type=str,
     )
 
 

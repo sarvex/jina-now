@@ -11,6 +11,10 @@ nodes:
     hostPort: 30080
     listenAddress: "0.0.0.0" # Optional, defaults to "0.0.0.0"
     protocol: tcp # Optional, defaults to tcp
+  - containerPort: 30090
+    hostPort: 30090
+    listenAddress: "0.0.0.0" # Optional, defaults to "0.0.0.0"
+    protocol: tcp # Optional, defaults to tcp
 networking:
   # WARNING: It is _strongly_ recommended that you keep this the default
   # (127.0.0.1) for security reasons. However it is possible to change this.

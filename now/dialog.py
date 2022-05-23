@@ -49,7 +49,6 @@ class UserInput:
 
     # model related
     quality: Optional[Qualities] = None
-    sandbox: bool = False
     model_variant: Optional[str] = None
 
     # cluster related
@@ -65,7 +64,6 @@ def configure_user_input(**kwargs) -> UserInput:
     _configure_output_modality(user_input, **kwargs)
     _configure_dataset(user_input, **kwargs)
     _configure_quality(user_input, **kwargs)
-    _configure_sandbox(user_input, **kwargs)
     _configure_cluster(user_input, **kwargs)
 
     return user_input
@@ -78,7 +76,7 @@ def print_headline():
     print('Get your search case up and running - end to end.\n')
     print(
         'You can choose between image and text search. \nJina now trains a model, pushes it to the jina hub'
-        ', deploys a flow and a frontend app in the cloud or locally. \nCheckout one of the demo cases or bring '
+        ', deploys a flow and a playground app in the cloud or locally. \nCheckout one of the demo cases or bring '
         'your own data.\n'
     )
     print(
@@ -250,14 +248,12 @@ def _configure_cluster(user_input: UserInput, skip=False, **kwargs):
             name='deployment_type',
             choices=[
                 {
-                    'name': '📍 Local (Kubernetes in Docker)',
-                    'value': 'local',
-                },
-                {
                     'name': '⛅️ Jina Cloud',
                     'value': 'remote',
-                    'disabled': AVAILABLE_SOON,  # Uncomment this before merging
-                    # Please move this option to the top once it is enabled
+                },
+                {
+                    'name': '📍 Local',
+                    'value': 'local',
                 },
             ],
             prompt_message='Where do you want to deploy your search engine?',
@@ -283,18 +279,17 @@ def _configure_cluster(user_input: UserInput, skip=False, **kwargs):
         pass
 
     if choices is not None:
-        cluster = _prompt_value(
+        user_input.cluster = _prompt_value(
             name='cluster',
             choices=choices,
             prompt_message='Which cluster you want to use to deploy your search engine?',
             prompt_type='list',
             **kwargs,
         )
-        user_input.cluster = cluster
-        if cluster != NEW_CLUSTER['value']:
-            if not _cluster_running(cluster):
+        if user_input.cluster != NEW_CLUSTER['value']:
+            if not _cluster_running(user_input.cluster):
                 print(
-                    f'Cluster {cluster} is not running. Please select a different one.'
+                    f'Cluster {user_input.cluster} is not running. Please select a different one.'
                 )
                 _configure_cluster(user_input, skip=True, **kwargs)
         else:
@@ -327,19 +322,6 @@ def _configure_quality(user_input: UserInput, **kwargs) -> None:
         print('  ✨ you trade-off speed to having the best quality')
 
     _, user_input.model_variant = IMAGE_MODEL_QUALITY_MAP[user_input.quality]
-
-
-def _configure_sandbox(user_input: UserInput, **kwargs):
-    # user_input.sandbox = _prompt_value(
-    #     name='sandbox',
-    #     prompt_message='Use Sandbox to save memory? (process data on our servers)',
-    #     choices=[
-    #         {'name': '⛔ no', 'value': False},
-    #         {'name': '✅ yes', 'value': True},
-    #     ],
-    #     **kwargs,
-    # )
-    user_input.sandbox = False
 
 
 def _construct_local_cluster_choices(active_context, contexts):
@@ -439,7 +421,7 @@ def _handle_ffmpeg_install_required():
     bc_end = '\033[0m'
     print()
     print(
-        f"{bc_red}Too use the audio modality you need the ffmpeg audio processing"
+        f"{bc_red}To use the audio modality you need the ffmpeg audio processing"
         f" library installed on your system.{bc_end}"
     )
     print(
