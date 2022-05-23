@@ -41,7 +41,7 @@ def get_encoder_config(user_input: UserInput) -> _ExecutorConfig:
     elif user_input.output_modality == Modalities.MUSIC:
         return _ExecutorConfig(
             name='openl3clip',
-            uses=f'jinahub+docker://BiModalMusicTextEncoder/v1.0.0',
+            uses=f'jinahub+docker://BiModalMusicTextEncoder',
             uses_with={},
         )
 
@@ -144,8 +144,8 @@ def get_custom_env_file(
     with open(env_file, 'w+') as fp:
         config_string = (
             f'ENCODER_NAME={encoder_config.uses}\n'
-            f'OUTPUT_DIM={finetune_settings.finetune_layer_size}\n'
-            f'EMBED_DIM={finetune_settings.pre_trained_embedding_size}\n'
+            f'FINETUNE_LAYER_SIZE={finetune_settings.finetune_layer_size}\n'
+            f'PRE_TRAINED_EMBEDDINGS_SIZE={finetune_settings.pre_trained_embedding_size}\n'
             f'INDEXER_NAME={indexer_name}\n'
         )
         if encoder_config.uses_with.get('pretrained_model_name_or_path'):
@@ -185,13 +185,6 @@ def deploy_flow(
     yaml_name = get_flow_yaml_name(user_input.output_modality, finetuning)
 
     if user_input.deployment_type == 'remote':
-        # Deploy it on wolf
-        # if finetuning:
-        #     flow_path = os.path.join(cur_dir, 'flow', 'ft-flow.yml')
-        # else:
-        #     flow_path = os.path.join(cur_dir, 'flow', 'flow.yml')
-        # yaml_name = get_flow_yaml_name(user_input.output_modality, finetuning)
-
         flow = deploy_wolf(
             path=os.path.join(cur_dir, 'flow', yaml_name), env_file=env_file, name=ns
         )
@@ -220,7 +213,7 @@ def deploy_flow(
         ) = deploy_k8s(
             f,
             ns,
-            2 + (2 if finetuning else 1),
+            5 + (2 if finetuning else 0),
             tmpdir,
             kubectl_path=kubectl_path,
         )

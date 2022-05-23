@@ -80,7 +80,10 @@ def _get_pre_trained_embedding_size(user_input: UserInput) -> int:
 def _is_finetuning(user_input: UserInput, dataset: DocumentArray) -> bool:
     if user_input.data in TUNEABLE_DEMO_DATASETS[user_input.output_modality]:
         return True
-    elif all(['finetuner_label' in d.tags for d in dataset]):
+
+    elif user_input.is_custom_dataset and all(
+        ['finetuner_label' in d.tags for d in dataset]
+    ):
         return True
     else:
         return False

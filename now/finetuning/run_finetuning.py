@@ -78,6 +78,9 @@ def _finetune_layer(
 
     assert all([d.embedding is not None for d in finetune_ds.index])
 
+    save_dir = os.path.join(save_dir, 'now', 'hub', 'head_encoder')
+    os.makedirs(save_dir, exist_ok=True)
+
     callbacks = [
         EvaluationCallback(
             finetune_ds.val_query,
@@ -119,7 +122,8 @@ def _finetune_layer(
         callbacks=callbacks,
     )
     print('🧠 Perfect! Early stopping triggered since accuracy is great already')
-    return f'{save_dir}/best_model_ndcg'
+
+    return os.path.join(save_dir, 'best_model_ndcg')
 
 
 @contextmanager
