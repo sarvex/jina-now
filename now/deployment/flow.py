@@ -147,7 +147,7 @@ def get_custom_env_file(
                 finetune_settings.pre_trained_embedding_size * 2
             )
         else:
-            pre_trained_embeddings_size = finetune_settings.pre_trained_embedding_size
+            pre_trained_embedding_size = finetune_settings.pre_trained_embedding_size
         config_string = (
             f'ENCODER_NAME={encoder_config.uses}\n'
             f'FINETUNE_LAYER_SIZE={finetune_settings.finetune_layer_size}\n'
