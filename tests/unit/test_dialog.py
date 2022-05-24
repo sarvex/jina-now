@@ -29,7 +29,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
             'output_modality': Modalities.MUSIC,
-            'data': 'music-genres-small',
+            'data': 'music-genres-mid',
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -176,7 +176,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'data': 'music-genres-small',
+            'data': 'music-genres-mid',
             'cluster': 'new',
             'deployment_type': 'local',
         },
