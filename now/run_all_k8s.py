@@ -8,7 +8,7 @@ import cowsay
 from now import run_backend, run_playground
 from now.cloud_manager import setup_cluster
 from now.constants import JC_SECRET, SURVEY_LINK
-from now.deployment.deployment import cmd, terminate_wolf
+from now.deployment.deployment import cmd, status_wolf, terminate_wolf
 from now.dialog import _get_context_names, configure_user_input, maybe_prompt_user
 from now.log.log import yaspin_extended
 from now.system_information import get_system_state
@@ -50,13 +50,11 @@ def stop_now(contexts, active_context, **kwargs):
             cmd(f'{kwargs["kind_path"]} delete clusters jina-now')
             spinner.ok('💀')
         cowsay.cow('local jina NOW cluster removed')
-    elif 'nowapi' in cluster:
-        with yaspin_extended(
-            sigmap=sigmap, text=f"Remove remote Flow {cluster}", color="green"
-        ) as spinner:
+    elif 'wolf.jina.ai' in cluster:
+        _result = status_wolf(flow_id)
+        if _result['status'] == 'ALIVE':
             terminate_wolf(flow_id)
-            os.remove(user(JC_SECRET))
-            spinner.ok('💀')
+        os.remove(user(JC_SECRET))
         cowsay.cow(f'remote Flow `{cluster}` removed')
     else:
         with yaspin_extended(

@@ -113,6 +113,7 @@ jobs:
         if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
         run: zip -r deploy.zip deployment docker-compose.yml
       - name: Deploy to AWS Elastic Beanstalk
+        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
         uses: einaregilsson/beanstalk-deploy@v20
         with:
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}

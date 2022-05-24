@@ -26,9 +26,9 @@ from now.constants import (
 )
 from now.deployment.deployment import cmd
 from now.log.log import yaspin_extended
-from now.thridparty.PyInquirer import Separator
-from now.thridparty.PyInquirer.prompt import prompt
-from now.utils import ffmpeg_is_installed, gcloud_is_installed, sigmap
+from now.thirdparty.PyInquirer import Separator
+from now.thirdparty.PyInquirer.prompt import prompt
+from now.utils import ffmpeg_is_installed, sigmap
 
 cur_dir = pathlib.Path(__file__).parent.resolve()
 NEW_CLUSTER = {'name': '🐣 create new', 'value': 'new'}
@@ -54,7 +54,7 @@ class UserInput:
 
     # cluster related
     cluster: Optional[str] = None
-    create_new_cluster: Optional[bool] = None
+    create_new_cluster: Optional[bool] = False
     deployment_type: Optional[str] = None
 
 
@@ -268,31 +268,19 @@ def _configure_cluster(user_input: UserInput, skip=False, **kwargs):
             prompt_type='list',
             **kwargs,
         )
-        if user_input.deployment_type == 'gke':
-            _maybe_install_gke(**kwargs)
-        elif user_input.deployment_type == 'remote':
-            _maybe_login_wolf()
-            os.environ['JCLOUD_NO_SURVEY'] = '1'
 
     if not skip:
         ask_deployment()
 
-    choices = None
-    user_input.create_new_cluster = False
-
-    if user_input.deployment_type == 'local':
+    if user_input.deployment_type == 'remote':
+        _maybe_login_wolf()
+        os.environ['JCLOUD_NO_SURVEY'] = '1'
+    else:
+        # get all local cluster contexts
         choices = _construct_local_cluster_choices(
             active_context=kwargs.get('active_context'), contexts=kwargs.get('contexts')
         )
-    elif user_input.deployment_type == 'gke':
-        choices = _construct_gke_cluster_choices(
-            active_context=kwargs.get('active_context'), contexts=kwargs.get('contexts')
-        )
-    else:
-        # Do we have any options to show choices here for WOLF?
-        pass
-
-    if choices is not None:
+        # prompt the local cluster context choices to the user
         user_input.cluster = _prompt_value(
             name='cluster',
             choices=choices,
@@ -344,16 +332,6 @@ def _construct_local_cluster_choices(active_context, contexts):
     # filter contexts with `gke`
     if len(context_names) > 0 and len(context_names[0]) > 0:
         context_names = [context for context in context_names if 'gke' not in context]
-        choices = context_names + choices
-    return choices
-
-
-def _construct_gke_cluster_choices(active_context, contexts):
-    context_names = _get_context_names(contexts, active_context)
-    choices = [NEW_CLUSTER]
-    # filter contexts with `gke`
-    if len(context_names) > 0 and len(context_names[0]) > 0:
-        context_names = [context for context in context_names if 'gke' in context]
         choices = context_names + choices
     return choices
 
@@ -412,18 +390,6 @@ def _cluster_running(cluster):
     except Exception as e:
         return False
     return True
-
-
-def _maybe_install_gke(os_type: str, arch: str):
-    if not gcloud_is_installed():
-        if not os.path.exists(user('~/.cache/jina-now/google-cloud-sdk')):
-            with yaspin_extended(
-                sigmap=sigmap, text='Setting up gcloud', color='green'
-            ) as spinner:
-                cmd(
-                    f'/bin/bash {cur_dir}/scripts/install_gcloud.sh {os_type} {arch}',
-                )
-                spinner.ok('🛠️')
 
 
 def _maybe_login_wolf():
