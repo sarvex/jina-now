@@ -43,7 +43,11 @@ def cleanup(deployment_type, dataset):
 
 @pytest.mark.parametrize(
     'output_modality, dataset',
-    [('image', 'bird-species'), ('image', 'best-artworks'), ('text', 'rock-lyrics')],
+    [
+        # ('image', 'bird-species'),
+        ('image', 'best-artworks'),
+        ('text', 'rock-lyrics'),
+    ],
 )  # art, rock-lyrics -> no finetuning, fashion -> finetuning
 @pytest.mark.parametrize('quality', ['medium'])
 @pytest.mark.parametrize('cluster', [NEW_CLUSTER['value']])
