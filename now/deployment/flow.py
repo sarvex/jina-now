@@ -219,7 +219,7 @@ def deploy_flow(
         ) = deploy_k8s(
             f,
             ns,
-            5 + (2 if finetuning else 0),
+            3 + (1 if finetuning else 0),
             tmpdir,
             kubectl_path=kubectl_path,
         )
