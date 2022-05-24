@@ -134,11 +134,10 @@ def run_k8s(os_type: str = 'linux', arch: str = 'x86_64', **kwargs):
 
 if __name__ == '__main__':
     run_k8s(
-        # output_modality='music',
         output_modality='image',
-        data='deepfashion',
-        # data='music-genres-small',
+        data='bird-species',
         cluster='new',
+        quality='medium',
         deployment_type='local',
         kubectl_path='/usr/local/bin/kubectl',
         kind_path='/Users/sebastianlettner/.cache/jina-now/kind',

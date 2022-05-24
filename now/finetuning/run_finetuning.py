@@ -18,7 +18,6 @@ from finetuner.tuner.pytorch.losses import TripletLoss
 from finetuner.tuner.pytorch.miner import TripletEasyHardMiner
 from yaspin import yaspin
 
-from now.constants import Modalities
 from now.dialog import UserInput
 from now.finetuning.dataset import FinetuneDataset, build_finetuning_dataset
 from now.finetuning.embeddings import embed_now
@@ -59,10 +58,10 @@ def finetune_now(
 
         finetuned_model_path = _finetune_layer(finetune_ds, finetune_settings, save_dir)
 
-        if user_input.output_modality == Modalities.IMAGE:
-            _show_finetune_improvements(
-                user_input, finetune_settings, finetune_ds, finetuned_model_path
-            )
+        # if user_input.output_modality == Modalities.IMAGE:
+        #     _show_finetune_improvements(
+        #         user_input, finetune_settings, finetune_ds, finetuned_model_path
+        #     )
 
         executor_name = push_to_hub(save_dir)
     return executor_name
