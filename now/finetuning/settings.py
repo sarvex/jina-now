@@ -11,7 +11,7 @@ TUNEABLE_DEMO_DATASETS = {
     Modalities.IMAGE: [DemoDatasets.DEEP_FASHION, DemoDatasets.BIRD_SPECIES],
     Modalities.TEXT: [],
     Modalities.MUSIC: [
-        DemoDatasets.MUSIC_GENRES_SMALL,
+        DemoDatasets.MUSIC_GENRES_MID,
         DemoDatasets.MUSIC_GENRES_LARGE,
     ],
 }

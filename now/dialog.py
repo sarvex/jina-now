@@ -188,8 +188,8 @@ def _configure_dataset_music(user_input: UserInput, **kwargs):
         prompt_message='What dataset do you want to use?',
         choices=[
             {
-                'name': '🎸 music small (≈2K docs)',
-                'value': DemoDatasets.MUSIC_GENRES_SMALL,
+                'name': '🎸 music mid (≈2K docs)',
+                'value': DemoDatasets.MUSIC_GENRES_MID,
             },
             {
                 'name': '🎸 music large (≈10K docs)',

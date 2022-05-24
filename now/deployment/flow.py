@@ -149,7 +149,7 @@ def get_custom_env_file(
             f'INDEXER_NAME={indexer_name}\n'
         )
         if encoder_config.uses_with.get('pretrained_model_name_or_path'):
-            config_string += f'CLIP_MODEL_NAME={encoder_config.uses_with["pretrained_model_name_or_path"]}'
+            config_string += f'CLIP_MODEL_NAME={encoder_config.uses_with["pretrained_model_name_or_path"]}\n'
         fp.write(config_string)
         if finetune_settings.perform_finetuning:
             fp.write(f'LINEAR_HEAD_NAME={linear_head_name}\n')

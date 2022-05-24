@@ -52,8 +52,12 @@ class DemoDatasets:
     DEEP_FASHION = 'deepfashion'
     NIH_CHEST_XRAYS = 'nih-chest-xrays'
     GEOLOCATION_GEOGUESSR = 'geolocation-geoguessr'
-    MUSIC_GENRES_SMALL = 'music-genres-small'
+    MUSIC_GENRES_MID = 'music-genres-mid'
     MUSIC_GENRES_LARGE = 'music-genres-large'
+    MUSIC_GENRES_EXTRA_LARGE = 'music-genres-xl'
+    MUSIC_MID = 'music-mid'
+    MUSIC_LARGE = 'music-large'
+    MUSIC_EXTRA_LARGE = 'music-xl'
     ROCK_LYRICS = 'rock-lyrics'
     POP_LYRICS = 'pop-lyrics'
     RAP_LYRICS = 'rap-lyrics'
@@ -73,7 +77,7 @@ AVAILABLE_DATASET = {
         DemoDatasets.GEOLOCATION_GEOGUESSR,
     ],
     Modalities.MUSIC: [
-        DemoDatasets.MUSIC_GENRES_SMALL,
+        DemoDatasets.MUSIC_GENRES_MID,
         DemoDatasets.MUSIC_GENRES_LARGE,
     ],
     Modalities.TEXT: [
