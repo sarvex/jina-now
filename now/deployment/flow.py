@@ -142,10 +142,16 @@ def get_custom_env_file(
 
     env_file = os.path.join(tmpdir, 'dot.env')
     with open(env_file, 'w+') as fp:
+        if finetune_settings.bi_modal:
+            pre_trained_embedding_size = (
+                finetune_settings.pre_trained_embedding_size * 2
+            )
+        else:
+            pre_trained_embeddings_size = finetune_settings.pre_trained_embedding_size
         config_string = (
             f'ENCODER_NAME={encoder_config.uses}\n'
             f'FINETUNE_LAYER_SIZE={finetune_settings.finetune_layer_size}\n'
-            f'PRE_TRAINED_EMBEDDINGS_SIZE={finetune_settings.pre_trained_embedding_size}\n'
+            f'PRE_TRAINED_EMBEDDINGS_SIZE={pre_trained_embedding_size}\n'
             f'INDEXER_NAME={indexer_name}\n'
         )
         if encoder_config.uses_with.get('pretrained_model_name_or_path'):

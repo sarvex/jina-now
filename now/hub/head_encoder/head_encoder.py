@@ -62,7 +62,10 @@ class FineTunedLinearHeadEncoder(Executor):
     def encode(self, docs: Optional[DocumentArray], **kwargs):
         content_attr = FineTunedLinearHeadEncoder._preserve_content_attribute(docs)
         for d in docs:
-            if self.bi_model:
+            if (
+                self.bi_model
+                and d.embedding.shape[0] != self.pre_trained_embedding_size
+            ):
                 d.tensor = get_bi_modal_embedding(d)
             else:
                 assert (
