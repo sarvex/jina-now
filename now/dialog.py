@@ -100,7 +100,7 @@ def _configure_output_modality(user_input: UserInput, **kwargs) -> None:
             {
                 'name': '🥁 Music Search',
                 'value': Modalities.MUSIC,
-                # 'disabled': AVAILABLE_SOON,
+                'disabled': AVAILABLE_SOON,
             },
         ],
         prompt_message='Which modalities you want to work with?',

@@ -15,7 +15,8 @@ spec:
     spec:
       containers:
         - name: now-playground
-          image: jinaai/now-playground:{docker_bff_playground_tag}
+#          image: jinaai/now-playground:{docker_bff_playground_tag}
+          image:  gcr.io/fresh-park-342814/now-bff
 #          image: jinaaitmpjoschka/now-playground:latest
           imagePullPolicy: Always
           command: ["streamlit"]
