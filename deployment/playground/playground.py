@@ -85,9 +85,6 @@ def deploy_streamlit():
             da_img, da_txt = load_data(data_dir + DATA + '.img10.bin'), load_data(
                 data_dir + DATA + '.txt10.bin'
             )
-            # # fix for nft-monkey image samples
-            # if DATA == 'nft-monkey':
-            #     da_img[:, 'mime_type'] = 'image'
         elif OUTPUT_MODALITY == 'text':
             # for now deactivated sample images for text
             output_modality_dir = 'text'
