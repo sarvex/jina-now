@@ -1,5 +1,5 @@
 import os
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from docarray import DocumentArray
 
@@ -27,6 +27,22 @@ class JinaNOWApp:
         """
         curdir = os.path.realpath(__file__)
         return os.path.join(curdir, 'flow.yml')
+
+    @property
+    def get_bff(self) -> Optional[str]:
+        """
+        Used to configure the bff which is used to define input and
+        :return: the path of the bff
+        """
+        return None
+
+    @property
+    def get_playground(self) -> Optional[str]:
+        """
+        Used to configure the playground(streamlit app) where the user can run example queries
+        :return: the path of the playground
+        """
+        return None
 
     @property
     def get_options(self) -> List[Dict]:
