@@ -52,6 +52,15 @@ First, you will get asked what search case you would like to deploy.
 ```bash
 jina now start
 ```
+<img width="643" alt="question-cluster" src="https://user-images.githubusercontent.com/11627845/170256027-99798fae-3ec4-42dc-8737-843f4a23f941.png">
+<img width="724" alt="question-custom" src="https://user-images.githubusercontent.com/11627845/170256031-b868058b-dec6-46aa-b2cf-afac4b33d996.png">
+<img width="547" alt="question-deployment" src="https://user-images.githubusercontent.com/11627845/170256038-8c44a5b8-985a-4fe7-af5d-16df0244f4bb.png">
+<img width="497" alt="question-ds" src="https://user-images.githubusercontent.com/11627845/170256042-1e414599-43f0-4b4f-8873-2f601b6e901f.png">
+<img width="506" alt="question-local-path" src="https://user-images.githubusercontent.com/11627845/170256044-67e82e86-6439-4a3e-98f1-dbdf1940de67.png">
+<img width="497" alt="question-modality" src="https://user-images.githubusercontent.com/11627845/170256046-4d20c79e-802e-4d28-8be9-4e5ebffd0e28.png">
+<img width="497" alt="question-quality" src="https://user-images.githubusercontent.com/11627845/170256049-18add461-f666-48f4-9dfe-52be9404a73d.png">
+  
+
   
 ### Use CLI Parameters
 ```bash
