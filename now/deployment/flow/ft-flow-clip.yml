@@ -15,8 +15,8 @@ executors:
   - name: linear_head
     uses: ${{ ENV.LINEAR_HEAD_NAME }}
     uses_with:
-      final_layer_output_dim: ${{ ENV.OUTPUT_DIM }}
-      embedding_size: ${{ ENV.EMBED_DIM }}
+      finetune_layer_size: ${{ ENV.FINETUNE_LAYER_SIZE }}
+      pre_trained_embedding_size: ${{ ENV.PRE_TRAINED_EMBEDDINGS_SIZE }}
     env:
       JINA_LOG_LEVEL: DEBUG
   - name: indexer

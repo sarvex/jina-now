@@ -6,7 +6,7 @@ import pytest
 from docarray import Document, DocumentArray
 from pytest_mock import MockerFixture
 
-from now.constants import DatasetTypes, Modalities
+from now.constants import DatasetTypes, DemoDatasets, Modalities
 from now.data_loading.data_loading import load_data
 from now.dialog import UserInput
 
@@ -122,7 +122,7 @@ def test_da_custom_ds(da: DocumentArray):
     user_input.output_modality = Modalities.IMAGE
     user_input.is_custom_dataset = False
     user_input.custom_dataset_type = DatasetTypes.DEMO
-    user_input.data = 'deepfashion'
+    user_input.data = DemoDatasets.DEEP_FASHION
 
     loaded_da = load_data(user_input)
 

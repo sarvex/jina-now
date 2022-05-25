@@ -87,9 +87,7 @@ def start_now(os_type, arch, contexts, active_context, is_debug, **kwargs):
             gateway_port,
             gateway_host_internal,
             gateway_port_internal,
-        ) = run_backend.run(
-            user_input, is_debug, tmpdir, kubectl_path=kwargs['kubectl_path']
-        )
+        ) = run_backend.run(user_input, tmpdir, kubectl_path=kwargs['kubectl_path'])
 
         if gateway_host == 'localhost' or 'NOW_CI_RUN' in os.environ:
             # only deploy playground when running locally or when testing
@@ -136,9 +134,13 @@ def run_k8s(os_type: str = 'linux', arch: str = 'x86_64', **kwargs):
 
 if __name__ == '__main__':
     run_k8s(
-        output_modality='music',
-        data='music-genres-small',
+        output_modality='image',
+        data='bird-species',
         cluster='new',
+        quality='medium',
         deployment_type='local',
         kubectl_path='/usr/local/bin/kubectl',
+        kind_path='/Users/sebastianlettner/.cache/jina-now/kind',
+        proceed=True,
+        now='start',
     )

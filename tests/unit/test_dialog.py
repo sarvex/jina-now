@@ -8,6 +8,7 @@ from typing import Dict
 import pytest
 from pytest_mock import MockerFixture
 
+from now.constants import DemoDatasets
 from now.dialog import (
     IMAGE_MODEL_QUALITY_MAP,
     Modalities,
@@ -187,7 +188,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'data': 'tll',
+            'data': DemoDatasets.TLL,
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -200,7 +201,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'data': 'pop-lyrics',
+            'data': DemoDatasets.ROCK_LYRICS,
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -216,7 +217,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'output_modality': Modalities.TEXT,
         },
         {
-            'data': 'pop-lyrics',
+            'data': DemoDatasets.POP_LYRICS,
             'cluster': 'new',
             'deployment_type': 'local',
             'quality': 'medium',

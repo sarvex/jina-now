@@ -20,6 +20,7 @@ from now.constants import (
     AVAILABLE_DATASET,
     IMAGE_MODEL_QUALITY_MAP,
     DatasetTypes,
+    DemoDatasets,
     Modalities,
     Qualities,
 )
@@ -134,22 +135,22 @@ def _configure_dataset_image(user_input: UserInput, **kwargs) -> None:
         name='data',
         prompt_message='What dataset do you want to use?',
         choices=[
-            {'name': '🖼  artworks (≈8K docs)', 'value': 'best-artworks'},
+            {'name': '🖼  artworks (≈8K docs)', 'value': DemoDatasets.BEST_ARTWORKS},
             {
                 'name': '💰 nft - bored apes (10K docs)',
-                'value': 'nft-monkey',
+                'value': DemoDatasets.NFT_MONKEY,
             },
-            {'name': '👬 totally looks like (≈12K docs)', 'value': 'tll'},
-            {'name': '🦆 birds (≈12K docs)', 'value': 'bird-species'},
-            {'name': '🚗 cars (≈16K docs)', 'value': 'stanford-cars'},
+            {'name': '👬 totally looks like (≈12K docs)', 'value': DemoDatasets.TLL},
+            {'name': '🦆 birds (≈12K docs)', 'value': DemoDatasets.BIRD_SPECIES},
+            {'name': '🚗 cars (≈16K docs)', 'value': DemoDatasets.STANFORD_CARS},
             {
                 'name': '🏞 geolocation (≈50K docs)',
-                'value': 'geolocation-geoguessr',
+                'value': DemoDatasets.GEOLOCATION_GEOGUESSR,
             },
-            {'name': '👕 fashion (≈53K docs)', 'value': 'deepfashion'},
+            {'name': '👕 fashion (≈53K docs)', 'value': DemoDatasets.DEEP_FASHION},
             {
                 'name': '☢️ chest x-ray (≈100K docs)',
-                'value': 'nih-chest-xrays',
+                'value': DemoDatasets.NIH_CHEST_XRAYS,
             },
             Separator(),
             {
@@ -186,8 +187,14 @@ def _configure_dataset_music(user_input: UserInput, **kwargs):
         name='data',
         prompt_message='What dataset do you want to use?',
         choices=[
-            {'name': '🎸 music small (≈2K docs)', 'value': 'music-genres-small'},
-            {'name': '🎸 music large (≈10K docs)', 'value': 'music-genres-large'},
+            {
+                'name': '🎸 music mid (≈2K docs)',
+                'value': DemoDatasets.MUSIC_GENRES_MID,
+            },
+            {
+                'name': '🎸 music large (≈10K docs)',
+                'value': DemoDatasets.MUSIC_GENRES_LARGE,
+            },
             Separator(),
             {
                 'name': '✨ custom',
@@ -206,33 +213,34 @@ def _configure_custom_dataset(user_input: UserInput, **kwargs) -> None:
         choices=[
             {
                 'name': 'docarray.pull id (recommended)',
-                'value': 'docarray',
+                'value': DatasetTypes.DOCARRAY,
             },
             {
                 'name': 'docarray URL',
-                'value': 'url',
+                'value': DatasetTypes.URL,
             },
             {
                 'name': 'local path',
-                'value': 'path',
+                'value': DatasetTypes.PATH,
             },
         ],
         **kwargs,
     )
-
-    if user_input.custom_dataset_type == 'docarray':
+    if user_input.custom_dataset_type == DatasetTypes.DOCARRAY:
         user_input.dataset_secret = _prompt_value(
             name='dataset_secret',
             prompt_message='Please enter your docarray secret.',
             prompt_type='password',
         )
-    elif user_input.custom_dataset_type == 'url':
+
+    elif user_input.custom_dataset_type == DatasetTypes.URL:
         user_input.dataset_url = _prompt_value(
             name='dataset_url',
             prompt_message='Please paste in your url for the docarray.',
             prompt_type='input',
         )
-    elif user_input.custom_dataset_type == 'path':
+
+    elif user_input.custom_dataset_type == DatasetTypes.PATH:
         user_input.dataset_path = _prompt_value(
             name='dataset_path',
             prompt_message='Please enter the path to the local folder.',
@@ -308,11 +316,11 @@ def _configure_quality(user_input: UserInput, **kwargs) -> None:
         prompt_type='list',
         **kwargs,
     )
-    if user_input.quality == 'medium':
+    if user_input.quality == Qualities.MEDIUM:
         print('  🚀 you trade-off a bit of quality for having the best speed')
-    elif user_input.quality == 'good':
+    elif user_input.quality == Qualities.GOOD:
         print('  ⚖️ you have the best out of speed and quality')
-    elif user_input.quality == 'excellent':
+    elif user_input.quality == Qualities.EXCELLENT:
         print('  ✨ you trade-off speed to having the best quality')
 
     _, user_input.model_variant = IMAGE_MODEL_QUALITY_MAP[user_input.quality]
