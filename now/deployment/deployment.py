@@ -2,6 +2,7 @@ import subprocess
 import tempfile
 
 from jcloud.flow import CloudFlow
+from jina.helper import get_or_reuse_loop
 
 
 def deploy_wolf(path: str, name: str, env_file: str = None):
@@ -10,6 +11,16 @@ def deploy_wolf(path: str, name: str, env_file: str = None):
 
 def terminate_wolf(flow_id: str):
     CloudFlow(flow_id=flow_id).__exit__()
+
+
+def status_wolf(flow_id):
+    loop = get_or_reuse_loop()
+    return loop.run_until_complete(CloudFlow(flow_id=flow_id).status)
+
+
+def list_all_wolf(flow_id):
+    loop = get_or_reuse_loop()
+    return loop.run_until_complete(CloudFlow().list_all())
 
 
 def cmd(command, std_output=False, wait=True):

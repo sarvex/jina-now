@@ -67,7 +67,7 @@ def set_start_parser(sp=None):
     )
 
     parser.add_argument(
-        '--output_modality',
+        '--output-modality',
         help='Select the modality you want to develop a search flow for.',
         type=str,
     )
@@ -93,7 +93,8 @@ def set_start_parser(sp=None):
 
     parser.add_argument(
         '--deployment-type',
-        help='Option is `local`. Select `local` if you want search engine to be deployed on local cluster',
+        help='Option is `local` and `remote`. Select `local` if you want search engine to be deployed on local '
+        'cluster. Select `remote` to deploy it on Jina Cloud',
         type=str,
     )
 

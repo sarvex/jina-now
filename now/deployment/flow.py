@@ -1,6 +1,7 @@
 import json
 import os.path
 import pathlib
+from collections import namedtuple
 from os.path import expanduser as user
 from time import sleep
 
@@ -11,12 +12,38 @@ from tqdm import tqdm
 from yaspin.spinners import Spinners
 
 from now.cloud_manager import is_local_cluster
-from now.constants import JC_SECRET
+from now.constants import JC_SECRET, Modalities
 from now.deployment.deployment import apply_replace, cmd, deploy_wolf
+from now.dialog import UserInput
+from now.finetuning.settings import FinetuneSettings
 from now.log.log import yaspin_extended
 from now.utils import sigmap
 
 cur_dir = pathlib.Path(__file__).parent.resolve()
+_ExecutorConfig = namedtuple('_ExecutorConfig', 'name, uses, uses_with')
+
+
+def get_encoder_config(user_input: UserInput) -> _ExecutorConfig:
+    """
+    Gets the correct Executor running the pre-trained model given the user configuration.
+    :param user_input: Configures user input.
+    :return: Small data-transfer-object with information about the executor
+    """
+    if (
+        user_input.output_modality == Modalities.IMAGE
+        or user_input.output_modality == Modalities.TEXT
+    ):
+        return _ExecutorConfig(
+            name='clip',
+            uses=f'jinahub+docker://CLIPEncoder/v0.2.1',
+            uses_with={'pretrained_model_name_or_path': user_input.model_variant},
+        )
+    elif user_input.output_modality == Modalities.MUSIC:
+        return _ExecutorConfig(
+            name='openl3clip',
+            uses=f'jinahub+docker://BiModalMusicTextEncoder',
+            uses_with={},
+        )
 
 
 def batch(data_list, n=1):
@@ -103,70 +130,70 @@ def deploy_k8s(f, ns, num_pods, tmpdir, kubectl_path):
 
 
 def get_custom_env_file(
-    indexer_name,
-    encoder_name,
-    linear_head_name,
-    model,
-    output_dim,
-    embed_size,
-    finetuning,
+    user_input: UserInput,
+    finetune_settings: FinetuneSettings,
     tmpdir,
 ):
+    suffix = 'docker' if user_input.deployment_type == 'remote' else 'docker'
+
+    indexer_name = f'jinahub+{suffix}://DocarrayIndexer'
+    encoder_config = get_encoder_config(user_input)
+    linear_head_name = f'jinahub+{suffix}://{finetune_settings.finetuned_model_name}'
+
     env_file = os.path.join(tmpdir, 'dot.env')
     with open(env_file, 'w+') as fp:
-        fp.write(
-            f'ENCODER_NAME={encoder_name}\n'
-            f'CLIP_MODEL_NAME={model}\n'
-            f'OUTPUT_DIM={output_dim}\n'
-            f'EMBED_DIM={embed_size}\n'
+        if finetune_settings.bi_modal:
+            pre_trained_embedding_size = (
+                finetune_settings.pre_trained_embedding_size * 2
+            )
+        else:
+            pre_trained_embedding_size = finetune_settings.pre_trained_embedding_size
+        config_string = (
+            f'ENCODER_NAME={encoder_config.uses}\n'
+            f'FINETUNE_LAYER_SIZE={finetune_settings.finetune_layer_size}\n'
+            f'PRE_TRAINED_EMBEDDINGS_SIZE={pre_trained_embedding_size}\n'
             f'INDEXER_NAME={indexer_name}\n'
         )
-        if finetuning:
+        if encoder_config.uses_with.get('pretrained_model_name_or_path'):
+            config_string += f'CLIP_MODEL_NAME={encoder_config.uses_with["pretrained_model_name_or_path"]}\n'
+        fp.write(config_string)
+        if finetune_settings.perform_finetuning:
             fp.write(f'LINEAR_HEAD_NAME={linear_head_name}\n')
 
     return env_file if env_file else None
 
 
+def get_flow_yaml_name(output_modality: Modalities, finetuning: bool) -> str:
+    options = {
+        Modalities.IMAGE: {0: 'flow-clip.yml', 1: 'ft-flow-clip.yml'},
+        Modalities.MUSIC: {1: 'ft-flow-music.yml'},
+        Modalities.TEXT: {0: 'flow-clip.yml'},
+    }
+    return options[output_modality][finetuning]
+
+
 def deploy_flow(
-    executor_name,
-    output_modality,
-    index,
-    vision_model,
-    final_layer_output_dim,
-    embedding_size,
-    tmpdir,
-    finetuning,
-    kubectl_path,
-    deployment_type,
+    user_input: UserInput,
+    finetune_settings: FinetuneSettings,
+    index: DocumentArray,
+    tmpdir: str,
+    kubectl_path: str,
 ):
     from jina import Flow
     from jina.clients import Client
 
-    suffix = 'docker' if deployment_type == 'remote' else 'docker'
+    finetuning = finetune_settings.perform_finetuning
 
-    indexer_name = f'jinahub+{suffix}://DocarrayIndexer'
-    encoder_name = f'jinahub+{suffix}://CLIPEncoder/v0.2.1'
-    executor_name = f'jinahub+{suffix}://{executor_name}'
-
-    env_file = get_custom_env_file(
-        indexer_name,
-        encoder_name,
-        executor_name,
-        vision_model,
-        final_layer_output_dim,
-        embedding_size,
-        finetuning,
-        tmpdir,
-    )
+    env_file = get_custom_env_file(user_input, finetune_settings, tmpdir)
 
     ns = 'nowapi'
-    if deployment_type == 'remote':
-        # Deploy it on wolf
-        if finetuning:
-            flow_path = os.path.join(cur_dir, 'flow', 'ft-flow.yml')
-        else:
-            flow_path = os.path.join(cur_dir, 'flow', 'flow.yml')
-        flow = deploy_wolf(path=flow_path, env_file=env_file, name=ns)
+
+    yaml_name = get_flow_yaml_name(user_input.output_modality, finetuning)
+
+    if user_input.deployment_type == 'remote':
+        flow = deploy_wolf(
+            path=os.path.join(cur_dir, 'flow', yaml_name), env_file=env_file, name=ns
+        )
         host = flow.gateway
         client = Client(host=host)
 
@@ -183,7 +210,6 @@ def deploy_flow(
         from dotenv import load_dotenv
 
         load_dotenv(env_file)
-        yaml_name = 'ft-flow.yml' if finetuning else 'flow.yml'
         f = Flow.load_config(os.path.join(cur_dir, 'flow', yaml_name))
         (
             gateway_host,
@@ -193,7 +219,7 @@ def deploy_flow(
         ) = deploy_k8s(
             f,
             ns,
-            2 + (2 if finetuning else 1),
+            3 + (1 if finetuning else 0),
             tmpdir,
             kubectl_path=kubectl_path,
         )
@@ -203,9 +229,9 @@ def deploy_flow(
     if os.path.exists(env_file):
         os.remove(env_file)
 
-    if output_modality == 'image':
+    if user_input.output_modality == 'image':
         index = [x for x in index if x.text == '']
-    elif output_modality == 'text':
+    elif user_input.output_modality == 'text':
         index = [x for x in index if x.text != '']
     print(f'▶ indexing {len(index)} documents')
     request_size = 64

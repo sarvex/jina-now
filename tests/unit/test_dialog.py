@@ -8,6 +8,7 @@ from typing import Dict
 import pytest
 from pytest_mock import MockerFixture
 
+from now.constants import DemoDatasets
 from now.dialog import (
     IMAGE_MODEL_QUALITY_MAP,
     Modalities,
@@ -28,7 +29,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
             'output_modality': Modalities.MUSIC,
-            'data': 'music-genres-small',
+            'data': 'music-genres-mid',
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -164,20 +165,18 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
         {
             'output_modality': Modalities.IMAGE,
             'data': 'tll',
-            'cluster': 'new',
             'quality': 'good',
-            'deployment_type': 'gke',
+            'deployment_type': 'remote',
         },
         {'os_type': 'darwin', 'arch': 'x86_64'},
         UserInput(
             is_custom_dataset=False,
-            create_new_cluster=True,
             model_variant=IMAGE_MODEL_QUALITY_MAP['good'][1],
         ),
     ),
     (
         {
-            'data': 'music-genres-small',
+            'data': 'music-genres-mid',
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -189,7 +188,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'data': 'tll',
+            'data': DemoDatasets.TLL,
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -202,7 +201,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'data': 'pop-lyrics',
+            'data': DemoDatasets.ROCK_LYRICS,
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -218,7 +217,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'output_modality': Modalities.TEXT,
         },
         {
-            'data': 'pop-lyrics',
+            'data': DemoDatasets.POP_LYRICS,
             'cluster': 'new',
             'deployment_type': 'local',
             'quality': 'medium',

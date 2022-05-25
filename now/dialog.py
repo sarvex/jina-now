@@ -20,14 +20,15 @@ from now.constants import (
     AVAILABLE_DATASET,
     IMAGE_MODEL_QUALITY_MAP,
     DatasetTypes,
+    DemoDatasets,
     Modalities,
     Qualities,
 )
 from now.deployment.deployment import cmd
 from now.log.log import yaspin_extended
-from now.thridparty.PyInquirer import Separator
-from now.thridparty.PyInquirer.prompt import prompt
-from now.utils import ffmpeg_is_installed, gcloud_is_installed, sigmap
+from now.thirdparty.PyInquirer import Separator
+from now.thirdparty.PyInquirer.prompt import prompt
+from now.utils import ffmpeg_is_installed, sigmap
 
 cur_dir = pathlib.Path(__file__).parent.resolve()
 NEW_CLUSTER = {'name': '🐣 create new', 'value': 'new'}
@@ -53,7 +54,7 @@ class UserInput:
 
     # cluster related
     cluster: Optional[str] = None
-    create_new_cluster: Optional[bool] = None
+    create_new_cluster: Optional[bool] = False
     deployment_type: Optional[str] = None
 
 
@@ -134,22 +135,22 @@ def _configure_dataset_image(user_input: UserInput, **kwargs) -> None:
         name='data',
         prompt_message='What dataset do you want to use?',
         choices=[
-            {'name': '🖼  artworks (≈8K docs)', 'value': 'best-artworks'},
+            {'name': '🖼  artworks (≈8K docs)', 'value': DemoDatasets.BEST_ARTWORKS},
             {
                 'name': '💰 nft - bored apes (10K docs)',
-                'value': 'nft-monkey',
+                'value': DemoDatasets.NFT_MONKEY,
             },
-            {'name': '👬 totally looks like (≈12K docs)', 'value': 'tll'},
-            {'name': '🦆 birds (≈12K docs)', 'value': 'bird-species'},
-            {'name': '🚗 cars (≈16K docs)', 'value': 'stanford-cars'},
+            {'name': '👬 totally looks like (≈12K docs)', 'value': DemoDatasets.TLL},
+            {'name': '🦆 birds (≈12K docs)', 'value': DemoDatasets.BIRD_SPECIES},
+            {'name': '🚗 cars (≈16K docs)', 'value': DemoDatasets.STANFORD_CARS},
             {
                 'name': '🏞 geolocation (≈50K docs)',
-                'value': 'geolocation-geoguessr',
+                'value': DemoDatasets.GEOLOCATION_GEOGUESSR,
             },
-            {'name': '👕 fashion (≈53K docs)', 'value': 'deepfashion'},
+            {'name': '👕 fashion (≈53K docs)', 'value': DemoDatasets.DEEP_FASHION},
             {
                 'name': '☢️ chest x-ray (≈100K docs)',
-                'value': 'nih-chest-xrays',
+                'value': DemoDatasets.NIH_CHEST_XRAYS,
             },
             Separator(),
             {
@@ -186,8 +187,14 @@ def _configure_dataset_music(user_input: UserInput, **kwargs):
         name='data',
         prompt_message='What dataset do you want to use?',
         choices=[
-            {'name': '🎸 music small (≈2K docs)', 'value': 'music-genres-small'},
-            {'name': '🎸 music large (≈10K docs)', 'value': 'music-genres-large'},
+            {
+                'name': '🎸 music mid (≈2K docs)',
+                'value': DemoDatasets.MUSIC_GENRES_MID,
+            },
+            {
+                'name': '🎸 music large (≈10K docs)',
+                'value': DemoDatasets.MUSIC_GENRES_LARGE,
+            },
             Separator(),
             {
                 'name': '✨ custom',
@@ -206,33 +213,34 @@ def _configure_custom_dataset(user_input: UserInput, **kwargs) -> None:
         choices=[
             {
                 'name': 'docarray.pull id (recommended)',
-                'value': 'docarray',
+                'value': DatasetTypes.DOCARRAY,
             },
             {
                 'name': 'docarray URL',
-                'value': 'url',
+                'value': DatasetTypes.URL,
             },
             {
                 'name': 'local path',
-                'value': 'path',
+                'value': DatasetTypes.PATH,
             },
         ],
         **kwargs,
     )
-
-    if user_input.custom_dataset_type == 'docarray':
+    if user_input.custom_dataset_type == DatasetTypes.DOCARRAY:
         user_input.dataset_secret = _prompt_value(
             name='dataset_secret',
             prompt_message='Please enter your docarray secret.',
             prompt_type='password',
         )
-    elif user_input.custom_dataset_type == 'url':
+
+    elif user_input.custom_dataset_type == DatasetTypes.URL:
         user_input.dataset_url = _prompt_value(
             name='dataset_url',
             prompt_message='Please paste in your url for the docarray.',
             prompt_type='input',
         )
-    elif user_input.custom_dataset_type == 'path':
+
+    elif user_input.custom_dataset_type == DatasetTypes.PATH:
         user_input.dataset_path = _prompt_value(
             name='dataset_path',
             prompt_message='Please enter the path to the local folder.',
@@ -260,31 +268,19 @@ def _configure_cluster(user_input: UserInput, skip=False, **kwargs):
             prompt_type='list',
             **kwargs,
         )
-        if user_input.deployment_type == 'gke':
-            _maybe_install_gke(**kwargs)
-        elif user_input.deployment_type == 'remote':
-            _maybe_login_wolf()
-            os.environ['JCLOUD_NO_SURVEY'] = '1'
 
     if not skip:
         ask_deployment()
 
-    choices = None
-    user_input.create_new_cluster = False
-
-    if user_input.deployment_type == 'local':
+    if user_input.deployment_type == 'remote':
+        _maybe_login_wolf()
+        os.environ['JCLOUD_NO_SURVEY'] = '1'
+    else:
+        # get all local cluster contexts
         choices = _construct_local_cluster_choices(
             active_context=kwargs.get('active_context'), contexts=kwargs.get('contexts')
         )
-    elif user_input.deployment_type == 'gke':
-        choices = _construct_gke_cluster_choices(
-            active_context=kwargs.get('active_context'), contexts=kwargs.get('contexts')
-        )
-    else:
-        # Do we have any options to show choices here for WOLF?
-        pass
-
-    if choices is not None:
+        # prompt the local cluster context choices to the user
         user_input.cluster = _prompt_value(
             name='cluster',
             choices=choices,
@@ -320,11 +316,11 @@ def _configure_quality(user_input: UserInput, **kwargs) -> None:
         prompt_type='list',
         **kwargs,
     )
-    if user_input.quality == 'medium':
+    if user_input.quality == Qualities.MEDIUM:
         print('  🚀 you trade-off a bit of quality for having the best speed')
-    elif user_input.quality == 'good':
+    elif user_input.quality == Qualities.GOOD:
         print('  ⚖️ you have the best out of speed and quality')
-    elif user_input.quality == 'excellent':
+    elif user_input.quality == Qualities.EXCELLENT:
         print('  ✨ you trade-off speed to having the best quality')
 
     _, user_input.model_variant = IMAGE_MODEL_QUALITY_MAP[user_input.quality]
@@ -336,16 +332,6 @@ def _construct_local_cluster_choices(active_context, contexts):
     # filter contexts with `gke`
     if len(context_names) > 0 and len(context_names[0]) > 0:
         context_names = [context for context in context_names if 'gke' not in context]
-        choices = context_names + choices
-    return choices
-
-
-def _construct_gke_cluster_choices(active_context, contexts):
-    context_names = _get_context_names(contexts, active_context)
-    choices = [NEW_CLUSTER]
-    # filter contexts with `gke`
-    if len(context_names) > 0 and len(context_names[0]) > 0:
-        context_names = [context for context in context_names if 'gke' in context]
         choices = context_names + choices
     return choices
 
@@ -404,18 +390,6 @@ def _cluster_running(cluster):
     except Exception as e:
         return False
     return True
-
-
-def _maybe_install_gke(os_type: str, arch: str):
-    if not gcloud_is_installed():
-        if not os.path.exists(user('~/.cache/jina-now/google-cloud-sdk')):
-            with yaspin_extended(
-                sigmap=sigmap, text='Setting up gcloud', color='green'
-            ) as spinner:
-                cmd(
-                    f'/bin/bash {cur_dir}/scripts/install_gcloud.sh {os_type} {arch}',
-                )
-                spinner.ok('🛠️')
 
 
 def _maybe_login_wolf():

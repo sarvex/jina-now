@@ -8,7 +8,7 @@ import cowsay
 from now import run_backend, run_playground
 from now.cloud_manager import setup_cluster
 from now.constants import JC_SECRET, SURVEY_LINK
-from now.deployment.deployment import cmd, terminate_wolf
+from now.deployment.deployment import cmd, status_wolf, terminate_wolf
 from now.dialog import _get_context_names, configure_user_input, maybe_prompt_user
 from now.log.log import yaspin_extended
 from now.system_information import get_system_state
@@ -50,13 +50,11 @@ def stop_now(contexts, active_context, **kwargs):
             cmd(f'{kwargs["kind_path"]} delete clusters jina-now')
             spinner.ok('💀')
         cowsay.cow('local jina NOW cluster removed')
-    elif 'nowapi' in cluster:
-        with yaspin_extended(
-            sigmap=sigmap, text=f"Remove remote Flow {cluster}", color="green"
-        ) as spinner:
+    elif 'wolf.jina.ai' in cluster:
+        _result = status_wolf(flow_id)
+        if _result['status'] == 'ALIVE':
             terminate_wolf(flow_id)
-            os.remove(user(JC_SECRET))
-            spinner.ok('💀')
+        os.remove(user(JC_SECRET))
         cowsay.cow(f'remote Flow `{cluster}` removed')
     else:
         with yaspin_extended(
@@ -89,9 +87,7 @@ def start_now(os_type, arch, contexts, active_context, is_debug, **kwargs):
             gateway_port,
             gateway_host_internal,
             gateway_port_internal,
-        ) = run_backend.run(
-            user_input, is_debug, tmpdir, kubectl_path=kwargs['kubectl_path']
-        )
+        ) = run_backend.run(user_input, tmpdir, kubectl_path=kwargs['kubectl_path'])
 
         if gateway_host == 'localhost' or 'NOW_CI_RUN' in os.environ:
             # only deploy playground when running locally or when testing
@@ -138,9 +134,13 @@ def run_k8s(os_type: str = 'linux', arch: str = 'x86_64', **kwargs):
 
 if __name__ == '__main__':
     run_k8s(
-        output_modality='music',
-        data='music-genres-small',
+        output_modality='image',
+        data='bird-species',
         cluster='new',
+        quality='medium',
         deployment_type='local',
         kubectl_path='/usr/local/bin/kubectl',
+        kind_path='/Users/sebastianlettner/.cache/jina-now/kind',
+        proceed=True,
+        now='start',
     )
