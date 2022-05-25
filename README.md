@@ -59,7 +59,7 @@ custom
 deployment
 <img width="547" alt="question-deployment" src="https://user-images.githubusercontent.com/11627845/170256038-8c44a5b8-985a-4fe7-af5d-16df0244f4bb.png">
 ds
-<img width="497" alt="question-ds" src="https://user-images.githubusercontent.com/11627845/170256042-1e414599-43f0-4b4f-8873-2f601b6e901f.png">
+<img width="422" alt="question-ds" src="https://user-images.githubusercontent.com/11627845/170263852-46776391-a906-417c-8528-e1fb7058c33a.png">
 
 local-path
 <img width="506" alt="question-local-path" src="https://user-images.githubusercontent.com/11627845/170256044-67e82e86-6439-4a3e-98f1-dbdf1940de67.png">
