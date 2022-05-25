@@ -6,29 +6,17 @@ on:
       - main
 
 jobs:
-  prep-testbed:
+  core-test:
     if: |
       !startsWith(github.event.head_commit.message, 'chore') &&
       !startsWith(github.event.head_commit.message, 'build: hotfix') &&
       !endsWith(github.event.head_commit.message, 'reformatted by jina-dev-bot')
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - id: set-matrix
-        run: |
-          sudo apt-get install jq
-          echo "::set-output name=matrix::$(bash scripts/get-all-test-paths.sh)"
-    outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
-
-  core-test:
-    needs: prep-testbed
-    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         python-version: [3.7]
-        test-path: ${{fromJson(needs.prep-testbed.outputs.matrix)}}
+        group: [1, 2, 3, 4]     # set to the number of end-to-end tests
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
@@ -49,39 +37,18 @@ jobs:
           echo ~/.jina/config.json
         env:
           WOLF_TOKEN: ${{ secrets.WOLF_TOKEN }}
-      - name: Start deployment containers
-        run: |
-          docker-compose -f docker-compose.yml up -d
       - name: Test
         id: test
-        run: |
-          pytest --suppress-no-test-exit-code --cov=now --cov-report=xml \
-            -v -s -m "not gpu" ${{ matrix.test-path }}
-          echo "::set-output name=codecov_flag::now"
-        timeout-minutes: 25
+        run: pytest --suppress-no-test-exit-code -v -s -m "not gpu" --splits 4 --group ${{ matrix.group }} tests/
+        timeout-minutes: 20
       - name: Setup tmate session for debugging
         if: ${{ failure() }}
         uses: mxschmitt/action-tmate@v3
-        timeout-minutes: 30
-      - name: Stop deployment containers
-        run: |
-          docker-compose -f docker-compose.yml down
-      - name: Check codecov file
-        id: check_files
-        uses: andstor/file-existence-action@v1
-        with:
-          files: "coverage.xml"
-      - name: Upload coverage from test to Codecov
-        uses: codecov/codecov-action@v2
-        if: steps.check_files.outputs.files_exists == 'true' && ${{ matrix.python-version }} == '3.7'
-        with:
-          file: coverage.xml
-          flags: ${{ steps.test.outputs.codecov_flag }}
-          fail_ci_if_error: false
+        timeout-minutes: 120
 
   prerelease:
-    needs: core-test
     runs-on: ubuntu-latest
+    needs: core-test
     steps:
       - uses: actions/checkout@v2
         with:
@@ -117,8 +84,8 @@ jobs:
         with:
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          application_name: now-bff-playground
-          environment_name: Nowbffplayground-env
+          application_name: now-bff-frontend
+          environment_name: Nowbfffrontend-env
           version_label: ${{ github.sha }}
           region: "eu-west-1"
           deployment_package: deploy.zip
