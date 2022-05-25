@@ -138,10 +138,11 @@ def deploy_streamlit():
         print(f"Searching by image")
         query_doc = document
         if query_doc.blob == b'':
-            if (query_doc.uri is not None) and query_doc.uri != '':
-                query_doc.load_uri_to_blob()
-            elif query_doc.tensor is not None:
+            if query_doc.tensor is not None:
                 query_doc.convert_tensor_to_blob()
+            elif (query_doc.uri is not None) and query_doc.uri != '':
+                query_doc.load_uri_to_blob()
+
             query_doc.convert_blob_to_image_tensor()
 
         data = {
