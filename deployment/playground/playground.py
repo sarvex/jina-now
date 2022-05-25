@@ -85,9 +85,9 @@ def deploy_streamlit():
             da_img, da_txt = load_data(data_dir + DATA + '.img10.bin'), load_data(
                 data_dir + DATA + '.txt10.bin'
             )
-            # fix for nft-monkey image samples
-            if DATA == 'nft-monkey':
-                da_img[:, 'mime_type'] = 'image'
+            # # fix for nft-monkey image samples
+            # if DATA == 'nft-monkey':
+            #     da_img[:, 'mime_type'] = 'image'
         elif OUTPUT_MODALITY == 'text':
             # for now deactivated sample images for text
             output_modality_dir = 'text'
@@ -141,10 +141,7 @@ def deploy_streamlit():
         print(f"Searching by image")
         query_doc = document
         if query_doc.blob == b'':
-            # fix for nft-monkey image samples
-            if query_doc.tensor is not None and DATA == 'nft-monkey':
-                query_doc.convert_tensor_to_blob()
-            elif (query_doc.uri is not None) and query_doc.uri != '':
+            if (query_doc.uri is not None) and query_doc.uri != '':
                 query_doc.load_uri_to_blob()
             elif query_doc.tensor is not None:
                 query_doc.convert_tensor_to_blob()
