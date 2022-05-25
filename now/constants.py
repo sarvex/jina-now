@@ -97,7 +97,7 @@ SURVEY_LINK = 'https://docs.google.com/forms/d/e/1FAIpQLSex5gMN4wuQc63TriwRqREBf
 PRE_TRAINED_LINEAR_HEADS_MUSIC = {
     DemoDatasets.MUSIC_GENRES_MID: 'FineTunedLinearHeadEncoder:93ea59dbd1ee3fe0bdc44252c6e86a87/'
     'linear_head_encoder_music_2k',
-    DemoDatasets.MUSIC_GENRES_LARGE: 'jinahub://FineTunedLinearHeadEncoder:93ea59dbd1ee3fe0bdc44252c6e86a87/'
+    DemoDatasets.MUSIC_GENRES_LARGE: 'FineTunedLinearHeadEncoder:93ea59dbd1ee3fe0bdc44252c6e86a87/'
     'linear_head_encoder_music_10k',
     DemoDatasets.MUSIC_GENRES_EXTRA_LARGE: 'FineTunedLinearHeadEncoder:93ea59dbd1ee3fe0bdc44252c6e86a87/'
     'linear_head_encoder_music_40k',
