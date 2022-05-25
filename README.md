@@ -4,7 +4,7 @@
 
 
 <br>
-One line to host them all. Bootstrap your image search case in minutes. <a href="https://docs.google.com/forms/d/e/1FAIpQLSex5gMN4wuQc63TriwRqREBfdijwOrATPe7RotcPaT1SSPfEw/viewform?usp=pp_url&entry.1126738320=Jina+NOW+pip+package">Survey</a>
+One command to host them all. Bring your search case into the cloud in minutes. <a href="https://docs.google.com/forms/d/e/1FAIpQLSex5gMN4wuQc63TriwRqREBfdijwOrATPe7RotcPaT1SSPfEw/viewform?usp=pp_url&entry.1126738320=Jina+NOW+pip+package">Survey</a>
 </p>
 
 <p align=center>
@@ -18,15 +18,13 @@ One line to host them all. Bootstrap your image search case in minutes. <a href=
 <img src="https://user-images.githubusercontent.com/11627845/164569398-5ef22a41-e2e1-438a-88a5-2ac43ad9426d.gif" alt="Jina NOW logo: The data structure for unstructured data" width="600px">
 
 
-NOW gives the world access to customized neural image search in just one line of code.
+NOW gives the world access to neural image search in just one command execution.
 Main features
+- ⛅ **Cloud**: We take care of the deployment and maintenance
 - 🐥 **Easy**: Minimal effort required to set up your search case
 - 🐎 **Fast**: Set up your search case within minutes
 - 🌈 **Quality**: If you provide labels to your documents, Jina NOW fine-tunes a model for you
-- 🌳 **Reliable**: We take care of the deployment and maintenance (coming soon)
 - ✨ **Nocode**: Deployment can be done by non-technical people
-
-
 
 
 ### Installation
@@ -34,7 +32,6 @@ Main features
 ```bash
 pip install jina-now
 ```
-
 
 In case you need sudo for running Docker, install and use jina-now using sudo as well.
 
@@ -44,9 +41,12 @@ For the Mac M1 it is generally recommended using a conda environment as outlined
 In a new conda environment first execute `conda install grpcio tokenizers protobuf`. Then run `pip install jina-now`.
 
 ### Usage
+You can use the following command to start Jina NOW.
 ```bash
-jina now [start | stop] --data [<pushpullid> | <localpath> | <url>] --quality [medium | good | excellent] --cluster <k8s-cluster-name>
+jina now start
 ```
+First, you will get asked what search case you would like to deploy. 
+
 
 ### Quick Start
 ```bash
