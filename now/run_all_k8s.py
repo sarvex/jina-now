@@ -5,7 +5,7 @@ from os.path import expanduser as user
 
 import cowsay
 
-from now import run_backend
+from now import run_backend, run_bff_playground
 from now.cloud_manager import setup_cluster
 from now.constants import JC_SECRET, SURVEY_LINK
 from now.deployment.deployment import cmd, status_wolf, terminate_wolf
@@ -14,7 +14,7 @@ from now.log.log import yaspin_extended
 from now.system_information import get_system_state
 from now.utils import sigmap
 
-docker_bff_playground_tag = '0.0.37'
+docker_bff_playground_tag = '0.0.38'
 
 
 def get_remote_flow_details():
@@ -91,7 +91,7 @@ def start_now(os_type, arch, contexts, active_context, is_debug, **kwargs):
 
         if gateway_host == 'localhost' or 'NOW_CI_RUN' in os.environ:
             # only deploy playground when running locally or when testing
-            bff_playground_host, bff_port, playground_port = run_playground.run(
+            bff_playground_host, bff_port, playground_port = run_bff_playground.run(
                 output_modality=user_input.output_modality,
                 dataset=user_input.data,
                 gateway_host=gateway_host,
@@ -101,7 +101,7 @@ def start_now(os_type, arch, contexts, active_context, is_debug, **kwargs):
                 kubectl_path=kwargs['kubectl_path'],
             )
         else:
-            bff_playground_host = 'https://runnow.jina.ai'
+            bff_playground_host = 'https://nowrun.jina.ai'
             bff_port = '80'
             playground_port = '80'
         # TODO: add separate BFF endpoints in print output
