@@ -52,24 +52,51 @@ First, you will get asked what search case you would like to deploy.
 ```bash
 jina now start
 ```
-Cluster
-<img width="643" alt="question-cluster" src="https://user-images.githubusercontent.com/11627845/170256027-99798fae-3ec4-42dc-8737-843f4a23f941.png">
-custom
-<img width="724" alt="question-custom" src="https://user-images.githubusercontent.com/11627845/170256031-b868058b-dec6-46aa-b2cf-afac4b33d996.png">
-deployment
-<img width="547" alt="question-deployment" src="https://user-images.githubusercontent.com/11627845/170256038-8c44a5b8-985a-4fe7-af5d-16df0244f4bb.png">
-ds
-<img width="422" alt="question-ds" src="https://user-images.githubusercontent.com/11627845/170263852-46776391-a906-417c-8528-e1fb7058c33a.png">
+First you will be prompted to choose the modality. As for now, we support to search images or text. But in the future, we will add many more options here.
 
-local-path
-<img width="506" alt="question-local-path" src="https://user-images.githubusercontent.com/11627845/170256044-67e82e86-6439-4a3e-98f1-dbdf1940de67.png">
-
-modality
 <img width="497" alt="question-modality" src="https://user-images.githubusercontent.com/11627845/170256046-4d20c79e-802e-4d28-8be9-4e5ebffd0e28.png">
 
-quality
+In the next step, you get asked to select the dataset for your search app. You could either choose one of our existing datasets or select `custom` to index your own data.
+
+<img width="422" alt="question-ds" src="https://user-images.githubusercontent.com/11627845/170263852-46776391-a906-417c-8528-e1fb7058c33a.png">
+
+When choosing `custom`, you can decide in what format you provide your data. The recommended way, is to push a document array described [here](https://docarray.jina.ai/fundamentals/documentarray/serialization/#from-to-cloud).
+Alternatively, you can specify a URL where a document array can be downloaded from.
+Also, it is possible to provide a local folder where the Images are located. In case of text search it would be a local text file.
+
+<img width="724" alt="question-custom" src="https://user-images.githubusercontent.com/11627845/170256031-b868058b-dec6-46aa-b2cf-afac4b33d996.png">
+
+If you chose `docarray.pull`, you will be asked to insert your docarray id. 
+Likewise, if you chose docarray URL, you will be prompted to enter the URL.
+In case you selected local path, `jina-now` will ask you to enter the local path of the data folder as shown bellow.
+
+<img width="506" alt="question-local-path" src="https://user-images.githubusercontent.com/11627845/170256044-67e82e86-6439-4a3e-98f1-dbdf1940de67.png">
+
+The search app can be deployed in different qualities. Have in mind that a better quality leads to a larger ai model being deployed and therefore inference will be a bit slower.
+
 <img width="497" alt="question-quality" src="https://user-images.githubusercontent.com/11627845/170256049-18add461-f666-48f4-9dfe-52be9404a73d.png">
-  
+
+Currently, we provide two deployment options. We recommend using the cloud deployment. This will run your search app on our servers.
+Alternatively, you can select the local deployment option.
+
+<img width="547" alt="question-deployment" src="https://user-images.githubusercontent.com/11627845/170256038-8c44a5b8-985a-4fe7-af5d-16df0244f4bb.png">
+
+In case of local deployment, you will be asked where you want to deploy it. Jina NOW reads your local .kube/config and lists all kubernetes clusters you have access to. 
+If you don't want to use an existing cluster, you can create a new one locally.
+<img width="643" alt="question-cluster" src="https://user-images.githubusercontent.com/11627845/170256027-99798fae-3ec4-42dc-8737-843f4a23f941.png">
+
+After the program execution finished, two links will be shown to you. The first one brings you to a playground where you can run example queries and experiment with the search case.
+The second url leads you to the swagger ui which is useful for Frontend integration.
+
+<image console output  here>
+
+Example of the playground.
+
+<playground image here>
+
+Example of the swagger ui.
+
+<swagger ui image here>
 
   
 ### Use CLI Parameters
