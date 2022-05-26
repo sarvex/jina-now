@@ -330,4 +330,9 @@ def flow_definition(dirpath) -> Dict:
         return yaml.safe_load(f.read())
 
 
+class BetterEnum:
+    def __iter__(self):
+        return [x for x in dir(self) if ('__' not in x and x != 'as_list')].__iter__()
+
+
 sigmap = {signal.SIGINT: my_handler, signal.SIGTERM: my_handler}
