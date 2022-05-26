@@ -19,6 +19,7 @@ from pyfiglet import Figlet
 from now.constants import (
     AVAILABLE_DATASET,
     IMAGE_MODEL_QUALITY_MAP,
+    Apps,
     DatasetTypes,
     DemoDatasets,
     Modalities,
@@ -38,6 +39,7 @@ AVAILABLE_SOON = 'will be available in upcoming versions'
 @dataclass
 class UserInput:
     output_modality: Optional[Modalities] = None
+    app: Optional[Apps] = None
 
     # data related
     data: Optional[str] = None
@@ -58,14 +60,18 @@ class UserInput:
     deployment_type: Optional[str] = None
 
 
+def _configure_app_options(user_input, **kwargs):
+    user_input
+    _configure_dataset(user_input, **kwargs)
+    _configure_quality(user_input, **kwargs)
+
+
 def configure_user_input(**kwargs) -> UserInput:
     print_headline()
 
     user_input = UserInput()
     _configure_app(user_input, **kwargs)
     _configure_app_options(user_input, **kwargs)
-    _configure_dataset(user_input, **kwargs)
-    _configure_quality(user_input, **kwargs)
     _configure_cluster(user_input, **kwargs)
 
     return user_input
@@ -94,13 +100,14 @@ def print_headline():
 def _configure_app(user_input: UserInput, **kwargs) -> None:
     """Asks user questions to set output_modality in user_input"""
     user_input.output_modality = _prompt_value(
-        name='output_modality',
+        name='app',
         choices=[
-            {'name': '🏞 Image Search', 'value': Modalities.TEXT_TO_IMAGE},
-            {'name': '📝 Text Search (experimental)', 'value': Modalities.TEXT},
+            {'name': '📝 ▶ 🏞 Text to Image search', 'value': Apps.TEXT_TO_IMAGE},
+            {'name': '🏞 ▶ 📝 Image to Text search', 'value': Apps.IMAGE_TO_TEXT},
+            {'name': '🏞 ▶ 🏞 Image to Image search', 'value': Apps.IMAGE_TO_TEXT},
             {
-                'name': '🥁 Music Search',
-                'value': Modalities.MUSIC_TO_MUSIC,
+                'name': '🥁 ▶ 🥁 Music to Music Search',
+                'value': Apps.MUSIC_TO_MUSIC,
                 'disabled': AVAILABLE_SOON,
             },
         ],

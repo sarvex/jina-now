@@ -2,9 +2,16 @@ from now.utils import BetterEnum
 
 
 class Modalities(BetterEnum):
+    TEXT = 'text'
     IMAGE = 'image'
     MUSIC = 'music'
-    TEXT = 'text'
+
+
+class Apps(BetterEnum):
+    TEXT_TO_IMAGE = 'text_to_image'
+    IMAGE_TO_TEXT = 'image_to_text'
+    IMAGE_TO_IMAGE = 'image_to_image'
+    MUSIC_TO_MUSIC = 'music_to_music'
 
 
 class DatasetTypes(BetterEnum):
@@ -54,7 +61,7 @@ class DemoDatasets:
 
 
 AVAILABLE_DATASET = {
-    Modalities.TEXT_TO_IMAGE: [
+    Modalities.IMAGE: [
         DemoDatasets.BEST_ARTWORKS,
         DemoDatasets.NFT_MONKEY,
         DemoDatasets.TLL,
@@ -64,7 +71,7 @@ AVAILABLE_DATASET = {
         DemoDatasets.NIH_CHEST_XRAYS,
         DemoDatasets.GEOLOCATION_GEOGUESSR,
     ],
-    Modalities.MUSIC_TO_MUSIC: [
+    Modalities.MUSIC: [
         DemoDatasets.MUSIC_GENRES_MID,
         DemoDatasets.MUSIC_GENRES_LARGE,
     ],
