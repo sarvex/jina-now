@@ -28,7 +28,7 @@ class CmdPromptMock:
 MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
-            'output_modality': Modalities.MUSIC,
+            'output_modality': Modalities.MUSIC_TO_MUSIC,
             'data': 'music-genres-mid',
             'cluster': 'new',
             'deployment_type': 'local',
@@ -41,7 +41,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'output_modality': Modalities.MUSIC,
+            'output_modality': Modalities.MUSIC_TO_MUSIC,
             'data': 'music-genres-large',
             'cluster': 'new',
             'deployment_type': 'local',
@@ -54,7 +54,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'output_modality': Modalities.IMAGE,
+            'output_modality': Modalities.TEXT_TO_IMAGE,
             'data': 'tll',
             'cluster': 'new',
             'quality': 'good',
@@ -69,7 +69,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'output_modality': Modalities.IMAGE,
+            'output_modality': Modalities.TEXT_TO_IMAGE,
             'data': 'nih-chest-xrays',
             'cluster': 'new',
             'quality': 'medium',
@@ -84,7 +84,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'output_modality': Modalities.IMAGE,
+            'output_modality': Modalities.TEXT_TO_IMAGE,
             'data': 'custom',
             'custom_dataset_type': 'docarray',
             'dataset_secret': 'xxx',
@@ -101,7 +101,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'output_modality': Modalities.MUSIC,
+            'output_modality': Modalities.MUSIC_TO_MUSIC,
             'data': 'custom',
             'custom_dataset_type': 'docarray',
             'dataset_secret': 'xxx',
@@ -116,7 +116,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'output_modality': Modalities.MUSIC,
+            'output_modality': Modalities.MUSIC_TO_MUSIC,
             'data': 'custom',
             'custom_dataset_type': 'path',
             'dataset_path': 'xxx',
@@ -131,7 +131,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'output_modality': Modalities.MUSIC,
+            'output_modality': Modalities.MUSIC_TO_MUSIC,
             'data': 'custom',
             'custom_dataset_type': 'url',
             'dataset_url': 'xxx',
@@ -146,7 +146,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'output_modality': Modalities.IMAGE,
+            'output_modality': Modalities.TEXT_TO_IMAGE,
             'data': 'custom',
             'custom_dataset_type': 'docarray',
             'dataset_secret': 'xxx',
@@ -163,7 +163,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'output_modality': Modalities.IMAGE,
+            'output_modality': Modalities.TEXT_TO_IMAGE,
             'data': 'tll',
             'quality': 'good',
             'deployment_type': 'remote',
@@ -180,7 +180,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'cluster': 'new',
             'deployment_type': 'local',
         },
-        {'output_modality': Modalities.MUSIC},
+        {'output_modality': Modalities.MUSIC_TO_MUSIC},
         UserInput(
             is_custom_dataset=False,
             create_new_cluster=True,
@@ -192,7 +192,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'cluster': 'new',
             'deployment_type': 'local',
         },
-        {'output_modality': Modalities.IMAGE, 'quality': 'good'},
+        {'output_modality': Modalities.TEXT_TO_IMAGE, 'quality': 'good'},
         UserInput(
             is_custom_dataset=False,
             create_new_cluster=True,

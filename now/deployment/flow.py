@@ -30,7 +30,7 @@ def get_encoder_config(user_input: UserInput) -> _ExecutorConfig:
     :return: Small data-transfer-object with information about the executor
     """
     if (
-        user_input.output_modality == Modalities.IMAGE
+        user_input.output_modality == Modalities.TEXT_TO_IMAGE
         or user_input.output_modality == Modalities.TEXT
     ):
         return _ExecutorConfig(
@@ -38,7 +38,7 @@ def get_encoder_config(user_input: UserInput) -> _ExecutorConfig:
             uses=f'jinahub+docker://CLIPEncoder/v0.2.1',
             uses_with={'pretrained_model_name_or_path': user_input.model_variant},
         )
-    elif user_input.output_modality == Modalities.MUSIC:
+    elif user_input.output_modality == Modalities.MUSIC_TO_MUSIC:
         return _ExecutorConfig(
             name='openl3clip',
             uses=f'jinahub+docker://BiModalMusicTextEncoder',
@@ -165,8 +165,8 @@ def get_custom_env_file(
 
 def get_flow_yaml_name(output_modality: Modalities, finetuning: bool) -> str:
     options = {
-        Modalities.IMAGE: {0: 'flow-clip.yml', 1: 'ft-flow-clip.yml'},
-        Modalities.MUSIC: {1: 'ft-flow-music.yml'},
+        Modalities.TEXT_TO_IMAGE: {0: 'flow-clip.yml', 1: 'ft-flow-clip.yml'},
+        Modalities.MUSIC_TO_MUSIC: {1: 'ft-flow-music.yml'},
         Modalities.TEXT: {0: 'flow-clip.yml'},
     }
     return options[output_modality][finetuning]

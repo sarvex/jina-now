@@ -62,7 +62,8 @@ def configure_user_input(**kwargs) -> UserInput:
     print_headline()
 
     user_input = UserInput()
-    _configure_output_modality(user_input, **kwargs)
+    _configure_app(user_input, **kwargs)
+    _configure_app_options(user_input, **kwargs)
     _configure_dataset(user_input, **kwargs)
     _configure_quality(user_input, **kwargs)
     _configure_cluster(user_input, **kwargs)
@@ -90,16 +91,16 @@ def print_headline():
     print()
 
 
-def _configure_output_modality(user_input: UserInput, **kwargs) -> None:
+def _configure_app(user_input: UserInput, **kwargs) -> None:
     """Asks user questions to set output_modality in user_input"""
     user_input.output_modality = _prompt_value(
         name='output_modality',
         choices=[
-            {'name': '🏞 Image Search', 'value': Modalities.IMAGE},
+            {'name': '🏞 Image Search', 'value': Modalities.TEXT_TO_IMAGE},
             {'name': '📝 Text Search (experimental)', 'value': Modalities.TEXT},
             {
                 'name': '🥁 Music Search',
-                'value': Modalities.MUSIC,
+                'value': Modalities.MUSIC_TO_MUSIC,
                 'disabled': AVAILABLE_SOON,
             },
         ],
@@ -111,11 +112,11 @@ def _configure_output_modality(user_input: UserInput, **kwargs) -> None:
 
 def _configure_dataset(user_input: UserInput, **kwargs) -> None:
     """Asks user to set dataset attribute of user_input"""
-    if user_input.output_modality == Modalities.IMAGE:
+    if user_input.output_modality == Modalities.TEXT_TO_IMAGE:
         _configure_dataset_image(user_input, **kwargs)
     elif user_input.output_modality == Modalities.TEXT:
         _configure_dataset_text(user_input, **kwargs)
-    elif user_input.output_modality == Modalities.MUSIC:
+    elif user_input.output_modality == Modalities.MUSIC_TO_MUSIC:
         if not ffmpeg_is_installed():
             _handle_ffmpeg_install_required()
         _configure_dataset_music(user_input, **kwargs)
@@ -300,7 +301,7 @@ def _configure_cluster(user_input: UserInput, skip=False, **kwargs):
 
 def _configure_quality(user_input: UserInput, **kwargs) -> None:
     """Asks users questions to set quality attribute of user_input"""
-    if user_input.output_modality == Modalities.MUSIC:
+    if user_input.output_modality == Modalities.MUSIC_TO_MUSIC:
         return
     user_input.quality = _prompt_value(
         name='quality',

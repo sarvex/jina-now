@@ -61,7 +61,7 @@ def finetune_now(
 
         if (
             "NOW_CI_RUN" not in os.environ
-            and user_input.output_modality == Modalities.IMAGE
+            and user_input.output_modality == Modalities.TEXT_TO_IMAGE
         ):
             _show_finetune_improvements(
                 user_input, finetune_settings, finetune_ds, finetuned_model_path

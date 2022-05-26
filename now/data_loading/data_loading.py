@@ -99,11 +99,11 @@ def _load_from_disk(dataset_path: str, modality: Modalities) -> DocumentArray:
         with yaspin_extended(
             sigmap=sigmap, text="Loading and pre-processing data", color="green"
         ) as spinner:
-            if modality == Modalities.IMAGE:
+            if modality == Modalities.TEXT_TO_IMAGE:
                 return _load_images_from_folder(dataset_path)
             elif modality == Modalities.TEXT:
                 return _load_texts_from_folder(dataset_path)
-            elif modality == Modalities.MUSIC:
+            elif modality == Modalities.MUSIC_TO_MUSIC:
                 return _load_music_from_folder(dataset_path)
             spinner.ok('🏭')
     else:
@@ -182,11 +182,11 @@ def get_dataset_url(
     dataset: str, model_quality: Optional[Qualities], output_modality: Modalities
 ) -> str:
     data_folder = None
-    if output_modality == Modalities.IMAGE:
+    if output_modality == Modalities.TEXT_TO_IMAGE:
         data_folder = 'jpeg'
     elif output_modality == Modalities.TEXT:
         data_folder = 'text'
-    elif output_modality == Modalities.MUSIC:
+    elif output_modality == Modalities.MUSIC_TO_MUSIC:
         data_folder = 'music'
 
     if model_quality is not None:

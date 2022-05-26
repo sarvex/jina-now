@@ -8,9 +8,9 @@ from now.constants import DemoDatasets, Modalities, Qualities
 from now.dialog import UserInput
 
 TUNEABLE_DEMO_DATASETS = {
-    Modalities.IMAGE: [DemoDatasets.DEEP_FASHION, DemoDatasets.BIRD_SPECIES],
+    Modalities.TEXT_TO_IMAGE: [DemoDatasets.DEEP_FASHION, DemoDatasets.BIRD_SPECIES],
     Modalities.TEXT: [],
-    Modalities.MUSIC: [
+    Modalities.MUSIC_TO_MUSIC: [
         DemoDatasets.MUSIC_GENRES_MID,
         DemoDatasets.MUSIC_GENRES_LARGE,
     ],
@@ -29,7 +29,7 @@ DEFAULT_POS_MINING_START = 'hard'
 DEFAULT_NEG_MINING_START = 'hard'
 
 PRE_TRAINED_EMBEDDING_SIZE = {
-    Modalities.IMAGE: {
+    Modalities.TEXT_TO_IMAGE: {
         Qualities.MEDIUM: 512,
         Qualities.GOOD: 512,
         Qualities.EXCELLENT: 768,
@@ -39,7 +39,7 @@ PRE_TRAINED_EMBEDDING_SIZE = {
         Qualities.GOOD: 512,
         Qualities.EXCELLENT: 768,
     },
-    Modalities.MUSIC: 512,
+    Modalities.MUSIC_TO_MUSIC: 512,
 }
 
 
@@ -65,9 +65,9 @@ class FinetuneSettings:
 
 def _get_pre_trained_embedding_size(user_input: UserInput) -> int:
     """Returns the dimension of embeddings given the configured user input object."""
-    if user_input.output_modality == Modalities.MUSIC:
+    if user_input.output_modality == Modalities.MUSIC_TO_MUSIC:
         assert user_input.quality is None, 'Music modality has no quality to select.'
-        return PRE_TRAINED_EMBEDDING_SIZE[Modalities.MUSIC]
+        return PRE_TRAINED_EMBEDDING_SIZE[Modalities.MUSIC_TO_MUSIC]
     else:
         assert user_input.quality is not None, (
             f'Missing quality ' f'for modality {user_input.output_modality}.'
