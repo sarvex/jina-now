@@ -88,18 +88,20 @@ If you don't want to use an existing cluster, you can create a new one locally.
 After the program execution finished, two links will be shown to you. The first one brings you to a playground where you can run example queries and experiment with the search case.
 The second url leads you to the swagger ui which is useful for Frontend integration.
 
-<image console output  here>
+<img width="709" alt="Screenshot 2022-05-26 at 16 34 56" src="https://user-images.githubusercontent.com/11627845/170511632-c741a418-1246-4c23-aadd-cfd74d783f6b.png">
 
 Example of the playground.
 
-<playground image here>
+<img width="350" alt="Screenshot 2022-05-26 at 16 36 49" src="https://user-images.githubusercontent.com/11627845/170511607-3fb810f7-a5aa-47cd-9f70-e6034a96b9fd.png">
 
 Example of the swagger ui.
 
-<swagger ui image here>
+<img width="350" alt="Screenshot 2022-05-26 at 16 36 06" src="https://user-images.githubusercontent.com/11627845/170511580-230d1e41-5e14-4623-adb6-3d4b2d400dc9.png">
+
 
   
 ### Use CLI Parameters
+Instead of answering the questions manually, you can also send the parameters when starting Jina NOW like shown here.
 ```bash
 jina now start --quality medium --data /local/img/folder
 ```
