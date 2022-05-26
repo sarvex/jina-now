@@ -54,7 +54,7 @@ class DemoDatasets:
 
 
 AVAILABLE_DATASET = {
-    Modalities.TEXT_TO_IMAGE: [
+    Modalities.IMAGE: [
         DemoDatasets.BEST_ARTWORKS,
         DemoDatasets.NFT_MONKEY,
         DemoDatasets.TLL,
@@ -64,7 +64,7 @@ AVAILABLE_DATASET = {
         DemoDatasets.NIH_CHEST_XRAYS,
         DemoDatasets.GEOLOCATION_GEOGUESSR,
     ],
-    Modalities.MUSIC_TO_MUSIC: [
+    Modalities.MUSIC: [
         DemoDatasets.MUSIC_GENRES_MID,
         DemoDatasets.MUSIC_GENRES_LARGE,
     ],
