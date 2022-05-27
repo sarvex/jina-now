@@ -55,20 +55,24 @@ def deploy_streamlit():
     setup_session_state()
     query_parameters = st.experimental_get_query_params()
     print(f"Received query params: {query_parameters}")
-    HOST = query_parameters.get('host')[0]
-    PORT = (
-        query_parameters.get('port')[0] if 'port' in query_parameters.keys() else None
-    )
-    OUTPUT_MODALITY = query_parameters.get('output_modality')[0]
-    DATA = (
-        query_parameters.get('data')[0] if 'data' in query_parameters.keys() else None
-    )
+    # HOST = query_parameters.get('host')[0]
+    # PORT = (
+    #     query_parameters.get('port')[0] if 'port' in query_parameters.keys() else None
+    # )
+    # OUTPUT_MODALITY = query_parameters.get('output_modality')[0]
+    # DATA = (
+    #     query_parameters.get('data')[0] if 'data' in query_parameters.keys() else None
+    # )
+    HOST = 'gateway'
+    PORT = 8080
+    OUTPUT_MODALITY = 'music'
+    DATA = 'music-genres-mid'
     # TODO: fix such that can call 'localhost' instead of 'jinanowtesting'
     # TODO: change Nginx such that api/api isn't required anymore
     if HOST == 'gateway':  # need to call now-bff as we communicate between pods
-        URL_HOST = f"http://now-bff/api/v1/{OUTPUT_MODALITY}/search"
+        URL_HOST = f"http://localhost:30090/api/v1/{OUTPUT_MODALITY}/search"
     else:
-        URL_HOST = f"https://jinanowtesting.com/api/api/v1/{OUTPUT_MODALITY}/search"
+        URL_HOST = f"http://localhost:30090/api/v1/{OUTPUT_MODALITY}/search"
 
     da_img = None
     da_txt = None
@@ -129,9 +133,10 @@ def deploy_streamlit():
         if PORT:
             data['port'] = PORT
         response = requests.post(URL_HOST, json=data)
+        print(response, URL_HOST)
         return DocumentArray.from_json(response.content)
 
-    def search_by_file(document, limit=TOP_K) -> DocumentArray:
+    def search_by_image(document, limit=TOP_K) -> DocumentArray:
         """
         Wrap file in Jina Document for searching, and do all necessary conversion to make similar to indexed Docs
         """
@@ -149,6 +154,19 @@ def deploy_streamlit():
             'image': base64.b64encode(query_doc.blob).decode('utf-8'),
             'limit': limit,
         }
+        if PORT:
+            data['port'] = PORT
+        response = requests.post(URL_HOST, json=data)
+        return DocumentArray.from_json(response.content)
+
+    def search_by_audio(document: Document, limit=TOP_K):
+        print('Searching by audio 🔊')
+        data = {
+            'host': HOST,
+            'song': base64.b64encode(document.blob).decode('utf-8'),
+            'limit': limit,
+        }
+
         if PORT:
             data['port'] = PORT
         response = requests.post(URL_HOST, json=data)
@@ -186,6 +204,8 @@ def deploy_streamlit():
             ["Image", "Text", 'Webcam'],
             on_change=clear_match,
         )
+    elif OUTPUT_MODALITY == 'music':
+        media_type = st.radio('', ["Text", "Music"], on_change=clear_match)
 
     if media_type == "Image":
         upload_c, preview_c = st.columns([12, 1])
@@ -193,7 +213,7 @@ def deploy_streamlit():
         if query:
             doc = convert_file_to_document(query)
             st.image(doc.blob, width=160)
-            st.session_state.matches = search_by_file(document=doc)
+            st.session_state.matches = search_by_image(document=doc)
         if da_img is not None:
             st.subheader("samples:")
             img_cs = st.columns(5)
@@ -203,12 +223,13 @@ def deploy_streamlit():
                     st.image(doc.blob if doc.blob else doc.tensor, width=100)
                 with txt:
                     if st.button('Search', key=doc.id):
-                        st.session_state.matches = search_by_file(document=doc)
+                        st.session_state.matches = search_by_image(document=doc)
 
     elif media_type == "Text":
         query = st.text_input("", key="text_search_box")
         if query:
             st.session_state.matches = search_by_t(search_text=query)
+            print(st.session_state.matches)
         if st.button("Search", key="text_search"):
             st.session_state.matches = search_by_t(search_text=query)
         if da_txt is not None:
@@ -243,13 +264,22 @@ def deploy_streamlit():
                 st.session_state.snap = query
                 doc = Document(tensor=query)
                 doc.convert_image_tensor_to_blob()
-                st.session_state.matches = search_by_file(document=doc)
+                st.session_state.matches = search_by_image(document=doc)
             elif st.session_state.snap is not None:
                 st.image(st.session_state.snap, width=160)
         else:
             clear_match()
 
+    elif media_type == 'Music':
+        query = st.file_uploader("Upload Song", type=['mp3'])
+        if query:
+            doc = convert_file_to_document(query)
+            st.subheader('Play your song')
+            st.audio(doc.blob)
+            st.session_state.matches = search_by_audio(document=doc)
+
     if st.session_state.matches:
+        print(st.session_state.matches)
         matches = deepcopy(st.session_state.matches)
         st.header('Search results')
         # Results area
