@@ -83,6 +83,7 @@ Alternatively, you can select the local deployment option.
 
 In case of local deployment, you will be asked where you want to deploy it. Jina NOW reads your local .kube/config and lists all kubernetes clusters you have access to. 
 If you don't want to use an existing cluster, you can create a new one locally.
+
 <img width="643" alt="question-cluster" src="https://user-images.githubusercontent.com/11627845/170256027-99798fae-3ec4-42dc-8737-843f4a23f941.png">
 
 After the program execution finished, two links will be shown to you. The first one brings you to a playground where you can run example queries and experiment with the search case.
