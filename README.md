@@ -52,7 +52,7 @@ First, you will get asked what search case you would like to deploy.
 ```bash
 jina now start
 ```
-First you will be prompted to choose the modality. As for now, we support to search images or text. But in the future, we will add many more options here.
+First, you will be prompted to choose the modality. As for now, we support images or text searches. But in the future, we will add many more options here.
 
 <img width="497" alt="question-modality" src="https://user-images.githubusercontent.com/11627845/170256046-4d20c79e-802e-4d28-8be9-4e5ebffd0e28.png">
 
