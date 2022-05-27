@@ -102,7 +102,7 @@ Example of the swagger ui.
 
   
 ### Use CLI Parameters
-Instead of answering the questions manually, you can also send the parameters when starting Jina NOW like shown here.
+Instead of answering the questions manually, you can also provide command-line arguments when starting Jina NOW like shown here.
 ```bash
 jina now start --quality medium --data /local/img/folder
 ```
