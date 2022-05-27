@@ -18,6 +18,6 @@ executors:
     env:
       JINA_LOG_LEVEL: DEBUG
   - name: indexer
-    uses: jinahub+docker://MusicIndexer/v0.0.1
+    uses: jinahub+docker://MusicIndexer/v0.0.2
     env:
       JINA_LOG_LEVEL: DEBUG
