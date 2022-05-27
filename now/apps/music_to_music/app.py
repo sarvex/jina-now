@@ -2,10 +2,10 @@ from typing import Dict, List
 
 import cowsay
 from docarray import DocumentArray
-from now_common import options
 
 from now.apps.base.app import JinaNOWApp
 from now.deployment.deployment import which
+from now.run_backend import finetune_and_push_if_possible
 
 
 class music_to_music(JinaNOWApp):
@@ -27,7 +27,7 @@ class music_to_music(JinaNOWApp):
 
     @property
     def options(self) -> List[Dict]:
-        return [options.QUALITY_CLIP]
+        return []
 
     def check_requirements(self) -> bool:
         if not ffmpeg_is_installed():
@@ -36,8 +36,7 @@ class music_to_music(JinaNOWApp):
         return True
 
     def setup(self, da: DocumentArray, user_config: Dict) -> Dict:
-
-        raise NotImplementedError()
+        return finetune_and_push_if_possible(self)
 
     def cleanup(self, app_config: dict) -> None:
         """

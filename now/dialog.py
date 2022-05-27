@@ -64,7 +64,7 @@ def _configure_app_options(app: JinaNOWApp, user_input, **kwargs):
     # _configure_quality(user_input, **kwargs)
 
 
-def _construct_app(user_input):
+def _construct_app(user_input) -> JinaNOWApp:
     return getattr(
         importlib.import_module(f'now.apps.{user_input.app}.app'), f'{user_input.app}'
     )()
