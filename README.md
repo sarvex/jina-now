@@ -86,8 +86,8 @@ If you don't want to use an existing cluster, you can create a new one locally.
 
 <img width="643" alt="question-cluster" src="https://user-images.githubusercontent.com/11627845/170256027-99798fae-3ec4-42dc-8737-843f4a23f941.png">
 
-After the program execution finished, two links will be shown to you. The first one brings you to a playground where you can run example queries and experiment with the search case.
-The second url leads you to the swagger ui which is useful for Frontend integration.
+After the program execution is finished, two links will be shown to you. The first one brings you to a playground where you can run example queries and experiment with the search case.
+The second URL leads you to the swagger UI which is useful for Frontend integration.
 
 <img width="709" alt="Screenshot 2022-05-26 at 16 34 56" src="https://user-images.githubusercontent.com/11627845/170511632-c741a418-1246-4c23-aadd-cfd74d783f6b.png">
 
