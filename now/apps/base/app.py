@@ -20,7 +20,28 @@ class JinaNOWApp:
     """
 
     @property
-    def get_flow_yaml(self) -> str:
+    def description(self) -> str:
+        """
+        Short description of the app.
+        """
+        return 'Jina NOW app'
+
+    @property
+    def input_modality(self) -> str:
+        """
+        Modality used for running search queries
+        """
+        raise NotImplementedError()
+
+    @property
+    def output_modality(self) -> str:
+        """
+        Modality used for running indexing data
+        """
+        raise NotImplementedError()
+
+    @property
+    def flow_yaml(self) -> str:
         """
         Used to configure the flow yaml in the Jina NOW app.
         :return: either the path, to the yaml or the yaml content.
@@ -29,7 +50,7 @@ class JinaNOWApp:
         return os.path.join(curdir, 'flow.yml')
 
     @property
-    def get_bff(self) -> Optional[str]:
+    def bff(self) -> Optional[str]:
         """
         Used to configure the bff which is used to define input and
         :return: the path of the bff
@@ -37,7 +58,7 @@ class JinaNOWApp:
         return None
 
     @property
-    def get_playground(self) -> Optional[str]:
+    def playground(self) -> Optional[str]:
         """
         Used to configure the playground(streamlit app) where the user can run example queries
         :return: the path of the playground
@@ -45,7 +66,7 @@ class JinaNOWApp:
         return None
 
     @property
-    def get_options(self) -> List[Dict]:
+    def options(self) -> List[Dict]:
         """
         Get the options which are used to configure the app.
         On CLI the user will get a prompt and at the storefront, a GUI will be generated accordingly.
@@ -67,12 +88,18 @@ class JinaNOWApp:
         return []
 
     @property
-    def get_example_datasource(self) -> List[Datasource]:
+    def example_datasource(self) -> List[Datasource]:
         """
         Get a list of example datasets for the app.
 
         """
         return []
+
+    def check_requirements(self) -> bool:
+        """
+        Returns true if all requirements on the system are satisfied. Else False.
+        """
+        return True
 
     def setup(self, da: DocumentArray, user_config: Dict) -> Dict:
         """
@@ -81,6 +108,7 @@ class JinaNOWApp:
             - create a database
             - finetune a model + push the artifact
             - notify other services
+            - check if starting the app is currently possible
         :param da:
         :param user_config: user configuration based on the given options
         :return: dict used to replace variables in flow yaml and to clean up resources after the flow is terminated

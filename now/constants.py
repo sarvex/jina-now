@@ -62,32 +62,38 @@ class DemoDatasets:
 
 AVAILABLE_DATASET = {
     Modalities.IMAGE: [
-        DemoDatasets.BEST_ARTWORKS,
-        DemoDatasets.NFT_MONKEY,
-        DemoDatasets.TLL,
-        DemoDatasets.BIRD_SPECIES,
-        DemoDatasets.STANFORD_CARS,
-        DemoDatasets.DEEP_FASHION,
-        DemoDatasets.NIH_CHEST_XRAYS,
-        DemoDatasets.GEOLOCATION_GEOGUESSR,
+        (DemoDatasets.BEST_ARTWORKS, '🖼  artworks (≈8K docs)'),
+        (DemoDatasets.NFT_MONKEY, '💰 nft - bored apes (10K docs)'),
+        (DemoDatasets.TLL, '👬 totally looks like (≈12K docs)'),
+        (DemoDatasets.BIRD_SPECIES, '🦆 birds (≈12K docs)'),
+        (DemoDatasets.STANFORD_CARS, '🚗 cars (≈16K docs)'),
+        (DemoDatasets.GEOLOCATION_GEOGUESSR, '🏞 geolocation (≈50K docs)'),
+        (DemoDatasets.DEEP_FASHION, '👕 fashion (≈53K docs)'),
+        (DemoDatasets.NIH_CHEST_XRAYS, '☢️ chest x-ray (≈100K docs)'),
     ],
     Modalities.MUSIC: [
-        DemoDatasets.MUSIC_GENRES_MID,
-        DemoDatasets.MUSIC_GENRES_LARGE,
+        (DemoDatasets.MUSIC_GENRES_MID, '🎸 music mid (≈2K docs)'),
+        (DemoDatasets.MUSIC_GENRES_LARGE, '🎸 music large (≈10K docs)'),
     ],
     Modalities.TEXT: [
-        DemoDatasets.ROCK_LYRICS,
-        DemoDatasets.POP_LYRICS,
-        DemoDatasets.RAP_LYRICS,
-        DemoDatasets.INDIE_LYRICS,
-        DemoDatasets.METAL_LYRICS,
+        (DemoDatasets.ROCK_LYRICS, '🎤 rock lyrics (200K docs)'),
+        (DemoDatasets.POP_LYRICS, '🎤 pop lyrics (200K docs)'),
+        (DemoDatasets.RAP_LYRICS, '🎤 rap lyrics (200K docs)'),
+        (DemoDatasets.INDIE_LYRICS, '🎤 indie lyrics (200K docs)'),
+        (DemoDatasets.METAL_LYRICS, '🎤 metal lyrics (200K docs)'),
     ],
 }
+
+# APP_INFO = {
+#     Apps.TEXT_TO_IMAGE: (Modalities.IMAGE, 'Search app for finding images given text'),
+#     Apps.IMAGE_TO_TEXT: (Modalities.TEXT, 'Search app for finding text given images'),
+#     Apps.IMAGE_TO_IMAGE: (Modalities.IMAGE, 'Search app for finding images given images'),
+#     Apps.MUSIC_TO_MUSIC: (Modalities.MUSIC, 'Search app for finding music given music'),
+# }
 
 JC_SECRET = '~/.cache/jina-now/wolf.json'
 
 SURVEY_LINK = 'https://docs.google.com/forms/d/e/1FAIpQLSex5gMN4wuQc63TriwRqREBfdijwOrATPe7RotcPaT1SSPfEw/viewform?usp=pp_url&entry.1126738320=Jina+NOW+pip+package'
-
 
 PRE_TRAINED_LINEAR_HEADS_MUSIC = {
     DemoDatasets.MUSIC_GENRES_MID: 'FineTunedLinearHeadEncoder:93ea59dbd1ee3fe0bdc44252c6e86a87/'

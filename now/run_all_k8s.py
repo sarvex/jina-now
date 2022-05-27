@@ -73,7 +73,7 @@ def get_task(kwargs):
 
 
 def start_now(os_type, arch, contexts, active_context, is_debug, **kwargs):
-    user_input = configure_user_input(
+    app, user_input = configure_user_input(
         contexts=contexts,
         active_context=active_context,
         os_type=os_type,

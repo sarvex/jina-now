@@ -6,6 +6,7 @@ the dialog won't ask for the value.
 """
 from __future__ import annotations, print_function, unicode_literals
 
+import importlib
 import os
 import pathlib
 from dataclasses import dataclass
@@ -16,20 +17,13 @@ import cowsay
 from kubernetes import client, config
 from pyfiglet import Figlet
 
-from now.constants import (
-    AVAILABLE_DATASET,
-    IMAGE_MODEL_QUALITY_MAP,
-    Apps,
-    DatasetTypes,
-    DemoDatasets,
-    Modalities,
-    Qualities,
-)
+from now.apps.base.app import JinaNOWApp
+from now.constants import AVAILABLE_DATASET, Apps, DatasetTypes, Modalities, Qualities
 from now.deployment.deployment import cmd
 from now.log.log import yaspin_extended
 from now.thirdparty.PyInquirer import Separator
 from now.thirdparty.PyInquirer.prompt import prompt
-from now.utils import ffmpeg_is_installed, sigmap
+from now.utils import sigmap
 
 cur_dir = pathlib.Path(__file__).parent.resolve()
 NEW_CLUSTER = {'name': '🐣 create new', 'value': 'new'}
@@ -60,21 +54,33 @@ class UserInput:
     deployment_type: Optional[str] = None
 
 
-def _configure_app_options(user_input, **kwargs):
-    user_input
-    _configure_dataset(user_input, **kwargs)
-    _configure_quality(user_input, **kwargs)
+def _configure_app_options(app: JinaNOWApp, user_input, **kwargs):
+    for option in app.options:
+        val = _prompt_value(
+            **option,
+            **kwargs,
+        )
+        setattr(user_input, user_input.app, val)
+    # _configure_quality(user_input, **kwargs)
 
 
-def configure_user_input(**kwargs) -> UserInput:
+def _construct_app(user_input):
+    return getattr(
+        importlib.import_module(f'now.apps.{user_input.app}.app'), f'{user_input.app}'
+    )()
+
+
+def configure_user_input(**kwargs) -> [JinaNOWApp, UserInput]:
     print_headline()
 
     user_input = UserInput()
     _configure_app(user_input, **kwargs)
-    _configure_app_options(user_input, **kwargs)
+    app = _construct_app(user_input)
+    _configure_app_options(app, user_input, **kwargs)
+    _configure_dataset(app, user_input, **kwargs)
     _configure_cluster(user_input, **kwargs)
 
-    return user_input
+    return app, user_input
 
 
 def print_headline():
@@ -99,7 +105,7 @@ def print_headline():
 
 def _configure_app(user_input: UserInput, **kwargs) -> None:
     """Asks user questions to set output_modality in user_input"""
-    user_input.output_modality = _prompt_value(
+    user_input.app = _prompt_value(
         name='app',
         choices=[
             {'name': '📝 ▶ 🏞 Text to Image search', 'value': Apps.TEXT_TO_IMAGE},
@@ -117,16 +123,9 @@ def _configure_app(user_input: UserInput, **kwargs) -> None:
     )
 
 
-def _configure_dataset(user_input: UserInput, **kwargs) -> None:
+def _configure_dataset(app: JinaNOWApp, user_input: UserInput, **kwargs) -> None:
     """Asks user to set dataset attribute of user_input"""
-    if user_input.output_modality == Modalities.TEXT_TO_IMAGE:
-        _configure_dataset_image(user_input, **kwargs)
-    elif user_input.output_modality == Modalities.TEXT:
-        _configure_dataset_text(user_input, **kwargs)
-    elif user_input.output_modality == Modalities.MUSIC_TO_MUSIC:
-        if not ffmpeg_is_installed():
-            _handle_ffmpeg_install_required()
-        _configure_dataset_music(user_input, **kwargs)
+    _configure_app_dataset(app, user_input, **kwargs)
 
     if user_input.data in AVAILABLE_DATASET[user_input.output_modality]:
         user_input.is_custom_dataset = False
@@ -138,79 +137,21 @@ def _configure_dataset(user_input: UserInput, **kwargs) -> None:
             _parse_custom_data_from_cli(user_input)
 
 
-def _configure_dataset_image(user_input: UserInput, **kwargs) -> None:
-    user_input.data = _prompt_value(
-        name='data',
-        prompt_message='What dataset do you want to use?',
-        choices=[
-            {'name': '🖼  artworks (≈8K docs)', 'value': DemoDatasets.BEST_ARTWORKS},
-            {
-                'name': '💰 nft - bored apes (10K docs)',
-                'value': DemoDatasets.NFT_MONKEY,
-            },
-            {'name': '👬 totally looks like (≈12K docs)', 'value': DemoDatasets.TLL},
-            {'name': '🦆 birds (≈12K docs)', 'value': DemoDatasets.BIRD_SPECIES},
-            {'name': '🚗 cars (≈16K docs)', 'value': DemoDatasets.STANFORD_CARS},
-            {
-                'name': '🏞 geolocation (≈50K docs)',
-                'value': DemoDatasets.GEOLOCATION_GEOGUESSR,
-            },
-            {'name': '👕 fashion (≈53K docs)', 'value': DemoDatasets.DEEP_FASHION},
-            {
-                'name': '☢️ chest x-ray (≈100K docs)',
-                'value': DemoDatasets.NIH_CHEST_XRAYS,
-            },
-            Separator(),
-            {
-                'name': '✨ custom',
-                'value': 'custom',
-            },
-        ],
-        **kwargs,
-    )
-
-
-def _configure_dataset_text(user_input: UserInput, **kwargs):
-    user_input.data = _prompt_value(
-        name='data',
-        prompt_message='What dataset do you want to use?',
-        choices=[
-            {'name': '🎤 rock lyrics (200K docs)', 'value': 'rock-lyrics'},
-            {'name': '🎤 pop lyrics (200K docs)', 'value': 'pop-lyrics'},
-            {'name': '🎤 rap lyrics (200K docs)', 'value': 'rap-lyrics'},
-            {'name': '🎤 indie lyrics (200K docs)', 'value': 'indie-lyrics'},
-            {'name': '🎤 metal lyrics (200K docs)', 'value': 'metal-lyrics'},
-            Separator(),
-            {
-                'name': '✨ custom .txt files',
-                'value': 'custom',
-            },
-        ],
-        **kwargs,
-    )
-
-
-def _configure_dataset_music(user_input: UserInput, **kwargs):
-    user_input.data = _prompt_value(
-        name='data',
-        prompt_message='What dataset do you want to use?',
-        choices=[
-            {
-                'name': '🎸 music mid (≈2K docs)',
-                'value': DemoDatasets.MUSIC_GENRES_MID,
-            },
-            {
-                'name': '🎸 music large (≈10K docs)',
-                'value': DemoDatasets.MUSIC_GENRES_LARGE,
-            },
-            Separator(),
-            {
-                'name': '✨ custom',
-                'value': 'custom',
-            },
-        ],
-        **kwargs,
-    )
+def _parse_custom_data_from_cli(user_input: UserInput):
+    data = user_input.data
+    try:
+        data = os.path.expanduser(data)
+    except Exception:
+        pass
+    if os.path.exists(data):
+        user_input.custom_dataset_type = DatasetTypes.PATH
+        user_input.dataset_path = data
+    elif 'http' in data:
+        user_input.custom_dataset_type = DatasetTypes.URL
+        user_input.dataset_url = data
+    else:
+        user_input.custom_dataset_type = DatasetTypes.DOCARRAY
+        user_input.dataset_secret = data
 
 
 def _configure_custom_dataset(user_input: UserInput, **kwargs) -> None:
@@ -254,6 +195,25 @@ def _configure_custom_dataset(user_input: UserInput, **kwargs) -> None:
             prompt_message='Please enter the path to the local folder.',
             prompt_type='input',
         )
+
+
+def _configure_app_dataset(app: JinaNOWApp, user_input: UserInput, **kwargs) -> None:
+    user_input.data = _prompt_value(
+        name='data',
+        prompt_message='What dataset do you want to use?',
+        choices=[
+            {'name': name, 'value': value}
+            for name, value in AVAILABLE_DATASET[app.output_modality]
+        ]
+        + [
+            Separator(),
+            {
+                'name': '✨ custom',
+                'value': 'custom',
+            },
+        ],
+        **kwargs,
+    )
 
 
 def _configure_cluster(user_input: UserInput, skip=False, **kwargs):
@@ -304,34 +264,6 @@ def _configure_cluster(user_input: UserInput, skip=False, **kwargs):
                 _configure_cluster(user_input, skip=True, **kwargs)
         else:
             user_input.create_new_cluster = True
-
-
-def _configure_quality(user_input: UserInput, **kwargs) -> None:
-    """Asks users questions to set quality attribute of user_input"""
-    if user_input.output_modality == Modalities.MUSIC_TO_MUSIC:
-        return
-    user_input.quality = _prompt_value(
-        name='quality',
-        choices=[
-            {'name': '🦊 medium (≈3GB mem, 15q/s)', 'value': Qualities.MEDIUM},
-            {'name': '🐻 good (≈3GB mem, 2.5q/s)', 'value': Qualities.GOOD},
-            {
-                'name': '🦄 excellent (≈4GB mem, 0.5q/s)',
-                'value': Qualities.EXCELLENT,
-            },
-        ],
-        prompt_message='What quality do you expect?',
-        prompt_type='list',
-        **kwargs,
-    )
-    if user_input.quality == Qualities.MEDIUM:
-        print('  🚀 you trade-off a bit of quality for having the best speed')
-    elif user_input.quality == Qualities.GOOD:
-        print('  ⚖️ you have the best out of speed and quality')
-    elif user_input.quality == Qualities.EXCELLENT:
-        print('  ✨ you trade-off speed to having the best quality')
-
-    _, user_input.model_variant = IMAGE_MODEL_QUALITY_MAP[user_input.quality]
 
 
 def _construct_local_cluster_choices(active_context, contexts):
@@ -407,39 +339,3 @@ def _maybe_login_wolf():
         ) as spinner:
             cmd('jcloud login')
         spinner.ok('🛠️')
-
-
-def _parse_custom_data_from_cli(user_input: UserInput):
-    data = user_input.data
-    try:
-        data = os.path.expanduser(data)
-    except Exception:
-        pass
-    if os.path.exists(data):
-        user_input.custom_dataset_type = DatasetTypes.PATH
-        user_input.dataset_path = data
-    elif 'http' in data:
-        user_input.custom_dataset_type = DatasetTypes.URL
-        user_input.dataset_url = data
-    else:
-        user_input.custom_dataset_type = DatasetTypes.DOCARRAY
-        user_input.dataset_secret = data
-
-
-def _handle_ffmpeg_install_required():
-    bc_red = '\033[91m'
-    bc_end = '\033[0m'
-    print()
-    print(
-        f"{bc_red}To use the audio modality you need the ffmpeg audio processing"
-        f" library installed on your system.{bc_end}"
-    )
-    print(
-        f"{bc_red}For MacOS please run 'brew install ffmpeg' and on"
-        f" Linux 'apt-get install ffmpeg libavcodec-extra'.{bc_end}"
-    )
-    print(
-        f"{bc_red}After the installation, restart Jina Now and have fun with music search 🎸!{bc_end}"
-    )
-    cowsay.cow('see you soon 👋')
-    exit(1)

@@ -14,8 +14,6 @@ from docarray import Document
 from PIL import Image, ImageDraw, ImageFont
 from rich.console import Console
 
-from now.deployment.deployment import which
-
 colors = [
     "navy",
     "turquoise",
@@ -319,10 +317,6 @@ def my_handler(signum, frame, spinner):
         sys.stdout.write("Program terminated!\n")
     spinner.stop()
     exit(0)
-
-
-def ffmpeg_is_installed():
-    return which("ffmpeg")
 
 
 def flow_definition(dirpath) -> Dict:

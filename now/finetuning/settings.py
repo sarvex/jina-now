@@ -4,13 +4,14 @@ from typing import Optional
 
 from docarray import DocumentArray
 
-from now.constants import DemoDatasets, Modalities, Qualities
+from now.constants import Apps, DemoDatasets, Modalities, Qualities
 from now.dialog import UserInput
 
 TUNEABLE_DEMO_DATASETS = {
-    Modalities.TEXT_TO_IMAGE: [DemoDatasets.DEEP_FASHION, DemoDatasets.BIRD_SPECIES],
-    Modalities.TEXT: [],
-    Modalities.MUSIC_TO_MUSIC: [
+    Apps.TEXT_TO_IMAGE: [DemoDatasets.DEEP_FASHION, DemoDatasets.BIRD_SPECIES],
+    Apps.IMAGE_TO_TEXT: [],
+    Apps.IMAGE_TO_IMAGE: [DemoDatasets.DEEP_FASHION, DemoDatasets.BIRD_SPECIES],
+    Apps.MUSIC_TO_MUSIC: [
         DemoDatasets.MUSIC_GENRES_MID,
         DemoDatasets.MUSIC_GENRES_LARGE,
     ],
@@ -30,17 +31,22 @@ DEFAULT_POS_MINING_START = 'hard'
 DEFAULT_NEG_MINING_START = 'hard'
 
 PRE_TRAINED_EMBEDDING_SIZE = {
-    Modalities.TEXT_TO_IMAGE: {
+    Apps.TEXT_TO_IMAGE: {
         Qualities.MEDIUM: 512,
         Qualities.GOOD: 512,
         Qualities.EXCELLENT: 768,
     },
-    Modalities.TEXT: {
+    Apps.IMAGE_TO_TEXT: {
         Qualities.MEDIUM: 512,
         Qualities.GOOD: 512,
         Qualities.EXCELLENT: 768,
     },
-    Modalities.MUSIC_TO_MUSIC: 512,
+    Apps.IMAGE_TO_IMAGE: {
+        Qualities.MEDIUM: 512,
+        Qualities.GOOD: 512,
+        Qualities.EXCELLENT: 768,
+    },
+    Apps.MUSIC_TO_MUSIC: 512,
 }
 
 
