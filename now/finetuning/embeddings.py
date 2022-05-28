@@ -25,7 +25,7 @@ def embed_now(user_input: UserInput, dataset: DocumentArray, kubectl_path: str):
     result = DocumentArray()
     with tempfile.TemporaryDirectory() as tmpdir:
         gateway_host, gateway_port, _, _ = deploy_k8s(
-            flow, _KS_NAMESPACE, 3, tmpdir, kubectl_path=kubectl_path
+            flow, _KS_NAMESPACE, tmpdir, kubectl_path=kubectl_path
         )
         client = Client(host=gateway_host, port=gateway_port)
         print(f'▶ create embeddings for {len(documents_without_embedding)} documents')

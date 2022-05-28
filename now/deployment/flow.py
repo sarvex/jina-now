@@ -48,7 +48,7 @@ def wait_for_lb(lb_name, ns):
     return ip
 
 
-def wait_for_all_pods_in_ns(ns, num_pods, max_wait=1800):
+def wait_for_all_pods_in_ns(f, ns, max_wait=1800):
     config.load_kube_config()
     v1 = k8s_client.CoreV1Api()
     for i in range(max_wait):
@@ -61,12 +61,12 @@ def wait_for_all_pods_in_ns(ns, num_pods, max_wait=1800):
             or not len(pod.status.container_statuses) == 1
             or not pod.status.container_statuses[0].ready
         ]
-        if len(not_ready) == 0 and num_pods == len(pods):
+        if len(not_ready) == 0 and f.num_deployments == len(pods):
             return
         sleep(1)
 
 
-def deploy_k8s(f, ns, num_pods, tmpdir, kubectl_path):
+def deploy_k8s(f, ns, tmpdir, kubectl_path):
     k8_path = os.path.join(tmpdir, f'k8s/{ns}')
     with yaspin_extended(
         sigmap=sigmap, text="Convert Flow to Kubernetes YAML", color="green"
@@ -99,7 +99,7 @@ def deploy_k8s(f, ns, num_pods, tmpdir, kubectl_path):
             gateway_port = 8080
         cmd(f'{kubectl_path} apply -R -f {k8_path}')
         # wait for flow to come up
-        wait_for_all_pods_in_ns(ns, num_pods)
+        wait_for_all_pods_in_ns(f, ns)
         spinner.ok("🚀")
     # work around - first request hangs
     sleep(3)
@@ -145,7 +145,6 @@ def deploy_flow(
         ) = deploy_k8s(
             f,
             ns,
-            f.num_pods,
             tmpdir,
             kubectl_path=kubectl_path,
         )
