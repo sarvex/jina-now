@@ -41,7 +41,7 @@ class JinaNOWApp:
     @property
     def output_modality(self) -> str:
         """
-        Modality used for running indexing data
+        Modality used for indexing data
         """
         raise NotImplementedError()
 
