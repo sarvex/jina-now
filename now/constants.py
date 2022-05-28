@@ -62,7 +62,7 @@ class DemoDatasets:
 
 AVAILABLE_DATASET = {
     Modalities.IMAGE: [
-        (DemoDatasets.BEST_ARTWORKS, '🖼  artworks (≈8K docs)'),
+        (DemoDatasets.BEST_ARTWORKS, '🖼 artworks (≈8K docs)'),
         (DemoDatasets.NFT_MONKEY, '💰 nft - bored apes (10K docs)'),
         (DemoDatasets.TLL, '👬 totally looks like (≈12K docs)'),
         (DemoDatasets.BIRD_SPECIES, '🦆 birds (≈12K docs)'),

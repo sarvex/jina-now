@@ -4,47 +4,41 @@ from docarray import DocumentArray
 from now_common import options
 
 from now.apps.base.app import JinaNOWApp
+from now.constants import Modalities
+from now.run_backend import finetune_and_push_if_possible
 
 
 class text_to_image(JinaNOWApp):
+    def __init__(self):
+        self._flow_yaml = None
+
     @property
     def description(self) -> str:
         return 'Text to image app'
 
     @property
     def input_modality(self) -> str:
-        """
-        Modality used for running search queries
-        """
-        raise NotImplementedError()
+        return Modalities.TEXT
 
     @property
     def output_modality(self) -> str:
-        """
-        Modality used for running indexing data
-        """
-        raise NotImplementedError()
+        return Modalities.IMAGE
 
     @property
     def flow_yaml(self) -> str:
-        pass
+        """Created in the setup function"""
+        return self._flow_yaml
+
+    @flow_yaml.setter
+    def flow_yaml(self, value: str):
+        self._flow_yaml = value
 
     @property
     def options(self) -> List[Dict]:
         return [options.QUALITY_CLIP]
 
-    def setup(self, da: DocumentArray, user_config: Dict) -> Dict:
-        """
-        Runs before the flow is deployed.
-        Common use cases:
-            - create a database
-            - finetune a model + push the artifact
-            - notify other services
-        :param da:
-        :param user_config: user configuration based on the given options
-        :return: dict used to replace variables in flow yaml and to clean up resources after the flow is terminated
-        """
-        pass
+    def setup(self, da: DocumentArray, user_config: Dict, kubectl_path) -> Dict:
+        return finetune_and_push_if_possible(self, da, user_config, kubectl_path)
 
     def cleanup(self, app_config: dict) -> None:
         """

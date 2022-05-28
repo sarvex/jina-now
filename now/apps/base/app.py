@@ -19,6 +19,11 @@ class JinaNOWApp:
             pass
     """
 
+    def __init__(self):
+
+        curdir = os.path.realpath(__file__)
+        self._flow_yaml = os.path.join(curdir, 'flow.yml')
+
     @property
     def description(self) -> str:
         """
@@ -46,8 +51,11 @@ class JinaNOWApp:
         Used to configure the flow yaml in the Jina NOW app.
         :return: either the path, to the yaml or the yaml content.
         """
-        curdir = os.path.realpath(__file__)
-        return os.path.join(curdir, 'flow.yml')
+        return self._flow_yaml
+
+    @flow_yaml.setter
+    def flow_yaml(self, value: str):
+        self._flow_yaml = value
 
     @property
     def bff(self) -> Optional[str]:
@@ -101,7 +109,9 @@ class JinaNOWApp:
         """
         return True
 
-    def setup(self, da: DocumentArray, user_config: Dict) -> Dict:
+    # TODO at the moment, the setup function needs kubectl because of finetuning
+    # When finetuning, inference is done on the k8s cluster or on wolf depending on the configuration
+    def setup(self, da: DocumentArray, user_config: Dict, kubectl_path: str) -> Dict:
         """
         Runs before the flow is deployed.
         Common use cases:

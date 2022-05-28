@@ -8,6 +8,7 @@ from typing import Optional
 
 from docarray import Document, DocumentArray
 
+from now.apps.base.app import JinaNOWApp
 from now.constants import (
     BASE_STORAGE_URL,
     IMAGE_MODEL_QUALITY_MAP,
@@ -21,7 +22,7 @@ from now.log.log import yaspin_extended
 from now.utils import download, sigmap
 
 
-def load_data(user_input: UserInput) -> DocumentArray:
+def load_data(app_instance: JinaNOWApp, user_input: UserInput) -> DocumentArray:
     """
     Based on the user input, this function will pull the configured DocArray.
 
@@ -30,14 +31,7 @@ def load_data(user_input: UserInput) -> DocumentArray:
     """
     da = None
 
-    if not user_input.is_custom_dataset:
-        print('⬇  Download DocArray')
-        url = get_dataset_url(
-            user_input.data, user_input.quality, user_input.output_modality
-        )
-        da = _fetch_da_from_url(url)
-
-    else:
+    if user_input.is_custom_dataset:
         if user_input.custom_dataset_type == DatasetTypes.DOCARRAY:
             print('⬇  Pull DocArray')
             da = _pull_docarray(user_input.dataset_secret)
@@ -47,7 +41,12 @@ def load_data(user_input: UserInput) -> DocumentArray:
         elif user_input.custom_dataset_type == DatasetTypes.PATH:
             print('💿  Loading DocArray from disk')
             da = _load_from_disk(user_input.dataset_path, user_input.output_modality)
-
+    else:
+        print('⬇  Download DocArray')
+        url = get_dataset_url(
+            user_input.data, user_input.quality, app_instance.output_modality
+        )
+        da = _fetch_da_from_url(url)
     if da is None:
         raise ValueError(
             f'Could not load DocArray. Please check your configuration: {user_input}.'
@@ -182,11 +181,11 @@ def get_dataset_url(
     dataset: str, model_quality: Optional[Qualities], output_modality: Modalities
 ) -> str:
     data_folder = None
-    if output_modality == Modalities.TEXT_TO_IMAGE:
+    if output_modality == Modalities.IMAGE:
         data_folder = 'jpeg'
     elif output_modality == Modalities.TEXT:
         data_folder = 'text'
-    elif output_modality == Modalities.MUSIC_TO_MUSIC:
+    elif output_modality == Modalities.MUSIC:
         data_folder = 'music'
 
     if model_quality is not None:

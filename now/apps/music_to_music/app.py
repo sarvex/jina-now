@@ -35,8 +35,8 @@ class music_to_music(JinaNOWApp):
             return False
         return True
 
-    def setup(self, da: DocumentArray, user_config: Dict) -> Dict:
-        return finetune_and_push_if_possible(self)
+    def setup(self, da: DocumentArray, user_config: Dict, kubectl_path) -> Dict:
+        return finetune_and_push_if_possible(self, da, user_config, kubectl_path)
 
     def cleanup(self, app_config: dict) -> None:
         """

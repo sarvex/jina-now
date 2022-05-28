@@ -108,7 +108,7 @@ def deploy_k8s(f, ns, num_pods, tmpdir, kubectl_path):
 
 def deploy_flow(
     user_input: UserInput,
-    app: JinaNOWApp,
+    app_instance: JinaNOWApp,
     ns: str,
     env_file: str,
     index: DocumentArray,
@@ -119,7 +119,7 @@ def deploy_flow(
     from jina.clients import Client
 
     if user_input.deployment_type == 'remote':
-        flow = deploy_wolf(path=app.flow_yaml, env_file=env_file, name=ns)
+        flow = deploy_wolf(path=app_instance.flow_yaml, env_file=env_file, name=ns)
         host = flow.gateway
         client = Client(host=host)
 
@@ -136,7 +136,7 @@ def deploy_flow(
         from dotenv import load_dotenv
 
         load_dotenv(env_file)
-        f = Flow.load_config(app.flow_yaml)
+        f = Flow.load_config(app_instance.flow_yaml)
         (
             gateway_host,
             gateway_port,

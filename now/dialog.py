@@ -54,13 +54,13 @@ class UserInput:
     deployment_type: Optional[str] = None
 
 
-def _configure_app_options(app: JinaNOWApp, user_input, **kwargs):
-    for option in app.options:
+def _configure_app_options(app_instance: JinaNOWApp, user_input, **kwargs):
+    for option in app_instance.options:
         val = _prompt_value(
             **option,
             **kwargs,
         )
-        setattr(user_input, user_input.app, val)
+        setattr(user_input, option['name'], val)
     # _configure_quality(user_input, **kwargs)
 
 
@@ -75,12 +75,12 @@ def configure_user_input(**kwargs) -> [JinaNOWApp, UserInput]:
 
     user_input = UserInput()
     _configure_app(user_input, **kwargs)
-    app = _construct_app(user_input)
-    _configure_app_options(app, user_input, **kwargs)
-    _configure_dataset(app, user_input, **kwargs)
+    app_instance = _construct_app(user_input)
+    _configure_app_options(app_instance, user_input, **kwargs)
+    _configure_dataset(app_instance, user_input, **kwargs)
     _configure_cluster(user_input, **kwargs)
 
-    return app, user_input
+    return app_instance, user_input
 
 
 def print_headline():
@@ -123,11 +123,15 @@ def _configure_app(user_input: UserInput, **kwargs) -> None:
     )
 
 
-def _configure_dataset(app: JinaNOWApp, user_input: UserInput, **kwargs) -> None:
+def _configure_dataset(
+    app_instance: JinaNOWApp, user_input: UserInput, **kwargs
+) -> None:
     """Asks user to set dataset attribute of user_input"""
-    _configure_app_dataset(app, user_input, **kwargs)
+    _configure_app_dataset(app_instance, user_input, **kwargs)
 
-    if user_input.data in AVAILABLE_DATASET[user_input.output_modality]:
+    if user_input.data in [
+        name for name, _ in AVAILABLE_DATASET[app_instance.output_modality]
+    ]:
         user_input.is_custom_dataset = False
     else:
         user_input.is_custom_dataset = True
@@ -197,13 +201,15 @@ def _configure_custom_dataset(user_input: UserInput, **kwargs) -> None:
         )
 
 
-def _configure_app_dataset(app: JinaNOWApp, user_input: UserInput, **kwargs) -> None:
+def _configure_app_dataset(
+    app_instance: JinaNOWApp, user_input: UserInput, **kwargs
+) -> None:
     user_input.data = _prompt_value(
         name='data',
         prompt_message='What dataset do you want to use?',
         choices=[
             {'name': name, 'value': value}
-            for name, value in AVAILABLE_DATASET[app.output_modality]
+            for value, name in AVAILABLE_DATASET[app_instance.output_modality]
         ]
         + [
             Separator(),

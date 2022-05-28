@@ -7,7 +7,8 @@ from docarray import DocumentArray
 from jina import Client, Flow
 from tqdm import tqdm
 
-from now.deployment.flow import batch, deploy_k8s, get_encoder_config
+from now.constants import IMAGE_MODEL_QUALITY_MAP, Apps
+from now.deployment.flow import _ExecutorConfig, batch, deploy_k8s
 from now.dialog import UserInput
 
 _KS_NAMESPACE = 'embed-now'
@@ -37,3 +38,27 @@ def embed_now(user_input: UserInput, dataset: DocumentArray, kubectl_path: str):
 
     for doc in result:
         dataset[doc.id].embedding = doc.embedding
+
+
+def get_encoder_config(user_input: UserInput) -> _ExecutorConfig:
+    """
+    Gets the correct Executor running the pre-trained model given the user configuration.
+    :param user_input: Configures user input.
+    :return: Small data-transfer-object with information about the executor
+    """
+    if user_input.app == Apps.MUSIC_TO_MUSIC:
+        return _ExecutorConfig(
+            name='openl3clip',
+            uses=f'jinahub+docker://BiModalMusicTextEncoder',
+            uses_with={},
+        )
+    else:
+        return _ExecutorConfig(
+            name='clip',
+            uses=f'jinahub+docker://CLIPEncoder/v0.2.1',
+            uses_with={
+                'pretrained_model_name_or_path': IMAGE_MODEL_QUALITY_MAP[
+                    user_input.quality
+                ][1]
+            },
+        )
