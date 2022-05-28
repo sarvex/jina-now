@@ -115,7 +115,7 @@ def start_now(os_type, arch, contexts, active_context, **kwargs):
         + (
             f'/?host='
             + (gateway_host_internal if gateway_host != 'localhost' else 'gateway')
-            + f'&output_modality={user_input.output_modality}&data={user_input.data}'
+            + f'&output_modality={app_instance.output_modality}&data={user_input.data}'
         )
         + (f'&port={gateway_port_internal}' if gateway_port_internal else '')
     )
