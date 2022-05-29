@@ -20,7 +20,6 @@ class JinaNOWApp:
     """
 
     def __init__(self):
-
         curdir = os.path.realpath(__file__)
         self._flow_yaml = os.path.join(curdir, 'flow.yml')
 
@@ -55,6 +54,9 @@ class JinaNOWApp:
 
     @flow_yaml.setter
     def flow_yaml(self, value: str):
+        """
+        Set the flow yaml.
+        """
         self._flow_yaml = value
 
     @property
@@ -109,8 +111,8 @@ class JinaNOWApp:
         """
         return True
 
-    # TODO at the moment, the setup function needs kubectl because of finetuning
-    # When finetuning, inference is done on the k8s cluster or on wolf depending on the configuration
+    # TODO Remove kubectl_path. At the moment, the setup function needs kubectl because of finetuning a custom
+    #  dataset with local deployment. In that case, inference is done on the k8s cluster.
     def setup(self, da: DocumentArray, user_config: Dict, kubectl_path: str) -> Dict:
         """
         Runs before the flow is deployed.

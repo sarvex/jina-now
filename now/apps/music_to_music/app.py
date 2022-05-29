@@ -1,33 +1,26 @@
-from typing import Dict, List
+from typing import Dict
 
 import cowsay
 from docarray import DocumentArray
 
 from now.apps.base.app import JinaNOWApp
+from now.constants import Modalities
 from now.deployment.deployment import which
-from now.run_backend import finetune_and_push_if_possible
+from now.run_backend import finetune_flow_setup
 
 
 class music_to_music(JinaNOWApp):
     @property
     def description(self) -> str:
-        return 'Music to music app'
+        return 'Music to music search'
 
     @property
     def input_modality(self) -> str:
-        raise NotImplementedError()
+        return Modalities.MUSIC
 
     @property
     def output_modality(self) -> str:
-        raise NotImplementedError()
-
-    @property
-    def flow_yaml(self) -> str:
-        pass
-
-    @property
-    def options(self) -> List[Dict]:
-        return []
+        return Modalities.MUSIC
 
     def check_requirements(self) -> bool:
         if not ffmpeg_is_installed():
@@ -36,19 +29,7 @@ class music_to_music(JinaNOWApp):
         return True
 
     def setup(self, da: DocumentArray, user_config: Dict, kubectl_path) -> Dict:
-        return finetune_and_push_if_possible(self, da, user_config, kubectl_path)
-
-    def cleanup(self, app_config: dict) -> None:
-        """
-        Runs after the flow is terminated.
-        Cleans up the resources created during setup.
-        Common examples are:
-            - delete a database
-            - remove artifact
-            - notify other services
-        :param app_config: contains all information needed to clean up the allocated resources
-        """
-        pass
+        return finetune_flow_setup(self, da, user_config, kubectl_path)
 
 
 def ffmpeg_is_installed():

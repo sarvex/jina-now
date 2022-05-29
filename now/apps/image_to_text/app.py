@@ -8,18 +8,18 @@ from now.constants import Modalities
 from now.run_backend import finetune_flow_setup
 
 
-class text_to_image(JinaNOWApp):
+class image_to_text(JinaNOWApp):
     @property
     def description(self) -> str:
-        return 'Text to image search'
+        return 'Image to text search'
 
     @property
     def input_modality(self) -> str:
-        return Modalities.TEXT
+        return Modalities.IMAGE
 
     @property
     def output_modality(self) -> str:
-        return Modalities.IMAGE
+        return Modalities.TEXT
 
     @property
     def options(self) -> List[Dict]:

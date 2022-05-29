@@ -76,6 +76,7 @@ def configure_user_input(**kwargs) -> [JinaNOWApp, UserInput]:
     user_input = UserInput()
     _configure_app(user_input, **kwargs)
     app_instance = _construct_app(user_input)
+    app_instance.check_requirements()
     _configure_app_options(app_instance, user_input, **kwargs)
     _configure_dataset(app_instance, user_input, **kwargs)
     _configure_cluster(user_input, **kwargs)

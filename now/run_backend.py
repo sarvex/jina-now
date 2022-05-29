@@ -16,9 +16,12 @@ from now.finetuning.settings import FinetuneSettings, parse_finetune_settings
 cur_dir = pathlib.Path(__file__).parent.resolve()
 
 
-def finetune_and_push_if_possible(
+def finetune_flow_setup(
     app_instance: JinaNOWApp, dataset: DocumentArray, user_input, kubectl_path
 ):
+    """
+    Apply finetuning if possible, pushes the executor to hub and generated the related yaml file
+    """
     finetune_settings = parse_finetune_settings(user_input, dataset)
     if finetune_settings.perform_finetuning:
         print(f'🔧 Perform finetuning!')
