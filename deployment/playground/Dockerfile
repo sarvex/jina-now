@@ -12,3 +12,5 @@ EXPOSE 8051
 ENV PYTHONUNBUFFERED=1
 
 ENTRYPOINT ["streamlit", "run", "playground.py", "--server.port", "8501"]
+#ENTRYPOINT ["streamlit", "run", "playground.py", "--server.port", "8501", "<node_url>", "31080", "<output_modality>", "<data>"]
+#ENTRYPOINT ["streamlit", "run", "playground.py", "--server.port", "8501", "localhost", "31080", "image", "best-artworks"]
