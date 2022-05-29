@@ -45,8 +45,7 @@ class UserInput:
     dataset_path: Optional[str] = None
 
     # model related
-    quality: Optional[Qualities] = None
-    model_variant: Optional[str] = None
+    quality: Optional[Qualities] = Qualities.MEDIUM
 
     # cluster related
     cluster: Optional[str] = None

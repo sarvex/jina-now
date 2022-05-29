@@ -17,6 +17,6 @@ class ExampleDatasource(Datasource):
 
 
 example_datasources = [
-    ExampleDatasource('bird-species', '🦆 birds (≈12K docs)', Modalities.TEXT_TO_IMAGE),
+    ExampleDatasource('bird-species', '🦆 birds (≈12K docs)', Modalities.IMAGE),
     ...,
 ]
