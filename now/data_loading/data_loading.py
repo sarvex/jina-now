@@ -8,7 +8,6 @@ from typing import Optional
 
 from docarray import Document, DocumentArray
 
-from now.apps.base.app import JinaNOWApp
 from now.constants import (
     BASE_STORAGE_URL,
     IMAGE_MODEL_QUALITY_MAP,
@@ -22,7 +21,7 @@ from now.log.log import yaspin_extended
 from now.utils import download, sigmap
 
 
-def load_data(app_instance: JinaNOWApp, user_input: UserInput) -> DocumentArray:
+def load_data(modality, user_input: UserInput) -> DocumentArray:
     """
     Based on the user input, this function will pull the configured DocArray.
 
@@ -40,12 +39,10 @@ def load_data(app_instance: JinaNOWApp, user_input: UserInput) -> DocumentArray:
             da = _fetch_da_from_url(user_input.dataset_url)
         elif user_input.custom_dataset_type == DatasetTypes.PATH:
             print('💿  Loading DocArray from disk')
-            da = _load_from_disk(user_input.dataset_path, user_input.output_modality)
+            da = _load_from_disk(user_input.dataset_path, modality)
     else:
         print('⬇  Download DocArray')
-        url = get_dataset_url(
-            user_input.data, user_input.quality, app_instance.output_modality
-        )
+        url = get_dataset_url(user_input.data, user_input.quality, modality)
         da = _fetch_da_from_url(url)
     if da is None:
         raise ValueError(
@@ -98,11 +95,11 @@ def _load_from_disk(dataset_path: str, modality: Modalities) -> DocumentArray:
         with yaspin_extended(
             sigmap=sigmap, text="Loading and pre-processing data", color="green"
         ) as spinner:
-            if modality == Modalities.TEXT_TO_IMAGE:
+            if modality == Modalities.IMAGE:
                 return _load_images_from_folder(dataset_path)
             elif modality == Modalities.TEXT:
                 return _load_texts_from_folder(dataset_path)
-            elif modality == Modalities.MUSIC_TO_MUSIC:
+            elif modality == Modalities.MUSIC:
                 return _load_music_from_folder(dataset_path)
             spinner.ok('🏭')
     else:

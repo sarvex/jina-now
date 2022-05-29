@@ -47,7 +47,7 @@ def run(app_instance: JinaNOWApp, user_input: UserInput, kubectl_path: str):
     :param kubectl_path:
     :return:
     """
-    dataset = load_data(app_instance, user_input)
+    dataset = load_data(app_instance.output_modality, user_input)
     env = app_instance.setup(dataset, user_input, kubectl_path)
     with tempfile.TemporaryDirectory() as tmpdir:
         env_file = os.path.join(tmpdir, 'dot.env')

@@ -2,7 +2,7 @@ import pytest
 from docarray import DocumentArray
 from pytest_mock import MockerFixture
 
-from now.constants import Modalities
+from now.constants import Apps
 from now.dialog import UserInput
 from now.finetuning.run_finetuning import finetune_now
 from now.finetuning.settings import parse_finetune_settings
@@ -24,7 +24,7 @@ def test_music_access_lookup_dict(mocker: MockerFixture, fake_dict):
     mocker.patch(
         'now.finetuning.run_finetuning.PRE_TRAINED_LINEAR_HEADS_MUSIC', fake_dict
     )
-    user_input = UserInput(output_modality=Modalities.MUSIC)
+    user_input = UserInput(app=Apps.MUSIC_TO_MUSIC)
     dataset = DocumentArray()
 
     finetune_now(user_input, dataset, parse_finetune_settings(user_input, dataset), '')
