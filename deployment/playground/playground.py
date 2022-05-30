@@ -10,6 +10,8 @@ import streamlit as st
 from docarray import Document, DocumentArray
 from streamlit_webrtc import ClientSettings, webrtc_streamer
 
+from now.constants import SURVEY_LINK
+
 WEBRTC_CLIENT_SETTINGS = ClientSettings(
     rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
     media_stream_constraints={"video": True, "audio": False},
@@ -194,6 +196,7 @@ def deploy_streamlit():
             doc = convert_file_to_document(query)
             st.image(doc.blob, width=160)
             st.session_state.matches = search_by_file(document=doc)
+            st.session_state.search_count += 1
         if da_img is not None:
             st.subheader("samples:")
             img_cs = st.columns(5)
@@ -209,6 +212,7 @@ def deploy_streamlit():
         query = st.text_input("", key="text_search_box")
         if query:
             st.session_state.matches = search_by_t(search_text=query)
+            st.session_state.search_count += 1
         if st.button("Search", key="text_search"):
             st.session_state.matches = search_by_t(search_text=query)
         if da_txt is not None:
@@ -252,6 +256,8 @@ def deploy_streamlit():
     if st.session_state.matches:
         matches = deepcopy(st.session_state.matches)
         st.header('Search results')
+        if st.session_state.search_count > 2:
+            st.write(f"##### :fire: [How do you like JinaNow?]({SURVEY_LINK}) :fire:")
         # Results area
         c1, c2, c3 = st.columns(3)
         c4, c5, c6 = st.columns(3)
@@ -364,6 +370,9 @@ def setup_session_state():
 
     if 'snap' not in st.session_state:
         st.session_state.snap = None
+
+    if 'search_count' not in st.session_state:
+        st.session_state.search_count = 0
 
 
 if __name__ == '__main__':
