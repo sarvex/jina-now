@@ -1,7 +1,7 @@
 import os
 import pathlib
 import tempfile
-from typing import Tuple
+from typing import Dict, Optional, Tuple
 
 from docarray import DocumentArray
 
@@ -23,6 +23,7 @@ def finetune_flow_setup(
     user_input,
     kubectl_path,
     finetune_datasets: Tuple = (),
+    pre_trained_head_map: Optional[Dict] = None,
 ):
     """
     Apply finetuning if possible, pushes the executor to hub and generated the related yaml file
@@ -31,7 +32,7 @@ def finetune_flow_setup(
     if finetune_settings.perform_finetuning:
         print(f'🔧 Perform finetuning!')
         finetune_settings.finetuned_model_name = finetune_now(
-            user_input, dataset, finetune_settings, kubectl_path
+            user_input, dataset, finetune_settings, pre_trained_head_map, kubectl_path
         )
 
     finetuning = finetune_settings.perform_finetuning

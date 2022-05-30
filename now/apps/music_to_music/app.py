@@ -39,6 +39,14 @@ class MusicToMusic(JinaNOWApp):
                 DemoDatasets.MUSIC_GENRES_MID,
                 DemoDatasets.MUSIC_GENRES_LARGE,
             ),
+            pre_trained_head_map={
+                DemoDatasets.MUSIC_GENRES_MID: 'FineTunedLinearHeadEncoder:93ea59dbd1ee3fe0bdc44252c6e86a87/'
+                'linear_head_encoder_music_2k',
+                DemoDatasets.MUSIC_GENRES_LARGE: 'FineTunedLinearHeadEncoder:93ea59dbd1ee3fe0bdc44252c6e86a87/'
+                'linear_head_encoder_music_10k',
+                DemoDatasets.MUSIC_GENRES_EXTRA_LARGE: 'FineTunedLinearHeadEncoder:93ea59dbd1ee3fe0bdc44252c6e86a87/'
+                'linear_head_encoder_music_40k',
+            },
         )
 
 
