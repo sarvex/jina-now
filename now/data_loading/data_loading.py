@@ -23,7 +23,7 @@ from now.utils import download, sigmap
 
 def load_data(output_modality, user_input: UserInput) -> DocumentArray:
     """
-    Based on the user input, this function will pull the configured DocArray.
+    Based on the user input, this function will pull the configured DocArray dataset.
 
     :param user_input: The configured user object. Result from the Jina Now cli dialog.
     :return: The loaded DocumentArray.
@@ -32,21 +32,21 @@ def load_data(output_modality, user_input: UserInput) -> DocumentArray:
 
     if user_input.is_custom_dataset:
         if user_input.custom_dataset_type == DatasetTypes.DOCARRAY:
-            print('⬇  Pull DocArray')
+            print('⬇  Pull DocArray dataset')
             da = _pull_docarray(user_input.dataset_secret)
         elif user_input.custom_dataset_type == DatasetTypes.URL:
-            print('⬇  Pull DocArray')
+            print('⬇  Pull DocArray dataset')
             da = _fetch_da_from_url(user_input.dataset_url)
         elif user_input.custom_dataset_type == DatasetTypes.PATH:
             print('💿  Loading files from disk')
             da = _load_from_disk(user_input.dataset_path, output_modality)
     else:
-        print('⬇  Download DocArray')
+        print('⬇  Download DocArray dataset')
         url = get_dataset_url(user_input.data, user_input.quality, output_modality)
         da = _fetch_da_from_url(url)
     if da is None:
         raise ValueError(
-            f'Could not load DocArray. Please check your configuration: {user_input}.'
+            f'Could not load DocArray dataset. Please check your configuration: {user_input}.'
         )
     da = da.shuffle(seed=42)
     da = deep_copy_da(da)
@@ -67,7 +67,7 @@ def _fetch_da_from_url(
         download(url, data_path)
 
     with yaspin_extended(
-        sigmap=sigmap, text="Extracting dataset", color="green"
+        sigmap=sigmap, text="Extracting dataset from DocArray", color="green"
     ) as spinner:
         da = DocumentArray.load_binary(data_path)
         spinner.ok("📂")
