@@ -1,22 +1,11 @@
 """ This module contains pre-configurations for finetuning on the demo datasets. """
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Tuple
 
 from docarray import DocumentArray
 
-from now.constants import Apps, DemoDatasets, Qualities
+from now.constants import Apps, Qualities
 from now.dataclasses import UserInput
-
-TUNEABLE_DEMO_DATASETS = {
-    Apps.TEXT_TO_IMAGE: [DemoDatasets.DEEP_FASHION, DemoDatasets.BIRD_SPECIES],
-    Apps.IMAGE_TO_TEXT: [],
-    Apps.IMAGE_TO_IMAGE: [DemoDatasets.DEEP_FASHION, DemoDatasets.BIRD_SPECIES],
-    Apps.MUSIC_TO_MUSIC: [
-        DemoDatasets.MUSIC_GENRES_MID,
-        DemoDatasets.MUSIC_GENRES_LARGE,
-    ],
-}
-
 
 DEFAULT_EPOCHS = 50
 DEFAULT_NUM_VAL_QUERIES = 50
@@ -77,8 +66,10 @@ def _get_pre_trained_embedding_size(user_input: UserInput) -> int:
     return PRE_TRAINED_EMBEDDING_SIZE[user_input.app][user_input.quality]
 
 
-def _is_finetuning(user_input: UserInput, dataset: DocumentArray) -> bool:
-    if user_input.data in TUNEABLE_DEMO_DATASETS[user_input.app]:
+def _is_finetuning(
+    user_input: UserInput, dataset: DocumentArray, finetune_datasets: Tuple
+) -> bool:
+    if user_input.data in finetune_datasets:
         return True
 
     elif user_input.is_custom_dataset and all(
@@ -99,11 +90,11 @@ def _is_bi_modal(user_input: UserInput, dataset: DocumentArray) -> bool:
 
 
 def parse_finetune_settings(
-    user_input: UserInput, dataset: DocumentArray
+    user_input: UserInput, dataset: DocumentArray, finetune_datasets: Tuple
 ) -> FinetuneSettings:
     """This function parses the user input configuration into the finetune settings"""
     return FinetuneSettings(
         pre_trained_embedding_size=_get_pre_trained_embedding_size(user_input),
-        perform_finetuning=_is_finetuning(user_input, dataset),
+        perform_finetuning=_is_finetuning(user_input, dataset, finetune_datasets),
         bi_modal=_is_bi_modal(user_input, dataset),
     )

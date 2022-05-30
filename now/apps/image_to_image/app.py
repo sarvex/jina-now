@@ -4,7 +4,7 @@ from docarray import DocumentArray
 from now_common import options
 
 from now.apps.base.app import JinaNOWApp
-from now.constants import Modalities
+from now.constants import DemoDatasets, Modalities
 from now.dataclasses import UserInput
 from now.run_backend import finetune_flow_setup
 
@@ -27,4 +27,10 @@ class ImageToImage(JinaNOWApp):
         return [options.QUALITY_CLIP]
 
     def setup(self, da: DocumentArray, user_config: UserInput, kubectl_path) -> Dict:
-        return finetune_flow_setup(self, da, user_config, kubectl_path)
+        return finetune_flow_setup(
+            self,
+            da,
+            user_config,
+            kubectl_path,
+            finetune_datasets=(DemoDatasets.DEEP_FASHION, DemoDatasets.BIRD_SPECIES),
+        )

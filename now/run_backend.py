@@ -1,6 +1,7 @@
 import os
 import pathlib
 import tempfile
+from typing import Tuple
 
 from docarray import DocumentArray
 
@@ -17,12 +18,16 @@ cur_dir = pathlib.Path(__file__).parent.resolve()
 
 
 def finetune_flow_setup(
-    app_instance: JinaNOWApp, dataset: DocumentArray, user_input, kubectl_path
+    app_instance: JinaNOWApp,
+    dataset: DocumentArray,
+    user_input,
+    kubectl_path,
+    finetune_datasets: Tuple = (),
 ):
     """
     Apply finetuning if possible, pushes the executor to hub and generated the related yaml file
     """
-    finetune_settings = parse_finetune_settings(user_input, dataset)
+    finetune_settings = parse_finetune_settings(user_input, dataset, finetune_datasets)
     if finetune_settings.perform_finetuning:
         print(f'🔧 Perform finetuning!')
         finetune_settings.finetuned_model_name = finetune_now(
