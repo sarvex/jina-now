@@ -334,7 +334,7 @@ def to_camel_case(text):
     s = s.split()
     if len(text) == 0:
         return text
-    return s[0] + ''.join(i.capitalize() for i in s[1:])
+    return ''.join(i.capitalize() for i in s)
 
 
 sigmap = {signal.SIGINT: my_handler, signal.SIGTERM: my_handler}
