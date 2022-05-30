@@ -183,11 +183,7 @@ def deploy_streamlit():
             on_change=clear_match,
         )
     elif INPUT_MODALITY == 'text':
-        media_type = st.radio(
-            '',
-            ["Text"],
-            on_change=clear_match,
-        )
+        media_type = 'Text'
 
     if media_type == "Image":
         upload_c, preview_c = st.columns([12, 1])
