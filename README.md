@@ -52,9 +52,9 @@ First, you will get asked what search case you would like to deploy.
 ```bash
 jina now start
 ```
-First, you will be prompted to choose the modality. As for now, we support images or text searches. But in the future, we will add many more options here.
+First, you will be prompted to choose an app. As for now, we support images or text searches. But in the future, we will add many more options here.
 
-<img width="497" alt="question-modality" src="https://user-images.githubusercontent.com/11627845/170256046-4d20c79e-802e-4d28-8be9-4e5ebffd0e28.png">
+<img width="613" alt="Screenshot 2022-05-31 at 01 08 25" src="https://user-images.githubusercontent.com/11627845/171066876-b01bb76d-80f0-4f7c-8e5b-f329ef59e147.png">
 
 In the next step, you get asked to select the dataset for your search app. You could either choose one of our existing datasets or select `custom` to index your own data.
 
