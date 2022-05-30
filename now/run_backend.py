@@ -89,11 +89,9 @@ def get_custom_env_file(
     encoder_uses: str,
     artifact: str,
 ):
-    suffix = 'docker' if user_input.deployment_type == 'remote' else 'docker'
-
-    indexer_name = f'jinahub+{suffix}://DocarrayIndexer'
+    indexer_name = f'jinahub+docker://DocarrayIndexer'
     encoder_config = get_encoder_config(encoder_uses, artifact)
-    linear_head_name = f'jinahub+{suffix}://{finetune_settings.finetuned_model_name}'
+    linear_head_name = f'jinahub+docker://{finetune_settings.finetuned_model_name}'
 
     if finetune_settings.bi_modal:
         pre_trained_embedding_size = finetune_settings.pre_trained_embedding_size * 2

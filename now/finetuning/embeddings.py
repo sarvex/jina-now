@@ -46,7 +46,7 @@ def get_encoder_config(encoder_uses: str, artifact: str) -> _ExecutorConfig:
     :return: Small data-transfer-object with information about the executor
     """
     return _ExecutorConfig(
-        name='openl3clip',
-        uses=encoder_uses,
+        name='encoder',
+        uses=f'jinahub+docker://{encoder_uses}',
         uses_with={'pretrained_model_name_or_path': artifact},
     )
