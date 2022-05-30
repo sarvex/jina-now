@@ -6,6 +6,7 @@ from os.path import join as osp
 from pathlib import Path
 from typing import Optional
 
+import docarray
 from docarray import Document, DocumentArray
 
 from now.constants import (
@@ -181,6 +182,7 @@ def _load_texts_from_folder(path: str) -> DocumentArray:
 def get_dataset_url(
     dataset: str, model_quality: Optional[Qualities], output_modality: Modalities
 ) -> str:
+    docarray_version = docarray.__version__
     data_folder = None
     if output_modality == Modalities.IMAGE:
         data_folder = 'jpeg'
@@ -190,9 +192,9 @@ def get_dataset_url(
         data_folder = 'music'
 
     if model_quality is not None:
-        return f'{BASE_STORAGE_URL}/{data_folder}/{dataset}.{IMAGE_MODEL_QUALITY_MAP[model_quality][0]}.bin'
+        return f'{BASE_STORAGE_URL}/{data_folder}/{dataset}.{IMAGE_MODEL_QUALITY_MAP[model_quality][0]}-{docarray_version}.bin'
     else:
-        return f'{BASE_STORAGE_URL}/{data_folder}/{dataset}.bin'
+        return f'{BASE_STORAGE_URL}/{data_folder}/{dataset}-{docarray_version}.bin'
 
 
 def deep_copy_da(da: DocumentArray) -> DocumentArray:
