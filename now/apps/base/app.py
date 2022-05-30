@@ -9,10 +9,6 @@ from now.datasource.datasource import Datasource
 from now.dialog import UserInput
 
 
-class AppConfig:
-    env: Dict
-
-
 class JinaNOWApp:
     """
     Interface for Jina NOW applications.
