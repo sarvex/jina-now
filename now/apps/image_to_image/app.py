@@ -4,7 +4,7 @@ from docarray import DocumentArray
 from now_common import options
 
 from now.apps.base.app import JinaNOWApp
-from now.constants import DemoDatasets, Modalities
+from now.constants import CLIP_USES, IMAGE_MODEL_QUALITY_MAP, DemoDatasets, Modalities
 from now.dataclasses import UserInput
 from now.run_backend import finetune_flow_setup
 
@@ -32,5 +32,7 @@ class ImageToImage(JinaNOWApp):
             da,
             user_config,
             kubectl_path,
+            encoder_uses=CLIP_USES,
+            artifact=IMAGE_MODEL_QUALITY_MAP[user_config.quality],
             finetune_datasets=(DemoDatasets.DEEP_FASHION, DemoDatasets.BIRD_SPECIES),
         )

@@ -37,6 +37,8 @@ IMAGE_MODEL_QUALITY_MAP = {
     Qualities.EXCELLENT: ('ViT-L14', 'openai/clip-vit-large-patch14'),
 }
 
+CLIP_USES = 'CLIPEncoder/v0.2.1'
+
 
 class DemoDatasets:
     BEST_ARTWORKS = 'best-artworks'
@@ -84,12 +86,6 @@ AVAILABLE_DATASET = {
     ],
 }
 
-# APP_INFO = {
-#     Apps.TEXT_TO_IMAGE: (Modalities.IMAGE, 'Search app for finding images given text'),
-#     Apps.IMAGE_TO_TEXT: (Modalities.TEXT, 'Search app for finding text given images'),
-#     Apps.IMAGE_TO_IMAGE: (Modalities.IMAGE, 'Search app for finding images given images'),
-#     Apps.MUSIC_TO_MUSIC: (Modalities.MUSIC, 'Search app for finding music given music'),
-# }
 
 JC_SECRET = '~/.cache/jina-now/wolf.json'
 

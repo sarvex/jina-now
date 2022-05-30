@@ -35,6 +35,8 @@ class MusicToMusic(JinaNOWApp):
             da,
             user_config,
             kubectl_path,
+            encoder_uses='BiModalMusicTextEncoder',
+            artifact='default',
             finetune_datasets=(
                 DemoDatasets.MUSIC_GENRES_MID,
                 DemoDatasets.MUSIC_GENRES_LARGE,

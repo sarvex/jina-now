@@ -22,6 +22,8 @@ def finetune_flow_setup(
     dataset: DocumentArray,
     user_input,
     kubectl_path,
+    encoder_uses: str,
+    artifact: str,
     finetune_datasets: Tuple = (),
     pre_trained_head_map: Optional[Dict] = None,
 ):
@@ -40,7 +42,7 @@ def finetune_flow_setup(
     yaml_name = get_flow_yaml_name(user_input.app, finetuning)
     app_instance.flow_yaml = os.path.join(cur_dir, 'deployment', 'flow', yaml_name)
 
-    env = get_custom_env_file(user_input, finetune_settings)
+    env = get_custom_env_file(user_input, finetune_settings, encoder_uses, artifact)
     return env
 
 
@@ -84,11 +86,13 @@ def write_env_file(env_file, config):
 def get_custom_env_file(
     user_input: UserInput,
     finetune_settings: FinetuneSettings,
+    encoder_uses: str,
+    artifact: str,
 ):
     suffix = 'docker' if user_input.deployment_type == 'remote' else 'docker'
 
     indexer_name = f'jinahub+{suffix}://DocarrayIndexer'
-    encoder_config = get_encoder_config(user_input)
+    encoder_config = get_encoder_config(encoder_uses, artifact)
     linear_head_name = f'jinahub+{suffix}://{finetune_settings.finetuned_model_name}'
 
     if finetune_settings.bi_modal:
