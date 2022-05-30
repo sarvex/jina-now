@@ -1,11 +1,13 @@
+from now.constants import Qualities
+
 QUALITY_CLIP = {
     'name': 'quality',
     'choices': [
-        {'name': '🦊 medium (≈3GB mem, 15q/s)', 'value': 'openai/clip-vit-base-patch32'},
-        {'name': '🐻 good (≈3GB mem, 2.5q/s)', 'value': 'openai/clip-vit-base-patch16'},
+        {'name': '🦊 medium (≈3GB mem, 15q/s)', 'value': Qualities.MEDIUM},
+        {'name': '🐻 good (≈3GB mem, 2.5q/s)', 'value': Qualities.GOOD},
         {
             'name': '🦄 excellent (≈4GB mem, 0.5q/s)',
-            'value': 'openai/clip-vit-large-patch14',
+            'value': Qualities.EXCELLENT,
         },
     ],
     'prompt_message': 'What quality do you expect?',

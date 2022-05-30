@@ -154,9 +154,9 @@ def deploy_flow(
     if os.path.exists(env_file):
         os.remove(env_file)
 
-    if user_input.output_modality == 'image':
+    if app_instance.output_modality == 'image':
         index = [x for x in index if x.text == '']
-    elif user_input.output_modality == 'text':
+    elif app_instance.output_modality == 'text':
         index = [x for x in index if x.text != '']
     print(f'▶ indexing {len(index)} documents')
     request_size = 64
