@@ -110,7 +110,7 @@ def _configure_app(user_input: UserInput, **kwargs) -> None:
         choices=[
             {'name': '📝 ▶ 🏞 Text to Image search', 'value': Apps.TEXT_TO_IMAGE},
             {'name': '🏞 ▶ 📝 Image to Text search', 'value': Apps.IMAGE_TO_TEXT},
-            {'name': '🏞 ▶ 🏞 Image to Image search', 'value': Apps.IMAGE_TO_TEXT},
+            {'name': '🏞 ▶ 🏞 Image to Image search', 'value': Apps.IMAGE_TO_IMAGE},
             {
                 'name': '🥁 ▶ 🥁 Music to Music Search',
                 'value': Apps.MUSIC_TO_MUSIC,
