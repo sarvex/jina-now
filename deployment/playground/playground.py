@@ -60,6 +60,7 @@ def deploy_streamlit():
         query_parameters.get('port')[0] if 'port' in query_parameters.keys() else None
     )
     OUTPUT_MODALITY = query_parameters.get('output_modality')[0]
+    INPUT_MODALITY = query_parameters.get('input_modality')[0]
     DATA = (
         query_parameters.get('data')[0] if 'data' in query_parameters.keys() else None
     )
@@ -173,18 +174,14 @@ def deploy_streamlit():
         '<style>div.st-bf{flex-direction:column;} div.st-ag{font-weight:bold;padding-right:50px;}</style>',
         unsafe_allow_html=True,
     )
-    if OUTPUT_MODALITY == 'image':
+    if INPUT_MODALITY == 'image':
         media_type = st.radio(
             '',
-            ["Text", "Image", 'Webcam'],
+            ["Image", 'Webcam'],
             on_change=clear_match,
         )
-    elif OUTPUT_MODALITY == 'text':
-        media_type = st.radio(
-            '',
-            ["Image", "Text", 'Webcam'],
-            on_change=clear_match,
-        )
+    elif INPUT_MODALITY == 'text':
+        media_type = 'Text'
 
     if media_type == "Image":
         upload_c, preview_c = st.columns([12, 1])

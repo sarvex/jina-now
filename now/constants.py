@@ -1,35 +1,30 @@
-from typing import List
+from now.utils import BetterEnum
 
 
-class Modalities:
+class Modalities(BetterEnum):
+    TEXT = 'text'
     IMAGE = 'image'
     MUSIC = 'music'
-    TEXT = 'text'
-
-    @classmethod
-    def as_list(cls) -> List[str]:
-        return [cls.IMAGE, cls.MUSIC, cls.TEXT]
 
 
-class DatasetTypes:
+class Apps(BetterEnum):
+    TEXT_TO_IMAGE = 'text_to_image'
+    IMAGE_TO_TEXT = 'image_to_text'
+    IMAGE_TO_IMAGE = 'image_to_image'
+    MUSIC_TO_MUSIC = 'music_to_music'
+
+
+class DatasetTypes(BetterEnum):
     DEMO = 'demo'
     PATH = 'path'
     URL = 'url'
     DOCARRAY = 'docarray'
 
-    @classmethod
-    def as_list(cls) -> List[str]:
-        return [cls.DEMO, cls.PATH, cls.URL, cls.DOCARRAY]
 
-
-class Qualities:
+class Qualities(BetterEnum):
     MEDIUM = 'medium'
     GOOD = 'good'
     EXCELLENT = 'excellent'
-
-    @classmethod
-    def as_list(cls) -> List[str]:
-        return [cls.MEDIUM, cls.GOOD, cls.EXCELLENT]
 
 
 BASE_STORAGE_URL = (
@@ -41,6 +36,8 @@ IMAGE_MODEL_QUALITY_MAP = {
     Qualities.GOOD: ('ViT-B16', 'openai/clip-vit-base-patch16'),
     Qualities.EXCELLENT: ('ViT-L14', 'openai/clip-vit-large-patch14'),
 }
+
+CLIP_USES = 'CLIPEncoder/v0.2.1'
 
 
 class DemoDatasets:
@@ -67,38 +64,29 @@ class DemoDatasets:
 
 AVAILABLE_DATASET = {
     Modalities.IMAGE: [
-        DemoDatasets.BEST_ARTWORKS,
-        DemoDatasets.NFT_MONKEY,
-        DemoDatasets.TLL,
-        DemoDatasets.BIRD_SPECIES,
-        DemoDatasets.STANFORD_CARS,
-        DemoDatasets.DEEP_FASHION,
-        DemoDatasets.NIH_CHEST_XRAYS,
-        DemoDatasets.GEOLOCATION_GEOGUESSR,
+        (DemoDatasets.BEST_ARTWORKS, '🖼 artworks (≈8K docs)'),
+        (DemoDatasets.NFT_MONKEY, '💰 nft - bored apes (10K docs)'),
+        (DemoDatasets.TLL, '👬 totally looks like (≈12K docs)'),
+        (DemoDatasets.BIRD_SPECIES, '🦆 birds (≈12K docs)'),
+        (DemoDatasets.STANFORD_CARS, '🚗 cars (≈16K docs)'),
+        (DemoDatasets.GEOLOCATION_GEOGUESSR, '🏞 geolocation (≈50K docs)'),
+        (DemoDatasets.DEEP_FASHION, '👕 fashion (≈53K docs)'),
+        (DemoDatasets.NIH_CHEST_XRAYS, '☢️ chest x-ray (≈100K docs)'),
     ],
     Modalities.MUSIC: [
-        DemoDatasets.MUSIC_GENRES_MID,
-        DemoDatasets.MUSIC_GENRES_LARGE,
+        (DemoDatasets.MUSIC_GENRES_MID, '🎸 music mid (≈2K docs)'),
+        (DemoDatasets.MUSIC_GENRES_LARGE, '🎸 music large (≈10K docs)'),
     ],
     Modalities.TEXT: [
-        DemoDatasets.ROCK_LYRICS,
-        DemoDatasets.POP_LYRICS,
-        DemoDatasets.RAP_LYRICS,
-        DemoDatasets.INDIE_LYRICS,
-        DemoDatasets.METAL_LYRICS,
+        (DemoDatasets.ROCK_LYRICS, '🎤 rock lyrics (200K docs)'),
+        (DemoDatasets.POP_LYRICS, '🎤 pop lyrics (200K docs)'),
+        (DemoDatasets.RAP_LYRICS, '🎤 rap lyrics (200K docs)'),
+        (DemoDatasets.INDIE_LYRICS, '🎤 indie lyrics (200K docs)'),
+        (DemoDatasets.METAL_LYRICS, '🎤 metal lyrics (200K docs)'),
     ],
 }
+
 
 JC_SECRET = '~/.cache/jina-now/wolf.json'
 
 SURVEY_LINK = 'https://docs.google.com/forms/d/e/1FAIpQLSex5gMN4wuQc63TriwRqREBfdijwOrATPe7RotcPaT1SSPfEw/viewform?usp=pp_url&entry.1126738320=Jina+NOW+pip+package'
-
-
-PRE_TRAINED_LINEAR_HEADS_MUSIC = {
-    DemoDatasets.MUSIC_GENRES_MID: 'FineTunedLinearHeadEncoder:93ea59dbd1ee3fe0bdc44252c6e86a87/'
-    'linear_head_encoder_music_2k',
-    DemoDatasets.MUSIC_GENRES_LARGE: 'FineTunedLinearHeadEncoder:93ea59dbd1ee3fe0bdc44252c6e86a87/'
-    'linear_head_encoder_music_10k',
-    DemoDatasets.MUSIC_GENRES_EXTRA_LARGE: 'FineTunedLinearHeadEncoder:93ea59dbd1ee3fe0bdc44252c6e86a87/'
-    'linear_head_encoder_music_40k',
-}
