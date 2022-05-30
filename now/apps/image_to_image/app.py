@@ -14,11 +14,11 @@ class image_to_image(JinaNOWApp):
         return 'Image to text search'
 
     @property
-    def input_modality(self) -> str:
+    def input_modality(self) -> Modalities:
         return Modalities.IMAGE
 
     @property
-    def output_modality(self) -> str:
+    def output_modality(self) -> Modalities:
         return Modalities.IMAGE
 
     @property

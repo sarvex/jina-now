@@ -15,11 +15,11 @@ class music_to_music(JinaNOWApp):
         return 'Music to music search'
 
     @property
-    def input_modality(self) -> str:
+    def input_modality(self) -> Modalities:
         return Modalities.MUSIC
 
     @property
-    def output_modality(self) -> str:
+    def output_modality(self) -> Modalities:
         return Modalities.MUSIC
 
     def check_requirements(self) -> bool:

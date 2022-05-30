@@ -4,6 +4,7 @@ from typing import Dict, List, Optional
 
 from docarray import DocumentArray
 
+from now.constants import Modalities
 from now.datasource.datasource import Datasource
 
 
@@ -33,7 +34,7 @@ class JinaNOWApp:
 
     @abc.abstractmethod
     @property
-    def input_modality(self) -> str:
+    def input_modality(self) -> Modalities:
         """
         Modality used for running search queries
         """
@@ -41,7 +42,7 @@ class JinaNOWApp:
 
     @abc.abstractmethod
     @property
-    def output_modality(self) -> str:
+    def output_modality(self) -> Modalities:
         """
         Modality used for indexing data
         """
@@ -65,16 +66,18 @@ class JinaNOWApp:
     @property
     def bff(self) -> Optional[str]:
         """
-        Used to configure the bff which is used to define input and
-        :return: the path of the bff
+        TODO This function is currently not used but already introduces the concept of custom bff
+        Used to configure the bff which is used to define input and output format.
+        :return: the path to the file where the bff routs are configured
         """
         return None
 
     @property
     def playground(self) -> Optional[str]:
         """
+        TODO This function is currently not used but already introduces the concept of custom playground
         Used to configure the playground(streamlit app) where the user can run example queries
-        :return: the path of the playground
+        :return: the path to the streamlit file.
         """
         return None
 
