@@ -21,7 +21,7 @@ from now.log.log import yaspin_extended
 from now.utils import download, sigmap
 
 
-def load_data(modality, user_input: UserInput) -> DocumentArray:
+def load_data(output_modality, user_input: UserInput) -> DocumentArray:
     """
     Based on the user input, this function will pull the configured DocArray.
 
@@ -39,10 +39,10 @@ def load_data(modality, user_input: UserInput) -> DocumentArray:
             da = _fetch_da_from_url(user_input.dataset_url)
         elif user_input.custom_dataset_type == DatasetTypes.PATH:
             print('💿  Loading DocArray from disk')
-            da = _load_from_disk(user_input.dataset_path, modality)
+            da = _load_from_disk(user_input.dataset_path, output_modality)
     else:
         print('⬇  Download DocArray')
-        url = get_dataset_url(user_input.data, user_input.quality, modality)
+        url = get_dataset_url(user_input.data, user_input.quality, output_modality)
         da = _fetch_da_from_url(url)
     if da is None:
         raise ValueError(

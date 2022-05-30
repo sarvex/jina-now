@@ -326,9 +326,7 @@ def flow_definition(dirpath) -> Dict:
 
 class BetterEnum:
     def __iter__(self):
-        return [
-            getattr(self, x) for x in dir(self) if ('__' not in x and x != 'as_list')
-        ].__iter__()
+        return [getattr(self, x) for x in dir(self) if ('__' not in x)].__iter__()
 
 
 sigmap = {signal.SIGINT: my_handler, signal.SIGTERM: my_handler}
