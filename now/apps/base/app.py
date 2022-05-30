@@ -56,7 +56,7 @@ class JinaNOWApp:
     @flow_yaml.setter
     def flow_yaml(self, value: str):
         """
-        Set the flow yaml.
+        Set the flow yaml. Either the path to the yaml or the yaml content.
         """
         self._flow_yaml = value
 
