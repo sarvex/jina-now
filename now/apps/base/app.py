@@ -29,16 +29,16 @@ class JinaNOWApp:
         """
         return 'Jina NOW app'
 
-    @abc.abstractmethod
     @property
+    @abc.abstractmethod
     def input_modality(self) -> Modalities:
         """
         Modality used for running search queries
         """
         raise NotImplementedError()
 
-    @abc.abstractmethod
     @property
+    @abc.abstractmethod
     def output_modality(self) -> Modalities:
         """
         Modality used for indexing data
