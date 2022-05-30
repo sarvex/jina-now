@@ -5,6 +5,7 @@ from now_common import options
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import Modalities
+from now.dialog import UserInput
 from now.run_backend import finetune_flow_setup
 
 
@@ -25,5 +26,5 @@ class image_to_image(JinaNOWApp):
     def options(self) -> List[Dict]:
         return [options.QUALITY_CLIP]
 
-    def setup(self, da: DocumentArray, user_config: Dict, kubectl_path) -> Dict:
+    def setup(self, da: DocumentArray, user_config: UserInput, kubectl_path) -> Dict:
         return finetune_flow_setup(self, da, user_config, kubectl_path)

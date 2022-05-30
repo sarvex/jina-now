@@ -6,6 +6,7 @@ from docarray import DocumentArray
 from now.apps.base.app import JinaNOWApp
 from now.constants import Modalities
 from now.deployment.deployment import which
+from now.dialog import UserInput
 from now.run_backend import finetune_flow_setup
 
 
@@ -28,7 +29,7 @@ class music_to_music(JinaNOWApp):
             return False
         return True
 
-    def setup(self, da: DocumentArray, user_config: Dict, kubectl_path) -> Dict:
+    def setup(self, da: DocumentArray, user_config: UserInput, kubectl_path) -> Dict:
         return finetune_flow_setup(self, da, user_config, kubectl_path)
 
 

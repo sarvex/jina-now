@@ -6,6 +6,7 @@ from docarray import DocumentArray
 
 from now.constants import Modalities
 from now.datasource.datasource import Datasource
+from now.dialog import UserInput
 
 
 class AppConfig:
@@ -120,7 +121,9 @@ class JinaNOWApp:
 
     # TODO Remove kubectl_path. At the moment, the setup function needs kubectl because of finetuning a custom
     #  dataset with local deployment. In that case, inference is done on the k8s cluster.
-    def setup(self, da: DocumentArray, user_config: Dict, kubectl_path: str) -> Dict:
+    def setup(
+        self, da: DocumentArray, user_config: UserInput, kubectl_path: str
+    ) -> Dict:
         """
         Runs before the flow is deployed.
         Common use cases:
