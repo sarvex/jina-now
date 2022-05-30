@@ -1,3 +1,4 @@
+import abc
 import os
 from typing import Dict, List, Optional
 
@@ -30,6 +31,7 @@ class JinaNOWApp:
         """
         return 'Jina NOW app'
 
+    @abc.abstractmethod
     @property
     def input_modality(self) -> str:
         """
@@ -37,6 +39,7 @@ class JinaNOWApp:
         """
         raise NotImplementedError()
 
+    @abc.abstractmethod
     @property
     def output_modality(self) -> str:
         """
