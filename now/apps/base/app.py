@@ -100,6 +100,7 @@ class JinaNOWApp:
     @property
     def example_datasource(self) -> List[Datasource]:
         """
+        # TODO just a prototype - needs to be implemented in the future
         Get a list of example datasets for the app.
 
         """

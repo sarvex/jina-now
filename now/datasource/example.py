@@ -4,6 +4,7 @@ from now.constants import BASE_STORAGE_URL, Modalities
 from now.datasource.datasource import Datasource
 
 
+# TODO just a prototype - needs to be implemented in the future
 class ExampleDatasource(Datasource):
     def __init__(self, ds_id, display_name, modality):
         self.ds_id = ds_id
