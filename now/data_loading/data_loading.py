@@ -38,7 +38,7 @@ def load_data(output_modality, user_input: UserInput) -> DocumentArray:
             print('⬇  Pull DocArray')
             da = _fetch_da_from_url(user_input.dataset_url)
         elif user_input.custom_dataset_type == DatasetTypes.PATH:
-            print('💿  Loading DocArray from disk')
+            print('💿  Loading files from disk')
             da = _load_from_disk(user_input.dataset_path, output_modality)
     else:
         print('⬇  Download DocArray')
