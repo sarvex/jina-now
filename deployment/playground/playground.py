@@ -20,7 +20,7 @@ root_data_dir = (
     'https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/'
 )
 
-ds_set = {
+ds_set = [
     'nft-monkey',
     'deepfashion',
     'nih-chest-xrays',
@@ -33,7 +33,7 @@ ds_set = {
     'rap-lyrics',
     'indie-lyrics',
     'metal-lyrics',
-}
+]
 
 
 def deploy_streamlit():
@@ -138,12 +138,10 @@ def deploy_streamlit():
         print(f"Searching by image")
         query_doc = document
         if query_doc.blob == b'':
-            if (query_doc.uri is not None) and query_doc.uri != '':
+            if query_doc.tensor is not None:
+                query_doc.convert_image_tensor_to_blob()
+            elif (query_doc.uri is not None) and query_doc.uri != '':
                 query_doc.load_uri_to_blob()
-            elif query_doc.tensor is not None:
-                query_doc.convert_tensor_to_blob()
-
-            query_doc.convert_blob_to_image_tensor()
 
         data = {
             'host': HOST,
