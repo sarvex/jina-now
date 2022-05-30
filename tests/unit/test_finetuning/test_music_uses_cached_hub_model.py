@@ -3,7 +3,7 @@ from docarray import DocumentArray
 from pytest_mock import MockerFixture
 
 from now.constants import Apps
-from now.dialog import UserInput
+from now.dataclasses import UserInput
 from now.finetuning.run_finetuning import finetune_now
 from now.finetuning.settings import parse_finetune_settings
 

@@ -9,7 +9,6 @@ from __future__ import annotations, print_function, unicode_literals
 import importlib
 import os
 import pathlib
-from dataclasses import dataclass
 from os.path import expanduser as user
 from typing import Dict, List, Optional, Union
 
@@ -18,39 +17,17 @@ from kubernetes import client, config
 from pyfiglet import Figlet
 
 from now.apps.base.app import JinaNOWApp
-from now.constants import AVAILABLE_DATASET, Apps, DatasetTypes, Modalities, Qualities
+from now.constants import AVAILABLE_DATASET, Apps, DatasetTypes
+from now.dataclasses import UserInput
 from now.deployment.deployment import cmd
 from now.log.log import yaspin_extended
 from now.thirdparty.PyInquirer import Separator
 from now.thirdparty.PyInquirer.prompt import prompt
-from now.utils import sigmap
+from now.utils import sigmap, to_camel_case
 
 cur_dir = pathlib.Path(__file__).parent.resolve()
 NEW_CLUSTER = {'name': '🐣 create new', 'value': 'new'}
 AVAILABLE_SOON = 'will be available in upcoming versions'
-
-
-@dataclass
-class UserInput:
-    output_modality: Optional[Modalities] = None
-    app: Optional[Apps] = None
-
-    # data related
-    data: Optional[str] = None
-    is_custom_dataset: Optional[bool] = None
-
-    custom_dataset_type: Optional[DatasetTypes] = None
-    dataset_secret: Optional[str] = None
-    dataset_url: Optional[str] = None
-    dataset_path: Optional[str] = None
-
-    # model related
-    quality: Optional[Qualities] = Qualities.MEDIUM
-
-    # cluster related
-    cluster: Optional[str] = None
-    create_new_cluster: Optional[bool] = False
-    deployment_type: Optional[str] = None
 
 
 def _configure_app_options(app_instance: JinaNOWApp, user_input, **kwargs):
@@ -65,7 +42,8 @@ def _configure_app_options(app_instance: JinaNOWApp, user_input, **kwargs):
 
 def _construct_app(user_input) -> JinaNOWApp:
     return getattr(
-        importlib.import_module(f'now.apps.{user_input.app}.app'), f'{user_input.app}'
+        importlib.import_module(f'now.apps.{user_input.app}.app'),
+        f'{to_camel_case(user_input.app)}',
     )()
 
 

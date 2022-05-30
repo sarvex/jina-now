@@ -5,11 +5,11 @@ from now_common import options
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import Modalities
-from now.dialog import UserInput
+from now.dataclasses import UserInput
 from now.run_backend import finetune_flow_setup
 
 
-class image_to_text(JinaNOWApp):
+class ImageToText(JinaNOWApp):
     @property
     def description(self) -> str:
         return 'Image to text search'

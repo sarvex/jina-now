@@ -9,7 +9,8 @@ import pytest
 from pytest_mock import MockerFixture
 
 from now.constants import Apps, DemoDatasets
-from now.dialog import UserInput, configure_user_input
+from now.dataclasses import UserInput
+from now.dialog import configure_user_input
 
 
 class CmdPromptMock:

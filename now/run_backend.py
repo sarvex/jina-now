@@ -7,8 +7,8 @@ from docarray import DocumentArray
 from now.apps.base.app import JinaNOWApp
 from now.constants import Apps
 from now.data_loading.data_loading import load_data
+from now.dataclasses import UserInput
 from now.deployment.flow import deploy_flow
-from now.dialog import UserInput
 from now.finetuning.embeddings import get_encoder_config
 from now.finetuning.run_finetuning import finetune_now
 from now.finetuning.settings import FinetuneSettings, parse_finetune_settings

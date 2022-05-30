@@ -14,8 +14,8 @@ from yaspin.spinners import Spinners
 from now.apps.base.app import JinaNOWApp
 from now.cloud_manager import is_local_cluster
 from now.constants import JC_SECRET
+from now.dataclasses import UserInput
 from now.deployment.deployment import apply_replace, cmd, deploy_wolf
-from now.dialog import UserInput
 from now.log.log import yaspin_extended
 from now.utils import sigmap
 

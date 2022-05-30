@@ -329,4 +329,12 @@ class BetterEnum:
         return [getattr(self, x) for x in dir(self) if ('__' not in x)].__iter__()
 
 
+def to_camel_case(text):
+    s = text.replace("-", " ").replace("_", " ")
+    s = s.split()
+    if len(text) == 0:
+        return text
+    return s[0] + ''.join(i.capitalize() for i in s[1:])
+
+
 sigmap = {signal.SIGINT: my_handler, signal.SIGTERM: my_handler}

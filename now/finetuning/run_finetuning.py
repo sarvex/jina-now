@@ -19,7 +19,7 @@ from finetuner.tuner.pytorch.miner import TripletEasyHardMiner
 from yaspin import yaspin
 
 from now.constants import PRE_TRAINED_LINEAR_HEADS_MUSIC, Apps
-from now.dialog import UserInput
+from now.dataclasses import UserInput
 from now.finetuning.dataset import FinetuneDataset, build_finetuning_dataset
 from now.finetuning.embeddings import embed_now
 from now.finetuning.settings import FinetuneSettings

@@ -5,12 +5,12 @@ from docarray import DocumentArray
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import Modalities
+from now.dataclasses import UserInput
 from now.deployment.deployment import which
-from now.dialog import UserInput
 from now.run_backend import finetune_flow_setup
 
 
-class music_to_music(JinaNOWApp):
+class MusicToMusic(JinaNOWApp):
     @property
     def description(self) -> str:
         return 'Music to music search'

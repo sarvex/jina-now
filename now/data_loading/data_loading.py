@@ -16,7 +16,7 @@ from now.constants import (
     Qualities,
 )
 from now.data_loading.convert_datasets_to_jpeg import to_thumbnail_jpg
-from now.dialog import UserInput
+from now.dataclasses import UserInput
 from now.log.log import yaspin_extended
 from now.utils import download, sigmap
 

@@ -8,8 +8,8 @@ from jina import Client, Flow
 from tqdm import tqdm
 
 from now.constants import IMAGE_MODEL_QUALITY_MAP, Apps
+from now.dataclasses import UserInput
 from now.deployment.flow import _ExecutorConfig, batch, deploy_k8s
-from now.dialog import UserInput
 
 _KS_NAMESPACE = 'embed-now'
 

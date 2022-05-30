@@ -5,7 +5,7 @@ from typing import Optional
 from docarray import DocumentArray
 
 from now.constants import Apps, DemoDatasets, Qualities
-from now.dialog import UserInput
+from now.dataclasses import UserInput
 
 TUNEABLE_DEMO_DATASETS = {
     Apps.TEXT_TO_IMAGE: [DemoDatasets.DEEP_FASHION, DemoDatasets.BIRD_SPECIES],
