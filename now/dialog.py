@@ -95,7 +95,7 @@ def _configure_app(user_input: UserInput, **kwargs) -> None:
                 'disabled': AVAILABLE_SOON,
             },
         ],
-        prompt_message='Which modalities you want to work with?',
+        prompt_message='Please select an app!',
         prompt_type='list',
         **kwargs,
     )

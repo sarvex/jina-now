@@ -133,19 +133,16 @@ jina now stop
 - `Docker` installation
 - 10 GB assigned to docker
 - User must be permitted to run docker containers
-#### Google Cloud deployment
-- Billing account enabled
-#### Jina Flow as a service
-- No further requirements (coming soon)
 
-## Supported Modalities (more will be added)
 
-- [x] Text
-- [x] Image
-- [ ] Audio
-- [ ] Video
-- [ ] 3D mesh
-- [ ] PDF 
+## Supported apps (more will be added)
+
+- [x] Text to Image search 📝 ▶ 🏞 
+- [x] Image to Text search 🏞 ▶ 📝 
+- [x] Image to Image search 🏞 ▶ 🏞
+- [ ] Music to Music search 🥁 ▶ 🥁 
+- [ ] Text to Video search 📝 ▶ 🎥
+- [ ] Text to 3D Mesh search 📝 ▶ 🧊
 - [ ] ...
 
 [![IMAGE ALT TEXT HERE](https://user-images.githubusercontent.com/11627845/164571632-0e6a6c39-0137-413b-8287-21fc34785665.png)](https://www.youtube.com/watch?v=fdIaLP0ctpo)
