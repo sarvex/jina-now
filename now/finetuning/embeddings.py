@@ -7,8 +7,8 @@ from docarray import DocumentArray
 from jina import Client, Flow
 from tqdm import tqdm
 
-from now.deployment.flow import batch, deploy_k8s, get_encoder_config
-from now.dialog import UserInput
+from now.dataclasses import UserInput
+from now.deployment.flow import _ExecutorConfig, batch, deploy_k8s
 
 _KS_NAMESPACE = 'embed-now'
 
@@ -24,7 +24,7 @@ def embed_now(user_input: UserInput, dataset: DocumentArray, kubectl_path: str):
     result = DocumentArray()
     with tempfile.TemporaryDirectory() as tmpdir:
         gateway_host, gateway_port, _, _ = deploy_k8s(
-            flow, _KS_NAMESPACE, 3, tmpdir, kubectl_path=kubectl_path
+            flow, _KS_NAMESPACE, tmpdir, kubectl_path=kubectl_path
         )
         client = Client(host=gateway_host, port=gateway_port)
         print(f'▶ create embeddings for {len(documents_without_embedding)} documents')
@@ -37,3 +37,16 @@ def embed_now(user_input: UserInput, dataset: DocumentArray, kubectl_path: str):
 
     for doc in result:
         dataset[doc.id].embedding = doc.embedding
+
+
+def get_encoder_config(encoder_uses: str, artifact: str) -> _ExecutorConfig:
+    """
+    Gets the correct Executor running the pre-trained model given the user configuration.
+    :param user_input: Configures user input.
+    :return: Small data-transfer-object with information about the executor
+    """
+    return _ExecutorConfig(
+        name='encoder',
+        uses=f'jinahub+docker://{encoder_uses}',
+        uses_with={'pretrained_model_name_or_path': artifact},
+    )

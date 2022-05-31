@@ -14,8 +14,6 @@ from docarray import Document
 from PIL import Image, ImageDraw, ImageFont
 from rich.console import Console
 
-from now.deployment.deployment import which
-
 colors = [
     "navy",
     "turquoise",
@@ -321,13 +319,22 @@ def my_handler(signum, frame, spinner):
     exit(0)
 
 
-def ffmpeg_is_installed():
-    return which("ffmpeg")
-
-
 def flow_definition(dirpath) -> Dict:
     with open(dirpath) as f:
         return yaml.safe_load(f.read())
+
+
+class BetterEnum:
+    def __iter__(self):
+        return [getattr(self, x) for x in dir(self) if ('__' not in x)].__iter__()
+
+
+def to_camel_case(text):
+    s = text.replace("-", " ").replace("_", " ")
+    s = s.split()
+    if len(text) == 0:
+        return text
+    return ''.join(i.capitalize() for i in s)
 
 
 sigmap = {signal.SIGINT: my_handler, signal.SIGTERM: my_handler}

@@ -18,8 +18,8 @@ from finetuner.tuner.pytorch.losses import TripletLoss
 from finetuner.tuner.pytorch.miner import TripletEasyHardMiner
 from yaspin import yaspin
 
-from now.constants import PRE_TRAINED_LINEAR_HEADS_MUSIC, Modalities
-from now.dialog import UserInput
+from now.constants import Apps
+from now.dataclasses import UserInput
 from now.finetuning.dataset import FinetuneDataset, build_finetuning_dataset
 from now.finetuning.embeddings import embed_now
 from now.finetuning.settings import FinetuneSettings
@@ -35,6 +35,7 @@ def finetune_now(
     user_input: UserInput,
     dataset: DocumentArray,
     finetune_settings: FinetuneSettings,
+    pre_trained_head_map,
     kubectl_path: str,
 ):
     """
@@ -53,9 +54,9 @@ def finetune_now(
 
     :return: Path to the tuned model.
     """
-    if user_input.output_modality == Modalities.MUSIC:
+    if pre_trained_head_map is not None and user_input.data in pre_trained_head_map:
         print(f'⚡️ Using cached hub model for speed')
-        return PRE_TRAINED_LINEAR_HEADS_MUSIC[user_input.data]
+        return pre_trained_head_map[user_input.data]
     dataset = _maybe_add_embeddings(user_input, dataset, kubectl_path)
 
     dataset = dataset.shuffle(42)
@@ -69,10 +70,7 @@ def finetune_now(
 
         finetuned_model_path = _finetune_layer(finetune_ds, finetune_settings, save_dir)
 
-        if (
-            "NOW_CI_RUN" not in os.environ
-            and user_input.output_modality == Modalities.IMAGE
-        ):
+        if "NOW_CI_RUN" not in os.environ and user_input.app == Apps.TEXT_TO_IMAGE:
             _show_finetune_improvements(
                 user_input, finetune_settings, finetune_ds, finetuned_model_path
             )

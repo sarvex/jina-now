@@ -9,8 +9,9 @@ import docker
 from kubernetes import client, config
 
 from now.constants import JC_SECRET
+from now.dataclasses import UserInput
 from now.deployment.deployment import cmd
-from now.dialog import UserInput, maybe_prompt_user
+from now.dialog import maybe_prompt_user
 from now.log.log import yaspin_extended
 from now.utils import sigmap
 
