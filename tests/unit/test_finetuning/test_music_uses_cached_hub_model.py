@@ -12,6 +12,8 @@ def test_music_access_lookup_dict():
     pre_trained_head_map = {'a': 'b'}
     cached = finetune_now(
         user_input,
+        '_',
+        '_',
         dataset,
         parse_finetune_settings(user_input, dataset, ()),
         pre_trained_head_map,

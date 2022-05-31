@@ -33,6 +33,8 @@ _BASE_SAVE_DIR = 'now/hub/head_encoder'
 
 def finetune_now(
     user_input: UserInput,
+    encoder_uses,
+    artifact,
     dataset: DocumentArray,
     finetune_settings: FinetuneSettings,
     pre_trained_head_map,
@@ -57,7 +59,7 @@ def finetune_now(
     if pre_trained_head_map is not None and user_input.data in pre_trained_head_map:
         print(f'⚡️ Using cached hub model for speed')
         return pre_trained_head_map[user_input.data]
-    dataset = _maybe_add_embeddings(user_input, dataset, kubectl_path)
+    dataset = _maybe_add_embeddings(encoder_uses, artifact, dataset, kubectl_path)
 
     dataset = dataset.shuffle(42)
 
@@ -146,7 +148,7 @@ def _finetune_dir() -> str:
 
 
 def _maybe_add_embeddings(
-    user_input: UserInput, dataset: DocumentArray, kubectl_path: str
+    encoder_uses, artifact, dataset: DocumentArray, kubectl_path: str
 ):
     with yaspin(
         sigmap=sigmap, text="Check if embeddings already exist", color="green"
@@ -157,7 +159,7 @@ def _maybe_add_embeddings(
         else:
             spinner.fail('👎')
 
-    embed_now(user_input, dataset, kubectl_path=kubectl_path)
+    embed_now(encoder_uses, artifact, dataset, kubectl_path=kubectl_path)
 
     assert all([d.embedding is not None for d in dataset]), (
         "Some docs slipped through and" " still have no embedding..."

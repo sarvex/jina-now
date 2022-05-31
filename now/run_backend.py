@@ -34,7 +34,13 @@ def finetune_flow_setup(
     if finetune_settings.perform_finetuning:
         print(f'🔧 Perform finetuning!')
         finetune_settings.finetuned_model_name = finetune_now(
-            user_input, dataset, finetune_settings, pre_trained_head_map, kubectl_path
+            user_input,
+            encoder_uses,
+            artifact,
+            dataset,
+            finetune_settings,
+            pre_trained_head_map,
+            kubectl_path,
         )
 
     finetuning = finetune_settings.perform_finetuning
