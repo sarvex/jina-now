@@ -304,6 +304,8 @@
         <span class="n">sigmap</span><span class="o">=</span><span class="n">sigmap</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">"Push fine-tuned model to Jina Hub"</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"green"</span>
     <span class="p">)</span> <span class="k">as</span> <span class="n">spinner</span><span class="p">:</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">,</span> <span class="s2">"NUL"</span><span class="p">),</span> <span class="s2">"w"</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s1">'NOW_CI_RUN'</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">'bashCommand: '</span><span class="p">,</span> <span class="n">bashCommand</span><span class="p">)</span>
             <span class="n">process</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">bashCommand</span><span class="o">.</span><span class="n">split</span><span class="p">(),</span> <span class="n">stdout</span><span class="o">=</span><span class="n">fh</span><span class="p">)</span>
         <span class="n">output</span><span class="p">,</span> <span class="n">error</span> <span class="o">=</span> <span class="n">process</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">'Push fine tuned'</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
@@ -326,7 +328,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on May 20, 2022.
+                            Last updated on May 31, 2022.
                         </div>
                     </div>
                     <div class="right-details">

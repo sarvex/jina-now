@@ -275,16 +275,25 @@
 <span class="kn">import</span> <span class="nn">tempfile</span>
 
 <span class="kn">from</span> <span class="nn">jcloud.flow</span> <span class="kn">import</span> <span class="n">CloudFlow</span>
+<span class="kn">from</span> <span class="nn">jina.helper</span> <span class="kn">import</span> <span class="n">get_or_reuse_loop</span>
 
 
 <div class="viewcode-block" id="deploy_wolf"><a class="viewcode-back" href="../../../../api/now.deployment.deployment/#now.deployment.deployment.deploy_wolf">[docs]</a><span class="k">def</span> <span class="nf">deploy_wolf</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">env_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">env_file</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">CloudFlow</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">env_file</span><span class="o">=</span><span class="n">env_file</span><span class="p">)</span><span class="o">.</span><span class="fm">__enter__</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">CloudFlow</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="fm">__enter__</span><span class="p">()</span></div>
+    <span class="k">return</span> <span class="n">CloudFlow</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">env_file</span><span class="o">=</span><span class="n">env_file</span><span class="p">)</span><span class="o">.</span><span class="fm">__enter__</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="terminate_wolf"><a class="viewcode-back" href="../../../../api/now.deployment.deployment/#now.deployment.deployment.terminate_wolf">[docs]</a><span class="k">def</span> <span class="nf">terminate_wolf</span><span class="p">(</span><span class="n">flow_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
     <span class="n">CloudFlow</span><span class="p">(</span><span class="n">flow_id</span><span class="o">=</span><span class="n">flow_id</span><span class="p">)</span><span class="o">.</span><span class="fm">__exit__</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="status_wolf"><a class="viewcode-back" href="../../../../api/now.deployment.deployment/#now.deployment.deployment.status_wolf">[docs]</a><span class="k">def</span> <span class="nf">status_wolf</span><span class="p">(</span><span class="n">flow_id</span><span class="p">):</span>
+    <span class="n">loop</span> <span class="o">=</span> <span class="n">get_or_reuse_loop</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">loop</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">(</span><span class="n">CloudFlow</span><span class="p">(</span><span class="n">flow_id</span><span class="o">=</span><span class="n">flow_id</span><span class="p">)</span><span class="o">.</span><span class="n">status</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="list_all_wolf"><a class="viewcode-back" href="../../../../api/now.deployment.deployment/#now.deployment.deployment.list_all_wolf">[docs]</a><span class="k">def</span> <span class="nf">list_all_wolf</span><span class="p">(</span><span class="n">flow_id</span><span class="p">):</span>
+    <span class="n">loop</span> <span class="o">=</span> <span class="n">get_or_reuse_loop</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">loop</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">(</span><span class="n">CloudFlow</span><span class="p">()</span><span class="o">.</span><span class="n">list_all</span><span class="p">())</span></div>
 
 
 <div class="viewcode-block" id="cmd"><a class="viewcode-back" href="../../../../api/now.deployment.deployment/#now.deployment.deployment.cmd">[docs]</a><span class="k">def</span> <span class="nf">cmd</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">std_output</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
@@ -331,7 +340,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on May 20, 2022.
+                            Last updated on May 31, 2022.
                         </div>
                     </div>
                     <div class="right-details">

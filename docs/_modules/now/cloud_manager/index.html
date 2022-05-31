@@ -282,9 +282,9 @@
 <span class="kn">from</span> <span class="nn">kubernetes</span> <span class="kn">import</span> <span class="n">client</span><span class="p">,</span> <span class="n">config</span>
 
 <span class="kn">from</span> <span class="nn">now.constants</span> <span class="kn">import</span> <span class="n">JC_SECRET</span>
+<span class="kn">from</span> <span class="nn">now.dataclasses</span> <span class="kn">import</span> <span class="n">UserInput</span>
 <span class="kn">from</span> <span class="nn">now.deployment.deployment</span> <span class="kn">import</span> <span class="n">cmd</span>
-<span class="kn">from</span> <span class="nn">now.dialog</span> <span class="kn">import</span> <span class="n">UserInput</span><span class="p">,</span> <span class="n">maybe_prompt_user</span>
-<span class="kn">from</span> <span class="nn">now.gke_deploy</span> <span class="kn">import</span> <span class="n">create_gke_cluster</span>
+<span class="kn">from</span> <span class="nn">now.dialog</span> <span class="kn">import</span> <span class="n">maybe_prompt_user</span>
 <span class="kn">from</span> <span class="nn">now.log.log</span> <span class="kn">import</span> <span class="n">yaspin_extended</span>
 <span class="kn">from</span> <span class="nn">now.utils</span> <span class="kn">import</span> <span class="n">sigmap</span>
 
@@ -391,14 +391,11 @@
     <span class="k">if</span> <span class="n">user_input</span><span class="o">.</span><span class="n">create_new_cluster</span><span class="p">:</span>
         <span class="c1"># There's no create new cluster for remote</span>
         <span class="c1"># It will be directly deployed using the flow.yml</span>
-        <span class="k">if</span> <span class="n">user_input</span><span class="o">.</span><span class="n">deployment_type</span> <span class="o">==</span> <span class="s1">'local'</span><span class="p">:</span>
-            <span class="n">create_local_cluster</span><span class="p">(</span><span class="n">kind_path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">user_input</span><span class="o">.</span><span class="n">deployment_type</span> <span class="o">==</span> <span class="s1">'gke'</span><span class="p">:</span>
-            <span class="n">create_gke_cluster</span><span class="p">()</span>
+        <span class="n">create_local_cluster</span><span class="p">(</span><span class="n">kind_path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">user_input</span><span class="o">.</span><span class="n">deployment_type</span> <span class="o">==</span> <span class="s1">'remote'</span><span class="p">:</span>
         <span class="c1"># If it is remote check if a flow is already deployed</span>
         <span class="c1"># If it is then ask to re-create and delete the old one</span>
-        <span class="n">check_wolf_deployment</span><span class="p">()</span>
+        <span class="n">check_wolf_deployment</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">cmd</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">kubectl_path</span><span class="si">}</span><span class="s1"> config use-context </span><span class="si">{</span><span class="n">user_input</span><span class="o">.</span><span class="n">cluster</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
         <span class="n">ask_existing</span><span class="p">(</span><span class="n">kubectl_path</span><span class="p">)</span></div>
@@ -449,7 +446,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on May 20, 2022.
+                            Last updated on May 31, 2022.
                         </div>
                     </div>
                     <div class="right-details">

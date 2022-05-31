@@ -271,38 +271,33 @@
                 </div>
                 <article role="main">
                     <h1>Source code for now.constants</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+<span></span><span class="kn">from</span> <span class="nn">now.utils</span> <span class="kn">import</span> <span class="n">BetterEnum</span>
 
 
-<div class="viewcode-block" id="Modalities"><a class="viewcode-back" href="../../../api/now.constants/#now.constants.Modalities">[docs]</a><span class="k">class</span> <span class="nc">Modalities</span><span class="p">:</span>
-    <span class="n">IMAGE</span> <span class="o">=</span> <span class="s1">'image'</span>
-    <span class="n">MUSIC</span> <span class="o">=</span> <span class="s1">'music'</span>
+<div class="viewcode-block" id="Modalities"><a class="viewcode-back" href="../../../api/now.constants/#now.constants.Modalities">[docs]</a><span class="k">class</span> <span class="nc">Modalities</span><span class="p">(</span><span class="n">BetterEnum</span><span class="p">):</span>
     <span class="n">TEXT</span> <span class="o">=</span> <span class="s1">'text'</span>
-
-<div class="viewcode-block" id="Modalities.as_list"><a class="viewcode-back" href="../../../api/now.constants/#now.constants.Modalities.as_list">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">as_list</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="p">[</span><span class="bp">cls</span><span class="o">.</span><span class="n">IMAGE</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">MUSIC</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">TEXT</span><span class="p">]</span></div></div>
+    <span class="n">IMAGE</span> <span class="o">=</span> <span class="s1">'image'</span>
+    <span class="n">MUSIC</span> <span class="o">=</span> <span class="s1">'music'</span></div>
 
 
-<div class="viewcode-block" id="DatasetTypes"><a class="viewcode-back" href="../../../api/now.constants/#now.constants.DatasetTypes">[docs]</a><span class="k">class</span> <span class="nc">DatasetTypes</span><span class="p">:</span>
+<div class="viewcode-block" id="Apps"><a class="viewcode-back" href="../../../api/now.constants/#now.constants.Apps">[docs]</a><span class="k">class</span> <span class="nc">Apps</span><span class="p">(</span><span class="n">BetterEnum</span><span class="p">):</span>
+    <span class="n">TEXT_TO_IMAGE</span> <span class="o">=</span> <span class="s1">'text_to_image'</span>
+    <span class="n">IMAGE_TO_TEXT</span> <span class="o">=</span> <span class="s1">'image_to_text'</span>
+    <span class="n">IMAGE_TO_IMAGE</span> <span class="o">=</span> <span class="s1">'image_to_image'</span>
+    <span class="n">MUSIC_TO_MUSIC</span> <span class="o">=</span> <span class="s1">'music_to_music'</span></div>
+
+
+<div class="viewcode-block" id="DatasetTypes"><a class="viewcode-back" href="../../../api/now.constants/#now.constants.DatasetTypes">[docs]</a><span class="k">class</span> <span class="nc">DatasetTypes</span><span class="p">(</span><span class="n">BetterEnum</span><span class="p">):</span>
     <span class="n">DEMO</span> <span class="o">=</span> <span class="s1">'demo'</span>
     <span class="n">PATH</span> <span class="o">=</span> <span class="s1">'path'</span>
     <span class="n">URL</span> <span class="o">=</span> <span class="s1">'url'</span>
-    <span class="n">DOCARRAY</span> <span class="o">=</span> <span class="s1">'docarray'</span>
-
-<div class="viewcode-block" id="DatasetTypes.as_list"><a class="viewcode-back" href="../../../api/now.constants/#now.constants.DatasetTypes.as_list">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">as_list</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="p">[</span><span class="bp">cls</span><span class="o">.</span><span class="n">DEMO</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">PATH</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">URL</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">DOCARRAY</span><span class="p">]</span></div></div>
+    <span class="n">DOCARRAY</span> <span class="o">=</span> <span class="s1">'docarray'</span></div>
 
 
-<div class="viewcode-block" id="Qualities"><a class="viewcode-back" href="../../../api/now.constants/#now.constants.Qualities">[docs]</a><span class="k">class</span> <span class="nc">Qualities</span><span class="p">:</span>
+<div class="viewcode-block" id="Qualities"><a class="viewcode-back" href="../../../api/now.constants/#now.constants.Qualities">[docs]</a><span class="k">class</span> <span class="nc">Qualities</span><span class="p">(</span><span class="n">BetterEnum</span><span class="p">):</span>
     <span class="n">MEDIUM</span> <span class="o">=</span> <span class="s1">'medium'</span>
     <span class="n">GOOD</span> <span class="o">=</span> <span class="s1">'good'</span>
-    <span class="n">EXCELLENT</span> <span class="o">=</span> <span class="s1">'excellent'</span>
-
-<div class="viewcode-block" id="Qualities.as_list"><a class="viewcode-back" href="../../../api/now.constants/#now.constants.Qualities.as_list">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">as_list</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="p">[</span><span class="bp">cls</span><span class="o">.</span><span class="n">MEDIUM</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">GOOD</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">EXCELLENT</span><span class="p">]</span></div></div>
+    <span class="n">EXCELLENT</span> <span class="o">=</span> <span class="s1">'excellent'</span></div>
 
 
 <span class="n">BASE_STORAGE_URL</span> <span class="o">=</span> <span class="p">(</span>
@@ -315,30 +310,55 @@
     <span class="n">Qualities</span><span class="o">.</span><span class="n">EXCELLENT</span><span class="p">:</span> <span class="p">(</span><span class="s1">'ViT-L14'</span><span class="p">,</span> <span class="s1">'openai/clip-vit-large-patch14'</span><span class="p">),</span>
 <span class="p">}</span>
 
+<span class="n">CLIP_USES</span> <span class="o">=</span> <span class="s1">'CLIPEncoder/v0.2.1'</span>
+
+
+<div class="viewcode-block" id="DemoDatasets"><a class="viewcode-back" href="../../../api/now.constants/#now.constants.DemoDatasets">[docs]</a><span class="k">class</span> <span class="nc">DemoDatasets</span><span class="p">:</span>
+    <span class="n">BEST_ARTWORKS</span> <span class="o">=</span> <span class="s1">'best-artworks'</span>
+    <span class="n">NFT_MONKEY</span> <span class="o">=</span> <span class="s1">'nft-monkey'</span>
+    <span class="n">TLL</span> <span class="o">=</span> <span class="s1">'tll'</span>
+    <span class="n">BIRD_SPECIES</span> <span class="o">=</span> <span class="s1">'bird-species'</span>
+    <span class="n">STANFORD_CARS</span> <span class="o">=</span> <span class="s1">'stanford-cars'</span>
+    <span class="n">DEEP_FASHION</span> <span class="o">=</span> <span class="s1">'deepfashion'</span>
+    <span class="n">NIH_CHEST_XRAYS</span> <span class="o">=</span> <span class="s1">'nih-chest-xrays'</span>
+    <span class="n">GEOLOCATION_GEOGUESSR</span> <span class="o">=</span> <span class="s1">'geolocation-geoguessr'</span>
+    <span class="n">MUSIC_GENRES_MID</span> <span class="o">=</span> <span class="s1">'music-genres-mid'</span>
+    <span class="n">MUSIC_GENRES_LARGE</span> <span class="o">=</span> <span class="s1">'music-genres-large'</span>
+    <span class="n">MUSIC_GENRES_EXTRA_LARGE</span> <span class="o">=</span> <span class="s1">'music-genres-xl'</span>
+    <span class="n">MUSIC_MID</span> <span class="o">=</span> <span class="s1">'music-mid'</span>
+    <span class="n">MUSIC_LARGE</span> <span class="o">=</span> <span class="s1">'music-large'</span>
+    <span class="n">MUSIC_EXTRA_LARGE</span> <span class="o">=</span> <span class="s1">'music-xl'</span>
+    <span class="n">ROCK_LYRICS</span> <span class="o">=</span> <span class="s1">'rock-lyrics'</span>
+    <span class="n">POP_LYRICS</span> <span class="o">=</span> <span class="s1">'pop-lyrics'</span>
+    <span class="n">RAP_LYRICS</span> <span class="o">=</span> <span class="s1">'rap-lyrics'</span>
+    <span class="n">INDIE_LYRICS</span> <span class="o">=</span> <span class="s1">'indie-lyrics'</span>
+    <span class="n">METAL_LYRICS</span> <span class="o">=</span> <span class="s1">'metal-lyrics'</span></div>
+
 
 <span class="n">AVAILABLE_DATASET</span> <span class="o">=</span> <span class="p">{</span>
     <span class="n">Modalities</span><span class="o">.</span><span class="n">IMAGE</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s1">'best-artworks'</span><span class="p">,</span>
-        <span class="s1">'nft-monkey'</span><span class="p">,</span>
-        <span class="s1">'tll'</span><span class="p">,</span>
-        <span class="s1">'bird-species'</span><span class="p">,</span>
-        <span class="s1">'stanford-cars'</span><span class="p">,</span>
-        <span class="s1">'deepfashion'</span><span class="p">,</span>
-        <span class="s1">'nih-chest-xrays'</span><span class="p">,</span>
-        <span class="s1">'geolocation-geoguessr'</span><span class="p">,</span>
+        <span class="p">(</span><span class="n">DemoDatasets</span><span class="o">.</span><span class="n">BEST_ARTWORKS</span><span class="p">,</span> <span class="s1">'🖼 artworks (≈8K docs)'</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">DemoDatasets</span><span class="o">.</span><span class="n">NFT_MONKEY</span><span class="p">,</span> <span class="s1">'💰 nft - bored apes (10K docs)'</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">DemoDatasets</span><span class="o">.</span><span class="n">TLL</span><span class="p">,</span> <span class="s1">'👬 totally looks like (≈12K docs)'</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">DemoDatasets</span><span class="o">.</span><span class="n">BIRD_SPECIES</span><span class="p">,</span> <span class="s1">'🦆 birds (≈12K docs)'</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">DemoDatasets</span><span class="o">.</span><span class="n">STANFORD_CARS</span><span class="p">,</span> <span class="s1">'🚗 cars (≈16K docs)'</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">DemoDatasets</span><span class="o">.</span><span class="n">GEOLOCATION_GEOGUESSR</span><span class="p">,</span> <span class="s1">'🏞 geolocation (≈50K docs)'</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">DemoDatasets</span><span class="o">.</span><span class="n">DEEP_FASHION</span><span class="p">,</span> <span class="s1">'👕 fashion (≈53K docs)'</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">DemoDatasets</span><span class="o">.</span><span class="n">NIH_CHEST_XRAYS</span><span class="p">,</span> <span class="s1">'☢️ chest x-ray (≈100K docs)'</span><span class="p">),</span>
     <span class="p">],</span>
     <span class="n">Modalities</span><span class="o">.</span><span class="n">MUSIC</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s1">'music-genres-small'</span><span class="p">,</span>
-        <span class="s1">'music-genres-large'</span><span class="p">,</span>
+        <span class="p">(</span><span class="n">DemoDatasets</span><span class="o">.</span><span class="n">MUSIC_GENRES_MID</span><span class="p">,</span> <span class="s1">'🎸 music mid (≈2K docs)'</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">DemoDatasets</span><span class="o">.</span><span class="n">MUSIC_GENRES_LARGE</span><span class="p">,</span> <span class="s1">'🎸 music large (≈10K docs)'</span><span class="p">),</span>
     <span class="p">],</span>
     <span class="n">Modalities</span><span class="o">.</span><span class="n">TEXT</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s1">'rock-lyrics'</span><span class="p">,</span>
-        <span class="s1">'pop-lyrics'</span><span class="p">,</span>
-        <span class="s1">'rap-lyrics'</span><span class="p">,</span>
-        <span class="s1">'indie-lyrics'</span><span class="p">,</span>
-        <span class="s1">'metal-lyrics'</span><span class="p">,</span>
+        <span class="p">(</span><span class="n">DemoDatasets</span><span class="o">.</span><span class="n">ROCK_LYRICS</span><span class="p">,</span> <span class="s1">'🎤 rock lyrics (200K docs)'</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">DemoDatasets</span><span class="o">.</span><span class="n">POP_LYRICS</span><span class="p">,</span> <span class="s1">'🎤 pop lyrics (200K docs)'</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">DemoDatasets</span><span class="o">.</span><span class="n">RAP_LYRICS</span><span class="p">,</span> <span class="s1">'🎤 rap lyrics (200K docs)'</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">DemoDatasets</span><span class="o">.</span><span class="n">INDIE_LYRICS</span><span class="p">,</span> <span class="s1">'🎤 indie lyrics (200K docs)'</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">DemoDatasets</span><span class="o">.</span><span class="n">METAL_LYRICS</span><span class="p">,</span> <span class="s1">'🎤 metal lyrics (200K docs)'</span><span class="p">),</span>
     <span class="p">],</span>
 <span class="p">}</span>
+
 
 <span class="n">JC_SECRET</span> <span class="o">=</span> <span class="s1">'~/.cache/jina-now/wolf.json'</span>
 
@@ -360,7 +380,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on May 20, 2022.
+                            Last updated on May 31, 2022.
                         </div>
                     </div>
                     <div class="right-details">

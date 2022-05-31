@@ -272,183 +272,128 @@
                 <article role="main">
                     <h1>Source code for now.run_backend</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">pickle</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
-<span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">join</span> <span class="k">as</span> <span class="n">osp</span>
+<span class="kn">import</span> <span class="nn">pathlib</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
 
+<span class="kn">from</span> <span class="nn">docarray</span> <span class="kn">import</span> <span class="n">DocumentArray</span>
+
+<span class="kn">from</span> <span class="nn">now.apps.base.app</span> <span class="kn">import</span> <span class="n">JinaNOWApp</span>
+<span class="kn">from</span> <span class="nn">now.constants</span> <span class="kn">import</span> <span class="n">Apps</span>
 <span class="kn">from</span> <span class="nn">now.data_loading.data_loading</span> <span class="kn">import</span> <span class="n">load_data</span>
+<span class="kn">from</span> <span class="nn">now.dataclasses</span> <span class="kn">import</span> <span class="n">UserInput</span>
 <span class="kn">from</span> <span class="nn">now.deployment.flow</span> <span class="kn">import</span> <span class="n">deploy_flow</span>
-<span class="kn">from</span> <span class="nn">now.dialog</span> <span class="kn">import</span> <span class="n">UserInput</span>
-<span class="kn">from</span> <span class="nn">now.finetuning.finetuning</span> <span class="kn">import</span> <span class="n">fill_missing</span>
-<span class="kn">from</span> <span class="nn">now.log.log</span> <span class="kn">import</span> <span class="n">yaspin_extended</span>
-<span class="kn">from</span> <span class="nn">now.utils</span> <span class="kn">import</span> <span class="n">sigmap</span>
+<span class="kn">from</span> <span class="nn">now.finetuning.embeddings</span> <span class="kn">import</span> <span class="n">get_encoder_config</span>
+<span class="kn">from</span> <span class="nn">now.finetuning.run_finetuning</span> <span class="kn">import</span> <span class="n">finetune_now</span>
+<span class="kn">from</span> <span class="nn">now.finetuning.settings</span> <span class="kn">import</span> <span class="n">FinetuneSettings</span><span class="p">,</span> <span class="n">parse_finetune_settings</span>
+
+<span class="n">cur_dir</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
 
 
-<div class="viewcode-block" id="save_mean"><a class="viewcode-back" href="../../../api/now.run_backend/#now.run_backend.save_mean">[docs]</a><span class="k">def</span> <span class="nf">save_mean</span><span class="p">(</span><span class="n">da</span><span class="p">,</span> <span class="n">tmpdir</span><span class="p">):</span>
-    <span class="n">mean</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">embeddings</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">osp</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">,</span> <span class="s1">'now/hub/head_encoder/'</span><span class="p">)):</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">osp</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">,</span> <span class="s1">'now/hub/head_encoder/'</span><span class="p">))</span>
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">osp</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">,</span> <span class="s1">'now/hub/head_encoder/mean.bin'</span><span class="p">),</span> <span class="s1">'wb'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-        <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="is_finetuning"><a class="viewcode-back" href="../../../api/now.run_backend/#now.run_backend.is_finetuning">[docs]</a><span class="k">def</span> <span class="nf">is_finetuning</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">,</span> <span class="n">dataset</span><span class="p">):</span>
-    <span class="c1"># finetuning for some datasets is deactivated since the generalization ability is lost</span>
-    <span class="c1"># they can be reactivated once this ticket is done:</span>
-    <span class="c1"># https://github.com/jina-ai/now/issues/76</span>
-    <span class="k">if</span> <span class="n">dataset_name</span> <span class="ow">in</span> <span class="p">[</span>
-        <span class="s1">'tll'</span><span class="p">,</span>
-        <span class="s1">'nft-monkey'</span><span class="p">,</span>
-        <span class="c1"># 'deepfashion',</span>
-        <span class="s1">'nih-chest-xrays'</span><span class="p">,</span>
-        <span class="s1">'geolocation-geoguessr'</span><span class="p">,</span>
-        <span class="s1">'stanford-cars'</span><span class="p">,</span>
-        <span class="c1"># 'bird-species',</span>
-        <span class="s1">'best-artworks'</span><span class="p">,</span>
-        <span class="s1">'lyrics'</span><span class="p">,</span>
-        <span class="s1">'lyrics-10000'</span><span class="p">,</span>
-        <span class="s1">'rock-lyrics'</span><span class="p">,</span>
-        <span class="s1">'pop-lyrics'</span><span class="p">,</span>
-        <span class="s1">'rap-lyrics'</span><span class="p">,</span>
-        <span class="s1">'indie-lyrics'</span><span class="p">,</span>
-        <span class="s1">'metal-lyrics'</span><span class="p">,</span>
-    <span class="p">]:</span>
-        <span class="k">return</span> <span class="kc">False</span>
-    <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">:</span>
-        <span class="k">if</span> <span class="s1">'finetuner_label'</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">tags</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">True</span>
-    <span class="k">return</span> <span class="kc">False</span></div>
-
-
-<div class="viewcode-block" id="run"><a class="viewcode-back" href="../../../api/now.run_backend/#now.run_backend.run">[docs]</a><span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">user_input</span><span class="p">:</span> <span class="n">UserInput</span><span class="p">,</span> <span class="n">is_debug</span><span class="p">,</span> <span class="n">tmpdir</span><span class="p">,</span> <span class="n">kubectl_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<div class="viewcode-block" id="finetune_flow_setup"><a class="viewcode-back" href="../../../api/now.run_backend/#now.run_backend.finetune_flow_setup">[docs]</a><span class="k">def</span> <span class="nf">finetune_flow_setup</span><span class="p">(</span>
+    <span class="n">app_instance</span><span class="p">:</span> <span class="n">JinaNOWApp</span><span class="p">,</span>
+    <span class="n">dataset</span><span class="p">:</span> <span class="n">DocumentArray</span><span class="p">,</span>
+    <span class="n">user_input</span><span class="p">,</span>
+    <span class="n">kubectl_path</span><span class="p">,</span>
+    <span class="n">encoder_uses</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">artifact</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">finetune_datasets</span><span class="p">:</span> <span class="n">Tuple</span> <span class="o">=</span> <span class="p">(),</span>
+    <span class="n">pre_trained_head_map</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
     <span class="sd">"""</span>
-<span class="sd">    Args:</span>
-<span class="sd">        user_input: User input arguments</span>
-<span class="sd">        is_debug: if True it also works on small datasets</span>
+<span class="sd">    Apply finetuning if possible, pushes the executor to hub and generated the related yaml file</span>
 <span class="sd">    """</span>
-    <span class="c1"># bring back at some point to make this configurable by the user</span>
-    <span class="p">(</span>
-        <span class="n">final_layer_output_dim</span><span class="p">,</span>
-        <span class="n">embedding_size</span><span class="p">,</span>
-        <span class="n">batch_size</span><span class="p">,</span>
-        <span class="n">train_val_split_ratio</span><span class="p">,</span>
-        <span class="n">num_default_val_queries</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">=</span> <span class="n">parse_user_input</span><span class="p">(</span><span class="n">user_input</span><span class="o">.</span><span class="n">quality</span><span class="p">,</span> <span class="n">is_debug</span><span class="p">)</span>
+    <span class="n">finetune_settings</span> <span class="o">=</span> <span class="n">parse_finetune_settings</span><span class="p">(</span><span class="n">user_input</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">finetune_datasets</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">finetune_settings</span><span class="o">.</span><span class="n">perform_finetuning</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'🔧 Perform finetuning!'</span><span class="p">)</span>
+        <span class="n">finetune_settings</span><span class="o">.</span><span class="n">finetuned_model_name</span> <span class="o">=</span> <span class="n">finetune_now</span><span class="p">(</span>
+            <span class="n">user_input</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">finetune_settings</span><span class="p">,</span> <span class="n">pre_trained_head_map</span><span class="p">,</span> <span class="n">kubectl_path</span>
+        <span class="p">)</span>
 
-    <span class="n">dataset</span> <span class="o">=</span> <span class="n">load_data</span><span class="p">(</span><span class="n">user_input</span><span class="p">)</span>
+    <span class="n">finetuning</span> <span class="o">=</span> <span class="n">finetune_settings</span><span class="o">.</span><span class="n">perform_finetuning</span>
 
-    <span class="n">finetuning</span> <span class="o">=</span> <span class="n">is_finetuning</span><span class="p">(</span><span class="n">user_input</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">dataset</span><span class="p">)</span>
+    <span class="n">yaml_name</span> <span class="o">=</span> <span class="n">get_flow_yaml_name</span><span class="p">(</span><span class="n">user_input</span><span class="o">.</span><span class="n">app</span><span class="p">,</span> <span class="n">finetuning</span><span class="p">)</span>
+    <span class="n">app_instance</span><span class="o">.</span><span class="n">flow_yaml</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cur_dir</span><span class="p">,</span> <span class="s1">'deployment'</span><span class="p">,</span> <span class="s1">'flow'</span><span class="p">,</span> <span class="n">yaml_name</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">finetuning</span><span class="p">:</span>
-        <span class="n">embedding_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">final_layer_output_dim</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
-    <span class="n">dataset</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s1">'index'</span><span class="p">:</span> <span class="n">dataset</span><span class="p">,</span>
-        <span class="s1">'train'</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="s1">'val'</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="s1">'val_query'</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="s1">'val_index'</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="s1">'val_query_image'</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="s1">'val_index_image'</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">}</span>
+    <span class="n">env</span> <span class="o">=</span> <span class="n">get_custom_env_file</span><span class="p">(</span><span class="n">user_input</span><span class="p">,</span> <span class="n">finetune_settings</span><span class="p">,</span> <span class="n">encoder_uses</span><span class="p">,</span> <span class="n">artifact</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">env</span></div>
 
-    <span class="k">if</span> <span class="n">finetuning</span><span class="p">:</span>
-        <span class="kn">from</span> <span class="nn">now.finetuning.finetuning</span> <span class="kn">import</span> <span class="n">add_clip_embeddings</span><span class="p">,</span> <span class="n">finetune_layer</span>
-        <span class="kn">from</span> <span class="nn">now.hub.head_encoder.head_encoder</span> <span class="kn">import</span> <span class="n">extend_embeddings</span>
-        <span class="kn">from</span> <span class="nn">now.hub.hub</span> <span class="kn">import</span> <span class="n">push_to_hub</span>
-        <span class="kn">from</span> <span class="nn">now.improvements.improvements</span> <span class="kn">import</span> <span class="n">show_improvement</span>
 
-        <span class="n">add_clip_embeddings</span><span class="p">(</span>
-            <span class="n">dataset</span><span class="p">,</span>
-            <span class="n">user_input</span><span class="o">.</span><span class="n">model_variant</span><span class="p">,</span>
-            <span class="n">tmpdir</span><span class="p">,</span>
+<div class="viewcode-block" id="run"><a class="viewcode-back" href="../../../api/now.run_backend/#now.run_backend.run">[docs]</a><span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">app_instance</span><span class="p">:</span> <span class="n">JinaNOWApp</span><span class="p">,</span> <span class="n">user_input</span><span class="p">:</span> <span class="n">UserInput</span><span class="p">,</span> <span class="n">kubectl_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    TODO: Write docs</span>
+
+<span class="sd">    :param user_input:</span>
+<span class="sd">    :param tmpdir:</span>
+<span class="sd">    :param kubectl_path:</span>
+<span class="sd">    :return:</span>
+<span class="sd">    """</span>
+    <span class="n">dataset</span> <span class="o">=</span> <span class="n">load_data</span><span class="p">(</span><span class="n">app_instance</span><span class="o">.</span><span class="n">output_modality</span><span class="p">,</span> <span class="n">user_input</span><span class="p">)</span>
+    <span class="n">env</span> <span class="o">=</span> <span class="n">app_instance</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">user_input</span><span class="p">,</span> <span class="n">kubectl_path</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">tmpdir</span><span class="p">:</span>
+        <span class="n">env_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">,</span> <span class="s1">'dot.env'</span><span class="p">)</span>
+        <span class="n">write_env_file</span><span class="p">(</span><span class="n">env_file</span><span class="p">,</span> <span class="n">env</span><span class="p">)</span>
+        <span class="p">(</span>
+            <span class="n">gateway_host</span><span class="p">,</span>
+            <span class="n">gateway_port</span><span class="p">,</span>
+            <span class="n">gateway_host_internal</span><span class="p">,</span>
+            <span class="n">gateway_port_internal</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="n">deploy_flow</span><span class="p">(</span>
+            <span class="n">user_input</span><span class="o">=</span><span class="n">user_input</span><span class="p">,</span>
+            <span class="n">app_instance</span><span class="o">=</span><span class="n">app_instance</span><span class="p">,</span>
+            <span class="n">env_file</span><span class="o">=</span><span class="n">env_file</span><span class="p">,</span>
+            <span class="n">ns</span><span class="o">=</span><span class="s1">'nowapi'</span><span class="p">,</span>
+            <span class="n">index</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
+            <span class="n">tmpdir</span><span class="o">=</span><span class="n">tmpdir</span><span class="p">,</span>
             <span class="n">kubectl_path</span><span class="o">=</span><span class="n">kubectl_path</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">extend_embeddings</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">'index'</span><span class="p">],</span> <span class="n">final_layer_output_dim</span><span class="p">)</span>
-        <span class="n">save_mean</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">'index'</span><span class="p">],</span> <span class="n">tmpdir</span><span class="p">)</span>
-        <span class="n">fill_missing</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">train_val_split_ratio</span><span class="p">,</span> <span class="n">num_default_val_queries</span><span class="p">,</span> <span class="n">is_debug</span><span class="p">)</span>
-
-        <span class="c1"># if False:</span>
-        <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
-            <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s1">'ignore'</span><span class="p">)</span>
-            <span class="n">finetuned_model_path</span> <span class="o">=</span> <span class="n">finetune_layer</span><span class="p">(</span>
-                <span class="n">dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">final_layer_output_dim</span><span class="p">,</span> <span class="n">embedding_size</span><span class="p">,</span> <span class="n">tmpdir</span>
-            <span class="p">)</span>
-
-        <span class="k">with</span> <span class="n">yaspin_extended</span><span class="p">(</span>
-            <span class="n">sigmap</span><span class="o">=</span><span class="n">sigmap</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">"Create overview"</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"green"</span>
-        <span class="p">)</span> <span class="k">as</span> <span class="n">spinner</span><span class="p">:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
-                    <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">"ignore"</span><span class="p">)</span>
-                    <span class="n">show_improvement</span><span class="p">(</span>
-                        <span class="n">user_input</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
-                        <span class="n">user_input</span><span class="o">.</span><span class="n">quality</span><span class="p">,</span>
-                        <span class="n">dataset</span><span class="p">[</span><span class="s1">'val_query_image'</span><span class="p">],</span>
-                        <span class="n">dataset</span><span class="p">[</span><span class="s1">'val_index_image'</span><span class="p">],</span>
-                        <span class="n">dataset</span><span class="p">[</span><span class="s1">'val_query'</span><span class="p">],</span>
-                        <span class="n">dataset</span><span class="p">[</span><span class="s1">'val_index'</span><span class="p">],</span>
-                        <span class="n">final_layer_output_dim</span><span class="p">,</span>
-                        <span class="n">embedding_size</span><span class="p">,</span>
-                        <span class="n">finetuned_model_path</span><span class="p">,</span>
-                        <span class="n">class_label</span><span class="o">=</span><span class="s1">'finetuner_label'</span><span class="p">,</span>
-                    <span class="p">)</span>
-            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="k">pass</span>
-            <span class="n">spinner</span><span class="o">.</span><span class="n">ok</span><span class="p">(</span><span class="s1">'🖼'</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s1">'before-after comparison result is saved in the current working directory as image'</span>
-        <span class="p">)</span>
-        <span class="n">executor_name</span> <span class="o">=</span> <span class="n">push_to_hub</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">executor_name</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="c1"># executor_name = 'FineTunedLinearHeadEncoder:93ea59dbd1ee3fe0bdc44252c6e86a87/</span>
-    <span class="c1"># linear_head_encoder_2022-02-20_20-35-15'</span>
-    <span class="c1"># print('###executor_name', executor_name)</span>
-    <span class="c1"># executor_name = 'FineTunedLinearHeadEncoder:93ea59dbd1ee3fe0bdc44252c6e86a87/</span>
-    <span class="c1"># deleteme_2022-02-06_13-20-37'</span>
-    <span class="p">(</span>
-        <span class="n">gateway_host</span><span class="p">,</span>
-        <span class="n">gateway_port</span><span class="p">,</span>
-        <span class="n">gateway_host_internal</span><span class="p">,</span>
-        <span class="n">gateway_port_internal</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">=</span> <span class="n">deploy_flow</span><span class="p">(</span>
-        <span class="n">executor_name</span><span class="o">=</span><span class="n">executor_name</span><span class="p">,</span>
-        <span class="n">output_modality</span><span class="o">=</span><span class="n">user_input</span><span class="o">.</span><span class="n">output_modality</span><span class="p">,</span>
-        <span class="n">index</span><span class="o">=</span><span class="n">dataset</span><span class="p">[</span><span class="s1">'index'</span><span class="p">],</span>
-        <span class="n">vision_model</span><span class="o">=</span><span class="n">user_input</span><span class="o">.</span><span class="n">model_variant</span><span class="p">,</span>
-        <span class="n">final_layer_output_dim</span><span class="o">=</span><span class="n">final_layer_output_dim</span><span class="p">,</span>
-        <span class="n">embedding_size</span><span class="o">=</span><span class="n">embedding_size</span><span class="p">,</span>
-        <span class="n">tmpdir</span><span class="o">=</span><span class="n">tmpdir</span><span class="p">,</span>
-        <span class="n">finetuning</span><span class="o">=</span><span class="n">finetuning</span><span class="p">,</span>
-        <span class="n">sandbox</span><span class="o">=</span><span class="n">user_input</span><span class="o">.</span><span class="n">sandbox</span><span class="p">,</span>
-        <span class="n">kubectl_path</span><span class="o">=</span><span class="n">kubectl_path</span><span class="p">,</span>
-        <span class="n">deployment_type</span><span class="o">=</span><span class="n">user_input</span><span class="o">.</span><span class="n">deployment_type</span><span class="p">,</span>
-    <span class="p">)</span>
     <span class="k">return</span> <span class="n">gateway_host</span><span class="p">,</span> <span class="n">gateway_port</span><span class="p">,</span> <span class="n">gateway_host_internal</span><span class="p">,</span> <span class="n">gateway_port_internal</span></div>
 
 
-<div class="viewcode-block" id="parse_user_input"><a class="viewcode-back" href="../../../api/now.run_backend/#now.run_backend.parse_user_input">[docs]</a><span class="k">def</span> <span class="nf">parse_user_input</span><span class="p">(</span><span class="n">quality</span><span class="p">,</span> <span class="n">is_debug</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">is_debug</span><span class="p">:</span>
-        <span class="n">train_val_split_ratio</span> <span class="o">=</span> <span class="mf">0.5</span>
-        <span class="n">batch_size</span> <span class="o">=</span> <span class="mi">10</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">batch_size</span> <span class="o">=</span> <span class="mi">128</span>
-        <span class="n">train_val_split_ratio</span> <span class="o">=</span> <span class="mf">0.9</span>
-    <span class="n">num_default_val_queries</span> <span class="o">=</span> <span class="mi">10</span>
+<div class="viewcode-block" id="write_env_file"><a class="viewcode-back" href="../../../api/now.run_backend/#now.run_backend.write_env_file">[docs]</a><span class="k">def</span> <span class="nf">write_env_file</span><span class="p">(</span><span class="n">env_file</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+    <span class="n">config_string</span> <span class="o">=</span> <span class="s1">'</span><span class="se">\n</span><span class="s1">'</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1">=</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">'</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">items</span><span class="p">()])</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">env_file</span><span class="p">,</span> <span class="s1">'w+'</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+        <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">config_string</span><span class="p">)</span></div>
 
-    <span class="k">if</span> <span class="n">quality</span> <span class="o">==</span> <span class="s1">'ViT-L14'</span><span class="p">:</span>
-        <span class="n">final_layer_output_dim</span> <span class="o">=</span> <span class="mi">768</span> <span class="o">*</span> <span class="mi">2</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">final_layer_output_dim</span> <span class="o">=</span> <span class="mi">512</span> <span class="o">*</span> <span class="mi">2</span>
-    <span class="n">embedding_size</span> <span class="o">=</span> <span class="mi">128</span>
 
-    <span class="k">return</span> <span class="p">(</span>
-        <span class="n">final_layer_output_dim</span><span class="p">,</span>
-        <span class="n">embedding_size</span><span class="p">,</span>
-        <span class="n">batch_size</span><span class="p">,</span>
-        <span class="n">train_val_split_ratio</span><span class="p">,</span>
-        <span class="n">num_default_val_queries</span><span class="p">,</span>
-    <span class="p">)</span></div>
+<div class="viewcode-block" id="get_custom_env_file"><a class="viewcode-back" href="../../../api/now.run_backend/#now.run_backend.get_custom_env_file">[docs]</a><span class="k">def</span> <span class="nf">get_custom_env_file</span><span class="p">(</span>
+    <span class="n">user_input</span><span class="p">:</span> <span class="n">UserInput</span><span class="p">,</span>
+    <span class="n">finetune_settings</span><span class="p">:</span> <span class="n">FinetuneSettings</span><span class="p">,</span>
+    <span class="n">encoder_uses</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">artifact</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="n">indexer_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">'jinahub+docker://DocarrayIndexer'</span>
+    <span class="n">encoder_config</span> <span class="o">=</span> <span class="n">get_encoder_config</span><span class="p">(</span><span class="n">encoder_uses</span><span class="p">,</span> <span class="n">artifact</span><span class="p">)</span>
+    <span class="n">linear_head_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">'jinahub+docker://</span><span class="si">{</span><span class="n">finetune_settings</span><span class="o">.</span><span class="n">finetuned_model_name</span><span class="si">}</span><span class="s1">'</span>
+
+    <span class="k">if</span> <span class="n">finetune_settings</span><span class="o">.</span><span class="n">bi_modal</span><span class="p">:</span>
+        <span class="n">pre_trained_embedding_size</span> <span class="o">=</span> <span class="n">finetune_settings</span><span class="o">.</span><span class="n">pre_trained_embedding_size</span> <span class="o">*</span> <span class="mi">2</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">pre_trained_embedding_size</span> <span class="o">=</span> <span class="n">finetune_settings</span><span class="o">.</span><span class="n">pre_trained_embedding_size</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">'ENCODER_NAME'</span><span class="p">:</span> <span class="n">encoder_config</span><span class="o">.</span><span class="n">uses</span><span class="p">,</span>
+        <span class="s1">'FINETUNE_LAYER_SIZE'</span><span class="p">:</span> <span class="n">finetune_settings</span><span class="o">.</span><span class="n">finetune_layer_size</span><span class="p">,</span>
+        <span class="s1">'PRE_TRAINED_EMBEDDINGS_SIZE'</span><span class="p">:</span> <span class="n">pre_trained_embedding_size</span><span class="p">,</span>
+        <span class="s1">'INDEXER_NAME'</span><span class="p">:</span> <span class="n">indexer_name</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="n">encoder_config</span><span class="o">.</span><span class="n">uses_with</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'pretrained_model_name_or_path'</span><span class="p">):</span>
+        <span class="n">config</span><span class="p">[</span><span class="s1">'CLIP_MODEL_NAME'</span><span class="p">]</span> <span class="o">=</span> <span class="n">encoder_config</span><span class="o">.</span><span class="n">uses_with</span><span class="p">[</span>
+            <span class="s2">"pretrained_model_name_or_path"</span>
+        <span class="p">]</span>
+    <span class="k">if</span> <span class="n">finetune_settings</span><span class="o">.</span><span class="n">perform_finetuning</span><span class="p">:</span>
+        <span class="n">config</span><span class="p">[</span><span class="s1">'LINEAR_HEAD_NAME'</span><span class="p">]</span> <span class="o">=</span> <span class="n">linear_head_name</span>
+
+    <span class="k">return</span> <span class="n">config</span></div>
+
+
+<div class="viewcode-block" id="get_flow_yaml_name"><a class="viewcode-back" href="../../../api/now.run_backend/#now.run_backend.get_flow_yaml_name">[docs]</a><span class="k">def</span> <span class="nf">get_flow_yaml_name</span><span class="p">(</span><span class="n">app</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">finetuning</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="n">options</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">Apps</span><span class="o">.</span><span class="n">TEXT_TO_IMAGE</span><span class="p">:</span> <span class="p">{</span><span class="kc">False</span><span class="p">:</span> <span class="s1">'flow-clip.yml'</span><span class="p">,</span> <span class="kc">True</span><span class="p">:</span> <span class="s1">'ft-flow-clip.yml'</span><span class="p">},</span>
+        <span class="n">Apps</span><span class="o">.</span><span class="n">IMAGE_TO_IMAGE</span><span class="p">:</span> <span class="p">{</span><span class="kc">False</span><span class="p">:</span> <span class="s1">'flow-clip.yml'</span><span class="p">,</span> <span class="kc">True</span><span class="p">:</span> <span class="s1">'ft-flow-clip.yml'</span><span class="p">},</span>
+        <span class="n">Apps</span><span class="o">.</span><span class="n">IMAGE_TO_TEXT</span><span class="p">:</span> <span class="p">{</span><span class="kc">False</span><span class="p">:</span> <span class="s1">'flow-clip.yml'</span><span class="p">},</span>
+        <span class="n">Apps</span><span class="o">.</span><span class="n">MUSIC_TO_MUSIC</span><span class="p">:</span> <span class="p">{</span><span class="kc">True</span><span class="p">:</span> <span class="s1">'ft-flow-music.yml'</span><span class="p">},</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">options</span><span class="p">[</span><span class="n">app</span><span class="p">][</span><span class="n">finetuning</span><span class="p">]</span></div>
 </pre></div>
                 </article>
             </div>
@@ -466,7 +411,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on May 20, 2022.
+                            Last updated on May 31, 2022.
                         </div>
                     </div>
                     <div class="right-details">

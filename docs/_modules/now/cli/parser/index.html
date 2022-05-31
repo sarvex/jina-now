@@ -340,8 +340,8 @@
     <span class="p">)</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s1">'--modality'</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s1">'Select the modality you want to develop a search flow for.'</span><span class="p">,</span>
+        <span class="s1">'--app'</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">'Select the app you would like to use.'</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span>
 
@@ -360,13 +360,15 @@
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s1">'--cluster'</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s1">'Reference an existing cluster or select `new` to create a new one.'</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">'Reference an existing `local` cluster or select `new` to create a new one.'</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s1">'--new-cluster-type'</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s1">'Only effective if --cluster=new. Optional are `local` and `gke`.'</span><span class="p">,</span>
+        <span class="s1">'--deployment-type'</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">'Option is `local` and `remote`. Select `local` if you want search engine to be deployed on local '</span>
+        <span class="s1">'cluster. Select `remote` to deploy it on Jina Cloud'</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span></div>
 
 
@@ -424,7 +426,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on May 20, 2022.
+                            Last updated on May 31, 2022.
                         </div>
                     </div>
                     <div class="right-details">

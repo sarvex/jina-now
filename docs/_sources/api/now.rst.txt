@@ -7,15 +7,16 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   now.bff
+   now.apps
    now.cli
    now.data_loading
+   now.datasource
    now.deployment
    now.finetuning
    now.hub
    now.improvements
    now.log
-   now.thridparty
+   now.thirdparty
 
 Submodules
 ----------
@@ -25,11 +26,11 @@ Submodules
 
    now.cloud_manager
    now.constants
+   now.dataclasses
    now.dialog
-   now.gke_deploy
    now.run_all_k8s
    now.run_backend
-   now.run_frontend
+   now.run_bff_playground
    now.system_information
    now.utils
 

@@ -301,11 +301,11 @@
 <span id="now-data-loading-data-loading-module"></span><h1>now.data_loading.data_loading module<a class="headerlink" href="#module-now.data_loading.data_loading" title="Permalink to this headline">#</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="now.data_loading.data_loading.load_data">
-<span class="sig-prename descclassname"><span class="pre">now.data_loading.data_loading.</span></span><span class="sig-name descname"><span class="pre">load_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">user_input</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/now/data_loading/data_loading/#load_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#now.data_loading.data_loading.load_data" title="Permalink to this definition">#</a></dt>
-<dd><p>Based on the user input, this function will pull the configured DocArray.</p>
+<span class="sig-prename descclassname"><span class="pre">now.data_loading.data_loading.</span></span><span class="sig-name descname"><span class="pre">load_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_modality</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_input</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/now/data_loading/data_loading/#load_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#now.data_loading.data_loading.load_data" title="Permalink to this definition">#</a></dt>
+<dd><p>Based on the user input, this function will pull the configured DocArray dataset.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>user_input</strong> (<a class="reference internal" href="../now.dialog/#now.dialog.UserInput" title="now.dialog.UserInput"><code class="xref py py-class docutils literal notranslate"><span class="pre">UserInput</span></code></a>) – The configured user object. Result from the Jina Now cli dialog.</p>
+<dd class="field-odd"><p><strong>user_input</strong> (<a class="reference internal" href="../now.dataclasses/#now.dataclasses.UserInput" title="now.dataclasses.UserInput"><code class="xref py py-class docutils literal notranslate"><span class="pre">UserInput</span></code></a>) – The configured user object. Result from the Jina Now cli dialog.</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">DocumentArray</span></code></p>
@@ -321,6 +321,15 @@
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="now.data_loading.data_loading.deep_copy_da">
+<span class="sig-prename descclassname"><span class="pre">now.data_loading.data_loading.</span></span><span class="sig-name descname"><span class="pre">deep_copy_da</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">da</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/now/data_loading/data_loading/#deep_copy_da"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#now.data_loading.data_loading.deep_copy_da" title="Permalink to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">DocumentArray</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -342,7 +351,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on May 20, 2022.
+                            Last updated on May 31, 2022.
                         </div>
                     </div>
                     <div class="right-details">

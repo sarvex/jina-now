@@ -305,72 +305,10 @@
 Its goal is to configure a UserInput object with users specifications.
 Optionally, values can be passed from the command-line when jina-now is launched. In that case,
 the dialog won’t ask for the value.</p>
-<dl class="py class">
-<dt class="sig sig-object py" id="now.dialog.UserInput">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">now.dialog.</span></span><span class="sig-name descname"><span class="pre">UserInput</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_modality</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_custom_dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom_dataset_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset_secret</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset_url</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quality</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sandbox</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_variant</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cluster</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">create_new_cluster</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deployment_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/now/dialog/#UserInput"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#now.dialog.UserInput" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="now.dialog.UserInput.output_modality">
-<span class="sig-name descname"><span class="pre">output_modality</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../now.constants/#now.constants.Modalities" title="now.constants.Modalities"><span class="pre">now.constants.Modalities</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#now.dialog.UserInput.output_modality" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="now.dialog.UserInput.data">
-<span class="sig-name descname"><span class="pre">data</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#now.dialog.UserInput.data" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="now.dialog.UserInput.is_custom_dataset">
-<span class="sig-name descname"><span class="pre">is_custom_dataset</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#now.dialog.UserInput.is_custom_dataset" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="now.dialog.UserInput.custom_dataset_type">
-<span class="sig-name descname"><span class="pre">custom_dataset_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../now.constants/#now.constants.DatasetTypes" title="now.constants.DatasetTypes"><span class="pre">now.constants.DatasetTypes</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#now.dialog.UserInput.custom_dataset_type" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="now.dialog.UserInput.dataset_secret">
-<span class="sig-name descname"><span class="pre">dataset_secret</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#now.dialog.UserInput.dataset_secret" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="now.dialog.UserInput.dataset_url">
-<span class="sig-name descname"><span class="pre">dataset_url</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#now.dialog.UserInput.dataset_url" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="now.dialog.UserInput.dataset_path">
-<span class="sig-name descname"><span class="pre">dataset_path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#now.dialog.UserInput.dataset_path" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="now.dialog.UserInput.quality">
-<span class="sig-name descname"><span class="pre">quality</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../now.constants/#now.constants.Qualities" title="now.constants.Qualities"><span class="pre">now.constants.Qualities</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#now.dialog.UserInput.quality" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="now.dialog.UserInput.sandbox">
-<span class="sig-name descname"><span class="pre">sandbox</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#now.dialog.UserInput.sandbox" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="now.dialog.UserInput.model_variant">
-<span class="sig-name descname"><span class="pre">model_variant</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#now.dialog.UserInput.model_variant" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="now.dialog.UserInput.cluster">
-<span class="sig-name descname"><span class="pre">cluster</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#now.dialog.UserInput.cluster" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="now.dialog.UserInput.create_new_cluster">
-<span class="sig-name descname"><span class="pre">create_new_cluster</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#now.dialog.UserInput.create_new_cluster" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="now.dialog.UserInput.deployment_type">
-<span class="sig-name descname"><span class="pre">deployment_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#now.dialog.UserInput.deployment_type" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-</dd></dl>
 <dl class="py function">
 <dt class="sig sig-object py" id="now.dialog.configure_user_input">
 <span class="sig-prename descclassname"><span class="pre">now.dialog.</span></span><span class="sig-name descname"><span class="pre">configure_user_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/now/dialog/#configure_user_input"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#now.dialog.configure_user_input" title="Permalink to this definition">#</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#now.dialog.UserInput" title="now.dialog.UserInput"><code class="xref py py-class docutils literal notranslate"><span class="pre">UserInput</span></code></a></p>
-</dd>
-</dl>
-</dd></dl>
+<dd></dd></dl>
 <dl class="py function">
 <dt class="sig sig-object py" id="now.dialog.print_headline">
 <span class="sig-prename descclassname"><span class="pre">now.dialog.</span></span><span class="sig-name descname"><span class="pre">print_headline</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/now/dialog/#print_headline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#now.dialog.print_headline" title="Permalink to this definition">#</a></dt>
@@ -411,7 +349,7 @@ See docs: <a class="reference external" href="https://github.com/CITGuru/PyInqui
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on May 20, 2022.
+                            Last updated on May 31, 2022.
                         </div>
                     </div>
                     <div class="right-details">

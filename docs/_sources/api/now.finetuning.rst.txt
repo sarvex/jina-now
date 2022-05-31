@@ -7,7 +7,10 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
-   now.finetuning.finetuning
+   now.finetuning.dataset
+   now.finetuning.embeddings
+   now.finetuning.run_finetuning
+   now.finetuning.settings
 
 Module contents
 ---------------

@@ -287,8 +287,6 @@
 <span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span><span class="p">,</span> <span class="n">ImageDraw</span><span class="p">,</span> <span class="n">ImageFont</span>
 <span class="kn">from</span> <span class="nn">rich.console</span> <span class="kn">import</span> <span class="n">Console</span>
 
-<span class="kn">from</span> <span class="nn">now.deployment.deployment</span> <span class="kn">import</span> <span class="n">which</span>
-
 <span class="n">colors</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">"navy"</span><span class="p">,</span>
     <span class="s2">"turquoise"</span><span class="p">,</span>
@@ -594,25 +592,22 @@
     <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="ffmpeg_is_installed"><a class="viewcode-back" href="../../../api/now.utils/#now.utils.ffmpeg_is_installed">[docs]</a><span class="k">def</span> <span class="nf">ffmpeg_is_installed</span><span class="p">():</span>
-    <span class="k">return</span> <span class="n">which</span><span class="p">(</span><span class="s2">"ffmpeg"</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="gcloud_is_installed"><a class="viewcode-back" href="../../../api/now.utils/#now.utils.gcloud_is_installed">[docs]</a><span class="k">def</span> <span class="nf">gcloud_is_installed</span><span class="p">():</span>
-    <span class="k">return</span> <span class="n">which</span><span class="p">(</span><span class="s2">"gcloud"</span><span class="p">)</span></div>
-
-
 <div class="viewcode-block" id="flow_definition"><a class="viewcode-back" href="../../../api/now.utils/#now.utils.flow_definition">[docs]</a><span class="k">def</span> <span class="nf">flow_definition</span><span class="p">(</span><span class="n">dirpath</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">dirpath</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">())</span></div>
 
 
-<div class="viewcode-block" id="update_uses_to_sandbox"><a class="viewcode-back" href="../../../api/now.utils/#now.utils.update_uses_to_sandbox">[docs]</a><span class="k">def</span> <span class="nf">update_uses_to_sandbox</span><span class="p">(</span><span class="n">flow</span><span class="p">):</span>
-    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">executor_dict</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">flow</span><span class="p">[</span><span class="s1">'executors'</span><span class="p">]):</span>
-        <span class="n">uses</span> <span class="o">=</span> <span class="n">executor_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'uses'</span><span class="p">,</span> <span class="p">{})</span>
-        <span class="n">first_part</span><span class="p">,</span> <span class="n">second_part</span> <span class="o">=</span> <span class="n">uses</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">'://'</span><span class="p">)</span>
-        <span class="n">uses</span> <span class="o">=</span> <span class="s1">'jinahub+sandbox://'</span> <span class="o">+</span> <span class="n">second_part</span>
-        <span class="n">flow</span><span class="p">[</span><span class="s1">'executors'</span><span class="p">][</span><span class="n">idx</span><span class="p">][</span><span class="s1">'uses'</span><span class="p">]</span> <span class="o">=</span> <span class="n">uses</span></div>
+<div class="viewcode-block" id="BetterEnum"><a class="viewcode-back" href="../../../api/now.utils/#now.utils.BetterEnum">[docs]</a><span class="k">class</span> <span class="nc">BetterEnum</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="k">if</span> <span class="p">(</span><span class="s1">'__'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">x</span><span class="p">)]</span><span class="o">.</span><span class="fm">__iter__</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="to_camel_case"><a class="viewcode-back" href="../../../api/now.utils/#now.utils.to_camel_case">[docs]</a><span class="k">def</span> <span class="nf">to_camel_case</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"-"</span><span class="p">,</span> <span class="s2">" "</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"_"</span><span class="p">,</span> <span class="s2">" "</span><span class="p">)</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">text</span>
+    <span class="k">return</span> <span class="s1">''</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">s</span><span class="p">)</span></div>
 
 
 <span class="n">sigmap</span> <span class="o">=</span> <span class="p">{</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGINT</span><span class="p">:</span> <span class="n">my_handler</span><span class="p">,</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIGTERM</span><span class="p">:</span> <span class="n">my_handler</span><span class="p">}</span>
@@ -633,7 +628,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on May 20, 2022.
+                            Last updated on May 31, 2022.
                         </div>
                     </div>
                     <div class="right-details">

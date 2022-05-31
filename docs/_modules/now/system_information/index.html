@@ -271,9 +271,7 @@
                 </div>
                 <article role="main">
                     <h1>Source code for now.system_information</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">os</span>
-
-<span class="kn">from</span> <span class="nn">now.deployment.deployment</span> <span class="kn">import</span> <span class="n">cmd</span>
+<span></span><span class="kn">from</span> <span class="nn">now.deployment.deployment</span> <span class="kn">import</span> <span class="n">cmd</span>
 
 
 <div class="viewcode-block" id="get_system_state"><a class="viewcode-back" href="../../../api/now.system_information/#now.system_information.get_system_state">[docs]</a><span class="k">def</span> <span class="nf">get_system_state</span><span class="p">(</span><span class="n">kubectl_path</span><span class="o">=</span><span class="s1">'kubectl'</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -296,11 +294,7 @@
         <span class="n">active_context</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">active_context</span> <span class="o">=</span> <span class="n">active_context</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">'utf-8'</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-
-    <span class="n">is_debug</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">'IS_DEBUG'</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">'true'</span> <span class="k">if</span> <span class="s1">'IS_DEBUG'</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span> <span class="k">else</span> <span class="kc">False</span>
-    <span class="p">)</span>
-    <span class="k">return</span> <span class="n">contexts</span><span class="p">,</span> <span class="n">active_context</span><span class="p">,</span> <span class="n">is_debug</span></div>
+    <span class="k">return</span> <span class="n">contexts</span><span class="p">,</span> <span class="n">active_context</span></div>
 </pre></div>
                 </article>
             </div>
@@ -318,7 +312,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on May 20, 2022.
+                            Last updated on May 31, 2022.
                         </div>
                     </div>
                     <div class="right-details">
