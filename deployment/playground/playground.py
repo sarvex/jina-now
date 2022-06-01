@@ -126,6 +126,7 @@ def deploy_streamlit():
         """
 
     def search_by_t(search_text, limit=TOP_K) -> DocumentArray:
+        st.session_state.search_count += 1
         print(f'Searching by text: {search_text}')
         data = {'host': HOST, 'text': search_text, 'limit': limit}
         if PORT:
@@ -137,6 +138,7 @@ def deploy_streamlit():
         """
         Wrap file in Jina Document for searching, and do all necessary conversion to make similar to indexed Docs
         """
+        st.session_state.search_count += 1
         print(f"Searching by image")
         query_doc = document
         if query_doc.blob == b'':
@@ -196,7 +198,6 @@ def deploy_streamlit():
             doc = convert_file_to_document(query)
             st.image(doc.blob, width=160)
             st.session_state.matches = search_by_file(document=doc)
-            st.session_state.search_count += 1
         if da_img is not None:
             st.subheader("samples:")
             img_cs = st.columns(5)
@@ -212,7 +213,6 @@ def deploy_streamlit():
         query = st.text_input("", key="text_search_box")
         if query:
             st.session_state.matches = search_by_t(search_text=query)
-            st.session_state.search_count += 1
         if st.button("Search", key="text_search"):
             st.session_state.matches = search_by_t(search_text=query)
         if da_txt is not None:
@@ -255,9 +255,11 @@ def deploy_streamlit():
 
     if st.session_state.matches:
         matches = deepcopy(st.session_state.matches)
-        st.header('Search results')
         if st.session_state.search_count > 2:
-            st.write(f"##### :fire: [How do you like JinaNow?]({SURVEY_LINK}) :fire:")
+            st.write(
+                f"🔥 How did you like Jina NOW? [Please leave a feedback]({SURVEY_LINK}) 🔥"
+            )
+        st.header('Search results')
         # Results area
         c1, c2, c3 = st.columns(3)
         c4, c5, c6 = st.columns(3)
