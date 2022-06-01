@@ -22,7 +22,7 @@ root_data_dir = (
     'https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/'
 )
 
-ds_set = {
+ds_set = [
     'nft-monkey',
     'deepfashion',
     'nih-chest-xrays',
@@ -35,7 +35,7 @@ ds_set = {
     'rap-lyrics',
     'indie-lyrics',
     'metal-lyrics',
-}
+]
 
 
 def deploy_streamlit():
@@ -62,15 +62,16 @@ def deploy_streamlit():
         query_parameters.get('port')[0] if 'port' in query_parameters.keys() else None
     )
     OUTPUT_MODALITY = query_parameters.get('output_modality')[0]
+    INPUT_MODALITY = query_parameters.get('input_modality')[0]
     DATA = (
         query_parameters.get('data')[0] if 'data' in query_parameters.keys() else None
     )
     # TODO: fix such that can call 'localhost' instead of 'jinanowtesting'
-    # TODO: change Nginx such that api/api isn't required anymore
     if HOST == 'gateway':  # need to call now-bff as we communicate between pods
         URL_HOST = f"http://now-bff/api/v1/{OUTPUT_MODALITY}/search"
     else:
-        URL_HOST = f"https://jinanowtesting.com/api/api/v1/{OUTPUT_MODALITY}/search"
+        URL_HOST = f"https://nowrun.jina.ai/api/v1/{OUTPUT_MODALITY}/search"
+        # URL_HOST = f"localhost/api/v1/{OUTPUT_MODALITY}/search"
 
     da_img = None
     da_txt = None
@@ -142,11 +143,10 @@ def deploy_streamlit():
         print(f"Searching by image")
         query_doc = document
         if query_doc.blob == b'':
-            if (query_doc.uri is not None) and query_doc.uri != '':
+            if query_doc.tensor is not None:
+                query_doc.convert_image_tensor_to_blob()
+            elif (query_doc.uri is not None) and query_doc.uri != '':
                 query_doc.load_uri_to_blob()
-            elif query_doc.tensor is not None:
-                query_doc.convert_tensor_to_blob()
-            query_doc.convert_blob_to_image_tensor()
 
         data = {
             'host': HOST,
@@ -178,18 +178,14 @@ def deploy_streamlit():
         '<style>div.st-bf{flex-direction:column;} div.st-ag{font-weight:bold;padding-right:50px;}</style>',
         unsafe_allow_html=True,
     )
-    if OUTPUT_MODALITY == 'image':
+    if INPUT_MODALITY == 'image':
         media_type = st.radio(
             '',
-            ["Text", "Image", 'Webcam'],
+            ["Image", 'Webcam'],
             on_change=clear_match,
         )
-    elif OUTPUT_MODALITY == 'text':
-        media_type = st.radio(
-            '',
-            ["Image", "Text", 'Webcam'],
-            on_change=clear_match,
-        )
+    elif INPUT_MODALITY == 'text':
+        media_type = 'Text'
 
     if media_type == "Image":
         upload_c, preview_c = st.columns([12, 1])

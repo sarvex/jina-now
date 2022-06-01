@@ -1,11 +1,10 @@
 import json
 import os
-import tempfile
 from os.path import expanduser as user
 
 import cowsay
 
-from now import run_backend, run_playground
+from now import run_backend, run_bff_playground
 from now.cloud_manager import setup_cluster
 from now.constants import JC_SECRET, SURVEY_LINK
 from now.deployment.deployment import cmd, status_wolf, terminate_wolf
@@ -14,7 +13,7 @@ from now.log.log import yaspin_extended
 from now.system_information import get_system_state
 from now.utils import sigmap
 
-docker_bff_playground_tag = '0.0.35'
+docker_bff_playground_tag = '0.0.46'
 
 
 def get_remote_flow_details():
@@ -72,58 +71,66 @@ def get_task(kwargs):
     raise Exception('kwargs do not contain a task')
 
 
-def start_now(os_type, arch, contexts, active_context, is_debug, **kwargs):
-    user_input = configure_user_input(
+def start_now(os_type, arch, contexts, active_context, **kwargs):
+    app_instance, user_input = configure_user_input(
         contexts=contexts,
         active_context=active_context,
         os_type=os_type,
         arch=arch,
         **kwargs,
     )
-    with tempfile.TemporaryDirectory() as tmpdir:
-        setup_cluster(user_input, **kwargs)
-        (
-            gateway_host,
-            gateway_port,
-            gateway_host_internal,
-            gateway_port_internal,
-        ) = run_backend.run(
-            user_input, is_debug, tmpdir, kubectl_path=kwargs['kubectl_path']
-        )
 
-        if gateway_host == 'localhost' or 'NOW_CI_RUN' in os.environ:
-            # only deploy playground when running locally or when testing
-            playground_host, playground_port = run_playground.run(
-                output_modality=user_input.output_modality,
-                dataset=user_input.data,
-                gateway_host=gateway_host,
-                gateway_host_internal=gateway_host_internal,
-                gateway_port_internal=gateway_port_internal,
-                docker_bff_playground_tag=docker_bff_playground_tag,
-                kubectl_path=kwargs['kubectl_path'],
-            )
-            url = f'{playground_host}' + (
-                '' if str(playground_port) == '80' else f':{playground_port}'
-            )
-        else:
-            url = 'https://jinanowtesting.com'
-        url += (
+    setup_cluster(user_input, **kwargs)
+    (
+        gateway_host,
+        gateway_port,
+        gateway_host_internal,
+        gateway_port_internal,
+    ) = run_backend.run(app_instance, user_input, kubectl_path=kwargs['kubectl_path'])
+
+    if gateway_host == 'localhost' or 'NOW_CI_RUN' in os.environ:
+        # only deploy playground when running locally or when testing
+        bff_playground_host, bff_port, playground_port = run_bff_playground.run(
+            output_modality=user_input.output_modality,
+            dataset=user_input.data,
+            gateway_host=gateway_host,
+            gateway_host_internal=gateway_host_internal,
+            gateway_port_internal=gateway_port_internal,
+            docker_bff_playground_tag=docker_bff_playground_tag,
+            kubectl_path=kwargs['kubectl_path'],
+        )
+    else:
+        bff_playground_host = 'https://nowrun.jina.ai'
+        bff_port = '80'
+        playground_port = '80'
+    # TODO: add separate BFF endpoints in print output
+    bff_url = (
+        bff_playground_host
+        + ('' if str(bff_port) == '80' else f':{bff_port}')
+        + f'/api/v1/{app_instance.input_modality}/redoc'
+    )
+    playground_url = (
+        bff_playground_host
+        + ('' if str(playground_port) == '80' else f':{playground_port}')
+        + (
             f'/?host='
             + (gateway_host_internal if gateway_host != 'localhost' else 'gateway')
-            + f'&output_modality={user_input.output_modality}&data={user_input.data}'
+            + f'&input_modality={app_instance.input_modality}'
+            + f'&output_modality={app_instance.output_modality}'
+            f'&data={user_input.data}'
         )
-        if gateway_port_internal:
-            url += f'&port={gateway_port_internal}'
-        print()
-        # cowsay.cow(f'You made it:\n{url}')
-        print(f'Playground is accessible at:\n{url}')
+        + (f'&port={gateway_port_internal}' if gateway_port_internal else '')
+    )
+    print()
+    print(f'BFF docs are accessible at:\n{bff_url}')
+    print(f'Playground is accessible at:\n{playground_url}')
 
 
 def run_k8s(os_type: str = 'linux', arch: str = 'x86_64', **kwargs):
-    contexts, active_context, is_debug = get_system_state(**kwargs)
+    contexts, active_context = get_system_state(**kwargs)
     task = get_task(kwargs)
     if task == 'start':
-        start_now(os_type, arch, contexts, active_context, is_debug, **kwargs)
+        start_now(os_type, arch, contexts, active_context, **kwargs)
     elif task == 'stop':
         stop_now(contexts, active_context, **kwargs)
     elif task == 'survey':
@@ -137,8 +144,12 @@ def run_k8s(os_type: str = 'linux', arch: str = 'x86_64', **kwargs):
 if __name__ == '__main__':
     run_k8s(
         output_modality='music',
-        data='music-genres-small',
+        data='music-genres-mid',
         cluster='new',
+        quality='medium',
         deployment_type='local',
         kubectl_path='/usr/local/bin/kubectl',
+        kind_path='/Users/sebastianlettner/.cache/jina-now/kind',
+        proceed=True,
+        now='start',
     )

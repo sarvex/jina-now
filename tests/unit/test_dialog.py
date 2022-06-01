@@ -8,12 +8,9 @@ from typing import Dict
 import pytest
 from pytest_mock import MockerFixture
 
-from now.dialog import (
-    IMAGE_MODEL_QUALITY_MAP,
-    Modalities,
-    UserInput,
-    configure_user_input,
-)
+from now.constants import Apps, DemoDatasets
+from now.dataclasses import UserInput
+from now.dialog import configure_user_input
 
 
 class CmdPromptMock:
@@ -27,8 +24,8 @@ class CmdPromptMock:
 MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
-            'output_modality': Modalities.MUSIC,
-            'data': 'music-genres-small',
+            'app': Apps.MUSIC_TO_MUSIC,
+            'data': 'music-genres-mid',
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -40,7 +37,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'output_modality': Modalities.MUSIC,
+            'app': Apps.MUSIC_TO_MUSIC,
             'data': 'music-genres-large',
             'cluster': 'new',
             'deployment_type': 'local',
@@ -53,7 +50,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'output_modality': Modalities.IMAGE,
+            'app': Apps.TEXT_TO_IMAGE,
             'data': 'tll',
             'cluster': 'new',
             'quality': 'good',
@@ -63,12 +60,11 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
         UserInput(
             is_custom_dataset=False,
             create_new_cluster=True,
-            model_variant=IMAGE_MODEL_QUALITY_MAP['good'][1],
         ),
     ),
     (
         {
-            'output_modality': Modalities.IMAGE,
+            'app': Apps.TEXT_TO_IMAGE,
             'data': 'nih-chest-xrays',
             'cluster': 'new',
             'quality': 'medium',
@@ -78,12 +74,11 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
         UserInput(
             is_custom_dataset=False,
             create_new_cluster=True,
-            model_variant=IMAGE_MODEL_QUALITY_MAP['medium'][1],
         ),
     ),
     (
         {
-            'output_modality': Modalities.IMAGE,
+            'app': Apps.TEXT_TO_IMAGE,
             'data': 'custom',
             'custom_dataset_type': 'docarray',
             'dataset_secret': 'xxx',
@@ -95,12 +90,11 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
         UserInput(
             is_custom_dataset=True,
             create_new_cluster=True,
-            model_variant=IMAGE_MODEL_QUALITY_MAP['medium'][1],
         ),
     ),
     (
         {
-            'output_modality': Modalities.MUSIC,
+            'app': Apps.MUSIC_TO_MUSIC,
             'data': 'custom',
             'custom_dataset_type': 'docarray',
             'dataset_secret': 'xxx',
@@ -115,7 +109,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'output_modality': Modalities.MUSIC,
+            'app': Apps.MUSIC_TO_MUSIC,
             'data': 'custom',
             'custom_dataset_type': 'path',
             'dataset_path': 'xxx',
@@ -130,7 +124,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'output_modality': Modalities.MUSIC,
+            'app': Apps.MUSIC_TO_MUSIC,
             'data': 'custom',
             'custom_dataset_type': 'url',
             'dataset_url': 'xxx',
@@ -145,7 +139,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'output_modality': Modalities.IMAGE,
+            'app': Apps.TEXT_TO_IMAGE,
             'data': 'custom',
             'custom_dataset_type': 'docarray',
             'dataset_secret': 'xxx',
@@ -157,12 +151,11 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
         UserInput(
             is_custom_dataset=True,
             create_new_cluster=True,
-            model_variant=IMAGE_MODEL_QUALITY_MAP['medium'][1],
         ),
     ),
     (
         {
-            'output_modality': Modalities.IMAGE,
+            'app': Apps.TEXT_TO_IMAGE,
             'data': 'tll',
             'quality': 'good',
             'deployment_type': 'remote',
@@ -170,16 +163,15 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
         {'os_type': 'darwin', 'arch': 'x86_64'},
         UserInput(
             is_custom_dataset=False,
-            model_variant=IMAGE_MODEL_QUALITY_MAP['good'][1],
         ),
     ),
     (
         {
-            'data': 'music-genres-small',
+            'data': 'music-genres-mid',
             'cluster': 'new',
             'deployment_type': 'local',
         },
-        {'output_modality': Modalities.MUSIC},
+        {'app': Apps.MUSIC_TO_MUSIC},
         UserInput(
             is_custom_dataset=False,
             create_new_cluster=True,
@@ -187,36 +179,34 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'data': 'tll',
+            'data': DemoDatasets.TLL,
             'cluster': 'new',
             'deployment_type': 'local',
         },
-        {'output_modality': Modalities.IMAGE, 'quality': 'good'},
+        {'app': Apps.TEXT_TO_IMAGE, 'quality': 'good'},
         UserInput(
             is_custom_dataset=False,
             create_new_cluster=True,
-            model_variant=IMAGE_MODEL_QUALITY_MAP['good'][1],
         ),
     ),
     (
         {
-            'data': 'pop-lyrics',
+            'data': DemoDatasets.ROCK_LYRICS,
             'cluster': 'new',
             'deployment_type': 'local',
         },
-        {'output_modality': Modalities.TEXT, 'quality': 'good'},
+        {'app': Apps.IMAGE_TO_TEXT, 'quality': 'good'},
         UserInput(
             is_custom_dataset=False,
             create_new_cluster=True,
-            model_variant=IMAGE_MODEL_QUALITY_MAP['good'][1],
         ),
     ),
     (
         {
-            'output_modality': Modalities.TEXT,
+            'app': Apps.IMAGE_TO_TEXT,
         },
         {
-            'data': 'pop-lyrics',
+            'data': DemoDatasets.POP_LYRICS,
             'cluster': 'new',
             'deployment_type': 'local',
             'quality': 'medium',
@@ -224,7 +214,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
         UserInput(
             is_custom_dataset=False,
             create_new_cluster=True,
-            model_variant=IMAGE_MODEL_QUALITY_MAP['medium'][1],
         ),
     ),
 ]
@@ -244,6 +233,6 @@ def test_configure_user_input(
     expected_user_input.__dict__.update(configure_kwargs)
     mocker.patch('now.dialog.prompt', CmdPromptMock(mocked_user_answers))
 
-    user_input = configure_user_input(**configure_kwargs)
+    _, user_input = configure_user_input(**configure_kwargs)
 
     assert user_input == expected_user_input

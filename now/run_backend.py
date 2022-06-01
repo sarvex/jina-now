@@ -1,177 +1,123 @@
 import os
-import pickle
-import warnings
-from os.path import join as osp
+import pathlib
+import tempfile
+from typing import Dict, Optional, Tuple
 
+from docarray import DocumentArray
+
+from now.apps.base.app import JinaNOWApp
+from now.constants import Apps
 from now.data_loading.data_loading import load_data
+from now.dataclasses import UserInput
 from now.deployment.flow import deploy_flow
-from now.dialog import UserInput
-from now.finetuning.finetuning import fill_missing
-from now.log.log import yaspin_extended
-from now.utils import sigmap
+from now.finetuning.embeddings import get_encoder_config
+from now.finetuning.run_finetuning import finetune_now
+from now.finetuning.settings import FinetuneSettings, parse_finetune_settings
+
+cur_dir = pathlib.Path(__file__).parent.resolve()
 
 
-def save_mean(da, tmpdir):
-    mean = da.embeddings.mean(0)
-    if not os.path.exists(osp(tmpdir, 'now/hub/head_encoder/')):
-        os.makedirs(osp(tmpdir, 'now/hub/head_encoder/'))
-    with open(osp(tmpdir, 'now/hub/head_encoder/mean.bin'), 'wb') as f:
-        pickle.dump(mean, f)
-
-
-def is_finetuning(dataset_name, dataset):
-    # finetuning for some datasets is deactivated since the generalization ability is lost
-    # they can be reactivated once this ticket is done:
-    # https://github.com/jina-ai/now/issues/76
-    if dataset_name in [
-        'tll',
-        'nft-monkey',
-        # 'deepfashion',
-        'nih-chest-xrays',
-        'geolocation-geoguessr',
-        'stanford-cars',
-        # 'bird-species',
-        'best-artworks',
-        'lyrics',
-        'lyrics-10000',
-        'rock-lyrics',
-        'pop-lyrics',
-        'rap-lyrics',
-        'indie-lyrics',
-        'metal-lyrics',
-    ]:
-        return False
-    for d in dataset:
-        if 'finetuner_label' in d.tags:
-            return True
-    return False
-
-
-def run(user_input: UserInput, is_debug, tmpdir, kubectl_path: str):
+def finetune_flow_setup(
+    app_instance: JinaNOWApp,
+    dataset: DocumentArray,
+    user_input,
+    kubectl_path,
+    encoder_uses: str,
+    artifact: str,
+    finetune_datasets: Tuple = (),
+    pre_trained_head_map: Optional[Dict] = None,
+):
     """
-    Args:
-        user_input: User input arguments
-        is_debug: if True it also works on small datasets
+    Apply finetuning if possible, pushes the executor to hub and generated the related yaml file
     """
-    # bring back at some point to make this configurable by the user
-    (
-        final_layer_output_dim,
-        embedding_size,
-        batch_size,
-        train_val_split_ratio,
-        num_default_val_queries,
-    ) = parse_user_input(user_input.quality, is_debug)
+    finetune_settings = parse_finetune_settings(user_input, dataset, finetune_datasets)
+    if finetune_settings.perform_finetuning:
+        print(f'🔧 Perform finetuning!')
+        finetune_settings.finetuned_model_name = finetune_now(
+            user_input, dataset, finetune_settings, pre_trained_head_map, kubectl_path
+        )
 
-    dataset = load_data(user_input)
+    finetuning = finetune_settings.perform_finetuning
 
-    finetuning = is_finetuning(user_input.data, dataset)
+    yaml_name = get_flow_yaml_name(user_input.app, finetuning)
+    app_instance.flow_yaml = os.path.join(cur_dir, 'deployment', 'flow', yaml_name)
 
-    dataset = {
-        'index': dataset,
-        'train': None,
-        'val': None,
-        'val_query': None,
-        'val_index': None,
-        'val_query_image': None,
-        'val_index_image': None,
-    }
+    env = get_custom_env_file(user_input, finetune_settings, encoder_uses, artifact)
+    return env
 
-    if finetuning:
-        from now.finetuning.finetuning import add_clip_embeddings, finetune_layer
-        from now.hub.head_encoder.head_encoder import extend_embeddings
-        from now.hub.hub import push_to_hub
-        from now.improvements.improvements import show_improvement
 
-        add_clip_embeddings(
-            dataset,
-            user_input.model_variant,
-            tmpdir,
+def run(app_instance: JinaNOWApp, user_input: UserInput, kubectl_path: str):
+    """
+    TODO: Write docs
+
+    :param user_input:
+    :param tmpdir:
+    :param kubectl_path:
+    :return:
+    """
+    dataset = load_data(app_instance.output_modality, user_input)
+    env = app_instance.setup(dataset, user_input, kubectl_path)
+    with tempfile.TemporaryDirectory() as tmpdir:
+        env_file = os.path.join(tmpdir, 'dot.env')
+        write_env_file(env_file, env)
+        (
+            gateway_host,
+            gateway_port,
+            gateway_host_internal,
+            gateway_port_internal,
+        ) = deploy_flow(
+            user_input=user_input,
+            app_instance=app_instance,
+            env_file=env_file,
+            ns='nowapi',
+            index=dataset,
+            tmpdir=tmpdir,
             kubectl_path=kubectl_path,
         )
-        extend_embeddings(dataset['index'], final_layer_output_dim)
-        save_mean(dataset['index'], tmpdir)
-        fill_missing(dataset, train_val_split_ratio, num_default_val_queries, is_debug)
-
-        # if False:
-        with warnings.catch_warnings():
-            warnings.simplefilter('ignore')
-            finetuned_model_path = finetune_layer(
-                dataset, batch_size, final_layer_output_dim, embedding_size, tmpdir
-            )
-
-        if 'NOW_CI_RUN' not in os.environ:
-            with yaspin_extended(
-                sigmap=sigmap, text="Create overview", color="green"
-            ) as spinner:
-                try:
-                    with warnings.catch_warnings():
-                        warnings.simplefilter("ignore")
-                        show_improvement(
-                            user_input.data,
-                            user_input.quality,
-                            dataset['val_query_image'],
-                            dataset['val_index_image'],
-                            dataset['val_query'],
-                            dataset['val_index'],
-                            final_layer_output_dim,
-                            embedding_size,
-                            finetuned_model_path,
-                            class_label='finetuner_label',
-                        )
-                except Exception as e:
-                    pass
-                spinner.ok('🖼')
-            print(
-                f'before-after comparison result is saved in the current working directory as image'
-            )
-        executor_name = push_to_hub(tmpdir)
-    else:
-        embedding_size = int(final_layer_output_dim / 2)
-        executor_name = None
-    # executor_name = 'FineTunedLinearHeadEncoder:93ea59dbd1ee3fe0bdc44252c6e86a87/
-    # linear_head_encoder_2022-02-20_20-35-15'
-    # print('###executor_name', executor_name)
-    # executor_name = 'FineTunedLinearHeadEncoder:93ea59dbd1ee3fe0bdc44252c6e86a87/
-    # deleteme_2022-02-06_13-20-37'
-    (
-        gateway_host,
-        gateway_port,
-        gateway_host_internal,
-        gateway_port_internal,
-    ) = deploy_flow(
-        executor_name=executor_name,
-        output_modality=user_input.output_modality,
-        index=dataset['index'],
-        vision_model=user_input.model_variant,
-        final_layer_output_dim=final_layer_output_dim,
-        embedding_size=embedding_size,
-        tmpdir=tmpdir,
-        finetuning=finetuning,
-        kubectl_path=kubectl_path,
-        deployment_type=user_input.deployment_type,
-    )
     return gateway_host, gateway_port, gateway_host_internal, gateway_port_internal
 
 
-def parse_user_input(quality, is_debug):
-    if is_debug:
-        train_val_split_ratio = 0.5
-        batch_size = 10
-    else:
-        batch_size = 128
-        train_val_split_ratio = 0.9
-    num_default_val_queries = 10
+def write_env_file(env_file, config):
+    config_string = '\n'.join([f'{key}={value}' for key, value in config.items()])
+    with open(env_file, 'w+') as fp:
+        fp.write(config_string)
 
-    if quality == 'ViT-L14':
-        final_layer_output_dim = 768 * 2
-    else:
-        final_layer_output_dim = 512 * 2
-    embedding_size = 128
 
-    return (
-        final_layer_output_dim,
-        embedding_size,
-        batch_size,
-        train_val_split_ratio,
-        num_default_val_queries,
-    )
+def get_custom_env_file(
+    user_input: UserInput,
+    finetune_settings: FinetuneSettings,
+    encoder_uses: str,
+    artifact: str,
+):
+    indexer_name = f'jinahub+docker://DocarrayIndexer'
+    encoder_config = get_encoder_config(encoder_uses, artifact)
+    linear_head_name = f'jinahub+docker://{finetune_settings.finetuned_model_name}'
+
+    if finetune_settings.bi_modal:
+        pre_trained_embedding_size = finetune_settings.pre_trained_embedding_size * 2
+    else:
+        pre_trained_embedding_size = finetune_settings.pre_trained_embedding_size
+    config = {
+        'ENCODER_NAME': encoder_config.uses,
+        'FINETUNE_LAYER_SIZE': finetune_settings.finetune_layer_size,
+        'PRE_TRAINED_EMBEDDINGS_SIZE': pre_trained_embedding_size,
+        'INDEXER_NAME': indexer_name,
+    }
+    if encoder_config.uses_with.get('pretrained_model_name_or_path'):
+        config['CLIP_MODEL_NAME'] = encoder_config.uses_with[
+            "pretrained_model_name_or_path"
+        ]
+    if finetune_settings.perform_finetuning:
+        config['LINEAR_HEAD_NAME'] = linear_head_name
+
+    return config
+
+
+def get_flow_yaml_name(app: str, finetuning: bool) -> str:
+    options = {
+        Apps.TEXT_TO_IMAGE: {False: 'flow-clip.yml', True: 'ft-flow-clip.yml'},
+        Apps.IMAGE_TO_IMAGE: {False: 'flow-clip.yml', True: 'ft-flow-clip.yml'},
+        Apps.IMAGE_TO_TEXT: {False: 'flow-clip.yml'},
+        Apps.MUSIC_TO_MUSIC: {True: 'ft-flow-music.yml'},
+    }
+    return options[app][finetuning]
