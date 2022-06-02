@@ -88,3 +88,5 @@ AVAILABLE_DATASET = {
 
 
 JC_SECRET = '~/.cache/jina-now/wolf.json'
+
+SURVEY_LINK = 'https://10sw1tcpld4.typeform.com/to/VTAyYRpR?utm_source=cli'
