@@ -252,7 +252,8 @@ def deploy_flow(
                 print(traceback.format_exc())
             sleep(1)
 
-    client.post(
+    # TODO: Check response
+    response = client.post(
         '/index',
         request_size=request_size,
         inputs=tqdm(index),

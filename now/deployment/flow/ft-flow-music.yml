@@ -6,6 +6,8 @@ with:
 executors:
   - name: encoder_music
     uses: ${{ ENV.ENCODER_NAME }}
+    uses_with:
+      hop_size_in_sec: 2
     resources:
       memory: 8G
     env:

@@ -1,4 +1,5 @@
 import base64
+import io
 import os
 from copy import deepcopy
 from urllib.request import urlopen
@@ -133,7 +134,6 @@ def deploy_streamlit():
         if PORT:
             data['port'] = PORT
         response = requests.post(URL_HOST, json=data)
-        print(response, URL_HOST)
         return DocumentArray.from_json(response.content)
 
     def search_by_image(document, limit=TOP_K) -> DocumentArray:
@@ -170,6 +170,7 @@ def deploy_streamlit():
         if PORT:
             data['port'] = PORT
         response = requests.post(URL_HOST, json=data)
+        print(f"got response {len(DocumentArray.from_json(response.content))}")
         return DocumentArray.from_json(response.content)
 
     def convert_file_to_document(query):
@@ -229,7 +230,6 @@ def deploy_streamlit():
         query = st.text_input("", key="text_search_box")
         if query:
             st.session_state.matches = search_by_t(search_text=query)
-            print(st.session_state.matches)
         if st.button("Search", key="text_search"):
             st.session_state.matches = search_by_t(search_text=query)
         if da_txt is not None:
@@ -279,7 +279,6 @@ def deploy_streamlit():
             st.session_state.matches = search_by_audio(document=doc)
 
     if st.session_state.matches:
-        print(st.session_state.matches)
         matches = deepcopy(st.session_state.matches)
         st.header('Search results')
         # Results area
@@ -301,28 +300,15 @@ def deploy_streamlit():
             if OUTPUT_MODALITY == 'text':
                 display_text = profanity.censor(match.text).replace('\n', ' ')
                 body = f"<!DOCTYPE html><html><body><blockquote>{display_text}</blockquote>"
-                if match.tags.get('additional_info'):
-                    additional_info = match.tags.get('additional_info')
-                    if type(additional_info) == str:
-                        additional_info_text = additional_info
-                    elif type(additional_info) == list:
-                        if len(additional_info) == 1:
-                            # assumes just one line containing information on text name and creator, etc.
-                            additional_info_text = additional_info
-                        elif len(additional_info) == 2:
-                            # assumes first element is text name and second element is creator name
-                            additional_info_text = (
-                                f"<em>{additional_info[0]}</em> "
-                                f"<small>by {additional_info[1]}</small>"
-                            )
-                        else:
-                            additional_info_text = " ".join(additional_info)
-                    body += f"<figcaption>{additional_info_text}</figcaption>"
+                body = maybe_add_additional_info(body, match)
                 body += "</body></html>"
                 c.markdown(
                     body=body,
                     unsafe_allow_html=True,
                 )
+            elif OUTPUT_MODALITY == 'music':
+                print(f'Rendering audio results: {match}')
+                c.audio(io.BytesIO(match.blob))
             elif match.uri is not None:
                 if match.blob != b'':
                     match.convert_blob_to_datauri()
@@ -337,6 +323,27 @@ def deploy_streamlit():
             key='slider',
             on_change=update_conf,
         )
+
+
+def maybe_add_additional_info(body, match):
+    if match.tags.get('additional_info'):
+        additional_info = match.tags.get('additional_info')
+        if type(additional_info) == str:
+            additional_info_text = additional_info
+        elif type(additional_info) == list:
+            if len(additional_info) == 1:
+                # assumes just one line containing information on text name and creator, etc.
+                additional_info_text = additional_info
+            elif len(additional_info) == 2:
+                # assumes first element is text name and second element is creator name
+                additional_info_text = (
+                    f"<em>{additional_info[0]}</em> "
+                    f"<small>by {additional_info[1]}</small>"
+                )
+            else:
+                additional_info_text = " ".join(additional_info)
+        body += f"<figcaption>{additional_info_text}</figcaption>"
+    return body
 
 
 def update_conf():
