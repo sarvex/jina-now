@@ -22,6 +22,8 @@ def test_dataset_is_available(
 ):
     if modality == Modalities.MUSIC:  # music has no quality config
         quality = None
+        # TODO: Remove skip on music release
+        pytest.skip('music case not fully implemented yet')
     url = get_dataset_url(ds_name, quality, modality)
 
     assert requests.head(url).status_code == 200
