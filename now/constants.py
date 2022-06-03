@@ -52,7 +52,7 @@ class DemoDatasets:
     DEEP_FASHION = 'deepfashion'
     NIH_CHEST_XRAYS = 'nih-chest-xrays'
     GEOLOCATION_GEOGUESSR = 'geolocation-geoguessr'
-    MUSIC_GENRES_MID = 'music-genres-mid'
+    MUSIC_GENRES_MID = 'music-genres-mid-mini'
     MUSIC_GENRES_LARGE = 'music-genres-large'
     MUSIC_GENRES_EXTRA_LARGE = 'music-genres-xl'
     MUSIC_MID = 'music-mid'
