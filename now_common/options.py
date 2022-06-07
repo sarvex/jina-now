@@ -1,5 +1,7 @@
 from now.constants import Qualities
 
+# make sure for all options to have `name` and `description` attribute as this
+# will also show up on the terminal as arguments to Jina NOW CLI
 QUALITY_CLIP = {
     'name': 'quality',
     'choices': [

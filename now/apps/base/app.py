@@ -110,6 +110,9 @@ class JinaNOWApp:
         return []
 
     def set_app_parser(self, parser, formatter):
+        """
+        This parser reads from the `options` property
+        """
         # Read all the options from the JinaNOWApp and parse it to arguments
         for option in self.options:
             parser.add_argument(
