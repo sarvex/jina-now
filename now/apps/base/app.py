@@ -109,11 +109,11 @@ class JinaNOWApp:
         """
         return []
 
-    def set_app_parser(self, parser, formatter):
+    def set_app_parser(self, parser, formatter) -> None:
         """
-        This parser reads from the `options` property
+        This parser reads from the `options` property and parses it
+        to form the command line arguments for app
         """
-        # Read all the options from the JinaNOWApp and parse it to arguments
         for option in self.options:
             parser.add_argument(
                 f'--{option["name"]}',

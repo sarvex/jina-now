@@ -3,7 +3,9 @@ import argparse
 from jina.parsers.helper import _ColoredHelpFormatter
 
 from now import __version__
-from now.apps import ImageToImage, ImageToText, TextToImage
+from now.apps.image_to_image.app import ImageToImage
+from now.apps.image_to_text.app import ImageToText
+from now.apps.text_to_image.app import TextToImage
 from now.constants import Apps
 
 
