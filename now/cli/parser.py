@@ -3,6 +3,7 @@ import argparse
 from jina.parsers.helper import _ColoredHelpFormatter
 
 from now import __version__
+from now.apps import ImageToImage, ImageToText, TextToImage
 from now.constants import Apps
 
 
@@ -54,30 +55,6 @@ def set_help_parser(parser=None):
     return parser
 
 
-def set_img2txt_parser(parser):
-    parser.add_argument(
-        '--quality',
-        help='Choose the quality of the model that you would like to finetune',
-        type=str,
-    )
-
-
-def set_txt2img_parser(parser):
-    parser.add_argument(
-        '--quality',
-        help='Choose the quality of the model that you would like to finetune',
-        type=str,
-    )
-
-
-def set_img2img_parser(parser):
-    parser.add_argument(
-        '--quality',
-        help='Choose the quality of the model that you would like to finetune',
-        type=str,
-    )
-
-
 def set_default_start_args(parser):
     parser.add_argument(
         '--app',
@@ -124,34 +101,9 @@ def set_start_parser(parser=None):
     )
 
     # Set parser args for the Image to Image app
-    set_img2img_parser(
-        sub_parser.add_parser(
-            Apps.IMAGE_TO_IMAGE,
-            help='Image To Image App.',
-            description='Create an `Image To Image` app.',
-            formatter_class=_chf,
-        )
-    )
-
-    # Set parser args for the Image to Image app
-    set_img2txt_parser(
-        sub_parser.add_parser(
-            Apps.IMAGE_TO_TEXT,
-            help='Image to Text App.',
-            description='Create an `Image To Text` app.',
-            formatter_class=_chf,
-        )
-    )
-
-    # Set parser args for the Image to Image app
-    set_txt2img_parser(
-        sub_parser.add_parser(
-            Apps.TEXT_TO_IMAGE,
-            help='Text To Image App.',
-            description='Create `Text To Image` app.',
-            formatter_class=_chf,
-        )
-    )
+    ImageToImage().set_app_parser(sub_parser, formatter=_chf)
+    ImageToText().set_app_parser(sub_parser, formatter=_chf)
+    TextToImage().set_app_parser(sub_parser, formatter=_chf)
 
 
 def set_stop_parser(sp):

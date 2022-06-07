@@ -109,6 +109,15 @@ class JinaNOWApp:
         """
         return []
 
+    def set_app_parser(self, parser, formatter):
+        # Read all the options from the JinaNOWApp and parse it to arguments
+        for option in self.options:
+            parser.add_argument(
+                f'--{option["name"]}',
+                help=option['description'],
+                type=str,
+            )
+
     def check_requirements(self) -> bool:
         """
         Returns true if all requirements on the system are satisfied. Else False.

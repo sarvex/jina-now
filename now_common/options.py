@@ -12,6 +12,7 @@ QUALITY_CLIP = {
     ],
     'prompt_message': 'What quality do you expect?',
     'prompt_type': 'list',
+    'description': 'Choose the quality of the model that you would like to finetune',
 }
 
 # DATASET_DESCRIPTION = [
