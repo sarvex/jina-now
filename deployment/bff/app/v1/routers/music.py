@@ -53,6 +53,4 @@ def search(data: NowMusicSearchRequestModel):
     else:
         c = Client(host=data.host, port=data.port)
     docs = c.post('/search', query_doc, parameters={"limit": data.limit})
-    print(docs[0])
-    print(docs[0].matches[0])
-    return docs[0].matches.to_dict()
+    return docs.to_dict()

@@ -41,7 +41,7 @@ spec:
       containers:
         - name: now-bff
 #          image: jinaai/now-bff:{docker_bff_playground_tag}
-          image: slettner/now-bff:local-4
+          image: slettner/now-bff:local-5
           imagePullPolicy: Always
           command: ['uvicorn']
           args:  ["deployment.bff.app.app:application", "--host", "0.0.0.0", "--port", "80", "--loop", "uvloop"]

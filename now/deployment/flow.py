@@ -41,7 +41,7 @@ def get_encoder_config(user_input: UserInput) -> _ExecutorConfig:
     elif user_input.output_modality == Modalities.MUSIC:
         return _ExecutorConfig(
             name='openl3clip',
-            uses='jinahub+docker://BiModalMusicTextEncoder:fcb025de625784073c4fcf5eb6ba2d50/v0.0.8',
+            uses='jinahub+docker://BiModalMusicTextEncoder:fcb025de625784073c4fcf5eb6ba2d50/v0.0.11',
             uses_with={},
         )
 

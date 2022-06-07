@@ -60,8 +60,10 @@ class FineTunedLinearHeadEncoder(Executor):
 
     @requests
     def encode(self, docs: Optional[DocumentArray], **kwargs):
+        print("-------- New Request --------")
         content_attr = FineTunedLinearHeadEncoder._preserve_content_attribute(docs)
         for d in docs:
+            print(d)
             if (
                 self.bi_model
                 and d.embedding.shape[0] != self.pre_trained_embedding_size
