@@ -18,10 +18,10 @@ def set_base_parser():
         'Help': ('💬', 'https://slack.jina.ai'),
         'Hiring!': ('🙌', 'https://career.jina.ai'),
     }
-    url_str = '\n'.join(f'- {v[0]:<10} {k:10.10}\t{v[1]}' for k, v in urls.items())
+    url_str = '\n'.join(f'- {v[0]:<15} {k:10.10}\t{v[1]}' for k, v in urls.items())
 
     parser = argparse.ArgumentParser(
-        epilog=f'Jina NOW - get your neural search case up in minutes. \n\n {url_str}',
+        epilog=f'Jina NOW - get your neural search case up in minutes. \n\n{url_str}',
         formatter_class=_chf,
         description='Command Line Interface of `%(prog)s`',
     )
