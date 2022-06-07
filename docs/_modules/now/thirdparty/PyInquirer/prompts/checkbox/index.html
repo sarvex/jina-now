@@ -5,10 +5,10 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../../../../genindex/" /><link rel="search" title="Search" href="../../../../../../search/" />
         <link rel="canonical" href="https://now.jina.ai/_modules/now/thirdparty/PyInquirer/prompts/checkbox.html" />
 
-    <link rel="shortcut icon" href="../../../../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.04.07"/>
-        <title>now.thirdparty.PyInquirer.prompts.checkbox - NOW 0.0.10 documentation</title>
+    <link rel="shortcut icon" href="../../../../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.06.04.1"/>
+        <title>now.thirdparty.PyInquirer.prompts.checkbox - NOW 0.0.11 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../../../_static/styles/furo.css?digest=68f4518137b9aefe99b631505a2064c3c42c9852" />
+    <link rel="stylesheet" type="text/css" href="../../../../../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="../../../../../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../../../../../_static/tabs.css" />
     <link rel="stylesheet" type="text/css" href="../../../../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../../../../">
-                <div class="brand">NOW 0.0.10 documentation</div>
+                <div class="brand">NOW 0.0.11 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -272,9 +272,9 @@
                 <article role="main">
                     <h1>Source code for now.thirdparty.PyInquirer.prompts.checkbox</h1><div class="highlight"><pre>
 <span></span><span class="c1"># -*- coding: utf-8 -*-</span>
-<span class="sd">"""</span>
+<span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">`checkbox` type question</span>
-<span class="sd">"""</span>
+<span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">from</span> <span class="nn">prompt_toolkit.application</span> <span class="kn">import</span> <span class="n">Application</span>
 <span class="kn">from</span> <span class="nn">prompt_toolkit.key_binding</span> <span class="kn">import</span> <span class="n">KeyBindings</span>
 <span class="kn">from</span> <span class="nn">prompt_toolkit.filters</span> <span class="kn">import</span> <span class="n">IsDone</span>
@@ -297,9 +297,9 @@
 <div class="viewcode-block" id="InquirerControl"><a class="viewcode-back" href="../../../../../../api/now.thirdparty.PyInquirer.prompts.checkbox/#now.thirdparty.PyInquirer.prompts.checkbox.InquirerControl">[docs]</a><span class="k">class</span> <span class="nc">InquirerControl</span><span class="p">(</span><span class="n">FormattedTextControl</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">choices</span><span class="p">,</span> <span class="n">pointer_index</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pointer_index</span> <span class="o">=</span> <span class="n">pointer_index</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">pointer_sign</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"pointer_sign"</span><span class="p">,</span> <span class="s2">"</span><span class="se">\u276f</span><span class="s2">"</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">selected_sign</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"selected_sign"</span><span class="p">,</span> <span class="s2">"</span><span class="se">\u25cf</span><span class="s2">"</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">unselected_sign</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"unselected_sign"</span><span class="p">,</span> <span class="s2">"</span><span class="se">\u25cb</span><span class="s2">"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pointer_sign</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;pointer_sign&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\u276f</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">selected_sign</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;selected_sign&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\u25cf</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unselected_sign</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;unselected_sign&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\u25cb</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">selected_options</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># list of names</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">answered</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">answered_correctly</span> <span class="o">=</span> <span class="kc">True</span>
@@ -315,11 +315,11 @@
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">Separator</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">choices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">name</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="s1">'name'</span><span class="p">]</span>
-                <span class="n">value</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'value'</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-                <span class="n">disabled</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'disabled'</span><span class="p">)</span>
-                <span class="n">description</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'description'</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'checked'</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">disabled</span><span class="p">:</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;value&#39;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+                <span class="n">disabled</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;disabled&#39;</span><span class="p">)</span>
+                <span class="n">description</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;checked&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">disabled</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">selected_options</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">choices</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">disabled</span><span class="p">,</span> <span class="n">description</span><span class="p">))</span>
                 <span class="k">if</span> <span class="n">searching_first_choice</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">disabled</span><span class="p">:</span>  <span class="c1"># find the first (available) choice</span>
@@ -335,7 +335,7 @@
 
         <span class="k">def</span> <span class="nf">append</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">Separator</span><span class="p">):</span>
-                <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">'class:Separator'</span><span class="p">,</span> <span class="s1">'  </span><span class="si">%s</span><span class="se">\n</span><span class="s1">'</span> <span class="o">%</span> <span class="n">line</span><span class="p">))</span>
+                <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;class:Separator&#39;</span><span class="p">,</span> <span class="s1">&#39;  </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">line</span><span class="p">))</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">line_name</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                 <span class="n">line_value</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
@@ -351,26 +351,26 @@
                         <span class="bp">self</span><span class="o">.</span><span class="n">selected_options</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line_value</span><span class="p">)</span>
 
                 <span class="k">if</span> <span class="n">pointed_at</span><span class="p">:</span>
-                    <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">'class:pointer'</span><span class="p">,</span> <span class="s1">' </span><span class="si">{}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pointer_sign</span><span class="p">),</span> <span class="n">select_item</span><span class="p">))</span>  <span class="c1"># ' &gt;'</span>
+                    <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;class:pointer&#39;</span><span class="p">,</span> <span class="s1">&#39; </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pointer_sign</span><span class="p">),</span> <span class="n">select_item</span><span class="p">))</span>  <span class="c1"># &#39; &gt;&#39;</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">''</span><span class="p">,</span> <span class="s1">'  '</span><span class="p">,</span> <span class="n">select_item</span><span class="p">))</span>
-                <span class="c1"># 'o ' - FISHEYE</span>
+                    <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;  &#39;</span><span class="p">,</span> <span class="n">select_item</span><span class="p">))</span>
+                <span class="c1"># &#39;o &#39; - FISHEYE</span>
                 <span class="k">if</span> <span class="n">choice</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span>  <span class="c1"># disabled</span>
-                    <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">''</span><span class="p">,</span> <span class="s1">'- </span><span class="si">%s</span><span class="s1"> (</span><span class="si">%s</span><span class="s1">)'</span> <span class="o">%</span> <span class="p">(</span><span class="n">choice</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">choice</span><span class="p">[</span><span class="mi">2</span><span class="p">])))</span>
+                    <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;- </span><span class="si">%s</span><span class="s1"> (</span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">choice</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">choice</span><span class="p">[</span><span class="mi">2</span><span class="p">])))</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">selected</span><span class="p">:</span>
-                        <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">'class:selected'</span><span class="p">,</span> <span class="s1">'</span><span class="si">{}</span><span class="s1"> '</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">selected_sign</span><span class="p">),</span> <span class="n">select_item</span><span class="p">))</span>
+                        <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;class:selected&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">selected_sign</span><span class="p">),</span> <span class="n">select_item</span><span class="p">))</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">''</span><span class="p">,</span> <span class="s1">'</span><span class="si">{}</span><span class="s1"> '</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unselected_sign</span><span class="p">),</span> <span class="n">select_item</span><span class="p">))</span>
+                        <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unselected_sign</span><span class="p">),</span> <span class="n">select_item</span><span class="p">))</span>
 
                     <span class="k">if</span> <span class="n">pointed_at</span><span class="p">:</span>
-                        <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">'[SetCursorPosition]'</span><span class="p">,</span> <span class="s1">''</span><span class="p">))</span>
+                        <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;[SetCursorPosition]&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span>
 
                     <span class="k">if</span> <span class="n">choice</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span>  <span class="c1"># description</span>
-                        <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">''</span><span class="p">,</span> <span class="s2">"</span><span class="si">%s</span><span class="s2"> - </span><span class="si">%s</span><span class="s2">"</span> <span class="o">%</span> <span class="p">(</span><span class="n">line_name</span><span class="p">,</span> <span class="n">choice</span><span class="p">[</span><span class="mi">3</span><span class="p">])))</span>
+                        <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> - </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">line_name</span><span class="p">,</span> <span class="n">choice</span><span class="p">[</span><span class="mi">3</span><span class="p">])))</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">''</span><span class="p">,</span> <span class="n">line_name</span><span class="p">,</span> <span class="n">select_item</span><span class="p">))</span>
-                <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">''</span><span class="p">,</span> <span class="s1">'</span><span class="se">\n</span><span class="s1">'</span><span class="p">))</span>
+                        <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">line_name</span><span class="p">,</span> <span class="n">select_item</span><span class="p">))</span>
+                <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">))</span>
 
         <span class="c1"># prepare the select choices</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">choice</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">choices</span><span class="p">):</span>
@@ -392,48 +392,48 @@
     <span class="c1"># TODO add bottom-bar (Move up and down to reveal more choices)</span>
     <span class="c1"># TODO extract common parts for list, checkbox, rawlist, expand</span>
     <span class="c1"># TODO validate</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="s1">'choices'</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">PromptParameterException</span><span class="p">(</span><span class="s1">'choices'</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="s1">&#39;choices&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">PromptParameterException</span><span class="p">(</span><span class="s1">&#39;choices&#39;</span><span class="p">)</span>
     <span class="c1"># this does not implement default, use checked...</span>
-    <span class="k">if</span> <span class="s1">'default'</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">'Checkbox does not implement </span><span class="se">\'</span><span class="s1">default</span><span class="se">\'</span><span class="s1"> '</span>
-                         <span class="s1">'use </span><span class="se">\'</span><span class="s1">checked</span><span class="se">\'</span><span class="s1">:True</span><span class="se">\'</span><span class="s1"> in choice!'</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s1">&#39;default&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Checkbox does not implement </span><span class="se">\&#39;</span><span class="s1">default</span><span class="se">\&#39;</span><span class="s1"> &#39;</span>
+                         <span class="s1">&#39;use </span><span class="se">\&#39;</span><span class="s1">checked</span><span class="se">\&#39;</span><span class="s1">:True</span><span class="se">\&#39;</span><span class="s1"> in choice!&#39;</span><span class="p">)</span>
 
-    <span class="n">choices</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">'choices'</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">choices</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;choices&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="n">validator</span> <span class="o">=</span> <span class="n">setup_simple_validator</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="c1"># TODO style defaults on detail level</span>
-    <span class="n">style</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">'style'</span><span class="p">,</span> <span class="n">default_style</span><span class="p">)</span>
+    <span class="n">style</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;style&#39;</span><span class="p">,</span> <span class="n">default_style</span><span class="p">)</span>
 
-    <span class="n">pointer_index</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">'pointer_index'</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">pointer_index</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;pointer_index&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
     <span class="n">additional_parameters</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-    <span class="n">additional_parameters</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">"pointer_sign"</span><span class="p">:</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">'pointer_sign'</span><span class="p">,</span> <span class="s1">'</span><span class="se">\u276f</span><span class="s1">'</span><span class="p">)})</span>
-    <span class="n">additional_parameters</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">"selected_sign"</span><span class="p">:</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">'selected_sign'</span><span class="p">,</span> <span class="s1">'</span><span class="se">\u25cf</span><span class="s1">'</span><span class="p">)})</span>
-    <span class="n">additional_parameters</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">"unselected_sign"</span><span class="p">:</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">'unselected_sign'</span><span class="p">,</span> <span class="s1">'</span><span class="se">\u25cb</span><span class="s1">'</span><span class="p">)})</span>
+    <span class="n">additional_parameters</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;pointer_sign&quot;</span><span class="p">:</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;pointer_sign&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\u276f</span><span class="s1">&#39;</span><span class="p">)})</span>
+    <span class="n">additional_parameters</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;selected_sign&quot;</span><span class="p">:</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;selected_sign&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\u25cf</span><span class="s1">&#39;</span><span class="p">)})</span>
+    <span class="n">additional_parameters</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;unselected_sign&quot;</span><span class="p">:</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;unselected_sign&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\u25cb</span><span class="s1">&#39;</span><span class="p">)})</span>
 
     <span class="n">ic</span> <span class="o">=</span> <span class="n">InquirerControl</span><span class="p">(</span><span class="n">choices</span><span class="p">,</span> <span class="n">pointer_index</span><span class="p">,</span> <span class="o">**</span><span class="n">additional_parameters</span><span class="p">)</span>
-    <span class="n">qmark</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">'qmark'</span><span class="p">,</span> <span class="s1">'?'</span><span class="p">)</span>
+    <span class="n">qmark</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;qmark&#39;</span><span class="p">,</span> <span class="s1">&#39;?&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">get_prompt_tokens</span><span class="p">():</span>
         <span class="n">tokens</span> <span class="o">=</span> <span class="p">[]</span>
 
-        <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">'class:questionmark'</span><span class="p">,</span> <span class="n">qmark</span><span class="p">))</span>
-        <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">'class:question'</span><span class="p">,</span> <span class="s1">' </span><span class="si">%s</span><span class="s1"> '</span> <span class="o">%</span> <span class="n">message</span><span class="p">))</span>
+        <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;class:questionmark&#39;</span><span class="p">,</span> <span class="n">qmark</span><span class="p">))</span>
+        <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;class:question&#39;</span><span class="p">,</span> <span class="s1">&#39; </span><span class="si">%s</span><span class="s1"> &#39;</span> <span class="o">%</span> <span class="n">message</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">ic</span><span class="o">.</span><span class="n">answered</span><span class="p">:</span>
             <span class="n">nbr_selected</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ic</span><span class="o">.</span><span class="n">selected_options</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">nbr_selected</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">'class:answer'</span><span class="p">,</span> <span class="s1">' done'</span><span class="p">))</span>
+                <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;class:answer&#39;</span><span class="p">,</span> <span class="s1">&#39; done&#39;</span><span class="p">))</span>
             <span class="k">elif</span> <span class="n">nbr_selected</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">'class:Answer'</span><span class="p">,</span> <span class="s1">' [</span><span class="si">%s</span><span class="s1">]'</span> <span class="o">%</span> <span class="n">ic</span><span class="o">.</span><span class="n">selected_options</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+                <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;class:Answer&#39;</span><span class="p">,</span> <span class="s1">&#39; [</span><span class="si">%s</span><span class="s1">]&#39;</span> <span class="o">%</span> <span class="n">ic</span><span class="o">.</span><span class="n">selected_options</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">'class:answer'</span><span class="p">,</span>
-                               <span class="s1">' done (</span><span class="si">%d</span><span class="s1"> selections)'</span> <span class="o">%</span> <span class="n">nbr_selected</span><span class="p">))</span>
+                <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;class:answer&#39;</span><span class="p">,</span>
+                               <span class="s1">&#39; done (</span><span class="si">%d</span><span class="s1"> selections)&#39;</span> <span class="o">%</span> <span class="n">nbr_selected</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">'class:instruction'</span><span class="p">,</span>
-                           <span class="s1">' (&lt;up&gt;, &lt;down&gt; to move, &lt;space&gt; to select, &lt;a&gt; '</span>
-                           <span class="s1">'to toggle, &lt;i&gt; to invert)'</span><span class="p">))</span>
+            <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;class:instruction&#39;</span><span class="p">,</span>
+                           <span class="s1">&#39; (&lt;up&gt;, &lt;down&gt; to move, &lt;space&gt; to select, &lt;a&gt; &#39;</span>
+                           <span class="s1">&#39;to toggle, &lt;i&gt; to invert)&#39;</span><span class="p">))</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">ic</span><span class="o">.</span><span class="n">answered_correctly</span><span class="p">:</span>
-                <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">Token</span><span class="o">.</span><span class="n">Error</span><span class="p">,</span> <span class="s1">' Error: </span><span class="si">%s</span><span class="s1">'</span> <span class="o">%</span> <span class="n">ic</span><span class="o">.</span><span class="n">error_message</span><span class="p">))</span>
+                <span class="n">tokens</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">Token</span><span class="o">.</span><span class="n">Error</span><span class="p">,</span> <span class="s1">&#39; Error: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">ic</span><span class="o">.</span><span class="n">error_message</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">tokens</span>
 
     <span class="c1"># assemble layout</span>
@@ -456,13 +456,13 @@
     <span class="c1"># key bindings</span>
     <span class="n">kb</span> <span class="o">=</span> <span class="n">KeyBindings</span><span class="p">()</span>
 
-    <span class="nd">@kb</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">'c-q'</span><span class="p">,</span> <span class="n">eager</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="nd">@kb</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">'c-c'</span><span class="p">,</span> <span class="n">eager</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="nd">@kb</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;c-q&#39;</span><span class="p">,</span> <span class="n">eager</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="nd">@kb</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;c-c&#39;</span><span class="p">,</span> <span class="n">eager</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">event</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">KeyboardInterrupt</span><span class="p">()</span>
         <span class="c1"># event.app.exit(result=None)</span>
 
-    <span class="nd">@kb</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">' '</span><span class="p">,</span> <span class="n">eager</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="nd">@kb</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">eager</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">toggle</span><span class="p">(</span><span class="n">event</span><span class="p">):</span>
         <span class="n">pointed_choice</span> <span class="o">=</span> <span class="n">ic</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="n">ic</span><span class="o">.</span><span class="n">pointer_index</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># value</span>
         <span class="k">if</span> <span class="n">pointed_choice</span> <span class="ow">in</span> <span class="n">ic</span><span class="o">.</span><span class="n">selected_options</span><span class="p">:</span>
@@ -470,7 +470,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">ic</span><span class="o">.</span><span class="n">selected_options</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pointed_choice</span><span class="p">)</span>
 
-    <span class="nd">@kb</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">'i'</span><span class="p">,</span> <span class="n">eager</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="nd">@kb</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;i&#39;</span><span class="p">,</span> <span class="n">eager</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">invert</span><span class="p">(</span><span class="n">event</span><span class="p">):</span>
         <span class="n">inverted_selection</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">ic</span><span class="o">.</span><span class="n">choices</span> <span class="k">if</span>
                               <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">Separator</span><span class="p">)</span> <span class="ow">and</span>
@@ -478,7 +478,7 @@
                               <span class="ow">not</span> <span class="n">c</span><span class="p">[</span><span class="mi">2</span><span class="p">]]</span>
         <span class="n">ic</span><span class="o">.</span><span class="n">selected_options</span> <span class="o">=</span> <span class="n">inverted_selection</span>
 
-    <span class="nd">@kb</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">'a'</span><span class="p">,</span> <span class="n">eager</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="nd">@kb</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">eager</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">all</span><span class="p">(</span><span class="n">event</span><span class="p">):</span>
         <span class="n">all_selected</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># all choices have been selected</span>
         <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">ic</span><span class="o">.</span><span class="n">choices</span><span class="p">:</span>
@@ -489,7 +489,7 @@
         <span class="k">if</span> <span class="n">all_selected</span><span class="p">:</span>
             <span class="n">ic</span><span class="o">.</span><span class="n">selected_options</span> <span class="o">=</span> <span class="p">[]</span>
 
-    <span class="nd">@kb</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">'down'</span><span class="p">,</span> <span class="n">eager</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="nd">@kb</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;down&#39;</span><span class="p">,</span> <span class="n">eager</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">move_cursor_down</span><span class="p">(</span><span class="n">event</span><span class="p">):</span>
         <span class="k">def</span> <span class="nf">_next</span><span class="p">():</span>
             <span class="n">ic</span><span class="o">.</span><span class="n">pointer_index</span> <span class="o">=</span> <span class="p">((</span><span class="n">ic</span><span class="o">.</span><span class="n">pointer_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">ic</span><span class="o">.</span><span class="n">line_count</span><span class="p">)</span>
@@ -498,7 +498,7 @@
                 <span class="n">ic</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="n">ic</span><span class="o">.</span><span class="n">pointer_index</span><span class="p">][</span><span class="mi">2</span><span class="p">]:</span>
             <span class="n">_next</span><span class="p">()</span>
 
-    <span class="nd">@kb</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">'up'</span><span class="p">,</span> <span class="n">eager</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="nd">@kb</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;up&#39;</span><span class="p">,</span> <span class="n">eager</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">move_cursor_up</span><span class="p">(</span><span class="n">event</span><span class="p">):</span>
         <span class="k">def</span> <span class="nf">_prev</span><span class="p">():</span>
             <span class="n">ic</span><span class="o">.</span><span class="n">pointer_index</span> <span class="o">=</span> <span class="p">((</span><span class="n">ic</span><span class="o">.</span><span class="n">pointer_index</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">ic</span><span class="o">.</span><span class="n">line_count</span><span class="p">)</span>
@@ -507,7 +507,7 @@
                 <span class="n">ic</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="n">ic</span><span class="o">.</span><span class="n">pointer_index</span><span class="p">][</span><span class="mi">2</span><span class="p">]:</span>
             <span class="n">_prev</span><span class="p">()</span>
 
-    <span class="nd">@kb</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">'enter'</span><span class="p">,</span> <span class="n">eager</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="nd">@kb</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;enter&#39;</span><span class="p">,</span> <span class="n">eager</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">set_answer</span><span class="p">(</span><span class="n">event</span><span class="p">):</span>
         <span class="n">ic</span><span class="o">.</span><span class="n">answered</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="c1"># TODO use validator</span>
@@ -536,7 +536,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Jun 02, 2022.
+                            Last updated on Jun 07, 2022.
                         </div>
                     </div>
                     <div class="right-details">

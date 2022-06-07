@@ -10,7 +10,7 @@
   
 <meta property="og:url" content="https://now.jina.ai/index/" />
   
-<meta property="og:site_name" content="NOW 0.0.10 Documentation" />
+<meta property="og:site_name" content="NOW 0.0.11 Documentation" />
   
 <meta property="og:description" content="One line to host them all. Bootstrap your image search case in minutes. NOW gives the world access to neural image search in just one command execution. Main features ⛅ Cloud: We take care of the deployment and maintenance, 🐥 Easy: Minimal effort required to set up your search case, 🐎 Fast: Set u..." />
   
@@ -38,10 +38,10 @@
     <link rel="index" title="Index" href="genindex/" /><link rel="search" title="Search" href="search/" /><link rel="next" title="FAQ" href="user-guides/faq/" />
         <link rel="canonical" href="https://now.jina.ai/index.html" />
 
-    <link rel="shortcut icon" href="_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.04.07"/>
-        <title>NOW 0.0.10 documentation</title>
+    <link rel="shortcut icon" href="_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.06.04.1"/>
+        <title>NOW 0.0.11 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=68f4518137b9aefe99b631505a2064c3c42c9852" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="_static/tabs.css" />
     <link rel="stylesheet" type="text/css" href="_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
@@ -172,7 +172,7 @@
         </div>
         <div class="header-center">
             <a href="#">
-                <div class="brand">NOW 0.0.10 documentation</div>
+                <div class="brand">NOW 0.0.11 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -307,7 +307,7 @@
 <h1>Welcome to Jina NOW!<a class="headerlink" href="#welcome-to-jina-now" title="Permalink to this headline">#</a></h1>
 <p>One line to host them all. Bootstrap your image search case in minutes.</p>
 <p align="center">
-<img alt="Jina NOW logo: The data structure for unstructured data" src="https://user-images.githubusercontent.com/11627845/164569398-5ef22a41-e2e1-438a-88a5-2ac43ad9426d.gif" width="600px"/>
+<img src="https://user-images.githubusercontent.com/11627845/164569398-5ef22a41-e2e1-438a-88a5-2ac43ad9426d.gif" alt="Jina NOW logo: The data structure for unstructured data" width="600px">
 <p>NOW gives the world access to neural image search in just one command execution.
 Main features</p>
 <ul class="simple">
@@ -343,32 +343,32 @@ In a new conda environment first execute <code class="docutils literal notransla
 </pre></div>
 </div>
 <p>First, you will be prompted to choose an app. As for now, we support images or text searches. But in the future, we will add many more options here.</p>
-<img alt="Screenshot 2022-05-31 at 01 08 25" src="https://user-images.githubusercontent.com/11627845/171066876-b01bb76d-80f0-4f7c-8e5b-f329ef59e147.png" width="613"/>
+<img width="613" alt="Screenshot 2022-05-31 at 01 08 25" src="https://user-images.githubusercontent.com/11627845/171066876-b01bb76d-80f0-4f7c-8e5b-f329ef59e147.png">
 <p>In the next step, you get asked to select the dataset for your search app. You could either choose one of our existing datasets or select <code class="docutils literal notranslate"><span class="pre">custom</span></code> to index your own data.</p>
-<img alt="question-ds" src="https://user-images.githubusercontent.com/11627845/170263852-46776391-a906-417c-8528-e1fb7058c33a.png" width="422"/>
+<img width="422" alt="question-ds" src="https://user-images.githubusercontent.com/11627845/170263852-46776391-a906-417c-8528-e1fb7058c33a.png">
 <p>When choosing <code class="docutils literal notranslate"><span class="pre">custom</span></code>, you can decide in what format you provide your data. The recommended way, is to push a document array described <a class="reference external" href="https://docarray.jina.ai/fundamentals/documentarray/serialization/#from-to-cloud">here</a>.
 Alternatively, you can specify a URL where a document array can be downloaded from.
 Also, it is possible to provide a local folder where the Images are located. In case of text search it would be a local text file.</p>
-<img alt="question-custom" src="https://user-images.githubusercontent.com/11627845/170256031-b868058b-dec6-46aa-b2cf-afac4b33d996.png" width="724"/>
+<img width="724" alt="question-custom" src="https://user-images.githubusercontent.com/11627845/170256031-b868058b-dec6-46aa-b2cf-afac4b33d996.png">
 <p>If you chose <code class="docutils literal notranslate"><span class="pre">docarray.pull</span></code>, you will be asked to insert your docarray id.
 Likewise, if you chose docarray URL, you will be prompted to enter the URL.
 In case you selected local path, <code class="docutils literal notranslate"><span class="pre">jina-now</span></code> will ask you to enter the local path of the data folder as shown bellow.</p>
-<img alt="question-local-path" src="https://user-images.githubusercontent.com/11627845/170256044-67e82e86-6439-4a3e-98f1-dbdf1940de67.png" width="506"/>
+<img width="506" alt="question-local-path" src="https://user-images.githubusercontent.com/11627845/170256044-67e82e86-6439-4a3e-98f1-dbdf1940de67.png">
 <p>The search app can be deployed in different qualities. Have in mind that a better quality leads to a larger ai model being deployed and therefore inference will be a bit slower.</p>
-<img alt="question-quality" src="https://user-images.githubusercontent.com/11627845/170256049-18add461-f666-48f4-9dfe-52be9404a73d.png" width="497"/>
+<img width="497" alt="question-quality" src="https://user-images.githubusercontent.com/11627845/170256049-18add461-f666-48f4-9dfe-52be9404a73d.png">
 <p>Currently, we provide two deployment options. We recommend using the cloud deployment. This will run your search app on our servers.
 Alternatively, you can select the local deployment option.</p>
-<img alt="question-deployment" src="https://user-images.githubusercontent.com/11627845/170256038-8c44a5b8-985a-4fe7-af5d-16df0244f4bb.png" width="547"/>
+<img width="547" alt="question-deployment" src="https://user-images.githubusercontent.com/11627845/170256038-8c44a5b8-985a-4fe7-af5d-16df0244f4bb.png">
 <p>In case of local deployment, you will be asked where you want to deploy it. Jina NOW reads your local .kube/config and lists all kubernetes clusters you have access to.
 If you don’t want to use an existing cluster, you can create a new one locally.</p>
-<img alt="question-cluster" src="https://user-images.githubusercontent.com/11627845/170256027-99798fae-3ec4-42dc-8737-843f4a23f941.png" width="643"/>
+<img width="643" alt="question-cluster" src="https://user-images.githubusercontent.com/11627845/170256027-99798fae-3ec4-42dc-8737-843f4a23f941.png">
 <p>After the program execution is finished, two links will be shown to you. The first one brings you to a playground where you can run example queries and experiment with the search case.
 The second URL leads you to the swagger UI which is useful for Frontend integration.</p>
-<img alt="Screenshot 2022-05-26 at 16 34 56" src="https://user-images.githubusercontent.com/11627845/170511632-c741a418-1246-4c23-aadd-cfd74d783f6b.png" width="709"/>
+<img width="709" alt="Screenshot 2022-05-26 at 16 34 56" src="https://user-images.githubusercontent.com/11627845/170511632-c741a418-1246-4c23-aadd-cfd74d783f6b.png">
 <p>Example of the playground.</p>
-<img alt="Screenshot 2022-05-26 at 16 36 49" src="https://user-images.githubusercontent.com/11627845/170511607-3fb810f7-a5aa-47cd-9f70-e6034a96b9fd.png" width="350"/>
+<img width="350" alt="Screenshot 2022-05-26 at 16 36 49" src="https://user-images.githubusercontent.com/11627845/170511607-3fb810f7-a5aa-47cd-9f70-e6034a96b9fd.png">
 <p>Example of the swagger ui.</p>
-<img alt="Screenshot 2022-05-26 at 16 36 06" src="https://user-images.githubusercontent.com/11627845/170511580-230d1e41-5e14-4623-adb6-3d4b2d400dc9.png" width="350"/>
+<img width="350" alt="Screenshot 2022-05-26 at 16 36 06" src="https://user-images.githubusercontent.com/11627845/170511580-230d1e41-5e14-4623-adb6-3d4b2d400dc9.png">
 </section>
 <section id="use-cli-parameters">
 <h2>Use CLI Parameters<a class="headerlink" href="#use-cli-parameters" title="Permalink to this headline">#</a></h2>
@@ -382,12 +382,12 @@ The second URL leads you to the swagger UI which is useful for Frontend integrat
 <p>You can now send requests to the API using the jina client. This case shows a local deployment.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>from jina import Client    
 <span class="nv">client</span> <span class="o">=</span> Client<span class="o">(</span>
-        <span class="nv">host</span><span class="o">=</span><span class="s1">'localhost'</span>,
+        <span class="nv">host</span><span class="o">=</span><span class="s1">&#39;localhost&#39;</span>,
         <span class="nv">port</span><span class="o">=</span><span class="m">31080</span>,
 <span class="o">)</span> 
 <span class="nv">response</span> <span class="o">=</span> client.search<span class="o">(</span>
         Document<span class="o">(</span><span class="nv">text</span><span class="o">=</span>search_text<span class="o">)</span>, <span class="c1"># or in case you send an image: Document(url=image_path),</span>
-        <span class="nv">parameters</span><span class="o">={</span><span class="s2">"limit"</span>: <span class="m">9</span>, <span class="s2">"filter"</span>: <span class="o">{}}</span>,
+        <span class="nv">parameters</span><span class="o">={</span><span class="s2">&quot;limit&quot;</span>: <span class="m">9</span>, <span class="s2">&quot;filter&quot;</span>: <span class="o">{}}</span>,
 <span class="o">)</span>
 </pre></div>
 </div>
@@ -424,32 +424,32 @@ The second URL leads you to the swagger UI which is useful for Frontend integrat
 <li><p>[ ] Text to 3D Mesh search 📝 ▶ 🧊</p></li>
 <li><p>[ ] …</p></li>
 </ul>
-<p><a class="reference external" href="https://www.youtube.com/watch?v=fdIaLP0ctpo"><img alt="IMAGE ALT TEXT HERE" src="https://user-images.githubusercontent.com/11627845/164571632-0e6a6c39-0137-413b-8287-21fc34785665.png"/></a></p>
-</section></p>
-<br/>
+<p><a class="reference external" href="https://www.youtube.com/watch?v=fdIaLP0ctpo"><img alt="IMAGE ALT TEXT HERE" src="https://user-images.githubusercontent.com/11627845/164571632-0e6a6c39-0137-413b-8287-21fc34785665.png" /></a></p>
+</p>
+<br>
 </section>
 <section id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">#</a></h2>
 <details><summary>👕 Fashion</summary>
-<img alt="image" src="https://user-images.githubusercontent.com/11627845/157079335-8f36fc73-d826-4c0a-b1f3-ed5d650a1af1.png" width="400"/>
+<img width="400" alt="image" src="https://user-images.githubusercontent.com/11627845/157079335-8f36fc73-d826-4c0a-b1f3-ed5d650a1af1.png">
 </details>
 <details><summary>☢️ Chest X-Ray</summary>
-<img src="https://user-images.githubusercontent.com/11627845/157067695-59851a77-5c43-4f68-80c4-403fec850776.png" width="400"/>
+<img src="https://user-images.githubusercontent.com/11627845/157067695-59851a77-5c43-4f68-80c4-403fec850776.png" width="400">
 </details>
 <details><summary>💰 NFT - bored apes</summary>
-<img src="https://user-images.githubusercontent.com/11627845/157019002-573cc101-e23b-4020-825c-f37ec66c6ccf.jpeg" width="400"/>
+<img src="https://user-images.githubusercontent.com/11627845/157019002-573cc101-e23b-4020-825c-f37ec66c6ccf.jpeg" width="400">
 </details>
 <details><summary>🖼 Art</summary>
-<img alt="image" src="https://user-images.githubusercontent.com/11627845/157074453-721c0f2d-3f7d-4839-b6ff-bbccbdba2e5f.png" width="400"/>
+<img width="400" alt="image" src="https://user-images.githubusercontent.com/11627845/157074453-721c0f2d-3f7d-4839-b6ff-bbccbdba2e5f.png">
 </details>
 <details><summary>🚗 Cars</summary>
-<img alt="image" src="https://user-images.githubusercontent.com/11627845/157081047-792df6bd-544d-420c-b180-df824c802e73.png" width="400"/>
+<img width="400" alt="image" src="https://user-images.githubusercontent.com/11627845/157081047-792df6bd-544d-420c-b180-df824c802e73.png">
 </details>
 <details><summary>🏞 Street view</summary>
-<img alt="image" src="https://user-images.githubusercontent.com/11627845/157087532-46ae36a2-c97f-45d7-9c3e-c624dcf6dc46.png" width="400"/>
+<img width="400" alt="image" src="https://user-images.githubusercontent.com/11627845/157087532-46ae36a2-c97f-45d7-9c3e-c624dcf6dc46.png">
 </details>
 <details><summary>🦆 Birds</summary>
-<img alt="image" src="https://user-images.githubusercontent.com/11627845/157069954-615a5cb6-dda0-4a2f-9442-ea807ad4a8d5.png" width="400"/>
+<img width="400" alt="image" src="https://user-images.githubusercontent.com/11627845/157069954-615a5cb6-dda0-4a2f-9442-ea807ad4a8d5.png">
 </details>
 <section id="now-use-your-custom-data">
 <h3>Now use your custom data :)<a class="headerlink" href="#now-use-your-custom-data" title="Permalink to this headline">#</a></h3>
@@ -460,7 +460,7 @@ The second URL leads you to the swagger UI which is useful for Frontend integrat
 <p><a class="reference internal" href="genindex/"><span class="std std-ref">Index</span></a> | <a class="reference internal" href="py-modindex/"><span class="std std-ref">Module Index</span></a></p>
 </section>
 </section>
-
+</section>
 
                 </article>
             </div>
@@ -488,7 +488,7 @@ The second URL leads you to the swagger UI which is useful for Frontend integrat
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Jun 02, 2022.
+                            Last updated on Jun 07, 2022.
                         </div>
                     </div>
                     <div class="right-details">

@@ -5,10 +5,10 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../../../genindex/" /><link rel="search" title="Search" href="../../../../../search/" />
         <link rel="canonical" href="https://now.jina.ai/_modules/deployment/bff/app/app.html" />
 
-    <link rel="shortcut icon" href="../../../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.04.07"/>
-        <title>deployment.bff.app.app - NOW 0.0.10 documentation</title>
+    <link rel="shortcut icon" href="../../../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.06.04.1"/>
+        <title>deployment.bff.app.app - NOW 0.0.11 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/styles/furo.css?digest=68f4518137b9aefe99b631505a2064c3c42c9852" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/tabs.css" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../../../">
-                <div class="brand">NOW 0.0.10 documentation</div>
+                <div class="brand">NOW 0.0.11 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -284,53 +284,53 @@
 <span class="kn">from</span> <span class="nn">deployment.bff.app.v1.routers</span> <span class="kn">import</span> <span class="n">image</span><span class="p">,</span> <span class="n">text</span>
 
 <span class="n">logging</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">dictConfig</span><span class="p">(</span><span class="n">api_settings</span><span class="o">.</span><span class="n">DEFAULT_LOGGING_CONFIG</span><span class="p">)</span>
-<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">'bff.app'</span><span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;bff.app&#39;</span><span class="p">)</span>
 <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">api_settings</span><span class="o">.</span><span class="n">DEFAULT_LOGGING_LEVEL</span><span class="p">)</span>
 
-<span class="n">TITLE</span> <span class="o">=</span> <span class="s1">'Jina NOW'</span>
-<span class="n">DESCRIPTION</span> <span class="o">=</span> <span class="s1">'The Jina NOW service API'</span>
-<span class="n">AUTHOR</span> <span class="o">=</span> <span class="s1">'Jina AI'</span>
-<span class="n">EMAIL</span> <span class="o">=</span> <span class="s1">'hello@jina.ai'</span>
-<span class="n">__version__</span> <span class="o">=</span> <span class="s2">"latest"</span>
+<span class="n">TITLE</span> <span class="o">=</span> <span class="s1">&#39;Jina NOW&#39;</span>
+<span class="n">DESCRIPTION</span> <span class="o">=</span> <span class="s1">&#39;The Jina NOW service API&#39;</span>
+<span class="n">AUTHOR</span> <span class="o">=</span> <span class="s1">&#39;Jina AI&#39;</span>
+<span class="n">EMAIL</span> <span class="o">=</span> <span class="s1">&#39;hello@jina.ai&#39;</span>
+<span class="n">__version__</span> <span class="o">=</span> <span class="s2">&quot;latest&quot;</span>
 
 
 <div class="viewcode-block" id="get_app_instance"><a class="viewcode-back" href="../../../../../api/deployment.bff.app.app/#deployment.bff.app.app.get_app_instance">[docs]</a><span class="k">def</span> <span class="nf">get_app_instance</span><span class="p">():</span>
-    <span class="sd">"""Build FastAPI app."""</span>
+    <span class="sd">&quot;&quot;&quot;Build FastAPI app.&quot;&quot;&quot;</span>
     <span class="n">app</span> <span class="o">=</span> <span class="n">FastAPI</span><span class="p">(</span>
         <span class="n">title</span><span class="o">=</span><span class="n">TITLE</span><span class="p">,</span>
         <span class="n">description</span><span class="o">=</span><span class="n">DESCRIPTION</span><span class="p">,</span>
         <span class="n">contact</span><span class="o">=</span><span class="p">{</span>
-            <span class="s1">'author'</span><span class="p">:</span> <span class="n">AUTHOR</span><span class="p">,</span>
-            <span class="s1">'email'</span><span class="p">:</span> <span class="n">EMAIL</span><span class="p">,</span>
+            <span class="s1">&#39;author&#39;</span><span class="p">:</span> <span class="n">AUTHOR</span><span class="p">,</span>
+            <span class="s1">&#39;email&#39;</span><span class="p">:</span> <span class="n">EMAIL</span><span class="p">,</span>
         <span class="p">},</span>
     <span class="p">)</span>
 
-    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'/ping'</span><span class="p">)</span>
+    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;/ping&#39;</span><span class="p">)</span>
     <span class="nd">@api_method</span>
     <span class="nd">@timed</span>
     <span class="k">def</span> <span class="nf">check_liveness</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="sd">"""</span>
+        <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Sanity check - this will let the caller know that the service is operational.</span>
-<span class="sd">        """</span>
-        <span class="k">return</span> <span class="s1">'pong!'</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s1">&#39;pong!&#39;</span>
 
-    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'/'</span><span class="p">)</span>
+    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
     <span class="nd">@api_method</span>
     <span class="nd">@timed</span>
     <span class="k">def</span> <span class="nf">read_root</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="sd">"""</span>
+        <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Root path welcome message.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">(</span>
-            <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">TITLE</span><span class="si">}</span><span class="s1"> v</span><span class="si">{</span><span class="n">__version__</span><span class="si">}</span><span class="s1"> 🚀 </span><span class="si">{</span><span class="n">DESCRIPTION</span><span class="si">}</span><span class="s1"> ✨ '</span>
-            <span class="sa">f</span><span class="s1">'author: </span><span class="si">{</span><span class="n">AUTHOR</span><span class="si">}</span><span class="s1"> email: </span><span class="si">{</span><span class="n">EMAIL</span><span class="si">}</span><span class="s1"> 📄  '</span>
-            <span class="s1">'Check out /docs or /redoc for the API documentation!'</span>
+            <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">TITLE</span><span class="si">}</span><span class="s1"> v</span><span class="si">{</span><span class="n">__version__</span><span class="si">}</span><span class="s1"> 🚀 </span><span class="si">{</span><span class="n">DESCRIPTION</span><span class="si">}</span><span class="s1"> ✨ &#39;</span>
+            <span class="sa">f</span><span class="s1">&#39;author: </span><span class="si">{</span><span class="n">AUTHOR</span><span class="si">}</span><span class="s1"> email: </span><span class="si">{</span><span class="n">EMAIL</span><span class="si">}</span><span class="s1"> 📄  &#39;</span>
+            <span class="s1">&#39;Check out /docs or /redoc for the API documentation!&#39;</span>
         <span class="p">)</span>
 
-    <span class="nd">@app</span><span class="o">.</span><span class="n">on_event</span><span class="p">(</span><span class="s1">'startup'</span><span class="p">)</span>
+    <span class="nd">@app</span><span class="o">.</span><span class="n">on_event</span><span class="p">(</span><span class="s1">&#39;startup&#39;</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">startup</span><span class="p">():</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s1">'Jina NOW started! '</span> <span class="sa">f</span><span class="s1">'Listening to [::]:</span><span class="si">{</span><span class="n">api_settings</span><span class="o">.</span><span class="n">DEFAULT_PORT</span><span class="si">}</span><span class="s1">'</span>
+            <span class="sa">f</span><span class="s1">&#39;Jina NOW started! &#39;</span> <span class="sa">f</span><span class="s1">&#39;Listening to [::]:</span><span class="si">{</span><span class="n">api_settings</span><span class="o">.</span><span class="n">DEFAULT_PORT</span><span class="si">}</span><span class="s1">&#39;</span>
         <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">app</span></div>
@@ -338,14 +338,14 @@
 
 <div class="viewcode-block" id="build_app"><a class="viewcode-back" href="../../../../../api/deployment.bff.app.app/#deployment.bff.app.app.build_app">[docs]</a><span class="k">def</span> <span class="nf">build_app</span><span class="p">():</span>
     <span class="c1"># Image router</span>
-    <span class="n">image_mount</span> <span class="o">=</span> <span class="s2">"/api/v1/image"</span>
+    <span class="n">image_mount</span> <span class="o">=</span> <span class="s2">&quot;/api/v1/image&quot;</span>
     <span class="n">image_app</span> <span class="o">=</span> <span class="n">get_app_instance</span><span class="p">()</span>
-    <span class="n">image_app</span><span class="o">.</span><span class="n">include_router</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">router</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="s1">'Image'</span><span class="p">])</span>
+    <span class="n">image_app</span><span class="o">.</span><span class="n">include_router</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">router</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Image&#39;</span><span class="p">])</span>
 
     <span class="c1"># Text router</span>
-    <span class="n">text_mount</span> <span class="o">=</span> <span class="s2">"/api/v1/text"</span>
+    <span class="n">text_mount</span> <span class="o">=</span> <span class="s2">&quot;/api/v1/text&quot;</span>
     <span class="n">text_app</span> <span class="o">=</span> <span class="n">get_app_instance</span><span class="p">()</span>
-    <span class="n">text_app</span><span class="o">.</span><span class="n">include_router</span><span class="p">(</span><span class="n">text</span><span class="o">.</span><span class="n">router</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="s1">'Text'</span><span class="p">])</span>
+    <span class="n">text_app</span><span class="o">.</span><span class="n">include_router</span><span class="p">(</span><span class="n">text</span><span class="o">.</span><span class="n">router</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Text&#39;</span><span class="p">])</span>
 
     <span class="c1"># Mount them - for other modalities just add an app instance</span>
     <span class="n">app</span> <span class="o">=</span> <span class="n">Starlette</span><span class="p">(</span><span class="n">routes</span><span class="o">=</span><span class="p">[</span><span class="n">Mount</span><span class="p">(</span><span class="n">image_mount</span><span class="p">,</span> <span class="n">image_app</span><span class="p">),</span> <span class="n">Mount</span><span class="p">(</span><span class="n">text_mount</span><span class="p">,</span> <span class="n">text_app</span><span class="p">)])</span>
@@ -357,20 +357,20 @@
 
 
 <div class="viewcode-block" id="run_server"><a class="viewcode-back" href="../../../../../api/deployment.bff.app.app/#deployment.bff.app.app.run_server">[docs]</a><span class="k">def</span> <span class="nf">run_server</span><span class="p">():</span>
-    <span class="sd">"""Run server."""</span>
+    <span class="sd">&quot;&quot;&quot;Run server.&quot;&quot;&quot;</span>
     <span class="n">app</span> <span class="o">=</span> <span class="n">build_app</span><span class="p">()</span>
 
     <span class="c1"># start the server!</span>
     <span class="n">uvicorn</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
         <span class="n">app</span><span class="p">,</span>
-        <span class="n">host</span><span class="o">=</span><span class="s1">'0.0.0.0'</span><span class="p">,</span>
+        <span class="n">host</span><span class="o">=</span><span class="s1">&#39;0.0.0.0&#39;</span><span class="p">,</span>
         <span class="n">port</span><span class="o">=</span><span class="mi">8080</span><span class="p">,</span>
-        <span class="n">loop</span><span class="o">=</span><span class="s1">'uvloop'</span><span class="p">,</span>
-        <span class="n">http</span><span class="o">=</span><span class="s1">'httptools'</span><span class="p">,</span>
+        <span class="n">loop</span><span class="o">=</span><span class="s1">&#39;uvloop&#39;</span><span class="p">,</span>
+        <span class="n">http</span><span class="o">=</span><span class="s1">&#39;httptools&#39;</span><span class="p">,</span>
     <span class="p">)</span></div>
 
 
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">'__main__'</span><span class="p">:</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">run_server</span><span class="p">()</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
@@ -394,7 +394,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Jun 02, 2022.
+                            Last updated on Jun 07, 2022.
                         </div>
                     </div>
                     <div class="right-details">

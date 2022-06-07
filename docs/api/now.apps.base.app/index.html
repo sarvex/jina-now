@@ -10,7 +10,7 @@
   
 <meta property="og:url" content="https://now.jina.ai/api/now.apps.base.app/" />
   
-<meta property="og:site_name" content="NOW 0.0.10 Documentation" />
+<meta property="og:site_name" content="NOW 0.0.11 Documentation" />
   
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@JinaAI_">
@@ -32,10 +32,10 @@
     <link rel="index" title="Index" href="../../genindex/" /><link rel="search" title="Search" href="../../search/" />
         <link rel="canonical" href="https://now.jina.ai/api/now.apps.base.app.html" />
 
-    <link rel="shortcut icon" href="../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.04.07"/>
-        <title>now.apps.base.app module - NOW 0.0.10 documentation</title>
+    <link rel="shortcut icon" href="../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.06.04.1"/>
+        <title>now.apps.base.app module - NOW 0.0.11 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=68f4518137b9aefe99b631505a2064c3c42c9852" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/tabs.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
@@ -166,7 +166,7 @@
         </div>
         <div class="header-center">
             <a href="../../">
-                <div class="brand">NOW 0.0.10 documentation</div>
+                <div class="brand">NOW 0.0.11 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -322,6 +322,7 @@ Example:</p>
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="now.apps.base.app.JinaNOWApp.input_modality">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">input_modality</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../now.constants/#now.constants.Modalities" title="now.constants.Modalities"><span class="pre">now.constants.Modalities</span></a></em><a class="headerlink" href="#now.apps.base.app.JinaNOWApp.input_modality" title="Permalink to this definition">#</a></dt>
@@ -332,6 +333,7 @@ Example:</p>
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="now.apps.base.app.JinaNOWApp.output_modality">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">output_modality</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../now.constants/#now.constants.Modalities" title="now.constants.Modalities"><span class="pre">now.constants.Modalities</span></a></em><a class="headerlink" href="#now.apps.base.app.JinaNOWApp.output_modality" title="Permalink to this definition">#</a></dt>
@@ -342,6 +344,7 @@ Example:</p>
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="now.apps.base.app.JinaNOWApp.flow_yaml">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">flow_yaml</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#now.apps.base.app.JinaNOWApp.flow_yaml" title="Permalink to this definition">#</a></dt>
@@ -349,6 +352,7 @@ Example:</p>
 :rtype: <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>
 :return: either the path, to the yaml or the yaml content.</p>
 </dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="now.apps.base.app.JinaNOWApp.bff">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bff</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#now.apps.base.app.JinaNOWApp.bff" title="Permalink to this definition">#</a></dt>
@@ -357,6 +361,7 @@ Used to configure the bff which is used to define input and output format.
 :rtype: <code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]
 :return: the path to the file where the bff routs are configured</p>
 </dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="now.apps.base.app.JinaNOWApp.playground">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">playground</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#now.apps.base.app.JinaNOWApp.playground" title="Permalink to this definition">#</a></dt>
@@ -365,6 +370,7 @@ Used to configure the playground(streamlit app) where the user can run example q
 :rtype: <code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]
 :return: the path to the streamlit file.</p>
 </dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="now.apps.base.app.JinaNOWApp.options">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">options</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#now.apps.base.app.JinaNOWApp.options" title="Permalink to this definition">#</a></dt>
@@ -392,6 +398,7 @@ prompt_type=’list’</p>
 :rtype: <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>]
 :return:</p>
 </dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="now.apps.base.app.JinaNOWApp.example_datasource">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">example_datasource</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../now.datasource.datasource/#now.datasource.datasource.Datasource" title="now.datasource.datasource.Datasource"><span class="pre">now.datasource.datasource.Datasource</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#now.apps.base.app.JinaNOWApp.example_datasource" title="Permalink to this definition">#</a></dt>
@@ -403,6 +410,7 @@ Get a list of example datasets for the app.</p>
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="now.apps.base.app.JinaNOWApp.check_requirements">
 <span class="sig-name descname"><span class="pre">check_requirements</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/now/apps/base/app/#JinaNOWApp.check_requirements"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#now.apps.base.app.JinaNOWApp.check_requirements" title="Permalink to this definition">#</a></dt>
@@ -413,6 +421,7 @@ Get a list of example datasets for the app.</p>
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="now.apps.base.app.JinaNOWApp.setup">
 <span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">da</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kubectl_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/now/apps/base/app/#JinaNOWApp.setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#now.apps.base.app.JinaNOWApp.setup" title="Permalink to this definition">#</a></dt>
@@ -441,6 +450,7 @@ Common use cases:</p>
 </dd>
 </dl>
 </dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="now.apps.base.app.JinaNOWApp.cleanup">
 <span class="sig-name descname"><span class="pre">cleanup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">app_config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/now/apps/base/app/#JinaNOWApp.cleanup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#now.apps.base.app.JinaNOWApp.cleanup" title="Permalink to this definition">#</a></dt>
@@ -463,7 +473,9 @@ Common examples are:</p>
 </dd>
 </dl>
 </dd></dl>
+
 </dd></dl>
+
 </section>
 
                 </article>
@@ -482,7 +494,7 @@ Common examples are:</p>
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Jun 02, 2022.
+                            Last updated on Jun 07, 2022.
                         </div>
                     </div>
                     <div class="right-details">

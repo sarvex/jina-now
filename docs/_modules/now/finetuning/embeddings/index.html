@@ -5,10 +5,10 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../../genindex/" /><link rel="search" title="Search" href="../../../../search/" />
         <link rel="canonical" href="https://now.jina.ai/_modules/now/finetuning/embeddings.html" />
 
-    <link rel="shortcut icon" href="../../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.04.07"/>
-        <title>now.finetuning.embeddings - NOW 0.0.10 documentation</title>
+    <link rel="shortcut icon" href="../../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.06.04.1"/>
+        <title>now.finetuning.embeddings - NOW 0.0.11 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?digest=68f4518137b9aefe99b631505a2064c3c42c9852" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/tabs.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../../">
-                <div class="brand">NOW 0.0.10 documentation</div>
+                <div class="brand">NOW 0.0.11 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -271,7 +271,7 @@
                 </div>
                 <article role="main">
                     <h1>Source code for now.finetuning.embeddings</h1><div class="highlight"><pre>
-<span></span><span class="sd">""" This module implements functionality to fine tune on the music dataset """</span>
+<span></span><span class="sd">&quot;&quot;&quot; This module implements functionality to fine tune on the music dataset &quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">tempfile</span>
@@ -283,7 +283,7 @@
 <span class="kn">from</span> <span class="nn">now.dataclasses</span> <span class="kn">import</span> <span class="n">UserInput</span>
 <span class="kn">from</span> <span class="nn">now.deployment.flow</span> <span class="kn">import</span> <span class="n">_ExecutorConfig</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">deploy_k8s</span>
 
-<span class="n">_KS_NAMESPACE</span> <span class="o">=</span> <span class="s1">'embed-now'</span>
+<span class="n">_KS_NAMESPACE</span> <span class="o">=</span> <span class="s1">&#39;embed-now&#39;</span>
 
 
 <div class="viewcode-block" id="embed_now"><a class="viewcode-back" href="../../../../api/now.finetuning.embeddings/#now.finetuning.embeddings.embed_now">[docs]</a><span class="k">def</span> <span class="nf">embed_now</span><span class="p">(</span><span class="n">user_input</span><span class="p">:</span> <span class="n">UserInput</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">DocumentArray</span><span class="p">,</span> <span class="n">kubectl_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
@@ -300,12 +300,12 @@
             <span class="n">flow</span><span class="p">,</span> <span class="n">_KS_NAMESPACE</span><span class="p">,</span> <span class="n">tmpdir</span><span class="p">,</span> <span class="n">kubectl_path</span><span class="o">=</span><span class="n">kubectl_path</span>
         <span class="p">)</span>
         <span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="n">gateway_host</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">gateway_port</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'▶ create embeddings for </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">documents_without_embedding</span><span class="p">)</span><span class="si">}</span><span class="s1"> documents'</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;▶ create embeddings for </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">documents_without_embedding</span><span class="p">)</span><span class="si">}</span><span class="s1"> documents&#39;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span>
             <span class="n">batch</span><span class="p">(</span><span class="n">documents_without_embedding</span><span class="p">,</span> <span class="mi">16</span><span class="p">),</span>
             <span class="n">total</span><span class="o">=</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">documents_without_embedding</span><span class="p">)</span> <span class="o">/</span> <span class="mi">16</span><span class="p">),</span>
         <span class="p">):</span>
-            <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s1">'/index'</span><span class="p">,</span> <span class="n">request_size</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="n">x</span><span class="p">)</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s1">&#39;/index&#39;</span><span class="p">,</span> <span class="n">request_size</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="n">x</span><span class="p">)</span>
             <span class="n">result</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
@@ -313,15 +313,15 @@
 
 
 <div class="viewcode-block" id="get_encoder_config"><a class="viewcode-back" href="../../../../api/now.finetuning.embeddings/#now.finetuning.embeddings.get_encoder_config">[docs]</a><span class="k">def</span> <span class="nf">get_encoder_config</span><span class="p">(</span><span class="n">encoder_uses</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">artifact</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_ExecutorConfig</span><span class="p">:</span>
-    <span class="sd">"""</span>
+    <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Gets the correct Executor running the pre-trained model given the user configuration.</span>
 <span class="sd">    :param user_input: Configures user input.</span>
 <span class="sd">    :return: Small data-transfer-object with information about the executor</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_ExecutorConfig</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="s1">'encoder'</span><span class="p">,</span>
-        <span class="n">uses</span><span class="o">=</span><span class="sa">f</span><span class="s1">'jinahub+docker://</span><span class="si">{</span><span class="n">encoder_uses</span><span class="si">}</span><span class="s1">'</span><span class="p">,</span>
-        <span class="n">uses_with</span><span class="o">=</span><span class="p">{</span><span class="s1">'pretrained_model_name_or_path'</span><span class="p">:</span> <span class="n">artifact</span><span class="p">},</span>
+        <span class="n">name</span><span class="o">=</span><span class="s1">&#39;encoder&#39;</span><span class="p">,</span>
+        <span class="n">uses</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;jinahub+docker://</span><span class="si">{</span><span class="n">encoder_uses</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+        <span class="n">uses_with</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;pretrained_model_name_or_path&#39;</span><span class="p">:</span> <span class="n">artifact</span><span class="p">},</span>
     <span class="p">)</span></div>
 </pre></div>
                 </article>
@@ -340,7 +340,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Jun 02, 2022.
+                            Last updated on Jun 07, 2022.
                         </div>
                     </div>
                     <div class="right-details">

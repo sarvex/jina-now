@@ -5,10 +5,10 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../../genindex/" /><link rel="search" title="Search" href="../../../../search/" />
         <link rel="canonical" href="https://now.jina.ai/_modules/now/finetuning/settings.html" />
 
-    <link rel="shortcut icon" href="../../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.04.07"/>
-        <title>now.finetuning.settings - NOW 0.0.10 documentation</title>
+    <link rel="shortcut icon" href="../../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.06.04.1"/>
+        <title>now.finetuning.settings - NOW 0.0.11 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?digest=68f4518137b9aefe99b631505a2064c3c42c9852" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/tabs.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../../">
-                <div class="brand">NOW 0.0.10 documentation</div>
+                <div class="brand">NOW 0.0.11 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -271,7 +271,7 @@
                 </div>
                 <article role="main">
                     <h1>Source code for now.finetuning.settings</h1><div class="highlight"><pre>
-<span></span><span class="sd">""" This module contains pre-configurations for finetuning on the demo datasets. """</span>
+<span></span><span class="sd">&quot;&quot;&quot; This module contains pre-configurations for finetuning on the demo datasets. &quot;&quot;&quot;</span>
 <span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
 
@@ -289,8 +289,8 @@
 <span class="n">DEFAULT_NUM_ITEMS_PER_CLASS</span> <span class="o">=</span> <span class="mi">4</span>
 <span class="n">DEFAULT_LEARNING_RATE</span> <span class="o">=</span> <span class="mf">5e-4</span>
 <span class="n">DEFAULT_EARLY_STOPPING_PATIENCE</span> <span class="o">=</span> <span class="mi">5</span>
-<span class="n">DEFAULT_POS_MINING_START</span> <span class="o">=</span> <span class="s1">'hard'</span>
-<span class="n">DEFAULT_NEG_MINING_START</span> <span class="o">=</span> <span class="s1">'hard'</span>
+<span class="n">DEFAULT_POS_MINING_START</span> <span class="o">=</span> <span class="s1">&#39;hard&#39;</span>
+<span class="n">DEFAULT_NEG_MINING_START</span> <span class="o">=</span> <span class="s1">&#39;hard&#39;</span>
 
 <span class="n">PRE_TRAINED_EMBEDDING_SIZE</span> <span class="o">=</span> <span class="p">{</span>
     <span class="n">Apps</span><span class="o">.</span><span class="n">TEXT_TO_IMAGE</span><span class="p">:</span> <span class="p">{</span>
@@ -335,7 +335,7 @@
 
 
 <span class="k">def</span> <span class="nf">_get_pre_trained_embedding_size</span><span class="p">(</span><span class="n">user_input</span><span class="p">:</span> <span class="n">UserInput</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-    <span class="sd">"""Returns the dimension of embeddings given the configured user input object."""</span>
+    <span class="sd">&quot;&quot;&quot;Returns the dimension of embeddings given the configured user input object.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">PRE_TRAINED_EMBEDDING_SIZE</span><span class="p">[</span><span class="n">user_input</span><span class="o">.</span><span class="n">app</span><span class="p">][</span><span class="n">user_input</span><span class="o">.</span><span class="n">quality</span><span class="p">]</span>
 
 
@@ -346,7 +346,7 @@
         <span class="k">return</span> <span class="kc">True</span>
 
     <span class="k">elif</span> <span class="n">user_input</span><span class="o">.</span><span class="n">is_custom_dataset</span> <span class="ow">and</span> <span class="nb">all</span><span class="p">(</span>
-        <span class="p">[</span><span class="s1">'finetuner_label'</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">tags</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">]</span>
+        <span class="p">[</span><span class="s1">&#39;finetuner_label&#39;</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">tags</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">]</span>
     <span class="p">):</span>
         <span class="k">return</span> <span class="kc">True</span>
     <span class="k">else</span><span class="p">:</span>
@@ -355,8 +355,8 @@
 
 <span class="k">def</span> <span class="nf">_is_bi_modal</span><span class="p">(</span><span class="n">user_input</span><span class="p">:</span> <span class="n">UserInput</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">DocumentArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
     <span class="k">if</span> <span class="n">user_input</span><span class="o">.</span><span class="n">is_custom_dataset</span><span class="p">:</span>
-        <span class="n">has_blob</span> <span class="o">=</span> <span class="nb">any</span><span class="p">([</span><span class="n">d</span><span class="o">.</span><span class="n">blob</span> <span class="o">!=</span> <span class="sa">b</span><span class="s1">''</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">])</span>
-        <span class="n">has_text</span> <span class="o">=</span> <span class="nb">any</span><span class="p">([</span><span class="n">d</span><span class="o">.</span><span class="n">text</span> <span class="o">!=</span> <span class="s1">''</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">])</span>
+        <span class="n">has_blob</span> <span class="o">=</span> <span class="nb">any</span><span class="p">([</span><span class="n">d</span><span class="o">.</span><span class="n">blob</span> <span class="o">!=</span> <span class="sa">b</span><span class="s1">&#39;&#39;</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">])</span>
+        <span class="n">has_text</span> <span class="o">=</span> <span class="nb">any</span><span class="p">([</span><span class="n">d</span><span class="o">.</span><span class="n">text</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">])</span>
         <span class="k">return</span> <span class="n">has_text</span> <span class="ow">and</span> <span class="n">has_blob</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">True</span>  <span class="c1"># right now all demo cases are bi-modal</span>
@@ -365,7 +365,7 @@
 <div class="viewcode-block" id="parse_finetune_settings"><a class="viewcode-back" href="../../../../api/now.finetuning.settings/#now.finetuning.settings.parse_finetune_settings">[docs]</a><span class="k">def</span> <span class="nf">parse_finetune_settings</span><span class="p">(</span>
     <span class="n">user_input</span><span class="p">:</span> <span class="n">UserInput</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">DocumentArray</span><span class="p">,</span> <span class="n">finetune_datasets</span><span class="p">:</span> <span class="n">Tuple</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FinetuneSettings</span><span class="p">:</span>
-    <span class="sd">"""This function parses the user input configuration into the finetune settings"""</span>
+    <span class="sd">&quot;&quot;&quot;This function parses the user input configuration into the finetune settings&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">FinetuneSettings</span><span class="p">(</span>
         <span class="n">pre_trained_embedding_size</span><span class="o">=</span><span class="n">_get_pre_trained_embedding_size</span><span class="p">(</span><span class="n">user_input</span><span class="p">),</span>
         <span class="n">perform_finetuning</span><span class="o">=</span><span class="n">_is_finetuning</span><span class="p">(</span><span class="n">user_input</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">finetune_datasets</span><span class="p">),</span>
@@ -388,7 +388,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Jun 02, 2022.
+                            Last updated on Jun 07, 2022.
                         </div>
                     </div>
                     <div class="right-details">

@@ -5,10 +5,10 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../../genindex/" /><link rel="search" title="Search" href="../../../../search/" />
         <link rel="canonical" href="https://now.jina.ai/_modules/now/finetuning/dataset.html" />
 
-    <link rel="shortcut icon" href="../../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.04.07"/>
-        <title>now.finetuning.dataset - NOW 0.0.10 documentation</title>
+    <link rel="shortcut icon" href="../../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.06.04.1"/>
+        <title>now.finetuning.dataset - NOW 0.0.11 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?digest=68f4518137b9aefe99b631505a2064c3c42c9852" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/tabs.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../../">
-                <div class="brand">NOW 0.0.10 documentation</div>
+                <div class="brand">NOW 0.0.11 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -271,7 +271,7 @@
                 </div>
                 <article role="main">
                     <h1>Source code for now.finetuning.dataset</h1><div class="highlight"><pre>
-<span></span><span class="sd">""" Module contains data-transfer-object for finetune datasets. """</span>
+<span></span><span class="sd">&quot;&quot;&quot; Module contains data-transfer-object for finetune datasets. &quot;&quot;&quot;</span>
 <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
 <span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span>
@@ -295,10 +295,10 @@
 
 <div class="viewcode-block" id="FinetuneDataset.as_dict"><a class="viewcode-back" href="../../../../api/now.finetuning.dataset/#now.finetuning.dataset.FinetuneDataset.as_dict">[docs]</a>    <span class="k">def</span> <span class="nf">as_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DocumentArray</span><span class="p">]]:</span>
         <span class="k">return</span> <span class="p">{</span>
-            <span class="s1">'train'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">train</span><span class="p">,</span>
-            <span class="s1">'val'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">val</span><span class="p">,</span>
-            <span class="s1">'val_query'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">val_query</span><span class="p">,</span>
-            <span class="s1">'val_index'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">val_index</span><span class="p">,</span>
+            <span class="s1">&#39;train&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">train</span><span class="p">,</span>
+            <span class="s1">&#39;val&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">val</span><span class="p">,</span>
+            <span class="s1">&#39;val_query&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">val_query</span><span class="p">,</span>
+            <span class="s1">&#39;val_index&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">val_index</span><span class="p">,</span>
         <span class="p">}</span></div></div>
 
 
@@ -338,7 +338,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Jun 02, 2022.
+                            Last updated on Jun 07, 2022.
                         </div>
                     </div>
                     <div class="right-details">

@@ -5,10 +5,10 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../../../genindex/" /><link rel="search" title="Search" href="../../../../../search/" />
         <link rel="canonical" href="https://now.jina.ai/_modules/now/apps/music_to_music/app.html" />
 
-    <link rel="shortcut icon" href="../../../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.04.07"/>
-        <title>now.apps.music_to_music.app - NOW 0.0.10 documentation</title>
+    <link rel="shortcut icon" href="../../../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.06.04.1"/>
+        <title>now.apps.music_to_music.app - NOW 0.0.11 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/styles/furo.css?digest=68f4518137b9aefe99b631505a2064c3c42c9852" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/tabs.css" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../../../">
-                <div class="brand">NOW 0.0.10 documentation</div>
+                <div class="brand">NOW 0.0.11 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -286,7 +286,7 @@
 <div class="viewcode-block" id="MusicToMusic"><a class="viewcode-back" href="../../../../../api/now.apps.music_to_music.app/#now.apps.music_to_music.app.MusicToMusic">[docs]</a><span class="k">class</span> <span class="nc">MusicToMusic</span><span class="p">(</span><span class="n">JinaNOWApp</span><span class="p">):</span>
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">description</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s1">'Music to music search'</span>
+        <span class="k">return</span> <span class="s1">&#39;Music to music search&#39;</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">input_modality</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Modalities</span><span class="p">:</span>
@@ -308,43 +308,43 @@
             <span class="n">da</span><span class="p">,</span>
             <span class="n">user_config</span><span class="p">,</span>
             <span class="n">kubectl_path</span><span class="p">,</span>
-            <span class="n">encoder_uses</span><span class="o">=</span><span class="s1">'BiModalMusicTextEncoder'</span><span class="p">,</span>
-            <span class="n">artifact</span><span class="o">=</span><span class="s1">'default'</span><span class="p">,</span>
+            <span class="n">encoder_uses</span><span class="o">=</span><span class="s1">&#39;BiModalMusicTextEncoder&#39;</span><span class="p">,</span>
+            <span class="n">artifact</span><span class="o">=</span><span class="s1">&#39;default&#39;</span><span class="p">,</span>
             <span class="n">finetune_datasets</span><span class="o">=</span><span class="p">(</span>
                 <span class="n">DemoDatasets</span><span class="o">.</span><span class="n">MUSIC_GENRES_MID</span><span class="p">,</span>
                 <span class="n">DemoDatasets</span><span class="o">.</span><span class="n">MUSIC_GENRES_LARGE</span><span class="p">,</span>
             <span class="p">),</span>
             <span class="n">pre_trained_head_map</span><span class="o">=</span><span class="p">{</span>
-                <span class="n">DemoDatasets</span><span class="o">.</span><span class="n">MUSIC_GENRES_MID</span><span class="p">:</span> <span class="s1">'FineTunedLinearHeadEncoder:93ea59dbd1ee3fe0bdc44252c6e86a87/'</span>
-                <span class="s1">'linear_head_encoder_music_2k'</span><span class="p">,</span>
-                <span class="n">DemoDatasets</span><span class="o">.</span><span class="n">MUSIC_GENRES_LARGE</span><span class="p">:</span> <span class="s1">'FineTunedLinearHeadEncoder:93ea59dbd1ee3fe0bdc44252c6e86a87/'</span>
-                <span class="s1">'linear_head_encoder_music_10k'</span><span class="p">,</span>
-                <span class="n">DemoDatasets</span><span class="o">.</span><span class="n">MUSIC_GENRES_EXTRA_LARGE</span><span class="p">:</span> <span class="s1">'FineTunedLinearHeadEncoder:93ea59dbd1ee3fe0bdc44252c6e86a87/'</span>
-                <span class="s1">'linear_head_encoder_music_40k'</span><span class="p">,</span>
+                <span class="n">DemoDatasets</span><span class="o">.</span><span class="n">MUSIC_GENRES_MID</span><span class="p">:</span> <span class="s1">&#39;FineTunedLinearHeadEncoder:93ea59dbd1ee3fe0bdc44252c6e86a87/&#39;</span>
+                <span class="s1">&#39;linear_head_encoder_music_2k&#39;</span><span class="p">,</span>
+                <span class="n">DemoDatasets</span><span class="o">.</span><span class="n">MUSIC_GENRES_LARGE</span><span class="p">:</span> <span class="s1">&#39;FineTunedLinearHeadEncoder:93ea59dbd1ee3fe0bdc44252c6e86a87/&#39;</span>
+                <span class="s1">&#39;linear_head_encoder_music_10k&#39;</span><span class="p">,</span>
+                <span class="n">DemoDatasets</span><span class="o">.</span><span class="n">MUSIC_GENRES_EXTRA_LARGE</span><span class="p">:</span> <span class="s1">&#39;FineTunedLinearHeadEncoder:93ea59dbd1ee3fe0bdc44252c6e86a87/&#39;</span>
+                <span class="s1">&#39;linear_head_encoder_music_40k&#39;</span><span class="p">,</span>
             <span class="p">},</span>
         <span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="ffmpeg_is_installed"><a class="viewcode-back" href="../../../../../api/now.apps.music_to_music.app/#now.apps.music_to_music.app.ffmpeg_is_installed">[docs]</a><span class="k">def</span> <span class="nf">ffmpeg_is_installed</span><span class="p">():</span>
-    <span class="k">return</span> <span class="n">which</span><span class="p">(</span><span class="s2">"ffmpeg"</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">which</span><span class="p">(</span><span class="s2">&quot;ffmpeg&quot;</span><span class="p">)</span></div>
 
 
 <span class="k">def</span> <span class="nf">_handle_ffmpeg_install_required</span><span class="p">():</span>
-    <span class="n">bc_red</span> <span class="o">=</span> <span class="s1">'</span><span class="se">\033</span><span class="s1">[91m'</span>
-    <span class="n">bc_end</span> <span class="o">=</span> <span class="s1">'</span><span class="se">\033</span><span class="s1">[0m'</span>
+    <span class="n">bc_red</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[91m&#39;</span>
+    <span class="n">bc_end</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[0m&#39;</span>
     <span class="nb">print</span><span class="p">()</span>
     <span class="nb">print</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">bc_red</span><span class="si">}</span><span class="s2">To use the audio modality you need the ffmpeg audio processing"</span>
-        <span class="sa">f</span><span class="s2">" library installed on your system.</span><span class="si">{</span><span class="n">bc_end</span><span class="si">}</span><span class="s2">"</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">bc_red</span><span class="si">}</span><span class="s2">To use the audio modality you need the ffmpeg audio processing&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot; library installed on your system.</span><span class="si">{</span><span class="n">bc_end</span><span class="si">}</span><span class="s2">&quot;</span>
     <span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">bc_red</span><span class="si">}</span><span class="s2">For MacOS please run 'brew install ffmpeg' and on"</span>
-        <span class="sa">f</span><span class="s2">" Linux 'apt-get install ffmpeg libavcodec-extra'.</span><span class="si">{</span><span class="n">bc_end</span><span class="si">}</span><span class="s2">"</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">bc_red</span><span class="si">}</span><span class="s2">For MacOS please run &#39;brew install ffmpeg&#39; and on&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot; Linux &#39;apt-get install ffmpeg libavcodec-extra&#39;.</span><span class="si">{</span><span class="n">bc_end</span><span class="si">}</span><span class="s2">&quot;</span>
     <span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">bc_red</span><span class="si">}</span><span class="s2">After the installation, restart Jina Now and have fun with music search 🎸!</span><span class="si">{</span><span class="n">bc_end</span><span class="si">}</span><span class="s2">"</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">bc_red</span><span class="si">}</span><span class="s2">After the installation, restart Jina Now and have fun with music search 🎸!</span><span class="si">{</span><span class="n">bc_end</span><span class="si">}</span><span class="s2">&quot;</span>
     <span class="p">)</span>
-    <span class="n">cowsay</span><span class="o">.</span><span class="n">cow</span><span class="p">(</span><span class="s1">'see you soon 👋'</span><span class="p">)</span>
+    <span class="n">cowsay</span><span class="o">.</span><span class="n">cow</span><span class="p">(</span><span class="s1">&#39;see you soon 👋&#39;</span><span class="p">)</span>
     <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
                 </article>
@@ -363,7 +363,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Jun 02, 2022.
+                            Last updated on Jun 07, 2022.
                         </div>
                     </div>
                     <div class="right-details">

@@ -5,10 +5,10 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../../../genindex/" /><link rel="search" title="Search" href="../../../../../search/" />
         <link rel="canonical" href="https://now.jina.ai/_modules/now/thirdparty/PyInquirer/prompt.html" />
 
-    <link rel="shortcut icon" href="../../../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.04.07"/>
-        <title>now.thirdparty.PyInquirer.prompt - NOW 0.0.10 documentation</title>
+    <link rel="shortcut icon" href="../../../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.06.04.1"/>
+        <title>now.thirdparty.PyInquirer.prompt - NOW 0.0.11 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/styles/furo.css?digest=68f4518137b9aefe99b631505a2064c3c42c9852" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/tabs.css" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../../../">
-                <div class="brand">NOW 0.0.10 documentation</div>
+                <div class="brand">NOW 0.0.11 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -289,56 +289,56 @@
         <span class="n">questions</span> <span class="o">=</span> <span class="p">[</span><span class="n">questions</span><span class="p">]</span>
     <span class="n">answers</span> <span class="o">=</span> <span class="n">answers</span> <span class="ow">or</span> <span class="p">{}</span>
 
-    <span class="n">patch_stdout</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">'patch_stdout'</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
-    <span class="n">return_asyncio_coroutine</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">'return_asyncio_coroutine'</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
-    <span class="n">true_color</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">'true_color'</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
-    <span class="n">refresh_interval</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">'refresh_interval'</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-    <span class="n">kbi_msg</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">'keyboard_interrupt_msg'</span><span class="p">,</span> <span class="s1">'Cancelled by user'</span><span class="p">)</span>
-    <span class="n">raise_kbi</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">'raise_keyboard_interrupt'</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">patch_stdout</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;patch_stdout&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">return_asyncio_coroutine</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;return_asyncio_coroutine&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">true_color</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;true_color&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">refresh_interval</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;refresh_interval&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">kbi_msg</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;keyboard_interrupt_msg&#39;</span><span class="p">,</span> <span class="s1">&#39;Cancelled by user&#39;</span><span class="p">)</span>
+    <span class="n">raise_kbi</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;raise_keyboard_interrupt&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">question</span> <span class="ow">in</span> <span class="n">questions</span><span class="p">:</span>
         <span class="c1"># import the question</span>
-        <span class="k">if</span> <span class="s1">'type'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">question</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">PromptParameterException</span><span class="p">(</span><span class="s1">'type'</span><span class="p">)</span>
-        <span class="k">if</span> <span class="s1">'name'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">question</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">PromptParameterException</span><span class="p">(</span><span class="s1">'name'</span><span class="p">)</span>
-        <span class="k">if</span> <span class="s1">'message'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">question</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">PromptParameterException</span><span class="p">(</span><span class="s1">'message'</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;type&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">question</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">PromptParameterException</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;name&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">question</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">PromptParameterException</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;message&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">question</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">PromptParameterException</span><span class="p">(</span><span class="s1">&#39;message&#39;</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">choices</span> <span class="o">=</span> <span class="n">question</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'choices'</span><span class="p">)</span>
+            <span class="n">choices</span> <span class="o">=</span> <span class="n">question</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;choices&#39;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">choices</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">callable</span><span class="p">(</span><span class="n">choices</span><span class="p">):</span>
-                <span class="n">question</span><span class="p">[</span><span class="s1">'choices'</span><span class="p">]</span> <span class="o">=</span> <span class="n">choices</span><span class="p">(</span><span class="n">answers</span><span class="p">)</span>
+                <span class="n">question</span><span class="p">[</span><span class="s1">&#39;choices&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">choices</span><span class="p">(</span><span class="n">answers</span><span class="p">)</span>
 
             <span class="n">_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="n">_kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="n">_kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">question</span><span class="p">)</span>
-            <span class="n">type_</span> <span class="o">=</span> <span class="n">_kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">'type'</span><span class="p">)</span>
-            <span class="n">name</span> <span class="o">=</span> <span class="n">_kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">'name'</span><span class="p">)</span>
-            <span class="n">message</span> <span class="o">=</span> <span class="n">_kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">'message'</span><span class="p">)</span>
-            <span class="n">when</span> <span class="o">=</span> <span class="n">_kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">'when'</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-            <span class="nb">filter</span> <span class="o">=</span> <span class="n">_kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">'filter'</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">type_</span> <span class="o">=</span> <span class="n">_kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">)</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">_kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="n">_kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;message&#39;</span><span class="p">)</span>
+            <span class="n">when</span> <span class="o">=</span> <span class="n">_kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;when&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="nb">filter</span> <span class="o">=</span> <span class="n">_kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;filter&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">when</span><span class="p">:</span>
                 <span class="c1"># at least a little sanity check!</span>
-                <span class="k">if</span> <span class="n">callable</span><span class="p">(</span><span class="n">question</span><span class="p">[</span><span class="s1">'when'</span><span class="p">]):</span>
+                <span class="k">if</span> <span class="n">callable</span><span class="p">(</span><span class="n">question</span><span class="p">[</span><span class="s1">&#39;when&#39;</span><span class="p">]):</span>
                     <span class="k">try</span><span class="p">:</span>
-                        <span class="k">if</span> <span class="ow">not</span> <span class="n">question</span><span class="p">[</span><span class="s1">'when'</span><span class="p">](</span><span class="n">answers</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">question</span><span class="p">[</span><span class="s1">&#39;when&#39;</span><span class="p">](</span><span class="n">answers</span><span class="p">):</span>
                             <span class="k">continue</span>
                     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                            <span class="s1">'Problem in </span><span class="se">\'</span><span class="s1">when</span><span class="se">\'</span><span class="s1"> check of </span><span class="si">%s</span><span class="s1"> question: </span><span class="si">%s</span><span class="s1">'</span> <span class="o">%</span>
+                            <span class="s1">&#39;Problem in </span><span class="se">\&#39;</span><span class="s1">when</span><span class="se">\&#39;</span><span class="s1"> check of </span><span class="si">%s</span><span class="s1"> question: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
                             <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">e</span><span class="p">))</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">'</span><span class="se">\'</span><span class="s1">when</span><span class="se">\'</span><span class="s1"> needs to be function that '</span> \
-                                     <span class="s1">'accepts a dict argument'</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\&#39;</span><span class="s1">when</span><span class="se">\&#39;</span><span class="s1"> needs to be function that &#39;</span> \
+                                     <span class="s1">&#39;accepts a dict argument&#39;</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">filter</span><span class="p">:</span>
                 <span class="c1"># at least a little sanity check!</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">callable</span><span class="p">(</span><span class="n">question</span><span class="p">[</span><span class="s1">'filter'</span><span class="p">]):</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">'</span><span class="se">\'</span><span class="s1">filter</span><span class="se">\'</span><span class="s1"> needs to be function that '</span> \
-                                     <span class="s1">'accepts an argument'</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">callable</span><span class="p">(</span><span class="n">question</span><span class="p">[</span><span class="s1">&#39;filter&#39;</span><span class="p">]):</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\&#39;</span><span class="s1">filter</span><span class="se">\&#39;</span><span class="s1"> needs to be function that &#39;</span> \
+                                     <span class="s1">&#39;accepts an argument&#39;</span><span class="p">)</span>
 
-            <span class="k">if</span> <span class="n">callable</span><span class="p">(</span><span class="n">question</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'default'</span><span class="p">)):</span>
-                <span class="n">_kwargs</span><span class="p">[</span><span class="s1">'default'</span><span class="p">]</span> <span class="o">=</span> <span class="n">question</span><span class="p">[</span><span class="s1">'default'</span><span class="p">](</span><span class="n">answers</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">callable</span><span class="p">(</span><span class="n">question</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;default&#39;</span><span class="p">)):</span>
+                <span class="n">_kwargs</span><span class="p">[</span><span class="s1">&#39;default&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">question</span><span class="p">[</span><span class="s1">&#39;default&#39;</span><span class="p">](</span><span class="n">answers</span><span class="p">)</span>
 
             <span class="k">with</span> <span class="n">pt_patch_stdout</span><span class="p">()</span> <span class="k">if</span> <span class="n">patch_stdout</span> <span class="k">else</span> <span class="n">_dummy_context_manager</span><span class="p">():</span>
                 <span class="n">result</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">prompts</span><span class="p">,</span> <span class="n">type_</span><span class="p">)</span><span class="o">.</span><span class="n">question</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="o">**</span><span class="n">_kwargs</span><span class="p">)</span>
@@ -360,22 +360,22 @@
             <span class="k">if</span> <span class="n">answer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">if</span> <span class="nb">filter</span><span class="p">:</span>
                     <span class="k">try</span><span class="p">:</span>
-                        <span class="n">answer</span> <span class="o">=</span> <span class="n">question</span><span class="p">[</span><span class="s1">'filter'</span><span class="p">](</span><span class="n">answer</span><span class="p">)</span>
+                        <span class="n">answer</span> <span class="o">=</span> <span class="n">question</span><span class="p">[</span><span class="s1">&#39;filter&#39;</span><span class="p">](</span><span class="n">answer</span><span class="p">)</span>
                     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                            <span class="s1">'Problem processing </span><span class="se">\'</span><span class="s1">filter</span><span class="se">\'</span><span class="s1"> of </span><span class="si">%s</span><span class="s1"> question: </span><span class="si">%s</span><span class="s1">'</span> <span class="o">%</span>
+                            <span class="s1">&#39;Problem processing </span><span class="se">\&#39;</span><span class="s1">filter</span><span class="se">\&#39;</span><span class="s1"> of </span><span class="si">%s</span><span class="s1"> question: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
                             <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">e</span><span class="p">))</span>
                 <span class="n">answers</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">answer</span>
         <span class="k">except</span> <span class="ne">AttributeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">'No question type </span><span class="se">\'</span><span class="si">%s</span><span class="se">\'</span><span class="s1">'</span> <span class="o">%</span> <span class="n">type_</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;No question type </span><span class="se">\&#39;</span><span class="si">%s</span><span class="se">\&#39;</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">type_</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">KeyboardInterrupt</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">raise_kbi</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">exc</span> <span class="kn">from</span> <span class="bp">None</span>
             <span class="k">if</span> <span class="n">kbi_msg</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s1">''</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
                 <span class="nb">print</span><span class="p">(</span><span class="n">kbi_msg</span><span class="p">)</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s1">''</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
             <span class="k">return</span> <span class="p">{}</span>
     <span class="k">return</span> <span class="n">answers</span></div>
 
@@ -402,7 +402,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Jun 02, 2022.
+                            Last updated on Jun 07, 2022.
                         </div>
                     </div>
                     <div class="right-details">

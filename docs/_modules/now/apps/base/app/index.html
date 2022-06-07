@@ -5,10 +5,10 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../../../genindex/" /><link rel="search" title="Search" href="../../../../../search/" />
         <link rel="canonical" href="https://now.jina.ai/_modules/now/apps/base/app.html" />
 
-    <link rel="shortcut icon" href="../../../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.04.07"/>
-        <title>now.apps.base.app - NOW 0.0.10 documentation</title>
+    <link rel="shortcut icon" href="../../../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.06.04.1"/>
+        <title>now.apps.base.app - NOW 0.0.11 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/styles/furo.css?digest=68f4518137b9aefe99b631505a2064c3c42c9852" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/tabs.css" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../../../">
-                <div class="brand">NOW 0.0.10 documentation</div>
+                <div class="brand">NOW 0.0.11 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -283,109 +283,109 @@
 
 
 <div class="viewcode-block" id="JinaNOWApp"><a class="viewcode-back" href="../../../../../api/now.apps.base.app/#now.apps.base.app.JinaNOWApp">[docs]</a><span class="k">class</span> <span class="nc">JinaNOWApp</span><span class="p">:</span>
-    <span class="sd">"""</span>
+    <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Interface for Jina NOW applications.</span>
 <span class="sd">    To create a new application, you need to inherit from this class and override the methods.</span>
 <span class="sd">    Example:</span>
 <span class="sd">        class TextToImageApp(JinaNowApp):</span>
 <span class="sd">            pass</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">curdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_flow_yaml</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">curdir</span><span class="p">,</span> <span class="s1">'flow.yml'</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_flow_yaml</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">curdir</span><span class="p">,</span> <span class="s1">&#39;flow.yml&#39;</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">description</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="sd">"""</span>
+        <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Short description of the app.</span>
-<span class="sd">        """</span>
-        <span class="k">return</span> <span class="s1">'Jina NOW app'</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s1">&#39;Jina NOW app&#39;</span>
 
     <span class="nd">@property</span>
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span> <span class="nf">input_modality</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Modalities</span><span class="p">:</span>
-        <span class="sd">"""</span>
+        <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Modality used for running search queries</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
 
     <span class="nd">@property</span>
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span> <span class="nf">output_modality</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Modalities</span><span class="p">:</span>
-        <span class="sd">"""</span>
+        <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Modality used for indexing data</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">flow_yaml</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="sd">"""</span>
+        <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Used to configure the flow yaml in the Jina NOW app.</span>
 <span class="sd">        :return: either the path, to the yaml or the yaml content.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flow_yaml</span>
 
     <span class="nd">@flow_yaml</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">flow_yaml</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="sd">"""</span>
+        <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the flow yaml. Either the path to the yaml or the yaml content.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_flow_yaml</span> <span class="o">=</span> <span class="n">value</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">bff</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-        <span class="sd">"""</span>
+        <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        TODO This function is currently not used but already introduces the concept of custom bff</span>
 <span class="sd">        Used to configure the bff which is used to define input and output format.</span>
 <span class="sd">        :return: the path to the file where the bff routs are configured</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="kc">None</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">playground</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-        <span class="sd">"""</span>
+        <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        TODO This function is currently not used but already introduces the concept of custom playground</span>
 <span class="sd">        Used to configure the playground(streamlit app) where the user can run example queries</span>
 <span class="sd">        :return: the path to the streamlit file.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="kc">None</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">options</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">]:</span>
-        <span class="sd">"""</span>
+        <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the options which are used to configure the app.</span>
 <span class="sd">        On CLI the user will get a prompt and at the storefront, a GUI will be generated accordingly.</span>
 <span class="sd">        Example:</span>
 <span class="sd">        return [</span>
 <span class="sd">            {</span>
-<span class="sd">                name='quality',</span>
+<span class="sd">                name=&#39;quality&#39;,</span>
 <span class="sd">                choices=[</span>
-<span class="sd">                    {'name': '🦊 medium (≈3GB mem, 15q/s)', 'value': 'openai/clip-vit-base-patch32'},</span>
-<span class="sd">                    {'name': '🐻 good (≈3GB mem, 2.5q/s)', 'value': 'openai/clip-vit-base-patch16'},</span>
-<span class="sd">                    {'name': '🦄 excellent (≈4GB mem, 0.5q/s)','value': 'openai/clip-vit-large-patch14',},</span>
+<span class="sd">                    {&#39;name&#39;: &#39;🦊 medium (≈3GB mem, 15q/s)&#39;, &#39;value&#39;: &#39;openai/clip-vit-base-patch32&#39;},</span>
+<span class="sd">                    {&#39;name&#39;: &#39;🐻 good (≈3GB mem, 2.5q/s)&#39;, &#39;value&#39;: &#39;openai/clip-vit-base-patch16&#39;},</span>
+<span class="sd">                    {&#39;name&#39;: &#39;🦄 excellent (≈4GB mem, 0.5q/s)&#39;,&#39;value&#39;: &#39;openai/clip-vit-large-patch14&#39;,},</span>
 <span class="sd">                ],</span>
-<span class="sd">                prompt_message='What quality do you expect?',</span>
-<span class="sd">                prompt_type='list'</span>
+<span class="sd">                prompt_message=&#39;What quality do you expect?&#39;,</span>
+<span class="sd">                prompt_type=&#39;list&#39;</span>
 <span class="sd">            }</span>
 <span class="sd">        ]</span>
 <span class="sd">        :return:</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">[]</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">example_datasource</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Datasource</span><span class="p">]:</span>
-        <span class="sd">"""</span>
+        <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        # TODO just a prototype - needs to be implemented in the future</span>
 <span class="sd">        Get a list of example datasets for the app.</span>
 
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">[]</span>
 
 <div class="viewcode-block" id="JinaNOWApp.check_requirements"><a class="viewcode-back" href="../../../../../api/now.apps.base.app/#now.apps.base.app.JinaNOWApp.check_requirements">[docs]</a>    <span class="k">def</span> <span class="nf">check_requirements</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="sd">"""</span>
+        <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns true if all requirements on the system are satisfied. Else False.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="kc">True</span></div>
 
     <span class="c1"># TODO Remove kubectl_path. At the moment, the setup function needs kubectl because of finetuning a custom</span>
@@ -393,7 +393,7 @@
 <div class="viewcode-block" id="JinaNOWApp.setup"><a class="viewcode-back" href="../../../../../api/now.apps.base.app/#now.apps.base.app.JinaNOWApp.setup">[docs]</a>    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">da</span><span class="p">:</span> <span class="n">DocumentArray</span><span class="p">,</span> <span class="n">user_config</span><span class="p">:</span> <span class="n">UserInput</span><span class="p">,</span> <span class="n">kubectl_path</span><span class="p">:</span> <span class="nb">str</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
-        <span class="sd">"""</span>
+        <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Runs before the flow is deployed.</span>
 <span class="sd">        Common use cases:</span>
 <span class="sd">            - create a database</span>
@@ -403,11 +403,11 @@
 <span class="sd">        :param da:</span>
 <span class="sd">        :param user_config: user configuration based on the given options</span>
 <span class="sd">        :return: dict used to replace variables in flow yaml and to clean up resources after the flow is terminated</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
 <div class="viewcode-block" id="JinaNOWApp.cleanup"><a class="viewcode-back" href="../../../../../api/now.apps.base.app/#now.apps.base.app.JinaNOWApp.cleanup">[docs]</a>    <span class="k">def</span> <span class="nf">cleanup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app_config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">"""</span>
+        <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Runs after the flow is terminated.</span>
 <span class="sd">        Cleans up the resources created during setup.</span>
 <span class="sd">        Common examples are:</span>
@@ -415,7 +415,7 @@
 <span class="sd">            - remove artifact</span>
 <span class="sd">            - notify other services</span>
 <span class="sd">        :param app_config: contains all information needed to clean up the allocated resources</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div></div>
 </pre></div>
                 </article>
@@ -434,7 +434,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Jun 02, 2022.
+                            Last updated on Jun 07, 2022.
                         </div>
                     </div>
                     <div class="right-details">

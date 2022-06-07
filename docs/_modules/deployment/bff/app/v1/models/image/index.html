@@ -5,10 +5,10 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../../../../../genindex/" /><link rel="search" title="Search" href="../../../../../../../search/" />
         <link rel="canonical" href="https://now.jina.ai/_modules/deployment/bff/app/v1/models/image.html" />
 
-    <link rel="shortcut icon" href="../../../../../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.04.07"/>
-        <title>deployment.bff.app.v1.models.image - NOW 0.0.10 documentation</title>
+    <link rel="shortcut icon" href="../../../../../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.06.04.1"/>
+        <title>deployment.bff.app.v1.models.image - NOW 0.0.11 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../../../../_static/styles/furo.css?digest=68f4518137b9aefe99b631505a2064c3c42c9852" />
+    <link rel="stylesheet" type="text/css" href="../../../../../../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="../../../../../../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../../../../../../_static/tabs.css" />
     <link rel="stylesheet" type="text/css" href="../../../../../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../../../../../">
-                <div class="brand">NOW 0.0.10 documentation</div>
+                <div class="brand">NOW 0.0.11 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -286,33 +286,33 @@
 <div class="viewcode-block" id="NowImageIndexRequestModel"><a class="viewcode-back" href="../../../../../../../api/deployment.bff.app.v1.models.image/#deployment.bff.app.v1.models.image.NowImageIndexRequestModel">[docs]</a><span class="k">class</span> <span class="nc">NowImageIndexRequestModel</span><span class="p">(</span><span class="n">BaseRequestModel</span><span class="p">):</span>
     <span class="n">images</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
         <span class="n">default</span><span class="o">=...</span><span class="p">,</span>
-        <span class="n">description</span><span class="o">=</span><span class="s1">'List of Images to index. Images should be base64encoded in `utf-8` format'</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s1">&#39;List of Images to index. Images should be base64encoded in `utf-8` format&#39;</span><span class="p">,</span>
     <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="NowImageSearchRequestModel"><a class="viewcode-back" href="../../../../../../../api/deployment.bff.app.v1.models.image/#deployment.bff.app.v1.models.image.NowImageSearchRequestModel">[docs]</a><span class="k">class</span> <span class="nc">NowImageSearchRequestModel</span><span class="p">(</span><span class="n">BaseRequestModel</span><span class="p">):</span>
-    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s1">'Text query'</span><span class="p">)</span>
+    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Text query&#39;</span><span class="p">)</span>
     <span class="n">image</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
         <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">description</span><span class="o">=</span><span class="s1">'Image query. Image should be base64encoded in `utf-8` format'</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Image query. Image should be base64encoded in `utf-8` format&#39;</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s1">'Number of matching results to return'</span><span class="p">)</span></div>
+    <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Number of matching results to return&#39;</span><span class="p">)</span></div>
 
 
 <span class="c1"># Response Model</span>
 <div class="viewcode-block" id="NowImageResponseModel"><a class="viewcode-back" href="../../../../../../../api/deployment.bff.app.v1.models.image/#deployment.bff.app.v1.models.image.NowImageResponseModel">[docs]</a><span class="k">class</span> <span class="nc">NowImageResponseModel</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
     <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-        <span class="n">default</span><span class="o">=...</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s1">'Id of the matching result.'</span>
+        <span class="n">default</span><span class="o">=...</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Id of the matching result.&#39;</span>
     <span class="p">)</span>
     <span class="n">blob</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-        <span class="n">description</span><span class="o">=</span><span class="s1">'Base64 encoded image in `utf-8` str format.'</span>
+        <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Base64 encoded image in `utf-8` str format.&#39;</span>
     <span class="p">)</span>
-    <span class="n">uri</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s1">'Uri of the image file.'</span><span class="p">)</span>
-    <span class="n">scores</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="s1">'_NamedScore'</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-        <span class="n">description</span><span class="o">=</span><span class="s1">'Similarity score with respect to the query.'</span>
+    <span class="n">uri</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s1">&#39;Uri of the image file.&#39;</span><span class="p">)</span>
+    <span class="n">scores</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="s1">&#39;_NamedScore&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Similarity score with respect to the query.&#39;</span>
     <span class="p">)</span>
-    <span class="n">tags</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="s1">'_StructValueType'</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-        <span class="n">description</span><span class="o">=</span><span class="s1">'Additional tags associated with the file.'</span>
+    <span class="n">tags</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="s1">&#39;_StructValueType&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Additional tags associated with the file.&#39;</span>
     <span class="p">)</span>
 
 <div class="viewcode-block" id="NowImageResponseModel.Config"><a class="viewcode-back" href="../../../../../../../api/deployment.bff.app.v1.models.image/#deployment.bff.app.v1.models.image.NowImageResponseModel.Config">[docs]</a>    <span class="k">class</span> <span class="nc">Config</span><span class="p">:</span>
@@ -338,7 +338,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Jun 02, 2022.
+                            Last updated on Jun 07, 2022.
                         </div>
                     </div>
                     <div class="right-details">
