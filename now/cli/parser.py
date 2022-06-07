@@ -3,6 +3,7 @@ import argparse
 from jina.parsers.helper import _ColoredHelpFormatter
 
 from now import __version__
+from now.constants import Apps
 
 
 def set_base_parser():
@@ -53,22 +54,36 @@ def set_help_parser(parser=None):
     return parser
 
 
-def set_start_parser(sp=None):
-    """Add the arguments for the jina now to the parser
-    :param parser: an optional existing parser to build upon
-    :return: the parser
-    """
-
-    parser = sp.add_parser(
-        'start',
-        help='Start jina now and create or reuse a cluster.',
-        description='Start jina now and create or reuse a cluster.',
-        formatter_class=_chf,
+def set_img2txt_parser(parser):
+    parser.add_argument(
+        '--quality',
+        help='Choose the quality of the model that you would like to finetune',
+        type=str,
     )
 
+
+def set_txt2img_parser(parser):
+    parser.add_argument(
+        '--quality',
+        help='Choose the quality of the model that you would like to finetune',
+        type=str,
+    )
+
+
+def set_img2img_parser(parser):
+    parser.add_argument(
+        '--quality',
+        help='Choose the quality of the model that you would like to finetune',
+        type=str,
+    )
+
+
+def set_default_start_args(parser):
     parser.add_argument(
         '--app',
-        help='Select the app you would like to use.',
+        help='Select the app you would like to use. Do not use this argument when'
+        ' using the `%(prog)-8s [sub-command]`',
+        choices=[Apps.IMAGE_TO_TEXT, Apps.TEXT_TO_IMAGE, Apps.IMAGE_TO_IMAGE],
         type=str,
     )
 
@@ -76,12 +91,6 @@ def set_start_parser(sp=None):
         '--data',
         help='Select one of the available datasets or provide local filepath, '
         'docarray url, or docarray secret to use your own dataset',
-        type=str,
-    )
-
-    parser.add_argument(
-        '--quality',
-        help='Choose the quality of the model that you would like to finetune',
         type=str,
     )
 
@@ -99,22 +108,58 @@ def set_start_parser(sp=None):
     )
 
 
-def set_stop_parser(sp):
-    sp.add_parser(
-        'stop',
-        help='Stop jina now and remove local cluster.',
-        description='Stop jina now and remove local cluster.',
-        formatter_class=_chf,
+def set_start_parser(parser=None):
+    """Add the arguments for the jina now to the parser
+    :param parser: an optional existing parser to build upon
+    :return: the parser
+    """
+
+    set_default_start_args(parser)
+
+    sub_parser = parser.add_subparsers(
+        dest='app',
+        description='use `%(prog)-8s [sub-command] --help` '
+        'to get additional arguments to be used with each sub-command',
+        required=False,
     )
+
+    # Set parser args for the Image to Image app
+    set_img2img_parser(
+        sub_parser.add_parser(
+            Apps.IMAGE_TO_IMAGE,
+            help='Image To Image App.',
+            description='Create an `Image To Image` app.',
+            formatter_class=_chf,
+        )
+    )
+
+    # Set parser args for the Image to Image app
+    set_img2txt_parser(
+        sub_parser.add_parser(
+            Apps.IMAGE_TO_TEXT,
+            help='Image to Text App.',
+            description='Create an `Image To Text` app.',
+            formatter_class=_chf,
+        )
+    )
+
+    # Set parser args for the Image to Image app
+    set_txt2img_parser(
+        sub_parser.add_parser(
+            Apps.TEXT_TO_IMAGE,
+            help='Text To Image App.',
+            description='Create `Text To Image` app.',
+            formatter_class=_chf,
+        )
+    )
+
+
+def set_stop_parser(sp):
+    pass
 
 
 def set_survey_parser(sp):
-    sp.add_parser(
-        'survey',
-        help='Opens a survey in the browser. Thanks for providing us feedback.',
-        description='Opens a survey in the browser. Thanks for providing us feedback.',
-        formatter_class=_chf,
-    )
+    pass
 
 
 def get_main_parser():
@@ -128,9 +173,30 @@ def get_main_parser():
         description='',
         required=True,
     )
-    set_start_parser(sp)
-    set_stop_parser(sp)
-    set_survey_parser(sp)
+    set_start_parser(
+        sp.add_parser(
+            'start',
+            help='Start jina now and create or reuse a cluster.',
+            description='Start jina now and create or reuse a cluster.',
+            formatter_class=_chf,
+        )
+    )
+    set_stop_parser(
+        sp.add_parser(
+            'stop',
+            help='Stop jina now and remove local cluster.',
+            description='Stop jina now and remove local cluster.',
+            formatter_class=_chf,
+        )
+    )
+    set_survey_parser(
+        sp.add_parser(
+            'survey',
+            help='Opens a survey in the browser. Thanks for providing us feedback.',
+            description='Opens a survey in the browser. Thanks for providing us feedback.',
+            formatter_class=_chf,
+        )
+    )
 
     return parser
 
