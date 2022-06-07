@@ -13,9 +13,9 @@ from now.data_loading.data_loading import get_dataset_url
 
 @pytest.mark.parametrize(
     'modality, ds_name',
-    [(m, d) for m in Modalities.as_list() for d in AVAILABLE_DATASET[m]],
+    [(m, d[0]) for m in Modalities() for d in AVAILABLE_DATASET[m]],
 )
-@pytest.mark.parametrize('quality', [q for q in Qualities.as_list()])
+@pytest.mark.parametrize('quality', [q for q in Qualities()])
 def test_dataset_is_available(
     ds_name: str,
     modality: Modalities,

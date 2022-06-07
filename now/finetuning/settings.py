@@ -1,21 +1,11 @@
 """ This module contains pre-configurations for finetuning on the demo datasets. """
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Tuple
 
 from docarray import DocumentArray
 
-from now.constants import DemoDatasets, Modalities, Qualities
-from now.dialog import UserInput
-
-TUNEABLE_DEMO_DATASETS = {
-    Modalities.IMAGE: [DemoDatasets.DEEP_FASHION, DemoDatasets.BIRD_SPECIES],
-    Modalities.TEXT: [],
-    Modalities.MUSIC: [
-        DemoDatasets.MUSIC_GENRES_MID,
-        DemoDatasets.MUSIC_GENRES_LARGE,
-    ],
-}
-
+from now.constants import Apps, Qualities
+from now.dataclasses import UserInput
 
 DEFAULT_EPOCHS = 50
 DEFAULT_NUM_VAL_QUERIES = 50
@@ -30,17 +20,24 @@ DEFAULT_POS_MINING_START = 'hard'
 DEFAULT_NEG_MINING_START = 'hard'
 
 PRE_TRAINED_EMBEDDING_SIZE = {
-    Modalities.IMAGE: {
+    Apps.TEXT_TO_IMAGE: {
         Qualities.MEDIUM: 512,
         Qualities.GOOD: 512,
         Qualities.EXCELLENT: 768,
     },
-    Modalities.TEXT: {
+    Apps.IMAGE_TO_TEXT: {
         Qualities.MEDIUM: 512,
         Qualities.GOOD: 512,
         Qualities.EXCELLENT: 768,
     },
-    Modalities.MUSIC: 512,
+    Apps.IMAGE_TO_IMAGE: {
+        Qualities.MEDIUM: 512,
+        Qualities.GOOD: 512,
+        Qualities.EXCELLENT: 768,
+    },
+    Apps.MUSIC_TO_MUSIC: {
+        Qualities.MEDIUM: 512,
+    },
 }
 
 
@@ -66,20 +63,13 @@ class FinetuneSettings:
 
 def _get_pre_trained_embedding_size(user_input: UserInput) -> int:
     """Returns the dimension of embeddings given the configured user input object."""
-    if user_input.output_modality == Modalities.MUSIC:
-        assert user_input.quality is None, 'Music modality has no quality to select.'
-        return PRE_TRAINED_EMBEDDING_SIZE[Modalities.MUSIC]
-    else:
-        assert user_input.quality is not None, (
-            f'Missing quality ' f'for modality {user_input.output_modality}.'
-        )
-        return PRE_TRAINED_EMBEDDING_SIZE[user_input.output_modality][
-            user_input.quality
-        ]
+    return PRE_TRAINED_EMBEDDING_SIZE[user_input.app][user_input.quality]
 
 
-def _is_finetuning(user_input: UserInput, dataset: DocumentArray) -> bool:
-    if user_input.data in TUNEABLE_DEMO_DATASETS[user_input.output_modality]:
+def _is_finetuning(
+    user_input: UserInput, dataset: DocumentArray, finetune_datasets: Tuple
+) -> bool:
+    if user_input.data in finetune_datasets:
         return True
 
     elif user_input.is_custom_dataset and all(
@@ -100,11 +90,11 @@ def _is_bi_modal(user_input: UserInput, dataset: DocumentArray) -> bool:
 
 
 def parse_finetune_settings(
-    user_input: UserInput, dataset: DocumentArray
+    user_input: UserInput, dataset: DocumentArray, finetune_datasets: Tuple
 ) -> FinetuneSettings:
     """This function parses the user input configuration into the finetune settings"""
     return FinetuneSettings(
         pre_trained_embedding_size=_get_pre_trained_embedding_size(user_input),
-        perform_finetuning=_is_finetuning(user_input, dataset),
+        perform_finetuning=_is_finetuning(user_input, dataset, finetune_datasets),
         bi_modal=_is_bi_modal(user_input, dataset),
     )
