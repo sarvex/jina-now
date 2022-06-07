@@ -35,6 +35,8 @@ ds_set = [
     'metal-lyrics',
 ]
 
+SURVEY_LINK = 'https://10sw1tcpld4.typeform.com/to/VTAyYRpR?utm_source=cli'
+
 
 def deploy_streamlit():
     """
@@ -125,6 +127,7 @@ def deploy_streamlit():
         """
 
     def search_by_t(search_text, limit=TOP_K) -> DocumentArray:
+        st.session_state.search_count += 1
         print(f'Searching by text: {search_text}')
         data = {'host': HOST, 'text': search_text, 'limit': limit}
         if PORT:
@@ -136,6 +139,7 @@ def deploy_streamlit():
         """
         Wrap file in Jina Document for searching, and do all necessary conversion to make similar to indexed Docs
         """
+        st.session_state.search_count += 1
         print(f"Searching by image")
         query_doc = document
         if query_doc.blob == b'':
@@ -247,6 +251,10 @@ def deploy_streamlit():
 
     if st.session_state.matches:
         matches = deepcopy(st.session_state.matches)
+        if st.session_state.search_count > 2:
+            st.write(
+                f"🔥 How did you like Jina NOW? [Please leave a feedback]({SURVEY_LINK}) 🔥"
+            )
         st.header('Search results')
         # Results area
         c1, c2, c3 = st.columns(3)
@@ -360,6 +368,9 @@ def setup_session_state():
 
     if 'snap' not in st.session_state:
         st.session_state.snap = None
+
+    if 'search_count' not in st.session_state:
+        st.session_state.search_count = 0
 
 
 if __name__ == '__main__':
