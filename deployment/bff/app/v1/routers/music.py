@@ -2,9 +2,9 @@ import base64
 from typing import List
 
 from docarray import Document, DocumentArray
-from fastapi import APIRouter
-from jina import Client
+from fastapi import APIRouter, Depends
 
+from deployment.bff.app.v1.dependencies.jina_client import get_jina_client
 from deployment.bff.app.v1.models.music import (
     NowMusicIndexRequestModel,
     NowMusicResponseModel,
@@ -19,7 +19,7 @@ router = APIRouter()
     "/index",
     summary='Add more data to the indexer',
 )
-def index(data: NowMusicIndexRequestModel):
+def index(data: NowMusicIndexRequestModel, jina_client=Depends(get_jina_client)):
     """
     Append the list of songs to the indexer. Each song data request should be
     `base64` encoded using human-readable characters - `utf-8`.
@@ -30,11 +30,7 @@ def index(data: NowMusicIndexRequestModel):
         message = base64.decodebytes(base64_bytes)
         index_docs.append(Document(blob=message))
 
-    if 'wolf.jina.ai' in data.host:
-        c = Client(host=data.host)
-    else:
-        c = Client(host=data.host, port=data.port)
-    c.post('/index', index_docs)
+    jina_client.post('/index', index_docs)
 
 
 @router.post(
@@ -42,15 +38,11 @@ def index(data: NowMusicIndexRequestModel):
     response_model=List[NowMusicResponseModel],
     summary='Search music data via text or music as query',
 )
-def search(data: NowMusicSearchRequestModel):
+def search(data: NowMusicSearchRequestModel, jina_client=Depends(get_jina_client)):
     """
     Retrieve matching songs for a given query. Song query should be `base64` encoded
     using human-readable characters - `utf-8`. In the case of music, the docs are already the matches.
     """
     query_doc = process_query(data.text, blob=data.song)
-    if 'wolf.jina.ai' in data.host:
-        c = Client(host=data.host)
-    else:
-        c = Client(host=data.host, port=data.port)
-    docs = c.post('/search', query_doc, parameters={"limit": data.limit})
+    docs = jina_client.post('/search', query_doc, parameters={"limit": data.limit})
     return docs.to_dict()

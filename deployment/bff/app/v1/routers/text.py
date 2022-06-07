@@ -1,9 +1,9 @@
 from typing import List
 
 from docarray import Document, DocumentArray
-from fastapi import APIRouter
-from jina import Client
+from fastapi import APIRouter, Depends
 
+from deployment.bff.app.v1.dependencies.jina_client import get_jina_client
 from deployment.bff.app.v1.models.text import (
     NowTextIndexRequestModel,
     NowTextResponseModel,
@@ -19,19 +19,14 @@ router = APIRouter()
     "/index",
     summary='Add more data to the indexer',
 )
-def index(data: NowTextIndexRequestModel):
+def index(data: NowTextIndexRequestModel, jina_client=Depends(get_jina_client)):
     """
     Append the list of texts to the indexer.
     """
     index_docs = DocumentArray()
     for text in data.texts:
         index_docs.append(Document(text=text))
-
-    if 'wolf.jina.ai' in data.host:
-        c = Client(host=data.host)
-    else:
-        c = Client(host=data.host, port=data.port)
-    c.post('/index', index_docs)
+    jina_client.post('/index', index_docs)
 
 
 # Search
@@ -40,15 +35,11 @@ def index(data: NowTextIndexRequestModel):
     response_model=List[NowTextResponseModel],
     summary='Search text data via text or image as query',
 )
-def search(data: NowTextSearchRequestModel):
+def search(data: NowTextSearchRequestModel, jina_client=Depends(get_jina_client)):
     """
     Retrieve matching texts for a given text as query. Query should be `base64` encoded
     using human-readable characters - `utf-8`.
     """
     query_doc = process_query(data.text, data.image)
-    if 'wolf.jina.ai' in data.host:
-        c = Client(host=data.host)
-    else:
-        c = Client(host=data.host, port=data.port)
-    docs = c.post('/search', query_doc, parameters={"limit": data.limit})
+    docs = jina_client.post('/search', query_doc, parameters={"limit": data.limit})
     return docs[0].matches.to_dict()
