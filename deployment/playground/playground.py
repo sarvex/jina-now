@@ -136,7 +136,7 @@ def deploy_streamlit():
         response = requests.post(URL_HOST, json=data)
         return DocumentArray.from_json(response.content)
 
-    def search_by_file(document, limit=TOP_K) -> DocumentArray:
+    def search_by_image(document, limit=TOP_K) -> DocumentArray:
         """
         Wrap file in Jina Document for searching, and do all necessary conversion to make similar to indexed Docs
         """
@@ -194,7 +194,7 @@ def deploy_streamlit():
         if query:
             doc = convert_file_to_document(query)
             st.image(doc.blob, width=160)
-            st.session_state.matches = search_by_file(document=doc)
+            st.session_state.matches = search_by_image(document=doc)
         if da_img is not None:
             st.subheader("samples:")
             img_cs = st.columns(5)
@@ -204,7 +204,7 @@ def deploy_streamlit():
                     st.image(doc.blob if doc.blob else doc.tensor, width=100)
                 with txt:
                     if st.button('Search', key=doc.id):
-                        st.session_state.matches = search_by_file(document=doc)
+                        st.session_state.matches = search_by_image(document=doc)
 
     elif media_type == "Text":
         query = st.text_input("", key="text_search_box")
@@ -244,7 +244,7 @@ def deploy_streamlit():
                 st.session_state.snap = query
                 doc = Document(tensor=query)
                 doc.convert_image_tensor_to_blob()
-                st.session_state.matches = search_by_file(document=doc)
+                st.session_state.matches = search_by_image(document=doc)
             elif st.session_state.snap is not None:
                 st.image(st.session_state.snap, width=160)
         else:
