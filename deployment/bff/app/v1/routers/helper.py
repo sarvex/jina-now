@@ -2,6 +2,7 @@ import base64
 
 from docarray import Document
 from fastapi import HTTPException
+from jina import Client
 
 
 def process_query(text: str, blob: str) -> Document:
@@ -22,3 +23,10 @@ def process_query(text: str, blob: str) -> Document:
             detail=f'Not a correct encoded query. Please see the error stack for more information. \n{e}',
         )
     return query_doc
+
+
+def get_jina_client(host: str, port: int) -> Client:
+    if 'wolf.jina.ai' in host:
+        return Client(host=host)
+    else:
+        return Client(host=host, port=port)

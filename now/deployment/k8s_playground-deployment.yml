@@ -40,7 +40,8 @@ spec:
     spec:
       containers:
         - name: now-bff
-          image: jinaai/now-bff:{docker_bff_playground_tag}
+#          image: jinaai/now-bff:{docker_bff_playground_tag}
+          image: slettner/now-bff:local-6
 #          image: jinaaitmpjoschka/now-bff:latest
           imagePullPolicy: Always
           command: ['uvicorn']
