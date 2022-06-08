@@ -119,7 +119,7 @@ jobs:
         if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
         run: |
           FILE='now/constants.py'
-          BFF_PLAYGROUND_TAG=$(sed -n '/DOCKER_BFF_AND_PLAYGROUND_TAG =/p' $FILE | cut -d \' -f2)
+          BFF_PLAYGROUND_TAG=$(sed -n '/DOCKER_BFF_PLAYGROUND_TAG =/p' $FILE | cut -d \' -f2)
           echo "BFF_PLAYGROUND_TAG=$BFF_PLAYGROUND_TAG" >> $GITHUB_ENV
       - name: Check that tag isn't used already for bff
         if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
