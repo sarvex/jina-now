@@ -33,5 +33,6 @@ class ImageToText(JinaNOWApp):
             user_config,
             kubectl_path,
             encoder_uses=CLIP_USES,
-            artifact=IMAGE_MODEL_QUALITY_MAP[user_config.quality][1],
+            encoder_uses_with=IMAGE_MODEL_QUALITY_MAP[user_config.quality][1],
+            indexer_uses='DocarrayIndexer',
         )

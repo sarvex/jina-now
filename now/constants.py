@@ -9,7 +9,7 @@ class Modalities(BetterEnum):
     MUSIC = 'music'
 
 
-class Apps(BetterEnum):
+class Apps(BetterEnum, str):
     TEXT_TO_IMAGE = 'text_to_image'
     IMAGE_TO_TEXT = 'image_to_text'
     IMAGE_TO_IMAGE = 'image_to_image'
@@ -53,10 +53,6 @@ class DemoDatasets:
     GEOLOCATION_GEOGUESSR = 'geolocation-geoguessr'
     MUSIC_GENRES_MID = 'music-genres-mid'
     MUSIC_GENRES_LARGE = 'music-genres-large'
-    MUSIC_GENRES_EXTRA_LARGE = 'music-genres-xl'
-    MUSIC_MID = 'music-mid'
-    MUSIC_LARGE = 'music-large'
-    MUSIC_EXTRA_LARGE = 'music-xl'
     ROCK_LYRICS = 'rock-lyrics'
     POP_LYRICS = 'pop-lyrics'
     RAP_LYRICS = 'rap-lyrics'
