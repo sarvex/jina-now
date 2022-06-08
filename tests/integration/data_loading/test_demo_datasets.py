@@ -46,11 +46,11 @@ def test_dataset_is_available(
         "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/text/indie-lyrics.txt10-{}.bin",
         "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/text/metal-lyrics.txt10-{}.bin",
         "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/jpeg/deepfashion.txt10-{}.bin",
-        "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/jpeg/nih-chest-xrays-{}.txt10.bin",
-        "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/jpeg/stanford-cars-{}.txt10.bin",
-        "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/jpeg/bird-species-{}.txt10.bin",
-        "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/jpeg/best-artworks-{}.txt10.bin",
-        "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/jpeg/geolocation-geoguessr-{}.txt10.bin",
+        "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/jpeg/nih-chest-xrays.txt10-{}.bin",
+        "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/jpeg/stanford-cars.txt10-{}.bin",
+        "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/jpeg/bird-species.txt10-{}.bin",
+        "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/jpeg/best-artworks.txt10-{}.bin",
+        "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/jpeg/geolocation-geoguessr.txt10-{}.bin",
     ],
 )
 def test_sample_data_is_available(ds_url: str):
