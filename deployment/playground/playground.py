@@ -21,7 +21,7 @@ root_data_dir = (
     'https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/'
 )
 
-ds_set = {
+ds_set = [
     'nft-monkey',
     'deepfashion',
     'nih-chest-xrays',
@@ -34,7 +34,9 @@ ds_set = {
     'rap-lyrics',
     'indie-lyrics',
     'metal-lyrics',
-}
+]
+
+SURVEY_LINK = 'https://10sw1tcpld4.typeform.com/to/VTAyYRpR?utm_source=cli'
 
 
 def deploy_streamlit():
@@ -61,6 +63,7 @@ def deploy_streamlit():
         query_parameters.get('port')[0] if 'port' in query_parameters.keys() else None
     )
     OUTPUT_MODALITY = query_parameters.get('output_modality')[0]
+    INPUT_MODALITY = query_parameters.get('input_modality')[0]
     DATA = (
         query_parameters.get('data')[0] if 'data' in query_parameters.keys() else None
     )
@@ -125,6 +128,7 @@ def deploy_streamlit():
         """
 
     def search_by_t(search_text, limit=TOP_K) -> DocumentArray:
+        st.session_state.search_count += 1
         print(f'Searching by text: {search_text}')
         data = {'host': HOST, 'text': search_text, 'limit': limit}
         if PORT:
@@ -136,15 +140,14 @@ def deploy_streamlit():
         """
         Wrap file in Jina Document for searching, and do all necessary conversion to make similar to indexed Docs
         """
+        st.session_state.search_count += 1
         print(f"Searching by image")
         query_doc = document
         if query_doc.blob == b'':
-            if (query_doc.uri is not None) and query_doc.uri != '':
+            if query_doc.tensor is not None:
+                query_doc.convert_image_tensor_to_blob()
+            elif (query_doc.uri is not None) and query_doc.uri != '':
                 query_doc.load_uri_to_blob()
-            elif query_doc.tensor is not None:
-                query_doc.convert_tensor_to_blob()
-
-            query_doc.convert_blob_to_image_tensor()
 
         data = {
             'host': HOST,
@@ -176,18 +179,14 @@ def deploy_streamlit():
         '<style>div.st-bf{flex-direction:column;} div.st-ag{font-weight:bold;padding-right:50px;}</style>',
         unsafe_allow_html=True,
     )
-    if OUTPUT_MODALITY == 'image':
+    if INPUT_MODALITY == 'image':
         media_type = st.radio(
             '',
-            ["Text", "Image", 'Webcam'],
+            ["Image", 'Webcam'],
             on_change=clear_match,
         )
-    elif OUTPUT_MODALITY == 'text':
-        media_type = st.radio(
-            '',
-            ["Image", "Text", 'Webcam'],
-            on_change=clear_match,
-        )
+    elif INPUT_MODALITY == 'text':
+        media_type = 'Text'
 
     if media_type == "Image":
         upload_c, preview_c = st.columns([12, 1])
@@ -253,6 +252,10 @@ def deploy_streamlit():
 
     if st.session_state.matches:
         matches = deepcopy(st.session_state.matches)
+        if st.session_state.search_count > 2:
+            st.write(
+                f"🔥 How did you like Jina NOW? [Please leave a feedback]({SURVEY_LINK}) 🔥"
+            )
         st.header('Search results')
         # Results area
         c1, c2, c3 = st.columns(3)
@@ -366,6 +369,9 @@ def setup_session_state():
 
     if 'snap' not in st.session_state:
         st.session_state.snap = None
+
+    if 'search_count' not in st.session_state:
+        st.session_state.search_count = 0
 
 
 if __name__ == '__main__':

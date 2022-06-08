@@ -17,12 +17,12 @@ from now.constants import (
     Qualities,
 )
 from now.data_loading.convert_datasets_to_jpeg import to_thumbnail_jpg
-from now.dialog import UserInput
-from now.log.log import yaspin_extended
+from now.dataclasses import UserInput
+from now.log import yaspin_extended
 from now.utils import download, sigmap
 
 
-def load_data(user_input: UserInput) -> DocumentArray:
+def load_data(output_modality, user_input: UserInput) -> DocumentArray:
     """
     Based on the user input, this function will pull the configured DocArray dataset.
 
@@ -31,14 +31,7 @@ def load_data(user_input: UserInput) -> DocumentArray:
     """
     da = None
 
-    if not user_input.is_custom_dataset:
-        print('⬇  Download DocArray dataset')
-        url = get_dataset_url(
-            user_input.data, user_input.quality, user_input.output_modality
-        )
-        da = _fetch_da_from_url(url)
-
-    else:
+    if user_input.is_custom_dataset:
         if user_input.custom_dataset_type == DatasetTypes.DOCARRAY:
             print('⬇  Pull DocArray dataset')
             da = _pull_docarray(user_input.dataset_secret)
@@ -46,9 +39,12 @@ def load_data(user_input: UserInput) -> DocumentArray:
             print('⬇  Pull DocArray dataset')
             da = _fetch_da_from_url(user_input.dataset_url)
         elif user_input.custom_dataset_type == DatasetTypes.PATH:
-            print('💿  Loading DocArray dataset from disk')
-            da = _load_from_disk(user_input.dataset_path, user_input.output_modality)
-
+            print('💿  Loading files from disk')
+            da = _load_from_disk(user_input.dataset_path, output_modality)
+    else:
+        print('⬇  Download DocArray dataset')
+        url = get_dataset_url(user_input.data, user_input.quality, output_modality)
+        da = _fetch_da_from_url(url)
     if da is None:
         raise ValueError(
             f'Could not load DocArray dataset. Please check your configuration: {user_input}.'

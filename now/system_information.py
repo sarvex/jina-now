@@ -1,5 +1,3 @@
-import os
-
 from now.deployment.deployment import cmd
 
 
@@ -23,8 +21,4 @@ def get_system_state(kubectl_path='kubectl', **kwargs):
         active_context = None
     else:
         active_context = active_context.decode('utf-8').strip()
-
-    is_debug = (
-        os.environ['IS_DEBUG'].lower() == 'true' if 'IS_DEBUG' in os.environ else False
-    )
-    return contexts, active_context, is_debug
+    return contexts, active_context
