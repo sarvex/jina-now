@@ -47,6 +47,6 @@ def get_encoder_config(encoder_uses: str, artifact: str) -> _ExecutorConfig:
     """
     return _ExecutorConfig(
         name='encoder',
-        uses=f'jinahub+docker://{encoder_uses}',
+        uses=f'jinahub+sandbox://{encoder_uses}',
         uses_with={'pretrained_model_name_or_path': artifact},
     )

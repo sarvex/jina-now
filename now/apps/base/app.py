@@ -23,6 +23,10 @@ class JinaNOWApp:
         self._flow_yaml = os.path.join(curdir, 'flow.yml')
 
     @property
+    def app(self) -> str:
+        return ''
+
+    @property
     def description(self) -> str:
         """
         Short description of the app.
@@ -114,12 +118,19 @@ class JinaNOWApp:
         This parser reads from the `options` property and parses it
         to form the command line arguments for app
         """
-        for option in self.options:
-            parser.add_argument(
-                f'--{option["name"]}',
-                help=option['description'],
-                type=str,
+        if self.app != '':
+            parser = parser.add_parser(
+                self.app,
+                help=self.description,
+                description=f'Create an {self.app} app.',
+                formatter_class=formatter,
             )
+            for option in self.options:
+                parser.add_argument(
+                    f'--{option["name"]}',
+                    help=option['description'],
+                    type=str,
+                )
 
     def check_requirements(self) -> bool:
         """

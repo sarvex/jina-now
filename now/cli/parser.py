@@ -106,6 +106,8 @@ def set_start_parser(parser=None):
     ImageToImage().set_app_parser(sub_parser, formatter=_chf)
     ImageToText().set_app_parser(sub_parser, formatter=_chf)
     TextToImage().set_app_parser(sub_parser, formatter=_chf)
+    # TODO: Uncomment below line once the music_to_music app is enabled
+    # MusicToMusic().set_app_parser(sub_parser, formatter=_chf)
 
 
 def set_stop_parser(sp):

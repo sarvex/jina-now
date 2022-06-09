@@ -17,8 +17,12 @@ from now.run_backend import finetune_flow_setup
 
 class TextToImage(JinaNOWApp):
     @property
+    def app(self) -> str:
+        return Apps.TEXT_TO_IMAGE
+
+    @property
     def description(self) -> str:
-        return 'Text to image search'
+        return 'Text to image search app'
 
     @property
     def input_modality(self) -> Modalities:
@@ -31,15 +35,6 @@ class TextToImage(JinaNOWApp):
     @property
     def options(self) -> List[Dict]:
         return [options.QUALITY_CLIP]
-
-    def set_app_parser(self, parser, formatter):
-        parser = parser.add_parser(
-            Apps.TEXT_TO_IMAGE,
-            help='Text To Image App.',
-            description='Create an `Text To Image` app.',
-            formatter_class=formatter,
-        )
-        super().set_app_parser(parser, formatter)
 
     def setup(self, da: DocumentArray, user_config: UserInput, kubectl_path) -> Dict:
         return finetune_flow_setup(
