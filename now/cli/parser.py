@@ -60,7 +60,7 @@ def set_default_start_args(parser):
         '--app',
         help='Select the app you would like to use. Do not use this argument when'
         ' using the `%(prog)-8s [sub-command]`',
-        choices=[Apps.IMAGE_TO_TEXT, Apps.TEXT_TO_IMAGE, Apps.IMAGE_TO_IMAGE],
+        choices=[app for app in Apps() if _construct_app(app).is_enabled],
         type=str,
     )
 
