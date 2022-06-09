@@ -290,6 +290,7 @@ def deploy_streamlit():
                                 f"<em>{additional_info[0]}</em> "
                                 f"<small>by {additional_info[1]}</small>"
                             )
+
                         else:
                             additional_info_text = " ".join(additional_info)
                     body += f"<figcaption>{additional_info_text}</figcaption>"

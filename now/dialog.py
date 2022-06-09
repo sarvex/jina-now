@@ -71,9 +71,7 @@ def print_headline():
         'and deploys a Flow and a playground app in the cloud or locally. \nCheck out one of our demos or bring '
         'your own data.\n'
     )
-    print(
-        'If you want learn more about our framework please visit docs.jina.ai'
-    )
+    print('If you want learn more about our framework please visit docs.jina.ai')
     print(
         '💡 Make sure you give enough memory to your Docker daemon. '
         '5GB - 8GB should be okay.'
