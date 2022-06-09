@@ -16,6 +16,10 @@ class MusicToMusic(JinaNOWApp):
         return Apps.MUSIC_TO_MUSIC
 
     @property
+    def is_enabled(self) -> bool:
+        return False
+
+    @property
     def description(self) -> str:
         return 'Music to music search app'
 

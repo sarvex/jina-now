@@ -3,10 +3,8 @@ import argparse
 from jina.parsers.helper import _ColoredHelpFormatter
 
 from now import __version__
-from now.apps.image_to_image.app import ImageToImage
-from now.apps.image_to_text.app import ImageToText
-from now.apps.text_to_image.app import TextToImage
 from now.constants import Apps
+from now.dialog import _construct_app
 
 
 def set_base_parser():
@@ -21,7 +19,7 @@ def set_base_parser():
         'Help': ('💬', 'https://slack.jina.ai'),
         'Hiring!': ('🙌', 'https://career.jina.ai'),
     }
-    url_str = '\n'.join(f'- {v[0]:<15} {k:10.10}\t{v[1]}' for k, v in urls.items())
+    url_str = '\n'.join(f'- {v[0]:<10} {k:10.10}\t{v[1]}' for k, v in urls.items())
 
     parser = argparse.ArgumentParser(
         epilog=f'Jina NOW - get your neural search case up in minutes. \n\n{url_str}',
@@ -102,12 +100,9 @@ def set_start_parser(parser=None):
         required=False,
     )
 
-    # Set parser args for the Image to Image app
-    ImageToImage().set_app_parser(sub_parser, formatter=_chf)
-    ImageToText().set_app_parser(sub_parser, formatter=_chf)
-    TextToImage().set_app_parser(sub_parser, formatter=_chf)
-    # TODO: Uncomment below line once the music_to_music app is enabled
-    # MusicToMusic().set_app_parser(sub_parser, formatter=_chf)
+    # Set parser args for the enabled apps
+    for app in Apps():
+        _construct_app(app).set_app_parser(sub_parser, formatter=_chf)
 
 
 def set_stop_parser(sp):

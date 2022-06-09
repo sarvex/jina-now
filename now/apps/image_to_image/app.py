@@ -21,6 +21,10 @@ class ImageToImage(JinaNOWApp):
         return Apps.IMAGE_TO_IMAGE
 
     @property
+    def is_enabled(self) -> bool:
+        return True
+
+    @property
     def description(self) -> str:
         return 'Image to image search app'
 

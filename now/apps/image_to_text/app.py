@@ -15,6 +15,10 @@ class ImageToText(JinaNOWApp):
         return Apps.IMAGE_TO_TEXT
 
     @property
+    def is_enabled(self) -> bool:
+        return True
+
+    @property
     def description(self) -> str:
         return 'Image to text search app'
 

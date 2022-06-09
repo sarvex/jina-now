@@ -24,7 +24,17 @@ class JinaNOWApp:
 
     @property
     def app(self) -> str:
-        return ''
+        """
+        Name of the app. Should be an enum value set in now.constants.Apps
+        """
+        raise NotImplementedError()
+
+    @property
+    def is_enabled(self) -> bool:
+        """
+        Set to True if this app is enabled for the end user.
+        """
+        raise NotImplementedError()
 
     @property
     def description(self) -> str:
@@ -118,7 +128,7 @@ class JinaNOWApp:
         This parser reads from the `options` property and parses it
         to form the command line arguments for app
         """
-        if self.app != '':
+        if self.is_enabled:
             parser = parser.add_parser(
                 self.app,
                 help=self.description,
