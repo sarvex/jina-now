@@ -35,19 +35,19 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             create_new_cluster=True,
         ),
     ),
-    # (
-    #     {
-    #         'app': Apps.MUSIC_TO_MUSIC,
-    #         'data': 'music-genres-large',
-    #         'cluster': 'new',
-    #         'deployment_type': 'local',
-    #     },
-    #     {},
-    #     UserInput(
-    #         is_custom_dataset=False,
-    #         create_new_cluster=True,
-    #     ),
-    # ),
+    (
+        {
+            'app': Apps.MUSIC_TO_MUSIC,
+            'data': 'music-genres-mix',
+            'cluster': 'new',
+            'deployment_type': 'local',
+        },
+        {},
+        UserInput(
+            is_custom_dataset=False,
+            create_new_cluster=True,
+        ),
+    ),
     (
         {
             'app': Apps.TEXT_TO_IMAGE,
