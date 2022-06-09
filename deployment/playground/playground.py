@@ -161,7 +161,6 @@ def deploy_streamlit():
         return DocumentArray.from_json(response.content)
 
     def search_by_audio(document: Document, limit=TOP_K):
-        print('Searching by audio 🔊')
         data = {
             'host': HOST,
             'song': base64.b64encode(document.blob).decode('utf-8'),
@@ -172,14 +171,14 @@ def deploy_streamlit():
             data['port'] = PORT
         response = requests.post(URL_HOST, json=data)
         result = DocumentArray.from_json(response.content)
-        track_ids = set()
+        already_added_tracks = set()
         final_result = DocumentArray()
         for doc in result:
-            if doc.tags['track_id'] in track_ids:
+            if doc.tags['track_id'] in already_added_tracks or doc.text:
                 continue
             else:
                 final_result.append(doc)
-                track_ids.add(doc.tags['track_id'])
+                already_added_tracks.add(doc.tags['track_id'])
             if len(final_result) >= TOP_K:
                 break
         return final_result
