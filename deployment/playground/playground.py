@@ -159,6 +159,20 @@ def deploy_streamlit():
         response = requests.post(URL_HOST, json=data)
         return DocumentArray.from_json(response.content)
 
+    def search_by_audio(document: Document, limit=TOP_K):
+        print('Searching by audio 🔊')
+        data = {
+            'host': HOST,
+            'song': base64.b64encode(document.blob).decode('utf-8'),
+            'limit': limit,
+        }
+
+        if PORT:
+            data['port'] = PORT
+        response = requests.post(URL_HOST, json=data)
+        print(f"got response {len(DocumentArray.from_json(response.content))}")
+        return DocumentArray.from_json(response.content)
+
     def convert_file_to_document(query):
         data = query.read()
         doc = Document(blob=data)
@@ -187,6 +201,9 @@ def deploy_streamlit():
         )
     elif INPUT_MODALITY == 'text':
         media_type = 'Text'
+
+    elif INPUT_MODALITY == 'music':
+        media_type = 'Music'
 
     if media_type == "Image":
         upload_c, preview_c = st.columns([12, 1])
