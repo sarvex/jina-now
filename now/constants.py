@@ -1,6 +1,6 @@
 from now.utils import BetterEnum
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.57'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.60'
 
 
 class Modalities(BetterEnum):
@@ -72,8 +72,8 @@ AVAILABLE_DATASET = {
         (DemoDatasets.NIH_CHEST_XRAYS, '☢️ chest x-ray (≈100K docs)'),
     ],
     Modalities.MUSIC: [
-        (DemoDatasets.MUSIC_GENRES_MID, '🎸 music mid (≈2K docs)'),
-        (DemoDatasets.MUSIC_GENRES_LARGE, '🎸 music large (≈10K docs)'),
+        (DemoDatasets.MUSIC_GENRES_MID, '🎸 rock music (≈2K docs)'),
+        # (DemoDatasets.MUSIC_GENRES_LARGE, '🎸 music large (≈10K docs)'), not ready yet, would be too large
     ],
     Modalities.TEXT: [
         (DemoDatasets.ROCK_LYRICS, '🎤 rock lyrics (200K docs)'),
