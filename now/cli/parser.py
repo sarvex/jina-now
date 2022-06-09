@@ -72,24 +72,32 @@ def set_default_start_args(parser):
     )
 
     parser.add_argument(
-        '--cluster',
-        help='Reference an existing `local` cluster or select `new` to create a new one.',
-        type=str,
-    )
-
-    parser.add_argument(
         '--deployment-type',
         help='Option is `local` and `remote`. Select `local` if you want search engine to be deployed on local '
         'cluster. Select `remote` to deploy it on Jina Cloud',
         type=str,
     )
 
+    parser.add_argument(
+        '--cluster',
+        help='Reference an existing `local` cluster or select `new` to create a new one. '
+        'Use this only when the `--deployment-type=local`',
+        type=str,
+    )
 
-def set_start_parser(parser=None):
+
+def set_start_parser(sp):
     """Add the arguments for the jina now to the parser
     :param parser: an optional existing parser to build upon
     :return: the parser
     """
+
+    parser = sp.add_parser(
+        'start',
+        help='Start jina now and create or reuse a cluster.',
+        description='Start jina now and create or reuse a cluster.',
+        formatter_class=_chf,
+    )
 
     set_default_start_args(parser)
 
@@ -106,11 +114,21 @@ def set_start_parser(parser=None):
 
 
 def set_stop_parser(sp):
-    pass
+    sp.add_parser(
+        'stop',
+        help='Stop jina now and remove local cluster.',
+        description='Stop jina now and remove local cluster.',
+        formatter_class=_chf,
+    )
 
 
 def set_survey_parser(sp):
-    pass
+    sp.add_parser(
+        'survey',
+        help='Opens a survey in the browser. Thanks for providing us feedback.',
+        description='Opens a survey in the browser. Thanks for providing us feedback.',
+        formatter_class=_chf,
+    )
 
 
 def get_main_parser():
@@ -124,30 +142,10 @@ def get_main_parser():
         description='',
         required=True,
     )
-    set_start_parser(
-        sp.add_parser(
-            'start',
-            help='Start jina now and create or reuse a cluster.',
-            description='Start jina now and create or reuse a cluster.',
-            formatter_class=_chf,
-        )
-    )
-    set_stop_parser(
-        sp.add_parser(
-            'stop',
-            help='Stop jina now and remove local cluster.',
-            description='Stop jina now and remove local cluster.',
-            formatter_class=_chf,
-        )
-    )
-    set_survey_parser(
-        sp.add_parser(
-            'survey',
-            help='Opens a survey in the browser. Thanks for providing us feedback.',
-            description='Opens a survey in the browser. Thanks for providing us feedback.',
-            formatter_class=_chf,
-        )
-    )
+
+    set_start_parser(sp)
+    set_stop_parser(sp)
+    set_survey_parser(sp)
 
     return parser
 
