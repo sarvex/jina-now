@@ -286,27 +286,29 @@ def deploy_streamlit():
         st.text(
             'Pro tip: You can download search results and use them to search again :)'
         )
+
         query = st.file_uploader("", type=['mp3', 'wav'])
-        columns = st.columns(3)
-        music_examples = load_music_examples()
-
-        def on_button_click(doc_id: str):
-            def callback():
-                st.session_state.matches = search_by_audio(
-                    music_examples[doc_id], limit=TOP_K
-                )
-
-            return callback
-
         if query:
             doc = convert_file_to_document(query)
             st.subheader('Play your song')
             st.audio(doc.blob)
             st.session_state.matches = search_by_audio(document=doc, limit=TOP_K)
 
-        for c, song in zip(columns, music_examples):
-            display_song(c, song)
-            c.button('Search', on_click=on_button_click(song.id), key=song.id)
+        else:
+            columns = st.columns(3)
+            music_examples = load_music_examples()
+
+            def on_button_click(doc_id: str):
+                def callback():
+                    st.session_state.matches = search_by_audio(
+                        music_examples[doc_id], limit=TOP_K
+                    )
+
+                return callback
+
+            for c, song in zip(columns, music_examples):
+                display_song(c, song)
+                c.button('Search', on_click=on_button_click(song.id), key=song.id)
 
     if st.session_state.matches:
         matches = deepcopy(st.session_state.matches)
