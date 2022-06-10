@@ -298,15 +298,15 @@ def deploy_streamlit():
 
             return callback
 
-        for c, song in zip(columns, music_examples):
-            display_song(c, song)
-            c.button('Search', on_click=on_button_click(song.id), key=song.id)
-
         if query:
             doc = convert_file_to_document(query)
             st.subheader('Play your song')
             st.audio(doc.blob)
             st.session_state.matches = search_by_audio(document=doc, limit=TOP_K)
+
+        for c, song in zip(columns, music_examples):
+            display_song(c, song)
+            c.button('Search', on_click=on_button_click(song.id), key=song.id)
 
     if st.session_state.matches:
         matches = deepcopy(st.session_state.matches)
