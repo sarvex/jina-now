@@ -26,7 +26,7 @@ class MusicToMusic(JinaNOWApp):
 
     @property
     def is_enabled(self) -> bool:
-        return False
+        return True
 
     @property
     def description(self) -> str:

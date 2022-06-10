@@ -72,15 +72,12 @@ def deploy_streamlit():
         URL_HOST = f"http://now-bff/api/v1/{INPUT_MODALITY}-to-{OUTPUT_MODALITY}/search"
     else:
         URL_HOST = f"https://nowrun.jina.ai/api/v1/{INPUT_MODALITY}-to-{OUTPUT_MODALITY}/search"
-        # URL_HOST = f"localhost/api/v1/{OUTPUT_MODALITY}/search"
 
     da_img = None
     da_txt = None
 
     # General
     TOP_K = 9
-    DEBUG = os.getenv("DEBUG", False)
-    DATA_DIR = "../data/images/"
 
     if DATA in ds_set:
         if OUTPUT_MODALITY == 'image':
@@ -173,7 +170,10 @@ def deploy_streamlit():
         already_added_tracks = set()
         final_result = DocumentArray()
         for doc in result:
-            if doc.tags['track_id'] in already_added_tracks or doc.text:
+            if (
+                doc.tags['track_id'] in already_added_tracks
+                or 'location' not in doc.tags
+            ):
                 continue
             else:
                 final_result.append(doc)
@@ -189,7 +189,7 @@ def deploy_streamlit():
 
     def load_music_examples() -> DocumentArray:
         ds_url = root_data_dir + 'music/' + DATA + f'-song5-{docarray_version}.bin'
-        return load_data(ds_url)
+        return load_data(ds_url)[0, 1, 4]
 
     # Layout
     st.markdown(
