@@ -4,7 +4,8 @@
 
 
 <br>
-One command to host them all. Bring your search case into the cloud in minutes. <a href="https://10sw1tcpld4.typeform.com/to/VTAyYRpR?utm_source=cli">Survey</a>
+One command to host them all. Bring your search case into the cloud in minutes. <br>
+Tell us what you think: <a href="https://10sw1tcpld4.typeform.com/to/VTAyYRpR?utm_source=cli">Survey</a>
 </p>
 
 <p align=center>
