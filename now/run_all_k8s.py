@@ -40,22 +40,22 @@ def stop_now(contexts, active_context, **kwargs):
         ]
         cluster = maybe_prompt_user(questions, 'cluster', **kwargs)
     if cluster == 'kind-jina-now':
-        only_delete_namespace = maybe_prompt_user(
+        delete_cluster = maybe_prompt_user(
             [
                 {
                     'type': 'list',
-                    'name': 'delete-ns',
-                    'message': 'Do you want to delete the namespace only and keep the cluster?',
+                    'name': 'delete-cluster',
+                    'message': 'Do you want to delete the entire cluster or just the namespace?',
                     'choices': [
-                        {'name': '⛔ no', 'value': False},
-                        {'name': '✅ yes', 'value': True},
+                        {'name': '⛔ no, keep the cluster', 'value': False},
+                        {'name': '✅ yes, delete everything', 'value': True},
                     ],
                 }
             ],
-            attribute='delete-ns',
+            attribute='delete-cluster',
             **kwargs,
         )
-        if not only_delete_namespace:
+        if delete_cluster:
             with yaspin_extended(
                 sigmap=sigmap, text=f"Remove local cluster {cluster}", color="green"
             ) as spinner:
