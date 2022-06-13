@@ -17,7 +17,7 @@ from now.run_backend import finetune_flow_setup
 
 class TextToImage(JinaNOWApp):
     @property
-    def app(self) -> str:
+    def app_name(self) -> str:
         return Apps.TEXT_TO_IMAGE
 
     @property

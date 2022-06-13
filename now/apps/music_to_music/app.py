@@ -21,7 +21,7 @@ class MusicToMusic(JinaNOWApp):
     """
 
     @property
-    def app(self) -> str:
+    def app_name(self) -> str:
         return Apps.MUSIC_TO_MUSIC
 
     @property
@@ -40,6 +40,10 @@ class MusicToMusic(JinaNOWApp):
     def output_modality(self) -> Modalities:
         return Modalities.MUSIC
 
+    @property
+    def required_docker_memory_in_gb(self) -> int:
+        return 10
+
     def check_requirements(self) -> bool:
         if not ffmpeg_is_installed():
             _handle_ffmpeg_install_required()
@@ -55,8 +59,8 @@ class MusicToMusic(JinaNOWApp):
             encoder_uses='BiModalMusicTextEncoder:fcb025de625784073c4fcf5eb6ba2d50/v0.0.11',
             encoder_uses_with={},
             finetune_datasets=(
-                DemoDatasets.MUSIC_GENRES_ROCK,
                 DemoDatasets.MUSIC_GENRES_MIX,
+                DemoDatasets.MUSIC_GENRES_ROCK,
             ),
             pre_trained_head_map={
                 DemoDatasets.MUSIC_GENRES_ROCK: 'FineTunedLinearHeadEncoder:93ea59dbd1ee3fe0bdc44252c6e86a87/'
