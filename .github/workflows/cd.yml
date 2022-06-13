@@ -6,66 +6,66 @@ on:
       - main
 
 jobs:
-#  core-test:
-#    if: |
-#      !startsWith(github.event.head_commit.message, 'chore') &&
-#      !startsWith(github.event.head_commit.message, 'build: hotfix') &&
-#      !endsWith(github.event.head_commit.message, 'reformatted by jina-dev-bot')
-#    runs-on: ubuntu-latest
-#    strategy:
-#      fail-fast: false
-#      matrix:
-#        python-version: [3.7]
-#        group: [1, 2, 3, 4, 5, 6]     # set to the number of end-to-end tests
-#    steps:
-#      - uses: actions/checkout@v2
-#      - name: Set up Python ${{ matrix.python-version }}
-#        uses: actions/setup-python@v2
-#        with:
-#          python-version: ${{ matrix.python-version }}
-#      - name: Prepare environment
-#        run: |
-#          sudo apt update && sudo apt install ffmpeg
-#          python -m pip install --upgrade pip
-#          python -m pip install wheel
-#          pip install --no-cache-dir ".[full,test]"
-#      - name: Add JCloud auth token
-#        run: |
-#          mkdir -p ~/.jina
-#          touch ~/.jina/config.json
-#          echo "{\"auth_token\": \"${WOLF_TOKEN}\"}" > ~/.jina/config.json
-#          echo ~/.jina/config.json
-#        env:
-#          WOLF_TOKEN: ${{ secrets.WOLF_TOKEN }}
-#      - name: Test
-#        id: test
-#        run: pytest --suppress-no-test-exit-code -v -s -m "not gpu" --splits 6 --group ${{ matrix.group }} tests/
-#        timeout-minutes: 25
-#      - name: Setup tmate session for debugging
-#        if: ${{ failure() }}
-#        uses: mxschmitt/action-tmate@v3
-#        timeout-minutes: 120
+  core-test:
+    if: |
+      !startsWith(github.event.head_commit.message, 'chore') &&
+      !startsWith(github.event.head_commit.message, 'build: hotfix') &&
+      !endsWith(github.event.head_commit.message, 'reformatted by jina-dev-bot')
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.7]
+        group: [1, 2, 3, 4, 5, 6]     # set to the number of end-to-end tests
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Prepare environment
+        run: |
+          sudo apt update && sudo apt install ffmpeg
+          python -m pip install --upgrade pip
+          python -m pip install wheel
+          pip install --no-cache-dir ".[full,test]"
+      - name: Add JCloud auth token
+        run: |
+          mkdir -p ~/.jina
+          touch ~/.jina/config.json
+          echo "{\"auth_token\": \"${WOLF_TOKEN}\"}" > ~/.jina/config.json
+          echo ~/.jina/config.json
+        env:
+          WOLF_TOKEN: ${{ secrets.WOLF_TOKEN }}
+      - name: Test
+        id: test
+        run: pytest --suppress-no-test-exit-code -v -s -m "not gpu" --splits 6 --group ${{ matrix.group }} tests/
+        timeout-minutes: 25
+      - name: Setup tmate session for debugging
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3
+        timeout-minutes: 120
 
-#  prerelease:
-#    runs-on: ubuntu-latest
-#    needs: core-test
-#    steps:
-#      - uses: actions/checkout@v2
-#        with:
-#          fetch-depth: 100
-#      - name: Pre-release (.devN)
-#        run: |
-#          git fetch --depth=1 origin +refs/tags/*:refs/tags/*
-#          pip install twine wheel
-#          ./scripts/release.sh
-#        env:
-#          TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
-#          TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
-#          JINA_SLACK_WEBHOOK: ${{ secrets.JINA_SLACK_WEBHOOK }}
+  prerelease:
+    runs-on: ubuntu-latest
+    needs: core-test
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 100
+      - name: Pre-release (.devN)
+        run: |
+          git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+          pip install twine wheel
+          ./scripts/release.sh
+        env:
+          TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
+          JINA_SLACK_WEBHOOK: ${{ secrets.JINA_SLACK_WEBHOOK }}
 
   update-deployment-if-required:
     runs-on: ubuntu-latest
-#    needs: core-test
+    needs: core-test
     steps:
       - uses: actions/checkout@v2
       - name: Check if deployment has changed
