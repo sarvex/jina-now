@@ -1,10 +1,11 @@
+import os
 from typing import Dict
 
 import cowsay
 from docarray import DocumentArray
 
 from now.apps.base.app import JinaNOWApp
-from now.constants import Apps, DemoDatasets, Modalities
+from now.constants import Apps, DemoDatasets, Modalities, Qualities
 from now.dataclasses import UserInput
 from now.deployment.deployment import which
 from now.run_backend import finetune_flow_setup
@@ -19,6 +20,9 @@ class MusicToMusic(JinaNOWApp):
     To re-built, go in now/hub/head_encoder with place the model weights in this folder
     and run "jina hub push --private . -t linear_head_encoder_music_2k"
     """
+
+    def __init__(self):
+        super().__init__()
 
     @property
     def app_name(self) -> str:
@@ -43,6 +47,16 @@ class MusicToMusic(JinaNOWApp):
     @property
     def required_docker_memory_in_gb(self) -> int:
         return 10
+
+    def set_flow_yaml(self, **kwargs):
+        flow_dir = os.path.abspath(os.path.join(__file__, '..'))
+        self.flow_yaml = os.path.join(flow_dir, 'ft-flow-music.yml')
+
+    @property
+    def pre_trained_embedding_size(self) -> Dict[Qualities, int]:
+        return {
+            Qualities.MEDIUM: 512,
+        }
 
     def check_requirements(self) -> bool:
         if not ffmpeg_is_installed():

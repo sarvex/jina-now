@@ -21,8 +21,8 @@ DEFAULT_LOGGING_CONFIG = {
     'formatters': {
         'basic': {
             'class': 'logging.Formatter',
-            'datefmt': '%Y-%m-%d %H:%M:%S',
             'format': '%(asctime)s  %(name)-30s  %(levelname)8s  ::  %(message)s',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
         }
     },
     'handlers': {

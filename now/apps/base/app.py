@@ -5,7 +5,7 @@ from typing import Dict, List, Optional
 import docker
 from docarray import DocumentArray
 
-from now.constants import Modalities
+from now.constants import Modalities, Qualities
 from now.dataclasses import UserInput
 from now.datasource.datasource import Datasource
 
@@ -20,8 +20,9 @@ class JinaNOWApp:
     """
 
     def __init__(self):
-        curdir = os.path.realpath(__file__)
-        self._flow_yaml = os.path.join(curdir, 'flow.yml')
+        self.flow_yaml = ''
+
+        self.set_flow_yaml()
 
     @property
     def app_name(self) -> str:
@@ -60,20 +61,10 @@ class JinaNOWApp:
         """
         raise NotImplementedError()
 
-    @property
-    def flow_yaml(self) -> str:
-        """
-        Used to configure the flow yaml in the Jina NOW app.
-        :return: either the path, to the yaml or the yaml content.
-        """
-        return self._flow_yaml
-
-    @flow_yaml.setter
-    def flow_yaml(self, value: str):
-        """
-        Set the flow yaml. Either the path to the yaml or the yaml content.
-        """
-        self._flow_yaml = value
+    def set_flow_yaml(self, **kwargs):
+        """Used to configure the flow yaml in the Jina NOW app."""
+        flow_dir = os.path.abspath(os.path.join(__file__, '..'))
+        self.flow_yaml = os.path.join(flow_dir, 'flow.yml')
 
     @property
     def bff(self) -> Optional[str]:
@@ -114,6 +105,13 @@ class JinaNOWApp:
         :return:
         """
         return []
+
+    @property
+    def pre_trained_embedding_size(self) -> Dict[Qualities, int]:
+        """
+        Returns a dictionary which maps given quality to embedding size of pretrained model.
+        """
+        return {}
 
     @property
     def example_datasource(self) -> List[Datasource]:

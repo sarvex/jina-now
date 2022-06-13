@@ -48,7 +48,8 @@ def test_image_index(
     base64_image_string: str,
 ):
     response = client_with_mocked_jina_client(DocumentArray()).post(
-        '/api/v1/image-to-image/index', json={'images': [base64_image_string]}
+        '/api/v1/image-to-image/index',
+        json={'images': [base64_image_string], 'tags': [{'tag': 'val'}]},
     )
     assert response.status_code == status.HTTP_200_OK
 
