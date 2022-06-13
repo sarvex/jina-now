@@ -1,0 +1,24 @@
+jtype: Flow
+with:
+  name: nowapi
+  port_expose: 8080
+  cors: True
+executors:
+  - name: encoder_text
+    uses: ${{ ENV.ENCODER_NAME }}
+    jcloud:
+      capacity: on-demand
+      resources:
+        memory: 8G
+    uses_with:
+      model_name: ${{ ENV.PRE_TRAINED_MODEL_NAME }}
+    env:
+      JINA_LOG_LEVEL: DEBUG
+  - name: indexer
+    uses: ${{ ENV.INDEXER_NAME }}
+    jcloud:
+      capacity: on-demand
+      resources:
+        memory: 4G
+    env:
+      JINA_LOG_LEVEL: DEBUG

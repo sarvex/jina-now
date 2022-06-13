@@ -1,6 +1,6 @@
 from now.utils import BetterEnum
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.68'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.69'
 
 
 class Modalities(BetterEnum):
@@ -10,6 +10,7 @@ class Modalities(BetterEnum):
 
 
 class Apps(BetterEnum):
+    TEXT_TO_TEXT = 'text_to_text'
     TEXT_TO_IMAGE = 'text_to_image'
     IMAGE_TO_TEXT = 'image_to_text'
     IMAGE_TO_IMAGE = 'image_to_image'

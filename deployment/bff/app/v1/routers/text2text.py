@@ -3,10 +3,10 @@ from typing import List
 from docarray import Document, DocumentArray
 from fastapi import APIRouter
 
-from deployment.bff.app.v1.models.image import NowImageSearchRequestModel
 from deployment.bff.app.v1.models.text import (
     NowTextIndexRequestModel,
     NowTextResponseModel,
+    NowTextSearchRequestModel,
 )
 from deployment.bff.app.v1.routers.helper import get_jina_client, process_query
 
@@ -20,7 +20,7 @@ router = APIRouter()
 )
 def index(data: NowTextIndexRequestModel):
     """
-    Append the list of text to the indexer.
+    Append the list of text data to the indexer.
     """
     index_docs = DocumentArray()
     for text, tags in zip(data.texts, data.tags):
@@ -32,14 +32,13 @@ def index(data: NowTextIndexRequestModel):
 @router.post(
     "/search",
     response_model=List[NowTextResponseModel],
-    summary='Search text data via image as query',
+    summary='Search text data via text as query',
 )
-def search(data: NowImageSearchRequestModel):
+def search(data: NowTextSearchRequestModel):
     """
-    Retrieve matching text for a given image query. Image query should be
-    `base64` encoded using human-readable characters - `utf-8`.
+    Retrieve matching text for a given text as query.
     """
-    query_doc = process_query(blob=data.image)
+    query_doc = process_query(text=data.text)
     docs = get_jina_client(data.host, data.port).post(
         '/search', query_doc, parameters={"limit": data.limit}
     )
