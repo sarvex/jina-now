@@ -73,6 +73,12 @@ def cleanup(deployment_type, dataset):
             Modalities.TEXT,
             DemoDatasets.ROCK_LYRICS,
         ),
+        (
+            Apps.TEXT_TO_TEXT,
+            Modalities.TEXT,
+            Modalities.TEXT,
+            DemoDatasets.POP_LYRICS,
+        ),
     ],
 )  # art, rock-lyrics -> no finetuning, fashion -> finetuning
 @pytest.mark.parametrize('quality', ['medium'])
@@ -120,9 +126,9 @@ def test_backend(
         search_text = 'test'
 
     # Perform end-to-end check via bff
-    if app == Apps.IMAGE_TO_IMAGE or app == Apps.IMAGE_TO_TEXT:
+    if app in [Apps.IMAGE_TO_IMAGE, Apps.IMAGE_TO_TEXT]:
         request_body = {'image': test_search_image, 'limit': 9}
-    elif app == Apps.TEXT_TO_IMAGE:
+    elif app in [Apps.TEXT_TO_IMAGE, Apps.TEXT_TO_TEXT]:
         request_body = {'text': search_text, 'limit': 9}
     else:  # Add different request body if app changes
         request_body = {}
