@@ -6,7 +6,7 @@ from jina.helper import get_or_reuse_loop
 
 
 def deploy_wolf(path: str, name: str, env_file: str = None):
-    return CloudFlow(path=path, name=name, env_file=env_file).__enter__()
+    return
 
 
 def terminate_wolf(flow_id: str):

@@ -8,6 +8,7 @@ import av
 import numpy as np
 import requests
 import streamlit as st
+import streamlit.components.v1 as components
 from docarray import Document, DocumentArray
 from docarray import __version__ as docarray_version
 from streamlit_webrtc import ClientSettings, webrtc_streamer
@@ -58,15 +59,15 @@ def deploy_streamlit():
     setup_session_state()
     query_parameters = st.experimental_get_query_params()
     print(f"Received query params: {query_parameters}")
-    HOST = query_parameters.get('host')[0]
-    PORT = (
-        query_parameters.get('port')[0] if 'port' in query_parameters.keys() else None
-    )
-    OUTPUT_MODALITY = query_parameters.get('output_modality')[0]
-    INPUT_MODALITY = query_parameters.get('input_modality')[0]
-    DATA = (
-        query_parameters.get('data')[0] if 'data' in query_parameters.keys() else None
-    )
+    HOST = "grpcs://nowapi-1cf62a2f29.wolf.jina.ai"  # query_parameters.get('host')[0]
+    PORT = 443  # (
+    #     query_parameters.get('port')[0] if 'port' in query_parameters.keys() else None
+    # )
+    OUTPUT_MODALITY = 'image'  # query_parameters.get('output_modality')[0]
+    INPUT_MODALITY = 'image'  # query_parameters.get('input_modality')[0]
+    DATA = 'deepfashion'  # '(
+    # query_parameters.get('data')[0] if 'data' in query_parameters.keys() else None
+    # )
     # TODO: fix such that can call 'localhost' instead of 'jinanowtesting'
     if HOST == 'gateway':  # need to call now-bff as we communicate between pods
         URL_HOST = f"http://now-bff/api/v1/{INPUT_MODALITY}-to-{OUTPUT_MODALITY}/search"
@@ -90,6 +91,7 @@ def deploy_streamlit():
             # for now deactivated sample images for text
             output_modality_dir = 'text'
             data_dir = root_data_dir + output_modality_dir + '/'
+            print(data_dir + DATA + f'.txt10-{docarray_version}.bin')
             da_txt = load_data(data_dir + DATA + f'.txt10-{docarray_version}.bin')
 
     if OUTPUT_MODALITY == 'text':
@@ -375,6 +377,51 @@ def deploy_streamlit():
             1.0,
             key='slider',
             on_change=update_conf,
+        )
+
+    # Adding social share buttons
+    twitter, linkedin, facebook, _ = st.columns([0.12, 0.12, 0.12, 0.55])
+    with twitter:
+        components.html(
+            """
+                <a href="https://twitter.com/share?ref_src=twsrc%5Etfw" class="twitter-share-button"
+                data-text="Check my cool Streamlit Web-App🎈"
+                data-url={}
+                data-show-count="false">
+                data-size="Large"
+                data-hashtags="Jina NOW, Neural search, Jina AI"
+                Tweet
+                </a>
+                <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+            """
+        )
+
+    with linkedin:
+        components.html(
+            """
+                <a href="https://www.linkedin.com/sharing/share-offsite/?url=https://now.jina.ai"
+                class="linkedin-share-button"
+                rel="noreferrer noopener" when using target="_blank">
+                </a>
+                <script src="https://platform.linkedin.com/in.js" type="text/javascript">lang: en_US</script>
+                <script type="IN/Share" data-url="https://now.jina.ai"></script>
+            """
+        )
+
+    with facebook:
+        components.html(
+            """
+                <a href="https://www.facebook.com/sharer.php?u=https://now.jina.ai" class="facebook-share-button"
+                rel="noreferrer noopener" when using target="_blank">
+                </a>
+                <div id="fb-root"></div>
+                <script async defer crossorigin="anonymous"
+                src="https://connect.facebook.net/en_GB/sdk.js#xfbml=1&version=v14.0" nonce="kquhy3fp"></script>
+                <div class="fb-share-button" data-href="https://now.jina.ai" data-layout="button" data-size="small">
+                <a target="_blank"
+                 href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fnow.jina.ai%2F&amp;src=sdkpreparse"
+                  class="fb-xfbml-parse-ignore">Share</a></div>
+            """
         )
 
 
