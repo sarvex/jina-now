@@ -26,7 +26,6 @@ def stop_now(contexts, active_context, **kwargs):
     if os.path.exists(user(JC_SECRET)):
         flow_details = get_remote_flow_details()
         choices += [flow_details['gateway']]
-        flow_id = flow_details['flow_id']
     if len(choices) == 0:
         cowsay.cow('nothing to stop')
         return
@@ -41,25 +40,47 @@ def stop_now(contexts, active_context, **kwargs):
         ]
         cluster = maybe_prompt_user(questions, 'cluster', **kwargs)
     if cluster == 'kind-jina-now':
-        with yaspin_extended(
-            sigmap=sigmap, text=f"Remove local cluster {cluster}", color="green"
-        ) as spinner:
-            cmd(f'{kwargs["kind_path"]} delete clusters jina-now')
-            spinner.ok('💀')
-        cowsay.cow('local jina NOW cluster removed')
+        only_delete_namespace = maybe_prompt_user(
+            [
+                {
+                    'type': 'list',
+                    'name': 'delete-ns',
+                    'message': 'Do you want to delete the namespace only and keep the cluster?',
+                    'choices': [
+                        {'name': '⛔ no', 'value': False},
+                        {'name': '✅ yes', 'value': True},
+                    ],
+                }
+            ],
+            attribute='delete-ns',
+            **kwargs,
+        )
+        if not only_delete_namespace:
+            with yaspin_extended(
+                sigmap=sigmap, text=f"Remove local cluster {cluster}", color="green"
+            ) as spinner:
+                cmd(f'{kwargs["kind_path"]} delete clusters jina-now')
+                spinner.ok('💀')
+            cowsay.cow('local jina NOW cluster removed')
+        else:
+            with yaspin_extended(
+                sigmap=sigmap,
+                text=f"Remove namespace nowapi NOW from {cluster}",
+                color="green",
+            ) as spinner:
+                cmd(f'{kwargs["kubectl_path"]} delete ns nowapi')
+                spinner.ok('💀')
+            cowsay.cow(f'nowapi namespace removed from {cluster}')
     elif 'wolf.jina.ai' in cluster:
+        flow_details = get_remote_flow_details()
+        flow_id = flow_details['flow_id']
         _result = status_wolf(flow_id)
-        if _result['status'] == 'ALIVE':
+        if _result is None:
+            print(f'❎ Flow not found in JCloud. Likely, it has been deleted already')
+        if _result is not None and _result['status'] == 'ALIVE':
             terminate_wolf(flow_id)
         os.remove(user(JC_SECRET))
         cowsay.cow(f'remote Flow `{cluster}` removed')
-    else:
-        with yaspin_extended(
-            sigmap=sigmap, text=f"Remove jina NOW from {cluster}", color="green"
-        ) as spinner:
-            cmd(f'{kwargs["kubectl_path"]} delete ns nowapi')
-            spinner.ok('💀')
-        cowsay.cow(f'nowapi namespace removed from {cluster}')
 
 
 def get_task(kwargs):
