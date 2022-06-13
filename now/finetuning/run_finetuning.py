@@ -7,27 +7,28 @@ from copy import deepcopy
 from os.path import join as osp
 from typing import Dict
 
-import finetuner
 from docarray import DocumentArray
-from docarray.math.evaluation import ndcg_at_k
-from finetuner.tuner.callback import (
-    BestModelCheckpoint,
-    EarlyStopping,
-    EvaluationCallback,
-)
-from finetuner.tuner.pytorch.losses import TripletLoss
-from finetuner.tuner.pytorch.miner import TripletEasyHardMiner
 
-from now.constants import Apps
 from now.dataclasses import UserInput
 from now.finetuning.dataset import FinetuneDataset, build_finetuning_dataset
 from now.finetuning.embeddings import embed_now
 from now.finetuning.settings import FinetuneSettings
-from now.hub.head_encoder.head_encoder import LinearHead, get_bi_modal_embedding
-from now.hub.hub import push_to_hub
-from now.improvements.improvements import show_improvement
+
+# from now.improvements.improvements import show_improvement
 from now.log import yaspin_extended
 from now.utils import sigmap
+
+# from now.hub.head_encoder.head_encoder import LinearHead, get_bi_modal_embedding
+
+
+# from finetuner.tuner.callback import (
+#     BestModelCheckpoint,
+#     EarlyStopping,
+#     EvaluationCallback,
+# )
+# from finetuner.tuner.pytorch.losses import TripletLoss
+# from finetuner.tuner.pytorch.miner import TripletEasyHardMiner
+
 
 _BASE_SAVE_DIR = 'now/hub/head_encoder'
 
@@ -60,28 +61,28 @@ def finetune_now(
     if pre_trained_head_map is not None and user_input.data in pre_trained_head_map:
         print(f'⚡️ Using cached hub model for speed')
         return pre_trained_head_map[user_input.data]
-    dataset = _maybe_add_embeddings(
-        encoder_uses, encoder_uses_with, dataset, kubectl_path
-    )
+    # dataset = _maybe_add_embeddings(
+    #     encoder_uses, encoder_uses_with, dataset, kubectl_path
+    # )
 
     dataset = dataset.shuffle(42)
 
-    if finetune_settings.bi_modal:
-        _prepare_dataset_bi_modal(dataset)
+    # if finetune_settings.bi_modal:
+    #     _prepare_dataset_bi_modal(dataset)
 
     finetune_ds = build_finetuning_dataset(dataset, finetune_settings)
 
     with _finetune_dir() as save_dir:
 
         finetuned_model_path = _finetune_layer(finetune_ds, finetune_settings, save_dir)
+        #
+        # if "NOW_CI_RUN" not in os.environ and user_input.app == Apps.TEXT_TO_IMAGE:
+        #     _show_finetune_improvements(
+        #         user_input, finetune_settings, finetune_ds, finetuned_model_path
+        #     )
 
-        if "NOW_CI_RUN" not in os.environ and user_input.app == Apps.TEXT_TO_IMAGE:
-            _show_finetune_improvements(
-                user_input, finetune_settings, finetune_ds, finetuned_model_path
-            )
-
-        executor_name = push_to_hub(save_dir)
-    return executor_name
+        # executor_name = push_to_hub(save_dir)
+    return ''
 
 
 def _finetune_layer(
@@ -97,21 +98,21 @@ def _finetune_layer(
     save_dir = os.path.join(save_dir, 'now', 'hub', 'head_encoder')
     os.makedirs(save_dir, exist_ok=True)
 
-    callbacks = [
-        EvaluationCallback(
-            finetune_ds.val_query,
-            finetune_ds.val_index,
-            limit=finetune_settings.eval_match_limit,
-            num_workers=8,
-            metrics={'ndcg': (ndcg_at_k, {})},
-        ),
-        BestModelCheckpoint(monitor='ndcg', save_dir=save_dir),
-        EarlyStopping(
-            monitor='ndcg',
-            verbose=False,
-            patience=finetune_settings.early_stopping_patience,
-        ),
-    ]
+    # callbacks = [
+    #     EvaluationCallback(
+    #         finetune_ds.val_query,
+    #         finetune_ds.val_index,
+    #         limit=finetune_settings.eval_match_limit,
+    #         num_workers=8,
+    #         metrics={'ndcg': (ndcg_at_k, {})},
+    #     ),
+    #     BestModelCheckpoint(monitor='ndcg', save_dir=save_dir),
+    #     EarlyStopping(
+    #         monitor='ndcg',
+    #         verbose=False,
+    #         patience=finetune_settings.early_stopping_patience,
+    #     ),
+    # ]
 
     print('💪 fine-tuning:')
     input_size = (
@@ -119,24 +120,24 @@ def _finetune_layer(
         if not finetune_settings.bi_modal
         else finetune_settings.pre_trained_embedding_size * 2
     )
-    head = LinearHead(input_size, finetune_settings.finetune_layer_size)
+    # head = LinearHead(input_size, finetune_settings.finetune_layer_size)
 
-    finetuner.fit(
-        head,
-        train_data=finetune_ds.train,
-        eval_data=finetune_ds.val,
-        epochs=finetune_settings.epochs,
-        learning_rate=finetune_settings.learning_rate,
-        batch_size=finetune_settings.batch_size,
-        loss=TripletLoss(
-            miner=TripletEasyHardMiner(
-                pos_strategy=finetune_settings.pos_mining_strat,
-                neg_strategy=finetune_settings.neg_mining_strat,
-            ),
-        ),
-        num_items_per_class=finetune_settings.num_items_per_class,
-        callbacks=callbacks,
-    )
+    # finetuner.fit(
+    #     head,
+    #     train_data=finetune_ds.train,
+    #     eval_data=finetune_ds.val,
+    #     epochs=finetune_settings.epochs,
+    #     learning_rate=finetune_settings.learning_rate,
+    #     batch_size=finetune_settings.batch_size,
+    #     loss=TripletLoss(
+    #         miner=TripletEasyHardMiner(
+    #             pos_strategy=finetune_settings.pos_mining_strat,
+    #             neg_strategy=finetune_settings.neg_mining_strat,
+    #         ),
+    #     ),
+    #     num_items_per_class=finetune_settings.num_items_per_class,
+    #     callbacks=callbacks,
+    # )
     print('🧠 Perfect! Early stopping triggered since accuracy is great already')
 
     return os.path.join(save_dir, 'best_model_ndcg')

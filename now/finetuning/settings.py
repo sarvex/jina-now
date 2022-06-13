@@ -67,9 +67,9 @@ def _get_pre_trained_embedding_size(user_input: UserInput) -> int:
 
 
 def _is_finetuning(
-    user_input: UserInput, dataset: DocumentArray, finetune_datasets: Tuple
+    user_input: UserInput, dataset: DocumentArray, finetuneable_datasets: Tuple
 ) -> bool:
-    if user_input.data in finetune_datasets:
+    if user_input.data in finetuneable_datasets:
         return True
 
     elif user_input.is_custom_dataset and all(
@@ -90,11 +90,11 @@ def _is_bi_modal(user_input: UserInput, dataset: DocumentArray) -> bool:
 
 
 def parse_finetune_settings(
-    user_input: UserInput, dataset: DocumentArray, finetune_datasets: Tuple
+    user_input: UserInput, dataset: DocumentArray, finetuneable_datasets: Tuple
 ) -> FinetuneSettings:
     """This function parses the user input configuration into the finetune settings"""
     return FinetuneSettings(
         pre_trained_embedding_size=_get_pre_trained_embedding_size(user_input),
-        perform_finetuning=_is_finetuning(user_input, dataset, finetune_datasets),
+        perform_finetuning=_is_finetuning(user_input, dataset, finetuneable_datasets),
         bi_modal=_is_bi_modal(user_input, dataset),
     )
