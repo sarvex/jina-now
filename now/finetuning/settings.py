@@ -8,6 +8,7 @@ from now.constants import Apps, Qualities
 from now.dataclasses import UserInput
 
 DEFAULT_EPOCHS = 50
+DEFAULT_HIDDEN_SIZES = (128,)
 DEFAULT_NUM_VAL_QUERIES = 50
 DEFAULT_FINETUNED_EMBEDDING_SIZE = 128
 DEFAULT_BATCH_SIZE = 128
@@ -48,6 +49,7 @@ class FinetuneSettings:
     bi_modal: bool  # atm, bi-modal means text and some blob value
     finetuned_model_name: Optional[str] = None
 
+    hidden_sizes: Tuple[int] = DEFAULT_HIDDEN_SIZES
     batch_size: int = DEFAULT_BATCH_SIZE
     epochs: int = DEFAULT_EPOCHS
     finetune_layer_size: int = DEFAULT_FINETUNED_EMBEDDING_SIZE
