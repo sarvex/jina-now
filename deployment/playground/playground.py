@@ -379,50 +379,45 @@ def deploy_streamlit():
             on_change=update_conf,
         )
 
-        # Adding social share buttons
-        twitter, linkedin, facebook, _ = st.columns([0.12, 0.12, 0.12, 0.55])
-        with twitter:
-            components.html(
-                """
-                    <a href="https://twitter.com/share?ref_src=twsrc%5Etfw" class="twitter-share-button"
-                    data-text="Check my cool Streamlit Web-App🎈"
-                    data-url={}
-                    data-show-count="false">
-                    data-size="Large"
-                    data-hashtags="Jina NOW, Neural search, Jina AI"
-                    Tweet
-                    </a>
-                    <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-                """
-            )
+    # Adding social share buttons
+    _, twitter, linkedin, facebook = st.columns([0.55, 0.12, 0.12, 0.12])
+    with twitter:
+        components.html(
+            """
+                <a href="https://twitter.com/share?ref_src=twsrc%5Etfw" class="twitter-share-button"
+                Tweet
+                </a>
+                <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+            """
+        )
 
-        with linkedin:
-            components.html(
-                """
-                    <a href="https://www.linkedin.com/sharing/share-offsite/?url=https://now.jina.ai"
-                    class="linkedin-share-button"
-                    rel="noreferrer noopener" when using target="_blank">
-                    </a>
-                    <script src="https://platform.linkedin.com/in.js" type="text/javascript">lang: en_US</script>
-                    <script type="IN/Share" data-url="https://now.jina.ai"></script>
-                """
-            )
+    with linkedin:
+        components.html(
+            """
+                <a href="https://www.linkedin.com/sharing/share-offsite/?url=https://now.jina.ai"
+                class="linkedin-share-button"
+                rel="noreferrer noopener" when using target="_blank">
+                </a>
+                <script src="https://platform.linkedin.com/in.js" type="text/javascript">lang: en_US</script>
+                <script type="IN/Share" data-url="https://now.jina.ai"></script>
+            """
+        )
 
-        with facebook:
-            components.html(
-                """
-                    <a href="https://www.facebook.com/sharer.php?u=https://now.jina.ai" class="facebook-share-button"
-                    rel="noreferrer noopener" when using target="_blank">
-                    </a>
-                    <div id="fb-root"></div>
-                    <script async defer crossorigin="anonymous"
-                    src="https://connect.facebook.net/en_GB/sdk.js#xfbml=1&version=v14.0" nonce="kquhy3fp"></script>
-                    <div class="fb-share-button" data-href="https://now.jina.ai" data-layout="button" data-size="small">
-                    <a target="_blank"
-                     href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fnow.jina.ai%2F&amp;src=sdkpreparse"
-                      class="fb-xfbml-parse-ignore">Share</a></div>
-                """
-            )
+    with facebook:
+        components.html(
+            """
+                <a href="https://www.facebook.com/sharer.php?u=https://now.jina.ai" class="facebook-share-button"
+                rel="noreferrer noopener" when using target="_blank">
+                </a>
+                <div id="fb-root"></div>
+                <script async defer crossorigin="anonymous"
+                src="https://connect.facebook.net/en_GB/sdk.js#xfbml=1&version=v14.0" nonce="kquhy3fp"></script>
+                <div class="fb-share-button" data-href="https://now.jina.ai" data-layout="button" data-size="small">
+                <a target="_blank"
+                 href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fnow.jina.ai%2F&amp;src=sdkpreparse"
+                  class="fb-xfbml-parse-ignore">Share</a></div>
+            """
+        )
 
 
 def display_song(attach_to, song_doc: Document):
