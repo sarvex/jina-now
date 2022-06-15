@@ -81,6 +81,13 @@ def stop_now(contexts, active_context, **kwargs):
             terminate_wolf(flow_id)
         os.remove(user(JC_SECRET))
         cowsay.cow(f'remote Flow `{cluster}` removed')
+    else:
+        with yaspin_extended(
+            sigmap=sigmap, text=f"Remove jina NOW from {cluster}", color="green"
+        ) as spinner:
+            cmd(f'{kwargs["kubectl_path"]} delete ns nowapi')
+            spinner.ok('💀')
+        cowsay.cow(f'nowapi namespace removed from {cluster}')
 
 
 def get_task(kwargs):
