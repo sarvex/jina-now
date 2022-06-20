@@ -31,7 +31,7 @@ class TextToMesh(JinaNOWApp):
 
     @property
     def description(self) -> str:
-        return 'Text to image search app'
+        return 'Text to mesh search app'
 
     @property
     def input_modality(self) -> Modalities:
@@ -39,22 +39,11 @@ class TextToMesh(JinaNOWApp):
 
     @property
     def output_modality(self) -> Modalities:
-        return Modalities.IMAGE
-
-    @property
-    def options(self) -> List[Dict]:
-        return [options.QUALITY_CLIP]
+        return Modalities.MESH
 
     def set_flow_yaml(self, **kwargs):
-        now_package_dir = os.path.abspath(
-            os.path.join(__file__, '..', '..', '..', '..')
-        )
-        flow_dir = os.path.join(now_package_dir, 'now_common', 'flow')
-        finetuning = kwargs.get('finetuning', False)
-        if finetuning:
-            self.flow_yaml = os.path.join(flow_dir, 'ft-flow-clip.yml')
-        else:
-            self.flow_yaml = os.path.join(flow_dir, 'flow-clip.yml')
+        flow_dir = os.path.join(os.path.join(__file__, '..'))
+        self.flow_yaml = os.path.join(flow_dir, 'flow-clip.yml')
 
     @property
     def pre_trained_embedding_size(self) -> Dict[Qualities, int]:

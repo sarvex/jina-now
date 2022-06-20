@@ -1,0 +1,28 @@
+jtype: Flow                                       # We configure the index flow here that is used for indexing images and captions
+with:                                             # Parameters for the flow are defined after with
+  name: nowapi
+  cors: True
+executors:                                        # Now, we define the executors that are used
+  - name: encoder
+    uses: 'jinahub://CLIPEncoder/v0.3.0'
+    jcloud:
+      capacity: on-demand
+      resources:
+        memory: 8G
+    uses_with:
+      pretrained_model_name_or_path: openai/clip-vit-base-patch32
+#      device: 'cuda'
+      batch_size: 1024
+
+  - name: indexer
+    uses: 'jinahub://AnnLiteIndexer/0.3.0'
+    uses_with:
+      dim: 512
+      limit: 20
+
+  - name: ranker
+    uses: 'jinahub://SimpleRanker/latest'
+#    uses: models/simpleranker.yml
+    uses_with:
+      ranking: 'min'
+
