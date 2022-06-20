@@ -59,15 +59,15 @@ def deploy_streamlit():
     setup_session_state()
     query_parameters = st.experimental_get_query_params()
     print(f"Received query params: {query_parameters}")
-    HOST = "grpcs://nowapi-1cf62a2f29.wolf.jina.ai"  # query_parameters.get('host')[0]
-    PORT = 443  # (
-    #     query_parameters.get('port')[0] if 'port' in query_parameters.keys() else None
-    # )
-    OUTPUT_MODALITY = 'image'  # query_parameters.get('output_modality')[0]
-    INPUT_MODALITY = 'image'  # query_parameters.get('input_modality')[0]
-    DATA = 'deepfashion'  # '(
-    # query_parameters.get('data')[0] if 'data' in query_parameters.keys() else None
-    # )
+    HOST = query_parameters.get('host')[0]
+    PORT = (
+        query_parameters.get('port')[0] if 'port' in query_parameters.keys() else None
+    )
+    OUTPUT_MODALITY = query_parameters.get('output_modality')[0]
+    INPUT_MODALITY = query_parameters.get('input_modality')[0]
+    DATA = (
+        query_parameters.get('data')[0] if 'data' in query_parameters.keys() else None
+    )
     # TODO: fix such that can call 'localhost' instead of 'jinanowtesting'
     if HOST == 'gateway':  # need to call now-bff as we communicate between pods
         URL_HOST = f"http://now-bff/api/v1/{INPUT_MODALITY}-to-{OUTPUT_MODALITY}/search"
@@ -91,7 +91,6 @@ def deploy_streamlit():
             # for now deactivated sample images for text
             output_modality_dir = 'text'
             data_dir = root_data_dir + output_modality_dir + '/'
-            print(data_dir + DATA + f'.txt10-{docarray_version}.bin')
             da_txt = load_data(data_dir + DATA + f'.txt10-{docarray_version}.bin')
 
     if OUTPUT_MODALITY == 'text':
