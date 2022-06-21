@@ -25,3 +25,4 @@ class UserInput:
     cluster: Optional[str] = None
     create_new_cluster: Optional[bool] = False
     deployment_type: Optional[str] = None
+    skip_finetuning: bool = False

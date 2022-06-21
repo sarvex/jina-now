@@ -100,7 +100,20 @@ Example of the swagger ui.
 
 <img width="350" alt="Screenshot 2022-05-26 at 16 36 06" src="https://user-images.githubusercontent.com/11627845/170511580-230d1e41-5e14-4623-adb6-3d4b2d400dc9.png">
 
+### Finetuning
+If you want to finetune on your own labels, you need to create a DocumentArray for your dataset and put the class labels into the `document.tags` using `finetuner-label` as key.
+Here is an example:
+```python
+from docarray import DocumentArray, Document
 
+da = DocumentArray([
+    Document(text='first doc', tags={'finetuner-label': 'class1'}),
+    Document(text='second doc', tags={'finetuner-label': 'class1'}),
+    Document(text='third doc', tags={'finetuner-label': 'class2'}),
+    ...
+])
+```
+In case you want to skip finetuning, you can use the flag `--skip-finetuning true`.
   
 ### Use CLI Parameters
 Instead of answering the questions manually, you can also provide command-line arguments when starting Jina NOW like shown here.

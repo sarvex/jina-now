@@ -85,6 +85,13 @@ def set_default_start_args(parser):
         type=str,
     )
 
+    parser.add_argument(
+        '--skip-finetuning',
+        help='If set true, finetuning will be skipped even if finetuner_label is set.',
+        type=bool,
+        default=False,
+    )
+
 
 def set_start_parser(sp):
     """Add the arguments for the jina now to the parser

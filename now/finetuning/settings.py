@@ -70,6 +70,9 @@ def _get_pre_trained_embedding_size(user_input: UserInput) -> int:
 def _is_finetuning(
     user_input: UserInput, dataset: DocumentArray, finetune_datasets: Tuple
 ) -> bool:
+    if user_input.skip_finetuning:
+        print('Skip finetuning since --skip-finetuning flag is set.')
+        return False
     if user_input.data in finetune_datasets:
         return True
 

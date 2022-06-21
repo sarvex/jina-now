@@ -47,10 +47,15 @@ def _construct_app(app) -> JinaNOWApp:
     )()
 
 
+def _configure_additional_cli_params(user_input, **kwargs):
+    user_input.skip_finetuning = kwargs['skip_finetuning']
+
+
 def configure_user_input(**kwargs) -> [JinaNOWApp, UserInput]:
     print_headline()
 
     user_input = UserInput()
+    _configure_additional_cli_params(user_input, **kwargs)
     _configure_app(user_input, **kwargs)
     app_instance = _construct_app(user_input.app)
     app_instance.check_requirements()
