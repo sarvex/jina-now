@@ -117,7 +117,20 @@ def test_backend(
         cmd(f'{kubectl_path} create namespace nowapi')
 
     kwargs = Namespace(**kwargs)
-    cli(args=kwargs)
+    response = cli(args=kwargs)
+
+    assert (
+        response['bff']
+        == f'http://localhost:30090/api/v1/{app.replace("_", "-")}/redoc'
+    )
+    assert (
+        response['playground']
+        == f'http://localhost:30080/?host=gateway&input_modality={input_modality}&output_modality={output_modality}&data={dataset}&port=8080'
+    )
+    assert response['input_modality'] == input_modality
+    assert response['output_modality'] == output_modality
+    assert response['host'] == 'gateway.nowapi.svc.cluster.local'
+    assert response['port'] == 8080
 
     if dataset == DemoDatasets.BEST_ARTWORKS:
         search_text = 'impressionism'
