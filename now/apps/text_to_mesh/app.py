@@ -43,7 +43,7 @@ class TextToMesh(JinaNOWApp):
 
     def set_flow_yaml(self, **kwargs):
         flow_dir = os.path.join(os.path.join(__file__, '..'))
-        self.flow_yaml = os.path.join(flow_dir, 'flow-clip.yml')
+        self.flow_yaml = os.path.join(flow_dir, 'flow-mesh.yml')
 
     @property
     def pre_trained_embedding_size(self) -> Dict[Qualities, int]:
