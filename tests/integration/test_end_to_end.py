@@ -126,7 +126,11 @@ def test_backend(
     assert response['playground'].startswith('http://localhost:30080/?')
     assert response['input_modality'] == input_modality
     assert response['output_modality'] == output_modality
-    assert response['host'] == 'gateway.nowapi.svc.cluster.local'
+    if deployment_type == 'local':
+        assert response['host'] == 'gateway.nowapi.svc.cluster.local'
+    else:
+        assert response['host'].startswith('grpcs://')
+        assert response['host'].endswith('.wolf.jina.ai')
     assert response['port'] == 8080
 
     if dataset == DemoDatasets.BEST_ARTWORKS:
