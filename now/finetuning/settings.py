@@ -5,7 +5,7 @@ from typing import Optional, Tuple
 from docarray import DocumentArray
 
 from now.constants import Apps, Qualities
-from now.dataclasses import UserInput
+from now.now_dataclasses import UserInput
 
 DEFAULT_EPOCHS = 50
 DEFAULT_HIDDEN_SIZES = (128,)

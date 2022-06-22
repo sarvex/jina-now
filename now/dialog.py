@@ -18,9 +18,9 @@ from pyfiglet import Figlet
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import AVAILABLE_DATASET, Apps, DatasetTypes
-from now.dataclasses import UserInput
 from now.deployment.deployment import cmd
 from now.log import yaspin_extended
+from now.now_dataclasses import UserInput
 from now.thirdparty.PyInquirer import Separator
 from now.thirdparty.PyInquirer.prompt import prompt
 from now.utils import sigmap, to_camel_case

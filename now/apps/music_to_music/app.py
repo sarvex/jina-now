@@ -5,8 +5,8 @@ from docarray import DocumentArray
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import Apps, DemoDatasets, Modalities
-from now.dataclasses import UserInput
 from now.deployment.deployment import which
+from now.now_dataclasses import UserInput
 from now.run_backend import finetune_flow_setup
 
 

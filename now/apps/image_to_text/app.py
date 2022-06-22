@@ -5,7 +5,7 @@ from now_common import options
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import CLIP_USES, IMAGE_MODEL_QUALITY_MAP, Apps, Modalities
-from now.dataclasses import UserInput
+from now.now_dataclasses import UserInput
 from now.run_backend import finetune_flow_setup
 
 
