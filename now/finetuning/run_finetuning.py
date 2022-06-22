@@ -12,7 +12,7 @@ from typing import Dict
 import finetuner
 import numpy as np
 from docarray import DocumentArray
-from finetuner.callback import BestModelCheckpoint, EarlyStopping, EvaluationCallback
+from finetuner.callback import EarlyStopping, EvaluationCallback
 from yaspin import yaspin
 
 from now.finetuning.dataset import FinetuneDataset, build_finetuning_dataset
@@ -91,8 +91,6 @@ def _finetune_layer(
     )
     finetuner.login()
 
-    print(f'🧪 Creating finetune experiment')
-
     callbacks = [
         EvaluationCallback(
             finetune_ds.val_query,
@@ -100,13 +98,17 @@ def _finetune_layer(
             limit=finetune_settings.eval_match_limit,
             # metrics=['ndcg'],
         ),
-        BestModelCheckpoint(monitor='ndcg', save_dir=save_dir, verbose=True),
+        # BestModelCheckpoint(monitor='ndcg', save_dir=save_dir, verbose=True),
         EarlyStopping(
             monitor='ndcg',
             verbose=False,
             patience=finetune_settings.early_stopping_patience,
         ),
     ]
+    experiment_name = 'now-finetuning-' + _get_random_string(8)
+    run_name = _get_random_string(12)
+    print(f'🧪 Creating finetune experiment ({experiment_name})')
+    finetuner.create_experiment(experiment_name)
 
     run = finetuner.fit(
         model='mlp',
@@ -117,8 +119,10 @@ def _finetune_layer(
             'bias': False if finetune_settings.bi_modal else True,
         },
         train_data=finetune_ds.train,
-        # eval_data=finetune_ds.val,
-        # callbacks=callbacks,
+        experiment_name=experiment_name,
+        run_name=run_name,
+        eval_data=finetune_ds.val,
+        callbacks=callbacks,
     )
 
     run_failed = False
@@ -209,5 +213,9 @@ def _prepare_dataset_bi_modal(dataset: DocumentArray):
 
 
 def _get_random_string(length) -> str:
+    import time
+
+    t = 1000 * time.time()  # current time in milliseconds
+    random.seed(int(t) % 2**32)
     letters = string.ascii_lowercase
     return ''.join(random.choice(letters) for _ in range(length))
