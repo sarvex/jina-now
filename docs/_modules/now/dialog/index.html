@@ -5,8 +5,8 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex/" /><link rel="search" title="Search" href="../../../search/" />
         <link rel="canonical" href="https://now.jina.ai/_modules/now/dialog.html" />
 
-    <link rel="shortcut icon" href="../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.06.04.1"/>
-        <title>now.dialog - NOW 0.0.11 documentation</title>
+    <link rel="shortcut icon" href="../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.06.21"/>
+        <title>now.dialog - NOW 0.0.12 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../">
-                <div class="brand">NOW 0.0.11 documentation</div>
+                <div class="brand">NOW 0.0.12 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -200,27 +200,27 @@
     <p class="caption" role="heading"><span class="caption-text">Ecosystem</span></p>
     <ul>
         <li class="toctree-l1">
-            <a class="reference external" href="https://docs.jina.ai?utm_source=now">
+            <a class="reference external" href="https://docs.jina.ai">
                 <img class="sidebar-ecosys-logo only-light-line" src="../../../_static/search-light.svg">
                 <img class="sidebar-ecosys-logo only-dark-line" src="../../../_static/search-dark.svg">
                 Jina</a></li>
-        <li class="toctree-l1"><a class="reference external" href="https://hub.jina.ai?utm_source=now">
+        <li class="toctree-l1"><a class="reference external" href="https://hub.jina.ai">
             <img class="sidebar-ecosys-logo only-light-line" src="../../../_static/hub-light.svg">
             <img class="sidebar-ecosys-logo only-dark-line" src="../../../_static/hub-dark.svg">
             Jina Hub</a></li>
-        <li class="toctree-l1"><a class="reference external" href="https://finetuner.jina.ai?utm_source=now">
+        <li class="toctree-l1"><a class="reference external" href="https://finetuner.jina.ai">
             <img class="sidebar-ecosys-logo only-light-line" src="../../../_static/finetuner-light.svg">
             <img class="sidebar-ecosys-logo only-dark-line" src="../../../_static/finetuner-dark.svg">
             Finetuner</a></li>
-        <li class="toctree-l1"><a class="reference external" href="https://docarray.jina.ai/?utm_source=now">
+        <li class="toctree-l1"><a class="reference external" href="https://docarray.jina.ai/">
             <img class="sidebar-ecosys-logo only-light-line" src="../../../_static/docarray-light.svg">
             <img class="sidebar-ecosys-logo only-dark-line" src="../../../_static/docarray-dark.svg">
             DocArray</a></li>
-        <li class="toctree-l1"><a class="reference external" href="https://clip-as-service.jina.ai?utm_source=now">
+        <li class="toctree-l1"><a class="reference external" href="https://clip-as-service.jina.ai">
             <img class="sidebar-ecosys-logo only-light-line" src="../../../_static/cas-light.svg">
             <img class="sidebar-ecosys-logo only-dark-line" src="../../../_static/cas-dark.svg">
             CLIP-as-service</a></li>
-        <li class="toctree-l1"><a class="reference external" href="https://github.com/jina-ai/jcloud?utm_source=now">
+        <li class="toctree-l1"><a class="reference external" href="https://github.com/jina-ai/jcloud">
             <img class="sidebar-ecosys-logo only-light-line" src="../../../_static/JCloud-light.svg">
             <img class="sidebar-ecosys-logo only-dark-line" src="../../../_static/JCloud-dark.svg">
             JCloud</a></li>
@@ -313,10 +313,10 @@
     <span class="c1"># _configure_quality(user_input, **kwargs)</span>
 
 
-<span class="k">def</span> <span class="nf">_construct_app</span><span class="p">(</span><span class="n">user_input</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">JinaNOWApp</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">_construct_app</span><span class="p">(</span><span class="n">app</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">JinaNOWApp</span><span class="p">:</span>
     <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span>
-        <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;now.apps.</span><span class="si">{</span><span class="n">user_input</span><span class="o">.</span><span class="n">app</span><span class="si">}</span><span class="s1">.app&#39;</span><span class="p">),</span>
-        <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">to_camel_case</span><span class="p">(</span><span class="n">user_input</span><span class="o">.</span><span class="n">app</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+        <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;now.apps.</span><span class="si">{</span><span class="n">app</span><span class="si">}</span><span class="s1">.app&#39;</span><span class="p">),</span>
+        <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">to_camel_case</span><span class="p">(</span><span class="n">app</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
     <span class="p">)()</span>
 
 
@@ -325,7 +325,7 @@
 
     <span class="n">user_input</span> <span class="o">=</span> <span class="n">UserInput</span><span class="p">()</span>
     <span class="n">_configure_app</span><span class="p">(</span><span class="n">user_input</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-    <span class="n">app_instance</span> <span class="o">=</span> <span class="n">_construct_app</span><span class="p">(</span><span class="n">user_input</span><span class="p">)</span>
+    <span class="n">app_instance</span> <span class="o">=</span> <span class="n">_construct_app</span><span class="p">(</span><span class="n">user_input</span><span class="o">.</span><span class="n">app</span><span class="p">)</span>
     <span class="n">app_instance</span><span class="o">.</span><span class="n">check_requirements</span><span class="p">()</span>
     <span class="n">_configure_app_options</span><span class="p">(</span><span class="n">app_instance</span><span class="p">,</span> <span class="n">user_input</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="n">_configure_dataset</span><span class="p">(</span><span class="n">app_instance</span><span class="p">,</span> <span class="n">user_input</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -340,13 +340,11 @@
     <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">renderText</span><span class="p">(</span><span class="s1">&#39;Jina NOW&#39;</span><span class="p">))</span>
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Get your search case up and running - end to end.</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span>
-        <span class="s1">&#39;You can choose between image and text search. </span><span class="se">\n</span><span class="s1">Jina now trains a model, pushes it to the jina hub&#39;</span>
-        <span class="s1">&#39;, deploys a flow and a playground app in the cloud or locally. </span><span class="se">\n</span><span class="s1">Checkout one of the demo cases or bring &#39;</span>
+        <span class="s1">&#39;You can choose between image and text search. </span><span class="se">\n</span><span class="s1">Jina NOW trains a model, pushes it to Jina Hub&#39;</span>
+        <span class="s1">&#39;and deploys a Flow and a playground app in the cloud or locally. </span><span class="se">\n</span><span class="s1">Check out one of our demos or bring &#39;</span>
         <span class="s1">&#39;your own data.</span><span class="se">\n</span><span class="s1">&#39;</span>
     <span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span>
-        <span class="s1">&#39;If you want learn more about our framework please visit: https://docs.jina.ai/&#39;</span>
-    <span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;If you want learn more about our framework please visit docs.jina.ai&#39;</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span>
         <span class="s1">&#39;💡 Make sure you give enough memory to your Docker daemon. &#39;</span>
         <span class="s1">&#39;5GB - 8GB should be okay.&#39;</span>
@@ -359,16 +357,17 @@
     <span class="n">user_input</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="n">_prompt_value</span><span class="p">(</span>
         <span class="n">name</span><span class="o">=</span><span class="s1">&#39;app&#39;</span><span class="p">,</span>
         <span class="n">choices</span><span class="o">=</span><span class="p">[</span>
-            <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;📝 ▶ 🏞 Text to Image search&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">Apps</span><span class="o">.</span><span class="n">TEXT_TO_IMAGE</span><span class="p">},</span>
-            <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;🏞 ▶ 📝 Image to Text search&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">Apps</span><span class="o">.</span><span class="n">IMAGE_TO_TEXT</span><span class="p">},</span>
-            <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;🏞 ▶ 🏞 Image to Image search&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">Apps</span><span class="o">.</span><span class="n">IMAGE_TO_IMAGE</span><span class="p">},</span>
+            <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;📝 ▶ 🏞 text to image search&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">Apps</span><span class="o">.</span><span class="n">TEXT_TO_IMAGE</span><span class="p">},</span>
+            <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;🏞 ▶ 📝 image to text search&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">Apps</span><span class="o">.</span><span class="n">IMAGE_TO_TEXT</span><span class="p">},</span>
+            <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;🏞 ▶ 🏞 image to image search&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">Apps</span><span class="o">.</span><span class="n">IMAGE_TO_IMAGE</span><span class="p">},</span>
+            <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;📝 ▶ 📝 text to text search&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">Apps</span><span class="o">.</span><span class="n">TEXT_TO_TEXT</span><span class="p">},</span>
             <span class="p">{</span>
-                <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;🥁 ▶ 🥁 Music to Music Search&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;🥁 ▶ 🥁 music to music Search&#39;</span><span class="p">,</span>
                 <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">Apps</span><span class="o">.</span><span class="n">MUSIC_TO_MUSIC</span><span class="p">,</span>
                 <span class="s1">&#39;disabled&#39;</span><span class="p">:</span> <span class="n">AVAILABLE_SOON</span><span class="p">,</span>
             <span class="p">},</span>
         <span class="p">],</span>
-        <span class="n">prompt_message</span><span class="o">=</span><span class="s1">&#39;Please select an app!&#39;</span><span class="p">,</span>
+        <span class="n">prompt_message</span><span class="o">=</span><span class="s1">&#39;What sort of search engine would you like to build?&#39;</span><span class="p">,</span>
         <span class="n">prompt_type</span><span class="o">=</span><span class="s1">&#39;list&#39;</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span>
@@ -433,14 +432,14 @@
     <span class="k">if</span> <span class="n">user_input</span><span class="o">.</span><span class="n">custom_dataset_type</span> <span class="o">==</span> <span class="n">DatasetTypes</span><span class="o">.</span><span class="n">DOCARRAY</span><span class="p">:</span>
         <span class="n">user_input</span><span class="o">.</span><span class="n">dataset_secret</span> <span class="o">=</span> <span class="n">_prompt_value</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="s1">&#39;dataset_secret&#39;</span><span class="p">,</span>
-            <span class="n">prompt_message</span><span class="o">=</span><span class="s1">&#39;Please enter your docarray secret.&#39;</span><span class="p">,</span>
+            <span class="n">prompt_message</span><span class="o">=</span><span class="s1">&#39;Please enter your DocArray secret.&#39;</span><span class="p">,</span>
             <span class="n">prompt_type</span><span class="o">=</span><span class="s1">&#39;password&#39;</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="k">elif</span> <span class="n">user_input</span><span class="o">.</span><span class="n">custom_dataset_type</span> <span class="o">==</span> <span class="n">DatasetTypes</span><span class="o">.</span><span class="n">URL</span><span class="p">:</span>
         <span class="n">user_input</span><span class="o">.</span><span class="n">dataset_url</span> <span class="o">=</span> <span class="n">_prompt_value</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="s1">&#39;dataset_url&#39;</span><span class="p">,</span>
-            <span class="n">prompt_message</span><span class="o">=</span><span class="s1">&#39;Please paste in your url for the docarray.&#39;</span><span class="p">,</span>
+            <span class="n">prompt_message</span><span class="o">=</span><span class="s1">&#39;Please paste in the URL for your DocArray.&#39;</span><span class="p">,</span>
             <span class="n">prompt_type</span><span class="o">=</span><span class="s1">&#39;input&#39;</span><span class="p">,</span>
         <span class="p">)</span>
 
@@ -509,7 +508,7 @@
         <span class="n">user_input</span><span class="o">.</span><span class="n">cluster</span> <span class="o">=</span> <span class="n">_prompt_value</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="s1">&#39;cluster&#39;</span><span class="p">,</span>
             <span class="n">choices</span><span class="o">=</span><span class="n">choices</span><span class="p">,</span>
-            <span class="n">prompt_message</span><span class="o">=</span><span class="s1">&#39;Which cluster you want to use to deploy your search engine?&#39;</span><span class="p">,</span>
+            <span class="n">prompt_message</span><span class="o">=</span><span class="s1">&#39;On which cluster do you want to deploy your search engine?&#39;</span><span class="p">,</span>
             <span class="n">prompt_type</span><span class="o">=</span><span class="s1">&#39;list&#39;</span><span class="p">,</span>
             <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
         <span class="p">)</span>
@@ -613,7 +612,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Jun 07, 2022.
+                            Last updated on Jun 22, 2022.
                         </div>
                     </div>
                     <div class="right-details">
