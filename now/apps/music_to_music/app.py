@@ -1,10 +1,11 @@
+import os
 from typing import Dict
 
 import cowsay
 from docarray import DocumentArray
 
 from now.apps.base.app import JinaNOWApp
-from now.constants import Apps, DemoDatasets, Modalities
+from now.constants import Apps, DemoDatasets, Modalities, Qualities
 from now.deployment.deployment import which
 from now.now_dataclasses import UserInput
 from now.run_backend import finetune_flow_setup
@@ -20,13 +21,16 @@ class MusicToMusic(JinaNOWApp):
     and run "jina hub push --private . -t linear_head_encoder_music_2k"
     """
 
+    def __init__(self):
+        super().__init__()
+
     @property
     def app(self) -> str:
         return Apps.MUSIC_TO_MUSIC
 
     @property
     def is_enabled(self) -> bool:
-        return False
+        return True
 
     @property
     def description(self) -> str:
@@ -39,6 +43,16 @@ class MusicToMusic(JinaNOWApp):
     @property
     def output_modality(self) -> Modalities:
         return Modalities.MUSIC
+
+    def set_flow_yaml(self, **kwargs):
+        flow_dir = os.path.abspath(os.path.join(__file__, '..'))
+        self.flow_yaml = os.path.join(flow_dir, 'ft-flow-music.yml')
+
+    @property
+    def pre_trained_embedding_size(self) -> Dict[Qualities, int]:
+        return {
+            Qualities.MEDIUM: 512,
+        }
 
     def check_requirements(self) -> bool:
         if not ffmpeg_is_installed():
@@ -55,14 +69,14 @@ class MusicToMusic(JinaNOWApp):
             encoder_uses='BiModalMusicTextEncoder:fcb025de625784073c4fcf5eb6ba2d50/v0.0.11',
             encoder_uses_with={},
             finetune_datasets=(
-                DemoDatasets.MUSIC_GENRES_MID,
-                DemoDatasets.MUSIC_GENRES_LARGE,
+                DemoDatasets.MUSIC_GENRES_ROCK,
+                DemoDatasets.MUSIC_GENRES_MIX,
             ),
             pre_trained_head_map={
-                DemoDatasets.MUSIC_GENRES_MID: 'FineTunedLinearHeadEncoder:93ea59dbd1ee3fe0bdc44252c6e86a87/'
+                DemoDatasets.MUSIC_GENRES_ROCK: 'FineTunedLinearHeadEncoder:93ea59dbd1ee3fe0bdc44252c6e86a87/'
                 'linear_head_encoder_music_2k',
-                DemoDatasets.MUSIC_GENRES_LARGE: 'FineTunedLinearHeadEncoder:93ea59dbd1ee3fe0bdc44252c6e86a87/'
-                'linear_head_encoder_music_10k',
+                DemoDatasets.MUSIC_GENRES_MIX: 'FineTunedLinearHeadEncoder:93ea59dbd1ee3fe0bdc44252c6e86a87/'
+                'linear_head_encoder_music_10k',  # music-genres-mix is sampled from the 10k dataset
             },
             indexer_uses='MusicRecommendationIndexer:e0b75cc6569bd73cee76e1161a433b9d/v0.0.5',
         )

@@ -4,6 +4,7 @@ from typing import Optional, Tuple
 
 from docarray import DocumentArray
 
+from now.apps.base.app import JinaNOWApp
 from now.constants import Apps, Qualities
 from now.now_dataclasses import UserInput
 
@@ -92,11 +93,16 @@ def _is_bi_modal(user_input: UserInput, dataset: DocumentArray) -> bool:
 
 
 def parse_finetune_settings(
-    user_input: UserInput, dataset: DocumentArray, finetuneable_datasets: Tuple
+    app_instance: JinaNOWApp,
+    user_input: UserInput,
+    dataset: DocumentArray,
+    finetune_datasets: Tuple,
 ) -> FinetuneSettings:
     """This function parses the user input configuration into the finetune settings"""
     return FinetuneSettings(
-        pre_trained_embedding_size=_get_pre_trained_embedding_size(user_input),
-        perform_finetuning=_is_finetuning(user_input, dataset, finetuneable_datasets),
+        pre_trained_embedding_size=app_instance.pre_trained_embedding_size[
+            user_input.quality
+        ],
+        perform_finetuning=_is_finetuning(user_input, dataset, finetune_datasets),
         bi_modal=_is_bi_modal(user_input, dataset),
     )

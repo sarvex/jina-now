@@ -1,6 +1,6 @@
 from now.utils import BetterEnum
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.58'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.69'
 
 
 class Modalities(BetterEnum):
@@ -10,6 +10,7 @@ class Modalities(BetterEnum):
 
 
 class Apps(BetterEnum):
+    TEXT_TO_TEXT = 'text_to_text'
     TEXT_TO_IMAGE = 'text_to_image'
     IMAGE_TO_TEXT = 'image_to_text'
     IMAGE_TO_IMAGE = 'image_to_image'
@@ -51,8 +52,8 @@ class DemoDatasets:
     DEEP_FASHION = 'deepfashion'
     NIH_CHEST_XRAYS = 'nih-chest-xrays'
     GEOLOCATION_GEOGUESSR = 'geolocation-geoguessr'
-    MUSIC_GENRES_MID = 'music-genres-mid'
-    MUSIC_GENRES_LARGE = 'music-genres-large'
+    MUSIC_GENRES_ROCK = 'music-genres-mid'
+    MUSIC_GENRES_MIX = 'music-genres-mix'
     ROCK_LYRICS = 'rock-lyrics'
     POP_LYRICS = 'pop-lyrics'
     RAP_LYRICS = 'rap-lyrics'
@@ -72,8 +73,8 @@ AVAILABLE_DATASET = {
         (DemoDatasets.NIH_CHEST_XRAYS, '☢️ chest x-ray (≈100K docs)'),
     ],
     Modalities.MUSIC: [
-        (DemoDatasets.MUSIC_GENRES_MID, '🎸 music mid (≈2K docs)'),
-        (DemoDatasets.MUSIC_GENRES_LARGE, '🎸 music large (≈10K docs)'),
+        (DemoDatasets.MUSIC_GENRES_ROCK, '🎸 rock music (≈2K songs)'),
+        (DemoDatasets.MUSIC_GENRES_MIX, '🎸 multiple genres (≈2K songs)'),
     ],
     Modalities.TEXT: [
         (DemoDatasets.ROCK_LYRICS, '🎤 rock lyrics (200K docs)'),
