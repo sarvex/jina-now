@@ -6,6 +6,7 @@
 
 
 
+
 <a name=release-note-0-0-7></a>
 ## Release Note (`0.0.7`)
 
@@ -280,4 +281,19 @@
  - [[```6deb7aa1```](https://github.com/jina-ai/now/commit/6deb7aa1766ea4736950dc95ed22859c1de5fd41)] __-__ fix text strings (#245) (*Alex Cureton-Griffiths*)
  - [[```4afc03ea```](https://github.com/jina-ai/now/commit/4afc03ea12647387e0d9db60c10a426d4f5702c2)] __-__ update docarray version to 0.13.17 (#240) (*Sebastian Lettner*)
  - [[```5cc69e9e```](https://github.com/jina-ai/now/commit/5cc69e9e195665d2278d101cd56ddeec95829488)] __-__ __version__: the next version will be 0.0.12 (*Jina Dev Bot*)
+
+<a name=release-note-0-0-13></a>
+## Release Note (`0.0.13`)
+
+> Release time: 2022-06-23 08:20:59
+
+
+
+🙇 We'd like to thank all contributors for this new release! In particular,
+ Jina Dev Bot,  🙇
+
+
+### 🍹 Other Improvements
+
+ - [[```2177b9f8```](https://github.com/jina-ai/now/commit/2177b9f84d8e2a1b26c6dfaf377476bda8a635eb)] __-__ __version__: the next version will be 0.0.13 (*Jina Dev Bot*)
 
