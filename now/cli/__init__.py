@@ -139,7 +139,7 @@ def cli(args=None):
     args['kind_path'] = _get_kind_path()
     from now.run_all_k8s import run_k8s
 
-    run_k8s(os_type=os_type, arch=arch, **args)
+    return run_k8s(os_type=os_type, arch=arch, **args)
 
 
 if __name__ == '__main__':

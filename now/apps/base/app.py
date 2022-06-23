@@ -4,8 +4,8 @@ from typing import Dict, List, Optional
 
 from docarray import DocumentArray
 
-from now.constants import Modalities, Qualities
-from now.datasource.datasource import Datasource
+from now.constants import AVAILABLE_DATASET, Modalities, Qualities
+from now.datasource.datasource import DemoDatasource
 from now.now_dataclasses import UserInput
 
 
@@ -113,13 +113,21 @@ class JinaNOWApp:
         return {}
 
     @property
-    def example_datasource(self) -> List[Datasource]:
+    def example_datasource(self) -> List[DemoDatasource]:
         """
         # TODO just a prototype - needs to be implemented in the future
         Get a list of example datasets for the app.
 
         """
-        return []
+        if self.output_modality in AVAILABLE_DATASET:
+            return [
+                DemoDatasource(
+                    id_=ds[0], display_name=ds[1], modality_folder=self.output_modality
+                )
+                for ds in AVAILABLE_DATASET[self.output_modality]
+            ]
+        else:
+            return []
 
     def set_app_parser(self, parser, formatter) -> None:
         """
