@@ -39,7 +39,7 @@ class DemoDatasource(Datasource):
         modality_folder: Modalities,
     ):
         self.id = id_
-        self.display_name: display_name
+        self.display_name = display_name
         self.modalities_folder = modality_folder
 
     @property
