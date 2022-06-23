@@ -131,7 +131,7 @@ def test_backend(
     else:
         assert response['host'].startswith('grpcs://')
         assert response['host'].endswith('.wolf.jina.ai')
-    assert response['port'] == 8080
+    assert response['port'] == 8080 or response['port'] is None
 
     if dataset == DemoDatasets.BEST_ARTWORKS:
         search_text = 'impressionism'
