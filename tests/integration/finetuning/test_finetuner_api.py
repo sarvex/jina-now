@@ -28,24 +28,19 @@ def finetune_ds(finetune_settings: FinetuneSettings) -> FinetuneDataset:
     for class_id in range(num_classes):
         for _ in range(num_images_per_class):
             doc = Document(
-                embedding=np.random.rand(
-                    embedding_dim
-                ),  # are the embeddings computed behind the api?
+                embedding=np.random.rand(embedding_dim),
                 tags={'finetuner_label': str(class_id)},
             )
             train_data.append(doc)
     return build_finetuning_dataset(train_data, finetune_settings)
 
 
-@pytest.skip(
-    reason='Login if not patched an would open browser. Tracking issue '
-    'https://github.com/jina-ai/finetuner/issues/466',
-    allow_module_level=True,
-)
 def test_end2end(
     finetune_ds: FinetuneDataset,
     finetune_settings: FinetuneSettings,
+    with_hubble_login_patch,
 ):
+
     with tempfile.TemporaryDirectory() as tempdir:
         _finetune_layer(
             finetune_ds=finetune_ds,

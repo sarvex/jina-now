@@ -152,6 +152,7 @@ def _finetune_layer(
 
     if run.status()['status'] == 'FAILED':
         print('❌ finetune failed. See logs for details')
+        print(run.status())
         print(run.logs())
         sys.exit(0)
 

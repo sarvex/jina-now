@@ -2,9 +2,9 @@ from docarray import DocumentArray
 
 from now.apps.music_to_music.app import MusicToMusic
 from now.constants import Apps
-from now.dataclasses import UserInput
 from now.finetuning.run_finetuning import finetune_now
 from now.finetuning.settings import parse_finetune_settings
+from now.now_dataclasses import UserInput
 
 
 def test_music_access_lookup_dict():
