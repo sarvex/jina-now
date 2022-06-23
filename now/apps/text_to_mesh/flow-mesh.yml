@@ -12,7 +12,7 @@ executors:                                        # Now, we define the executors
         memory: 8G
     uses_with:
       pretrained_model_name_or_path: openai/clip-vit-base-patch32
-#      traversal_paths: '@c'
+      traversal_paths: '@c'
 #      device: 'cuda'
       batch_size: 1024
     env:
@@ -30,6 +30,40 @@ executors:                                        # Now, we define the executors
         memory: 4G
     env:
       JINA_LOG_LEVEL: DEBUG
+
+
+
+#jtype: Flow
+#with:
+#  name: nowapi
+#  port_expose: 8080
+#  cors: True
+#executors:
+#  - name: encoder_clip
+#    uses: ${{ ENV.ENCODER_NAME }}
+#    jcloud:
+#      capacity: on-demand
+#      resources:
+#        memory: 8G
+#    uses_with:
+#      pretrained_model_name_or_path: ${{ ENV.PRE_TRAINED_MODEL_NAME }}
+#      traversal_paths: '@c'
+#      batch_size: 1024
+#    env:
+#      JINA_LOG_LEVEL: DEBUG
+#
+#  - name: indexer
+#    uses: ${{ ENV.INDEXER_NAME }}
+#    jcloud:
+#      capacity: on-demand
+#      resources:
+#        memory: 4G
+#    uses_with:
+#      dim: 512
+#      limit: 20
+#      index_traversal_paths: '@c'
+#    env:
+#      JINA_LOG_LEVEL: DEBUG
 
   - name: ranker
     uses: 'jinahub+docker://SimpleRanker/latest'

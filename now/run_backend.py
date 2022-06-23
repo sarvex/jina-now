@@ -6,7 +6,6 @@ from typing import Dict, Optional, Tuple
 from docarray import DocumentArray
 
 from now.apps.base.app import JinaNOWApp
-from now.constants import Modalities
 from now.data_loading.data_loading import load_data
 from now.dataclasses import UserInput
 from now.deployment.flow import deploy_flow
@@ -47,7 +46,7 @@ def finetune_flow_setup(
         )
 
     finetuning = finetune_settings.perform_finetuning
-
+    print(f'🔧 Finetuning: {finetuning}')
     app_instance.set_flow_yaml(finetuning=finetuning)
 
     env = get_custom_env_file(
@@ -69,49 +68,30 @@ def run(app_instance: JinaNOWApp, user_input: UserInput, kubectl_path: str):
     """
     dataset = load_data(app_instance.output_modality, user_input)
     # if app_instance.output_modality == Modalities.MESH:
-    if False:
-        with tempfile.TemporaryDirectory() as tmpdir:
-            env_file = os.path.join(tmpdir, 'dot.env')
-            (
-                gateway_host,
-                gateway_port,
-                gateway_host_internal,
-                gateway_port_internal,
-            ) = deploy_flow(
-                user_input=user_input,
-                app_instance=app_instance,
-                env_file=env_file,
-                ns='nowapi',
-                index=dataset,
-                tmpdir=tmpdir,
-                kubectl_path=kubectl_path,
-            )
-
-        pass
-    else:
-        env = app_instance.setup(dataset, user_input, kubectl_path)
-        with tempfile.TemporaryDirectory() as tmpdir:
-            env_file = os.path.join(tmpdir, 'dot.env')
-            write_env_file(env_file, env)
-            (
-                gateway_host,
-                gateway_port,
-                gateway_host_internal,
-                gateway_port_internal,
-            ) = deploy_flow(
-                user_input=user_input,
-                app_instance=app_instance,
-                env_file=env_file,
-                ns='nowapi',
-                index=dataset,
-                tmpdir=tmpdir,
-                kubectl_path=kubectl_path,
-            )
+    env = app_instance.setup(dataset, user_input, kubectl_path)
+    with tempfile.TemporaryDirectory() as tmpdir:
+        env_file = os.path.join(tmpdir, 'dot.env')
+        write_env_file(env_file, env)
+        (
+            gateway_host,
+            gateway_port,
+            gateway_host_internal,
+            gateway_port_internal,
+        ) = deploy_flow(
+            user_input=user_input,
+            app_instance=app_instance,
+            env_file=env_file,
+            ns='nowapi',
+            index=dataset,
+            tmpdir=tmpdir,
+            kubectl_path=kubectl_path,
+        )
     return gateway_host, gateway_port, gateway_host_internal, gateway_port_internal
 
 
 def write_env_file(env_file, config):
     config_string = '\n'.join([f'{key}={value}' for key, value in config.items()])
+    print(f'🔧 Writing env file: {config_string}')
     with open(env_file, 'w+') as fp:
         fp.write(config_string)
 
@@ -140,6 +120,8 @@ def get_custom_env_file(
         config['PRE_TRAINED_MODEL_NAME'] = encoder_uses_with[
             "pretrained_model_name_or_path"
         ]
+    if encoder_uses_with.get('traversal_paths'):
+        config['TRAVERSAL_PATHS'] = encoder_uses_with["traversal_paths"]
     if finetune_settings.perform_finetuning:
         config['LINEAR_HEAD_NAME'] = linear_head_name
 
