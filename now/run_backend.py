@@ -6,6 +6,7 @@ from typing import Dict, Optional, Tuple
 from docarray import DocumentArray
 
 from now.apps.base.app import JinaNOWApp
+from now.constants import Modalities
 from now.data_loading.data_loading import load_data
 from now.dataclasses import UserInput
 from now.deployment.flow import deploy_flow
@@ -52,6 +53,7 @@ def finetune_flow_setup(
     env = get_custom_env_file(
         finetune_settings, encoder_uses, encoder_uses_with, indexer_uses
     )
+    print(env)
     return env
 
 
@@ -66,24 +68,45 @@ def run(app_instance: JinaNOWApp, user_input: UserInput, kubectl_path: str):
     :return:
     """
     dataset = load_data(app_instance.output_modality, user_input)
-    env = app_instance.setup(dataset, user_input, kubectl_path)
-    with tempfile.TemporaryDirectory() as tmpdir:
-        env_file = os.path.join(tmpdir, 'dot.env')
-        write_env_file(env_file, env)
-        (
-            gateway_host,
-            gateway_port,
-            gateway_host_internal,
-            gateway_port_internal,
-        ) = deploy_flow(
-            user_input=user_input,
-            app_instance=app_instance,
-            env_file=env_file,
-            ns='nowapi',
-            index=dataset,
-            tmpdir=tmpdir,
-            kubectl_path=kubectl_path,
-        )
+    # if app_instance.output_modality == Modalities.MESH:
+    if False:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            env_file = os.path.join(tmpdir, 'dot.env')
+            (
+                gateway_host,
+                gateway_port,
+                gateway_host_internal,
+                gateway_port_internal,
+            ) = deploy_flow(
+                user_input=user_input,
+                app_instance=app_instance,
+                env_file=env_file,
+                ns='nowapi',
+                index=dataset,
+                tmpdir=tmpdir,
+                kubectl_path=kubectl_path,
+            )
+
+        pass
+    else:
+        env = app_instance.setup(dataset, user_input, kubectl_path)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            env_file = os.path.join(tmpdir, 'dot.env')
+            write_env_file(env_file, env)
+            (
+                gateway_host,
+                gateway_port,
+                gateway_host_internal,
+                gateway_port_internal,
+            ) = deploy_flow(
+                user_input=user_input,
+                app_instance=app_instance,
+                env_file=env_file,
+                ns='nowapi',
+                index=dataset,
+                tmpdir=tmpdir,
+                kubectl_path=kubectl_path,
+            )
     return gateway_host, gateway_port, gateway_host_internal, gateway_port_internal
 
 

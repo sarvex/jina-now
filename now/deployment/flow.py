@@ -157,6 +157,7 @@ def deploy_flow(
         index = [x for x in index if x.text == '']
     elif app_instance.output_modality == 'text':
         index = [x for x in index if x.text != '']
+    index = index[:64]
     print(f'▶ indexing {len(index)} documents')
     request_size = 64
 
@@ -180,6 +181,7 @@ def deploy_flow(
         '/index',
         request_size=request_size,
         inputs=tqdm(index),
+        # parameters={'traversal_paths': '@c'},
     )
 
     print('⭐ Success - your data is indexed')

@@ -42,7 +42,7 @@ class TextToMesh(JinaNOWApp):
         return Modalities.MESH
 
     def set_flow_yaml(self, **kwargs):
-        flow_dir = os.path.join(os.path.join(__file__, '..'))
+        flow_dir = os.path.abspath(os.path.join(__file__, '..'))
         self.flow_yaml = os.path.join(flow_dir, 'flow-mesh.yml')
 
     @property
@@ -53,18 +53,19 @@ class TextToMesh(JinaNOWApp):
             Qualities.EXCELLENT: 768,
         }
 
-    def setup(self, da: DocumentArray, user_config: UserInput, kubectl_path) -> Dict:
-        return finetune_flow_setup(
-            self,
-            da,
-            user_config,
-            kubectl_path,
-            encoder_uses=CLIP_USES,
-            encoder_uses_with={
-                'pretrained_model_name_or_path': IMAGE_MODEL_QUALITY_MAP[
-                    user_config.quality
-                ][1]
-            },
-            finetune_datasets=(DemoDatasets.DEEP_FASHION, DemoDatasets.BIRD_SPECIES),
-            indexer_uses='DocarrayIndexer',
-        )
+
+    # def setup(self, da: DocumentArray, user_config: UserInput, kubectl_path) -> Dict:
+    #     return finetune_flow_setup(
+    #         self,
+    #         da,
+    #         user_config,
+    #         kubectl_path,
+    #         encoder_uses='CLIPEncoder/v0.3.0',
+    #         encoder_uses_with={
+    #             'pretrained_model_name_or_path': IMAGE_MODEL_QUALITY_MAP[
+    #                 user_config.quality
+    #             ][1]
+    #         },
+    #         # finetune_datasets=(DemoDatasets.DEEP_FASHION, DemoDatasets.BIRD_SPECIES),
+    #         indexer_uses='AnnLiteIndexer/0.3.0',
+    #     )
