@@ -7,11 +7,11 @@ from docarray import DocumentArray
 
 from now.apps.base.app import JinaNOWApp
 from now.data_loading.data_loading import load_data
-from now.dataclasses import UserInput
 from now.deployment.flow import deploy_flow
 from now.finetuning.run_finetuning import finetune_now
 from now.finetuning.settings import FinetuneSettings, parse_finetune_settings
 from now.log import time_profiler
+from now.now_dataclasses import UserInput
 
 cur_dir = pathlib.Path(__file__).parent.resolve()
 

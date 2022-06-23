@@ -23,7 +23,7 @@ def embed_now(
     )
 
     flow = Flow(name=_KS_NAMESPACE, port_expose=8080, cors=True).add(
-        uses=encoder_uses, uses_with=encoder_uses_with
+        uses=f'jinahub+docker://' + encoder_uses, uses_with=encoder_uses_with
     )
     result = DocumentArray()
     with tempfile.TemporaryDirectory() as tmpdir:

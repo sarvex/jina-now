@@ -1,9 +1,8 @@
 """ Module contains data-transfer-object for finetune datasets. """
-from copy import deepcopy
 from dataclasses import dataclass
 from typing import Dict, Optional
 
-from docarray import DocumentArray
+from docarray import Document, DocumentArray
 
 from now.finetuning.settings import FinetuneSettings
 
@@ -39,12 +38,23 @@ def build_finetuning_dataset(
         len(dataset) - MAX_VAL_SET_SIZE,
     )
 
-    ds.train = deepcopy(dataset[:split_index])
-    ds.val = deepcopy(dataset[split_index:])
+    def _create_finetune_subset(subset: DocumentArray) -> DocumentArray:
+        return DocumentArray(
+            [
+                Document(
+                    tensor=doc.embedding.astype('float32'),
+                    tags={'finetuner_label': doc.tags['finetuner_label']},
+                )
+                for doc in subset
+            ]
+        )
 
-    ds.val_index = deepcopy(ds.val)
-    ds.val_query = deepcopy(
-        ds.val_index.sample(k=finetune_setting.num_val_queries, seed=_SEED)
+    ds.train = _create_finetune_subset(dataset[:split_index])
+    ds.val = _create_finetune_subset(dataset[split_index:])
+
+    ds.val_index = _create_finetune_subset(dataset[split_index:])
+    ds.val_query = _create_finetune_subset(
+        dataset[split_index:].sample(k=finetune_setting.num_val_queries, seed=_SEED)
     )
 
     return ds

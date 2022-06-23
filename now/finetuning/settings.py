@@ -6,9 +6,10 @@ from docarray import DocumentArray
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import Apps, Qualities
-from now.dataclasses import UserInput
+from now.now_dataclasses import UserInput
 
 DEFAULT_EPOCHS = 50
+DEFAULT_HIDDEN_SIZES = (128,)
 DEFAULT_NUM_VAL_QUERIES = 50
 DEFAULT_FINETUNED_EMBEDDING_SIZE = 128
 DEFAULT_BATCH_SIZE = 128
@@ -49,6 +50,7 @@ class FinetuneSettings:
     bi_modal: bool  # atm, bi-modal means text and some blob value
     finetuned_model_name: Optional[str] = None
 
+    hidden_sizes: Tuple[int] = DEFAULT_HIDDEN_SIZES
     batch_size: int = DEFAULT_BATCH_SIZE
     epochs: int = DEFAULT_EPOCHS
     finetune_layer_size: int = DEFAULT_FINETUNED_EMBEDDING_SIZE
@@ -68,9 +70,9 @@ def _get_pre_trained_embedding_size(user_input: UserInput) -> int:
 
 
 def _is_finetuning(
-    user_input: UserInput, dataset: DocumentArray, finetune_datasets: Tuple
+    user_input: UserInput, dataset: DocumentArray, finetuneable_datasets: Tuple
 ) -> bool:
-    if user_input.data in finetune_datasets:
+    if user_input.data in finetuneable_datasets:
         return True
 
     elif user_input.is_custom_dataset and all(

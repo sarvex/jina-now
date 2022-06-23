@@ -5,8 +5,8 @@ from typing import Dict, List, Optional
 from docarray import DocumentArray
 
 from now.constants import AVAILABLE_DATASET, Modalities, Qualities
-from now.dataclasses import UserInput
 from now.datasource.datasource import DemoDatasource
+from now.now_dataclasses import UserInput
 
 
 class JinaNOWApp:

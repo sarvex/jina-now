@@ -177,9 +177,9 @@ def run_k8s(os_type: str = 'linux', arch: str = 'x86_64', **kwargs):
 
 if __name__ == '__main__':
     run_k8s(
-        output_modality='music',
-        data='music-genres-mid',
-        cluster='new',
+        app='text_to_image',
+        data='bird-species',
+        cluster='kind-jina-now',
         quality='medium',
         deployment_type='local',
         kubectl_path='/usr/local/bin/kubectl',

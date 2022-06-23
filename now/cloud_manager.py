@@ -9,10 +9,10 @@ import docker
 from kubernetes import client, config
 
 from now.constants import JC_SECRET
-from now.dataclasses import UserInput
 from now.deployment.deployment import cmd
 from now.dialog import maybe_prompt_user
 from now.log import time_profiler, yaspin_extended
+from now.now_dataclasses import UserInput
 from now.utils import sigmap
 
 cur_dir = pathlib.Path(__file__).parent.resolve()

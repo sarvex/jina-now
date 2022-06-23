@@ -8,7 +8,7 @@ from pytest_mock import MockerFixture
 
 from now.constants import DatasetTypes, DemoDatasets, Modalities
 from now.data_loading.data_loading import load_data
-from now.dataclasses import UserInput
+from now.now_dataclasses import UserInput
 
 
 @pytest.fixture()

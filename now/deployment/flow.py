@@ -13,9 +13,9 @@ from yaspin.spinners import Spinners
 from now.apps.base.app import JinaNOWApp
 from now.cloud_manager import is_local_cluster
 from now.constants import JC_SECRET
-from now.dataclasses import UserInput
 from now.deployment.deployment import apply_replace, cmd, deploy_wolf
 from now.log import time_profiler, yaspin_extended
+from now.now_dataclasses import UserInput
 from now.utils import sigmap
 
 cur_dir = pathlib.Path(__file__).parent.resolve()
