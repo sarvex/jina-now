@@ -179,6 +179,7 @@ jobs:
           cat ~/.jina/config.json
         env:
           WOLF_TOKEN: ${{ secrets.WOLF_TOKEN }}
+          HUBBLE_AUTH_TOKEN: ${{ secrets.HUBBLE_AUTH_TOKEN }}
       - name: Test
         id: test
         run: |

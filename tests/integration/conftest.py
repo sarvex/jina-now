@@ -1,7 +1,11 @@
+import logging
 import os
 
 import pytest
 from pytest_mock import MockerFixture
+
+logging.basicConfig(level=logging.DEBUG)
+log = logging.getLogger(__name__)
 
 
 class HubbleAuthPatch:
@@ -12,6 +16,7 @@ class HubbleAuthPatch:
     @staticmethod
     def get_auth_token() -> str:
         token = os.environ.get('HUBBLE_AUTH_TOKEN')
+        log.debug(f'Found token in env *** (Len={len(token)})')
         if token:
             return token
         else:
