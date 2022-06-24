@@ -7,12 +7,13 @@ from os.path import expanduser as user
 
 import cpuinfo
 
+from now import __version__ as version
 from now.deployment.deployment import cmd
 
 warnings.filterwarnings("ignore")
 
 if len(sys.argv) != 1 and not ('-h' in sys.argv[1:] or '--help' in sys.argv[1:]):
-    print('Initialising Jina NOW...')
+    print(f'Initialising Jina NOW {version}...')
 cur_dir = pathlib.Path(__file__).parents[1].resolve()
 
 os.environ['JINA_CHECK_VERSION'] = 'False'
