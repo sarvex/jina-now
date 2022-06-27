@@ -102,7 +102,7 @@ def check_wolf_deployment(**kwargs):
                 with open(user(JC_SECRET), 'r') as fp:
                     flow_details = json.load(fp)
                 flow_id = flow_details['flow_id']
-                cmd(f'jcloud remove {flow_id}', wait=False)
+                cmd(f'jcloud remove {flow_id} ', wait=False)
                 spinner.ok('💀')
         else:
             cowsay.cow('see you soon 👋')
