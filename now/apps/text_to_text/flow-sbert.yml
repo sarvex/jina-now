@@ -4,7 +4,7 @@ with:
   port_expose: 8080
   cors: True
 jcloud:
-  version: 3.4.11
+  version: 3.6.6
 executors:
   - name: encoder_text
     uses: ${{ ENV.ENCODER_NAME }}
