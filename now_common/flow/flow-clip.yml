@@ -9,7 +9,6 @@ executors:
   - name: encoder_clip
     uses: ${{ ENV.ENCODER_NAME }}
     jcloud:
-      capacity: on-demand
       resources:
         memory: 8G
     uses_with:
