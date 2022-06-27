@@ -7,6 +7,7 @@ class Modalities(BetterEnum):
     TEXT = 'text'
     IMAGE = 'image'
     MUSIC = 'music'
+    VIDEO = 'video'
 
 
 class Apps(BetterEnum):

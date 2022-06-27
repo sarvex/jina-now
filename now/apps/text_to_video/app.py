@@ -39,7 +39,7 @@ class TextToVideo(JinaNOWApp):
 
     @property
     def output_modality(self) -> Modalities:
-        return Modalities.IMAGE
+        return Modalities.VIDEO
 
     @property
     def options(self) -> List[Dict]:
