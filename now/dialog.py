@@ -89,9 +89,12 @@ def _configure_app(user_input: UserInput, **kwargs) -> None:
             {'name': '🏞 ▶ 🏞 image to image search', 'value': Apps.IMAGE_TO_IMAGE},
             {'name': '📝 ▶ 📝 text to text search', 'value': Apps.TEXT_TO_TEXT},
             {
-                'name': '🥁 ▶ 🥁 music to music Search',
+                'name': '🥁 ▶ 🥁 music to music search',
                 'value': Apps.MUSIC_TO_MUSIC,
-                'disabled': AVAILABLE_SOON,
+            },
+            {
+                'name': '📝 ▶ 🎦 text to video search',
+                'value': Apps.TEXT_TO_VIDEO,
             },
         ],
         prompt_message='What sort of search engine would you like to build?',

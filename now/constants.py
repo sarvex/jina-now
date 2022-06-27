@@ -15,6 +15,7 @@ class Apps(BetterEnum):
     IMAGE_TO_TEXT = 'image_to_text'
     IMAGE_TO_IMAGE = 'image_to_image'
     MUSIC_TO_MUSIC = 'music_to_music'
+    TEXT_TO_VIDEO = 'text_to_video'
 
 
 class DatasetTypes(BetterEnum):
