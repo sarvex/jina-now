@@ -144,9 +144,6 @@ def _load_video_from_folder(path: str) -> DocumentArray:
     da = DocumentArray.from_files(path + '/**')
     da.apply(convert_fn)
 
-    with open('test.gif', 'wb') as f:
-        f.write(da[0].blob)
-
     return DocumentArray(d for d in da if d.blob != b'')
 
 

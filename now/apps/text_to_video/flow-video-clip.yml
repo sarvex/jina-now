@@ -6,13 +6,6 @@ with:
 jcloud:
   version: 3.6.6
 executors:
-#  - name: video_loader
-#    uses: jinahub+docker://VideoSampler
-#    jcloud:
-#      resources:
-#        memory: 1G
-#    env:
-#      JINA_LOG_LEVEL: DEBUG
   - name: encoder_clip
     uses: ${{ ENV.ENCODER_NAME }}
     jcloud:
@@ -20,7 +13,7 @@ executors:
         memory: 8G
     uses_with:
       pretrained_model_name_or_path: ${{ ENV.PRE_TRAINED_MODEL_NAME }}
-      traversal_paths: @c
+      traversal_paths: '@c'
     env:
       JINA_LOG_LEVEL: DEBUG
   - name: indexer
@@ -30,6 +23,6 @@ executors:
       resources:
         memory: 4G
     uses_with:
-      traversal_paths: @c
+      traversal_paths: '@c'
     env:
       JINA_LOG_LEVEL: DEBUG
