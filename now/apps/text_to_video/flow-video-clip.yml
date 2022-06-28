@@ -1,0 +1,33 @@
+jtype: Flow
+with:
+  name: nowapi
+  port_expose: 8080
+  cors: True
+jcloud:
+  version: 3.6.6
+executors:
+  - name: video_loader
+      uses: jinahub+docker://VideoSampler
+      jcloud:
+        resources:
+          memory: 1G
+      env:
+        JINA_LOG_LEVEL: DEBUG
+  - name: encoder_clip
+    uses: ${{ ENV.ENCODER_NAME }}
+    jcloud:
+      resources:
+        memory: 8G
+    uses_with:
+      pretrained_model_name_or_path: ${{ ENV.PRE_TRAINED_MODEL_NAME }}
+      traversal_path: c
+    env:
+      JINA_LOG_LEVEL: DEBUG
+  - name: indexer
+    uses: ${{ ENV.INDEXER_NAME }}
+    jcloud:
+      capacity: on-demand
+      resources:
+        memory: 4G
+    env:
+      JINA_LOG_LEVEL: DEBUG
