@@ -6,13 +6,13 @@ with:
 jcloud:
   version: 3.6.6
 executors:
-  - name: video_loader
-      uses: jinahub+docker://VideoSampler
-      jcloud:
-        resources:
-          memory: 1G
-      env:
-        JINA_LOG_LEVEL: DEBUG
+#  - name: video_loader
+#    uses: jinahub+docker://VideoSampler
+#    jcloud:
+#      resources:
+#        memory: 1G
+#    env:
+#      JINA_LOG_LEVEL: DEBUG
   - name: encoder_clip
     uses: ${{ ENV.ENCODER_NAME }}
     jcloud:

@@ -1,6 +1,6 @@
 from now.utils import BetterEnum
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.71'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.71-video'
 
 
 class Modalities(BetterEnum):

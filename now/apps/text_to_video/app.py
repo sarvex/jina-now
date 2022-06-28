@@ -1,13 +1,22 @@
 import io
+import os
 from typing import Dict, List
 
 import numpy as np
-from docarray import Document
+from docarray import Document, DocumentArray
 from now_common import options
 from PIL import Image
 
 from now.apps.base.app import JinaNOWApp
-from now.constants import Apps, Modalities, Qualities
+from now.constants import (
+    CLIP_USES,
+    IMAGE_MODEL_QUALITY_MAP,
+    Apps,
+    Modalities,
+    Qualities,
+)
+from now.dataclasses import UserInput
+from now.run_backend import finetune_flow_setup
 
 
 class TextToVideo(JinaNOWApp):
@@ -39,7 +48,8 @@ class TextToVideo(JinaNOWApp):
         return [options.QUALITY_CLIP]
 
     def set_flow_yaml(self, **kwargs):
-        self.flow_yaml = 'flow-video-clip.yml'
+        flow_dir = os.path.abspath(os.path.join(__file__, '..'))
+        self.flow_yaml = os.path.join(flow_dir, 'flow-video-clip.yml')
 
     @property
     def pre_trained_embedding_size(self) -> Dict[Qualities, int]:
@@ -48,6 +58,22 @@ class TextToVideo(JinaNOWApp):
             Qualities.GOOD: 512,
             Qualities.EXCELLENT: 768,
         }
+
+    def setup(self, da: DocumentArray, user_config: UserInput, kubectl_path) -> Dict:
+        return finetune_flow_setup(
+            self,
+            da,
+            user_config,
+            kubectl_path,
+            encoder_uses=CLIP_USES,
+            encoder_uses_with={
+                'pretrained_model_name_or_path': IMAGE_MODEL_QUALITY_MAP[
+                    user_config.quality
+                ][1]
+            },
+            finetune_datasets=(),
+            indexer_uses='DocarrayIndexer',
+        )
 
 
 def select_frames(num_selected_frames, num_total_frames):
