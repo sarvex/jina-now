@@ -97,12 +97,19 @@ def _load_from_disk(dataset_path: str, modality: Modalities) -> DocumentArray:
             sigmap=sigmap, text="Loading and pre-processing data", color="green"
         ) as spinner:
             if modality == Modalities.IMAGE:
-                return _load_images_from_folder(dataset_path)
+                da = _load_images_from_folder(dataset_path)
             elif modality == Modalities.TEXT:
-                return _load_texts_from_folder(dataset_path)
+                da = _load_texts_from_folder(dataset_path)
             elif modality == Modalities.MUSIC:
-                return _load_music_from_folder(dataset_path)
+                da = _load_music_from_folder(dataset_path)
+            elif modality == Modalities.VIDEO:
+                da = _load_video_from_folder(dataset_path)
+            else:
+                raise Exception(
+                    f'modality {modality} not supported for data loading from folder'
+                )
             spinner.ok('🏭')
+            return da
     else:
         raise ValueError(
             f'The provided dataset path {dataset_path} does not'
@@ -114,12 +121,32 @@ def _load_images_from_folder(path: str) -> DocumentArray:
     def convert_fn(d):
         try:
             d.load_uri_to_image_tensor()
-            return to_thumbnail_jpg(d)
+            return to_thumbnail_jpg(d, 'JPEG')
         except:
             return d
 
     da = DocumentArray.from_files(path + '/**')
     da.apply(convert_fn)
+    return DocumentArray(d for d in da if d.blob != b'')
+
+
+def _load_video_from_folder(path: str) -> DocumentArray:
+    from now.apps.text_to_video.app import sample_video
+
+    def convert_fn(d):
+        try:
+            d.load_uri_to_blob()
+            sample_video(d)
+        except:
+            pass
+        return d
+
+    da = DocumentArray.from_files(path + '/**')
+    da.apply(convert_fn)
+
+    with open('test.gif', 'wb') as f:
+        f.write(da[0].blob)
+
     return DocumentArray(d for d in da if d.blob != b'')
 
 
