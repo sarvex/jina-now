@@ -1,6 +1,6 @@
 finetuner-client @ git+https://github.com/jina-ai/finetuner@dev
 pyfiglet==0.8.post1
-jina[perf]==3.4.11
+jina[perf]==3.6.6
 cowsay==4.0
 yaspin==2.1.0
 py-cpuinfo==8.0.0
