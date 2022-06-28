@@ -72,7 +72,7 @@ class TextToVideo(JinaNOWApp):
                 ][1]
             },
             finetune_datasets=(),
-            indexer_uses='DocarrayIndexer',
+            indexer_uses='DocarrayIndexerV2',
         )
 
 
