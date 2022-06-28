@@ -33,7 +33,7 @@ class TextToVideo(JinaNOWApp):
 
     @property
     def description(self) -> str:
-        return 'Text to image search app'
+        return 'Text to video search app'
 
     @property
     def input_modality(self) -> Modalities:
