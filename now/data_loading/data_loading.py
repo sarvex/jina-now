@@ -121,7 +121,7 @@ def _load_images_from_folder(path: str) -> DocumentArray:
     def convert_fn(d):
         try:
             d.load_uri_to_image_tensor()
-            return to_thumbnail_jpg(d, 'JPEG')
+            return to_thumbnail_jpg(d)
         except:
             return d
 
