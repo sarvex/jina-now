@@ -44,7 +44,8 @@ def search(data: NowTextSearchRequestModel):
     Retrieve matching videos for a given text as query.
     """
     query_doc = process_query(text=data.text)
+    # for video the search requests have to be on chunk-level
     docs = get_jina_client(data.host, data.port).post(
-        '/search', query_doc, parameters={"limit": data.limit}
+        '/search', Document(chunks=query_doc), parameters={"limit": data.limit}
     )
     return docs[0].matches.to_dict()
