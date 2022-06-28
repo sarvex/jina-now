@@ -1,6 +1,7 @@
 from now.utils import BetterEnum
 
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.71'
+DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 
 
 class Modalities(BetterEnum):

@@ -21,7 +21,7 @@ class HubbleAuthPatch:
             return token
         else:
             raise RuntimeError(
-                'Hubble token not found in environment ' 'under key `HUBBLE_AUTH_TOKEN`'
+                'Hubble token not found in environment under key `HUBBLE_AUTH_TOKEN`'
             )
 
 

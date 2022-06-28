@@ -95,6 +95,7 @@ def test_backend(
     cleanup,
     input_modality,
     output_modality,
+    with_hubble_login_patch,
 ):
     if deployment_type == 'remote' and dataset != 'best-artworks':
         pytest.skip('Too time consuming, hence skipping!')

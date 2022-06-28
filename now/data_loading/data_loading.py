@@ -6,11 +6,11 @@ from os.path import join as osp
 from pathlib import Path
 from typing import Optional
 
-import docarray
 from docarray import Document, DocumentArray
 
 from now.constants import (
     BASE_STORAGE_URL,
+    DEMO_DATASET_DOCARRAY_VERSION,
     IMAGE_MODEL_QUALITY_MAP,
     DatasetTypes,
     Modalities,
@@ -179,7 +179,7 @@ def get_dataset_url(
     dataset: str, model_quality: Optional[Qualities], output_modality: Modalities
 ) -> str:
     data_folder = None
-    docarray_version = docarray.__version__
+    docarray_version = DEMO_DATASET_DOCARRAY_VERSION
     if output_modality == Modalities.IMAGE:
         data_folder = 'jpeg'
     elif output_modality == Modalities.TEXT:

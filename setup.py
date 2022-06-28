@@ -43,14 +43,14 @@ extra_require = get_requirements_list('requirements-test.txt')
 
 sys_platform = platform.system().lower()
 # if sys_platform == 'darwin':
-torch_requirement = ['torch==1.10.2']
+# torch_requirement = ['torch==1.10.2']
 # else:
 #     torch_requirement = [
 #         'torch==1.10.2+cpu',
 #     ]
 
 
-install_requires.extend(torch_requirement)
+# install_requires.extend(torch_requirement)
 
 setup(
     name=pkg_name,

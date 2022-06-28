@@ -2,12 +2,16 @@
 This suite tests that the demo datasets are available
 behind their URLs.
 """
-import docarray
 import pytest
 import requests
 from starlette import status
 
-from now.constants import AVAILABLE_DATASET, Modalities, Qualities
+from now.constants import (
+    AVAILABLE_DATASET,
+    DEMO_DATASET_DOCARRAY_VERSION,
+    Modalities,
+    Qualities,
+)
 from now.data_loading.data_loading import get_dataset_url
 
 
@@ -53,6 +57,6 @@ def test_dataset_is_available(
 )
 def test_sample_data_is_available(ds_url: str):
     assert (
-        requests.head(url=ds_url.format(docarray.__version__)).status_code
+        requests.head(url=ds_url.format(DEMO_DATASET_DOCARRAY_VERSION)).status_code
         == status.HTTP_200_OK
     )
