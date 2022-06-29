@@ -15,7 +15,7 @@ from now.constants import (
     Modalities,
     Qualities,
 )
-from now.dataclasses import UserInput
+from now.now_dataclasses import UserInput
 from now.run_backend import finetune_flow_setup
 
 
