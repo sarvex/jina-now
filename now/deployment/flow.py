@@ -175,12 +175,7 @@ def deploy_flow(
                 print(traceback.format_exc())
             sleep(1)
 
-    client.post(
-        '/index',
-        request_size=request_size,
-        inputs=index,
-        show_progress=True,
-    )
+    client.post('/index', request_size=request_size, inputs=index, show_progress=True)
 
     print('⭐ Success - your data is indexed')
     return gateway_host, gateway_port, gateway_host_internal, gateway_port_internal
