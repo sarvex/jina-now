@@ -96,7 +96,6 @@ def _load_from_disk(dataset_path: str, modality: Modalities) -> DocumentArray:
         with yaspin_extended(
             sigmap=sigmap, text="Loading and pre-processing data", color="green"
         ) as spinner:
-            spinner.ok('🏭')
             if modality == Modalities.IMAGE:
                 da = _load_images_from_folder(dataset_path)
             elif modality == Modalities.TEXT:
@@ -109,7 +108,7 @@ def _load_from_disk(dataset_path: str, modality: Modalities) -> DocumentArray:
                 raise Exception(
                     f'modality {modality} not supported for data loading from folder'
                 )
-
+            spinner.ok('🏭')
             return da
     else:
         raise ValueError(
