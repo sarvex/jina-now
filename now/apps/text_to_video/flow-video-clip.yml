@@ -2,6 +2,7 @@ jtype: Flow
 with:
   name: nowapi
   port_expose: 8080
+  prefetch: 10
   cors: True
 jcloud:
   version: 3.6.6
