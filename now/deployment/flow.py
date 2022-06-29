@@ -7,7 +7,6 @@ from time import sleep
 from docarray import DocumentArray
 from kubernetes import client as k8s_client
 from kubernetes import config
-from tqdm import tqdm
 from yaspin.spinners import Spinners
 
 from now.apps.base.app import JinaNOWApp
@@ -179,7 +178,8 @@ def deploy_flow(
     client.post(
         '/index',
         request_size=request_size,
-        inputs=tqdm(index),
+        inputs=index,
+        show_progress=True,
     )
 
     print('⭐ Success - your data is indexed')

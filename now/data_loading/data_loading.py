@@ -96,6 +96,7 @@ def _load_from_disk(dataset_path: str, modality: Modalities) -> DocumentArray:
         with yaspin_extended(
             sigmap=sigmap, text="Loading and pre-processing data", color="green"
         ) as spinner:
+            spinner.ok('🏭')
             if modality == Modalities.IMAGE:
                 da = _load_images_from_folder(dataset_path)
             elif modality == Modalities.TEXT:
@@ -108,7 +109,7 @@ def _load_from_disk(dataset_path: str, modality: Modalities) -> DocumentArray:
                 raise Exception(
                     f'modality {modality} not supported for data loading from folder'
                 )
-            spinner.ok('🏭')
+
             return da
     else:
         raise ValueError(
@@ -142,8 +143,18 @@ def _load_video_from_folder(path: str) -> DocumentArray:
         return d
 
     da = DocumentArray.from_files(path + '/**')
-    da.apply(convert_fn)
 
+    def gen():
+        def _get_chunk(batch):
+            return [convert_fn(d) for d in batch]
+
+        for batch in da.map_batch(
+            _get_chunk, batch_size=4, backend='process', show_progress=True
+        ):
+            for d in batch:
+                yield d
+
+    da = DocumentArray(d for d in gen())
     return DocumentArray(d for d in da if d.blob != b'')
 
 
