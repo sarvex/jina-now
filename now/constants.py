@@ -1,13 +1,15 @@
 from now.utils import BetterEnum
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.71'
+
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.73'
 
 
 class Modalities(BetterEnum):
     TEXT = 'text'
     IMAGE = 'image'
     MUSIC = 'music'
+    VIDEO = 'video'
 
 
 class Apps(BetterEnum):
@@ -16,6 +18,7 @@ class Apps(BetterEnum):
     IMAGE_TO_TEXT = 'image_to_text'
     IMAGE_TO_IMAGE = 'image_to_image'
     MUSIC_TO_MUSIC = 'music_to_music'
+    TEXT_TO_VIDEO = 'text_to_video'
 
 
 class DatasetTypes(BetterEnum):
@@ -84,6 +87,7 @@ AVAILABLE_DATASET = {
         (DemoDatasets.INDIE_LYRICS, '🎤 indie lyrics (200K docs)'),
         (DemoDatasets.METAL_LYRICS, '🎤 metal lyrics (200K docs)'),
     ],
+    Modalities.VIDEO: [],
 }
 
 
