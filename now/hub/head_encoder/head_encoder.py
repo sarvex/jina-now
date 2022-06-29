@@ -40,7 +40,7 @@ def load_mean(mean_path):
         return pickle.load(f)
 
 
-class FineTunedLinearHeadEncoder(Executor):
+class FineTunedLinearHeadEncoderV4(Executor):
     def __init__(
         self,
         pre_trained_embedding_size,
@@ -60,7 +60,7 @@ class FineTunedLinearHeadEncoder(Executor):
 
     @requests
     def encode(self, docs: Optional[DocumentArray], **kwargs):
-        content_attr = FineTunedLinearHeadEncoder._preserve_content_attribute(docs)
+        content_attr = FineTunedLinearHeadEncoderV4._preserve_content_attribute(docs)
         for d in docs:
             if (
                 self.bi_model

@@ -21,12 +21,12 @@ def push_to_hub(tmpdir):
     I would prefer Idea 1 since remote Docarrays vanish, and the password has to be part of the k8s config,...
     """
     name = f'linear_head_encoder_{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}'
-    secret = '93ea59dbd1ee3fe0bdc44252c6e86a87'
-    class_name = 'FineTunedLinearHeadEncoder'
+    secret = 'f9a4fb5f787d4b138262615ce741b332'
+    class_name = 'FineTunedLinearHeadEncoderV4'
     src_path = os.path.join(cur_dir, 'head_encoder')
     dst_path = os.path.join(tmpdir, 'now/hub/head_encoder')
     copytree(src_path, dst_path)
-    bashCommand = f"jina hub push --private {dst_path} -t {name} --force-update {class_name} --secret {secret}"
+    bashCommand = f"jina hub push {dst_path} -t {name} --force-update {class_name} --secret {secret}"
     with yaspin_extended(
         sigmap=sigmap, text="Push fine-tuned model to Jina Hub", color="green"
     ) as spinner:
@@ -36,4 +36,4 @@ def push_to_hub(tmpdir):
             process = subprocess.Popen(bashCommand.split(), stdout=fh)
         output, error = process.communicate()
         spinner.ok('⏫ ')
-    return f'FineTunedLinearHeadEncoder:{secret}/{name}'
+    return f'{class_name}/{name}'

@@ -58,5 +58,5 @@ class TextToText(JinaNOWApp):
                     user_config.quality
                 ]
             },
-            indexer_uses='DocarrayIndexer',
+            indexer_uses='DocarrayIndexerV2',
         )
