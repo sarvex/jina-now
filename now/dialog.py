@@ -95,7 +95,6 @@ def _configure_app(user_input: UserInput, **kwargs) -> None:
             {
                 'name': '🥁 ▶ 🥁 music to music search',
                 'value': Apps.MUSIC_TO_MUSIC,
-                'disabled': AVAILABLE_SOON,
             },
         ],
         prompt_message='What sort of search engine would you like to build?',
