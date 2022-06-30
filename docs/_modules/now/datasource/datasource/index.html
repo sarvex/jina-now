@@ -6,7 +6,7 @@
         <link rel="canonical" href="https://now.jina.ai/_modules/now/datasource/datasource.html" />
 
     <link rel="shortcut icon" href="../../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.06.21"/>
-        <title>now.datasource.datasource - NOW 0.0.14 documentation</title>
+        <title>now.datasource.datasource - NOW 0.0.15 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../../">
-                <div class="brand">NOW 0.0.14 documentation</div>
+                <div class="brand">NOW 0.0.15 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -272,51 +272,66 @@
                 <article role="main">
                     <h1>Source code for now.datasource.datasource</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">abc</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
 
 <span class="kn">from</span> <span class="nn">docarray</span> <span class="kn">import</span> <span class="n">DocumentArray</span>
 
-<span class="kn">from</span> <span class="nn">now.constants</span> <span class="kn">import</span> <span class="n">BASE_STORAGE_URL</span><span class="p">,</span> <span class="n">Modalities</span>
+<span class="kn">from</span> <span class="nn">now.constants</span> <span class="kn">import</span> <span class="n">Modalities</span><span class="p">,</span> <span class="n">Qualities</span>
+<span class="kn">from</span> <span class="nn">now.data_loading.data_loading</span> <span class="kn">import</span> <span class="n">_fetch_da_from_url</span><span class="p">,</span> <span class="n">get_dataset_url</span>
+<span class="kn">from</span> <span class="nn">now.utils</span> <span class="kn">import</span> <span class="n">BetterEnum</span>
 
 
-<span class="c1"># TODO just a prototype - needs to be implemented in the future</span>
+<div class="viewcode-block" id="DatasourceType"><a class="viewcode-back" href="../../../../api/now.datasource.datasource/#now.datasource.datasource.DatasourceType">[docs]</a><span class="k">class</span> <span class="nc">DatasourceType</span><span class="p">(</span><span class="n">BetterEnum</span><span class="p">):</span>
+    <span class="n">DEMO</span> <span class="o">=</span> <span class="s1">&#39;demo&#39;</span>
+    <span class="n">CUSTOM_DOCARRAY</span> <span class="o">=</span> <span class="s1">&#39;custom-docarray&#39;</span>
+    <span class="n">LOCAL_FILES</span> <span class="o">=</span> <span class="s1">&#39;local-files&#39;</span>
+    <span class="n">DATABASE_CONNECTOR</span> <span class="o">=</span> <span class="s1">&#39;db-connector&#39;</span></div>
+
+
 <div class="viewcode-block" id="Datasource"><a class="viewcode-back" href="../../../../api/now.datasource.datasource/#now.datasource.datasource.Datasource">[docs]</a><span class="k">class</span> <span class="nc">Datasource</span><span class="p">:</span>
+    <span class="nd">@property</span>
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DatasourceType</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">modalities</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Modalities</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;modalities&#39;</span><span class="p">)</span>
+
 <div class="viewcode-block" id="Datasource.get_data"><a class="viewcode-back" href="../../../../api/now.datasource.datasource/#now.datasource.datasource.Datasource.get_data">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mapping</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DocumentArray</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div></div>
+    <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DocumentArray</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;get_data&#39;</span><span class="p">)</span></div></div>
 
 
-<span class="c1"># TODO just a prototype - needs to be implemented in the future</span>
-<div class="viewcode-block" id="DocarrayURLDatasource"><a class="viewcode-back" href="../../../../api/now.datasource.datasource/#now.datasource.datasource.DocarrayURLDatasource">[docs]</a><span class="k">class</span> <span class="nc">DocarrayURLDatasource</span><span class="p">(</span><span class="n">Datasource</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ds_id</span><span class="p">,</span> <span class="n">display_name</span><span class="p">,</span> <span class="n">modality</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ds_id</span> <span class="o">=</span> <span class="n">ds_id</span>
+<div class="viewcode-block" id="DemoDatasource"><a class="viewcode-back" href="../../../../api/now.datasource.datasource/#now.datasource.datasource.DemoDatasource">[docs]</a><span class="k">class</span> <span class="nc">DemoDatasource</span><span class="p">(</span><span class="n">Datasource</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">id_</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">display_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">modality_folder</span><span class="p">:</span> <span class="n">Modalities</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">id_</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">display_name</span> <span class="o">=</span> <span class="n">display_name</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">modality</span> <span class="o">=</span> <span class="n">modality</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">modalities_folder</span> <span class="o">=</span> <span class="n">modality_folder</span>
 
-<div class="viewcode-block" id="DocarrayURLDatasource.get_data"><a class="viewcode-back" href="../../../../api/now.datasource.datasource/#now.datasource.datasource.DocarrayURLDatasource.get_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mapping</span><span class="p">,</span> <span class="n">quality</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DocumentArray</span><span class="p">:</span>
-        <span class="c1"># TODO comment from sebastian:</span>
-        <span class="c1">#  This signature misses the mapping arg from the baseclass.</span>
-        <span class="c1">#  The baseclass interface is not really guiding the user a lot at the moment.</span>
-        <span class="c1">#  Maybe we should start with an explicit ObjectStorageDataset or something like that</span>
-        <span class="c1">#  because all our app are using that atm. and abstract the interface furhter once we work on</span>
-        <span class="c1">#  the database table column mapping stuff?</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DatasourceType</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">DatasourceType</span><span class="o">.</span><span class="n">DEMO</span>
 
-        <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">BASE_STORAGE_URL</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">modality</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ds_id</span><span class="si">}{</span><span class="p">(</span><span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">quality</span><span class="p">)</span> <span class="k">if</span> <span class="n">quality</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="si">}</span><span class="s1">.bin&#39;</span>
-        <span class="c1"># TODO  return document array from url</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div></div>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">modalities</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Modalities</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">Modalities</span><span class="o">.</span><span class="n">TEXT</span><span class="p">,</span> <span class="n">Modalities</span><span class="o">.</span><span class="n">IMAGE</span><span class="p">]</span>
 
-
-<div class="viewcode-block" id="DocarrayPullDatasource"><a class="viewcode-back" href="../../../../api/now.datasource.datasource/#now.datasource.datasource.DocarrayPullDatasource">[docs]</a><span class="k">class</span> <span class="nc">DocarrayPullDatasource</span><span class="p">(</span><span class="n">Datasource</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
-
-<div class="viewcode-block" id="DocarrayPullDatasource.get_data"><a class="viewcode-back" href="../../../../api/now.datasource.datasource/#now.datasource.datasource.DocarrayPullDatasource.get_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">quality</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DocumentArray</span><span class="p">:</span>
-        <span class="k">pass</span></div></div>
+<div class="viewcode-block" id="DemoDatasource.get_data"><a class="viewcode-back" href="../../../../api/now.datasource.datasource/#now.datasource.datasource.DemoDatasource.get_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">quality</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Qualities</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DocumentArray</span><span class="p">:</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">get_dataset_url</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">quality</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">modalities_folder</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_fetch_da_from_url</span><span class="p">(</span><span class="n">url</span><span class="p">)</span></div></div>
 
 
-<span class="n">example_datasources</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="n">DocarrayURLDatasource</span><span class="p">(</span><span class="s1">&#39;bird-species&#39;</span><span class="p">,</span> <span class="s1">&#39;🦆 birds (≈12K docs)&#39;</span><span class="p">,</span> <span class="n">Modalities</span><span class="o">.</span><span class="n">IMAGE</span><span class="p">),</span>
-    <span class="o">...</span><span class="p">,</span>
-<span class="p">]</span>
+<span class="c1"># example_datasources = [</span>
+<span class="c1">#     DocarrayURLDatasource(&#39;bird-species&#39;, &#39;🦆 birds (≈12K docs)&#39;, Modalities.IMAGE),</span>
+<span class="c1">#     ...,</span>
+<span class="c1"># ]</span>
 </pre></div>
                 </article>
             </div>
@@ -334,7 +349,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Jun 23, 2022.
+                            Last updated on Jun 30, 2022.
                         </div>
                     </div>
                     <div class="right-details">

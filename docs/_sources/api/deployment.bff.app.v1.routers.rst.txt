@@ -13,6 +13,7 @@ Submodules
    deployment.bff.app.v1.routers.music2music
    deployment.bff.app.v1.routers.text2text
    deployment.bff.app.v1.routers.txt2img
+   deployment.bff.app.v1.routers.txt2video
 
 Module contents
 ---------------

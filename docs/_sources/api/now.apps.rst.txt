@@ -13,6 +13,7 @@ Subpackages
    now.apps.music_to_music
    now.apps.text_to_image
    now.apps.text_to_text
+   now.apps.text_to_video
 
 Module contents
 ---------------

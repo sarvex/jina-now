@@ -10,7 +10,7 @@
   
 <meta property="og:url" content="https://now.jina.ai/api/now.datasource.datasource/" />
   
-<meta property="og:site_name" content="NOW 0.0.14 Documentation" />
+<meta property="og:site_name" content="NOW 0.0.15 Documentation" />
   
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@JinaAI_">
@@ -33,7 +33,7 @@
         <link rel="canonical" href="https://now.jina.ai/api/now.datasource.datasource.html" />
 
     <link rel="shortcut icon" href="../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.06.21"/>
-        <title>now.datasource.datasource module - NOW 0.0.14 documentation</title>
+        <title>now.datasource.datasource module - NOW 0.0.15 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
@@ -166,7 +166,7 @@
         </div>
         <div class="header-center">
             <a href="../../">
-                <div class="brand">NOW 0.0.14 documentation</div>
+                <div class="brand">NOW 0.0.15 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -300,12 +300,58 @@
                     <section id="module-now.datasource.datasource">
 <span id="now-datasource-datasource-module"></span><h1>now.datasource.datasource module<a class="headerlink" href="#module-now.datasource.datasource" title="Permalink to this headline">#</a></h1>
 <dl class="py class">
+<dt class="sig sig-object py" id="now.datasource.datasource.DatasourceType">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">now.datasource.datasource.</span></span><span class="sig-name descname"><span class="pre">DatasourceType</span></span><a class="reference internal" href="../../_modules/now/datasource/datasource/#DatasourceType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#now.datasource.datasource.DatasourceType" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../now.utils/#now.utils.BetterEnum" title="now.utils.BetterEnum"><code class="xref py py-class docutils literal notranslate"><span class="pre">now.utils.BetterEnum</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="now.datasource.datasource.DatasourceType.DEMO">
+<span class="sig-name descname"><span class="pre">DEMO</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'demo'</span></em><a class="headerlink" href="#now.datasource.datasource.DatasourceType.DEMO" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="now.datasource.datasource.DatasourceType.CUSTOM_DOCARRAY">
+<span class="sig-name descname"><span class="pre">CUSTOM_DOCARRAY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'custom-docarray'</span></em><a class="headerlink" href="#now.datasource.datasource.DatasourceType.CUSTOM_DOCARRAY" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="now.datasource.datasource.DatasourceType.LOCAL_FILES">
+<span class="sig-name descname"><span class="pre">LOCAL_FILES</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'local-files'</span></em><a class="headerlink" href="#now.datasource.datasource.DatasourceType.LOCAL_FILES" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="now.datasource.datasource.DatasourceType.DATABASE_CONNECTOR">
+<span class="sig-name descname"><span class="pre">DATABASE_CONNECTOR</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'db-connector'</span></em><a class="headerlink" href="#now.datasource.datasource.DatasourceType.DATABASE_CONNECTOR" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="now.datasource.datasource.Datasource">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">now.datasource.datasource.</span></span><span class="sig-name descname"><span class="pre">Datasource</span></span><a class="reference internal" href="../../_modules/now/datasource/datasource/#Datasource"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#now.datasource.datasource.Datasource" title="Permalink to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py property">
+<dt class="sig sig-object py" id="now.datasource.datasource.Datasource.type">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#now.datasource.datasource.DatasourceType" title="now.datasource.datasource.DatasourceType"><span class="pre">now.datasource.datasource.DatasourceType</span></a></em><a class="headerlink" href="#now.datasource.datasource.Datasource.type" title="Permalink to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#now.datasource.datasource.DatasourceType" title="now.datasource.datasource.DatasourceType"><code class="xref py py-class docutils literal notranslate"><span class="pre">DatasourceType</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="now.datasource.datasource.Datasource.modalities">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">modalities</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../now.constants/#now.constants.Modalities" title="now.constants.Modalities"><span class="pre">now.constants.Modalities</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#now.datasource.datasource.Datasource.modalities" title="Permalink to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<a class="reference internal" href="../now.constants/#now.constants.Modalities" title="now.constants.Modalities"><code class="xref py py-class docutils literal notranslate"><span class="pre">Modalities</span></code></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="now.datasource.datasource.Datasource.get_data">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mapping</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/now/datasource/datasource/#Datasource.get_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#now.datasource.datasource.Datasource.get_data" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/now/datasource/datasource/#Datasource.get_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#now.datasource.datasource.Datasource.get_data" title="Permalink to this definition">#</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">DocumentArray</span></code></p>
@@ -316,28 +362,32 @@
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="now.datasource.datasource.DocarrayURLDatasource">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">now.datasource.datasource.</span></span><span class="sig-name descname"><span class="pre">DocarrayURLDatasource</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ds_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">display_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modality</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/now/datasource/datasource/#DocarrayURLDatasource"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#now.datasource.datasource.DocarrayURLDatasource" title="Permalink to this definition">#</a></dt>
+<dt class="sig sig-object py" id="now.datasource.datasource.DemoDatasource">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">now.datasource.datasource.</span></span><span class="sig-name descname"><span class="pre">DemoDatasource</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id_</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">display_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modality_folder</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/now/datasource/datasource/#DemoDatasource"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#now.datasource.datasource.DemoDatasource" title="Permalink to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#now.datasource.datasource.Datasource" title="now.datasource.datasource.Datasource"><code class="xref py py-class docutils literal notranslate"><span class="pre">now.datasource.datasource.Datasource</span></code></a></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="now.datasource.datasource.DocarrayURLDatasource.get_data">
-<span class="sig-name descname"><span class="pre">get_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mapping</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quality</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/now/datasource/datasource/#DocarrayURLDatasource.get_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#now.datasource.datasource.DocarrayURLDatasource.get_data" title="Permalink to this definition">#</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="now.datasource.datasource.DemoDatasource.type">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#now.datasource.datasource.DatasourceType" title="now.datasource.datasource.DatasourceType"><span class="pre">now.datasource.datasource.DatasourceType</span></a></em><a class="headerlink" href="#now.datasource.datasource.DemoDatasource.type" title="Permalink to this definition">#</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">DocumentArray</span></code></p>
+<dd class="field-odd"><p><a class="reference internal" href="#now.datasource.datasource.DatasourceType" title="now.datasource.datasource.DatasourceType"><code class="xref py py-class docutils literal notranslate"><span class="pre">DatasourceType</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="now.datasource.datasource.DemoDatasource.modalities">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">modalities</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../now.constants/#now.constants.Modalities" title="now.constants.Modalities"><span class="pre">now.constants.Modalities</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#now.datasource.datasource.DemoDatasource.modalities" title="Permalink to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<a class="reference internal" href="../now.constants/#now.constants.Modalities" title="now.constants.Modalities"><code class="xref py py-class docutils literal notranslate"><span class="pre">Modalities</span></code></a>]</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="py class">
-<dt class="sig sig-object py" id="now.datasource.datasource.DocarrayPullDatasource">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">now.datasource.datasource.</span></span><span class="sig-name descname"><span class="pre">DocarrayPullDatasource</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/now/datasource/datasource/#DocarrayPullDatasource"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#now.datasource.datasource.DocarrayPullDatasource" title="Permalink to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#now.datasource.datasource.Datasource" title="now.datasource.datasource.Datasource"><code class="xref py py-class docutils literal notranslate"><span class="pre">now.datasource.datasource.Datasource</span></code></a></p>
 <dl class="py method">
-<dt class="sig sig-object py" id="now.datasource.datasource.DocarrayPullDatasource.get_data">
-<span class="sig-name descname"><span class="pre">get_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">quality</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/now/datasource/datasource/#DocarrayPullDatasource.get_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#now.datasource.datasource.DocarrayPullDatasource.get_data" title="Permalink to this definition">#</a></dt>
+<dt class="sig sig-object py" id="now.datasource.datasource.DemoDatasource.get_data">
+<span class="sig-name descname"><span class="pre">get_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">quality</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/now/datasource/datasource/#DemoDatasource.get_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#now.datasource.datasource.DemoDatasource.get_data" title="Permalink to this definition">#</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">DocumentArray</span></code></p>
@@ -365,7 +415,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Jun 23, 2022.
+                            Last updated on Jun 30, 2022.
                         </div>
                     </div>
                     <div class="right-details">
