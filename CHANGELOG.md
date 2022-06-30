@@ -9,6 +9,7 @@
 
 
 
+
 <a name=release-note-0-0-7></a>
 ## Release Note (`0.0.7`)
 
@@ -360,4 +361,20 @@
 
  - [[```0f76cc72```](https://github.com/jina-ai/now/commit/0f76cc729a8ad31c07f16b07d88629c1950f3fed)] __-__ Feat video search (#286) (*Florian Hönicke*)
  - [[```bafa1077```](https://github.com/jina-ai/now/commit/bafa10770dbd7b393c143718df265b1d5a6a735e)] __-__ __version__: the next version will be 0.0.15 (*Jina Dev Bot*)
+
+<a name=release-note-0-0-16></a>
+## Release Note (`0.0.16`)
+
+> Release time: 2022-06-30 17:17:00
+
+
+
+🙇 We'd like to thank all contributors for this new release! In particular,
+ Sebastian Lettner,  Jina Dev Bot,  🙇
+
+
+### 🍹 Other Improvements
+
+ - [[```b35d903e```](https://github.com/jina-ai/now/commit/b35d903e68e086d629bdd84826db2353895c1c1c)] __-__ update and release music (#291) (*Sebastian Lettner*)
+ - [[```98d1ec05```](https://github.com/jina-ai/now/commit/98d1ec052fd5c6b4216c606faf3d852850e3ed16)] __-__ __version__: the next version will be 0.0.16 (*Jina Dev Bot*)
 
