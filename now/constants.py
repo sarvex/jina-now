@@ -1,6 +1,6 @@
 from now.utils import BetterEnum
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.73'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.74'
 
 
 class Modalities(BetterEnum):
@@ -87,7 +87,6 @@ AVAILABLE_DATASET = {
     ],
     Modalities.VIDEO: [],
 }
-
 
 JC_SECRET = '~/.cache/jina-now/wolf.json'
 
