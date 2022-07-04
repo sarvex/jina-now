@@ -157,7 +157,7 @@ def deploy_flow(
     elif app_instance.output_modality == 'text':
         index = [x for x in index if x.text != '']
     print(f'▶ indexing {len(index)} documents')
-    request_size = 16
+    request_size = 4
 
     # double check that flow is up and running - should be done by wolf/core in the future
     while True:
