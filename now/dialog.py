@@ -135,7 +135,7 @@ def _parse_custom_data_from_cli(user_input: UserInput):
         user_input.dataset_url = data
     else:
         user_input.custom_dataset_type = DatasetTypes.DOCARRAY
-        user_input.dataset_secret = data
+        user_input.dataset_name = data
 
 
 def _configure_custom_dataset(user_input: UserInput, **kwargs) -> None:
@@ -160,7 +160,7 @@ def _configure_custom_dataset(user_input: UserInput, **kwargs) -> None:
         **kwargs,
     )
     if user_input.custom_dataset_type == DatasetTypes.DOCARRAY:
-        user_input.dataset_secret = _prompt_value(
+        user_input.dataset_name = _prompt_value(
             name='dataset_name',
             prompt_message='Please enter your DocArray name.',
         )
