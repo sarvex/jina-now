@@ -145,15 +145,15 @@ def _configure_custom_dataset(user_input: UserInput, **kwargs) -> None:
         prompt_message='How do you want to provide input? (format: https://docarray.jina.ai/)',
         choices=[
             {
-                'name': 'docarray.pull id (recommended)',
+                'name': 'DocArray dataset name (recommended)',
                 'value': DatasetTypes.DOCARRAY,
             },
             {
-                'name': 'docarray URL',
+                'name': 'DocArray URL',
                 'value': DatasetTypes.URL,
             },
             {
-                'name': 'local path',
+                'name': 'Local path',
                 'value': DatasetTypes.PATH,
             },
         ],
@@ -161,15 +161,14 @@ def _configure_custom_dataset(user_input: UserInput, **kwargs) -> None:
     )
     if user_input.custom_dataset_type == DatasetTypes.DOCARRAY:
         user_input.dataset_secret = _prompt_value(
-            name='dataset_secret',
-            prompt_message='Please enter your DocArray secret.',
-            prompt_type='password',
+            name='dataset_name',
+            prompt_message='Please enter your DocArray name.',
         )
 
     elif user_input.custom_dataset_type == DatasetTypes.URL:
         user_input.dataset_url = _prompt_value(
             name='dataset_url',
-            prompt_message='Please paste in the URL for your DocArray.',
+            prompt_message='Please paste in the URL to download your DocArray from.',
             prompt_type='input',
         )
 
