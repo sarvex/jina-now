@@ -145,7 +145,7 @@ def _configure_custom_dataset(user_input: UserInput, **kwargs) -> None:
         prompt_message='How do you want to provide input? (format: https://docarray.jina.ai/)',
         choices=[
             {
-                'name': 'DocArray dataset name (recommended)',
+                'name': 'DocArray name (recommended)',
                 'value': DatasetTypes.DOCARRAY,
             },
             {
