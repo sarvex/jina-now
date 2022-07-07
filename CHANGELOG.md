@@ -10,6 +10,7 @@
 
 
 
+
 <a name=release-note-0-0-7></a>
 ## Release Note (`0.0.7`)
 
@@ -377,4 +378,30 @@
 
  - [[```b35d903e```](https://github.com/jina-ai/now/commit/b35d903e68e086d629bdd84826db2353895c1c1c)] __-__ update and release music (#291) (*Sebastian Lettner*)
  - [[```98d1ec05```](https://github.com/jina-ai/now/commit/98d1ec052fd5c6b4216c606faf3d852850e3ed16)] __-__ __version__: the next version will be 0.0.16 (*Jina Dev Bot*)
+
+<a name=release-note-0-0-17></a>
+## Release Note (`0.0.17`)
+
+> Release time: 2022-07-07 08:01:34
+
+
+
+🙇 We'd like to thank all contributors for this new release! In particular,
+ Mohammad Kalim Akram,  Zac Li,  Florian Hönicke,  Winston Wong,  Jina Dev Bot,  🙇
+
+
+### 🆕 New Features
+
+ - [[```1a688490```](https://github.com/jina-ai/now/commit/1a688490eb654dc5a423b0c858417c1ad15b234a)] __-__ enable monitoring for flow-clip (#297) (*Zac Li*)
+ - [[```e79e1671```](https://github.com/jina-ai/now/commit/e79e16716c13672dc4b54ac0896355ea3bd07422)] __-__ __docs__: add qabot to jina now docs (#292) (*Winston Wong*)
+
+### 🐞 Bug fixes
+
+ - [[```bf0fe0c0```](https://github.com/jina-ai/now/commit/bf0fe0c0474442e1f1edc66e31d72c5fd2d06b7c)] __-__ the uri loading (#298) (*Mohammad Kalim Akram*)
+ - [[```a85bfff5```](https://github.com/jina-ai/now/commit/a85bfff5e446bb473c6b9ebd76ddc4023dbf6373)] __-__ reduce request_size (#290) (*Florian Hönicke*)
+
+### 🍹 Other Improvements
+
+ - [[```f8c20e7a```](https://github.com/jina-ai/now/commit/f8c20e7a74ebc443216b058f06210eef637479b6)] __-__ Fix update flow retention (#296) (*Mohammad Kalim Akram*)
+ - [[```ca5d84e2```](https://github.com/jina-ai/now/commit/ca5d84e21d38dd0a16bfcbf6384dbdebf7d83eb1)] __-__ __version__: the next version will be 0.0.17 (*Jina Dev Bot*)
 
