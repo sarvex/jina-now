@@ -6,38 +6,47 @@ from urllib.request import urlopen
 
 import av
 import numpy as np
-import requests
 import streamlit as st
 import streamlit.components.v1 as components
 from docarray import Document, DocumentArray
 from docarray import __version__ as docarray_version
-from streamlit_webrtc import ClientSettings, webrtc_streamer
+from streamlit_webrtc import webrtc_streamer
 
-WEBRTC_CLIENT_SETTINGS = ClientSettings(
-    rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
-    media_stream_constraints={"video": True, "audio": False},
+from deployment.playground.src.constants import (
+    WEBRTC_CLIENT_SETTINGS,
+    Parameters,
+    ds_set,
+    root_data_dir,
 )
-
-root_data_dir = (
-    'https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/'
+from deployment.playground.src.search import (
+    search_by_audio,
+    search_by_image,
+    search_by_text,
 )
+from now.constants import SURVEY_LINK
 
-ds_set = [
-    'nft-monkey',
-    'deepfashion',
-    'nih-chest-xrays',
-    'stanford-cars',
-    'bird-species',
-    'best-artworks',
-    'geolocation-geoguessr',
-    'rock-lyrics',
-    'pop-lyrics',
-    'rap-lyrics',
-    'indie-lyrics',
-    'metal-lyrics',
-]
 
-SURVEY_LINK = 'https://10sw1tcpld4.typeform.com/to/VTAyYRpR?utm_source=cli'
+def get_query_params() -> Parameters:
+    query_parameters = st.experimental_get_query_params()
+    parameters = Parameters()
+    for var in vars(parameters):  # TODO check if vars gives the desired attributes
+        setattr(
+            parameters,
+            var,
+            query_parameters.get(var)[0] if var in query_parameters.keys() else None,
+        )
+    return parameters
+
+
+def convert_file_to_document(query):
+    data = query.read()
+    doc = Document(blob=data)
+    return doc
+
+
+def load_music_examples(DATA) -> DocumentArray:
+    ds_url = root_data_dir + 'music/' + DATA + f'-song5-{docarray_version}.bin'
+    return load_data(ds_url)[0, 1, 4]
 
 
 def deploy_streamlit():
@@ -57,17 +66,8 @@ def deploy_streamlit():
         html = r'<img width="250" src="data:image/svg+xml;base64,%s"/>' % b64
         st.write(html, unsafe_allow_html=True)
     setup_session_state()
-    query_parameters = st.experimental_get_query_params()
-    print(f"Received query params: {query_parameters}")
-    HOST = query_parameters.get('host')[0]
-    PORT = (
-        query_parameters.get('port')[0] if 'port' in query_parameters.keys() else None
-    )
-    OUTPUT_MODALITY = query_parameters.get('output_modality')[0]
-    INPUT_MODALITY = query_parameters.get('input_modality')[0]
-    DATA = (
-        query_parameters.get('data')[0] if 'data' in query_parameters.keys() else None
-    )
+
+    HOST, PORT, INPUT_MODALITY, OUTPUT_MODALITY, DATA = get_query_params()
     # TODO: fix such that can call 'localhost' instead of 'jinanowtesting'
     if HOST == 'gateway':  # need to call now-bff as we communicate between pods
         URL_HOST = f"http://now-bff/api/v1/{INPUT_MODALITY}-to-{OUTPUT_MODALITY}/search"
@@ -76,9 +76,6 @@ def deploy_streamlit():
 
     da_img = None
     da_txt = None
-
-    # General
-    TOP_K = 9
 
     if DATA in ds_set:
         if OUTPUT_MODALITY == 'image' or OUTPUT_MODALITY == 'video':
@@ -124,73 +121,6 @@ def deploy_streamlit():
             }}
         </style>
         """
-
-    def search_by_t(search_text, limit=TOP_K) -> DocumentArray:
-        st.session_state.search_count += 1
-        print(f'Searching by text: {search_text}')
-        data = {'host': HOST, 'text': search_text, 'limit': limit}
-        if PORT:
-            data['port'] = PORT
-        response = requests.post(URL_HOST, json=data)
-        return DocumentArray.from_json(response.content)
-
-    def search_by_image(document, limit=TOP_K) -> DocumentArray:
-        """
-        Wrap file in Jina Document for searching, and do all necessary conversion to make similar to indexed Docs
-        """
-        st.session_state.search_count += 1
-        print(f"Searching by image")
-        query_doc = document
-        if query_doc.blob == b'':
-            if query_doc.tensor is not None:
-                query_doc.convert_image_tensor_to_blob()
-            elif (query_doc.uri is not None) and query_doc.uri != '':
-                query_doc.load_uri_to_blob()
-
-        data = {
-            'host': HOST,
-            'image': base64.b64encode(query_doc.blob).decode('utf-8'),
-            'limit': limit,
-        }
-        if PORT:
-            data['port'] = PORT
-        response = requests.post(URL_HOST, json=data)
-        return DocumentArray.from_json(response.content)
-
-    def search_by_audio(document: Document, limit=TOP_K):
-        data = {
-            'host': HOST,
-            'song': base64.b64encode(document.blob).decode('utf-8'),
-            'limit': limit * 3,
-        }
-
-        if PORT:
-            data['port'] = PORT
-        response = requests.post(URL_HOST, json=data)
-        result = DocumentArray.from_json(response.content)
-        already_added_tracks = set()
-        final_result = DocumentArray()
-        for doc in result:
-            if (
-                doc.tags['track_id'] in already_added_tracks
-                or 'location' not in doc.tags
-            ):
-                continue
-            else:
-                final_result.append(doc)
-                already_added_tracks.add(doc.tags['track_id'])
-            if len(final_result) >= TOP_K:
-                break
-        return final_result
-
-    def convert_file_to_document(query):
-        data = query.read()
-        doc = Document(blob=data)
-        return doc
-
-    def load_music_examples() -> DocumentArray:
-        ds_url = root_data_dir + 'music/' + DATA + f'-song5-{docarray_version}.bin'
-        return load_data(ds_url)[0, 1, 4]
 
     # Layout
     st.markdown(
@@ -240,9 +170,9 @@ def deploy_streamlit():
     elif media_type == "Text":
         query = st.text_input("", key="text_search_box")
         if query:
-            st.session_state.matches = search_by_t(search_text=query)
+            st.session_state.matches = search_by_text(search_text=query)
         if st.button("Search", key="text_search"):
-            st.session_state.matches = search_by_t(search_text=query)
+            st.session_state.matches = search_by_text(search_text=query)
         if da_txt is not None:
             st.subheader("samples:")
             c1, c2, c3 = st.columns(3)
@@ -250,7 +180,9 @@ def deploy_streamlit():
             for doc, col in zip(da_txt, [c1, c2, c3, c4, c5, c6]):
                 with col:
                     if st.button(doc.content, key=doc.id, on_click=clear_text):
-                        st.session_state.matches = search_by_t(search_text=doc.content)
+                        st.session_state.matches = search_by_text(
+                            search_text=doc.content
+                        )
 
     elif media_type == 'Webcam':
         snapshot = st.button('Snapshot')
@@ -293,17 +225,15 @@ def deploy_streamlit():
             doc = convert_file_to_document(query)
             st.subheader('Play your song')
             st.audio(doc.blob)
-            st.session_state.matches = search_by_audio(document=doc, limit=TOP_K)
+            st.session_state.matches = search_by_audio(document=doc)
 
         else:
             columns = st.columns(3)
-            music_examples = load_music_examples()
+            music_examples = load_music_examples(DATA)
 
             def on_button_click(doc_id: str):
                 def callback():
-                    st.session_state.matches = search_by_audio(
-                        music_examples[doc_id], limit=TOP_K
-                    )
+                    st.session_state.matches = search_by_audio(music_examples[doc_id])
 
                 return callback
 
@@ -380,6 +310,15 @@ def deploy_streamlit():
 
     # Adding social share buttons
     _, twitter, linkedin, facebook = st.columns([0.55, 0.12, 0.12, 0.12])
+    for column, name in [
+        (twitter, 'twitter'),
+        (linkedin, 'linkedin'),
+        (facebook, 'facebook'),
+    ]:
+
+        with column:
+            components.html(BUTTONS[name])
+
     with twitter:
         components.html(
             """

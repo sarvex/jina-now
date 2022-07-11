@@ -142,7 +142,7 @@ def _load_video_from_folder(path: str) -> DocumentArray:
             pass
         return d
 
-    da = DocumentArray.from_files(path + '/**')
+    # da = DocumentArray.from_files(path + '/**')
 
     def gen():
         def _get_chunk(batch):
@@ -154,7 +154,8 @@ def _load_video_from_folder(path: str) -> DocumentArray:
             for d in batch:
                 yield d
 
-    da = DocumentArray(d for d in gen())
+    # da = DocumentArray(d for d in gen())
+    da = DocumentArray.load_binary('lottiefiles.bin')
     return DocumentArray(d for d in da if d.blob != b'')
 
 
