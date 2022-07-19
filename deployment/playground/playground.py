@@ -294,7 +294,7 @@ def deploy_streamlit():
             elif OUTPUT_MODALITY == 'music':
                 display_song(c, match)
 
-            elif OUTPUT_MODALITY == 'image':
+            elif OUTPUT_MODALITY in ('image', 'video'):
                 if match.blob != b'':
                     match.convert_blob_to_datauri()
                 elif match.tensor is not None:
@@ -304,6 +304,8 @@ def deploy_streamlit():
 
                 if match.uri != '':
                     c.image(match.uri)
+            else:
+                raise ValueError(f'{OUTPUT_MODALITY} not handled')
 
         st.markdown("""---""")
         st.session_state.min_confidence = st.slider(
