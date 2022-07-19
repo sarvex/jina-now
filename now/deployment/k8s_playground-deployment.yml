@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: now-playground
-          image: jinaai/now-playground:0.0.73
+          image: jinaai/now-playground:{docker_bff_playground_tag}
 #          image: jinaaitmpjoschka/now-playground:latest
           imagePullPolicy: Always
           command: ["streamlit"]
@@ -40,7 +40,7 @@ spec:
     spec:
       containers:
         - name: now-bff
-          image: jinaai/now-bff:0.0.73
+          image: jinaai/now-bff:{docker_bff_playground_tag}
 #          image: jinaaitmpjoschka/now-bff:latest
           imagePullPolicy: Always
           command: ['uvicorn']
