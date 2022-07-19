@@ -40,6 +40,10 @@ class ImageToText(JinaNOWApp):
     def output_modality(self) -> Modalities:
         return Modalities.TEXT
 
+    @property
+    def required_docker_memory_in_gb(self) -> int:
+        return 8
+
     def set_flow_yaml(self, **kwargs):
         now_package_dir = os.path.abspath(
             os.path.join(__file__, '..', '..', '..', '..')
