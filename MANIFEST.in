@@ -1,4 +1,5 @@
 recursive-include now/ *
+recursive-include now_common/ *
 include LICENSE
 prune test/
 prune **/tests/

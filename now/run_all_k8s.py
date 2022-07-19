@@ -26,7 +26,6 @@ def stop_now(contexts, active_context, **kwargs):
     if os.path.exists(user(JC_SECRET)):
         flow_details = get_remote_flow_details()
         choices += [flow_details['gateway']]
-        flow_id = flow_details['flow_id']
     if len(choices) == 0:
         cowsay.cow('nothing to stop')
         return
@@ -41,15 +40,44 @@ def stop_now(contexts, active_context, **kwargs):
         ]
         cluster = maybe_prompt_user(questions, 'cluster', **kwargs)
     if cluster == 'kind-jina-now':
-        with yaspin_extended(
-            sigmap=sigmap, text=f"Remove local cluster {cluster}", color="green"
-        ) as spinner:
-            cmd(f'{kwargs["kind_path"]} delete clusters jina-now')
-            spinner.ok('💀')
-        cowsay.cow('local jina NOW cluster removed')
+        delete_cluster = maybe_prompt_user(
+            [
+                {
+                    'type': 'list',
+                    'name': 'delete-cluster',
+                    'message': 'Do you want to delete the entire cluster or just the namespace?',
+                    'choices': [
+                        {'name': '⛔ no, keep the cluster', 'value': False},
+                        {'name': '✅ yes, delete everything', 'value': True},
+                    ],
+                }
+            ],
+            attribute='delete-cluster',
+            **kwargs,
+        )
+        if delete_cluster:
+            with yaspin_extended(
+                sigmap=sigmap, text=f"Remove local cluster {cluster}", color="green"
+            ) as spinner:
+                cmd(f'{kwargs["kind_path"]} delete clusters jina-now')
+                spinner.ok('💀')
+            cowsay.cow('local jina NOW cluster removed')
+        else:
+            with yaspin_extended(
+                sigmap=sigmap,
+                text=f"Remove namespace nowapi NOW from {cluster}",
+                color="green",
+            ) as spinner:
+                cmd(f'{kwargs["kubectl_path"]} delete ns nowapi')
+                spinner.ok('💀')
+            cowsay.cow(f'nowapi namespace removed from {cluster}')
     elif 'wolf.jina.ai' in cluster:
+        flow_details = get_remote_flow_details()
+        flow_id = flow_details['flow_id']
         _result = status_wolf(flow_id)
-        if _result['status'] == 'ALIVE':
+        if _result is None:
+            print(f'❎ Flow not found in JCloud. Likely, it has been deleted already')
+        if _result is not None and _result['status'] == 'ALIVE':
             terminate_wolf(flow_id)
         os.remove(user(JC_SECRET))
         cowsay.cow(f'remote Flow `{cluster}` removed')
@@ -122,15 +150,23 @@ def start_now(os_type, arch, contexts, active_context, **kwargs):
     print()
     print(f'BFF docs are accessible at:\n{bff_url}')
     print(f'Playground is accessible at:\n{playground_url}')
+    return {
+        'bff': bff_url,
+        'playground': playground_url,
+        'input_modality': app_instance.input_modality,
+        'output_modality': app_instance.output_modality,
+        'host': gateway_host_internal,
+        'port': gateway_port_internal,
+    }
 
 
 def run_k8s(os_type: str = 'linux', arch: str = 'x86_64', **kwargs):
     contexts, active_context = get_system_state(**kwargs)
     task = get_task(kwargs)
     if task == 'start':
-        start_now(os_type, arch, contexts, active_context, **kwargs)
+        return start_now(os_type, arch, contexts, active_context, **kwargs)
     elif task == 'stop':
-        stop_now(contexts, active_context, **kwargs)
+        return stop_now(contexts, active_context, **kwargs)
     elif task == 'survey':
         import webbrowser
 

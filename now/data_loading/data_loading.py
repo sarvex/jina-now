@@ -34,7 +34,7 @@ def load_data(output_modality, user_input: UserInput) -> DocumentArray:
     if user_input.is_custom_dataset:
         if user_input.custom_dataset_type == DatasetTypes.DOCARRAY:
             print('⬇  Pull DocArray dataset')
-            da = _pull_docarray(user_input.dataset_secret)
+            da = _pull_docarray(user_input.dataset_name)
         elif user_input.custom_dataset_type == DatasetTypes.URL:
             print('⬇  Pull DocArray dataset')
             da = _fetch_da_from_url(user_input.dataset_url)
@@ -75,9 +75,9 @@ def _fetch_da_from_url(
     return da
 
 
-def _pull_docarray(dataset_secret: str):
+def _pull_docarray(dataset_name: str):
     try:
-        return DocumentArray.pull(token=dataset_secret, show_progress=True)
+        return DocumentArray.pull(name=dataset_name, show_progress=True)
     except Exception:
         print(
             '💔 oh no, the secret of your docarray is wrong, or it was deleted after 14 days'
@@ -96,13 +96,21 @@ def _load_from_disk(dataset_path: str, modality: Modalities) -> DocumentArray:
         with yaspin_extended(
             sigmap=sigmap, text="Loading and pre-processing data", color="green"
         ) as spinner:
-            if modality == Modalities.IMAGE:
-                return _load_images_from_folder(dataset_path)
-            elif modality == Modalities.TEXT:
-                return _load_texts_from_folder(dataset_path)
-            elif modality == Modalities.MUSIC:
-                return _load_music_from_folder(dataset_path)
             spinner.ok('🏭')
+            if modality == Modalities.IMAGE:
+                da = _load_images_from_folder(dataset_path)
+            elif modality == Modalities.TEXT:
+                da = _load_texts_from_folder(dataset_path)
+            elif modality == Modalities.MUSIC:
+                da = _load_music_from_folder(dataset_path)
+            elif modality == Modalities.VIDEO:
+                da = _load_video_from_folder(dataset_path)
+            else:
+                raise Exception(
+                    f'modality {modality} not supported for data loading from folder'
+                )
+
+            return da
     else:
         raise ValueError(
             f'The provided dataset path {dataset_path} does not'
@@ -120,6 +128,33 @@ def _load_images_from_folder(path: str) -> DocumentArray:
 
     da = DocumentArray.from_files(path + '/**')
     da.apply(convert_fn)
+    return DocumentArray(d for d in da if d.blob != b'')
+
+
+def _load_video_from_folder(path: str) -> DocumentArray:
+    from now.apps.text_to_video.app import sample_video
+
+    def convert_fn(d):
+        try:
+            d.load_uri_to_blob()
+            sample_video(d)
+        except:
+            pass
+        return d
+
+    da = DocumentArray.from_files(path + '/**')
+
+    def gen():
+        def _get_chunk(batch):
+            return [convert_fn(d) for d in batch]
+
+        for batch in da.map_batch(
+            _get_chunk, batch_size=4, backend='process', show_progress=True
+        ):
+            for d in batch:
+                yield d
+
+    da = DocumentArray(d for d in gen())
     return DocumentArray(d for d in da if d.blob != b'')
 
 
