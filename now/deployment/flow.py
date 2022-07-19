@@ -110,9 +110,11 @@ def estimate_request_size(index):
         sample = random.sample(index, 30)
     else:
         sample = index
-    size = sys.getsizeof(sample) / 30
-
-    return 4
+    size = sum([sys.getsizeof(x.content) for x in sample]) / 30
+    max_size = 50000
+    max_request_size = 128
+    request_size = max(min(max_request_size, int(max_size / size)), 1)
+    return request_size
 
 
 @time_profiler
