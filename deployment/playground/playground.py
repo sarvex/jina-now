@@ -10,32 +10,16 @@ import streamlit as st
 import streamlit.components.v1 as components
 from docarray import Document, DocumentArray
 from docarray import __version__ as docarray_version
-from streamlit_webrtc import webrtc_streamer
-
-from deployment.playground.src.constants import (
-    WEBRTC_CLIENT_SETTINGS,
-    Parameters,
-    ds_set,
-    root_data_dir,
-)
-from deployment.playground.src.search import (
+from src.constants import BUTTONS, WEBRTC_CLIENT_SETTINGS, ds_set, root_data_dir
+from src.search import (
+    get_query_params,
     search_by_audio,
     search_by_image,
     search_by_text,
 )
+from streamlit_webrtc import webrtc_streamer
+
 from now.constants import SURVEY_LINK
-
-
-def get_query_params() -> Parameters:
-    query_parameters = st.experimental_get_query_params()
-    parameters = Parameters()
-    for var in vars(parameters):  # TODO check if vars gives the desired attributes
-        setattr(
-            parameters,
-            var,
-            query_parameters.get(var)[0] if var in query_parameters.keys() else None,
-        )
-    return parameters
 
 
 def convert_file_to_document(query):
@@ -68,7 +52,6 @@ def deploy_streamlit():
     setup_session_state()
 
     HOST, PORT, INPUT_MODALITY, OUTPUT_MODALITY, DATA = get_query_params()
-    # TODO: fix such that can call 'localhost' instead of 'jinanowtesting'
     if HOST == 'gateway':  # need to call now-bff as we communicate between pods
         URL_HOST = f"http://now-bff/api/v1/{INPUT_MODALITY}-to-{OUTPUT_MODALITY}/search"
     else:
@@ -77,6 +60,46 @@ def deploy_streamlit():
     da_img = None
     da_txt = None
 
+    da_img, da_txt = load_example_queries(DATA, OUTPUT_MODALITY, da_img, da_txt)
+
+    if OUTPUT_MODALITY == 'text':
+        # censor words in text incl. in custom data
+        from better_profanity import profanity
+
+        profanity.load_censor_words()
+
+    setup_design()
+
+    if INPUT_MODALITY == 'image':
+        media_type = st.radio(
+            '',
+            ["Image", 'Webcam'],
+            on_change=clear_match,
+        )
+    elif INPUT_MODALITY == 'text':
+        media_type = 'Text'
+
+    elif INPUT_MODALITY == 'music':
+        media_type = 'Music'
+
+    if media_type == "Image":
+        render_image(da_img)
+
+    elif media_type == "Text":
+        render_text(da_txt)
+
+    elif media_type == 'Webcam':
+        render_webcam()
+
+    elif media_type == 'Music':
+        render_music_app(DATA)
+
+    render_matches(OUTPUT_MODALITY)
+
+    add_social_share_buttons()
+
+
+def load_example_queries(DATA, OUTPUT_MODALITY, da_img, da_txt):
     if DATA in ds_set:
         if OUTPUT_MODALITY == 'image' or OUTPUT_MODALITY == 'video':
             output_modality_dir = 'jpeg'
@@ -89,13 +112,10 @@ def deploy_streamlit():
             output_modality_dir = 'text'
             data_dir = root_data_dir + output_modality_dir + '/'
             da_txt = load_data(data_dir + DATA + f'.txt10-{docarray_version}.bin')
+    return da_img, da_txt
 
-    if OUTPUT_MODALITY == 'text':
-        # censor words in text incl. in custom data
-        from better_profanity import profanity
 
-        profanity.load_censor_words()
-
+def setup_design():
     class UI:
         about_block = """
         ### About
@@ -127,7 +147,6 @@ def deploy_streamlit():
         body=UI.css,
         unsafe_allow_html=True,
     )
-
     # design and create toggle button
     st.write(
         '<style>div.row-widget.stRadio > div{flex-direction:row;justify-content: center;} </style>',
@@ -137,110 +156,44 @@ def deploy_streamlit():
         '<style>div.st-bf{flex-direction:column;} div.st-ag{font-weight:bold;padding-right:50px;}</style>',
         unsafe_allow_html=True,
     )
-    if INPUT_MODALITY == 'image':
-        media_type = st.radio(
-            '',
-            ["Image", 'Webcam'],
-            on_change=clear_match,
-        )
-    elif INPUT_MODALITY == 'text':
-        media_type = 'Text'
 
-    elif INPUT_MODALITY == 'music':
-        media_type = 'Music'
 
-    if media_type == "Image":
-        upload_c, preview_c = st.columns([12, 1])
-        query = upload_c.file_uploader("")
-        if query:
-            doc = convert_file_to_document(query)
-            st.image(doc.blob, width=160)
-            st.session_state.matches = search_by_image(document=doc)
-        if da_img is not None:
-            st.subheader("samples:")
-            img_cs = st.columns(5)
-            txt_cs = st.columns(5)
-            for doc, c, txt in zip(da_img, img_cs, txt_cs):
-                with c:
-                    st.image(doc.blob if doc.blob else doc.tensor, width=100)
-                with txt:
-                    if st.button('Search', key=doc.id):
-                        st.session_state.matches = search_by_image(document=doc)
+def render_image(da_img):
+    upload_c, preview_c = st.columns([12, 1])
+    query = upload_c.file_uploader("")
+    if query:
+        doc = convert_file_to_document(query)
+        st.image(doc.blob, width=160)
+        st.session_state.matches = search_by_image(document=doc)
+    if da_img is not None:
+        st.subheader("samples:")
+        img_cs = st.columns(5)
+        txt_cs = st.columns(5)
+        for doc, c, txt in zip(da_img, img_cs, txt_cs):
+            with c:
+                st.image(doc.blob if doc.blob else doc.tensor, width=100)
+            with txt:
+                if st.button('Search', key=doc.id):
+                    st.session_state.matches = search_by_image(document=doc)
 
-    elif media_type == "Text":
-        query = st.text_input("", key="text_search_box")
-        if query:
-            st.session_state.matches = search_by_text(search_text=query)
-        if st.button("Search", key="text_search"):
-            st.session_state.matches = search_by_text(search_text=query)
-        if da_txt is not None:
-            st.subheader("samples:")
-            c1, c2, c3 = st.columns(3)
-            c4, c5, c6 = st.columns(3)
-            for doc, col in zip(da_txt, [c1, c2, c3, c4, c5, c6]):
-                with col:
-                    if st.button(doc.content, key=doc.id, on_click=clear_text):
-                        st.session_state.matches = search_by_text(
-                            search_text=doc.content
-                        )
 
-    elif media_type == 'Webcam':
-        snapshot = st.button('Snapshot')
+def render_text(da_txt):
+    query = st.text_input("", key="text_search_box")
+    if query:
+        st.session_state.matches = search_by_text(search_text=query)
+    if st.button("Search", key="text_search"):
+        st.session_state.matches = search_by_text(search_text=query)
+    if da_txt is not None:
+        st.subheader("samples:")
+        c1, c2, c3 = st.columns(3)
+        c4, c5, c6 = st.columns(3)
+        for doc, col in zip(da_txt, [c1, c2, c3, c4, c5, c6]):
+            with col:
+                if st.button(doc.content, key=doc.id, on_click=clear_text):
+                    st.session_state.matches = search_by_text(search_text=doc.content)
 
-        class VideoProcessor:
-            snapshot: np.ndarray = None
 
-            def recv(self, frame):
-                self.snapshot = frame.to_ndarray(format="rgb24")
-                return av.VideoFrame.from_ndarray(self.snapshot, format='rgb24')
-
-        ctx = webrtc_streamer(
-            key="jina-now",
-            video_processor_factory=VideoProcessor,
-            client_settings=WEBRTC_CLIENT_SETTINGS,
-        )
-
-        if ctx.video_processor:
-            if snapshot:
-                query = ctx.video_processor.snapshot
-                st.image(query, width=160)
-                st.session_state.snap = query
-                doc = Document(tensor=query)
-                doc.convert_image_tensor_to_blob()
-                st.session_state.matches = search_by_image(document=doc)
-            elif st.session_state.snap is not None:
-                st.image(st.session_state.snap, width=160)
-        else:
-            clear_match()
-
-    elif media_type == 'Music':
-        st.header('Welcome to JinaNOW music search 👋🏽')
-        st.text('Upload a song to search with or select one of the examples.')
-        st.text(
-            'Pro tip: You can download search results and use them to search again :)'
-        )
-
-        query = st.file_uploader("", type=['mp3', 'wav'])
-        if query:
-            doc = convert_file_to_document(query)
-            st.subheader('Play your song')
-            st.audio(doc.blob)
-            st.session_state.matches = search_by_audio(document=doc)
-
-        else:
-            columns = st.columns(3)
-            music_examples = load_music_examples(DATA)
-
-            def on_button_click(doc_id: str):
-                def callback():
-                    st.session_state.matches = search_by_audio(music_examples[doc_id])
-
-                return callback
-
-            for c, song in zip(columns, music_examples):
-                display_song(c, song)
-                c.button('Search', on_click=on_button_click(song.id), key=song.id)
-
+def render_matches(OUTPUT_MODALITY):
     if st.session_state.matches:
         matches = deepcopy(st.session_state.matches)
         if st.session_state.search_count > 2:
@@ -316,6 +269,63 @@ def deploy_streamlit():
             on_change=update_conf,
         )
 
+
+def render_music_app(DATA):
+    st.header('Welcome to JinaNOW music search 👋🏽')
+    st.text('Upload a song to search with or select one of the examples.')
+    st.text('Pro tip: You can download search results and use them to search again :)')
+    query = st.file_uploader("", type=['mp3', 'wav'])
+    if query:
+        doc = convert_file_to_document(query)
+        st.subheader('Play your song')
+        st.audio(doc.blob)
+        st.session_state.matches = search_by_audio(document=doc)
+
+    else:
+        columns = st.columns(3)
+        music_examples = load_music_examples(DATA)
+
+        def on_button_click(doc_id: str):
+            def callback():
+                st.session_state.matches = search_by_audio(music_examples[doc_id])
+
+            return callback
+
+        for c, song in zip(columns, music_examples):
+            display_song(c, song)
+            c.button('Search', on_click=on_button_click(song.id), key=song.id)
+
+
+def render_webcam():
+    snapshot = st.button('Snapshot')
+
+    class VideoProcessor:
+        snapshot: np.ndarray = None
+
+        def recv(self, frame):
+            self.snapshot = frame.to_ndarray(format="rgb24")
+            return av.VideoFrame.from_ndarray(self.snapshot, format='rgb24')
+
+    ctx = webrtc_streamer(
+        key="jina-now",
+        video_processor_factory=VideoProcessor,
+        client_settings=WEBRTC_CLIENT_SETTINGS,
+    )
+    if ctx.video_processor:
+        if snapshot:
+            query = ctx.video_processor.snapshot
+            st.image(query, width=160)
+            st.session_state.snap = query
+            doc = Document(tensor=query)
+            doc.convert_image_tensor_to_blob()
+            st.session_state.matches = search_by_image(document=doc)
+        elif st.session_state.snap is not None:
+            st.image(st.session_state.snap, width=160)
+    else:
+        clear_match()
+
+
+def add_social_share_buttons():
     # Adding social share buttons
     _, twitter, linkedin, facebook = st.columns([0.55, 0.12, 0.12, 0.12])
     for column, name in [
@@ -323,47 +333,8 @@ def deploy_streamlit():
         (linkedin, 'linkedin'),
         (facebook, 'facebook'),
     ]:
-
         with column:
             components.html(BUTTONS[name])
-
-    with twitter:
-        components.html(
-            """
-                <a href="https://twitter.com/share?ref_src=twsrc%5Etfw" class="twitter-share-button"
-                Tweet
-                </a>
-                <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-            """
-        )
-
-    with linkedin:
-        components.html(
-            """
-                <a href="https://www.linkedin.com/sharing/share-offsite/?url=https://now.jina.ai"
-                class="linkedin-share-button"
-                rel="noreferrer noopener" when using target="_blank">
-                </a>
-                <script src="https://platform.linkedin.com/in.js" type="text/javascript">lang: en_US</script>
-                <script type="IN/Share" data-url="https://now.jina.ai"></script>
-            """
-        )
-
-    with facebook:
-        components.html(
-            """
-                <a href="https://www.facebook.com/sharer.php?u=https://now.jina.ai" class="facebook-share-button"
-                rel="noreferrer noopener" when using target="_blank">
-                </a>
-                <div id="fb-root"></div>
-                <script async defer crossorigin="anonymous"
-                src="https://connect.facebook.net/en_GB/sdk.js#xfbml=1&version=v14.0" nonce="kquhy3fp"></script>
-                <div class="fb-share-button" data-href="https://now.jina.ai" data-layout="button" data-size="small">
-                <a target="_blank"
-                 href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fnow.jina.ai%2F&amp;src=sdkpreparse"
-                  class="fb-xfbml-parse-ignore">Share</a></div>
-            """
-        )
 
 
 def display_song(attach_to, song_doc: Document):
