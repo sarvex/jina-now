@@ -8,6 +8,7 @@ import av
 import numpy as np
 import streamlit as st
 import streamlit.components.v1 as components
+from better_profanity import profanity
 from docarray import Document, DocumentArray
 from docarray import __version__ as docarray_version
 from src.constants import BUTTONS, WEBRTC_CLIENT_SETTINGS, ds_set, root_data_dir
@@ -51,11 +52,7 @@ def deploy_streamlit():
         st.write(html, unsafe_allow_html=True)
     setup_session_state()
 
-    HOST, PORT, INPUT_MODALITY, OUTPUT_MODALITY, DATA = get_query_params()
-    if HOST == 'gateway':  # need to call now-bff as we communicate between pods
-        URL_HOST = f"http://now-bff/api/v1/{INPUT_MODALITY}-to-{OUTPUT_MODALITY}/search"
-    else:
-        URL_HOST = f"https://nowrun.jina.ai/api/v1/{INPUT_MODALITY}-to-{OUTPUT_MODALITY}/search"
+    _, _, INPUT_MODALITY, OUTPUT_MODALITY, DATA = get_query_params()
 
     da_img = None
     da_txt = None

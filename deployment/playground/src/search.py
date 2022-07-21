@@ -23,7 +23,7 @@ def search(attribute_name, attribute_value, top_k=TOP_K):
     print(f'Searching by {attribute_name}: {attribute_value}')
     st.session_state.search_count += 1
     params = get_query_params()
-    # TODO: fix such that can call 'localhost' instead of 'jinanowtesting'
+
     if params.host == 'gateway':  # need to call now-bff as we communicate between pods
         domain = f"http://now-bff"
     else:
