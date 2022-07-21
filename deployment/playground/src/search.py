@@ -4,17 +4,17 @@ import requests
 import streamlit as st
 from docarray import Document, DocumentArray
 
-from constants import TOP_K, Parameters
+from .constants import TOP_K, Parameters
 
 
 def get_query_params() -> Parameters:
     query_parameters = st.experimental_get_query_params()
     parameters = Parameters()
-    for var in vars(parameters):  # TODO check if vars gives the desired attributes
+    for key, val in query_parameters.items():
         setattr(
             parameters,
-            var,
-            query_parameters.get(var)[0] if var in query_parameters.keys() else None,
+            key,
+            val[0],
         )
     return parameters
 

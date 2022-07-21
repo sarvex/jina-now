@@ -11,7 +11,13 @@ import streamlit.components.v1 as components
 from better_profanity import profanity
 from docarray import Document, DocumentArray
 from docarray import __version__ as docarray_version
-from src.constants import BUTTONS, WEBRTC_CLIENT_SETTINGS, ds_set, root_data_dir
+from src.constants import (
+    BUTTONS,
+    SURVEY_LINK,
+    WEBRTC_CLIENT_SETTINGS,
+    ds_set,
+    root_data_dir,
+)
 from src.search import (
     get_query_params,
     search_by_audio,
@@ -19,8 +25,6 @@ from src.search import (
     search_by_text,
 )
 from streamlit_webrtc import webrtc_streamer
-
-from now.constants import SURVEY_LINK
 
 
 def convert_file_to_document(query):
@@ -52,14 +56,16 @@ def deploy_streamlit():
         st.write(html, unsafe_allow_html=True)
     setup_session_state()
 
-    _, _, INPUT_MODALITY, OUTPUT_MODALITY, DATA = get_query_params()
+    params = get_query_params()
 
     da_img = None
     da_txt = None
 
-    da_img, da_txt = load_example_queries(DATA, OUTPUT_MODALITY, da_img, da_txt)
+    da_img, da_txt = load_example_queries(
+        params.data, params.output_modality, da_img, da_txt
+    )
 
-    if OUTPUT_MODALITY == 'text':
+    if params.output_modality == 'text':
         # censor words in text incl. in custom data
         from better_profanity import profanity
 
@@ -67,16 +73,16 @@ def deploy_streamlit():
 
     setup_design()
 
-    if INPUT_MODALITY == 'image':
+    if params.input_modality == 'image':
         media_type = st.radio(
             '',
             ["Image", 'Webcam'],
             on_change=clear_match,
         )
-    elif INPUT_MODALITY == 'text':
+    elif params.input_modality == 'text':
         media_type = 'Text'
 
-    elif INPUT_MODALITY == 'music':
+    elif params.input_modality == 'music':
         media_type = 'Music'
 
     if media_type == "Image":
@@ -89,9 +95,9 @@ def deploy_streamlit():
         render_webcam()
 
     elif media_type == 'Music':
-        render_music_app(DATA)
+        render_music_app(params.data)
 
-    render_matches(OUTPUT_MODALITY)
+    render_matches(params.output_modality)
 
     add_social_share_buttons()
 
