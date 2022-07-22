@@ -66,5 +66,3 @@ BUTTONS = {
                   class="fb-xfbml-parse-ignore">Share</a></div>
             """,
 }
-
-COOKIE_NAME = 'JinaNOW'
