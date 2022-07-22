@@ -20,7 +20,7 @@ def get_query_params() -> Parameters:
 
 
 def search(attribute_name, attribute_value, top_k=TOP_K):
-    print(f'Searching by {attribute_name}: {attribute_value}')
+    print(f'Searching by {attribute_name}')
     st.session_state.search_count += 1
     params = get_query_params()
 

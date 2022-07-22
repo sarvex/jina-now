@@ -3,7 +3,7 @@ from streamlit_webrtc import ClientSettings
 
 class Parameters:
     host: str
-    port: str
+    port: str = None
     input_modality: str
     output_modality: str
     data: str
