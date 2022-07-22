@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional
+from typing import List, Optional
 
 from now.constants import Apps, DatasetTypes, Modalities, Qualities
 
@@ -25,3 +25,6 @@ class UserInput:
     cluster: Optional[str] = None
     create_new_cluster: Optional[bool] = False
     deployment_type: Optional[str] = None
+    secured: Optional[bool] = False
+    additional_user: Optional[bool] = False
+    nick_names: Optional[List[str]] = None
