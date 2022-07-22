@@ -2,11 +2,11 @@ from streamlit_webrtc import ClientSettings
 
 
 class Parameters:
-    host: str = None
+    host: str
     port: str = None
-    input_modality: str = None
-    output_modality: str = None
-    data: str = None
+    input_modality: str
+    output_modality: str
+    data: str
     code: str = None
     state: str = None
 

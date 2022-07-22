@@ -58,8 +58,8 @@ def configure_user_input(**kwargs) -> [JinaNOWApp, UserInput]:
     _configure_dataset(app_instance, user_input, **kwargs)
     _configure_cluster(user_input, **kwargs)
     if _configure_security(user_input, **kwargs):
-        if _configure_additional_user():
-            _configure_nick_names()
+        if _configure_additional_user(user_input, **kwargs):
+            _configure_nick_names(user_input, **kwargs)
     return app_instance, user_input
 
 

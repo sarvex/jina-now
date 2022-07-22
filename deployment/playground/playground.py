@@ -100,16 +100,21 @@ def deploy_streamlit():
     login_val = get_cookie_value()
     login_details = unquote(login_val) if login_val else None
     if not login_details:
+        login = True
         code = params.code
         state = params.state
         if code and state:
             resp_jwt = requests.get(
                 url=f'https://api.hubble.jina.ai/v2/rpc/user.identity.grant.auto'
-                f'?code={code[0]}&state={state[0]}'
+                f'?code={code}&state={state}'
             ).json()
             if resp_jwt and resp_jwt['code'] == 200:
                 setter_cookie(resp_jwt['data']['user'])
-        else:
+                login = False
+            else:
+                login = True
+
+        if login:
             redirect_uri = (
                 f'https://nowrun.jina.ai/?host={params.host}&input_modality={params.output_modality}'
                 f'&output_modality={params.input_modality}&data={params.data}'
