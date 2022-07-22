@@ -2,11 +2,13 @@ from streamlit_webrtc import ClientSettings
 
 
 class Parameters:
-    host: str
+    host: str = None
     port: str = None
-    input_modality: str
-    output_modality: str
-    data: str
+    input_modality: str = None
+    output_modality: str = None
+    data: str = None
+    code: str = None
+    state: str = None
 
 
 WEBRTC_CLIENT_SETTINGS = ClientSettings(
@@ -64,3 +66,5 @@ BUTTONS = {
                   class="fb-xfbml-parse-ignore">Share</a></div>
             """,
 }
+
+COOKIE_NAME = 'JinaNOW'

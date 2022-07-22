@@ -23,9 +23,13 @@ def index(data: NowTextIndexRequestModel):
     Append the list of text to the indexer.
     """
     index_docs = DocumentArray()
+    user = data.user
+    nick_names = data.nick_names if data.nick_names else []
     for text, tags in zip(data.texts, data.tags):
         index_docs.append(Document(text=text, tags=tags))
-    get_jina_client(data.host, data.port).post('/index', index_docs)
+    get_jina_client(data.host, data.port).post(
+        '/index', index_docs, parameters={'user': user, 'nick_names': nick_names}
+    )
 
 
 # Search
@@ -40,7 +44,11 @@ def search(data: NowImageSearchRequestModel):
     `base64` encoded using human-readable characters - `utf-8`.
     """
     query_doc = process_query(blob=data.image)
+    user = data.user
+    nick_names = data.nick_names if data.nick_names else []
     docs = get_jina_client(data.host, data.port).post(
-        '/search', query_doc, parameters={"limit": data.limit}
+        '/search',
+        query_doc,
+        parameters={"limit": data.limit, 'user': user, 'nick_names': nick_names},
     )
     return docs[0].matches.to_dict()
