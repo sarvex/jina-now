@@ -59,7 +59,7 @@ def configure_user_input(**kwargs) -> [JinaNOWApp, UserInput]:
     _configure_cluster(user_input, **kwargs)
     if _configure_security(user_input, **kwargs):
         if _configure_additional_user(user_input, **kwargs):
-            _configure_nick_names(user_input, **kwargs)
+            _configure_email_ids(user_input, **kwargs)
     return app_instance, user_input
 
 
@@ -279,14 +279,14 @@ def _configure_additional_user(user_input: UserInput, **kwargs):
     return user_input.additional_user
 
 
-def _configure_nick_names(user_input: UserInput, **kwargs):
-    nick_names = _prompt_value(
-        name='nick_names',
-        prompt_message='Please enter the list of Email ID or GitHub username (comma separated)',
+def _configure_email_ids(user_input: UserInput, **kwargs):
+    email_ids = _prompt_value(
+        name='email_ids',
+        prompt_message='Please enter the list of Email IDs(comma separated) who will have access to this flow',
         prompt_type='input',
         **kwargs,
     )
-    user_input.nick_names = [nick_names.split(',') if nick_names else []]
+    user_input.email_ids = [nick_names.split(',') if nick_names else []]
 
 
 def _construct_local_cluster_choices(active_context, contexts):

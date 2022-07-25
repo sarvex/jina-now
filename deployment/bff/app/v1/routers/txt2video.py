@@ -25,15 +25,14 @@ def index(data: NowVideoIndexRequestModel):
     `base64` encoded using human-readable characters - `utf-8`.
     """
     index_docs = DocumentArray()
-    user = data.user
-    nick_names = data.nick_names if data.nick_names else []
+    jwt = data.jwt
     for video, tags in zip(data.videos, data.tags):
         base64_bytes = video.encode('utf-8')
         message = base64.decodebytes(base64_bytes)
         index_docs.append(Document(blob=message, tags=tags))
 
     get_jina_client(data.host, data.port).post(
-        '/index', index_docs, parameters={'user': user, 'nick_names': nick_names}
+        '/index', index_docs, parameters={'jwt': jwt}
     )
 
 
@@ -48,12 +47,11 @@ def search(data: NowTextSearchRequestModel):
     Retrieve matching videos for a given text as query.
     """
     query_doc = process_query(text=data.text)
-    user = data.user
-    nick_names = data.nick_names if data.nick_names else []
+    jwt = data.jwt
     # for video the search requests have to be on chunk-level
     docs = get_jina_client(data.host, data.port).post(
         '/search',
         Document(chunks=query_doc),
-        parameters={"limit": data.limit, 'user': user, 'nick_names': nick_names},
+        parameters={"limit": data.limit, 'jwt': jwt},
     )
     return docs[0].matches.to_dict()

@@ -18,12 +18,7 @@ class BaseRequestModel(BaseModel):
         default='localhost', description='Host address returned by the flow deployment.'
     )
     port: int = Field(default=31080, description='Port at which to connect.')
-    user: str = Field(default=..., description='User info obtained from the hubble')
-    nick_names: List[str] = Field(
-        defaults=None,
-        description='List of users nick name authorised to use this flow.'
-        'Can be email id or github username',
-    )
+    jwt: str = Field(default=..., description='User info obtained from the hubble')
 
     class Config:
         allow_mutation = False
@@ -31,14 +26,14 @@ class BaseRequestModel(BaseModel):
         arbitrary_types_allowed = True
 
 
-# Index upon Base Request
+# Index extending Base Request
 class BaseIndexRequestModel(BaseRequestModel):
     tags: List[Dict[str, Any]] = Field(
         default={}, description='List of tags of the documents to be indexed.'
     )
 
 
-# Search upon Base Request
+# Search extending Base Request
 class BaseSearchRequestModel(BaseRequestModel):
     limit: int = Field(default=10, description='Number of matching results to return')
 

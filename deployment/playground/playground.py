@@ -109,7 +109,7 @@ def deploy_streamlit():
                 f'?code={code}&state={state}'
             ).json()
             if resp_jwt and resp_jwt['code'] == 200:
-                setter_cookie(resp_jwt['data']['user'])
+                setter_cookie(resp_jwt['data'])
                 login = False
             else:
                 login = True
@@ -122,7 +122,7 @@ def deploy_streamlit():
             redirect_uri = quote(redirect_uri)
             rsp = requests.get(
                 url=f'https://api.hubble.jina.ai/v2/rpc/user.identity.authorize'
-                f'?provider=jina-login&response_mode=query&redirect_uri={redirect_uri}'
+                f'?provider=jina-login&response_mode=query&redirect_uri={redirect_uri}&scope=email%20profile%20openid'
             ).json()
             redirect_to = rsp['data']['redirectTo']
             st.write('')

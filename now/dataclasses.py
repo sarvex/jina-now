@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import Optional
 
 from now.constants import Apps, DatasetTypes, Modalities, Qualities
 
@@ -27,4 +27,4 @@ class UserInput:
     deployment_type: Optional[str] = None
     secured: Optional[bool] = False
     additional_user: Optional[bool] = False
-    nick_names: Optional[List[str]] = None
+    email_ids: Optional[str] = None
