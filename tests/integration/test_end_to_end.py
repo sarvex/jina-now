@@ -95,6 +95,7 @@ def test_backend(
     cleanup,
     input_modality,
     output_modality,
+    with_hubble_login_patch,
 ):
     if deployment_type == 'remote' and dataset != 'best-artworks':
         pytest.skip('Too time consuming, hence skipping!')
@@ -163,5 +164,7 @@ def test_backend(
         json=request_body,
     )
 
-    assert response.status_code == 200
+    assert (
+        response.status_code == 200
+    ), f"Received code {response.status_code} with text: {response.text}"
     assert len(response.json()) == 9

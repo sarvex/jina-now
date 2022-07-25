@@ -8,11 +8,11 @@ from docarray import DocumentArray
 from now.apps.base.app import JinaNOWApp
 from now.constants import PREFETCH_NR
 from now.data_loading.data_loading import load_data
-from now.dataclasses import UserInput
 from now.deployment.flow import deploy_flow
 from now.finetuning.run_finetuning import finetune_now
 from now.finetuning.settings import FinetuneSettings, parse_finetune_settings
 from now.log import time_profiler
+from now.now_dataclasses import UserInput
 
 cur_dir = pathlib.Path(__file__).parent.resolve()
 
@@ -36,7 +36,7 @@ def finetune_flow_setup(
     )
     if finetune_settings.perform_finetuning:
         print(f'🔧 Perform finetuning!')
-        finetune_settings.finetuned_model_name = finetune_now(
+        artifact_id, token = finetune_now(
             user_input,
             dataset,
             finetune_settings,
@@ -45,6 +45,8 @@ def finetune_flow_setup(
             encoder_uses,
             encoder_uses_with,
         )
+        finetune_settings.finetuned_model_artifact = artifact_id
+        finetune_settings.token = token
 
     finetuning = finetune_settings.perform_finetuning
 
@@ -102,7 +104,6 @@ def get_custom_env_file(
 ):
     indexer_name = f'jinahub+docker://' + indexer_uses
     encoder_name = f'jinahub+docker://' + encoder_uses
-    linear_head_name = f'jinahub+docker://{finetune_settings.finetuned_model_name}'
 
     if finetune_settings.bi_modal:
         pre_trained_embedding_size = finetune_settings.pre_trained_embedding_size * 2
@@ -120,6 +121,7 @@ def get_custom_env_file(
             "pretrained_model_name_or_path"
         ]
     if finetune_settings.perform_finetuning:
-        config['LINEAR_HEAD_NAME'] = linear_head_name
+        config['FINETUNE_ARTIFACT'] = finetune_settings.finetuned_model_artifact
+        config['JINA_TOKEN'] = finetune_settings.token
 
     return config
