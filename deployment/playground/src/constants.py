@@ -2,11 +2,11 @@ from streamlit_webrtc import ClientSettings
 
 
 class Parameters:
-    host: str
+    host: str = None
     port: str = None
-    input_modality: str
-    output_modality: str
-    data: str
+    input_modality: str = None
+    output_modality: str = None
+    data: str = None
     code: str = None
     state: str = None
 
@@ -67,4 +67,6 @@ BUTTONS = {
             """,
 }
 
-COOKIE_NAME = 'JinaNOW'
+JWT_COOKIE = 'JinaNOW_Jwt'
+AVATAR_COOKIE = 'AvatarUrl'
+TOKEN_COOKIE = 'JinaNOW_Token'

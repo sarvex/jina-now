@@ -286,7 +286,7 @@ def _configure_email_ids(user_input: UserInput, **kwargs):
         prompt_type='input',
         **kwargs,
     )
-    user_input.email_ids = [nick_names.split(',') if nick_names else []]
+    user_input.email_ids = email_ids  # [nick_names.split(',') if nick_names else []]
 
 
 def _construct_local_cluster_choices(active_context, contexts):
