@@ -48,23 +48,23 @@ def run(app_instance: JinaNOWApp, user_input: UserInput, kubectl_path: str):
         dataset = [x for x in dataset if x.text == '']
     elif app_instance.output_modality == 'text':
         dataset = [x for x in dataset if x.text != '']
+
     print(f'▶ indexing {len(dataset)} documents')
-    call_index(client=client, dataset=dataset)
+    call_index(client=client, dataset=dataset, params=user_input.jwt)
     print('⭐ Success - your data is indexed')
 
     return gateway_host, gateway_port, gateway_host_internal, gateway_port_internal
 
 
 @time_profiler
-def call_index(client: Client, dataset: DocumentArray):
+def call_index(client: Client, dataset: DocumentArray, params=None):
     request_size = estimate_request_size(dataset)
 
     # double check that flow is up and running - should be done by wolf/core in the future
     while True:
         try:
             client.post(
-                '/index',
-                inputs=DocumentArray(),
+                '/index', inputs=DocumentArray(), parameters=params if params else {}
             )
             break
         except Exception as e:
@@ -76,7 +76,11 @@ def call_index(client: Client, dataset: DocumentArray):
             sleep(1)
 
     response = client.post(
-        '/index', request_size=request_size, inputs=dataset, show_progress=True
+        '/index',
+        request_size=request_size,
+        inputs=dataset,
+        parameters=params if params else {},
+        show_progress=True,
     )
 
     if response:

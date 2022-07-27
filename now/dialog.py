@@ -9,7 +9,6 @@ from __future__ import annotations, print_function, unicode_literals
 import importlib
 import os
 import pathlib
-from os.path import expanduser as user
 from typing import Dict, List, Optional, Union
 
 import cowsay
@@ -18,12 +17,10 @@ from pyfiglet import Figlet
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import AVAILABLE_DATASET, Apps, DatasetTypes
-from now.deployment.deployment import cmd
-from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
 from now.thirdparty.PyInquirer import Separator
 from now.thirdparty.PyInquirer.prompt import prompt
-from now.utils import sigmap, to_camel_case
+from now.utils import _get_info_hubble, to_camel_case
 
 cur_dir = pathlib.Path(__file__).parent.resolve()
 NEW_CLUSTER = {'name': '🐣 create new', 'value': 'new'}
@@ -57,9 +54,12 @@ def configure_user_input(**kwargs) -> [JinaNOWApp, UserInput]:
     _configure_app_options(app_instance, user_input, **kwargs)
     _configure_dataset(app_instance, user_input, **kwargs)
     _configure_cluster(user_input, **kwargs)
-    if _configure_security(user_input, **kwargs):
-        if _configure_additional_user(user_input, **kwargs):
-            _configure_email_ids(user_input, **kwargs)
+    if user_input.deployment_type == 'remote':
+        if _configure_security(user_input, **kwargs):
+            pass
+            # TODO: Uncomment below when we have directions how to add additional user
+            # if _configure_additional_user(user_input, **kwargs):
+            #     _configure_email_ids(user_input, **kwargs)
     return app_instance, user_input
 
 
@@ -228,7 +228,7 @@ def _configure_cluster(user_input: UserInput, skip=False, **kwargs):
         ask_deployment()
 
     if user_input.deployment_type == 'remote':
-        _maybe_login_wolf()
+        _get_info_hubble(user_input)
         os.environ['JCLOUD_NO_SURVEY'] = '1'
     else:
         # get all local cluster contexts
@@ -354,12 +354,3 @@ def _cluster_running(cluster):
     except Exception as e:
         return False
     return True
-
-
-def _maybe_login_wolf():
-    if not os.path.exists(user('~/.jina/config.json')):
-        with yaspin_extended(
-            sigmap=sigmap, text='Log in to JCloud', color='green'
-        ) as spinner:
-            cmd('jcloud login')
-        spinner.ok('🛠️')

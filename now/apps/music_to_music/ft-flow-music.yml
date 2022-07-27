@@ -13,7 +13,6 @@ executors:
     uses: jinahub+docker://SecurityExecutor
     uses_with:
       owner_id: ${{ ENV.OWNER_ID }}
-      email_ids: ${{ ENV.EMAIL_IDS }}
   - name: encoder_music
     uses: ${{ ENV.ENCODER_NAME }}
     jcloud:
