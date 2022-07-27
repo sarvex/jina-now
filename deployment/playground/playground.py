@@ -200,11 +200,14 @@ def _do_login(params):
             f'?code={code}&state={state}'
         ).json()
         if resp_jwt and resp_jwt['code'] == 200:
-            st.session_state.jwt_val = resp_jwt['data']
+            st.session_state.jwt_val = {
+                'user': resp_jwt['data']['user'],
+                'token': resp_jwt['data']['token'],
+            }
             st.session_state.token_val = resp_jwt['data']['token']
             st.session_state.avatar_val = resp_jwt['data']['user']['avatarUrl']
             st.session_state.login = False
-            setter_cookie(cookie_name=JWT_COOKIE, val=resp_jwt['data'])
+            setter_cookie(cookie_name=JWT_COOKIE, val=st.session_state.jwt_val)
             return
         else:
             st.session_state.login = True
