@@ -3,12 +3,12 @@ from typing import Dict
 
 import cowsay
 from docarray import DocumentArray
+from now_common.utils import setup_clip_music_apps
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import Apps, DemoDatasets, Modalities, Qualities
 from now.deployment.deployment import which
 from now.now_dataclasses import UserInput
-from now.run_backend import finetune_flow_setup
 
 
 class MusicToMusic(JinaNOWApp):
@@ -49,8 +49,23 @@ class MusicToMusic(JinaNOWApp):
         return 10
 
     def set_flow_yaml(self, **kwargs):
+        finetuning = kwargs.get('finetuning', False)
+        encode = kwargs.get('encode', False)
+        demo_data = kwargs.get('demo_data', False)
+        if finetuning + encode + demo_data > 1:
+            raise ValueError(
+                f"Can't set flow to more than one mode but have "
+                f"demo_data={demo_data}, encode={encode}, finetuning={finetuning}"
+            )
+
         flow_dir = os.path.abspath(os.path.join(__file__, '..'))
-        self.flow_yaml = os.path.join(flow_dir, 'ft-flow-music.yml')
+
+        if demo_data:
+            self.flow_yaml = os.path.join(flow_dir, 'demo-data-flow-music.yml')
+        elif encode:
+            self.flow_yaml = os.path.join(flow_dir, 'encode-flow-music.yml')
+        else:
+            self.flow_yaml = os.path.join(flow_dir, 'ft-flow-music.yml')
 
     @property
     def pre_trained_embedding_size(self) -> Dict[Qualities, int]:
@@ -58,30 +73,44 @@ class MusicToMusic(JinaNOWApp):
             Qualities.MEDIUM: 512,
         }
 
-    def check_requirements(self) -> bool:
+    def _check_requirements(self) -> bool:
         if not ffmpeg_is_installed():
             _handle_ffmpeg_install_required()
             return False
         return True
 
-    def setup(self, da: DocumentArray, user_config: UserInput, kubectl_path) -> Dict:
-        return finetune_flow_setup(
-            self,
-            da,
-            user_config,
-            kubectl_path,
+    def setup(
+        self, dataset: DocumentArray, user_input: UserInput, kubectl_path
+    ) -> Dict:
+        # needed to write a custom solution for music 2 music app as we need to allow to integrate
+        # externally pretrained executors for the demo datasets
+        pre_trained_head_map = {
+            DemoDatasets.MUSIC_GENRES_ROCK: 'FinetunedLinearHeadEncoderMusicRock',
+            DemoDatasets.MUSIC_GENRES_MIX: 'FineTunedLinearHeadEncoderMusicMix',
+        }
+
+        # will execute finetuning on custom datasets (if possible) but not for demo datasets
+        env_dict = setup_clip_music_apps(
+            app_instance=self,
+            user_input=user_input,
+            dataset=dataset,
             encoder_uses='BiModalMusicTextEncoderV2',
             encoder_uses_with={},
-            finetune_datasets=(
-                DemoDatasets.MUSIC_GENRES_MIX,
-                DemoDatasets.MUSIC_GENRES_ROCK,
-            ),
-            pre_trained_head_map={
-                DemoDatasets.MUSIC_GENRES_ROCK: 'FinetunedLinearHeadEncoderMusicRock',
-                DemoDatasets.MUSIC_GENRES_MIX: 'FineTunedLinearHeadEncoderMusicMix',
-            },
             indexer_uses='MusicRecommendationIndexerV2',
+            kubectl_path=kubectl_path,
         )
+
+        # can reuse large part of other code but need to make some adjustments
+        if user_input.data in pre_trained_head_map:
+            print(f'⚡️ Using cached hub model for speed')
+
+            env_dict[
+                'LINEAR_HEAD_NAME'
+            ] = f"jinahub+docker://{pre_trained_head_map[user_input.data]}"
+
+            self.set_flow_yaml(demo_data=True)
+
+        return env_dict
 
 
 def ffmpeg_is_installed():

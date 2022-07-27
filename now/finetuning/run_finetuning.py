@@ -11,26 +11,28 @@ import numpy as np
 from docarray import DocumentArray
 from finetuner.callback import EarlyStopping, EvaluationCallback
 
+from now.apps.base.app import JinaNOWApp
 from now.finetuning.dataset import FinetuneDataset, build_finetuning_dataset
 from now.finetuning.embeddings import embed_now
 from now.finetuning.settings import FinetuneSettings
-from now.log import yaspin_extended
+from now.log import time_profiler, yaspin_extended
 from now.now_dataclasses import UserInput
 from now.utils import sigmap
 
 _BASE_SAVE_DIR = 'now/hub/head_encoder'
 
 
-def finetune_now(
-    user_input: UserInput,
-    dataset: DocumentArray,
+@time_profiler
+def finetune(
     finetune_settings: FinetuneSettings,
-    pre_trained_head_map: Dict[str, str],
+    app_instance: JinaNOWApp,
+    dataset: DocumentArray,
+    user_input: UserInput,
+    env_dict: Dict,
     kubectl_path: str,
-    encoder_uses: str,
-    encoder_uses_with: Dict,
 ) -> Tuple[str, str]:
-    """
+    """If possible, applies finetuning and updates finetune_settings.finetuned_model_name accordingly.
+
     Performs the finetuning procedure:
      1. If embeddings are not present -> compute them using a k8s deployed flow
      2. If bi-modal, prepare the embeddings by concatenating zeros for the opposing modality
@@ -39,6 +41,7 @@ def finetune_now(
     Note, for music we use cached models because the datasets are too large and consume too much time
 
     :param user_input: The configured user input object
+    :param env_dict: environment variables for flow.yml file
     :param dataset: The dataset with the finetuning labels on all documents. Embeddings are optional and can
         be computed on the fly
     :param finetune_settings: Mainly parameter configuration for the finetuner.fit
@@ -46,11 +49,16 @@ def finetune_now(
 
     :return: artifact of finetuned model and token required for FinetunerExecutor
     """
-    if pre_trained_head_map is not None and user_input.data in pre_trained_head_map:
-        print(f'⚡️ Using cached hub model for speed')
-        return pre_trained_head_map[user_input.data]
+    if not finetune_settings.perform_finetuning:
+        return
+
+    print(f'🔧 Perform finetuning!')
     dataset = _maybe_add_embeddings(
-        encoder_uses, encoder_uses_with, dataset, kubectl_path
+        app_instance=app_instance,
+        user_input=user_input,
+        env_dict=env_dict,
+        dataset=dataset,
+        kubectl_path=kubectl_path,
     )
 
     dataset = dataset.shuffle(42)
@@ -63,6 +71,7 @@ def finetune_now(
     return _finetune_layer(finetune_ds, finetune_settings)
 
 
+@time_profiler
 def _finetune_layer(
     finetune_ds: FinetuneDataset,
     finetune_settings: FinetuneSettings,
@@ -84,7 +93,6 @@ def _finetune_layer(
             limit=finetune_settings.eval_match_limit,
             # metrics=['ndcg'],
         ),
-        # BestModelCheckpoint(monitor='ndcg', save_dir=save_dir, verbose=True),
         EarlyStopping(
             monitor='ndcg',
             patience=finetune_settings.early_stopping_patience,
@@ -110,6 +118,7 @@ def _finetune_layer(
         eval_data=finetune_ds.val,
         callbacks=callbacks,
         learning_rate=finetune_settings.learning_rate,
+        run_name=experiment_name,
     )
 
     run_failed = False
@@ -154,8 +163,9 @@ def _finetune_layer(
 
 
 def _maybe_add_embeddings(
-    encoder_uses: str,
-    encoder_uses_with: Dict,
+    app_instance: JinaNOWApp,
+    user_input: UserInput,
+    env_dict: Dict,
     dataset: DocumentArray,
     kubectl_path: str,
 ):
@@ -168,7 +178,14 @@ def _maybe_add_embeddings(
         else:
             spinner.fail('👎')
 
-    embed_now(encoder_uses, encoder_uses_with, dataset, kubectl_path=kubectl_path)
+    app_instance.set_flow_yaml(encode=True)
+    embed_now(
+        deployment_type=user_input.deployment_type,
+        flow_yaml=app_instance.flow_yaml,
+        env_dict=env_dict,
+        dataset=dataset,
+        kubectl_path=kubectl_path,
+    )
 
     assert all([d.embedding is not None for d in dataset]), (
         "Some docs slipped through and" " still have no embedding..."

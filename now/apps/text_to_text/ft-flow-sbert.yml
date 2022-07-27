@@ -9,11 +9,13 @@ jcloud:
   version: 3.6.6
   retention_days: -1
 executors:
-  - name: encoder_music
+  - name: encoder_text
     uses: ${{ ENV.ENCODER_NAME }}
     jcloud:
       resources:
         memory: 8G
+    uses_with:
+      model_name: ${{ ENV.PRE_TRAINED_MODEL_NAME }}
     env:
       JINA_LOG_LEVEL: DEBUG
   - name: cast_convert

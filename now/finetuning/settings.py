@@ -75,7 +75,6 @@ def _is_finetuning(
 ) -> bool:
     if user_input.data in finetuneable_datasets:
         return True
-
     elif user_input.is_custom_dataset and all(
         ['finetuner_label' in d.tags for d in dataset]
     ):
@@ -97,7 +96,7 @@ def parse_finetune_settings(
     app_instance: JinaNOWApp,
     user_input: UserInput,
     dataset: DocumentArray,
-    finetune_datasets: Tuple,
+    finetune_datasets: Optional[Tuple] = (),
 ) -> FinetuneSettings:
     """This function parses the user input configuration into the finetune settings"""
     return FinetuneSettings(

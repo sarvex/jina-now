@@ -9,14 +9,18 @@ jcloud:
   version: 3.6.6
   retention_days: -1
 executors:
-  - name: encoder_clip
+  - name: encoder_music
     uses: ${{ ENV.ENCODER_NAME }}
     jcloud:
       resources:
         memory: 8G
+    env:
+      JINA_LOG_LEVEL: DEBUG
+  - name: linear_head
+    uses: ${{ ENV.LINEAR_HEAD_NAME }}
     uses_with:
-      pretrained_model_name_or_path: ${{ ENV.PRE_TRAINED_MODEL_NAME }}
-      traversal_paths: '@c'
+      finetune_layer_size: ${{ ENV.FINETUNE_LAYER_SIZE }}
+      pre_trained_embedding_size: ${{ ENV.PRE_TRAINED_EMBEDDINGS_SIZE }}
     env:
       JINA_LOG_LEVEL: DEBUG
   - name: indexer
@@ -25,7 +29,5 @@ executors:
       capacity: on-demand
       resources:
         memory: 4G
-    uses_with:
-      traversal_paths: '@c'
     env:
       JINA_LOG_LEVEL: DEBUG
