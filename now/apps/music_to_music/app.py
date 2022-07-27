@@ -115,7 +115,7 @@ class MusicToMusic(JinaNOWApp):
     def load_from_folder(self, path: str) -> DocumentArray:
         return DocumentArray.from_files(path + '/**')
 
-    def preprocess(self, da: DocumentArray, *args, **kwargs) -> DocumentArray:
+    def preprocess(self, da: DocumentArray, user_input: UserInput) -> DocumentArray:
         from pydub import AudioSegment
 
         def convert_fn(d: Document):

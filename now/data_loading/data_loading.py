@@ -5,7 +5,7 @@ from copy import deepcopy
 from docarray import DocumentArray
 
 from now.apps.base.app import JinaNOWApp
-from now.constants import DatasetTypes, Modalities
+from now.constants import DatasetTypes
 from now.data_loading.utils import _fetch_da_from_url, get_dataset_url
 from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
@@ -21,7 +21,6 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
     :return: The loaded DocumentArray.
     """
     da = None
-    output_modality = app.output_modality
 
     if user_input.is_custom_dataset:
         if user_input.custom_dataset_type == DatasetTypes.DOCARRAY:
@@ -32,10 +31,10 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
             da = _fetch_da_from_url(user_input.dataset_url)
         elif user_input.custom_dataset_type == DatasetTypes.PATH:
             print('💿  Loading files from disk')
-            da = _load_from_disk(app, user_input.dataset_path, output_modality)
+            da = _load_from_disk(app, user_input.dataset_path)
     else:
         print('⬇  Download DocArray dataset')
-        url = get_dataset_url(user_input.data, user_input.quality, output_modality)
+        url = get_dataset_url(user_input.data, user_input.quality, app.output_modality)
         da = _fetch_da_from_url(url)
     if da is None:
         raise ValueError(
@@ -56,9 +55,7 @@ def _pull_docarray(dataset_name: str):
         exit(1)
 
 
-def _load_from_disk(
-    app: JinaNOWApp, dataset_path: str, modality: Modalities
-) -> DocumentArray:
+def _load_from_disk(app: JinaNOWApp, dataset_path: str) -> DocumentArray:
     if os.path.isfile(dataset_path):
         try:
             return DocumentArray.load_binary(dataset_path)
