@@ -1,5 +1,6 @@
 import base64
 import io
+import json
 import os
 from copy import deepcopy
 from urllib.parse import quote, unquote
@@ -8,17 +9,16 @@ from urllib.request import urlopen
 import av
 import extra_streamlit_components as stx
 import numpy as np
+import requests
 import streamlit as st
 import streamlit.components.v1 as components
 from better_profanity import profanity
 from docarray import Document, DocumentArray
 from docarray import __version__ as docarray_version
 from src.constants import (
-    AVATAR_COOKIE,
     BUTTONS,
     JWT_COOKIE,
     SURVEY_LINK,
-    TOKEN_COOKIE,
     WEBRTC_CLIENT_SETTINGS,
     ds_set,
     root_data_dir,
@@ -57,6 +57,10 @@ cookie_manager = get_cookie_manager()
 
 
 def setter_cookie(cookie_name, val):
+    # try:
+    #     cookie_manager.delete(cookie_name, key=cookie_name)
+    # except:
+    #     pass
     cookie_manager.set(cookie=cookie_name, val=val, key=cookie_name)
 
 
@@ -92,7 +96,7 @@ def deploy_streamlit():
     Please deploy a streamlit playground on k8s/local to access the api.
     You can get the starting point for the streamlit application from alex.
     """
-    # Start with setting up the vars default values then proceed to placing UI attributes
+    # Start with setting up the vars default values then proceed to placing UI components
     # Set up session state vars if not already set
     setup_session_state()
 
@@ -100,29 +104,25 @@ def deploy_streamlit():
     params = get_query_params()
     jwt_val = get_cookie_value(cookie_name=JWT_COOKIE)
     if jwt_val:
-        st.session_state.jwt_val = unquote(jwt_val)  # getter_cookie(JWT_COOKIE)
-
-    avatar_val = get_cookie_value(cookie_name=AVATAR_COOKIE)
-    if avatar_val:
-        st.session_state.avatar_val = unquote(
-            avatar_val
-        )  # getter_cookie(AVATAR_COOKIE)
-
-    token_val = get_cookie_value(cookie_name=TOKEN_COOKIE)
-    if token_val:
-        st.session_state.token_val = unquote(token_val)  # getter_cookie(TOKEN_COOKIE)
+        jwt_val = json.loads(unquote(jwt_val))
+        if not st.session_state.jwt_val:
+            st.session_state.jwt_val = jwt_val
+        if not st.session_state.avatar_val:
+            st.session_state.avatar_val = jwt_val['user']['avatarUrl']
+        if not st.session_state.token_val:
+            st.session_state.token_val = jwt_val['token']
 
     redirect_to = None
-
-    if not jwt_val:
+    if not st.session_state.jwt_val:
         redirect_to = _do_login(params)
 
     _, logout, avatar = st.columns([0.7, 0.12, 0.12])
-    with avatar:
-        if st.session_state.avatar_val:
-            st.image(st.session_state.avatar_val, width=30)
-    with logout:
-        st.button('Logout', on_click=_do_logout)
+    if not st.session_state.login:
+        with avatar:
+            if st.session_state.avatar_val:
+                st.image(st.session_state.avatar_val, width=30)
+        with logout:
+            st.button('Logout', on_click=_do_logout)
 
     _, mid, _ = st.columns([0.8, 1, 1])
     with open('./logo.svg', 'r') as f:
@@ -132,7 +132,7 @@ def deploy_streamlit():
         html = r'<img width="250" src="data:image/svg+xml;base64,%s"/>' % b64
         st.write(html, unsafe_allow_html=True)
 
-    if redirect_to:  # not login_val and not st.session_state.jwt:
+    if redirect_to and st.session_state.login:
         st.write('')
         st.write('You are not Logged in. Please Login.')
         st.markdown(
@@ -185,91 +185,52 @@ def deploy_streamlit():
 
 
 def _do_login(params):
-    login = True
     code = params.code
     state = params.state
     if code and state:
-        # resp_jwt = requests.get(
-        #     url=f'https://api.hubble.jina.ai/v2/rpc/user.identity.grant.auto'
-        #         f'?code={code}&state={state}'
-        # ).json()
-        resp_jwt = {
-            'code': 200,
-            'status': 20000,
-            'data': {
-                'user': {
-                    '_id': '62723cc6a5d1c4b707b62693',
-                    'name': 'auth0-unified-dbd6ad61fc666b4f',
-                    'nickname': 'kalim.akram',
-                    'avatarUrl': 'https://lh3.googleusercontent.com/a-/AOh14Gh1L7-yKliXDVka7QknqMSOgg6aobLhRopiFMou=s96-c',
-                    'createdAt': '2022-05-04T08:43:50.867Z',
-                    'updatedAt': '2022-05-04T08:43:50.867Z',
-                },
-                'identity': {
-                    '_id': '62723cc6b2c5d89642f35410',
-                    'user': '62723cc6a5d1c4b707b62693',
-                    'provider': 'auth0-unified',
-                    'identifier': 'google-oauth2|110300548630292003811',
-                    'createdAt': '2022-05-04T08:43:50.870Z',
-                    'updatedAt': '2022-07-25T12:53:00.590Z',
-                    'scope': 'openid profile email',
-                    'scopes': ['openid', 'profile', 'email'],
-                    'userInfo': {
-                        'sub': 'google-oauth2|110300548630292003811',
-                        'name': 'Mohammad Kalim Akram',
-                        'given_name': 'Mohammad Kalim',
-                        'family_name': 'Akram',
-                        'nickname': 'kalim.akram',
-                        'picture': 'https://lh3.googleusercontent.com/a-/AFdZucryD7w1i-hDsTUzF99RAMlAyw-4cdGrUu7Y5BXP=s96-c',
-                        'email': 'kalim.akram@jina.ai',
-                        'email_verified': True,
-                        'locale': 'en',
-                        'updated_at': '2022-07-25T12:35:40.505Z',
-                        'givenName': 'Mohammad Kalim',
-                        'familyName': 'Akram',
-                        'updatedAt': '2022-07-25T12:35:40.505Z',
-                        'emailVerified': True,
-                    },
-                },
-                'token': 'd5cc4ea90ee6e53ce0e5eed61d6eb6c8:7bd20dd75e28977f86ce924cb24a13e6e2a4b998',
-            },
-        }
-        if resp_jwt and resp_jwt['code'] == 200:
-            print(resp_jwt['data'])
-            setter_cookie(JWT_COOKIE, resp_jwt['data'])
-            setter_cookie(AVATAR_COOKIE, resp_jwt['data']['user']['avatarUrl'])
-            setter_cookie(TOKEN_COOKIE, resp_jwt['data']['token'])
-            st.session_state.jwt = resp_jwt['data']
-            st.session_state.avatar_url = resp_jwt['data']['user']['avatarUrl']
-            st.session_state.token = resp_jwt['data']['token']
-            login = False
-        else:
-            login = True
-
-    if login:
-        redirect_uri = (
-            f'https://nowrun.jina.ai/?host={params.host}&input_modality={params.output_modality}'
-            f'&output_modality={params.input_modality}&data={params.data}'
+        # Whether it is fail or success, clear the query param
+        st.experimental_set_query_params(
+            host=unquote(params.host),
+            input_modality=params.input_modality,
+            output_modality=params.output_modality,
+            data=params.data,
         )
-        redirect_uri = quote(redirect_uri)
-        # rsp = requests.get(
-        #     url=f'https://api.hubble.jina.ai/v2/rpc/user.identity.authorize'
-        #         f'?provider=jina-login&response_mode=query&redirect_uri={redirect_uri}&scope=email%20profile%20openid'
-        # ).json()
-        redirect_to = 'http://192.168.1.212:8653/?host=grpcs%3A%2F%2Fnowapi-4f66606529.wolf.jina.ai&input_modality=text&output_modality=image&data=custom&code=a3CvxNQpneUkzVBBAhsSWrGHKv-fICID_IZ1Oph8_Jhwq&state=jina-login%3A7d754c817af58aa76abe90ef67cffc29'  # rsp['data']['redirectTo']
-        return redirect_to
+        resp_jwt = requests.get(
+            url=f'https://api.hubble.jina.ai/v2/rpc/user.identity.grant.auto'
+            f'?code={code}&state={state}'
+        ).json()
+        if resp_jwt and resp_jwt['code'] == 200:
+            st.session_state.jwt_val = resp_jwt['data']
+            st.session_state.token_val = resp_jwt['data']['token']
+            st.session_state.avatar_val = resp_jwt['data']['user']['avatarUrl']
+            st.session_state.login = False
+            setter_cookie(cookie_name=JWT_COOKIE, val=resp_jwt['data'])
+            return
+        else:
+            st.session_state.login = True
+            params.code = None
+            params.state = None
+
+    st.session_state.login = True
+    redirect_uri = (
+        f'https://nowrun.jina.ai/?host={params.host}&input_modality={params.input_modality}'
+        f'&output_modality={params.output_modality}&data={params.data}'
+    )
+    redirect_uri = quote(redirect_uri)
+    rsp = requests.get(
+        url=f'https://api.hubble.jina.ai/v2/rpc/user.identity.authorize'
+        f'?provider=jina-login&response_mode=query&redirect_uri={redirect_uri}&scope=email%20profile%20openid'
+    ).json()
+    redirect_to = rsp['data']['redirectTo']
+    return redirect_to
 
 
 def _do_logout():
-    if cookie_manager.get(cookie=JWT_COOKIE):
-        cookie_manager.delete(cookie=JWT_COOKIE)
-    if cookie_manager.get(cookie=AVATAR_COOKIE):
-        cookie_manager.delete(cookie=AVATAR_COOKIE)
-    if cookie_manager.get(cookie=TOKEN_COOKIE):
-        cookie_manager.delete(cookie=TOKEN_COOKIE)
-    st.session_state.jwt = None
-    st.session_state.avatar_url = None
-    st.session_state.token = None
+    st.session_state.jwt_val = None
+    st.session_state.avatar_val = None
+    st.session_state.token_val = None
+    st.session_state.login = True
+    cookie_manager.delete(cookie=JWT_COOKIE, key=JWT_COOKIE)
 
 
 def load_example_queries(DATA, OUTPUT_MODALITY, da_img, da_txt):
@@ -646,14 +607,17 @@ def setup_session_state():
     if 'search_count' not in st.session_state:
         st.session_state.search_count = 0
 
-    if 'jwt' not in st.session_state:
-        st.session_state.jwt = None
+    if 'jwt_val' not in st.session_state:
+        st.session_state.jwt_val = None
 
-    if 'avatar_url' not in st.session_state:
-        st.session_state.avatar_url = None
+    if 'avatar_val' not in st.session_state:
+        st.session_state.avatar_val = None
 
-    if 'token' not in st.session_state:
-        st.session_state.token = None
+    if 'token_val' not in st.session_state:
+        st.session_state.token_val = None
+
+    if 'login' not in st.session_state:
+        st.session_state.login = False
 
 
 if __name__ == '__main__':
