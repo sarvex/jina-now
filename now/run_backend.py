@@ -5,6 +5,7 @@ import tempfile
 from os.path import expanduser as user
 from typing import Dict, Optional, Tuple
 
+import hubble
 from docarray import DocumentArray
 
 from now.apps.base.app import JinaNOWApp
@@ -52,19 +53,25 @@ def finetune_flow_setup(
 
     app_instance.set_flow_yaml(finetuning=finetuning)
 
-    email_ids = None
+    user_ids = None
+    owner_id = None
     if user_input.secured:
         with open(user('~/.jina/config.json')) as f:
             cont = json.load(f)
             user_token = cont['auth_token']
-        email_ids = ''  # Need to get this solved from hubble side
+        client = hubble.Client(token=user_token, max_retries=None, jsonify=True)
+        # Get current user information.
+        response = client.get_user_info()
+        owner_id = response['data']['_id']
+        user_ids = user_input.user_ids
 
     env = get_custom_env_file(
         finetune_settings,
         encoder_uses,
         encoder_uses_with,
         indexer_uses,
-        email_ids,
+        owner_id,
+        user_ids,
     )
     return env
 
@@ -112,7 +119,8 @@ def get_custom_env_file(
     encoder_uses: str,
     encoder_uses_with: Dict,
     indexer_uses: str,
-    email_ids: str,
+    owner_id: str,
+    user_ids: str,
 ):
     indexer_name = f'jinahub+docker://' + indexer_uses
     encoder_name = f'jinahub+docker://' + encoder_uses
@@ -128,7 +136,8 @@ def get_custom_env_file(
         'PRE_TRAINED_EMBEDDINGS_SIZE': pre_trained_embedding_size,
         'INDEXER_NAME': indexer_name,
         'PREFETCH': PREFETCH_NR,
-        'EMAIL_IDS': email_ids,
+        'OWNER_ID': owner_id,
+        'USER_IDS': user_ids,
     }
     if encoder_uses_with.get('pretrained_model_name_or_path'):
         config['PRE_TRAINED_MODEL_NAME'] = encoder_uses_with[

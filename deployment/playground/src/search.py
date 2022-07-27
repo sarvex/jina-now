@@ -20,7 +20,7 @@ def get_query_params() -> Parameters:
     return parameters
 
 
-def search(attribute_name, attribute_value, top_k=TOP_K):
+def search(attribute_name, attribute_value, jwt, top_k=TOP_K):
     print(f'Searching by {attribute_name}')
     st.session_state.search_count += 1
     params = get_query_params()
@@ -33,18 +33,23 @@ def search(attribute_name, attribute_value, top_k=TOP_K):
         f"{domain}/api/v1/{params.input_modality}-to-{params.output_modality}/search"
     )
 
-    data = {'host': params.host, attribute_name: attribute_value, 'limit': top_k}
+    data = {
+        'host': params.host,
+        attribute_name: attribute_value,
+        'limit': top_k,
+        'jwt': jwt,
+    }
     if params.port:
         data['port'] = params.port
     response = requests.post(URL_HOST, json=data)
     return DocumentArray.from_json(response.content)
 
 
-def search_by_text(search_text) -> DocumentArray:
-    return search('text', search_text)
+def search_by_text(search_text, jwt) -> DocumentArray:
+    return search('text', search_text, jwt)
 
 
-def search_by_image(document) -> DocumentArray:
+def search_by_image(document: Document, jwt) -> DocumentArray:
     """
     Wrap file in Jina Document for searching, and do all necessary conversion to make similar to indexed Docs
     """
@@ -57,11 +62,13 @@ def search_by_image(document) -> DocumentArray:
         elif (query_doc.uri is not None) and query_doc.uri != '':
             query_doc.load_uri_to_blob()
 
-    return search('image', base64.b64encode(query_doc.blob).decode('utf-8'))
+    return search('image', base64.b64encode(query_doc.blob).decode('utf-8'), jwt)
 
 
-def search_by_audio(document: Document):
-    result = search('song', base64.b64encode(document.blob).decode('utf-8'), TOP_K * 3)
+def search_by_audio(document: Document, jwt):
+    result = search(
+        'song', base64.b64encode(document.blob).decode('utf-8'), jwt, TOP_K * 3
+    )
 
     already_added_tracks = set()
     final_result = DocumentArray()

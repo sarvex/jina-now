@@ -298,7 +298,9 @@ def render_image(da_img):
     if query:
         doc = convert_file_to_document(query)
         st.image(doc.blob, width=160)
-        st.session_state.matches = search_by_image(document=doc)
+        st.session_state.matches = search_by_image(
+            document=doc, jwt=st.session_state.jwt_token
+        )
     if da_img is not None:
         st.subheader("samples:")
         img_cs = st.columns(5)
@@ -308,15 +310,21 @@ def render_image(da_img):
                 st.image(doc.blob if doc.blob else doc.tensor, width=100)
             with txt:
                 if st.button('Search', key=doc.id):
-                    st.session_state.matches = search_by_image(document=doc)
+                    st.session_state.matches = search_by_image(
+                        document=doc, jwt=st.session_state.jwt_token
+                    )
 
 
 def render_text(da_txt):
     query = st.text_input("", key="text_search_box")
     if query:
-        st.session_state.matches = search_by_text(search_text=query)
+        st.session_state.matches = search_by_text(
+            search_text=query, jwt=st.session_state.jwt_token
+        )
     if st.button("Search", key="text_search"):
-        st.session_state.matches = search_by_text(search_text=query)
+        st.session_state.matches = search_by_text(
+            search_text=query, jwt=st.session_state.jwt_token
+        )
     if da_txt is not None:
         st.subheader("samples:")
         c1, c2, c3 = st.columns(3)
@@ -324,7 +332,9 @@ def render_text(da_txt):
         for doc, col in zip(da_txt, [c1, c2, c3, c4, c5, c6]):
             with col:
                 if st.button(doc.content, key=doc.id, on_click=clear_text):
-                    st.session_state.matches = search_by_text(search_text=doc.content)
+                    st.session_state.matches = search_by_text(
+                        search_text=doc.content, jwt=st.session_state.jwt_token
+                    )
 
 
 def render_matches(OUTPUT_MODALITY):
@@ -413,7 +423,9 @@ def render_music_app(DATA):
         doc = convert_file_to_document(query)
         st.subheader('Play your song')
         st.audio(doc.blob)
-        st.session_state.matches = search_by_audio(document=doc)
+        st.session_state.matches = search_by_audio(
+            document=doc, jwt=st.session_state.jwt_token
+        )
 
     else:
         columns = st.columns(3)
@@ -421,7 +433,9 @@ def render_music_app(DATA):
 
         def on_button_click(doc_id: str):
             def callback():
-                st.session_state.matches = search_by_audio(music_examples[doc_id])
+                st.session_state.matches = search_by_audio(
+                    music_examples[doc_id], jwt=st.session_state.jwt_token
+                )
 
             return callback
 
@@ -452,7 +466,9 @@ def render_webcam():
             st.session_state.snap = query
             doc = Document(tensor=query)
             doc.convert_image_tensor_to_blob()
-            st.session_state.matches = search_by_image(document=doc)
+            st.session_state.matches = search_by_image(
+                document=doc, jwt=st.session_state.jwt_token
+            )
         elif st.session_state.snap is not None:
             st.image(st.session_state.snap, width=160)
     else:

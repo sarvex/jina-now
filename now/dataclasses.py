@@ -27,4 +27,4 @@ class UserInput:
     deployment_type: Optional[str] = None
     secured: Optional[bool] = False
     additional_user: Optional[bool] = False
-    email_ids: Optional[str] = None
+    user_ids: Optional[str] = None

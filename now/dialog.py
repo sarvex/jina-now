@@ -258,8 +258,8 @@ def _configure_security(user_input: UserInput, **kwargs):
         name='secured',
         prompt_message='Do you want to secure the flow?',
         choices=[
-            {'name': '⛔ no', 'value': False},
             {'name': '✅ yes', 'value': True},
+            {'name': '⛔ no', 'value': False},
         ],
         **kwargs,
     )
@@ -280,13 +280,14 @@ def _configure_additional_user(user_input: UserInput, **kwargs):
 
 
 def _configure_email_ids(user_input: UserInput, **kwargs):
-    email_ids = _prompt_value(
+    user_ids = _prompt_value(
         name='email_ids',
-        prompt_message='Please enter the list of Email IDs(comma separated) who will have access to this flow',
+        prompt_message='Please enter the list of Email IDs or nick names(comma separated)'
+        ' who will have access to this flow',
         prompt_type='input',
         **kwargs,
     )
-    user_input.email_ids = email_ids  # [nick_names.split(',') if nick_names else []]
+    user_input.user_ids = user_ids
 
 
 def _construct_local_cluster_choices(active_context, contexts):
