@@ -9,18 +9,13 @@ jcloud:
   version: 3.6.6
   retention_days: -1
 executors:
-  - name: security_check
-    uses: jinahub+docker://SecurityExecutor
-    uses_with:
-      owner_id: ${{ ENV.OWNER_ID }}
-      email_ids: ${{ ENV.EMAIL_IDS }}
-  - name: encoder_clip
+  - name: encoder_text
     uses: ${{ ENV.ENCODER_NAME }}
     jcloud:
       resources:
         memory: 8G
     uses_with:
-      pretrained_model_name_or_path: ${{ ENV.PRE_TRAINED_MODEL_NAME }}
+      model_name: ${{ ENV.PRE_TRAINED_MODEL_NAME }}
     env:
       JINA_LOG_LEVEL: DEBUG
   - name: cast_convert

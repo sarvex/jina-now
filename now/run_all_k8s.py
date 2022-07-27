@@ -118,11 +118,7 @@ def start_now(os_type, arch, contexts, active_context, **kwargs):
     if gateway_host == 'localhost' or 'NOW_CI_RUN' in os.environ:
         # only deploy playground when running locally or when testing
         bff_playground_host, bff_port, playground_port = run_bff_playground.run(
-            output_modality=user_input.output_modality,
-            dataset=user_input.data,
             gateway_host=gateway_host,
-            gateway_host_internal=gateway_host_internal,
-            gateway_port_internal=gateway_port_internal,
             docker_bff_playground_tag=DOCKER_BFF_PLAYGROUND_TAG,
             kubectl_path=kwargs['kubectl_path'],
         )
@@ -178,9 +174,9 @@ def run_k8s(os_type: str = 'linux', arch: str = 'x86_64', **kwargs):
 
 if __name__ == '__main__':
     run_k8s(
-        output_modality='music',
-        data='music-genres-mid',
-        cluster='new',
+        app='text_to_image',
+        data='bird-species',
+        cluster='kind-jina-now',
         quality='medium',
         deployment_type='local',
         kubectl_path='/usr/local/bin/kubectl',
