@@ -40,7 +40,7 @@ def _configure_app_options(app_instance: JinaNOWApp, user_input, **kwargs):
     # _configure_quality(user_input, **kwargs)
 
 
-def _construct_app(app) -> JinaNOWApp:
+def _construct_app(app: str) -> JinaNOWApp:
     return getattr(
         importlib.import_module(f'now.apps.{app}.app'),
         f'{to_camel_case(app)}',

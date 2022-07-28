@@ -5,7 +5,7 @@ from docarray import DocumentArray
 from now_common.utils import preprocess_text, setup_clip_music_apps
 
 from now.apps.base.app import JinaNOWApp
-from now.constants import Apps, Modalities, Qualities
+from now.constants import Apps, DatasetTypes, Modalities, Qualities
 from now.now_dataclasses import UserInput
 
 
