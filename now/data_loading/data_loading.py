@@ -1,6 +1,8 @@
+import base64
 import os
 import uuid
 from copy import deepcopy
+from pathlib import Path
 
 from docarray import DocumentArray
 
@@ -32,6 +34,9 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
         elif user_input.custom_dataset_type == DatasetTypes.PATH:
             print('💿  Loading files from disk')
             da = _load_from_disk(app, user_input.dataset_path)
+        elif user_input.custom_dataset_type == DatasetTypes.S3_BUCKET:
+            print('⬇  Download from S3 bucket')
+            da = _load_from_s3_bucket(app=app, user_input=user_input)
     else:
         print('⬇  Download DocArray dataset')
         url = get_dataset_url(user_input.data, user_input.quality, app.output_modality)
@@ -64,7 +69,7 @@ def _load_from_disk(app: JinaNOWApp, dataset_path: str) -> DocumentArray:
             exit(1)
     elif os.path.isdir(dataset_path):
         with yaspin_extended(
-            sigmap=sigmap, text="Loading and pre-processing data", color="green"
+            sigmap=sigmap, text="Loading data", color="green"
         ) as spinner:
             spinner.ok('🏭')
             return app.load_from_folder(dataset_path)
@@ -73,6 +78,44 @@ def _load_from_disk(app: JinaNOWApp, dataset_path: str) -> DocumentArray:
             f'The provided dataset path {dataset_path} does not'
             f' appear to be a valid file or folder on your system.'
         )
+
+
+def _load_from_s3_bucket(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
+    import boto3.session
+
+    s3_uri = user_input.dataset_path
+    if not s3_uri.startswith('s3://'):
+        raise ValueError(
+            f"Can't process S3 URI {s3_uri} as it assumes it starts with: 's3://'"
+        )
+
+    data_dir = os.path.expanduser(
+        f'~/.cache/jina-now/data/tmp/{base64.b64encode(bytes(s3_uri, "utf-8")).decode("utf-8")}'
+    )
+    Path(data_dir).mkdir(parents=True, exist_ok=True)
+
+    bucket = s3_uri.split('/')[2]
+    folder_prefix = '/'.join(s3_uri.split('/')[3:])
+
+    session = boto3.session.Session(
+        aws_access_key_id=user_input.aws_access_key_id,
+        aws_secret_access_key=user_input.aws_secret_access_key,
+    )
+    bucket = session.resource('s3').Bucket(bucket)
+
+    with yaspin_extended(
+        sigmap=sigmap, text="Loading data from S3 and creating DocArray", color="green"
+    ) as spinner:
+        spinner.ok('🏭')
+
+        for obj in list(bucket.objects.filter(Prefix=folder_prefix)):
+            # create nested directory structure
+            path_obj_machine = os.path.join(data_dir, obj.key)
+            Path(os.path.dirname(path_obj_machine)).mkdir(parents=True, exist_ok=True)
+            # save file with full path locally
+            bucket.download_file(obj.key, path_obj_machine)
+
+        return app.load_from_folder(data_dir)
 
 
 def deep_copy_da(da: DocumentArray) -> DocumentArray:

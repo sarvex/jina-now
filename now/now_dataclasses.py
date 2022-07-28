@@ -16,6 +16,9 @@ class UserInput:
     dataset_name: Optional[str] = None
     dataset_url: Optional[str] = None
     dataset_path: Optional[str] = None
+    # AWS related
+    aws_access_key_id: Optional[str] = None
+    aws_secret_access_key: Optional[str] = None
 
     # model related
     quality: Optional[Qualities] = Qualities.MEDIUM

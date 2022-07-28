@@ -25,6 +25,7 @@ class DatasetTypes(BetterEnum):
     PATH = 'path'
     URL = 'url'
     DOCARRAY = 'docarray'
+    S3_BUCKET = 's3_bucket'
 
 
 class Qualities(BetterEnum):

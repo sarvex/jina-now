@@ -155,26 +155,44 @@ def _configure_custom_dataset(user_input: UserInput, **kwargs) -> None:
                 'name': 'Local path',
                 'value': DatasetTypes.PATH,
             },
+            {'name': 'Download from S3 bucket', 'value': DatasetTypes.S3_BUCKET},
         ],
         **kwargs,
     )
     if user_input.custom_dataset_type == DatasetTypes.DOCARRAY:
         user_input.dataset_name = _prompt_value(
             name='dataset_name',
-            prompt_message='Please enter your DocArray name.',
+            prompt_message='Please enter your DocArray name:',
         )
 
     elif user_input.custom_dataset_type == DatasetTypes.URL:
         user_input.dataset_url = _prompt_value(
             name='dataset_url',
-            prompt_message='Please paste in the URL to download your DocArray from.',
+            prompt_message='Please paste in the URL to download your DocArray from:',
             prompt_type='input',
         )
 
     elif user_input.custom_dataset_type == DatasetTypes.PATH:
         user_input.dataset_path = _prompt_value(
             name='dataset_path',
-            prompt_message='Please enter the path to the local folder.',
+            prompt_message='Please enter the path to the local folder:',
+            prompt_type='input',
+        )
+
+    elif user_input.custom_dataset_type == DatasetTypes.S3_BUCKET:
+        user_input.dataset_path = _prompt_value(
+            name='dataset_path',
+            prompt_message='Please enter the S3 URI to the folder:',
+            prompt_type='input',
+        )
+        user_input.aws_access_key_id = _prompt_value(
+            name='aws_access_key_id',
+            prompt_message='Please enter the AWS access key ID:',
+            prompt_type='input',
+        )
+        user_input.aws_secret_access_key = _prompt_value(
+            name='aws_secret_access_key',
+            prompt_message='Please enter the AWS secret access key:',
             prompt_type='input',
         )
 
