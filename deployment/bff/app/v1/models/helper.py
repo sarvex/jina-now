@@ -19,7 +19,7 @@ class BaseRequestModel(BaseModel):
     )
     port: int = Field(default=31080, description='Port at which to connect.')
     jwt: Dict[str, Any] = Field(
-        default=...,
+        default=None,
         description='User info obtained ' 'from the hubble along with token',
     )
 
