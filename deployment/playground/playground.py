@@ -103,7 +103,7 @@ def deploy_streamlit():
     # Retrieve query params
     params = get_query_params()
     jwt_val = get_cookie_value(cookie_name=JWT_COOKIE)
-    if jwt_val:
+    if jwt_val and not st.session_state.login:
         jwt_val = json.loads(unquote(jwt_val))
         if not st.session_state.jwt_val:
             st.session_state.jwt_val = jwt_val
@@ -302,7 +302,7 @@ def render_image(da_img):
         doc = convert_file_to_document(query)
         st.image(doc.blob, width=160)
         st.session_state.matches = search_by_image(
-            document=doc, jwt=st.session_state.jwt_token
+            document=doc, jwt=st.session_state.jwt_val
         )
     if da_img is not None:
         st.subheader("samples:")
@@ -314,7 +314,7 @@ def render_image(da_img):
             with txt:
                 if st.button('Search', key=doc.id):
                     st.session_state.matches = search_by_image(
-                        document=doc, jwt=st.session_state.jwt_token
+                        document=doc, jwt=st.session_state.jwt_val
                     )
 
 
@@ -322,11 +322,11 @@ def render_text(da_txt):
     query = st.text_input("", key="text_search_box")
     if query:
         st.session_state.matches = search_by_text(
-            search_text=query, jwt=st.session_state.jwt_token
+            search_text=query, jwt=st.session_state.jwt_val
         )
     if st.button("Search", key="text_search"):
         st.session_state.matches = search_by_text(
-            search_text=query, jwt=st.session_state.jwt_token
+            search_text=query, jwt=st.session_state.jwt_val
         )
     if da_txt is not None:
         st.subheader("samples:")
@@ -336,7 +336,7 @@ def render_text(da_txt):
             with col:
                 if st.button(doc.content, key=doc.id, on_click=clear_text):
                     st.session_state.matches = search_by_text(
-                        search_text=doc.content, jwt=st.session_state.jwt_token
+                        search_text=doc.content, jwt=st.session_state.jwt_val
                     )
 
 
@@ -429,7 +429,7 @@ def render_music_app(DATA):
         st.subheader('Play your song')
         st.audio(doc.blob)
         st.session_state.matches = search_by_audio(
-            document=doc, jwt=st.session_state.jwt_token
+            document=doc, jwt=st.session_state.jwt_val
         )
 
     else:
@@ -439,7 +439,7 @@ def render_music_app(DATA):
         def on_button_click(doc_id: str):
             def callback():
                 st.session_state.matches = search_by_audio(
-                    music_examples[doc_id], jwt=st.session_state.jwt_token
+                    music_examples[doc_id], jwt=st.session_state.jwt_val
                 )
 
             return callback
@@ -472,7 +472,7 @@ def render_webcam():
             doc = Document(tensor=query)
             doc.convert_image_tensor_to_blob()
             st.session_state.matches = search_by_image(
-                document=doc, jwt=st.session_state.jwt_token
+                document=doc, jwt=st.session_state.jwt_val
             )
         elif st.session_state.snap is not None:
             st.image(st.session_state.snap, width=160)

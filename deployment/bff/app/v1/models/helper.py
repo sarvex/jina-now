@@ -18,7 +18,10 @@ class BaseRequestModel(BaseModel):
         default='localhost', description='Host address returned by the flow deployment.'
     )
     port: int = Field(default=31080, description='Port at which to connect.')
-    jwt: str = Field(default=..., description='User info obtained from the hubble')
+    jwt: Dict[str, Any] = Field(
+        default=...,
+        description='User info obtained ' 'from the hubble along with token',
+    )
 
     class Config:
         allow_mutation = False

@@ -41,7 +41,9 @@ def search(attribute_name, attribute_value, jwt, top_k=TOP_K):
     }
     if params.port:
         data['port'] = params.port
-    response = requests.post(URL_HOST, json=data)
+    response = requests.post(
+        URL_HOST, json=data, headers={"Content-Type": "application/json; charset=utf-8"}
+    )
     return DocumentArray.from_json(response.content)
 
 
