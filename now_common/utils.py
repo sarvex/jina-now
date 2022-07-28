@@ -65,7 +65,7 @@ def setup_clip_music_apps(
         encoder_uses=encoder_uses,
         encoder_uses_with=encoder_uses_with,
         indexer_uses=indexer_uses,
-        owner_id=user_input.owner_id if user_input.secured else None,
+        owner_id=user_input.owner_id if user_input.secured else '',
     )
 
     if finetune_settings.perform_finetuning:
