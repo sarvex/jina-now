@@ -2,30 +2,23 @@ import base64
 import os
 import uuid
 from copy import deepcopy
-from os.path import join as osp
 from pathlib import Path
-from typing import Optional
 
-from docarray import Document, DocumentArray
+from docarray import DocumentArray
 
-from now.constants import (
-    BASE_STORAGE_URL,
-    DEMO_DATASET_DOCARRAY_VERSION,
-    IMAGE_MODEL_QUALITY_MAP,
-    DatasetTypes,
-    Modalities,
-    Qualities,
-)
-from now.data_loading.convert_datasets_to_jpeg import to_thumbnail_jpg
+from now.apps.base.app import JinaNOWApp
+from now.constants import DatasetTypes
+from now.data_loading.utils import _fetch_da_from_url, get_dataset_url
 from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
-from now.utils import download, sigmap
+from now.utils import sigmap
 
 
-def load_data(output_modality, user_input: UserInput) -> DocumentArray:
+def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
     """
     Based on the user input, this function will pull the configured DocArray dataset.
 
+    :param app: chosen JinaNOWApp
     :param user_input: The configured user object. Result from the Jina Now cli dialog.
     :return: The loaded DocumentArray.
     """
@@ -40,10 +33,13 @@ def load_data(output_modality, user_input: UserInput) -> DocumentArray:
             da = _fetch_da_from_url(user_input.dataset_url)
         elif user_input.custom_dataset_type == DatasetTypes.PATH:
             print('💿  Loading files from disk')
-            da = _load_from_disk(user_input.dataset_path, output_modality)
+            da = _load_from_disk(app, user_input.dataset_path)
+        elif user_input.custom_dataset_type == DatasetTypes.S3_BUCKET:
+            print('⬇  Download from S3 bucket')
+            da = _load_from_s3_bucket(app=app, user_input=user_input)
     else:
         print('⬇  Download DocArray dataset')
-        url = get_dataset_url(user_input.data, user_input.quality, output_modality)
+        url = get_dataset_url(user_input.data, user_input.quality, app.output_modality)
         da = _fetch_da_from_url(url)
     if da is None:
         raise ValueError(
@@ -51,27 +47,6 @@ def load_data(output_modality, user_input: UserInput) -> DocumentArray:
         )
     da = da.shuffle(seed=42)
     da = deep_copy_da(da)
-    return da
-
-
-def _fetch_da_from_url(
-    url: str, downloaded_path: str = '~/.cache/jina-now'
-) -> DocumentArray:
-    data_dir = os.path.expanduser(downloaded_path)
-    if not os.path.exists(osp(data_dir, 'data/tmp')):
-        os.makedirs(osp(data_dir, 'data/tmp'))
-    data_path = (
-        data_dir
-        + f"/data/tmp/{base64.b64encode(bytes(url, 'utf-8')).decode('utf-8')}.bin"
-    )
-    if not os.path.exists(data_path):
-        download(url, data_path)
-
-    with yaspin_extended(
-        sigmap=sigmap, text="Extracting dataset from DocArray", color="green"
-    ) as spinner:
-        da = DocumentArray.load_binary(data_path)
-        spinner.ok("📂")
     return da
 
 
@@ -85,7 +60,7 @@ def _pull_docarray(dataset_name: str):
         exit(1)
 
 
-def _load_from_disk(dataset_path: str, modality: Modalities) -> DocumentArray:
+def _load_from_disk(app: JinaNOWApp, dataset_path: str) -> DocumentArray:
     if os.path.isfile(dataset_path):
         try:
             return DocumentArray.load_binary(dataset_path)
@@ -94,23 +69,10 @@ def _load_from_disk(dataset_path: str, modality: Modalities) -> DocumentArray:
             exit(1)
     elif os.path.isdir(dataset_path):
         with yaspin_extended(
-            sigmap=sigmap, text="Loading and pre-processing data", color="green"
+            sigmap=sigmap, text="Loading data", color="green"
         ) as spinner:
             spinner.ok('🏭')
-            if modality == Modalities.IMAGE:
-                da = _load_images_from_folder(dataset_path)
-            elif modality == Modalities.TEXT:
-                da = _load_texts_from_folder(dataset_path)
-            elif modality == Modalities.MUSIC:
-                da = _load_music_from_folder(dataset_path)
-            elif modality == Modalities.VIDEO:
-                da = _load_video_from_folder(dataset_path)
-            else:
-                raise Exception(
-                    f'modality {modality} not supported for data loading from folder'
-                )
-
-            return da
+            return app.load_from_folder(dataset_path)
     else:
         raise ValueError(
             f'The provided dataset path {dataset_path} does not'
@@ -118,114 +80,42 @@ def _load_from_disk(dataset_path: str, modality: Modalities) -> DocumentArray:
         )
 
 
-def _load_images_from_folder(path: str) -> DocumentArray:
-    def convert_fn(d):
-        try:
-            d.load_uri_to_image_tensor()
-            return to_thumbnail_jpg(d)
-        except:
-            return d
+def _load_from_s3_bucket(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
+    import boto3.session
 
-    da = DocumentArray.from_files(path + '/**')
-    da.apply(convert_fn)
-    return DocumentArray(d for d in da if d.blob != b'')
-
-
-def _load_video_from_folder(path: str) -> DocumentArray:
-    from now.apps.text_to_video.app import sample_video
-
-    def convert_fn(d):
-        try:
-            d.load_uri_to_blob()
-            sample_video(d)
-        except:
-            pass
-        return d
-
-    da = DocumentArray.from_files(path + '/**')
-
-    def gen():
-        def _get_chunk(batch):
-            return [convert_fn(d) for d in batch]
-
-        for batch in da.map_batch(
-            _get_chunk, batch_size=4, backend='process', show_progress=True
-        ):
-            for d in batch:
-                yield d
-
-    da = DocumentArray(d for d in gen())
-    return DocumentArray(d for d in da if d.blob != b'')
-
-
-def _load_music_from_folder(path: str):
-    from pydub import AudioSegment
-
-    def convert_fn(d: Document):
-        try:
-            AudioSegment.from_file(d.uri)  # checks if file is valid
-            with open(d.uri, 'rb') as fh:
-                d.blob = fh.read()
-            return d
-        except Exception as e:
-            return d
-
-    da = DocumentArray.from_files(path + '/**')
-    da.apply(convert_fn)
-    return DocumentArray(d for d in da if d.blob != b'')
-
-
-def _load_texts_from_folder(path: str) -> DocumentArray:
-    import nltk
-
-    nltk.download('punkt', quiet=True)
-    from nltk.tokenize import sent_tokenize
-
-    def convert_fn(d):
-        try:
-            d.load_uri_to_text()
-            d.tags['additional_info'] = str(Path(d.uri).relative_to(path))
-            return d
-        except:
-            return d
-
-    def split_document(d):
-        return DocumentArray(
-            (
-                Document(
-                    mime_type='text',
-                    text=sentence,
-                    tags=d.tags,
-                )
-                for sentence in set(sent_tokenize(d.text.replace('\n', ' ')))
-            )
+    s3_uri = user_input.dataset_path
+    if not s3_uri.startswith('s3://'):
+        raise ValueError(
+            f"Can't process S3 URI {s3_uri} as it assumes it starts with: 's3://'"
         )
 
-    da = DocumentArray.from_files(path + '/*.txt')
-    da.apply(convert_fn)
+    data_dir = os.path.expanduser(
+        f'~/.cache/jina-now/data/tmp/{base64.b64encode(bytes(s3_uri, "utf-8")).decode("utf-8")}'
+    )
+    Path(data_dir).mkdir(parents=True, exist_ok=True)
 
-    ret = DocumentArray()
-    for d in da:
-        ret += split_document(d)
-    return ret
+    bucket = s3_uri.split('/')[2]
+    folder_prefix = '/'.join(s3_uri.split('/')[3:])
 
+    session = boto3.session.Session(
+        aws_access_key_id=user_input.aws_access_key_id,
+        aws_secret_access_key=user_input.aws_secret_access_key,
+    )
+    bucket = session.resource('s3').Bucket(bucket)
 
-def get_dataset_url(
-    dataset: str, model_quality: Optional[Qualities], output_modality: Modalities
-) -> str:
-    data_folder = None
-    docarray_version = DEMO_DATASET_DOCARRAY_VERSION
-    if output_modality == Modalities.IMAGE:
-        data_folder = 'jpeg'
-    elif output_modality == Modalities.TEXT:
-        data_folder = 'text'
-    elif output_modality == Modalities.MUSIC:
-        data_folder = 'music'
+    with yaspin_extended(
+        sigmap=sigmap, text="Loading data from S3 and creating DocArray", color="green"
+    ) as spinner:
+        spinner.ok('🏭')
 
-    if output_modality != Modalities.MUSIC:
-        return f'{BASE_STORAGE_URL}/{data_folder}/{dataset}.{IMAGE_MODEL_QUALITY_MAP[model_quality][0]}-{docarray_version}.bin'
-    else:
-        return f'{BASE_STORAGE_URL}/{data_folder}/{dataset}-{docarray_version}.bin'
+        for obj in list(bucket.objects.filter(Prefix=folder_prefix)):
+            # create nested directory structure
+            path_obj_machine = os.path.join(data_dir, obj.key)
+            Path(os.path.dirname(path_obj_machine)).mkdir(parents=True, exist_ok=True)
+            # save file with full path locally
+            bucket.download_file(obj.key, path_obj_machine)
+
+        return app.load_from_folder(data_dir)
 
 
 def deep_copy_da(da: DocumentArray) -> DocumentArray:

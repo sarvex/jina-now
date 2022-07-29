@@ -94,6 +94,35 @@ class TextToVideo(JinaNOWApp):
             kubectl_path=kubectl_path,
         )
 
+    def load_from_folder(self, path: str) -> DocumentArray:
+        return DocumentArray.from_files(path + '/**')
+
+    def preprocess(self, da: DocumentArray, user_input: UserInput) -> DocumentArray:
+        def convert_fn(d: Document):
+            try:
+                if d.blob == b'':
+                    if d.uri:
+                        d.load_uri_to_blob()
+                    elif d.tensor is not None:
+                        d.convert_tensor_to_blob()
+                sample_video(d)
+            except:
+                pass
+            return d
+
+        def gen():
+            def _get_chunk(batch):
+                return [convert_fn(d) for d in batch]
+
+            for batch in da.map_batch(
+                _get_chunk, batch_size=4, backend='process', show_progress=True
+            ):
+                for d in batch:
+                    yield d
+
+        da = DocumentArray(d for d in gen())
+        return DocumentArray(d for d in da if d.blob != b'')
+
 
 def select_frames(num_selected_frames, num_total_frames):
     partition_size = num_total_frames / (num_selected_frames + 1)

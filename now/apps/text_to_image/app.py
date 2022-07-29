@@ -3,7 +3,7 @@ from typing import Dict, List
 
 from docarray import DocumentArray
 from now_common import options
-from now_common.utils import setup_clip_music_apps
+from now_common.utils import preprocess_images, setup_clip_music_apps
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import (
@@ -90,3 +90,9 @@ class TextToImage(JinaNOWApp):
             finetune_datasets=(DemoDatasets.DEEP_FASHION, DemoDatasets.BIRD_SPECIES),
             kubectl_path=kubectl_path,
         )
+
+    def load_from_folder(self, path: str) -> DocumentArray:
+        return DocumentArray.from_files(path + '/**')
+
+    def preprocess(self, da: DocumentArray, user_input: UserInput) -> DocumentArray:
+        return preprocess_images(da=da)
