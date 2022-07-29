@@ -3,6 +3,7 @@ import pathlib
 import random
 import sys
 from time import sleep
+from typing import Dict
 
 from docarray import DocumentArray
 from jina.clients import Client
@@ -60,15 +61,13 @@ def run(app_instance: JinaNOWApp, user_input: UserInput, kubectl_path: str):
 
 
 @time_profiler
-def call_index(client: Client, dataset: DocumentArray, params=None):
+def call_index(client: Client, dataset: DocumentArray, params: Dict):
     request_size = estimate_request_size(dataset)
 
     # double check that flow is up and running - should be done by wolf/core in the future
     while True:
         try:
-            client.post(
-                '/index', inputs=DocumentArray(), parameters=params if params else {}
-            )
+            client.index(inputs=DocumentArray(), parameters=params)
             break
         except Exception as e:
             if 'NOW_CI_RUN' in os.environ:
@@ -82,7 +81,7 @@ def call_index(client: Client, dataset: DocumentArray, params=None):
         '/index',
         request_size=request_size,
         inputs=dataset,
-        parameters=params if params else {},
+        parameters=params,
         show_progress=True,
     )
 

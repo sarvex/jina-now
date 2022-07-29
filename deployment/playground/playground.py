@@ -56,19 +56,6 @@ def get_cookie_manager():
 cookie_manager = get_cookie_manager()
 
 
-def setter_cookie(cookie_name, val):
-    # try:
-    #     cookie_manager.delete(cookie_name, key=cookie_name)
-    # except:
-    #     pass
-    cookie_manager.set(cookie=cookie_name, val=val, key=cookie_name)
-
-
-def getter_cookie(cookie_name):
-    _ = cookie_manager.get(cookie=cookie_name)
-    return cookie_manager.get(cookie=cookie_name)
-
-
 def _get_all_cookies() -> dict:
     session_infos = Server.get_current()._session_info_by_id.values()
     headers = [si.ws.request.headers for si in session_infos]
@@ -207,7 +194,9 @@ def _do_login(params):
             st.session_state.token_val = resp_jwt['data']['token']
             st.session_state.avatar_val = resp_jwt['data']['user']['avatarUrl']
             st.session_state.login = False
-            setter_cookie(cookie_name=JWT_COOKIE, val=st.session_state.jwt_val)
+            cookie_manager.set(
+                cookie=JWT_COOKIE, val=st.session_state.jwt_val, key=JWT_COOKIE
+            )
             return
         else:
             st.session_state.login = True
