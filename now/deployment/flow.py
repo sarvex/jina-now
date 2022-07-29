@@ -1,6 +1,8 @@
+import json
 import os.path
 import pathlib
 import tempfile
+from os.path import expanduser as user
 from time import sleep
 from typing import Dict
 
@@ -11,6 +13,7 @@ from kubernetes import config
 from yaspin.spinners import Spinners
 
 from now.cloud_manager import is_local_cluster
+from now.constants import JC_SECRET
 from now.deployment.deployment import apply_replace, cmd, deploy_wolf
 from now.log import time_profiler, yaspin_extended
 from now.utils import sigmap, write_env_file
@@ -117,6 +120,10 @@ def deploy_flow(
             flow = deploy_wolf(path=flow_yaml, env_file=env_file, name=ns)
             host = flow.gateway
             client = Client(host=host)
+
+            # Dump the flow ID and gateway to keep track
+            with open(user(JC_SECRET), 'w') as fp:
+                json.dump({'flow_id': flow.flow_id, 'gateway': host}, fp)
 
             # host & port
             gateway_host = 'remote'
