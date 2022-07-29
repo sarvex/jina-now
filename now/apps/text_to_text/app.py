@@ -39,18 +39,11 @@ class TextToText(JinaNOWApp):
 
     def set_flow_yaml(self, **kwargs):
         finetuning = kwargs.get('finetuning', False)
-        encode = kwargs.get('encode', False)
-        if finetuning + encode > 1:
-            raise ValueError(
-                f"Can't set flow to more than one mode but have encode={encode}, finetuning={finetuning}"
-            )
 
         flow_dir = os.path.abspath(os.path.join(__file__, '..'))
 
         if finetuning:
             self.flow_yaml = os.path.join(flow_dir, 'ft-flow-sbert.yml')
-        elif encode:
-            self.flow_yaml = os.path.join(flow_dir, 'encode-flow-sbert.yml')
         else:
             self.flow_yaml = os.path.join(flow_dir, 'flow-sbert.yml')
 

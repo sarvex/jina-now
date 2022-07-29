@@ -47,11 +47,6 @@ class ImageToText(JinaNOWApp):
 
     def set_flow_yaml(self, **kwargs):
         finetuning = kwargs.get('finetuning', False)
-        encode = kwargs.get('encode', False)
-        if finetuning + encode > 1:
-            raise ValueError(
-                f"Can't set flow to more than one mode but have encode={encode}, finetuning={finetuning}"
-            )
 
         now_package_dir = os.path.abspath(
             os.path.join(__file__, '..', '..', '..', '..')
@@ -60,8 +55,6 @@ class ImageToText(JinaNOWApp):
 
         if finetuning:
             self.flow_yaml = os.path.join(flow_dir, 'ft-flow-clip.yml')
-        elif encode:
-            self.flow_yaml = os.path.join(flow_dir, 'encode-flow-clip.yml')
         else:
             self.flow_yaml = os.path.join(flow_dir, 'flow-clip.yml')
 

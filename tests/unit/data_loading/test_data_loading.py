@@ -63,17 +63,6 @@ def test_da_pull(da: DocumentArray):
     assert is_da_text_equal(da, loaded_da)
 
 
-# def test_da_url_fetch(da: DocumentArray):
-#     user_input = UserInput()
-#     user_input.is_custom_dataset = True
-#     user_input.custom_dataset_type = DatasetTypes.URL
-#     user_input.dataset_url = 'https://some.url'
-#
-#     loaded_da = load_data(TextToImage(), user_input)
-#
-#     assert is_da_text_equal(da, loaded_da)
-
-
 def test_da_local_path(local_da: DocumentArray):
     path, da = local_da
     user_input = UserInput()

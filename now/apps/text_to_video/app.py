@@ -53,18 +53,11 @@ class TextToVideo(JinaNOWApp):
 
     def set_flow_yaml(self, **kwargs):
         finetuning = kwargs.get('finetuning', False)
-        encode = kwargs.get('encode', False)
-        if finetuning + encode > 1:
-            raise ValueError(
-                f"Can't set flow to more than one mode but have encode={encode}, finetuning={finetuning}"
-            )
 
         flow_dir = os.path.abspath(os.path.join(__file__, '..'))
 
         if finetuning:
             self.flow_yaml = os.path.join(flow_dir, 'ft-flow-video-clip.yml')
-        elif encode:
-            self.flow_yaml = os.path.join(flow_dir, 'encode-flow-video-clip.yml')
         else:
             self.flow_yaml = os.path.join(flow_dir, 'flow-video-clip.yml')
 
@@ -93,9 +86,6 @@ class TextToVideo(JinaNOWApp):
             finetune_datasets=(),
             kubectl_path=kubectl_path,
         )
-
-    def load_from_folder(self, path: str) -> DocumentArray:
-        return DocumentArray.from_files(path + '/**')
 
     def preprocess(self, da: DocumentArray, user_input: UserInput) -> DocumentArray:
         def convert_fn(d: Document):

@@ -220,9 +220,7 @@ class JinaNOWApp:
 
     def load_from_folder(self, path: str) -> DocumentArray:
         """Loads files from folder into DocumentArray without any preprocessing or actual loading of documents."""
-        raise Exception(
-            f'modality {self.output_modality} not supported for data loading from folder'
-        )
+        return DocumentArray.from_files(path + '/**')
 
     def preprocess(self, da: DocumentArray, user_input: UserInput) -> DocumentArray:
         """Loads and preprocesses every document such that it is ready for finetuning/indexing."""

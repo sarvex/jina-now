@@ -178,7 +178,7 @@ def _maybe_add_embeddings(
         else:
             spinner.fail('👎')
 
-    app_instance.set_flow_yaml(encode=True)
+    app_instance.set_flow_yaml()
     embed_now(
         deployment_type=user_input.deployment_type,
         flow_yaml=app_instance.flow_yaml,
