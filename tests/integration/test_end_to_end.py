@@ -31,9 +31,9 @@ def cleanup(deployment_type, dataset):
     yield
     if deployment_type == 'remote':
         if dataset == 'best-artworks':
-            flow_ids = list_all_wolf()
+            flow_ids = list_all_wolf(status='ALIVE')
             for ids in flow_ids:
-                terminate_wolf(ids)
+                terminate_wolf(ids['id'])
     else:
         kwargs = {
             'deployment_type': deployment_type,
@@ -56,30 +56,30 @@ def cleanup(deployment_type, dataset):
 @pytest.mark.parametrize(
     'app, input_modality, output_modality, dataset',
     [
-        (
-            Apps.TEXT_TO_IMAGE,
-            Modalities.TEXT,
-            Modalities.IMAGE,
-            DemoDatasets.BIRD_SPECIES,
-        ),
+        # (
+        #     Apps.TEXT_TO_IMAGE,
+        #     Modalities.TEXT,
+        #     Modalities.IMAGE,
+        #     DemoDatasets.BIRD_SPECIES,
+        # ),
         (
             Apps.IMAGE_TO_IMAGE,
             Modalities.IMAGE,
             Modalities.IMAGE,
             DemoDatasets.BEST_ARTWORKS,
         ),
-        (
-            Apps.IMAGE_TO_TEXT,
-            Modalities.IMAGE,
-            Modalities.TEXT,
-            DemoDatasets.ROCK_LYRICS,
-        ),
-        (
-            Apps.TEXT_TO_TEXT,
-            Modalities.TEXT,
-            Modalities.TEXT,
-            DemoDatasets.POP_LYRICS,
-        ),
+        # (
+        #     Apps.IMAGE_TO_TEXT,
+        #     Modalities.IMAGE,
+        #     Modalities.TEXT,
+        #     DemoDatasets.ROCK_LYRICS,
+        # ),
+        # (
+        #     Apps.TEXT_TO_TEXT,
+        #     Modalities.TEXT,
+        #     Modalities.TEXT,
+        #     DemoDatasets.POP_LYRICS,
+        # ),
     ],
 )  # art, rock-lyrics -> no finetuning, fashion -> finetuning
 @pytest.mark.parametrize('quality', ['medium'])
