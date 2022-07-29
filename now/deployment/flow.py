@@ -4,6 +4,7 @@ import pathlib
 import tempfile
 from os.path import expanduser as user
 from time import sleep
+from typing import Dict
 
 from jina import Flow
 from jina.clients import Client
@@ -108,7 +109,7 @@ def deploy_flow(
     deployment_type: str,
     flow_yaml: str,
     ns: str,
-    env_dict: str,
+    env_dict: Dict,
     kubectl_path: str,
 ):
     with tempfile.TemporaryDirectory() as tmpdir:
