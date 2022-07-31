@@ -1,6 +1,6 @@
 from docarray import DocumentArray
 
-from now.constants import BASE_STORAGE_URL, Modalities
+from now.constants import BASE_STORAGE_URL
 from now.datasource.datasource import Datasource
 
 
@@ -33,6 +33,6 @@ class DocarrayPullDatasource(Datasource):
 
 
 example_datasources = [
-    ExampleDatasource('bird-species', '🦆 birds (≈12K docs)', Modalities.IMAGE),
+    # ExampleDatasource('bird-species', '🦆 birds (≈12K docs)', Modalities.IMAGE),
     ...,
 ]
