@@ -3,7 +3,7 @@ import pathlib
 import random
 import sys
 from time import sleep
-from typing import Dict
+from typing import Dict, Optional
 
 from docarray import DocumentArray
 from jina.clients import Client
@@ -52,17 +52,17 @@ def run(app_instance: JinaNOWApp, user_input: UserInput, kubectl_path: str):
         dataset = [x for x in dataset if x.text != '']
 
     print(f'▶ indexing {len(dataset)} documents')
-    params = {}
     if user_input.secured:
-        params['jwt'] = user_input.jwt
-    call_index(client=client, dataset=dataset, params=params)
+        call_index(client=client, dataset=dataset, params={'jwt': user_input.jwt})
+    else:
+        call_index(client=client, dataset=dataset)
     print('⭐ Success - your data is indexed')
 
     return gateway_host, gateway_port, gateway_host_internal, gateway_port_internal
 
 
 @time_profiler
-def call_index(client: Client, dataset: DocumentArray, params: Dict):
+def call_index(client: Client, dataset: DocumentArray, params: Optional[Dict] = None):
     request_size = estimate_request_size(dataset)
 
     # double check that flow is up and running - should be done by wolf/core in the future
@@ -86,8 +86,6 @@ def call_index(client: Client, dataset: DocumentArray, params: Dict):
         show_progress=True,
     )
 
-    print('⭐ Success - your data is indexed -1. ')
-    print('Now returning')
     if response:
         return DocumentArray.from_json(response.to_json())
 
