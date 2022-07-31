@@ -14,13 +14,13 @@ class _NamedScore(BaseModel):
 
 # Base Request
 class BaseRequestModel(BaseModel):
-    host: str = Field(
+    host: Optional[str] = Field(
         default='localhost', description='Host address returned by the flow deployment.'
     )
-    port: int = Field(default=31080, description='Port at which to connect.')
-    jwt: Dict[str, Any] = Field(
+    port: Optional[int] = Field(default=31080, description='Port at which to connect.')
+    jwt: Optional[Dict[str, Any]] = Field(
         default=None,
-        description='User info obtained ' 'from the hubble along with token',
+        description='User info obtained from the hubble along with token. To be passed when the flow is secure',
     )
 
     class Config:

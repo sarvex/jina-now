@@ -68,7 +68,7 @@ def call_index(client: Client, dataset: DocumentArray, params: Optional[Dict] = 
     # double check that flow is up and running - should be done by wolf/core in the future
     while True:
         try:
-            client.index(inputs=DocumentArray(), parameters=params)
+            client.index(inputs=DocumentArray())  # , parameters=params)
             break
         except Exception as e:
             if 'NOW_CI_RUN' in os.environ:
@@ -82,7 +82,7 @@ def call_index(client: Client, dataset: DocumentArray, params: Optional[Dict] = 
         '/index',
         request_size=request_size,
         inputs=dataset,
-        parameters=params,
+        # parameters=params,
         show_progress=True,
     )
 
