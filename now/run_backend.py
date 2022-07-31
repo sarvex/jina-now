@@ -86,6 +86,8 @@ def call_index(client: Client, dataset: DocumentArray, params: Dict):
         show_progress=True,
     )
 
+    print('⭐ Success - your data is indexed -1. ')
+    print('Now returning')
     if response:
         return DocumentArray.from_json(response.to_json())
 
