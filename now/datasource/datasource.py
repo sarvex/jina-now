@@ -4,7 +4,7 @@ from typing import List, Optional
 from docarray import DocumentArray
 
 from now.constants import Modalities, Qualities
-from now.data_loading.data_loading import _fetch_da_from_url, get_dataset_url
+from now.data_loading.utils import _fetch_da_from_url, get_dataset_url
 from now.utils import BetterEnum
 
 

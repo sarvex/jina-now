@@ -12,7 +12,7 @@ from now.constants import (
     Modalities,
     Qualities,
 )
-from now.data_loading.data_loading import get_dataset_url
+from now.data_loading.utils import get_dataset_url
 
 
 @pytest.mark.parametrize(

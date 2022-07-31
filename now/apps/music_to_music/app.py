@@ -2,7 +2,7 @@ import os
 from typing import Dict
 
 import cowsay
-from docarray import DocumentArray
+from docarray import Document, DocumentArray
 from now_common.utils import setup_clip_music_apps
 
 from now.apps.base.app import JinaNOWApp
@@ -111,6 +111,26 @@ class MusicToMusic(JinaNOWApp):
             self.set_flow_yaml(demo_data=True)
 
         return env_dict
+
+    def load_from_folder(self, path: str) -> DocumentArray:
+        return DocumentArray.from_files(path + '/**')
+
+    def preprocess(self, da: DocumentArray, user_input: UserInput) -> DocumentArray:
+        from pydub import AudioSegment
+
+        def convert_fn(d: Document):
+            try:
+                if d.blob == b'':
+                    if d.uri:
+                        AudioSegment.from_file(d.uri)  # checks if file is valid
+                        with open(d.uri, 'rb') as fh:
+                            d.blob = fh.read()
+                return d
+            except Exception as e:
+                return d
+
+        da.apply(convert_fn)
+        return DocumentArray(d for d in da if d.blob != b'')
 
 
 def ffmpeg_is_installed():
