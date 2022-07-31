@@ -83,6 +83,7 @@ def call_index(client: Client, dataset: DocumentArray, params: Optional[Dict] = 
         request_size=request_size,
         inputs=dataset,
         # parameters=params,
+        parameters=params if params else {},
         show_progress=True,
     )
 

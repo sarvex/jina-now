@@ -11,8 +11,9 @@ import requests
 from now.cli import _get_kind_path, _get_kubectl_path, cli
 from now.cloud_manager import create_local_cluster
 from now.constants import JC_SECRET, Apps, DemoDatasets, Modalities
-from now.deployment.deployment import cmd, list_all_wolf, terminate_wolf
+from now.deployment.deployment import cmd, terminate_wolf
 from now.dialog import NEW_CLUSTER
+from now.run_all_k8s import get_remote_flow_details
 
 
 @pytest.fixture
@@ -31,9 +32,8 @@ def cleanup(deployment_type, dataset):
     yield
     if deployment_type == 'remote':
         if dataset == 'best-artworks':
-            flow_ids = list_all_wolf(status='ALIVE')
-            for ids in flow_ids:
-                terminate_wolf(ids['id'])
+            flow_id = get_remote_flow_details()['flow_id']
+            terminate_wolf(flow_id)
     else:
         kwargs = {
             'deployment_type': deployment_type,
