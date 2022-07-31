@@ -82,7 +82,7 @@ def call_index(client: Client, dataset: DocumentArray, params: Dict):
         '/index',
         request_size=request_size,
         inputs=dataset,
-        parameters=params,
+        # parameters=params,
         show_progress=True,
     )
 
