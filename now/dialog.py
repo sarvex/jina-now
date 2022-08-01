@@ -56,10 +56,8 @@ def configure_user_input(**kwargs) -> [JinaNOWApp, UserInput]:
     _configure_cluster(user_input, **kwargs)
     if user_input.deployment_type == 'remote':
         if _configure_security(user_input, **kwargs):
-            pass
-            # TODO: Uncomment below when we have directions how to add additional user
-            # if _configure_additional_user(user_input, **kwargs):
-            #     _configure_email_ids(user_input, **kwargs)
+            if _configure_additional_user(user_input, **kwargs):
+                _configure_email_ids(user_input, **kwargs)
     return app_instance, user_input
 
 
@@ -287,10 +285,10 @@ def _configure_security(user_input: UserInput, **kwargs):
 def _configure_additional_user(user_input: UserInput, **kwargs):
     user_input.additional_user = _prompt_value(
         name='additional_user',
-        prompt_message='Do you want to provide additional users access to this flow?',
+        prompt_message='Do you want to provide additional with users access to this flow?',
         choices=[
-            {'name': '⛔ no', 'value': False},
             {'name': '✅ yes', 'value': True},
+            {'name': '⛔ no', 'value': False},
         ],
         **kwargs,
     )
@@ -298,14 +296,14 @@ def _configure_additional_user(user_input: UserInput, **kwargs):
 
 
 def _configure_email_ids(user_input: UserInput, **kwargs):
-    user_ids = _prompt_value(
+    email_ids = _prompt_value(
         name='email_ids',
-        prompt_message='Please enter the list of Email IDs or nick names(comma separated)'
-        ' who will have access to this flow',
+        prompt_message='Please enter the comma separated Email IDs'
+        ' who will have access to this flow:',
         prompt_type='input',
         **kwargs,
     )
-    user_input.user_ids = user_ids
+    user_input.email_ids = email_ids
 
 
 def _construct_local_cluster_choices(active_context, contexts):

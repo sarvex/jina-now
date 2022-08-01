@@ -14,7 +14,8 @@ import streamlit as st
 import streamlit.components.v1 as components
 from better_profanity import profanity
 from docarray import Document, DocumentArray
-from docarray import __version__ as docarray_version
+
+# from docarray import __version__ as docarray_version
 from src.constants import (
     BUTTONS,
     JWT_COOKIE,
@@ -32,6 +33,9 @@ from src.search import (
 from streamlit.server.server import Server
 from streamlit_webrtc import webrtc_streamer
 from tornado.httputil import parse_cookie
+
+# TODO: Uncomment the docarray_version when the file name on GCloud has been changed
+docarray_version = '0.13.19'
 
 # HEADER
 st.set_page_config(page_title="NOW", page_icon='https://jina.ai/favicon.ico')
@@ -187,10 +191,7 @@ def _do_login(params):
             f'?code={code}&state={state}'
         ).json()
         if resp_jwt and resp_jwt['code'] == 200:
-            st.session_state.jwt_val = {
-                'user': resp_jwt['data']['user'],
-                'token': resp_jwt['data']['token'],
-            }
+            st.session_state.jwt_val = resp_jwt['data']
             st.session_state.token_val = resp_jwt['data']['token']
             st.session_state.avatar_val = resp_jwt['data']['user']['avatarUrl']
             st.session_state.login = False

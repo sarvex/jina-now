@@ -33,4 +33,4 @@ class UserInput:
 
     # These attributes are added but is not in use
     additional_user: Optional[bool] = False
-    user_ids: Optional[str] = None
+    email_ids: Optional[str] = None
