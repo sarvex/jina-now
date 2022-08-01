@@ -31,7 +31,7 @@ def get_clip_music_flow_env_dict(
         'PRE_TRAINED_EMBEDDINGS_SIZE': pre_trained_embedding_size,
         'INDEXER_NAME': indexer_name,
         'PREFETCH': PREFETCH_NR,
-        'OWNER_ID': owner_id,
+        # 'OWNER_ID': owner_id,
     }
     if encoder_uses_with.get('pretrained_model_name_or_path'):
         config['PRE_TRAINED_MODEL_NAME'] = encoder_uses_with[
