@@ -19,7 +19,7 @@ Tell us what you think: <a href="https://10sw1tcpld4.typeform.com/to/VTAyYRpR?ut
 <img src="https://user-images.githubusercontent.com/11627845/164569398-5ef22a41-e2e1-438a-88a5-2ac43ad9426d.gif" alt="Jina NOW logo: The data structure for unstructured data" width="600px">
 
 
-NOW gives the world access to neural image search in just one command execution.
+NOW gives the world access tooo neural image search in just one command execution.
 Main features
 - ⛅ **Cloud**: We take care of the deployment and maintenance
 - 🐥 **Easy**: Minimal effort required to set up your search case
