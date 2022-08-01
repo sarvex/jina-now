@@ -10,7 +10,7 @@ jcloud:
   retention_days: -1
 executors:
   - name: security_check
-    uses: jinahub+docker://SecurityExecutor
+    uses: jinahub+docker://SecurityExecutor/v0.1
     uses_with:
       owner_id: ${{ ENV.OWNER_ID }}
   - name: encoder_music

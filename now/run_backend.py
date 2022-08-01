@@ -52,10 +52,11 @@ def run(app_instance: JinaNOWApp, user_input: UserInput, kubectl_path: str):
         dataset = [x for x in dataset if x.text != '']
 
     print(f'▶ indexing {len(dataset)} documents')
+    params = {}
     if user_input.secured:
-        call_index(client=client, dataset=dataset, params={'jwt': user_input.jwt})
-    else:
-        call_index(client=client, dataset=dataset)
+        params['jwt'] = user_input.jwt
+
+    call_index(client=client, dataset=dataset, params=params)
     print('⭐ Success - your data is indexed')
 
     return gateway_host, gateway_port, gateway_host_internal, gateway_port_internal
@@ -68,7 +69,7 @@ def call_index(client: Client, dataset: DocumentArray, params: Optional[Dict] = 
     # double check that flow is up and running - should be done by wolf/core in the future
     while True:
         try:
-            client.index(inputs=DocumentArray())  # , parameters=params)
+            client.index(inputs=DocumentArray(), parameters=params)
             break
         except Exception as e:
             if 'NOW_CI_RUN' in os.environ:
@@ -82,8 +83,7 @@ def call_index(client: Client, dataset: DocumentArray, params: Optional[Dict] = 
         '/index',
         request_size=request_size,
         inputs=dataset,
-        # parameters=params,
-        parameters=params if params else {},
+        parameters=params,
         show_progress=True,
     )
 
