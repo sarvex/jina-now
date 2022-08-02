@@ -285,7 +285,7 @@ def _configure_security(user_input: UserInput, **kwargs):
 def _configure_additional_user(user_input: UserInput, **kwargs):
     user_input.additional_user = _prompt_value(
         name='additional_user',
-        prompt_message='Do you want to provide additional with users access to this flow?',
+        prompt_message='Do you want to provide additional users access to this flow?',
         choices=[
             {'name': '✅ yes', 'value': True},
             {'name': '⛔ no', 'value': False},
