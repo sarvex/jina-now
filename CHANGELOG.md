@@ -11,6 +11,7 @@
 
 
 
+
 <a name=release-note-0-0-7></a>
 ## Release Note (`0.0.7`)
 
@@ -404,4 +405,36 @@
 
  - [[```f8c20e7a```](https://github.com/jina-ai/now/commit/f8c20e7a74ebc443216b058f06210eef637479b6)] __-__ Fix update flow retention (#296) (*Mohammad Kalim Akram*)
  - [[```ca5d84e2```](https://github.com/jina-ai/now/commit/ca5d84e21d38dd0a16bfcbf6384dbdebf7d83eb1)] __-__ __version__: the next version will be 0.0.17 (*Jina Dev Bot*)
+
+<a name=release-note-0-0-18></a>
+## Release Note (`0.0.18`)
+
+> Release time: 2022-08-02 11:04:03
+
+
+
+🙇 We'd like to thank all contributors for this new release! In particular,
+ joschkabraun,  Sebastian Lettner,  Florian Hönicke,  Jina Dev Bot,  🙇
+
+
+### 🆕 New Features
+
+ - [[```35a8b832```](https://github.com/jina-ai/now/commit/35a8b832021be8694ed375947bdba2178982dfe8)] __-__ refactor fine-tune logic (#314) (*joschkabraun*)
+ - [[```d151d8d0```](https://github.com/jina-ai/now/commit/d151d8d0af03e2bf45110351e16278ad9eac79b9)] __-__ integrate finetuner client (#278) (*Sebastian Lettner*)
+ - [[```d76f4ea9```](https://github.com/jina-ai/now/commit/d76f4ea9f4dc4eb2ea22ce7ce529df216f134e5d)] __-__ list all wolf deployments (#305) (*joschkabraun*)
+ - [[```75bfd27e```](https://github.com/jina-ai/now/commit/75bfd27e4ad73ecb119537cd2bb057b350472fc5)] __-__ dyn requ size and prefetch (#308) (*Florian Hönicke*)
+ - [[```1ada1a89```](https://github.com/jina-ai/now/commit/1ada1a89ba97a4df9b7f5e160dd96fcd37eda61f)] __-__ __app__: add docker mem limit (#258) (*Sebastian Lettner*)
+ - [[```d1d64ebd```](https://github.com/jina-ai/now/commit/d1d64ebd897c388f6f83f346e8a7558eacbbe5b8)] __-__ upgrade jcloud version (#306) (*Florian Hönicke*)
+
+### 🐞 Bug fixes
+
+ - [[```98225c0e```](https://github.com/jina-ai/now/commit/98225c0ee6b4b6a1dcd43cc251fe14d278cc15ce)] __-__ __cd__: add wolf token (*joschkabraun*)
+ - [[```b3eeaca6```](https://github.com/jina-ai/now/commit/b3eeaca69b57d262e11253b105f0f5ccd35cca5d)] __-__ playground (#309) (*Florian Hönicke*)
+ - [[```cb2a7d58```](https://github.com/jina-ai/now/commit/cb2a7d58421ce4589ac55855e705c66a03c83ed0)] __-__ video (#302) (*Florian Hönicke*)
+
+### 🍹 Other Improvements
+
+ - [[```70d58e5c```](https://github.com/jina-ai/now/commit/70d58e5cd79947b7517de0cd2c535779eaadc8d9)] __-__ Load from S3 Bucket (#318) (*joschkabraun*)
+ - [[```3f53da62```](https://github.com/jina-ai/now/commit/3f53da62b6012537e214e99784e825f0a8a05b6c)] __-__ Refactor playground (#300) (*Florian Hönicke*)
+ - [[```94da8e4d```](https://github.com/jina-ai/now/commit/94da8e4d79830596aa3bb8aa4458cfe6cbaef258)] __-__ __version__: the next version will be 0.0.18 (*Jina Dev Bot*)
 
