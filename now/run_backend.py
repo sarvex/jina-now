@@ -71,7 +71,7 @@ def run(app_instance: JinaNOWApp, user_input: UserInput, kubectl_path: str):
     )
 
     print(f"▶ indexing {len(dataset)} documents")
-    call_index(client=client, inputs=dataset)
+    call_index(client=client, dataset=dataset)
     print('⭐ Success - your data is indexed')
 
     return gateway_host, gateway_port, gateway_host_internal, gateway_port_internal

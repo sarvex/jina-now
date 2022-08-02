@@ -3,7 +3,7 @@ from typing import Dict, List
 
 from docarray import DocumentArray
 from now_common import options
-from now_common.utils import preprocess_text, setup_clip_music_apps
+from now_common.utils import preprocess_images, preprocess_text, setup_clip_music_apps
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import (
@@ -91,14 +91,20 @@ class ImageToText(JinaNOWApp):
             kubectl_path=kubectl_path,
         )
 
-    def preprocess(self, da: DocumentArray, user_input: UserInput) -> DocumentArray:
-        split_by_sentences = False
-        if (
-            user_input.is_custom_dataset
-            and user_input.custom_dataset_type == DatasetTypes.PATH
-            and user_input.dataset_path
-            and os.path.isdir(user_input.dataset_path)
-        ):
-            # for text loaded from folder can't assume it is split by sentences
-            split_by_sentences = True
-        return preprocess_text(da=da, split_by_sentences=split_by_sentences)
+    def preprocess(
+        self, da: DocumentArray, user_input: UserInput, is_indexing=False
+    ) -> DocumentArray:
+        if is_indexing:
+            split_by_sentences = False
+            if (
+                user_input
+                and user_input.is_custom_dataset
+                and user_input.custom_dataset_type == DatasetTypes.PATH
+                and user_input.dataset_path
+                and os.path.isdir(user_input.dataset_path)
+            ):
+                # for text loaded from folder can't assume it is split by sentences
+                split_by_sentences = True
+            return preprocess_text(da=da, split_by_sentences=split_by_sentences)
+        else:
+            return preprocess_images(da=da)

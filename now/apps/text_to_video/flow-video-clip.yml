@@ -9,6 +9,15 @@ jcloud:
   version: 3.6.6
   retention_days: -1
 executors:
+  - name: preprocessor
+    uses: ${{ ENV.PREPROCESSOR_NAME }}
+    uses_with:
+      app: ${{ ENV.APP }}
+    jcloud:
+      resources:
+        memory: 2G
+    env:
+      JINA_LOG_LEVEL: DEBUG
   - name: encoder_clip
     uses: ${{ ENV.ENCODER_NAME }}
     jcloud:

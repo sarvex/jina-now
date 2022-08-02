@@ -88,5 +88,7 @@ class ImageToImage(JinaNOWApp):
             kubectl_path=kubectl_path,
         )
 
-    def preprocess(self, da: DocumentArray, user_input: UserInput) -> DocumentArray:
+    def preprocess(
+        self, da: DocumentArray, user_input: UserInput, is_indexing=False
+    ) -> DocumentArray:
         return preprocess_images(da=da)

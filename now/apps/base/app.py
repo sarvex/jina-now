@@ -223,6 +223,11 @@ class JinaNOWApp:
         """
         pass
 
-    def preprocess(self, da: DocumentArray, user_input: UserInput) -> DocumentArray:
+    def preprocess(
+        self,
+        da: DocumentArray,
+        user_input: UserInput,
+        is_indexing: Optional[bool] = False,
+    ) -> DocumentArray:
         """Loads and preprocesses every document such that it is ready for finetuning/indexing."""
         return da

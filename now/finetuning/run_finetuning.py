@@ -13,7 +13,7 @@ from docarray import DocumentArray
 from finetuner.callback import EarlyStopping, EvaluationCallback
 
 from now.apps.base.app import JinaNOWApp
-from now.deployment.deployment import cmd
+from now.deployment.deployment import cmd, terminate_wolf
 from now.deployment.flow import deploy_flow
 from now.finetuning.dataset import FinetuneDataset, build_finetuning_dataset
 from now.finetuning.settings import FinetuneSettings
@@ -217,7 +217,7 @@ def _maybe_add_embeddings(
     )
 
     app_instance.set_flow_yaml()
-    client, _, _, _, _, = deploy_flow(
+    client, _, _, gateway_host_internal, _, = deploy_flow(
         deployment_type=user_input.deployment_type,
         flow_yaml=app_instance.flow_yaml,
         ns=_KS_NAMESPACE,
@@ -226,6 +226,13 @@ def _maybe_add_embeddings(
     )
     print(f'▶ create embeddings for {len(documents_without_embedding)} documents')
     result = call_index(client=client, dataset=documents_without_embedding)
+
+    for doc in result:
+        dataset[doc.id].embedding = doc.embedding
+
+    assert all([d.embedding is not None for d in dataset]), (
+        "Some docs slipped through and" " still have no embedding..."
+    )
 
     # removes normal flow as it is unused from now on
     if user_input.deployment_type == 'local':
@@ -238,12 +245,7 @@ def _maybe_add_embeddings(
             spinner.ok('💀')
         cowsay.cow(f'{_KS_NAMESPACE} namespace removed from kind-jina-now')
     elif user_input.deployment_type == 'remote':
-        # TODO: finish, i.e., find out which flow_id is used; maybe use output from deploy_flow
-        pass
-
-    for doc in result:
-        dataset[doc.id].embedding = doc.embedding
-
-    assert all([d.embedding is not None for d in dataset]), (
-        "Some docs slipped through and" " still have no embedding..."
-    )
+        flow_id = gateway_host_internal.replace('grpcs://nowapi-', '').replace(
+            '.wolf.jina.ai', ''
+        )
+        terminate_wolf(flow_id=flow_id)

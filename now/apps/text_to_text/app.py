@@ -75,7 +75,9 @@ class TextToText(JinaNOWApp):
             kubectl_path=kubectl_path,
         )
 
-    def preprocess(self, da: DocumentArray, user_input: UserInput) -> DocumentArray:
+    def preprocess(
+        self, da: DocumentArray, user_input: UserInput, is_indexing=False
+    ) -> DocumentArray:
         split_by_sentences = False
         if (
             user_input.is_custom_dataset

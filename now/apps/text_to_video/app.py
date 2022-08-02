@@ -5,7 +5,7 @@ from typing import Dict, List
 import numpy as np
 from docarray import Document, DocumentArray
 from now_common import options
-from now_common.utils import setup_clip_music_apps
+from now_common.utils import preprocess_text, setup_clip_music_apps
 from PIL import Image
 
 from now.apps.base.app import JinaNOWApp
@@ -87,31 +87,37 @@ class TextToVideo(JinaNOWApp):
             kubectl_path=kubectl_path,
         )
 
-    def preprocess(self, da: DocumentArray, user_input: UserInput) -> DocumentArray:
-        def convert_fn(d: Document):
-            try:
-                if d.blob == b'':
-                    if d.uri:
-                        d.load_uri_to_blob()
-                    elif d.tensor is not None:
-                        d.convert_tensor_to_blob()
-                sample_video(d)
-            except:
-                pass
-            return d
+    def preprocess(
+        self, da: DocumentArray, user_input: UserInput, is_indexing=False
+    ) -> DocumentArray:
+        if is_indexing:
 
-        def gen():
-            def _get_chunk(batch):
-                return [convert_fn(d) for d in batch]
+            def convert_fn(d: Document):
+                try:
+                    if d.blob == b'':
+                        if d.uri:
+                            d.load_uri_to_blob()
+                        elif d.tensor is not None:
+                            d.convert_tensor_to_blob()
+                    sample_video(d)
+                except:
+                    pass
+                return d
 
-            for batch in da.map_batch(
-                _get_chunk, batch_size=4, backend='process', show_progress=True
-            ):
-                for d in batch:
-                    yield d
+            def gen():
+                def _get_chunk(batch):
+                    return [convert_fn(d) for d in batch]
 
-        da = DocumentArray(d for d in gen())
-        return DocumentArray(d for d in da if d.blob != b'')
+                for batch in da.map_batch(
+                    _get_chunk, batch_size=4, backend='process', show_progress=True
+                ):
+                    for d in batch:
+                        yield d
+
+            da = DocumentArray(d for d in gen())
+            return DocumentArray(d for d in da if d.blob != b'')
+        else:
+            return preprocess_text(da=da, split_by_sentences=False)
 
 
 def select_frames(num_selected_frames, num_total_frames):

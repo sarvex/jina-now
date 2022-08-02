@@ -2,6 +2,7 @@ from typing import Dict, Optional, Tuple
 
 from docarray import Document, DocumentArray
 
+from now import __version__ as JINA_NOW_VERSION
 from now.apps.base.app import JinaNOWApp
 from now.constants import PREFETCH_NR
 from now.data_loading.convert_datasets_to_jpeg import to_thumbnail_jpg
@@ -17,19 +18,18 @@ def get_clip_music_flow_env_dict(
     indexer_uses: str,
 ):
     """Returns dictionary for the environments variables for the clip & music flow.yml files."""
-    indexer_name = f'jinahub+docker://' + indexer_uses
-    encoder_name = f'jinahub+docker://' + encoder_uses
-
     if finetune_settings.bi_modal:
         pre_trained_embedding_size = finetune_settings.pre_trained_embedding_size * 2
     else:
         pre_trained_embedding_size = finetune_settings.pre_trained_embedding_size
+
     config = {
-        'ENCODER_NAME': encoder_name,
+        'ENCODER_NAME': f'jinahub+docker://{encoder_uses}',
         'FINETUNE_LAYER_SIZE': finetune_settings.finetune_layer_size,
         'PRE_TRAINED_EMBEDDINGS_SIZE': pre_trained_embedding_size,
-        'INDEXER_NAME': indexer_name,
+        'INDEXER_NAME': f'jinahub+docker://{indexer_uses}',
         'PREFETCH': PREFETCH_NR,
+        'PREPROCESSOR_NAME': f'jinahub+docker://NOWPreprocessor/v{JINA_NOW_VERSION}',
     }
     if encoder_uses_with.get('pretrained_model_name_or_path'):
         config['PRE_TRAINED_MODEL_NAME'] = encoder_uses_with[
@@ -65,6 +65,7 @@ def setup_clip_music_apps(
         encoder_uses_with=encoder_uses_with,
         indexer_uses=indexer_uses,
     )
+    env_dict['APP'] = user_input.app
 
     if finetune_settings.perform_finetuning:
         artifact_id, token = finetune(

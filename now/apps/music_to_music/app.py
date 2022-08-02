@@ -109,7 +109,9 @@ class MusicToMusic(JinaNOWApp):
 
         return env_dict
 
-    def preprocess(self, da: DocumentArray, user_input: UserInput) -> DocumentArray:
+    def preprocess(
+        self, da: DocumentArray, user_input: UserInput, is_indexing=False
+    ) -> DocumentArray:
         from pydub import AudioSegment
 
         def convert_fn(d: Document):
