@@ -44,6 +44,7 @@ def run(app_instance: JinaNOWApp, user_input: UserInput, kubectl_path: str):
         env_dict=env_dict,
         ns='nowapi',
         kubectl_path=kubectl_path,
+        secured=user_input.secured,
     )
 
     if app_instance.output_modality == 'image':
