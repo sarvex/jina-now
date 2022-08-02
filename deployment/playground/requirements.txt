@@ -1,4 +1,4 @@
-streamlit==1.8.1
+streamlit==1.11.1
 av==9.1.1
 click==8.0.0
 streamlit-webrtc==0.36.1
