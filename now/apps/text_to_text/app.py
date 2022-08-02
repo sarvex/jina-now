@@ -1,5 +1,5 @@
 import os
-from typing import Dict
+from typing import Dict, List
 
 from docarray import DocumentArray
 from now_common.utils import preprocess_text, setup_clip_music_apps
@@ -48,6 +48,10 @@ class TextToText(JinaNOWApp):
             self.flow_yaml = os.path.join(flow_dir, 'flow-sbert.yml')
 
     @property
+    def supported_wildcards(self) -> List[str]:
+        return ['*.txt']
+
+    @property
     def pre_trained_embedding_size(self) -> Dict[Qualities, int]:
         return {Qualities.MEDIUM: 768}
 
@@ -70,9 +74,6 @@ class TextToText(JinaNOWApp):
             indexer_uses='DocarrayIndexerV2',
             kubectl_path=kubectl_path,
         )
-
-    def load_from_folder(self, path: str) -> DocumentArray:
-        return DocumentArray.from_files(path + '/*.txt')
 
     def preprocess(self, da: DocumentArray, user_input: UserInput) -> DocumentArray:
         split_by_sentences = False

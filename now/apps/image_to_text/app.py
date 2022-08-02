@@ -63,6 +63,10 @@ class ImageToText(JinaNOWApp):
         return [options.QUALITY_CLIP]
 
     @property
+    def supported_wildcards(self) -> List[str]:
+        return ['*.txt']
+
+    @property
     def pre_trained_embedding_size(self) -> Dict[Qualities, int]:
         return {
             Qualities.MEDIUM: 512,
@@ -86,9 +90,6 @@ class ImageToText(JinaNOWApp):
             indexer_uses='DocarrayIndexerV2',
             kubectl_path=kubectl_path,
         )
-
-    def load_from_folder(self, path: str) -> DocumentArray:
-        return DocumentArray.from_files(path + '/*.txt')
 
     def preprocess(self, da: DocumentArray, user_input: UserInput) -> DocumentArray:
         split_by_sentences = False

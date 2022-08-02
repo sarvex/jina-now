@@ -16,6 +16,31 @@ from now.now_dataclasses import UserInput
 cur_dir = pathlib.Path(__file__).parent.resolve()
 
 
+# def load_preprocess_in_exec(app: JinaNOWApp, user_input: UserInput, kubectl_path: str) -> Tuple[str, str, Dict]:
+#     """ Deploys an external executor which loads & preprocesses data.
+#
+#     :return: host and port to use the executor as an external executor in a flow; and return dictionary after loading &
+#         preprocessing data, which is used to determine how many documents there are and if one can finetune
+#     """
+#     env_dict = {
+#         'APP': user_input.app,
+#         'PREPROCESSOR_NAME': f"jinahub+docker://NOWPreprocessor/{now_version}",
+#     }
+#     client, _, _, gateway_host_internal, gateway_port_internal = deploy_flow(
+#         deployment_type=user_input.deployment_type,
+#         flow_yaml=app.load_preprocess_yaml,
+#         env_dict=env_dict,
+#         ns='nowapi',
+#         kubectl_path=kubectl_path
+#     )
+#
+#     with yaspin_extended(sigmap=sigmap, text="Loading & preprocessing data in executor", color="green") as spinner:
+#         spinner.ok('🏭')
+#         preprocess_dict = client.post(on='/load_preprocess', parameters=asdict(user_input)).to_dict()['parameters']
+#
+#     return gateway_host_internal, gateway_port_internal, preprocess_dict
+
+
 @time_profiler
 def run(app_instance: JinaNOWApp, user_input: UserInput, kubectl_path: str):
     """
@@ -26,7 +51,7 @@ def run(app_instance: JinaNOWApp, user_input: UserInput, kubectl_path: str):
     :return:
     """
     dataset = load_data(app_instance, user_input)
-    dataset = app_instance.preprocess(da=dataset, user_input=user_input)
+
     env_dict = app_instance.setup(
         dataset=dataset, user_input=user_input, kubectl_path=kubectl_path
     )
@@ -45,12 +70,8 @@ def run(app_instance: JinaNOWApp, user_input: UserInput, kubectl_path: str):
         kubectl_path=kubectl_path,
     )
 
-    if app_instance.output_modality == 'image':
-        dataset = [x for x in dataset if x.text == '']
-    elif app_instance.output_modality == 'text':
-        dataset = [x for x in dataset if x.text != '']
-    print(f'▶ indexing {len(dataset)} documents')
-    call_index(client=client, dataset=dataset)
+    print(f"▶ indexing {len(dataset)} documents")
+    call_index(client=client, inputs=dataset)
     print('⭐ Success - your data is indexed')
 
     return gateway_host, gateway_port, gateway_host_internal, gateway_port_internal

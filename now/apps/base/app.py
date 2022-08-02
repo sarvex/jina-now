@@ -111,6 +111,11 @@ class JinaNOWApp:
         return []
 
     @property
+    def supported_wildcards(self) -> List[str]:
+        """Used to filter files in local structure or an S3 bucket."""
+        return ['**']
+
+    @property
     def pre_trained_embedding_size(self) -> Dict[Qualities, int]:
         """
         Returns a dictionary which maps given quality to embedding size of pretrained model.
@@ -217,10 +222,6 @@ class JinaNOWApp:
         :param app_config: contains all information needed to clean up the allocated resources
         """
         pass
-
-    def load_from_folder(self, path: str) -> DocumentArray:
-        """Loads files from folder into DocumentArray without any preprocessing or actual loading of documents."""
-        return DocumentArray.from_files(path + '/**')
 
     def preprocess(self, da: DocumentArray, user_input: UserInput) -> DocumentArray:
         """Loads and preprocesses every document such that it is ready for finetuning/indexing."""

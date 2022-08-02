@@ -148,4 +148,4 @@ def preprocess_text(da: DocumentArray, split_by_sentences=False) -> DocumentArra
     if split_by_sentences:
         da = DocumentArray(d for d in gen_split_by_sentences())
 
-    return DocumentArray(d for d in da if d.text)
+    return DocumentArray(d for d in da if d.text and d.text != '')
