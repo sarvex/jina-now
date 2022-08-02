@@ -9,6 +9,7 @@ class Parameters:
     data: str = None
     code: str = None
     state: str = None
+    secured: str = 'false'
 
 
 WEBRTC_CLIENT_SETTINGS = ClientSettings(

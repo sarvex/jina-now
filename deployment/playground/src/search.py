@@ -37,8 +37,10 @@ def search(attribute_name, attribute_value, jwt, top_k=TOP_K):
         'host': params.host,
         attribute_name: attribute_value,
         'limit': top_k,
-        'jwt': jwt,
     }
+    # in case the jwt is none, no jwt will be sent. This is the case when no authentication is used for that flow
+    if jwt is not None:
+        data['jwt'] = jwt
     if params.port:
         data['port'] = params.port
     response = requests.post(

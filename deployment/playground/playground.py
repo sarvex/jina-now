@@ -93,27 +93,8 @@ def deploy_streamlit():
 
     # Retrieve query params
     params = get_query_params()
-    jwt_val = get_cookie_value(cookie_name=JWT_COOKIE)
-    if jwt_val and not st.session_state.login:
-        jwt_val = json.loads(unquote(jwt_val))
-        if not st.session_state.jwt_val:
-            st.session_state.jwt_val = jwt_val
-        if not st.session_state.avatar_val:
-            st.session_state.avatar_val = jwt_val['user']['avatarUrl']
-        if not st.session_state.token_val:
-            st.session_state.token_val = jwt_val['token']
 
-    redirect_to = None
-    if not st.session_state.jwt_val:
-        redirect_to = _do_login(params)
-
-    _, logout, avatar = st.columns([0.7, 0.12, 0.12])
-    if not st.session_state.login:
-        with avatar:
-            if st.session_state.avatar_val:
-                st.image(st.session_state.avatar_val, width=30)
-        with logout:
-            st.button('Logout', on_click=_do_logout)
+    redirect_to = render_auth_components(params)
 
     _, mid, _ = st.columns([0.8, 1, 1])
     with open('./logo.svg', 'r') as f:
@@ -173,6 +154,32 @@ def deploy_streamlit():
         render_matches(params.output_modality)
 
         add_social_share_buttons()
+
+
+def render_auth_components(params):
+    if params.secured.lower() == 'true':
+        jwt_val = get_cookie_value(cookie_name=JWT_COOKIE)
+        if jwt_val and not st.session_state.login:
+            jwt_val = json.loads(unquote(jwt_val))
+            if not st.session_state.jwt_val:
+                st.session_state.jwt_val = jwt_val
+            if not st.session_state.avatar_val:
+                st.session_state.avatar_val = jwt_val['user']['avatarUrl']
+            if not st.session_state.token_val:
+                st.session_state.token_val = jwt_val['token']
+        redirect_to = None
+        if not st.session_state.jwt_val:
+            redirect_to = _do_login(params)
+        _, logout, avatar = st.columns([0.7, 0.12, 0.12])
+        if not st.session_state.login:
+            with avatar:
+                if st.session_state.avatar_val:
+                    st.image(st.session_state.avatar_val, width=30)
+            with logout:
+                st.button('Logout', on_click=_do_logout)
+        return redirect_to
+    else:
+        return None
 
 
 def _do_login(params):
