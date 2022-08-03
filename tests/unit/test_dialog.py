@@ -159,10 +159,12 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'data': 'tll',
             'quality': 'good',
             'deployment_type': 'remote',
+            'secured': False,
         },
         {'os_type': 'darwin', 'arch': 'x86_64'},
         UserInput(
             is_custom_dataset=False,
+            secured=False,
         ),
     ),
     (
@@ -234,5 +236,8 @@ def test_configure_user_input(
     mocker.patch('now.dialog.prompt', CmdPromptMock(mocked_user_answers))
 
     _, user_input = configure_user_input(**configure_kwargs)
+
+    if user_input.deployment_type == 'remote':
+        user_input.__dict__.update({'jwt': None, 'owner_id': None})
 
     assert user_input == expected_user_input

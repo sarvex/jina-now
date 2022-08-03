@@ -140,7 +140,8 @@ def start_now(os_type, arch, contexts, active_context, **kwargs):
             + (gateway_host_internal if gateway_host != 'localhost' else 'gateway')
             + f'&input_modality={app_instance.input_modality}'
             + f'&output_modality={app_instance.output_modality}'
-            f'&data={user_input.data}'
+            + f'&data={user_input.data}'
+            + (f'&secured={user_input.secured}' if user_input.secured else '')
         )
         + (f'&port={gateway_port_internal}' if gateway_port_internal else '')
     )
@@ -154,6 +155,7 @@ def start_now(os_type, arch, contexts, active_context, **kwargs):
         'output_modality': app_instance.output_modality,
         'host': gateway_host_internal,
         'port': gateway_port_internal,
+        'secured': user_input.secured,
     }
 
 
