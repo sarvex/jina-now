@@ -118,9 +118,12 @@ class MusicToMusic(JinaNOWApp):
             try:
                 if d.blob == b'':
                     if d.uri:
-                        AudioSegment.from_file(d.uri)  # checks if file is valid
-                        with open(d.uri, 'rb') as fh:
-                            d.blob = fh.read()
+                        if d.uri.startswith(f'data:{d.mime_type}'):
+                            d.load_uri_to_blob()
+                        else:
+                            AudioSegment.from_file(d.uri)  # checks if file is valid
+                            with open(d.uri, 'rb') as fh:
+                                d.blob = fh.read()
                 return d
             except Exception as e:
                 return d
