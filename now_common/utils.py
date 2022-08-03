@@ -2,7 +2,6 @@ from typing import Dict, Optional, Tuple
 
 from docarray import Document, DocumentArray
 
-from now import __version__ as JINA_NOW_VERSION
 from now.apps.base.app import JinaNOWApp
 from now.constants import PREFETCH_NR
 from now.data_loading.convert_datasets_to_jpeg import to_thumbnail_jpg
@@ -29,7 +28,7 @@ def get_clip_music_flow_env_dict(
         'PRE_TRAINED_EMBEDDINGS_SIZE': pre_trained_embedding_size,
         'INDEXER_NAME': f'jinahub+docker://{indexer_uses}',
         'PREFETCH': PREFETCH_NR,
-        'PREPROCESSOR_NAME': f'jinahub+docker://NOWPreprocessor/v{JINA_NOW_VERSION-1}',
+        'PREPROCESSOR_NAME': f'jinahub+docker://NOWPreprocessor/v0.0.18',
     }
     if encoder_uses_with.get('pretrained_model_name_or_path'):
         config['PRE_TRAINED_MODEL_NAME'] = encoder_uses_with[
