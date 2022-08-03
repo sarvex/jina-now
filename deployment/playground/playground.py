@@ -14,8 +14,6 @@ import streamlit as st
 import streamlit.components.v1 as components
 from better_profanity import profanity
 from docarray import Document, DocumentArray
-
-# from docarray import __version__ as docarray_version
 from src.constants import (
     BUTTONS,
     JWT_COOKIE,
@@ -34,8 +32,7 @@ from streamlit.server.server import Server
 from streamlit_webrtc import webrtc_streamer
 from tornado.httputil import parse_cookie
 
-# TODO: Uncomment the docarray_version when the file name on GCloud has been changed
-docarray_version = '0.13.19'
+from now.constants import DEMO_DATASET_DOCARRAY_VERSION
 
 # HEADER
 st.set_page_config(page_title="NOW", page_icon='https://jina.ai/favicon.ico')
@@ -48,7 +45,9 @@ def convert_file_to_document(query):
 
 
 def load_music_examples(DATA) -> DocumentArray:
-    ds_url = root_data_dir + 'music/' + DATA + f'-song5-{docarray_version}.bin'
+    ds_url = (
+        root_data_dir + 'music/' + DATA + f'-song5-{DEMO_DATASET_DOCARRAY_VERSION}.bin'
+    )
     return load_data(ds_url)[0, 1, 4]
 
 
@@ -187,12 +186,16 @@ def _do_login(params):
     state = params.state
     if code and state:
         # Whether it is fail or success, clear the query param
-        st.experimental_set_query_params(
-            host=unquote(params.host),
-            input_modality=params.input_modality,
-            output_modality=params.output_modality,
-            data=params.data,
-        )
+        query_params_var = {
+            'host': unquote(params.host),
+            'input_modality': params.input_modality,
+            'output_modality': params.output_modality,
+            'data': params.data,
+        }
+        if params.secured:
+            query_params_var['secured'] = params.secured
+        st.experimental_set_query_params(**query_params_var)
+
         resp_jwt = requests.get(
             url=f'https://api.hubble.jina.ai/v2/rpc/user.identity.grant.auto'
             f'?code={code}&state={state}'
@@ -215,6 +218,9 @@ def _do_login(params):
     redirect_uri = (
         f'https://nowrun.jina.ai/?host={params.host}&input_modality={params.input_modality}'
         f'&output_modality={params.output_modality}&data={params.data}'
+        + f'&secured={params.secured}'
+        if params.secured
+        else ''
     )
     redirect_uri = quote(redirect_uri)
     rsp = requests.get(
@@ -239,13 +245,17 @@ def load_example_queries(DATA, OUTPUT_MODALITY, da_img, da_txt):
             output_modality_dir = 'jpeg'
             data_dir = root_data_dir + output_modality_dir + '/'
             da_img, da_txt = load_data(
-                data_dir + DATA + f'.img10-{docarray_version}.bin'
-            ), load_data(data_dir + DATA + f'.txt10-{docarray_version}.bin')
+                data_dir + DATA + f'.img10-{DEMO_DATASET_DOCARRAY_VERSION}.bin'
+            ), load_data(
+                data_dir + DATA + f'.txt10-{DEMO_DATASET_DOCARRAY_VERSION}.bin'
+            )
         elif OUTPUT_MODALITY == 'text':
             # for now deactivated sample images for text
             output_modality_dir = 'text'
             data_dir = root_data_dir + output_modality_dir + '/'
-            da_txt = load_data(data_dir + DATA + f'.txt10-{docarray_version}.bin')
+            da_txt = load_data(
+                data_dir + DATA + f'.txt10-{DEMO_DATASET_DOCARRAY_VERSION}.bin'
+            )
     return da_img, da_txt
 
 

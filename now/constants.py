@@ -1,7 +1,10 @@
 from now.utils import BetterEnum
 
-DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.88'
+# TODO: Uncomment the DEMO_DATASET_DOCARRAY_VERSION when the DocArray datasets on GCloud has been changed
+# from docarray import __version__ as docarray_version
+# DEMO_DATASET_DOCARRAY_VERSION = docarray_version
+DEMO_DATASET_DOCARRAY_VERSION = '0.13.19'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.89'
 
 
 class Modalities(BetterEnum):
