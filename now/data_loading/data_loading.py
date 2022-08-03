@@ -4,7 +4,6 @@ import uuid
 from copy import deepcopy
 from pathlib import Path
 
-import boto3.session
 from docarray import Document, DocumentArray
 
 from now.apps.base.app import JinaNOWApp
