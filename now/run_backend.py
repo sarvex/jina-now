@@ -18,31 +18,6 @@ from now.now_dataclasses import UserInput
 cur_dir = pathlib.Path(__file__).parent.resolve()
 
 
-# def load_preprocess_in_exec(app: JinaNOWApp, user_input: UserInput, kubectl_path: str) -> Tuple[str, str, Dict]:
-#     """ Deploys an external executor which loads & preprocesses data.
-#
-#     :return: host and port to use the executor as an external executor in a flow; and return dictionary after loading &
-#         preprocessing data, which is used to determine how many documents there are and if one can finetune
-#     """
-#     env_dict = {
-#         'APP': user_input.app,
-#         'PREPROCESSOR_NAME': f"jinahub+docker://NOWPreprocessor/{now_version}",
-#     }
-#     client, _, _, gateway_host_internal, gateway_port_internal = deploy_flow(
-#         deployment_type=user_input.deployment_type,
-#         flow_yaml=app.load_preprocess_yaml,
-#         env_dict=env_dict,
-#         ns='nowapi',
-#         kubectl_path=kubectl_path
-#     )
-#
-#     with yaspin_extended(sigmap=sigmap, text="Loading & preprocessing data in executor", color="green") as spinner:
-#         spinner.ok('🏭')
-#         preprocess_dict = client.post(on='/load_preprocess', parameters=asdict(user_input)).to_dict()['parameters']
-#
-#     return gateway_host_internal, gateway_port_internal, preprocess_dict
-
-
 @time_profiler
 def run(app_instance: JinaNOWApp, user_input: UserInput, kubectl_path: str):
     """
