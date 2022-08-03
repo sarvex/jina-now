@@ -195,8 +195,8 @@ def _configure_custom_dataset(user_input: UserInput, **kwargs) -> None:
             prompt_message='Please enter the AWS secret access key:',
             prompt_type='input',
         )
-        user_input.aws_region = _prompt_value(
-            name='aws_region',
+        user_input.aws_region_name = _prompt_value(
+            name='aws_region_name',
             prompt_message='Please enter the AWS region:',
             prompt_type='input',
         )
