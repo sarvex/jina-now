@@ -141,9 +141,7 @@ def start_now(os_type, arch, contexts, active_context, **kwargs):
             + f'&input_modality={app_instance.input_modality}'
             + f'&output_modality={app_instance.output_modality}'
             + f'&data={user_input.data}'
-            + f'&secured={user_input.secured}'
-            if user_input.secured
-            else ''
+            + (f'&secured={user_input.secured}' if user_input.secured else '')
         )
         + (f'&port={gateway_port_internal}' if gateway_port_internal else '')
     )
