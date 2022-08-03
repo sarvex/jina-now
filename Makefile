@@ -9,7 +9,7 @@
 init:
 	pip install -r requirements.txt
 style:
-	black -S . --exclude now/thridparty/*
-	flake8 ./now
+	black -S . --exclude now/thirdparty/*
+	flake8 .
 	isort .
 	pycln .

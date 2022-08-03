@@ -32,7 +32,7 @@ class DocarrayPullDatasource(Datasource):
         pass
 
 
-# example_datasources = [
-#     ExampleDatasource('bird-species', '🦆 birds (≈12K docs)', Modalities.IMAGE),
-#     ...,
-# ]
+example_datasources = [
+    # ExampleDatasource('bird-species', '🦆 birds (≈12K docs)', Modalities.IMAGE),
+    ...,
+]

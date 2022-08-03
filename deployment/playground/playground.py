@@ -1,18 +1,22 @@
 import base64
 import io
+import json
 import os
 from copy import deepcopy
+from urllib.parse import quote, unquote
 from urllib.request import urlopen
 
 import av
+import extra_streamlit_components as stx
 import numpy as np
+import requests
 import streamlit as st
 import streamlit.components.v1 as components
 from better_profanity import profanity
 from docarray import Document, DocumentArray
-from docarray import __version__ as docarray_version
 from src.constants import (
     BUTTONS,
+    JWT_COOKIE,
     SURVEY_LINK,
     WEBRTC_CLIENT_SETTINGS,
     ds_set,
@@ -24,7 +28,16 @@ from src.search import (
     search_by_image,
     search_by_text,
 )
+from streamlit.server.server import Server
 from streamlit_webrtc import webrtc_streamer
+from tornado.httputil import parse_cookie
+
+# TODO: Uncomment the docarray_version when the file name on GCloud has been changed
+# from docarray import __version__ as docarray_version
+docarray_version = '0.13.17'
+
+# HEADER
+st.set_page_config(page_title="NOW", page_icon='https://jina.ai/favicon.ico')
 
 
 def convert_file_to_document(query):
@@ -38,15 +51,50 @@ def load_music_examples(DATA) -> DocumentArray:
     return load_data(ds_url)[0, 1, 4]
 
 
+@st.cache(allow_output_mutation=True, suppress_st_warning=True)
+def get_cookie_manager():
+    return stx.CookieManager()
+
+
+cookie_manager = get_cookie_manager()
+
+
+def _get_all_cookies() -> dict:
+    session_infos = Server.get_current()._session_info_by_id.values()
+    headers = [si.ws.request.headers for si in session_infos]
+    cookie_strings = [
+        header_str
+        for header in headers
+        for k, header_str in header.get_all()
+        if k == 'Cookie'
+    ]
+    parsed_cookies = {k: v for c in cookie_strings for k, v in parse_cookie(c).items()}
+
+    return parsed_cookies
+
+
+def get_cookie_value(cookie_name):
+    all_cookies = _get_all_cookies()
+    for k, v in all_cookies.items():
+        if k == cookie_name:
+            return v
+
+
 def deploy_streamlit():
     """
     We want to provide the end-to-end experience to the user.
     Please deploy a streamlit playground on k8s/local to access the api.
     You can get the starting point for the streamlit application from alex.
     """
-    # Header
-    # put this on the top so that it shows immediately, while the rest is loading
-    st.set_page_config(page_title="NOW", page_icon='https://jina.ai/favicon.ico')
+    # Start with setting up the vars default values then proceed to placing UI components
+    # Set up session state vars if not already set
+    setup_session_state()
+
+    # Retrieve query params
+    params = get_query_params()
+
+    redirect_to = render_auth_components(params)
+
     _, mid, _ = st.columns([0.8, 1, 1])
     with open('./logo.svg', 'r') as f:
         svg = f.read()
@@ -54,52 +102,141 @@ def deploy_streamlit():
         b64 = base64.b64encode(svg.encode('utf-8')).decode("utf-8")
         html = r'<img width="250" src="data:image/svg+xml;base64,%s"/>' % b64
         st.write(html, unsafe_allow_html=True)
-    setup_session_state()
 
-    params = get_query_params()
-
-    da_img = None
-    da_txt = None
-
-    da_img, da_txt = load_example_queries(
-        params.data, params.output_modality, da_img, da_txt
-    )
-
-    if params.output_modality == 'text':
-        # censor words in text incl. in custom data
-        from better_profanity import profanity
-
-        profanity.load_censor_words()
-
-    setup_design()
-
-    if params.input_modality == 'image':
-        media_type = st.radio(
-            '',
-            ["Image", 'Webcam'],
-            on_change=clear_match,
+    if redirect_to and st.session_state.login:
+        st.write('')
+        st.write('You are not Logged in. Please Login.')
+        st.markdown(
+            get_login_button(redirect_to),
+            unsafe_allow_html=True,
         )
-    elif params.input_modality == 'text':
+    else:
+        da_img = None
+        da_txt = None
         media_type = 'Text'
 
-    elif params.input_modality == 'music':
-        media_type = 'Music'
+        da_img, da_txt = load_example_queries(
+            params.data, params.output_modality, da_img, da_txt
+        )
 
-    if media_type == "Image":
-        render_image(da_img)
+        if params.output_modality == 'text':
+            # censor words in text incl. in custom data
+            from better_profanity import profanity
 
-    elif media_type == "Text":
-        render_text(da_txt)
+            profanity.load_censor_words()
 
-    elif media_type == 'Webcam':
-        render_webcam()
+        setup_design()
 
-    elif media_type == 'Music':
-        render_music_app(params.data)
+        if params.input_modality == 'image':
+            media_type = st.radio(
+                '',
+                ["Image", 'Webcam'],
+                on_change=clear_match,
+            )
+        elif params.input_modality == 'text':
+            media_type = 'Text'
+        elif params.input_modality == 'music':
+            media_type = 'Music'
 
-    render_matches(params.output_modality)
+        if media_type == "Image":
+            render_image(da_img)
 
-    add_social_share_buttons()
+        elif media_type == "Text":
+            render_text(da_txt)
+
+        elif media_type == 'Webcam':
+            render_webcam()
+
+        elif media_type == 'Music':
+            render_music_app(params.data)
+
+        render_matches(params.output_modality)
+
+        add_social_share_buttons()
+
+
+def render_auth_components(params):
+    if params.secured.lower() == 'true':
+        jwt_val = get_cookie_value(cookie_name=JWT_COOKIE)
+        if jwt_val and not st.session_state.login:
+            jwt_val = json.loads(unquote(jwt_val))
+            if not st.session_state.jwt_val:
+                st.session_state.jwt_val = jwt_val
+            if not st.session_state.avatar_val:
+                st.session_state.avatar_val = jwt_val['user']['avatarUrl']
+            if not st.session_state.token_val:
+                st.session_state.token_val = jwt_val['token']
+        redirect_to = None
+        if not st.session_state.jwt_val:
+            redirect_to = _do_login(params)
+        _, logout, avatar = st.columns([0.7, 0.12, 0.12])
+        if not st.session_state.login:
+            with avatar:
+                if st.session_state.avatar_val:
+                    st.image(st.session_state.avatar_val, width=30)
+            with logout:
+                st.button('Logout', on_click=_do_logout)
+        return redirect_to
+    else:
+        return None
+
+
+def _do_login(params):
+    code = params.code
+    state = params.state
+    if code and state:
+        # Whether it is fail or success, clear the query param
+        query_params_var = {
+            'host': unquote(params.host),
+            'input_modality': params.input_modality,
+            'output_modality': params.output_modality,
+            'data': params.data,
+        }
+        if params.secured:
+            query_params_var['secured'] = params.secured
+        st.experimental_set_query_params(**query_params_var)
+
+        resp_jwt = requests.get(
+            url=f'https://api.hubble.jina.ai/v2/rpc/user.identity.grant.auto'
+            f'?code={code}&state={state}'
+        ).json()
+        if resp_jwt and resp_jwt['code'] == 200:
+            st.session_state.jwt_val = resp_jwt['data']
+            st.session_state.token_val = resp_jwt['data']['token']
+            st.session_state.avatar_val = resp_jwt['data']['user']['avatarUrl']
+            st.session_state.login = False
+            cookie_manager.set(
+                cookie=JWT_COOKIE, val=st.session_state.jwt_val, key=JWT_COOKIE
+            )
+            return
+        else:
+            st.session_state.login = True
+            params.code = None
+            params.state = None
+
+    st.session_state.login = True
+    redirect_uri = (
+        f'https://nowrun.jina.ai/?host={params.host}&input_modality={params.input_modality}'
+        f'&output_modality={params.output_modality}&data={params.data}'
+        + f'&secured={params.secured}'
+        if params.secured
+        else ''
+    )
+    redirect_uri = quote(redirect_uri)
+    rsp = requests.get(
+        url=f'https://api.hubble.jina.ai/v2/rpc/user.identity.authorize'
+        f'?provider=jina-login&response_mode=query&redirect_uri={redirect_uri}&scope=email%20profile%20openid'
+    ).json()
+    redirect_to = rsp['data']['redirectTo']
+    return redirect_to
+
+
+def _do_logout():
+    st.session_state.jwt_val = None
+    st.session_state.avatar_val = None
+    st.session_state.token_val = None
+    st.session_state.login = True
+    cookie_manager.delete(cookie=JWT_COOKIE, key=JWT_COOKIE)
 
 
 def load_example_queries(DATA, OUTPUT_MODALITY, da_img, da_txt):
@@ -167,7 +304,9 @@ def render_image(da_img):
     if query:
         doc = convert_file_to_document(query)
         st.image(doc.blob, width=160)
-        st.session_state.matches = search_by_image(document=doc)
+        st.session_state.matches = search_by_image(
+            document=doc, jwt=st.session_state.jwt_val
+        )
     if da_img is not None:
         st.subheader("samples:")
         img_cs = st.columns(5)
@@ -177,15 +316,21 @@ def render_image(da_img):
                 st.image(doc.blob if doc.blob else doc.tensor, width=100)
             with txt:
                 if st.button('Search', key=doc.id):
-                    st.session_state.matches = search_by_image(document=doc)
+                    st.session_state.matches = search_by_image(
+                        document=doc, jwt=st.session_state.jwt_val
+                    )
 
 
 def render_text(da_txt):
     query = st.text_input("", key="text_search_box")
     if query:
-        st.session_state.matches = search_by_text(search_text=query)
+        st.session_state.matches = search_by_text(
+            search_text=query, jwt=st.session_state.jwt_val
+        )
     if st.button("Search", key="text_search"):
-        st.session_state.matches = search_by_text(search_text=query)
+        st.session_state.matches = search_by_text(
+            search_text=query, jwt=st.session_state.jwt_val
+        )
     if da_txt is not None:
         st.subheader("samples:")
         c1, c2, c3 = st.columns(3)
@@ -193,7 +338,9 @@ def render_text(da_txt):
         for doc, col in zip(da_txt, [c1, c2, c3, c4, c5, c6]):
             with col:
                 if st.button(doc.content, key=doc.id, on_click=clear_text):
-                    st.session_state.matches = search_by_text(search_text=doc.content)
+                    st.session_state.matches = search_by_text(
+                        search_text=doc.content, jwt=st.session_state.jwt_val
+                    )
 
 
 def render_matches(OUTPUT_MODALITY):
@@ -284,7 +431,9 @@ def render_music_app(DATA):
         doc = convert_file_to_document(query)
         st.subheader('Play your song')
         st.audio(doc.blob)
-        st.session_state.matches = search_by_audio(document=doc)
+        st.session_state.matches = search_by_audio(
+            document=doc, jwt=st.session_state.jwt_val
+        )
 
     else:
         columns = st.columns(3)
@@ -292,7 +441,9 @@ def render_music_app(DATA):
 
         def on_button_click(doc_id: str):
             def callback():
-                st.session_state.matches = search_by_audio(music_examples[doc_id])
+                st.session_state.matches = search_by_audio(
+                    music_examples[doc_id], jwt=st.session_state.jwt_val
+                )
 
             return callback
 
@@ -323,7 +474,9 @@ def render_webcam():
             st.session_state.snap = query
             doc = Document(tensor=query)
             doc.convert_image_tensor_to_blob()
-            st.session_state.matches = search_by_image(document=doc)
+            st.session_state.matches = search_by_image(
+                document=doc, jwt=st.session_state.jwt_val
+            )
         elif st.session_state.snap is not None:
             st.image(st.session_state.snap, width=160)
     else:
@@ -404,6 +557,64 @@ def load_data(data_path: str) -> DocumentArray:
     return da
 
 
+def get_login_button(url):
+    return (
+        f'<a href="{url}" target="_self" class="button">'
+        + 'Login'
+        + """<style>
+                                    .button {
+                                      margin-top: -50px;
+                                      position: relative;
+                                      overflow: hidden;
+                                      -webkit-transition: background 400ms;
+                                      transition: background 400ms;
+                                      color: #fff;
+                                      background-color: #90ee90;
+                                      padding: 0.5em 0.5rem;
+                                      font-family: 'Roboto', sans-serif;
+                                      font-size: 1.0rem;
+                                      outline: 0;
+                                      border: 0;
+                                      border-radius: 0.05rem;
+                                      -webkit-box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.3);
+                                      box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.3);
+                                      cursor: pointer;
+                                    }
+                                    </style>
+                                """
+        + '</a>'
+    )
+
+
+def get_logout_button(url):
+    return (
+        f'<a href="{url}" target="_self" class="button">'
+        + 'Logout'
+        + """<style>
+                                    .button {
+                                      margin-top: -50px;
+                                      position: relative;
+                                      overflow: hidden;
+                                      -webkit-transition: background 400ms;
+                                      transition: background 400ms;
+                                      color: #fff;
+                                      background-color: #90ee90;
+                                      padding: 0.5em 0.5rem;
+                                      font-family: 'Roboto', sans-serif;
+                                      font-size: 1.0rem;
+                                      outline: 0;
+                                      border: 0;
+                                      border-radius: 0.05rem;
+                                      -webkit-box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.3);
+                                      box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.3);
+                                      cursor: pointer;
+                                    }
+                                    </style>
+                                """
+        + '</a>'
+    )
+
+
 def setup_session_state():
     if 'matches' not in st.session_state:
         st.session_state.matches = None
@@ -419,6 +630,18 @@ def setup_session_state():
 
     if 'search_count' not in st.session_state:
         st.session_state.search_count = 0
+
+    if 'jwt_val' not in st.session_state:
+        st.session_state.jwt_val = None
+
+    if 'avatar_val' not in st.session_state:
+        st.session_state.avatar_val = None
+
+    if 'token_val' not in st.session_state:
+        st.session_state.token_val = None
+
+    if 'login' not in st.session_state:
+        st.session_state.login = False
 
 
 if __name__ == '__main__':
