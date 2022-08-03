@@ -17,6 +17,7 @@ def get_clip_music_flow_env_dict(
     indexer_uses: str,
     owner_id: str,
     email_ids: str,
+    secured: bool,
 ):
     """Returns dictionary for the environments variables for the clip & music flow.yml files."""
     indexer_name = f'jinahub+docker://' + indexer_uses
@@ -32,8 +33,6 @@ def get_clip_music_flow_env_dict(
         'PRE_TRAINED_EMBEDDINGS_SIZE': pre_trained_embedding_size,
         'INDEXER_NAME': indexer_name,
         'PREFETCH': PREFETCH_NR,
-        'OWNER_ID': owner_id,
-        'EMAIL_IDS': email_ids,
     }
     if encoder_uses_with.get('pretrained_model_name_or_path'):
         config['PRE_TRAINED_MODEL_NAME'] = encoder_uses_with[
@@ -42,6 +41,11 @@ def get_clip_music_flow_env_dict(
     if finetune_settings.perform_finetuning:
         config['FINETUNE_ARTIFACT'] = finetune_settings.finetuned_model_artifact
         config['JINA_TOKEN'] = finetune_settings.token
+
+    if secured:
+        config['OWNER_ID'] = owner_id
+        if email_ids:
+            config['EMAIL_IDS'] = email_ids
 
     return config
 
@@ -68,8 +72,9 @@ def setup_clip_music_apps(
         encoder_uses=encoder_uses,
         encoder_uses_with=encoder_uses_with,
         indexer_uses=indexer_uses,
-        owner_id=user_input.owner_id if user_input.secured else '',
-        email_ids=user_input.email_ids if user_input.email_ids else '',
+        owner_id=user_input.owner_id,
+        email_ids=user_input.email_ids,
+        secured=user_input.secured,
     )
 
     if finetune_settings.perform_finetuning:
