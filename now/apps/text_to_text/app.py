@@ -65,7 +65,7 @@ class TextToText(JinaNOWApp):
             app_instance=self,
             user_input=user_input,
             dataset=dataset,
-            encoder_uses='TransformerSentenceEncoder/v0.5',
+            encoder_uses='TransformerSentenceEncoder/v0.4',
             encoder_uses_with={
                 'pretrained_model_name_or_path': quality_pretrained_model_map[
                     user_input.quality
