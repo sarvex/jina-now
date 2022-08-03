@@ -1,8 +1,10 @@
+import dataclasses
 import os
 import pathlib
 import random
 import sys
 from time import sleep
+from typing import Dict, Optional
 
 from docarray import DocumentArray
 from jina.clients import Client
@@ -71,23 +73,24 @@ def run(app_instance: JinaNOWApp, user_input: UserInput, kubectl_path: str):
     )
 
     print(f"▶ indexing {len(dataset)} documents")
-    call_index(client=client, dataset=dataset)
+    call_index(
+        client=client, dataset=dataset, parameters=dataclasses.asdict(user_input)
+    )
     print('⭐ Success - your data is indexed')
 
     return gateway_host, gateway_port, gateway_host_internal, gateway_port_internal
 
 
 @time_profiler
-def call_index(client: Client, dataset: DocumentArray):
+def call_index(
+    client: Client, dataset: DocumentArray, parameters: Optional[Dict] = None
+):
     request_size = estimate_request_size(dataset)
 
     # double check that flow is up and running - should be done by wolf/core in the future
     while True:
         try:
-            client.post(
-                '/index',
-                inputs=DocumentArray(),
-            )
+            client.post('/index', inputs=DocumentArray(), parameters=parameters)
             break
         except Exception as e:
             if 'NOW_CI_RUN' in os.environ:
@@ -98,7 +101,11 @@ def call_index(client: Client, dataset: DocumentArray):
             sleep(1)
 
     response = client.post(
-        '/index', request_size=request_size, inputs=dataset, show_progress=True
+        '/index',
+        request_size=request_size,
+        inputs=dataset,
+        show_progress=True,
+        parameters=parameters,
     )
 
     if response:

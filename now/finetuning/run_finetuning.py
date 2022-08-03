@@ -1,4 +1,5 @@
 """ This module is the entry point to the finetuning package."""
+import dataclasses
 import os
 import random
 import string
@@ -225,7 +226,11 @@ def _maybe_add_embeddings(
         kubectl_path=kubectl_path,
     )
     print(f'▶ create embeddings for {len(documents_without_embedding)} documents')
-    result = call_index(client=client, dataset=documents_without_embedding)
+    result = call_index(
+        client=client,
+        dataset=documents_without_embedding,
+        parameters=dataclasses.asdict(user_input),
+    )
 
     for doc in result:
         dataset[doc.id].embedding = doc.embedding
