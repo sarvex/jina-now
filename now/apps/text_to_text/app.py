@@ -67,7 +67,9 @@ class TextToText(JinaNOWApp):
             dataset=dataset,
             encoder_uses='TransformerSentenceEncoder/v0.5',
             encoder_uses_with={
-                'model_name': quality_pretrained_model_map[user_input.quality]
+                'pretrained_model_name_or_path': quality_pretrained_model_map[
+                    user_input.quality
+                ]
             },
             indexer_uses='DocarrayIndexerV2',
             kubectl_path=kubectl_path,
