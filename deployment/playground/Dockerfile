@@ -5,15 +5,16 @@ RUN apt-get -y install
 
 WORKDIR /app
 
-COPY requirements.txt .
+COPY requirements.txt ./requirements.txt
 RUN pip3 install -r requirements.txt
-COPY . .
+
+COPY . ./
 
 # needed to copy custom streamlit index.html file to add tracking
 COPY custom_streamlit_index.html /usr/local/lib/python3.9/site-packages/streamlit/static/index.html
 
-EXPOSE 8051
+EXPOSE 8535
 
 ENV PYTHONUNBUFFERED=1
 
-ENTRYPOINT ["streamlit", "run", "playground.py", "--server.port", "8501"]
+ENTRYPOINT ["streamlit", "run", "playground.py", "--server.port", "8535"]
