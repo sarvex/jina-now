@@ -3,10 +3,10 @@ import os
 from typing import Dict, List
 
 import numpy as np
+import PIL
 from docarray import Document, DocumentArray
 from now_common import options
 from now_common.utils import preprocess_text, setup_clip_music_apps
-from PIL import Image
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import (
@@ -104,17 +104,8 @@ class TextToVideo(JinaNOWApp):
                     pass
                 return d
 
-            def gen():
-                def _get_chunk(batch):
-                    return [convert_fn(d) for d in batch]
+            da.apply(convert_fn)
 
-                for batch in da.map_batch(
-                    _get_chunk, batch_size=4, backend='process', show_progress=True
-                ):
-                    for d in batch:
-                        yield d
-
-            da = DocumentArray(d for d in gen())
             return DocumentArray(d for d in da if d.blob != b'')
         else:
             return preprocess_text(da=da, split_by_sentences=False)
@@ -128,13 +119,13 @@ def select_frames(num_selected_frames, num_total_frames):
 def sample_video(d):
     video = d.blob
     video_io = io.BytesIO(video)
-    gif = Image.open(video_io)
+    gif = PIL.Image.open(video_io)
     frame_indices = select_frames(3, gif.n_frames)
     frames = []
     for i in frame_indices:
         gif.seek(i)
         frame = np.array(gif.convert("RGB"))
-        frame_pil = Image.fromarray(frame)
+        frame_pil = PIL.Image.fromarray(frame)
         frame_pil_resized = frame_pil.resize((224, 224))
         frames.append(frame_pil_resized)
         frame_bytes = io.BytesIO()
