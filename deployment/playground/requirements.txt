@@ -1,4 +1,4 @@
-streamlit==1.8.1
+streamlit==1.11.1
 extra-streamlit-components==0.1.55
 av==9.1.1
 click==8.0.0
