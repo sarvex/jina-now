@@ -6,7 +6,7 @@ import numpy as np
 import PIL
 from docarray import Document, DocumentArray
 from now_common import options
-from now_common.utils import preprocess_text, setup_clip_music_apps
+from now_common.utils import setup_clip_music_apps
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import (
@@ -108,7 +108,13 @@ class TextToVideo(JinaNOWApp):
 
             return DocumentArray(d for d in da if d.blob != b'')
         else:
-            return preprocess_text(da=da, split_by_sentences=False)
+
+            def convert_fn(d: Document):
+                d.chunks = d.chunks.find(query={'text': {'$exists': True}})
+
+            da.apply(convert_fn)
+
+            return DocumentArray(d for d in da if da.chunks)
 
 
 def select_frames(num_selected_frames, num_total_frames):
