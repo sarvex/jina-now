@@ -111,6 +111,7 @@ class TextToVideo(JinaNOWApp):
 
             def convert_fn(d: Document):
                 d.chunks = d.chunks.find(query={'text': {'$exists': True}})
+                return d
 
             da.apply(convert_fn)
 
