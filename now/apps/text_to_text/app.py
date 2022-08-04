@@ -5,7 +5,7 @@ from docarray import DocumentArray
 from now_common.utils import preprocess_text, setup_clip_music_apps
 
 from now.apps.base.app import JinaNOWApp
-from now.constants import Apps, DatasetTypes, Modalities, Qualities
+from now.constants import CLIP_USES, Apps, DatasetTypes, Modalities, Qualities
 from now.now_dataclasses import UserInput
 
 
@@ -53,23 +53,42 @@ class TextToText(JinaNOWApp):
 
     @property
     def pre_trained_embedding_size(self) -> Dict[Qualities, int]:
-        return {Qualities.MEDIUM: 768}
+        return {Qualities.MEDIUM: 512, Qualities.EXCELLENT: 768}
+
+    @property
+    def options(self) -> List[Dict]:
+        return [
+            {
+                'name': 'quality',
+                'choices': [
+                    {'name': '🦊 medium', 'value': Qualities.MEDIUM},
+                    {'name': '🦄 excellent', 'value': Qualities.EXCELLENT},
+                ],
+                'prompt_message': 'What quality do you expect?',
+                'prompt_type': 'list',
+                'description': 'Choose the quality of the model that you would like to finetune',
+            }
+        ]
 
     def setup(
         self, dataset: DocumentArray, user_input: UserInput, kubectl_path: str
     ) -> Dict:
         quality_pretrained_model_map = {
-            Qualities.MEDIUM: 'sentence-transformers/msmarco-distilbert-base-v4',
+            Qualities.MEDIUM: 'openai/clip-vit-base-patch32',
+            Qualities.EXCELLENT: 'sentence-transformers/msmarco-distilbert-base-v4',
         }
+        pretrained_model_name_or_path = quality_pretrained_model_map[user_input.quality]
+        if pretrained_model_name_or_path.startswith('openai'):
+            encoder_uses = CLIP_USES
+        else:
+            encoder_uses = 'TransformerSentenceEncoder/v0.4'
         return setup_clip_music_apps(
             app_instance=self,
             user_input=user_input,
             dataset=dataset,
-            encoder_uses='TransformerSentenceEncoder/v0.4',
+            encoder_uses=encoder_uses,
             encoder_uses_with={
-                'pretrained_model_name_or_path': quality_pretrained_model_map[
-                    user_input.quality
-                ]
+                'pretrained_model_name_or_path': pretrained_model_name_or_path
             },
             indexer_uses='DocarrayIndexerV2',
             kubectl_path=kubectl_path,
