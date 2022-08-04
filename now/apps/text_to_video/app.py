@@ -114,7 +114,7 @@ class TextToVideo(JinaNOWApp):
 
             da.apply(convert_fn)
 
-            return DocumentArray(d for d in da if da.chunks)
+            return DocumentArray(d for d in da if d.chunks)
 
 
 def select_frames(num_selected_frames, num_total_frames):
