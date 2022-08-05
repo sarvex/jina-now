@@ -155,7 +155,7 @@ def deploy_flow(
         else:
             from dotenv import load_dotenv
 
-            load_dotenv(env_file)
+            load_dotenv(env_file, override=True)
             f = Flow.load_config(flow_yaml)
             (
                 gateway_host,

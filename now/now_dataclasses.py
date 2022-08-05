@@ -19,6 +19,7 @@ class UserInput:
     # AWS related
     aws_access_key_id: Optional[str] = None
     aws_secret_access_key: Optional[str] = None
+    aws_region_name: Optional[str] = None
 
     # model related
     quality: Optional[Qualities] = Qualities.MEDIUM

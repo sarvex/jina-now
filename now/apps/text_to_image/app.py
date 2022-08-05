@@ -3,7 +3,7 @@ from typing import Dict, List
 
 from docarray import DocumentArray
 from now_common import options
-from now_common.utils import preprocess_images, setup_clip_music_apps
+from now_common.utils import preprocess_images, preprocess_text, setup_clip_music_apps
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import (
@@ -47,11 +47,6 @@ class TextToImage(JinaNOWApp):
 
     def set_flow_yaml(self, **kwargs):
         finetuning = kwargs.get('finetuning', False)
-        encode = kwargs.get('encode', False)
-        if finetuning + encode > 1:
-            raise ValueError(
-                f"Can't set flow to more than one mode but have encode={encode}, finetuning={finetuning}"
-            )
 
         now_package_dir = os.path.abspath(
             os.path.join(__file__, '..', '..', '..', '..')
@@ -60,8 +55,6 @@ class TextToImage(JinaNOWApp):
 
         if finetuning:
             self.flow_yaml = os.path.join(flow_dir, 'ft-flow-clip.yml')
-        elif encode:
-            self.flow_yaml = os.path.join(flow_dir, 'encode-flow-clip.yml')
         else:
             self.flow_yaml = os.path.join(flow_dir, 'flow-clip.yml')
 
@@ -91,8 +84,10 @@ class TextToImage(JinaNOWApp):
             kubectl_path=kubectl_path,
         )
 
-    def load_from_folder(self, path: str) -> DocumentArray:
-        return DocumentArray.from_files(path + '/**')
-
-    def preprocess(self, da: DocumentArray, user_input: UserInput) -> DocumentArray:
-        return preprocess_images(da=da)
+    def preprocess(
+        self, da: DocumentArray, user_input: UserInput, is_indexing=False
+    ) -> DocumentArray:
+        if is_indexing:
+            return preprocess_images(da=da)
+        else:
+            return preprocess_text(da=da, split_by_sentences=False)

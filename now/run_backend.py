@@ -1,3 +1,4 @@
+import dataclasses
 import os
 import pathlib
 import random
@@ -27,7 +28,7 @@ def run(app_instance: JinaNOWApp, user_input: UserInput, kubectl_path: str):
     :return:
     """
     dataset = load_data(app_instance, user_input)
-    dataset = app_instance.preprocess(da=dataset, user_input=user_input)
+
     env_dict = app_instance.setup(
         dataset=dataset, user_input=user_input, kubectl_path=kubectl_path
     )
@@ -47,30 +48,26 @@ def run(app_instance: JinaNOWApp, user_input: UserInput, kubectl_path: str):
         secured=user_input.secured,
     )
 
-    if app_instance.output_modality == 'image':
-        dataset = [x for x in dataset if x.text == '']
-    elif app_instance.output_modality == 'text':
-        dataset = [x for x in dataset if x.text != '']
-
-    print(f'▶ indexing {len(dataset)} documents')
-    params = {}
+    print(f"▶ indexing {len(dataset)} documents")
+    params = dataclasses.asdict(user_input)
     if user_input.secured:
         params['jwt'] = user_input.jwt
-
-    call_index(client=client, dataset=dataset, params=params)
+    call_index(client=client, dataset=dataset, parameters=params)
     print('⭐ Success - your data is indexed')
 
     return gateway_host, gateway_port, gateway_host_internal, gateway_port_internal
 
 
 @time_profiler
-def call_index(client: Client, dataset: DocumentArray, params: Optional[Dict] = None):
+def call_index(
+    client: Client, dataset: DocumentArray, parameters: Optional[Dict] = None
+):
     request_size = estimate_request_size(dataset)
 
     # double check that flow is up and running - should be done by wolf/core in the future
     while True:
         try:
-            client.index(inputs=DocumentArray(), parameters=params)
+            client.post('/index', inputs=DocumentArray(), parameters=parameters)
             break
         except Exception as e:
             if 'NOW_CI_RUN' in os.environ:
@@ -84,8 +81,8 @@ def call_index(client: Client, dataset: DocumentArray, params: Optional[Dict] = 
         '/index',
         request_size=request_size,
         inputs=dataset,
-        parameters=params,
         show_progress=True,
+        parameters=parameters,
     )
 
     if response:

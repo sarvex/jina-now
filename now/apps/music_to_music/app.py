@@ -50,20 +50,17 @@ class MusicToMusic(JinaNOWApp):
 
     def set_flow_yaml(self, **kwargs):
         finetuning = kwargs.get('finetuning', False)
-        encode = kwargs.get('encode', False)
         demo_data = kwargs.get('demo_data', False)
-        if finetuning + encode + demo_data > 1:
+        if finetuning + demo_data > 1:
             raise ValueError(
                 f"Can't set flow to more than one mode but have "
-                f"demo_data={demo_data}, encode={encode}, finetuning={finetuning}"
+                f"demo_data={demo_data}, finetuning={finetuning}"
             )
 
         flow_dir = os.path.abspath(os.path.join(__file__, '..'))
 
         if demo_data:
             self.flow_yaml = os.path.join(flow_dir, 'demo-data-flow-music.yml')
-        elif encode:
-            self.flow_yaml = os.path.join(flow_dir, 'encode-flow-music.yml')
         else:
             self.flow_yaml = os.path.join(flow_dir, 'ft-flow-music.yml')
 
@@ -112,19 +109,21 @@ class MusicToMusic(JinaNOWApp):
 
         return env_dict
 
-    def load_from_folder(self, path: str) -> DocumentArray:
-        return DocumentArray.from_files(path + '/**')
-
-    def preprocess(self, da: DocumentArray, user_input: UserInput) -> DocumentArray:
+    def preprocess(
+        self, da: DocumentArray, user_input: UserInput, is_indexing=False
+    ) -> DocumentArray:
         from pydub import AudioSegment
 
         def convert_fn(d: Document):
             try:
                 if d.blob == b'':
                     if d.uri:
-                        AudioSegment.from_file(d.uri)  # checks if file is valid
-                        with open(d.uri, 'rb') as fh:
-                            d.blob = fh.read()
+                        if d.uri.startswith(f'data:{d.mime_type}'):
+                            d.load_uri_to_blob()
+                        else:
+                            AudioSegment.from_file(d.uri)  # checks if file is valid
+                            with open(d.uri, 'rb') as fh:
+                                d.blob = fh.read()
                 return d
             except Exception as e:
                 return d
