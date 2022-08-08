@@ -25,11 +25,10 @@ def search(attribute_name, attribute_value, jwt, top_k=TOP_K):
     st.session_state.search_count += 1
     params = get_query_params()
 
-    # if params.host == 'gateway':  # need to call now-bff as we communicate between pods
-    #     domain = f"http://now-bff"
-    # else:
-    #     domain = f"https://nowrun.jina.ai"
-    domain = 'http://0.0.0.0:8080'
+    if params.host == 'gateway':  # need to call now-bff as we communicate between pods
+        domain = f"http://now-bff"
+    else:
+        domain = f"https://nowrun.jina.ai"
     URL_HOST = (
         f"{domain}/api/v1/{params.input_modality}-to-{params.output_modality}/search"
     )
@@ -47,6 +46,10 @@ def search(attribute_name, attribute_value, jwt, top_k=TOP_K):
     response = requests.post(
         URL_HOST, json=data, headers={"Content-Type": "application/json; charset=utf-8"}
     )
+    if response.status_code == 401:
+        st.session_state.error_msg = response.json()['detail']
+        return None
+    st.session_state.error_msg = None
     return DocumentArray.from_json(response.content)
 
 
