@@ -9,7 +9,12 @@ from deployment.bff.app.v1.models.video import (
     NowVideoIndexRequestModel,
     NowVideoResponseModel,
 )
-from deployment.bff.app.v1.routers.helper import get_jina_client, process_query
+from deployment.bff.app.v1.routers.helper import (
+    get_jina_client,
+    index_all_docs,
+    process_query,
+    search_doc,
+)
 
 router = APIRouter()
 
@@ -31,9 +36,7 @@ def index(data: NowVideoIndexRequestModel):
         message = base64.decodebytes(base64_bytes)
         index_docs.append(Document(blob=message, tags=tags))
 
-    get_jina_client(data.host, data.port).post(
-        '/index', index_docs, parameters={'jwt': jwt}
-    )
+    index_all_docs(get_jina_client(data.host, data.port), index_docs, jwt)
 
 
 # Search
@@ -48,10 +51,13 @@ def search(data: NowTextSearchRequestModel):
     """
     query_doc = process_query(text=data.text)
     jwt = data.jwt
+
     # for video the search requests have to be on chunk-level
-    docs = get_jina_client(data.host, data.port).post(
-        '/search',
+    docs = search_doc(
+        get_jina_client(data.host, data.port),
         Document(chunks=query_doc),
-        parameters={"limit": data.limit, 'jwt': jwt},
+        data.limit,
+        jwt,
     )
+
     return docs[0].matches.to_dict()
