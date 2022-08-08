@@ -12,6 +12,7 @@
 
 
 
+
 <a name=release-note-0-0-7></a>
 ## Release Note (`0.0.7`)
 
@@ -437,4 +438,25 @@
  - [[```70d58e5c```](https://github.com/jina-ai/now/commit/70d58e5cd79947b7517de0cd2c535779eaadc8d9)] __-__ Load from S3 Bucket (#318) (*joschkabraun*)
  - [[```3f53da62```](https://github.com/jina-ai/now/commit/3f53da62b6012537e214e99784e825f0a8a05b6c)] __-__ Refactor playground (#300) (*Florian Hönicke*)
  - [[```94da8e4d```](https://github.com/jina-ai/now/commit/94da8e4d79830596aa3bb8aa4458cfe6cbaef258)] __-__ __version__: the next version will be 0.0.18 (*Jina Dev Bot*)
+
+<a name=release-note-0-0-19></a>
+## Release Note (`0.0.19`)
+
+> Release time: 2022-08-08 05:01:15
+
+
+
+🙇 We'd like to thank all contributors for this new release! In particular,
+ dependabot[bot],  joschkabraun,  Mohammad Kalim Akram,  Jina Dev Bot,  🙇
+
+
+### 🆕 New Features
+
+ - [[```56142b27```](https://github.com/jina-ai/now/commit/56142b2746091a04584c2e9d9ec57464580f7a89)] __-__ add playground login (#311) (*Mohammad Kalim Akram*)
+
+### 🍹 Other Improvements
+
+ - [[```cea2d98e```](https://github.com/jina-ai/now/commit/cea2d98e7b68e48ebb9f27ca24162d6355500c46)] __-__ __deps__: bump streamlit from 1.5.0 to 1.11.1 in /now/data_loading (#328) (*dependabot[bot]*)
+ - [[```fc40ac2f```](https://github.com/jina-ai/now/commit/fc40ac2f42b9a0f2553f7417456972f525c2341a)] __-__ Feat add preprocess executor (#323) (*joschkabraun*)
+ - [[```a5a5fc91```](https://github.com/jina-ai/now/commit/a5a5fc9190b680619dd50e500ec06d00b45f9f87)] __-__ __version__: the next version will be 0.0.19 (*Jina Dev Bot*)
 
