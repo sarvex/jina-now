@@ -10,7 +10,7 @@ pathspec==0.9.0
 matplotlib==3.5.1
 cryptography==36.0.1
 spacy==3.2.1
-streamlit==1.5.0
+streamlit==1.11.1
 jina==3.4.4
 cowsay==4.0
 portforward==0.2.7

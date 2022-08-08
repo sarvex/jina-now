@@ -1,4 +1,5 @@
 """ This module is the entry point to the finetuning package."""
+import dataclasses
 import os
 import random
 import string
@@ -6,20 +7,21 @@ import sys
 from time import sleep
 from typing import Dict, Tuple
 
+import cowsay
 import finetuner
 import numpy as np
 from docarray import DocumentArray
 from finetuner.callback import EarlyStopping, EvaluationCallback
 
 from now.apps.base.app import JinaNOWApp
+from now.deployment.deployment import cmd, terminate_wolf
+from now.deployment.flow import deploy_flow
 from now.finetuning.dataset import FinetuneDataset, build_finetuning_dataset
-from now.finetuning.embeddings import embed_now
 from now.finetuning.settings import FinetuneSettings
 from now.log import time_profiler, yaspin_extended
 from now.now_dataclasses import UserInput
+from now.run_backend import call_index
 from now.utils import sigmap
-
-_BASE_SAVE_DIR = 'now/hub/head_encoder'
 
 
 @time_profiler
@@ -162,36 +164,6 @@ def _finetune_layer(
     return finetune_artifact, token
 
 
-def _maybe_add_embeddings(
-    app_instance: JinaNOWApp,
-    user_input: UserInput,
-    env_dict: Dict,
-    dataset: DocumentArray,
-    kubectl_path: str,
-):
-    with yaspin_extended(
-        sigmap=sigmap, text="Check if embeddings already exist", color="green"
-    ) as spinner:
-        if all([d.embedding is not None for d in dataset]):
-            spinner.ok('👍')
-            return dataset
-        else:
-            spinner.fail('👎')
-
-    app_instance.set_flow_yaml(encode=True)
-    embed_now(
-        deployment_type=user_input.deployment_type,
-        flow_yaml=app_instance.flow_yaml,
-        env_dict=env_dict,
-        dataset=dataset,
-        kubectl_path=kubectl_path,
-    )
-
-    assert all([d.embedding is not None for d in dataset]), (
-        "Some docs slipped through and" " still have no embedding..."
-    )
-
-
 def get_bi_modal_embedding(doc) -> np.ndarray:
     attributes = [doc.text, doc.blob]
     if not any(attributes) or all(attributes):
@@ -218,3 +190,67 @@ def _get_random_string(length) -> str:
     random.seed(int(t) % 2**32)
     letters = string.ascii_lowercase
     return ''.join(random.choice(letters) for _ in range(length))
+
+
+_KS_NAMESPACE = 'embed-now'
+
+
+@time_profiler
+def _maybe_add_embeddings(
+    app_instance: JinaNOWApp,
+    user_input: UserInput,
+    env_dict: Dict,
+    dataset: DocumentArray,
+    kubectl_path: str,
+):
+    with yaspin_extended(
+        sigmap=sigmap, text="Check if embeddings already exist", color="green"
+    ) as spinner:
+        if all([d.embedding is not None for d in dataset]):
+            spinner.ok('👍')
+            return dataset
+        else:
+            spinner.fail('👎')
+
+    # creates list of indices of documents without embedding
+    documents_without_embedding = DocumentArray(
+        list(filter(lambda d: d.embedding is None, dataset))
+    )
+
+    app_instance.set_flow_yaml()
+    client, _, _, gateway_host_internal, _, = deploy_flow(
+        deployment_type=user_input.deployment_type,
+        flow_yaml=app_instance.flow_yaml,
+        ns=_KS_NAMESPACE,
+        env_dict=env_dict,
+        kubectl_path=kubectl_path,
+    )
+    print(f'▶ create embeddings for {len(documents_without_embedding)} documents')
+    result = call_index(
+        client=client,
+        dataset=documents_without_embedding,
+        parameters=dataclasses.asdict(user_input),
+    )
+
+    for doc in result:
+        dataset[doc.id].embedding = doc.embedding
+
+    assert all([d.embedding is not None for d in dataset]), (
+        "Some docs slipped through and" " still have no embedding..."
+    )
+
+    # removes normal flow as it is unused from now on
+    if user_input.deployment_type == 'local':
+        with yaspin_extended(
+            sigmap=sigmap,
+            text=f"Remove encoding namespace ({_KS_NAMESPACE}) NOW from kind-jina-now",
+            color="green",
+        ) as spinner:
+            cmd(f'{kubectl_path} delete ns {_KS_NAMESPACE}')
+            spinner.ok('💀')
+        cowsay.cow(f'{_KS_NAMESPACE} namespace removed from kind-jina-now')
+    elif user_input.deployment_type == 'remote':
+        flow_id = gateway_host_internal.replace('grpcs://nowapi-', '').replace(
+            '.wolf.jina.ai', ''
+        )
+        terminate_wolf(flow_id=flow_id)

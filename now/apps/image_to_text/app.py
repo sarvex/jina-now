@@ -3,7 +3,7 @@ from typing import Dict, List
 
 from docarray import DocumentArray
 from now_common import options
-from now_common.utils import preprocess_text, setup_clip_music_apps
+from now_common.utils import preprocess_images, preprocess_text, setup_clip_music_apps
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import (
@@ -47,11 +47,6 @@ class ImageToText(JinaNOWApp):
 
     def set_flow_yaml(self, **kwargs):
         finetuning = kwargs.get('finetuning', False)
-        encode = kwargs.get('encode', False)
-        if finetuning + encode > 1:
-            raise ValueError(
-                f"Can't set flow to more than one mode but have encode={encode}, finetuning={finetuning}"
-            )
 
         now_package_dir = os.path.abspath(
             os.path.join(__file__, '..', '..', '..', '..')
@@ -60,14 +55,16 @@ class ImageToText(JinaNOWApp):
 
         if finetuning:
             self.flow_yaml = os.path.join(flow_dir, 'ft-flow-clip.yml')
-        elif encode:
-            self.flow_yaml = os.path.join(flow_dir, 'encode-flow-clip.yml')
         else:
             self.flow_yaml = os.path.join(flow_dir, 'flow-clip.yml')
 
     @property
     def options(self) -> List[Dict]:
         return [options.QUALITY_CLIP]
+
+    @property
+    def supported_wildcards(self) -> List[str]:
+        return ['*.txt']
 
     @property
     def pre_trained_embedding_size(self) -> Dict[Qualities, int]:
@@ -94,17 +91,20 @@ class ImageToText(JinaNOWApp):
             kubectl_path=kubectl_path,
         )
 
-    def load_from_folder(self, path: str) -> DocumentArray:
-        return DocumentArray.from_files(path + '/*.txt')
-
-    def preprocess(self, da: DocumentArray, user_input: UserInput) -> DocumentArray:
-        split_by_sentences = False
-        if (
-            user_input.is_custom_dataset
-            and user_input.custom_dataset_type == DatasetTypes.PATH
-            and user_input.dataset_path
-            and os.path.isdir(user_input.dataset_path)
-        ):
-            # for text loaded from folder can't assume it is split by sentences
-            split_by_sentences = True
-        return preprocess_text(da=da, split_by_sentences=split_by_sentences)
+    def preprocess(
+        self, da: DocumentArray, user_input: UserInput, is_indexing=False
+    ) -> DocumentArray:
+        if is_indexing:
+            split_by_sentences = False
+            if (
+                user_input
+                and user_input.is_custom_dataset
+                and user_input.custom_dataset_type == DatasetTypes.PATH
+                and user_input.dataset_path
+                and os.path.isdir(user_input.dataset_path)
+            ):
+                # for text loaded from folder can't assume it is split by sentences
+                split_by_sentences = True
+            return preprocess_text(da=da, split_by_sentences=split_by_sentences)
+        else:
+            return preprocess_images(da=da)
