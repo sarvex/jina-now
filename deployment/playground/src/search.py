@@ -46,6 +46,10 @@ def search(attribute_name, attribute_value, jwt, top_k=TOP_K):
     response = requests.post(
         URL_HOST, json=data, headers={"Content-Type": "application/json; charset=utf-8"}
     )
+    if response.status_code == 401:
+        st.session_state.error_msg = response.json()['detail']
+        return None
+    st.session_state.error_msg = None
     return DocumentArray.from_json(response.content)
 
 

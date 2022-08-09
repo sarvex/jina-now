@@ -9,7 +9,12 @@ from deployment.bff.app.v1.models.image import (
     NowImageResponseModel,
     NowImageSearchRequestModel,
 )
-from deployment.bff.app.v1.routers.helper import get_jina_client, process_query
+from deployment.bff.app.v1.routers.helper import (
+    get_jina_client,
+    index_all_docs,
+    process_query,
+    search_doc,
+)
 
 router = APIRouter()
 
@@ -31,9 +36,7 @@ def index(data: NowImageIndexRequestModel):
         message = base64.decodebytes(base64_bytes)
         index_docs.append(Document(blob=message, tags=tags))
 
-    get_jina_client(data.host, data.port).post(
-        '/index', index_docs, parameters={'jwt': jwt}
-    )
+    index_all_docs(get_jina_client(data.host, data.port), index_docs, jwt)
 
 
 # Search
@@ -49,9 +52,12 @@ def search(data: NowImageSearchRequestModel):
     """
     query_doc = process_query(blob=data.image)
     jwt = data.jwt
-    docs = get_jina_client(data.host, data.port).post(
-        '/search',
+
+    docs = search_doc(
+        get_jina_client(data.host, data.port),
         query_doc,
-        parameters={"limit": data.limit, 'jwt': jwt},
+        data.limit,
+        jwt,
     )
+
     return docs[0].matches.to_dict()

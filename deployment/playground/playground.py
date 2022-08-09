@@ -344,7 +344,7 @@ def render_text(da_txt):
 
 
 def render_matches(OUTPUT_MODALITY):
-    if st.session_state.matches:
+    if st.session_state.matches and not st.session_state.error_msg:
         matches = deepcopy(st.session_state.matches)
         if st.session_state.search_count > 2:
             st.write(
@@ -420,6 +420,9 @@ def render_matches(OUTPUT_MODALITY):
             key='slider',
             on_change=update_conf,
         )
+
+    if st.session_state.error_msg:
+        st.error(st.session_state.error_msg)
 
 
 def render_music_app(DATA):
@@ -523,6 +526,7 @@ def clear_match():
     st.session_state.slider = 0.0
     st.session_state.min_confidence = 0.0
     st.session_state.snap = None
+    st.session_state.error_msg = None
 
 
 def clear_text():
@@ -642,6 +646,9 @@ def setup_session_state():
 
     if 'login' not in st.session_state:
         st.session_state.login = False
+
+    if 'error_msg' not in st.session_state:
+        st.session_state.error_msg = None
 
 
 if __name__ == '__main__':
