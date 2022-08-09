@@ -28,6 +28,7 @@ from src.search import (
     search_by_image,
     search_by_text,
 )
+from streamlit.scriptrunner import add_script_run_ctx
 from streamlit.server.server import Server
 from streamlit_webrtc import webrtc_streamer
 from tornado.httputil import parse_cookie
@@ -60,14 +61,10 @@ cookie_manager = get_cookie_manager()
 
 
 def _get_all_cookies() -> dict:
-    session_infos = Server.get_current()._session_info_by_id.values()
-    headers = [si.ws.request.headers for si in session_infos]
-    cookie_strings = [
-        header_str
-        for header in headers
-        for k, header_str in header.get_all()
-        if k == 'Cookie'
-    ]
+    session_id = add_script_run_ctx().streamlit_script_run_ctx.session_id
+    session_info = Server.get_current()._get_session_info(session_id)
+    header = session_info.ws.request.headers
+    cookie_strings = [header_str for k, header_str in header.get_all() if k == 'Cookie']
     parsed_cookies = {k: v for c in cookie_strings for k, v in parse_cookie(c).items()}
 
     return parsed_cookies
