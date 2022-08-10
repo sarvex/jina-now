@@ -109,10 +109,10 @@ def _extend_flow_yaml(flow_yaml, tmpdir, secured):
         f = Flow.load_config(flow_yaml)
         g = Flow().add(
             name='security_check',
-            uses='jinahub+docker://SecurityExecutor/v0.1',
+            uses='jinahub+docker://SecurityExecutor/v0.2',
             uses_with={
-                'owner_id': '${{ ENV.OWNER_ID }}',
-                'email_ids': '${{ ENV.EMAIL_IDS }}',
+                'admin_emails': '${{ ENV.ADMIN_EMAILS }}',
+                'user_emails': '${{ ENV.USER_EMAILS }}',
             },
         )
         for node_name, node in f._deployment_nodes.items():

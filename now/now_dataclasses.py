@@ -29,9 +29,9 @@ class UserInput:
     create_new_cluster: Optional[bool] = False
     deployment_type: Optional[str] = None
     secured: Optional[bool] = False
-    owner_id: Optional[str] = None
+    admin_emails: Optional[str] = None
     jwt: Optional[Dict[str, str]] = None
 
     # These attributes are added but is not in use
     additional_user: Optional[bool] = False
-    email_ids: Optional[str] = None
+    user_emails: Optional[str] = None

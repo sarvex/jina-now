@@ -238,6 +238,6 @@ def test_configure_user_input(
     _, user_input = configure_user_input(**configure_kwargs)
 
     if user_input.deployment_type == 'remote':
-        user_input.__dict__.update({'jwt': None, 'owner_id': None})
+        user_input.__dict__.update({'jwt': None, 'admin_emails': None})
 
     assert user_input == expected_user_input

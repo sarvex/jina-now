@@ -57,7 +57,7 @@ def configure_user_input(**kwargs) -> [JinaNOWApp, UserInput]:
     if user_input.deployment_type == 'remote':
         if _configure_security(user_input, **kwargs):
             if _configure_additional_user(user_input, **kwargs):
-                _configure_email_ids(user_input, **kwargs)
+                _configure_user_emails(user_input, **kwargs)
     return app_instance, user_input
 
 
@@ -300,15 +300,15 @@ def _configure_additional_user(user_input: UserInput, **kwargs):
     return user_input.additional_user
 
 
-def _configure_email_ids(user_input: UserInput, **kwargs):
-    email_ids = _prompt_value(
-        name='email_ids',
+def _configure_user_emails(user_input: UserInput, **kwargs):
+    user_emails = _prompt_value(
+        name='user_emails',
         prompt_message='Please enter the comma separated Email IDs'
         ' who will have access to this flow:',
         prompt_type='input',
         **kwargs,
     )
-    user_input.email_ids = email_ids
+    user_input.user_emails = user_emails
 
 
 def _construct_local_cluster_choices(active_context, contexts):
