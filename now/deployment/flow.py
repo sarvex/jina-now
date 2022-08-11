@@ -109,7 +109,7 @@ def _extend_flow_yaml(flow_yaml, tmpdir, secured):
         f = Flow.load_config(flow_yaml)
         g = Flow().add(
             name='security_check',
-            uses='jinahub+docker://SecurityExecutor/v0.2',
+            uses='jinahub+docker://AuthExecutor/0.0.1',
             uses_with={
                 'admin_emails': '${{ ENV.ADMIN_EMAILS }}',
                 'user_emails': '${{ ENV.USER_EMAILS }}',
