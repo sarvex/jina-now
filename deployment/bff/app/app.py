@@ -9,6 +9,7 @@ from starlette.routing import Mount
 import deployment.bff.app.settings as api_settings
 from deployment.bff.app.decorators import api_method, timed
 from deployment.bff.app.v1.routers import (
+    admin,
     img2img,
     img2txt,
     music2music,
@@ -101,6 +102,11 @@ def build_app():
     text2video_app = get_app_instance()
     text2video_app.include_router(txt2video.router, tags=['Text-To-Video'])
 
+    # Admin router
+    admin_mount = '/api/v1/admin'
+    admin_app = get_app_instance()
+    admin_app.include_router(admin.router, tags=['admin'])
+
     # Mount them - for other modalities just add an app instance
     app = Starlette(
         routes=[
@@ -110,6 +116,7 @@ def build_app():
             Mount(text2text_mount, text2text_app),
             Mount(music2music_mount, music2music_app),
             Mount(text2video_mount, text2video_app),
+            Mount(admin_mount, admin_app),
         ]
     )
 

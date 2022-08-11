@@ -31,25 +31,23 @@ def get_jina_client(host: str, port: int) -> Client:
         return Client(host=host, port=port)
 
 
-def index_all_docs(client, docs, jwt):
-    try:
-        client.post('/index', docs, parameters={'jwt': jwt})
-    except BadServer as e:
-        if 'Not a valid user' in e.args[0].status.description:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail='You are not authorised to use this flow',
-            )
-        else:
-            raise e
+def index_all_docs(host: str, port: int, docs, jwt):
+    send_request('index', host, port, docs, jwt)
 
 
-def search_doc(client, doc, limit, jwt):
+def search_doc(host: str, port: int, doc, limit, jwt):
+    return send_request('search', host, port, doc, jwt, {"limit": limit})
+
+
+def send_request(on, host: str, port: int, docs, jwt, parameters=None):
+    client = get_jina_client(host, port)
+    if parameters is None:
+        parameters = {}
     try:
-        docs = client.post(
-            '/search',
-            doc,
-            parameters={"limit": limit, 'jwt': jwt},
+        result = client.post(
+            f'/{on}',
+            docs,
+            parameters={**parameters, 'jwt': jwt},
         )
     except BadServer as e:
         if 'Not a valid user' in e.args[0].status.description:
@@ -59,5 +57,4 @@ def search_doc(client, doc, limit, jwt):
             )
         else:
             raise e
-
-    return docs
+    return result

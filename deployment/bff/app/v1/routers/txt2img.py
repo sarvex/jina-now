@@ -10,7 +10,6 @@ from deployment.bff.app.v1.models.image import (
 )
 from deployment.bff.app.v1.models.text import NowTextSearchRequestModel
 from deployment.bff.app.v1.routers.helper import (
-    get_jina_client,
     index_all_docs,
     process_query,
     search_doc,
@@ -36,7 +35,7 @@ def index(data: NowImageIndexRequestModel):
         message = base64.decodebytes(base64_bytes)
         index_docs.append(Document(blob=message, tags=tags))
 
-    index_all_docs(get_jina_client(data.host, data.port), index_docs, jwt)
+    index_all_docs(data.host, data.port, index_docs, jwt)
 
 
 # Search
@@ -53,7 +52,8 @@ def search(data: NowTextSearchRequestModel):
     jwt = data.jwt
 
     docs = search_doc(
-        get_jina_client(data.host, data.port),
+        data.host,
+        data.port,
         query_doc,
         data.limit,
         jwt,

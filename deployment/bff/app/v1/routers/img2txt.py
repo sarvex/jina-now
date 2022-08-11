@@ -9,7 +9,6 @@ from deployment.bff.app.v1.models.text import (
     NowTextResponseModel,
 )
 from deployment.bff.app.v1.routers.helper import (
-    get_jina_client,
     index_all_docs,
     process_query,
     search_doc,
@@ -32,7 +31,7 @@ def index(data: NowTextIndexRequestModel):
     for text, tags in zip(data.texts, data.tags):
         index_docs.append(Document(text=text, tags=tags))
 
-    index_all_docs(get_jina_client(data.host, data.port), index_docs, jwt)
+    index_all_docs(data.host, data.port, index_docs, jwt)
 
 
 # Search
@@ -50,7 +49,8 @@ def search(data: NowImageSearchRequestModel):
     jwt = data.jwt
 
     docs = search_doc(
-        get_jina_client(data.host, data.port),
+        data.host,
+        data.port,
         query_doc,
         data.limit,
         jwt,

@@ -10,7 +10,6 @@ from deployment.bff.app.v1.models.video import (
     NowVideoResponseModel,
 )
 from deployment.bff.app.v1.routers.helper import (
-    get_jina_client,
     index_all_docs,
     process_query,
     search_doc,
@@ -36,7 +35,7 @@ def index(data: NowVideoIndexRequestModel):
         message = base64.decodebytes(base64_bytes)
         index_docs.append(Document(blob=message, tags=tags))
 
-    index_all_docs(get_jina_client(data.host, data.port), index_docs, jwt)
+    index_all_docs(data.host, data.port, index_docs, jwt)
 
 
 # Search
@@ -54,7 +53,8 @@ def search(data: NowTextSearchRequestModel):
 
     # for video the search requests have to be on chunk-level
     docs = search_doc(
-        get_jina_client(data.host, data.port),
+        data.host,
+        data.port,
         Document(chunks=query_doc),
         data.limit,
         jwt,
