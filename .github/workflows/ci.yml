@@ -133,9 +133,9 @@ jobs:
           repository: ${{ secrets.NOW_PREPROCESSOR_REPO }}
           event-type: build-preprocessor-executor
           client-payload: '{"sha": "${{ github.event.pull_request.head.sha }}", "now_preprocessor_version": "${{ env.NOW_PREPROCESSOR_VERSION }}"}'
-      - name: Wait 4 mins for building & push to finish
-        if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
-        run: sleep 4m
+#      - name: Wait 4 mins for building & push to finish
+#        if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
+#        run: sleep 4m
 
   update-bff-playground-if-required:
     runs-on: ubuntu-latest
