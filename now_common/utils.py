@@ -66,20 +66,29 @@ def setup_clip_music_apps(
     env_dict['APP'] = user_input.app
 
     if finetune_settings.perform_finetuning:
-        artifact_id, token = finetune(
-            finetune_settings=finetune_settings,
-            app_instance=app_instance,
-            dataset=dataset,
-            user_input=user_input,
-            env_dict=env_dict,
-            kubectl_path=kubectl_path,
-        )
+        try:
+            artifact_id, token = finetune(
+                finetune_settings=finetune_settings,
+                app_instance=app_instance,
+                dataset=dataset,
+                user_input=user_input,
+                env_dict=env_dict,
+                kubectl_path=kubectl_path,
+            )
 
-        finetune_settings.finetuned_model_artifact = artifact_id
-        finetune_settings.token = token
+            finetune_settings.finetuned_model_artifact = artifact_id
+            finetune_settings.token = token
 
-        env_dict['FINETUNE_ARTIFACT'] = finetune_settings.finetuned_model_artifact
-        env_dict['JINA_TOKEN'] = finetune_settings.token
+            env_dict['FINETUNE_ARTIFACT'] = finetune_settings.finetuned_model_artifact
+            env_dict['JINA_TOKEN'] = finetune_settings.token
+        except Exception as e:
+            print(
+                'Finetuning is currently offline. The programm execution still continues without finetuning. Please report the following exception to us:'
+            )
+            import traceback
+
+            traceback.print_exc()
+            finetune_settings.perform_finetuning = False
 
     app_instance.set_flow_yaml(finetuning=finetune_settings.perform_finetuning)
 
