@@ -16,7 +16,6 @@ from docarray import Document
 from PIL import Image, ImageDraw, ImageFont
 from rich.console import Console
 
-from now.constants import HUBBLE_CONFIG
 from now.deployment.deployment import cmd
 from now.log import yaspin_extended
 
@@ -354,10 +353,10 @@ def write_env_file(env_file, config):
 
 def _get_info_hubble(user_input):
     login = False
-    if not os.path.exists(user(HUBBLE_CONFIG)):
+    if not os.path.exists(user('~/.jina/config.json')):
         login = True
     if not login:
-        with open(user(HUBBLE_CONFIG)) as fp:
+        with open(user('~/.jina/config.json')) as fp:
             config_val = json.load(fp)
             user_token = config_val['auth_token']
         client = hubble.Client(token=user_token, max_retries=None, jsonify=True)

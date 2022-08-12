@@ -27,4 +27,4 @@ class HubbleAuthPatch:
 
 @pytest.fixture
 def with_hubble_login_patch(mocker: MockerFixture) -> None:
-    mocker.patch(target='finetuner.client.base.hubble.Auth', new=HubbleAuthPatch)
+    mocker.patch(target='hubble.utils.auth.Auth', new=HubbleAuthPatch)
