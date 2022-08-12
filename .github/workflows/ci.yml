@@ -228,8 +228,6 @@ jobs:
           touch ~/.jina/config.json
           echo "{\"auth_token\": \"${WOLF_TOKEN}\"}" > ~/.jina/config.json
           echo "{\"auth_token\": \"${WOLF_TOKEN}\"}" > ~/.jina/wolf.json
-          mkdir ~/.cache/jina-now
-          echo "{\"auth_token\": \"${WOLF_TOKEN}\"}" > ~/.cache/jina-now/wolf.json
           cat ~/.jina/config.json
         env:
           WOLF_TOKEN: ${{ secrets.WOLF_TOKEN }}
