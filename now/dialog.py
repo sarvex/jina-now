@@ -301,13 +301,14 @@ def _configure_additional_user(user_input: UserInput, **kwargs):
 
 
 def _configure_user_emails(user_input: UserInput, **kwargs):
-    user_emails = _prompt_value(
+    user_emails_string = _prompt_value(
         name='user_emails',
         prompt_message='Please enter the comma separated Email IDs'
         ' who will have access to this flow:',
         prompt_type='input',
         **kwargs,
     )
+    user_emails = user_emails_string.split(',')
     user_input.user_emails = user_emails
 
 

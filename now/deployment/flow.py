@@ -4,7 +4,7 @@ import pathlib
 import tempfile
 from os.path import expanduser as user
 from time import sleep
-from typing import Dict
+from typing import Dict, List
 
 from jina import Flow
 from jina.clients import Client
@@ -104,15 +104,15 @@ def deploy_k8s(f, ns, tmpdir, kubectl_path):
     return gateway_host, gateway_port, gateway_host_internal, gateway_port_internal
 
 
-def _extend_flow_yaml(flow_yaml, tmpdir, secured):
+def _extend_flow_yaml(flow_yaml, tmpdir, secured, admin_emails, user_emails):
     if secured:
         f = Flow.load_config(flow_yaml)
         g = Flow().add(
             name='security_check',
             uses='jinahub+docker://AuthExecutor/0.0.1',
             uses_with={
-                'admin_emails': '${{ ENV.ADMIN_EMAILS }}',
-                'user_emails': '${{ ENV.USER_EMAILS }}',
+                'admin_emails': admin_emails,
+                'user_emails': user_emails,
             },
         )
         for node_name, node in f._deployment_nodes.items():
@@ -132,9 +132,13 @@ def deploy_flow(
     env_dict: Dict,
     kubectl_path: str,
     secured: bool = False,
+    admin_emails: List[str] = None,
+    user_emails: List[str] = None,
 ):
     with tempfile.TemporaryDirectory() as tmpdir:
-        flow_yaml = _extend_flow_yaml(flow_yaml, tmpdir, secured)
+        flow_yaml = _extend_flow_yaml(
+            flow_yaml, tmpdir, secured, admin_emails, user_emails
+        )
         env_file = os.path.join(tmpdir, 'dot.env')
         write_env_file(env_file, env_dict)
 

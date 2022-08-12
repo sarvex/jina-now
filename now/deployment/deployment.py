@@ -20,7 +20,8 @@ def status_wolf(flow_id):
 
 def list_all_wolf(status=None):
     loop = get_or_reuse_loop()
-    return loop.run_until_complete(CloudFlow().list_all(status=status))
+    flows = loop.run_until_complete(CloudFlow().list_all(status=status))
+    return flows
 
 
 def cmd(command, std_output=False, wait=True):

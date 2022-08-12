@@ -362,7 +362,7 @@ def _get_info_hubble(user_input):
         client = hubble.Client(token=user_token, max_retries=None, jsonify=True)
         response = client.get_user_info()
         if response['code'] == 200:
-            user_input.admin_emails = response['data']['_id']
+            user_input.admin_emails = [response['data']['_id']]
             user_input.jwt = {'user': response['data'], 'token': user_token}
             return response['data'], user_token
         else:

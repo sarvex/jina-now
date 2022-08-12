@@ -8,10 +8,10 @@ router = APIRouter()
 
 # Index
 @router.post(
-    "/index",
-    summary='Add more image data to the indexer',
+    "/admin/updateUserEmails",
+    summary='update user emails during runtime',
 )
-def update_email(data: UpdateEmailsRequestModel):
+def update_user_email(data: UpdateEmailsRequestModel):
     """
     Append the list of image data to the indexer. Each image data should be
     `base64` encoded using human-readable characters - `utf-8`.
