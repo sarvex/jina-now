@@ -111,8 +111,8 @@ def _extend_flow_yaml(flow_yaml, tmpdir, secured, admin_emails, user_emails):
             name='security_check',
             uses='jinahub+docker://AuthExecutor/0.0.1',
             uses_with={
-                'admin_emails': admin_emails,
-                'user_emails': user_emails,
+                'admin_emails': admin_emails if admin_emails else [],
+                'user_emails': user_emails if user_emails else [],
             },
         )
         for node_name, node in f._deployment_nodes.items():
