@@ -11,7 +11,7 @@ import requests
 from now.cli import _get_kind_path, _get_kubectl_path, cli
 from now.cloud_manager import create_local_cluster
 from now.constants import JC_SECRET, Apps, DemoDatasets, Modalities
-from now.deployment.deployment import cmd, terminate_wolf
+from now.deployment.deployment import cmd, list_all_wolf, terminate_wolf
 from now.dialog import NEW_CLUSTER
 from now.run_all_k8s import get_remote_flow_details
 
@@ -51,6 +51,10 @@ def cleanup(deployment_type, dataset):
         f'Time taken to execute `{deployment_type}` deployment with dataset `{dataset}`: {mins}m {secs}s'
     )
     print(50 * '#')
+
+
+def test_token_exists():
+    list_all_wolf()
 
 
 @pytest.mark.parametrize(
