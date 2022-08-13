@@ -32,6 +32,4 @@ class UserInput:
     jwt: Optional[Dict[str, str]] = None
     admin_emails: Optional[List[str]] = None
     user_emails: Optional[List[str]] = None
-
-    # These attributes are added but is not in use
     additional_user: Optional[bool] = False

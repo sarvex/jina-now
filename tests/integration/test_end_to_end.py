@@ -5,6 +5,7 @@ import time
 from argparse import Namespace
 from os.path import expanduser as user
 
+import hubble
 import pytest
 import requests
 
@@ -118,6 +119,7 @@ def test_backend(
     # need to create local cluster and namespace to deploy playground and bff for WOLF deployment
     if deployment_type == 'remote':
         kwargs['secured'] = True
+        kwargs['additional_user'] = False
         kind_path = _get_kind_path()
         create_local_cluster(kind_path, **kwargs)
         kubectl_path = _get_kubectl_path()
@@ -165,6 +167,11 @@ def test_backend(
             flow_details = json.load(fp)
         request_body['host'] = flow_details['gateway']
 
+    if kwargs['secured']:
+        os.environ['JINA_AUTH_TOKEN'] = os.environ['WOLF_TOKEN']
+        client = hubble.Client(token=hubble.get_token(), max_retries=None, jsonify=True)
+        jwt = client.get_user_info()['data']
+        request_body['jwt'] = jwt
     response = requests.post(
         f'http://localhost:30090/api/v1/{input_modality}-to-{output_modality}/search',
         json=request_body,
