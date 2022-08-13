@@ -11,14 +11,14 @@ from deployment.bff.app.v1.models.helper import (
 
 # Request Model
 class NowImageIndexRequestModel(BaseIndexRequestModel):
-    images: List[str] = Field(
+    images: Optional[List[str]] = Field(
         default=...,
         description='List of Images to index. Images should be base64encoded in `utf-8` format',
     )
 
 
 class NowImageSearchRequestModel(BaseSearchRequestModel):
-    image: str = Field(
+    image: Optional[str] = Field(
         default=None,
         description='Image query. Image should be base64encoded in `utf-8` format',
     )
@@ -27,9 +27,8 @@ class NowImageSearchRequestModel(BaseSearchRequestModel):
 # Response Model
 class NowImageResponseModel(BaseSearchResponseModel):
     blob: Optional[str] = Field(
-        description='Base64 encoded image in `utf-8` str format.'
+        description='Base64 encoded image in `utf-8` str format'
     )
-    uri: Optional[str] = Field(description='Uri of the image file.')
 
 
 NowImageResponseModel.update_forward_refs()

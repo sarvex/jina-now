@@ -8,7 +8,9 @@ from starlette import status
 
 def test_text_index_fails_with_no_flow_running(client: requests.Session):
     with pytest.raises(ConnectionError):
-        client.post(f'/api/v1/image-to-text/index', json={'texts': ['Hello']})
+        client.post(
+            f'/api/v1/image-to-text/index', json={'texts': ['Hello'], 'uris': ['']}
+        )
 
 
 def test_text_search_fails_with_no_flow_running(
@@ -43,7 +45,7 @@ def test_text_index(
 ):
     response = client_with_mocked_jina_client(DocumentArray()).post(
         '/api/v1/image-to-text/index',
-        json={'texts': ['Hello'], 'tags': [{'tag': 'val'}]},
+        json={'texts': ['Hello'], 'tags': [{'tag': 'val'}], 'uris': ['']},
     )
     assert response.status_code == status.HTTP_200_OK
 

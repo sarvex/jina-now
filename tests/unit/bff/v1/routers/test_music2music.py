@@ -36,7 +36,8 @@ def test_music_index_fails_with_no_flow_running(
 ):
     with pytest.raises(ConnectionError):
         client.post(
-            f'/api/v1/music-to-music/index', json={'songs': [base64_audio_string]}
+            f'/api/v1/music-to-music/index',
+            json={'songs': [base64_audio_string], 'uris': ['']},
         )
 
 
@@ -75,7 +76,7 @@ def test_music_index(
 ):
     response = client_with_mocked_jina_client(DocumentArray()).post(
         '/api/v1/music-to-music/index',
-        json={'songs': [base64_audio_string], 'tags': [{'tag': 'val'}]},
+        json={'songs': [base64_audio_string], 'tags': [{'tag': 'val'}], 'uris': ['']},
     )
     assert response.status_code == status.HTTP_200_OK
 

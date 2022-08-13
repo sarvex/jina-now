@@ -50,7 +50,26 @@ def search(attribute_name, attribute_value, jwt, top_k=TOP_K):
         st.session_state.error_msg = response.json()['detail']
         return None
     st.session_state.error_msg = None
-    return DocumentArray.from_json(response.content)
+
+    docs = DocumentArray.from_json(response.content)
+    # update URI to temporary URI for any cloud bucket resources
+    docs_cloud = docs.find({'uri': {'$regex': r"\As3://"}})
+    if len(docs_cloud) > 0:
+        del data[attribute_name]
+        del data['limit']
+        data['ids'] = docs_cloud[:, 'id']
+        data['uris'] = docs_cloud[:, 'uri']
+
+        response_temp_links = requests.post(
+            f"{domain}/api/v1/cloud-bucket-utils/temp_link",
+            json=data,
+            headers={"Content-Type": "application/json; charset=utf-8"},
+        )
+        docs_temp_links = DocumentArray.from_json(response_temp_links.content)
+        for _id, _uri in zip(*docs_temp_links[:, ['id', 'uri']]):
+            docs[_id].uri = _uri
+
+    return docs
 
 
 def search_by_text(search_text, jwt) -> DocumentArray:
