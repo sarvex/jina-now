@@ -52,7 +52,7 @@ def jina_client_post(
     client = get_jina_client(host=host, port=port)
 
     try:
-        docs = client.post(
+        result = client.post(
             endpoint, inputs=inputs, parameters=parameters, *args, **kwargs
         )
     except BadServer as e:
