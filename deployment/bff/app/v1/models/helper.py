@@ -34,11 +34,17 @@ class BaseIndexRequestModel(BaseRequestModel):
     tags: List[Dict[str, Any]] = Field(
         default={}, description='List of tags of the documents to be indexed.'
     )
+    uris: Optional[List[str]] = Field(
+        default=..., description='List of URIs of files or data URIs to index'
+    )
 
 
 # Search extending Base Request
 class BaseSearchRequestModel(BaseRequestModel):
     limit: int = Field(default=10, description='Number of matching results to return')
+    uri: Optional[str] = Field(
+        default=None, description='URI of the file or data URI of the query'
+    )
 
 
 # Base Request for Search
@@ -51,6 +57,9 @@ class BaseSearchResponseModel(BaseModel):
     )
     tags: Optional[Dict[str, '_StructValueType']] = Field(
         description='Additional tags associated with the file.'
+    )
+    uri: Optional[str] = Field(
+        description='URI of file or data URI of search results', default=''
     )
 
     class Config:

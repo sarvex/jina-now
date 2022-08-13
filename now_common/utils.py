@@ -15,6 +15,7 @@ def get_clip_music_flow_env_dict(
     encoder_uses: str,
     encoder_uses_with: Dict,
     indexer_uses: str,
+    user_input: UserInput,
 ):
     """Returns dictionary for the environments variables for the clip & music flow.yml files."""
     if finetune_settings.bi_modal:
@@ -29,6 +30,7 @@ def get_clip_music_flow_env_dict(
         'INDEXER_NAME': f'jinahub+docker://{indexer_uses}',
         'PREFETCH': PREFETCH_NR,
         'PREPROCESSOR_NAME': f'jinahub+docker://NOWPreprocessor/v{NOW_PREPROCESSOR_VERSION}',
+        'APP': user_input.app,
     }
     if encoder_uses_with.get('pretrained_model_name_or_path'):
         config['PRE_TRAINED_MODEL_NAME'] = encoder_uses_with[
@@ -37,6 +39,7 @@ def get_clip_music_flow_env_dict(
     if finetune_settings.perform_finetuning:
         config['FINETUNE_ARTIFACT'] = finetune_settings.finetuned_model_artifact
         config['JINA_TOKEN'] = finetune_settings.token
+
     return config
 
 
@@ -62,8 +65,8 @@ def setup_clip_music_apps(
         encoder_uses=encoder_uses,
         encoder_uses_with=encoder_uses_with,
         indexer_uses=indexer_uses,
+        user_input=user_input,
     )
-    env_dict['APP'] = user_input.app
 
     if finetune_settings.perform_finetuning:
         try:

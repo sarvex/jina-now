@@ -133,9 +133,9 @@ jobs:
           repository: ${{ secrets.NOW_PREPROCESSOR_REPO }}
           event-type: build-preprocessor-executor
           client-payload: '{"sha": "${{ github.event.pull_request.head.sha }}", "now_preprocessor_version": "${{ env.NOW_PREPROCESSOR_VERSION }}"}'
-#      - name: Wait 4 mins for building & push to finish
-#        if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
-#        run: sleep 4m
+      - name: Wait 4 mins for building & push to finish
+        if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
+        run: sleep 4m
 
   update-bff-playground-if-required:
     runs-on: ubuntu-latest
@@ -238,6 +238,9 @@ jobs:
         timeout-minutes: 30
         env:
           WOLF_TOKEN: ${{ secrets.WOLF_TOKEN }}
+          S3_IMAGE_TEST_DATA_PATH: ${{ secrets.S3_IMAGE_TEST_DATA_PATH }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       - name: Setup tmate session for debugging
         if: ${{ failure() || (github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled) }}
         uses: mxschmitt/action-tmate@v3

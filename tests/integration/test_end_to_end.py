@@ -11,7 +11,7 @@ import requests
 
 from now.cli import _get_kind_path, _get_kubectl_path, cli
 from now.cloud_manager import create_local_cluster
-from now.constants import JC_SECRET, Apps, DemoDatasets, Modalities
+from now.constants import JC_SECRET, Apps, DatasetTypes, DemoDatasets, Modalities
 from now.deployment.deployment import cmd, list_all_wolf, terminate_wolf
 from now.dialog import NEW_CLUSTER
 from now.run_all_k8s import get_remote_flow_details
@@ -90,7 +90,7 @@ def test_token_exists():
 @pytest.mark.parametrize('quality', ['medium'])
 @pytest.mark.parametrize('cluster', [NEW_CLUSTER['value']])
 @pytest.mark.parametrize('deployment_type', ['local', 'remote'])
-def test_backend(
+def test_backend_demo_data(
     app: str,
     dataset: str,
     quality: str,
@@ -181,3 +181,77 @@ def test_backend(
         response.status_code == 200
     ), f"Received code {response.status_code} with text: {response.text}"
     assert len(response.json()) == 9
+
+
+@pytest.mark.parametrize('deployment_type', ['remote'])
+@pytest.mark.parametrize('dataset', ['custom_s3_bucket'])
+def test_backend_custom_data(
+    deployment_type: str,
+    dataset: str,
+    cleanup,
+    with_hubble_login_patch,
+):
+    os.environ['NOW_CI_RUN'] = 'True'
+    os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
+    app = Apps.TEXT_TO_IMAGE
+    kwargs = {
+        'now': 'start',
+        'app': app,
+        'data': 'custom',
+        'custom_dataset_type': DatasetTypes.S3_BUCKET,
+        'dataset_path': os.environ.get('S3_IMAGE_TEST_DATA_PATH'),
+        'aws_access_key_id': os.environ.get('AWS_ACCESS_KEY_ID'),
+        'aws_secret_access_key': os.environ.get('AWS_SECRET_ACCESS_KEY'),
+        'aws_region_name': 'eu-west-1',
+        'quality': 'medium',
+        'cluster': NEW_CLUSTER['value'],
+        'deployment_type': deployment_type,
+        'proceed': True,
+    }
+
+    kwargs['secured'] = False
+    kind_path = _get_kind_path()
+    create_local_cluster(kind_path, **kwargs)
+    kubectl_path = _get_kubectl_path()
+    cmd(f'{kubectl_path} create namespace nowapi')
+
+    kwargs = Namespace(**kwargs)
+    response = cli(args=kwargs)
+
+    assert (
+        response['bff']
+        == f'http://localhost:30090/api/v1/{app.replace("_", "-")}/redoc'
+    )
+    assert response['playground'].startswith('http://localhost:30080/?')
+    assert response['input_modality'] == 'text'
+    assert response['output_modality'] == 'image'
+    assert response['host'].startswith('grpcs://')
+    assert response['host'].endswith('.wolf.jina.ai')
+    assert response['port'] == 8080 or response['port'] is None
+
+    request_body = {'text': 'test', 'limit': 9}
+
+    print(f"Getting gateway from flow_details")
+    with open(user(JC_SECRET), 'r') as fp:
+        flow_details = json.load(fp)
+    request_body['host'] = flow_details['gateway']
+
+    response = requests.post(
+        f'http://localhost:30090/api/v1/text-to-image/search',
+        json=request_body,
+    )
+
+    assert (
+        response.status_code == 200
+    ), f"Received code {response.status_code} with text: {response.text}"
+    response_json = response.json()
+    assert len(response_json) == 9
+    assert all(
+        [resp['uri'].startswith('s3://') for resp in response_json]
+    ), f"Received non s3 uris: {[resp['uri'] for resp in response_json]}"
+    assert all(
+        [
+            resp['blob'] is None or resp['blob'] == '' or resp['blob'] == b''
+            for resp in response_json
+        ]
+    ), f"Received blobs: {[resp['blob'] for resp in response_json]}"
