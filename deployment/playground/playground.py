@@ -342,7 +342,7 @@ def render_text(da_txt):
 
 def render_matches(OUTPUT_MODALITY):
     if st.session_state.matches and not st.session_state.error_msg:
-        matches = deepcopy(st.session_state.matches)
+        matches: DocumentArray = deepcopy(st.session_state.matches)
         if st.session_state.search_count > 2:
             st.write(
                 f"🔥 How did you like Jina NOW? [Please leave feedback]({SURVEY_LINK}) 🔥"
@@ -394,6 +394,8 @@ def render_matches(OUTPUT_MODALITY):
                 )
 
             elif OUTPUT_MODALITY == 'music':
+                if match.uri:
+                    match.load_uri_to_blob()
                 display_song(c, match)
 
             elif OUTPUT_MODALITY in ('image', 'video'):
@@ -401,8 +403,6 @@ def render_matches(OUTPUT_MODALITY):
                     match.convert_blob_to_datauri()
                 elif match.tensor is not None:
                     match.convert_image_tensor_to_uri()
-                elif match.uri != '':
-                    match.convert_uri_to_datauri()
 
                 if match.uri != '':
                     c.image(match.uri)

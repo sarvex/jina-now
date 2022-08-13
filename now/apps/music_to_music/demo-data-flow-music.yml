@@ -32,6 +32,13 @@ executors:
       pre_trained_embedding_size: ${{ ENV.PRE_TRAINED_EMBEDDINGS_SIZE }}
     env:
       JINA_LOG_LEVEL: DEBUG
+  - name: postprocessor
+    uses: jinahub+docker://NOWPostprocessor/v0.0.4
+    jcloud:
+      resources:
+        memory: 1G
+    env:
+      JINA_LOG_LEVEL: DEBUG
   - name: indexer
     uses: ${{ ENV.INDEXER_NAME }}
     jcloud:

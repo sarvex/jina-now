@@ -28,6 +28,13 @@ executors:
       traversal_paths: '@c'
     env:
       JINA_LOG_LEVEL: DEBUG
+  - name: postprocessor
+    uses: jinahub+docker://NOWPostprocessor/v0.0.4
+    jcloud:
+      resources:
+        memory: 1G
+    env:
+      JINA_LOG_LEVEL: DEBUG
   - name: indexer
     uses: ${{ ENV.INDEXER_NAME }}
     jcloud:

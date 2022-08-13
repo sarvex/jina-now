@@ -11,16 +11,18 @@ from deployment.bff.app.v1.models.helper import (
 
 # Request Model
 class NowTextIndexRequestModel(BaseIndexRequestModel):
-    texts: List[str] = Field(default=..., description='List of Texts to index.')
+    texts: Optional[List[str]] = Field(
+        default=..., description='List of Texts to index.'
+    )
 
 
 class NowTextSearchRequestModel(BaseSearchRequestModel):
-    text: str = Field(default=None, description='Text query')
+    text: Optional[str] = Field(default=None, description='Text query')
 
 
 # Response Model
 class NowTextResponseModel(BaseSearchResponseModel):
-    text: Optional[str] = Field(description='Matching text result.')
+    text: Optional[str] = Field(description='Matching text result.', default='')
 
 
 NowTextResponseModel.update_forward_refs()

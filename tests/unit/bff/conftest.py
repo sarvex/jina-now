@@ -23,8 +23,10 @@ class MockedJinaClient:
     def post(
         self,
         url: str,
-        query_docs: Union[Document, DocumentArray],
+        inputs: Union[Document, DocumentArray],
         parameters: Optional[Dict] = None,
+        *args,
+        **kwargs
     ) -> DocumentArray:
         for doc in self.response.flatten():
             doc.tags = {'url': url, 'parameters': parameters}
@@ -46,18 +48,9 @@ def client_with_mocked_jina_client(
             return MockedJinaClient(response)
 
         mocker.patch(
-            'deployment.bff.app.v1.routers.img2img.get_jina_client', _get_jina_client
+            'deployment.bff.app.v1.routers.helper.get_jina_client', _get_jina_client
         )
-        mocker.patch(
-            'deployment.bff.app.v1.routers.img2txt.get_jina_client', _get_jina_client
-        )
-        mocker.patch(
-            'deployment.bff.app.v1.routers.music2music.get_jina_client',
-            _get_jina_client,
-        )
-        mocker.patch(
-            'deployment.bff.app.v1.routers.txt2img.get_jina_client', _get_jina_client
-        )
+
         return TestClient(build_app())
 
     return _fixture

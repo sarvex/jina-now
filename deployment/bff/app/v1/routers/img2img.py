@@ -9,12 +9,7 @@ from deployment.bff.app.v1.models.image import (
     NowImageResponseModel,
     NowImageSearchRequestModel,
 )
-from deployment.bff.app.v1.routers.helper import (
-    get_jina_client,
-    index_all_docs,
-    process_query,
-    search_doc,
-)
+from deployment.bff.app.v1.routers.helper import jina_client_post, process_query
 
 router = APIRouter()
 
@@ -31,12 +26,25 @@ def index(data: NowImageIndexRequestModel):
     """
     index_docs = DocumentArray()
     jwt = data.jwt
-    for image, tags in zip(data.images, data.tags):
-        base64_bytes = image.encode('utf-8')
-        message = base64.decodebytes(base64_bytes)
-        index_docs.append(Document(blob=message, tags=tags))
+    for image, uri, tags in zip(data.images, data.uris, data.tags):
+        if bool(image) + bool(uri) != 1:
+            raise ValueError(
+                f'Can only set one value but have image={image}, uri={uri}'
+            )
+        if image:
+            base64_bytes = image.encode('utf-8')
+            image = base64.decodebytes(base64_bytes)
+            index_docs.append(Document(blob=image, tags=tags))
+        else:
+            index_docs.append(Document(uri=uri, tags=tags))
 
-    index_all_docs(get_jina_client(data.host, data.port), index_docs, jwt)
+    jina_client_post(
+        host=data.host,
+        port=data.port,
+        inputs=index_docs,
+        parameters={'jwt': jwt},
+        endpoint='/index',
+    )
 
 
 # Search
@@ -50,14 +58,15 @@ def search(data: NowImageSearchRequestModel):
     Retrieve matching images for a given image query. Image query should be
     `base64` encoded using human-readable characters - `utf-8`.
     """
-    query_doc = process_query(blob=data.image)
+    query_doc = process_query(blob=data.image, uri=data.uri)
     jwt = data.jwt
 
-    docs = search_doc(
-        get_jina_client(data.host, data.port),
-        query_doc,
-        data.limit,
-        jwt,
+    docs = jina_client_post(
+        host=data.host,
+        port=data.port,
+        inputs=query_doc,
+        parameters={'jwt': jwt, 'limit': data.limit},
+        endpoint='/search',
     )
 
     return docs[0].matches.to_dict()

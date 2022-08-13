@@ -9,6 +9,7 @@ from starlette.routing import Mount
 import deployment.bff.app.settings as api_settings
 from deployment.bff.app.decorators import api_method, timed
 from deployment.bff.app.v1.routers import (
+    cloud_temp_link,
     img2img,
     img2txt,
     music2music,
@@ -71,6 +72,13 @@ def get_app_instance():
 
 
 def build_app():
+    # cloud temporary link router
+    cloud_temp_link_mount = '/api/v1/cloud-bucket-utils'
+    cloud_temp_link_app = get_app_instance()
+    cloud_temp_link_app.include_router(
+        cloud_temp_link.router, tags=['Temporary-Link-Cloud']
+    )
+
     # Image2Image router
     img2img_mount = '/api/v1/image-to-image'
     img2img_app = get_app_instance()
@@ -104,6 +112,7 @@ def build_app():
     # Mount them - for other modalities just add an app instance
     app = Starlette(
         routes=[
+            Mount(cloud_temp_link_mount, cloud_temp_link_app),
             Mount(img2img_mount, img2img_app),
             Mount(img2txt_mount, img2txt_app),
             Mount(txt2img_mount, txt2img_app),

@@ -164,6 +164,7 @@ def _configure_custom_dataset(user_input: UserInput, **kwargs) -> None:
         user_input.dataset_name = _prompt_value(
             name='dataset_name',
             prompt_message='Please enter your DocArray name:',
+            **kwargs,
         )
 
     elif user_input.custom_dataset_type == DatasetTypes.URL:
@@ -171,6 +172,7 @@ def _configure_custom_dataset(user_input: UserInput, **kwargs) -> None:
             name='dataset_url',
             prompt_message='Please paste in the URL to download your DocArray from:',
             prompt_type='input',
+            **kwargs,
         )
 
     elif user_input.custom_dataset_type == DatasetTypes.PATH:
@@ -178,6 +180,7 @@ def _configure_custom_dataset(user_input: UserInput, **kwargs) -> None:
             name='dataset_path',
             prompt_message='Please enter the path to the local folder:',
             prompt_type='input',
+            **kwargs,
         )
 
     elif user_input.custom_dataset_type == DatasetTypes.S3_BUCKET:
@@ -185,21 +188,25 @@ def _configure_custom_dataset(user_input: UserInput, **kwargs) -> None:
             name='dataset_path',
             prompt_message='Please enter the S3 URI to the folder:',
             prompt_type='input',
+            **kwargs,
         )
         user_input.aws_access_key_id = _prompt_value(
             name='aws_access_key_id',
             prompt_message='Please enter the AWS access key ID:',
             prompt_type='input',
+            **kwargs,
         )
         user_input.aws_secret_access_key = _prompt_value(
             name='aws_secret_access_key',
             prompt_message='Please enter the AWS secret access key:',
             prompt_type='input',
+            **kwargs,
         )
         user_input.aws_region_name = _prompt_value(
             name='aws_region_name',
             prompt_message='Please enter the AWS region:',
             prompt_type='input',
+            **kwargs,
         )
 
 
