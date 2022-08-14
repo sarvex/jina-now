@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from deployment.bff.app.v1.models.admin import UpdateEmailsRequestModel
-from deployment.bff.app.v1.routers.helper import send_request
+from deployment.bff.app.v1.routers.helper import jina_client_post
 
 router = APIRouter()
 
@@ -16,12 +16,11 @@ def update_user_email(data: UpdateEmailsRequestModel):
     Append the list of image data to the indexer. Each image data should be
     `base64` encoded using human-readable characters - `utf-8`.
     """
-    jwt = data.jwt
-    send_request(
-        'admin/updateEmails',
-        data.host,
-        data.port,
-        [],
-        jwt,
-        parameters={'user_emails': data.user_emails},
+    jina_client_post(
+        host=data.host,
+        port=data.port,
+        inputs=[],
+        endpoint='/admin/updateEmails',
+        parameters={'jwt': data.jwt},
+        target_executor=r'\Asecurity_check\Z',
     )

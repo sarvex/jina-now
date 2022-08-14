@@ -28,6 +28,7 @@ def temp_link(data: CloudTempLinkRequestModel):
         port=data.port,
         inputs=DocumentArray(docs),
         endpoint='/temp_link_cloud_bucket',
+        parameters={'jwt': data.jwt},
         target_executor=r'\Asecurity_check\Z|\Apreprocessor\Z',
     )
 

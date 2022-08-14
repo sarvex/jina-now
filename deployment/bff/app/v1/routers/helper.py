@@ -36,7 +36,7 @@ def get_jina_client(host: str, port: int) -> Client:
 
 
 def jina_client_post(
-    host: str, port: int, endpoint: str, inputs, parameters={}, *args, **kwargs
+    host: str, port: int, endpoint: str, inputs, parameters=None, *args, **kwargs
 ) -> DocumentArray:
     """Posts to the endpoint of the Jina client.
 
@@ -49,8 +49,9 @@ def jina_client_post(
     :param kwargs: any additional keyword arguments passed to the `client.post` method
     :return: response of `client.post`
     """
+    if parameters is None:
+        parameters = {}
     client = get_jina_client(host=host, port=port)
-
     try:
         result = client.post(
             endpoint, inputs=inputs, parameters=parameters, *args, **kwargs
