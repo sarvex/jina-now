@@ -40,11 +40,6 @@ def get_clip_music_flow_env_dict(
         config['FINETUNE_ARTIFACT'] = finetune_settings.finetuned_model_artifact
         config['JINA_TOKEN'] = finetune_settings.token
 
-    if user_input.secured:
-        config['OWNER_ID'] = user_input.owner_id
-        if user_input.email_ids:
-            config['EMAIL_IDS'] = user_input.email_ids
-
     return config
 
 

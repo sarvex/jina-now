@@ -46,6 +46,8 @@ def run(app_instance: JinaNOWApp, user_input: UserInput, kubectl_path: str):
         ns='nowapi',
         kubectl_path=kubectl_path,
         secured=user_input.secured,
+        admin_emails=user_input.admin_emails,
+        user_emails=user_input.user_emails,
     )
 
     print(f"▶ indexing {len(dataset)} documents")

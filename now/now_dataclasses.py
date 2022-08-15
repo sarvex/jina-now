@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 from now.constants import Apps, DatasetTypes, Qualities
 
@@ -29,9 +29,7 @@ class UserInput:
     create_new_cluster: Optional[bool] = False
     deployment_type: Optional[str] = None
     secured: Optional[bool] = False
-    owner_id: Optional[str] = None
     jwt: Optional[Dict[str, str]] = None
-
-    # These attributes are added but is not in use
+    admin_emails: Optional[List[str]] = None
+    user_emails: Optional[List[str]] = None
     additional_user: Optional[bool] = False
-    email_ids: Optional[str] = None

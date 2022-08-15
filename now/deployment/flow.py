@@ -4,7 +4,7 @@ import pathlib
 import tempfile
 from os.path import expanduser as user
 from time import sleep
-from typing import Dict
+from typing import Dict, List
 
 from jina import Flow
 from jina.clients import Client
@@ -104,21 +104,27 @@ def deploy_k8s(f, ns, tmpdir, kubectl_path):
     return gateway_host, gateway_port, gateway_host_internal, gateway_port_internal
 
 
-def _extend_flow_yaml(flow_yaml, tmpdir, secured):
+def _extend_flow_yaml(flow_yaml, tmpdir, secured, admin_emails, user_emails):
     if secured:
-        f = Flow.load_config(flow_yaml)
-        g = Flow().add(
-            name='security_check',
-            uses='jinahub+docker://SecurityExecutor/v0.1',
-            uses_with={
-                'owner_id': '${{ ENV.OWNER_ID }}',
-                'email_ids': '${{ ENV.EMAIL_IDS }}',
-            },
-        )
-        for node_name, node in f._deployment_nodes.items():
-            g = g.add(**vars(node.args))
+        if flow_yaml.endswith('.yml') or flow_yaml.endswith('.yaml'):
+            with open(flow_yaml, 'r') as f:
+                flow_yaml = f.read()
+        first_part, second_part = flow_yaml.split('executors:')
+        executor_string = f"""
+  - name: security_check
+    uses: jinahub+docker://AuthExecutor2/0.0.2
+    uses_with:
+      admin_emails: {admin_emails if admin_emails else []}
+      user_emails: {user_emails if user_emails else []}
+    jcloud:
+      resources:
+        memory: 1G
+    env:
+      JINA_LOG_LEVEL: DEBUG"""
+        full_yaml = f'{first_part}executors:{executor_string}{second_part}'
         mod_path = os.path.join(tmpdir, 'mod.yml')
-        g.save_config(mod_path)
+        with open(mod_path, 'w') as f:
+            f.write(full_yaml)
         return mod_path
     else:
         return flow_yaml
@@ -132,9 +138,13 @@ def deploy_flow(
     env_dict: Dict,
     kubectl_path: str,
     secured: bool = False,
+    admin_emails: List[str] = None,
+    user_emails: List[str] = None,
 ):
     with tempfile.TemporaryDirectory() as tmpdir:
-        flow_yaml = _extend_flow_yaml(flow_yaml, tmpdir, secured)
+        flow_yaml = _extend_flow_yaml(
+            flow_yaml, tmpdir, secured, admin_emails, user_emails
+        )
         env_file = os.path.join(tmpdir, 'dot.env')
         write_env_file(env_file, env_dict)
 
