@@ -106,7 +106,7 @@ def test_backend_demo_data(
     output_modality,
     with_hubble_login_patch,
 ):
-    if deployment_type == 'remote' and dataset != 'best-artworks':
+    if (deployment_type == 'remote') == (dataset != 'best-artworks'):
         pytest.skip('Too time consuming, hence skipping!')
 
     os.environ['NOW_CI_RUN'] = 'True'
