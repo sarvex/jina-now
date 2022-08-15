@@ -35,7 +35,6 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
             print('💿  Loading files from disk')
             da = _load_from_disk(app, user_input)
         elif user_input.custom_dataset_type == DatasetTypes.S3_BUCKET:
-            print('⬇  List files from S3 bucket')
             da = _list_files_from_s3_bucket(app=app, user_input=user_input)
     else:
         print('⬇  Download DocArray dataset')
@@ -75,7 +74,7 @@ def _load_from_disk(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
             exit(1)
     elif os.path.isdir(dataset_path):
         with yaspin_extended(
-            sigmap=sigmap, text="Loading data", color="green"
+            sigmap=sigmap, text="Loading data from folder", color="green"
         ) as spinner:
             spinner.ok('🏭')
             docs = DocumentArray.from_files(
@@ -110,7 +109,7 @@ def _list_files_from_s3_bucket(app: JinaNOWApp, user_input: UserInput) -> Docume
 
     docs = []
     with yaspin_extended(
-        sigmap=sigmap, text="Listing files ...", color="green"
+        sigmap=sigmap, text="Listing files from S3 bucket ...", color="green"
     ) as spinner:
         spinner.ok('🏭')
         for obj in list(bucket.objects.filter(Prefix=folder_prefix)):
