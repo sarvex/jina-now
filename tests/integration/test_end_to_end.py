@@ -172,7 +172,8 @@ def test_backend_demo_data(
         request_body['host'] = flow_details['gateway']
 
     if kwargs.secured:
-        os.environ['JINA_AUTH_TOKEN'] = os.environ['WOLF_TOKEN']
+        if 'WOLF_TOKEN' in os.environ:
+            os.environ['JINA_AUTH_TOKEN'] = os.environ['WOLF_TOKEN']
         client = hubble.Client(token=hubble.get_token(), max_retries=None, jsonify=True)
         jwt = client.get_user_info()['data']
         request_body['jwt'] = jwt
