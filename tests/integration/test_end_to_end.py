@@ -106,7 +106,8 @@ def test_backend_demo_data(
     output_modality,
     with_hubble_login_patch,
 ):
-    if (deployment_type == 'remote') == (dataset != 'best-artworks'):
+    # Run all tests only remote except the image to image app which runs only local
+    if (deployment_type == 'remote') == (app != Apps.IMAGE_TO_IMAGE):
         pytest.skip('Too time consuming, hence skipping!')
 
     os.environ['NOW_CI_RUN'] = 'True'
@@ -117,22 +118,83 @@ def test_backend_demo_data(
         'data': dataset,
         'quality': quality,
         'cluster': cluster,
+        'secured': deployment_type == 'remote',
+        'additional_user': False,
         'deployment_type': deployment_type,
         'proceed': True,
     }
     # need to create local cluster and namespace to deploy playground and bff for WOLF deployment
     if deployment_type == 'remote':
-        kwargs['secured'] = True
-        kwargs['additional_user'] = False
         kind_path = _get_kind_path()
         create_local_cluster(kind_path, **kwargs)
         kubectl_path = _get_kubectl_path()
         cmd(f'{kubectl_path} create namespace nowapi')
-    else:
-        kwargs['secured'] = False
     kwargs = Namespace(**kwargs)
     response = cli(args=kwargs)
 
+    assert_deployment_response(
+        app, deployment_type, input_modality, output_modality, response
+    )
+    assert_deployment_queries(
+        app,
+        dataset,
+        deployment_type,
+        input_modality,
+        kwargs,
+        output_modality,
+        test_search_image,
+    )
+
+
+def assert_deployment_queries(
+    app,
+    dataset,
+    deployment_type,
+    input_modality,
+    kwargs,
+    output_modality,
+    test_search_image,
+):
+    if dataset == DemoDatasets.BEST_ARTWORKS:
+        search_text = 'impressionism'
+    elif dataset == DemoDatasets.NFT_MONKEY:
+        search_text = 'laser eyes'
+    else:
+        search_text = 'test'
+    # Perform end-to-end check via bff
+    if app in [Apps.IMAGE_TO_IMAGE, Apps.IMAGE_TO_TEXT]:
+        request_body = {'image': test_search_image, 'limit': 9}
+    elif app in [Apps.TEXT_TO_IMAGE, Apps.TEXT_TO_TEXT]:
+        request_body = {'text': search_text, 'limit': 9}
+    else:  # Add different request body if app changes
+        request_body = {}
+    if deployment_type == 'local':
+        request_body['host'] = 'gateway'
+        request_body['port'] = 8080
+    elif deployment_type == 'remote':
+        print(f"Getting gateway from flow_details")
+        with open(user(JC_SECRET), 'r') as fp:
+            flow_details = json.load(fp)
+        request_body['host'] = flow_details['gateway']
+    if kwargs.secured:
+        if 'WOLF_TOKEN' in os.environ:
+            os.environ['JINA_AUTH_TOKEN'] = os.environ['WOLF_TOKEN']
+        client = hubble.Client(token=hubble.get_token(), max_retries=None, jsonify=True)
+        user_info = client.get_user_info()['data']
+        request_body['jwt'] = {'user': user_info, 'token': hubble.get_token()}
+    response = requests.post(
+        f'http://localhost:30090/api/v1/{input_modality}-to-{output_modality}/search',
+        json=request_body,
+    )
+    assert (
+        response.status_code == 200
+    ), f"Received code {response.status_code} with text: {response.text}"
+    assert len(response.json()) == 9
+
+
+def assert_deployment_response(
+    app, deployment_type, input_modality, output_modality, response
+):
     assert (
         response['bff']
         == f'http://localhost:30090/api/v1/{app.replace("_", "-")}/redoc'
@@ -146,46 +208,6 @@ def test_backend_demo_data(
         assert response['host'].startswith('grpcs://')
         assert response['host'].endswith('.wolf.jina.ai')
     assert response['port'] == 8080 or response['port'] is None
-
-    if dataset == DemoDatasets.BEST_ARTWORKS:
-        search_text = 'impressionism'
-    elif dataset == DemoDatasets.NFT_MONKEY:
-        search_text = 'laser eyes'
-    else:
-        search_text = 'test'
-
-    # Perform end-to-end check via bff
-    if app in [Apps.IMAGE_TO_IMAGE, Apps.IMAGE_TO_TEXT]:
-        request_body = {'image': test_search_image, 'limit': 9}
-    elif app in [Apps.TEXT_TO_IMAGE, Apps.TEXT_TO_TEXT]:
-        request_body = {'text': search_text, 'limit': 9}
-    else:  # Add different request body if app changes
-        request_body = {}
-
-    if deployment_type == 'local':
-        request_body['host'] = 'gateway'
-        request_body['port'] = 8080
-    elif deployment_type == 'remote':
-        print(f"Getting gateway from flow_details")
-        with open(user(JC_SECRET), 'r') as fp:
-            flow_details = json.load(fp)
-        request_body['host'] = flow_details['gateway']
-
-    if kwargs.secured:
-        if 'WOLF_TOKEN' in os.environ:
-            os.environ['JINA_AUTH_TOKEN'] = os.environ['WOLF_TOKEN']
-        client = hubble.Client(token=hubble.get_token(), max_retries=None, jsonify=True)
-        jwt = client.get_user_info()['data']
-        request_body['jwt'] = jwt
-    response = requests.post(
-        f'http://localhost:30090/api/v1/{input_modality}-to-{output_modality}/search',
-        json=request_body,
-    )
-
-    assert (
-        response.status_code == 200
-    ), f"Received code {response.status_code} with text: {response.text}"
-    assert len(response.json()) == 9
 
 
 @pytest.mark.parametrize('deployment_type', ['remote'])
