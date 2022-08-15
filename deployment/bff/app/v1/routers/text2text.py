@@ -23,7 +23,6 @@ def index(data: NowTextIndexRequestModel):
     Append the list of text data to the indexer.
     """
     index_docs = DocumentArray()
-    jwt = data.jwt
     for text, uri, tags in zip(data.texts, data.uris, data.tags):
         if bool(text) + bool(uri) != 1:
             raise ValueError(f'Can only set one value but have text={text}, uri={uri}')
@@ -36,7 +35,7 @@ def index(data: NowTextIndexRequestModel):
         host=data.host,
         port=data.port,
         inputs=index_docs,
-        parameters={'jwt': jwt},
+        parameters={'jwt': data.jwt},
         endpoint='/index',
     )
 

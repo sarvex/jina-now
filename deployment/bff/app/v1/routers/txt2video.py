@@ -25,7 +25,6 @@ def index(data: NowVideoIndexRequestModel):
     `base64` encoded using human-readable characters - `utf-8`.
     """
     index_docs = DocumentArray()
-    jwt = data.jwt
     for video, uri, tags in zip(data.videos, data.uris, data.tags):
         if bool(video) + bool(uri) != 1:
             raise ValueError(
@@ -42,7 +41,7 @@ def index(data: NowVideoIndexRequestModel):
         host=data.host,
         port=data.port,
         inputs=index_docs,
-        parameters={'jwt': jwt},
+        parameters={'jwt': data.jwt},
         endpoint='/index',
     )
 
