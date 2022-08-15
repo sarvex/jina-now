@@ -24,7 +24,6 @@ def index(data: NowMusicIndexRequestModel):
     `base64` encoded using human-readable characters - `utf-8`.
     """
     index_docs = DocumentArray()
-    jwt = data.jwt
     for audio, uri, tags in zip(data.songs, data.uris, data.tags):
         if bool(audio) + bool(uri) != 1:
             raise ValueError(
@@ -41,7 +40,7 @@ def index(data: NowMusicIndexRequestModel):
         host=data.host,
         port=data.port,
         inputs=index_docs,
-        parameters={'jwt': jwt},
+        parameters={'jwt': data.jwt},
         endpoint='/index',
     )
 
