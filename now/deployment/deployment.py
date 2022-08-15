@@ -21,6 +21,8 @@ def status_wolf(flow_id):
 def list_all_wolf(status=None):
     loop = get_or_reuse_loop()
     flows = loop.run_until_complete(CloudFlow().list_all(status=status))
+    if flows is None:
+        flows = []
     return flows
 
 
