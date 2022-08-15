@@ -33,7 +33,11 @@ def cleanup(deployment_type, dataset):
     yield
     if deployment_type == 'remote':
         if dataset == 'best-artworks':
-            flow_id = get_remote_flow_details()['flow_id']
+            flow_details = get_remote_flow_details()
+            if 'flow_id' not in flow_details:
+                print('nothing to clean up')
+                return
+            flow_id = flow_details['flow_id']
             terminate_wolf(flow_id)
     else:
         kwargs = {
