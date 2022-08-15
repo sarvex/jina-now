@@ -57,13 +57,12 @@ def search(data: NowTextSearchRequestModel):
     Retrieve matching images for a given text as query.
     """
     query_doc = process_query(text=data.text, uri=data.uri)
-    jwt = data.jwt
 
     docs = jina_client_post(
         host=data.host,
         port=data.port,
         inputs=query_doc,
-        parameters={'jwt': jwt, 'limit': data.limit},
+        parameters={'jwt': data.jwt, 'limit': data.limit},
         endpoint='/search',
     )
 
