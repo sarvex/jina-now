@@ -171,7 +171,7 @@ def assert_deployment_queries(
 
     # add email
     if kwargs.secured:
-        request_body = get_default_request_body(deployment_type, kwargs)
+        request_body = get_default_request_body(deployment_type, kwargs.secured)
         request_body['user_emails'] = ['florian.hoenicke@jina.ai']
         response = requests.post(
             f'{url}/admin/updateUserEmails',
@@ -181,7 +181,7 @@ def assert_deployment_queries(
 
 
 def get_search_request_body(app, dataset, deployment_type, kwargs, test_search_image):
-    request_body = get_default_request_body(deployment_type, kwargs)
+    request_body = get_default_request_body(deployment_type, kwargs.secured)
     request_body['limit'] = 9
     # Perform end-to-end check via bff
     if app in [Apps.IMAGE_TO_IMAGE, Apps.IMAGE_TO_TEXT]:
@@ -197,7 +197,7 @@ def get_search_request_body(app, dataset, deployment_type, kwargs, test_search_i
     return request_body
 
 
-def get_default_request_body(deployment_type, kwargs):
+def get_default_request_body(deployment_type, secured):
     request_body = {}
     if deployment_type == 'local':
         request_body['host'] = 'gateway'
@@ -207,7 +207,7 @@ def get_default_request_body(deployment_type, kwargs):
         with open(user(JC_SECRET), 'r') as fp:
             flow_details = json.load(fp)
         request_body['host'] = flow_details['gateway']
-    if kwargs.secured:
+    if secured:
         if 'WOLF_TOKEN' in os.environ:
             os.environ['JINA_AUTH_TOKEN'] = os.environ['WOLF_TOKEN']
         client = hubble.Client(token=hubble.get_token(), max_retries=None, jsonify=True)
