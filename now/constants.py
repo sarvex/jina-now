@@ -4,7 +4,7 @@ from now.utils import BetterEnum
 # from docarray import __version__ as docarray_version
 # DEMO_DATASET_DOCARRAY_VERSION = docarray_version
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.99-add-pagination-1'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.99-add-pagination-2'
 NOW_PREPROCESSOR_VERSION = '0.0.30-security-executor-add-emails-19'
 
 

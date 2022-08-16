@@ -359,17 +359,17 @@ def render_matches(OUTPUT_MODALITY):
         c4, c5, c6 = st.columns(3)
         c7, c8, c9 = st.columns(3)
         all_cs = [c1, c2, c3, c4, c5, c6, c7, c8, c9]
-        for m in list_matches[data_chunk_choice()]:
+        for m in list_matches[st.session_state.chunk]:
             m.scores['cosine'].value = 1 - m.scores['cosine'].value
         sorted(matches, key=lambda m: m.scores['cosine'].value, reverse=True)
-        list_matches[data_chunk_choice()] = DocumentArray(
+        list_matches[st.session_state.chunk] = DocumentArray(
             [
                 m
-                for m in list_matches[data_chunk_choice()]
+                for m in list_matches[st.session_state.chunk]
                 if m.scores['cosine'].value > st.session_state.min_confidence
             ]
         )
-        for c, match in zip(all_cs, list_matches[data_chunk_choice()]):
+        for c, match in zip(all_cs, list_matches[st.session_state.chunk]):
             match.mime_type = OUTPUT_MODALITY
 
             if OUTPUT_MODALITY == 'text':
@@ -420,8 +420,6 @@ def render_matches(OUTPUT_MODALITY):
         if len(matches) > 9:
             layout = {
                 'color': "secondary",
-                'text-align': 'center',
-                'background-color': 'teal',
                 'style': {'margin-top': '1px'},
             }
             pagination_component(len(list_matches), layout=layout, key="chunk")
@@ -531,10 +529,6 @@ def display_song(attach_to, song_doc: Document):
     attach_to.audio(io.BytesIO(song_doc.blob))
 
 
-def data_chunk_choice():
-    return st.session_state.chunk
-
-
 def update_conf():
     st.session_state.min_confidence = st.session_state.slider
 
@@ -545,12 +539,10 @@ def clear_match():
     st.session_state.min_confidence = 0.0
     st.session_state.snap = None
     st.session_state.error_msg = None
-    st.session_state.chunk = 0
 
 
 def clear_text():
     st.session_state.text_search_box = ''
-    st.session_state.chunk = 0
 
 
 def load_data(data_path: str) -> DocumentArray:
