@@ -155,13 +155,13 @@ def assert_deployment_queries(
     output_modality,
     test_search_image,
 ):
-    url = f'http://localhost:30090/api/v1/{input_modality}-to-{output_modality}'
+    url = f'http://localhost:30090/api/v1'
     # normal case
     request_body = get_search_request_body(
         app, dataset, deployment_type, kwargs, test_search_image
     )
     response = requests.post(
-        f'{url}/search',
+        f'{url}/{input_modality}-to-{output_modality}/search',
         json=request_body,
     )
     assert (
