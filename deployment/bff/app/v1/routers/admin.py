@@ -21,5 +21,5 @@ def update_user_email(data: UpdateEmailsRequestModel):
         port=data.port,
         inputs=[],
         endpoint='/admin/updateEmails',
-        parameters={'jwt': data.jwt},
+        parameters={'jwt': data.jwt, 'user_emails': data.user_emails},
     )
