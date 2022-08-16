@@ -30,6 +30,7 @@ from src.search import (
 )
 from streamlit.scriptrunner import add_script_run_ctx
 from streamlit.server.server import Server
+from streamlit_pagination import pagination_component
 from streamlit_webrtc import webrtc_streamer
 from tornado.httputil import parse_cookie
 
@@ -276,6 +277,10 @@ def setup_design():
                 color: "#111";
                 background-color: "#eee";
             }}
+            iframe{
+                height:50px;
+                width:500px;
+            }
         </style>
         """
 
@@ -297,7 +302,7 @@ def setup_design():
 
 def render_image(da_img):
     upload_c, preview_c = st.columns([12, 1])
-    query = upload_c.file_uploader("")
+    query = upload_c.file_uploader("", on_change=clear_match)
     if query:
         doc = convert_file_to_document(query)
         st.image(doc.blob, width=160)
@@ -312,19 +317,19 @@ def render_image(da_img):
             with c:
                 st.image(doc.blob if doc.blob else doc.tensor, width=100)
             with txt:
-                if st.button('Search', key=doc.id):
+                if st.button('Search', key=doc.id, on_click=clear_match):
                     st.session_state.matches = search_by_image(
                         document=doc, jwt=st.session_state.jwt_val
                     )
 
 
 def render_text(da_txt):
-    query = st.text_input("", key="text_search_box")
+    query = st.text_input("", key="text_search_box", on_change=clear_match)
     if query:
         st.session_state.matches = search_by_text(
             search_text=query, jwt=st.session_state.jwt_val
         )
-    if st.button("Search", key="text_search"):
+    if st.button("Search", key="text_search", on_click=clear_match):
         st.session_state.matches = search_by_text(
             search_text=query, jwt=st.session_state.jwt_val
         )
@@ -343,6 +348,7 @@ def render_text(da_txt):
 def render_matches(OUTPUT_MODALITY):
     if st.session_state.matches and not st.session_state.error_msg:
         matches: DocumentArray = deepcopy(st.session_state.matches)
+        list_matches = [matches[i : i + 9] for i in range(0, len(matches), 9)]
         if st.session_state.search_count > 2:
             st.write(
                 f"🔥 How did you like Jina NOW? [Please leave feedback]({SURVEY_LINK}) 🔥"
@@ -353,15 +359,17 @@ def render_matches(OUTPUT_MODALITY):
         c4, c5, c6 = st.columns(3)
         c7, c8, c9 = st.columns(3)
         all_cs = [c1, c2, c3, c4, c5, c6, c7, c8, c9]
-        for m in matches:
+        for m in list_matches[data_chunk_choice()]:
             m.scores['cosine'].value = 1 - m.scores['cosine'].value
         sorted(matches, key=lambda m: m.scores['cosine'].value, reverse=True)
-        matches = [
-            m
-            for m in matches
-            if m.scores['cosine'].value > st.session_state.min_confidence
-        ]
-        for c, match in zip(all_cs, matches):
+        list_matches[data_chunk_choice()] = DocumentArray(
+            [
+                m
+                for m in list_matches[data_chunk_choice()]
+                if m.scores['cosine'].value > st.session_state.min_confidence
+            ]
+        )
+        for c, match in zip(all_cs, list_matches[data_chunk_choice()]):
             match.mime_type = OUTPUT_MODALITY
 
             if OUTPUT_MODALITY == 'text':
@@ -409,6 +417,15 @@ def render_matches(OUTPUT_MODALITY):
             else:
                 raise ValueError(f'{OUTPUT_MODALITY} not handled')
 
+        if len(matches) > 9:
+            layout = {
+                'color': "secondary",
+                'text-align': 'center',
+                'background-color': 'teal',
+                'style': {'margin-top': '1px'},
+            }
+            pagination_component(len(list_matches), layout=layout, key="chunk")
+
         st.markdown("""---""")
         st.session_state.min_confidence = st.slider(
             'Confidence threshold',
@@ -453,7 +470,7 @@ def render_music_app(DATA):
 
 
 def render_webcam():
-    snapshot = st.button('Snapshot')
+    snapshot = st.button('Snapshot', on_click=clear_match)
 
     class VideoProcessor:
         snapshot: np.ndarray = None
@@ -514,6 +531,10 @@ def display_song(attach_to, song_doc: Document):
     attach_to.audio(io.BytesIO(song_doc.blob))
 
 
+def data_chunk_choice():
+    return st.session_state.chunk
+
+
 def update_conf():
     st.session_state.min_confidence = st.session_state.slider
 
@@ -524,10 +545,12 @@ def clear_match():
     st.session_state.min_confidence = 0.0
     st.session_state.snap = None
     st.session_state.error_msg = None
+    st.session_state.chunk = 0
 
 
 def clear_text():
     st.session_state.text_search_box = ''
+    st.session_state.chunk = 0
 
 
 def load_data(data_path: str) -> DocumentArray:
@@ -646,6 +669,9 @@ def setup_session_state():
 
     if 'error_msg' not in st.session_state:
         st.session_state.error_msg = None
+
+    if 'chunk' not in st.session_state:
+        st.session_state.chunk = 0
 
 
 if __name__ == '__main__':
