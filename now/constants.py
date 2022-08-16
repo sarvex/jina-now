@@ -6,6 +6,7 @@ from now.utils import BetterEnum
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.98-security-executor-add-emails-19'
 NOW_PREPROCESSOR_VERSION = '0.0.30-security-executor-add-emails-19'
+GPU_THRESHOLD = 50000
 
 
 class Modalities(BetterEnum):

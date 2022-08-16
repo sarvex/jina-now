@@ -23,6 +23,7 @@ executors:
     jcloud:
       resources:
         memory: 8G
+        gpu: ${{ ENV.GPU  }}
     uses_with:
       pretrained_model_name_or_path: ${{ ENV.PRE_TRAINED_MODEL_NAME }}
     env:

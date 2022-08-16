@@ -3,7 +3,7 @@ from typing import Dict, Optional, Tuple
 from docarray import Document, DocumentArray
 
 from now.apps.base.app import JinaNOWApp
-from now.constants import NOW_PREPROCESSOR_VERSION, PREFETCH_NR
+from now.constants import GPU_THRESHOLD, NOW_PREPROCESSOR_VERSION, PREFETCH_NR
 from now.data_loading.convert_datasets_to_jpeg import to_thumbnail_jpg
 from now.finetuning.run_finetuning import finetune
 from now.finetuning.settings import FinetuneSettings, parse_finetune_settings
@@ -16,6 +16,7 @@ def get_clip_music_flow_env_dict(
     encoder_uses_with: Dict,
     indexer_uses: str,
     user_input: UserInput,
+    gpu: str,
 ):
     """Returns dictionary for the environments variables for the clip & music flow.yml files."""
     if finetune_settings.bi_modal:
@@ -31,6 +32,7 @@ def get_clip_music_flow_env_dict(
         'PREFETCH': PREFETCH_NR,
         'PREPROCESSOR_NAME': f'jinahub+docker://NOWPreprocessor/v{NOW_PREPROCESSOR_VERSION}',
         'APP': user_input.app,
+        'GPU': gpu,
     }
     if encoder_uses_with.get('pretrained_model_name_or_path'):
         config['PRE_TRAINED_MODEL_NAME'] = encoder_uses_with[
@@ -60,12 +62,17 @@ def setup_clip_music_apps(
         finetune_datasets=finetune_datasets,
     )
 
+    gpu = '0'
+    if len(dataset) > GPU_THRESHOLD:
+        gpu = 'shared'
+
     env_dict = get_clip_music_flow_env_dict(
         finetune_settings=finetune_settings,
         encoder_uses=encoder_uses,
         encoder_uses_with=encoder_uses_with,
         indexer_uses=indexer_uses,
         user_input=user_input,
+        gpu=gpu,
     )
 
     if finetune_settings.perform_finetuning:
