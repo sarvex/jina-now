@@ -8,7 +8,7 @@ router = APIRouter()
 
 # Index
 @router.post(
-    "/admin/updateUserEmails",
+    "/updateUserEmails",
     summary='update user emails during runtime',
 )
 def update_user_email(data: UpdateEmailsRequestModel):
@@ -22,5 +22,4 @@ def update_user_email(data: UpdateEmailsRequestModel):
         inputs=[],
         endpoint='/admin/updateEmails',
         parameters={'jwt': data.jwt},
-        target_executor=r'\Asecurity_check\Z',
     )
