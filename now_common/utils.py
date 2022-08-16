@@ -17,6 +17,7 @@ def get_clip_music_flow_env_dict(
     indexer_uses: str,
     user_input: UserInput,
     gpu: str,
+    device: str,
 ):
     """Returns dictionary for the environments variables for the clip & music flow.yml files."""
     if finetune_settings.bi_modal:
@@ -33,6 +34,7 @@ def get_clip_music_flow_env_dict(
         'PREPROCESSOR_NAME': f'jinahub+docker://NOWPreprocessor/v{NOW_PREPROCESSOR_VERSION}',
         'APP': user_input.app,
         'GPU': gpu,
+        'DEVICE': device,
     }
     if encoder_uses_with.get('pretrained_model_name_or_path'):
         config['PRE_TRAINED_MODEL_NAME'] = encoder_uses_with[
@@ -63,8 +65,12 @@ def setup_clip_music_apps(
     )
 
     gpu = '0'
-    if len(dataset) > GPU_THRESHOLD:
+    device = 'cpu'
+    if (
+        len(dataset) > GPU_THRESHOLD
+    ):  # uses GPU if dataset contains over GPU_THRESHOLD documents
         gpu = 'shared'
+        device = 'cuda'
 
     env_dict = get_clip_music_flow_env_dict(
         finetune_settings=finetune_settings,
@@ -73,6 +79,7 @@ def setup_clip_music_apps(
         indexer_uses=indexer_uses,
         user_input=user_input,
         gpu=gpu,
+        device=device,
     )
 
     if finetune_settings.perform_finetuning:

@@ -20,6 +20,7 @@ executors:
       JINA_LOG_LEVEL: DEBUG
   - name: encoder_clip
     uses: ${{ ENV.ENCODER_NAME }}
+    uses_with: ${{ ENV.DEVICE }}
     jcloud:
       resources:
         memory: 8G
