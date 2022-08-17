@@ -1,3 +1,4 @@
+from docarray import Document
 from fastapi import APIRouter
 
 from deployment.bff.app.v1.models.admin import UpdateEmailsRequestModel
@@ -13,13 +14,12 @@ router = APIRouter()
 )
 def update_user_email(data: UpdateEmailsRequestModel):
     """
-    Append the list of image data to the indexer. Each image data should be
-    `base64` encoded using human-readable characters - `utf-8`.
+    Update the list of emails for the security executor
     """
     jina_client_post(
         host=data.host,
         port=data.port,
-        inputs=[],
-        endpoint='/admin/updateEmails',
+        inputs=[Document()],
+        endpoint='/admin/updateUserEmails',
         parameters={'jwt': data.jwt, 'user_emails': data.user_emails},
     )
