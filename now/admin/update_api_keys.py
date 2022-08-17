@@ -4,7 +4,7 @@ from tests.integration.test_end_to_end import get_default_request_body
 #  TODO needs to be updated to work on cli / or even putting things like this into a new client package
 
 
-def update_emails(deployment_type, api_keys):
+def update_api_keys(deployment_type, api_keys):
     if deployment_type == 'remote':
         url = f"https://nowrun.jina.ai/api/v1"  # remote
     else:
@@ -22,7 +22,7 @@ def update_emails(deployment_type, api_keys):
 
 
 if __name__ == '__main__':
-    update_emails(
+    update_api_keys(
         deployment_type='remote',
         api_keys=['new_key'],
     )
