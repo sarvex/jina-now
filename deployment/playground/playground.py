@@ -426,6 +426,7 @@ def render_matches(OUTPUT_MODALITY):
                 else:
                     raise ValueError(f'{OUTPUT_MODALITY} not handled')
 
+        if len(list_matches) > 1:
             # disable prev button or not
             if st.session_state.page_number <= 0:
                 st.session_state.disable_prev = True
@@ -438,7 +439,8 @@ def render_matches(OUTPUT_MODALITY):
             else:
                 st.session_state.disable_next = False
 
-            prev, _, next = st.columns([1, 10, 1])
+            prev, _, page, _, next = st.columns([1, 4, 2, 4, 1])
+            page.write(f'Page {st.session_state.page_number + 1}/{len(list_matches)}')
             next.button(
                 "Next", disabled=st.session_state.disable_next, on_click=increment_page
             )

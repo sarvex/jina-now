@@ -1,5 +1,4 @@
 import base64
-from functools import lru_cache
 
 import requests
 import streamlit as st
@@ -21,11 +20,11 @@ def get_query_params() -> Parameters:
     return parameters
 
 
-@lru_cache(maxsize=1, typed=False)
-def search(attribute_name, attribute_value, jwt, top_k=None, params=get_query_params()):
+def search(attribute_name, attribute_value, jwt, top_k=None):
     print(f'Searching by {attribute_name}')
     st.session_state.search_count += 1
 
+    params = get_query_params()
     if params.host == 'gateway':  # need to call now-bff as we communicate between pods
         domain = f"http://now-bff"
     else:
@@ -44,6 +43,7 @@ def search(attribute_name, attribute_value, jwt, top_k=None, params=get_query_pa
         data['jwt'] = jwt
     if params.port:
         data['port'] = params.port
+
     response = requests.post(
         URL_HOST, json=data, headers={"Content-Type": "application/json; charset=utf-8"}
     )
