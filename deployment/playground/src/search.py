@@ -21,7 +21,7 @@ def get_query_params() -> Parameters:
     return parameters
 
 
-@lru_cache(maxsize=128, typed=False)
+@lru_cache(maxsize=1, typed=False)
 def search(attribute_name, attribute_value, jwt, top_k=None, params=get_query_params()):
     print(f'Searching by {attribute_name}')
     st.session_state.search_count += 1

@@ -30,7 +30,6 @@ from src.search import (
 )
 from streamlit.scriptrunner import add_script_run_ctx
 from streamlit.server.server import Server
-from streamlit_pagination import pagination_component
 from streamlit_webrtc import webrtc_streamer
 from tornado.httputil import parse_cookie
 
@@ -347,8 +346,23 @@ def render_text(da_txt):
 
 def render_matches(OUTPUT_MODALITY):
     if st.session_state.matches and not st.session_state.error_msg:
+        # make a copy and filter based on threshold
         matches: DocumentArray = deepcopy(st.session_state.matches)
+        matches = DocumentArray(
+            [
+                m
+                for m in matches
+                if m.scores['cosine'].value > st.session_state.min_confidence
+            ]
+        )
+
+        # sort them based on confidence score and then group them for pagination
+        for m in matches:
+            m.scores['cosine'].value = 1 - m.scores['cosine'].value
+        sorted(matches, key=lambda m: m.scores['cosine'].value, reverse=True)
         list_matches = [matches[i : i + 9] for i in range(0, len(matches), 9)]
+        st.session_state.last_page = len(list_matches)
+
         if st.session_state.search_count > 2:
             st.write(
                 f"🔥 How did you like Jina NOW? [Please leave feedback]({SURVEY_LINK}) 🔥"
@@ -359,17 +373,8 @@ def render_matches(OUTPUT_MODALITY):
         c4, c5, c6 = st.columns(3)
         c7, c8, c9 = st.columns(3)
         all_cs = [c1, c2, c3, c4, c5, c6, c7, c8, c9]
-        for m in list_matches[st.session_state.chunk]:
-            m.scores['cosine'].value = 1 - m.scores['cosine'].value
-        sorted(matches, key=lambda m: m.scores['cosine'].value, reverse=True)
-        list_matches[st.session_state.chunk] = DocumentArray(
-            [
-                m
-                for m in list_matches[st.session_state.chunk]
-                if m.scores['cosine'].value > st.session_state.min_confidence
-            ]
-        )
-        for c, match in zip(all_cs, list_matches[st.session_state.chunk]):
+
+        for c, match in zip(all_cs, list_matches[st.session_state.page_number]):
             match.mime_type = OUTPUT_MODALITY
 
             if OUTPUT_MODALITY == 'text':
@@ -418,11 +423,27 @@ def render_matches(OUTPUT_MODALITY):
                 raise ValueError(f'{OUTPUT_MODALITY} not handled')
 
         if len(matches) > 9:
-            layout = {
-                'color': "secondary",
-                'style': {'margin-top': '1px'},
-            }
-            pagination_component(len(list_matches), layout=layout, key="chunk")
+            # disable prev button or not
+            if st.session_state.page_number == 0:
+                st.session_state.disable_prev = True
+            else:
+                st.session_state.disable_prev = False
+
+            # disable next button or not
+            if st.session_state.page_number == len(list_matches):
+                st.session_state.disable_next = True
+            else:
+                st.session_state.disable_next = False
+
+            prev, _, next = st.columns([1, 10, 1])
+            next.button(
+                "Next", disabled=st.session_state.disable_next, on_click=increment_page
+            )
+            prev.button(
+                "Previous",
+                disabled=st.session_state.disable_prev,
+                on_click=decrement_page,
+            )
 
         st.markdown("""---""")
         st.session_state.min_confidence = st.slider(
@@ -529,8 +550,17 @@ def display_song(attach_to, song_doc: Document):
     attach_to.audio(io.BytesIO(song_doc.blob))
 
 
+def increment_page():
+    st.session_state.page_number += 1
+
+
+def decrement_page():
+    st.session_state.page_number -= 1
+
+
 def update_conf():
     st.session_state.min_confidence = st.session_state.slider
+    st.experimental_rerun()
 
 
 def clear_match():
@@ -539,6 +569,7 @@ def clear_match():
     st.session_state.min_confidence = 0.0
     st.session_state.snap = None
     st.session_state.error_msg = None
+    st.session_state.page_number = 0
 
 
 def clear_text():
@@ -662,8 +693,14 @@ def setup_session_state():
     if 'error_msg' not in st.session_state:
         st.session_state.error_msg = None
 
-    if 'chunk' not in st.session_state:
-        st.session_state.chunk = 0
+    if 'page_number' not in st.session_state:
+        st.session_state.page_number = 0
+
+    if 'disable_next' not in st.session_state:
+        st.session_state.disable_next = True
+
+    if 'disable_prev' not in st.session_state:
+        st.session_state.disable_prev = True
 
 
 if __name__ == '__main__':
