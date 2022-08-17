@@ -38,10 +38,9 @@ def index(data: NowImageIndexRequestModel):
             index_docs.append(Document(uri=uri, tags=tags))
 
     jina_client_post(
-        host=data.host,
-        port=data.port,
+        data=data,
         inputs=index_docs,
-        parameters={'jwt': data.jwt},
+        parameters={},
         endpoint='/index',
     )
 
@@ -59,10 +58,9 @@ def search(data: NowTextSearchRequestModel):
     query_doc = process_query(text=data.text, uri=data.uri)
 
     docs = jina_client_post(
-        host=data.host,
-        port=data.port,
+        data=data,
         inputs=query_doc,
-        parameters={'jwt': data.jwt, 'limit': data.limit},
+        parameters={'limit': data.limit},
         endpoint='/search',
     )
 

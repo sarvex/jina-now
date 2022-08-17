@@ -24,5 +24,5 @@ def update_api_keys(deployment_type, api_keys):
 if __name__ == '__main__':
     update_api_keys(
         deployment_type='remote',
-        api_keys=['new_key'],
+        api_keys=['my_key'],
     )
