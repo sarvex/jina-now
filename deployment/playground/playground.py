@@ -276,6 +276,10 @@ def setup_design():
                 color: "#111";
                 background-color: "#eee";
             }}
+            iframe{
+                height:50px;
+                width:500px;
+            }
         </style>
         """
 
@@ -297,7 +301,7 @@ def setup_design():
 
 def render_image(da_img):
     upload_c, preview_c = st.columns([12, 1])
-    query = upload_c.file_uploader("")
+    query = upload_c.file_uploader("", on_change=clear_match)
     if query:
         doc = convert_file_to_document(query)
         st.image(doc.blob, width=160)
@@ -312,19 +316,19 @@ def render_image(da_img):
             with c:
                 st.image(doc.blob if doc.blob else doc.tensor, width=100)
             with txt:
-                if st.button('Search', key=doc.id):
+                if st.button('Search', key=doc.id, on_click=clear_match):
                     st.session_state.matches = search_by_image(
                         document=doc, jwt=st.session_state.jwt_val
                     )
 
 
 def render_text(da_txt):
-    query = st.text_input("", key="text_search_box")
+    query = st.text_input("", key="text_search_box", on_change=clear_match)
     if query:
         st.session_state.matches = search_by_text(
             search_text=query, jwt=st.session_state.jwt_val
         )
-    if st.button("Search", key="text_search"):
+    if st.button("Search", key="text_search", on_click=clear_match):
         st.session_state.matches = search_by_text(
             search_text=query, jwt=st.session_state.jwt_val
         )
@@ -342,72 +346,109 @@ def render_text(da_txt):
 
 def render_matches(OUTPUT_MODALITY):
     if st.session_state.matches and not st.session_state.error_msg:
-        matches: DocumentArray = deepcopy(st.session_state.matches)
         if st.session_state.search_count > 2:
             st.write(
                 f"🔥 How did you like Jina NOW? [Please leave feedback]({SURVEY_LINK}) 🔥"
             )
-        st.header('Search results')
-        # Results area
-        c1, c2, c3 = st.columns(3)
-        c4, c5, c6 = st.columns(3)
-        c7, c8, c9 = st.columns(3)
-        all_cs = [c1, c2, c3, c4, c5, c6, c7, c8, c9]
+        # make a copy and  sort them based on scores
+        matches: DocumentArray = deepcopy(st.session_state.matches)
         for m in matches:
             m.scores['cosine'].value = 1 - m.scores['cosine'].value
         sorted(matches, key=lambda m: m.scores['cosine'].value, reverse=True)
-        matches = [
-            m
-            for m in matches
-            if m.scores['cosine'].value > st.session_state.min_confidence
-        ]
-        for c, match in zip(all_cs, matches):
-            match.mime_type = OUTPUT_MODALITY
 
-            if OUTPUT_MODALITY == 'text':
-                if match.text == '' and match.uri != '':
-                    match.load_uri_to_text()
-                display_text = profanity.censor(match.text).replace('\n', ' ')
-                body = f"<!DOCTYPE html><html><body><blockquote>{display_text}</blockquote>"
-                if match.tags.get('additional_info'):
-                    additional_info = match.tags.get('additional_info')
-                    if type(additional_info) == str:
-                        additional_info_text = additional_info
-                    elif type(additional_info) == list:
-                        if len(additional_info) == 1:
-                            # assumes just one line containing information on text name and creator, etc.
+        # filter based on threshold and then group them for pagination
+        matches = DocumentArray(
+            [
+                m
+                for m in matches
+                if m.scores['cosine'].value > st.session_state.min_confidence
+            ]
+        )
+        list_matches = [matches[i : i + 9] for i in range(0, len(matches), 9)]
+
+        # render the current page or the last page if filtered documents are less
+        if len(list_matches) > 0:
+            st.session_state.page_number = min(
+                st.session_state.page_number, len(list_matches) - 1
+            )
+            st.header('Search results')
+            # Results area
+            c1, c2, c3 = st.columns(3)
+            c4, c5, c6 = st.columns(3)
+            c7, c8, c9 = st.columns(3)
+            all_cs = [c1, c2, c3, c4, c5, c6, c7, c8, c9]
+
+            for c, match in zip(all_cs, list_matches[st.session_state.page_number]):
+                match.mime_type = OUTPUT_MODALITY
+
+                if OUTPUT_MODALITY == 'text':
+                    if match.text == '' and match.uri != '':
+                        match.load_uri_to_text()
+                    display_text = profanity.censor(match.text).replace('\n', ' ')
+                    body = f"<!DOCTYPE html><html><body><blockquote>{display_text}</blockquote>"
+                    if match.tags.get('additional_info'):
+                        additional_info = match.tags.get('additional_info')
+                        if type(additional_info) == str:
                             additional_info_text = additional_info
-                        elif len(additional_info) == 2:
-                            # assumes first element is text name and second element is creator name
-                            additional_info_text = (
-                                f"<em>{additional_info[0]}</em> "
-                                f"<small>by {additional_info[1]}</small>"
-                            )
+                        elif type(additional_info) == list:
+                            if len(additional_info) == 1:
+                                # assumes just one line containing information on text name and creator, etc.
+                                additional_info_text = additional_info
+                            elif len(additional_info) == 2:
+                                # assumes first element is text name and second element is creator name
+                                additional_info_text = (
+                                    f"<em>{additional_info[0]}</em> "
+                                    f"<small>by {additional_info[1]}</small>"
+                                )
 
-                        else:
-                            additional_info_text = " ".join(additional_info)
-                    body += f"<figcaption>{additional_info_text}</figcaption>"
-                body += "</body></html>"
-                c.markdown(
-                    body=body,
-                    unsafe_allow_html=True,
-                )
+                            else:
+                                additional_info_text = " ".join(additional_info)
+                        body += f"<figcaption>{additional_info_text}</figcaption>"
+                    body += "</body></html>"
+                    c.markdown(
+                        body=body,
+                        unsafe_allow_html=True,
+                    )
 
-            elif OUTPUT_MODALITY == 'music':
-                if match.uri:
-                    match.load_uri_to_blob()
-                display_song(c, match)
+                elif OUTPUT_MODALITY == 'music':
+                    if match.uri:
+                        match.load_uri_to_blob()
+                    display_song(c, match)
 
-            elif OUTPUT_MODALITY in ('image', 'video'):
-                if match.blob != b'':
-                    match.convert_blob_to_datauri()
-                elif match.tensor is not None:
-                    match.convert_image_tensor_to_uri()
+                elif OUTPUT_MODALITY in ('image', 'video'):
+                    if match.blob != b'':
+                        match.convert_blob_to_datauri()
+                    elif match.tensor is not None:
+                        match.convert_image_tensor_to_uri()
 
-                if match.uri != '':
-                    c.image(match.uri)
+                    if match.uri != '':
+                        c.image(match.uri)
+                else:
+                    raise ValueError(f'{OUTPUT_MODALITY} not handled')
+
+        if len(list_matches) > 1:
+            # disable prev button or not
+            if st.session_state.page_number <= 0:
+                st.session_state.disable_prev = True
             else:
-                raise ValueError(f'{OUTPUT_MODALITY} not handled')
+                st.session_state.disable_prev = False
+
+            # disable next button or not
+            if st.session_state.page_number + 1 >= len(list_matches):
+                st.session_state.disable_next = True
+            else:
+                st.session_state.disable_next = False
+
+            prev, _, page, _, next = st.columns([1, 4, 2, 4, 1])
+            page.write(f'Page {st.session_state.page_number + 1}/{len(list_matches)}')
+            next.button(
+                "Next", disabled=st.session_state.disable_next, on_click=increment_page
+            )
+            prev.button(
+                "Previous",
+                disabled=st.session_state.disable_prev,
+                on_click=decrement_page,
+            )
 
         st.markdown("""---""")
         st.session_state.min_confidence = st.slider(
@@ -453,7 +494,7 @@ def render_music_app(DATA):
 
 
 def render_webcam():
-    snapshot = st.button('Snapshot')
+    snapshot = st.button('Snapshot', on_click=clear_match)
 
     class VideoProcessor:
         snapshot: np.ndarray = None
@@ -514,6 +555,14 @@ def display_song(attach_to, song_doc: Document):
     attach_to.audio(io.BytesIO(song_doc.blob))
 
 
+def increment_page():
+    st.session_state.page_number += 1
+
+
+def decrement_page():
+    st.session_state.page_number -= 1
+
+
 def update_conf():
     st.session_state.min_confidence = st.session_state.slider
 
@@ -524,6 +573,7 @@ def clear_match():
     st.session_state.min_confidence = 0.0
     st.session_state.snap = None
     st.session_state.error_msg = None
+    st.session_state.page_number = 0
 
 
 def clear_text():
@@ -646,6 +696,15 @@ def setup_session_state():
 
     if 'error_msg' not in st.session_state:
         st.session_state.error_msg = None
+
+    if 'page_number' not in st.session_state:
+        st.session_state.page_number = 0
+
+    if 'disable_next' not in st.session_state:
+        st.session_state.disable_next = True
+
+    if 'disable_prev' not in st.session_state:
+        st.session_state.disable_prev = True
 
 
 if __name__ == '__main__':

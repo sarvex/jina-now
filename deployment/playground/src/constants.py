@@ -10,6 +10,7 @@ class Parameters:
     code: str = None
     state: str = None
     secured: str = 'false'
+    top_k: int = 9
 
 
 WEBRTC_CLIENT_SETTINGS = ClientSettings(
@@ -37,7 +38,6 @@ ds_set = [
 ]
 
 SURVEY_LINK = 'https://10sw1tcpld4.typeform.com/to/VTAyYRpR?utm_source=cli'
-TOP_K = 9
 
 BUTTONS = {
     'twitter': """
