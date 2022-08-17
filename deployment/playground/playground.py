@@ -346,8 +346,17 @@ def render_text(da_txt):
 
 def render_matches(OUTPUT_MODALITY):
     if st.session_state.matches and not st.session_state.error_msg:
-        # make a copy and filter based on threshold
+        if st.session_state.search_count > 2:
+            st.write(
+                f"🔥 How did you like Jina NOW? [Please leave feedback]({SURVEY_LINK}) 🔥"
+            )
+        # make a copy and  sort them based on scores
         matches: DocumentArray = deepcopy(st.session_state.matches)
+        for m in matches:
+            m.scores['cosine'].value = 1 - m.scores['cosine'].value
+        sorted(matches, key=lambda m: m.scores['cosine'].value, reverse=True)
+
+        # filter based on threshold and then group them for pagination
         matches = DocumentArray(
             [
                 m
@@ -355,82 +364,76 @@ def render_matches(OUTPUT_MODALITY):
                 if m.scores['cosine'].value > st.session_state.min_confidence
             ]
         )
-
-        # sort them based on confidence score and then group them for pagination
-        for m in matches:
-            m.scores['cosine'].value = 1 - m.scores['cosine'].value
-        sorted(matches, key=lambda m: m.scores['cosine'].value, reverse=True)
         list_matches = [matches[i : i + 9] for i in range(0, len(matches), 9)]
-        st.session_state.last_page = len(list_matches)
 
-        if st.session_state.search_count > 2:
-            st.write(
-                f"🔥 How did you like Jina NOW? [Please leave feedback]({SURVEY_LINK}) 🔥"
+        # render the current page or the last page if filtered documents are less
+        if len(list_matches) > 0:
+            st.session_state.page_number = min(
+                st.session_state.page_number, len(list_matches) - 1
             )
-        st.header('Search results')
-        # Results area
-        c1, c2, c3 = st.columns(3)
-        c4, c5, c6 = st.columns(3)
-        c7, c8, c9 = st.columns(3)
-        all_cs = [c1, c2, c3, c4, c5, c6, c7, c8, c9]
+            st.header('Search results')
+            # Results area
+            c1, c2, c3 = st.columns(3)
+            c4, c5, c6 = st.columns(3)
+            c7, c8, c9 = st.columns(3)
+            all_cs = [c1, c2, c3, c4, c5, c6, c7, c8, c9]
 
-        for c, match in zip(all_cs, list_matches[st.session_state.page_number]):
-            match.mime_type = OUTPUT_MODALITY
+            for c, match in zip(all_cs, list_matches[st.session_state.page_number]):
+                match.mime_type = OUTPUT_MODALITY
 
-            if OUTPUT_MODALITY == 'text':
-                if match.text == '' and match.uri != '':
-                    match.load_uri_to_text()
-                display_text = profanity.censor(match.text).replace('\n', ' ')
-                body = f"<!DOCTYPE html><html><body><blockquote>{display_text}</blockquote>"
-                if match.tags.get('additional_info'):
-                    additional_info = match.tags.get('additional_info')
-                    if type(additional_info) == str:
-                        additional_info_text = additional_info
-                    elif type(additional_info) == list:
-                        if len(additional_info) == 1:
-                            # assumes just one line containing information on text name and creator, etc.
+                if OUTPUT_MODALITY == 'text':
+                    if match.text == '' and match.uri != '':
+                        match.load_uri_to_text()
+                    display_text = profanity.censor(match.text).replace('\n', ' ')
+                    body = f"<!DOCTYPE html><html><body><blockquote>{display_text}</blockquote>"
+                    if match.tags.get('additional_info'):
+                        additional_info = match.tags.get('additional_info')
+                        if type(additional_info) == str:
                             additional_info_text = additional_info
-                        elif len(additional_info) == 2:
-                            # assumes first element is text name and second element is creator name
-                            additional_info_text = (
-                                f"<em>{additional_info[0]}</em> "
-                                f"<small>by {additional_info[1]}</small>"
-                            )
+                        elif type(additional_info) == list:
+                            if len(additional_info) == 1:
+                                # assumes just one line containing information on text name and creator, etc.
+                                additional_info_text = additional_info
+                            elif len(additional_info) == 2:
+                                # assumes first element is text name and second element is creator name
+                                additional_info_text = (
+                                    f"<em>{additional_info[0]}</em> "
+                                    f"<small>by {additional_info[1]}</small>"
+                                )
 
-                        else:
-                            additional_info_text = " ".join(additional_info)
-                    body += f"<figcaption>{additional_info_text}</figcaption>"
-                body += "</body></html>"
-                c.markdown(
-                    body=body,
-                    unsafe_allow_html=True,
-                )
+                            else:
+                                additional_info_text = " ".join(additional_info)
+                        body += f"<figcaption>{additional_info_text}</figcaption>"
+                    body += "</body></html>"
+                    c.markdown(
+                        body=body,
+                        unsafe_allow_html=True,
+                    )
 
-            elif OUTPUT_MODALITY == 'music':
-                if match.uri:
-                    match.load_uri_to_blob()
-                display_song(c, match)
+                elif OUTPUT_MODALITY == 'music':
+                    if match.uri:
+                        match.load_uri_to_blob()
+                    display_song(c, match)
 
-            elif OUTPUT_MODALITY in ('image', 'video'):
-                if match.blob != b'':
-                    match.convert_blob_to_datauri()
-                elif match.tensor is not None:
-                    match.convert_image_tensor_to_uri()
+                elif OUTPUT_MODALITY in ('image', 'video'):
+                    if match.blob != b'':
+                        match.convert_blob_to_datauri()
+                    elif match.tensor is not None:
+                        match.convert_image_tensor_to_uri()
 
-                if match.uri != '':
-                    c.image(match.uri)
-            else:
-                raise ValueError(f'{OUTPUT_MODALITY} not handled')
+                    if match.uri != '':
+                        c.image(match.uri)
+                else:
+                    raise ValueError(f'{OUTPUT_MODALITY} not handled')
 
-        if len(matches) > 9:
             # disable prev button or not
-            if st.session_state.page_number == 0:
+            if st.session_state.page_number <= 0:
                 st.session_state.disable_prev = True
             else:
                 st.session_state.disable_prev = False
 
             # disable next button or not
-            if st.session_state.page_number == len(list_matches):
+            if st.session_state.page_number + 1 >= len(list_matches):
                 st.session_state.disable_next = True
             else:
                 st.session_state.disable_next = False
@@ -560,7 +563,6 @@ def decrement_page():
 
 def update_conf():
     st.session_state.min_confidence = st.session_state.slider
-    st.experimental_rerun()
 
 
 def clear_match():
