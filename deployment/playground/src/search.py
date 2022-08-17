@@ -4,7 +4,7 @@ import requests
 import streamlit as st
 from docarray import Document, DocumentArray
 
-from .constants import TOP_K, Parameters
+from .constants import Parameters
 
 
 def get_query_params() -> Parameters:
@@ -20,11 +20,11 @@ def get_query_params() -> Parameters:
     return parameters
 
 
-def search(attribute_name, attribute_value, jwt, top_k=TOP_K):
+def search(attribute_name, attribute_value, jwt, top_k=None):
     print(f'Searching by {attribute_name}')
     st.session_state.search_count += 1
-    params = get_query_params()
 
+    params = get_query_params()
     if params.host == 'gateway':  # need to call now-bff as we communicate between pods
         domain = f"http://now-bff"
     else:
@@ -36,13 +36,14 @@ def search(attribute_name, attribute_value, jwt, top_k=TOP_K):
     data = {
         'host': params.host,
         attribute_name: attribute_value,
-        'limit': top_k,
+        'limit': top_k if top_k else params.top_k,
     }
     # in case the jwt is none, no jwt will be sent. This is the case when no authentication is used for that flow
     if jwt is not None:
         data['jwt'] = jwt
     if params.port:
         data['port'] = params.port
+
     response = requests.post(
         URL_HOST, json=data, headers={"Content-Type": "application/json; charset=utf-8"}
     )
@@ -93,6 +94,8 @@ def search_by_image(document: Document, jwt) -> DocumentArray:
 
 
 def search_by_audio(document: Document, jwt):
+    params = get_query_params()
+    TOP_K = params.top_k
     result = search(
         'song', base64.b64encode(document.blob).decode('utf-8'), jwt, TOP_K * 3
     )
