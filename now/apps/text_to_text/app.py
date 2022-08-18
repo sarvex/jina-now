@@ -2,7 +2,7 @@ import os
 from typing import Dict, List
 
 from docarray import DocumentArray
-from now_common.utils import preprocess_text, setup_clip_music_apps
+from now_common.utils import get_indexer_config, preprocess_text, setup_clip_music_apps
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import CLIP_USES, Apps, DatasetTypes, Modalities, Qualities
@@ -82,6 +82,7 @@ class TextToText(JinaNOWApp):
             encoder_uses = CLIP_USES
         else:
             encoder_uses = 'TransformerSentenceEncoder/v0.4'
+        indexer_config = get_indexer_config(len(dataset))
         return setup_clip_music_apps(
             app_instance=self,
             user_input=user_input,
@@ -90,7 +91,8 @@ class TextToText(JinaNOWApp):
             encoder_uses_with={
                 'pretrained_model_name_or_path': pretrained_model_name_or_path
             },
-            indexer_uses='DocarrayIndexerV2',
+            indexer_uses=indexer_config['indexer_uses'],
+            indexer_resources=indexer_config['indexer_resources'],
             kubectl_path=kubectl_path,
         )
 

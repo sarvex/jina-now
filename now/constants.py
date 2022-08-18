@@ -4,8 +4,9 @@ from now.utils import BetterEnum
 # from docarray import __version__ as docarray_version
 # DEMO_DATASET_DOCARRAY_VERSION = docarray_version
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.105-feat-error-handling-in-bff-1'
-NOW_PREPROCESSOR_VERSION = '0.0.30-security-executor-add-emails-19'
+
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.106-feat-fix-bff'
+NOW_PREPROCESSOR_VERSION = '0.0.35'
 
 
 class Modalities(BetterEnum):

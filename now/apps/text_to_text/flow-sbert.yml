@@ -37,9 +37,12 @@ executors:
       JINA_LOG_LEVEL: DEBUG
   - name: indexer
     uses: ${{ ENV.INDEXER_NAME }}
+    uses_with:
+      n_dim: ${{ ENV.PRE_TRAINED_EMBEDDINGS_SIZE }}
     jcloud:
       capacity: on-demand
       resources:
-        memory: 4G
+        memory: ${{ ENV.INDEXER_MEM }}
+        cpu: 1.0
     env:
       JINA_LOG_LEVEL: DEBUG

@@ -32,7 +32,7 @@ def cleanup(deployment_type, dataset):
     start = time.time()
     yield
     if deployment_type == 'remote':
-        if dataset == 'best-artworks':
+        if dataset in ['pop-lyrics', 'rap-lyrics']:
             flow_details = get_remote_flow_details()
             if 'flow_id' not in flow_details:
                 print('nothing to clean up')
@@ -106,8 +106,13 @@ def test_backend_demo_data(
     output_modality,
     with_hubble_login_patch,
 ):
-    # Run all tests only remote except the image to image app which runs only local
-    if (deployment_type == 'remote') == (app != Apps.IMAGE_TO_IMAGE):
+    # Run all tests with more than 50k docs remotely, all others locally
+    if (
+        deployment_type == 'remote'
+        and app not in [Apps.IMAGE_TO_TEXT, Apps.TEXT_TO_TEXT]
+    ) or (
+        deployment_type == 'local' and app in [Apps.IMAGE_TO_TEXT, Apps.TEXT_TO_TEXT]
+    ):
         pytest.skip('Too time consuming, hence skipping!')
 
     os.environ['NOW_CI_RUN'] = 'True'
