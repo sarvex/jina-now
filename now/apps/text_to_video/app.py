@@ -6,7 +6,7 @@ import numpy as np
 import PIL
 from docarray import Document, DocumentArray
 from now_common import options
-from now_common.utils import get_indexer_config, setup_clip_music_apps
+from now_common.utils import setup_clip_music_apps
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import (
@@ -17,8 +17,6 @@ from now.constants import (
     Qualities,
 )
 from now.now_dataclasses import UserInput
-
-NUM_FRAMES_SAMPLED = 3
 
 
 class TextToVideo(JinaNOWApp):
@@ -74,7 +72,6 @@ class TextToVideo(JinaNOWApp):
     def setup(
         self, dataset: DocumentArray, user_input: UserInput, kubectl_path
     ) -> Dict:
-        indexer_config = get_indexer_config(len(dataset) * NUM_FRAMES_SAMPLED)
         return setup_clip_music_apps(
             app_instance=self,
             user_input=user_input,
@@ -85,8 +82,7 @@ class TextToVideo(JinaNOWApp):
                     user_input.quality
                 ][1]
             },
-            indexer_uses=indexer_config['indexer_uses'],
-            indexer_resources=indexer_config['indexer_resources'],
+            indexer_uses='DocarrayIndexerV2',
             finetune_datasets=(),
             kubectl_path=kubectl_path,
         )
@@ -131,7 +127,7 @@ def sample_video(d):
     video = d.blob
     video_io = io.BytesIO(video)
     gif = PIL.Image.open(video_io)
-    frame_indices = select_frames(NUM_FRAMES_SAMPLED, gif.n_frames)
+    frame_indices = select_frames(3, gif.n_frames)
     frames = []
     for i in frame_indices:
         gif.seek(i)
