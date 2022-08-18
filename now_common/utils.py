@@ -184,6 +184,7 @@ def preprocess_text(da: DocumentArray, split_by_sentences=False) -> DocumentArra
 
     return DocumentArray(d for d in da if d.text and d.text != '')
 
+
 def _get_email():
     with open(user('~/.jina/config.json')) as fp:
         config_val = json.load(fp)
