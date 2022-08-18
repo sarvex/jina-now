@@ -49,7 +49,7 @@ IMAGE_MODEL_QUALITY_MAP = {
     Qualities.EXCELLENT: ('ViT-L14', 'openai/clip-vit-large-patch14'),
 }
 
-CLIP_USES = 'CLIPEncoder/v0.2.1'
+CLIP_USES = 'CLIPEncoder/0.3.1-gpu'
 
 PREFETCH_NR = 10
 

@@ -1,5 +1,8 @@
+import json
+from os.path import expanduser as user
 from typing import Dict, Optional, Tuple
 
+import hubble
 from docarray import Document, DocumentArray
 
 from now.apps.base.app import JinaNOWApp
@@ -66,9 +69,11 @@ def setup_clip_music_apps(
 
     gpu = '0'
     device = 'cpu'
-    if (
-        len(dataset) > GPU_THRESHOLD
-    ):  # uses GPU if dataset contains over GPU_THRESHOLD documents
+    user_email = _get_email()
+
+    if (len(dataset) > GPU_THRESHOLD) and user_email.split('@')[
+        -1
+    ] == 'jina.ai':  # uses GPU if dataset contains over GPU_THRESHOLD documents and user is from jina team
         gpu = 'shared'
         device = 'cuda'
 
@@ -174,3 +179,14 @@ def preprocess_text(da: DocumentArray, split_by_sentences=False) -> DocumentArra
         da = DocumentArray(d for d in gen_split_by_sentences())
 
     return DocumentArray(d for d in da if d.text and d.text != '')
+
+
+def _get_email():
+    with open(user('~/.jina/config.json')) as fp:
+        config_val = json.load(fp)
+        user_token = config_val['auth_token']
+        client = hubble.Client(token=user_token, max_retries=None, jsonify=True)
+        response = client.get_user_info()
+    if 'email' in response['data']:
+        return response['data']['email']
+    return ''
