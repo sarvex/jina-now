@@ -3,7 +3,12 @@ from typing import Dict, List
 
 from docarray import DocumentArray
 from now_common import options
-from now_common.utils import preprocess_images, preprocess_text, setup_clip_music_apps
+from now_common.utils import (
+    get_indexer_config,
+    preprocess_images,
+    preprocess_text,
+    setup_clip_music_apps,
+)
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import (
@@ -77,6 +82,7 @@ class ImageToText(JinaNOWApp):
     def setup(
         self, dataset: DocumentArray, user_input: UserInput, kubectl_path
     ) -> Dict:
+        indexer_config = get_indexer_config(len(dataset))
         return setup_clip_music_apps(
             app_instance=self,
             user_input=user_input,
@@ -87,7 +93,8 @@ class ImageToText(JinaNOWApp):
                     user_input.quality
                 ][1]
             },
-            indexer_uses='DocarrayIndexerV2',
+            indexer_uses=indexer_config['indexer_uses'],
+            indexer_resources=indexer_config['indexer_resources'],
             kubectl_path=kubectl_path,
         )
 
