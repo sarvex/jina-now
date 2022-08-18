@@ -1,5 +1,5 @@
 import os
-from typing import Dict, Optional, Tuple
+from typing import Dict
 
 from docarray import Document, DocumentArray
 
@@ -55,13 +55,12 @@ def setup_clip_music_apps(
     indexer_uses: str,
     indexer_resources: Dict,
     kubectl_path: str,
-    finetune_datasets: Optional[Tuple] = (),
 ) -> Dict:
     finetune_settings = parse_finetune_settings(
         app_instance=app_instance,
         user_input=user_input,
         dataset=dataset,
-        finetune_datasets=finetune_datasets,
+        finetune_datasets=app_instance.finetune_datasets,
     )
 
     env_dict = get_clip_music_flow_env_dict(

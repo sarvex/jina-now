@@ -1,6 +1,6 @@
 import abc
 import os
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 import docker
 from docarray import DocumentArray
@@ -21,7 +21,6 @@ class JinaNOWApp:
 
     def __init__(self):
         self.flow_yaml = ''
-
         self.set_flow_yaml()
 
     @property
@@ -145,6 +144,11 @@ class JinaNOWApp:
         Recommended memory limit for the docker client to run this app.
         """
         return 8
+
+    @property
+    def finetune_datasets(self) -> [Tuple]:
+        """Defines the list of demo datasets which are fine-tunable."""
+        return ()
 
     def _check_docker_mem_limit(self) -> bool:
         mem_total = docker.from_env().info().get('MemTotal')
