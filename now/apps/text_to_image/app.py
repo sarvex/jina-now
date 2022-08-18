@@ -15,7 +15,6 @@ from now.constants import (
     CLIP_USES,
     IMAGE_MODEL_QUALITY_MAP,
     Apps,
-    DemoDatasets,
     Modalities,
     Qualities,
 )
@@ -87,7 +86,6 @@ class TextToImage(JinaNOWApp):
             },
             indexer_uses=indexer_config['indexer_uses'],
             indexer_resources=indexer_config['indexer_resources'],
-            finetune_datasets=(DemoDatasets.DEEP_FASHION, DemoDatasets.BIRD_SPECIES),
             kubectl_path=kubectl_path,
         )
 
