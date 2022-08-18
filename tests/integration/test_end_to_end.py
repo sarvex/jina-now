@@ -32,7 +32,7 @@ def cleanup(deployment_type, dataset):
     start = time.time()
     yield
     if deployment_type == 'remote':
-        if dataset == 'best-artworks':
+        if dataset in ['pop-lyrics', 'rap-lyrics']:
             flow_details = get_remote_flow_details()
             if 'flow_id' not in flow_details:
                 print('nothing to clean up')
@@ -106,8 +106,13 @@ def test_backend_demo_data(
     output_modality,
     with_hubble_login_patch,
 ):
-    # Run all tests only remote except the image to image app which runs only local
-    if (deployment_type == 'remote') == (app != Apps.IMAGE_TO_IMAGE):
+    # Run all tests with more than 50k docs remotely, all others locally
+    if (
+        deployment_type == 'remote'
+        and app not in [Apps.IMAGE_TO_TEXT, Apps.TEXT_TO_TEXT]
+    ) or (
+        deployment_type == 'local' and app in [Apps.IMAGE_TO_TEXT, Apps.TEXT_TO_TEXT]
+    ):
         pytest.skip('Too time consuming, hence skipping!')
 
     os.environ['NOW_CI_RUN'] = 'True'
@@ -155,19 +160,50 @@ def assert_deployment_queries(
     output_modality,
     test_search_image,
 ):
-    if dataset == DemoDatasets.BEST_ARTWORKS:
-        search_text = 'impressionism'
-    elif dataset == DemoDatasets.NFT_MONKEY:
-        search_text = 'laser eyes'
-    else:
-        search_text = 'test'
+    url = f'http://localhost:30090/api/v1'
+    # normal case
+    request_body = get_search_request_body(
+        app, dataset, deployment_type, kwargs, test_search_image
+    )
+    response = requests.post(
+        f'{url}/{input_modality}-to-{output_modality}/search',
+        json=request_body,
+    )
+    assert (
+        response.status_code == 200
+    ), f"Received code {response.status_code} with text: {response.text}"
+    assert len(response.json()) == 9
+
+    # add email
+    if kwargs.secured:
+        request_body = get_default_request_body(deployment_type, kwargs.secured)
+        request_body['user_emails'] = ['florian.hoenicke@jina.ai']
+        response = requests.post(
+            f'{url}/admin/updateUserEmails',
+            json=request_body,
+        )
+        assert response.status_code == 200
+
+
+def get_search_request_body(app, dataset, deployment_type, kwargs, test_search_image):
+    request_body = get_default_request_body(deployment_type, kwargs.secured)
+    request_body['limit'] = 9
     # Perform end-to-end check via bff
     if app in [Apps.IMAGE_TO_IMAGE, Apps.IMAGE_TO_TEXT]:
-        request_body = {'image': test_search_image, 'limit': 9}
+        request_body['image'] = test_search_image
     elif app in [Apps.TEXT_TO_IMAGE, Apps.TEXT_TO_TEXT]:
-        request_body = {'text': search_text, 'limit': 9}
-    else:  # Add different request body if app changes
-        request_body = {}
+        if dataset == DemoDatasets.BEST_ARTWORKS:
+            search_text = 'impressionism'
+        elif dataset == DemoDatasets.NFT_MONKEY:
+            search_text = 'laser eyes'
+        else:
+            search_text = 'test'
+        request_body['text'] = search_text
+    return request_body
+
+
+def get_default_request_body(deployment_type, secured):
+    request_body = {}
     if deployment_type == 'local':
         request_body['host'] = 'gateway'
         request_body['port'] = 8080
@@ -176,20 +212,13 @@ def assert_deployment_queries(
         with open(user(JC_SECRET), 'r') as fp:
             flow_details = json.load(fp)
         request_body['host'] = flow_details['gateway']
-    if kwargs.secured:
+    if secured:
         if 'WOLF_TOKEN' in os.environ:
             os.environ['JINA_AUTH_TOKEN'] = os.environ['WOLF_TOKEN']
         client = hubble.Client(token=hubble.get_token(), max_retries=None, jsonify=True)
         user_info = client.get_user_info()['data']
         request_body['jwt'] = {'user': user_info, 'token': hubble.get_token()}
-    response = requests.post(
-        f'http://localhost:30090/api/v1/{input_modality}-to-{output_modality}/search',
-        json=request_body,
-    )
-    assert (
-        response.status_code == 200
-    ), f"Received code {response.status_code} with text: {response.text}"
-    assert len(response.json()) == 9
+    return request_body
 
 
 def assert_deployment_response(

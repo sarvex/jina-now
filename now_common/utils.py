@@ -18,12 +18,13 @@ def get_clip_music_flow_env_dict(
     encoder_uses: str,
     encoder_uses_with: Dict,
     indexer_uses: str,
+    indexer_resources: Dict,
     user_input: UserInput,
     gpu: str,
     device: str,
 ):
     """Returns dictionary for the environments variables for the clip & music flow.yml files."""
-    if finetune_settings.bi_modal:
+    if finetune_settings.perform_finetuning and finetune_settings.bi_modal:
         pre_trained_embedding_size = finetune_settings.pre_trained_embedding_size * 2
     else:
         pre_trained_embedding_size = finetune_settings.pre_trained_embedding_size
@@ -38,6 +39,7 @@ def get_clip_music_flow_env_dict(
         'APP': user_input.app,
         'GPU': gpu,
         'DEVICE': device,
+        **indexer_resources,
     }
     if encoder_uses_with.get('pretrained_model_name_or_path'):
         config['PRE_TRAINED_MODEL_NAME'] = encoder_uses_with[
@@ -57,6 +59,7 @@ def setup_clip_music_apps(
     encoder_uses: str,
     encoder_uses_with: Dict,
     indexer_uses: str,
+    indexer_resources: Dict,
     kubectl_path: str,
     finetune_datasets: Optional[Tuple] = (),
 ) -> Dict:
@@ -82,6 +85,7 @@ def setup_clip_music_apps(
         encoder_uses=encoder_uses,
         encoder_uses_with=encoder_uses_with,
         indexer_uses=indexer_uses,
+        indexer_resources=indexer_resources,
         user_input=user_input,
         gpu=gpu,
         device=device,
@@ -180,7 +184,6 @@ def preprocess_text(da: DocumentArray, split_by_sentences=False) -> DocumentArra
 
     return DocumentArray(d for d in da if d.text and d.text != '')
 
-
 def _get_email():
     with open(user('~/.jina/config.json')) as fp:
         config_val = json.load(fp)
@@ -190,3 +193,20 @@ def _get_email():
     if 'email' in response['data']:
         return response['data']['email']
     return ''
+
+
+def get_indexer_config(num_indexed_samples: int) -> Dict:
+    """Depending on the number of samples, which will be indexed, indexer and its resources are determined.
+
+    :param num_indexed_samples: number of samples which will be indexed; should incl. chunks for e.g. text-to-video app
+    """
+    config = {'indexer_uses': 'AnnLiteIndexer/v0.1'}
+    if num_indexed_samples <= 50_000:
+        config['indexer_uses'] = 'DocarrayIndexerV2'
+        config['indexer_resources'] = {'INDEXER_CPU': 0.1, 'INDEXER_MEM': '2G'}
+    elif num_indexed_samples <= 250_000:
+        config['indexer_resources'] = {'INDEXER_CPU': 0.1, 'INDEXER_MEM': '2G'}
+    else:
+        config['indexer_resources'] = {'INDEXER_CPU': 1.0, 'INDEXER_MEM': '4G'}
+
+    return config

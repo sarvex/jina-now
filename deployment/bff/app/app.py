@@ -2,8 +2,9 @@ import logging.config
 import sys
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from starlette.applications import Starlette
+from starlette.responses import JSONResponse
 from starlette.routing import Mount
 
 import deployment.bff.app.settings as api_settings
@@ -69,6 +70,18 @@ def get_app_instance():
             f'Jina NOW started! ' f'Listening to [::]:{api_settings.DEFAULT_PORT}'
         )
 
+    @app.exception_handler(Exception)
+    async def unicorn_exception_handler(request: Request, exc: Exception):
+        import traceback
+
+        error = traceback.format_exc()
+        return JSONResponse(
+            status_code=500,
+            content={
+                "message": f"Exception in BFF, but the root cause can still be in the flow: {error}"
+            },
+        )
+
     return app
 
 
@@ -128,7 +141,6 @@ def build_app():
             Mount(admin_mount, admin_app),
         ]
     )
-
     return app
 
 

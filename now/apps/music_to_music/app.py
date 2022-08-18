@@ -94,6 +94,7 @@ class MusicToMusic(JinaNOWApp):
             encoder_uses='BiModalMusicTextEncoderV2',
             encoder_uses_with={},
             indexer_uses='MusicRecommendationIndexerV2',
+            indexer_resources={},
             kubectl_path=kubectl_path,
         )
 

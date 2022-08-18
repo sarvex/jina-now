@@ -13,6 +13,7 @@
 
 
 
+
 <a name=release-note-0-0-7></a>
 ## Release Note (`0.0.7`)
 
@@ -459,4 +460,44 @@
  - [[```cea2d98e```](https://github.com/jina-ai/now/commit/cea2d98e7b68e48ebb9f27ca24162d6355500c46)] __-__ __deps__: bump streamlit from 1.5.0 to 1.11.1 in /now/data_loading (#328) (*dependabot[bot]*)
  - [[```fc40ac2f```](https://github.com/jina-ai/now/commit/fc40ac2f42b9a0f2553f7417456972f525c2341a)] __-__ Feat add preprocess executor (#323) (*joschkabraun*)
  - [[```a5a5fc91```](https://github.com/jina-ai/now/commit/a5a5fc9190b680619dd50e500ec06d00b45f9f87)] __-__ __version__: the next version will be 0.0.19 (*Jina Dev Bot*)
+
+<a name=release-note-0-0-20></a>
+## Release Note (`0.0.20`)
+
+> Release time: 2022-08-17 12:00:19
+
+
+
+🙇 We'd like to thank all contributors for this new release! In particular,
+ Florian Hönicke,  joschkabraun,  Joschka Braun,  Mohammad Kalim Akram,  Jina Dev Bot,  🙇
+
+
+### 🆕 New Features
+
+ - [[```a197b5f3```](https://github.com/jina-ai/now/commit/a197b5f347eef2f82f9890337003acfaf0eab9ba)] __-__ client code to update emails (#346) (*Florian Hönicke*)
+ - [[```36574b0b```](https://github.com/jina-ai/now/commit/36574b0bf45c5de322aa844852225d43b68dea5e)] __-__ __playground-s3__: fix typo in backend (*Joschka Braun*)
+ - [[```dd143c47```](https://github.com/jina-ai/now/commit/dd143c4774ed61bb5f73c17f2ec4e108d4bff53f)] __-__ __playground-s3__: fix using jwt in temp link (*Joschka Braun*)
+ - [[```fc2d19df```](https://github.com/jina-ai/now/commit/fc2d19df14128a5bd2d46fa01b103f03d27f363e)] __-__ __playground-s3__: adds postprocessor, uri to for indexing in bff (#334) (*joschkabraun*)
+ - [[```559122b6```](https://github.com/jina-ai/now/commit/559122b677cfd4a5a26d62f7531a16ab171365e2)] __-__ __prepr-exec-ci__: test gha (#331) (*joschkabraun*)
+
+### 🐞 Bug fixes
+
+ - [[```5ef1d8c4```](https://github.com/jina-ai/now/commit/5ef1d8c48710e1d24ebf8b3b8b5b6e17077983c8)] __-__ bff path (#356) (*Florian Hönicke*)
+ - [[```9f45ffb0```](https://github.com/jina-ai/now/commit/9f45ffb07644102285759f96c34195bd68b3ed61)] __-__ user emails in bff (#349) (*Florian Hönicke*)
+ - [[```be3dd8d5```](https://github.com/jina-ai/now/commit/be3dd8d5cc80028be06677f32d22d19e73cdb264)] __-__ __jwt-temp-link__: fix jwt (#339) (*joschkabraun*)
+ - [[```c2458892```](https://github.com/jina-ai/now/commit/c24588920a76fd67ca06b9b48afc19e7ef70ffa3)] __-__ version hubble (#337) (*Florian Hönicke*)
+ - [[```1b7f96b9```](https://github.com/jina-ai/now/commit/1b7f96b97920ccfe1a893f40fd309f3e6f443383)] __-__ remove getting all cookies (#333) (*Mohammad Kalim Akram*)
+
+### 🧼 Code Refactoring
+
+ - [[```01a40d34```](https://github.com/jina-ai/now/commit/01a40d34e168b58607cf16ff3f913ad4450e18a8)] __-__ security executor (#335) (*Florian Hönicke*)
+
+### 🏁 Unit Test and CICD
+
+ - [[```801c17ca```](https://github.com/jina-ai/now/commit/801c17ca5f0eeb0c114bb27b36fb9481fbacd9a9)] __-__ add user email (#342) (*Florian Hönicke*)
+
+### 🍹 Other Improvements
+
+ - [[```591906c0```](https://github.com/jina-ai/now/commit/591906c00bc3751c6480e108e085d10e2f9919e9)] __-__ Fix preproc userinput (#341) (*joschkabraun*)
+ - [[```7f631032```](https://github.com/jina-ai/now/commit/7f631032d774ac37e386109323a944b9acc76bdf)] __-__ __version__: the next version will be 0.0.20 (*Jina Dev Bot*)
 
