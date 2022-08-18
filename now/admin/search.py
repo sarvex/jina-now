@@ -8,7 +8,7 @@ API_KEY = 'my_key'
 url = f"https://nowrun.jina.ai/api/v1/text-to-image/search"
 host = 'grpcs://nowapi-c74eae8ebe.wolf.jina.ai'
 url = 'http://localhost:8080/api/v1/text-to-image/search'
-host = 'grpcs://0.0.0.0'
+host = 'grpc://0.0.0.0'
 port = 9090
 direct = False
 
@@ -28,7 +28,7 @@ else:
     # request the bff
     request_body = {
         'host': host,
-        'prot': -1,
+        'port': port,
         'api_key': API_KEY,
         'text': 'girl on motorbike',
     }
@@ -39,4 +39,5 @@ else:
     )
 
 
-print(response.json()['message'])
+if 'message' in response.json():
+    print(response.json()['message'])
