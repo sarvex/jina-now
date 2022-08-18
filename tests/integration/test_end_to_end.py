@@ -151,6 +151,17 @@ def test_backend_demo_data(
     )
 
 
+def assert_search(search_url, request_body):
+    response = requests.post(
+        search_url,
+        json=request_body,
+    )
+    assert (
+        response.status_code == 200
+    ), f"Received code {response.status_code} with text: {response.json()['message']}"
+    assert len(response.json()) == 9
+
+
 def assert_deployment_queries(
     app,
     dataset,
@@ -165,17 +176,11 @@ def assert_deployment_queries(
     request_body = get_search_request_body(
         app, dataset, deployment_type, kwargs, test_search_image
     )
-    response = requests.post(
-        f'{url}/{input_modality}-to-{output_modality}/search',
-        json=request_body,
-    )
-    assert (
-        response.status_code == 200
-    ), f"Received code {response.status_code} with text: {response.text}"
-    assert len(response.json()) == 9
+    search_url = f'{url}/{input_modality}-to-{output_modality}/search'
+    assert_search(search_url, request_body)
 
-    # add email
     if kwargs.secured:
+        # test add email
         request_body = get_default_request_body(deployment_type, kwargs.secured)
         request_body['user_emails'] = ['florian.hoenicke@jina.ai']
         response = requests.post(
@@ -183,6 +188,31 @@ def assert_deployment_queries(
             json=request_body,
         )
         assert response.status_code == 200
+
+        # test api keys
+        # search with invalid api key
+        request_body = get_search_request_body(
+            app, dataset, deployment_type, kwargs, test_search_image
+        )
+        del request_body['jwt']
+        request_body['api_key'] = 'my_key'
+        with pytest.raises(Exception):
+            assert_search(search_url, request_body)
+        # add api key
+        request_body_update_keys = get_default_request_body(
+            deployment_type, kwargs.secured
+        )
+        request_body_update_keys['api_keys'] = ['my_key']
+        response = requests.post(
+            f'{url}/admin/updateApiKeys',
+            json=request_body_update_keys,
+        )
+        if response.status_code != 200:
+            print(response.text)
+            print(response.json()['message'])
+            raise Exception(f'Response status is {response.status_code}')
+        # the same search should work now
+        assert_search(search_url, request_body)
 
 
 def get_search_request_body(app, dataset, deployment_type, kwargs, test_search_image):
@@ -299,7 +329,7 @@ def test_backend_custom_data(
 
     assert (
         response.status_code == 200
-    ), f"Received code {response.status_code} with text: {response.text}"
+    ), f"Received code {response.status_code} with text: {response.json()['message']}"
     response_json = response.json()
     assert len(response_json) == 9
     assert all(

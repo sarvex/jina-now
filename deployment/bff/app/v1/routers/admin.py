@@ -19,11 +19,10 @@ def update_user_email(data: UpdateEmailsRequestModel):
     Update the list of emails for the security executor
     """
     jina_client_post(
-        host=data.host,
-        port=data.port,
+        data=data,
         inputs=[Document()],
         endpoint='/admin/updateUserEmails',
-        parameters={'jwt': data.jwt, 'user_emails': data.user_emails},
+        parameters={'user_emails': data.user_emails},
     )
 
 
@@ -31,14 +30,13 @@ def update_user_email(data: UpdateEmailsRequestModel):
     "/updateApiKeys",
     summary='update api keys during runtime',
 )
-def update_user_email(data: UpdateApiKeysRequestModel):
+def update_api_keys(data: UpdateApiKeysRequestModel):
     """
     Update the list of api keys for the security executor
     """
     jina_client_post(
-        host=data.host,
-        port=data.port,
+        data=data,
         inputs=[Document()],
         endpoint='/admin/updateApiKeys',
-        parameters={'jwt': data.jwt, 'api_keys': data.api_keys},
+        parameters={'api_keys': data.api_keys},
     )

@@ -20,6 +20,8 @@ def process_query(text: str = '', blob: str = b'', uri: str = None) -> Document:
             base64_bytes = blob.encode('utf-8')
             message_bytes = base64.decodebytes(base64_bytes)
             query_doc = Document(blob=message_bytes, mime_type='image')
+        else:
+            raise ValueError('None of the attributes uri, text or blob is set.')
     except BaseException as e:
         raise HTTPException(
             status_code=500,
@@ -36,12 +38,11 @@ def get_jina_client(host: str, port: int) -> Client:
 
 
 def jina_client_post(
-    host: str, port: int, endpoint: str, inputs, parameters=None, *args, **kwargs
+    data, endpoint: str, inputs, parameters=None, *args, **kwargs
 ) -> DocumentArray:
     """Posts to the endpoint of the Jina client.
 
-    :param host: host address of the flow
-    :param port: port of flow
+    :param data: contains the request model of the flow
     :param endpoint: endpoint which shall be called, e.g. '/index' or '/search'
     :param inputs: document(s) which shall be passed in
     :param parameters: parameters to pass to the executors, e.g. jwt for securitization or limit for search
@@ -51,10 +52,19 @@ def jina_client_post(
     """
     if parameters is None:
         parameters = {}
-    client = get_jina_client(host=host, port=port)
+    client = get_jina_client(host=data.host, port=data.port)
+    auth_dict = {}
+    if data.api_key is not None:
+        auth_dict['api_key'] = data.api_key
+    if data.jwt is not None:
+        auth_dict['jwt'] = data.jwt
     try:
         result = client.post(
-            endpoint, inputs=inputs, parameters=parameters, *args, **kwargs
+            endpoint,
+            inputs=inputs,
+            parameters={**auth_dict, **parameters},
+            *args,
+            **kwargs,
         )
     except BadServer as e:
         if 'Not a valid user' in e.args[0].status.description:

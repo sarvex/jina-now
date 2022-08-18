@@ -13,7 +13,7 @@ from kubernetes import config
 from yaspin.spinners import Spinners
 
 from now.cloud_manager import is_local_cluster
-from now.constants import JC_SECRET
+from now.constants import JC_SECRET, NOW_AUTH_EXECUTOR_VERSION
 from now.deployment.deployment import apply_replace, cmd, deploy_wolf
 from now.log import time_profiler, yaspin_extended
 from now.utils import sigmap, write_env_file
@@ -112,7 +112,7 @@ def _extend_flow_yaml(flow_yaml, tmpdir, secured, admin_emails, user_emails):
         first_part, second_part = flow_yaml.split('executors:')
         executor_string = f"""
   - name: security_check
-    uses: jinahub+docker://AuthExecutor2/0.0.3
+    uses: jinahub+docker://AuthExecutor2/{NOW_AUTH_EXECUTOR_VERSION}
     uses_with:
       admin_emails: {admin_emails if admin_emails else []}
       user_emails: {user_emails if user_emails else []}

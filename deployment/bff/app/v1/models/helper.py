@@ -22,6 +22,10 @@ class BaseRequestModel(BaseModel):
         default=None,
         description='User info obtained from the hubble along with token. To be passed when the flow is secure',
     )
+    api_key: Optional[str] = Field(
+        default=None,
+        description='Used to authenticate machines',
+    )
 
     class Config:
         allow_mutation = False

@@ -24,11 +24,10 @@ def temp_link(data: CloudTempLinkRequestModel):
         docs.append(Document(id=id, uri=uri))
 
     docs = jina_client_post(
-        host=data.host,
-        port=data.port,
+        data=data,
         inputs=DocumentArray(docs),
         endpoint='/temp_link_cloud_bucket',
-        parameters={'jwt': data.jwt},
+        parameters={},
         target_executor=r'\Asecurity_check\Z|\Apreprocessor\Z',
     )
 
