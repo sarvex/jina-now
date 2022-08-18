@@ -44,6 +44,8 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
         raise ValueError(
             f'Could not load DocArray dataset. Please check your configuration: {user_input}.'
         )
+    if 'NOW_CI_RUN' in os.environ:
+        da = da[:1000]
     da = da.shuffle(seed=42)
     da = deep_copy_da(da)
     return da
