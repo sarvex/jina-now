@@ -1,10 +1,30 @@
 import base64
+import functools
 
 import requests
 import streamlit as st
 from docarray import Document, DocumentArray
+from frozendict import frozendict
 
 from .constants import Parameters
+
+
+def freeze_args(func):
+    """
+    Transform mutable dictionary into immutable. Useful to be compatible with cache.
+    """
+
+    @functools.wraps(func)
+    def wrapped(*args, **kwargs):
+        args = tuple(
+            [frozendict(arg) if isinstance(arg, dict) else arg for arg in args]
+        )
+        kwargs = {
+            k: frozendict(v) if isinstance(v, dict) else v for k, v in kwargs.items()
+        }
+        return func(*args, **kwargs)
+
+    return wrapped
 
 
 def get_query_params() -> Parameters:
@@ -22,8 +42,6 @@ def get_query_params() -> Parameters:
 
 def search(attribute_name, attribute_value, jwt, top_k=None):
     print(f'Searching by {attribute_name}')
-    st.session_state.search_count += 1
-
     params = get_query_params()
     if params.host == 'gateway':  # need to call now-bff as we communicate between pods
         domain = f"http://now-bff"
@@ -44,9 +62,18 @@ def search(attribute_name, attribute_value, jwt, top_k=None):
     if params.port:
         data['port'] = params.port
 
+    return call_flow(URL_HOST, data, attribute_name, domain)
+
+
+@freeze_args
+@functools.lru_cache(maxsize=10, typed=False)
+def call_flow(url_host, data, attribute_name, domain):
+    st.session_state.search_count += 1
+    data = dict(data)
     response = requests.post(
-        URL_HOST, json=data, headers={"Content-Type": "application/json; charset=utf-8"}
+        url_host, json=data, headers={"Content-Type": "application/json; charset=utf-8"}
     )
+
     if response.status_code == 401:
         st.session_state.error_msg = response.json()['detail']
         return None
@@ -81,8 +108,6 @@ def search_by_image(document: Document, jwt) -> DocumentArray:
     """
     Wrap file in Jina Document for searching, and do all necessary conversion to make similar to indexed Docs
     """
-    st.session_state.search_count += 1
-    print(f"Searching by image")
     query_doc = document
     if query_doc.blob == b'':
         if query_doc.tensor is not None:

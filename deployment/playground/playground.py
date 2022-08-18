@@ -578,6 +578,7 @@ def clear_match():
 
 def clear_text():
     st.session_state.text_search_box = ''
+    clear_match()
 
 
 def load_data(data_path: str) -> DocumentArray:
