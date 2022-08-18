@@ -38,5 +38,5 @@ def update_api_keys(data: UpdateApiKeysRequestModel):
         data=data,
         inputs=[Document()],
         endpoint='/admin/updateApiKeys',
-        parameters={},
+        parameters={'api_keys': data.api_keys},
     )

@@ -207,7 +207,10 @@ def assert_deployment_queries(
             f'{url}/admin/updateApiKeys',
             json=request_body_update_keys,
         )
-        assert response.status_code == 200
+        if response.status_code != 200:
+            print(response.text)
+            print(response.json()['message'])
+            raise Exception(f'Response status is {response.status_code}')
         # the same search should work now
         assert_search(search_url, request_body)
 
