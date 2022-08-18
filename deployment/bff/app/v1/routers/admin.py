@@ -35,8 +35,7 @@ def update_api_keys(data: UpdateApiKeysRequestModel):
     Update the list of api keys for the security executor
     """
     jina_client_post(
-        host=data.host,
-        port=data.port,
+        data=data,
         inputs=[Document()],
         endpoint='/admin/updateApiKeys',
         parameters={},

@@ -158,7 +158,7 @@ def assert_search(search_url, request_body):
     )
     assert (
         response.status_code == 200
-    ), f"Received code {response.status_code} with text: {response.text}"
+    ), f"Received code {response.status_code} with text: {response.json()['message']}"
     assert len(response.json()) == 9
 
 
@@ -326,7 +326,7 @@ def test_backend_custom_data(
 
     assert (
         response.status_code == 200
-    ), f"Received code {response.status_code} with text: {response.text}"
+    ), f"Received code {response.status_code} with text: {response.json()['message']}"
     response_json = response.json()
     assert len(response_json) == 9
     assert all(

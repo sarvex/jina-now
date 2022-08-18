@@ -53,11 +53,16 @@ def jina_client_post(
     if parameters is None:
         parameters = {}
     client = get_jina_client(host=data.host, port=data.port)
+    auth_dict = {}
+    if data.api_key is not None:
+        auth_dict['api_key'] = data.api_key
+    if data.jwt is not None:
+        auth_dict['jwt'] = data.jwt
     try:
         result = client.post(
             endpoint,
             inputs=inputs,
-            parameters={'jwt': data.jwt, 'api_key': data.api_key, **parameters},
+            parameters={**auth_dict, **parameters},
             *args,
             **kwargs,
         )
