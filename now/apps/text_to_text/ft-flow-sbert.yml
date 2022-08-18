@@ -20,9 +20,12 @@ executors:
       JINA_LOG_LEVEL: DEBUG
   - name: encoder_text
     uses: ${{ ENV.ENCODER_NAME }}
+    uses_with: 
+      device: ${{ ENV.DEVICE }}
     jcloud:
       resources:
         memory: 8G
+        gpu: ${{ ENV.GPU  }}
     uses_with:
       model_name: ${{ ENV.PRE_TRAINED_MODEL_NAME }}
     env:
