@@ -7,7 +7,10 @@ API_KEY = 'my_key'
 
 url = f"https://nowrun.jina.ai/api/v1/text-to-image/search"
 host = 'grpcs://nowapi-c74eae8ebe.wolf.jina.ai'
-direct = True
+url = 'http://localhost:8080/api/v1/text-to-image/search'
+host = 'grpcs://0.0.0.0'
+port = 9090
+direct = False
 
 
 if direct:
@@ -36,4 +39,4 @@ else:
     )
 
 
-print()
+print(response.json()['message'])
