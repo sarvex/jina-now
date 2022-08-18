@@ -553,7 +553,7 @@ def _build_lyrics(
 
 
 def _build_rock_lyrics(
-    root: str, num_workers: int = 8, max_size: int = 200000
+    root: str, num_workers: int = 8, max_size: int = 200_000
 ) -> DocumentArray:
     """
     Builds the rock lyrics dataset. Download the CSV files from:
@@ -572,7 +572,7 @@ def _build_rock_lyrics(
 
 
 def _build_pop_lyrics(
-    root: str, num_workers: int = 8, max_size: int = 200000
+    root: str, num_workers: int = 8, max_size: int = 200_000
 ) -> DocumentArray:
     """
     Builds the pop lyrics dataset. Download the CSV files from:
@@ -591,7 +591,7 @@ def _build_pop_lyrics(
 
 
 def _build_rap_lyrics(
-    root: str, num_workers: int = 8, max_size: int = 200000
+    root: str, num_workers: int = 8, max_size: int = 200_000
 ) -> DocumentArray:
     """
     Builds the rap lyrics dataset. Download the CSV files from:
@@ -610,7 +610,7 @@ def _build_rap_lyrics(
 
 
 def _build_indie_lyrics(
-    root: str, num_workers: int = 8, max_size: int = 200000
+    root: str, num_workers: int = 8, max_size: int = 200_000
 ) -> DocumentArray:
     """
     Builds the indie lyrics dataset. Download the CSV files from:
@@ -629,7 +629,7 @@ def _build_indie_lyrics(
 
 
 def _build_metal_lyrics(
-    root: str, num_workers: int = 8, max_size: int = 200000
+    root: str, num_workers: int = 8, max_size: int = 200_000
 ) -> DocumentArray:
     """
     Builds the indie lyrics dataset. Download the CSV files from:

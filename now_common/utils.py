@@ -1,3 +1,4 @@
+import os
 from typing import Dict, Optional, Tuple
 
 from docarray import Document, DocumentArray
@@ -172,10 +173,14 @@ def get_indexer_config(num_indexed_samples: int) -> Dict:
     :param num_indexed_samples: number of samples which will be indexed; should incl. chunks for e.g. text-to-video app
     """
     config = {'indexer_uses': 'AnnLiteIndexer/v0.1'}
-    if num_indexed_samples <= 50_000:
+    threshold1 = 50_000
+    threshold2 = 250_000
+    if 'NOW_CI_RUN' in os.environ:
+        threshold1 = 1_500
+    if num_indexed_samples <= threshold1:
         config['indexer_uses'] = 'DocarrayIndexerV2'
         config['indexer_resources'] = {'INDEXER_CPU': 0.1, 'INDEXER_MEM': '2G'}
-    elif num_indexed_samples <= 250_000:
+    elif num_indexed_samples <= threshold2:
         config['indexer_resources'] = {'INDEXER_CPU': 0.1, 'INDEXER_MEM': '2G'}
     else:
         config['indexer_resources'] = {'INDEXER_CPU': 1.0, 'INDEXER_MEM': '4G'}

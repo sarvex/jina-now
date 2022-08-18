@@ -7,7 +7,7 @@ from pathlib import Path
 from docarray import Document, DocumentArray
 
 from now.apps.base.app import JinaNOWApp
-from now.constants import DatasetTypes
+from now.constants import DatasetTypes, DemoDatasets
 from now.data_loading.utils import _fetch_da_from_url, get_dataset_url
 from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
@@ -45,7 +45,10 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
             f'Could not load DocArray dataset. Please check your configuration: {user_input}.'
         )
     if 'NOW_CI_RUN' in os.environ:
-        da = da[:1000]
+        if user_input.data == DemoDatasets.BEST_ARTWORKS:
+            da = da[:2000]
+        else:
+            da = da[:1000]
     da = da.shuffle(seed=42)
     da = deep_copy_da(da)
     return da
