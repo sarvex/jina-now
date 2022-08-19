@@ -1,5 +1,6 @@
 import base64
 import functools
+from collections.abc import Collection, Hashable, Mapping
 
 import requests
 import streamlit as st
@@ -9,22 +10,40 @@ from frozendict import frozendict
 from .constants import Parameters
 
 
-def freeze_args(func):
+def deep_freeze(thing):
+    if thing is None or isinstance(thing, str):
+        return thing
+    elif isinstance(thing, Mapping):
+        return frozendict({k: deep_freeze(v) for k, v in thing.items()})
+    elif isinstance(thing, Collection):
+        return tuple(deep_freeze(i) for i in thing)
+    elif not isinstance(thing, Hashable):
+        raise TypeError(f"un-freezable type: '{type(thing)}'")
+    else:
+        return thing
+
+
+def deep_freeze_args(func):
     """
     Transform mutable dictionary into immutable. Useful to be compatible with cache.
     """
 
     @functools.wraps(func)
     def wrapped(*args, **kwargs):
-        args = tuple(
-            [frozendict(arg) if isinstance(arg, dict) else arg for arg in args]
-        )
-        kwargs = {
-            k: frozendict(v) if isinstance(v, dict) else v for k, v in kwargs.items()
-        }
-        return func(*args, **kwargs)
+        return func(*deep_freeze(args), **deep_freeze(kwargs))
 
     return wrapped
+
+
+def unfreeze_param(data):
+    new_data = {}
+    for k, v in data.items():
+        if isinstance(v, frozendict):
+            d = unfreeze_param(v)
+            new_data[k] = dict(d)
+        else:
+            new_data[k] = v
+    return new_data
 
 
 def get_query_params() -> Parameters:
@@ -65,11 +84,12 @@ def search(attribute_name, attribute_value, jwt, top_k=None):
     return call_flow(URL_HOST, data, attribute_name, domain)
 
 
-@freeze_args
+@deep_freeze_args
 @functools.lru_cache(maxsize=10, typed=False)
 def call_flow(url_host, data, attribute_name, domain):
     st.session_state.search_count += 1
-    data = dict(data)
+    data = unfreeze_param(data)
+
     response = requests.post(
         url_host, json=data, headers={"Content-Type": "application/json; charset=utf-8"}
     )
