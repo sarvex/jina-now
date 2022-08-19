@@ -14,6 +14,8 @@
 
 
 
+
+
 <a name=release-note-0-0-7></a>
 ## Release Note (`0.0.7`)
 
@@ -500,4 +502,53 @@
 
  - [[```591906c0```](https://github.com/jina-ai/now/commit/591906c00bc3751c6480e108e085d10e2f9919e9)] __-__ Fix preproc userinput (#341) (*joschkabraun*)
  - [[```7f631032```](https://github.com/jina-ai/now/commit/7f631032d774ac37e386109323a944b9acc76bdf)] __-__ __version__: the next version will be 0.0.20 (*Jina Dev Bot*)
+
+<a name=release-note-0-0-21></a>
+## Release Note (`0.0.21`)
+
+> Release time: 2022-08-19 12:37:29
+
+
+
+🙇 We'd like to thank all contributors for this new release! In particular,
+ Mohammad Kalim Akram,  Florian Hönicke,  joschkabraun,  Jina Dev Bot,  🙇
+
+
+### 🆕 New Features
+
+ - [[```2b227de5```](https://github.com/jina-ai/now/commit/2b227de5effde3421af2749b08d9c931a541d944)] __-__ __improve-gif__: improves gif search by adjusting preprocess and clip (#368) (*joschkabraun*)
+ - [[```3c880c4f```](https://github.com/jina-ai/now/commit/3c880c4fb4818cd52e6701a84d6ee18c8b6c5928)] __-__ add api key to bff requests (#363) (*Florian Hönicke*)
+ - [[```9ad9e4bb```](https://github.com/jina-ai/now/commit/9ad9e4bbfa8e285fefe9d2908eb548cc90a692a5)] __-__ error handling in bff (#365) (*Florian Hönicke*)
+ - [[```eb2efd69```](https://github.com/jina-ai/now/commit/eb2efd696252f9251e0c94f351c8b95e8a1786b9)] __-__ api key (#361) (*Florian Hönicke*)
+
+### 🐞 Bug fixes
+
+ - [[```7d8763f0```](https://github.com/jina-ai/now/commit/7d8763f00c6c67d5e181420820d3c5c82d375888)] __-__ use lru cache to spped up (#364) (*Mohammad Kalim Akram*)
+
+### 🧼 Code Refactoring
+
+ - [[```b35a8c78```](https://github.com/jina-ai/now/commit/b35a8c78c63218db19ff0833591e9edb9a0417a6)] __-__ merge main (#371) (*Florian Hönicke*)
+ - [[```13923bf5```](https://github.com/jina-ai/now/commit/13923bf57ed235fd62e7e3ab5d2403c1c234b024)] __-__ finetune datasets (#370) (*Florian Hönicke*)
+ - [[```7c7e3ea0```](https://github.com/jina-ai/now/commit/7c7e3ea0e961dcc6088d8c524332d9aeb9c2447d)] __-__ boost cicd (#369) (*Florian Hönicke*)
+ - [[```ffe23cc8```](https://github.com/jina-ai/now/commit/ffe23cc859775b9de9cf339a75067c96c48b1fcd)] __-__ bump auth executor version (#362) (*Florian Hönicke*)
+
+### 🍹 Other Improvements
+
+ - [[```f336a539```](https://github.com/jina-ai/now/commit/f336a539d730c7696c9080f36bf037a3cdf31c18)] __-__ Update JCloud and use latest jina auth (#367) (*Mohammad Kalim Akram*)
+ - [[```42ff2a6b```](https://github.com/jina-ai/now/commit/42ff2a6b9c6f025164346efc53d6efed282f61ec)] __-__ __version__: the next version will be 0.0.21 (*Jina Dev Bot*)
+
+<a name=release-note-0-0-22></a>
+## Release Note (`0.0.22`)
+
+> Release time: 2022-08-19 13:19:56
+
+
+
+🙇 We'd like to thank all contributors for this new release! In particular,
+ Jina Dev Bot,  🙇
+
+
+### 🍹 Other Improvements
+
+ - [[```1ac11474```](https://github.com/jina-ai/now/commit/1ac11474bc08988afdde477c5c6a6ebedd343673)] __-__ __version__: the next version will be 0.0.22 (*Jina Dev Bot*)
 
