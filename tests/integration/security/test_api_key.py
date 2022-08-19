@@ -1,6 +1,9 @@
+import json
 from multiprocessing import Process
+from os.path import expanduser as user
 from time import sleep
 
+import hubble
 import pytest
 import requests
 from docarray import Document
@@ -27,11 +30,18 @@ def get_reqest_body():
 
 
 def test_add_key():
+    with open(user('~/.jina/config.json')) as fp:
+        config_val = json.load(fp)
+        user_token = config_val['auth_token']
+    client = hubble.Client(token=user_token, max_retries=None, jsonify=True)
+    response = client.get_user_info()
+    user_id = [response['data']['_id']]
+
     print('### spin up flow')
     with Flow(port_expose=9090).add(
         uses=f'jinahub+docker://AuthExecutor2/{NOW_AUTH_EXECUTOR_VERSION}',
         uses_with={
-            'admin_emails': ['627e28288fc10d87ce805dc8'],
+            'admin_emails': [user_id],
             'user_emails': [],
         },
     ).add(uses=f'jinahub+docker://{CLIP_USES}',).add(
