@@ -11,20 +11,25 @@ jcloud:
 executors:
   - name: preprocessor
     uses: ${{ ENV.PREPROCESSOR_NAME }}
+    replicas: 5
     uses_with:
       app: ${{ ENV.APP }}
     jcloud:
       resources:
+        cpu: 2.0
         memory: 2G
     env:
       JINA_LOG_LEVEL: DEBUG
-  - name: encoder_text
+  - name: encoder_clip
     uses: ${{ ENV.ENCODER_NAME }}
+    replicas: 5
     jcloud:
       resources:
+        cpu: 2.0
         memory: 8G
     uses_with:
-      model_name: ${{ ENV.PRE_TRAINED_MODEL_NAME }}
+      pretrained_model_name_or_path: ${{ ENV.PRE_TRAINED_MODEL_NAME }}
+      traversal_paths: '@c'
     env:
       JINA_LOG_LEVEL: DEBUG
   - name: cast_convert
@@ -57,6 +62,7 @@ executors:
   - name: indexer
     uses: ${{ ENV.INDEXER_NAME }}
     uses_with:
+      traversal_paths: '@c'
       n_dim: ${{ ENV.PRE_TRAINED_EMBEDDINGS_SIZE }}
     jcloud:
       capacity: on-demand
