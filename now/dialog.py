@@ -12,15 +12,18 @@ import pathlib
 from typing import Dict, List, Optional, Union
 
 import cowsay
+from hubble import AuthenticationRequiredError
 from kubernetes import client, config
 from pyfiglet import Figlet
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import AVAILABLE_DATASET, Apps, DatasetTypes
+from now.deployment.deployment import cmd
+from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
 from now.thirdparty.PyInquirer import Separator
 from now.thirdparty.PyInquirer.prompt import prompt
-from now.utils import _get_info_hubble, to_camel_case
+from now.utils import _get_info_hubble, jina_auth_login, sigmap, to_camel_case
 
 cur_dir = pathlib.Path(__file__).parent.resolve()
 NEW_CLUSTER = {'name': '🐣 create new', 'value': 'new'}
@@ -256,6 +259,15 @@ def _configure_cluster(user_input: UserInput, skip=False, **kwargs):
         ask_deployment()
 
     if user_input.deployment_type == 'remote':
+        try:
+            jina_auth_login()
+        except AuthenticationRequiredError:
+            with yaspin_extended(
+                sigmap=sigmap, text='Log in to JCloud', color='green'
+            ) as spinner:
+                cmd('jina auth login')
+            spinner.ok('🛠️')
+
         _get_info_hubble(user_input)
         os.environ['JCLOUD_NO_SURVEY'] = '1'
     else:

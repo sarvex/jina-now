@@ -65,6 +65,7 @@ class JinaNOWApp:
         The interface is as follows:
         - if kwargs['finetuning']=True, choose finetuning flow
         - if kwargs['encode']=True, choose encoding flow (to get embeddings for finetuning)
+        - temporarily introduced kwargs['dataset_len'], if app optimizes different flows to it
         """
         flow_dir = os.path.abspath(os.path.join(__file__, '..'))
         self.flow_yaml = os.path.join(flow_dir, 'flow.yml')
