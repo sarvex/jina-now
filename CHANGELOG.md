@@ -15,6 +15,7 @@
 
 
 
+
 <a name=release-note-0-0-7></a>
 ## Release Note (`0.0.7`)
 
@@ -535,4 +536,19 @@
 
  - [[```f336a539```](https://github.com/jina-ai/now/commit/f336a539d730c7696c9080f36bf037a3cdf31c18)] __-__ Update JCloud and use latest jina auth (#367) (*Mohammad Kalim Akram*)
  - [[```42ff2a6b```](https://github.com/jina-ai/now/commit/42ff2a6b9c6f025164346efc53d6efed282f61ec)] __-__ __version__: the next version will be 0.0.21 (*Jina Dev Bot*)
+
+<a name=release-note-0-0-22></a>
+## Release Note (`0.0.22`)
+
+> Release time: 2022-08-19 13:19:56
+
+
+
+🙇 We'd like to thank all contributors for this new release! In particular,
+ Jina Dev Bot,  🙇
+
+
+### 🍹 Other Improvements
+
+ - [[```1ac11474```](https://github.com/jina-ai/now/commit/1ac11474bc08988afdde477c5c6a6ebedd343673)] __-__ __version__: the next version will be 0.0.22 (*Jina Dev Bot*)
 
