@@ -7,7 +7,7 @@ import hubble
 from docarray import Document, DocumentArray
 
 from now.apps.base.app import JinaNOWApp
-from now.constants import GPU_THRESHOLD, NOW_PREPROCESSOR_VERSION, PREFETCH_NR
+from now.constants import NOW_PREPROCESSOR_VERSION, PREFETCH_NR
 from now.data_loading.convert_datasets_to_jpeg import to_thumbnail_jpg
 from now.finetuning.run_finetuning import finetune
 from now.finetuning.settings import FinetuneSettings, parse_finetune_settings
@@ -73,8 +73,12 @@ def setup_clip_music_apps(
     gpu = '0'
     device = 'cpu'
     user_email = _get_email()
+    gpu_threshold = 250000
 
-    if (len(dataset) > GPU_THRESHOLD) and user_email.split('@')[
+    if 'NOW_CI_RUN' in os.environ:
+        gpu_threshold = 50000
+
+    if (len(dataset) > gpu_threshold) and user_email.split('@')[
         -1
     ] == 'jina.ai':  # uses GPU if dataset contains over GPU_THRESHOLD documents and user is from jina team
         gpu = 'shared'
