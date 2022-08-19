@@ -77,9 +77,10 @@ def call_flow(url_host, data, attribute_name, domain):
     try:
         docs = DocumentArray.from_json(response.content)
     except Exception:
-        st.session_state.error_msg = response.json()['message'].replace('"', "'")
         if response.status_code == 401:
             st.session_state.error_msg = response.json()['detail']
+        else:
+            st.session_state.error_msg = response.json()['message'].replace('"', "'")
 
         return None
 
