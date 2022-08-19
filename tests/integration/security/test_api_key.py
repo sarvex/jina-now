@@ -32,12 +32,11 @@ def test_add_key():
         uses=f'jinahub+docker://AuthExecutor2/{NOW_AUTH_EXECUTOR_VERSION}',
         uses_with={
             'admin_emails': ['627e28288fc10d87ce805dc8'],
-            'api_keys': [API_KEY],
             'user_emails': [],
         },
     ).add(uses=f'jinahub+docker://{CLIP_USES}',).add(
         uses=f'jinahub+docker://AnnLiteIndexer/v0.1',
-        uses_with={'n_dim': 3},
+        uses_with={'n_dim': 512},
     ) as f:
         f.index(
             [Document(text='test') for i in range(10)],
@@ -48,7 +47,7 @@ def test_add_key():
         p1.daemon = True
         p1.start()
         print('### server started')
-        sleep(10)
+        sleep(5)
 
         request_body = get_reqest_body()
         print('# Test adding user email')
@@ -63,9 +62,9 @@ def test_add_key():
         print('# search with invalid api key')
         request_body = get_reqest_body()
         request_body['text'] = 'girl on motorbike'
-
         del request_body['jwt']
         request_body['api_key'] = 'my_key'
+        request_body['limit'] = 9
         with pytest.raises(Exception):
             assert_search(search_url, request_body)
         print('# add api key')
