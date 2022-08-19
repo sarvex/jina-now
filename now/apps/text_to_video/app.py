@@ -6,7 +6,7 @@ import numpy as np
 import PIL
 from docarray import Document, DocumentArray
 from now_common import options
-from now_common.utils import get_indexer_config, setup_clip_music_apps
+from now_common.utils import _get_email, get_indexer_config, setup_clip_music_apps
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import (
@@ -55,13 +55,27 @@ class TextToVideo(JinaNOWApp):
 
     def set_flow_yaml(self, **kwargs):
         finetuning = kwargs.get('finetuning', False)
+        dataset_len = kwargs.get('dataset_len', 0) * NUM_FRAMES_SAMPLED
+        is_jina_email = _get_email().split('@')[-1] == 'jina.ai'
 
         flow_dir = os.path.abspath(os.path.join(__file__, '..'))
 
         if finetuning:
-            self.flow_yaml = os.path.join(flow_dir, 'ft-flow-video-clip.yml')
+            if dataset_len > 200_000 and is_jina_email:
+                print(f"🚀🚀🚀 You are using high performance flow")
+                self.flow_yaml = os.path.join(
+                    flow_dir, 'ft-flow-video-clip-high-performance.yml'
+                )
+            else:
+                self.flow_yaml = os.path.join(flow_dir, 'ft-flow-video-clip.yml')
         else:
-            self.flow_yaml = os.path.join(flow_dir, 'flow-video-clip.yml')
+            if dataset_len > 200_000 and is_jina_email:
+                print(f"🚀🚀🚀 You are using high performance flow")
+                self.flow_yaml = os.path.join(
+                    flow_dir, 'flow-video-clip-high-performance.yml'
+                )
+            else:
+                self.flow_yaml = os.path.join(flow_dir, 'flow-video-clip.yml')
 
     @property
     def pre_trained_embedding_size(self) -> Dict[Qualities, int]:

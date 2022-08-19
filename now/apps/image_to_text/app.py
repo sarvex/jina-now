@@ -1,5 +1,5 @@
 import os
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 from docarray import DocumentArray
 from now_common import options
@@ -16,6 +16,7 @@ from now.constants import (
     IMAGE_MODEL_QUALITY_MAP,
     Apps,
     DatasetTypes,
+    DemoDatasets,
     Modalities,
     Qualities,
 )
@@ -49,6 +50,10 @@ class ImageToText(JinaNOWApp):
     @property
     def required_docker_memory_in_gb(self) -> int:
         return 8
+
+    @property
+    def finetune_datasets(self) -> [Tuple]:
+        return (DemoDatasets.DEEP_FASHION, DemoDatasets.BIRD_SPECIES)
 
     def set_flow_yaml(self, **kwargs):
         finetuning = kwargs.get('finetuning', False)

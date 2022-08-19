@@ -11,21 +11,22 @@ jcloud:
 executors:
   - name: preprocessor
     uses: ${{ ENV.PREPROCESSOR_NAME }}
+    replicas: 5
     uses_with:
       app: ${{ ENV.APP }}
     jcloud:
       resources:
+        cpu: 2.0
         memory: 2G
     env:
       JINA_LOG_LEVEL: DEBUG
   - name: encoder_clip
     uses: ${{ ENV.ENCODER_NAME }}
-    uses_with: 
-      device: ${{ ENV.DEVICE }}
+    replicas: 5
     jcloud:
       resources:
+        cpu: 2.0
         memory: 8G
-        gpu: ${{ ENV.GPU  }}
     uses_with:
       pretrained_model_name_or_path: ${{ ENV.PRE_TRAINED_MODEL_NAME }}
       traversal_paths: '@c'

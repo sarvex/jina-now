@@ -1,6 +1,6 @@
 import abc
 import os
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 import docker
 from docarray import DocumentArray
@@ -21,7 +21,6 @@ class JinaNOWApp:
 
     def __init__(self):
         self.flow_yaml = ''
-
         self.set_flow_yaml()
 
     @property
@@ -66,6 +65,7 @@ class JinaNOWApp:
         The interface is as follows:
         - if kwargs['finetuning']=True, choose finetuning flow
         - if kwargs['encode']=True, choose encoding flow (to get embeddings for finetuning)
+        - temporarily introduced kwargs['dataset_len'], if app optimizes different flows to it
         """
         flow_dir = os.path.abspath(os.path.join(__file__, '..'))
         self.flow_yaml = os.path.join(flow_dir, 'flow.yml')
@@ -145,6 +145,11 @@ class JinaNOWApp:
         Recommended memory limit for the docker client to run this app.
         """
         return 8
+
+    @property
+    def finetune_datasets(self) -> [Tuple]:
+        """Defines the list of demo datasets which are fine-tunable."""
+        return ()
 
     def _check_docker_mem_limit(self) -> bool:
         mem_total = docker.from_env().info().get('MemTotal')

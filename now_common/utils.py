@@ -1,6 +1,7 @@
 import json
+import os
 from os.path import expanduser as user
-from typing import Dict, Optional, Tuple
+from typing import Dict
 
 import hubble
 from docarray import Document, DocumentArray
@@ -61,13 +62,12 @@ def setup_clip_music_apps(
     indexer_uses: str,
     indexer_resources: Dict,
     kubectl_path: str,
-    finetune_datasets: Optional[Tuple] = (),
 ) -> Dict:
     finetune_settings = parse_finetune_settings(
         app_instance=app_instance,
         user_input=user_input,
         dataset=dataset,
-        finetune_datasets=finetune_datasets,
+        finetune_datasets=app_instance.finetune_datasets,
     )
 
     gpu = '0'
@@ -116,7 +116,9 @@ def setup_clip_music_apps(
             traceback.print_exc()
             finetune_settings.perform_finetuning = False
 
-    app_instance.set_flow_yaml(finetuning=finetune_settings.perform_finetuning)
+    app_instance.set_flow_yaml(
+        finetuning=finetune_settings.perform_finetuning, dataset_len=len(dataset)
+    )
 
     return env_dict
 
@@ -202,10 +204,14 @@ def get_indexer_config(num_indexed_samples: int) -> Dict:
     :param num_indexed_samples: number of samples which will be indexed; should incl. chunks for e.g. text-to-video app
     """
     config = {'indexer_uses': 'AnnLiteIndexer/v0.1'}
-    if num_indexed_samples <= 50_000:
+    threshold1 = 50_000
+    threshold2 = 250_000
+    if 'NOW_CI_RUN' in os.environ:
+        threshold1 = 1_500
+    if num_indexed_samples <= threshold1:
         config['indexer_uses'] = 'DocarrayIndexerV2'
         config['indexer_resources'] = {'INDEXER_CPU': 0.1, 'INDEXER_MEM': '2G'}
-    elif num_indexed_samples <= 250_000:
+    elif num_indexed_samples <= threshold2:
         config['indexer_resources'] = {'INDEXER_CPU': 0.1, 'INDEXER_MEM': '2G'}
     else:
         config['indexer_resources'] = {'INDEXER_CPU': 1.0, 'INDEXER_MEM': '4G'}
