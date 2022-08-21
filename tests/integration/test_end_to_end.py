@@ -136,7 +136,7 @@ def test_backend_demo_data(
         cmd(f'{kubectl_path} create namespace nowapi')
     kwargs = Namespace(**kwargs)
     response = cli(args=kwargs)
-    print(kwargs)
+    print('Kwargs: ', kwargs)
     assert_deployment_response(
         app, deployment_type, input_modality, output_modality, response
     )
