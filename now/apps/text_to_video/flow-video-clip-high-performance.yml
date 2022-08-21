@@ -22,7 +22,7 @@ executors:
       JINA_LOG_LEVEL: DEBUG
   - name: encoder_clip
     uses: ${{ ENV.ENCODER_NAME }}
-    replicas: 5
+    replicas: 3
     jcloud:
       resources:
         cpu: 2.0

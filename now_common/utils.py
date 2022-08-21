@@ -172,14 +172,17 @@ def preprocess_text(da: DocumentArray, split_by_sentences=False) -> DocumentArra
 
 
 def _get_email():
-    with open(user('~/.jina/config.json')) as fp:
-        config_val = json.load(fp)
-        user_token = config_val['auth_token']
-        client = hubble.Client(token=user_token, max_retries=None, jsonify=True)
-        response = client.get_user_info()
-    if 'email' in response['data']:
-        return response['data']['email']
-    return ''
+    try:
+        with open(user('~/.jina/config.json')) as fp:
+            config_val = json.load(fp)
+            user_token = config_val['auth_token']
+            client = hubble.Client(token=user_token, max_retries=None, jsonify=True)
+            response = client.get_user_info()
+        if 'email' in response['data']:
+            return response['data']['email']
+        return ''
+    except FileNotFoundError:
+        return ''
 
 
 def get_indexer_config(num_indexed_samples: int) -> Dict:
