@@ -94,12 +94,22 @@ def call_flow(url_host, data, attribute_name, domain):
         url_host, json=data, headers={"Content-Type": "application/json; charset=utf-8"}
     )
 
-    if response.status_code == 401:
-        st.session_state.error_msg = response.json()['detail']
+    try:
+        docs = DocumentArray.from_json(response.content)
+    except Exception:
+        try:
+            json_response = response.json()
+
+            if response.status_code == 401:
+                st.session_state.error_msg = json_response['detail']
+            else:
+                st.session_state.error_msg = json_response['message'].replace('"', "'")
+        except Exception:
+            st.session_state.error_msg = response.text
         return None
+
     st.session_state.error_msg = None
 
-    docs = DocumentArray.from_json(response.content)
     # update URI to temporary URI for any cloud bucket resources
     docs_cloud = docs.find({'uri': {'$regex': r"\As3://"}})
     if len(docs_cloud) > 0:
