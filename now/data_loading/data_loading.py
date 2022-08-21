@@ -70,7 +70,7 @@ def _load_to_datauri_and_save_into_tags(d: Document) -> Document:
 
 
 def _load_from_disk(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
-    dataset_path = user_input.dataset_path
+    dataset_path = user_input.dataset_path.strip()
     if os.path.isfile(dataset_path):
         try:
             return DocumentArray.load_binary(dataset_path)

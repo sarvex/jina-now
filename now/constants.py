@@ -6,7 +6,7 @@ from now.utils import BetterEnum
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.106-fix-user-issue-1'
-NOW_PREPROCESSOR_VERSION = '0.0.37-high-performance-gifs'
+NOW_PREPROCESSOR_VERSION = '0.0.37-path-space-1'
 NOW_AUTH_EXECUTOR_VERSION = '0.0.3'
 
 
