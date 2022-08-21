@@ -460,7 +460,10 @@ def render_matches(OUTPUT_MODALITY):
         )
 
     if st.session_state.error_msg:
-        st.error(st.session_state.error_msg)
+        with st.expander(
+            "Received error response from the server. Expand this to see the full error message"
+        ):
+            st.text(st.session_state.error_msg)
 
 
 def render_music_app(DATA):
