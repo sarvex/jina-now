@@ -16,9 +16,6 @@ from docarray import Document
 from PIL import Image, ImageDraw, ImageFont
 from rich.console import Console
 
-from now.deployment.deployment import cmd
-from now.log import yaspin_extended
-
 colors = [
     "navy",
     "turquoise",
@@ -351,27 +348,17 @@ def write_env_file(env_file, config):
         fp.write(config_string)
 
 
+@hubble.login_required
+def jina_auth_login():
+    pass
+
+
 def _get_info_hubble(user_input):
-    login = False
-    if not os.path.exists(user('~/.jina/config.json')):
-        login = True
-    if not login:
-        with open(user('~/.jina/config.json')) as fp:
-            config_val = json.load(fp)
-            user_token = config_val['auth_token']
-        client = hubble.Client(token=user_token, max_retries=None, jsonify=True)
-        response = client.get_user_info()
-        if response['code'] == 200:
-            user_input.admin_emails = [response['data']['_id']]
-            user_input.jwt = {'user': response['data'], 'token': user_token}
-            return response['data'], user_token
-        else:
-            login = True
-    if login:
-        with yaspin_extended(
-            sigmap=sigmap, text='Log in to JCloud', color='green'
-        ) as spinner:
-            # hubble.login()
-            cmd('jc login')
-        spinner.ok('🛠️')
-        _get_info_hubble(user_input)
+    with open(user('~/.jina/config.json')) as fp:
+        config_val = json.load(fp)
+        user_token = config_val['auth_token']
+    client = hubble.Client(token=user_token, max_retries=None, jsonify=True)
+    response = client.get_user_info()
+    user_input.admin_emails = [response['data']['_id']]
+    user_input.jwt = {'user': response['data'], 'token': user_token}
+    return response['data'], user_token

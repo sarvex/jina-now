@@ -101,7 +101,6 @@ class TextToVideo(JinaNOWApp):
             },
             indexer_uses=indexer_config['indexer_uses'],
             indexer_resources=indexer_config['indexer_resources'],
-            finetune_datasets=(),
             kubectl_path=kubectl_path,
         )
 
