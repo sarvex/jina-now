@@ -6,7 +6,7 @@ from now.utils import BetterEnum
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.107-fix-prettify-error-3'
-NOW_PREPROCESSOR_VERSION = '0.0.47-gpu-enable'
+NOW_PREPROCESSOR_VERSION = '0.0.48-gpu-enable'
 NOW_AUTH_EXECUTOR_VERSION = '0.0.3'
 
 
