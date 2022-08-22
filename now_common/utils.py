@@ -1,7 +1,7 @@
 import json
 import os
 from os.path import expanduser as user
-from typing import Dict
+from typing import Dict, Union
 
 import hubble
 from docarray import Document, DocumentArray
@@ -57,7 +57,7 @@ def setup_clip_music_apps(
     app_instance: JinaNOWApp,
     user_input: UserInput,
     dataset: DocumentArray,
-    encoder_uses: str,
+    encoder_uses: Union[str, Dict],
     encoder_uses_with: Dict,
     indexer_uses: str,
     indexer_resources: Dict,
@@ -73,7 +73,6 @@ def setup_clip_music_apps(
     gpu = '0'
     device = 'cpu'
     gpu_threshold = 250000
-
     if 'NOW_CI_CPU' in os.environ:  # test gpu in CI if len(dataset) > 1000
         gpu_threshold = 1000
 
@@ -85,9 +84,15 @@ def setup_clip_music_apps(
         gpu = 'shared'
         device = 'cuda'
 
+    if isinstance(encoder_uses, dict):
+        key = 'gpu' if device == 'cuda' else 'cpu'
+        encoder_ = encoder_uses[key]
+    else:
+        encoder_ = encoder_uses
+
     env_dict = get_clip_music_flow_env_dict(
         finetune_settings=finetune_settings,
-        encoder_uses=encoder_uses,
+        encoder_uses=encoder_,
         encoder_uses_with=encoder_uses_with,
         indexer_uses=indexer_uses,
         indexer_resources=indexer_resources,
