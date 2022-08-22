@@ -28,6 +28,7 @@ def get_reqest_body():
 
 def test_add_key():
 
+    clip_uses = CLIP_USES['cpu']
     user_id = get_reqest_body()['jwt']['user']['_id']
     print('### spin up flow')
     with Flow(port_expose=9090).add(
@@ -36,7 +37,7 @@ def test_add_key():
             'admin_emails': [user_id],
             'user_emails': [],
         },
-    ).add(uses=f'jinahub+docker://{CLIP_USES}',).add(
+    ).add(uses=f'jinahub+docker://{clip_uses}',).add(
         uses=f'jinahub+docker://AnnLiteIndexer/v0.1',
         uses_with={'n_dim': 512},
     ) as f:
