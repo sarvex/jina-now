@@ -5,8 +5,8 @@ from now.utils import BetterEnum
 # DEMO_DATASET_DOCARRAY_VERSION = docarray_version
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.108-annlite-chunks-fix'
-NOW_PREPROCESSOR_VERSION = '0.0.40-annlite-chunks-fix'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.109'
+NOW_PREPROCESSOR_VERSION = '0.0.49'
 NOW_AUTH_EXECUTOR_VERSION = '0.0.3'
 
 
@@ -50,7 +50,7 @@ IMAGE_MODEL_QUALITY_MAP = {
     Qualities.EXCELLENT: ('ViT-L14', 'openai/clip-vit-large-patch14'),
 }
 
-CLIP_USES = 'CLIPEncoder/v0.2.1'
+CLIP_USES = {'cpu': 'CLIPEncoder/0.3.1', 'gpu': 'CLIPEncoder/0.3.1-gpu'}
 
 PREFETCH_NR = 10
 

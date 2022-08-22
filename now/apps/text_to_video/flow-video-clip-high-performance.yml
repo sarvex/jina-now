@@ -22,11 +22,14 @@ executors:
       JINA_LOG_LEVEL: DEBUG
   - name: encoder_clip
     uses: ${{ ENV.ENCODER_NAME }}
+    uses_with:
+      device: ${{ ENV.DEVICE }}
     replicas: 3
     jcloud:
       resources:
         cpu: 2.0
         memory: 8G
+        gpu: ${{ ENV.GPU }}
     uses_with:
       pretrained_model_name_or_path: ${{ ENV.PRE_TRAINED_MODEL_NAME }}
       traversal_paths: '@c'
