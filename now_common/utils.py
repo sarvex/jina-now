@@ -73,7 +73,7 @@ def setup_clip_music_apps(
     gpu = '0'
     device = 'cpu'
     gpu_threshold = 250000
-    if 'NOW_CI_CPU' in os.environ:  # test gpu in CI if len(dataset) > 1000
+    if 'NOW_CI_RUN' in os.environ:  # test gpu in CI if len(dataset) > 1000
         gpu_threshold = 1000
 
     user_email = _get_email()
