@@ -31,7 +31,7 @@ executors:
     env:
       JINA_LOG_LEVEL: DEBUG
   - name: postprocessor
-    uses: jinahub+docker://NOWPostprocessor/v0.0.4
+    uses: jinahub+docker://NOWPostprocessor/v0.0.5
     jcloud:
       resources:
         memory: 1G
