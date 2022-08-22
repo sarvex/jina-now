@@ -141,8 +141,9 @@ jina now stop
 - [x] Text to Image search 📝 ▶ 🏞 
 - [x] Image to Text search 🏞 ▶ 📝 
 - [x] Image to Image search 🏞 ▶ 🏞
-- [ ] Music to Music search 🥁 ▶ 🥁 
-- [ ] Text to Video search 📝 ▶ 🎥
+- [x] Text to Text search 📝 ▶ 📝
+- [x] Music to Music search 🥁 ▶ 🥁 
+- [x] Text to Video search 📝 ▶ 🎥 (only gif at the moment)
 - [ ] Text to 3D Mesh search 📝 ▶ 🧊
 - [ ] ...
 
