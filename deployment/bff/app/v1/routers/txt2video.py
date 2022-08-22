@@ -65,4 +65,8 @@ def search(data: NowTextSearchRequestModel):
         endpoint='/search',
     )
 
-    return docs[0].matches.to_dict()
+    # DocArrayIndexerV2 returns matches on matches level, while AnnLite returns them on .chunks[0].matches level
+    if docs[0].chunks and len(docs[0].chunks[0].matches) > 0:
+        return docs[0].chunks[0].matches.to_dict()
+    else:
+        return docs[0].matches.to_dict()

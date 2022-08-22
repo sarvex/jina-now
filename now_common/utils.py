@@ -1,7 +1,7 @@
 import json
 import os
 from os.path import expanduser as user
-from typing import Dict
+from typing import Dict, Union
 
 import hubble
 from docarray import Document, DocumentArray
@@ -21,6 +21,8 @@ def get_clip_music_flow_env_dict(
     indexer_uses: str,
     indexer_resources: Dict,
     user_input: UserInput,
+    device: str,
+    gpu: str,
 ):
     """Returns dictionary for the environments variables for the clip & music flow.yml files."""
     if finetune_settings.perform_finetuning and finetune_settings.bi_modal:
@@ -36,6 +38,8 @@ def get_clip_music_flow_env_dict(
         'PREFETCH': PREFETCH_NR,
         'PREPROCESSOR_NAME': f'jinahub+docker://NOWPreprocessor/v{NOW_PREPROCESSOR_VERSION}',
         'APP': user_input.app,
+        'DEVICE': device,
+        'GPU': gpu,
         **indexer_resources,
     }
     if encoder_uses_with.get('pretrained_model_name_or_path'):
@@ -53,7 +57,7 @@ def setup_clip_music_apps(
     app_instance: JinaNOWApp,
     user_input: UserInput,
     dataset: DocumentArray,
-    encoder_uses: str,
+    encoder_uses: Union[str, Dict],
     encoder_uses_with: Dict,
     indexer_uses: str,
     indexer_resources: Dict,
@@ -66,13 +70,35 @@ def setup_clip_music_apps(
         finetune_datasets=app_instance.finetune_datasets,
     )
 
+    gpu = '0'
+    device = 'cpu'
+    gpu_threshold = 250000
+    if 'NOW_CI_RUN' in os.environ:  # test gpu in CI if len(dataset) > 1000
+        gpu_threshold = 1000
+
+    user_email = _get_email()
+
+    if (len(dataset) > gpu_threshold) and user_email.split('@')[
+        -1
+    ] == 'jina.ai':  # uses GPU if dataset contains over 250000 documents and user is from jina team
+        gpu = 'shared'
+        device = 'cuda'
+
+    if isinstance(encoder_uses, dict):
+        key = 'gpu' if device == 'cuda' else 'cpu'
+        encoder_ = encoder_uses[key]
+    else:
+        encoder_ = encoder_uses
+
     env_dict = get_clip_music_flow_env_dict(
         finetune_settings=finetune_settings,
-        encoder_uses=encoder_uses,
+        encoder_uses=encoder_,
         encoder_uses_with=encoder_uses_with,
         indexer_uses=indexer_uses,
         indexer_resources=indexer_resources,
         user_input=user_input,
+        device=device,
+        gpu=gpu,
     )
 
     if finetune_settings.perform_finetuning:
@@ -190,7 +216,7 @@ def get_indexer_config(num_indexed_samples: int) -> Dict:
 
     :param num_indexed_samples: number of samples which will be indexed; should incl. chunks for e.g. text-to-video app
     """
-    config = {'indexer_uses': 'AnnLiteIndexer/v0.1'}
+    config = {'indexer_uses': 'AnnLiteIndexer/0.3.0'}
     threshold1 = 50_000
     threshold2 = 250_000
     if 'NOW_CI_RUN' in os.environ:
