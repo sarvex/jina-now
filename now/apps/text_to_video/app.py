@@ -154,16 +154,4 @@ def sample_video(d):
         frames.append(frame_pil_resized)
         frame_bytes = io.BytesIO()
         frame_pil_resized.save(frame_bytes, format="JPEG", quality=70)
-        d.chunks.append(Document(blob=frame_bytes.getvalue()))
-    small_gif_bytes_io = io.BytesIO()
-    frames[0].save(
-        small_gif_bytes_io,
-        "gif",
-        save_all=True,
-        append_images=frames[1:],
-        optimize=False,
-        duration=300,
-        loop=0,
-        quality=75,
-    )
-    d.blob = small_gif_bytes_io.getvalue()
+        d.chunks.append(Document(uri=d.uri, blob=frame_bytes.getvalue()))
