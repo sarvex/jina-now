@@ -230,6 +230,7 @@ def _maybe_add_embeddings(
         client=client,
         dataset=documents_without_embedding,
         parameters={'user_input': dataclasses.asdict(user_input)},
+        return_results=True,
     )
 
     for doc in result:
