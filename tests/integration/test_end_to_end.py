@@ -94,14 +94,12 @@ def test_token_exists():
 @pytest.mark.parametrize('quality', ['medium'])
 @pytest.mark.parametrize('cluster', [NEW_CLUSTER['value']])
 @pytest.mark.parametrize('deployment_type', ['local', 'remote'])
-@pytest.mark.parametrize('gpu', [True, False])
 def test_backend_demo_data(
     app: str,
     dataset: str,
     quality: str,
     cluster: str,
     deployment_type: str,
-    gpu: bool,
     test_search_image,
     cleanup,
     input_modality,
@@ -118,8 +116,6 @@ def test_backend_demo_data(
         pytest.skip('Too time consuming, hence skipping!')
 
     os.environ['NOW_CI_RUN'] = 'True'
-    if gpu:
-        os.environ['NOW_CI_GPU'] = 'True'
     os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
     kwargs = {
         'now': 'start',
