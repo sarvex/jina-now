@@ -16,6 +16,7 @@
 
 
 
+
 <a name=release-note-0-0-7></a>
 ## Release Note (`0.0.7`)
 
@@ -551,4 +552,30 @@
 ### 🍹 Other Improvements
 
  - [[```1ac11474```](https://github.com/jina-ai/now/commit/1ac11474bc08988afdde477c5c6a6ebedd343673)] __-__ __version__: the next version will be 0.0.22 (*Jina Dev Bot*)
+
+<a name=release-note-0-0-23></a>
+## Release Note (`0.0.23`)
+
+> Release time: 2022-08-22 11:52:31
+
+
+
+🙇 We'd like to thank all contributors for this new release! In particular,
+ Florian Hönicke,  joschkabraun,  Mohammad Kalim Akram,  Jina Dev Bot,  🙇
+
+
+### 🐞 Bug fixes
+
+ - [[```3fbdc82a```](https://github.com/jina-ai/now/commit/3fbdc82a2db8c958ae7859259ef6548bc7e39a12)] __-__ __gif-app__: fix set flow yaml (#380) (*joschkabraun*)
+ - [[```d94823ba```](https://github.com/jina-ai/now/commit/d94823baa5a4ca5e5f88b446a05ef171b196406e)] __-__ user issue path space (#378) (*Florian Hönicke*)
+ - [[```81e6d262```](https://github.com/jina-ai/now/commit/81e6d26208febac6238c5503144a9c58688c8482)] __-__ issue reported by user (#379) (*Mohammad Kalim Akram*)
+
+### 📗 Documentation
+
+ - [[```c5f25255```](https://github.com/jina-ai/now/commit/c5f252550dcbb30077656cc73f276d7288752208)] __-__ update app list (*Florian Hönicke*)
+
+### 🍹 Other Improvements
+
+ - [[```fe5622a2```](https://github.com/jina-ai/now/commit/fe5622a20b61bb3148f012f24e742550fc0a832e)] __-__ Fix refined logging (#376) (*Mohammad Kalim Akram*)
+ - [[```34eb1c19```](https://github.com/jina-ai/now/commit/34eb1c19b6cface46110179cc37cbfe3688a287b)] __-__ __version__: the next version will be 0.0.23 (*Jina Dev Bot*)
 
