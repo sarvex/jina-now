@@ -6,22 +6,13 @@ from copy import deepcopy
 from urllib.parse import quote, unquote
 from urllib.request import urlopen
 
-import av
 import extra_streamlit_components as stx
-import numpy as np
 import requests
 import streamlit as st
 import streamlit.components.v1 as components
 from better_profanity import profanity
 from docarray import Document, DocumentArray
-from src.constants import (
-    BUTTONS,
-    JWT_COOKIE,
-    SURVEY_LINK,
-    WEBRTC_CLIENT_SETTINGS,
-    ds_set,
-    root_data_dir,
-)
+from src.constants import BUTTONS, JWT_COOKIE, SURVEY_LINK, ds_set, root_data_dir
 from src.search import (
     get_query_params,
     search_by_audio,
@@ -30,8 +21,12 @@ from src.search import (
 )
 from streamlit.scriptrunner import add_script_run_ctx
 from streamlit.server.server import Server
-from streamlit_webrtc import webrtc_streamer
+from streamlit_webrtc import RTCConfiguration, WebRtcMode, webrtc_streamer
 from tornado.httputil import parse_cookie
+
+RTC_CONFIGURATION = RTCConfiguration(
+    {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
+)
 
 # TODO: Uncomment the docarray_version when the file name on GCloud has been changed
 # from docarray import __version__ as docarray_version
@@ -499,19 +494,14 @@ def render_music_app(DATA):
 def render_webcam():
     snapshot = st.button('Snapshot', on_click=clear_match)
 
-    class VideoProcessor:
-        snapshot: np.ndarray = None
-
-        def recv(self, frame):
-            self.snapshot = frame.to_ndarray(format="rgb24")
-            return av.VideoFrame.from_ndarray(self.snapshot, format='rgb24')
-
     ctx = webrtc_streamer(
         key="jina-now",
-        video_processor_factory=VideoProcessor,
-        client_settings=WEBRTC_CLIENT_SETTINGS,
+        mode=WebRtcMode.SENDRECV,
+        rtc_configuration=RTC_CONFIGURATION,
+        media_stream_constraints={"video": True, "audio": False},
+        async_processing=True,
     )
-    if ctx.video_processor:
+    if ctx.state.playing:
         if snapshot:
             query = ctx.video_processor.snapshot
             st.image(query, width=160)
