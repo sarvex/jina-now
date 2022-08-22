@@ -6,13 +6,21 @@ from copy import deepcopy
 from urllib.parse import quote, unquote
 from urllib.request import urlopen
 
+import av
 import extra_streamlit_components as stx
 import requests
 import streamlit as st
 import streamlit.components.v1 as components
 from better_profanity import profanity
 from docarray import Document, DocumentArray
-from src.constants import BUTTONS, JWT_COOKIE, SURVEY_LINK, ds_set, root_data_dir
+from src.constants import (
+    BUTTONS,
+    JWT_COOKIE,
+    RTC_CONFIGURATION,
+    SURVEY_LINK,
+    ds_set,
+    root_data_dir,
+)
 from src.search import (
     get_query_params,
     search_by_audio,
@@ -21,12 +29,8 @@ from src.search import (
 )
 from streamlit.scriptrunner import add_script_run_ctx
 from streamlit.server.server import Server
-from streamlit_webrtc import RTCConfiguration, WebRtcMode, webrtc_streamer
+from streamlit_webrtc import WebRtcMode, webrtc_streamer
 from tornado.httputil import parse_cookie
-
-RTC_CONFIGURATION = RTCConfiguration(
-    {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
-)
 
 # TODO: Uncomment the docarray_version when the file name on GCloud has been changed
 # from docarray import __version__ as docarray_version
@@ -271,10 +275,6 @@ def setup_design():
                 color: "#111";
                 background-color: "#eee";
             }}
-            iframe{
-                height:50px;
-                width:500px;
-            }
         </style>
         """
 
@@ -494,16 +494,25 @@ def render_music_app(DATA):
 def render_webcam():
     snapshot = st.button('Snapshot', on_click=clear_match)
 
+    class VideoProcessor:
+        def __init__(self) -> None:
+            self.img = None
+
+        def recv(self, frame):
+            self.img = frame.to_ndarray(format="rgb24")
+
+            return av.VideoFrame.from_ndarray(self.img, format="rgb24")
+
     ctx = webrtc_streamer(
         key="jina-now",
         mode=WebRtcMode.SENDRECV,
         rtc_configuration=RTC_CONFIGURATION,
         media_stream_constraints={"video": True, "audio": False},
-        async_processing=True,
+        video_processor_factory=VideoProcessor,
     )
     if ctx.state.playing:
         if snapshot:
-            query = ctx.video_processor.snapshot
+            query = ctx.video_processor.img
             st.image(query, width=160)
             st.session_state.snap = query
             doc = Document(tensor=query)
