@@ -8,7 +8,6 @@ from urllib.request import urlopen
 
 import av
 import extra_streamlit_components as stx
-import numpy as np
 import requests
 import streamlit as st
 import streamlit.components.v1 as components
@@ -17,8 +16,8 @@ from docarray import Document, DocumentArray
 from src.constants import (
     BUTTONS,
     JWT_COOKIE,
+    RTC_CONFIGURATION,
     SURVEY_LINK,
-    WEBRTC_CLIENT_SETTINGS,
     ds_set,
     root_data_dir,
 )
@@ -30,7 +29,7 @@ from src.search import (
 )
 from streamlit.scriptrunner import add_script_run_ctx
 from streamlit.server.server import Server
-from streamlit_webrtc import webrtc_streamer
+from streamlit_webrtc import WebRtcMode, webrtc_streamer
 from tornado.httputil import parse_cookie
 
 # TODO: Uncomment the docarray_version when the file name on GCloud has been changed
@@ -276,10 +275,6 @@ def setup_design():
                 color: "#111";
                 background-color: "#eee";
             }}
-            iframe{
-                height:50px;
-                width:500px;
-            }
         </style>
         """
 
@@ -500,20 +495,24 @@ def render_webcam():
     snapshot = st.button('Snapshot', on_click=clear_match)
 
     class VideoProcessor:
-        snapshot: np.ndarray = None
+        def __init__(self) -> None:
+            self.img = None
 
         def recv(self, frame):
-            self.snapshot = frame.to_ndarray(format="rgb24")
-            return av.VideoFrame.from_ndarray(self.snapshot, format='rgb24')
+            self.img = frame.to_ndarray(format="rgb24")
+
+            return av.VideoFrame.from_ndarray(self.img, format="rgb24")
 
     ctx = webrtc_streamer(
         key="jina-now",
+        mode=WebRtcMode.SENDRECV,
+        rtc_configuration=RTC_CONFIGURATION,
+        media_stream_constraints={"video": True, "audio": False},
         video_processor_factory=VideoProcessor,
-        client_settings=WEBRTC_CLIENT_SETTINGS,
     )
-    if ctx.video_processor:
+    if ctx.state.playing:
         if snapshot:
-            query = ctx.video_processor.snapshot
+            query = ctx.video_processor.img
             st.image(query, width=160)
             st.session_state.snap = query
             doc = Document(tensor=query)
