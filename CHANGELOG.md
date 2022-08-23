@@ -17,6 +17,7 @@
 
 
 
+
 <a name=release-note-0-0-7></a>
 ## Release Note (`0.0.7`)
 
@@ -578,4 +579,29 @@
 
  - [[```fe5622a2```](https://github.com/jina-ai/now/commit/fe5622a20b61bb3148f012f24e742550fc0a832e)] __-__ Fix refined logging (#376) (*Mohammad Kalim Akram*)
  - [[```34eb1c19```](https://github.com/jina-ai/now/commit/34eb1c19b6cface46110179cc37cbfe3688a287b)] __-__ __version__: the next version will be 0.0.23 (*Jina Dev Bot*)
+
+<a name=release-note-0-0-24></a>
+## Release Note (`0.0.24`)
+
+> Release time: 2022-08-23 14:11:21
+
+
+
+🙇 We'd like to thank all contributors for this new release! In particular,
+ Mohammad Kalim Akram,  joschkabraun,  Aziz Belaweid,  Jina Dev Bot,  🙇
+
+
+### 🆕 New Features
+
+ - [[```056cba77```](https://github.com/jina-ai/now/commit/056cba77f51cc0b83545bd127f39d10dd80f3734)] __-__ enable gpu (#383) (*Aziz Belaweid*)
+
+### 🐞 Bug fixes
+
+ - [[```1c9cf0d5```](https://github.com/jina-ai/now/commit/1c9cf0d5292da8b8895a240d75087fb1d43391e8)] __-__ __annlite-chunks__: fixes search chunks (#389) (*joschkabraun*)
+ - [[```e0f16857```](https://github.com/jina-ai/now/commit/e0f16857bccca18e2d43ce9d4f0e208001b7f83d)] __-__ fix chunk level search annlite (#385) (*joschkabraun*)
+
+### 🍹 Other Improvements
+
+ - [[```57bd1f0d```](https://github.com/jina-ai/now/commit/57bd1f0d60b9185f8ca34bfa1e11d558c8fd4a36)] __-__ Fix update docker call (#392) (*Mohammad Kalim Akram*)
+ - [[```78fa06f8```](https://github.com/jina-ai/now/commit/78fa06f85e9f4ef51ff041c175317daba54bc99c)] __-__ __version__: the next version will be 0.0.24 (*Jina Dev Bot*)
 
