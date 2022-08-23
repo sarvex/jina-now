@@ -194,9 +194,11 @@ class JinaNOWApp:
         """
         return True
 
-    def run_checks(self) -> bool:
+    def run_checks(self, user_input: UserInput) -> bool:
         req_check = self._check_requirements()
-        mem_check = self._check_docker_mem_limit()
+        mem_check = True
+        if user_input.deployment_type != 'remote':
+            mem_check = self._check_docker_mem_limit()
         return req_check and mem_check
 
     # TODO Remove kubectl_path. At the moment, the setup function needs kubectl because of finetuning a custom
