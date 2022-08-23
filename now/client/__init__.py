@@ -65,7 +65,7 @@ class Client:
 
 
 if __name__ == '__main__':
-    client = Client(jcloud_id='3a0796379d', app=Apps.TEXT_TO_VIDEO, api_key='<my_key>')
+    client = Client(jcloud_id='...', app=Apps.TEXT_TO_VIDEO, api_key='...')
     result = client.send_request(
         '/search',
         text='girl on a motorbike',
