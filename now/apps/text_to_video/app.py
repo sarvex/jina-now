@@ -1,3 +1,4 @@
+import base64
 import io
 import os
 from typing import Dict, List
@@ -5,9 +6,17 @@ from typing import Dict, List
 import numpy as np
 import PIL
 from docarray import Document, DocumentArray
+from jina.serve.runtimes.gateway.http.models import JinaRequestModel, JinaResponseModel
 from now_common import options
 from now_common.utils import _get_email, get_indexer_config, setup_clip_music_apps
+from pydantic import BaseModel
 
+from deployment.bff.app.v1.models.text import NowTextSearchRequestModel
+from deployment.bff.app.v1.models.video import (
+    NowVideoIndexRequestModel,
+    NowVideoListResponseModel,
+    NowVideoResponseModel,
+)
 from now.apps.base.app import JinaNOWApp
 from now.constants import (
     CLIP_USES,
@@ -133,6 +142,77 @@ class TextToVideo(JinaNOWApp):
             da.apply(convert_fn)
 
             return DocumentArray(d for d in da if d.chunks)
+
+    @property
+    def bff_mapping_fns(self):
+        def search_text_to_video_request_mapping_fn(
+            request: NowTextSearchRequestModel,
+        ) -> JinaRequestModel:
+            jina_request_model = JinaRequestModel()
+            jina_request_model.data = [Document(chunks=[Document(text=request.text)])]
+            jina_request_model.parameters = {
+                'limit': request.limit * 3,
+                'api_key': request.api_key,
+                'jwt': request.jwt,
+            }
+            return jina_request_model
+
+        def search_video_response_mapping_fn(
+            request: NowTextSearchRequestModel, response: JinaResponseModel
+        ) -> List[NowVideoResponseModel]:
+            docs = response.data
+            limit = request.limit
+            # DocArrayIndexerV2 returns matches on matches level, while AnnLite returns them on .chunks[0].matches level
+            if docs[0].chunks and len(docs[0].chunks[0].matches) > 0:
+                # similar to DocArrayIndexerV2 we need to make sure that we don't return duplicates (chunks having same parent)
+                all_matches = docs[0].chunks[0].matches
+                unique_matches = []
+                parent_ids = []
+                for match in all_matches:
+                    if match.parent_id in parent_ids:
+                        continue
+                    unique_matches.append(match)
+                    parent_ids.append(match.parent_id)
+                    if len(unique_matches) == limit:
+                        break
+                return DocumentArray(unique_matches).to_dict()
+            else:
+                return docs[0].matches[:limit].to_dict()
+
+        def index_text_to_video_request_mapping_fn(
+            request: NowVideoIndexRequestModel,
+        ) -> JinaRequestModel:
+            index_docs = DocumentArray()
+            for video, uri, tags in zip(request.videos, request.uris, request.tags):
+                if bool(video) + bool(uri) != 1:
+                    raise ValueError(
+                        f'Can only set one value but have video={video}, uri={uri}'
+                    )
+                if video:
+                    base64_bytes = video.encode('utf-8')
+                    message = base64.decodebytes(base64_bytes)
+                    index_docs.append(Document(blob=message, tags=tags))
+                else:
+                    index_docs.append(Document(uri=uri, tags=tags))
+            return JinaRequestModel(data=index_docs)
+
+        def no_response_mapping_fn(_: JinaResponseModel) -> BaseModel:
+            return BaseModel()
+
+        return {
+            '/search': (
+                NowTextSearchRequestModel,
+                NowVideoListResponseModel,
+                search_text_to_video_request_mapping_fn,
+                search_video_response_mapping_fn,
+            ),
+            '/index': (
+                NowVideoIndexRequestModel,
+                BaseModel,
+                index_text_to_video_request_mapping_fn,
+                no_response_mapping_fn,
+            ),
+        }
 
 
 def select_frames(num_selected_frames, num_total_frames):
