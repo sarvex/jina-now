@@ -53,10 +53,10 @@ def configure_user_input(**kwargs) -> [JinaNOWApp, UserInput]:
     user_input = UserInput()
     _configure_app(user_input, **kwargs)
     app_instance = _construct_app(user_input.app)
-    app_instance.run_checks(user_input)
     _configure_app_options(app_instance, user_input, **kwargs)
     _configure_dataset(app_instance, user_input, **kwargs)
     _configure_cluster(user_input, **kwargs)
+    app_instance.run_checks(user_input)
     if user_input.deployment_type == 'remote':
         if _configure_security(user_input, **kwargs):
             if _configure_additional_user(user_input, **kwargs):
