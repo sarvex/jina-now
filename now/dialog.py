@@ -40,7 +40,7 @@ def _configure_app_options(app_instance: JinaNOWApp, user_input, **kwargs):
     # _configure_quality(user_input, **kwargs)
 
 
-def _construct_app(app: str) -> JinaNOWApp:
+def _construct_app(app: Apps) -> JinaNOWApp:
     return getattr(
         importlib.import_module(f'now.apps.{app}.app'),
         f'{to_camel_case(app)}',
@@ -53,7 +53,7 @@ def configure_user_input(**kwargs) -> [JinaNOWApp, UserInput]:
     user_input = UserInput()
     _configure_app(user_input, **kwargs)
     app_instance = _construct_app(user_input.app)
-    app_instance.run_checks()
+    app_instance.run_checks(user_input)
     _configure_app_options(app_instance, user_input, **kwargs)
     _configure_dataset(app_instance, user_input, **kwargs)
     _configure_cluster(user_input, **kwargs)
