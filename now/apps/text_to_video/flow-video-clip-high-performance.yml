@@ -54,7 +54,7 @@ executors:
     jcloud:
       capacity: on-demand
       resources:
-        memory: ${{ ENV.INDEXER_MEM }}
+        memory: 4G
         cpu: 1.0
     env:
       JINA_LOG_LEVEL: DEBUG
