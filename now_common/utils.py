@@ -25,7 +25,9 @@ def get_clip_music_flow_env_dict(
     gpu: str,
 ):
     """Returns dictionary for the environments variables for the clip & music flow.yml files."""
-    if finetune_settings.bi_modal:
+    if (
+        finetune_settings.perform_finetuning and finetune_settings.bi_modal
+    ) or user_input.app == 'music_to_music':
         pre_trained_embedding_size = finetune_settings.pre_trained_embedding_size * 2
     else:
         pre_trained_embedding_size = finetune_settings.pre_trained_embedding_size
