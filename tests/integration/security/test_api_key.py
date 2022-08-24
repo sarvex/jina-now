@@ -43,7 +43,7 @@ def get_flow():
         )
         .add(
             uses=f'jinahub+docker://AnnLiteNOWIndexer/0.3.0',
-            uses_with={'n_dim': 512},
+            uses_with={'dim': 512},
         )
     )
     return f
@@ -65,44 +65,46 @@ def start_bff():
 
 @pytest.fixture
 def setup():
-    f = get_flow()
-    f.start()
-    index(f)
-    start_bff()
-    sleep(10)
+
     yield
-    f.stop()
+    # f.stop()
 
 
 def test_add_key(setup):
-    request_body = get_reqest_body()
-    print('# Test adding user email')
-    request_body['user_emails'] = ['florian.hoenicke@jina.ai']
-    response = requests.post(
-        update_emails_url,
-        json=request_body,
-    )
-    assert response.status_code == 200
+    f = get_flow()
+    with f:
+        index(f)
+        start_bff()
+        sleep(10)
 
-    print('# test api keys')
-    print('# search with invalid api key')
-    request_body = get_reqest_body()
-    request_body['text'] = 'girl on motorbike'
-    del request_body['jwt']
-    request_body['api_key'] = 'my_key'
-    request_body['limit'] = 9
-    with pytest.raises(Exception):
+        request_body = get_reqest_body()
+        print('# Test adding user email')
+        request_body['user_emails'] = ['florian.hoenicke@jina.ai']
+        response = requests.post(
+            update_emails_url,
+            json=request_body,
+        )
+        assert response.status_code == 200
+
+        print('# test api keys')
+        print('# search with invalid api key')
+        request_body = get_reqest_body()
+        request_body['text'] = 'girl on motorbike'
+        del request_body['jwt']
+        request_body['api_key'] = 'my_key'
+        request_body['limit'] = 9
+        with pytest.raises(Exception):
+            assert_search(search_url, request_body)
+        print('# add api key')
+        request_body_update_keys = get_reqest_body()
+        request_body_update_keys['api_keys'] = ['my_key']
+        response = requests.post(
+            update_api_keys_url,
+            json=request_body_update_keys,
+        )
+        if response.status_code != 200:
+            print(response.text)
+            print(response.json()['message'])
+            raise Exception(f'Response status is {response.status_code}')
+        print('# the same search should work now')
         assert_search(search_url, request_body)
-    print('# add api key')
-    request_body_update_keys = get_reqest_body()
-    request_body_update_keys['api_keys'] = ['my_key']
-    response = requests.post(
-        update_api_keys_url,
-        json=request_body_update_keys,
-    )
-    if response.status_code != 200:
-        print(response.text)
-        print(response.json()['message'])
-        raise Exception(f'Response status is {response.status_code}')
-    print('# the same search should work now')
-    assert_search(search_url, request_body)
