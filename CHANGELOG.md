@@ -19,6 +19,7 @@
 
 
 
+
 <a name=release-note-0-0-7></a>
 ## Release Note (`0.0.7`)
 
@@ -624,4 +625,24 @@
 ### 🍹 Other Improvements
 
  - [[```432cc37d```](https://github.com/jina-ai/now/commit/432cc37d0d7d4f8f069a78895b4a88e374872890)] __-__ __version__: the next version will be 0.0.25 (*Jina Dev Bot*)
+
+<a name=release-note-0-0-26></a>
+## Release Note (`0.0.26`)
+
+> Release time: 2022-08-24 09:49:51
+
+
+
+🙇 We'd like to thank all contributors for this new release! In particular,
+ Florian Hönicke,  Jina Dev Bot,  🙇
+
+
+### 🐞 Bug fixes
+
+ - [[```e37cdba3```](https://github.com/jina-ai/now/commit/e37cdba3c87d92a544e0c26cb52eb5dd4e5a6fe2)] __-__ cleanup all remote flows (#397) (*Florian Hönicke*)
+
+### 🍹 Other Improvements
+
+ - [[```5d7aef3b```](https://github.com/jina-ai/now/commit/5d7aef3badb4fb8b88f244758db714f4e3894490)] __-__ Feat client (#395) (*Florian Hönicke*)
+ - [[```97f34056```](https://github.com/jina-ai/now/commit/97f3405642f64526f4ef1b6c8f18ceb4d6301feb)] __-__ __version__: the next version will be 0.0.26 (*Jina Dev Bot*)
 
