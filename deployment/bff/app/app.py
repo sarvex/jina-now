@@ -1,3 +1,5 @@
+# TODO bff_request_mapping_fn and bff_response_mapping_fn should be used to create all routes
+
 import logging.config
 import sys
 
