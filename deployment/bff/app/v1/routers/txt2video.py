@@ -65,19 +65,4 @@ def search(data: NowTextSearchRequestModel):
         endpoint='/search',
     )
 
-    # DocArrayIndexerV2 returns matches on matches level, while AnnLite returns them on .chunks[0].matches level
-    if docs[0].chunks and len(docs[0].chunks[0].matches) > 0:
-        # similar to DocArrayIndexerV2 we need to make sure that we don't return duplicates (chunks having same parent)
-        all_matches = docs[0].chunks[0].matches
-        unique_matches = []
-        parent_ids = []
-        for match in all_matches:
-            if match.parent_id in parent_ids:
-                continue
-            unique_matches.append(match)
-            parent_ids.append(match.parent_id)
-            if len(unique_matches) == data.limit:
-                break
-        return DocumentArray(unique_matches).to_dict()
-    else:
-        return docs[0].matches[: data.limit].to_dict()
+    return docs[0].matches[: data.limit].to_dict()
