@@ -18,6 +18,7 @@
 
 
 
+
 <a name=release-note-0-0-7></a>
 ## Release Note (`0.0.7`)
 
@@ -604,4 +605,23 @@
 
  - [[```57bd1f0d```](https://github.com/jina-ai/now/commit/57bd1f0d60b9185f8ca34bfa1e11d558c8fd4a36)] __-__ Fix update docker call (#392) (*Mohammad Kalim Akram*)
  - [[```78fa06f8```](https://github.com/jina-ai/now/commit/78fa06f85e9f4ef51ff041c175317daba54bc99c)] __-__ __version__: the next version will be 0.0.24 (*Jina Dev Bot*)
+
+<a name=release-note-0-0-25></a>
+## Release Note (`0.0.25`)
+
+> Release time: 2022-08-24 06:38:30
+
+
+
+🙇 We'd like to thank all contributors for this new release! In particular,
+ joschkabraun,  Jina Dev Bot,  🙇
+
+
+### 🐞 Bug fixes
+
+ - [[```cd5a1b41```](https://github.com/jina-ai/now/commit/cd5a1b41db131332e262ce58786cac869052637e)] __-__ manually set memory (#393) (*joschkabraun*)
+
+### 🍹 Other Improvements
+
+ - [[```432cc37d```](https://github.com/jina-ai/now/commit/432cc37d0d7d4f8f069a78895b4a88e374872890)] __-__ __version__: the next version will be 0.0.25 (*Jina Dev Bot*)
 
