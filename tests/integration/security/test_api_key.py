@@ -42,7 +42,7 @@ def get_flow():
             uses=f'jinahub+docker://{clip_uses}',
         )
         .add(
-            uses=f'jinahub+docker://AnnLiteNOWIndexer/0.3.0',
+            uses=f'jinahub+docker://AnnLiteNOWIndexer2/0.3.0',
             uses_with={'dim': 512},
         )
     )
