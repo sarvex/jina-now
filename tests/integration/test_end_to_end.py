@@ -31,22 +31,26 @@ def test_search_image(resources_folder_path: str):
 def cleanup(deployment_type, dataset):
     start = time.time()
     yield
-    if deployment_type == 'remote':
-        flow_details = get_remote_flow_details()
-        if 'flow_id' not in flow_details:
-            print('nothing to clean up')
-            return
-        flow_id = flow_details['flow_id']
-        terminate_wolf(flow_id)
-    else:
-        kwargs = {
-            'deployment_type': deployment_type,
-            'now': 'stop',
-            'cluster': 'kind-jina-now',
-            'delete-cluster': True,
-        }
-        kwargs = Namespace(**kwargs)
-        cli(args=kwargs)
+    try:
+        if deployment_type == 'remote':
+            flow_details = get_remote_flow_details()
+            if 'flow_id' not in flow_details:
+                print('nothing to clean up')
+                return
+            flow_id = flow_details['flow_id']
+            terminate_wolf(flow_id)
+        else:
+            kwargs = {
+                'deployment_type': deployment_type,
+                'now': 'stop',
+                'cluster': 'kind-jina-now',
+                'delete-cluster': True,
+            }
+            kwargs = Namespace(**kwargs)
+            cli(args=kwargs)
+    except Exception as e:
+        print('no clean up')
+    print('cleaned up')
     now = time.time() - start
     mins = int(now / 60)
     secs = int(now % 60)

@@ -50,7 +50,7 @@ def test_add_key():
         p1.daemon = True
         p1.start()
         print('### server started')
-        sleep(5)
+        sleep(10)
 
         request_body = get_reqest_body()
         print('# Test adding user email')
