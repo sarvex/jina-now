@@ -58,7 +58,7 @@ def search(data: NowTextSearchRequestModel):
     query_doc = process_query(text=data.text, uri=data.uri)
 
     # for video the search requests have to be on chunk-level
-    # need to make request 3 times larger as we only retrieve chunks in AnnLiteIndexer
+    # need to make request 3 times larger as we only retrieve chunks in AnnLiteNOWIndexer
     docs = jina_client_post(
         data=data,
         inputs=Document(chunks=query_doc),

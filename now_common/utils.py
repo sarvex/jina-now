@@ -216,7 +216,7 @@ def get_indexer_config(num_indexed_samples: int) -> Dict:
 
     :param num_indexed_samples: number of samples which will be indexed; should incl. chunks for e.g. text-to-video app
     """
-    config = {'indexer_uses': 'AnnLiteIndexer/0.3.0'}
+    config = {'indexer_uses': 'AnnLiteNOWIndexer/0.3.0'}
     threshold1 = 50_000
     threshold2 = 250_000
     if 'NOW_CI_RUN' in os.environ:
