@@ -32,13 +32,12 @@ def cleanup(deployment_type, dataset):
     start = time.time()
     yield
     if deployment_type == 'remote':
-        if dataset in ['pop-lyrics', 'rap-lyrics']:
-            flow_details = get_remote_flow_details()
-            if 'flow_id' not in flow_details:
-                print('nothing to clean up')
-                return
-            flow_id = flow_details['flow_id']
-            terminate_wolf(flow_id)
+        flow_details = get_remote_flow_details()
+        if 'flow_id' not in flow_details:
+            print('nothing to clean up')
+            return
+        flow_id = flow_details['flow_id']
+        terminate_wolf(flow_id)
     else:
         kwargs = {
             'deployment_type': deployment_type,
