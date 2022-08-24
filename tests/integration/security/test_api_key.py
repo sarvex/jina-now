@@ -63,14 +63,7 @@ def start_bff():
     print('### server started')
 
 
-@pytest.fixture
-def setup():
-
-    yield
-    # f.stop()
-
-
-def test_add_key(setup):
+def test_add_key():
     f = get_flow()
     with f:
         index(f)

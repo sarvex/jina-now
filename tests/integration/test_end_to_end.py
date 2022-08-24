@@ -50,6 +50,7 @@ def cleanup(deployment_type, dataset):
             cli(args=kwargs)
     except Exception as e:
         print('no clean up')
+        return
     print('cleaned up')
     now = time.time() - start
     mins = int(now / 60)
@@ -66,42 +67,43 @@ def test_token_exists():
 
 
 @pytest.mark.parametrize(
-    'app, input_modality, output_modality, dataset',
+    'app, input_modality, output_modality, dataset, deployment_type',
     [
         (
             Apps.TEXT_TO_IMAGE,
             Modalities.TEXT,
             Modalities.IMAGE,
             DemoDatasets.BIRD_SPECIES,
+            'local',
         ),
         (
             Apps.IMAGE_TO_IMAGE,
             Modalities.IMAGE,
             Modalities.IMAGE,
             DemoDatasets.BEST_ARTWORKS,
+            'local',
         ),
         (
             Apps.IMAGE_TO_TEXT,
             Modalities.IMAGE,
             Modalities.TEXT,
             DemoDatasets.ROCK_LYRICS,
+            'remote',
         ),
         (
             Apps.TEXT_TO_TEXT,
             Modalities.TEXT,
             Modalities.TEXT,
             DemoDatasets.POP_LYRICS,
+            'remote',
         ),
     ],
-)  # art, rock-lyrics -> no finetuning, fashion -> finetuning
+)
 @pytest.mark.parametrize('quality', ['medium'])
-@pytest.mark.parametrize('cluster', [NEW_CLUSTER['value']])
-@pytest.mark.parametrize('deployment_type', ['local', 'remote'])
 def test_backend_demo_data(
     app: str,
     dataset: str,
     quality: str,
-    cluster: str,
     deployment_type: str,
     test_search_image,
     cleanup,
@@ -109,15 +111,7 @@ def test_backend_demo_data(
     output_modality,
     with_hubble_login_patch,
 ):
-    # Run all tests with more than 50k docs remotely, all others locally
-    if (
-        deployment_type == 'remote'
-        and app not in [Apps.IMAGE_TO_TEXT, Apps.TEXT_TO_TEXT]
-    ) or (
-        deployment_type == 'local' and app in [Apps.IMAGE_TO_TEXT, Apps.TEXT_TO_TEXT]
-    ):
-        pytest.skip('Too time consuming, hence skipping!')
-
+    cluster = NEW_CLUSTER['value']
     os.environ['NOW_CI_RUN'] = 'True'
     os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
     kwargs = {
