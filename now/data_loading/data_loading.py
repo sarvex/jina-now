@@ -1,4 +1,5 @@
 import base64
+import json
 import os
 import uuid
 from copy import deepcopy
@@ -36,6 +37,7 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
             da = _load_from_disk(app, user_input)
         elif user_input.custom_dataset_type == DatasetTypes.S3_BUCKET:
             da = _list_files_from_s3_bucket(app=app, user_input=user_input)
+            da = _load_tags_from_json(da)
     else:
         print('⬇  Download DocArray dataset')
         url = get_dataset_url(user_input.data, user_input.quality, app.output_modality)
@@ -51,6 +53,25 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
             da = da[:1000]
     da = da.shuffle(seed=42)
     da = deep_copy_da(da)
+    return da
+
+
+def _load_tags_from_json(da: DocumentArray):
+
+    print('Loading tags!')
+    dic = {}
+    for i, d in enumerate(da):
+        folder = d.uri.split('/')[-2]
+        if not d.uri.endswith('.json') and folder not in dic:
+            dic[folder] = i
+
+    for i, d in enumerate(da):
+        folder = d.uri.split('/')[-2]
+        if d.uri.endswith('json') and folder in dic:
+            with open(d.uri, 'r') as f:
+                data = json.load(f)
+                for tag, value in data['tags'].items():
+                    da[dic[folder]].tags[tag] = value['slug']
     return da
 
 
