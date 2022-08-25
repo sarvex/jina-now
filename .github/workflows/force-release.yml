@@ -7,8 +7,6 @@ on:
         description: 'Short reason for this manual release'
         required: true
 
-  pull_request:
-
 jobs:
   regular-release:
     runs-on: ubuntu-latest
