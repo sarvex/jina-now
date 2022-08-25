@@ -203,6 +203,7 @@ jobs:
           tags: jinaai/now-playground:${{ env.BFF_PLAYGROUND_TAG }}
 
   core-test:
+    if: !startsWith(github.event.head_commit.message, 'chore')
     runs-on: ubuntu-latest
     needs: [update-preprocessor-if-required, update-bff-playground-if-required]
     strategy:
