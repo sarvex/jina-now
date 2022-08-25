@@ -61,13 +61,13 @@ def _load_tags_from_json(da: DocumentArray):
     print('Loading tags!')
     dic = {}
     for i, d in enumerate(da):
-        folder = d.uri.split('/')[-2]
+        folder = d.uri.rsplit('/', 1)[0]
         if not d.uri.endswith('.json') and folder not in dic:
             dic[folder] = i
 
     for i, d in enumerate(da):
-        folder = d.uri.split('/')[-2]
-        if d.uri.endswith('json') and folder in dic:
+        folder = d.uri.rsplit('/', 1)[0]
+        if d.uri.endswith('.json') and folder in dic:
             with open(d.uri, 'r') as f:
                 data = json.load(f)
                 for tag, value in data['tags'].items():
