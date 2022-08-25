@@ -126,6 +126,7 @@ def test_da_custom_ds(da: DocumentArray):
 
 
 def test_load_tags(gif_resource_path: str):
+    user_input = UserInput()
     da = DocumentArray(
         [
             Document(uri=os.path.join(gif_resource_path, 'folder1/file.gif')),
@@ -135,13 +136,13 @@ def test_load_tags(gif_resource_path: str):
         ]
     )
 
-    da = _load_tags_from_json(da)
+    da = _load_tags_from_json(da, user_input, False)
 
     assert 'custom' in da[0].tags
-    assert 'custom' in da[2].tags
+    assert 'custom' in da[1].tags
 
     assert da[0].tags['custom'] == 'moneystack'
-    assert da[2].tags['ml'] == 'visual-arts'
+    assert da[1].tags['ml'] == 'visual-arts'
 
     da1 = DocumentArray(
         [
@@ -150,7 +151,7 @@ def test_load_tags(gif_resource_path: str):
         ]
     )
 
-    da1 = _load_tags_from_json(da1)
+    da1 = _load_tags_from_json(da1, user_input, False)
 
     for d in da1:
         assert not 'custom' in d.tags

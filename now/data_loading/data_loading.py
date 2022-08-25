@@ -37,7 +37,7 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
             da = _load_from_disk(app, user_input)
         elif user_input.custom_dataset_type == DatasetTypes.S3_BUCKET:
             da = _list_files_from_s3_bucket(app=app, user_input=user_input)
-            da = _load_tags_from_json(da)
+            da = _load_tags_from_json(da, user_input, True)
     else:
         print('⬇  Download DocArray dataset')
         url = get_dataset_url(user_input.data, user_input.quality, app.output_modality)
@@ -56,10 +56,32 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
     return da
 
 
-def _load_tags_from_json(da: DocumentArray):
+def _open_file(path: str):
+    with open(path, 'r') as f:
+        data = json.load(f)
+    return data
+
+
+def _open_s3_file(path: str, user_input: UserInput):
+    import boto3
+
+    bucket = path.split('/')[2]
+    key = '/'.join(path.split('/')[3:])
+
+    client = boto3.client(
+        's3',
+        aws_access_key_id=user_input.aws_access_key_id,
+        aws_secret_access_key=user_input.aws_secret_access_key,
+    )
+    response = client.get_object(Bucket=bucket, Key=key)
+    return json.loads(response['Body'].read())
+
+
+def _load_tags_from_json(da: DocumentArray, user_input: UserInput, s3: bool):
 
     print('Loading tags!')
     dic = {}
+    ids_to_delete = []
     for i, d in enumerate(da):
         folder = d.uri.rsplit('/', 1)[0]
         if not d.uri.endswith('.json') and folder not in dic:
@@ -68,10 +90,15 @@ def _load_tags_from_json(da: DocumentArray):
     for i, d in enumerate(da):
         folder = d.uri.rsplit('/', 1)[0]
         if d.uri.endswith('.json') and folder in dic:
-            with open(d.uri, 'r') as f:
-                data = json.load(f)
-                for tag, value in data['tags'].items():
-                    da[dic[folder]].tags[tag] = value['slug']
+            ids_to_delete.append(i)
+            if s3:
+                data = _open_s3_file(d.uri, user_input)
+            else:
+                data = _open_file(d.uri)
+            for tag, value in data['tags'].items():
+                da[dic[folder]].tags[tag] = value['slug']
+    if len(ids_to_delete) > 0:
+        del da[ids_to_delete]
     return da
 
 
