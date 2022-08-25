@@ -49,5 +49,5 @@ jobs:
         with:
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           repo: now.private
-          owner: jinaai
+          owner: makram93
           event_type: update_api
