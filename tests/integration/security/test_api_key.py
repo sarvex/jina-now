@@ -26,30 +26,48 @@ def get_reqest_body():
     return request_body
 
 
-def test_add_key():
-
+def get_flow():
     clip_uses = CLIP_USES['cpu']
     user_id = get_reqest_body()['jwt']['user']['_id']
-    print('### spin up flow')
-    with Flow(port_expose=9090).add(
-        uses=f'jinahub+docker://AuthExecutor2/{NOW_AUTH_EXECUTOR_VERSION}',
-        uses_with={
-            'admin_emails': [user_id],
-            'user_emails': [],
-        },
-    ).add(uses=f'jinahub+docker://{clip_uses}',).add(
-        uses=f'jinahub+docker://AnnLiteIndexer/v0.1',
-        uses_with={'n_dim': 512},
-    ) as f:
-        f.index(
-            [Document(text='test') for i in range(10)],
-            parameters={'jwt': get_reqest_body()['jwt']},
+    f = (
+        Flow(port_expose=9090)
+        .add(
+            uses=f'jinahub+docker://AuthExecutor2/{NOW_AUTH_EXECUTOR_VERSION}',
+            uses_with={
+                'admin_emails': [user_id],
+                'user_emails': [],
+            },
         )
-        print('### flow started')
-        p1 = Process(target=run_server, args=())
-        p1.daemon = True
-        p1.start()
-        print('### server started')
+        .add(
+            uses=f'jinahub+docker://{clip_uses}',
+        )
+        .add(
+            uses=f'jinahub+docker://AnnLiteNOWIndexer2/0.3.0',
+            uses_with={'dim': 512},
+        )
+    )
+    return f
+
+
+def index(f):
+    f.index(
+        [Document(text='test') for i in range(10)],
+        parameters={'jwt': get_reqest_body()['jwt']},
+    )
+
+
+def start_bff():
+    p1 = Process(target=run_server, args=())
+    p1.daemon = True
+    p1.start()
+    print('### server started')
+
+
+def test_add_key():
+    f = get_flow()
+    with f:
+        index(f)
+        start_bff()
         sleep(10)
 
         request_body = get_reqest_body()
