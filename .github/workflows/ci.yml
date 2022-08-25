@@ -203,7 +203,6 @@ jobs:
           tags: jinaai/now-playground:${{ env.BFF_PLAYGROUND_TAG }}
 
   core-test:
-    if: !startsWith(github.event.head_commit.message, 'chore')
     runs-on: ubuntu-latest
     needs: [update-preprocessor-if-required, update-bff-playground-if-required]
     strategy:
@@ -236,7 +235,7 @@ jobs:
         run: |
           pytest --suppress-no-test-exit-code --cov=now \
           -v -s -m "not gpu" --splits 6 --group ${{ matrix.group }} --splitting-algorithm least_duration tests/
-        timeout-minutes: 35
+        timeout-minutes: 20
         env:
           WOLF_TOKEN: ${{ secrets.WOLF_TOKEN }}
           S3_IMAGE_TEST_DATA_PATH: ${{ secrets.S3_IMAGE_TEST_DATA_PATH }}
