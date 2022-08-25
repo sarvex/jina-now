@@ -101,7 +101,8 @@ class TextToText(JinaNOWApp):
     ) -> DocumentArray:
         split_by_sentences = False
         if (
-            user_input.is_custom_dataset
+            is_indexing
+            and user_input.is_custom_dataset
             and user_input.custom_dataset_type == DatasetTypes.PATH
             and user_input.dataset_path
             and os.path.isdir(user_input.dataset_path)
