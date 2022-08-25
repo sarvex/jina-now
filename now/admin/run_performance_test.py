@@ -21,9 +21,9 @@ def call():
 
 # Latency Test
 start = time()
-for i in range(20):
+for i in range(10):
     call()
-print(f'Latency: {(time() - start) / 20}s')
+print(f'Latency: {(time() - start) / 10}s')
 
 # QPS test
 start = time()
