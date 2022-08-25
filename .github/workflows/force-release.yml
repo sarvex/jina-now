@@ -45,6 +45,7 @@ jobs:
       - name: Emit repository_dispatch to now.private
         uses: mvasigh/dispatch-action@main
         with:
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           repo: now.private
           owner: jinaai
           event_type: update_api
