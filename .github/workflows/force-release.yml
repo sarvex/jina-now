@@ -41,13 +41,12 @@ jobs:
 
 
   trigger-now-private:
-    name: Dispatch to now.private to package now_api
+    name: Trigger dispatch
     runs-on: ubuntu-latest
     steps:
-      - name: Emit repository_dispatch to now.private
-        uses: mvasigh/dispatch-action@main
+      - name: Dispatch to now.private to package now_api
+        uses: peter-evans/repository-dispatch@v2
         with:
-          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-          repo: now.private
-          owner: makram93
-          event_type: update_api
+          token: ${{ secrets.NOW_PREPROCESSOR_REPO_TOKEN }}
+          repository: ${{ secrets.NOW_PREPROCESSOR_REPO }}
+          event-type: update_api
