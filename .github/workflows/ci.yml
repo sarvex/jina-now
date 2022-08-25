@@ -87,10 +87,6 @@ jobs:
           CHANGED_FILES: ${{ steps.file_changes.outputs.added_modified }}
 
   update-preprocessor-if-required:
-    if: |
-      !startsWith(github.event.head_commit.message, 'chore') &&
-      !startsWith(github.event.head_commit.message, 'build: hotfix') &&
-      !endsWith(github.event.head_commit.message, 'reformatted by jina-dev-bot')
     runs-on: ubuntu-latest
     needs: [commit-lint, lint-flake-8, check-black]
     steps:
@@ -142,10 +138,6 @@ jobs:
         run: sleep 4m
 
   update-bff-playground-if-required:
-    if: |
-      !startsWith(github.event.head_commit.message, 'chore') &&
-      !startsWith(github.event.head_commit.message, 'build: hotfix') &&
-      !endsWith(github.event.head_commit.message, 'reformatted by jina-dev-bot')
     runs-on: ubuntu-latest
     needs: [commit-lint, lint-flake-8, check-black]
     steps:
