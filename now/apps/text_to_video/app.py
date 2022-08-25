@@ -151,7 +151,7 @@ class TextToVideo(JinaNOWApp):
             jina_request_model = JinaRequestModel()
             jina_request_model.data = [Document(chunks=[Document(text=request.text)])]
             jina_request_model.parameters = {
-                'limit': request.limit * 3,
+                'limit': request.limit,
                 'api_key': request.api_key,
                 'jwt': request.jwt,
             }
@@ -162,22 +162,7 @@ class TextToVideo(JinaNOWApp):
         ) -> List[NowVideoResponseModel]:
             docs = response.data
             limit = request.limit
-            # DocArrayIndexerV2 returns matches on matches level, while AnnLite returns them on .chunks[0].matches level
-            if docs[0].chunks and len(docs[0].chunks[0].matches) > 0:
-                # similar to DocArrayIndexerV2 we need to make sure that we don't return duplicates (chunks having same parent)
-                all_matches = docs[0].chunks[0].matches
-                unique_matches = []
-                parent_ids = []
-                for match in all_matches:
-                    if match.parent_id in parent_ids:
-                        continue
-                    unique_matches.append(match)
-                    parent_ids.append(match.parent_id)
-                    if len(unique_matches) == limit:
-                        break
-                return DocumentArray(unique_matches).to_dict()
-            else:
-                return docs[0].matches[:limit].to_dict()
+            return docs[0].matches[:limit].to_dict()
 
         def index_text_to_video_request_mapping_fn(
             request: NowVideoIndexRequestModel,
