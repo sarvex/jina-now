@@ -11,10 +11,15 @@ client = Client(
 
 
 def call():
-    return client.send_request(
+    # return client.send_request(
+    #     '/search',
+    #     text='girl on a motorbike',
+    #     limit=60,
+    # )
+    return client.send_request_bff(
         '/search',
         text='girl on a motorbike',
-        limit=200,
+        limit=60,
     )
 
 

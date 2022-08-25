@@ -1,6 +1,8 @@
 import json
 import re
+import time
 
+import requests
 from jina.serve.runtimes.gateway.http.models import JinaResponseModel
 from pydantic import parse_obj_as
 
@@ -36,6 +38,19 @@ class Client:
         raise ValueError(
             f'the path does not match the following patterns: {[path for path, (_, _) in app_instance.bff_mapping_fns.items()]}'
         )
+
+    def send_request_bff(self, endpoint: str, **kwargs):
+        request_body = {
+            "host": f'grpcs://nowapi-{self.jcloud_id}.wolf.jina.ai',
+            "api_key": self.api_key,
+            **kwargs,
+        }
+        start = time.time()
+        response = requests.post(
+            f'https://nowrun.jina.ai/api/v1/text-to-video/{endpoint}',
+            json=request_body,
+        )
+        print(f"latency: {time.time() - start - 0.3}")
 
     def send_request(self, endpoint: str, **kwargs):
         """
