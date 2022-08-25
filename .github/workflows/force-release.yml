@@ -36,3 +36,15 @@ jobs:
           github_token: ${{ secrets.JINA_DEV_BOT }}
           tags: true
           branch: main
+
+
+  trigger-now-private:
+    name: Dispatch to now.private to package now_api
+    runs-on: ubuntu-latest
+    steps:
+      - name: Emit repository_dispatch to now.private
+        uses: mvasigh/dispatch-action@main
+        with:
+          repo: now.private
+          owner: jinaai
+          event_type: update_api
