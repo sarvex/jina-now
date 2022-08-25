@@ -1,3 +1,4 @@
+from concurrent.futures import ProcessPoolExecutor
 from time import time
 
 from now.client import Client
@@ -11,13 +12,8 @@ client = Client(
 
 
 def call():
-    # return client.send_request(
-    #     '/search',
-    #     text='girl on a motorbike',
-    #     limit=60,
-    # )
     return client.send_request_bff(
-        '/search',
+        'text-to-video/search',
         text='girl on a motorbike',
         limit=60,
     )
@@ -29,16 +25,16 @@ for i in range(20):
     call()
 print(f'Latency: {(time() - start) / 20}s')
 
-# # QPS test
-# start = time()
-# num_queries = 3000
-# worker = 100
-# with ProcessPoolExecutor(max_workers=worker) as executor:
-#     futures = []
-#
-#     for i in range(num_queries):
-#         future = executor.submit(call)
-#         futures.append(future)
-#     for future in futures:
-#         future.result()
-# print(f'QPS: {num_queries / (time() - start)}s')
+# QPS test
+start = time()
+num_queries = 3000
+worker = 100
+with ProcessPoolExecutor(max_workers=worker) as executor:
+    futures = []
+
+    for i in range(num_queries):
+        future = executor.submit(call)
+        futures.append(future)
+    for future in futures:
+        future.result()
+print(f'QPS: {num_queries / (time() - start)}s')
