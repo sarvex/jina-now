@@ -8,7 +8,7 @@ from pathlib import Path
 from docarray import Document, DocumentArray
 
 from now.apps.base.app import JinaNOWApp
-from now.constants import DatasetTypes, DemoDatasets
+from now.constants import MODALITY_EXTENSIONS, DatasetTypes, DemoDatasets
 from now.data_loading.utils import _fetch_da_from_url, get_dataset_url
 from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
@@ -65,8 +65,9 @@ def _open_file(path: str):
 def _open_s3_file(path: str, user_input: UserInput):
     import boto3
 
-    bucket = path.split('/')[2]
-    key = '/'.join(path.split('/')[3:])
+    path_splits = path.split('/')
+    bucket = path_splits[2]
+    key = '/'.join(path_splits[3:])
 
     client = boto3.client(
         's3',
@@ -84,13 +85,23 @@ def _load_tags_from_json(da: DocumentArray, user_input: UserInput, s3: bool):
     ids_to_delete = []
     for i, d in enumerate(da):
         folder = d.uri.rsplit('/', 1)[0]
-        if not d.uri.endswith('.json') and folder not in dic:
-            dic[folder] = i
+        file_extension = d.uri.split('.')[-1]
+        if file_extension in MODALITY_EXTENSIONS[user_input.app.output_modality]:
+            if folder not in dic:
+                dic[folder] = i
+            else:
+                print(
+                    'Two files with the same modality exist in the same folder! tags assigned to the first one'
+                )
 
     for i, d in enumerate(da):
         folder = d.uri.rsplit('/', 1)[0]
-        if d.uri.endswith('.json') and folder in dic:
+        if (
+            d.uri.split('.')[-1]
+            not in MODALITY_EXTENSIONS[user_input.app.output_modality]
+        ):
             ids_to_delete.append(i)
+        if d.uri.endswith('.json') and folder in dic:
             if s3:
                 data = _open_s3_file(d.uri, user_input)
             else:

@@ -127,17 +127,20 @@ def test_da_custom_ds(da: DocumentArray):
 
 def test_load_tags(gif_resource_path: str):
     user_input = UserInput()
+    user_input.app = TextToImage()
     da = DocumentArray(
         [
             Document(uri=os.path.join(gif_resource_path, 'folder1/file.gif')),
             Document(uri=os.path.join(gif_resource_path, 'folder1/manifest.json')),
+            Document(uri=os.path.join(gif_resource_path, 'folder1/file.txt')),
             Document(uri=os.path.join(gif_resource_path, 'folder2/file.gif')),
             Document(uri=os.path.join(gif_resource_path, 'folder2/manifest.json')),
         ]
     )
 
     da = _load_tags_from_json(da, user_input, False)
-
+    print(da[0].summary())
+    print(da[1].summary())
     assert 'custom' in da[0].tags
     assert 'custom' in da[1].tags
 
@@ -148,6 +151,7 @@ def test_load_tags(gif_resource_path: str):
         [
             Document(uri=os.path.join(gif_resource_path, 'folder1/file.gif')),
             Document(uri=os.path.join(gif_resource_path, 'folder2/file.gif')),
+            Document(uri=os.path.join(gif_resource_path, 'folder1/file.txt')),
         ]
     )
 
