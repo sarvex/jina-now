@@ -6,7 +6,7 @@ from now.utils import BetterEnum
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.112-feat-client-6'
-NOW_PREPROCESSOR_VERSION = '0.0.55-fix-yaml'
+NOW_PREPROCESSOR_VERSION = '0.0.55-setup-new-app'
 NOW_AUTH_EXECUTOR_VERSION = '0.0.3'
 
 
@@ -24,6 +24,7 @@ class Apps(BetterEnum):
     IMAGE_TO_IMAGE = 'image_to_image'
     MUSIC_TO_MUSIC = 'music_to_music'
     TEXT_TO_VIDEO = 'text_to_video'
+    TEXT_TO_TEXT_AND_IMAGE = 'text_to_text_and_image'
 
 
 class DatasetTypes(BetterEnum):
