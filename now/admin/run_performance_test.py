@@ -4,12 +4,16 @@ from time import time
 from now.client import Client
 from now.constants import Apps
 
-client = Client(jcloud_id='...', app=Apps.TEXT_TO_VIDEO, api_key='...')
+client = Client(
+    jcloud_id='...',
+    app=Apps.TEXT_TO_VIDEO,
+    api_key='...',
+)
 
 
 def call():
-    return client.send_request(
-        '/search',
+    return client.send_request_bff(
+        'text-to-video/search',
         text='girl on a motorbike',
         limit=60,
     )
