@@ -63,6 +63,10 @@ class TextToImage(JinaNOWApp):
             self.flow_yaml = os.path.join(flow_dir, 'flow-clip.yml')
 
     @property
+    def supported_wildcards(self) -> List[str]:
+        return ['*.gif', '*.png', '*.jpg', '*.jpeg', '**']
+
+    @property
     def pre_trained_embedding_size(self) -> Dict[Qualities, int]:
         return {
             Qualities.MEDIUM: 512,

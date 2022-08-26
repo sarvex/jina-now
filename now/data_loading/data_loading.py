@@ -8,7 +8,7 @@ from pathlib import Path
 from docarray import Document, DocumentArray
 
 from now.apps.base.app import JinaNOWApp
-from now.constants import MODALITY_EXTENSIONS, DatasetTypes, DemoDatasets
+from now.constants import DatasetTypes, DemoDatasets
 from now.data_loading.utils import _fetch_da_from_url, get_dataset_url
 from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
@@ -35,9 +35,12 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
         elif user_input.custom_dataset_type == DatasetTypes.PATH:
             print('💿  Loading files from disk')
             da = _load_from_disk(app, user_input)
+            if any([doc.uri.endswith('.json') for doc in da]):
+                da = _load_tags_from_json(da, user_input)
         elif user_input.custom_dataset_type == DatasetTypes.S3_BUCKET:
             da = _list_files_from_s3_bucket(app=app, user_input=user_input)
-            da = _load_tags_from_json(da, user_input, True)
+            if any([doc.uri.endswith('.json') for doc in da]):
+                da = _load_tags_from_json(da, user_input)
     else:
         print('⬇  Download DocArray dataset')
         url = get_dataset_url(user_input.data, user_input.quality, app.output_modality)
@@ -56,13 +59,13 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
     return da
 
 
-def _open_file(path: str):
+def _open_json(path: str):
     with open(path, 'r') as f:
         data = json.load(f)
     return data
 
 
-def _open_s3_file(path: str, user_input: UserInput):
+def _open_s3_json(path: str, user_input: UserInput):
     import boto3
 
     path_splits = path.split('/')
@@ -78,34 +81,40 @@ def _open_s3_file(path: str, user_input: UserInput):
     return json.loads(response['Body'].read())
 
 
-def _load_tags_from_json(da: DocumentArray, user_input: UserInput, s3: bool):
+def _load_tags_from_json(da: DocumentArray, user_input: UserInput):
 
     print('Loading tags!')
     dic = {}
     ids_to_delete = []
+    files_in_same_folder = []
     for i, d in enumerate(da):
         folder = d.uri.rsplit('/', 1)[0]
         file_extension = d.uri.split('.')[-1]
-        if file_extension in MODALITY_EXTENSIONS[user_input.app.output_modality]:
+        if file_extension in [
+            wildcard.split('.')[-1] for wildcard in user_input.app.supported_wildcards
+        ]:
             if folder not in dic:
                 dic[folder] = i
             else:
-                print(
-                    'Two files with the same modality exist in the same folder! tags assigned to the first one'
-                )
+                files_in_same_folder.append(i)
+
+    if len(files_in_same_folder) > 0:
+        print('Files with the same modality are found within the same folder!')
+        print(
+            'Printing first 5 ids:', ', '.join(str(id) for id in files_in_same_folder)
+        )
 
     for i, d in enumerate(da):
         folder = d.uri.rsplit('/', 1)[0]
-        if (
-            d.uri.split('.')[-1]
-            not in MODALITY_EXTENSIONS[user_input.app.output_modality]
-        ):
+        if d.uri.split('.')[-1] not in [
+            wildcard.split('.')[-1] for wildcard in user_input.app.supported_wildcards
+        ]:
             ids_to_delete.append(i)
         if d.uri.endswith('.json') and folder in dic:
-            if s3:
-                data = _open_s3_file(d.uri, user_input)
+            if user_input.dataset_path.startswith('s3://'):
+                data = _open_s3_json(d.uri, user_input)
             else:
-                data = _open_file(d.uri)
+                data = _open_json(d.uri)
             for tag, value in data['tags'].items():
                 da[dic[folder]].tags[tag] = value['slug']
     if len(ids_to_delete) > 0:

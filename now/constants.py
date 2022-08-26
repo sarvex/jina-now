@@ -50,13 +50,6 @@ IMAGE_MODEL_QUALITY_MAP = {
     Qualities.EXCELLENT: ('ViT-L14', 'openai/clip-vit-large-patch14'),
 }
 
-MODALITY_EXTENSIONS = {
-    'text': ['txt'],
-    'image': ['png', 'jpg', 'gif'],
-    'video': ['gif', 'mp4', 'mov'],
-    'music': ['mp3'],
-}
-
 CLIP_USES = {'cpu': 'CLIPEncoder/0.3.1', 'gpu': 'CLIPEncoder/0.3.1-gpu'}
 
 PREFETCH_NR = 10

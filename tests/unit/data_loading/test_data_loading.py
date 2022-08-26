@@ -127,6 +127,7 @@ def test_da_custom_ds(da: DocumentArray):
 
 def test_load_tags(gif_resource_path: str):
     user_input = UserInput()
+    user_input.dataset_path = ''
     user_input.app = TextToImage()
     da = DocumentArray(
         [
@@ -138,7 +139,7 @@ def test_load_tags(gif_resource_path: str):
         ]
     )
 
-    da = _load_tags_from_json(da, user_input, False)
+    da = _load_tags_from_json(da, user_input)
     print(da[0].summary())
     print(da[1].summary())
     assert 'custom' in da[0].tags
@@ -155,7 +156,7 @@ def test_load_tags(gif_resource_path: str):
         ]
     )
 
-    da1 = _load_tags_from_json(da1, user_input, False)
+    da1 = _load_tags_from_json(da1, user_input)
 
     for d in da1:
         assert not 'custom' in d.tags
