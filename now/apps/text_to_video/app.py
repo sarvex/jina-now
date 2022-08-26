@@ -130,7 +130,8 @@ class TextToVideo(JinaNOWApp):
                     pass
                 return d
 
-            da.apply(convert_fn)
+            for d in da:
+                convert_fn(d)
 
             return DocumentArray(d for d in da if d.blob != b'')
         else:
@@ -139,7 +140,8 @@ class TextToVideo(JinaNOWApp):
                 d.chunks = d.chunks.find(query={'text': {'$exists': True}})
                 return d
 
-            da.apply(convert_fn)
+            for d in da:
+                convert_fn(d)
 
             return DocumentArray(d for d in da if d.chunks)
 
