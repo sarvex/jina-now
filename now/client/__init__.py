@@ -68,7 +68,6 @@ class Client:
             endpoint,
             jina_request.data,
             jina_request.parameters,
-            target_executor=r'\Aencoder_clip\Z|\Aindexer\Z',
         )
         # jina_response_model = JinaResponseModel()
         # jina_response_model.data = jina_response
