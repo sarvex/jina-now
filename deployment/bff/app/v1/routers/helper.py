@@ -1,4 +1,5 @@
 import base64
+import time
 
 from docarray import Document, DocumentArray
 from fastapi import HTTPException, status
@@ -59,6 +60,7 @@ def jina_client_post(
     if data.jwt is not None:
         auth_dict['jwt'] = data.jwt
     try:
+        t0 = time.time()
         result = client.post(
             endpoint,
             inputs=inputs,
@@ -66,6 +68,7 @@ def jina_client_post(
             *args,
             **kwargs,
         )
+        return time.time() - t0
     except BadServer as e:
         if 'Not a valid user' in e.args[0].status.description:
             raise HTTPException(
@@ -74,4 +77,4 @@ def jina_client_post(
             )
         else:
             raise e
-    return result
+    # return result

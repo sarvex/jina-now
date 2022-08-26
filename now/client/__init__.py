@@ -1,4 +1,9 @@
+import re
+
 import requests
+
+from deployment.bff.app.v1.routers.helper import jina_client_post
+from now.dialog import _construct_app
 
 
 class Client:
@@ -11,23 +16,23 @@ class Client:
         self.app = app
         self.api_key = api_key
 
-    # def get_maps(self, app_instance, path):
-    #     """
-    #     checks if the specified path is matching one of the provided patterns
-    #     and returns the related request and response mappings
-    #     """
-    #     for path_regex, (
-    #         request_model,
-    #         response_model,
-    #         request_map,
-    #         response_map,
-    #     ) in app_instance.bff_mapping_fns.items():
-    #         path_compiled_regex = re.compile(fr'{path_regex}')
-    #         if path_compiled_regex.match(path):
-    #             return request_model, response_model, request_map, response_map
-    #     raise ValueError(
-    #         f'the path does not match the following patterns: {[path for path, (_, _) in app_instance.bff_mapping_fns.items()]}'
-    #     )
+    def get_maps(self, app_instance, path):
+        """
+        checks if the specified path is matching one of the provided patterns
+        and returns the related request and response mappings
+        """
+        for path_regex, (
+            request_model,
+            response_model,
+            request_map,
+            response_map,
+        ) in app_instance.bff_mapping_fns.items():
+            path_compiled_regex = re.compile(fr'{path_regex}')
+            if path_compiled_regex.match(path):
+                return request_model, response_model, request_map, response_map
+        raise ValueError(
+            f'the path does not match the following patterns: {[path for path, (_, _) in app_instance.bff_mapping_fns.items()]}'
+        )
 
     def send_request_bff(self, endpoint: str, **kwargs):
         request_body = {
@@ -41,35 +46,35 @@ class Client:
         )
         return response
 
-    # def send_request(self, endpoint: str, **kwargs):
-    #     """
-    #     Client to run requests against a deployed flow
-    #     """
-    #
-    #     app_instance = _construct_app(self.app)
-    #     request_model, response_model, request_map, response_map = self.get_maps(
-    #         app_instance, endpoint
-    #     )
-    #     app_request = request_model(
-    #         host=f'grpcs://nowapi-{self.jcloud_id}.wolf.jina.ai',
-    #         api_key=self.api_key,
-    #         **kwargs,
-    #     )
-    #     jina_request = request_map(app_request)
-    #     jina_response = jina_client_post(
-    #         app_request,
-    #         endpoint,
-    #         jina_request.data,
-    #         jina_request.parameters,
-    #         target_executor=r'\Aencoder_clip\Z|\Aindexer\Z',
-    #     )
-    #     jina_response_model = JinaResponseModel()
-    #     jina_response_model.data = jina_response
-    #     app_response = response_map(app_request, jina_response_model)
-    #     parsed_response = json.loads(parse_obj_as(response_model, app_response).json())
-    #     if '__root__' in parsed_response:
-    #         parsed_response = parsed_response['__root__']
-    #     return parsed_response
+    def send_request(self, endpoint: str, **kwargs):
+        """
+        Client to run requests against a deployed flow
+        """
+
+        app_instance = _construct_app(self.app)
+        request_model, response_model, request_map, response_map = self.get_maps(
+            app_instance, endpoint
+        )
+        app_request = request_model(
+            host=f'grpcs://nowapi-{self.jcloud_id}.wolf.jina.ai',
+            api_key=self.api_key,
+            **kwargs,
+        )
+        jina_request = request_map(app_request)
+        return jina_client_post(
+            app_request,
+            endpoint,
+            jina_request.data,
+            jina_request.parameters,
+            target_executor=r'\Aencoder_clip\Z|\Aindexer\Z',
+        )
+        # jina_response_model = JinaResponseModel()
+        # jina_response_model.data = jina_response
+        # app_response = response_map(app_request, jina_response_model)
+        # parsed_response = json.loads(parse_obj_as(response_model, app_response).json())
+        # if '__root__' in parsed_response:
+        #     parsed_response = parsed_response['__root__']
+        # return parsed_response
 
 
 # if __name__ == '__main__':
