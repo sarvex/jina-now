@@ -129,7 +129,8 @@ class MusicToMusic(JinaNOWApp):
             except Exception as e:
                 return d
 
-        da.apply(convert_fn)
+        for d in da:
+            convert_fn(d)
         return DocumentArray(d for d in da if d.blob != b'')
 
 

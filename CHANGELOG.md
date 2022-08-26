@@ -20,6 +20,7 @@
 
 
 
+
 <a name=release-note-0-0-7></a>
 ## Release Note (`0.0.7`)
 
@@ -645,4 +646,31 @@
 
  - [[```5d7aef3b```](https://github.com/jina-ai/now/commit/5d7aef3badb4fb8b88f244758db714f4e3894490)] __-__ Feat client (#395) (*Florian Hönicke*)
  - [[```97f34056```](https://github.com/jina-ai/now/commit/97f3405642f64526f4ef1b6c8f18ceb4d6301feb)] __-__ __version__: the next version will be 0.0.26 (*Jina Dev Bot*)
+
+<a name=release-note-0-0-27></a>
+## Release Note (`0.0.27`)
+
+> Release time: 2022-08-25 11:14:24
+
+
+
+🙇 We'd like to thank all contributors for this new release! In particular,
+ Mohammad Kalim Akram,  Florian Hönicke,  Jina Dev Bot,  🙇
+
+
+### 🆕 New Features
+
+ - [[```37429d6f```](https://github.com/jina-ai/now/commit/37429d6faa3c454f92da746346fe39bc34c38725)] __-__ trigger dispatch workflows (#400) (*Mohammad Kalim Akram*)
+
+### 🐞 Bug fixes
+
+ - [[```83935d60```](https://github.com/jina-ai/now/commit/83935d60f492dff19ca6832ee955ba3a0cd80253)] __-__ check embed for music app (*Mohammad Kalim Akram*)
+ - [[```6e4a76eb```](https://github.com/jina-ai/now/commit/6e4a76eb9a2728cbda717f86d8416c9fed5e97fe)] __-__ check ony if bi modal (*Mohammad Kalim Akram*)
+
+### 🍹 Other Improvements
+
+ - [[```aacc9e05```](https://github.com/jina-ai/now/commit/aacc9e0572dbc0f330e7bc1dbc433f16b1270247)] __-__ update token for workflow dispatch (#401) (*Mohammad Kalim Akram*)
+ - [[```8d377e71```](https://github.com/jina-ai/now/commit/8d377e719f6b2da7505b9a5fc519f8ae34704ddc)] __-__ Feat custom annlite (#399) (*Florian Hönicke*)
+ - [[```4bd9d010```](https://github.com/jina-ai/now/commit/4bd9d010040be44fb77ee61ffc5ad6263d8ece36)] __-__ revert changes (*Mohammad Kalim Akram*)
+ - [[```0aade695```](https://github.com/jina-ai/now/commit/0aade695d862c4a8cd67ed81cf7f9e86ee70e513)] __-__ __version__: the next version will be 0.0.27 (*Jina Dev Bot*)
 

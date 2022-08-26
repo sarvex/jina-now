@@ -149,7 +149,8 @@ def preprocess_images(da: DocumentArray) -> DocumentArray:
         except:
             return d
 
-    da.apply(convert_fn)
+    for d in da:
+        convert_fn(d)
     return DocumentArray(d for d in da if d.blob != b'')
 
 
@@ -191,7 +192,8 @@ def preprocess_text(da: DocumentArray, split_by_sentences=False) -> DocumentArra
             for d in batch:
                 yield d
 
-    da.apply(convert_fn)
+    for d in da:
+        convert_fn(d)
 
     if split_by_sentences:
         da = DocumentArray(d for d in gen_split_by_sentences())
