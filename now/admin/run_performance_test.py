@@ -6,7 +6,7 @@ from now.constants import Apps
 
 
 def call(client, use_bff):
-    if use_bff:
+    if not use_bff:
         return client.send_request(
             '/search',
             text='girl on a motorbike',
