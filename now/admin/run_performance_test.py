@@ -25,11 +25,12 @@ for i in range(10):
     call()
 print(f'Latency: {(time() - start) / 10}s')
 
-# QPS test
-start = time()
-num_queries = 3000
-worker = 100
+
+num_queries = 500
+worker = 30
 with ProcessPoolExecutor(max_workers=worker) as executor:
+    # QPS test
+    start = time()
     futures = []
 
     for i in range(num_queries):
@@ -37,4 +38,4 @@ with ProcessPoolExecutor(max_workers=worker) as executor:
         futures.append(future)
     for future in futures:
         future.result()
-print(f'QPS: {num_queries / (time() - start)}s')
+    print(f'QPS: {num_queries / (time() - start)}s')
