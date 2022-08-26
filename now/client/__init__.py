@@ -1,4 +1,5 @@
 import re
+import time
 
 import requests
 
@@ -40,11 +41,12 @@ class Client:
             "api_key": self.api_key,
             **kwargs,
         }
+        t0 = time.time()
         response = requests.post(
             f'https://nowrun.jina.ai/api/v1/{endpoint}',
             json=request_body,
         )
-        return response
+        return time.time() - t0
 
     def send_request(self, endpoint: str, **kwargs):
         """

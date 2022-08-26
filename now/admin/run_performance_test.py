@@ -12,16 +12,16 @@ client = Client(
 
 
 def call():
-    return client.send_request(
-        '/search',
-        text='girl on a motorbike',
-        limit=60,
-    )
-    # return client.send_request_bff(
-    #     'text-to-video/search',
+    # return client.send_request(
+    #     '/search',
     #     text='girl on a motorbike',
     #     limit=60,
     # )
+    return client.send_request_bff(
+        'text-to-video/search',
+        text='girl on a motorbike',
+        limit=60,
+    )
 
 
 # Latency Test
