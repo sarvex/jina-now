@@ -101,7 +101,8 @@ def _load_tags_from_json(da: DocumentArray, user_input: UserInput):
     if len(files_in_same_folder) > 0:
         print('Files with the same modality are found within the same folder!')
         print(
-            'Printing first 5 ids:', ', '.join(str(id) for id in files_in_same_folder)
+            'Printing first 5 ids:',
+            ', '.join(str(id) for id in files_in_same_folder[:5]),
         )
 
     for i, d in enumerate(da):
