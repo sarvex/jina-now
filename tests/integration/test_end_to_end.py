@@ -9,6 +9,7 @@ import hubble
 import pytest
 import requests
 
+from now.apps.text_to_image.app import TextToImage
 from now.cli import _get_kind_path, _get_kubectl_path, cli
 from now.cloud_manager import create_local_cluster
 from now.constants import JC_SECRET, Apps, DatasetTypes, DemoDatasets, Modalities
@@ -276,7 +277,7 @@ def test_backend_custom_data(
 ):
     os.environ['NOW_CI_RUN'] = 'True'
     os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
-    app = Apps.TEXT_TO_IMAGE
+    app = TextToImage()
     kwargs = {
         'now': 'start',
         'app': app,

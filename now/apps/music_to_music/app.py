@@ -66,7 +66,7 @@ class MusicToMusic(JinaNOWApp):
 
     @property
     def supported_wildcards(self) -> List[str]:
-        return ['*.mp3', '**']
+        return ['*.mp3']
 
     @property
     def pre_trained_embedding_size(self) -> Dict[Qualities, int]:

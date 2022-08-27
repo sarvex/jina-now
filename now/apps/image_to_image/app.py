@@ -72,7 +72,7 @@ class ImageToImage(JinaNOWApp):
 
     @property
     def supported_wildcards(self) -> List[str]:
-        return ['*.gif', '*.png', '*.jpg', '**']
+        return ['*.gif', '*.png', '*.jpg']
 
     @property
     def pre_trained_embedding_size(self) -> Dict[Qualities, int]:

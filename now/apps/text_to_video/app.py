@@ -88,7 +88,7 @@ class TextToVideo(JinaNOWApp):
 
     @property
     def supported_wildcards(self) -> List[str]:
-        return ['*.gif', '*.mp4', '*.mov', '**']
+        return ['*.gif', '*.mp4', '*.mov']
 
     @property
     def pre_trained_embedding_size(self) -> Dict[Qualities, int]:
