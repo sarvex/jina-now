@@ -328,6 +328,9 @@ def test_backend_custom_data(
         response.status_code == 200
     ), f"Received code {response.status_code} with text: {response.json()['message']}"
     response_json = response.json()
+    for d in response_json:
+        print(d.to_json())
+
     assert len(response_json) == 9
     assert all(
         [resp['uri'].startswith('s3://') for resp in response_json]
