@@ -329,7 +329,7 @@ def test_backend_custom_data(
     ), f"Received code {response.status_code} with text: {response.json()['message']}"
     response_json = response.json()
     for d in response_json:
-        print(d.to_json())
+        print(d)
 
     assert len(response_json) == 9
     assert all(
