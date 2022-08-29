@@ -7,7 +7,7 @@ with:
   cors: True
 jcloud:
   version: 3.7.0
-  retention_days: 70
+  retention_days: 7
 executors:
   - name: preprocessor
     uses: ${{ ENV.PREPROCESSOR_NAME }}
@@ -18,7 +18,7 @@ executors:
       capacity: on-demand
       resources:
         cpu: 2.0
-        memory: 2G
+        memory: 1G
     env:
       JINA_LOG_LEVEL: DEBUG
   - name: encoder_clip
@@ -29,7 +29,7 @@ executors:
       capacity: on-demand
       resources:
         cpu: 2.0
-        memory: 4G
+        memory: 3G
         gpu: ${{ ENV.GPU }}
     uses_with:
       pretrained_model_name_or_path: ${{ ENV.PRE_TRAINED_MODEL_NAME }}
@@ -44,7 +44,7 @@ executors:
     jcloud:
       capacity: on-demand
       resources:
-        memory: 1G
+        memory: 500M
     env:
       JINA_LOG_LEVEL: DEBUG
   - name: indexer
@@ -57,7 +57,7 @@ executors:
     jcloud:
       capacity: on-demand
       resources:
-        memory: 4G
-        cpu: 1.0
+        memory: ${{ ENV.INDEXER_MEM }}
+        cpu: 0.1
     env:
       JINA_LOG_LEVEL: DEBUG

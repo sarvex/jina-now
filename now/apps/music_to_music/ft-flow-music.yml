@@ -7,7 +7,7 @@ with:
   cors: True
 jcloud:
   version: 3.7.0
-  retention_days: 30
+  retention_days: 7
 executors:
   - name: preprocessor
     uses: ${{ ENV.PREPROCESSOR_NAME }}
@@ -15,14 +15,14 @@ executors:
       app: ${{ ENV.APP }}
     jcloud:
       resources:
-        memory: 2G
+        memory: 1G
     env:
       JINA_LOG_LEVEL: DEBUG
   - name: encoder_music
     uses: ${{ ENV.ENCODER_NAME }}
     jcloud:
       resources:
-        memory: 8G
+        memory: 3G
     env:
       JINA_LOG_LEVEL: DEBUG
   - name: cast_convert
@@ -42,14 +42,14 @@ executors:
     output_array_type: numpy
     jcloud:
       resources:
-        memory: 4G
+        memory: 500M
     env:
       JINA_LOG_LEVEL: DEBUG
   - name: postprocessor
     uses: jinahub+docker://NOWPostprocessor/v0.0.5
     jcloud:
       resources:
-        memory: 1G
+        memory: 500M
     env:
       JINA_LOG_LEVEL: DEBUG
   - name: indexer
@@ -59,6 +59,6 @@ executors:
     jcloud:
       capacity: on-demand
       resources:
-        memory: 4G
+        memory: ${{ ENV.INDEXER_MEM }}
     env:
       JINA_LOG_LEVEL: DEBUG
