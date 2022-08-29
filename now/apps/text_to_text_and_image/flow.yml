@@ -6,14 +6,14 @@ executors:
     '/query_text': encode
     '/index_text': encode
   uses_with:
-    artifact: 62ff394b1fe737c17c28e48e
+    artifact: ${{ ENV.SBERT_ARTIFACT }}
     token: ${{ ENV.JINA_TOKEN }}
 - name: Encoder_2
   uses: jinahub+docker://FinetunerExecutor
   uses_requests:
     '/query_vision_text': encode
   uses_with:
-    artifact: 62ff3b461fe737c17c28e4d2
+    artifact: ${{ ENV.CLIP_ARTIFACT }}
     token: ${{ ENV.JINA_TOKEN }}
     select_model: clip-text
 - name: Encoder_3
@@ -21,6 +21,6 @@ executors:
   uses_requests:
     '/index_vision': encode
   uses_with:
-    artifact: 62ff3b461fe737c17c28e4d2
+    artifact: ${{ ENV.CLIP_ARTIFACT }}
     token: ${{ ENV.JINA_TOKEN }}
     select_model: clip-vision
