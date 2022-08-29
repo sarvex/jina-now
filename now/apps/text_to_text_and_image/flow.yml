@@ -1,6 +1,6 @@
 jtype: Flow
 executors:
-- name: Encoder_1
+- name: sbert_encoder
   uses: jinahub+docker://FinetunerExecutor
   uses_requests:
     '/query_text': encode
@@ -8,7 +8,7 @@ executors:
   uses_with:
     artifact: ${{ ENV.SBERT_ARTIFACT }}
     token: ${{ ENV.JINA_TOKEN }}
-- name: Encoder_2
+- name: clip_text_encoder
   uses: jinahub+docker://FinetunerExecutor
   uses_requests:
     '/query_vision_text': encode
@@ -16,7 +16,7 @@ executors:
     artifact: ${{ ENV.CLIP_ARTIFACT }}
     token: ${{ ENV.JINA_TOKEN }}
     select_model: clip-text
-- name: Encoder_3
+- name: clip_vision_encoder
   uses: jinahub+docker://FinetunerExecutor
   uses_requests:
     '/index_vision': encode
