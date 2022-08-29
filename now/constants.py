@@ -5,8 +5,8 @@ from now.utils import BetterEnum
 # DEMO_DATASET_DOCARRAY_VERSION = docarray_version
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.112-feat-client-6'
-NOW_PREPROCESSOR_VERSION = '0.0.61-tags-loading'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.113-gif-demo-data-7'
+NOW_PREPROCESSOR_VERSION = '0.0.61-gif-demo-data-7'
 NOW_AUTH_EXECUTOR_VERSION = '0.0.3'
 
 
@@ -72,6 +72,8 @@ class DemoDatasets:
     RAP_LYRICS = 'rap-lyrics'
     INDIE_LYRICS = 'indie-lyrics'
     METAL_LYRICS = 'metal-lyrics'
+    TUMBLR_GIFS = 'tumblr-gifs'
+    TUMBLR_GIFS_10K = 'tumblr-gifs-10k'
 
 
 AVAILABLE_DATASET = {
@@ -96,7 +98,10 @@ AVAILABLE_DATASET = {
         (DemoDatasets.INDIE_LYRICS, '🎤 indie lyrics (200K docs)'),
         (DemoDatasets.METAL_LYRICS, '🎤 metal lyrics (200K docs)'),
     ],
-    Modalities.VIDEO: [],
+    Modalities.VIDEO: [
+        (DemoDatasets.TUMBLR_GIFS, '🎦 tumblr gifs (100K gifs)'),
+        (DemoDatasets.TUMBLR_GIFS_10K, '🎦 tumblr gifs subset (10K gifs)'),
+    ],
 }
 
 JC_SECRET = '~/.cache/jina-now/wolf.json'

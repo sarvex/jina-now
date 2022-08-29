@@ -50,7 +50,10 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
             f'Could not load DocArray dataset. Please check your configuration: {user_input}.'
         )
     if 'NOW_CI_RUN' in os.environ:
-        if user_input.data == DemoDatasets.BEST_ARTWORKS:
+        if user_input.data in [
+            DemoDatasets.BEST_ARTWORKS,
+            DemoDatasets.TUMBLR_GIFS_10K,
+        ]:
             da = da[:2000]
         else:
             da = da[:1000]

@@ -1,4 +1,5 @@
 import csv
+import io
 import json
 import multiprocessing as mp
 import os
@@ -10,8 +11,6 @@ from typing import Any, Dict, Optional
 import pandas as pd
 from jina import Document, DocumentArray
 from tqdm import tqdm
-
-from now.data_loading.utils import upload_to_gcloud_bucket
 
 IMAGE_SHAPE = (224, 224)
 
@@ -647,6 +646,40 @@ def _build_metal_lyrics(
     )
 
 
+def _build_tumblr_gifs(root: str, max_size: int = 0) -> DocumentArray:
+    """Builds the Tumblr GIF data. Download data/tgif-v1.0.tsv from
+    https://github.com/raingo/TGIF-Release into :param root.
+
+    :param root: the dataset root folder
+    :param max_size: used to randomly subsample from dataset if greater than 0
+
+    :returns: DocumentArray
+    """
+    df = pd.read_csv(
+        os.path.join(root, 'tgif-v1.0.tsv'),
+        delimiter='\t',
+        names=['url', 'description'],
+        dtype={'url': str, 'description': str},
+    )
+    # filter duplicated url (some GIFs have multiple descriptions)
+    df = df[~df.duplicated(subset='url', keep='first')]
+
+    # create image documents
+    df['mime_type'] = 'image'
+    df['uri'] = df['url']
+    da_image = DocumentArray.from_dataframe(df)
+    # create text documents
+    del df['uri']
+    df['mime_type'] = 'text'
+    df['text'] = df['description']
+    da_text = DocumentArray.from_dataframe(df)
+
+    if max_size > 0:
+        return da_text[:max_size] + da_image[:max_size]
+    else:
+        return da_text + da_image
+
+
 def process_dataset(
     datadir: str,
     name: str,
@@ -659,21 +692,20 @@ def process_dataset(
     """
     Build, save and upload a dataset.
     """
+    docarray_version = '0.13.17'
     root = f'{datadir}/{name}'
-    out = f'{name}.bin'
-    out_img10 = f'{name}.img{k}.bin'
-    out_txt10 = f'{name}.txt{k}.bin'
+    out = f'{name}-10k-{docarray_version}.bin'
+    out_img10 = f'{name}.img{k}-{docarray_version}.bin'
+    out_txt10 = f'{name}.txt{k}-{docarray_version}.bin'
 
     print(f'===> {name}')
     print(f'  Building {name} from {root} ...')
     docs = globals()[f'_build_{name.replace("-", "_")}'](root)
     docs = docs.shuffle(42)
     image_docs = DocumentArray(
-        [doc for doc in docs if doc.tags['content_type'] == 'image']
+        [doc for doc in docs if doc.mime_type.startswith('image')]
     )
-    text_docs = DocumentArray(
-        [doc for doc in docs if doc.tags['content_type'] == 'text']
-    )
+    text_docs = DocumentArray([doc for doc in docs if doc.mime_type.startswith('text')])
     print(f'  Dataset size: {len(docs)}')
     print(f'  Num image docs: {len(image_docs)}')
     print(f'  Num text docs: {len(text_docs)}')
@@ -737,6 +769,27 @@ def main():
     ]
     for name in datasets:
         process_dataset(localdir, name, project, bucket, location)
+    location = 'data/one-line/datasets/video'
+    datasets = ['tumblr-gifs']
+    for name in datasets:
+        process_dataset(localdir, name, project, bucket, location)
+
+
+def upload_to_gcloud_bucket(project: str, bucket: str, location: str, fname: str):
+    """
+    Upload local file to Google Cloud bucket.
+    """
+    # if TYPE_CHECKING:
+    from google.cloud import storage
+
+    client = storage.Client(project=project)
+    bucket = client.get_bucket(bucket)
+
+    with open(fname, 'rb') as f:
+        content = io.BytesIO(f.read())
+
+    tensor = bucket.blob(location + '/' + fname)
+    tensor.upload_from_file(content, timeout=7200)
 
 
 if __name__ == '__main__':
