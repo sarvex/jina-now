@@ -97,6 +97,13 @@ def test_token_exists():
             DemoDatasets.POP_LYRICS,
             'remote',
         ),
+        (
+            Apps.TEXT_TO_VIDEO,
+            Modalities.TEXT,
+            Modalities.VIDEO,
+            DemoDatasets.TUMBLR_GIFS_10K,
+            'local',
+        ),
     ],
 )
 @pytest.mark.parametrize('quality', ['medium'])
@@ -218,7 +225,7 @@ def get_search_request_body(app, dataset, deployment_type, kwargs, test_search_i
     # Perform end-to-end check via bff
     if app in [Apps.IMAGE_TO_IMAGE, Apps.IMAGE_TO_TEXT]:
         request_body['image'] = test_search_image
-    elif app in [Apps.TEXT_TO_IMAGE, Apps.TEXT_TO_TEXT]:
+    elif app in [Apps.TEXT_TO_IMAGE, Apps.TEXT_TO_TEXT, Apps.TEXT_TO_VIDEO]:
         if dataset == DemoDatasets.BEST_ARTWORKS:
             search_text = 'impressionism'
         elif dataset == DemoDatasets.NFT_MONKEY:

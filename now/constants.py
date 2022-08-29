@@ -73,6 +73,8 @@ class DemoDatasets:
     RAP_LYRICS = 'rap-lyrics'
     INDIE_LYRICS = 'indie-lyrics'
     METAL_LYRICS = 'metal-lyrics'
+    TUMBLR_GIFS = 'tumblr-gifs'
+    TUMBLR_GIFS_10K = 'tumblr-gifs-10k'
 
 
 AVAILABLE_DATASET = {
@@ -97,7 +99,10 @@ AVAILABLE_DATASET = {
         (DemoDatasets.INDIE_LYRICS, '🎤 indie lyrics (200K docs)'),
         (DemoDatasets.METAL_LYRICS, '🎤 metal lyrics (200K docs)'),
     ],
-    Modalities.VIDEO: [],
+    Modalities.VIDEO: [
+        (DemoDatasets.TUMBLR_GIFS, '🎦 tumblr gifs (100K gifs)'),
+        (DemoDatasets.TUMBLR_GIFS_10K, '🎦 tumblr gifs subset (10K gifs)'),
+    ],
     Modalities.TEXT_AND_IMAGE: [],
 }
 
