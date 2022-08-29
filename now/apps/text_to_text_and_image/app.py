@@ -1,3 +1,5 @@
+import os
+
 from now.apps.base.app import JinaNOWApp
 from now.constants import Apps
 
@@ -23,3 +25,8 @@ class TextToTextAndImage(JinaNOWApp):
         return (
             'Text to text+image search app combining symbolic and neural IR approaches.'
         )
+
+    def set_flow_yaml(self, **kwargs):
+        """configure the flow yaml in the Jina NOW app."""
+        flow_dir = os.path.abspath(os.path.join(__file__, '..'))
+        self.flow_yaml = os.path.join(flow_dir, 'flow.yml')

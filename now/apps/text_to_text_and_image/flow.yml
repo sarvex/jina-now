@@ -1,0 +1,26 @@
+jtype: Flow
+executors:
+- name: Encoder_1
+  uses: jinahub+docker://FinetunerExecutor
+  uses_requests:
+    '/query_text': encode
+    '/index_text': encode
+  uses_with:
+    artifact: 62ff394b1fe737c17c28e48e
+    token: ${{ ENV.JINA_TOKEN }}
+- name: Encoder_2
+  uses: jinahub+docker://FinetunerExecutor
+  uses_requests:
+    '/query_vision_text': encode
+  uses_with:
+    artifact: 62ff3b461fe737c17c28e4d2
+    token: ${{ ENV.JINA_TOKEN }}
+    select_model: clip-text
+- name: Encoder_3
+  uses: jinahub+docker://FinetunerExecutor
+  uses_requests:
+    '/index_vision': encode
+  uses_with:
+    artifact: 62ff3b461fe737c17c28e4d2
+    token: ${{ ENV.JINA_TOKEN }}
+    select_model: clip-vision
