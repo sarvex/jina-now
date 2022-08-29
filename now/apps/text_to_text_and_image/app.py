@@ -1,7 +1,7 @@
 import os
 
 from now.apps.base.app import JinaNOWApp
-from now.constants import Apps
+from now.constants import Apps, Modalities
 
 
 class TextToTextAndImage(JinaNOWApp):
@@ -30,3 +30,11 @@ class TextToTextAndImage(JinaNOWApp):
         """configure the flow yaml in the Jina NOW app."""
         flow_dir = os.path.abspath(os.path.join(__file__, '..'))
         self.flow_yaml = os.path.join(flow_dir, 'flow.yml')
+
+    @property
+    def input_modality(self) -> Modalities:
+        return Modalities.TEXT
+
+    @property
+    def output_modality(self) -> Modalities:
+        return Modalities.TEXT_AND_IMAGE
