@@ -101,6 +101,6 @@ def estimate_request_size(index):
         sample = index
     size = sum([sys.getsizeof(x.content) for x in sample]) / 30
     max_size = 50_000
-    max_request_size = 128
+    max_request_size = 32
     request_size = max(min(max_request_size, int(max_size / size)), 1)
     return request_size

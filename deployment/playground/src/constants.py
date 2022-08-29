@@ -34,6 +34,8 @@ ds_set = [
     'rap-lyrics',
     'indie-lyrics',
     'metal-lyrics',
+    'tumblr-gifs',
+    'tumblr-gifs-10k',
 ]
 
 SURVEY_LINK = 'https://10sw1tcpld4.typeform.com/to/VTAyYRpR?utm_source=cli'

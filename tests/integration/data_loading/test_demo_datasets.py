@@ -53,6 +53,12 @@ def test_dataset_is_available(
         "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/jpeg/geolocation-geoguessr.txt10-{}.bin",
         "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/music/music-genres-mid-song5-{}.bin",
         "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/music/music-genres-mix-song5-{}.bin",
+        "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/video/tumblr-gifs-{}.bin",
+        "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/video/tumblr-gifs.img10-{}.bin",
+        "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/video/tumblr-gifs.txt10-{}.bin",
+        "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/video/tumblr-gifs-10k-{}.bin",
+        "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/video/tumblr-gifs-10k.img10-{}.bin",
+        "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/video/tumblr-gifs-10k.txt10-{}.bin",
     ],
 )
 def test_sample_data_is_available(ds_url: str):

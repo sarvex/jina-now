@@ -3,11 +3,11 @@ with:
   name: nowapi
   monitoring: true
   port_expose: 8080
-  prefetch: 10
+  prefetch: 30
   cors: True
 jcloud:
   version: 3.7.0
-  retention_days: 30
+  retention_days: 70
 executors:
   - name: preprocessor
     uses: ${{ ENV.PREPROCESSOR_NAME }}
@@ -15,24 +15,26 @@ executors:
     uses_with:
       app: ${{ ENV.APP }}
     jcloud:
+      capacity: on-demand
       resources:
         cpu: 2.0
         memory: 2G
     env:
       JINA_LOG_LEVEL: DEBUG
   - name: encoder_clip
+    replicas: 3
     uses: ${{ ENV.ENCODER_NAME }}
-    uses_with:
-      device: ${{ ENV.DEVICE }}
     replicas: 3
     jcloud:
+      capacity: on-demand
       resources:
         cpu: 2.0
-        memory: 8G
+        memory: 4G
         gpu: ${{ ENV.GPU }}
     uses_with:
       pretrained_model_name_or_path: ${{ ENV.PRE_TRAINED_MODEL_NAME }}
       traversal_paths: '@c'
+      device: ${{ ENV.DEVICE }}
     env:
       JINA_LOG_LEVEL: DEBUG
   - name: postprocessor
@@ -40,6 +42,7 @@ executors:
     uses_with:
       traversal_paths: '@c'
     jcloud:
+      capacity: on-demand
       resources:
         memory: 1G
     env:

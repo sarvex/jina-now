@@ -18,11 +18,10 @@ def update_api_keys(deployment_type, api_keys):
         f'{url}/admin/updateApiKeys',
         json=request_body,
     )
-    print()
 
 
 if __name__ == '__main__':
     update_api_keys(
         deployment_type='remote',
-        api_keys=['my_key'],
+        api_keys=['...'],
     )

@@ -5,8 +5,10 @@ from now.utils import BetterEnum
 # DEMO_DATASET_DOCARRAY_VERSION = docarray_version
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.112-feat-client-6'
-NOW_PREPROCESSOR_VERSION = '0.0.55'
+
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.114'
+NOW_PREPROCESSOR_VERSION = '0.0.64'
+
 NOW_AUTH_EXECUTOR_VERSION = '0.0.3'
 
 
@@ -15,6 +17,7 @@ class Modalities(BetterEnum):
     IMAGE = 'image'
     MUSIC = 'music'
     VIDEO = 'video'
+    TEXT_AND_IMAGE = 'text_and_image'
 
 
 class Apps(BetterEnum):
@@ -24,6 +27,7 @@ class Apps(BetterEnum):
     IMAGE_TO_IMAGE = 'image_to_image'
     MUSIC_TO_MUSIC = 'music_to_music'
     TEXT_TO_VIDEO = 'text_to_video'
+    TEXT_TO_TEXT_AND_IMAGE = 'text_to_text_and_image'
 
 
 class DatasetTypes(BetterEnum):
@@ -71,6 +75,8 @@ class DemoDatasets:
     RAP_LYRICS = 'rap-lyrics'
     INDIE_LYRICS = 'indie-lyrics'
     METAL_LYRICS = 'metal-lyrics'
+    TUMBLR_GIFS = 'tumblr-gifs'
+    TUMBLR_GIFS_10K = 'tumblr-gifs-10k'
 
 
 AVAILABLE_DATASET = {
@@ -95,7 +101,11 @@ AVAILABLE_DATASET = {
         (DemoDatasets.INDIE_LYRICS, '🎤 indie lyrics (200K docs)'),
         (DemoDatasets.METAL_LYRICS, '🎤 metal lyrics (200K docs)'),
     ],
-    Modalities.VIDEO: [],
+    Modalities.VIDEO: [
+        (DemoDatasets.TUMBLR_GIFS, '🎦 tumblr gifs (100K gifs)'),
+        (DemoDatasets.TUMBLR_GIFS_10K, '🎦 tumblr gifs subset (10K gifs)'),
+    ],
+    Modalities.TEXT_AND_IMAGE: [],
 }
 
 JC_SECRET = '~/.cache/jina-now/wolf.json'
