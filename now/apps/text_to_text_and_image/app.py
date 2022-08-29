@@ -1,5 +1,5 @@
 from now.apps.base.app import JinaNOWApp
-from now.constants import Apps
+from now.constants import Apps, Modalities
 
 
 class TextToTextAndImage(JinaNOWApp):
@@ -23,3 +23,11 @@ class TextToTextAndImage(JinaNOWApp):
         return (
             'Text to text+image search app combining symbolic and neural IR approaches.'
         )
+
+    @property
+    def input_modality(self) -> Modalities:
+        return Modalities.TEXT
+
+    @property
+    def output_modality(self) -> Modalities:
+        return Modalities.TEXT_AND_IMAGE
