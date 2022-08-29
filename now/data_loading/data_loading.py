@@ -175,8 +175,9 @@ def _list_files_from_s3_bucket(app: JinaNOWApp, user_input: UserInput) -> Docume
             f"Can't process S3 URI {s3_uri} as it assumes it starts with: 's3://'"
         )
 
-    bucket = s3_uri.split('/')[2]
-    folder_prefix = '/'.join(s3_uri.split('/')[3:])
+    path_splits = s3_uri.split('/', 3)
+    bucket = path_splits[2]
+    folder_prefix = path_splits[-1]
 
     session = boto3.session.Session(
         aws_access_key_id=user_input.aws_access_key_id,
