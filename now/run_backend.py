@@ -54,9 +54,7 @@ def run(app_instance: JinaNOWApp, user_input: UserInput, kubectl_path: str):
     params = {'user_input': dataclasses.asdict(user_input)}
     if user_input.secured:
         params['jwt'] = user_input.jwt
-    call_index(
-        client=client, dataset=dataset[:100], parameters=params, return_results=False
-    )
+    call_index(client=client, dataset=dataset, parameters=params, return_results=False)
     print('⭐ Success - your data is indexed')
 
     return gateway_host, gateway_port, gateway_host_internal, gateway_port_internal
