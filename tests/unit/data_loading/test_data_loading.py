@@ -125,6 +125,7 @@ def test_da_custom_ds(da: DocumentArray):
     for doc in loaded_da:
         assert doc.blob != b''
 
+
 def test_es_custom_ds(es_resource_path: str = 'es_extracted_data_flat'):
     user_input = UserInput()
     user_input.is_custom_dataset = True
@@ -139,6 +140,7 @@ def test_es_custom_ds(es_resource_path: str = 'es_extracted_data_flat'):
 
     for doc in loaded_da:
         assert doc.blob != b''
+
 
 def test_load_tags(gif_resource_path: str):
     user_input = UserInput()

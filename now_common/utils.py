@@ -209,6 +209,7 @@ def preprocess_text(da: DocumentArray, split_by_sentences=False) -> DocumentArra
 
     return DocumentArray(d for d in da if d.text and d.text != '')
 
+
 def preprocess_nested_docs(da: DocumentArray, user_input: UserInput) -> DocumentArray:
     """
     Process a `DocumentArray` with `Document`s that have `chunks` of nested `Document`s.
@@ -219,18 +220,14 @@ def preprocess_nested_docs(da: DocumentArray, user_input: UserInput) -> Document
     :return: A `DocumentArray` with `Document`s containing text and image chunks.
     """
     fields = user_input.task.indexer_scope
-    es_transformer = ESDataTransformer()
-    transformed_da = es_transformer.transform(da)
-    processed_da = DocumentArray()
-    for doc in transformed_da:
-        new_doc = Document(chunks=
-            [
-                Document(text=doc[fields['text']][0]),
-                Document(uri=doc[fields['image']][0])
-            ]
-        )
-        processed_da.append(new_doc)
-    return processed_da
+    transformed_da = ESDataTransformer.transform(da)
+    return DocumentArray([Document(chunks=
+        [
+            Document(text=doc[fields['text']][0]),
+            Document(uri=doc[fields['image']][0])
+        ]
+    ) for doc in transformed_da])
+
 
 def _get_email():
     try:
