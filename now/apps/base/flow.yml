@@ -3,5 +3,5 @@ version: '1'
 with:
 jcloud:
   version: 3.6.6
-  retention_days: ${{ ENV.RETENTION_DAYS }}
+  retention_days: ${{ RETENTION_DAYS }}
 executors:

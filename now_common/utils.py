@@ -58,7 +58,7 @@ def get_clip_music_flow_env_dict(
             'RETENTION_DAYS'
         ] = 0  # JCloud will delete after 24hrs of being idle if not deleted in CI
     else:
-        config['RETENTION_DAYS'] = 30  # for user deployment set it to 30 days
+        config['RETENTION_DAYS'] = 7  # for user deployment set it to 30 days
 
     return config
 
