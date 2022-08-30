@@ -221,12 +221,17 @@ def preprocess_nested_docs(da: DocumentArray, user_input: UserInput) -> Document
     """
     fields = user_input.task.indexer_scope
     transformed_da = ESDataTransformer.transform(da)
-    return DocumentArray([Document(chunks=
+    return DocumentArray(
         [
-            Document(text=doc[fields['text']][0]),
-            Document(uri=doc[fields['image']][0])
+            Document(
+                chunks=[
+                    Document(text=doc[fields['text']][0]),
+                    Document(uri=doc[fields['image']][0]),
+                ]
+            )
+            for doc in transformed_da
         ]
-    ) for doc in transformed_da])
+    )
 
 
 def _get_email():

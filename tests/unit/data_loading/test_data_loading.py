@@ -139,7 +139,9 @@ def test_es_custom_ds(es_resource_path: str = 'es_extracted_data_flat'):
     loaded_da = app.preprocess(da=loaded_da, user_input=user_input)
 
     for doc in loaded_da:
-        assert doc.blob != b''
+        assert doc.chunks
+        assert doc.chunks[0].text
+        assert doc.chunks[1].uri
 
 
 def test_load_tags(gif_resource_path: str):
