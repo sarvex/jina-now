@@ -48,5 +48,5 @@
       ]
     }
   ],
-  "add_indexer": false
+  "indexer_scope": {"text": "text", "image": "uris"}
 }
