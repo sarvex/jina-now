@@ -154,6 +154,7 @@ def deploy_flow(
             client = Client(host=host)
 
             # Dump the flow ID and gateway to keep track
+            pathlib.Path(user(JC_SECRET)).parent.mkdir(parents=True, exist_ok=True)
             with open(user(JC_SECRET), 'w') as fp:
                 json.dump({'flow_id': flow.flow_id, 'gateway': host}, fp)
 

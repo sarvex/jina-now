@@ -97,6 +97,13 @@ def test_token_exists():
             DemoDatasets.POP_LYRICS,
             'remote',
         ),
+        (
+            Apps.TEXT_TO_VIDEO,
+            Modalities.TEXT,
+            Modalities.VIDEO,
+            DemoDatasets.TUMBLR_GIFS_10K,
+            'local',
+        ),
     ],
 )
 @pytest.mark.parametrize('quality', ['medium'])
@@ -218,7 +225,7 @@ def get_search_request_body(app, dataset, deployment_type, kwargs, test_search_i
     # Perform end-to-end check via bff
     if app in [Apps.IMAGE_TO_IMAGE, Apps.IMAGE_TO_TEXT]:
         request_body['image'] = test_search_image
-    elif app in [Apps.TEXT_TO_IMAGE, Apps.TEXT_TO_TEXT]:
+    elif app in [Apps.TEXT_TO_IMAGE, Apps.TEXT_TO_TEXT, Apps.TEXT_TO_VIDEO]:
         if dataset == DemoDatasets.BEST_ARTWORKS:
             search_text = 'impressionism'
         elif dataset == DemoDatasets.NFT_MONKEY:
@@ -328,7 +335,7 @@ def test_backend_custom_data(
         response.status_code == 200
     ), f"Received code {response.status_code} with text: {response.json()['message']}"
     response_json = response.json()
-    assert len(response_json) == 9
+    assert len(response_json) == 2
     assert all(
         [resp['uri'].startswith('s3://') for resp in response_json]
     ), f"Received non s3 uris: {[resp['uri'] for resp in response_json]}"

@@ -7,7 +7,7 @@ with:
   cors: True
 jcloud:
   version: 3.7.0
-  retention_days: 30
+  retention_days: ${{ RETENTION_DAYS }}
 executors:
   - name: preprocessor
     uses: ${{ ENV.PREPROCESSOR_NAME }}
@@ -20,8 +20,6 @@ executors:
       JINA_LOG_LEVEL: DEBUG
   - name: encoder_clip
     uses: ${{ ENV.ENCODER_NAME }}
-    uses_with:
-      device: ${{ ENV.DEVICE }}
     jcloud:
       resources:
         memory: 8G
@@ -29,6 +27,7 @@ executors:
     uses_with:
       pretrained_model_name_or_path: ${{ ENV.PRE_TRAINED_MODEL_NAME }}
       traversal_paths: '@c'
+      device: ${{ ENV.DEVICE }}
     env:
       JINA_LOG_LEVEL: DEBUG
   - name: cast_convert
@@ -55,9 +54,6 @@ executors:
     uses: jinahub+docker://NOWPostprocessor/v0.0.5
     uses_with:
       traversal_paths: '@c'
-    jcloud:
-      resources:
-        memory: 1G
     env:
       JINA_LOG_LEVEL: DEBUG
   - name: indexer

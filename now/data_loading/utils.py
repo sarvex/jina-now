@@ -1,5 +1,4 @@
 import base64
-import io
 import os
 from os.path import join as osp
 from typing import Optional
@@ -15,23 +14,6 @@ from now.constants import (
 )
 from now.log import yaspin_extended
 from now.utils import download, sigmap
-
-
-def upload_to_gcloud_bucket(project: str, bucket: str, location: str, fname: str):
-    """
-    Upload local file to Google Cloud bucket.
-    """
-    # if TYPE_CHECKING:
-    from google.cloud import storage
-
-    client = storage.Client(project=project)
-    bucket = client.get_bucket(bucket)
-
-    with open(fname, 'rb') as f:
-        content = io.BytesIO(f.read())
-
-    tensor = bucket.blob(location + '/' + fname)
-    tensor.upload_from_file(content, timeout=7200)
 
 
 def _fetch_da_from_url(
@@ -66,8 +48,10 @@ def get_dataset_url(
         data_folder = 'text'
     elif output_modality == Modalities.MUSIC:
         data_folder = 'music'
+    elif output_modality == Modalities.VIDEO:
+        data_folder = 'video'
 
-    if output_modality != Modalities.MUSIC:
+    if output_modality not in [Modalities.MUSIC, Modalities.VIDEO]:
         return f'{BASE_STORAGE_URL}/{data_folder}/{dataset}.{IMAGE_MODEL_QUALITY_MAP[model_quality][0]}-{docarray_version}.bin'
     else:
         return f'{BASE_STORAGE_URL}/{data_folder}/{dataset}-{docarray_version}.bin'
