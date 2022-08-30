@@ -2,6 +2,7 @@ from typing import Any, Dict, List
 
 from docarray import Document, DocumentArray
 
+
 class ESDataTransformer:
     @classmethod
     def transform(cls, data: DocumentArray) -> List[Dict[str, Any]]:
