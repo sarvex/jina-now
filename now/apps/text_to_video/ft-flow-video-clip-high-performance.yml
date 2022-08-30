@@ -58,9 +58,6 @@ executors:
     uses: jinahub+docker://NOWPostprocessor/v0.0.5
     uses_with:
       traversal_paths: '@c'
-    jcloud:
-      resources:
-        memory: 1G
     env:
       JINA_LOG_LEVEL: DEBUG
   - name: indexer
