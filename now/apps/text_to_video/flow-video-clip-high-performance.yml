@@ -43,8 +43,6 @@ executors:
       traversal_paths: '@c'
     jcloud:
       capacity: on-demand
-      resources:
-        memory: 1G
     env:
       JINA_LOG_LEVEL: DEBUG
   - name: indexer
