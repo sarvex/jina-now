@@ -6,7 +6,7 @@ from now.utils import BetterEnum
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.115-bff-tags'
-NOW_PREPROCESSOR_VERSION = '0.0.61-gif-demo-data-7'
+NOW_PREPROCESSOR_VERSION = '0.0.65-bff-tags'
 NOW_AUTH_EXECUTOR_VERSION = '0.0.3'
 
 
@@ -15,6 +15,7 @@ class Modalities(BetterEnum):
     IMAGE = 'image'
     MUSIC = 'music'
     VIDEO = 'video'
+    TEXT_AND_IMAGE = 'text_and_image'
 
 
 class Apps(BetterEnum):
@@ -102,6 +103,7 @@ AVAILABLE_DATASET = {
         (DemoDatasets.TUMBLR_GIFS, '🎦 tumblr gifs (100K gifs)'),
         (DemoDatasets.TUMBLR_GIFS_10K, '🎦 tumblr gifs subset (10K gifs)'),
     ],
+    Modalities.TEXT_AND_IMAGE: [],
 }
 
 JC_SECRET = '~/.cache/jina-now/wolf.json'
