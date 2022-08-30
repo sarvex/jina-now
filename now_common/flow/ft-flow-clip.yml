@@ -7,7 +7,7 @@ with:
   cors: True
 jcloud:
   version: 3.7.0
-  retention_days: ${{ ENV.RETENTION_DAYS }}
+  retention_days: 7
 executors:
   - name: preprocessor
     uses: ${{ ENV.PREPROCESSOR_NAME }}
