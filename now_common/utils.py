@@ -10,6 +10,7 @@ from now.apps.base.app import JinaNOWApp
 from now.constants import NOW_PREPROCESSOR_VERSION, PREFETCH_NR
 from now.data_loading.convert_datasets_to_jpeg import to_thumbnail_jpg
 from now.finetuning.run_finetuning import finetune
+from now.finetuning.data_builder import ESDataTransformer
 from now.finetuning.settings import FinetuneSettings, parse_finetune_settings
 from now.now_dataclasses import UserInput
 
@@ -203,29 +204,25 @@ def preprocess_text(da: DocumentArray, split_by_sentences=False) -> DocumentArra
 def preprocess_nested_docs(da: DocumentArray, user_input: UserInput) -> DocumentArray:
     """
     Process a `DocumentArray` with `Document`s that have `chunks` of nested `Document`s.
-    It constructs `Document`s containg two chunks: one containing image data
-    (first `Document` with image modality tag), and another containing text data
-    (concatenation of the texts of all `Document`s with text modality).
-
-    Note: in future, we can add more complex data generation methods.
+    It constructs `Document`s containg two chunks: one containing image data and another
+    containing text data. Fields for indexing should be specified in the `UserInput`.
 
     :param da: A `DocumentArray` containing nested chunks.
     :return: A `DocumentArray` with `Document`s containing text and image chunks.
     """
-    da = DocumentArray()
-    for doc in da:
-        image_uris = [c.uri for chunk in doc.chunks for c in chunk.chunks if c.tags['modality'] == 'image']
-        texts = [c.text for chunk in doc.chunks for c in chunk.chunks if c.tags['modality'] == 'text']
-        if image_uris and texts:
-            processed_doc = Document(id=doc.id)
-            processed_doc.chunks(
-                [
-                    Document(uri=image_uris[0]),
-                    Document(text=' '.join(texts))
-                ]
-            )
-            da.append(processed_doc)
-    return da
+    fields = user_input.task.indexer_scope
+    es_transformer = ESDataTransformer()
+    transformed_da = es_transformer.transform(da)
+    processed_da = DocumentArray()
+    for doc in transformed_da:
+        new_doc = Document(chunks=
+            [
+                Document(text=doc[fields['text']][0]),
+                Document(uri=doc[fields['image']][0])
+            ]
+        )
+        processed_da.append(new_doc)
+    return processed_da
 
 def _get_email():
     try:

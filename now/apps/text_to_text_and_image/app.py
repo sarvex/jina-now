@@ -49,7 +49,7 @@ class TextToTextAndImage(JinaNOWApp):
     def preprocess(self, da: DocumentArray, user_input: UserInput, is_indexing: False) -> DocumentArray:
         # Indexing
         if is_indexing:
-            return preprocess_nested_docs(da=da)
+            return preprocess_nested_docs(da=da, user_input=user_input)
         # Query
         else:
             return preprocess_text(da=da, split_by_sentences=False)
