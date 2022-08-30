@@ -1,0 +1,26 @@
+jtype: Flow
+executors:
+- name: sbert_encoder
+  uses: jinahub+docker://FinetunerExecutor
+  uses_requests:
+    '/query_text': encode
+    '/index_text': encode
+  uses_with:
+    artifact: ${{ ENV.SBERT_ARTIFACT }}
+    token: ${{ ENV.JINA_TOKEN }}
+- name: clip_text_encoder
+  uses: jinahub+docker://FinetunerExecutor
+  uses_requests:
+    '/query_vision_text': encode
+  uses_with:
+    artifact: ${{ ENV.CLIP_ARTIFACT }}
+    token: ${{ ENV.JINA_TOKEN }}
+    select_model: clip-text
+- name: clip_vision_encoder
+  uses: jinahub+docker://FinetunerExecutor
+  uses_requests:
+    '/index_vision': encode
+  uses_with:
+    artifact: ${{ ENV.CLIP_ARTIFACT }}
+    token: ${{ ENV.JINA_TOKEN }}
+    select_model: clip-vision
