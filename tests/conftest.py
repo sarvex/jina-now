@@ -30,3 +30,8 @@ def music_resource_path(resources_folder_path: str) -> str:
 @pytest.fixture()
 def gif_resource_path(resources_folder_path: str) -> str:
     return os.path.join(resources_folder_path, 'gif')
+
+
+@pytest.fixture
+def get_config_path(resources_folder_path: str) -> str:
+    return os.path.join(resources_folder_path, 'config.json')
