@@ -5,7 +5,7 @@ from now.utils import BetterEnum
 # DEMO_DATASET_DOCARRAY_VERSION = docarray_version
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.113-feat-client-6'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.114-newplaygorund'
 NOW_PREPROCESSOR_VERSION = '0.0.64-postprocessor-memory-1'
 
 NOW_AUTH_EXECUTOR_VERSION = '0.0.3'
