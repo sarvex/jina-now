@@ -50,7 +50,7 @@ def search(data: NowTextSearchRequestModel):
     Retrieve matching text for a given text as query.
     """
     query_doc, filter_query = process_query(
-        blob=data.text, uri=data.uri, conditions=data.conditions
+        text=data.text, uri=data.uri, conditions=data.conditions
     )
 
     docs = jina_client_post(
