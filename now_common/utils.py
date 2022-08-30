@@ -1,7 +1,7 @@
 import json
 import os
 from os.path import expanduser as user
-from typing import Dict, Union
+from typing import Dict, List, Union
 
 import hubble
 from docarray import Document, DocumentArray
@@ -200,6 +200,32 @@ def preprocess_text(da: DocumentArray, split_by_sentences=False) -> DocumentArra
 
     return DocumentArray(d for d in da if d.text and d.text != '')
 
+def preprocess_nested_docs(da: DocumentArray, user_input: UserInput) -> DocumentArray:
+    """
+    Process a `DocumentArray` with `Document`s that have `chunks` of nested `Document`s.
+    It constructs `Document`s containg two chunks: one containng image data
+    (first `Document` with image modality tag), and another containing text data
+    (concatenation of the texts of all `Document`s with text modality).
+
+    Note: in future, we can add more complex data generation methods.
+
+    :param da: A `DocumentArray` containing nested chunks.
+    :return: A `DocumentArray` with `Document`s containing text and image chunks.
+    """
+    da = DocumentArray()
+    for doc in da:
+        image_uris = [c.uri for chunk in doc.chunks for c in chunk.chunks if c.tags['modality'] == 'image']
+        texts = [c.text for chunk in doc.chunks for c in chunk.chunks if c.tags['modality'] == 'text']
+        if image_uris and texts:
+            processed_doc = Document(id=doc['id'])
+            processed_doc.chunks(
+                [
+                    Document(uri=image_uris[0]),
+                    Document(text=' '.join(texts))
+                ]
+            )
+            da.append(processed_doc)
+    return da
 
 def _get_email():
     try:
