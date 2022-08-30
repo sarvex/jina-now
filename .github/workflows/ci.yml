@@ -189,14 +189,14 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: Build and push bff
         if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           context: deployment/bff/.
           push: true
           tags: jinaai/now-bff:${{ env.BFF_PLAYGROUND_TAG }}
       - name: Build and push playground
         if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           context: deployment/playground/.
           push: true
