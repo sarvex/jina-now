@@ -1,7 +1,38 @@
+from pydantic.dataclasses import dataclass as pydantic_dataclass
 from dataclasses import dataclass
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 
 from now.constants import Apps, DatasetTypes, Qualities
+
+
+@pydantic_dataclass
+class TrainDataGeneratorConfig:
+    method: str
+    parameters: Dict[str, Any]
+    scope: List[str]
+
+
+@pydantic_dataclass
+class TrainDataGenerationConfig:
+    query: TrainDataGeneratorConfig
+    target: TrainDataGeneratorConfig
+
+
+@pydantic_dataclass
+class EncoderConfig:
+    name: str
+    encoder_type: str
+    target_fields: List[str]
+    train_dataset_name: str
+    training_data_generation_methods: List[TrainDataGenerationConfig]
+
+
+@pydantic_dataclass
+class Task:
+    name: str
+    extracted_dataset: str
+    encoders: List[EncoderConfig]
+    indexer_scope: Dict[str, str]
 
 
 @dataclass
@@ -20,6 +51,9 @@ class UserInput:
     aws_access_key_id: Optional[str] = None
     aws_secret_access_key: Optional[str] = None
     aws_region_name: Optional[str] = None
+
+    # ES related
+    task_config: Optional[Task] = None
 
     # model related
     quality: Optional[Qualities] = Qualities.MEDIUM
