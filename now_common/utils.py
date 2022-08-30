@@ -203,7 +203,7 @@ def preprocess_text(da: DocumentArray, split_by_sentences=False) -> DocumentArra
 def preprocess_nested_docs(da: DocumentArray, user_input: UserInput) -> DocumentArray:
     """
     Process a `DocumentArray` with `Document`s that have `chunks` of nested `Document`s.
-    It constructs `Document`s containg two chunks: one containng image data
+    It constructs `Document`s containg two chunks: one containing image data
     (first `Document` with image modality tag), and another containing text data
     (concatenation of the texts of all `Document`s with text modality).
 
@@ -217,7 +217,7 @@ def preprocess_nested_docs(da: DocumentArray, user_input: UserInput) -> Document
         image_uris = [c.uri for chunk in doc.chunks for c in chunk.chunks if c.tags['modality'] == 'image']
         texts = [c.text for chunk in doc.chunks for c in chunk.chunks if c.tags['modality'] == 'text']
         if image_uris and texts:
-            processed_doc = Document(id=doc['id'])
+            processed_doc = Document(id=doc.id)
             processed_doc.chunks(
                 [
                     Document(uri=image_uris[0]),
