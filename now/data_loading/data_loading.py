@@ -45,6 +45,7 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
         print('⬇  Download DocArray dataset')
         url = get_dataset_url(user_input.data, user_input.quality, app.output_modality)
         da = _fetch_da_from_url(url)
+        da[:, 'embedding'] = None
     if da is None:
         raise ValueError(
             f'Could not load DocArray dataset. Please check your configuration: {user_input}.'

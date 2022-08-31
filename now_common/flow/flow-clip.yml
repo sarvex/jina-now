@@ -21,21 +21,11 @@ executors:
   - name: encoder_clip
     uses: ${{ ENV.ENCODER_NAME }}
     host: ${{ ENV.ENCODER_HOST }}
-    port: ${{ ENV.ENCODER_PORT }}
+#    port: ${{ ENV.ENCODER_PORT }}
     tls: ${{ ENV.ENCODER_USES_TLS }}
     external: ${{ ENV.ENCODER_IS_EXTERNAL }}
     uses_with:
       name: ${{ ENV.PRE_TRAINED_MODEL_NAME }}
-  - name: encoder_clip
-    uses: ${{ ENV.ENCODER_NAME }}
-    uses_with:
-      device: ${{ ENV.DEVICE }}
-    jcloud:
-      resources:
-        memory: 5G
-        gpu: ${{ ENV.GPU }}
-    uses_with:
-      pretrained_model_name_or_path: ${{ ENV.PRE_TRAINED_MODEL_NAME }}
     env:
       JINA_LOG_LEVEL: DEBUG
   - name: postprocessor
