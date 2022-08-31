@@ -16,8 +16,8 @@ executors:
       app: ${{ ENV.APP }}
     jcloud:
       resources:
-        cpu: 2.0
-        memory: 2G
+        cpu: 0.5
+        memory: 1G
     env:
       JINA_LOG_LEVEL: DEBUG
   - name: encoder_clip
@@ -25,8 +25,7 @@ executors:
     replicas: 5
     jcloud:
       resources:
-        cpu: 2.0
-        memory: 8G
+        memory: 4G
         gpu: ${{ ENV.GPU }}    
     uses_with:
       pretrained_model_name_or_path: ${{ ENV.PRE_TRAINED_MODEL_NAME }}
