@@ -41,7 +41,7 @@ class EncoderDataBuilder:
         Generates query and target data based on method(s).
 
         In case the encoder is `single_model`, we save generated targets and queries
-        separately. If the encoder is `multi_modal`, we generate query-target pairs.
+        separately. If the encoder is `multi_model`, we generate query-target pairs.
 
         :param es_data: Data extracted from ES.
         :return: `DocumentArray` of generated data.
