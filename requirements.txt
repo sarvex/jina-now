@@ -16,4 +16,4 @@ jcloud==0.0.35
 python-dotenv
 boto3
 jina-hubble-sdk==0.13.0
-dask[distributed]==2022.8.0
+dask[distributed]==2022.2.0
