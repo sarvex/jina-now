@@ -52,7 +52,11 @@ def get_dataset_url(
         data_folder = 'video'
     elif output_modality == Modalities.TEXT_AND_IMAGE:
         data_folder = 'text-image'
-    if output_modality not in [Modalities.MUSIC, Modalities.VIDEO, Modalities.TEXT_AND_IMAGE]:
+    if output_modality not in [
+        Modalities.MUSIC,
+        Modalities.VIDEO,
+        Modalities.TEXT_AND_IMAGE,
+    ]:
         return f'{BASE_STORAGE_URL}/{data_folder}/{dataset}.{IMAGE_MODEL_QUALITY_MAP[model_quality][0]}-{docarray_version}.bin'
     else:
         return f'{BASE_STORAGE_URL}/{data_folder}/{dataset}-{docarray_version}.bin'
