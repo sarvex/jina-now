@@ -1,20 +1,30 @@
 import json
 
 import pytest
-from docarray import Document, DocumentArray
+from docarray import Document
 
+from now.apps.text_to_text_and_image.app import TextToTextAndImage
+from now.constants import DemoDatasets
+from now.data_loading.data_loading import load_data
 from now.finetuning.data_builder import DataBuilder
 from now.finetuning.generation_fns import ImageNormalizer, TextProcessor
-from now.now_dataclasses import Task
+from now.now_dataclasses import Task, UserInput
 
 
 def test_data_generation(get_nest_config_path):
+    # read task config
     config_path = get_nest_config_path
     with open(config_path) as f:
         dct = json.load(f)
         task = Task(**dct)
 
-    dataset = DocumentArray.pull(task.extracted_dataset)
+    # load dataset
+    user_input = UserInput()
+    user_input.is_custom_dataset = False
+    user_input.data = DemoDatasets.ES_WORDLIFT_50
+    user_input.quality = None
+    dataset = load_data(TextToTextAndImage(), user_input)
+
     initial_length = len(dataset)
     number_of_uris = 66  # pre-computed
     data = DataBuilder(dataset=dataset, config=task).build()

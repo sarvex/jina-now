@@ -31,7 +31,7 @@ class EncoderConfig:
 @pydantic_dataclass
 class Task:
     name: str
-    extracted_dataset: str
+    data: str
     encoders: List[EncoderConfig]
     indexer_scope: Dict[str, str]
 

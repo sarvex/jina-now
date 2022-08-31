@@ -14,7 +14,7 @@ def test_parse_task_config(get_nest_config_path):
         dct = json.load(f)
         task = Task(**dct)
     assert task.name == 'wordlift-multi-modal-search'
-    assert task.extracted_dataset == 'extracted-wordlift-data'
+    assert task.data == "extracted-data-wordlift-50-flat"
     assert len(task.encoders) == 2
     assert type(task.encoders[0]) == EncoderConfig
     assert task.encoders[0].encoder_type == 'text-to-text'
