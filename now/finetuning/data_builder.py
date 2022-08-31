@@ -135,8 +135,9 @@ class DataBuilder:
         """
         Fine-tuning data generation for a specific task.
 
-        :param config: A `TaskConfig` object containing information about ES data and
-            data generation approaches.
+        :param dataset: A `DocumentArray` extracted from ES.
+        :param config: A `TaskConfig` object containing information about
+            data generation methods.
         :param num_workers: Number of workers for data generation.
         :param threads_per_worker: Number of threads per worker.
         """
@@ -195,11 +196,12 @@ class DataBuilder:
         """
         Generates data from ES dataset based on the task configuration file.
 
-        You can either upload the generated data on hubble, or save it locally
+        You can also upload the generated data on hubble, or save it locally
         (or both).
 
         :param to_hubble: Uploads data to Hubble if `True`.
         :param data_dir: Saves data locally in the given directory if it's not `None`.
+        :return: Generated data for each encoder.
         """
 
         def _generate(data: DocumentArray, data_builder: EncoderDataBuilder):
@@ -217,12 +219,11 @@ class DataBuilder:
                 )
             results = self._dask_client.gather(futures)
             dataset = DocumentArray(itertools.chain.from_iterable(results))
-
             data[enc_data_builder.name] = dataset
+
             if to_hubble:
                 dataset.push(dataset_name, show_progress=True, public=False)
             if data_dir:
                 os.makedirs(data_dir, exist_ok=True)
                 dataset.save_binary(os.path.join(data_dir, dataset_name))
-
         return data

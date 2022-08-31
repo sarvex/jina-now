@@ -9,7 +9,7 @@ from now.now_dataclasses import (
 
 
 def test_parse_task_config(get_config_path):
-    config_path = get_config_path
+    config_path = get_nest_config_path
     with open(config_path) as f:
         dct = json.load(f)
         task = Task(**dct)
