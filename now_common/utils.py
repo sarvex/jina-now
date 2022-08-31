@@ -91,8 +91,10 @@ def setup_clip_music_apps(
     if (len(dataset) > gpu_threshold) and user_email.split('@')[
         -1
     ] == 'jina.ai':  # uses GPU if dataset contains over 250000 documents and user is from jina team
-        gpu = 'shared'
-        device = 'cuda'
+        # disable GPU at the moment until we did a cost calculation
+        # gpu = 'shared'
+        # device = 'cuda'
+        pass
 
     if isinstance(encoder_uses, dict):
         key = 'gpu' if device == 'cuda' else 'cpu'
