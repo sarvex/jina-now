@@ -61,6 +61,6 @@ class TextToTextAndImage(JinaNOWApp):
     def setup(
         self, dataset: DocumentArray, user_input: UserInput, kubectl_path
     ) -> Dict:
-        # only implements data generation for now
+        # only implements data generation
         data = DataBuilder(dataset=dataset, config=user_input.task_config).build()
         return {}
