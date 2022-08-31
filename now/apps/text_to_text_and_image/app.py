@@ -1,7 +1,11 @@
 import os
 
+from docarray import DocumentArray
+from now_common.utils import preprocess_nested_docs, preprocess_text
+
 from now.apps.base.app import JinaNOWApp
 from now.constants import Apps, Modalities
+from now.now_dataclasses import UserInput
 
 
 class TextToTextAndImage(JinaNOWApp):
@@ -38,3 +42,14 @@ class TextToTextAndImage(JinaNOWApp):
     @property
     def output_modality(self) -> Modalities:
         return Modalities.TEXT_AND_IMAGE
+
+    @property
+    def preprocess(
+        self, da: DocumentArray, user_input: UserInput, is_indexing: False
+    ) -> DocumentArray:
+        # Indexing
+        if is_indexing:
+            return preprocess_nested_docs(da=da, user_input=user_input)
+        # Query
+        else:
+            return preprocess_text(da=da, split_by_sentences=False)
