@@ -1,10 +1,11 @@
+import json
+
 from now.now_dataclasses import (
-    Task,
     EncoderConfig,
+    Task,
     TrainDataGenerationConfig,
     TrainDataGeneratorConfig,
 )
-import json
 
 
 def test_parse_task_config(get_config_path):

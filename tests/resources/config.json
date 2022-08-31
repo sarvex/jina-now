@@ -1,6 +1,6 @@
 {
   "name": "wordlift-multi-modal-search",
-  "extracted_dataset": "extracted-wordlift-data",
+  "extracted_dataset": "wordlift-test-data-1",
   "encoders": [
     {
       "name": "text_encoder",
