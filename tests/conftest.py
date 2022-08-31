@@ -33,5 +33,5 @@ def gif_resource_path(resources_folder_path: str) -> str:
 
 
 @pytest.fixture
-def get_config_path(resources_folder_path: str) -> str:
-    return os.path.join(resources_folder_path, 'config.json')
+def get_nest_config_path(resources_folder_path: str) -> str:
+    return os.path.join(resources_folder_path, 'nest/config.json')

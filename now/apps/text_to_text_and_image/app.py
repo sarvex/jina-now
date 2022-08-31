@@ -2,7 +2,7 @@ import os
 from typing import Dict, Optional
 
 from docarray import DocumentArray
-from now_common.utils import get_indexer_config, preprocess_nested_docs, preprocess_text
+from now_common.utils import preprocess_nested_docs, preprocess_text
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import Apps, Modalities
