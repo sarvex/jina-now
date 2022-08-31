@@ -54,12 +54,14 @@ def search(data: NowMusicSearchRequestModel):
     Retrieve matching songs for a given query. Song query should be `base64` encoded
     using human-readable characters - `utf-8`. In the case of music, the docs are already the matches.
     """
-    query_doc = process_query(blob=data.song, uri=data.uri)
+    query_doc, filter_query = process_query(
+        blob=data.song, uri=data.uri, conditions=data.conditions
+    )
 
     docs = jina_client_post(
         data=data,
         inputs=query_doc,
-        parameters={'limit': data.limit},
+        parameters={'limit': data.limit, 'filter': filter_query},
         endpoint='/search',
     )
 
