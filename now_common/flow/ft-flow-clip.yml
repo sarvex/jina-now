@@ -15,19 +15,18 @@ executors:
       app: ${{ ENV.APP }}
     jcloud:
       resources:
-        memory: 2G
+        memory: 1G
     env:
       JINA_LOG_LEVEL: DEBUG
   - name: encoder_clip
     uses: ${{ ENV.ENCODER_NAME }}
-    uses_with:
-      device: ${{ ENV.DEVICE }}
     jcloud:
       resources:
-        memory: 8G
+        memory: 4G
         gpu: ${{ ENV.GPU }}
     uses_with:
       pretrained_model_name_or_path: ${{ ENV.PRE_TRAINED_MODEL_NAME }}
+      device: ${{ ENV.DEVICE }}
     env:
       JINA_LOG_LEVEL: DEBUG
   - name: cast_convert

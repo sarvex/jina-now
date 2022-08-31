@@ -340,6 +340,7 @@ def render_text(da_txt):
 
 
 def render_matches(OUTPUT_MODALITY):
+    # TODO function is too large. Split up.
     if st.session_state.matches and not st.session_state.error_msg:
         if st.session_state.search_count > 2:
             st.write(

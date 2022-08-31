@@ -55,13 +55,15 @@ def search(data: NowTextSearchRequestModel):
     """
     Retrieve matching videos for a given text as query.
     """
-    query_doc = process_query(text=data.text, uri=data.uri)
+    query_doc, filter_query = process_query(
+        text=data.text, uri=data.uri, conditions=data.conditions
+    )
 
     # for video the search requests have to be on chunk-level
     docs = jina_client_post(
         data=data,
         inputs=Document(chunks=query_doc),
-        parameters={'limit': data.limit},
+        parameters={'limit': data.limit, 'filter': filter_query},
         endpoint='/search',
     )
 
