@@ -134,9 +134,7 @@ def test_es_wordlift_ds(da: DocumentArray):
 
     app = TextToTextAndImage()
     loaded_da = load_data(app, user_input)
-    print(loaded_da.summary())
-    print(type(loaded_da))
-    loaded_da = app.preprocess(da=loaded_da, user_input=user_input)
+    loaded_da = app.preprocess(da=loaded_da, user_input=user_input, is_indexing=False)
 
     for doc in loaded_da:
         assert doc.chunks
