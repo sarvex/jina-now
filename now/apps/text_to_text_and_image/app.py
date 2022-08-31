@@ -1,6 +1,5 @@
 import os
 from typing import Dict, Optional
-
 from docarray import DocumentArray
 from now_common.utils import preprocess_nested_docs, preprocess_text
 
@@ -45,7 +44,6 @@ class TextToTextAndImage(JinaNOWApp):
     def output_modality(self) -> Modalities:
         return Modalities.TEXT_AND_IMAGE
 
-    @property
     def preprocess(
         self,
         da: DocumentArray,
