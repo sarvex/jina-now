@@ -45,7 +45,10 @@ class TextToTextAndImage(JinaNOWApp):
         return Modalities.TEXT_AND_IMAGE
 
     def preprocess(
-        self, da: DocumentArray, user_input: UserInput, is_indexing: Optional[bool] = False
+        self,
+        da: DocumentArray,
+        user_input: UserInput,
+        is_indexing: Optional[bool] = False,
     ) -> DocumentArray:
         # Indexing
         if is_indexing:
