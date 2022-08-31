@@ -17,6 +17,7 @@ class TrainDataGeneratorConfig:
     parameters : Parameters to pass to the training data generation method.
     scope : Fields to apply the method on.
     """
+
     method: str
     parameters: Dict[str, Any]
     scope: List[str]
@@ -34,6 +35,7 @@ class TrainDataGenerationConfig:
     target : Method to generate training targets and do preprocessing before
         encoding documents.
     """
+
     query: TrainDataGeneratorConfig
     target: TrainDataGeneratorConfig
 
@@ -69,7 +71,7 @@ class Task:
     ------
     name : Unique name for the task.
     data : Name of the dataset.
-    encoders : Configuration of the models to encode queries and 
+    encoders : Configuration of the models to encode queries and
         elastic search documents.
     indexer_scope: Fields to consider during indexing for each modality.
     """
