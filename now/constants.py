@@ -6,7 +6,7 @@ from now.utils import BetterEnum
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.113-feat-client-6'
-NOW_PREPROCESSOR_VERSION = '0.0.64-retention-days'
+NOW_PREPROCESSOR_VERSION = '0.0.64-dataset'
 
 NOW_AUTH_EXECUTOR_VERSION = '0.0.3'
 
@@ -76,6 +76,7 @@ class DemoDatasets:
     METAL_LYRICS = 'metal-lyrics'
     TUMBLR_GIFS = 'tumblr-gifs'
     TUMBLR_GIFS_10K = 'tumblr-gifs-10k'
+    ES_WORDLIFT_50 = 'extracted-data-wordlift-50-flat'
 
 
 AVAILABLE_DATASET = {
@@ -104,7 +105,9 @@ AVAILABLE_DATASET = {
         (DemoDatasets.TUMBLR_GIFS, '🎦 tumblr gifs (100K gifs)'),
         (DemoDatasets.TUMBLR_GIFS_10K, '🎦 tumblr gifs subset (10K gifs)'),
     ],
-    Modalities.TEXT_AND_IMAGE: [],
+    Modalities.TEXT_AND_IMAGE: [
+        (DemoDatasets.ES_WORDLIFT_50, 'wordlift online shop data (50 products)')
+    ],
 }
 
 JC_SECRET = '~/.cache/jina-now/wolf.json'
