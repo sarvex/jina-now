@@ -1,6 +1,7 @@
-from pydantic.dataclasses import dataclass as pydantic_dataclass
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Any
+from typing import Any, Dict, List, Optional
+
+from pydantic.dataclasses import dataclass as pydantic_dataclass
 
 from now.constants import Apps, DatasetTypes, Qualities
 
