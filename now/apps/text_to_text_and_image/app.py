@@ -1,10 +1,12 @@
 import os
+from typing import Dict, Optional
 
 from docarray import DocumentArray
-from now_common.utils import preprocess_nested_docs, preprocess_text
+from now_common.utils import get_indexer_config, preprocess_nested_docs, preprocess_text
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import Apps, Modalities
+from now.finetuning.data_builder import DataBuilder
 from now.now_dataclasses import UserInput
 
 
@@ -45,7 +47,10 @@ class TextToTextAndImage(JinaNOWApp):
 
     @property
     def preprocess(
-        self, da: DocumentArray, user_input: UserInput, is_indexing: False
+        self,
+        da: DocumentArray,
+        user_input: UserInput,
+        is_indexing: Optional[bool] = False,
     ) -> DocumentArray:
         # Indexing
         if is_indexing:
@@ -53,3 +58,10 @@ class TextToTextAndImage(JinaNOWApp):
         # Query
         else:
             return preprocess_text(da=da, split_by_sentences=False)
+
+    def setup(
+        self, dataset: DocumentArray, user_input: UserInput, kubectl_path
+    ) -> Dict:
+        # only implements data generation for now
+        data = DataBuilder(dataset=dataset, config=user_input.task_config).build()
+        return {}
