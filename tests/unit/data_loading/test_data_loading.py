@@ -10,7 +10,7 @@ from now.apps.music_to_music.app import MusicToMusic
 from now.apps.text_to_image.app import TextToImage
 from now.apps.text_to_text.app import TextToText
 from now.apps.text_to_text_and_image.app import TextToTextAndImage
-from now.constants import DatasetTypes, DemoDatasets
+from now.constants import DatasetTypes, DemoDatasets, Modalities
 from now.data_loading.data_loading import _load_tags_from_json, load_data
 from now.now_dataclasses import UserInput
 
@@ -126,11 +126,12 @@ def test_da_custom_ds(da: DocumentArray):
         assert doc.blob != b''
 
 
-def test_es_custom_ds(es_resource_path: str = 'es_extracted_data_flat'):
+def test_es_wordlift_ds(da: DocumentArray):
     user_input = UserInput()
-    user_input.is_custom_dataset = True
-    user_input.custom_dataset_type = DatasetTypes.PATH
-    user_input.dataset_path = es_resource_path
+    user_input.is_custom_dataset = False
+    user_input.data = DemoDatasets.ES_WORDLIFT_50
+    user_input.quality = None
+    app.output_modality = Modalities.TEXT_AND_IMAGE
 
     app = TextToTextAndImage()
     loaded_da = load_data(app, user_input)
