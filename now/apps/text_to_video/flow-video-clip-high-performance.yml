@@ -17,18 +17,16 @@ executors:
     jcloud:
       capacity: on-demand
       resources:
-        cpu: 2.0
-        memory: 2G
+        cpu: 0.5
+        memory: 1G
     env:
       JINA_LOG_LEVEL: DEBUG
   - name: encoder_clip
     replicas: 3
     uses: ${{ ENV.ENCODER_NAME }}
-    replicas: 3
     jcloud:
       capacity: on-demand
       resources:
-        cpu: 2.0
         memory: 4G
         gpu: ${{ ENV.GPU }}
     uses_with:

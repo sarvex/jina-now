@@ -254,8 +254,8 @@ class JinaNOWApp:
     ]:
         """
         Apps usually have a custom input format and response which does not match the JinaRequestModel or JinaResponseModel.
-        To create the mapping each Jina NOW app can implement
-        the two bff mapping functions for each path - one for requests and one for responses
+        To create the mapping each Jina NOW app can implement the two bff mapping functions for each path
+        - one for requests and one for responses
 
         :return: dictionary from path to a tuple of request model, response model,
         request mapping fn and response mapping fn.

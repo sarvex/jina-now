@@ -6,7 +6,9 @@ from jina import Client
 from jina.excepts import BadServer
 
 
-def process_query(text: str = '', blob: str = b'', uri: str = None) -> Document:
+def process_query(
+    text: str = '', blob: str = b'', uri: str = None, conditions: dict = None
+) -> Document:
     if bool(text) + bool(blob) + bool(uri) != 1:
         raise ValueError(
             f'Can only set one value but have text={text}, blob={blob}, uri={uri}'
@@ -27,7 +29,14 @@ def process_query(text: str = '', blob: str = b'', uri: str = None) -> Document:
             status_code=500,
             detail=f'Not a correct encoded query. Please see the error stack for more information. \n{e}',
         )
-    return query_doc
+    query = {}
+    if conditions:
+        filter_query = []
+
+        for key, value in conditions.items():
+            filter_query.append({f'tags__{key}': {'$eq': value}})
+        query = {'$and': filter_query}
+    return query_doc, query
 
 
 def get_jina_client(host: str, port: int) -> Client:
