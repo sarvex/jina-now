@@ -8,7 +8,7 @@ import PIL
 from docarray import Document, DocumentArray
 from jina.serve.runtimes.gateway.http.models import JinaRequestModel, JinaResponseModel
 from now_common import options
-from now_common.utils import _get_email, get_indexer_config, setup_clip_music_apps
+from now_common.utils import _get_email, common_setup, get_indexer_config
 from pydantic import BaseModel
 
 from deployment.bff.app.v1.models.text import NowTextSearchRequestModel
@@ -102,7 +102,7 @@ class TextToVideo(JinaNOWApp):
         self, dataset: DocumentArray, user_input: UserInput, kubectl_path
     ) -> Dict:
         indexer_config = get_indexer_config(len(dataset) * NUM_FRAMES_SAMPLED)
-        return setup_clip_music_apps(
+        return common_setup(
             app_instance=self,
             user_input=user_input,
             dataset=dataset,
@@ -113,8 +113,8 @@ class TextToVideo(JinaNOWApp):
                 ][1]
             },
             indexer_uses=indexer_config['indexer_uses'],
-            indexer_resources=indexer_config['indexer_resources'],
             kubectl_path=kubectl_path,
+            indexer_resources=indexer_config['indexer_resources'],
         )
 
     def preprocess(

@@ -3,11 +3,7 @@ from typing import Dict, List, Tuple
 
 from docarray import DocumentArray
 from now_common import options
-from now_common.utils import (
-    get_indexer_config,
-    preprocess_images,
-    setup_clip_music_apps,
-)
+from now_common.utils import common_setup, get_indexer_config, preprocess_images
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import (
@@ -86,19 +82,27 @@ class ImageToImage(JinaNOWApp):
         self, dataset: DocumentArray, user_input: UserInput, kubectl_path
     ) -> Dict:
         indexer_config = get_indexer_config(len(dataset))
-        return setup_clip_music_apps(
+        is_remote = user_input.deployment_type == 'remote'
+        encoder_with = {
+            'ENCODER_HOST': 'demo-cas.jina.ai' if is_remote else '0.0.0.0',
+            'ENCODER_PORT': 2096 if is_remote else None,
+            'ENCODER_USES_TLS': True if is_remote else False,
+            'ENCODER_IS_EXTERNAL': True if is_remote else False,
+        }
+        return common_setup(
             app_instance=self,
             user_input=user_input,
             dataset=dataset,
             encoder_uses=CLIP_USES,
+            encoder_with=encoder_with,
             encoder_uses_with={
                 'pretrained_model_name_or_path': IMAGE_MODEL_QUALITY_MAP[
                     user_input.quality
                 ][1]
             },
             indexer_uses=indexer_config['indexer_uses'],
-            indexer_resources=indexer_config['indexer_resources'],
             kubectl_path=kubectl_path,
+            indexer_resources=indexer_config['indexer_resources'],
         )
 
     def preprocess(

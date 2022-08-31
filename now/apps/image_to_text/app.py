@@ -4,10 +4,10 @@ from typing import Dict, List, Tuple
 from docarray import DocumentArray
 from now_common import options
 from now_common.utils import (
+    common_setup,
     get_indexer_config,
     preprocess_images,
     preprocess_text,
-    setup_clip_music_apps,
 )
 
 from now.apps.base.app import JinaNOWApp
@@ -88,7 +88,7 @@ class ImageToText(JinaNOWApp):
         self, dataset: DocumentArray, user_input: UserInput, kubectl_path
     ) -> Dict:
         indexer_config = get_indexer_config(len(dataset))
-        return setup_clip_music_apps(
+        return common_setup(
             app_instance=self,
             user_input=user_input,
             dataset=dataset,
@@ -99,8 +99,8 @@ class ImageToText(JinaNOWApp):
                 ][1]
             },
             indexer_uses=indexer_config['indexer_uses'],
-            indexer_resources=indexer_config['indexer_resources'],
             kubectl_path=kubectl_path,
+            indexer_resources=indexer_config['indexer_resources'],
         )
 
     def preprocess(

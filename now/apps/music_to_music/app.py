@@ -3,7 +3,7 @@ from typing import Dict, List
 
 import cowsay
 from docarray import Document, DocumentArray
-from now_common.utils import setup_clip_music_apps
+from now_common.utils import common_setup
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import Apps, DemoDatasets, Modalities, Qualities
@@ -91,15 +91,15 @@ class MusicToMusic(JinaNOWApp):
         }
 
         # will execute finetuning on custom datasets (if possible) but not for demo datasets
-        env_dict = setup_clip_music_apps(
+        env_dict = common_setup(
             app_instance=self,
             user_input=user_input,
             dataset=dataset,
             encoder_uses='BiModalMusicTextEncoderV2',
             encoder_uses_with={},
             indexer_uses='MusicRecommendationIndexerV2',
-            indexer_resources={},
             kubectl_path=kubectl_path,
+            indexer_resources={},
         )
 
         # can reuse large part of other code but need to make some adjustments

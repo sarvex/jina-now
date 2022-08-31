@@ -8,7 +8,6 @@ from docarray import DocumentArray
 from now.constants import (
     BASE_STORAGE_URL,
     DEMO_DATASET_DOCARRAY_VERSION,
-    IMAGE_MODEL_QUALITY_MAP,
     Modalities,
     Qualities,
 )
@@ -51,7 +50,8 @@ def get_dataset_url(
     elif output_modality == Modalities.VIDEO:
         data_folder = 'video'
 
-    if output_modality not in [Modalities.MUSIC, Modalities.VIDEO]:
-        return f'{BASE_STORAGE_URL}/{data_folder}/{dataset}.{IMAGE_MODEL_QUALITY_MAP[model_quality][0]}-{docarray_version}.bin'
-    else:
-        return f'{BASE_STORAGE_URL}/{data_folder}/{dataset}-{docarray_version}.bin'
+    # if output_modality not in [Modalities.MUSIC, Modalities.VIDEO]:
+    #     return f'{BASE_STORAGE_URL}/{data_folder}/{dataset}.{IMAGE_MODEL_QUALITY_MAP[model_quality][0]}-{docarray_version}.bin'
+    # else:
+    #     return f'{BASE_STORAGE_URL}/{data_folder}/{dataset}-{docarray_version}.bin'
+    return f'{BASE_STORAGE_URL}/{data_folder}/{dataset}-{docarray_version}.bin'

@@ -6,7 +6,7 @@ from now.utils import BetterEnum
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.113-feat-client-6'
-NOW_PREPROCESSOR_VERSION = '0.0.64-retention-days'
+NOW_PREPROCESSOR_VERSION = '0.0.65-use-cas'
 
 NOW_AUTH_EXECUTOR_VERSION = '0.0.3'
 
@@ -53,7 +53,7 @@ IMAGE_MODEL_QUALITY_MAP = {
     Qualities.EXCELLENT: ('ViT-L14', 'openai/clip-vit-large-patch14'),
 }
 
-CLIP_USES = {'cpu': 'CLIPEncoder/0.3.1', 'gpu': 'CLIPEncoder/0.3.1-gpu'}
+CLIP_USES = {'cpu': 'CLIPTorchEncoder/latest', 'gpu': 'CLIPTorchEncoder/latest-gpu'}
 
 PREFETCH_NR = 10
 
