@@ -15,7 +15,7 @@ executors:
       app: ${{ ENV.APP }}
     jcloud:
       resources:
-        memory: 2G
+        memory: 1G
     env:
       JINA_LOG_LEVEL: DEBUG
   - name: encoder_clip
