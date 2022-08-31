@@ -131,7 +131,6 @@ def test_es_wordlift_ds(da: DocumentArray):
     user_input.is_custom_dataset = False
     user_input.data = DemoDatasets.ES_WORDLIFT_50
     user_input.quality = None
-    app.output_modality = Modalities.TEXT_AND_IMAGE
 
     app = TextToTextAndImage()
     loaded_da = load_data(app, user_input)
