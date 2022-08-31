@@ -14,10 +14,24 @@ def test_data_generation(get_config_path):
         dct = json.load(f)
         task = Task(**dct)
 
-    print(task)
     dataset = DocumentArray.pull(task.extracted_dataset)
+    initial_length = len(dataset)
+    number_of_uris = 66  # pre-computed
     data = DataBuilder(dataset=dataset, config=task).build()
-    print(data)
+    assert len(data) == 2
+    text_dataset = data['text_encoder']
+    # for queries, we do powerset and permutations for 2 fields - >
+    # 4 combinations. plus number of target values. In the end we,
+    # should get (5 * initial length) examples.
+    assert len(text_dataset) == 5 * initial_length
+    assert text_dataset[0].text
+    vision_datset = data['vision_encoder']
+    # for queries, we generate powerset of 2 fields -> 3 combinations
+    # and we do product with number of uris for image data.
+    # in the end we should get (3 * number of uris) examples.
+    assert len(vision_datset) == 3 * number_of_uris
+    assert vision_datset[0].chunks[0].text
+    assert vision_datset[0].chunks[1].tensor.any()
 
 
 def test_image_normalizer():
