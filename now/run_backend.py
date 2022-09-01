@@ -51,7 +51,7 @@ def run(app_instance: JinaNOWApp, user_input: UserInput, kubectl_path: str):
     )
 
     print(f"▶ indexing {len(dataset)} documents")
-    params = {'user_input': dataclasses.asdict(user_input)}
+    params = {'user_input': user_input.dict()}
     if user_input.secured:
         params['jwt'] = user_input.jwt
     call_index(client=client, dataset=dataset, parameters=params, return_results=False)
