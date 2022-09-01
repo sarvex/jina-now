@@ -1,0 +1,4 @@
+jtype: AuthExecutor2
+metas:
+  py_modules:
+    - executor.py
