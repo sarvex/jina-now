@@ -107,6 +107,7 @@ def test_token_exists():
     ],
 )
 @pytest.mark.parametrize('quality', ['medium'])
+@pytest.mark.timeout(60 * 15)
 def test_backend_demo_data(
     app: str,
     dataset: str,
