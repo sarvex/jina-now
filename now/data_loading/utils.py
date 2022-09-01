@@ -77,9 +77,7 @@ def transform_es_data(data: DocumentArray) -> List[Dict[str, Any]]:
     return transformed_data
 
 
-def transform_doc(
-    document: Document, attributes: Dict[str, Any], names: List[str]
-):
+def transform_doc(document: Document, attributes: Dict[str, Any], names: List[str]):
     """
     Extract attributes from a `Document` and store it as a dictionary.
 
