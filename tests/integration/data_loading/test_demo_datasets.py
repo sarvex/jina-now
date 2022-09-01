@@ -6,12 +6,7 @@ import pytest
 import requests
 from starlette import status
 
-from now.constants import (
-    AVAILABLE_DATASET,
-    DEMO_DATASET_DOCARRAY_VERSION,
-    Modalities,
-    Qualities,
-)
+from now.constants import AVAILABLE_DATASET, DEMO_DATASET_DOCARRAY_VERSION, Modalities
 from now.data_loading.utils import get_dataset_url
 
 
@@ -19,13 +14,11 @@ from now.data_loading.utils import get_dataset_url
     'modality, ds_name',
     [(m, d[0]) for m in Modalities() for d in AVAILABLE_DATASET[m]],
 )
-@pytest.mark.parametrize('quality', [q for q in Qualities()])
 def test_dataset_is_available(
     ds_name: str,
     modality: Modalities,
-    quality: Qualities,
 ):
-    url = get_dataset_url(ds_name, quality, modality)
+    url = get_dataset_url(ds_name, modality)
 
     assert requests.head(url).status_code == status.HTTP_200_OK
 

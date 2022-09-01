@@ -20,17 +20,16 @@ executors:
       JINA_LOG_LEVEL: DEBUG
   - name: encoder_clip
     uses: ${{ ENV.ENCODER_NAME }}
-    jcloud:
-      resources:
-        memory: 4G
-        gpu: ${{ ENV.GPU }}
+    host: ${{ ENV.ENCODER_HOST }}
+    tls: ${{ ENV.ENCODER_USES_TLS }}
+    external: ${{ ENV.ENCODER_IS_EXTERNAL }}
+    port: 2096
     uses_with:
-      pretrained_model_name_or_path: ${{ ENV.PRE_TRAINED_MODEL_NAME }}
       traversal_paths: '@c'
-      device: ${{ ENV.DEVICE }}
+      name: ${{ ENV.PRE_TRAINED_MODEL_NAME }}
     env:
       JINA_LOG_LEVEL: DEBUG
-  - name: cast_convert
+- name: cast_convert
     uses: jinahub+docker://CastNMoveNowExecutor/v0.0.3
     uses_with:
       output_size: ${{ ENV.PRE_TRAINED_EMBEDDINGS_SIZE }}
