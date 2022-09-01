@@ -71,7 +71,7 @@ class TextToText(JinaNOWApp):
         ]
 
     def setup(
-        self, dataset: DocumentArray, user_input: UserInput, kubectl_path: str
+        self, dataset: DocumentArray, user_input: UserInput, kubectl_path: str, tags
     ) -> Dict:
         quality_pretrained_model_map = {
             Qualities.MEDIUM: 'openai/clip-vit-base-patch32',
@@ -94,6 +94,7 @@ class TextToText(JinaNOWApp):
             indexer_uses=indexer_config['indexer_uses'],
             indexer_resources=indexer_config['indexer_resources'],
             kubectl_path=kubectl_path,
+            tags=tags,
         )
 
     def preprocess(

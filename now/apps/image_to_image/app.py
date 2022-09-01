@@ -83,7 +83,7 @@ class ImageToImage(JinaNOWApp):
         }
 
     def setup(
-        self, dataset: DocumentArray, user_input: UserInput, kubectl_path
+        self, dataset: DocumentArray, user_input: UserInput, kubectl_path, tags
     ) -> Dict:
         indexer_config = get_indexer_config(len(dataset))
         return setup_clip_music_apps(
@@ -99,6 +99,7 @@ class ImageToImage(JinaNOWApp):
             indexer_uses=indexer_config['indexer_uses'],
             indexer_resources=indexer_config['indexer_resources'],
             kubectl_path=kubectl_path,
+            tags=tags,
         )
 
     def preprocess(

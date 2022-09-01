@@ -81,7 +81,7 @@ class MusicToMusic(JinaNOWApp):
         return True
 
     def setup(
-        self, dataset: DocumentArray, user_input: UserInput, kubectl_path
+        self, dataset: DocumentArray, user_input: UserInput, kubectl_path, tags
     ) -> Dict:
         # needed to write a custom solution for music 2 music app as we need to allow to integrate
         # externally pretrained executors for the demo datasets
@@ -100,6 +100,7 @@ class MusicToMusic(JinaNOWApp):
             indexer_uses='MusicRecommendationIndexerV2',
             indexer_resources={},
             kubectl_path=kubectl_path,
+            tags=tags,
         )
 
         # can reuse large part of other code but need to make some adjustments

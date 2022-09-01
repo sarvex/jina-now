@@ -24,7 +24,7 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
     :return: The loaded DocumentArray.
     """
     da = None
-
+    tags = []
     if user_input.is_custom_dataset:
         if user_input.custom_dataset_type == DatasetTypes.DOCARRAY:
             print('⬇  Pull DocArray dataset')
@@ -36,11 +36,11 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
             print('💿  Loading files from disk')
             da = _load_from_disk(app, user_input)
             if any([doc.uri.endswith('.json') for doc in da]):
-                da = _load_tags_from_json(da, user_input)
+                da, tags = _load_tags_from_json(da, user_input)
         elif user_input.custom_dataset_type == DatasetTypes.S3_BUCKET:
             da = _list_files_from_s3_bucket(app=app, user_input=user_input)
             if any([doc.uri.endswith('.json') for doc in da]):
-                da = _load_tags_from_json(da, user_input)
+                da, tags = _load_tags_from_json(da, user_input)
     else:
         print('⬇  Download DocArray dataset')
         url = get_dataset_url(user_input.data, user_input.quality, app.output_modality)
@@ -58,7 +58,7 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
             da = da[:1000]
     da = da.shuffle(seed=42)
     da = deep_copy_da(da)
-    return da
+    return da, tags
 
 
 def _open_json(path: str):
@@ -89,6 +89,7 @@ def _load_tags_from_json(da: DocumentArray, user_input: UserInput):
     dic = {}
     ids_to_delete = []
     files_in_same_folder = []
+    tags = set()
     for i, d in enumerate(da):
         folder = d.uri.rsplit('/', 1)[0]
         file_extension = d.uri.split('.')[-1]
@@ -120,9 +121,10 @@ def _load_tags_from_json(da: DocumentArray, user_input: UserInput):
                 data = _open_json(d.uri)
             for tag, value in data['tags'].items():
                 da[dic[folder]].tags[tag] = value['slug']
+                tags.add((tag, str(tag.__class__.__name__)))
     if len(ids_to_delete) > 0:
         del da[ids_to_delete]
-    return da
+    return da, list(tags)
 
 
 def _pull_docarray(dataset_name: str):

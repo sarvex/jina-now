@@ -34,7 +34,7 @@ def process_query(
         filter_query = []
 
         for key, value in conditions.items():
-            filter_query.append({f'tags__{key}': {'$eq': value}})
+            filter_query.append({f'{key}': {'$eq': value}})
         query = {'$and': filter_query}
     return query_doc, query
 

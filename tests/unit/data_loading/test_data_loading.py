@@ -139,7 +139,7 @@ def test_load_tags(gif_resource_path: str):
         ]
     )
 
-    da = _load_tags_from_json(da, user_input)
+    da, tags = _load_tags_from_json(da, user_input)
     print(da[0].summary())
     print(da[1].summary())
     assert 'custom' in da[0].tags
@@ -147,6 +147,12 @@ def test_load_tags(gif_resource_path: str):
 
     assert da[0].tags['custom'] == 'moneystack'
     assert da[1].tags['ml'] == 'visual-arts'
+
+    assert tags[0][0] in ['custom', 'ml', 'colors']
+    assert tags[0][1] == 'str'
+
+    assert tags[1][0] in ['custom', 'ml', 'colors']
+    assert tags[1][1] == 'str'
 
     da1 = DocumentArray(
         [
@@ -156,7 +162,9 @@ def test_load_tags(gif_resource_path: str):
         ]
     )
 
-    da1 = _load_tags_from_json(da1, user_input)
+    da1, tags = _load_tags_from_json(da1, user_input)
 
     for d in da1:
         assert not 'custom' in d.tags
+
+    assert len(tags) == 0

@@ -67,6 +67,7 @@ executors:
       index_traversal_paths: '@c'
       search_traversal_paths: '@c'
       dim: ${{ ENV.PRE_TRAINED_EMBEDDINGS_SIZE }}
+      columns: ${{ ENV.COLUMNS }}
     jcloud:
       capacity: on-demand
       resources:

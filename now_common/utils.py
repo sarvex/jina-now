@@ -1,7 +1,7 @@
 import json
 import os
 from os.path import expanduser as user
-from typing import Dict, Union
+from typing import Dict, List, Union
 
 import hubble
 from docarray import Document, DocumentArray
@@ -23,6 +23,7 @@ def get_clip_music_flow_env_dict(
     user_input: UserInput,
     device: str,
     gpu: str,
+    tags: str,
 ):
     """Returns dictionary for the environments variables for the clip & music flow.yml files."""
     if (
@@ -42,6 +43,7 @@ def get_clip_music_flow_env_dict(
         'APP': user_input.app,
         'DEVICE': device,
         'GPU': gpu,
+        'COLUMNS': tags,
         **indexer_resources,
     }
     if encoder_uses_with.get('pretrained_model_name_or_path'):
@@ -72,6 +74,7 @@ def setup_clip_music_apps(
     indexer_uses: str,
     indexer_resources: Dict,
     kubectl_path: str,
+    tags: List,
 ) -> Dict:
     finetune_settings = parse_finetune_settings(
         app_instance=app_instance,
@@ -100,6 +103,15 @@ def setup_clip_music_apps(
     else:
         encoder_ = encoder_uses
 
+    if len(tags) > 0:
+        tags_str = '['
+        for value1, value2 in tags:
+            tags_str += f'({value1},{value2}),'
+
+        tags_str = tags_str[: len(tags_str) - 1] + ']'
+    else:
+        tags_str = '[]'
+
     env_dict = get_clip_music_flow_env_dict(
         finetune_settings=finetune_settings,
         encoder_uses=encoder_,
@@ -109,6 +121,7 @@ def setup_clip_music_apps(
         user_input=user_input,
         device=device,
         gpu=gpu,
+        tags=tags_str,
     )
 
     if finetune_settings.perform_finetuning:
@@ -234,7 +247,7 @@ def get_indexer_config(num_indexed_samples: int) -> Dict:
     if 'NOW_CI_RUN' in os.environ:
         threshold1 = 1_500
     if num_indexed_samples <= threshold1:
-        config['indexer_uses'] = 'DocarrayIndexerV2'
+        config['indexer_uses'] = 'DocarrayIndexerV3'
         config['indexer_resources'] = {'INDEXER_CPU': 0.1, 'INDEXER_MEM': '2G'}
     elif num_indexed_samples <= threshold2:
         config['indexer_resources'] = {'INDEXER_CPU': 0.1, 'INDEXER_MEM': '2G'}
