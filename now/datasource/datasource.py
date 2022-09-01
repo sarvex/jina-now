@@ -1,9 +1,9 @@
 import abc
-from typing import List, Optional
+from typing import List
 
 from docarray import DocumentArray
 
-from now.constants import Modalities, Qualities
+from now.constants import Modalities
 from now.data_loading.utils import _fetch_da_from_url, get_dataset_url
 from now.utils import BetterEnum
 
@@ -50,8 +50,8 @@ class DemoDatasource(Datasource):
     def modalities(self) -> List[Modalities]:
         return [Modalities.TEXT, Modalities.IMAGE]
 
-    def get_data(self, quality: Optional[Qualities] = None) -> DocumentArray:
-        url = get_dataset_url(self.id, quality, self.modalities_folder)
+    def get_data(self) -> DocumentArray:
+        url = get_dataset_url(self.id, self.modalities_folder)
         return _fetch_da_from_url(url)
 
 

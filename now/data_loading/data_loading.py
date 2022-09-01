@@ -43,7 +43,7 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
                 da = _load_tags_from_json(da, user_input)
     else:
         print('⬇  Download DocArray dataset')
-        url = get_dataset_url(user_input.data, user_input.quality, app.output_modality)
+        url = get_dataset_url(user_input.data, app.output_modality)
         da = _fetch_da_from_url(url)
         da[:, 'embedding'] = None
     if da is None:

@@ -1,7 +1,7 @@
 import json
 import os
 from os.path import expanduser as user
-from typing import Dict, Optional, Union
+from typing import Dict, Optional
 
 import hubble
 from docarray import Document, DocumentArray
@@ -19,6 +19,7 @@ def common_get_flow_env_dict(
     encoder_uses: str,
     encoder_with: Dict,
     encoder_uses_with: Dict,
+    pre_trained_embedding_size: int,
     indexer_uses: str,
     indexer_resources: Dict,
     user_input: UserInput,
@@ -27,9 +28,7 @@ def common_get_flow_env_dict(
     if (
         finetune_settings.perform_finetuning and finetune_settings.bi_modal
     ) or user_input.app == 'music_to_music':
-        pre_trained_embedding_size = finetune_settings.pre_trained_embedding_size * 2
-    else:
-        pre_trained_embedding_size = finetune_settings.pre_trained_embedding_size
+        pre_trained_embedding_size = pre_trained_embedding_size * 2
 
     config = {
         'ENCODER_NAME': f'jinahub+docker://{encoder_uses}',
@@ -65,15 +64,17 @@ def common_setup(
     app_instance: JinaNOWApp,
     user_input: UserInput,
     dataset: DocumentArray,
-    encoder_uses: Union[str, Dict],
+    encoder_uses: str,
     encoder_uses_with: Dict,
     indexer_uses: str,
+    pre_trained_embedding_size: int,
     kubectl_path: str,
     encoder_with: Optional[Dict] = {},
     indexer_resources: Optional[Dict] = {},
 ) -> Dict:
+    # should receive pre embedding size
     finetune_settings = parse_finetune_settings(
-        app_instance=app_instance,
+        pre_trained_embedding_size=pre_trained_embedding_size,
         user_input=user_input,
         dataset=dataset,
         finetune_datasets=app_instance.finetune_datasets,
@@ -90,6 +91,7 @@ def common_setup(
         encoder_uses=_encoder,
         encoder_with=encoder_with,
         encoder_uses_with=encoder_uses_with,
+        pre_trained_embedding_size=pre_trained_embedding_size,
         indexer_uses=indexer_uses,
         indexer_resources=indexer_resources,
         user_input=user_input,

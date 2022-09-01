@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
-from now.constants import Apps, DatasetTypes, Qualities
+from now.constants import Apps, DatasetTypes
 
 
 @dataclass
@@ -20,9 +20,6 @@ class UserInput:
     aws_access_key_id: Optional[str] = None
     aws_secret_access_key: Optional[str] = None
     aws_region_name: Optional[str] = None
-
-    # model related
-    quality: Optional[Qualities] = Qualities.MEDIUM
 
     # cluster related
     cluster: Optional[str] = None

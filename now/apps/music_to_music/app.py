@@ -6,7 +6,7 @@ from docarray import Document, DocumentArray
 from now_common.utils import common_setup
 
 from now.apps.base.app import JinaNOWApp
-from now.constants import Apps, DemoDatasets, Modalities, Qualities
+from now.constants import Apps, DemoDatasets, Modalities
 from now.deployment.deployment import which
 from now.now_dataclasses import UserInput
 
@@ -67,12 +67,6 @@ class MusicToMusic(JinaNOWApp):
     @property
     def supported_wildcards(self) -> List[str]:
         return ['*.mp3']
-
-    @property
-    def pre_trained_embedding_size(self) -> Dict[Qualities, int]:
-        return {
-            Qualities.MEDIUM: 512,
-        }
 
     def _check_requirements(self) -> bool:
         if not ffmpeg_is_installed():
