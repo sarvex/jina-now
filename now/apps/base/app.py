@@ -6,7 +6,7 @@ import docker
 from docarray import DocumentArray
 from jina.serve.runtimes.gateway.http.models import JinaRequestModel, JinaResponseModel
 
-from now.constants import AVAILABLE_DATASET, Modalities, Qualities
+from now.constants import AVAILABLE_DATASET, Modalities
 from now.datasource.datasource import DemoDatasource
 from now.now_dataclasses import UserInput
 
@@ -115,13 +115,6 @@ class JinaNOWApp:
     def supported_wildcards(self) -> List[str]:
         """Used to filter files in local structure or an S3 bucket."""
         return ['**']
-
-    @property
-    def pre_trained_embedding_size(self) -> Dict[Qualities, int]:
-        """
-        Returns a dictionary which maps given quality to embedding size of pretrained model.
-        """
-        return {}
 
     @property
     def example_datasource(self) -> List[DemoDatasource]:
@@ -263,3 +256,8 @@ class JinaNOWApp:
         The path is a regex expression.
         """
         return {'.*': (JinaRequestModel, JinaResponseModel, lambda x: x, lambda x: x)}
+
+    @property
+    def index_query_access_paths(self) -> str:
+        """Gives access paths for indexing and searching."""
+        return '@r'

@@ -5,7 +5,7 @@ from now.utils import BetterEnum
 # DEMO_DATASET_DOCARRAY_VERSION = docarray_version
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.115-tags-bff'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.116-use-cas-3'
 NOW_PREPROCESSOR_VERSION = '0.0.68-dev15'
 NOW_AUTH_EXECUTOR_VERSION = '0.0.3'
 
@@ -46,13 +46,10 @@ BASE_STORAGE_URL = (
     'https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets'
 )
 
-IMAGE_MODEL_QUALITY_MAP = {
-    Qualities.MEDIUM: ('ViT-B32', 'openai/clip-vit-base-patch32'),
-    Qualities.GOOD: ('ViT-B16', 'openai/clip-vit-base-patch16'),
-    Qualities.EXCELLENT: ('ViT-L14', 'openai/clip-vit-large-patch14'),
+CLIP_USES = {
+    'local': ('CLIPTorchEncoder/latest', 'ViT-B-32::openai', 512),
+    'remote': ('CLIPTorchEncoder/latest-gpu', 'ViT-L-14-336::openai', 768),
 }
-
-CLIP_USES = {'cpu': 'CLIPEncoder/0.3.1', 'gpu': 'CLIPEncoder/0.3.1-gpu'}
 
 PREFETCH_NR = 10
 

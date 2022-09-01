@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional
 from pydantic import BaseModel
 from pydantic.dataclasses import dataclass
 
-from now.constants import Apps, DatasetTypes, Qualities
+from now.constants import Apps, DatasetTypes
 
 
 @dataclass

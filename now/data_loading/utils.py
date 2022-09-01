@@ -5,13 +5,7 @@ from typing import Optional, List, Any, Dict
 
 from docarray import DocumentArray, Document
 
-from now.constants import (
-    BASE_STORAGE_URL,
-    DEMO_DATASET_DOCARRAY_VERSION,
-    IMAGE_MODEL_QUALITY_MAP,
-    Modalities,
-    Qualities,
-)
+from now.constants import BASE_STORAGE_URL, DEMO_DATASET_DOCARRAY_VERSION, Modalities
 from now.log import yaspin_extended
 from now.utils import download, sigmap
 
@@ -37,9 +31,7 @@ def _fetch_da_from_url(
     return da
 
 
-def get_dataset_url(
-    dataset: str, model_quality: Optional[Qualities], output_modality: Modalities
-) -> str:
+def get_dataset_url(dataset: str, output_modality: Modalities) -> str:
     data_folder = None
     docarray_version = DEMO_DATASET_DOCARRAY_VERSION
     if output_modality == Modalities.IMAGE:
@@ -57,7 +49,8 @@ def get_dataset_url(
         Modalities.VIDEO,
         Modalities.TEXT_AND_IMAGE,
     ]:
-        return f'{BASE_STORAGE_URL}/{data_folder}/{dataset}.{IMAGE_MODEL_QUALITY_MAP[model_quality][0]}-{docarray_version}.bin'
+        model_name = 'ViT-B32'
+        return f'{BASE_STORAGE_URL}/{data_folder}/{dataset}.{model_name}-{docarray_version}.bin'
     else:
         return f'{BASE_STORAGE_URL}/{data_folder}/{dataset}-{docarray_version}.bin'
 

@@ -3,10 +3,10 @@ from typing import Dict, List
 
 import cowsay
 from docarray import Document, DocumentArray
-from now_common.utils import setup_clip_music_apps
+from now_common.utils import common_setup
 
 from now.apps.base.app import JinaNOWApp
-from now.constants import Apps, DemoDatasets, Modalities, Qualities
+from now.constants import Apps, DemoDatasets, Modalities
 from now.deployment.deployment import which
 from now.now_dataclasses import UserInput
 
@@ -68,12 +68,6 @@ class MusicToMusic(JinaNOWApp):
     def supported_wildcards(self) -> List[str]:
         return ['*.mp3']
 
-    @property
-    def pre_trained_embedding_size(self) -> Dict[Qualities, int]:
-        return {
-            Qualities.MEDIUM: 512,
-        }
-
     def _check_requirements(self) -> bool:
         if not ffmpeg_is_installed():
             _handle_ffmpeg_install_required()
@@ -91,15 +85,15 @@ class MusicToMusic(JinaNOWApp):
         }
 
         # will execute finetuning on custom datasets (if possible) but not for demo datasets
-        env_dict = setup_clip_music_apps(
+        env_dict = common_setup(
             app_instance=self,
             user_input=user_input,
             dataset=dataset,
             encoder_uses='BiModalMusicTextEncoderV2',
             encoder_uses_with={},
             indexer_uses='MusicRecommendationIndexerV2',
-            indexer_resources={},
             kubectl_path=kubectl_path,
+            indexer_resources={},
         )
 
         # can reuse large part of other code but need to make some adjustments
