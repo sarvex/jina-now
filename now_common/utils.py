@@ -247,7 +247,7 @@ def get_indexer_config(num_indexed_samples: int) -> Dict:
     if 'NOW_CI_RUN' in os.environ:
         threshold1 = 1_500
     if num_indexed_samples <= threshold1:
-        config['indexer_uses'] = 'DocarrayIndexerV3'
+        config['indexer_uses'] = 'DocarrayIndexerV3/latest'
         config['indexer_resources'] = {'INDEXER_CPU': 0.1, 'INDEXER_MEM': '2G'}
     elif num_indexed_samples <= threshold2:
         config['indexer_resources'] = {'INDEXER_CPU': 0.1, 'INDEXER_MEM': '2G'}
