@@ -1,12 +1,12 @@
-from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
-from pydantic.dataclasses import dataclass as pydantic_dataclass
+from pydantic import BaseModel
+from pydantic.dataclasses import dataclass
 
 from now.constants import Apps, DatasetTypes, Qualities
 
 
-@pydantic_dataclass
+@dataclass
 class TrainDataGeneratorConfig:
     """
     Configuration of a specific data generation method for an encoder model.
@@ -23,7 +23,7 @@ class TrainDataGeneratorConfig:
     scope: List[str]
 
 
-@pydantic_dataclass
+@dataclass
 class TrainDataGenerationConfig:
     """
     Configuration of the training data generation for a bi-encoder
@@ -40,7 +40,7 @@ class TrainDataGenerationConfig:
     target: TrainDataGeneratorConfig
 
 
-@pydantic_dataclass
+@dataclass
 class EncoderConfig:
     """
     Configuration of an encoder to encode queries and targets (text+image).
@@ -62,7 +62,7 @@ class EncoderConfig:
     training_data_generation_methods: List[TrainDataGenerationConfig]
 
 
-@pydantic_dataclass
+@dataclass
 class Task:
     """
     Task configuration for text to text+image apps.
@@ -82,8 +82,7 @@ class Task:
     indexer_scope: Dict[str, str]
 
 
-@dataclass
-class UserInput:
+class UserInput(BaseModel):
     app: Optional[Apps] = None
 
     # data related
@@ -114,3 +113,6 @@ class UserInput:
     admin_emails: Optional[List[str]] = None
     user_emails: Optional[List[str]] = None
     additional_user: Optional[bool] = False
+
+    class Config:
+        arbitrary_types_allowed = True

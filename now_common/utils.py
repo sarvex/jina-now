@@ -1,7 +1,7 @@
 import json
 import os
 from os.path import expanduser as user
-from typing import Dict, List, Union
+from typing import Dict, Union
 
 import hubble
 from docarray import Document, DocumentArray
@@ -9,8 +9,8 @@ from docarray import Document, DocumentArray
 from now.apps.base.app import JinaNOWApp
 from now.constants import NOW_PREPROCESSOR_VERSION, PREFETCH_NR
 from now.data_loading.convert_datasets_to_jpeg import to_thumbnail_jpg
+from now.data_loading.utils import transform_es_data
 from now.finetuning.run_finetuning import finetune
-from now.finetuning.data_builder import ESDataTransformer
 from now.finetuning.settings import FinetuneSettings, parse_finetune_settings
 from now.now_dataclasses import UserInput
 
@@ -220,7 +220,7 @@ def preprocess_nested_docs(da: DocumentArray, user_input: UserInput) -> Document
     :return: A `DocumentArray` with `Document`s containing text and image chunks.
     """
     fields = user_input.task.indexer_scope
-    transformed_da = ESDataTransformer.transform(da)
+    transformed_da = transform_es_data(da)
     return DocumentArray(
         [
             Document(
