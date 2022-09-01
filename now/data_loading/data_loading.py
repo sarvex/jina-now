@@ -56,8 +56,6 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
             da = da[:600]
         else:
             da = da[:1000]
-    da = da.shuffle(seed=42)
-    da = deep_copy_da(da)
     return da
 
 
