@@ -10,7 +10,7 @@ from now.apps.music_to_music.app import MusicToMusic
 from now.apps.text_to_image.app import TextToImage
 from now.apps.text_to_text.app import TextToText
 from now.constants import DatasetTypes, DemoDatasets
-from now.data_loading.data_loading import _load_tags_from_json, load_data
+from now.data_loading.data_loading import _load_tags_from_json_if_needed, load_data
 from now.now_dataclasses import UserInput
 
 
@@ -139,7 +139,7 @@ def test_load_tags(gif_resource_path: str):
         ]
     )
 
-    da = _load_tags_from_json(da, user_input)
+    da = _load_tags_from_json_if_needed(da, user_input)
     print(da[0].summary())
     print(da[1].summary())
     assert 'custom' in da[0].tags
@@ -156,7 +156,7 @@ def test_load_tags(gif_resource_path: str):
         ]
     )
 
-    da1 = _load_tags_from_json(da1, user_input)
+    da1 = _load_tags_from_json_if_needed(da1, user_input)
 
     for d in da1:
         assert not 'custom' in d.tags

@@ -52,8 +52,8 @@ class TextToImage(JinaNOWApp):
             self.flow_yaml = os.path.join(flow_dir, 'flow-clip.yml')
 
     @property
-    def supported_wildcards(self) -> List[str]:
-        return ['*.gif', '*.png', '*.jpg', '*.jpeg']
+    def supported_file_types(self) -> List[str]:
+        return ['gif', 'png', 'jpg', 'jpeg']
 
     def setup(
         self, dataset: DocumentArray, user_input: UserInput, kubectl_path
