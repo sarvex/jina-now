@@ -1,12 +1,12 @@
 {
-  "name": "wordlift-multi-modal-search",
-  "data": "extracted-data-wordlift-50-flat",
+  "name": "online-shop-multi-modal-search",
+  "data": "extracted-data-online-shop-50-flat",
   "encoders": [
     {
       "name": "text_encoder",
       "encoder_type": "text-to-text",
       "target_fields": ["title", "text"],
-      "train_dataset_name": "wordlift_text_pairs",
+      "train_dataset_name": "online_shop_text_pairs",
       "training_data_generation_methods": [
         {
           "query": {
@@ -29,7 +29,7 @@
       "name": "vision_encoder",
       "encoder_type": "text-to-image",
       "target_fields": ["uris", "title", "text"],
-      "train_dataset_name": "wordlift_text_img_pairs",
+      "train_dataset_name": "online_shop_text_img_pairs",
       "training_data_generation_methods": [
         {
           "query": {

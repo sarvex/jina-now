@@ -6,7 +6,7 @@ from now.utils import BetterEnum
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.115-tags-bff'
-NOW_PREPROCESSOR_VERSION = '0.0.68-dev8'
+NOW_PREPROCESSOR_VERSION = '0.0.68-dev9'
 NOW_AUTH_EXECUTOR_VERSION = '0.0.3'
 
 
@@ -75,7 +75,7 @@ class DemoDatasets:
     METAL_LYRICS = 'metal-lyrics'
     TUMBLR_GIFS = 'tumblr-gifs'
     TUMBLR_GIFS_10K = 'tumblr-gifs-10k'
-    ES_WORDLIFT_50 = 'extracted-data-wordlift-50-flat'
+    ES_ONLINE_SHOP_50 = 'extracted-data-online-shop-50-flat'
 
 
 AVAILABLE_DATASET = {
@@ -105,7 +105,7 @@ AVAILABLE_DATASET = {
         (DemoDatasets.TUMBLR_GIFS_10K, '🎦 tumblr gifs subset (10K gifs)'),
     ],
     Modalities.TEXT_AND_IMAGE: [
-        (DemoDatasets.ES_WORDLIFT_50, 'wordlift online shop data (50 products)')
+        (DemoDatasets.ES_ONLINE_SHOP_50, 'online shop data (50 products)')
     ],
 }
 
