@@ -35,12 +35,10 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
         elif user_input.custom_dataset_type == DatasetTypes.PATH:
             print('💿  Loading files from disk')
             da = _load_from_disk(app, user_input)
-            if any([doc.uri.endswith('.json') for doc in da]):
-                da = _load_tags_from_json(da, user_input)
+            da = _load_tags_from_json(da, user_input)
         elif user_input.custom_dataset_type == DatasetTypes.S3_BUCKET:
             da = _list_files_from_s3_bucket(app=app, user_input=user_input)
-            if any([doc.uri.endswith('.json') for doc in da]):
-                da = _load_tags_from_json(da, user_input)
+            da = _load_tags_from_json(da, user_input)
     else:
         print('⬇  Download DocArray dataset')
         url = get_dataset_url(user_input.data, user_input.quality, app.output_modality)
@@ -70,9 +68,9 @@ def _open_json(path: str):
 def _open_s3_json(path: str, user_input: UserInput):
     import boto3
 
-    path_splits = path.split('/')
+    path_splits = path.split('/', 3)
     bucket = path_splits[2]
-    key = '/'.join(path_splits[3:])
+    key = path_splits[-1]
 
     client = boto3.client(
         's3',
@@ -85,43 +83,46 @@ def _open_s3_json(path: str, user_input: UserInput):
 
 def _load_tags_from_json(da: DocumentArray, user_input: UserInput):
 
-    print('Loading tags!')
-    dic = {}
-    ids_to_delete = []
-    files_in_same_folder = []
-    for i, d in enumerate(da):
-        folder = d.uri.rsplit('/', 1)[0]
-        file_extension = d.uri.split('.')[-1]
-        if file_extension in [
-            wildcard.split('.')[-1] for wildcard in user_input.app.supported_wildcards
-        ]:
-            if folder not in dic:
-                dic[folder] = i
-            else:
-                files_in_same_folder.append(i)
+    if any([doc.uri.endswith('.json') for doc in da]):
+        print('Loading tags!')
+        dic = {}
+        ids_to_delete = []
+        files_in_same_folder = []
+        for i, d in enumerate(da):
+            folder = d.uri.rsplit('/', 1)[0]
+            file_extension = d.uri.split('.')[-1]
+            if file_extension in [
+                wildcard.split('.')[-1]
+                for wildcard in user_input.app.supported_wildcards
+            ]:
+                if folder not in dic:
+                    dic[folder] = i
+                else:
+                    files_in_same_folder.append(i)
 
-    if len(files_in_same_folder) > 0:
-        print('Files with the same modality are found within the same folder!')
-        print(
-            'Printing first 5 ids:',
-            ', '.join(str(id) for id in files_in_same_folder[:5]),
-        )
+        if len(files_in_same_folder) > 0:
+            print('Files with the same modality are found within the same folder!')
+            print(
+                'Printing first 5 ids:',
+                ', '.join(str(id) for id in files_in_same_folder[:5]),
+            )
 
-    for i, d in enumerate(da):
-        folder = d.uri.rsplit('/', 1)[0]
-        if d.uri.split('.')[-1] not in [
-            wildcard.split('.')[-1] for wildcard in user_input.app.supported_wildcards
-        ]:
-            ids_to_delete.append(i)
-        if d.uri.endswith('.json') and folder in dic:
-            if user_input.dataset_path.startswith('s3://'):
-                data = _open_s3_json(d.uri, user_input)
-            else:
-                data = _open_json(d.uri)
-            for tag, value in data['tags'].items():
-                da[dic[folder]].tags[tag] = value['slug']
-    if len(ids_to_delete) > 0:
-        del da[ids_to_delete]
+        for i, d in enumerate(da):
+            folder = d.uri.rsplit('/', 1)[0]
+            if d.uri.split('.')[-1] not in [
+                wildcard.split('.')[-1]
+                for wildcard in user_input.app.supported_wildcards
+            ]:
+                ids_to_delete.append(i)
+            if d.uri.endswith('.json') and folder in dic:
+                if user_input.dataset_path.startswith('s3://'):
+                    data = _open_s3_json(d.uri, user_input)
+                else:
+                    data = _open_json(d.uri)
+                for tag, value in data['tags'].items():
+                    da[dic[folder]].tags[tag] = value['slug']
+        if len(ids_to_delete) > 0:
+            del da[ids_to_delete]
     return da
 
 
@@ -174,8 +175,9 @@ def _list_files_from_s3_bucket(app: JinaNOWApp, user_input: UserInput) -> Docume
             f"Can't process S3 URI {s3_uri} as it assumes it starts with: 's3://'"
         )
 
-    bucket = s3_uri.split('/')[2]
-    folder_prefix = '/'.join(s3_uri.split('/')[3:])
+    path_splits = s3_uri.split('/', 3)
+    bucket = path_splits[2]
+    folder_prefix = path_splits[-1]
 
     session = boto3.session.Session(
         aws_access_key_id=user_input.aws_access_key_id,
