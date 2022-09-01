@@ -82,7 +82,9 @@ def common_setup(
     )
 
     if isinstance(encoder_uses, dict):
-        key = 'gpu' if user_input.deployment_type == 'remote' else 'cpu'
+        # For now, we deactivate gpu until we have a cost calculation of how much we consume and a policy when gpu deployment is allowed
+        # key = 'gpu' if user_input.deployment_type == 'remote' else 'cpu'
+        key = 'cpu'
         _encoder = encoder_uses[key]
     else:
         _encoder = encoder_uses
