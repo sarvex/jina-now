@@ -69,7 +69,7 @@ class ImageToText(JinaNOWApp):
         indexer_config = get_indexer_config(len(dataset))
         is_remote = user_input.deployment_type == 'remote'
         encoder_with = {
-            'ENCODER_HOST': 'grpcs://demo-cas.jina.ai' if is_remote else '0.0.0.0',
+            'ENCODER_HOST': 'demo-cas.jina.ai' if is_remote else '0.0.0.0',
             'ENCODER_PORT': 2096 if is_remote else None,
             'ENCODER_USES_TLS': True if is_remote else False,
             'ENCODER_IS_EXTERNAL': True if is_remote else False,
