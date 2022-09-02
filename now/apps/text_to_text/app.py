@@ -2,12 +2,11 @@ import os
 from typing import Dict, List
 
 from docarray import DocumentArray
-from now_common import options
-from now_common.options import DialogOptions, UserInput
-from now_common.utils import get_indexer_config, preprocess_text, setup_clip_music_apps
+from now_common.utils import common_setup, get_indexer_config, preprocess_text
 
 from now.apps.base.app import JinaNOWApp
-from now.constants import CLIP_USES, Apps, DatasetTypes, Modalities, Qualities
+from now.constants import Apps, DatasetTypes, Modalities
+from now.now_dataclasses import UserInput
 
 
 class TextToText(JinaNOWApp):
@@ -52,37 +51,22 @@ class TextToText(JinaNOWApp):
     def supported_wildcards(self) -> List[str]:
         return ['*.txt']
 
-    @property
-    def pre_trained_embedding_size(self) -> Dict[Qualities, int]:
-        return {Qualities.MEDIUM: 512, Qualities.EXCELLENT: 768}
-
-    def options(self) -> List[DialogOptions]:
-        return [options.QUALITY]
-
     def setup(
         self, dataset: DocumentArray, user_input: UserInput, kubectl_path: str
     ) -> Dict:
-        quality_pretrained_model_map = {
-            Qualities.MEDIUM: 'openai/clip-vit-base-patch32',
-            Qualities.EXCELLENT: 'sentence-transformers/msmarco-distilbert-base-v4',
-        }
-        pretrained_model_name_or_path = quality_pretrained_model_map[user_input.quality]
-        if pretrained_model_name_or_path.startswith('openai'):
-            encoder_uses = CLIP_USES
-        else:
-            encoder_uses = 'TransformerSentenceEncoder/v0.4'
         indexer_config = get_indexer_config(len(dataset))
-        return setup_clip_music_apps(
+        return common_setup(
             app_instance=self,
             user_input=user_input,
             dataset=dataset,
-            encoder_uses=encoder_uses,
+            encoder_uses='TransformerSentenceEncoder/v0.4',
             encoder_uses_with={
-                'pretrained_model_name_or_path': pretrained_model_name_or_path
+                'pretrained_model_name_or_path': 'sentence-transformers/msmarco-distilbert-base-v4'
             },
+            pre_trained_embedding_size=768,
             indexer_uses=indexer_config['indexer_uses'],
-            indexer_resources=indexer_config['indexer_resources'],
             kubectl_path=kubectl_path,
+            indexer_resources=indexer_config['indexer_resources'],
         )
 
     def preprocess(
@@ -91,7 +75,7 @@ class TextToText(JinaNOWApp):
         split_by_sentences = False
         if (
             is_indexing
-            and user_input.data == 'custom'
+            and user_input.is_custom_dataset
             and user_input.custom_dataset_type == DatasetTypes.PATH
             and user_input.dataset_path
             and os.path.isdir(user_input.dataset_path)

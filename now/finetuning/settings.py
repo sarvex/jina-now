@@ -5,9 +5,6 @@ from typing import Optional, Tuple
 from docarray import DocumentArray
 from now_common.options import UserInput
 
-from now.apps.base.app import JinaNOWApp
-from now.constants import Apps, Qualities
-
 DEFAULT_EPOCHS = 50
 DEFAULT_HIDDEN_SIZES = (128,)
 DEFAULT_NUM_VAL_QUERIES = 50
@@ -20,27 +17,6 @@ DEFAULT_LEARNING_RATE = 5e-4
 DEFAULT_EARLY_STOPPING_PATIENCE = 5
 DEFAULT_POS_MINING_START = 'hard'
 DEFAULT_NEG_MINING_START = 'hard'
-
-PRE_TRAINED_EMBEDDING_SIZE = {
-    Apps.TEXT_TO_IMAGE: {
-        Qualities.MEDIUM: 512,
-        Qualities.GOOD: 512,
-        Qualities.EXCELLENT: 768,
-    },
-    Apps.IMAGE_TO_TEXT: {
-        Qualities.MEDIUM: 512,
-        Qualities.GOOD: 512,
-        Qualities.EXCELLENT: 768,
-    },
-    Apps.IMAGE_TO_IMAGE: {
-        Qualities.MEDIUM: 512,
-        Qualities.GOOD: 512,
-        Qualities.EXCELLENT: 768,
-    },
-    Apps.MUSIC_TO_MUSIC: {
-        Qualities.MEDIUM: 512,
-    },
-}
 
 
 @dataclass
@@ -63,11 +39,6 @@ class FinetuneSettings:
     pos_mining_strat: str = DEFAULT_POS_MINING_START
     neg_mining_strat: str = DEFAULT_NEG_MINING_START
     early_stopping_patience: int = DEFAULT_EARLY_STOPPING_PATIENCE
-
-
-def _get_pre_trained_embedding_size(user_input: UserInput) -> int:
-    """Returns the dimension of embeddings given the configured user input object."""
-    return PRE_TRAINED_EMBEDDING_SIZE[user_input.app][user_input.quality]
 
 
 def _is_finetuning(
@@ -93,16 +64,14 @@ def _is_bi_modal(user_input: UserInput, dataset: DocumentArray) -> bool:
 
 
 def parse_finetune_settings(
-    app_instance: JinaNOWApp,
     user_input: UserInput,
     dataset: DocumentArray,
+    pre_trained_embedding_size: int,
     finetune_datasets: Tuple = (),
 ) -> FinetuneSettings:
     """This function parses the user input configuration into the finetune settings"""
     return FinetuneSettings(
-        pre_trained_embedding_size=app_instance.pre_trained_embedding_size[
-            user_input.quality
-        ],
+        pre_trained_embedding_size=pre_trained_embedding_size,
         perform_finetuning=_is_finetuning(user_input, dataset, finetune_datasets),
         bi_modal=_is_bi_modal(user_input, dataset),
     )
