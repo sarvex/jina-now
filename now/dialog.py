@@ -9,9 +9,8 @@ from __future__ import annotations, print_function, unicode_literals
 import inspect
 import pathlib
 
-from now_common.options import UserInput
-
 from now.apps.base.app import JinaNOWApp
+from now.now_dataclasses import UserInput
 from now.utils import _prompt_value, print_headline
 
 cur_dir = pathlib.Path(__file__).parent.resolve()

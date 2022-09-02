@@ -5,10 +5,10 @@ import warnings
 import cowsay
 import docker
 from kubernetes import client, config
-from now_common.options import UserInput
 
 from now.deployment.deployment import cmd
 from now.log import time_profiler, yaspin_extended
+from now.now_dataclasses import UserInput
 from now.utils import maybe_prompt_user, sigmap
 
 cur_dir = pathlib.Path(__file__).parent.resolve()

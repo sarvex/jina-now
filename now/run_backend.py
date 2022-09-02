@@ -8,12 +8,12 @@ from typing import Dict, Optional
 
 from docarray import DocumentArray
 from jina.clients import Client
-from now_common.options import UserInput
 
 from now.apps.base.app import JinaNOWApp
 from now.data_loading.data_loading import load_data
 from now.deployment.flow import deploy_flow
 from now.log import time_profiler
+from now.now_dataclasses import UserInput
 
 cur_dir = pathlib.Path(__file__).parent.resolve()
 
