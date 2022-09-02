@@ -34,3 +34,5 @@ docs/_build/**/*
 docs/api
 docs/api/*
 docs/api/**/*
+
+secret.key

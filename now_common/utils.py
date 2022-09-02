@@ -81,17 +81,9 @@ def common_setup(
         finetune_datasets=app_instance.finetune_datasets,
     )
 
-    if isinstance(encoder_uses, dict):
-        # For now, we deactivate gpu until we have a cost calculation of how much we consume and a policy when gpu deployment is allowed
-        # key = 'gpu' if user_input.deployment_type == 'remote' else 'cpu'
-        key = 'cpu'
-        _encoder = encoder_uses[key]
-    else:
-        _encoder = encoder_uses
-
     env_dict = common_get_flow_env_dict(
         finetune_settings=finetune_settings,
-        encoder_uses=_encoder,
+        encoder_uses=encoder_uses,
         encoder_with=encoder_with,
         encoder_uses_with=encoder_uses_with,
         pre_trained_embedding_size=pre_trained_embedding_size,
