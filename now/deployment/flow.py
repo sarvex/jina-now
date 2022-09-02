@@ -112,7 +112,7 @@ def _extend_flow_yaml(flow_yaml, tmpdir, secured, admin_emails, user_emails):
         first_part, second_part = flow_yaml.split('executors:')
         executor_string = f"""
   - name: security_check
-    uses: jinahub+docker://AuthExecutor2/{NOW_AUTH_EXECUTOR_VERSION}
+    uses: jinahub+docker://NOWAuthExecutor/v{NOW_AUTH_EXECUTOR_VERSION}
     uses_with:
       admin_emails: {admin_emails if admin_emails else []}
       user_emails: {user_emails if user_emails else []}
