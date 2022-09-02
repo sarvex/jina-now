@@ -66,7 +66,7 @@ def start_bff():
 def test_add_key():
     f = get_flow()
     with f:
-        index(f)
+        # index(f)
         start_bff()
         sleep(10)
 
