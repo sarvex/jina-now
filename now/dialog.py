@@ -70,7 +70,7 @@ def print_headline():
     print(f.renderText('Jina NOW'))
     print('Get your search case up and running - end to end.\n')
     print(
-        'You can choose between image and text search. \nJina NOW trains a model, pushes it to Jina Hub'
+        'You can choose between image and text search. \nJina NOW trains a model, pushes it to Jina Hub '
         'and deploys a Flow and a playground app in the cloud or locally. \nCheck out one of our demos or bring '
         'your own data.\n'
     )
