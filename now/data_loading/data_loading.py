@@ -56,8 +56,6 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
             da = da[:600]
         else:
             da = da[:1000]
-    da = da.shuffle(seed=42)
-    da = deep_copy_da(da)
     return da
 
 
@@ -87,17 +85,19 @@ def select_ending(files, endings):
     for file in files:
         for ending in endings:
             if file.endswith(ending):
-                return
+                return file
     return None
 
 
 def merge_documents(user_input, content_file, json_file):
-    if user_input.dataset_path.startswith('s3://'):
-        tags = _open_s3_json(json_file, user_input)
+    if json_file:
+        if user_input.dataset_path.startswith('s3://'):
+            tags = _open_s3_json(json_file, user_input)
+        else:
+            tags = _open_json(json_file)
     else:
-        tags = _open_json(json_file)
-
-    return Document(url=content_file, tags=tags)
+        tags = {}
+    return Document(uri=content_file, tags=tags)
 
 
 def _load_tags_from_json_if_needed(da: DocumentArray, user_input: UserInput):
@@ -108,7 +108,7 @@ def _load_tags_from_json_if_needed(da: DocumentArray, user_input: UserInput):
 
 
 def _load_tags_from_json(da, user_input):
-    print('Loading tags!')
+    print(f'Loading tags! Example: {da[0].uri}')
     # map folders to all files they contain
     folder_to_files = defaultdict(list)
     for d in da:
@@ -123,13 +123,10 @@ def _load_tags_from_json(da, user_input):
 
 
 def get_document(files, user_input):
-    # we always need two files in one folder - content file and the json
-    if len(files) != 2:
-        return None
     # json and content have to exist
     json_file = select_ending(files, ['json'])
     content_file = select_ending(files, user_input.app.supported_file_types)
-    if not (json_file or content_file):
+    if not content_file:
         return None
     document = merge_documents(user_input, content_file, json_file)
     return document
