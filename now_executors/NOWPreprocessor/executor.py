@@ -28,8 +28,11 @@ class NOWPreprocessor(Executor):
 
         self.app: JinaNOWApp = _construct_app(app)
         self.max_workers = max_workers
-        self.user_input_path = os.path.join(self.workspace, 'user_input.json')
-        if os.path.exists(self.user_input_path):
+
+        self.user_input_path = (
+            os.path.join(self.workspace, 'user_input.json') if self.workspace else None
+        )
+        if self.user_input_path and os.path.exists(self.user_input_path):
             with open(self.user_input_path, 'r') as fp:
                 user_input = json.load(fp)
             self._set_user_input({'user_input': {**user_input}})
@@ -46,8 +49,9 @@ class NOWPreprocessor(Executor):
                     attr_name,
                     parameters['user_input'].pop(attr_name, prev_value),
                 )
-            with open(self.user_input_path, 'w') as fp:
-                json.dump(self.user_input.__dict__, fp)
+            if self.user_input_path:
+                with open(self.user_input_path, 'w') as fp:
+                    json.dump(self.user_input.__dict__, fp)
 
     def _maybe_download_from_s3(
         self, docs: DocumentArray, tmpdir: tempfile.TemporaryDirectory
