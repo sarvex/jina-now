@@ -108,7 +108,9 @@ def _load_tags_from_json_if_needed(da: DocumentArray, user_input: UserInput):
 
 
 def _load_tags_from_json(da, user_input):
-    print(f'Loading tags! Example: {da[0].uri}')
+    print(
+        f'Loading tags! We assume that you have a folder for each document. The folder contains a content file (image, text, video, ...) and a json file containing the tags'
+    )
     # map folders to all files they contain
     folder_to_files = defaultdict(list)
     for d in da:
