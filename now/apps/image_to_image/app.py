@@ -3,6 +3,7 @@ from typing import Dict, List, Tuple
 
 from docarray import DocumentArray
 from now_common import options
+from now_common.options import DialogOptions, UserInput
 from now_common.utils import (
     get_indexer_config,
     preprocess_images,
@@ -18,7 +19,6 @@ from now.constants import (
     Modalities,
     Qualities,
 )
-from now.now_dataclasses import UserInput
 
 
 class ImageToImage(JinaNOWApp):
@@ -66,9 +66,8 @@ class ImageToImage(JinaNOWApp):
         else:
             self.flow_yaml = os.path.join(flow_dir, 'flow-clip.yml')
 
-    @property
-    def options(self) -> List[Dict]:
-        return [options.QUALITY_CLIP]
+    def options(self) -> List[DialogOptions]:
+        return [options.QUALITY]
 
     @property
     def supported_wildcards(self) -> List[str]:

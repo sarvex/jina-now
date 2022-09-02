@@ -5,10 +5,11 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 import docker
 from docarray import DocumentArray
 from jina.serve.runtimes.gateway.http.models import JinaRequestModel, JinaResponseModel
+from now_common import options
+from now_common.options import DialogOptions, UserInput
 
 from now.constants import AVAILABLE_DATASET, Modalities, Qualities
 from now.datasource.datasource import DemoDatasource
-from now.now_dataclasses import UserInput
 
 
 class JinaNOWApp:
@@ -89,8 +90,8 @@ class JinaNOWApp:
         """
         return None
 
-    @property
-    def options(self) -> List[Dict]:
+    @staticmethod
+    def options() -> List[DialogOptions]:
         """
         Get the options which are used to configure the app.
         On CLI the user will get a prompt and at the storefront, a GUI will be generated accordingly.
@@ -109,7 +110,7 @@ class JinaNOWApp:
         ]
         :return:
         """
-        return []
+        return options.base_options
 
     @property
     def supported_wildcards(self) -> List[str]:
@@ -181,10 +182,10 @@ class JinaNOWApp:
                 description=f'Create an {self.app_name} app.',
                 formatter_class=formatter,
             )
-            for option in self.options:
+            for option in self.options():
                 parser.add_argument(
-                    f'--{option["name"]}',
-                    help=option['description'],
+                    f'--{option.name}',
+                    help=option.description,
                     type=str,
                 )
 

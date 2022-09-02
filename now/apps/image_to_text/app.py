@@ -3,6 +3,7 @@ from typing import Dict, List, Tuple
 
 from docarray import DocumentArray
 from now_common import options
+from now_common.options import DialogOptions, UserInput
 from now_common.utils import (
     get_indexer_config,
     preprocess_images,
@@ -20,7 +21,6 @@ from now.constants import (
     Modalities,
     Qualities,
 )
-from now.now_dataclasses import UserInput
 
 
 class ImageToText(JinaNOWApp):
@@ -68,9 +68,8 @@ class ImageToText(JinaNOWApp):
         else:
             self.flow_yaml = os.path.join(flow_dir, 'flow-clip.yml')
 
-    @property
-    def options(self) -> List[Dict]:
-        return [options.QUALITY_CLIP]
+    def options(self) -> List[DialogOptions]:
+        return [options.QUALITY]
 
     @property
     def supported_wildcards(self) -> List[str]:
@@ -110,7 +109,7 @@ class ImageToText(JinaNOWApp):
             split_by_sentences = False
             if (
                 user_input
-                and user_input.is_custom_dataset
+                and user_input.data == 'custom'
                 and user_input.custom_dataset_type == DatasetTypes.PATH
                 and user_input.dataset_path
                 and os.path.isdir(user_input.dataset_path)

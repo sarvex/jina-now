@@ -3,6 +3,7 @@ from typing import Dict, List
 
 from docarray import DocumentArray
 from now_common import options
+from now_common.options import DialogOptions, UserInput
 from now_common.utils import (
     get_indexer_config,
     preprocess_images,
@@ -18,7 +19,6 @@ from now.constants import (
     Modalities,
     Qualities,
 )
-from now.now_dataclasses import UserInput
 
 
 class TextToImage(JinaNOWApp):
@@ -45,9 +45,8 @@ class TextToImage(JinaNOWApp):
     def output_modality(self) -> Modalities:
         return Modalities.IMAGE
 
-    @property
-    def options(self) -> List[Dict]:
-        return [options.QUALITY_CLIP]
+    def options(self) -> List[DialogOptions]:
+        return [options.QUALITY]
 
     def set_flow_yaml(self, **kwargs):
         finetuning = kwargs.get('finetuning', False)

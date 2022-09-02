@@ -6,12 +6,12 @@ from copy import deepcopy
 from pathlib import Path
 
 from docarray import Document, DocumentArray
+from now_common.options import UserInput
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import DatasetTypes, DemoDatasets
 from now.data_loading.utils import _fetch_da_from_url, get_dataset_url
 from now.log import yaspin_extended
-from now.now_dataclasses import UserInput
 from now.utils import sigmap
 
 
@@ -25,7 +25,7 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
     """
     da = None
 
-    if user_input.is_custom_dataset:
+    if user_input.data == 'custom':
         if user_input.custom_dataset_type == DatasetTypes.DOCARRAY:
             print('⬇  Pull DocArray dataset')
             da = _pull_docarray(user_input.dataset_name)

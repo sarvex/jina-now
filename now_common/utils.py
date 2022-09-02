@@ -5,13 +5,13 @@ from typing import Dict, Union
 
 import hubble
 from docarray import Document, DocumentArray
+from now_common.options import UserInput
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import NOW_PREPROCESSOR_VERSION, PREFETCH_NR
 from now.data_loading.convert_datasets_to_jpeg import to_thumbnail_jpg
 from now.finetuning.run_finetuning import finetune
 from now.finetuning.settings import FinetuneSettings, parse_finetune_settings
-from now.now_dataclasses import UserInput
 
 
 def get_clip_music_flow_env_dict(

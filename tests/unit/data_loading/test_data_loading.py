@@ -4,14 +4,14 @@ from typing import Tuple
 
 import pytest
 from docarray import Document, DocumentArray
+from now_common.options import UserInput
 from pytest_mock import MockerFixture
 
 from now.apps.music_to_music.app import MusicToMusic
 from now.apps.text_to_image.app import TextToImage
 from now.apps.text_to_text.app import TextToText
-from now.constants import DatasetTypes, DemoDatasets
+from now.constants import DatasetTypes
 from now.data_loading.data_loading import _load_tags_from_json, load_data
-from now.now_dataclasses import UserInput
 
 
 @pytest.fixture()
@@ -107,20 +107,6 @@ def test_da_local_path_music_folder(music_resource_path: str):
         f'Expected two music docs, got {len(loaded_da)}.'
         f' Check the tests/resources/music folder'
     )
-    for doc in loaded_da:
-        assert doc.blob != b''
-
-
-def test_da_custom_ds(da: DocumentArray):
-    user_input = UserInput()
-    user_input.is_custom_dataset = False
-    user_input.custom_dataset_type = DatasetTypes.DEMO
-    user_input.data = DemoDatasets.DEEP_FASHION
-
-    app = TextToImage()
-    loaded_da = load_data(app, user_input)
-    loaded_da = app.preprocess(da=loaded_da, user_input=user_input, is_indexing=True)
-
     for doc in loaded_da:
         assert doc.blob != b''
 

@@ -3,12 +3,12 @@ from typing import Dict, List
 
 import cowsay
 from docarray import Document, DocumentArray
+from now_common.options import UserInput
 from now_common.utils import setup_clip_music_apps
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import Apps, DemoDatasets, Modalities, Qualities
 from now.deployment.deployment import which
-from now.now_dataclasses import UserInput
 
 
 class MusicToMusic(JinaNOWApp):

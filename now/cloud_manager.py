@@ -5,12 +5,11 @@ import warnings
 import cowsay
 import docker
 from kubernetes import client, config
+from now_common.options import UserInput
 
 from now.deployment.deployment import cmd
-from now.dialog import maybe_prompt_user
 from now.log import time_profiler, yaspin_extended
-from now.now_dataclasses import UserInput
-from now.utils import sigmap
+from now.utils import maybe_prompt_user, sigmap
 
 cur_dir = pathlib.Path(__file__).parent.resolve()
 warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -91,7 +90,7 @@ def setup_cluster(
         ask_existing(kubectl_path)
 
 
-def ask_existing(kubectl_path):
+def ask_existing(kubectl_path, **kwargs):
     config.load_kube_config()
     v1 = client.CoreV1Api()
     if 'nowapi' in [item.metadata.name for item in v1.list_namespace().items]:

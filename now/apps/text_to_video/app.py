@@ -8,6 +8,7 @@ import PIL
 from docarray import Document, DocumentArray
 from jina.serve.runtimes.gateway.http.models import JinaRequestModel, JinaResponseModel
 from now_common import options
+from now_common.options import DialogOptions, UserInput
 from now_common.utils import _get_email, get_indexer_config, setup_clip_music_apps
 from pydantic import BaseModel
 
@@ -25,7 +26,6 @@ from now.constants import (
     Modalities,
     Qualities,
 )
-from now.now_dataclasses import UserInput
 
 NUM_FRAMES_SAMPLED = 3
 
@@ -58,9 +58,8 @@ class TextToVideo(JinaNOWApp):
     def required_docker_memory_in_gb(self) -> int:
         return 12
 
-    @property
-    def options(self) -> List[Dict]:
-        return [options.QUALITY_CLIP]
+    def options(self) -> List[DialogOptions]:
+        return [options.QUALITY]
 
     def set_flow_yaml(self, **kwargs):
         finetuning = kwargs.get('finetuning', False)

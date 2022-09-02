@@ -2,11 +2,12 @@ import os
 from typing import Dict, List
 
 from docarray import DocumentArray
+from now_common import options
+from now_common.options import DialogOptions, UserInput
 from now_common.utils import get_indexer_config, preprocess_text, setup_clip_music_apps
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import CLIP_USES, Apps, DatasetTypes, Modalities, Qualities
-from now.now_dataclasses import UserInput
 
 
 class TextToText(JinaNOWApp):
@@ -55,20 +56,8 @@ class TextToText(JinaNOWApp):
     def pre_trained_embedding_size(self) -> Dict[Qualities, int]:
         return {Qualities.MEDIUM: 512, Qualities.EXCELLENT: 768}
 
-    @property
-    def options(self) -> List[Dict]:
-        return [
-            {
-                'name': 'quality',
-                'choices': [
-                    {'name': '🦊 medium', 'value': Qualities.MEDIUM},
-                    {'name': '🦄 excellent', 'value': Qualities.EXCELLENT},
-                ],
-                'prompt_message': 'What quality do you expect?',
-                'prompt_type': 'list',
-                'description': 'Choose the quality of the model that you would like to finetune',
-            }
-        ]
+    def options(self) -> List[DialogOptions]:
+        return [options.QUALITY]
 
     def setup(
         self, dataset: DocumentArray, user_input: UserInput, kubectl_path: str
@@ -102,7 +91,7 @@ class TextToText(JinaNOWApp):
         split_by_sentences = False
         if (
             is_indexing
-            and user_input.is_custom_dataset
+            and user_input.data == 'custom'
             and user_input.custom_dataset_type == DatasetTypes.PATH
             and user_input.dataset_path
             and os.path.isdir(user_input.dataset_path)
