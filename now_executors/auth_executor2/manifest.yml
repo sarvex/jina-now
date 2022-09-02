@@ -1,5 +1,0 @@
-manifest_version: 1
-name: AuthExecutor2
-description: AuthExecutor2 performs the JWT and USER_ID check for authorization
-url: https://github.com/jina-ai/now.private/tree/main/hub/security_executor
-keywords: ['API Jina Security JCloud Token']

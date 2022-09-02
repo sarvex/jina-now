@@ -3,7 +3,7 @@ from typing import Dict
 
 import hubble
 import pytest
-from executor import AuthExecutor2
+from executor import NOWAuthExecutor
 from src import security
 from src.constants import SecurityLevel
 from src.security import secure_request
@@ -111,19 +111,19 @@ def user_jwt():
 
 
 def test_endpoints_empty(admin_email):
-    sec_exec = AuthExecutor2(admin_email)
+    sec_exec = NOWAuthExecutor(admin_email)
     # without jwt
     with pytest.raises(PermissionError):
         sec_exec.check()
 
 
 def test_endpoints_owner(admin_email, owner_jwt, mock_hubble):
-    sec_exec = AuthExecutor2(admin_email)
+    sec_exec = NOWAuthExecutor(admin_email)
     sec_exec.check(parameters={'jwt': owner_jwt})
 
 
 def test_endpoints_user_ids(admin_email, user_jwt):
-    sec_exec = AuthExecutor2(
+    sec_exec = NOWAuthExecutor(
         admin_email,
         user_emails=['kalim.akram@jina.ai', 'kalimakram@gmail.com', 'dummy@yahoo.com'],
     )
@@ -131,13 +131,13 @@ def test_endpoints_user_ids(admin_email, user_jwt):
 
 
 def test_endpoints_wrong_user_ids(admin_email, user_jwt, mock_hubble):
-    sec_exec = AuthExecutor2(admin_email=[], user_emails=['attacker@jina.ai'])
+    sec_exec = NOWAuthExecutor(admin_email=[], user_emails=['attacker@jina.ai'])
     with pytest.raises(PermissionError):
         sec_exec.check(parameters={'jwt': user_jwt})
 
 
 def test_decorator(mock_hubble):
-    class AuthExecutor2(Executor):
+    class NOWAuthExecutor(Executor):
         admin_emails = ['florian.hoenicke@jina.ai']
         user_emails = []
 
@@ -149,5 +149,5 @@ def test_decorator(mock_hubble):
         return True
 
     security._check_if_user_exists_and_verified = patch
-    executor = AuthExecutor2()
+    executor = NOWAuthExecutor()
     executor.set_emails(parameters={'jwt': {'token': 1}})

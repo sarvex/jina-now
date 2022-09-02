@@ -1,4 +1,4 @@
-jtype: AuthExecutor2
+jtype: NOWAuthExecutor
 metas:
   py_modules:
     - executor.py

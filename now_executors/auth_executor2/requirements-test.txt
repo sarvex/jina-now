@@ -1,2 +1,0 @@
-jina-hubble-sdk
-pytest

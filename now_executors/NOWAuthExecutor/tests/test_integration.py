@@ -1,6 +1,6 @@
 import pytest
 from docarray import Document
-from executor import AuthExecutor2
+from executor import NOWAuthExecutor
 from jina import Executor, Flow, requests
 
 
@@ -24,7 +24,7 @@ def test_authorization_failed(params):
         with (
             Flow()
             .add(
-                uses=AuthExecutor2,
+                uses=NOWAuthExecutor,
                 uses_with={'admin_emails': ['florian.hoenicke@jina.ai']},
             )
             .add(uses=SecondExecutor)
@@ -38,7 +38,7 @@ def test_authorization_failed_api_key():
         with (
             Flow()
             .add(
-                uses=AuthExecutor2,
+                uses=NOWAuthExecutor,
                 uses_with={'admin_emails': ['florian.hoenicke@jina.ai']},
             )
             .add(uses=SecondExecutor)
@@ -53,7 +53,7 @@ def test_authorization_success_api_key():
     with (
         Flow()
         .add(
-            uses=AuthExecutor2,
+            uses=NOWAuthExecutor,
             uses_with={
                 'admin_emails': ['florian.hoenicke@jina.ai'],
                 'api_keys': ['valid_key'],
@@ -112,7 +112,7 @@ def test_authorization_successful(params):
     with (
         Flow()
         .add(
-            uses=AuthExecutor2,
+            uses=NOWAuthExecutor,
             uses_with={'admin_emails': ['florian.hoenicke+lottiefiles@jina.ai']},
         )
         .add(uses=SecondExecutor)

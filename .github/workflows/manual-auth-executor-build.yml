@@ -1,0 +1,34 @@
+name: Manual NOWAuthExecutor Release
+
+on: workflow_dispatch
+
+jobs:
+  release-auth-executor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Get executor tag
+        run: |
+          FILE='now/constants.py'
+          NOW_AUTH_EXECUTOR_VERSION=$(sed -n '/NOW_AUTH_EXECUTOR_VERSION =/p' $FILE | cut -d \' -f2)
+          echo "NOW_AUTH_EXECUTOR_VERSION=NOW_AUTH_EXECUTOR_VERSION" >> $GITHUB_ENV
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+      - name: Pip install jina
+        run: pip install "jina[perf]"
+      - name: Check that tag isn't used already for executor
+        env:
+          NOW_AUTH_EXECUTOR_VERSION: ${{ env.NOW_AUTH_EXECUTOR_VERSION }}
+        run: |
+          if jina hub pull jinahub+docker://1xehat8u/v$NOW_AUTH_EXECUTOR_VERSION; then
+            echo "NOW Auth Executor version is used already. Please update the tag"
+            exit 1
+          else
+            echo "NOW Auth Executor version isn't used already, continue to build..."
+          fi
+      - name: Build and push executor
+        env:
+          NOW_AUTH_EXECUTOR_VERSION: ${{ env.NOW_AUTH_EXECUTOR_VERSION }}
+        run: jina hub push --force-update NOWAuthExecutor now_executors/NOWAuthExecutor --secret ${{ secrets.NOW_AUTH_EXECUTOR_SECRET }} -t latest --protected-tag v$NOW_AUTH_EXECUTOR_VERSION
