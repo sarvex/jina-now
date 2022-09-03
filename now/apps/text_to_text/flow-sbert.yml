@@ -15,14 +15,14 @@ executors:
       app: ${{ ENV.APP }}
     jcloud:
       resources:
-        memory: 2G
+        memory: 1G
     env:
       JINA_LOG_LEVEL: DEBUG
   - name: encoder_text
     uses: ${{ ENV.ENCODER_NAME }}
     jcloud:
       resources:
-        memory: 8G
+        memory: 4G
     uses_with:
       model_name: ${{ ENV.PRE_TRAINED_MODEL_NAME }}
       pretrained_model_name_or_path: ${{ ENV.PRE_TRAINED_MODEL_NAME }}

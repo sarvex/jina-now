@@ -142,7 +142,7 @@ class TextToVideo(JinaNOWApp):
         else:
 
             def convert_fn(d: Document):
-                d.chunks = d.chunks.find(query={'text': {'$exists': True}})
+                d.chunks = DocumentArray(d for d in d.chunks if d.text)
                 return d
 
             for d in da:
