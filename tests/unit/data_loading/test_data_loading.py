@@ -58,7 +58,7 @@ def test_da_pull(da: DocumentArray):
     user_input.custom_dataset_type = DatasetTypes.DOCARRAY
     user_input.dataset_name = 'secret-token'
 
-    loaded_da = load_data(TextToImage(), user_input)
+    loaded_da, _ = load_data(TextToImage(), user_input)
 
     assert is_da_text_equal(da, loaded_da)
 
@@ -70,7 +70,7 @@ def test_da_local_path(local_da: DocumentArray):
     user_input.custom_dataset_type = DatasetTypes.PATH
     user_input.dataset_path = path
 
-    loaded_da = load_data(TextToText(), user_input)
+    loaded_da, _ = load_data(TextToText(), user_input)
 
     assert is_da_text_equal(da, loaded_da)
 
@@ -82,7 +82,7 @@ def test_da_local_path_image_folder(image_resource_path: str):
     user_input.dataset_path = image_resource_path
 
     app = TextToImage()
-    loaded_da = load_data(app, user_input)
+    loaded_da, _ = load_data(app, user_input)
     loaded_da = app.preprocess(da=loaded_da, user_input=user_input, is_indexing=True)
 
     assert len(loaded_da) == 2, (
@@ -100,7 +100,7 @@ def test_da_local_path_music_folder(music_resource_path: str):
     user_input.dataset_path = music_resource_path
 
     app = MusicToMusic()
-    loaded_da = load_data(app, user_input)
+    loaded_da, _ = load_data(app, user_input)
     loaded_da = app.preprocess(da=loaded_da, user_input=user_input)
 
     assert len(loaded_da) == 2, (
@@ -118,7 +118,7 @@ def test_da_custom_ds(da: DocumentArray):
     user_input.data = DemoDatasets.DEEP_FASHION
 
     app = TextToImage()
-    loaded_da = load_data(app, user_input)
+    loaded_da, _ = load_data(app, user_input)
     loaded_da = app.preprocess(da=loaded_da, user_input=user_input, is_indexing=True)
 
     for doc in loaded_da:
