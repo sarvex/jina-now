@@ -101,6 +101,7 @@ jobs:
             - 'now/data_loading/data_loading.py'
             - 'now_common/utils.py'
             - 'now/constants.py'
+            - 'now_executors/NOWPreprocessor/**'
       - name: Get preprocessor tag
         if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
         run: |
@@ -126,17 +127,11 @@ jobs:
           else
             echo "NOW preprocessor version isn't used already, continue to build..."
           fi
-      - name: Repository dispatch
+      - name: Build and push executor
         if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
-        uses: peter-evans/repository-dispatch@v2
-        with:
-          token: ${{ secrets.NOW_PREPROCESSOR_REPO_TOKEN }}
-          repository: ${{ secrets.NOW_PREPROCESSOR_REPO }}
-          event-type: build-preprocessor-executor
-          client-payload: '{"sha": "${{ github.event.pull_request.head.sha }}", "now_preprocessor_version": "${{ env.NOW_PREPROCESSOR_VERSION }}"}'
-      - name: Wait 4 mins for building & push to finish
-        if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
-        run: sleep 4m
+        env:
+          NOW_PREPROCESSOR_VERSION: ${{ env.NOW_PREPROCESSOR_VERSION }}
+        run: JINA_AUTH_TOKEN=${{ secrets.NOW_PREPROCESSOR_JCLOUD_TOKEN }} jina hub push --force-update NOWPreprocessor now_executors/NOWPreprocessor/. -t latest --protected-tag v$NOW_PREPROCESSOR_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
 
   update-bff-playground-if-required:
     runs-on: ubuntu-latest

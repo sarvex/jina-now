@@ -45,9 +45,10 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
                 da, tags = _load_tags_from_json(da, user_input)
     else:
         print('⬇  Download DocArray dataset')
-        url = get_dataset_url(user_input.data, user_input.quality, app.output_modality)
+        url = get_dataset_url(user_input.data, app.output_modality)
         da = _fetch_da_from_url(url)
         tags = _extract_tags_annlite(da)
+        da[:, 'embedding'] = None
     if da is None:
         raise ValueError(
             f'Could not load DocArray dataset. Please check your configuration: {user_input}.'
@@ -59,8 +60,6 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
             da = da[:600]
         else:
             da = da[:1000]
-    da = da.shuffle(seed=42)
-    da = deep_copy_da(da)
     return da, tags
 
 

@@ -2,22 +2,15 @@ import os
 from typing import Dict, List
 
 from docarray import DocumentArray
-from now_common import options
 from now_common.utils import (
+    common_setup,
     get_indexer_config,
     preprocess_images,
     preprocess_text,
-    setup_clip_music_apps,
 )
 
 from now.apps.base.app import JinaNOWApp
-from now.constants import (
-    CLIP_USES,
-    IMAGE_MODEL_QUALITY_MAP,
-    Apps,
-    Modalities,
-    Qualities,
-)
+from now.constants import CLIP_USES, Apps, Modalities
 from now.now_dataclasses import UserInput
 
 
@@ -45,10 +38,6 @@ class TextToImage(JinaNOWApp):
     def output_modality(self) -> Modalities:
         return Modalities.IMAGE
 
-    @property
-    def options(self) -> List[Dict]:
-        return [options.QUALITY_CLIP]
-
     def set_flow_yaml(self, **kwargs):
         finetuning = kwargs.get('finetuning', False)
 
@@ -66,32 +55,33 @@ class TextToImage(JinaNOWApp):
     def supported_wildcards(self) -> List[str]:
         return ['*.gif', '*.png', '*.jpg', '*.jpeg']
 
-    @property
-    def pre_trained_embedding_size(self) -> Dict[Qualities, int]:
-        return {
-            Qualities.MEDIUM: 512,
-            Qualities.GOOD: 512,
-            Qualities.EXCELLENT: 768,
-        }
-
     def setup(
         self, dataset: DocumentArray, user_input: UserInput, kubectl_path, tags
     ) -> Dict:
         indexer_config = get_indexer_config(len(dataset))
-        return setup_clip_music_apps(
+        is_remote = user_input.deployment_type == 'remote'
+        encoder_with = {
+            'ENCODER_HOST': 'demo-cas.jina.ai' if is_remote else '0.0.0.0',
+            'ENCODER_PORT': 2096 if is_remote else None,
+            'ENCODER_USES_TLS': True if is_remote else False,
+            'ENCODER_IS_EXTERNAL': True if is_remote else False,
+        }
+        return common_setup(
             app_instance=self,
             user_input=user_input,
             dataset=dataset,
-            encoder_uses=CLIP_USES,
+            encoder_uses=CLIP_USES[user_input.deployment_type][0],
+            encoder_with=encoder_with,
             encoder_uses_with={
-                'pretrained_model_name_or_path': IMAGE_MODEL_QUALITY_MAP[
-                    user_input.quality
-                ][1]
+                'pretrained_model_name_or_path': CLIP_USES[user_input.deployment_type][
+                    1
+                ]
             },
+            pre_trained_embedding_size=CLIP_USES[user_input.deployment_type][2],
             indexer_uses=indexer_config['indexer_uses'],
-            indexer_resources=indexer_config['indexer_resources'],
             kubectl_path=kubectl_path,
             tags=tags,
+            indexer_resources=indexer_config['indexer_resources'],
         )
 
     def preprocess(

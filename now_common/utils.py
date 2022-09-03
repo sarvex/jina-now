@@ -1,7 +1,7 @@
 import json
 import os
 from os.path import expanduser as user
-from typing import Dict, List, Union
+from typing import Dict, List, Optional
 
 import hubble
 from docarray import Document, DocumentArray
@@ -14,24 +14,22 @@ from now.finetuning.settings import FinetuneSettings, parse_finetune_settings
 from now.now_dataclasses import UserInput
 
 
-def get_clip_music_flow_env_dict(
+def common_get_flow_env_dict(
     finetune_settings: FinetuneSettings,
     encoder_uses: str,
+    encoder_with: Dict,
     encoder_uses_with: Dict,
+    pre_trained_embedding_size: int,
     indexer_uses: str,
     indexer_resources: Dict,
     user_input: UserInput,
-    device: str,
-    gpu: str,
     tags: List,
 ):
     """Returns dictionary for the environments variables for the clip & music flow.yml files."""
     if (
         finetune_settings.perform_finetuning and finetune_settings.bi_modal
     ) or user_input.app == 'music_to_music':
-        pre_trained_embedding_size = finetune_settings.pre_trained_embedding_size * 2
-    else:
-        pre_trained_embedding_size = finetune_settings.pre_trained_embedding_size
+        pre_trained_embedding_size = pre_trained_embedding_size * 2
 
     config = {
         'ENCODER_NAME': f'jinahub+docker://{encoder_uses}',
@@ -41,9 +39,8 @@ def get_clip_music_flow_env_dict(
         'PREFETCH': PREFETCH_NR,
         'PREPROCESSOR_NAME': f'jinahub+docker://NOWPreprocessor/v{NOW_PREPROCESSOR_VERSION}',
         'APP': user_input.app,
-        'DEVICE': device,
-        'GPU': gpu,
         'COLUMNS': tags,
+        **encoder_with,
         **indexer_resources,
     }
     if encoder_uses_with.get('pretrained_model_name_or_path'):
@@ -65,53 +62,36 @@ def get_clip_music_flow_env_dict(
     return config
 
 
-def setup_clip_music_apps(
+def common_setup(
     app_instance: JinaNOWApp,
     user_input: UserInput,
     dataset: DocumentArray,
-    encoder_uses: Union[str, Dict],
+    encoder_uses: str,
     encoder_uses_with: Dict,
     indexer_uses: str,
-    indexer_resources: Dict,
+    pre_trained_embedding_size: int,
     kubectl_path: str,
     tags: List,
+    encoder_with: Optional[Dict] = {},
+    indexer_resources: Optional[Dict] = {},
 ) -> Dict:
+    # should receive pre embedding size
     finetune_settings = parse_finetune_settings(
-        app_instance=app_instance,
+        pre_trained_embedding_size=pre_trained_embedding_size,
         user_input=user_input,
         dataset=dataset,
         finetune_datasets=app_instance.finetune_datasets,
     )
 
-    gpu = '0'
-    device = 'cpu'
-    gpu_threshold = 250000
-    if 'NOW_CI_RUN' in os.environ:  # test gpu in CI if len(dataset) > 1000
-        gpu_threshold = 1000
-
-    user_email = _get_email()
-
-    if (len(dataset) > gpu_threshold) and user_email.split('@')[
-        -1
-    ] == 'jina.ai':  # uses GPU if dataset contains over 250000 documents and user is from jina team
-        gpu = 'shared'
-        device = 'cuda'
-
-    if isinstance(encoder_uses, dict):
-        key = 'gpu' if device == 'cuda' else 'cpu'
-        encoder_ = encoder_uses[key]
-    else:
-        encoder_ = encoder_uses
-
-    env_dict = get_clip_music_flow_env_dict(
+    env_dict = common_get_flow_env_dict(
         finetune_settings=finetune_settings,
-        encoder_uses=encoder_,
+        encoder_uses=encoder_uses,
+        encoder_with=encoder_with,
         encoder_uses_with=encoder_uses_with,
+        pre_trained_embedding_size=pre_trained_embedding_size,
         indexer_uses=indexer_uses,
         indexer_resources=indexer_resources,
         user_input=user_input,
-        device=device,
-        gpu=gpu,
         tags=tags,
     )
 
@@ -233,8 +213,8 @@ def get_indexer_config(num_indexed_samples: int) -> Dict:
     :param num_indexed_samples: number of samples which will be indexed; should incl. chunks for e.g. text-to-video app
     """
     config = {'indexer_uses': 'AnnLiteNOWIndexer3/latest'}
-    threshold1 = 1_000
-    threshold2 = 50_000
+    threshold1 = 50_000
+    threshold2 = 250_000
     if 'NOW_CI_RUN' in os.environ:
         threshold1 = 1_500
     if num_indexed_samples <= threshold1:

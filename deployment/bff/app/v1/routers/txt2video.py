@@ -37,10 +37,14 @@ def index(data: NowVideoIndexRequestModel):
         else:
             index_docs.append(Document(uri=uri, tags=tags))
 
+    # TODO: should use app.index_query_access_paths
     jina_client_post(
         data=data,
         inputs=index_docs,
-        parameters={},
+        parameters={
+            'traversal_paths': '@c',
+            'access_paths': '@c',
+        },
         endpoint='/index',
     )
 
@@ -63,7 +67,12 @@ def search(data: NowTextSearchRequestModel):
     docs = jina_client_post(
         data=data,
         inputs=Document(chunks=query_doc),
-        parameters={'limit': data.limit, 'filter': filter_query},
+        parameters={
+            'limit': data.limit,
+            'filter': filter_query,
+            'traversal_paths': '@c',
+            'access_paths': '@c',
+        },
         endpoint='/search',
     )
 

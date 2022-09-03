@@ -27,12 +27,12 @@ def get_reqest_body():
 
 
 def get_flow():
-    clip_uses = CLIP_USES['cpu']
+    clip_uses = CLIP_USES['local'][0]
     user_id = get_reqest_body()['jwt']['user']['_id']
     f = (
         Flow(port_expose=9090)
         .add(
-            uses=f'jinahub+docker://AuthExecutor2/{NOW_AUTH_EXECUTOR_VERSION}',
+            uses=f'jinahub+docker://NOWAuthExecutor/v{NOW_AUTH_EXECUTOR_VERSION}',
             uses_with={
                 'admin_emails': [user_id],
                 'user_emails': [],
