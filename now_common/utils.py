@@ -23,7 +23,7 @@ def get_clip_music_flow_env_dict(
     user_input: UserInput,
     device: str,
     gpu: str,
-    tags: str,
+    tags: List,
 ):
     """Returns dictionary for the environments variables for the clip & music flow.yml files."""
     if (
@@ -103,15 +103,6 @@ def setup_clip_music_apps(
     else:
         encoder_ = encoder_uses
 
-    if len(tags) > 0:
-        tags_str = '['
-        for value1, value2 in tags:
-            tags_str += f'({value1},{value2}),'
-
-        tags_str = tags_str[: len(tags_str) - 1] + ']'
-    else:
-        tags_str = '[]'
-
     env_dict = get_clip_music_flow_env_dict(
         finetune_settings=finetune_settings,
         encoder_uses=encoder_,
@@ -121,7 +112,7 @@ def setup_clip_music_apps(
         user_input=user_input,
         device=device,
         gpu=gpu,
-        tags=tags_str,
+        tags=tags,
     )
 
     if finetune_settings.perform_finetuning:
@@ -241,9 +232,9 @@ def get_indexer_config(num_indexed_samples: int) -> Dict:
 
     :param num_indexed_samples: number of samples which will be indexed; should incl. chunks for e.g. text-to-video app
     """
-    config = {'indexer_uses': 'AnnLiteNOWIndexer2/0.3.0'}
-    threshold1 = 50_000
-    threshold2 = 250_000
+    config = {'indexer_uses': 'AnnLiteNOWIndexer3/latest'}
+    threshold1 = 1_000
+    threshold2 = 50_000
     if 'NOW_CI_RUN' in os.environ:
         threshold1 = 1_500
     if num_indexed_samples <= threshold1:

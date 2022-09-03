@@ -29,9 +29,11 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
         if user_input.custom_dataset_type == DatasetTypes.DOCARRAY:
             print('⬇  Pull DocArray dataset')
             da = _pull_docarray(user_input.dataset_name)
+            tags = _extract_tags_annlite(da)
         elif user_input.custom_dataset_type == DatasetTypes.URL:
             print('⬇  Pull DocArray dataset')
             da = _fetch_da_from_url(user_input.dataset_url)
+            tags = _extract_tags_annlite
         elif user_input.custom_dataset_type == DatasetTypes.PATH:
             print('💿  Loading files from disk')
             da = _load_from_disk(app, user_input)
@@ -45,6 +47,7 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
         print('⬇  Download DocArray dataset')
         url = get_dataset_url(user_input.data, user_input.quality, app.output_modality)
         da = _fetch_da_from_url(url)
+        tags = _extract_tags_annlite(da)
     if da is None:
         raise ValueError(
             f'Could not load DocArray dataset. Please check your configuration: {user_input}.'
@@ -65,6 +68,20 @@ def _open_json(path: str):
     with open(path, 'r') as f:
         data = json.load(f)
     return data
+
+
+def _extract_tags_annlite(da: DocumentArray):
+    tags = set()
+    if any([len(doc.tags.keys()) > 0 for doc in da]):
+
+        for doc in da:
+            if len(doc.tags.keys()) > 0:
+                for tag, _ in doc.tags.items():
+                    tags.add((tag, str(tag.__class__.__name__)))
+    final_tags = list(tags)
+    for i, el in enumerate(final_tags):
+        final_tags[i] = list(el)
+    return final_tags
 
 
 def _open_s3_json(path: str, user_input: UserInput):
@@ -124,7 +141,11 @@ def _load_tags_from_json(da: DocumentArray, user_input: UserInput):
                 tags.add((tag, str(tag.__class__.__name__)))
     if len(ids_to_delete) > 0:
         del da[ids_to_delete]
-    return da, list(tags)
+    final_tags = list(tags)
+    for i, el in enumerate(final_tags):
+        final_tags[i] = list(el)
+
+    return da, final_tags
 
 
 def _pull_docarray(dataset_name: str):

@@ -1,0 +1,19 @@
+jtype: Flow
+version: '1'
+with: {}
+executors:
+- name: executor0
+  polling: "ANY"
+  uses: jinahub://AnnLiteIndexer/latest
+  uses_with:
+    dim: 256
+    columns:
+    - - price
+      - float
+    metric: cosine
+  uses_metas:
+    workspace: /my/tmp_folder
+  port: 55533
+  upload_files: []
+  install_requirements: true
+  port_monitoring: 54841
