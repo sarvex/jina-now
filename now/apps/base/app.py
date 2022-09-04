@@ -26,6 +26,10 @@ class JinaNOWApp:
         self.flow_yaml = ''
         self.set_flow_yaml()
 
+    @staticmethod
+    def ask_app():
+        return options.app
+
     @property
     def app_name(self) -> str:
         """

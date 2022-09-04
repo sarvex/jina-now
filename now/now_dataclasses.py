@@ -45,14 +45,12 @@ class DialogOptions:
     name: str
     prompt_message: str
     prompt_type: str
-    is_terminal_command: bool
-    description: str = None  # only needed when it is a terminal command
-    choices: Optional[
-        Union[
-            List[Dict[str, Union[str, bool]]],
-            Callable[[Any], List[Dict[str, str]]],
-        ]
+    choices: Union[
+        List[Dict[str, Union[str, bool]]],
+        Callable[[Any], List[Dict[str, str]]],
     ] = None
+    is_terminal_command: bool = False  # set when this dialog is required as a cli param
+    description: str = None  # Description to show on terminal when used as a cli param
     depends_on: Optional['DialogOptions'] = None
-    trigger_option_value: Optional[Union[str, bool]] = None
+    conditional_check: Callable[[Any], bool] = None
     post_func: Callable[[Any], None] = None

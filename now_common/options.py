@@ -16,7 +16,7 @@ from kubernetes import client, config
 from now.constants import AVAILABLE_DATASET, Apps, DatasetTypes, Qualities
 from now.deployment.deployment import cmd
 from now.log import yaspin_extended
-from now.now_dataclasses import DialogOptions
+from now.now_dataclasses import DialogOptions, UserInput
 from now.thirdparty.PyInquirer import Separator
 from now.utils import _get_info_hubble, jina_auth_login, sigmap, to_camel_case
 
@@ -112,36 +112,35 @@ CUSTOM_DATASET_TYPE = DialogOptions(
         },
     ],
     prompt_type='list',
-    is_terminal_command=False,
     depends_on=DATA,
-    trigger_option_value='custom',
+    conditional_check=lambda user_input: user_input.data == 'custom',
 )
 
 DATASET_NAME = DialogOptions(
     name='dataset_name',
     prompt_message='Please enter your DocArray name:',
     prompt_type='input',
-    is_terminal_command=False,
     depends_on=CUSTOM_DATASET_TYPE,
-    trigger_option_value=DatasetTypes.DOCARRAY,
+    conditional_check=lambda user_input: user_input.custom_dataset_type
+    == DatasetTypes.DOCARRAY,
 )
 
 DATASET_URL = DialogOptions(
     name='dataset_url',
     prompt_message='Please paste in the URL to download your DocArray from:',
     prompt_type='input',
-    is_terminal_command=False,
     depends_on=CUSTOM_DATASET_TYPE,
-    trigger_option_value=DatasetTypes.URL,
+    conditional_check=lambda user_input: user_input.custom_dataset_type
+    == DatasetTypes.URL,
 )
 
 DATASET_PATH = DialogOptions(
     name='dataset_path',
     prompt_message='Please enter the path to the local folder:',
     prompt_type='input',
-    is_terminal_command=False,
     depends_on=CUSTOM_DATASET_TYPE,
-    trigger_option_value=DatasetTypes.PATH,
+    conditional_check=lambda user_input: user_input.custom_dataset_type
+    == DatasetTypes.PATH,
 )
 
 DATASET_PATH_S3 = DialogOptions(
@@ -150,7 +149,8 @@ DATASET_PATH_S3 = DialogOptions(
     prompt_type='input',
     is_terminal_command=False,
     depends_on=CUSTOM_DATASET_TYPE,
-    trigger_option_value=DatasetTypes.S3_BUCKET,
+    conditional_check=lambda user_input: user_input.custom_dataset_type
+    == DatasetTypes.S3_BUCKET,
 )
 
 AWS_ACCESS_KEY_ID = DialogOptions(
@@ -159,7 +159,8 @@ AWS_ACCESS_KEY_ID = DialogOptions(
     prompt_type='input',
     is_terminal_command=False,
     depends_on=CUSTOM_DATASET_TYPE,
-    trigger_option_value=DatasetTypes.S3_BUCKET,
+    conditional_check=lambda user_input: user_input.custom_dataset_type
+    == DatasetTypes.S3_BUCKET,
 )
 
 AWS_SECRET_ACCESS_KEY = DialogOptions(
@@ -168,7 +169,8 @@ AWS_SECRET_ACCESS_KEY = DialogOptions(
     prompt_type='input',
     is_terminal_command=False,
     depends_on=CUSTOM_DATASET_TYPE,
-    trigger_option_value=DatasetTypes.S3_BUCKET,
+    conditional_check=lambda user_input: user_input.custom_dataset_type
+    == DatasetTypes.S3_BUCKET,
 )
 
 AWS_REGION_NAME = DialogOptions(
@@ -177,13 +179,16 @@ AWS_REGION_NAME = DialogOptions(
     prompt_type='input',
     is_terminal_command=False,
     depends_on=CUSTOM_DATASET_TYPE,
-    trigger_option_value=DatasetTypes.S3_BUCKET,
+    conditional_check=lambda user_input: user_input.custom_dataset_type
+    == DatasetTypes.S3_BUCKET,
 )
 
 # --------------------------------------------- #
 
 DEPLOYMENT_TYPE = DialogOptions(
     name='deployment_type',
+    prompt_message='Where do you want to deploy your search engine?',
+    prompt_type='list',
     choices=[
         {
             'name': '⛅️ Jina Cloud',
@@ -194,65 +199,61 @@ DEPLOYMENT_TYPE = DialogOptions(
             'value': 'local',
         },
     ],
-    prompt_message='Where do you want to deploy your search engine?',
-    prompt_type='list',
     is_terminal_command=True,
     description='Where do you want to deploy your search engine?',
     post_func=lambda user_input, **kwargs: _jina_auth_login(user_input, **kwargs),
 )
 
-
 LOCAL_CLUSTER = DialogOptions(
     name='cluster',
-    choices=lambda user_input, **kwargs: _construct_local_cluster_choices(**kwargs),
     prompt_message='On which cluster do you want to deploy your search engine?',
     prompt_type='list',
-    is_terminal_command=False,
-    post_func=lambda user_input, **kwargs: _check_requirements_match(
+    choices=lambda user_input, **kwargs: _construct_local_cluster_choices(
         user_input, **kwargs
     ),
     depends_on=DEPLOYMENT_TYPE,
-    trigger_option_value='local',
+    conditional_check=lambda user_inp: user_inp.deployment_type == 'local',
+    post_func=lambda user_input, **kwargs: _check_requirements_match(
+        user_input, **kwargs
+    ),
 )
 
 PROCEED = DialogOptions(
-    prompt_type='list',
     name='proceed',
-    prompt_message=(
-        'jina-now is deployed already. Do you want to remove the ' 'current data?'
-    ),
+    prompt_message='jina-now is deployed already. Do you want to remove the current data?',
+    prompt_type='list',
     choices=[
         {'name': '⛔ no', 'value': False},
         {'name': '✅ yes', 'value': True},
     ],
-    is_terminal_command=False,
     depends_on=LOCAL_CLUSTER,
+    conditional_check=lambda user_input: _check_if_existing(),
 )
 
 SECURED = DialogOptions(
     name='secured',
     prompt_message='Do you want to secure the flow?',
+    prompt_type='list',
     choices=[
         {'name': '✅ yes', 'value': True},
         {'name': '⛔ no', 'value': False},
     ],
-    prompt_type='list',
     is_terminal_command=False,
     depends_on=DEPLOYMENT_TYPE,
-    trigger_option_value='remote',
+    conditional_check=lambda user_inp: user_inp.deployment_type == 'remote',
 )
 
 ADDITIONAL_USERS = DialogOptions(
     name='additional_user',
+    prompt_message='Do you want to provide additional users access to this flow?',
+    prompt_type='list',
     choices=[
         {'name': '✅ yes', 'value': True},
         {'name': '⛔ no', 'value': False},
     ],
-    prompt_message='Do you want to provide additional users access to this flow?',
-    prompt_type='list',
     is_terminal_command=False,
     depends_on=SECURED,
-    trigger_option_value=True,
+    conditional_check=lambda user_inp: user_inp.secured,
 )
 
 USER_EMAILS = DialogOptions(
@@ -260,10 +261,15 @@ USER_EMAILS = DialogOptions(
     prompt_message='Please enter the comma separated Email IDs'
     'who will have access to this flow:',
     prompt_type='input',
-    is_terminal_command=False,
     depends_on=ADDITIONAL_USERS,
-    trigger_option_value=True,
+    conditional_check=lambda user_inp: user_inp.additional_user,
 )
+
+
+def _check_if_existing():
+    config.load_kube_config()
+    v1 = client.CoreV1Api()
+    return 'nowapi' in [item.metadata.name for item in v1.list_namespace().items]
 
 
 def _construct_app(user_input: UserInput, **kwargs) -> None:
@@ -278,6 +284,9 @@ def _check_requirements_match(user_input: UserInput, **kwargs) -> None:
 
 
 def _jina_auth_login(user_input, **kwargs):
+    if user_input.deployment_type != 'remote':
+        return
+
     try:
         jina_auth_login()
     except AuthenticationRequiredError:
@@ -305,7 +314,7 @@ def _get_data_choices(user_input, **kwargs) -> List[Dict[str, str]]:
     ]
 
 
-def _construct_local_cluster_choices(**kwargs):
+def _construct_local_cluster_choices(user_input, **kwargs):
     active_context = kwargs.get('active_context')
     contexts = kwargs.get('contexts')
     context_names = _get_context_names(contexts, active_context)
@@ -362,11 +371,12 @@ def _parse_custom_data_from_cli(user_input: UserInput, **kwargs) -> None:
         user_input.dataset_name = data
 
 
-app = [APP, DATA]
+app = APP
+data = [DATA]
 data_da = [CUSTOM_DATASET_TYPE, DATASET_NAME, DATASET_PATH, DATASET_URL]
 data_s3 = [DATASET_PATH_S3, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION_NAME]
 cluster = [DEPLOYMENT_TYPE, LOCAL_CLUSTER]
 remote_cluster = [SECURED, ADDITIONAL_USERS, USER_EMAILS]
 
 
-base_options = app + data_da + data_s3 + cluster + remote_cluster
+base_options = data + data_da + data_s3 + cluster + remote_cluster

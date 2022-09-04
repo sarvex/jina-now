@@ -28,29 +28,23 @@ def configure_user_input(**kwargs) -> [JinaNOWApp, UserInput]:
 
 
 def _configure_app_options(user_input, **kwargs):
-    # First we configure the base app options by calling it on the base class
-    for option in JinaNOWApp.options():
-        configure_option(option, user_input, **kwargs)
+    # First we configure the app and initialize it
+    configure_option(JinaNOWApp.ask_app(), user_input, **kwargs)
 
-    # Now we call app specific options
     for option in user_input.app_instance.options():
         configure_option(option, user_input, **kwargs)
 
 
 def configure_option(option, user_input, **kwargs):
-    # check if it is dependent on some other dialog options
-    if option.depends_on:
-        # # ii) Check if the parent option is set first else raise Exception
-        # if getattr(user_input, option.depends_on.name) is None:
-        #     raise ValueError(
-        #         f'The `{option.name}` option depends on `{option.depends_on.name}` option but it is not set. Please '
-        #         f'either change the order of dialog options or remove dependency'
-        #     )
-        # iii) Check if it should be triggered for the selected value of the parent
-        if option.trigger_option_value != getattr(user_input, option.depends_on.name):
-            return
+    # If there is any pre function then invoke that - commonly used to fill choices if needed
+    # if inspect.isfunction(option.pre_func):
+    #     option.post_func(user_input, option, **kwargs)
 
-    # 1) Populate choices if needed
+    # Check if it is dependent on some other dialog options
+    if option.depends_on and not option.conditional_check(user_input):
+        return
+
+    # Populate choices if needed
     if option.choices and inspect.isfunction(option.choices):
         option.choices = option.choices(user_input, **kwargs)
 
