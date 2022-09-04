@@ -7,8 +7,7 @@ import docker
 from kubernetes import client, config
 
 from now.deployment.deployment import cmd
-from now.log import time_profiler, yaspin_extended
-from now.now_dataclasses import UserInput
+from now.log import yaspin_extended
 from now.utils import maybe_prompt_user, sigmap
 
 cur_dir = pathlib.Path(__file__).parent.resolve()
@@ -72,22 +71,6 @@ def is_local_cluster(kubectl_path):
     addresses = out['items'][0]['status']['addresses']
     is_local = len([a for a in addresses if a['type'] == 'ExternalIP']) == 0
     return is_local
-
-
-@time_profiler
-def setup_cluster(
-    user_input: UserInput,
-    kubectl_path='kubectl',
-    kind_path='kind',
-    **kwargs,
-):
-    if user_input.create_new_cluster:
-        # There's no create new cluster for remote
-        # It will be directly deployed using the flow.yml
-        create_local_cluster(kind_path, **kwargs)
-    elif user_input.deployment_type != 'remote':
-        cmd(f'{kubectl_path} config use-context {user_input.cluster}')
-        ask_existing(kubectl_path)
 
 
 def ask_existing(kubectl_path, **kwargs):

@@ -13,9 +13,10 @@ from typing import Dict, List
 from hubble import AuthenticationRequiredError
 from kubernetes import client, config
 
+from now.cloud_manager import ask_existing, create_local_cluster
 from now.constants import AVAILABLE_DATASET, Apps, DatasetTypes, Qualities
 from now.deployment.deployment import cmd
-from now.log import yaspin_extended
+from now.log import time_profiler, yaspin_extended
 from now.now_dataclasses import DialogOptions, UserInput
 from now.thirdparty.PyInquirer import Separator
 from now.utils import _get_info_hubble, jina_auth_login, sigmap, to_camel_case
@@ -213,9 +214,7 @@ LOCAL_CLUSTER = DialogOptions(
     ),
     depends_on=DEPLOYMENT_TYPE,
     conditional_check=lambda user_inp: user_inp.deployment_type == 'local',
-    post_func=lambda user_input, **kwargs: _check_requirements_match(
-        user_input, **kwargs
-    ),
+    post_func=lambda user_input, **kwargs: _setup_cluster(user_input, **kwargs),
 )
 
 PROCEED = DialogOptions(
@@ -279,8 +278,17 @@ def _construct_app(user_input: UserInput, **kwargs) -> None:
     )()
 
 
-def _check_requirements_match(user_input: UserInput, **kwargs) -> None:
+@time_profiler
+def _setup_cluster(user_input: UserInput, **kwargs) -> None:
+    kubectl_path = kwargs.get('kubectl_path', 'kubectl')
     user_input.app_instance.run_checks(user_input)
+    if user_input.cluster == NEW_CLUSTER['value']:
+        # There's no create new cluster for remote
+        # It will be directly deployed using the flow.yml
+        create_local_cluster(**kwargs)
+    elif user_input.deployment_type != 'remote':
+        cmd(f'{kubectl_path} config use-context {user_input.cluster}')
+        ask_existing(kubectl_path)
 
 
 def _jina_auth_login(user_input, **kwargs):
