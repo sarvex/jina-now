@@ -30,10 +30,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'deployment_type': 'local',
         },
         {},
-        UserInput(
-            is_custom_dataset=False,
-            create_new_cluster=True,
-        ),
+        UserInput(),
     ),
     (
         {
@@ -43,10 +40,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'deployment_type': 'local',
         },
         {},
-        UserInput(
-            is_custom_dataset=False,
-            create_new_cluster=True,
-        ),
+        UserInput(),
     ),
     (
         {
@@ -57,10 +51,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'deployment_type': 'local',
         },
         {},
-        UserInput(
-            is_custom_dataset=False,
-            create_new_cluster=True,
-        ),
+        UserInput(),
     ),
     (
         {
@@ -71,10 +62,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'deployment_type': 'local',
         },
         {},
-        UserInput(
-            is_custom_dataset=False,
-            create_new_cluster=True,
-        ),
+        UserInput(),
     ),
     (
         {
@@ -87,10 +75,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'deployment_type': 'local',
         },
         {},
-        UserInput(
-            is_custom_dataset=True,
-            create_new_cluster=True,
-        ),
+        UserInput(),
     ),
     (
         {
@@ -102,10 +87,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'deployment_type': 'local',
         },
         {},
-        UserInput(
-            is_custom_dataset=True,
-            create_new_cluster=True,
-        ),
+        UserInput(),
     ),
     (
         {
@@ -117,10 +99,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'deployment_type': 'local',
         },
         {},
-        UserInput(
-            is_custom_dataset=True,
-            create_new_cluster=True,
-        ),
+        UserInput(),
     ),
     (
         {
@@ -132,10 +111,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'deployment_type': 'local',
         },
         {},
-        UserInput(
-            is_custom_dataset=True,
-            create_new_cluster=True,
-        ),
+        UserInput(),
     ),
     (
         {
@@ -148,10 +124,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'deployment_type': 'local',
         },
         {},
-        UserInput(
-            is_custom_dataset=True,
-            create_new_cluster=True,
-        ),
+        UserInput(),
     ),
     (
         {
@@ -162,10 +135,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'secured': False,
         },
         {'os_type': 'darwin', 'arch': 'x86_64'},
-        UserInput(
-            is_custom_dataset=False,
-            secured=False,
-        ),
+        UserInput(),
     ),
     (
         {
@@ -174,10 +144,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'deployment_type': 'local',
         },
         {'app': Apps.MUSIC_TO_MUSIC},
-        UserInput(
-            is_custom_dataset=False,
-            create_new_cluster=True,
-        ),
+        UserInput(),
     ),
     (
         {
@@ -186,10 +153,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'deployment_type': 'local',
         },
         {'app': Apps.TEXT_TO_IMAGE, 'quality': 'good'},
-        UserInput(
-            is_custom_dataset=False,
-            create_new_cluster=True,
-        ),
+        UserInput(),
     ),
     (
         {
@@ -198,10 +162,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'deployment_type': 'local',
         },
         {'app': Apps.IMAGE_TO_TEXT, 'quality': 'good'},
-        UserInput(
-            is_custom_dataset=False,
-            create_new_cluster=True,
-        ),
+        UserInput(),
     ),
     (
         {
@@ -213,10 +174,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'deployment_type': 'local',
             'quality': 'medium',
         },
-        UserInput(
-            is_custom_dataset=False,
-            create_new_cluster=True,
-        ),
+        UserInput(),
     ),
 ]
 

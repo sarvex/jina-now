@@ -31,7 +31,6 @@ class UserInput:
 
     # cluster related
     cluster: Optional[str] = None
-    create_new_cluster: Optional[bool] = None
     deployment_type: Optional[str] = None
     secured: Optional[bool] = None
     jwt: Optional[Dict[str, str]] = None
