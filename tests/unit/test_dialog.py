@@ -198,4 +198,6 @@ def test_configure_user_input(
     if user_input.deployment_type == 'remote':
         user_input.__dict__.update({'jwt': None, 'admin_emails': None})
 
+    user_input.__dict__.update({'app_instance': None})
+
     assert user_input == expected_user_input

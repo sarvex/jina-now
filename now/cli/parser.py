@@ -1,6 +1,7 @@
 import argparse
 
 from jina.parsers.helper import _ColoredHelpFormatter
+from now_common.options import _construct_app
 
 from now import __version__
 from now.constants import Apps
@@ -59,8 +60,7 @@ def set_default_start_args(parser):
         '--app',
         help='Select the app you would like to use. Do not use this argument when'
         ' using the `%(prog)-8s [sub-command]`',
-        # choices=[app for app in Apps() if _construct_app(app).is_enabled],
-        choices=[],
+        choices=[app for app in Apps() if _construct_app(app).is_enabled],
         type=str,
     )
 
@@ -117,8 +117,7 @@ def set_start_parser(sp):
 
     # Set parser args for the enabled apps
     for app in Apps():
-        # _construct_app(app).set_app_parser(sub_parser, formatter=_chf)
-        pass
+        _construct_app(app).set_app_parser(sub_parser, formatter=_chf)
 
 
 def set_stop_parser(sp):

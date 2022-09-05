@@ -6,6 +6,7 @@ import cowsay
 from now_common.options import _get_context_names
 
 from now import run_backend, run_bff_playground
+from now.cloud_manager import setup_cluster
 from now.constants import DOCKER_BFF_PLAYGROUND_TAG, JC_SECRET, SURVEY_LINK
 from now.deployment.deployment import cmd, list_all_wolf, status_wolf, terminate_wolf
 from now.dialog import configure_user_input
@@ -107,6 +108,7 @@ def start_now(os_type, arch, contexts, active_context, **kwargs):
         **kwargs,
     )
 
+    setup_cluster(user_input, **kwargs)
     (
         gateway_host,
         gateway_port,

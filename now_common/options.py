@@ -13,7 +13,6 @@ from typing import Dict, List
 from hubble import AuthenticationRequiredError
 from kubernetes import client, config
 
-from now.cloud_manager import ask_existing, create_local_cluster
 from now.constants import AVAILABLE_DATASET, Apps, DatasetTypes, Qualities
 from now.deployment.deployment import cmd
 from now.log import time_profiler, yaspin_extended
@@ -280,16 +279,7 @@ def _construct_app(user_input: UserInput, **kwargs) -> None:
 
 @time_profiler
 def _setup_cluster(user_input: UserInput, **kwargs) -> None:
-    kubectl_path = kwargs.get('kubectl_path', 'kubectl')
-    kind_path = kwargs.get('kubectl_path', 'kind')
     user_input.app_instance.run_checks(user_input)
-    if user_input.cluster == NEW_CLUSTER['value']:
-        # There's no create new cluster for remote
-        # It will be directly deployed using the flow.yml
-        create_local_cluster(kind_path, **kwargs)
-    elif user_input.deployment_type != 'remote':
-        cmd(f'{kubectl_path} config use-context {user_input.cluster}')
-        ask_existing(kubectl_path)
 
 
 def _jina_auth_login(user_input, **kwargs):
@@ -359,8 +349,10 @@ def _cluster_running(cluster):
 
 def _parse_custom_data_from_cli(user_input: UserInput, **kwargs) -> None:
     data = user_input.data
-    app_instance = user_input.app_instance
+    if data == 'custom':
+        return
 
+    app_instance = user_input.app_instance
     for k, v in enumerate(AVAILABLE_DATASET[app_instance.output_modality]):
         if v[0] == data:
             return
