@@ -65,8 +65,8 @@ class MusicToMusic(JinaNOWApp):
             self.flow_yaml = os.path.join(flow_dir, 'ft-flow-music.yml')
 
     @property
-    def supported_wildcards(self) -> List[str]:
-        return ['*.mp3']
+    def supported_file_types(self) -> List[str]:
+        return ['mp3']
 
     def _check_requirements(self) -> bool:
         if not ffmpeg_is_installed():
