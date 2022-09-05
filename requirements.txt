@@ -1,13 +1,13 @@
 finetuner==0.5.1
 pyfiglet==0.8.post1
-jina[perf]==3.7.0
+jina[perf]==3.8.2
 cowsay==4.0
 yaspin==2.1.0
 py-cpuinfo==8.0.0
 kubernetes==23.3.0
 prompt_toolkit==3.0.28
 protobuf==3.19.4
-docarray[common]==0.13.31
+docarray[common]==0.16.2
 docker==5.0.3
 requests==2.27.1
 pydub==0.25.1
@@ -15,4 +15,4 @@ nltk==3.7
 jcloud==0.0.35
 python-dotenv
 boto3
-jina-hubble-sdk==0.13.0
+jina-hubble-sdk>=0.15.4
