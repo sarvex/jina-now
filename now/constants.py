@@ -5,8 +5,8 @@ from now.utils import BetterEnum
 # DEMO_DATASET_DOCARRAY_VERSION = docarray_version
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.119-adapt-annlite-fix-versions'
-NOW_PREPROCESSOR_VERSION = '0.0.74-adapt-annlite-fix-versions'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.119-adapt-annlite-add-test'
+NOW_PREPROCESSOR_VERSION = '0.0.74-adapt-annlite-add-test'
 
 NOW_AUTH_EXECUTOR_VERSION = '0.0.3-8'
 
