@@ -84,7 +84,7 @@ class TextToVideo(JinaNOWApp):
         return '@c'
 
     def setup(
-        self, dataset: DocumentArray, user_input: UserInput, kubectl_path, tags
+        self, dataset: DocumentArray, user_input: UserInput, kubectl_path
     ) -> Dict:
         indexer_config = get_indexer_config(len(dataset) * NUM_FRAMES_SAMPLED)
         is_remote = user_input.deployment_type == 'remote'
@@ -108,7 +108,6 @@ class TextToVideo(JinaNOWApp):
             pre_trained_embedding_size=CLIP_USES[user_input.deployment_type][2],
             indexer_uses=indexer_config['indexer_uses'],
             kubectl_path=kubectl_path,
-            tags=tags,
             indexer_resources=indexer_config['indexer_resources'],
         )
 

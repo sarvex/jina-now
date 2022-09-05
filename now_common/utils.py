@@ -70,7 +70,6 @@ def common_setup(
     indexer_uses: str,
     pre_trained_embedding_size: int,
     kubectl_path: str,
-    tags: List,
     encoder_with: Optional[Dict] = {},
     indexer_resources: Optional[Dict] = {},
 ) -> Dict:
@@ -81,7 +80,7 @@ def common_setup(
         dataset=dataset,
         finetune_datasets=app_instance.finetune_datasets,
     )
-
+    tags = _extract_tags_annlite(dataset)
     env_dict = common_get_flow_env_dict(
         finetune_settings=finetune_settings,
         encoder_uses=encoder_uses,
@@ -159,3 +158,13 @@ def get_indexer_config(num_indexed_samples: int) -> Dict:
         config['indexer_resources'] = {'INDEXER_CPU': 1.0, 'INDEXER_MEM': '4G'}
 
     return config
+
+
+def _extract_tags_annlite(da: DocumentArray):
+    tags = set()
+    for doc in da:
+        if len(doc.tags.keys()) > 0:
+            for tag, _ in doc.tags.items():
+                tags.add((tag, str(tag.__class__.__name__)))
+    final_tags = [list(tag) for tag in tags]
+    return final_tags

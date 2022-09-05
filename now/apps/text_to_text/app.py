@@ -53,7 +53,7 @@ class TextToText(JinaNOWApp):
         return ['*.txt']
 
     def setup(
-        self, dataset: DocumentArray, user_input: UserInput, kubectl_path: str, tags
+        self, dataset: DocumentArray, user_input: UserInput, kubectl_path: str
     ) -> Dict:
         indexer_config = get_indexer_config(len(dataset))
         return common_setup(
@@ -67,7 +67,6 @@ class TextToText(JinaNOWApp):
             pre_trained_embedding_size=768,
             indexer_uses=indexer_config['indexer_uses'],
             kubectl_path=kubectl_path,
-            tags=tags,
             indexer_resources=indexer_config['indexer_resources'],
         )
 

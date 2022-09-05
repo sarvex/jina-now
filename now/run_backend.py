@@ -28,10 +28,9 @@ def run(app_instance: JinaNOWApp, user_input: UserInput, kubectl_path: str):
     :return:
     """
     dataset = load_data(app_instance, user_input)
-    tags = _extract_tags_annlite(dataset)
 
     env_dict = app_instance.setup(
-        dataset=dataset, user_input=user_input, kubectl_path=kubectl_path, tags=tags
+        dataset=dataset, user_input=user_input, kubectl_path=kubectl_path
     )
 
     (
@@ -109,13 +108,3 @@ def estimate_request_size(index):
     max_request_size = 32
     request_size = max(min(max_request_size, int(max_size / size)), 1)
     return request_size
-
-
-def _extract_tags_annlite(da: DocumentArray):
-    tags = set()
-    for doc in da:
-        if len(doc.tags.keys()) > 0:
-            for tag, _ in doc.tags.items():
-                tags.add((tag, str(tag.__class__.__name__)))
-    final_tags = [list(tag) for tag in tags]
-    return final_tags
