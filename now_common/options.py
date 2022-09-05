@@ -281,11 +281,12 @@ def _construct_app(user_input: UserInput, **kwargs) -> None:
 @time_profiler
 def _setup_cluster(user_input: UserInput, **kwargs) -> None:
     kubectl_path = kwargs.get('kubectl_path', 'kubectl')
+    kind_path = kwargs.get('kubectl_path', 'kind')
     user_input.app_instance.run_checks(user_input)
     if user_input.cluster == NEW_CLUSTER['value']:
         # There's no create new cluster for remote
         # It will be directly deployed using the flow.yml
-        create_local_cluster(**kwargs)
+        create_local_cluster(kind_path, **kwargs)
     elif user_input.deployment_type != 'remote':
         cmd(f'{kubectl_path} config use-context {user_input.cluster}')
         ask_existing(kubectl_path)

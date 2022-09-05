@@ -191,7 +191,7 @@ def test_configure_user_input(
 ):
     expected_user_input.__dict__.update(mocked_user_answers)
     expected_user_input.__dict__.update(configure_kwargs)
-    mocker.patch('now.dialog.prompt', CmdPromptMock(mocked_user_answers))
+    mocker.patch('now.utils.prompt', CmdPromptMock(mocked_user_answers))
 
     _, user_input = configure_user_input(**configure_kwargs)
 
