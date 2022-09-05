@@ -83,8 +83,6 @@ def setup_cluster(
     **kwargs,
 ):
     if user_input.cluster == NEW_CLUSTER['value']:
-        # There's no create new cluster for remote
-        # It will be directly deployed using the flow.yml
         create_local_cluster(kind_path, **kwargs)
     elif user_input.deployment_type != 'remote':
         cmd(f'{kubectl_path} config use-context {user_input.cluster}')
