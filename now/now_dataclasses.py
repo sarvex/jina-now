@@ -92,7 +92,7 @@ class Task:
 
 @dataclasses.dataclass
 class UserInput:
-    app_instance: Optional['JinaNOWApp'] = None
+    app_instance: Optional['JinaNOWApp'] = None  # noqa: F821
     # data related
     data: Optional[str] = None
     custom_dataset_type: Optional[DatasetTypes] = None
