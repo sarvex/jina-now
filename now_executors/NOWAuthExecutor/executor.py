@@ -1,3 +1,5 @@
+import json
+import os
 from functools import lru_cache
 from typing import Dict, List
 
@@ -112,12 +114,29 @@ class NOWAuthExecutor(Executor):
         self.api_keys = api_keys if api_keys else []
         self._user = None
 
+        self.api_keys_path = (
+            os.path.join(self.workspace, 'api_keys.json') if self.workspace else None
+        )
+        self.user_emails_path = (
+            os.path.join(self.workspace, 'user_emails.json') if self.workspace else None
+        )
+
+        if self.api_keys_path and os.path.exists(self.api_keys_path):
+            with open(self.api_keys_path, 'r') as fp:
+                self.api_keys = json.load(fp)
+        if self.user_emails_path and os.path.exists(self.user_emails_path):
+            with open(self.user_emails_path, 'r') as fp:
+                self.user_emails = json.load(fp)
+
     @secure_request(on='/admin/updateUserEmails', level=SecurityLevel.ADMIN)
     def update_user_emails(self, parameters: Dict = None, **kwargs):
         """
         Update the email addresses during runtime. That way, we don't have to restart it.
         """
         self.user_emails = parameters['user_emails']
+        if self.user_emails_path:
+            with open(self.user_emails_path, 'w') as fp:
+                json.dump(self.user_emails, fp)
 
     @secure_request(on='/admin/updateApiKeys', level=SecurityLevel.ADMIN)
     def update_api_keys(self, parameters: Dict = None, **kwargs):
@@ -125,6 +144,9 @@ class NOWAuthExecutor(Executor):
         Update the api keys during runtime. That way, we don't have to restart it.
         """
         self.api_keys = parameters['api_keys']
+        if self.api_keys_path:
+            with open(self.api_keys_path, 'w') as fp:
+                json.dump(self.api_keys, fp)
 
     @secure_request(level=SecurityLevel.USER)
     def check(self, docs: DocumentArray, **kwargs):

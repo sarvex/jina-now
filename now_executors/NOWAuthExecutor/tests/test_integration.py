@@ -1,7 +1,22 @@
+import json
+
 import pytest
 from docarray import Document
 from executor import NOWAuthExecutor
 from jina import Executor, Flow, requests
+
+
+def test_executor_persistance():
+    api_key = 'my_key'
+    e = NOWAuthExecutor(api_keys=[api_key], metas={'workspace': './workspace'})
+    e.update_user_emails(
+        parameters={'api_key': api_key, 'user_emails': ['abc@test.ai']}
+    )
+    with open(e.user_emails_path, 'r') as fp:
+        json.load(fp)
+    e.update_api_keys(parameters={'api_key': api_key, 'api_keys': ['your_key']})
+    with open(e.user_emails_path, 'r') as fp:
+        json.load(fp)
 
 
 class SecondExecutor(Executor):
