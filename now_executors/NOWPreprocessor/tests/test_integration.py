@@ -4,6 +4,7 @@ import json
 from docarray import Document, DocumentArray
 from executor import NOWPreprocessor
 from jina import Flow
+from now_common.options import _construct_app
 
 from now.constants import Apps, Modalities
 from now.now_dataclasses import UserInput
@@ -31,7 +32,7 @@ def test__text_to_video():
 
     user_inpuT = UserInput()
     user_inpuT.output_modality = Modalities.VIDEO
-    user_inpuT.app = app
+    user_inpuT.app_instance = _construct_app(app)
     user_inpuT.data = 'custom'
     user_inpuT.dataset_path = '/Users/joschkabraun/dev/now/da_tgif.30000.bin'
 

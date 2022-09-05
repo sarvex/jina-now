@@ -9,12 +9,11 @@ from __future__ import annotations, print_function, unicode_literals
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional, Union
 
-from now.constants import Apps, DatasetTypes
+from now.constants import DatasetTypes
 
 
 @dataclass
 class UserInput:
-    app: Optional[Apps] = None
     app_instance: Optional['JinaNOWApp'] = None  # noqa: F821
 
     # data related

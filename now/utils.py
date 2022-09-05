@@ -357,7 +357,7 @@ def jina_auth_login():
     pass
 
 
-def _get_info_hubble(user_input):
+def get_info_hubble(user_input):
     with open(user('~/.jina/config.json')) as fp:
         config_val = json.load(fp)
         user_token = config_val['auth_token']

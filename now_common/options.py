@@ -18,7 +18,7 @@ from now.deployment.deployment import cmd
 from now.log import time_profiler, yaspin_extended
 from now.now_dataclasses import DialogOptions, UserInput
 from now.thirdparty.PyInquirer import Separator
-from now.utils import _get_info_hubble, jina_auth_login, sigmap, to_camel_case
+from now.utils import get_info_hubble, jina_auth_login, sigmap, to_camel_case
 
 NEW_CLUSTER = {'name': '🐣 create new', 'value': 'new'}
 
@@ -55,7 +55,7 @@ APP = DialogOptions(
     is_terminal_command=True,
     description='What sort of search engine would you like to build?',
     post_func=lambda user_input, **kwargs: _construct_app(
-        user_input.app, user_input, **kwargs
+        kwargs['app'], user_input, **kwargs
     ),
 )
 
@@ -301,7 +301,7 @@ def _jina_auth_login(user_input, **kwargs):
             cmd('jina auth login')
         spinner.ok('🛠️')
 
-    _get_info_hubble(user_input)
+    get_info_hubble(user_input)
     os.environ['JCLOUD_NO_SURVEY'] = '1'
 
 

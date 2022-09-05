@@ -7,10 +7,10 @@ from typing import Dict, Optional
 
 import boto3
 from jina import Document, DocumentArray, Executor, requests
+from now_common.options import _construct_app
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import Apps, DatasetTypes, Modalities
-from now.dialog import _construct_app
 from now.now_dataclasses import UserInput
 
 
@@ -211,7 +211,7 @@ if __name__ == '__main__':
 
     user_inpuT = UserInput()
     user_inpuT.output_modality = Modalities.VIDEO
-    user_inpuT.app = app
+    user_inpuT.app_instance = _construct_app(app)
     user_inpuT.data = 'custom'
     user_inpuT.custom_dataset_type = DatasetTypes.S3_BUCKET
     user_inpuT.dataset_path = 's3://bucket/folder'

@@ -92,7 +92,8 @@ def _load_tags_from_json(da: DocumentArray, user_input: UserInput):
         folder = d.uri.rsplit('/', 1)[0]
         file_extension = d.uri.split('.')[-1]
         if file_extension in [
-            wildcard.split('.')[-1] for wildcard in user_input.app.supported_wildcards
+            wildcard.split('.')[-1]
+            for wildcard in user_input.app_instance.supported_wildcards
         ]:
             if folder not in dic:
                 dic[folder] = i
@@ -109,7 +110,8 @@ def _load_tags_from_json(da: DocumentArray, user_input: UserInput):
     for i, d in enumerate(da):
         folder = d.uri.rsplit('/', 1)[0]
         if d.uri.split('.')[-1] not in [
-            wildcard.split('.')[-1] for wildcard in user_input.app.supported_wildcards
+            wildcard.split('.')[-1]
+            for wildcard in user_input.app_instance.supported_wildcards
         ]:
             ids_to_delete.append(i)
         if d.uri.endswith('.json') and folder in dic:

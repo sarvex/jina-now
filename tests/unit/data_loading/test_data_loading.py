@@ -114,7 +114,7 @@ def test_da_local_path_music_folder(music_resource_path: str):
 def test_load_tags(gif_resource_path: str):
     user_input = UserInput()
     user_input.dataset_path = ''
-    user_input.app = TextToImage()
+    user_input.app_instance = TextToImage()
     da = DocumentArray(
         [
             Document(uri=os.path.join(gif_resource_path, 'folder1/file.gif')),

@@ -52,8 +52,11 @@ def configure_option(option, user_input, **kwargs):
         **option.__dict__,
         **kwargs,
     )
-    setattr(user_input, option.name, val)
+
+    if hasattr(user_input, option.name):
+        setattr(user_input, option.name, val)
 
     # If there is any post function then invoke that
+    kwargs[option.name] = val
     if inspect.isfunction(option.post_func):
         option.post_func(user_input, **kwargs)
