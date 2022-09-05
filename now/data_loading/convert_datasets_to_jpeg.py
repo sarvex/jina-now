@@ -10,6 +10,7 @@ def to_thumbnail_jpg(doc: Document):
     if doc.tensor is not None:
         im = Image.fromarray(doc.tensor)
         im.thumbnail((256, 256))
+        im = im.convert('RGB')
         doc.tensor = None
         img_byte_arr = io.BytesIO()
         im.save(img_byte_arr, format="JPEG", quality=75)

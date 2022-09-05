@@ -1,3 +1,5 @@
+import uuid
+
 import requests
 from tests.integration.test_end_to_end import get_default_request_body
 
@@ -21,7 +23,9 @@ def update_api_keys(deployment_type, api_keys):
 
 
 if __name__ == '__main__':
+    api_key = str(uuid.uuid4())
     update_api_keys(
         deployment_type='remote',
-        api_keys=['...'],
+        api_keys=[api_key],
     )
+    print(api_key)

@@ -9,6 +9,22 @@ from jina.excepts import BadServer
 def process_query(
     text: str = '', blob: str = b'', uri: str = None, conditions: dict = None
 ) -> Document:
+    """
+    Processes query image or text  into a document and prepares the filetring query
+    for the results.
+    Currently we support '$and' between different conditions means we return results
+    that have all the conditions. Also we only support '$eq' opperand for tag
+    which means a tag should be equal to an exact value.
+    Same query is passed to either docarray and annlite indexers, in docarray
+    executor we do preprocessing by adding tags__ to the query
+
+    :param text: text of the query
+    :param blob: the blob of the image
+    :param uri: uri of the ressource provided
+    :conditions: dictionary with the conditions to apply as filter
+        tag should be the key and desired value is assigned as value
+        to the key
+    """
     if bool(text) + bool(blob) + bool(uri) != 1:
         raise ValueError(
             f'Can only set one value but have text={text}, blob={blob}, uri={uri}'
@@ -32,10 +48,10 @@ def process_query(
     query = {}
     if conditions:
         filter_query = []
-
+        # construct filtering query from dictionary
         for key, value in conditions.items():
-            filter_query.append({f'tags__{key}': {'$eq': value}})
-        query = {'$and': filter_query}
+            filter_query.append({f'{key}': {'$eq': value}})
+        query = {'$and': filter_query}  # different conditions are aggregated using and
     return query_doc, query
 
 
