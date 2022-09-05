@@ -5,12 +5,12 @@ from typing import Dict, Optional
 
 import hubble
 from docarray import DocumentArray
-from now_common.options import UserInput
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import NOW_PREPROCESSOR_VERSION, PREFETCH_NR
 from now.finetuning.run_finetuning import finetune
 from now.finetuning.settings import FinetuneSettings, parse_finetune_settings
+from now.now_dataclasses import UserInput
 
 
 def common_get_flow_env_dict(

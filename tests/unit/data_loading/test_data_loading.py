@@ -4,7 +4,6 @@ from typing import Tuple
 
 import pytest
 from docarray import Document, DocumentArray
-from now_common.options import UserInput
 from pytest_mock import MockerFixture
 
 from now.apps.music_to_music.app import MusicToMusic
@@ -12,6 +11,7 @@ from now.apps.text_to_image.app import TextToImage
 from now.apps.text_to_text.app import TextToText
 from now.constants import DatasetTypes
 from now.data_loading.data_loading import _load_tags_from_json, load_data
+from now.now_dataclasses import UserInput
 
 
 @pytest.fixture()

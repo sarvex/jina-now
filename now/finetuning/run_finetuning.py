@@ -12,7 +12,6 @@ import finetuner
 import numpy as np
 from docarray import DocumentArray
 from finetuner.callback import EarlyStopping, EvaluationCallback
-from now_common.options import UserInput
 
 from now.apps.base.app import JinaNOWApp
 from now.deployment.deployment import cmd, terminate_wolf
@@ -20,6 +19,7 @@ from now.deployment.flow import deploy_flow
 from now.finetuning.dataset import FinetuneDataset, build_finetuning_dataset
 from now.finetuning.settings import FinetuneSettings
 from now.log import time_profiler, yaspin_extended
+from now.now_dataclasses import UserInput
 from now.run_backend import call_index
 from now.utils import sigmap
 
