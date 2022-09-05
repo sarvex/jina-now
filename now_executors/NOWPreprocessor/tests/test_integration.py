@@ -1,4 +1,5 @@
 import dataclasses
+import json
 
 from docarray import Document, DocumentArray
 from executor import NOWPreprocessor
@@ -6,6 +7,23 @@ from jina import Flow
 
 from now.constants import Apps, Modalities
 from now.now_dataclasses import UserInput
+
+
+def test_executor_persistance():
+    e = NOWPreprocessor('text_to_text', metas={'workspace': './workspace'})
+    user_input = UserInput()
+    text_docs = DocumentArray(
+        [
+            Document(text='test'),
+            Document(
+                chunks=DocumentArray([Document(uri='test.jpg'), Document(text='hi')])
+            ),
+        ]
+    )
+
+    e.index(docs=text_docs, parameters={'user_input': dataclasses.asdict(user_input)})
+    with open(e.user_input_path, 'r') as fp:
+        json.load(fp)
 
 
 def test__text_to_video():
