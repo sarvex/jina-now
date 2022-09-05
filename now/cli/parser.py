@@ -64,34 +64,6 @@ def set_default_start_args(parser):
         type=str,
     )
 
-    parser.add_argument(
-        '--data',
-        help='Select one of the available datasets or provide local filepath, '
-        'docarray url, or docarray secret to use your own dataset',
-        type=str,
-    )
-
-    parser.add_argument(
-        '--deployment-type',
-        help='Option is `local` and `remote`. Select `local` if you want search engine to be deployed on local '
-        'cluster. Select `remote` to deploy it on Jina Cloud',
-        type=str,
-    )
-
-    parser.add_argument(
-        '--cluster',
-        help='Reference an existing `local` cluster or select `new` to create a new one. '
-        'Use this only when the `--deployment-type=local`',
-        type=str,
-    )
-
-    parser.add_argument(
-        '--proceed',
-        help='Proceed even if app is deployed already. In that case, the old app is deleted.',
-        default=None,
-        type=bool,
-    )
-
 
 def set_start_parser(sp):
     """Add the arguments for the jina now to the parser

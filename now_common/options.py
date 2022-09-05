@@ -73,7 +73,7 @@ QUALITY = DialogOptions(
     ],
     prompt_message='What quality do you expect?',
     prompt_type='list',
-    is_terminal_command=True,
+    is_terminal_command=False,
     description='Choose the quality of the model that you would like to finetune',
 )
 
@@ -86,7 +86,8 @@ DATA = DialogOptions(
     choices=lambda user_input, **kwargs: _get_data_choices(user_input, **kwargs),
     prompt_type='list',
     is_terminal_command=True,
-    description='What dataset do you want to use?',
+    description='Select one of the available datasets or provide local filepath, '
+    'docarray url, or docarray secret to use your own dataset',
     post_func=lambda user_input, **kwargs: _parse_custom_data_from_cli(
         user_input, **kwargs
     ),
@@ -149,7 +150,6 @@ DATASET_PATH_S3 = DialogOptions(
     name='dataset_path',
     prompt_message='Please enter the S3 URI to the folder:',
     prompt_type='input',
-    is_terminal_command=False,
     depends_on=CUSTOM_DATASET_TYPE,
     conditional_check=lambda user_input: user_input.custom_dataset_type
     == DatasetTypes.S3_BUCKET,
@@ -159,7 +159,6 @@ AWS_ACCESS_KEY_ID = DialogOptions(
     name='aws_access_key_id',
     prompt_message='Please enter the AWS access key ID:',
     prompt_type='input',
-    is_terminal_command=False,
     depends_on=CUSTOM_DATASET_TYPE,
     conditional_check=lambda user_input: user_input.custom_dataset_type
     == DatasetTypes.S3_BUCKET,
@@ -169,7 +168,6 @@ AWS_SECRET_ACCESS_KEY = DialogOptions(
     name='aws_secret_access_key',
     prompt_message='Please enter the AWS secret access key:',
     prompt_type='input',
-    is_terminal_command=False,
     depends_on=CUSTOM_DATASET_TYPE,
     conditional_check=lambda user_input: user_input.custom_dataset_type
     == DatasetTypes.S3_BUCKET,
@@ -179,7 +177,6 @@ AWS_REGION_NAME = DialogOptions(
     name='aws_region_name',
     prompt_message='Please enter the AWS region:',
     prompt_type='input',
-    is_terminal_command=False,
     depends_on=CUSTOM_DATASET_TYPE,
     conditional_check=lambda user_input: user_input.custom_dataset_type
     == DatasetTypes.S3_BUCKET,
@@ -202,7 +199,8 @@ DEPLOYMENT_TYPE = DialogOptions(
         },
     ],
     is_terminal_command=True,
-    description='Where do you want to deploy your search engine?',
+    description='Option is `local` and `remote`. Select `local` if you want search engine to be deployed on local '
+    'cluster. Select `remote` to deploy it on Jina Cloud',
     post_func=lambda user_input, **kwargs: _jina_auth_login(user_input, **kwargs),
 )
 
@@ -214,6 +212,9 @@ LOCAL_CLUSTER = DialogOptions(
         user_input, **kwargs
     ),
     depends_on=DEPLOYMENT_TYPE,
+    is_terminal_command=True,
+    description='Reference an existing `local` cluster or select `new` to create a new one. '
+    'Use this only when the `--deployment-type=local`',
     conditional_check=lambda user_inp: user_inp.deployment_type == 'local',
     post_func=lambda user_input, **kwargs: _setup_cluster(user_input, **kwargs),
 )
@@ -238,7 +239,6 @@ SECURED = DialogOptions(
         {'name': '✅ yes', 'value': True},
         {'name': '⛔ no', 'value': False},
     ],
-    is_terminal_command=False,
     depends_on=DEPLOYMENT_TYPE,
     conditional_check=lambda user_inp: user_inp.deployment_type == 'remote',
 )
@@ -251,7 +251,6 @@ ADDITIONAL_USERS = DialogOptions(
         {'name': '✅ yes', 'value': True},
         {'name': '⛔ no', 'value': False},
     ],
-    is_terminal_command=False,
     depends_on=SECURED,
     conditional_check=lambda user_inp: user_inp.secured,
 )
@@ -272,10 +271,10 @@ def _check_if_existing():
     return 'nowapi' in [item.metadata.name for item in v1.list_namespace().items]
 
 
-def _construct_app(app: str, user_input: UserInput = None, **kwargs):
+def _construct_app(jina_app: str, user_input: UserInput = None, **kwargs):
     app_instance = getattr(
-        importlib.import_module(f'now.apps.{app}.app'),
-        f'{to_camel_case(app)}',
+        importlib.import_module(f'now.apps.{jina_app}.app'),
+        f'{to_camel_case(jina_app)}',
     )()
 
     if user_input:
