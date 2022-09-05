@@ -3,20 +3,22 @@
 `checkbox` type question
 """
 from prompt_toolkit.application import Application
-from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.filters import IsDone
+from prompt_toolkit.key_binding import KeyBindings
+from prompt_toolkit.layout import Layout
+from prompt_toolkit.layout.containers import (
+    ConditionalContainer,
+    HSplit,
+    ScrollOffsets,
+    Window,
+    WindowAlign,
+)
 from prompt_toolkit.layout.controls import FormattedTextControl
-from prompt_toolkit.layout.containers import ConditionalContainer, \
-    ScrollOffsets, HSplit, Window, WindowAlign
 from prompt_toolkit.layout.dimension import LayoutDimension as D
 
-from prompt_toolkit.layout import Layout
-
-
-from . import PromptParameterException
 from ..separator import Separator
-from .common import setup_simple_validator, default_style, if_mousedown
-
+from . import PromptParameterException
+from .common import default_style, if_mousedown, setup_simple_validator
 
 # custom control based on FormattedTextControl
 

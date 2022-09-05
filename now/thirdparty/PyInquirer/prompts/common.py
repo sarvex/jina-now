@@ -2,9 +2,9 @@
 """
 common prompt functionality
 """
-from prompt_toolkit.validation import Validator, ValidationError
-from prompt_toolkit.styles import Style
 from prompt_toolkit.mouse_events import MouseEventType
+from prompt_toolkit.styles import Style
+from prompt_toolkit.validation import ValidationError, Validator
 
 
 def if_mousedown(handler):

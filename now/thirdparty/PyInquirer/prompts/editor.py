@@ -5,12 +5,12 @@
 import inspect
 import os
 import sys
-from prompt_toolkit.shortcuts import PromptSession
-from prompt_toolkit.validation import Validator, ValidationError
+
 from prompt_toolkit.lexers import SimpleLexer
+from prompt_toolkit.shortcuts import PromptSession
+from prompt_toolkit.validation import ValidationError, Validator
 
 from .common import default_style
-
 
 # use std prompt-toolkit control
 

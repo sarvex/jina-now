@@ -3,6 +3,7 @@
 provide colorized output
 """
 import sys
+
 from prompt_toolkit.shortcuts import print_tokens
 
 

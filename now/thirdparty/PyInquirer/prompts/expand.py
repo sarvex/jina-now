@@ -3,19 +3,16 @@
 `expand` type question
 """
 from prompt_toolkit.application import Application
-from prompt_toolkit.key_binding import KeyBindings
-from prompt_toolkit.layout.containers import Window
 from prompt_toolkit.filters import IsDone
+from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.layout import Layout
+from prompt_toolkit.layout.containers import ConditionalContainer, HSplit, Window
 from prompt_toolkit.layout.controls import FormattedTextControl
-from prompt_toolkit.layout.containers import ConditionalContainer, HSplit
 from prompt_toolkit.layout.dimension import LayoutDimension as D
 
-from . import PromptParameterException
 from ..separator import Separator
-from .common import default_style
-from .common import if_mousedown
-
+from . import PromptParameterException
+from .common import default_style, if_mousedown
 
 # custom control based on FormattedTextControl
 

@@ -3,9 +3,10 @@
 `input` type question
 """
 import inspect
-from prompt_toolkit.shortcuts import prompt
-from prompt_toolkit.validation import Validator, ValidationError
+
 from prompt_toolkit.lexers import SimpleLexer
+from prompt_toolkit.shortcuts import prompt
+from prompt_toolkit.validation import ValidationError, Validator
 
 from .common import default_style
 

@@ -10,7 +10,7 @@ def format_json(data):
 
 def colorize_json(data):
     try:
-        from pygments import highlight, lexers, formatters
+        from pygments import formatters, highlight, lexers
         if isinstance(data, bytes):
             data = data.decode('UTF-8')
         colorful_json = highlight(data,
