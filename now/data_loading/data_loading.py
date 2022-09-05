@@ -2,6 +2,7 @@ import base64
 import json
 import os
 import uuid
+from collections import defaultdict
 from copy import deepcopy
 from pathlib import Path
 
@@ -34,12 +35,10 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
         elif user_input.custom_dataset_type == DatasetTypes.PATH:
             print('💿  Loading files from disk')
             da = _load_from_disk(app, user_input)
-            if any([doc.uri.endswith('.json') for doc in da]):
-                da = _load_tags_from_json(da, user_input)
+            da = _load_tags_from_json_if_needed(da, user_input)
         elif user_input.custom_dataset_type == DatasetTypes.S3_BUCKET:
             da = _list_files_from_s3_bucket(app=app, user_input=user_input)
-            if any([doc.uri.endswith('.json') for doc in da]):
-                da = _load_tags_from_json(da, user_input)
+            da = _load_tags_from_json_if_needed(da, user_input)
     else:
         print('⬇  Download DocArray dataset')
         url = get_dataset_url(user_input.data, app.output_modality)
@@ -81,47 +80,57 @@ def _open_s3_json(path: str, user_input: UserInput):
     return json.loads(response['Body'].read())
 
 
-def _load_tags_from_json(da: DocumentArray, user_input: UserInput):
+def select_ending(files, endings):
+    for file in files:
+        for ending in endings:
+            if file.endswith(ending):
+                return file
+    return None
 
-    print('Loading tags!')
-    dic = {}
-    ids_to_delete = []
-    files_in_same_folder = []
-    for i, d in enumerate(da):
+
+def merge_documents(user_input, content_file, json_file):
+    if json_file:
+        if user_input.dataset_path.startswith('s3://'):
+            tags = _open_s3_json(json_file, user_input)
+        else:
+            tags = _open_json(json_file)
+    else:
+        tags = {}
+    return Document(uri=content_file, tags=tags)
+
+
+def _load_tags_from_json_if_needed(da: DocumentArray, user_input: UserInput):
+    if any([doc.uri.endswith('.json') for doc in da]):
+        return _load_tags_from_json(da, user_input)
+    else:
+        return da
+
+
+def _load_tags_from_json(da, user_input):
+    print(
+        f'Loading tags! We assume that you have a folder for each document. The folder contains a content file (image, text, video, ...) and a json file containing the tags'
+    )
+    # map folders to all files they contain
+    folder_to_files = defaultdict(list)
+    for d in da:
         folder = d.uri.rsplit('/', 1)[0]
-        file_extension = d.uri.split('.')[-1]
-        if file_extension in [
-            wildcard.split('.')[-1] for wildcard in user_input.app.supported_wildcards
-        ]:
-            if folder not in dic:
-                dic[folder] = i
-            else:
-                files_in_same_folder.append(i)
+        folder_to_files[folder].append(d.uri)
+    merged_documents = []
+    for _, files in folder_to_files.items():
+        document = get_document(files, user_input)
+        if document:
+            merged_documents.append(document)
+    return DocumentArray(merged_documents)
 
-    if len(files_in_same_folder) > 0:
-        print('Files with the same modality are found within the same folder!')
-        print(
-            'Printing first 5 ids:',
-            ', '.join(str(id) for id in files_in_same_folder[:5]),
-        )
 
-    for i, d in enumerate(da):
-        folder = d.uri.rsplit('/', 1)[0]
-        if d.uri.split('.')[-1] not in [
-            wildcard.split('.')[-1] for wildcard in user_input.app.supported_wildcards
-        ]:
-            ids_to_delete.append(i)
-        if d.uri.endswith('.json') and folder in dic:
-            if user_input.dataset_path.startswith('s3://'):
-                data = _open_s3_json(d.uri, user_input)
-            else:
-                data = _open_json(d.uri)
-            for tag, value in data['tags'].items():
-                da[dic[folder]].tags[tag] = value['slug']
-    if len(ids_to_delete) > 0:
-        del da[ids_to_delete]
-
-    return da
+def get_document(files, user_input):
+    # json and content have to exist
+    json_file = select_ending(files, ['json'])
+    content_file = select_ending(files, user_input.app.supported_file_types)
+    if not content_file:
+        return None
+    document = merge_documents(user_input, content_file, json_file)
+    return document
 
 
 def _pull_docarray(dataset_name: str):
@@ -139,6 +148,13 @@ def _load_to_datauri_and_save_into_tags(d: Document) -> Document:
     return d.convert_uri_to_datauri()
 
 
+def match_types(uri, supported_file_types):
+    for t in supported_file_types:
+        if t == '**' or uri.split('.')[-1] == t:
+            return True
+    return False
+
+
 def _load_from_disk(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
     dataset_path = user_input.dataset_path.strip()
     if os.path.isfile(dataset_path):
@@ -152,8 +168,9 @@ def _load_from_disk(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
             sigmap=sigmap, text="Loading data from folder", color="green"
         ) as spinner:
             spinner.ok('🏭')
-            docs = DocumentArray.from_files(
-                [f"{dataset_path}/{wild_card}" for wild_card in app.supported_wildcards]
+            docs = DocumentArray.from_files(f'{dataset_path}/**')
+            docs = DocumentArray(
+                d for d in docs if match_types(d.uri, app.supported_file_types)
             )
             docs.apply(_load_to_datauri_and_save_into_tags)
             return docs
@@ -188,10 +205,10 @@ def _list_files_from_s3_bucket(app: JinaNOWApp, user_input: UserInput) -> Docume
     ) as spinner:
         spinner.ok('🏭')
         for obj in list(bucket.objects.filter(Prefix=folder_prefix)):
-            if app.supported_wildcards[0] == '**':
+            if app.supported_file_types[0] == '**':
                 docs.append(Document(uri=f"s3://{bucket.name}/{obj.key}"))
             else:
-                for wild_card in app.supported_wildcards:
+                for wild_card in app.supported_file_types:
                     _postfix = wild_card.split('*')[-1]
                     if str(obj.key).endswith(_postfix):
                         docs.append(Document(uri=f"s3://{bucket.name}/{obj.key}"))
@@ -229,9 +246,9 @@ def _download_from_s3_bucket(app: JinaNOWApp, user_input: UserInput) -> Document
         spinner.ok('🏭')
 
         for obj in list(bucket.objects.filter(Prefix=folder_prefix)):
-            if app.supported_wildcards[0] != '**':
+            if app.supported_file_types[0] != '**':
                 matches_postfix = False
-                for wild_card in app.supported_wildcards:
+                for wild_card in app.supported_file_types:
                     _postfix = wild_card.split('*')[-1]
                     if str(obj.key).endswith(_postfix):
                         matches_postfix = True
@@ -245,7 +262,7 @@ def _download_from_s3_bucket(app: JinaNOWApp, user_input: UserInput) -> Document
             bucket.download_file(obj.key, path_obj_machine)
 
         docs = DocumentArray.from_files(
-            [f"{data_dir}/{wild_card}" for wild_card in app.supported_wildcards]
+            [f"{data_dir}/{wild_card}" for wild_card in app.supported_file_types]
         )
         docs.apply(_load_to_datauri_and_save_into_tags)
         return docs
