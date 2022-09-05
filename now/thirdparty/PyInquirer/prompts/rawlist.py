@@ -16,6 +16,7 @@ from .common import default_style, if_mousedown
 
 # custom control based on FormattedTextControl
 
+
 class InquirerControl(FormattedTextControl):
     def __init__(self, choices, **kwargs):
         self.pointer_index = 0
@@ -52,7 +53,7 @@ class InquirerControl(FormattedTextControl):
             else:
                 key = line[0]
                 line = line[1]
-                pointed_at = (index == self.pointer_index)
+                pointed_at = index == self.pointer_index
 
                 @if_mousedown
                 def select_item(mouse_event):
@@ -60,11 +61,11 @@ class InquirerControl(FormattedTextControl):
                     self.pointer_index = index
 
                 if pointed_at:
-                    tokens.append(('class:selected', '  %d) %s' % (key, line),
-                                   select_item))
+                    tokens.append(
+                        ('class:selected', '  %d) %s' % (key, line), select_item)
+                    )
                 else:
-                    tokens.append(('', '  %d) %s' % (key, line),
-                                   select_item))
+                    tokens.append(('', '  %d) %s' % (key, line), select_item))
 
                 tokens.append(('', '\n'))
 
@@ -85,7 +86,7 @@ def question(message, **kwargs):
         raise PromptParameterException('choices')
     # this does not implement default, use checked...
     # TODO
-    #if 'default' in kwargs:
+    # if 'default' in kwargs:
     #    raise ValueError('rawlist does not implement \'default\' '
     #                     'use \'checked\':True\' in choice!')
     qmark = kwargs.pop('qmark', '?')
@@ -108,15 +109,12 @@ def question(message, **kwargs):
         return tokens
 
     # assemble layout
-    layout = HSplit([
-        Window(height=D.exact(1),
-               content=FormattedTextControl(get_prompt_tokens)
-        ),
-        ConditionalContainer(
-            Window(ic),
-            filter=~IsDone()
-        )
-    ])
+    layout = HSplit(
+        [
+            Window(height=D.exact(1), content=FormattedTextControl(get_prompt_tokens)),
+            ConditionalContainer(Window(ic), filter=~IsDone()),
+        ]
+    )
 
     # key bindings
     kb = KeyBindings()
@@ -129,12 +127,14 @@ def question(message, **kwargs):
     # add key bindings for choices
     for i, c in enumerate(ic.choices):
         if not isinstance(c, Separator):
+
             def _reg_binding(i, keys):
                 # trick out late evaluation with a "function factory":
                 # http://stackoverflow.com/questions/3431676/creating-functions-in-a-loop
                 @kb.add(keys, eager=True)
                 def select_choice(event):
                     ic.pointer_index = i
+
             _reg_binding(i, '%d' % c[0])
 
     @kb.add('enter', eager=True)
@@ -143,8 +143,5 @@ def question(message, **kwargs):
         event.app.exit(result=ic.get_selected_value())
 
     return Application(
-        layout=Layout(layout),
-        key_bindings=kb,
-        mouse_support=True,
-        style=style
+        layout=Layout(layout), key_bindings=kb, mouse_support=True, style=style
     )
