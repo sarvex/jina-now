@@ -10,7 +10,7 @@ from jina import Document, DocumentArray, Executor, requests
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import Apps, DatasetTypes, Modalities
-
+from now.dialog import _construct_app
 from now.now_dataclasses import UserInput
 
 
@@ -24,8 +24,6 @@ class NOWPreprocessor(Executor):
     """
 
     def __init__(self, app: str, max_workers: int = 15, **kwargs):
-        from now.dialog import _construct_app
-
         super().__init__(**kwargs)
 
         self.app: JinaNOWApp = _construct_app(app)
