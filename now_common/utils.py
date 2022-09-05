@@ -4,7 +4,7 @@ from os.path import expanduser as user
 from typing import Dict, Optional
 
 import hubble
-from docarray import DocumentArray
+from docarray import DocumentArray, Document
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import NOW_PREPROCESSOR_VERSION, PREFETCH_NR
