@@ -29,25 +29,22 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
         if user_input.custom_dataset_type == DatasetTypes.DOCARRAY:
             print('⬇  Pull DocArray dataset')
             da = _pull_docarray(user_input.dataset_name)
-            tags = _extract_tags_annlite(da)
         elif user_input.custom_dataset_type == DatasetTypes.URL:
             print('⬇  Pull DocArray dataset')
             da = _fetch_da_from_url(user_input.dataset_url)
-            tags = _extract_tags_annlite
         elif user_input.custom_dataset_type == DatasetTypes.PATH:
             print('💿  Loading files from disk')
             da = _load_from_disk(app, user_input)
             if any([doc.uri.endswith('.json') for doc in da]):
-                da, tags = _load_tags_from_json(da, user_input)
+                da = _load_tags_from_json(da, user_input)
         elif user_input.custom_dataset_type == DatasetTypes.S3_BUCKET:
             da = _list_files_from_s3_bucket(app=app, user_input=user_input)
             if any([doc.uri.endswith('.json') for doc in da]):
-                da, tags = _load_tags_from_json(da, user_input)
+                da = _load_tags_from_json(da, user_input)
     else:
         print('⬇  Download DocArray dataset')
         url = get_dataset_url(user_input.data, app.output_modality)
         da = _fetch_da_from_url(url)
-        tags = _extract_tags_annlite(da)
         da[:, 'embedding'] = None
     if da is None:
         raise ValueError(
@@ -60,6 +57,7 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
             da = da[:600]
         else:
             da = da[:1000]
+    tags = _extract_tags_annlite(da)
     return da, tags
 
 
@@ -72,7 +70,6 @@ def _open_json(path: str):
 def _extract_tags_annlite(da: DocumentArray):
     tags = set()
     if any([len(doc.tags.keys()) > 0 for doc in da]):
-
         for doc in da:
             if len(doc.tags.keys()) > 0:
                 for tag, _ in doc.tags.items():
@@ -105,7 +102,6 @@ def _load_tags_from_json(da: DocumentArray, user_input: UserInput):
     dic = {}
     ids_to_delete = []
     files_in_same_folder = []
-    tags = set()
     for i, d in enumerate(da):
         folder = d.uri.rsplit('/', 1)[0]
         file_extension = d.uri.split('.')[-1]
@@ -137,14 +133,10 @@ def _load_tags_from_json(da: DocumentArray, user_input: UserInput):
                 data = _open_json(d.uri)
             for tag, value in data['tags'].items():
                 da[dic[folder]].tags[tag] = value['slug']
-                tags.add((tag, str(tag.__class__.__name__)))
     if len(ids_to_delete) > 0:
         del da[ids_to_delete]
-    final_tags = list(tags)
-    for i, el in enumerate(final_tags):
-        final_tags[i] = list(el)
 
-    return da, final_tags
+    return da
 
 
 def _pull_docarray(dataset_name: str):
