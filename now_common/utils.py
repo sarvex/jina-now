@@ -163,8 +163,7 @@ def get_indexer_config(num_indexed_samples: int) -> Dict:
 def _extract_tags_annlite(da: DocumentArray):
     tags = set()
     for doc in da:
-        if len(doc.tags.keys()) > 0:
-            for tag, _ in doc.tags.items():
-                tags.add((tag, str(tag.__class__.__name__)))
+        for tag, _ in doc.tags.items():
+            tags.add((tag, str(tag.__class__.__name__)))
     final_tags = [list(tag) for tag in tags]
     return final_tags
