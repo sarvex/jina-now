@@ -2,7 +2,8 @@ import os
 from typing import Dict, List
 
 from docarray import DocumentArray
-from now_common.utils import common_setup, get_indexer_config, preprocess_text
+from now_common.preprocess import preprocess_text
+from now_common.utils import common_setup, get_indexer_config
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import Apps, DatasetTypes, Modalities

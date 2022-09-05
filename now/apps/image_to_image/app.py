@@ -2,7 +2,8 @@ import os
 from typing import Dict, List, Tuple
 
 from docarray import DocumentArray
-from now_common.utils import common_setup, get_indexer_config, preprocess_images
+from now_common.preprocess import preprocess_images
+from now_common.utils import common_setup, get_indexer_config
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import CLIP_USES, Apps, DemoDatasets, Modalities
