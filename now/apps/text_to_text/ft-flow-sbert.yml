@@ -55,6 +55,7 @@ executors:
     uses: ${{ ENV.INDEXER_NAME }}
     uses_with:
       n_dim: ${{ ENV.PRE_TRAINED_EMBEDDINGS_SIZE }}
+      columns: ${{ ENV.COLUMNS }}
     jcloud:
       capacity: on-demand
       resources:

@@ -1,7 +1,7 @@
 import json
 import os
 from os.path import expanduser as user
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 import hubble
 from docarray import DocumentArray
@@ -22,6 +22,7 @@ def common_get_flow_env_dict(
     indexer_uses: str,
     indexer_resources: Dict,
     user_input: UserInput,
+    tags: List,
 ):
     """Returns dictionary for the environments variables for the clip & music flow.yml files."""
     if (
@@ -37,6 +38,7 @@ def common_get_flow_env_dict(
         'PREFETCH': PREFETCH_NR,
         'PREPROCESSOR_NAME': f'jinahub+docker://NOWPreprocessor/v{NOW_PREPROCESSOR_VERSION}',
         'APP': user_input.app,
+        'COLUMNS': tags,
         **encoder_with,
         **indexer_resources,
     }
@@ -78,7 +80,7 @@ def common_setup(
         dataset=dataset,
         finetune_datasets=app_instance.finetune_datasets,
     )
-
+    tags = _extract_tags_annlite(dataset)
     env_dict = common_get_flow_env_dict(
         finetune_settings=finetune_settings,
         encoder_uses=encoder_uses,
@@ -88,6 +90,7 @@ def common_setup(
         indexer_uses=indexer_uses,
         indexer_resources=indexer_resources,
         user_input=user_input,
+        tags=tags,
     )
 
     if finetune_settings.perform_finetuning:
@@ -141,13 +144,13 @@ def get_indexer_config(num_indexed_samples: int) -> Dict:
 
     :param num_indexed_samples: number of samples which will be indexed; should incl. chunks for e.g. text-to-video app
     """
-    config = {'indexer_uses': 'AnnLiteNOWIndexer2/0.3.0'}
+    config = {'indexer_uses': 'AnnLiteNOWIndexer3/0.0.5'}
     threshold1 = 50_000
     threshold2 = 250_000
     if 'NOW_CI_RUN' in os.environ:
         threshold1 = 1_500
     if num_indexed_samples <= threshold1:
-        config['indexer_uses'] = 'DocarrayIndexerV2'
+        config['indexer_uses'] = 'DocarrayIndexerV3/v1.0.1'
         config['indexer_resources'] = {'INDEXER_CPU': 0.1, 'INDEXER_MEM': '2G'}
     elif num_indexed_samples <= threshold2:
         config['indexer_resources'] = {'INDEXER_CPU': 0.1, 'INDEXER_MEM': '2G'}
@@ -155,3 +158,12 @@ def get_indexer_config(num_indexed_samples: int) -> Dict:
         config['indexer_resources'] = {'INDEXER_CPU': 1.0, 'INDEXER_MEM': '4G'}
 
     return config
+
+
+def _extract_tags_annlite(da: DocumentArray):
+    tags = set()
+    for doc in da:
+        for tag, _ in doc.tags.items():
+            tags.add((tag, str(tag.__class__.__name__)))
+    final_tags = [list(tag) for tag in tags]
+    return final_tags
