@@ -98,9 +98,7 @@ jobs:
           filters: |
             has_preprocessing_changed:
             - 'now/apps/**'
-            - 'now/data_loading/data_loading.py'
-            - 'now_common/utils.py'
-            - 'now/constants.py'
+            - 'now_common/preprocess.py'
             - 'now_executors/NOWPreprocessor/**'
       - name: Get preprocessor tag
         if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
