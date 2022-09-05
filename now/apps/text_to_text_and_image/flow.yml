@@ -1,5 +1,14 @@
 jtype: Flow
 executors:
+- name: preprocessor
+  uses: ${{ ENV.PREPROCESSOR_NAME }}
+  uses_with:
+    app: ${{ ENV.APP }}
+  jcloud:
+    resources:
+      memory: 1G
+  env:
+    JINA_LOG_LEVEL: DEBUG
 - name: sbert_encoder
   uses: jinahub+docker://FinetunerExecutor
   uses_requests:
