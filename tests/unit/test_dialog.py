@@ -162,6 +162,7 @@ def test_configure_user_input(
     expected_user_input = UserInput()
     expected_user_input.__dict__.update(mocked_user_answers)
     expected_user_input.__dict__.update(configure_kwargs)
+    expected_user_input.__dict__.pop('app')
     mocker.patch('now.utils.prompt', CmdPromptMock(mocked_user_answers))
 
     user_input = configure_user_input(**configure_kwargs)
