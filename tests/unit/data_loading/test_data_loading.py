@@ -10,12 +10,9 @@ from now.apps.music_to_music.app import MusicToMusic
 from now.apps.text_to_image.app import TextToImage
 from now.apps.text_to_text.app import TextToText
 from now.constants import DatasetTypes, DemoDatasets
-from now.data_loading.data_loading import (
-    _extract_tags_annlite,
-    _load_tags_from_json,
-    load_data,
-)
+from now.data_loading.data_loading import _load_tags_from_json, load_data
 from now.now_dataclasses import UserInput
+from now.run_backend import _extract_tags_annlite
 
 
 @pytest.fixture()
@@ -62,7 +59,7 @@ def test_da_pull(da: DocumentArray):
     user_input.custom_dataset_type = DatasetTypes.DOCARRAY
     user_input.dataset_name = 'secret-token'
 
-    loaded_da, _ = load_data(TextToImage(), user_input)
+    loaded_da = load_data(TextToImage(), user_input)
 
     assert is_da_text_equal(da, loaded_da)
 
@@ -74,7 +71,7 @@ def test_da_local_path(local_da: DocumentArray):
     user_input.custom_dataset_type = DatasetTypes.PATH
     user_input.dataset_path = path
 
-    loaded_da, _ = load_data(TextToText(), user_input)
+    loaded_da = load_data(TextToText(), user_input)
 
     assert is_da_text_equal(da, loaded_da)
 
@@ -86,7 +83,7 @@ def test_da_local_path_image_folder(image_resource_path: str):
     user_input.dataset_path = image_resource_path
 
     app = TextToImage()
-    loaded_da, _ = load_data(app, user_input)
+    loaded_da = load_data(app, user_input)
     loaded_da = app.preprocess(da=loaded_da, user_input=user_input, is_indexing=True)
 
     assert len(loaded_da) == 2, (
@@ -104,7 +101,7 @@ def test_da_local_path_music_folder(music_resource_path: str):
     user_input.dataset_path = music_resource_path
 
     app = MusicToMusic()
-    loaded_da, _ = load_data(app, user_input)
+    loaded_da = load_data(app, user_input)
     loaded_da = app.preprocess(da=loaded_da, user_input=user_input)
 
     assert len(loaded_da) == 2, (

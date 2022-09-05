@@ -24,7 +24,6 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
     :return: The loaded DocumentArray.
     """
     da = None
-    tags = []
     if user_input.is_custom_dataset:
         if user_input.custom_dataset_type == DatasetTypes.DOCARRAY:
             print('⬇  Pull DocArray dataset')
@@ -57,27 +56,13 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
             da = da[:600]
         else:
             da = da[:1000]
-    tags = _extract_tags_annlite(da)
-    return da, tags
+    return da
 
 
 def _open_json(path: str):
     with open(path, 'r') as f:
         data = json.load(f)
     return data
-
-
-def _extract_tags_annlite(da: DocumentArray):
-    tags = set()
-    if any([len(doc.tags.keys()) > 0 for doc in da]):
-        for doc in da:
-            if len(doc.tags.keys()) > 0:
-                for tag, _ in doc.tags.items():
-                    tags.add((tag, str(tag.__class__.__name__)))
-    final_tags = list(tags)
-    for i, el in enumerate(final_tags):
-        final_tags[i] = list(el)
-    return final_tags
 
 
 def _open_s3_json(path: str, user_input: UserInput):
