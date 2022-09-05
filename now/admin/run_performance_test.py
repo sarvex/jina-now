@@ -6,18 +6,22 @@ from now.constants import Apps
 
 
 def call(client, use_bff):
-    if not use_bff:
-        return client.send_request(
-            '/search',
-            text='girl on a motorbike',
-            limit=60,
-        )
+    if use_bff:
+        send_fn = client.send_request_bff
+        end_point = 'text-to-video/search'
     else:
-        return client.send_request_bff(
-            'text-to-video/search',
-            text='girl on a motorbike',
-            limit=60,
-        )
+        send_fn = client.send_request
+        end_point = '/search'
+    start = time()
+
+    try:
+        send_fn(endpoint=end_point, text='girl on a motorbike', limit=60)
+    except Exception as e:
+        import traceback
+
+        traceback.print_stack()
+    dif = time() - start
+    return dif
 
 
 def benchmark_deployment(jcloud_id, api_key):
@@ -58,5 +62,5 @@ def benchmark_deployment(jcloud_id, api_key):
         print('\n')
 
 
-for jcloud_id, api_key in [('', ''), ('', '')]:
-    benchmark_deployment(jcloud_id=jcloud_id, api_key=api_key)
+if __name__ == '__main__':
+    benchmark_deployment(jcloud_id='jcloud_id', api_key='api_key')

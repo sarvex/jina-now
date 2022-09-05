@@ -1,7 +1,9 @@
+import json
 import re
-import time
 
 import requests
+from jina.serve.runtimes.gateway.http.models import JinaResponseModel
+from pydantic import parse_obj_as
 
 from deployment.bff.app.v1.routers.helper import jina_client_post
 from now.dialog import _construct_app
@@ -41,12 +43,11 @@ class Client:
             "api_key": self.api_key,
             **kwargs,
         }
-        t0 = time.time()
         response = requests.post(
             f'https://nowrun.jina.ai/api/v1/{endpoint}',
             json=request_body,
         )
-        return time.time() - t0
+        return response
 
     def send_request(self, endpoint: str, **kwargs):
         """
@@ -63,26 +64,16 @@ class Client:
             **kwargs,
         )
         jina_request = request_map(app_request)
-        return jina_client_post(
+        jina_response = jina_client_post(
             app_request,
             endpoint,
             jina_request.data,
             jina_request.parameters,
         )
-        # jina_response_model = JinaResponseModel()
-        # jina_response_model.data = jina_response
-        # app_response = response_map(app_request, jina_response_model)
-        # parsed_response = json.loads(parse_obj_as(response_model, app_response).json())
-        # if '__root__' in parsed_response:
-        #     parsed_response = parsed_response['__root__']
-        # return parsed_response
-
-
-# if __name__ == '__main__':
-#     client = Client(jcloud_id='...', app=Apps.TEXT_TO_VIDEO, api_key='...')
-#     result = client.send_request(
-#         '/search',
-#         text='girl on a motorbike',
-#         limit=60,
-#     )
-#     print(result)
+        jina_response_model = JinaResponseModel()
+        jina_response_model.data = jina_response
+        app_response = response_map(app_request, jina_response_model)
+        parsed_response = json.loads(parse_obj_as(response_model, app_response).json())
+        if '__root__' in parsed_response:
+            parsed_response = parsed_response['__root__']
+        return parsed_response
