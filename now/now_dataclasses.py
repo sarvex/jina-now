@@ -113,8 +113,6 @@ class UserInput(BaseModel):
     admin_emails: Optional[List[str]] = None
     user_emails: Optional[List[str]] = None
     additional_user: Optional[bool] = False
-    os_type: Optional[str] = None
-    arch: Optional[str] = None
 
     class Config:
         arbitrary_types_allowed = True

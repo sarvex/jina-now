@@ -151,19 +151,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'app': Apps.TEXT_TO_IMAGE,
-            'data': 'tll',
-            'deployment_type': 'remote',
-            'secured': False,
-        },
-        {'os_type': 'darwin', 'arch': 'x86_64'},
-        UserInput(
-            is_custom_dataset=False,
-            secured=False,
-        ),
-    ),
-    (
-        {
             'data': 'music-genres-mid',
             'cluster': 'new',
             'deployment_type': 'local',
