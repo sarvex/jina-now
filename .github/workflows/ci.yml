@@ -131,6 +131,49 @@ jobs:
           NOW_PREPROCESSOR_VERSION: ${{ env.NOW_PREPROCESSOR_VERSION }}
         run: JINA_AUTH_TOKEN=${{ secrets.NOW_PREPROCESSOR_JCLOUD_TOKEN }} jina hub push --verbose --force-update NOWPreprocessor now_executors/NOWPreprocessor/. -t latest --protected-tag v$NOW_PREPROCESSOR_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
 
+  update-auth-executor-if-required:
+    runs-on: ubuntu-latest
+    needs: [commit-lint, lint-flake-8, check-black]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Check if executor has changed
+        uses: dorny/paths-filter@v2
+        id: check_has_executor_changed
+        with:
+          filters: |
+            has_changed:
+            - 'now_executors/NOWAuthExecutor/**'
+      - name: Get executor tag
+        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
+        run: |
+          FILE='now/constants.py'
+          NOW_AUTH_EXECUTOR_VERSION=$(sed -n '/NOW_AUTH_EXECUTOR_VERSION =/p' $FILE | cut -d \' -f2)
+          echo "NOW_AUTH_EXECUTOR_VERSION=$NOW_AUTH_EXECUTOR_VERSION" >> $GITHUB_ENV
+      - name: Set up Python 3.7
+        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+      - name: Pip install jina
+        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
+        run: pip install "jina[perf]==3.7.0"
+      - name: Check that tag isn't used already for executor
+        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
+        env:
+          NOW_AUTH_EXECUTOR_VERSION: ${{ env.NOW_AUTH_EXECUTOR_VERSION }}
+        run: |
+          if jina hub pull jinahub+docker://1xehat8u/v$NOW_AUTH_EXECUTOR_VERSION; then
+            echo "NOW Auth Executor version is used already. Please update the tag"
+            exit 1
+          else
+            echo "NOW Auth Executor version isn't used already, continue to build..."
+          fi
+      - name: Build and push executor
+        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
+        env:
+          NOW_AUTH_EXECUTOR_VERSION: ${{ env.NOW_AUTH_EXECUTOR_VERSION }}
+        run: jina hub push --force-update NOWAuthExecutor now_executors/NOWAuthExecutor --secret ${{ secrets.NOW_AUTH_EXECUTOR_SECRET }} -t latest --protected-tag v$NOW_AUTH_EXECUTOR_VERSION
+
   update-bff-playground-if-required:
     runs-on: ubuntu-latest
     needs: [commit-lint, lint-flake-8, check-black]
@@ -198,7 +241,7 @@ jobs:
 
   core-test:
     runs-on: ubuntu-latest
-    needs: [update-preprocessor-if-required, update-bff-playground-if-required]
+    needs: [update-preprocessor-if-required, update-auth-executor-if-required, update-bff-playground-if-required]
     strategy:
       fail-fast: false
       matrix:
