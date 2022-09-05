@@ -6,10 +6,8 @@ the dialog won't ask for the value.
 """
 from __future__ import annotations, print_function, unicode_literals
 
+from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional, Union
-
-from pydantic import BaseModel
-from pydantic.dataclasses import dataclass
 
 from now.constants import Apps, DatasetTypes, Qualities
 
@@ -89,7 +87,8 @@ class Task:
     indexer_scope: Dict[str, str]
 
 
-class UserInput(BaseModel):
+@dataclass
+class UserInput:
     app: Optional[Apps] = None
     # data related
     data: Optional[str] = None
@@ -117,9 +116,6 @@ class UserInput(BaseModel):
     admin_emails: Optional[List[str]] = None
     user_emails: Optional[List[str]] = None
     additional_user: Optional[bool] = None
-
-    class Config:
-        arbitrary_types_allowed = True
 
 
 @dataclass
