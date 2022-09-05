@@ -9,6 +9,7 @@ from pytest_mock import MockerFixture
 from now.apps.music_to_music.app import MusicToMusic
 from now.apps.text_to_image.app import TextToImage
 from now.apps.text_to_text.app import TextToText
+from now.apps.text_to_text_and_image.app import TextToTextAndImage
 from now.constants import DatasetTypes, DemoDatasets
 from now.data_loading.data_loading import _load_tags_from_json_if_needed, load_data
 from now.now_dataclasses import UserInput
@@ -123,6 +124,22 @@ def test_da_custom_ds(da: DocumentArray):
 
     for doc in loaded_da:
         assert doc.blob != b''
+
+
+def test_es_online_shop_ds(da: DocumentArray):
+    user_input = UserInput()
+    user_input.is_custom_dataset = False
+    user_input.data = DemoDatasets.ES_ONLINE_SHOP_50
+    user_input.quality = None
+
+    app = TextToTextAndImage()
+    loaded_da = load_data(app, user_input)
+    loaded_da = app.preprocess(da=loaded_da, user_input=user_input)
+
+    for doc in loaded_da:
+        assert doc.chunks
+        assert doc.chunks[0].text
+        assert doc.chunks[1].uri
 
 
 @pytest.fixture

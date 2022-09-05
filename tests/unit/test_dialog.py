@@ -53,7 +53,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'app': Apps.TEXT_TO_IMAGE,
             'data': 'tll',
             'cluster': 'new',
-            'quality': 'good',
             'deployment_type': 'local',
         },
         {},
@@ -67,7 +66,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'app': Apps.TEXT_TO_IMAGE,
             'data': 'nih-chest-xrays',
             'cluster': 'new',
-            'quality': 'medium',
             'deployment_type': 'local',
         },
         {},
@@ -83,7 +81,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'custom_dataset_type': 'docarray',
             'dataset_name': 'xxx',
             'cluster': 'new',
-            'quality': 'medium',
             'deployment_type': 'local',
         },
         {},
@@ -143,7 +140,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'data': 'custom',
             'custom_dataset_type': 'docarray',
             'dataset_name': 'xxx',
-            'quality': 'medium',
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -151,20 +147,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
         UserInput(
             is_custom_dataset=True,
             create_new_cluster=True,
-        ),
-    ),
-    (
-        {
-            'app': Apps.TEXT_TO_IMAGE,
-            'data': 'tll',
-            'quality': 'good',
-            'deployment_type': 'remote',
-            'secured': False,
-        },
-        {'os_type': 'darwin', 'arch': 'x86_64'},
-        UserInput(
-            is_custom_dataset=False,
-            secured=False,
         ),
     ),
     (
@@ -185,7 +167,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'cluster': 'new',
             'deployment_type': 'local',
         },
-        {'app': Apps.TEXT_TO_IMAGE, 'quality': 'good'},
+        {'app': Apps.TEXT_TO_IMAGE},
         UserInput(
             is_custom_dataset=False,
             create_new_cluster=True,
@@ -197,7 +179,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'cluster': 'new',
             'deployment_type': 'local',
         },
-        {'app': Apps.IMAGE_TO_TEXT, 'quality': 'good'},
+        {'app': Apps.IMAGE_TO_TEXT},
         UserInput(
             is_custom_dataset=False,
             create_new_cluster=True,
@@ -211,7 +193,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'data': DemoDatasets.POP_LYRICS,
             'cluster': 'new',
             'deployment_type': 'local',
-            'quality': 'medium',
         },
         UserInput(
             is_custom_dataset=False,
