@@ -6,8 +6,10 @@ the dialog won't ask for the value.
 """
 from __future__ import annotations, print_function, unicode_literals
 
-from dataclasses import dataclass
+import dataclasses
 from typing import Any, Callable, Dict, List, Optional, Union
+
+from pydantic.dataclasses import dataclass
 
 from now.constants import DatasetTypes, Qualities
 
@@ -29,6 +31,7 @@ class TrainDataGeneratorConfig:
     scope: List[str]
 
 
+@dataclass
 class TrainDataGenerationConfig:
     """
     Configuration of the training data generation for a bi-encoder
@@ -87,7 +90,7 @@ class Task:
     indexer_scope: Dict[str, str]
 
 
-@dataclass
+@dataclasses.dataclass
 class UserInput:
     app_instance: Optional['JinaNOWApp'] = None
     # data related
