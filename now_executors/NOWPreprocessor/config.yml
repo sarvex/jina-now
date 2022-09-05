@@ -1,0 +1,4 @@
+jtype: NOWPreprocessor
+metas:
+  py_modules:
+    - executor.py

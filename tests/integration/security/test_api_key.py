@@ -32,7 +32,7 @@ def get_flow():
     f = (
         Flow(port_expose=9090)
         .add(
-            uses=f'jinahub+docker://AuthExecutor2/{NOW_AUTH_EXECUTOR_VERSION}',
+            uses=f'jinahub+docker://NOWAuthExecutor/v{NOW_AUTH_EXECUTOR_VERSION}',
             uses_with={
                 'admin_emails': [user_id],
                 'user_emails': [],

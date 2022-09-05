@@ -1,0 +1,4 @@
+manifest_version: 1
+name: CastNMoveNowExecutor
+description: If a document has an embedding attribute, it moves it to the tensor attribute and casts it to torch.Tensor. Also pads the document if it doesn't fit the size.
+

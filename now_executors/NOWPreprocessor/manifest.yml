@@ -1,0 +1,3 @@
+manifest_version: 1
+name: NOWPreprocessor
+description: Applies preprocessing to documents for encoding, indexing and searching as defined by Jina NOW app.

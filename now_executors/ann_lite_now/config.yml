@@ -1,0 +1,5 @@
+jtype: AnnLiteNOWIndexer2
+metas:
+  py_modules:
+    - executor.py
+  workspace: workspace/
