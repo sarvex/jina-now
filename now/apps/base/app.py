@@ -180,12 +180,6 @@ class JinaNOWApp:
                 description=f'Create an {self.app_name} app.',
                 formatter_class=formatter,
             )
-            for option in self.options():
-                parser.add_argument(
-                    f'--{option.name}',
-                    help=option.description,
-                    type=str,
-                )
 
     def _check_requirements(self) -> bool:
         """

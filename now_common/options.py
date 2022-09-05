@@ -54,7 +54,9 @@ APP = DialogOptions(
     prompt_type='list',
     is_terminal_command=True,
     description='What sort of search engine would you like to build?',
-    post_func=lambda user_input, **kwargs: _construct_app(user_input, **kwargs),
+    post_func=lambda user_input, **kwargs: _construct_app(
+        user_input.app, user_input, **kwargs
+    ),
 )
 
 # ------------------------------------ #
@@ -270,11 +272,16 @@ def _check_if_existing():
     return 'nowapi' in [item.metadata.name for item in v1.list_namespace().items]
 
 
-def _construct_app(user_input: UserInput, **kwargs) -> None:
-    user_input.app_instance = getattr(
-        importlib.import_module(f'now.apps.{user_input.app}.app'),
-        f'{to_camel_case(user_input.app)}',
+def _construct_app(app: str, user_input: UserInput = None, **kwargs):
+    app_instance = getattr(
+        importlib.import_module(f'now.apps.{app}.app'),
+        f'{to_camel_case(app)}',
     )()
+
+    if user_input:
+        user_input.app_instance = app_instance
+
+    return app_instance
 
 
 @time_profiler
