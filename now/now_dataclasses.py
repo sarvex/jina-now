@@ -9,6 +9,7 @@ from __future__ import annotations, print_function, unicode_literals
 import dataclasses
 from typing import Any, Callable, Dict, List, Optional, Union
 
+from pydantic import BaseModel
 from pydantic.dataclasses import dataclass
 
 from now.constants import DatasetTypes, Qualities
@@ -90,8 +91,7 @@ class Task:
     indexer_scope: Dict[str, str]
 
 
-@dataclasses.dataclass
-class UserInput:
+class UserInput(BaseModel):
     app_instance: Optional['JinaNOWApp'] = None  # noqa: F821
     # data related
     data: Optional[str] = None
@@ -120,8 +120,11 @@ class UserInput:
     user_emails: Optional[List[str]] = None
     additional_user: Optional[bool] = None
 
+    class Config:
+        arbitrary_types_allowed = True
 
-@dataclass
+
+@dataclasses.dataclass
 class DialogOptions:
     name: str
     prompt_message: str
