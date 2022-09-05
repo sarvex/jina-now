@@ -15,7 +15,7 @@ from now.constants import Apps, DatasetTypes
 @dataclass
 class UserInput:
     app: Optional[Apps] = None
-    app_instance: Optional['JinaNOWApp'] = None
+    app_instance: Optional['JinaNOWApp'] = None  # noqa: F821
 
     # data related
     data: Optional[str] = None
