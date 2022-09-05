@@ -1,4 +1,3 @@
-import dataclasses
 import os
 import pathlib
 import random
@@ -52,7 +51,7 @@ def run(app_instance: JinaNOWApp, user_input: UserInput, kubectl_path: str):
 
     print(f"▶ indexing {len(dataset)} documents")
     params = {
-        'user_input': user_input.dict(),
+        'user_input': user_input.__dict__,
         'traversal_paths': app_instance.index_query_access_paths,
         'access_paths': app_instance.index_query_access_paths,
     }

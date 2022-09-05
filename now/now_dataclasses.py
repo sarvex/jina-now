@@ -9,7 +9,7 @@ from __future__ import annotations, print_function, unicode_literals
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional, Union
 
-from now.constants import Apps, DatasetTypes, Qualities
+from now.constants import DatasetTypes, Qualities
 
 
 @dataclass
@@ -89,7 +89,7 @@ class Task:
 
 @dataclass
 class UserInput:
-    app: Optional[Apps] = None
+    app_instance: Optional['JinaNOWApp'] = None
     # data related
     data: Optional[str] = None
     custom_dataset_type: Optional[DatasetTypes] = None

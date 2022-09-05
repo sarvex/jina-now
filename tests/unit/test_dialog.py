@@ -164,7 +164,7 @@ def test_configure_user_input(
     expected_user_input.__dict__.update(configure_kwargs)
     mocker.patch('now.utils.prompt', CmdPromptMock(mocked_user_answers))
 
-    _, user_input = configure_user_input(**configure_kwargs)
+    user_input = configure_user_input(**configure_kwargs)
 
     if user_input.deployment_type == 'remote':
         user_input.__dict__.update({'jwt': None, 'admin_emails': None})
