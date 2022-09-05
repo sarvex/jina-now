@@ -18,13 +18,13 @@ cur_dir = pathlib.Path(__file__).parent.resolve()
 AVAILABLE_SOON = 'will be available in upcoming versions'
 
 
-def configure_user_input(**kwargs) -> [JinaNOWApp, UserInput]:
+def configure_user_input(**kwargs) -> UserInput:
     print_headline()
 
     user_input = UserInput()
     _configure_app_options(user_input, **kwargs)
 
-    return user_input.app_instance, user_input
+    return user_input
 
 
 def _configure_app_options(user_input, **kwargs):

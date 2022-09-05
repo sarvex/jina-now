@@ -216,7 +216,7 @@ LOCAL_CLUSTER = DialogOptions(
     description='Reference an existing `local` cluster or select `new` to create a new one. '
     'Use this only when the `--deployment-type=local`',
     conditional_check=lambda user_inp: user_inp.deployment_type == 'local',
-    post_func=lambda user_input, **kwargs: _setup_cluster(user_input, **kwargs),
+    post_func=lambda user_input, **kwargs: _check_requirements(user_input, **kwargs),
 )
 
 PROCEED = DialogOptions(
@@ -228,7 +228,7 @@ PROCEED = DialogOptions(
         {'name': '✅ yes', 'value': True},
     ],
     depends_on=LOCAL_CLUSTER,
-    conditional_check=lambda user_input: _check_if_existing(),
+    conditional_check=lambda user_input: _check_if_namespace_exist(),
 )
 
 SECURED = DialogOptions(
@@ -265,7 +265,7 @@ USER_EMAILS = DialogOptions(
 )
 
 
-def _check_if_existing():
+def _check_if_namespace_exist():
     config.load_kube_config()
     v1 = client.CoreV1Api()
     return 'nowapi' in [item.metadata.name for item in v1.list_namespace().items]
@@ -284,7 +284,7 @@ def _construct_app(jina_app: str, user_input: UserInput = None, **kwargs):
 
 
 @time_profiler
-def _setup_cluster(user_input: UserInput, **kwargs) -> None:
+def _check_requirements(user_input: UserInput, **kwargs) -> None:
     user_input.app_instance.run_checks(user_input)
 
 

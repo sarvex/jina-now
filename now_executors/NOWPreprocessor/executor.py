@@ -213,7 +213,6 @@ if __name__ == '__main__':
     user_inpuT.output_modality = Modalities.VIDEO
     user_inpuT.app = app
     user_inpuT.data = 'custom'
-    user_inpuT.is_custom_dataset = True
     user_inpuT.custom_dataset_type = DatasetTypes.S3_BUCKET
     user_inpuT.dataset_path = 's3://bucket/folder'
 

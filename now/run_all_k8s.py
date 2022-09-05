@@ -100,7 +100,7 @@ def get_task(kwargs):
 
 
 def start_now(os_type, arch, contexts, active_context, **kwargs):
-    app_instance, user_input = configure_user_input(
+    user_input = configure_user_input(
         contexts=contexts,
         active_context=active_context,
         os_type=os_type,
@@ -108,6 +108,7 @@ def start_now(os_type, arch, contexts, active_context, **kwargs):
         **kwargs,
     )
 
+    app_instance = user_input.app_instance
     setup_cluster(user_input, **kwargs)
     (
         gateway_host,

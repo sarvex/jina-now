@@ -33,7 +33,6 @@ def test__text_to_video():
     user_inpuT.output_modality = Modalities.VIDEO
     user_inpuT.app = app
     user_inpuT.data = 'custom'
-    user_inpuT.is_custom_dataset = True
     user_inpuT.dataset_path = '/Users/joschkabraun/dev/now/da_tgif.30000.bin'
 
     text_docs = DocumentArray(

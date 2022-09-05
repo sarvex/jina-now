@@ -54,7 +54,7 @@ def is_da_text_equal(da_a: DocumentArray, da_b: DocumentArray):
 
 def test_da_pull(da: DocumentArray):
     user_input = UserInput()
-    user_input.is_custom_dataset = True
+    user_input.data = 'custom'
     user_input.custom_dataset_type = DatasetTypes.DOCARRAY
     user_input.dataset_name = 'secret-token'
 
@@ -66,7 +66,7 @@ def test_da_pull(da: DocumentArray):
 def test_da_local_path(local_da: DocumentArray):
     path, da = local_da
     user_input = UserInput()
-    user_input.is_custom_dataset = True
+    user_input.data = 'custom'
     user_input.custom_dataset_type = DatasetTypes.PATH
     user_input.dataset_path = path
 
@@ -77,7 +77,7 @@ def test_da_local_path(local_da: DocumentArray):
 
 def test_da_local_path_image_folder(image_resource_path: str):
     user_input = UserInput()
-    user_input.is_custom_dataset = True
+    user_input.data = 'custom'
     user_input.custom_dataset_type = DatasetTypes.PATH
     user_input.dataset_path = image_resource_path
 
@@ -95,7 +95,7 @@ def test_da_local_path_image_folder(image_resource_path: str):
 
 def test_da_local_path_music_folder(music_resource_path: str):
     user_input = UserInput()
-    user_input.is_custom_dataset = True
+    user_input.data = 'custom'
     user_input.custom_dataset_type = DatasetTypes.PATH
     user_input.dataset_path = music_resource_path
 
