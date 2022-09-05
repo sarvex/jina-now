@@ -118,7 +118,7 @@ class JinaNOWApp:
         return options.base_options
 
     @property
-    def supported_wildcards(self) -> List[str]:
+    def supported_file_types(self) -> List[str]:
         """Used to filter files in local structure or an S3 bucket."""
         return ['**']
 
