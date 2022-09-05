@@ -10,8 +10,8 @@ from now.apps.music_to_music.app import MusicToMusic
 from now.apps.text_to_image.app import TextToImage
 from now.apps.text_to_text.app import TextToText
 from now.apps.text_to_text_and_image.app import TextToTextAndImage
-from now.constants import DatasetTypes, DemoDatasets, Modalities
-from now.data_loading.data_loading import _load_tags_from_json, load_data
+from now.constants import DatasetTypes, DemoDatasets
+from now.data_loading.data_loading import _load_tags_from_json_if_needed, load_data
 from now.now_dataclasses import UserInput
 
 
@@ -142,38 +142,40 @@ def test_es_online_shop_ds(da: DocumentArray):
         assert doc.chunks[1].uri
 
 
-def test_load_tags(gif_resource_path: str):
+@pytest.fixture
+def user_input():
     user_input = UserInput()
     user_input.dataset_path = ''
     user_input.app = TextToImage()
-    da = DocumentArray(
-        [
-            Document(uri=os.path.join(gif_resource_path, 'folder1/file.gif')),
-            Document(uri=os.path.join(gif_resource_path, 'folder1/manifest.json')),
-            Document(uri=os.path.join(gif_resource_path, 'folder1/file.txt')),
-            Document(uri=os.path.join(gif_resource_path, 'folder2/file.gif')),
-            Document(uri=os.path.join(gif_resource_path, 'folder2/manifest.json')),
-        ]
+    return user_input
+
+
+def get_data(gif_resource_path, files):
+    return DocumentArray(
+        Document(uri=os.path.join(gif_resource_path, file)) for file in files
     )
 
-    da = _load_tags_from_json(da, user_input)
-    print(da[0].summary())
-    print(da[1].summary())
-    assert 'custom' in da[0].tags
-    assert 'custom' in da[1].tags
 
-    assert da[0].tags['custom'] == 'moneystack'
-    assert da[1].tags['ml'] == 'visual-arts'
-
-    da1 = DocumentArray(
+def test_load_tags_ignore_too_many_files(user_input, gif_resource_path: str):
+    da = get_data(
+        gif_resource_path,
         [
-            Document(uri=os.path.join(gif_resource_path, 'folder1/file.gif')),
-            Document(uri=os.path.join(gif_resource_path, 'folder2/file.gif')),
-            Document(uri=os.path.join(gif_resource_path, 'folder1/file.txt')),
-        ]
+            'folder1/file.gif',
+            'folder1/meta.json',
+            'folder1/file.txt',
+            'folder2/file.gif',
+            'folder2/meta.json',
+        ],
     )
+    da_merged = _load_tags_from_json_if_needed(da, user_input)
+    assert len(da_merged) == 2
+    assert da_merged[0].tags['a1'] == 'v1'
+    assert da_merged[1].tags['a3'] == 'v3'
 
-    da1 = _load_tags_from_json(da1, user_input)
 
-    for d in da1:
-        assert not 'custom' in d.tags
+def test_load_tags_no_tags_if_missing(user_input, gif_resource_path: str):
+    da = get_data(
+        gif_resource_path, ['folder1/file.gif', 'folder2/file.gif', 'folder2/meta.json']
+    )
+    da_merged = _load_tags_from_json_if_needed(da, user_input)
+    assert len(da_merged) == 2

@@ -49,8 +49,8 @@ class TextToText(JinaNOWApp):
             self.flow_yaml = os.path.join(flow_dir, 'flow-sbert.yml')
 
     @property
-    def supported_wildcards(self) -> List[str]:
-        return ['*.txt']
+    def supported_file_types(self) -> List[str]:
+        return ['txt']
 
     def setup(
         self, dataset: DocumentArray, user_input: UserInput, kubectl_path: str
