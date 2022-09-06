@@ -6,7 +6,6 @@ the dialog won't ask for the value.
 """
 from __future__ import annotations, print_function, unicode_literals
 
-import dataclasses
 from typing import Any, Callable, Dict, List, Optional, Union
 
 from pydantic import BaseModel
@@ -124,8 +123,7 @@ class UserInput(BaseModel):
         arbitrary_types_allowed = True
 
 
-@dataclasses.dataclass
-class DialogOptions:
+class DialogOptions(BaseModel):
     name: str
     prompt_message: str
     prompt_type: str
@@ -138,3 +136,6 @@ class DialogOptions:
     depends_on: Optional['DialogOptions'] = None
     conditional_check: Callable[[Any], bool] = None
     post_func: Callable[[Any], None] = None
+
+    class Config:
+        arbitrary_types_allowed = True
