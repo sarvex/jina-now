@@ -5,7 +5,7 @@ from docarray import Document, DocumentArray
 from jina import Executor, Flow, requests
 
 
-class DocarrayIndexerV2(Executor):
+class DocarrayIndexerV3(Executor):
     def __init__(self, traversal_paths: str = "@r", *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.traversal_paths = traversal_paths
@@ -15,24 +15,38 @@ class DocarrayIndexerV2(Executor):
     def index(self, docs: DocumentArray, **kwargs):
         docs.summary()
         self.index.extend(docs)
-        return (
-            DocumentArray()
-        )  # prevent sending the data back by returning an empty DocumentArray
+        return DocumentArray()
+        #  prevent sending the data back by returning an empty DocumentArray
 
     @requests(on="/search")
     def search(self, docs: DocumentArray, parameters, **kwargs):
+        """
+        Search endpoint to search for document/documents and match across
+        the index.
+        We use the same interface of Annlite for filtering, this means the
+        filter key in parameters should contain queries for annlite
+        for example: {'filter': {'$and':[{'color':{'$eq':'red'}}]}}
+        We adapt this query by parsing the above query and add the prefix tags__
+        to all tags.
+        """
         limit = parameters.get("limit", 20)
         filter = parameters.get("filter", {})
+        if '$and' in filter.keys():
+            for query in filter['$and']:
+                #  adapt filter interface to annlite interface by adding tags
+                tag = list(query.keys())[0]
+                query['tags__' + tag] = query[tag]
+                del query[tag]
         traversal_paths = parameters.get("traversal_paths", self.traversal_paths)
         if traversal_paths == "@r":
             docs.match(self.index.find(filter=filter), limit=limit)
         elif traversal_paths == "@c":
             index = self.index[traversal_paths]
-            # to avoid having duplicate root level matches, we have to:
-            # 0. matching happening on chunk level
-            # 1. retrieve more docs since some of them could be duplicates
-            # 2. maintain a list of unique parent docs
-            # 3. break once we retrieved `limit` results
+            #   to avoid having duplicate root level matches, we have to:
+            #   0. matching happening on chunk level
+            #   1. retrieve more docs since some of them could be duplicates
+            #   2. maintain a list of unique parent docs
+            #   3. break once we retrieved `limit` results
             docs = docs[0].chunks
             docs.match(index.find(filter=filter), limit=limit * 10)
             for d in docs:
@@ -42,8 +56,8 @@ class DocarrayIndexerV2(Executor):
                     if m.parent_id in parent_ids:
                         continue
                     parent = self.index[m.parent_id]
-                    # to save bandwidth, we don't return the chunks.
-                    # But, without deepcopy, we would modify the ined
+                    #  to save bandwidth, we don't return the chunks.
+                    #  But, without deepcopy, we would modify the ined
                     parent = deepcopy(parent)
                     parent.chunks = []
                     parents.append(parent)
@@ -61,7 +75,6 @@ class DocarrayIndexerV2(Executor):
         /filter endpoint, filters through documents if docs is passed using some
         filtering conditions e.g. {"codition1":value1, "condition2": value2}
         in case of multiple conditions "and" is used
-
         :returns: filtered results in root, chunks and matches level
         """
         filtering_condition = parameters.get("filter", {})
@@ -72,7 +85,7 @@ class DocarrayIndexerV2(Executor):
 
 if __name__ == "__main__":
 
-    with Flow().add(uses=DocarrayIndexerV2, uses_with={"traversal_paths": "@r"}) as f:
+    with Flow().add(uses=DocarrayIndexerV3, uses_with={"traversal_paths": "@r"}) as f:
         f.index(
             DocumentArray(
                 [
@@ -116,8 +129,8 @@ if __name__ == "__main__":
             parameters={
                 'filter': {
                     '$and': [
-                        {'tags__color': {'$eq': 'red'}},
-                        {'tags__length': {'$eq': 18}},
+                        {'color': {'$eq': 'red'}},
+                        {'length': {'$eq': 18}},
                     ]
                 }
             },
@@ -126,14 +139,12 @@ if __name__ == "__main__":
         if len(x) > 0:
             x[0].summary()
 
-        x = f.post(
-            on='/filter', parameters={'filter': {'tags__something': {'$eq': 'kind'}}}
-        )
+        x = f.post(on='/filter', parameters={'filter': {'something': {'$eq': 'kind'}}})
         print('filter res:', x)
         if len(x) > 0:
             x[0].summary()
 
-        x = f.post(on='/filter', parameters={'filter': {'tags__color': {'$eq': 'red'}}})
+        x = f.post(on='/filter', parameters={'filter': {'color': {'$eq': 'red'}}})
         print('filter res:', x)
         if len(x) > 0:
             x[0].summary()
@@ -145,7 +156,7 @@ if __name__ == "__main__":
                 embedding=np.ones(5),
             ),
             return_results=True,
-            parameters={'filter': {'tags__color': {'$eq': 'blue'}}},
+            parameters={'filter': {'color': {'$eq': 'blue'}}},
         )
         x[0].summary()
         x = f.search(
