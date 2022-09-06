@@ -115,7 +115,7 @@ def test_da_local_path_music_folder(music_resource_path: str):
 
 def test_da_custom_ds(da: DocumentArray):
     user_input = UserInput()
-    user_input.is_custom_dataset = False
+    user_input.data = 'custom'
     user_input.custom_dataset_type = DatasetTypes.DEMO
     user_input.data = DemoDatasets.DEEP_FASHION
 
@@ -129,7 +129,7 @@ def test_da_custom_ds(da: DocumentArray):
 
 def test_es_online_shop_ds(da: DocumentArray):
     user_input = UserInput()
-    user_input.is_custom_dataset = False
+    user_input.data = 'custom'
     user_input.data = DemoDatasets.ES_ONLINE_SHOP_50
     user_input.quality = None
 

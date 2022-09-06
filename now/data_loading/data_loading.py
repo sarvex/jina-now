@@ -108,7 +108,8 @@ def _load_tags_from_json_if_needed(da: DocumentArray, user_input: UserInput):
 
 def _load_tags_from_json(da, user_input):
     print(
-        f'Loading tags! We assume that you have a folder for each document. The folder contains a content file (image, text, video, ...) and a json file containing the tags'
+        f'Loading tags! We assume that you have a folder for each document. The folder contains a content '
+        f'file (image, text, video, ...) and a json file containing the tags'
     )
     # map folders to all files they contain
     folder_to_files = defaultdict(list)
@@ -126,7 +127,7 @@ def _load_tags_from_json(da, user_input):
 def get_document(files, user_input):
     # json and content have to exist
     json_file = select_ending(files, ['json'])
-    content_file = select_ending(files, user_input.app.supported_file_types)
+    content_file = select_ending(files, user_input.app_instance.supported_file_types)
     if not content_file:
         return None
     document = merge_documents(user_input, content_file, json_file)
