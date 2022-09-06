@@ -377,7 +377,6 @@ def _parse_custom_data_from_cli(user_input: UserInput, **kwargs) -> None:
         user_input.dataset_name = data
 
 
-app = APP
 data = [DATA]
 data_da = [CUSTOM_DATASET_TYPE, DATASET_NAME, DATASET_PATH, DATASET_URL]
 data_s3 = [DATASET_PATH_S3, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION_NAME]

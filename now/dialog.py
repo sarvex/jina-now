@@ -9,7 +9,8 @@ from __future__ import annotations, print_function, unicode_literals
 import inspect
 import pathlib
 
-from now.apps.base.app import JinaNOWApp
+from now_common import options
+
 from now.now_dataclasses import UserInput
 from now.utils import _prompt_value, print_headline
 
@@ -29,9 +30,9 @@ def configure_user_input(**kwargs) -> UserInput:
 
 def _configure_app_options(user_input, **kwargs):
     # First we configure the app and initialize it
-    configure_option(JinaNOWApp.ask_app(), user_input, **kwargs)
+    configure_option(options.APP, user_input, **kwargs)
 
-    for option in user_input.app_instance.options():
+    for option in user_input.app_instance.options:
         configure_option(option, user_input, **kwargs)
 
 

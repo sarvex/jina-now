@@ -24,11 +24,6 @@ class JinaNOWApp:
 
     def __init__(self):
         self.flow_yaml = ''
-        self.set_flow_yaml()
-
-    @staticmethod
-    def ask_app():
-        return options.app
 
     @property
     def app_name(self) -> str:
@@ -95,24 +90,17 @@ class JinaNOWApp:
         """
         return None
 
-    @staticmethod
-    def options() -> List[DialogOptions]:
+    @property
+    def options(self) -> List[DialogOptions]:
         """
-        Get the options which are used to configure the app.
+        Get the options which are used to configure the app. Base class should override this function and
+        add their option to the base options. Check ``DialogOptions`` for the format of the options
         On CLI the user will get a prompt and at the storefront, a GUI will be generated accordingly.
         Example:
-        return [
-            {
-                name='quality',
-                choices=[
-                    {'name': '🦊 medium (≈3GB mem, 15q/s)', 'value': 'openai/clip-vit-base-patch32'},
-                    {'name': '🐻 good (≈3GB mem, 2.5q/s)', 'value': 'openai/clip-vit-base-patch16'},
-                    {'name': '🦄 excellent (≈4GB mem, 0.5q/s)','value': 'openai/clip-vit-large-patch14',},
-                ],
-                prompt_message='What quality do you expect?',
-                prompt_type='list'
-            }
-        ]
+        return options.base_option + options.your_custom_options (should be a list)
+        You can also rearrange the options according to how you want it to be displayed for app. In that
+        case you import base options one by one and shuffle/rearrange them. Please keep in mind, that a
+        dependent option should only come after the main options.
         :return:
         """
         return options.base_options
@@ -180,7 +168,7 @@ class JinaNOWApp:
                 description=f'Create an {self.app_name} app.',
                 formatter_class=formatter,
             )
-            for option in self.options():
+            for option in self.options:
                 if option.is_terminal_command:
                     parser.add_argument(
                         f'--{option.name}',

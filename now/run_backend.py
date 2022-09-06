@@ -72,7 +72,6 @@ def call_index(
 ):
     request_size = estimate_request_size(dataset)
     # Remove app_instance from parameters
-    parameters['user_input']['app'] = parameters['user_input']['app_instance'].app_name
     parameters['user_input'].pop('app_instance')
 
     # double check that flow is up and running - should be done by wolf/core in the future

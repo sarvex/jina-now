@@ -55,16 +55,6 @@ def set_help_parser(parser=None):
     return parser
 
 
-def set_default_start_args(parser):
-    parser.add_argument(
-        '--app',
-        help='Select the app you would like to use. Do not use this argument when'
-        ' using the `%(prog)-8s [sub-command]`',
-        choices=[app for app in Apps() if _construct_app(app).is_enabled],
-        type=str,
-    )
-
-
 def set_start_parser(sp):
     """Add the arguments for the jina now to the parser
     :param parser: an optional existing parser to build upon
@@ -78,7 +68,21 @@ def set_start_parser(sp):
         formatter_class=_chf,
     )
 
-    set_default_start_args(parser)
+    # Get list of enabled apps
+    enabled_apps, enabled_apps_instance = [], []
+    for app in Apps():
+        app_instance = _construct_app(app)
+        if app_instance.is_enabled:
+            enabled_apps.append(app)
+            enabled_apps_instance.append(app_instance)
+
+    parser.add_argument(
+        '--app',
+        help='Select the app you would like to use. Do not use this argument when'
+        ' using the `%(prog)-8s [sub-command]`',
+        choices=enabled_apps,
+        type=str,
+    )
 
     sub_parser = parser.add_subparsers(
         dest='app',
@@ -88,8 +92,8 @@ def set_start_parser(sp):
     )
 
     # Set parser args for the enabled apps
-    for app in Apps():
-        _construct_app(app).set_app_parser(sub_parser, formatter=_chf)
+    for app_instance in enabled_apps_instance:
+        app_instance.set_app_parser(sub_parser, formatter=_chf)
 
 
 def set_stop_parser(sp):

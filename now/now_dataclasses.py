@@ -139,3 +139,6 @@ class DialogOptions(BaseModel):
 
     class Config:
         arbitrary_types_allowed = True
+
+
+DialogOptions.update_forward_refs()
