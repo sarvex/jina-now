@@ -7,14 +7,18 @@ import stat
 import sys
 from collections import namedtuple
 from os.path import expanduser as user
-from typing import Dict
+from typing import Dict, List, Optional, Union
 
+import cowsay
 import hubble
 import numpy as np
 import yaml
 from docarray import Document
 from PIL import Image, ImageDraw, ImageFont
+from pyfiglet import Figlet
 from rich.console import Console
+
+from now.thirdparty.PyInquirer.prompt import prompt
 
 colors = [
     "navy",
@@ -332,7 +336,7 @@ class BetterEnum:
 
 
 def to_camel_case(text):
-    s = text.replace("-", " ").replace("_", " ")
+    s = text.replace("_", " ")
     s = s.split()
     if len(text) == 0:
         return text
@@ -353,7 +357,7 @@ def jina_auth_login():
     pass
 
 
-def _get_info_hubble(user_input):
+def get_info_hubble(user_input):
     with open(user('~/.jina/config.json')) as fp:
         config_val = json.load(fp)
         user_token = config_val['auth_token']
@@ -362,3 +366,59 @@ def _get_info_hubble(user_input):
     user_input.admin_emails = [response['data']['_id']]
     user_input.jwt = {'user': response['data'], 'token': user_token}
     return response['data'], user_token
+
+
+def print_headline():
+    f = Figlet(font='slant')
+    print('Welcome to:')
+    print(f.renderText('Jina NOW'))
+    print('Get your search case up and running - end to end.\n')
+    print(
+        'You can choose between image and text search. \nJina NOW trains a model, pushes it to Jina Hub '
+        'and deploys a Flow and a playground app in the cloud or locally. \nCheck out one of our demos or bring '
+        'your own data.\n'
+    )
+    print('If you want learn more about our framework please visit docs.jina.ai')
+    print(
+        '💡 Make sure you give enough memory to your Docker daemon. '
+        '5GB - 8GB should be okay.'
+    )
+    print()
+
+
+def maybe_prompt_user(questions, attribute, **kwargs):
+    """
+    Checks the `kwargs` for the `attribute` name. If present, the value is returned directly.
+    If not, the user is prompted via the cmd-line using the `questions` argument.
+
+    :param questions: A dictionary that is passed to `PyInquirer.prompt`
+        See docs: https://github.com/CITGuru/PyInquirer#documentation
+    :param attribute: Name of the value to get. Make sure this matches the name in `kwargs`
+
+    :return: A single value of either from `kwargs` or the user cli input.
+    """
+    if kwargs and kwargs.get(attribute) is not None:
+        return kwargs[attribute]
+    else:
+        answer = prompt(questions)
+        if attribute in answer:
+            return answer[attribute]
+        else:
+            print("\n" * 10)
+            cowsay.cow('see you soon 👋')
+            exit(0)
+
+
+def _prompt_value(
+    name: str,
+    prompt_message: str,
+    prompt_type: str = 'input',
+    choices: Optional[List[Union[Dict, str]]] = None,
+    **kwargs: Dict,
+):
+    qs = {'name': name, 'type': prompt_type, 'message': prompt_message}
+
+    if choices is not None:
+        qs['choices'] = choices
+        qs['type'] = 'list'
+    return maybe_prompt_user(qs, name, **kwargs)
