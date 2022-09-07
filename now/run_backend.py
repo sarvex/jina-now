@@ -1,4 +1,3 @@
-import dataclasses
 import os
 import pathlib
 import random
@@ -28,6 +27,7 @@ def run(app_instance: JinaNOWApp, user_input: UserInput, kubectl_path: str):
     :return:
     """
     dataset = load_data(app_instance, user_input)
+    tags_and_values = _extract_tags_and_vales(dataset)
 
     env_dict = app_instance.setup(
         dataset=dataset, user_input=user_input, kubectl_path=kubectl_path
@@ -61,7 +61,13 @@ def run(app_instance: JinaNOWApp, user_input: UserInput, kubectl_path: str):
     call_index(client=client, dataset=dataset, parameters=params, return_results=False)
     print('⭐ Success - your data is indexed')
 
-    return gateway_host, gateway_port, gateway_host_internal, gateway_port_internal
+    return (
+        gateway_host,
+        gateway_port,
+        gateway_host_internal,
+        gateway_port_internal,
+        tags_and_values,
+    )
 
 
 @time_profiler
@@ -108,3 +114,14 @@ def estimate_request_size(index):
     max_request_size = 32
     request_size = max(min(max_request_size, int(max_size / size)), 1)
     return request_size
+
+
+def _extract_tags_and_vales(da: DocumentArray):
+    tags = {}
+    for doc in da:
+        for tag, value in doc.tags.items():
+            if tag in tags.keys():
+                tags[tag].append(value)
+            else:
+                tags[tag] = [value]
+    return tags
