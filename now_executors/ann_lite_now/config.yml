@@ -1,4 +1,4 @@
-jtype: AnnLiteNOWIndexer2
+jtype: AnnLiteNOWIndexer3
 metas:
   py_modules:
     - executor.py

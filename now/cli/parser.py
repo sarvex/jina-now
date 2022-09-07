@@ -1,10 +1,10 @@
 import argparse
 
 from jina.parsers.helper import _ColoredHelpFormatter
+from now_common.options import _construct_app
 
 from now import __version__
 from now.constants import Apps
-from now.dialog import _construct_app
 
 
 def set_base_parser():
@@ -55,44 +55,6 @@ def set_help_parser(parser=None):
     return parser
 
 
-def set_default_start_args(parser):
-    parser.add_argument(
-        '--app',
-        help='Select the app you would like to use. Do not use this argument when'
-        ' using the `%(prog)-8s [sub-command]`',
-        choices=[app for app in Apps() if _construct_app(app).is_enabled],
-        type=str,
-    )
-
-    parser.add_argument(
-        '--data',
-        help='Select one of the available datasets or provide local filepath, '
-        'docarray url, or docarray secret to use your own dataset',
-        type=str,
-    )
-
-    parser.add_argument(
-        '--deployment-type',
-        help='Option is `local` and `remote`. Select `local` if you want search engine to be deployed on local '
-        'cluster. Select `remote` to deploy it on Jina Cloud',
-        type=str,
-    )
-
-    parser.add_argument(
-        '--cluster',
-        help='Reference an existing `local` cluster or select `new` to create a new one. '
-        'Use this only when the `--deployment-type=local`',
-        type=str,
-    )
-
-    parser.add_argument(
-        '--proceed',
-        help='Proceed even if app is deployed already. In that case, the old app is deleted.',
-        default=None,
-        type=bool,
-    )
-
-
 def set_start_parser(sp):
     """Add the arguments for the jina now to the parser
     :param parser: an optional existing parser to build upon
@@ -106,7 +68,21 @@ def set_start_parser(sp):
         formatter_class=_chf,
     )
 
-    set_default_start_args(parser)
+    # Get list of enabled apps
+    enabled_apps, enabled_apps_instance = [], []
+    for app in Apps():
+        app_instance = _construct_app(app)
+        if app_instance.is_enabled:
+            enabled_apps.append(app)
+            enabled_apps_instance.append(app_instance)
+
+    parser.add_argument(
+        '--app',
+        help='Select the app you would like to use. Do not use this argument when'
+        ' using the `%(prog)-8s [sub-command]`',
+        choices=enabled_apps,
+        type=str,
+    )
 
     sub_parser = parser.add_subparsers(
         dest='app',
@@ -116,8 +92,8 @@ def set_start_parser(sp):
     )
 
     # Set parser args for the enabled apps
-    for app in Apps():
-        _construct_app(app).set_app_parser(sub_parser, formatter=_chf)
+    for app_instance in enabled_apps_instance:
+        app_instance.set_app_parser(sub_parser, formatter=_chf)
 
 
 def set_stop_parser(sp):

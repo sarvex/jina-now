@@ -94,7 +94,7 @@ class ImageToText(JinaNOWApp):
             split_by_sentences = False
             if (
                 user_input
-                and user_input.is_custom_dataset
+                and user_input.data == 'custom'
                 and user_input.custom_dataset_type == DatasetTypes.PATH
                 and user_input.dataset_path
                 and os.path.isdir(user_input.dataset_path)

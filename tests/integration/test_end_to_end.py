@@ -8,12 +8,12 @@ from os.path import expanduser as user
 import hubble
 import pytest
 import requests
+from now_common.options import NEW_CLUSTER
 
 from now.cli import _get_kind_path, _get_kubectl_path, cli
 from now.cloud_manager import create_local_cluster
 from now.constants import JC_SECRET, Apps, DatasetTypes, DemoDatasets, Modalities
 from now.deployment.deployment import cmd, list_all_wolf, terminate_wolf
-from now.dialog import NEW_CLUSTER
 from now.run_all_k8s import get_remote_flow_details
 
 
@@ -298,9 +298,9 @@ def test_backend_custom_data(
         'cluster': NEW_CLUSTER['value'],
         'deployment_type': deployment_type,
         'proceed': True,
+        'secured': False,
     }
 
-    kwargs['secured'] = False
     kind_path = _get_kind_path()
     create_local_cluster(kind_path, **kwargs)
     kubectl_path = _get_kubectl_path()

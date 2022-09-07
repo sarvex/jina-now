@@ -84,4 +84,3 @@ class TextToTextAndImage(JinaNOWApp):
     def add_embeddings(self) -> bool:
         """Whether we need to calculate embeddings before fine-tuning or not."""
         raise False
-
