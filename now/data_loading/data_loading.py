@@ -1,10 +1,10 @@
-import base64
 import json
 import os
 import uuid
 from collections import defaultdict
+from collections.abc import MutableMapping
+from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
-from pathlib import Path
 
 from docarray import Document, DocumentArray
 
@@ -88,6 +88,17 @@ def select_ending(files, endings):
     return None
 
 
+def flatten_dict(d, parent_key='', sep='_'):
+    items = []
+    for k, v in d.items():
+        new_key = parent_key + sep + k if parent_key else k
+        if isinstance(v, MutableMapping):
+            items.extend(flatten_dict(v, new_key, sep=sep).items())
+        else:
+            items.append((new_key, v))
+    return dict(items)
+
+
 def merge_documents(user_input, content_file, json_file):
     if json_file:
         if user_input.dataset_path.startswith('s3://'):
@@ -96,6 +107,7 @@ def merge_documents(user_input, content_file, json_file):
             tags = _open_json(json_file)
     else:
         tags = {}
+    tags = flatten_dict(tags)
     return Document(uri=content_file, tags=tags)
 
 
@@ -117,10 +129,15 @@ def _load_tags_from_json(da, user_input):
         folder = d.uri.rsplit('/', 1)[0]
         folder_to_files[folder].append(d.uri)
     merged_documents = []
-    for _, files in folder_to_files.items():
-        document = get_document(files, user_input)
-        if document:
-            merged_documents.append(document)
+    with ThreadPoolExecutor() as thread_executor:
+        futures = []
+        for files in folder_to_files.values():
+            f = thread_executor.submit(get_document, files, user_input)
+            futures.append(f)
+        for f in futures:
+            doc = f.result()
+            if doc:
+                merged_documents.append(doc)
     return DocumentArray(merged_documents)
 
 
@@ -171,7 +188,9 @@ def _load_from_disk(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
             spinner.ok('🏭')
             docs = DocumentArray.from_files(f'{dataset_path}/**')
             docs = DocumentArray(
-                d for d in docs if match_types(d.uri, app.supported_file_types)
+                d
+                for d in docs
+                if match_types(d.uri, app.supported_file_types + ['json'])
             )
             docs.apply(_load_to_datauri_and_save_into_tags)
             return docs
@@ -209,64 +228,13 @@ def _list_files_from_s3_bucket(app: JinaNOWApp, user_input: UserInput) -> Docume
             if app.supported_file_types[0] == '**':
                 docs.append(Document(uri=f"s3://{bucket.name}/{obj.key}"))
             else:
-                for wild_card in app.supported_file_types:
+                for wild_card in app.supported_file_types + ['json']:
                     _postfix = wild_card.split('*')[-1]
                     if str(obj.key).endswith(_postfix):
                         docs.append(Document(uri=f"s3://{bucket.name}/{obj.key}"))
                         break
 
     return DocumentArray(docs)
-
-
-def _download_from_s3_bucket(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
-    import boto3.session
-
-    s3_uri = user_input.dataset_path
-    if not s3_uri.startswith('s3://'):
-        raise ValueError(
-            f"Can't process S3 URI {s3_uri} as it assumes it starts with: 's3://'"
-        )
-
-    data_dir = os.path.expanduser(
-        f'~/.cache/jina-now/data/tmp/{base64.b64encode(bytes(s3_uri, "utf-8")).decode("utf-8")}'
-    )
-    Path(data_dir).mkdir(parents=True, exist_ok=True)
-
-    bucket = s3_uri.split('/')[2]
-    folder_prefix = '/'.join(s3_uri.split('/')[3:])
-
-    session = boto3.session.Session(
-        aws_access_key_id=user_input.aws_access_key_id,
-        aws_secret_access_key=user_input.aws_secret_access_key,
-    )
-    bucket = session.resource('s3').Bucket(bucket)
-
-    with yaspin_extended(
-        sigmap=sigmap, text="Loading data from S3 and creating DocArray", color="green"
-    ) as spinner:
-        spinner.ok('🏭')
-
-        for obj in list(bucket.objects.filter(Prefix=folder_prefix)):
-            if app.supported_file_types[0] != '**':
-                matches_postfix = False
-                for wild_card in app.supported_file_types:
-                    _postfix = wild_card.split('*')[-1]
-                    if str(obj.key).endswith(_postfix):
-                        matches_postfix = True
-                        break
-                if not matches_postfix:
-                    continue
-            # create nested directory structure
-            path_obj_machine = os.path.join(data_dir, obj.key)
-            Path(os.path.dirname(path_obj_machine)).mkdir(parents=True, exist_ok=True)
-            # save file with full path locally
-            bucket.download_file(obj.key, path_obj_machine)
-
-        docs = DocumentArray.from_files(
-            [f"{data_dir}/{wild_card}" for wild_card in app.supported_file_types]
-        )
-        docs.apply(_load_to_datauri_and_save_into_tags)
-        return docs
 
 
 def deep_copy_da(da: DocumentArray) -> DocumentArray:
