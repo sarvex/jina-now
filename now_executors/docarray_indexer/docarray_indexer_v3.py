@@ -1,8 +1,8 @@
 from copy import deepcopy
+from sys import maxsize
 
-import numpy as np
 from docarray import Document, DocumentArray
-from jina import Executor, Flow, requests
+from jina import Executor, requests
 
 
 class DocarrayIndexerV3(Executor):
@@ -17,6 +17,18 @@ class DocarrayIndexerV3(Executor):
         self.index.extend(docs)
         return DocumentArray()
         #  prevent sending the data back by returning an empty DocumentArray
+
+    @requests(on="/list")
+    def list(self, parameters: dict = {}, **kwargs):
+        """List all indexed documents.
+        :param parameters: dictionary with limit and offset
+        - offset (int): number of documents to skip
+        - limit (int): number of retrieved documents
+        """
+        limit = int(parameters.get('limit', maxsize))
+        offset = int(parameters.get('offset', 0))
+        part = self.index[offset : offset + limit]
+        return DocumentArray([Document(id=d.id, uri=d.uri, tags=d.tags) for d in part])
 
     @requests(on="/search")
     def search(self, docs: DocumentArray, parameters, **kwargs):
@@ -81,90 +93,3 @@ class DocarrayIndexerV3(Executor):
         traversal_paths = parameters.get("traversal_paths", self.traversal_paths)
         result = self.index[traversal_paths].find(filtering_condition)
         return result
-
-
-if __name__ == "__main__":
-
-    with Flow().add(uses=DocarrayIndexerV3, uses_with={"traversal_paths": "@r"}) as f:
-        f.index(
-            DocumentArray(
-                [
-                    Document(
-                        id="parent",
-                        blob=b"gif...",
-                        embedding=np.ones(5),
-                        chunks=[
-                            Document(
-                                id="chunk1",
-                                blob=b"jpg...",
-                                embedding=np.ones(5),
-                                tags={'color': 'red'},
-                            ),
-                            Document(
-                                id="chunk2",
-                                blob=b"jpg...",
-                                embedding=np.ones(5),
-                                tags={'color': 'blue'},
-                            ),
-                        ],
-                    ),
-                    Document(
-                        id="doc1",
-                        blob=b"jpg...",
-                        embedding=np.ones(5),
-                        tags={'color': 'red', 'length': 18},
-                    ),
-                    Document(
-                        id="doc2",
-                        blob=b"jpg...",
-                        embedding=np.ones(5),
-                        tags={'color': 'blue'},
-                    ),
-                ]
-            )
-        )
-
-        x = f.post(
-            on='/filter',
-            parameters={
-                'filter': {
-                    '$and': [
-                        {'color': {'$eq': 'red'}},
-                        {'length': {'$eq': 18}},
-                    ]
-                }
-            },
-        )
-        print('filter res:', x)
-        if len(x) > 0:
-            x[0].summary()
-
-        x = f.post(on='/filter', parameters={'filter': {'something': {'$eq': 'kind'}}})
-        print('filter res:', x)
-        if len(x) > 0:
-            x[0].summary()
-
-        x = f.post(on='/filter', parameters={'filter': {'color': {'$eq': 'red'}}})
-        print('filter res:', x)
-        if len(x) > 0:
-            x[0].summary()
-
-        x = f.search(
-            Document(
-                id="doc1",
-                blob=b"jpg...",
-                embedding=np.ones(5),
-            ),
-            return_results=True,
-            parameters={'filter': {'color': {'$eq': 'blue'}}},
-        )
-        x[0].summary()
-        x = f.search(
-            Document(
-                id="doc1",
-                blob=b"jpg...",
-                embedding=np.ones(5),
-            ),
-            return_results=True,
-        )
-        x[0].summary()
