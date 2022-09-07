@@ -1,0 +1,4 @@
+jtype: ElasticIndexer
+metas:
+  py_modules:
+    - elastic_indexer.py
