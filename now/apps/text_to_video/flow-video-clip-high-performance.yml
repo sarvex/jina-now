@@ -30,6 +30,7 @@ executors:
     port: 2096
     uses_with:
       traversal_paths: '@c'
+      access_paths: '@c'
       name: ${{ ENV.PRE_TRAINED_MODEL_NAME }}
     env:
       JINA_LOG_LEVEL: DEBUG
@@ -37,6 +38,7 @@ executors:
     uses: jinahub+docker://NOWPostprocessor/v0.0.5
     uses_with:
       traversal_paths: '@c'
+      access_paths: '@c'
     jcloud:
       capacity: on-demand
     env:

@@ -1,5 +1,4 @@
 """ This module is the entry point to the finetuning package."""
-import dataclasses
 import os
 import random
 import string
@@ -56,7 +55,7 @@ def finetune(
 
     print(f'🔧 Perform finetuning!')
     if finetune_settings.add_embeddings:
-        dataset = _add_embeddings(
+        dataset = _maybe_add_embeddings(
             app_instance=app_instance,
             user_input=user_input,
             env_dict=env_dict,
@@ -211,7 +210,7 @@ _KS_NAMESPACE = 'embed-now'
 
 
 @time_profiler
-def _add_embeddings(
+def _maybe_add_embeddings(
     app_instance: JinaNOWApp,
     user_input: UserInput,
     env_dict: Dict,
@@ -244,7 +243,7 @@ def _add_embeddings(
     result = call_index(
         client=client,
         dataset=documents_without_embedding,
-        parameters={'user_input': user_input.dict()},
+        parameters={'user_input': user_input.__dict__},
         return_results=True,
     )
 

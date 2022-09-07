@@ -5,6 +5,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 import docker
 from docarray import DocumentArray
 from jina.serve.runtimes.gateway.http.models import JinaRequestModel, JinaResponseModel
+from now_common.options import DialogOptions
 
 from now.constants import AVAILABLE_DATASET, Modalities
 from now.datasource.datasource import DemoDatasource
@@ -22,7 +23,6 @@ class JinaNOWApp:
 
     def __init__(self):
         self.flow_yaml = ''
-        self.set_flow_yaml()
 
     @property
     def app_name(self) -> str:
@@ -90,24 +90,14 @@ class JinaNOWApp:
         return None
 
     @property
-    def options(self) -> List[Dict]:
+    def options(self) -> List[DialogOptions]:
         """
-        Get the options which are used to configure the app.
+        Get the options which are used to configure the app. Base class should override this function and
+        return the list of their option. Check ``DialogOptions`` for the format of the options
         On CLI the user will get a prompt and at the storefront, a GUI will be generated accordingly.
         Example:
-        return [
-            {
-                name='quality',
-                choices=[
-                    {'name': '🦊 medium (≈3GB mem, 15q/s)', 'value': 'openai/clip-vit-base-patch32'},
-                    {'name': '🐻 good (≈3GB mem, 2.5q/s)', 'value': 'openai/clip-vit-base-patch16'},
-                    {'name': '🦄 excellent (≈4GB mem, 0.5q/s)','value': 'openai/clip-vit-large-patch14',},
-                ],
-                prompt_message='What quality do you expect?',
-                prompt_type='list'
-            }
-        ]
-        :return:
+        ``return [options.your_custom_options`]``
+        :return: List[DialogOptions]
         """
         return []
 
@@ -175,11 +165,12 @@ class JinaNOWApp:
                 formatter_class=formatter,
             )
             for option in self.options:
-                parser.add_argument(
-                    f'--{option["name"]}',
-                    help=option['description'],
-                    type=str,
-                )
+                if option.is_terminal_command:
+                    parser.add_argument(
+                        f'--{option.name}',
+                        help=option.description,
+                        type=str,
+                    )
 
     def _check_requirements(self) -> bool:
         """
@@ -262,12 +253,10 @@ class JinaNOWApp:
         """Gives access paths for indexing and searching."""
         return '@r'
 
-    @property
     def finetuning_model_name(self, encoder_type: Optional[str] = None) -> str:
         """Name of the model used in case of fine-tuning."""
         return 'mlp'
 
-    @property
     def loss_function(self, encoder_type: Optional[str] = None) -> str:
         """Loss function used during fine-tuning."""
         return 'TripletMarginLoss'

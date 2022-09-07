@@ -29,6 +29,7 @@ executors:
     port: 2096
     uses_with:
       traversal_paths: '@c'
+      access_paths: '@c'
       name: ${{ ENV.PRE_TRAINED_MODEL_NAME }}
     env:
       JINA_LOG_LEVEL: DEBUG
