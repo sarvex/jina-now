@@ -30,10 +30,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'deployment_type': 'local',
         },
         {},
-        UserInput(
-            is_custom_dataset=False,
-            create_new_cluster=True,
-        ),
     ),
     (
         {
@@ -43,10 +39,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'deployment_type': 'local',
         },
         {},
-        UserInput(
-            is_custom_dataset=False,
-            create_new_cluster=True,
-        ),
     ),
     (
         {
@@ -56,10 +48,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'deployment_type': 'local',
         },
         {},
-        UserInput(
-            is_custom_dataset=False,
-            create_new_cluster=True,
-        ),
     ),
     (
         {
@@ -69,10 +57,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'deployment_type': 'local',
         },
         {},
-        UserInput(
-            is_custom_dataset=False,
-            create_new_cluster=True,
-        ),
     ),
     (
         {
@@ -84,10 +68,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'deployment_type': 'local',
         },
         {},
-        UserInput(
-            is_custom_dataset=True,
-            create_new_cluster=True,
-        ),
     ),
     (
         {
@@ -99,10 +79,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'deployment_type': 'local',
         },
         {},
-        UserInput(
-            is_custom_dataset=True,
-            create_new_cluster=True,
-        ),
     ),
     (
         {
@@ -114,10 +90,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'deployment_type': 'local',
         },
         {},
-        UserInput(
-            is_custom_dataset=True,
-            create_new_cluster=True,
-        ),
     ),
     (
         {
@@ -129,10 +101,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'deployment_type': 'local',
         },
         {},
-        UserInput(
-            is_custom_dataset=True,
-            create_new_cluster=True,
-        ),
     ),
     (
         {
@@ -144,10 +112,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'deployment_type': 'local',
         },
         {},
-        UserInput(
-            is_custom_dataset=True,
-            create_new_cluster=True,
-        ),
     ),
     (
         {
@@ -156,10 +120,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'deployment_type': 'local',
         },
         {'app': Apps.MUSIC_TO_MUSIC},
-        UserInput(
-            is_custom_dataset=False,
-            create_new_cluster=True,
-        ),
     ),
     (
         {
@@ -168,10 +128,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'deployment_type': 'local',
         },
         {'app': Apps.TEXT_TO_IMAGE},
-        UserInput(
-            is_custom_dataset=False,
-            create_new_cluster=True,
-        ),
     ),
     (
         {
@@ -180,10 +136,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'deployment_type': 'local',
         },
         {'app': Apps.IMAGE_TO_TEXT},
-        UserInput(
-            is_custom_dataset=False,
-            create_new_cluster=True,
-        ),
     ),
     (
         {
@@ -194,31 +146,30 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'cluster': 'new',
             'deployment_type': 'local',
         },
-        UserInput(
-            is_custom_dataset=False,
-            create_new_cluster=True,
-        ),
     ),
 ]
 
 
 @pytest.mark.parametrize(
-    ('mocked_user_answers', 'configure_kwargs', 'expected_user_input'),
+    ('mocked_user_answers', 'configure_kwargs'),
     MOCKED_DIALOGS_WITH_CONFIGS,
 )
 def test_configure_user_input(
     mocker: MockerFixture,
     mocked_user_answers: Dict[str, str],
     configure_kwargs: Dict,
-    expected_user_input: UserInput,
 ):
+    expected_user_input = UserInput()
     expected_user_input.__dict__.update(mocked_user_answers)
     expected_user_input.__dict__.update(configure_kwargs)
-    mocker.patch('now.dialog.prompt', CmdPromptMock(mocked_user_answers))
+    expected_user_input.__dict__.pop('app')
+    mocker.patch('now.utils.prompt', CmdPromptMock(mocked_user_answers))
 
-    _, user_input = configure_user_input(**configure_kwargs)
+    user_input = configure_user_input(**configure_kwargs)
 
     if user_input.deployment_type == 'remote':
         user_input.__dict__.update({'jwt': None, 'admin_emails': None})
+
+    user_input.__dict__.update({'app_instance': None})
 
     assert user_input == expected_user_input

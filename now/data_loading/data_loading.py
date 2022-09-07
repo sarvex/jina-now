@@ -11,7 +11,6 @@ from docarray import Document, DocumentArray
 from now.apps.base.app import JinaNOWApp
 from now.constants import DatasetTypes, DemoDatasets
 from now.data_loading.utils import _fetch_da_from_url, get_dataset_url
-from now.dialog import _construct_app
 from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
 from now.utils import sigmap
@@ -26,7 +25,7 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
     :return: The loaded DocumentArray.
     """
     da = None
-    if user_input.is_custom_dataset:
+    if user_input.data == 'custom':
         if user_input.custom_dataset_type == DatasetTypes.DOCARRAY:
             print('⬇  Pull DocArray dataset')
             da = _pull_docarray(user_input.dataset_name)
@@ -121,7 +120,8 @@ def _load_tags_from_json_if_needed(da: DocumentArray, user_input: UserInput):
 
 def _load_tags_from_json(da, user_input):
     print(
-        f'Loading tags! We assume that you have a folder for each document. The folder contains a content file (image, text, video, ...) and a json file containing the tags'
+        f'Loading tags! We assume that you have a folder for each document. The folder contains a content '
+        f'file (image, text, video, ...) and a json file containing the tags'
     )
     # map folders to all files they contain
     folder_to_files = defaultdict(list)
@@ -144,9 +144,7 @@ def _load_tags_from_json(da, user_input):
 def get_document(files, user_input):
     # json and content have to exist
     json_file = select_ending(files, ['json'])
-    content_file = select_ending(
-        files, _construct_app(user_input.app).supported_file_types
-    )
+    content_file = select_ending(files, user_input.app_instance.supported_file_types)
     if not content_file:
         return None
     document = merge_documents(user_input, content_file, json_file)

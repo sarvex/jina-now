@@ -27,7 +27,7 @@ def common_get_flow_env_dict(
     """Returns dictionary for the environments variables for the clip & music flow.yml files."""
     if (
         finetune_settings.perform_finetuning and finetune_settings.bi_modal
-    ) or user_input.app == 'music_to_music':
+    ) or user_input.app_instance.app_name == 'music_to_music':
         pre_trained_embedding_size = pre_trained_embedding_size * 2
 
     config = {
@@ -37,7 +37,7 @@ def common_get_flow_env_dict(
         'INDEXER_NAME': f'jinahub+docker://{indexer_uses}',
         'PREFETCH': PREFETCH_NR,
         'PREPROCESSOR_NAME': f'jinahub+docker://NOWPreprocessor/v{NOW_PREPROCESSOR_VERSION}',
-        'APP': user_input.app,
+        'APP': user_input.app_instance.app_name,
         'COLUMNS': tags,
         **encoder_with,
         **indexer_resources,

@@ -1,5 +1,4 @@
 """ This module is the entry point to the finetuning package."""
-import dataclasses
 import os
 import random
 import string
@@ -229,7 +228,7 @@ def _maybe_add_embeddings(
     result = call_index(
         client=client,
         dataset=documents_without_embedding,
-        parameters={'user_input': user_input.dict()},
+        parameters={'user_input': user_input.__dict__},
         return_results=True,
     )
 
