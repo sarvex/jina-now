@@ -256,7 +256,7 @@ ADDITIONAL_USERS = DialogOptions(
 
 USER_EMAILS = DialogOptions(
     name='user_emails',
-    prompt_message='Please enter the comma separated Email IDs'
+    prompt_message='Please enter the comma separated Email IDs '
     'who will have access to this flow:',
     prompt_type='input',
     depends_on=ADDITIONAL_USERS,

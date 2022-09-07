@@ -5,7 +5,6 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 import docker
 from docarray import DocumentArray
 from jina.serve.runtimes.gateway.http.models import JinaRequestModel, JinaResponseModel
-from now_common import options
 from now_common.options import DialogOptions
 
 from now.constants import AVAILABLE_DATASET, Modalities
@@ -94,16 +93,13 @@ class JinaNOWApp:
     def options(self) -> List[DialogOptions]:
         """
         Get the options which are used to configure the app. Base class should override this function and
-        add their option to the base options. Check ``DialogOptions`` for the format of the options
+        return the list of their option. Check ``DialogOptions`` for the format of the options
         On CLI the user will get a prompt and at the storefront, a GUI will be generated accordingly.
         Example:
-        return options.base_option + options.your_custom_options (should be a list)
-        You can also rearrange the options according to how you want it to be displayed for app. In that
-        case you import base options one by one and shuffle/rearrange them. Please keep in mind, that a
-        dependent option should only come after the main options.
-        :return:
+        ``return [options.your_custom_options`]``
+        :return: List[DialogOptions]
         """
-        return options.base_options
+        return []
 
     @property
     def supported_file_types(self) -> List[str]:

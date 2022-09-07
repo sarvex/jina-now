@@ -32,6 +32,11 @@ def _configure_app_options(user_input, **kwargs):
     # First we configure the app and initialize it
     configure_option(options.APP, user_input, **kwargs)
 
+    # Ask the base/common options
+    for option in options.base_options:
+        configure_option(option, user_input, **kwargs)
+
+    # Ask app specific options
     for option in user_input.app_instance.options:
         configure_option(option, user_input, **kwargs)
 
