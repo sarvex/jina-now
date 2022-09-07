@@ -4,8 +4,8 @@ from jina import Document, DocumentArray, Flow
 
 from ..executor import AnnLiteNOWIndexer3
 
-N = 100  # number of data points
-Nu = 99  # number of data update
+N = 10  # number of data points
+Nu = 9  # number of data update
 Nq = 10
 D = 128  # dimentionality / number of features
 
@@ -216,18 +216,22 @@ def test_delete(tmpdir):
         uses_metas=metas,
     )
     with f:
+        docs[0].tags['parent_tag'] = 'different_value'
         f.post(on='/index', inputs=docs)
         status = f.post(on='/status', return_results=True)[0]
         assert int(status.tags['total_docs']) == N
         assert int(status.tags['index_size']) == N
 
-        f.post(on='/delete', inputs=docs[:5])
+        f.post(
+            on='/delete',
+            parameters={'filter': {'tags__parent_tag': {'$eq': 'different_value'}}},
+        )
         status = f.post(on='/status', return_results=True)[0]
-        assert int(status.tags['total_docs']) == N - 5
-        assert int(status.tags['index_size']) == N - 5
+        assert int(status.tags['total_docs']) == N - 1
+        assert int(status.tags['index_size']) == N - 1
 
         doc_list = f.post(on='/list')
-        assert len(doc_list) == N - 5
+        assert len(doc_list) == N - 1
 
         docs_query = gen_docs(Nq)
         f.post(on='/search', inputs=docs_query, return_results=True)

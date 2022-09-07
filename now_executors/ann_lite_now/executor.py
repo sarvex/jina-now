@@ -1,3 +1,4 @@
+from copy import deepcopy
 from sys import maxsize
 from typing import Dict, List, Optional
 
@@ -151,26 +152,17 @@ class AnnLiteNOWIndexer3(Executor):
         self._index.update(flat_docs)
 
     @requests(on='/delete')
-    def delete(
-        self, docs: Optional[DocumentArray] = None, parameters: dict = {}, **kwargs
-    ):
-        """Delete existing documents
-
-        :param docs: the Documents to delete
-        :param parameters: dictionary with options for deletion
-
-        Keys accepted:
-            - 'traversal_paths' (str): traversal path for the docs
+    def delete(self, parameters: dict = {}, **kwargs):
         """
-        if not docs:
-            return
-
-        traversal_paths = parameters.get('traversal_paths', self.index_traversal_paths)
-        flat_docs = docs[traversal_paths]
-        if len(flat_docs) == 0:
-            return
-        self.delete_inmemory_docs(flat_docs)
-        self._index.delete(flat_docs)
+        Delete endpoint to delete document/documents from the index.
+        Filter conditions can be passed to select documents for deletion.
+        """
+        filter = parameters.get("filter", {})
+        if filter:
+            filtered_docs = deepcopy(self.da.find(filter=filter))
+            self.delete_inmemory_docs(filtered_docs)
+            self._index.delete(filtered_docs)
+        return DocumentArray()
 
     @requests(on='/list')
     def list(self, parameters: dict = {}, **kwargs):
