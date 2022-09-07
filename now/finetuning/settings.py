@@ -10,10 +10,10 @@ from now.now_dataclasses import UserInput
 
 DEFAULT_EPOCHS = 5
 DEFAULT_HIDDEN_SIZES = (128,)
-DEFAULT_NUM_VAL_QUERIES = 50
+DEFAULT_NUM_VAL_QUERIES = 5
 DEFAULT_FINETUNED_EMBEDDING_SIZE = 128
 DEFAULT_BATCH_SIZE = 128
-DEFAULT_TRAIN_VAL_SPLIT_RATIO = 0.9
+DEFAULT_TRAIN_VAL_SPLIT_RATIO = 0.8
 DEFAULT_EVAL_MATCH_LIMIT = 20
 DEFAULT_NUM_ITEMS_PER_CLASS = 4
 DEFAULT_LEARNING_RATE = 5e-4
@@ -85,8 +85,8 @@ def parse_finetune_settings(
     return FinetuneSettings(
         perform_finetuning=_is_finetuning(user_input, dataset, finetune_datasets),
         bi_modal=_is_bi_modal(user_input, dataset),
-        model_name=user_input.app.finetuning_model_name(encoder_type),
-        loss=user_input.app.loss_function(encoder_type),
-        add_embeddings=user_input.app.add_embeddings(),
+        model_name='openai/clip-vit-base-patch32',  #user_input.app.finetuning_model_name(encoder_type),
+        loss='CLIPLoss',  #user_input.app.loss_function(encoder_type),
+        add_embeddings=False, #user_input.app.add_embeddings(),
         pre_trained_embedding_size=pre_trained_embedding_size,
     )

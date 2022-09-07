@@ -1,4 +1,5 @@
 import dataclasses
+import json
 import os
 import pathlib
 import random
@@ -13,7 +14,7 @@ from now.apps.base.app import JinaNOWApp
 from now.data_loading.data_loading import load_data
 from now.deployment.flow import deploy_flow
 from now.log import time_profiler
-from now.now_dataclasses import UserInput
+from now.now_dataclasses import UserInput, Task
 
 cur_dir = pathlib.Path(__file__).parent.resolve()
 
@@ -28,6 +29,11 @@ def run(app_instance: JinaNOWApp, user_input: UserInput, kubectl_path: str):
     :return:
     """
     dataset = load_data(app_instance, user_input)
+
+    with open('/Users/jinaai/Desktop/now/tests/resources/nest/config.json') as f:
+        dct = json.load(f)
+        task = Task(**dct)
+        user_input.task_config = task
 
     env_dict = app_instance.setup(
         dataset=dataset, user_input=user_input, kubectl_path=kubectl_path

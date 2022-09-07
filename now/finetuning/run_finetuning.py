@@ -108,11 +108,11 @@ def _finetune_model(
     finetuner.login()
 
     callbacks = [
-        EvaluationCallback(
-            finetune_ds.val_query,
-            finetune_ds.val_index,
-            limit=finetune_settings.eval_match_limit,
-        ),
+        # EvaluationCallback(
+        #     finetune_ds.val_query,
+        #     finetune_ds.val_index,
+        #     limit=finetune_settings.eval_match_limit,
+        # ),
         EarlyStopping(
             monitor='ndcg',
             patience=finetune_settings.early_stopping_patience,

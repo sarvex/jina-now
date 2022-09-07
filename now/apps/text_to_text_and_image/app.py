@@ -2,6 +2,9 @@ import os
 from typing import Dict, Optional
 
 from docarray import DocumentArray
+
+from now.finetuning.run_finetuning import finetune
+from now.finetuning.settings import parse_finetune_settings
 from now_common.preprocess import preprocess_nested_docs, preprocess_text
 
 from now.apps.base.app import JinaNOWApp
@@ -24,7 +27,7 @@ class TextToTextAndImage(JinaNOWApp):
 
     @property
     def is_enabled(self) -> bool:
-        return False
+        return True
 
     @property
     def description(self) -> str:
@@ -46,10 +49,10 @@ class TextToTextAndImage(JinaNOWApp):
         return Modalities.TEXT_AND_IMAGE
 
     def preprocess(
-        self,
-        da: DocumentArray,
-        user_input: UserInput,
-        is_indexing: Optional[bool] = False,
+            self,
+            da: DocumentArray,
+            user_input: UserInput,
+            is_indexing: Optional[bool] = False,
     ) -> DocumentArray:
         # Indexing
         if is_indexing:
@@ -59,10 +62,29 @@ class TextToTextAndImage(JinaNOWApp):
             return preprocess_text(da=da, split_by_sentences=False)
 
     def setup(
-        self, dataset: DocumentArray, user_input: UserInput, kubectl_path
+            self, dataset: DocumentArray, user_input: UserInput, kubectl_path
     ) -> Dict:
         # only implements data generation
         data = DataBuilder(dataset=dataset, config=user_input.task_config).build()
+
+        # for encoder_data, encoder_type in data:
+        encoder_data, encoder_type = data[1]
+        finetune_settings = parse_finetune_settings(user_input=user_input,
+                                           dataset=dataset,
+                                           encoder_type=encoder_type)
+
+        artifact_id, token = finetune(
+            finetune_settings=finetune_settings,
+            app_instance=self,
+            dataset=encoder_data,
+            user_input=user_input,
+            env_dict={},
+            kubectl_path=kubectl_path,
+        )
+        import time
+        time.sleep(10)
+        exit(0)
+
         return {}
 
     @property
@@ -84,4 +106,3 @@ class TextToTextAndImage(JinaNOWApp):
     def add_embeddings(self) -> bool:
         """Whether we need to calculate embeddings before fine-tuning or not."""
         raise False
-

@@ -31,6 +31,7 @@ class EncoderDataBuilder:
         self._name = name
         self._methods = methods
         self._encoder_type = encoder_type
+        self._modality = 'multi_model' if self._encoder_type == 'text-to-image' else 'single_model'
         self._generation_cls = {
             cls.name(): cls
             for _, cls in getmembers(generation_fns, isclass)
@@ -58,7 +59,7 @@ class EncoderDataBuilder:
             for doc_id, document in enumerate(es_data):
                 queries = query_generator.process(document=document)
                 targets = target_generator.process(document=document)
-                if self._encoder_type == 'single_model':
+                if self._modality == 'single_model':
                     merged_docs = []
                     for doc in [*queries, *targets]:
                         doc.tags = {'finetuner_label': doc_id}
@@ -76,6 +77,10 @@ class EncoderDataBuilder:
     @property
     def name(self):
         return self._name
+
+    @property
+    def encoder_type(self):
+        return self._encoder_type
 
 
 class DataBuilder:
@@ -96,12 +101,13 @@ class DataBuilder:
         :param threads_per_worker: Number of threads per worker.
         """
         self._dataset = dataset
-        self._num_workers = num_workers if num_workers else os.cpu_count()
+        # self._num_workers = num_workers if num_workers else os.cpu_count()
+        self._num_workers = 1
         self._enc_data_builders = self._init_enc_data_builders(config)
-        self._dask_client = Client(
-            threads_per_worker=threads_per_worker,
-            n_workers=self._num_workers,
-        )
+        # self._dask_client = Client(
+        #     threads_per_worker=threads_per_worker,
+        #     n_workers=self._num_workers,
+        # )
 
     @staticmethod
     def _init_enc_data_builders(
@@ -122,9 +128,7 @@ class DataBuilder:
                 EncoderDataBuilder(
                     name=encoder.name,
                     methods=encoder.training_data_generation_methods,
-                    encoder_type='multi_model'
-                    if encoder.encoder_type == 'text-to-image'
-                    else 'single_model',
+                    encoder_type=encoder.encoder_type
                 ),
             )
             for encoder in config.encoders
@@ -146,7 +150,7 @@ class DataBuilder:
         self,
         to_hubble: bool = False,
         data_dir: Optional[str] = None,
-    ) -> Dict[str, DocumentArray]:
+    ) -> List[Tuple[DocumentArray, str]]:
         """
         Generates data from ES dataset based on the task configuration file.
 
@@ -162,22 +166,25 @@ class DataBuilder:
             transformed_data = transform_es_data(data)
             return data_builder.build(es_data=transformed_data)
 
-        data = {}
+        data = []
         for dataset_name, enc_data_builder in self._enc_data_builders:
-            futures = []
+            # futures = []
+            generated_data = []
             for chunk in self._data_chunk_generator(
                 data=self._dataset, num_chunks=self._num_workers
             ):
-                futures.append(
-                    self._dask_client.submit(_generate, chunk, enc_data_builder)
-                )
-            results = self._dask_client.gather(futures)
-            dataset = DocumentArray(itertools.chain.from_iterable(results))
-            data[enc_data_builder.name] = dataset
+                # futures.append(
+                #     self._dask_client.submit(_generate, chunk, enc_data_builder)
+                # )
+                generated_data = _generate(chunk, enc_data_builder)
+            # results = self._dask_client.gather(futures)
+            # dataset = DocumentArray(itertools.chain.from_iterable(results))
 
-            if to_hubble:
-                dataset.push(dataset_name, show_progress=True, public=False)
-            if data_dir:
-                os.makedirs(data_dir, exist_ok=True)
-                dataset.save_binary(os.path.join(data_dir, dataset_name))
+            data.append((generated_data, enc_data_builder.encoder_type))
+
+            # if to_hubble:
+            #     dataset.push(dataset_name, show_progress=True, public=False)
+            # if data_dir:
+            #     os.makedirs(data_dir, exist_ok=True)
+            #     dataset.save_binary(os.path.join(data_dir, dataset_name))
         return data

@@ -29,32 +29,35 @@ class FinetuneDataset:
 
 
 def build_finetuning_dataset(
-    dataset: DocumentArray, finetune_setting: FinetuneSettings
+    dataset: DocumentArray, finetune_settings: FinetuneSettings
 ) -> FinetuneDataset:
     ds = FinetuneDataset(index=dataset)
 
     split_index = max(
-        int(len(dataset) * finetune_setting.train_val_split_ration),
+        int(len(dataset) * finetune_settings.train_val_split_ration),
         len(dataset) - MAX_VAL_SET_SIZE,
     )
 
     def _create_finetune_subset(subset: DocumentArray) -> DocumentArray:
-        return DocumentArray(
-            [
-                Document(
-                    tensor=doc.embedding.astype('float32'),
-                    tags={'finetuner_label': doc.tags['finetuner_label']},
-                )
-                for doc in subset
-            ]
-        )
+        if finetune_settings.add_embeddings:
+            return DocumentArray(
+                [
+                    Document(
+                        tensor=doc.embedding.astype('float32'),
+                        tags={'finetuner_label': doc.tags['finetuner_label']},
+                    )
+                    for doc in subset
+                ]
+            )
+        else:
+            return subset
 
     ds.train = _create_finetune_subset(dataset[:split_index])
     ds.val = _create_finetune_subset(dataset[split_index:])
 
-    ds.val_index = _create_finetune_subset(dataset[split_index:])
-    ds.val_query = _create_finetune_subset(
-        dataset[split_index:].sample(k=finetune_setting.num_val_queries, seed=_SEED)
-    )
+    # ds.val_index = _create_finetune_subset(dataset[split_index:])
+    # ds.val_query = _create_finetune_subset(
+    #     dataset[split_index:].sample(k=finetune_settings.num_val_queries, seed=_SEED)
+    # )
 
     return ds
