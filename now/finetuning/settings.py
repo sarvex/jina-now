@@ -51,7 +51,7 @@ def _is_finetuning(
 ) -> bool:
     if (
         user_input.data in finetuneable_datasets
-        or user_input.app_instance.name == Apps.TEXT_TO_TEXT_AND_IMAGE
+        or user_input.app_instance.app_name == Apps.TEXT_TO_TEXT_AND_IMAGE
     ):
         return True
     elif user_input.data == 'custom' and all(
@@ -63,7 +63,7 @@ def _is_finetuning(
 
 
 def _is_bi_modal(user_input: UserInput, dataset: DocumentArray) -> bool:
-    if user_input.app_instance.name == Apps.TEXT_TO_TEXT_AND_IMAGE:
+    if user_input.app_instance.app_name == Apps.TEXT_TO_TEXT_AND_IMAGE:
         return False
     elif user_input.data == 'custom':
         has_blob = any([d.blob != b'' for d in dataset])
@@ -86,6 +86,6 @@ def parse_finetune_settings(
         bi_modal=_is_bi_modal(user_input, dataset),
         model_name=user_input.app_instance.finetuning_model_name(encoder_type),
         loss=user_input.app_instance.loss_function(encoder_type),
-        add_embeddings=user_input.app_instance.add_embeddings(),
+        add_embeddings=user_input.app_instance.add_embeddings,
         pre_trained_embedding_size=pre_trained_embedding_size,
     )

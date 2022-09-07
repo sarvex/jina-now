@@ -70,27 +70,27 @@ def test_token_exists():
 @pytest.mark.parametrize(
     'app, input_modality, output_modality, dataset, deployment_type',
     [
-        # (
-        #     Apps.TEXT_TO_IMAGE,
-        #     Modalities.TEXT,
-        #     Modalities.IMAGE,
-        #     DemoDatasets.BIRD_SPECIES,
-        #     'local',
-        # ),
-        # (
-        #     Apps.IMAGE_TO_IMAGE,
-        #     Modalities.IMAGE,
-        #     Modalities.IMAGE,
-        #     DemoDatasets.BEST_ARTWORKS,
-        #     'local',
-        # ),
-        # (
-        #     Apps.IMAGE_TO_TEXT,
-        #     Modalities.IMAGE,
-        #     Modalities.TEXT,
-        #     DemoDatasets.ROCK_LYRICS,
-        #     'remote',
-        # ),
+        (
+            Apps.TEXT_TO_IMAGE,
+            Modalities.TEXT,
+            Modalities.IMAGE,
+            DemoDatasets.BIRD_SPECIES,
+            'local',
+        ),
+        (
+            Apps.IMAGE_TO_IMAGE,
+            Modalities.IMAGE,
+            Modalities.IMAGE,
+            DemoDatasets.BEST_ARTWORKS,
+            'local',
+        ),
+        (
+            Apps.IMAGE_TO_TEXT,
+            Modalities.IMAGE,
+            Modalities.TEXT,
+            DemoDatasets.ROCK_LYRICS,
+            'remote',
+        ),
         (
             Apps.TEXT_TO_TEXT,
             Modalities.TEXT,
@@ -98,13 +98,13 @@ def test_token_exists():
             DemoDatasets.POP_LYRICS,
             'remote',
         ),
-        # (
-        #     Apps.TEXT_TO_VIDEO,
-        #     Modalities.TEXT,
-        #     Modalities.VIDEO,
-        #     DemoDatasets.TUMBLR_GIFS_10K,
-        #     'local',
-        # ),
+        (
+            Apps.TEXT_TO_VIDEO,
+            Modalities.TEXT,
+            Modalities.VIDEO,
+            DemoDatasets.TUMBLR_GIFS_10K,
+            'local',
+        ),
     ],
 )
 @pytest.mark.parametrize('quality', ['medium'])
@@ -125,7 +125,7 @@ def test_backend_demo_data(
     os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
     kwargs = {
         'now': 'start',
-        'app_instance': _construct_app(app),
+        'app': app,
         'data': dataset,
         'quality': quality,
         'cluster': cluster,

@@ -55,7 +55,7 @@ APP = DialogOptions(
     is_terminal_command=True,
     description='What sort of search engine would you like to build?',
     post_func=lambda user_input, **kwargs: _construct_app(
-        kwargs['app_instance'].name, user_input, **kwargs
+        kwargs['app'], user_input, **kwargs
     ),
 )
 
