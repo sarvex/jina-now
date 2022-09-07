@@ -74,63 +74,19 @@ def _is_bi_modal(user_input: UserInput, dataset: DocumentArray) -> bool:
         return True  # right now all demo cases are bi-modal
 
 
-def _get_model_name(app: Apps, metadata: Optional[dict] = None) -> str:
-    """
-    Get the name of the model to be fine-tuned. `TextToTextAndImage` needs to fine-tune
-    both sbert and clip model depending on the encoder. Other apps only fine-tune an
-    additional linear layer.
-
-    :param app: Name of the app.
-    :param metadata: Additional info on model, app or dataset.
-    :return: Name of the model.
-    """
-    if app == Apps.TEXT_TO_TEXT_AND_IMAGE:
-        if metadata['encoder_type'] == 'text_to_text':
-            return 'sentence-transformers/msmarco-distilbert-base-v3'
-        elif metadata['encoder_type'] == 'text_to_image':
-            return 'openai/clip-vit-base-patch32'
-    else:
-        return 'mlp'
-
-
-def _get_loss(app: Apps, metadata: Optional[dict] = None) -> str:
-    """
-    Get loss function based on the app and encoder type.
-
-    :param app: Name of the app.
-    :param metadata: Additional info on model, app or dataset.
-    :return: Name of the loss function.
-    """
-    if app == Apps.TEXT_TO_TEXT_AND_IMAGE:
-        if metadata['encoder_type'] == 'text_to_image':
-            return 'CLIPLoss'
-    return 'TripletMarginLoss'
-
-
-def _add_embeddings(app: Apps) -> bool:
-    """
-    Determines whether we need to add embeddings to the dataset before fine-tuning.
-    (Currently, this is `True` for every app except `TextToTextAndImage`).
-
-    :param app: Name of the app.
-    :return: `True` if embeddings need to be calculated beforehand, `False` otherwise.
-    """
-    return app != Apps.TEXT_TO_TEXT_AND_IMAGE
-
-
 def parse_finetune_settings(
     user_input: UserInput,
     dataset: DocumentArray,
     finetune_datasets: Tuple = (),
     pre_trained_embedding_size: Optional[int] = None,
-    metadata: Optional[dict] = None,
+    encoder_type: Optional[str] = None,
 ) -> FinetuneSettings:
     """This function parses the user input configuration into the finetune settings"""
     return FinetuneSettings(
         perform_finetuning=_is_finetuning(user_input, dataset, finetune_datasets),
         bi_modal=_is_bi_modal(user_input, dataset),
-        model_name=_get_model_name(user_input.app, metadata),
-        loss=_get_loss(user_input.app, metadata),
-        add_embeddings=_add_embeddings(user_input.app),
+        model_name=user_input.app.finetuning_model_name(encoder_type),
+        loss=user_input.app.loss_function(encoder_type),
+        add_embeddings=user_input.app.add_embeddings(),
         pre_trained_embedding_size=pre_trained_embedding_size,
     )

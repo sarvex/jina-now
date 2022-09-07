@@ -64,3 +64,24 @@ class TextToTextAndImage(JinaNOWApp):
         # only implements data generation
         data = DataBuilder(dataset=dataset, config=user_input.task_config).build()
         return {}
+
+    @property
+    def finetuning_model_name(self, encoder_type: Optional[str] = None) -> str:
+        """Name of the model used in case of fine-tuning."""
+        if encoder_type == 'text_to_text':
+            return 'sentence-transformers/msmarco-distilbert-base-v3'
+        elif encoder_type == 'text_to_image':
+            return 'openai/clip-vit-base-patch32'
+
+    @property
+    def loss_function(self, encoder_type: Optional[str] = None) -> str:
+        """Loss function used during fine-tuning."""
+        if encoder_type == 'text_to_image':
+            return 'CLIPLoss'
+        return 'TripletMarginLoss'
+
+    @property
+    def add_embeddings(self) -> bool:
+        """Whether we need to calculate embeddings before fine-tuning or not."""
+        raise False
+

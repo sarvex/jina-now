@@ -261,3 +261,18 @@ class JinaNOWApp:
     def index_query_access_paths(self) -> str:
         """Gives access paths for indexing and searching."""
         return '@r'
+
+    @property
+    def finetuning_model_name(self, encoder_type: Optional[str] = None) -> str:
+        """Name of the model used in case of fine-tuning."""
+        return 'mlp'
+
+    @property
+    def loss_function(self, encoder_type: Optional[str] = None) -> str:
+        """Loss function used during fine-tuning."""
+        return 'TripletMarginLoss'
+
+    @property
+    def add_embeddings(self) -> bool:
+        """Whether we need to calculate embeddings before fine-tuning or not."""
+        return True
