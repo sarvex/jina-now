@@ -6,7 +6,7 @@ from now.utils import BetterEnum
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.120-adapt-annlite-add-docs'
-NOW_PREPROCESSOR_VERSION = '0.0.75-adapt-annlite-add-docs'
+NOW_PREPROCESSOR_VERSION = '0.0.76-fix-tags-3'
 
 NOW_AUTH_EXECUTOR_VERSION = '0.0.3-8'
 

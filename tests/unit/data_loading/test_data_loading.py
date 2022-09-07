@@ -11,7 +11,7 @@ from now.apps.music_to_music.app import MusicToMusic
 from now.apps.text_to_image.app import TextToImage
 from now.apps.text_to_text.app import TextToText
 from now.apps.text_to_text_and_image.app import TextToTextAndImage
-from now.constants import DatasetTypes, DemoDatasets
+from now.constants import Apps, DatasetTypes, DemoDatasets
 from now.data_loading.data_loading import _load_tags_from_json_if_needed, load_data
 from now.now_dataclasses import UserInput
 
@@ -147,7 +147,7 @@ def test_es_online_shop_ds(da: DocumentArray):
 def user_input():
     user_input = UserInput()
     user_input.dataset_path = ''
-    user_input.app = TextToImage()
+    user_input.app = Apps.TEXT_TO_IMAGE
     return user_input
 
 
