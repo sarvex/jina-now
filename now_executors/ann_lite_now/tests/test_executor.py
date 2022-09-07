@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 from jina import Document, DocumentArray, Flow
 
 from ..executor import AnnLiteNOWIndexer3
@@ -64,7 +65,10 @@ def test_index(tmpdir):
         assert len(result) == 0
 
 
-def test_list(tmpdir):
+@pytest.mark.parametrize(
+    'offset, limit', [(0, 0), (10, 0), (0, 10), (10, 10), (None, None)]
+)
+def test_list(tmpdir, offset, limit):
     """Test list returns all indexed docs"""
     metas = {'workspace': str(tmpdir)}
     docs = gen_docs(N)
@@ -77,14 +81,24 @@ def test_list(tmpdir):
     )
     with f:
         f.post(on='/index', inputs=docs)
-        list_res = f.post(on='/list', return_results=True)
-        assert len(list_res) == N
-        assert list_res[0].id == '0'
-        assert list_res[0].uri == 'my-parent-uri'
-        assert len(list_res[0].chunks) == 0
-        assert list_res[0].embedding is None
-        assert list_res[0].text == ''
-        assert list_res[0].tags == {'parent_tag': 'value'}
+        parameters = (
+            {
+                'offset': offset,
+                'limit': limit,
+            }
+            if offset is not None
+            else {}
+        )
+        list_res = f.post(on='/list', parameters=parameters, return_results=True)
+        l = N if offset is None else limit
+        assert len(list_res) == l
+        if l > 0:
+            assert list_res[0].id == str(offset) if offset is not None else '0'
+            assert list_res[0].uri == 'my-parent-uri'
+            assert len(list_res[0].chunks) == 0
+            assert list_res[0].embedding is None
+            assert list_res[0].text == ''
+            assert list_res[0].tags == {'parent_tag': 'value'}
 
 
 def test_update(tmpdir):
@@ -211,6 +225,9 @@ def test_delete(tmpdir):
         status = f.post(on='/status', return_results=True)[0]
         assert int(status.tags['total_docs']) == N - 5
         assert int(status.tags['index_size']) == N - 5
+
+        doc_list = f.post(on='/list')
+        assert len(doc_list) == N - 5
 
         docs_query = gen_docs(Nq)
         f.post(on='/search', inputs=docs_query, return_results=True)
