@@ -156,6 +156,7 @@ class AnnLiteNOWIndexer3(Executor):
         for cell_id in range(self._index.n_cells):
             for docs in self._index.documents_generator(cell_id, batch_size=10240):
                 da.extend(Document(id=d.id, uri=d.uri, tags=d.tags) for d in docs)
+        return da
 
     @requests(on='/search')
     def search(

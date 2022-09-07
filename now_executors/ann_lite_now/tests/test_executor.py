@@ -3,9 +3,8 @@ from jina import Document, DocumentArray, Flow
 
 from ..executor import AnnLiteNOWIndexer3
 
-N = 1000  # number of data points
-Nt = 2000
-Nu = 999  # number of data update
+N = 100  # number of data points
+Nu = 99  # number of data update
 Nq = 10
 D = 128  # dimentionality / number of features
 
@@ -14,7 +13,13 @@ def gen_docs(num, has_chunk=False):
     res = DocumentArray()
     k = np.random.random((num, D)).astype(np.float32)
     for i in range(num):
-        doc = Document(id=f'{i}', embedding=k[i])
+        doc = Document(
+            id=f'{i}',
+            text='parent',
+            embedding=k[i],
+            uri='my-parent-uri',
+            tags={'parent_tag': 'value'},
+        )
         if has_chunk:
             for j in range(2):
                 doc.chunks.append(Document(id=f'{i}_{j}', embedding=doc.embedding))
@@ -44,6 +49,7 @@ def docs_with_tags(N):
 
 
 def test_index(tmpdir):
+    """Test indexing does not return anything"""
     metas = {'workspace': str(tmpdir)}
     docs = gen_docs(N)
     f = Flow().add(
@@ -55,7 +61,30 @@ def test_index(tmpdir):
     )
     with f:
         result = f.post(on='/index', inputs=docs, return_results=True)
-        assert len(result) == N
+        assert len(result) == 0
+
+
+def test_list(tmpdir):
+    """Test list returns all indexed docs"""
+    metas = {'workspace': str(tmpdir)}
+    docs = gen_docs(N)
+    f = Flow().add(
+        uses=AnnLiteNOWIndexer3,
+        uses_with={
+            'dim': D,
+        },
+        uses_metas=metas,
+    )
+    with f:
+        f.post(on='/index', inputs=docs)
+        list_res = f.post(on='/list', return_results=True)
+        assert len(list_res) == N
+        assert list_res[0].id == '0'
+        assert list_res[0].uri == 'my-parent-uri'
+        assert len(list_res[0].chunks) == 0
+        assert list_res[0].embedding is None
+        assert list_res[0].text == ''
+        assert list_res[0].tags == {'parent_tag': 'value'}
 
 
 def test_update(tmpdir):

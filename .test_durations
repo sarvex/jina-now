@@ -1,4 +1,13 @@
 {
+    "now_executors/ann_lite_now/tests/test_executor.py::test_clear": 1.2173394549999994,
+    "now_executors/ann_lite_now/tests/test_executor.py::test_delete": 1.2909562979999993,
+    "now_executors/ann_lite_now/tests/test_executor.py::test_index": 1.1954613960000002,
+    "now_executors/ann_lite_now/tests/test_executor.py::test_list": 1.203160613,
+    "now_executors/ann_lite_now/tests/test_executor.py::test_search": 1.2103859550000005,
+    "now_executors/ann_lite_now/tests/test_executor.py::test_search_match": 1.3641626500000017,
+    "now_executors/ann_lite_now/tests/test_executor.py::test_search_with_filtering": 1.189567352,
+    "now_executors/ann_lite_now/tests/test_executor.py::test_status": 1.1812931969999987,
+    "now_executors/ann_lite_now/tests/test_executor.py::test_update": 1.2944662130000006,
     "tests/integration/data_loading/test_demo_datasets.py::test_dataset_is_available[excellent-image-best-artworks]": 0.5055535599999998,
     "tests/integration/data_loading/test_demo_datasets.py::test_dataset_is_available[excellent-image-bird-species]": 0.38489829799999997,
     "tests/integration/data_loading/test_demo_datasets.py::test_dataset_is_available[excellent-image-deepfashion]": 0.251817897,
