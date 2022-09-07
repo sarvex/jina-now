@@ -4,6 +4,35 @@ from jina import Flow
 from now_executors.docarray_indexer.docarray_indexer_v3 import DocarrayIndexerV3
 
 
+def test_list():
+    with Flow().add(uses=DocarrayIndexerV3) as f:
+        f.index(
+            DocumentArray(
+                [
+                    Document(
+                        id="doc2",
+                        blob=b"jpg...",
+                        embedding=np.ones(5),
+                        tags={'color': 'red', 'length': 18},
+                    ),
+                    Document(
+                        id="doc3",
+                        blob=b"jpg...",
+                        embedding=np.ones(5),
+                        tags={'color': 'blue'},
+                    ),
+                ]
+            )
+        )
+
+        x = f.post('/list')
+        assert len(x) == 2
+        assert 'color' in x[0].tags
+        assert x[0].embedding is None
+        assert x[0].blob == b''
+        assert len(x[0].chunks) == 0
+
+
 def test_filtering():
     with Flow().add(uses=DocarrayIndexerV3, uses_with={"traversal_paths": "@r"}) as f:
         f.index(
@@ -48,8 +77,8 @@ def test_filtering():
             parameters={
                 'filter': {
                     '$and': [
-                        {'color': {'$eq': 'red'}},
-                        {'length': {'$eq': 19}},
+                        {'tags__color': {'$eq': 'red'}},
+                        {'tags__length': {'$eq': 19}},
                     ]
                 }
             },
@@ -60,8 +89,8 @@ def test_filtering():
             parameters={
                 'filter': {
                     '$and': [
-                        {'color': {'$eq': 'red'}},
-                        {'length': {'$eq': 18}},
+                        {'tags__color': {'$eq': 'red'}},
+                        {'tags__length': {'$eq': 18}},
                     ]
                 }
             },
@@ -69,11 +98,13 @@ def test_filtering():
         assert len(result) == 1
 
         result = f.post(
-            on='/filter', parameters={'filter': {'something': {'$eq': 'kind'}}}
+            on='/filter', parameters={'filter': {'tags__something': {'$eq': 'kind'}}}
         )
         assert len(result) == 0
 
-        result = f.post(on='/filter', parameters={'filter': {'color': {'$eq': 'red'}}})
+        result = f.post(
+            on='/filter', parameters={'filter': {'tags__color': {'$eq': 'red'}}}
+        )
         assert len(result) == 1
 
 
@@ -123,11 +154,11 @@ def test_search():
                 embedding=np.ones(5),
             ),
             return_results=True,
-            parameters={'filter': {'color': {'$eq': 'blue'}}},
+            parameters={'filter': {'tags__color': {'$eq': 'blue'}}},
         )
-        assert len(result) == 1
+        assert len(result[0].matches) == 1
 
-        result = f.search(
+        result2 = f.search(
             Document(
                 id="doc2",
                 blob=b"jpg...",
@@ -135,4 +166,4 @@ def test_search():
             ),
             return_results=True,
         )
-        assert len(result) == 3
+        assert len(result2[0].matches) == 3

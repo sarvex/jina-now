@@ -1,11 +1,11 @@
 import numpy as np
+import pytest
 from jina import Document, DocumentArray, Flow
 
 from ..executor import AnnLiteNOWIndexer3
 
-N = 1000  # number of data points
-Nt = 2000
-Nu = 999  # number of data update
+N = 100  # number of data points
+Nu = 99  # number of data update
 Nq = 10
 D = 128  # dimentionality / number of features
 
@@ -14,7 +14,13 @@ def gen_docs(num, has_chunk=False):
     res = DocumentArray()
     k = np.random.random((num, D)).astype(np.float32)
     for i in range(num):
-        doc = Document(id=f'{i}', embedding=k[i])
+        doc = Document(
+            id=f'{i}',
+            text='parent',
+            embedding=k[i],
+            uri='my-parent-uri',
+            tags={'parent_tag': 'value'},
+        )
         if has_chunk:
             for j in range(2):
                 doc.chunks.append(Document(id=f'{i}_{j}', embedding=doc.embedding))
@@ -44,6 +50,7 @@ def docs_with_tags(N):
 
 
 def test_index(tmpdir):
+    """Test indexing does not return anything"""
     metas = {'workspace': str(tmpdir)}
     docs = gen_docs(N)
     f = Flow().add(
@@ -55,7 +62,43 @@ def test_index(tmpdir):
     )
     with f:
         result = f.post(on='/index', inputs=docs, return_results=True)
-        assert len(result) == N
+        assert len(result) == 0
+
+
+@pytest.mark.parametrize(
+    'offset, limit', [(0, 0), (10, 0), (0, 10), (10, 10), (None, None)]
+)
+def test_list(tmpdir, offset, limit):
+    """Test list returns all indexed docs"""
+    metas = {'workspace': str(tmpdir)}
+    docs = gen_docs(N)
+    f = Flow().add(
+        uses=AnnLiteNOWIndexer3,
+        uses_with={
+            'dim': D,
+        },
+        uses_metas=metas,
+    )
+    with f:
+        f.post(on='/index', inputs=docs)
+        parameters = (
+            {
+                'offset': offset,
+                'limit': limit,
+            }
+            if offset is not None
+            else {}
+        )
+        list_res = f.post(on='/list', parameters=parameters, return_results=True)
+        l = N if offset is None else limit
+        assert len(list_res) == l
+        if l > 0:
+            assert list_res[0].id == str(offset) if offset is not None else '0'
+            assert list_res[0].uri == 'my-parent-uri'
+            assert len(list_res[0].chunks) == 0
+            assert list_res[0].embedding is None
+            assert list_res[0].text == ''
+            assert list_res[0].tags == {'parent_tag': 'value'}
 
 
 def test_update(tmpdir):
@@ -182,6 +225,9 @@ def test_delete(tmpdir):
         status = f.post(on='/status', return_results=True)[0]
         assert int(status.tags['total_docs']) == N - 5
         assert int(status.tags['index_size']) == N - 5
+
+        doc_list = f.post(on='/list')
+        assert len(doc_list) == N - 5
 
         docs_query = gen_docs(Nq)
         f.post(on='/search', inputs=docs_query, return_results=True)
