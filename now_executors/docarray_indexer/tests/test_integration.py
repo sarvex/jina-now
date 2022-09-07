@@ -1,11 +1,11 @@
 import numpy as np
 from docarray import Document, DocumentArray
-from docarray_indexer_v2 import DocarrayIndexerV2
 from jina import Flow
+from now_executors.docarray_indexer.docarray_indexer_v3 import DocarrayIndexerV3
 
 
 def test_filtering():
-    with Flow().add(uses=DocarrayIndexerV2, uses_with={"traversal_paths": "@r"}) as f:
+    with Flow().add(uses=DocarrayIndexerV3, uses_with={"traversal_paths": "@r"}) as f:
         f.index(
             DocumentArray(
                 [
@@ -48,8 +48,8 @@ def test_filtering():
             parameters={
                 'filter': {
                     '$and': [
-                        {'tags__color': {'$eq': 'red'}},
-                        {'tags__length': {'$eq': 19}},
+                        {'color': {'$eq': 'red'}},
+                        {'length': {'$eq': 19}},
                     ]
                 }
             },
@@ -60,8 +60,8 @@ def test_filtering():
             parameters={
                 'filter': {
                     '$and': [
-                        {'tags__color': {'$eq': 'red'}},
-                        {'tags__length': {'$eq': 18}},
+                        {'color': {'$eq': 'red'}},
+                        {'length': {'$eq': 18}},
                     ]
                 }
             },
@@ -69,18 +69,16 @@ def test_filtering():
         assert len(result) == 1
 
         result = f.post(
-            on='/filter', parameters={'filter': {'tags__something': {'$eq': 'kind'}}}
+            on='/filter', parameters={'filter': {'something': {'$eq': 'kind'}}}
         )
         assert len(result) == 0
 
-        result = f.post(
-            on='/filter', parameters={'filter': {'tags__color': {'$eq': 'red'}}}
-        )
+        result = f.post(on='/filter', parameters={'filter': {'color': {'$eq': 'red'}}})
         assert len(result) == 1
 
 
 def test_search():
-    with Flow().add(uses=DocarrayIndexerV2, uses_with={"traversal_paths": "@r"}) as f:
+    with Flow().add(uses=DocarrayIndexerV3, uses_with={"traversal_paths": "@r"}) as f:
         f.index(
             DocumentArray(
                 [
@@ -125,7 +123,7 @@ def test_search():
                 embedding=np.ones(5),
             ),
             return_results=True,
-            parameters={'filter': {'tags__color': {'$eq': 'blue'}}},
+            parameters={'filter': {'color': {'$eq': 'blue'}}},
         )
         assert len(result) == 1
 

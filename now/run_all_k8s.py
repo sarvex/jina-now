@@ -3,15 +3,16 @@ import os
 from os.path import expanduser as user
 
 import cowsay
+from now_common.options import _get_context_names
 
 from now import run_backend, run_bff_playground
 from now.cloud_manager import setup_cluster
 from now.constants import DOCKER_BFF_PLAYGROUND_TAG, JC_SECRET, SURVEY_LINK
 from now.deployment.deployment import cmd, list_all_wolf, status_wolf, terminate_wolf
-from now.dialog import _get_context_names, configure_user_input, maybe_prompt_user
+from now.dialog import configure_user_input
 from now.log import yaspin_extended
 from now.system_information import get_system_state
-from now.utils import sigmap
+from now.utils import maybe_prompt_user, sigmap
 
 
 def get_remote_flow_details():
@@ -99,7 +100,7 @@ def get_task(kwargs):
 
 
 def start_now(os_type, arch, contexts, active_context, **kwargs):
-    app_instance, user_input = configure_user_input(
+    user_input = configure_user_input(
         contexts=contexts,
         active_context=active_context,
         os_type=os_type,
@@ -107,6 +108,7 @@ def start_now(os_type, arch, contexts, active_context, **kwargs):
         **kwargs,
     )
 
+    app_instance = user_input.app_instance
     setup_cluster(user_input, **kwargs)
     (
         gateway_host,

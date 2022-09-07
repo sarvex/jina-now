@@ -20,7 +20,6 @@ def test_data_generation(get_nest_config_path):
 
     # load dataset
     user_input = UserInput()
-    user_input.is_custom_dataset = False
     user_input.data = DemoDatasets.ES_ONLINE_SHOP_50
     user_input.quality = None
     dataset = load_data(TextToTextAndImage(), user_input)

@@ -21,6 +21,7 @@
 
 
 
+
 <a name=release-note-0-0-7></a>
 ## Release Note (`0.0.7`)
 
@@ -673,4 +674,61 @@
  - [[```8d377e71```](https://github.com/jina-ai/now/commit/8d377e719f6b2da7505b9a5fc519f8ae34704ddc)] __-__ Feat custom annlite (#399) (*Florian Hönicke*)
  - [[```4bd9d010```](https://github.com/jina-ai/now/commit/4bd9d010040be44fb77ee61ffc5ad6263d8ece36)] __-__ revert changes (*Mohammad Kalim Akram*)
  - [[```0aade695```](https://github.com/jina-ai/now/commit/0aade695d862c4a8cd67ed81cf7f9e86ee70e513)] __-__ __version__: the next version will be 0.0.27 (*Jina Dev Bot*)
+
+<a name=release-note-0-0-28></a>
+## Release Note (`0.0.28`)
+
+> Release time: 2022-09-07 12:23:10
+
+
+
+🙇 We'd like to thank all contributors for this new release! In particular,
+ Mohammad Kalim Akram,  Joschka Braun,  Aziz Belaweid,  Florian Hönicke,  Saba Sturua,  Yanlong Wang,  Alex Cureton-Griffiths,  Isabelle Mohr,  Han Xiao,  Jina Dev Bot,  🙇
+
+
+### 🆕 New Features
+
+ - [[```1d3f6a09```](https://github.com/jina-ai/now/commit/1d3f6a09d60ea0e9285a4f69302aa2faa1a5fee2)] __-__ update executors (#469) (*Aziz Belaweid*)
+ - [[```a13d9584```](https://github.com/jina-ai/now/commit/a13d9584dfd3f8a2bdfbc41006a72b5d45fc764d)] __-__ preprocessing and data generation (#440) (*Saba Sturua*)
+ - [[```3087c74a```](https://github.com/jina-ai/now/commit/3087c74adaa02db3124a44f9f6917860f04d5129)] __-__ use cas executor for clip (#437) (*Joschka Braun*)
+ - [[```ab09f7b2```](https://github.com/jina-ai/now/commit/ab09f7b2dcc7be44573d5087f7fdb19a4bab29ca)] __-__ add tag search (#422) (*Aziz Belaweid*)
+ - [[```34293236```](https://github.com/jina-ai/now/commit/34293236981bf0a6ee75d0bf47fe033e7753fae0)] __-__ add path preprocessor (#411) (*Florian Hönicke*)
+ - [[```8f1377aa```](https://github.com/jina-ai/now/commit/8f1377aa6567c60dceee37ca8eea46f39d620fce)] __-__ add a flow for text2text+image app (#419) (*Saba Sturua*)
+ - [[```1ae08cd0```](https://github.com/jina-ai/now/commit/1ae08cd02d455db0493f7dc85628f5b6daf89361)] __-__ add nest modalities (#412) (*Isabelle Mohr*)
+ - [[```97166cf3```](https://github.com/jina-ai/now/commit/97166cf30b851ebf38b42d46632f91dcbcfd8ddd)] __-__ add tags (#398) (*Aziz Belaweid*)
+ - [[```a5b13635```](https://github.com/jina-ai/now/commit/a5b1363560da1827d6bec69b34a57fdcd2967a16)] __-__ setup an app for Nest (#406) (*Saba Sturua*)
+
+### 🐞 Bug fixes
+
+ - [[```1aa5fe88```](https://github.com/jina-ai/now/commit/1aa5fe88a904d9bc7840ceb39e37b4bcb595919f)] __-__ loading tags (#468) (*Joschka Braun*)
+ - [[```13489240```](https://github.com/jina-ai/now/commit/134892401c53e96d81ae1d7258def186aa51e3df)] __-__ adapt annlite (#442) (*Aziz Belaweid*)
+ - [[```6cfac282```](https://github.com/jina-ai/now/commit/6cfac282d00b61e28963b2b604ed5d9649c42661)] __-__ handle different image formats (#466) (*Florian Hönicke*)
+ - [[```bb0f1869```](https://github.com/jina-ai/now/commit/bb0f186960bf96a3149f376b65b871ab5bf1ae9a)] __-__ file endings (#455) (*Florian Hönicke*)
+ - [[```9f100116```](https://github.com/jina-ai/now/commit/9f10011698eab1262159313806f6154a85bbee36)] __-__ missing space in sentence (#460) (*Alex Cureton-Griffiths*)
+ - [[```1c77d26a```](https://github.com/jina-ai/now/commit/1c77d26a80a1ae48c695c364daae5109849d3e42)] __-__ update flow with env var (#431) (*Mohammad Kalim Akram*)
+ - [[```ae3a2f09```](https://github.com/jina-ai/now/commit/ae3a2f093f0389a9e1d00dbdfb3e2b27af631ca0)] __-__ reset post processor mem usage (#426) (*Joschka Braun*)
+ - [[```3739a2ab```](https://github.com/jina-ai/now/commit/3739a2ab874ab216562ce57c2cb6ad8eebca0abe)] __-__ set env retention days to 0 for CI (#428) (*Mohammad Kalim Akram*)
+ - [[```eff5e111```](https://github.com/jina-ai/now/commit/eff5e111ba73fdeaa6a42b665cc8179684010a4b)] __-__ yamls (#410) (*Aziz Belaweid*)
+ - [[```696cd0a6```](https://github.com/jina-ai/now/commit/696cd0a6861277f9ab5214a02d82dc3d395fcc47)] __-__ __apply-latency__: replace apply with for (#407) (*Joschka Braun*)
+
+### 🧼 Code Refactoring
+
+ - [[```b8f4f11c```](https://github.com/jina-ai/now/commit/b8f4f11cbfdb6dff3804aa31a12a844bece78d1b)] __-__ performance test (#413) (*Florian Hönicke*)
+ - [[```a324a17a```](https://github.com/jina-ai/now/commit/a324a17ab92bb4c60173dd736c7409797abcb143)] __-__ bump jina version (#464) (*Florian Hönicke*)
+ - [[```7f4e3304```](https://github.com/jina-ai/now/commit/7f4e3304fb1860dc82487ee3cec5ccf90bef23b5)] __-__ ci for preprocessor (#462) (*Joschka Braun*)
+ - [[```4a817f7d```](https://github.com/jina-ai/now/commit/4a817f7ddc64ab7159fe71fb12fbf73eebd4b56c)] __-__ deactivate gpu (#441) (*Florian Hönicke*)
+ - [[```390ecdcd```](https://github.com/jina-ai/now/commit/390ecdcdc311534d56032bf911af360a07c2b36c)] __-__ reduce consumption (#435) (*Florian Hönicke*)
+ - [[```8a7f114e```](https://github.com/jina-ai/now/commit/8a7f114ef7acd465c4ea77a0ac1c4084749565e2)] __-__ bump playground version (#432) (*Florian Hönicke*)
+
+### 🏁 Unit Test and CICD
+
+ - [[```2b55eb80```](https://github.com/jina-ai/now/commit/2b55eb802a54f625077864f80ceb4ef1646ed779)] __-__ enable hub push verbosity for more logs (#463) (*Yanlong Wang*)
+ - [[```d8c643bf```](https://github.com/jina-ai/now/commit/d8c643bf7f124de786f93797a4a22acaeef4a5d9)] __-__ timeout (#454) (*Florian Hönicke*)
+ - [[```ed0c93b8```](https://github.com/jina-ai/now/commit/ed0c93b8c5c4cc5899d1ccd4e64c240b5300d0ca)] __-__ shorten gif test (#420) (*Joschka Braun*)
+
+### 🍹 Other Improvements
+
+ - [[```c803f18c```](https://github.com/jina-ai/now/commit/c803f18c46d828e8a2ae08a797a62c77c3a23638)] __-__ Refactor dialog app options (#459) (*Mohammad Kalim Akram*)
+ - [[```e80498ff```](https://github.com/jina-ai/now/commit/e80498fff7948772bbdf2eb100fe25382667691f)] __-__ smaller retention days to save budget (*Han Xiao*)
+ - [[```6b477ab8```](https://github.com/jina-ai/now/commit/6b477ab81b986891ba745bd33fd61cc1969d55e6)] __-__ __version__: the next version will be 0.0.28 (*Jina Dev Bot*)
 

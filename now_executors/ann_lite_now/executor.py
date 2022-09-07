@@ -1,11 +1,11 @@
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 import annlite
 from jina import Document, DocumentArray, Executor, requests
 from jina.logging.logger import JinaLogger
 
 
-class AnnLiteNOWIndexer2(Executor):
+class AnnLiteNOWIndexer3(Executor):
     """
     A simple Indexer based on PQLite that stores all the Document data together in a local LMDB store.
 
@@ -23,7 +23,7 @@ class AnnLiteNOWIndexer2(Executor):
         include_metadata: bool = True,
         index_traversal_paths: str = '@r',
         search_traversal_paths: str = '@r',
-        columns: Optional[List[Tuple[str, str]]] = None,
+        columns: Optional[List] = None,
         serialize_config: Optional[Dict] = None,
         *args,
         **kwargs,
@@ -58,6 +58,10 @@ class AnnLiteNOWIndexer2(Executor):
         self._valid_input_columns = ['str', 'float', 'int']
 
         if columns:
+            corrected_list = []
+            for i in range(0, len(columns), 2):
+                corrected_list.append((columns[i], columns[i + 1]))
+            columns = corrected_list
             cols = []
             for n, t in columns:
                 assert (
