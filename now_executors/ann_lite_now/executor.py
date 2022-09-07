@@ -181,10 +181,6 @@ class AnnLiteNOWIndexer3(Executor):
         """
         limit = int(parameters.get('limit', maxsize))
         offset = int(parameters.get('offset', 0))
-        # da = DocumentArray()
-        # for cell_id in range(self._index.n_cells):
-        #     for docs in self._index.documents_generator(cell_id, batch_size=10240):
-        #         da.extend(Document(id=d.id, uri=d.uri, tags=d.tags) for d in docs)
         return self.da[offset : offset + limit]
 
     @requests(on='/search')
