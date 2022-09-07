@@ -149,6 +149,14 @@ class AnnLiteNOWIndexer3(Executor):
 
         self._index.delete(flat_docs)
 
+    @requests(on='/list')
+    def list(self, **kwargs):
+        """List all indexed documents"""
+        da = DocumentArray()
+        for cell_id in range(self._index.n_cells):
+            for docs in self._index.documents_generator(cell_id, batch_size=10240):
+                da.extend(Document(id=d.id, uri=d.uri, tags=d.tags) for d in docs)
+
     @requests(on='/search')
     def search(
         self, docs: Optional[DocumentArray] = None, parameters: dict = {}, **kwargs
