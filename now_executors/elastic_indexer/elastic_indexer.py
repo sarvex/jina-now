@@ -47,7 +47,15 @@ class ElasticIndexer(Executor):
         """
         super().__init__(**kwargs)
         self.distance = distance
-        self.index = DocumentArray()
+        self.index = DocumentArray(
+            storage='elasticsearch',
+            config={'index_name': 'nest_index', 'n_dim': 5},
+            subindex_configs={
+                '@.[text]': {'n_dim': 512},
+                '@.[image]': {'n_dim': 786},
+                '@.[bm25_text]': None,
+            },
+        )
 
     @requests(on="/index")
     def index(self, docs: DocumentArray, **kwargs):
