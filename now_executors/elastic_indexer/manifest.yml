@@ -1,0 +1,5 @@
+manifest_version: 1
+name: ElasticIndexer
+description: indexer for elasticsearch
+url: none
+keywords: [index, trivial]
