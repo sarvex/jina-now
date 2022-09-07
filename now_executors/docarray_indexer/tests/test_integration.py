@@ -4,6 +4,32 @@ from jina import Flow
 from now_executors.docarray_indexer.docarray_indexer_v3 import DocarrayIndexerV3
 
 
+def test_delete():
+    """testing deleting of docs using filter conditions"""
+    with Flow().add(uses=DocarrayIndexerV3) as f:
+        f.index(
+            DocumentArray(
+                [
+                    Document(
+                        id="doc2",
+                        tags={'color': 'red', 'length': 18},
+                    ),
+                    Document(
+                        id="doc3",
+                        tags={'color': 'blue'},
+                    ),
+                ]
+            )
+        )
+        f.delete(
+            parameters={'filter': {'tags__color': {'$eq': 'blue'}}},
+        )
+        result = f.post('/list')
+        assert len(result) == 1
+        assert result[0].id == 'doc2'
+        assert result[0].tags['color'] == 'red'
+
+
 def test_list():
     with Flow().add(uses=DocarrayIndexerV3) as f:
         f.index(
