@@ -1,6 +1,10 @@
 jtype: Flow
 version: '1'
 with:
+  name: nowapi
+  monitoring: true
+  env:
+    JINA_LOG_LEVEL: DEBUG
 jcloud:
   version: 3.6.6
   retention_days: ${{ RETENTION_DAYS }}
