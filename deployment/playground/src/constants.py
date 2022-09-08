@@ -1,5 +1,3 @@
-from typing import Dict
-
 from streamlit_webrtc import RTCConfiguration
 
 
@@ -13,7 +11,6 @@ class Parameters:
     state: str = None
     secured: str = 'false'
     top_k: int = 9
-    filter: Dict = {}  # 'name_of_tag' : ['different tag values'], .....
 
 
 RTC_CONFIGURATION = RTCConfiguration(

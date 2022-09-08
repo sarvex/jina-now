@@ -2,7 +2,6 @@ import os
 import pathlib
 import random
 import sys
-from collections import defaultdict
 from time import sleep
 from typing import Dict, Optional
 
@@ -28,7 +27,6 @@ def run(app_instance: JinaNOWApp, user_input: UserInput, kubectl_path: str):
     :return:
     """
     dataset = load_data(app_instance, user_input)
-    tags_and_values = _extract_tags_and_vales(dataset)
 
     env_dict = app_instance.setup(
         dataset=dataset, user_input=user_input, kubectl_path=kubectl_path
@@ -67,7 +65,6 @@ def run(app_instance: JinaNOWApp, user_input: UserInput, kubectl_path: str):
         gateway_port,
         gateway_host_internal,
         gateway_port_internal,
-        tags_and_values,
     )
 
 
@@ -117,15 +114,3 @@ def estimate_request_size(index):
     max_request_size = 32
     request_size = max(min(max_request_size, int(max_size / size)), 1)
     return request_size
-
-
-def _extract_tags_and_vales(da: DocumentArray):
-    tags = defaultdict(set)
-    for doc in da:
-        for tag, value in doc.tags.items():
-            tags[tag].add(value)
-
-    for tag, value in tags.items():
-        tags[tag] = list(value)
-
-    return tags

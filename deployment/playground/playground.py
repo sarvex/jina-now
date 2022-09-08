@@ -13,6 +13,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 from better_profanity import profanity
 from docarray import Document, DocumentArray
+from jina import Client
 from src.constants import (
     BUTTONS,
     JWT_COOKIE,
@@ -121,21 +122,19 @@ def deploy_streamlit():
             profanity.load_censor_words()
         setup_design()
 
-        # if params.host:
-        #    client = Client(host=params.host)
-        #    filters = client.post(on='/tags')
-        #    print(filters)
+        if params.host:
+            client = Client(host=params.host)
+            response = client.post(on='/tags')
+            filters = response[0].tags['tags']
 
         filter_selection = {}
-        if params.filter:
+        if filters:
 
             st.sidebar.title("Filters")
-            params.filter = json.loads(params.filter)
-            for tag, values in params.filter.items():
+            for tag, values in filters.items():
                 values.insert(0, 'All')
                 filter_selection[tag] = st.sidebar.selectbox(tag, values)
 
-        print(filter_selection)
         if params.input_modality == 'image':
             media_type = st.radio(
                 '',
@@ -227,7 +226,7 @@ def _do_login(params):
     st.session_state.login = True
     redirect_uri = (
         f'https://nowrun.jina.ai/?host={params.host}&input_modality={params.input_modality}'
-        f'&output_modality={params.output_modality}&data={params.data}&filter={json.dumps(params.filter)}'
+        f'&output_modality={params.output_modality}&data={params.data}'
         + f'&secured={params.secured}'
         if params.secured
         else ''

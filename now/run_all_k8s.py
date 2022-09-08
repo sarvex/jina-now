@@ -115,7 +115,6 @@ def start_now(os_type, arch, contexts, active_context, **kwargs):
         gateway_port,
         gateway_host_internal,
         gateway_port_internal,
-        tags_and_values,
     ) = run_backend.run(app_instance, user_input, kubectl_path=kwargs['kubectl_path'])
 
     if gateway_host == 'localhost' or 'NOW_CI_RUN' in os.environ:
@@ -144,7 +143,6 @@ def start_now(os_type, arch, contexts, active_context, **kwargs):
             + f'&input_modality={app_instance.input_modality}'
             + f'&output_modality={app_instance.output_modality}'
             + f'&data={user_input.data}'
-            + f'&filter={json.dumps(tags_and_values)}'
             + (f'&secured={user_input.secured}' if user_input.secured else '')
         )
         + (f'&port={gateway_port_internal}' if gateway_port_internal else '')
