@@ -4,7 +4,7 @@ import random
 import string
 import sys
 from time import sleep
-from typing import Dict, Tuple, Any
+from typing import Any, Dict, Tuple
 
 import cowsay
 import finetuner
@@ -19,7 +19,7 @@ from now.finetuning.dataset import FinetuneDataset, build_finetuning_dataset
 from now.finetuning.settings import FinetuneSettings
 from now.log import time_profiler, yaspin_extended
 from now.now_dataclasses import UserInput
-from now.run_backend import call_index
+from now.run_backend import call_flow
 from now.utils import sigmap
 
 
@@ -206,7 +206,7 @@ def _get_random_string(length) -> str:
     return ''.join(random.choice(letters) for _ in range(length))
 
 
-_KS_NAMESPACE = 'embed-now'
+_KS_NAMESPACE = 'nowapi'
 
 
 @time_profiler
@@ -240,7 +240,8 @@ def _maybe_add_embeddings(
         kubectl_path=kubectl_path,
     )
     print(f'▶ create embeddings for {len(documents_without_embedding)} documents')
-    result = call_index(
+    result = call_flow(
+        endpoint='/encode',
         client=client,
         dataset=documents_without_embedding,
         parameters={'user_input': user_input.__dict__},

@@ -57,16 +57,17 @@ def run(app_instance: JinaNOWApp, user_input: UserInput, kubectl_path: str):
     }
     if user_input.secured:
         params['jwt'] = user_input.jwt
-    call_index(client=client, dataset=dataset, parameters=params, return_results=False)
+    call_flow(client=client, dataset=dataset, parameters=params, return_results=False)
     print('⭐ Success - your data is indexed')
 
     return gateway_host, gateway_port, gateway_host_internal, gateway_port_internal
 
 
 @time_profiler
-def call_index(
+def call_flow(
     client: Client,
     dataset: DocumentArray,
+    endpoint: str = '/index',
     parameters: Optional[Dict] = None,
     return_results: Optional[bool] = False,
 ):
@@ -77,7 +78,7 @@ def call_index(
     # double check that flow is up and running - should be done by wolf/core in the future
     while True:
         try:
-            client.post('/index', inputs=DocumentArray(), parameters=parameters)
+            client.post(on=endpoint, inputs=DocumentArray(), parameters=parameters)
             break
         except Exception as e:
             if 'NOW_CI_RUN' in os.environ:
@@ -88,9 +89,9 @@ def call_index(
             sleep(1)
 
     response = client.post(
-        '/index',
+        on=endpoint,
         request_size=request_size,
-        inputs=dataset,
+        inputs=dataset[:500],
         show_progress=True,
         parameters=parameters,
     )

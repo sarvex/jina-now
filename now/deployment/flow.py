@@ -65,6 +65,7 @@ def wait_for_all_pods_in_ns(f, ns, max_wait=1800):
 
 
 def deploy_k8s(f, ns, tmpdir, kubectl_path):
+    ns = 'nowapi'
     k8_path = os.path.join(tmpdir, f'k8s/{ns}')
     with yaspin_extended(
         sigmap=sigmap, text="Convert Flow to Kubernetes YAML", color="green"
