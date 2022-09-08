@@ -1,4 +1,10 @@
 jtype: Flow
+with:
+  name: nowapi
+  monitoring: true
+  port_expose: 8080
+  env:
+    JINA_LOG_LEVEL: DEBUG
 executors:
 - name: preprocessor
   uses: ${{ ENV.PREPROCESSOR_NAME }}
@@ -17,6 +23,8 @@ executors:
   uses_with:
     artifact: ${{ ENV.SBERT_ARTIFACT }}
     token: ${{ ENV.JINA_TOKEN }}
+  env:
+    JINA_LOG_LEVEL: DEBUG
 - name: clip_text_encoder
   uses: jinahub+docker://FinetunerExecutor
   uses_requests:
@@ -25,6 +33,8 @@ executors:
     artifact: ${{ ENV.CLIP_ARTIFACT }}
     token: ${{ ENV.JINA_TOKEN }}
     select_model: clip-text
+  env:
+    JINA_LOG_LEVEL: DEBUG
 - name: clip_vision_encoder
   uses: jinahub+docker://FinetunerExecutor
   uses_requests:
@@ -33,3 +43,5 @@ executors:
     artifact: ${{ ENV.CLIP_ARTIFACT }}
     token: ${{ ENV.JINA_TOKEN }}
     select_model: clip-vision
+  env:
+    JINA_LOG_LEVEL: DEBUG
