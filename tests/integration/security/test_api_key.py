@@ -22,7 +22,7 @@ port = 9090
 def get_reqest_body():
     request_body = get_default_request_body('local', True)
     request_body['host'] = 'grpc://0.0.0.0'
-    request_body['port'] = 9090
+    request_body['port'] = 9089
     return request_body
 
 
@@ -30,7 +30,7 @@ def get_flow():
     clip_uses = CLIP_USES['local'][0]
     user_id = get_reqest_body()['jwt']['user']['_id']
     f = (
-        Flow(port_expose=9090)
+        Flow(port_expose=9089)
         .add(
             uses=f'jinahub+docker://NOWAuthExecutor/v{NOW_AUTH_EXECUTOR_VERSION}',
             uses_with={

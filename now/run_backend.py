@@ -53,7 +53,7 @@ def run(app_instance: JinaNOWApp, user_input: UserInput, kubectl_path: str):
 
     print(f"▶ indexing {len(dataset)} documents")
     params = {
-        'user_input': user_input.dict(),
+        'user_input': user_input.__dict__,
         'traversal_paths': app_instance.index_query_access_paths,
         'access_paths': app_instance.index_query_access_paths,
     }
@@ -79,6 +79,8 @@ def call_index(
     return_results: Optional[bool] = False,
 ):
     request_size = estimate_request_size(dataset)
+    # Remove app_instance from parameters
+    parameters['user_input'].pop('app_instance')
 
     # double check that flow is up and running - should be done by wolf/core in the future
     while True:
