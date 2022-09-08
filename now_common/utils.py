@@ -79,6 +79,9 @@ def common_setup(
         user_input=user_input,
         dataset=dataset,
         finetune_datasets=app_instance.finetune_datasets,
+        model_name='mlp',
+        add_embeddings=True,
+        loss='TripletMarginLoss',
     )
     tags = _extract_tags_annlite(dataset)
     env_dict = common_get_flow_env_dict(

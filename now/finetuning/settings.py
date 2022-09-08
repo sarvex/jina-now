@@ -76,16 +76,18 @@ def _is_bi_modal(user_input: UserInput, dataset: DocumentArray) -> bool:
 def parse_finetune_settings(
     user_input: UserInput,
     dataset: DocumentArray,
+    model_name: str,
+    loss: str,
     finetune_datasets: Tuple = (),
+    add_embeddings: bool = True,
     pre_trained_embedding_size: Optional[int] = None,
-    encoder_type: Optional[str] = None,
 ) -> FinetuneSettings:
     """This function parses the user input configuration into the finetune settings"""
     return FinetuneSettings(
         perform_finetuning=_is_finetuning(user_input, dataset, finetune_datasets),
         bi_modal=_is_bi_modal(user_input, dataset),
-        model_name=user_input.app_instance.finetuning_model_name(encoder_type),
-        loss=user_input.app_instance.loss_function(encoder_type),
-        add_embeddings=user_input.app_instance.add_embeddings,
         pre_trained_embedding_size=pre_trained_embedding_size,
+        model_name=model_name,
+        loss=loss,
+        add_embeddings=add_embeddings,
     )
