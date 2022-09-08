@@ -2,6 +2,7 @@ import os
 import pathlib
 import random
 import sys
+from collections import defaultdict
 from time import sleep
 from typing import Dict, Optional
 
@@ -117,11 +118,12 @@ def estimate_request_size(index):
 
 
 def _extract_tags_and_vales(da: DocumentArray):
-    tags = {}
+    tags = defaultdict(set)
     for doc in da:
         for tag, value in doc.tags.items():
-            if tag in tags.keys():
-                tags[tag].append(value)
-            else:
-                tags[tag] = [value]
+            tags[tag].add(value)
+
+    for tag, value in tags.items():
+        tags[tag] = list(value)
+
     return tags

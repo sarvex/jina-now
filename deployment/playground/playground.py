@@ -121,13 +121,18 @@ def deploy_streamlit():
             profanity.load_censor_words()
         setup_design()
 
+        # if params.host:
+        #    client = Client(host=params.host)
+        #    filters = client.post(on='/tags')
+        #    print(filters)
+
         filter_selection = {}
         if params.filter:
 
             st.sidebar.title("Filters")
             params.filter = json.loads(params.filter)
             for tag, values in params.filter.items():
-                values.insert(0, 'None')
+                values.insert(0, 'All')
                 filter_selection[tag] = st.sidebar.selectbox(tag, values)
 
         print(filter_selection)

@@ -1,3 +1,6 @@
+import os.path
+import pickle
+from collections import defaultdict
 from typing import Dict
 
 from jina import Document, DocumentArray, Executor, requests
@@ -15,6 +18,11 @@ class NOWPostprocessor(Executor):
     def __init__(self, traversal_paths: str = "@r", *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.traversal_paths = traversal_paths
+        if os.path.isfile('./tags.pkl'):
+            with open('./tags.pkl') as f:
+                self.tags_values = pickle.loads(f)
+        else:
+            self.tags_values = defaultdict(set)
 
     @requests(on='/index')
     def maybe_drop_blob_tensor(
@@ -38,7 +46,19 @@ class NOWPostprocessor(Executor):
                         doc.tensor = None
                     except FileNotFoundError:
                         continue
+        for doc in docs:
+            for tag, value in doc.tags.items():
+                self.tags_values[tag].add(value)
+
+        for tag, value in self.tags_values.items():
+            self.tags_values[tag] = list(value)
+        with open('./tags.pkl') as f:
+            pickle.dumps(self.tags_values, f)
         return docs
+
+    @requests(on='/tags')
+    def get_tags_and_values(self):
+        return self.tags_values
 
 
 if __name__ == '__main__':

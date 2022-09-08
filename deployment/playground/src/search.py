@@ -91,7 +91,6 @@ def call_flow(url_host, data, attribute_name, domain):
     st.session_state.search_count += 1
     data = unfreeze_param(data)
 
-    print('filter: ', data['filter'])
     response = requests.post(
         url_host, json=data, headers={"Content-Type": "application/json; charset=utf-8"}
     )
