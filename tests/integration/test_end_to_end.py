@@ -8,7 +8,8 @@ from os.path import expanduser as user
 import hubble
 import pytest
 import requests
-from now_common.options import NEW_CLUSTER
+
+from now_common.options import NEW_CLUSTER, _construct_app
 
 from now.cli import _get_kind_path, _get_kubectl_path, cli
 from now.cloud_manager import create_local_cluster

@@ -1,12 +1,13 @@
 """ This module contains pre-configurations for finetuning on the demo datasets. """
 from dataclasses import dataclass
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Dict, Any
 
 from docarray import DocumentArray
 
+from now.constants import Apps
 from now.now_dataclasses import UserInput
 
-DEFAULT_EPOCHS = 50
+DEFAULT_EPOCHS = 5
 DEFAULT_HIDDEN_SIZES = (128,)
 DEFAULT_NUM_VAL_QUERIES = 50
 DEFAULT_FINETUNED_EMBEDDING_SIZE = 128
@@ -23,8 +24,11 @@ DEFAULT_NEG_MINING_START = 'hard'
 @dataclass
 class FinetuneSettings:
     perform_finetuning: bool
-    pre_trained_embedding_size: int
+    model_name: str
+    add_embeddings: bool
     bi_modal: bool  # atm, bi-modal means text and some blob value
+    loss: str
+    pre_trained_embedding_size: Optional[int] = None
     finetuned_model_artifact: Optional[str] = None
     token: Optional[str] = None
 
@@ -45,7 +49,10 @@ class FinetuneSettings:
 def _is_finetuning(
     user_input: UserInput, dataset: DocumentArray, finetuneable_datasets: Tuple
 ) -> bool:
-    if user_input.data in finetuneable_datasets:
+    if (
+        user_input.data in finetuneable_datasets
+        or user_input.app_instance.app_name == Apps.TEXT_TO_TEXT_AND_IMAGE
+    ):
         return True
     elif user_input.data == 'custom' and all(
         ['finetuner_label' in d.tags for d in dataset]
@@ -56,7 +63,9 @@ def _is_finetuning(
 
 
 def _is_bi_modal(user_input: UserInput, dataset: DocumentArray) -> bool:
-    if user_input.data == 'custom':
+    if user_input.app_instance.app_name == Apps.TEXT_TO_TEXT_AND_IMAGE:
+        return False
+    elif user_input.data == 'custom':
         has_blob = any([d.blob != b'' for d in dataset])
         has_text = any([d.text != '' for d in dataset])
         return has_text and has_blob
@@ -67,12 +76,18 @@ def _is_bi_modal(user_input: UserInput, dataset: DocumentArray) -> bool:
 def parse_finetune_settings(
     user_input: UserInput,
     dataset: DocumentArray,
-    pre_trained_embedding_size: int,
+    model_name: str,
+    loss: str,
     finetune_datasets: Tuple = (),
+    add_embeddings: bool = True,
+    pre_trained_embedding_size: Optional[int] = None,
 ) -> FinetuneSettings:
     """This function parses the user input configuration into the finetune settings"""
     return FinetuneSettings(
-        pre_trained_embedding_size=pre_trained_embedding_size,
         perform_finetuning=_is_finetuning(user_input, dataset, finetune_datasets),
         bi_modal=_is_bi_modal(user_input, dataset),
+        pre_trained_embedding_size=pre_trained_embedding_size,
+        model_name=model_name,
+        loss=loss,
+        add_embeddings=add_embeddings,
     )

@@ -4,7 +4,7 @@ import random
 import string
 import sys
 from time import sleep
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Any
 
 import cowsay
 import finetuner
@@ -54,13 +54,14 @@ def finetune(
         return
 
     print(f'🔧 Perform finetuning!')
-    dataset = _maybe_add_embeddings(
-        app_instance=app_instance,
-        user_input=user_input,
-        env_dict=env_dict,
-        dataset=dataset,
-        kubectl_path=kubectl_path,
-    )
+    if finetune_settings.add_embeddings:
+        dataset = _maybe_add_embeddings(
+            app_instance=app_instance,
+            user_input=user_input,
+            env_dict=env_dict,
+            dataset=dataset,
+            kubectl_path=kubectl_path,
+        )
 
     dataset = dataset.shuffle(42)
 
@@ -69,22 +70,40 @@ def finetune(
 
     finetune_ds = build_finetuning_dataset(dataset, finetune_settings)
 
-    return _finetune_layer(finetune_ds, finetune_settings)
+    if finetune_settings.add_embeddings:
+        assert all([d.embedding is not None for d in finetune_ds.index])
+
+    return _finetune_model(finetune_ds, finetune_settings)
+
+
+def _get_model_options(finetune_settings: FinetuneSettings) -> Dict[str, Any]:
+    """
+    Returns additional model options for fine-tuning specific for each model.
+
+    :param finetune_settings: Fine-tuning settings.
+    :return: Dictionary of model parameters.
+    """
+    if finetune_settings.model_name == 'mlp':
+        input_size = (
+            finetune_settings.pre_trained_embedding_size
+            if not finetune_settings.bi_modal
+            else finetune_settings.pre_trained_embedding_size * 2
+        )
+        return {
+            'input_size': input_size,
+            'hidden_sizes': finetune_settings.hidden_sizes,
+            'l2': True,
+            'bias': False if finetune_settings.bi_modal else True,
+        }
+    return {}
 
 
 @time_profiler
-def _finetune_layer(
+def _finetune_model(
     finetune_ds: FinetuneDataset,
     finetune_settings: FinetuneSettings,
 ) -> Tuple[str, str]:
-    assert all([d.embedding is not None for d in finetune_ds.index])
-
     print('💪 fine-tuning:')
-    input_size = (
-        finetune_settings.pre_trained_embedding_size
-        if not finetune_settings.bi_modal
-        else finetune_settings.pre_trained_embedding_size * 2
-    )
     finetuner.login()
 
     callbacks = [
@@ -92,7 +111,6 @@ def _finetune_layer(
             finetune_ds.val_query,
             finetune_ds.val_index,
             limit=finetune_settings.eval_match_limit,
-            # metrics=['ndcg'],
         ),
         EarlyStopping(
             monitor='ndcg',
@@ -107,19 +125,16 @@ def _finetune_layer(
     finetuner.create_experiment(experiment_name)
 
     run = finetuner.fit(
-        model='mlp',
-        model_options={
-            'input_size': input_size,
-            'hidden_sizes': finetune_settings.hidden_sizes,
-            'l2': True,
-            'bias': False if finetune_settings.bi_modal else True,
-        },
+        model=finetune_settings.model_name,
+        model_options=_get_model_options(finetune_settings),
+        loss=finetune_settings.loss,
         train_data=finetune_ds.train,
         experiment_name=experiment_name,
         eval_data=finetune_ds.val,
         callbacks=callbacks,
         learning_rate=finetune_settings.learning_rate,
         run_name=experiment_name,
+        epochs=finetune_settings.epochs,
     )
 
     run_failed = False
