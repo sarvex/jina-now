@@ -49,10 +49,10 @@ class TextToTextAndImage(JinaNOWApp):
         return Modalities.TEXT_AND_IMAGE
 
     def preprocess(
-            self,
-            da: DocumentArray,
-            user_input: UserInput,
-            is_indexing: Optional[bool] = False,
+        self,
+        da: DocumentArray,
+        user_input: UserInput,
+        is_indexing: Optional[bool] = False,
     ) -> DocumentArray:
         # Indexing
         if is_indexing:
@@ -62,40 +62,39 @@ class TextToTextAndImage(JinaNOWApp):
             return preprocess_text(da=da, split_by_sentences=False)
 
     def setup(
-            self, dataset: DocumentArray, user_input: UserInput, kubectl_path
+        self, dataset: DocumentArray, user_input: UserInput, kubectl_path
     ) -> Dict:
         # only implements data generation
         data = DataBuilder(dataset=dataset, config=user_input.task_config).build()
 
-        # for encoder_data, encoder_type in data:
-        encoder_data, encoder_type = data[1]
-        finetune_settings = parse_finetune_settings(user_input=user_input,
-                                           dataset=dataset,
-                                           encoder_type=encoder_type)
+        for encoder_data, encoder_type in data:
+            finetune_settings = parse_finetune_settings(
+                user_input=user_input, dataset=dataset, encoder_type=encoder_type
+            )
 
-        artifact_id, token = finetune(
-            finetune_settings=finetune_settings,
-            app_instance=self,
-            dataset=encoder_data,
-            user_input=user_input,
-            env_dict={},
-            kubectl_path=kubectl_path,
-        )
+            artifact_id, token = finetune(
+                finetune_settings=finetune_settings,
+                app_instance=self,
+                dataset=encoder_data,
+                user_input=user_input,
+                env_dict={},
+                kubectl_path=kubectl_path,
+            )
+            print('gatavda', artifact_id, token)
         import time
+
         time.sleep(10)
         exit(0)
 
         return {}
 
-    @property
     def finetuning_model_name(self, encoder_type: Optional[str] = None) -> str:
         """Name of the model used in case of fine-tuning."""
-        if encoder_type == 'text_to_text':
+        if encoder_type == 'text-to-text':
             return 'sentence-transformers/msmarco-distilbert-base-v3'
-        elif encoder_type == 'text_to_image':
+        elif encoder_type == 'text-to-image':
             return 'openai/clip-vit-base-patch32'
 
-    @property
     def loss_function(self, encoder_type: Optional[str] = None) -> str:
         """Loss function used during fine-tuning."""
         if encoder_type == 'text_to_image':
@@ -105,4 +104,4 @@ class TextToTextAndImage(JinaNOWApp):
     @property
     def add_embeddings(self) -> bool:
         """Whether we need to calculate embeddings before fine-tuning or not."""
-        raise False
+        return False

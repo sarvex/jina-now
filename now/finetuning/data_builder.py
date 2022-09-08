@@ -31,7 +31,9 @@ class EncoderDataBuilder:
         self._name = name
         self._methods = methods
         self._encoder_type = encoder_type
-        self._modality = 'multi_model' if self._encoder_type == 'text-to-image' else 'single_model'
+        self._modality = (
+            'multi_model' if self._encoder_type == 'text-to-image' else 'single_model'
+        )
         self._generation_cls = {
             cls.name(): cls
             for _, cls in getmembers(generation_fns, isclass)
@@ -128,7 +130,7 @@ class DataBuilder:
                 EncoderDataBuilder(
                     name=encoder.name,
                     methods=encoder.training_data_generation_methods,
-                    encoder_type=encoder.encoder_type
+                    encoder_type=encoder.encoder_type,
                 ),
             )
             for encoder in config.encoders
