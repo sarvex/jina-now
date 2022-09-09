@@ -1,8 +1,8 @@
 from copy import deepcopy
+from sys import maxsize
 
-import numpy as np
 from docarray import Document, DocumentArray
-from jina import Executor, Flow, requests
+from jina import Executor, requests
 
 
 class DocarrayIndexerV3(Executor):
@@ -18,6 +18,18 @@ class DocarrayIndexerV3(Executor):
         return DocumentArray()
         #  prevent sending the data back by returning an empty DocumentArray
 
+    @requests(on="/list")
+    def list(self, parameters: dict = {}, **kwargs):
+        """List all indexed documents.
+        :param parameters: dictionary with limit and offset
+        - offset (int): number of documents to skip
+        - limit (int): number of retrieved documents
+        """
+        limit = int(parameters.get('limit', maxsize))
+        offset = int(parameters.get('offset', 0))
+        part = self.index[offset : offset + limit]
+        return DocumentArray([Document(id=d.id, uri=d.uri, tags=d.tags) for d in part])
+
     @requests(on="/search")
     def search(self, docs: DocumentArray, parameters, **kwargs):
         """
@@ -30,44 +42,30 @@ class DocarrayIndexerV3(Executor):
         to all tags.
         """
         limit = parameters.get("limit", 20)
-        filter = parameters.get("filter", {})
-        if '$and' in filter.keys():
-            for query in filter['$and']:
-                #  adapt filter interface to annlite interface by adding tags
-                tag = list(query.keys())[0]
-                query['tags__' + tag] = query[tag]
-                del query[tag]
         traversal_paths = parameters.get("traversal_paths", self.traversal_paths)
-        if traversal_paths == "@r":
-            docs.match(self.index.find(filter=filter), limit=limit)
-        elif traversal_paths == "@c":
-            index = self.index[traversal_paths]
-            #   to avoid having duplicate root level matches, we have to:
-            #   0. matching happening on chunk level
-            #   1. retrieve more docs since some of them could be duplicates
-            #   2. maintain a list of unique parent docs
-            #   3. break once we retrieved `limit` results
+        self.index = self.index[traversal_paths]
+
+        filtered_docs = self.filter_docs(parameters)
+
+        match_limit = limit
+        if traversal_paths == "@c":
             docs = docs[0].chunks
-            docs.match(index.find(filter=filter), limit=limit * 10)
-            for d in docs:
-                parents = []
-                parent_ids = []
-                for m in d.matches:
-                    if m.parent_id in parent_ids:
-                        continue
-                    parent = self.index[m.parent_id]
-                    #  to save bandwidth, we don't return the chunks.
-                    #  But, without deepcopy, we would modify the ined
-                    parent = deepcopy(parent)
-                    parent.chunks = []
-                    parents.append(parent)
-                    parent_ids.append(m.parent_id)
-                    if len(parents) == limit:
-                        break
-                d.matches = parents
-        else:
-            raise Exception("traversal paths not supported", traversal_paths)
+            match_limit = limit * 10
+        docs.match(filtered_docs, limit=match_limit)
+        if traversal_paths == "@c":
+            self.merge_matches(docs, limit)
         return docs
+
+    @requests(on="/delete")
+    def delete(self, parameters, **kwargs):
+        """
+        Delete endpoint to delete document/documents from the index.
+        Filter conditions can be passed to select documents for deletion.
+        """
+        filtered_docs = self.filter_docs(parameters)
+        for doc in filtered_docs:
+            self.index.remove(doc)
+        return DocumentArray()
 
     @requests(on="/filter")
     def filter(self, parameters: dict = {}, **kwargs):
@@ -82,89 +80,36 @@ class DocarrayIndexerV3(Executor):
         result = self.index[traversal_paths].find(filtering_condition)
         return result
 
+    def merge_matches(self, docs, limit):
+        #   to avoid having duplicate root level matches, we have to:
+        #   0. matching happening on chunk level
+        #   1. retrieve more docs since some of them could be duplicates
+        #   2. maintain a list of unique parent docs
+        #   3. break once we retrieved `limit` results
+        for d in docs:
+            parents = []
+            parent_ids = []
+            for m in d.matches:
+                if m.parent_id in parent_ids:
+                    continue
+                parent = self.index[m.parent_id]
+                #  to save bandwidth, we don't return the chunks.
+                #  But, without deepcopy, we would modify the ined
+                parent = deepcopy(parent)
+                parent.chunks = []
+                parents.append(parent)
+                parent_ids.append(m.parent_id)
+                if len(parents) == limit:
+                    break
+            d.matches = parents
 
-if __name__ == "__main__":
-
-    with Flow().add(uses=DocarrayIndexerV3, uses_with={"traversal_paths": "@r"}) as f:
-        f.index(
-            DocumentArray(
-                [
-                    Document(
-                        id="parent",
-                        blob=b"gif...",
-                        embedding=np.ones(5),
-                        chunks=[
-                            Document(
-                                id="chunk1",
-                                blob=b"jpg...",
-                                embedding=np.ones(5),
-                                tags={'color': 'red'},
-                            ),
-                            Document(
-                                id="chunk2",
-                                blob=b"jpg...",
-                                embedding=np.ones(5),
-                                tags={'color': 'blue'},
-                            ),
-                        ],
-                    ),
-                    Document(
-                        id="doc1",
-                        blob=b"jpg...",
-                        embedding=np.ones(5),
-                        tags={'color': 'red', 'length': 18},
-                    ),
-                    Document(
-                        id="doc2",
-                        blob=b"jpg...",
-                        embedding=np.ones(5),
-                        tags={'color': 'blue'},
-                    ),
-                ]
-            )
-        )
-
-        x = f.post(
-            on='/filter',
-            parameters={
-                'filter': {
-                    '$and': [
-                        {'color': {'$eq': 'red'}},
-                        {'length': {'$eq': 18}},
-                    ]
-                }
-            },
-        )
-        print('filter res:', x)
-        if len(x) > 0:
-            x[0].summary()
-
-        x = f.post(on='/filter', parameters={'filter': {'something': {'$eq': 'kind'}}})
-        print('filter res:', x)
-        if len(x) > 0:
-            x[0].summary()
-
-        x = f.post(on='/filter', parameters={'filter': {'color': {'$eq': 'red'}}})
-        print('filter res:', x)
-        if len(x) > 0:
-            x[0].summary()
-
-        x = f.search(
-            Document(
-                id="doc1",
-                blob=b"jpg...",
-                embedding=np.ones(5),
-            ),
-            return_results=True,
-            parameters={'filter': {'color': {'$eq': 'blue'}}},
-        )
-        x[0].summary()
-        x = f.search(
-            Document(
-                id="doc1",
-                blob=b"jpg...",
-                embedding=np.ones(5),
-            ),
-            return_results=True,
-        )
-        x[0].summary()
+    def filter_docs(self, parameters):
+        filter = parameters.get("filter", {})
+        if '$and' in filter.keys():
+            for query in filter['$and']:
+                #  adapt filter interface to annlite interface by adding tags
+                tag = list(query.keys())[0]
+                query['tags__' + tag] = query[tag]
+                del query[tag]
+        filtered_docs = self.index.find(filter=filter)
+        return filtered_docs

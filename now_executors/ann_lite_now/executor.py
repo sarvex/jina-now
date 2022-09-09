@@ -1,3 +1,5 @@
+from copy import deepcopy
+from sys import maxsize
 from typing import Dict, List, Optional
 
 import annlite
@@ -81,6 +83,26 @@ class AnnLiteNOWIndexer3(Executor):
             serialize_config=serialize_config or {},
             **kwargs,
         )
+        self.da = DocumentArray()
+        for cell_id in range(self._index.n_cells):
+            for docs in self._index.documents_generator(cell_id, batch_size=10240):
+                self.extend_inmemory_docs(docs)
+
+        self.da = DocumentArray(sorted([d for d in self.da], key=lambda x: x.id))
+
+    def extend_inmemory_docs(self, docs):
+        """Extend the in-memory DocumentArray with new documents"""
+        self.da.extend(Document(id=d.id, uri=d.uri, tags=d.tags) for d in docs)
+
+    def update_inmemory_docs(self, docs):
+        """Update documents in the in-memory DocumentArray"""
+        for d in docs:
+            self.da[d.id] = d
+
+    def delete_inmemory_docs(self, docs):
+        """Delete documents from the in-memory DocumentArray"""
+        for d in docs:
+            del self.da[d.id]
 
     @requests(on='/index')
     def index(
@@ -102,6 +124,7 @@ class AnnLiteNOWIndexer3(Executor):
             return
 
         self._index.index(flat_docs)
+        self.extend_inmemory_docs(flat_docs)
         return DocumentArray([])
 
     @requests(on='/update')
@@ -125,29 +148,32 @@ class AnnLiteNOWIndexer3(Executor):
         if len(flat_docs) == 0:
             return
 
+        self.update_inmemory_docs(flat_docs)
         self._index.update(flat_docs)
 
     @requests(on='/delete')
-    def delete(
-        self, docs: Optional[DocumentArray] = None, parameters: dict = {}, **kwargs
-    ):
-        """Delete existing documents
-
-        :param docs: the Documents to delete
-        :param parameters: dictionary with options for deletion
-
-        Keys accepted:
-            - 'traversal_paths' (str): traversal path for the docs
+    def delete(self, parameters: dict = {}, **kwargs):
         """
-        if not docs:
-            return
+        Delete endpoint to delete document/documents from the index.
+        Filter conditions can be passed to select documents for deletion.
+        """
+        filter = parameters.get("filter", {})
+        if filter:
+            filtered_docs = deepcopy(self.da.find(filter=filter))
+            self.delete_inmemory_docs(filtered_docs)
+            self._index.delete(filtered_docs)
+        return DocumentArray()
 
-        traversal_paths = parameters.get('traversal_paths', self.index_traversal_paths)
-        flat_docs = docs[traversal_paths]
-        if len(flat_docs) == 0:
-            return
-
-        self._index.delete(flat_docs)
+    @requests(on='/list')
+    def list(self, parameters: dict = {}, **kwargs):
+        """List all indexed documents.
+        :param parameters: dictionary with limit and offset
+        - offset (int): number of documents to skip
+        - limit (int): number of retrieved documents
+        """
+        limit = int(parameters.get('limit', maxsize))
+        offset = int(parameters.get('offset', 0))
+        return self.da[offset : offset + limit]
 
     @requests(on='/search')
     def search(

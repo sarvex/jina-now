@@ -69,7 +69,8 @@ class TextToTextAndImage(JinaNOWApp):
 
         for encoder_data, encoder_type in data:
             finetune_settings = parse_finetune_settings(
-                user_input=user_input, dataset=dataset, encoder_type=encoder_type
+                user_input=user_input, dataset=dataset, model_name=self._model_name(encoder_type),
+                loss=self._loss_function(encoder_type), add_embeddings=False,
             )
 
             artifact_id, token = finetune(
@@ -88,20 +89,17 @@ class TextToTextAndImage(JinaNOWApp):
 
         return {}
 
-    def finetuning_model_name(self, encoder_type: Optional[str] = None) -> str:
+    @staticmethod
+    def _model_name(encoder_type: Optional[str] = None) -> str:
         """Name of the model used in case of fine-tuning."""
         if encoder_type == 'text-to-text':
             return 'sentence-transformers/msmarco-distilbert-base-v3'
         elif encoder_type == 'text-to-image':
             return 'openai/clip-vit-base-patch32'
 
-    def loss_function(self, encoder_type: Optional[str] = None) -> str:
+    @staticmethod
+    def _loss_function(encoder_type: Optional[str] = None) -> str:
         """Loss function used during fine-tuning."""
         if encoder_type == 'text_to_image':
             return 'CLIPLoss'
         return 'TripletMarginLoss'
-
-    @property
-    def add_embeddings(self) -> bool:
-        """Whether we need to calculate embeddings before fine-tuning or not."""
-        return False
