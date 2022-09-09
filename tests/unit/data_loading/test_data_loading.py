@@ -169,8 +169,8 @@ def test_load_tags_ignore_too_many_files(user_input, gif_resource_path: str):
     )
     da_merged = _load_tags_from_json_if_needed(da, user_input)
     assert len(da_merged) == 2
-    assert da_merged[0].tags['a1'] == 'v1'
-    assert da_merged[1].tags['a3'] == 'v3'
+    assert da_merged[0].tags['tag_uri'].endswith('folder1/meta.json')
+    assert da_merged[1].tags['tag_uri'].endswith('folder2/meta.json')
 
 
 def test_load_tags_no_tags_if_missing(user_input, gif_resource_path: str):
