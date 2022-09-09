@@ -5,6 +5,7 @@ from typing import Dict, List, Optional
 
 import hubble
 from docarray import DocumentArray
+from jina import __version__ as jina_version
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import NOW_PREPROCESSOR_VERSION, PREFETCH_NR
@@ -31,6 +32,7 @@ def common_get_flow_env_dict(
         pre_trained_embedding_size = pre_trained_embedding_size * 2
 
     config = {
+        'JINA_VERSION': jina_version,
         'ENCODER_NAME': f'jinahub+docker://{encoder_uses}',
         'FINETUNE_LAYER_SIZE': finetune_settings.finetune_layer_size,
         'PRE_TRAINED_EMBEDDINGS_SIZE': pre_trained_embedding_size,
@@ -39,6 +41,8 @@ def common_get_flow_env_dict(
         'PREPROCESSOR_NAME': f'jinahub+docker://NOWPreprocessor/v{NOW_PREPROCESSOR_VERSION}',
         'APP': user_input.app_instance.app_name,
         'COLUMNS': tags,
+        'ADMIN_EMAILS': user_input.admin_emails or [] if user_input.secured else [],
+        'USER_EMAILS': user_input.user_emails or [] if user_input.secured else [],
         **encoder_with,
         **indexer_resources,
     }
@@ -79,6 +83,9 @@ def common_setup(
         user_input=user_input,
         dataset=dataset,
         finetune_datasets=app_instance.finetune_datasets,
+        model_name='mlp',
+        add_embeddings=True,
+        loss='TripletMarginLoss',
     )
     tags = _extract_tags_annlite(dataset)
     env_dict = common_get_flow_env_dict(

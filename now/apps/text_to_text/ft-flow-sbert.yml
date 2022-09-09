@@ -5,14 +5,18 @@ with:
   port_expose: 8080
   prefetch: 10
   cors: True
+  env:
+    JINA_LOG_LEVEL: DEBUG
 jcloud:
-  version: 3.7.0
+  version: ${{ ENV.JINA_VERSION }}
   retention_days: ${{ RETENTION_DAYS }}
 executors:
   - name: preprocessor
     uses: ${{ ENV.PREPROCESSOR_NAME }}
     uses_with:
       app: ${{ ENV.APP }}
+      admin_emails: ${{ ENV.ADMIN_EMAILS }}
+      user_emails: ${{ ENV.USER_EMAILS }}
     jcloud:
       resources:
         memory: 1G

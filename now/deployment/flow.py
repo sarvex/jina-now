@@ -114,11 +114,8 @@ def _extend_flow_yaml(flow_yaml, tmpdir, secured, admin_emails, user_emails):
   - name: security_check
     uses: jinahub+docker://NOWAuthExecutor/v{NOW_AUTH_EXECUTOR_VERSION}
     uses_with:
-      admin_emails: {admin_emails if admin_emails else []}
-      user_emails: {user_emails if user_emails else []}
-    jcloud:
-      resources:
-        memory: 1G
+      admin_emails: {admin_emails or []}
+      user_emails: {user_emails or []}
     env:
       JINA_LOG_LEVEL: DEBUG"""
         full_yaml = f'{first_part}executors:{executor_string}{second_part}'

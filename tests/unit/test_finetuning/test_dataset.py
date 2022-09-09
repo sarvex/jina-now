@@ -27,6 +27,9 @@ def docs() -> DocumentArray:
 @pytest.fixture()
 def finetune_setting() -> FinetuneSettings:
     return FinetuneSettings(
+        model_name='mlp',
+        add_embeddings=True,
+        loss='TripletMarginLoss',
         pre_trained_embedding_size=512,
         perform_finetuning=True,
         bi_modal=True,

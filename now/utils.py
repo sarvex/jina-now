@@ -363,8 +363,8 @@ def get_info_hubble(user_input):
         user_token = config_val['auth_token']
     client = hubble.Client(token=user_token, max_retries=None, jsonify=True)
     response = client.get_user_info()
-    user_input.admin_emails = [response['data']['_id']]
-    user_input.jwt = {'user': response['data'], 'token': user_token}
+    user_input.admin_emails = [response['data']['email']]
+    user_input.jwt = {'token': user_token}
     return response['data'], user_token
 
 

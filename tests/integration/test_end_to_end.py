@@ -194,30 +194,27 @@ def assert_deployment_queries(
         )
         assert response.status_code == 200
 
-        # test api keys
-        # search with invalid api key
-        request_body = get_search_request_body(
-            app, dataset, deployment_type, kwargs, test_search_image
-        )
-        del request_body['jwt']
-        request_body['api_key'] = 'my_key'
-        with pytest.raises(Exception):
-            assert_search(search_url, request_body)
         # add api key
-        request_body_update_keys = get_default_request_body(
-            deployment_type, kwargs.secured
-        )
-        request_body_update_keys['api_keys'] = ['my_key']
+        del request_body['user_emails']
+        request_body['api_keys'] = ['my_key']
         response = requests.post(
             f'{url}/admin/updateApiKeys',
-            json=request_body_update_keys,
+            json=request_body,
         )
         if response.status_code != 200:
             print(response.text)
             print(response.json()['message'])
             raise Exception(f'Response status is {response.status_code}')
         # the same search should work now
+        request_body = get_search_request_body(
+            app, dataset, deployment_type, kwargs, test_search_image
+        )
         assert_search(search_url, request_body)
+        # search with invalid api key
+        del request_body['jwt']
+        request_body['api_key'] = 'no_key'
+        with pytest.raises(Exception):
+            assert_search(search_url, request_body)
 
 
 def get_search_request_body(app, dataset, deployment_type, kwargs, test_search_image):
@@ -250,9 +247,7 @@ def get_default_request_body(deployment_type, secured):
     if secured:
         if 'WOLF_TOKEN' in os.environ:
             os.environ['JINA_AUTH_TOKEN'] = os.environ['WOLF_TOKEN']
-        client = hubble.Client(token=hubble.get_token(), max_retries=None, jsonify=True)
-        user_info = client.get_user_info()['data']
-        request_body['jwt'] = {'user': user_info, 'token': hubble.get_token()}
+        request_body['jwt'] = {'token': hubble.get_token()}
     return request_body
 
 

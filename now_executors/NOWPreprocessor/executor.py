@@ -6,8 +6,10 @@ from concurrent.futures import ThreadPoolExecutor
 from typing import Dict, Optional
 
 import boto3
-from jina import Document, DocumentArray, Executor, requests
+from jina import Document, DocumentArray
 from now_common.options import _construct_app
+from now_executors import NOWAuthExecutor as Executor
+from now_executors import SecurityLevel, secure_request
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import Apps, DatasetTypes, Modalities
@@ -23,8 +25,8 @@ class NOWPreprocessor(Executor):
     To update user_input, set the 'user_input' key in parameters dictionary.
     """
 
-    def __init__(self, app: str, max_workers: int = 15, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, app: str, max_workers: int = 15, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
         self.app: JinaNOWApp = _construct_app(app)
         self.max_workers = max_workers
@@ -128,7 +130,7 @@ class NOWPreprocessor(Executor):
 
         return docs
 
-    @requests(on=['/index', '/encode'])
+    @secure_request(on=['/index', '/encode'], level=SecurityLevel.USER)
     def index(
         self, docs: DocumentArray, parameters: Optional[Dict] = None, *args, **kwargs
     ) -> DocumentArray:
@@ -143,7 +145,7 @@ class NOWPreprocessor(Executor):
         self._set_user_input(parameters=parameters)
         return self._preprocess_maybe_cloud_download(docs=docs, is_indexing=True)
 
-    @requests(on='/search')
+    @secure_request(on='/search', level=SecurityLevel.USER)
     def search(
         self, docs: DocumentArray, parameters: Optional[Dict] = None, *args, **kwargs
     ) -> DocumentArray:
@@ -158,7 +160,7 @@ class NOWPreprocessor(Executor):
         self._set_user_input(parameters=parameters)
         return self._preprocess_maybe_cloud_download(docs=docs, is_indexing=False)
 
-    @requests(on='/temp_link_cloud_bucket')
+    @secure_request(on='/temp_link_cloud_bucket', level=SecurityLevel.USER)
     def temporary_link_from_cloud_bucket(
         self, docs: DocumentArray, parameters: Optional[Dict] = None, *args, **kwargs
     ) -> DocumentArray:

@@ -25,7 +25,6 @@ def index(data: NowImageIndexRequestModel):
     `base64` encoded using human-readable characters - `utf-8`.
     """
     index_docs = DocumentArray()
-    jwt = data.jwt
     for image, uri, tags in zip(data.images, data.uris, data.tags):
         if bool(image) + bool(uri) != 1:
             raise ValueError(

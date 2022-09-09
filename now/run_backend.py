@@ -2,6 +2,7 @@ import os
 import pathlib
 import random
 import sys
+from copy import deepcopy
 from time import sleep
 from typing import Dict, Optional
 
@@ -57,7 +58,12 @@ def run(app_instance: JinaNOWApp, user_input: UserInput, kubectl_path: str):
     }
     if user_input.secured:
         params['jwt'] = user_input.jwt
-    call_index(client=client, dataset=dataset, parameters=params, return_results=False)
+    call_index(
+        client=client,
+        dataset=dataset,
+        parameters=deepcopy(params),
+        return_results=False,
+    )
     print('⭐ Success - your data is indexed')
 
     return (
@@ -76,8 +82,9 @@ def call_index(
     return_results: Optional[bool] = False,
 ):
     request_size = estimate_request_size(dataset)
-    # Remove app_instance from parameters
-    parameters['user_input'].pop('app_instance')
+
+    # Deep copy of the user_input without app_instance from parameters
+    parameters['user_input'].pop('app_instance', None)
 
     # double check that flow is up and running - should be done by wolf/core in the future
     while True:
