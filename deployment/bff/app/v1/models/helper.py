@@ -49,8 +49,8 @@ class BaseSearchRequestModel(BaseRequestModel):
     uri: Optional[str] = Field(
         default=None, description='URI of the file or data URI of the query'
     )
-    conditions: Optional[dict] = Field(
-        default=None, description='dictionary with filter conditions for search results'
+    filters: Optional[Dict] = Field(
+        default=None, description='dictionary with filters for search results'
     )
 
 
