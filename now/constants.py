@@ -6,7 +6,7 @@ from now.utils import BetterEnum
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.122-auth-exec-4'
-NOW_PREPROCESSOR_VERSION = '0.0.60-feat-preprocessor-gets-tags-1'
+NOW_PREPROCESSOR_VERSION = '0.0.60-feat-preprocessor-gets-tags-2'
 NOW_AUTH_EXECUTOR_VERSION = '0.0.5-auth-exec-4'
 
 
