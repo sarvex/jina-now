@@ -94,6 +94,7 @@ class NOWPreprocessor(Executor):
                     tags = json.load(fp)
                     tags = flatten_dict(tags)
                     d.tags.update(tags)
+                del d.tags['tag_uri']
             return d
 
         docs_to_download = []

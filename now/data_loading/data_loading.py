@@ -104,17 +104,19 @@ def _load_tags_from_json(da, user_input):
         folder = d.uri.rsplit('/', 1)[0]
         folder_to_files[folder].append(d.uri)
 
-    docs_with_tag_file_uri = DocumentArray()
+    docs = DocumentArray()
     for files in folder_to_files.values():
         tag_file = select_ending(files, ['json'])
         content_file = select_ending(
             files, user_input.app_instance.supported_file_types
         )
-        if tag_file is not None and content_file is not None:
-            docs_with_tag_file_uri.append(
-                Document(uri=content_file, tags={'tag_uri': tag_file})
-            )
-    return docs_with_tag_file_uri
+        if content_file:
+            if tag_file:
+                tags = {'tag_uri': tag_file}
+            else:
+                tags = {}
+            docs.append(Document(uri=content_file, tags=tags))
+    return docs
 
 
 def _pull_docarray(dataset_name: str):
