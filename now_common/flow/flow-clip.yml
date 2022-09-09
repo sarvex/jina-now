@@ -41,6 +41,8 @@ executors:
     uses_with:
       dim: ${{ ENV.PRE_TRAINED_EMBEDDINGS_SIZE }}
       columns: ${{ ENV.COLUMNS }}
+      admin_emails: ${{ ENV.ADMIN_EMAILS }}
+      user_emails: ${{ ENV.USER_EMAILS }}
     jcloud:
       capacity: on-demand
       resources:
