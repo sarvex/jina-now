@@ -79,8 +79,7 @@ def call_index(
     request_size = estimate_request_size(dataset)
 
     # Deep copy of the user_input without app_instance from parameters
-    if 'app_instance' in parameters['user_input']:
-        parameters['user_input'].pop('app_instance')
+    parameters['user_input'].pop('app_instance', None)
 
     # double check that flow is up and running - should be done by wolf/core in the future
     while True:
