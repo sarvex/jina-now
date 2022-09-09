@@ -1,8 +1,11 @@
 import warnings
-from typing import Any, Dict, List, Mapping, Optional, Union
+from typing import Dict, List, Optional, Union
 
-from docarray import Document, DocumentArray, dataclass
-from docarray.typing import Image, Text
+import numpy as np
+from docarray import Document, DocumentArray
+from docarray.score import NamedScore
+from elasticsearch import Elasticsearch
+from elasticsearch.helpers import bulk
 from jina import Executor, Flow, requests
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -11,77 +14,91 @@ metrics_mapping = {
     'l2_norm': 'l2norm',
 }
 
+MAPPING = {
+    "properties": {
+        "id": {"type": "text", "analyzer": "standard"},
+        "text": {"type": "text", "analyzer": "standard"},
+        "text_embedding": {
+            "type": "dense_vector",
+            "dims": 768,
+            "similarity": "cosine",
+            "index": "true",
+        },
+        "image_embedding": {
+            "type": "dense_vector",
+            "dims": 512,
+            "similarity": "cosine",
+            "index": "true",
+        },
+    }
+}
+
 
 class ElasticIndexer(Executor):
     def __init__(
         self,
-        hosts: Union[
-            str, List[Union[str, Mapping[str, Union[str, int]]]], None
-        ] = 'http://localhost:9200',
-        n_dim: int = 128,
+        es_connection_str: Optional[str] = 'http://localhost:9200',
         distance: str = 'cosine',
         index_name: str = 'nest',
-        es_config: Optional[Dict[str, Any]] = None,
-        tag_indices: Optional[List[str]] = None,
-        batch_size: int = 64,
-        ef_construction: Optional[int] = None,
-        m: Optional[int] = None,
+        es_mapping: Optional[Dict] = None,
         **kwargs,
     ):
         """
         Initializer function for the ElasticIndexer
 
-        :param hosts: host configuration of the ElasticSearch node or cluster
-        :param n_dim: number of dimensions
+        :param es_connection_str: host configuration of the ElasticSearch node or cluster
         :param distance: The distance metric used for the vector index and vector search
         :param index_name: ElasticSearch Index name used for the storage
-        :param es_config: ElasticSearch cluster configuration object
-        :param index_text: If set to True, ElasticSearch will index the text attribute of each Document to allow text
-            search
-        :param tag_indices: Tag fields to be indexed in ElasticSearch to allow text search on them.
-        :param batch_size: Batch size used to handle storage refreshes/updates.
-        :param ef_construction: The size of the dynamic list for the nearest neighbors. Defaults to the default
-            `ef_construction` value in ElasticSearch
-        :param m: The maximum number of connections per element in all layers. Defaults to the default
-            `m` in ElasticSearch.
+        :param es_mapping: Mapping for new index.
         """
         super().__init__(**kwargs)
+
+        self.es_connection_str = es_connection_str
         self.distance = distance
-        self.index = DocumentArray(
-            storage='elasticsearch',
-            config={'index_name': 'nest_index', 'n_dim': 5},
-            subindex_configs={
-                '@.[text]': {'n_dim': 512},
-                '@.[image]': {'n_dim': 786},
-                '@.[bm25_text]': None,
-            },
-        )
+        self.index_name = index_name
+        if not es_mapping:
+            self.es_mapping = MAPPING
+        else:
+            self.es_mapping = es_mapping
+
+        self.es = Elasticsearch(es_connection_str, verify_certs=False)
+        if not self.es.indices.exists(index=self.index_name):
+            self.es.indices.create(index=self.index_name, mappings=self.es_mapping)
 
     @requests(on="/index")
-    def index(self, docs: DocumentArray, **kwargs):
-        docs.summary()
-        self.index.extend(docs)
+    def index(self, docs: DocumentArray, **kwargs) -> DocumentArray:
+        """
+        Index new `Document`s by adding them to the Elasticsearch indeex.
+
+        :param docs: Documents to be indexed.
+        :return: empty `DocumentArray`.
+        """
+        es_docs = self._transform_docs_to_es(docs)
+        bulk(self.es, es_docs, refresh="wait_for")
         return (
             DocumentArray()
         )  # prevent sending the data back by returning an empty DocumentArray
 
     @requests(on="/search")
-    def search(self, docs: DocumentArray, limit: Optional[int] = 20, **kwargs):
+    def search(
+        self, docs: Union[Document, DocumentArray], limit: Optional[int] = 20, **kwargs
+    ):
         """Perform traditional bm25 + vector search.
 
         :param docs: query `Document`s.
         :param limit: return top `limit` results.
         """
-        result_da = DocumentArray()
         for doc in docs:
-            text_encoded_query = doc  # encoded with sbert
-            image_encoded_query = doc  # encoded with clip-text
-            query = self._build_es_query(
-                DocumentArray([text_encoded_query, image_encoded_query])
-            )
-            results = self.index.find(query=query, limit=limit)
-            result_da.append(results)
-        return result_da
+            query = self._build_es_query(doc)
+            result = self.es.search(
+                index=self.index_name,
+                query=query,
+                fields=['text'],
+                source=False,
+                size=limit,
+            )["hits"]["hits"]
+            doc.matches = self._transform_es_results_to_matches(result)
+        return docs
 
     def _build_es_query(
         self,
@@ -92,12 +109,9 @@ class ElasticIndexer(Executor):
 
         :param query: two `Document`s in this `DocumentArray`, one with the query encoded with
             text encoder and another with the query encoded with clip-text encoder.
-        :param mode: support two modes: bm25 / vector. Different query dict template will
-        be used in different modes.
-        :param filter_ids: only perform search on docs within these ids.
         :return: query dict containing query and filter.
         """
-
+        query_embeddings = self._extract_embeddings(doc=query)
         query_json = {
             "script_score": {
                 "query": {
@@ -105,73 +119,161 @@ class ElasticIndexer(Executor):
                 },
                 "script": {
                     "source": f"""_score / (_score + 10.0)
-                            + 0.5*{metrics_mapping[self.distance]}(params.query_ImageVector, 'image')
-                            + 0.5*{metrics_mapping[self.distance]}(params.query_TextVector, 'text')
+                            + 0.5*{metrics_mapping[self.distance]}(params.query_ImageVector, 'image_embedding')
+                            + 0.5*{metrics_mapping[self.distance]}(params.query_TextVector, 'text_embedding')
                             + 1.0""",
                     "params": {
-                        "query_TextVector": query[0].embedding,
-                        "query_ImageVector": query[1].embedding,
+                        "query_TextVector": query_embeddings['query_TextEmbedding'],
+                        "query_ImageVector": query_embeddings['query_ImageEmbedding'],
                     },
                 },
             }
         }
         return query_json
 
+    @requests(on="/update")
+    def update(self, docs: DocumentArray, **kwargs) -> DocumentArray:
+        """
+        TODO: implement update endpoint, eg. update ES docs with new embeddings etc.
+        """
+        raise NotImplementedError()
+
     @requests(on="/filter")
     def filter(self, parameters: dict = {}, **kwargs):
         """
-        /filter endpoint, filters through documents if docs is passed using some
-        filtering conditions e.g. {"codition1":value1, "condition2": value2}
-        in case of multiple conditions "and" is used
+        TODO: implement filter query for Elasticsearch
 
         :returns: filtered results in root, chunks and matches level
         """
-        filtering_condition = parameters.get("filter", {})
-        traversal_paths = parameters.get("traversal_paths", self.traversal_paths)
-        result = self.index[traversal_paths].find(filtering_condition)
-        return result
+        raise NotImplementedError()
+
+    def _transform_docs_to_es(self, docs: DocumentArray) -> List[Dict]:
+        """
+        This function takes a `DocumentArray` containing `Document`s
+        with text and image chunks and returns a dictionary with text,
+        embedding and image embedding.
+
+        :param doc: A `Document` containing text and image chunks.
+        :return: A list of dictionaries containing text, text embedding and image embedding
+        """
+        new_docs = list()
+        for doc in docs:
+            new_doc = dict()
+            new_doc['_id'] = doc.id
+            for chunk in doc.chunks:
+                if chunk.modality == "text":
+                    new_doc['text'] = chunk.text
+                    new_doc['text_embedding'] = chunk.embedding
+                elif chunk.modality == "image":
+                    new_doc['image_embedding'] = chunk.embedding
+            new_doc["_op_type"] = "index"
+            new_doc["_index"] = self.index_name
+            if all(
+                field in new_doc
+                for field in ("text", "text_embedding", "image_embedding")
+            ):
+                new_docs.append(new_doc)
+        return new_docs
+
+    def _transform_es_results_to_matches(self, es_results: List[Dict]) -> DocumentArray:
+        """
+        Transform a list of results from Elasticsearch into a matches in the form of a `DocumentArray`.
+
+        :param es_results: List of dictionaries containing results from Elasticsearch querying.
+        :return: `DocumentArray` that holds all matches in the form of `Document`s.
+        """
+        matches = DocumentArray()
+        for result in es_results:
+            d = Document(id=result['_id'])
+            d.scores[self.distance] = NamedScore(value=result['_score'])
+            matches.append(d)
+        return matches
+
+    def _extract_embeddings(self, doc: Document) -> Dict[str, np.ndarray]:
+        """
+        Get embeddings from the document.
+
+        :param doc: `Document` with chunks of text document and image document
+        :return: Two embeddings in a dictionary, one for image and one for text
+        """
+        embeddings = {}
+        for c in doc.chunks:
+            if c.modality == 'text':
+                embeddings['query_TextEmbedding'] = c.embedding
+            elif c.modality == 'image':
+                embeddings['query_ImageEmbedding'] = c.embedding
+            else:
+                print("Modality not found")
+                raise
+        if embeddings and len(embeddings) == 2:
+            return embeddings
+        else:
+            print("No/not all embeddings extracted")
+            raise
 
 
 if __name__ == "__main__":
-
-    @dataclass
-    class ESDocument:
-        text: Text
-        image: Image
-        bm25_text: Text
-
-    @dataclass
-    class ESQuery:
-        text: Text
-
     with Flow().add(uses=ElasticIndexer) as f:
         f.index(
             DocumentArray(
                 [
                     Document(
-                        ESDocument(
-                            text='this is a flower',
-                            image='https://t3.ftcdn.net/jpg/03/31/21/08/240_F_331210846_9yjYz8hRqqvezWIIIcr1sL8UB4zyhyQg.jpg',
-                            bm25_text='this is a flower and some other stuff',
-                        )
+                        id='123',
+                        chunks=[
+                            Document(
+                                id='x',
+                                text='this is a flower',
+                                embedding=np.random.rand(768),
+                                modality='text',
+                            ),
+                            Document(
+                                id='xx',
+                                uri='https://cdn.pixabay.com/photo/2015/04/23/21/59/tree-736877_1280.jpg',
+                                embedding=np.random.rand(512),
+                                modality='image',
+                            ),
+                        ],
                     ),
                     Document(
-                        ESDocument(
-                            text='i have a cat',
-                            image='https://t3.ftcdn.net/jpg/03/31/21/08/240_F_331210846_9yjYz8hRqqvezWIIIcr1sL8UB4zyhyQg.jpg',
-                            bm25_text='i have a cat and some other stuff',
-                        )
+                        id='456',
+                        chunks=[
+                            Document(
+                                id='xxx',
+                                text='this is a cat',
+                                embedding=np.random.rand(768),
+                                modality='text',
+                            ),
+                            Document(
+                                id='xxxx',
+                                uri='https://cdn.pixabay.com/photo/2015/04/23/21/59/tree-736877_1280.jpg',
+                                embedding=np.random.rand(512),
+                                modality='image',
+                            ),
+                        ],
                     ),
-                ],
-                storage='elasticsearch',
-                config={'index_name': 'nest_index', 'n_dim': 5},
-                subindex_configs={
-                    '@.[text]': {'n_dim': 512},
-                    '@.[image]': {'n_dim': 786},
-                    '@.[bm25_text]': None,
-                },
+                ]
             )
         )
 
-        x = f.search(Document(ESQuery(text='flower')))
-        print(x)
+        x = f.search(
+            DocumentArray(
+                [
+                    Document(
+                        chunks=[
+                            Document(
+                                text='this is a flower',
+                                embedding=np.random.rand(768),
+                                modality='text',
+                            ),
+                            Document(
+                                uri='https://cdn.pixabay.com/photo/2015/04/23/21/59/tree-736877_1280.jpg',
+                                embedding=np.random.rand(512),
+                                modality='image',
+                            ),
+                        ]
+                    )
+                ]
+            )
+        )
+        x.summary()
+        x[0].matches.summary()
