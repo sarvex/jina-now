@@ -26,7 +26,7 @@ def run(app_instance: JinaNOWApp, user_input: UserInput, kubectl_path: str):
     :param kubectl_path:
     :return:
     """
-    dataset = load_data(app_instance, user_input)
+    dataset = load_data(app_instance, user_input)[:500]
 
     env_dict = app_instance.setup(
         dataset=dataset, user_input=user_input, kubectl_path=kubectl_path
@@ -73,7 +73,8 @@ def call_flow(
 ):
     request_size = estimate_request_size(dataset)
     # Remove app_instance from parameters
-    parameters['user_input'].pop('app_instance')
+    if 'app_instance' in parameters['user_input']:
+        del parameters['user_input']['app_instance']
 
     # double check that flow is up and running - should be done by wolf/core in the future
     while True:
@@ -91,9 +92,10 @@ def call_flow(
     response = client.post(
         on=endpoint,
         request_size=request_size,
-        inputs=dataset[:500],
+        inputs=dataset,
         show_progress=True,
         parameters=parameters,
+        return_results=return_results,
     )
 
     if return_results and response:

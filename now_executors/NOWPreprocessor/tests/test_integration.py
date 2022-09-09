@@ -1,4 +1,3 @@
-import dataclasses
 import json
 
 from docarray import Document, DocumentArray
@@ -10,31 +9,37 @@ from now.constants import Apps, Modalities
 from now.now_dataclasses import UserInput
 
 
-def test_executor_persistance():
-    e = NOWPreprocessor('text_to_text', metas={'workspace': './workspace'})
+def test_executor_persistence():
+    e = NOWPreprocessor('image_to_image', metas={'workspace': './workspace'})
     user_input = UserInput()
     text_docs = DocumentArray(
         [
             Document(text='test'),
-            Document(
-                chunks=DocumentArray([Document(uri='test.jpg'), Document(text='hi')])
-            ),
+            Document(uri='test.jpg'),
+            # chunks=DocumentArray([Document(uri='test.jpg'), Document(text='hi')])
+            # ),
         ]
     )
 
-    e.index(docs=text_docs, parameters={'user_input': dataclasses.asdict(user_input)})
+    ret = e.index(
+        docs=text_docs,
+        parameters={'user_input': user_input.__dict__, 'is_indexing': False},
+    )
     with open(e.user_input_path, 'r') as fp:
         json.load(fp)
 
 
-def test__text_to_video():
+# def test_text_image_encoding():
+
+
+def test_text_to_video():
     app = Apps.TEXT_TO_VIDEO
 
-    user_inpuT = UserInput()
-    user_inpuT.output_modality = Modalities.VIDEO
-    user_inpuT.app_instance = _construct_app(app)
-    user_inpuT.data = 'custom'
-    user_inpuT.dataset_path = '/Users/joschkabraun/dev/now/da_tgif.30000.bin'
+    user_input = UserInput()
+    user_input.output_modality = Modalities.VIDEO
+    user_input.app_instance = _construct_app(app)
+    user_input.data = 'custom'
+    user_input.dataset_path = '/Users/joschkabraun/dev/now/da_tgif.30000.bin'
 
     text_docs = DocumentArray(
         [
@@ -49,7 +54,7 @@ def test__text_to_video():
         result = f.post(
             on='/search',
             inputs=text_docs,
-            parameters={'user_input': dataclasses.asdict(user_inpuT)},
+            parameters={'user_input': user_input.__dict__},
             show_progress=True,
         )
 

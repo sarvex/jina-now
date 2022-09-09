@@ -14,7 +14,6 @@ from finetuner.callback import EarlyStopping, EvaluationCallback
 
 from now.apps.base.app import JinaNOWApp
 from now.deployment.deployment import cmd, terminate_wolf
-from now.deployment.flow import deploy_flow
 from now.finetuning.dataset import FinetuneDataset, build_finetuning_dataset
 from now.finetuning.settings import FinetuneSettings
 from now.log import time_profiler, yaspin_extended
@@ -232,13 +231,17 @@ def _maybe_add_embeddings(
     )
 
     app_instance.set_flow_yaml()
-    client, _, _, gateway_host_internal, _, = deploy_flow(
-        deployment_type=user_input.deployment_type,
-        flow_yaml=app_instance.flow_yaml,
-        ns=_KS_NAMESPACE,
-        env_dict=env_dict,
-        kubectl_path=kubectl_path,
-    )
+    from jina import Client
+
+    client = Client(host='localhost', port=31080)
+    gateway_host_internal = 'gateway.nowapi.svc.cluster.local'
+    # client, _, _, gateway_host_internal, _, = deploy_flow(
+    #     deployment_type=user_input.deployment_type,
+    #     flow_yaml=app_instance.flow_yaml,
+    #     ns=_KS_NAMESPACE,
+    #     env_dict=env_dict,
+    #     kubectl_path=kubectl_path,
+    # )
     print(f'▶ create embeddings for {len(documents_without_embedding)} documents')
     result = call_flow(
         endpoint='/encode',

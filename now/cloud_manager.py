@@ -86,7 +86,7 @@ def setup_cluster(
         create_local_cluster(kind_path, **kwargs)
     elif user_input.deployment_type != 'remote':
         cmd(f'{kubectl_path} config use-context {user_input.cluster}')
-        ask_existing(kubectl_path)
+        # ask_existing(kubectl_path)
 
 
 def ask_existing(kubectl_path, **kwargs):
