@@ -3,6 +3,7 @@ import os
 import random
 import string
 import sys
+from copy import deepcopy
 from time import sleep
 from typing import Dict, Tuple, Any
 
@@ -243,7 +244,7 @@ def _maybe_add_embeddings(
     result = call_index(
         client=client,
         dataset=documents_without_embedding,
-        parameters={'user_input': user_input.__dict__},
+        parameters={'user_input': deepcopy(user_input.__dict__)},
         return_results=True,
     )
 
