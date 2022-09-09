@@ -9,7 +9,7 @@ from copy import deepcopy
 from docarray import Document, DocumentArray
 
 from now.apps.base.app import JinaNOWApp
-from now.constants import DatasetTypes, DemoDatasets
+from now.constants import DatasetTypes, DemoDatasets, Modalities
 from now.data_loading.utils import _fetch_da_from_url, get_dataset_url
 from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
@@ -43,7 +43,7 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
         print('⬇  Download DocArray dataset')
         url = get_dataset_url(user_input.data, app.output_modality)
         da = _fetch_da_from_url(url)
-        da[:, 'embedding'] = None
+        da = _filter_da_by_modality(da, app.output_modality)
     if da is None:
         raise ValueError(
             f'Could not load DocArray dataset. Please check your configuration: {user_input}.'
@@ -56,6 +56,27 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
         else:
             da = da[:1000]
     return da
+
+
+def _filter_da_by_modality(da: DocumentArray, modality: Modalities) -> DocumentArray:
+    """Filter the DocumentArray by the modality.
+
+    :param da: The DocumentArray to filter.
+    :param modality: The modality to filter by.
+    :return: The filtered DocumentArray.
+    """
+    if modality == Modalities.TEXT:
+        return DocumentArray([d for d in da if d.text != ''])
+    elif modality == Modalities.IMAGE:
+        return DocumentArray([d for d in da if d.blob != b'' or d.uri != ''])
+    elif modality == Modalities.MUSIC:
+        return da  # to be processed later
+    elif modality == Modalities.VIDEO:
+        return da  # to be processed later
+    elif modality == Modalities.TEXT_AND_IMAGE:
+        return da  # to be processed later
+    else:
+        raise ValueError(f'Unknown modality: {modality}')
 
 
 def _open_json(path: str):

@@ -26,7 +26,7 @@ def run(app_instance: JinaNOWApp, user_input: UserInput, kubectl_path: str):
     :param kubectl_path:
     :return:
     """
-    dataset = load_data(app_instance, user_input)[:500]
+    dataset = load_data(app_instance, user_input)
 
     env_dict = app_instance.setup(
         dataset=dataset, user_input=user_input, kubectl_path=kubectl_path

@@ -14,6 +14,7 @@ from finetuner.callback import EarlyStopping, EvaluationCallback
 
 from now.apps.base.app import JinaNOWApp
 from now.deployment.deployment import cmd, terminate_wolf
+from now.deployment.flow import deploy_flow
 from now.finetuning.dataset import FinetuneDataset, build_finetuning_dataset
 from now.finetuning.settings import FinetuneSettings
 from now.log import time_profiler, yaspin_extended
@@ -231,22 +232,20 @@ def _maybe_add_embeddings(
     )
 
     app_instance.set_flow_yaml()
-    from jina import Client
 
-    client = Client(host='localhost', port=31080)
-    gateway_host_internal = 'gateway.nowapi.svc.cluster.local'
-    # client, _, _, gateway_host_internal, _, = deploy_flow(
-    #     deployment_type=user_input.deployment_type,
-    #     flow_yaml=app_instance.flow_yaml,
-    #     ns=_KS_NAMESPACE,
-    #     env_dict=env_dict,
-    #     kubectl_path=kubectl_path,
-    # )
+    client, _, _, gateway_host_internal, _, = deploy_flow(
+        deployment_type=user_input.deployment_type,
+        flow_yaml=app_instance.flow_yaml,
+        ns=_KS_NAMESPACE,
+        env_dict=env_dict,
+        kubectl_path=kubectl_path,
+    )
+
     print(f'▶ create embeddings for {len(documents_without_embedding)} documents')
     result = call_flow(
-        endpoint='/encode',
         client=client,
         dataset=documents_without_embedding,
+        endpoint='/encode',
         parameters={'user_input': user_input.__dict__},
         return_results=True,
     )
@@ -254,9 +253,11 @@ def _maybe_add_embeddings(
     for doc in result:
         dataset[doc.id].embedding = doc.embedding
 
-    assert all([d.embedding is not None for d in dataset]), (
-        "Some docs slipped through and" " still have no embedding..."
-    )
+    if not all([d.embedding is not None for d in dataset]):
+        print(
+            "Some docs slipped through and still have no embeddings. Re-run the program or continue with "
+            "the next step."
+        )
 
     # removes normal flow as it is unused from now on
     if user_input.deployment_type == 'local':
@@ -273,3 +274,5 @@ def _maybe_add_embeddings(
             '.wolf.jina.ai', ''
         )
         terminate_wolf(flow_id=flow_id)
+
+    return dataset
