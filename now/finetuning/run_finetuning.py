@@ -3,6 +3,7 @@ import os
 import random
 import string
 import sys
+from copy import deepcopy
 from time import sleep
 from typing import Any, Dict, Tuple
 
@@ -206,7 +207,7 @@ def _get_random_string(length) -> str:
     return ''.join(random.choice(letters) for _ in range(length))
 
 
-_KS_NAMESPACE = 'nowapi'
+_KS_NAMESPACE = 'embed-now'
 
 
 @time_profiler
@@ -232,7 +233,6 @@ def _maybe_add_embeddings(
     )
 
     app_instance.set_flow_yaml()
-
     client, _, _, gateway_host_internal, _, = deploy_flow(
         deployment_type=user_input.deployment_type,
         flow_yaml=app_instance.flow_yaml,
@@ -240,13 +240,12 @@ def _maybe_add_embeddings(
         env_dict=env_dict,
         kubectl_path=kubectl_path,
     )
-
     print(f'▶ create embeddings for {len(documents_without_embedding)} documents')
     result = call_flow(
         client=client,
         dataset=documents_without_embedding,
         endpoint='/encode',
-        parameters={'user_input': user_input.__dict__},
+        parameters={'user_input': deepcopy(user_input.__dict__)},
         return_results=True,
     )
 

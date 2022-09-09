@@ -1,6 +1,7 @@
 from multiprocessing import Process
 from time import sleep
 
+import hubble
 import pytest
 import requests
 from docarray import Document
@@ -28,13 +29,16 @@ def get_reqest_body():
 
 def get_flow():
     clip_uses = CLIP_USES['local'][0]
-    user_id = get_reqest_body()['jwt']['user']['_id']
+    client = hubble.Client(
+        token=get_reqest_body()['jwt']['token'], max_retries=None, jsonify=True
+    )
+    admin_email = client.get_user_info()['data'].get('email')
     f = (
         Flow(port_expose=9089)
         .add(
             uses=f'jinahub+docker://NOWAuthExecutor/v{NOW_AUTH_EXECUTOR_VERSION}',
             uses_with={
-                'admin_emails': [user_id],
+                'admin_emails': [admin_email],
                 'user_emails': [],
             },
         )

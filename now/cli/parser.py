@@ -1,6 +1,7 @@
 import argparse
 
 from jina.parsers.helper import _ColoredHelpFormatter
+from now_common import options
 from now_common.options import _construct_app
 
 from now import __version__
@@ -84,6 +85,16 @@ def set_start_parser(sp):
         type=str,
     )
 
+    # Add common app options
+    for option in options.base_options:
+        if option.is_terminal_command:
+            parser.add_argument(
+                f'--{option.name}',
+                help=option.description,
+                type=str,
+            )
+
+    # Add app sub-command and its options
     sub_parser = parser.add_subparsers(
         dest='app',
         description='use `%(prog)-8s [sub-command] --help` '
