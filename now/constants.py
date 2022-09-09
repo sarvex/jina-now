@@ -6,8 +6,8 @@ from now.utils import BetterEnum
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.122-auth-exec-4'
-NOW_PREPROCESSOR_VERSION = '0.0.79-auth-exec-4'
-NOW_AUTH_EXECUTOR_VERSION = '0.0.5-auth-exec-4'
+NOW_PREPROCESSOR_VERSION = '0.0.79-finetune-1'
+NOW_AUTH_EXECUTOR_VERSION = '0.0.5-finetune-1'
 
 
 class Modalities(BetterEnum):
