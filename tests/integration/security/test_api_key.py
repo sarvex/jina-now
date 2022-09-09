@@ -9,7 +9,11 @@ from jina import Flow
 from tests.integration.test_end_to_end import assert_search, get_default_request_body
 
 from deployment.bff.app.app import run_server
-from now.constants import CLIP_USES, NOW_AUTH_EXECUTOR_VERSION
+from now.constants import (
+    CLIP_USES,
+    NOW_ANNLITE_INDEXER_VERSION,
+    NOW_AUTH_EXECUTOR_VERSION,
+)
 
 API_KEY = 'my_key'
 base_url = 'http://localhost:8080/api/v1'
@@ -46,8 +50,8 @@ def get_flow():
             uses=f'jinahub+docker://{clip_uses}',
         )
         .add(
-            uses=f'jinahub+docker://AnnLiteNOWIndexer2/0.3.0',
-            uses_with={'dim': 512},
+            uses=f'jinahub+docker://NOWAnnLiteIndexer/v{NOW_ANNLITE_INDEXER_VERSION}',
+            uses_with={'dim': 512, 'admin_emails': [admin_email]},
         )
     )
     return f

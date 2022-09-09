@@ -5,9 +5,11 @@ from now.utils import BetterEnum
 # DEMO_DATASET_DOCARRAY_VERSION = docarray_version
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.127-add-filter-playground'
-NOW_PREPROCESSOR_VERSION = '0.0.79-auth-exec-4'
+
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.128-add-filter-playground'
+NOW_PREPROCESSOR_VERSION = '0.0.80-annlite-secure-1'
 NOW_AUTH_EXECUTOR_VERSION = '0.0.5-auth-exec-4'
+NOW_ANNLITE_INDEXER_VERSION = '0.0.3-annlite-secure-1'
 
 
 class Modalities(BetterEnum):
@@ -47,9 +49,11 @@ BASE_STORAGE_URL = (
 )
 
 CLIP_USES = {
-    'local': ('CLIPTorchEncoder/latest', 'ViT-B-32::openai', 512),
-    'remote': ('CLIPTorchEncoder/latest-gpu', 'ViT-L-14-336::openai', 768),
+    'local': ('CLIPOnnxEncoder/latest', 'ViT-B-32::openai', 512),
+    'remote': ('CLIPOnnxEncoder/latest-gpu', 'ViT-B-32::openai', 512),
 }
+
+EXTERNAL_CLIP_HOST = 'encoderclip-bh-5f4efaff13.wolf.jina.ai'
 
 PREFETCH_NR = 10
 
