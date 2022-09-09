@@ -29,6 +29,7 @@ class NOWPostprocessorV2(Executor):
         self, docs: DocumentArray, parameters: Dict = {}, **kwargs
     ):
         traversal_paths = parameters.get("traversal_paths", self.traversal_paths)
+
         for doc in docs:
             for tag, value in doc.tags.items():
                 self.tags_values[tag].add(value)
@@ -51,9 +52,10 @@ class NOWPostprocessorV2(Executor):
                     except FileNotFoundError:
                         continue
 
+        self.save_tags()
         return docs
 
-    def close(self):
+    def save_tags(self):
         with open('./tags.pkl', 'wb') as f:
             pickle.dump(self.tags_values, f)
 

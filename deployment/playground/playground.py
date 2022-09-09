@@ -2,6 +2,7 @@ import base64
 import io
 import json
 import os
+from collections import OrderedDict
 from copy import deepcopy
 from urllib.parse import quote, unquote
 from urllib.request import urlopen
@@ -122,14 +123,15 @@ def deploy_streamlit():
             profanity.load_censor_words()
         setup_design()
 
+        filters = None
         if params.host:
             client = Client(host=params.host)
             response = client.post(on='/tags')
-            filters = response[0].tags['tags']
+            filters = OrderedDict(response[0].tags['tags'])
 
         filter_selection = {}
         if filters:
-
+            print(filters)
             st.sidebar.title("Filters")
             for tag, values in filters.items():
                 values.insert(0, 'All')
@@ -147,16 +149,16 @@ def deploy_streamlit():
             media_type = 'Music'
 
         if media_type == "Image":
-            render_image(da_img, filter_selection)
+            render_image(da_img, deepcopy(filter_selection))
 
         elif media_type == "Text":
-            render_text(da_txt, filter_selection)
+            render_text(da_txt, deepcopy(filter_selection))
 
         elif media_type == 'Webcam':
             render_webcam()
 
         elif media_type == 'Music':
-            render_music_app(params.data, filter_selection)
+            render_music_app(params.data, deepcopy(filter_selection))
 
         render_matches(params.output_modality)
 
