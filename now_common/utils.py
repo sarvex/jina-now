@@ -8,7 +8,11 @@ from docarray import DocumentArray
 from jina import __version__ as jina_version
 
 from now.apps.base.app import JinaNOWApp
-from now.constants import NOW_PREPROCESSOR_VERSION, PREFETCH_NR
+from now.constants import (
+    NOW_ANNLITE_INDEXER_VERSION,
+    NOW_PREPROCESSOR_VERSION,
+    PREFETCH_NR,
+)
 from now.finetuning.run_finetuning import finetune
 from now.finetuning.settings import FinetuneSettings, parse_finetune_settings
 from now.now_dataclasses import UserInput
@@ -151,7 +155,7 @@ def get_indexer_config(num_indexed_samples: int) -> Dict:
 
     :param num_indexed_samples: number of samples which will be indexed; should incl. chunks for e.g. text-to-video app
     """
-    config = {'indexer_uses': 'AnnLiteNOWIndexer3/0.0.5'}
+    config = {'indexer_uses': f'NOWAnnLiteIndexer/v{NOW_ANNLITE_INDEXER_VERSION}'}
     threshold1 = 50_000
     threshold2 = 250_000
     if 'NOW_CI_RUN' in os.environ:

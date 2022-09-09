@@ -29,9 +29,9 @@ executors:
     replicas: 3
     uses: ${{ ENV.ENCODER_NAME }}
     host: ${{ ENV.ENCODER_HOST }}
+    port: ${{ ENV.ENCODER_PORT }}
     tls: ${{ ENV.ENCODER_USES_TLS }}
     external: ${{ ENV.ENCODER_IS_EXTERNAL }}
-    port: 2096
     uses_with:
       traversal_paths: '@c'
       access_paths: '@c'

@@ -1,0 +1,8 @@
+jtype: NOWAnnLiteIndexer
+py_modules:
+  - executor.py
+metas:
+  name: NOWAnnLiteIndexer
+  description: ann, similarity_search, indexer, pq, hnsw, pre-filtering
+  url: https://github.com/jina-ai/now/now_executors/NOWAnnLiteIndexer
+  keywords: [ann, similarity_search, indexer, pq, hnsw, pre-filtering]
