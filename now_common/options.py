@@ -53,7 +53,6 @@ APP = DialogOptions(
             'name': '🥁 ▶ 🥁 text to text+image search',
             'value': Apps.TEXT_TO_TEXT_AND_IMAGE,
         },
-
     ],
     prompt_message='What sort of search engine would you like to build?',
     prompt_type='list',

@@ -69,8 +69,11 @@ class TextToTextAndImage(JinaNOWApp):
 
         for encoder_data, encoder_type in data:
             finetune_settings = parse_finetune_settings(
-                user_input=user_input, dataset=dataset, model_name=self._model_name(encoder_type),
-                loss=self._loss_function(encoder_type), add_embeddings=False,
+                user_input=user_input,
+                dataset=dataset,
+                model_name=self._model_name(encoder_type),
+                loss=self._loss_function(encoder_type),
+                add_embeddings=False,
             )
 
             artifact_id, token = finetune(
