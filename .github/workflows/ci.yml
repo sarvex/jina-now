@@ -100,6 +100,7 @@ jobs:
             - 'now/apps/**'
             - 'now_common/preprocess.py'
             - 'now_executors/NOWPreprocessor/**'
+            - 'now_executors/NOWAuthExecutor/**'
       - name: Get preprocessor tag
         if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
         run: |
@@ -156,7 +157,7 @@ jobs:
           python-version: 3.7
       - name: Pip install jina
         if: steps.check_has_executor_changed.outputs.has_changed == 'true'
-        run: pip install "jina[perf]==3.7.0"
+        run: pip install "jina[perf]"
       - name: Check that tag isn't used already for executor
         if: steps.check_has_executor_changed.outputs.has_changed == 'true'
         env:
@@ -172,7 +173,7 @@ jobs:
         if: steps.check_has_executor_changed.outputs.has_changed == 'true'
         env:
           NOW_AUTH_EXECUTOR_VERSION: ${{ env.NOW_AUTH_EXECUTOR_VERSION }}
-        run: jina hub push --force-update NOWAuthExecutor now_executors/NOWAuthExecutor --secret ${{ secrets.NOW_AUTH_EXECUTOR_SECRET }} -t latest --protected-tag v$NOW_AUTH_EXECUTOR_VERSION
+        run: jina hub push --verbose --force-update NOWAuthExecutor now_executors/NOWAuthExecutor --secret ${{ secrets.NOW_AUTH_EXECUTOR_SECRET }} -t latest --protected-tag v$NOW_AUTH_EXECUTOR_VERSION
 
   update-bff-playground-if-required:
     runs-on: ubuntu-latest

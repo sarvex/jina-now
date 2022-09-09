@@ -8,7 +8,7 @@ with:
   env:
     JINA_LOG_LEVEL: DEBUG
 jcloud:
-  version: 3.7.0
+  version: ${{ ENV.JINA_VERSION }}
   retention_days: ${{ RETENTION_DAYS }}
 executors:
   - name: preprocessor
@@ -16,6 +16,8 @@ executors:
     replicas: 5
     uses_with:
       app: ${{ ENV.APP }}
+      admin_emails: ${{ ENV.ADMIN_EMAILS }}
+      user_emails: ${{ ENV.USER_EMAILS }}
     jcloud:
       capacity: on-demand
       resources:

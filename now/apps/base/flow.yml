@@ -6,6 +6,6 @@ with:
   env:
     JINA_LOG_LEVEL: DEBUG
 jcloud:
-  version: 3.6.6
+  version: ${{ ENV.JINA_VERSION }}
   retention_days: ${{ RETENTION_DAYS }}
 executors:

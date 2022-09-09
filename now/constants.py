@@ -5,9 +5,9 @@ from now.utils import BetterEnum
 # DEMO_DATASET_DOCARRAY_VERSION = docarray_version
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.120-adapt-annlite-add-docs'
-NOW_PREPROCESSOR_VERSION = '0.0.78-gateway-debug-1'
-NOW_AUTH_EXECUTOR_VERSION = '0.0.4-5'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.122-auth-exec-4'
+NOW_PREPROCESSOR_VERSION = '0.0.79-auth-exec-4'
+NOW_AUTH_EXECUTOR_VERSION = '0.0.5-auth-exec-4'
 
 
 class Modalities(BetterEnum):

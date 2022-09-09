@@ -33,6 +33,9 @@ def secure_request(level: int, on: str = None):
 
 
 def _check_user(kwargs, level, user_emails, admin_emails, api_keys):
+    if user_emails == [] and admin_emails == [] and api_keys == []:
+        return
+
     if 'parameters' not in kwargs or (
         'api_key' not in kwargs['parameters'] and 'jwt' not in kwargs['parameters']
     ):
@@ -48,42 +51,31 @@ def _check_user(kwargs, level, user_emails, admin_emails, api_keys):
     else:
         jwt = kwargs['parameters']['jwt']
 
-    user_info, _ = _get_token_detail(jwt['token'])
+    user_info = _get_user_info(jwt['token'])
     for email in user_emails + admin_emails:
-        # TODO hack - user_info['_id'] should not be used. Use email once hubble provides it
-        if user_info['_id'] == email:
-            return
-
-        if 'identity' in jwt and jwt['identity']['userInfo']['email'] == email:
-            if not jwt['identity']['userInfo']['email_verified']:
-                raise PermissionError(
-                    f'User {email} needs to be verified. Check if you received verification link.'
-                )
+        if user_info.get('email') == email:
             if level == SecurityLevel.ADMIN and email not in admin_emails:
                 raise PermissionError(f'User {email} is not an admin.')
             return
     raise PermissionError(
-        f'User {jwt["identity"]["userInfo"]["email"] if "identity" in jwt else user_info["_id"]} has no permission'
+        f'User {user_info.get("email") or user_info["_id"]} has no permission'
     )
 
 
 @lru_cache(maxsize=128, typed=False)
-def _get_token_detail(token):
+def _get_user_info(token):
     try:
         client = hubble.Client(token=token, max_retries=None, jsonify=True)
         user_info = client.get_user_info()
-        pats = client.list_personal_access_tokens()
-        if user_info['code'] != 200 or pats['code'] != 200:
+        if user_info['code'] != 200:
             raise PermissionError(
                 'Wrong token passed or the token is expired! Please re-login'
             )
-        user_info = user_info['data']
-        pats = pats['data']['personal_access_tokens']
+        return user_info['data']
     except AuthenticationRequiredError as e:
         raise PermissionError(
             'Token expired or invalid. Please use the updated token', e
         )
-    return user_info, pats
 
 
 class NOWAuthExecutor(Executor):
@@ -91,13 +83,15 @@ class NOWAuthExecutor(Executor):
     NOWAuthExecutor performs the token check for authorization. It stores the owner ID belonging
     to the authorised user and also the `user_id` of the allowed users with access to the flow
     deployed by the user.
+
+    If no `admin_emals`, `user_emails` and `api_keys` are provided, no checks will be performed.
     """
 
     def __init__(
         self,
-        admin_emails: List[str] = None,
-        user_emails: List[str] = None,
-        api_keys: List[str] = None,
+        admin_emails: List[str] = [],
+        user_emails: List[str] = [],
+        api_keys: List[str] = [],
         *args,
         **kwargs,
     ):
@@ -109,9 +103,9 @@ class NOWAuthExecutor(Executor):
         """
         super().__init__(*args, **kwargs)
 
-        self.admin_emails = admin_emails if admin_emails else []
-        self.user_emails = user_emails if user_emails else []
-        self.api_keys = api_keys if api_keys else []
+        self.admin_emails = admin_emails
+        self.user_emails = user_emails
+        self.api_keys = api_keys
         self._user = None
 
         self.api_keys_path = (
