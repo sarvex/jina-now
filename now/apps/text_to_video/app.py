@@ -6,6 +6,7 @@ from typing import Dict, List
 import numpy as np
 import PIL
 from docarray import Document, DocumentArray
+from jina.helper import random_port
 from jina.serve.runtimes.gateway.http.models import JinaRequestModel, JinaResponseModel
 from now_common.utils import _get_email, common_setup, get_indexer_config
 from pydantic import BaseModel
@@ -17,7 +18,7 @@ from deployment.bff.app.v1.models.video import (
     NowVideoResponseModel,
 )
 from now.apps.base.app import JinaNOWApp
-from now.constants import CLIP_USES, Apps, Modalities
+from now.constants import CLIP_USES, EXTERNAL_CLIP_HOST, Apps, Modalities
 from now.now_dataclasses import UserInput
 
 NUM_FRAMES_SAMPLED = 3
@@ -89,8 +90,8 @@ class TextToVideo(JinaNOWApp):
         indexer_config = get_indexer_config(len(dataset) * NUM_FRAMES_SAMPLED)
         is_remote = user_input.deployment_type == 'remote'
         encoder_with = {
-            'ENCODER_HOST': 'demo-cas.jina.ai' if is_remote else '0.0.0.0',
-            'ENCODER_PORT': 2096 if is_remote else None,
+            'ENCODER_HOST': EXTERNAL_CLIP_HOST if is_remote else '0.0.0.0',
+            'ENCODER_PORT': 443 if is_remote else random_port(),
             'ENCODER_USES_TLS': True if is_remote else False,
             'ENCODER_IS_EXTERNAL': True if is_remote else False,
         }

@@ -3,11 +3,13 @@ from sys import maxsize
 from typing import Dict, List, Optional
 
 import annlite
-from jina import Document, DocumentArray, Executor, requests
+from jina import Document, DocumentArray
 from jina.logging.logger import JinaLogger
+from now_executors import NOWAuthExecutor as Executor
+from now_executors import SecurityLevel, secure_request
 
 
-class AnnLiteNOWIndexer3(Executor):
+class NOWAnnLiteIndexer(Executor):
     """
     A simple Indexer based on PQLite that stores all the Document data together in a local LMDB store.
 
@@ -104,7 +106,7 @@ class AnnLiteNOWIndexer3(Executor):
         for d in docs:
             del self.da[d.id]
 
-    @requests(on='/index')
+    @secure_request(on='/index', level=SecurityLevel.USER)
     def index(
         self, docs: Optional[DocumentArray] = None, parameters: dict = {}, **kwargs
     ):
@@ -127,7 +129,7 @@ class AnnLiteNOWIndexer3(Executor):
         self.extend_inmemory_docs(flat_docs)
         return DocumentArray([])
 
-    @requests(on='/update')
+    @secure_request(on='/update', level=SecurityLevel.USER)
     def update(
         self, docs: Optional[DocumentArray] = None, parameters: dict = {}, **kwargs
     ):
@@ -151,7 +153,7 @@ class AnnLiteNOWIndexer3(Executor):
         self.update_inmemory_docs(flat_docs)
         self._index.update(flat_docs)
 
-    @requests(on='/delete')
+    @secure_request(on='/delete', level=SecurityLevel.USER)
     def delete(self, parameters: dict = {}, **kwargs):
         """
         Delete endpoint to delete document/documents from the index.
@@ -164,7 +166,7 @@ class AnnLiteNOWIndexer3(Executor):
             self._index.delete(filtered_docs)
         return DocumentArray()
 
-    @requests(on='/list')
+    @secure_request(on='/list', level=SecurityLevel.USER)
     def list(self, parameters: dict = {}, **kwargs):
         """List all indexed documents.
         :param parameters: dictionary with limit and offset
@@ -175,7 +177,7 @@ class AnnLiteNOWIndexer3(Executor):
         offset = int(parameters.get('offset', 0))
         return self.da[offset : offset + limit]
 
-    @requests(on='/search')
+    @secure_request(on='/search', level=SecurityLevel.USER)
     def search(
         self, docs: Optional[DocumentArray] = None, parameters: dict = {}, **kwargs
     ):
@@ -240,7 +242,7 @@ class AnnLiteNOWIndexer3(Executor):
                 d.matches = unique_matches
         return docs
 
-    @requests(on='/status')
+    @secure_request(on='/status', level=SecurityLevel.USER)
     def status(self, **kwargs) -> DocumentArray:
         """Return the document containing status information about the indexer.
 
@@ -251,7 +253,7 @@ class AnnLiteNOWIndexer3(Executor):
         status = Document(tags=self._index.stat)
         return DocumentArray([status])
 
-    @requests(on='/clear')
+    @secure_request(on='/clear', level=SecurityLevel.USER)
     def clear(self, **kwargs):
         """Clear the index of all entries."""
         self._index.clear()
