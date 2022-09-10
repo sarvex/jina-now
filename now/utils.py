@@ -9,7 +9,6 @@ from collections import namedtuple
 from os.path import expanduser as user
 from typing import Dict, List, Optional, Union
 
-import cowsay
 import hubble
 import numpy as np
 import yaml
@@ -336,10 +335,9 @@ class BetterEnum:
 
 
 def to_camel_case(text):
+    """Convert text to camel case in great coding style"""
     s = text.replace("_", " ")
     s = s.split()
-    if len(text) == 0:
-        return text
     return ''.join(i.capitalize() for i in s)
 
 
@@ -401,12 +399,7 @@ def maybe_prompt_user(questions, attribute, **kwargs):
         return kwargs[attribute]
     else:
         answer = prompt(questions)
-        if attribute in answer:
-            return answer[attribute]
-        else:
-            print("\n" * 10)
-            cowsay.cow('see you soon 👋')
-            exit(0)
+        return answer[attribute]
 
 
 def _prompt_value(
