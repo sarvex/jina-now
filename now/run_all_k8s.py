@@ -21,7 +21,7 @@ def get_remote_flow_details():
     return flow_details
 
 
-def stop_now(contexts, active_context, **kwargs):
+def stop_now(user_input, contexts, active_context, **kwargs):
     choices = _get_context_names(contexts, active_context)
     # Add remote Flow if it exists
     if os.path.exists(user(JC_SECRET)):
@@ -90,6 +90,7 @@ def stop_now(contexts, active_context, **kwargs):
             cmd(f'{kwargs["kubectl_path"]} delete ns nowapi')
             spinner.ok('💀')
         cowsay.cow(f'nowapi namespace removed from {cluster}')
+    user_input.app_instance.cleanup()
 
 
 def get_task(kwargs):
@@ -99,15 +100,7 @@ def get_task(kwargs):
     raise Exception('kwargs do not contain a task')
 
 
-def start_now(os_type, arch, contexts, active_context, **kwargs):
-    user_input = configure_user_input(
-        contexts=contexts,
-        active_context=active_context,
-        os_type=os_type,
-        arch=arch,
-        **kwargs,
-    )
-
+def start_now(user_input, **kwargs):
     app_instance = user_input.app_instance
     setup_cluster(user_input, **kwargs)
     (
@@ -164,10 +157,17 @@ def start_now(os_type, arch, contexts, active_context, **kwargs):
 def run_k8s(os_type: str = 'linux', arch: str = 'x86_64', **kwargs):
     contexts, active_context = get_system_state(**kwargs)
     task = get_task(kwargs)
+    user_input = configure_user_input(
+        contexts=contexts,
+        active_context=active_context,
+        os_type=os_type,
+        arch=arch,
+        **kwargs,
+    )
     if task == 'start':
-        return start_now(os_type, arch, contexts, active_context, **kwargs)
+        return start_now(user_input, **kwargs)
     elif task == 'stop':
-        return stop_now(contexts, active_context, **kwargs)
+        return stop_now(user_input, contexts, active_context, **kwargs)
     elif task == 'survey':
         import webbrowser
 
