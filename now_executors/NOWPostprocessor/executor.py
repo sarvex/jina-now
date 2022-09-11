@@ -1,6 +1,3 @@
-import os.path
-import pickle
-from collections import defaultdict
 from typing import Dict
 
 from jina import Document, DocumentArray, Executor, requests
@@ -8,7 +5,7 @@ from jina import Document, DocumentArray, Executor, requests
 CLOUD_BUCKET_PRE_FIXES = ['s3://']
 
 
-class NOWPostprocessorV2(Executor):
+class NOWPostprocessor(Executor):
     """Post-processes any documents after encoding such that they are ready to be indexed, used as query, ...
 
     For indexing, itdrops `blob`, `tensor` attribute from documents which have `uri` attribute whose 'uri' is either in
@@ -18,21 +15,12 @@ class NOWPostprocessorV2(Executor):
     def __init__(self, traversal_paths: str = "@r", *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.traversal_paths = traversal_paths
-        if os.path.isfile('./tags.pkl'):
-            with open('./tags.pkl', 'rb') as f:
-                self.tags_values = pickle.load(f)
-        else:
-            self.tags_values = defaultdict(set)
 
     @requests(on='/index')
     def maybe_drop_blob_tensor(
         self, docs: DocumentArray, parameters: Dict = {}, **kwargs
     ):
         traversal_paths = parameters.get("traversal_paths", self.traversal_paths)
-
-        for doc in docs:
-            for tag, value in doc.tags.items():
-                self.tags_values[tag].add(value)
 
         for doc in docs[traversal_paths]:
             if doc.uri:
@@ -52,24 +40,11 @@ class NOWPostprocessorV2(Executor):
                     except FileNotFoundError:
                         continue
 
-        self.save_tags()
         return docs
-
-    def save_tags(self):
-        with open('./tags.pkl', 'wb') as f:
-            pickle.dump(self.tags_values, f)
-
-    @requests(on='/tags')
-    def get_tags_and_values(self, **kwargs):
-        for tag, value in self.tags_values.items():
-            self.tags_values[tag] = list(value)
-        return DocumentArray(
-            [Document(text='tags', tags={'tags': dict(self.tags_values)})]
-        )
 
 
 if __name__ == '__main__':
-    post_processor = NOWPostprocessorV2(traversal_paths='@c')
+    post_processor = NOWPostprocessor(traversal_paths='@c')
 
     doc_blob = Document(
         uri='https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Wikipedia-logo-v2-en.svg/270px-Wikipedia-logo-v2-en.svg.png'
@@ -107,15 +82,3 @@ if __name__ == '__main__':
         doc_post.summary()
 
         print('----------------\n')
-
-    docs = DocumentArray(
-        [
-            Document(text='hi', tags={'color': 'red'}),
-            Document(blob=b'b12', tags={'color': 'blue'}),
-            Document(blob=b'b12', uri='file_will.never_exist'),
-        ]
-    )
-    docs_post = post_processor.maybe_drop_blob_tensor(docs)
-    tags = post_processor.get_tags_and_values()
-
-    print(tags[0].tags)

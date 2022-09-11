@@ -1,12 +1,12 @@
 from copy import deepcopy
 
 from docarray import Document, DocumentArray
-from executor import NOWPostprocessorV2
+from executor import NOWPostprocessor
 from jina import Flow
 
 
 def test_postprocessing():
-    with Flow().add(uses=NOWPostprocessorV2) as f:
+    with Flow().add(uses=NOWPostprocessor) as f:
         doc_blob = Document(
             uri='https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Wikipedia-logo-v2-en.svg/270px-Wikipedia-logo-v2-en.svg.png'
         )

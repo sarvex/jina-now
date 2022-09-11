@@ -1,3 +1,6 @@
+import os.path
+import pickle
+from collections import defaultdict
 from copy import deepcopy
 from sys import maxsize
 from typing import Dict, List, Optional
@@ -92,6 +95,12 @@ class NOWAnnLiteIndexer(Executor):
 
         self.da = DocumentArray(sorted([d for d in self.da], key=lambda x: x.id))
 
+        if os.path.isfile('./tags.pkl'):
+            with open('./tags.pkl', 'rb') as f:
+                self.tags_values = pickle.load(f)
+        else:
+            self.tags_values = defaultdict(set)
+
     def extend_inmemory_docs(self, docs):
         """Extend the in-memory DocumentArray with new documents"""
         self.da.extend(Document(id=d.id, uri=d.uri, tags=d.tags) for d in docs)
@@ -127,7 +136,21 @@ class NOWAnnLiteIndexer(Executor):
 
         self._index.index(flat_docs)
         self.extend_inmemory_docs(flat_docs)
+
+        for doc in flat_docs:
+            for tag, value in doc.tags.items():
+                self.tags_values[tag].add(value)
+
+        self.save_tags()
         return DocumentArray([])
+
+    @secure_request(on='/tags', level=SecurityLevel.USER)
+    def get_tags_and_values(self, **kwargs):
+        for tag, value in self.tags_values.items():
+            self.tags_values[tag] = list(value)
+        return DocumentArray(
+            [Document(text='tags', tags={'tags': dict(self.tags_values)})]
+        )
 
     @secure_request(on='/update', level=SecurityLevel.USER)
     def update(
@@ -261,3 +284,7 @@ class NOWAnnLiteIndexer(Executor):
     def close(self, **kwargs):
         """Close the index."""
         self._index.close()
+
+    def save_tags(self):
+        with open('./tags.pkl', 'wb') as f:
+            pickle.dump(self.tags_values, f)

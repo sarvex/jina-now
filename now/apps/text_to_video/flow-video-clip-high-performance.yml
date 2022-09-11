@@ -39,7 +39,7 @@ executors:
     env:
       JINA_LOG_LEVEL: DEBUG
   - name: postprocessor
-    uses: jinahub+docker://NOWPostprocessorV2/v0.0.6
+    uses: jinahub+docker://NOWPostprocessor/v0.0.5
     uses_with:
       traversal_paths: '@c'
       access_paths: '@c'
