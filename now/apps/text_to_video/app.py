@@ -126,7 +126,7 @@ class TextToVideo(JinaNOWApp):
                             d.convert_tensor_to_blob()
                     sample_video(d)
                 except:
-                    pass
+                    print(f'Failed to process {d.id}')
                 return d
 
             for d in da:
