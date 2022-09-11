@@ -126,7 +126,7 @@ class TextToVideo(JinaNOWApp):
                             d.convert_tensor_to_blob()
                     sample_video(d)
                 except:
-                    pass
+                    print(f'Failed to process {d.id}')
                 return d
 
             for d in da:
@@ -220,4 +220,4 @@ def sample_video(d):
         frames.append(frame_pil_resized)
         frame_bytes = io.BytesIO()
         frame_pil_resized.save(frame_bytes, format="JPEG", quality=70)
-        d.chunks.append(Document(uri=d.uri, blob=frame_bytes.getvalue()))
+        d.chunks.append(Document(uri=d.uri, blob=frame_bytes.getvalue(), tags=d.tags))

@@ -2,6 +2,7 @@ import base64
 import json
 import os
 import tempfile
+from collections.abc import MutableMapping
 from concurrent.futures import ThreadPoolExecutor
 from typing import Dict, Optional
 
@@ -65,15 +66,8 @@ class NOWPreprocessor(Executor):
         :param tmpdir: temporary directory in which files will be saved
         """
 
-        def convert_fn(d: Document) -> Document:
-            d.tags['uri'] = d.uri
-            session = boto3.session.Session(
-                aws_access_key_id=self.user_input.aws_access_key_id,
-                aws_secret_access_key=self.user_input.aws_secret_access_key,
-                region_name=self.user_input.aws_region_name,
-            )
-            bucket = session.resource('s3').Bucket(d.uri.split('/')[2])
-            path_s3 = '/'.join(d.uri.split('/')[3:])
+        def download(bucket, uri):
+            path_s3 = '/'.join(uri.split('/')[3:])
             path_local = os.path.join(
                 str(tmpdir),
                 base64.b64encode(bytes(path_s3, "utf-8")).decode("utf-8"),
@@ -82,7 +76,25 @@ class NOWPreprocessor(Executor):
                 path_s3,
                 path_local,
             )
-            d.uri = path_local
+            return path_local
+
+        def convert_fn(d: Document) -> Document:
+            """Downloads files and tags from S3 bucket and updates the content uri and the tags uri to the local path"""
+            d.tags['uri'] = d.uri
+            session = boto3.session.Session(
+                aws_access_key_id=self.user_input.aws_access_key_id,
+                aws_secret_access_key=self.user_input.aws_secret_access_key,
+                region_name=self.user_input.aws_region_name,
+            )
+            bucket = session.resource('s3').Bucket(d.uri.split('/')[2])
+            d.uri = download(bucket, d.uri)
+            if 'tag_uri' in d.tags:
+                d.tags['tag_uri'] = download(bucket, d.tags['tag_uri'])
+                with open(d.tags['tag_uri'], 'r') as fp:
+                    tags = json.load(fp)
+                    tags = flatten_dict(tags)
+                    d.tags.update(tags)
+                del d.tags['tag_uri']
             return d
 
         docs_to_download = []
@@ -201,6 +213,17 @@ class NOWPreprocessor(Executor):
             convert_fn(d)
 
         return docs
+
+
+def flatten_dict(d, parent_key='', sep='_'):
+    items = []
+    for k, v in d.items():
+        new_key = parent_key + sep + k if parent_key else k
+        if isinstance(v, MutableMapping):
+            items.extend(flatten_dict(v, new_key, sep=sep).items())
+        else:
+            items.append((new_key, v))
+    return dict(items)
 
 
 if __name__ == '__main__':
