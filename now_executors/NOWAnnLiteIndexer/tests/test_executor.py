@@ -254,6 +254,43 @@ def test_status(tmpdir):
         assert int(status.tags['index_size']) == N
 
 
+def test_get_tags(tmpdir):
+    metas = {'workspace': str(tmpdir)}
+    docs = DocumentArray(
+        [
+            Document(
+                text='hi',
+                embedding=np.random.rand(D).astype(np.float32),
+                tags={'color': 'red'},
+            ),
+            Document(
+                blob=b'b12',
+                embedding=np.random.rand(D).astype(np.float32),
+                tags={'color': 'blue'},
+            ),
+            Document(
+                blob=b'b12',
+                embedding=np.random.rand(D).astype(np.float32),
+                uri='file_will.never_exist',
+            ),
+        ]
+    )
+    f = Flow().add(
+        uses=NOWAnnLiteIndexer,
+        uses_with={
+            'dim': D,
+        },
+        uses_metas=metas,
+    )
+    with f:
+        f.post(on='/index', inputs=docs)
+        response = f.post(on='/tags')
+        assert response[0].text == 'tags'
+        assert 'tags' in response[0].tags
+        assert 'color' in response[0].tags['tags']
+        assert response[0].tags['tags']['color'] == ['blue', 'red']
+
+
 def test_clear(tmpdir):
     metas = {'workspace': str(tmpdir)}
     docs = gen_docs(N)

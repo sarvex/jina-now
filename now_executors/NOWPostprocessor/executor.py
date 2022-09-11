@@ -21,7 +21,6 @@ class NOWPostprocessor(Executor):
         self, docs: DocumentArray, parameters: Dict = {}, **kwargs
     ):
         traversal_paths = parameters.get("traversal_paths", self.traversal_paths)
-
         for doc in docs[traversal_paths]:
             if doc.uri:
                 if doc.text:
@@ -61,8 +60,8 @@ if __name__ == '__main__':
             Document(
                 chunks=DocumentArray(
                     [
-                        Document(text='hi', tags={'color': 'red'}),
-                        Document(blob=b'b12', tags={'color': 'blue'}),
+                        Document(text='hi'),
+                        Document(blob=b'b12'),
                         Document(blob=b'b12', uri='file_will.never_exist'),
                         doc_blob,
                         doc_tens,
