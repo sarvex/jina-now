@@ -24,8 +24,9 @@ def update_api_keys(deployment_type, api_keys):
 
 if __name__ == '__main__':
     api_key = str(uuid.uuid4())
-    update_api_keys(
-        deployment_type='remote',
-        api_keys=[api_key],
-    )
-    print(api_key)
+    for i in range(100):  # increase the probability that all replicas get the new key
+        update_api_keys(
+            deployment_type='remote',
+            api_keys=[api_key],
+        )
+        print(api_key)
