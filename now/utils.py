@@ -361,7 +361,13 @@ def get_info_hubble(user_input):
         user_token = config_val['auth_token']
     client = hubble.Client(token=user_token, max_retries=None, jsonify=True)
     response = client.get_user_info()
-    user_input.admin_emails = [response['data']['email']]
+    user_input.admin_emails = (
+        [response['data']['email']] if 'email' in response['data'] else []
+    )
+    if not user_input.admin_emails:
+        print(
+            'Your hubble account is not verified. Please verify your account to deploy your flow as admin.'
+        )
     user_input.jwt = {'token': user_token}
     return response['data'], user_token
 
