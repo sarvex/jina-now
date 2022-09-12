@@ -291,6 +291,125 @@ def test_get_tags(tmpdir):
         assert response[0].tags['tags']['color'] == ['blue', 'red']
 
 
+def test_delete_tags(tmpdir):
+    metas = {'workspace': str(tmpdir)}
+    docs = DocumentArray(
+        [
+            Document(
+                text='hi',
+                embedding=np.random.rand(D).astype(np.float32),
+                tags={'color': 'red'},
+            ),
+            Document(
+                blob=b'b12',
+                embedding=np.random.rand(D).astype(np.float32),
+                tags={'color': 'blue'},
+            ),
+            Document(
+                blob=b'b12',
+                embedding=np.random.rand(D).astype(np.float32),
+                uri='file_will.never_exist',
+            ),
+            Document(
+                blob=b'b12',
+                embedding=np.random.rand(D).astype(np.float32),
+                tags={'greeting': 'hello'},
+            ),
+        ]
+    )
+    f = Flow().add(
+        uses=NOWAnnLiteIndexer,
+        uses_with={
+            'dim': D,
+        },
+        uses_metas=metas,
+    )
+    with f:
+        f.post(on='/index', inputs=docs)
+        f.post(
+            on='/delete',
+            parameters={'filter': {'tags__color': {'$eq': 'blue'}}},
+        )
+        response = f.post(on='/tags')
+        assert response[0].text == 'tags'
+        assert 'tags' in response[0].tags
+        assert 'color' in response[0].tags['tags']
+        assert response[0].tags['tags']['color'] == ['red']
+        f.post(
+            on='/delete',
+            parameters={'filter': {'tags__greeting': {'$eq': 'hello'}}},
+        )
+        response = f.post(on='/tags')
+        assert 'greeting' not in response[0].tags['tags']
+
+
+def test_update_tags(tmpdir):
+    metas = {'workspace': str(tmpdir)}
+    docs = DocumentArray(
+        [
+            Document(
+                id='1',
+                text='hi',
+                embedding=np.random.rand(D).astype(np.float32),
+                tags={'color': 'red'},
+            ),
+            Document(
+                id='2',
+                blob=b'b12',
+                embedding=np.random.rand(D).astype(np.float32),
+                tags={'color': 'blue'},
+            ),
+            Document(
+                id='3',
+                blob=b'b12',
+                embedding=np.random.rand(D).astype(np.float32),
+                uri='file_will.never_exist',
+            ),
+            Document(
+                id='4',
+                blob=b'b12',
+                embedding=np.random.rand(D).astype(np.float32),
+                tags={'greeting': 'hello'},
+            ),
+        ]
+    )
+    f = Flow().add(
+        uses=NOWAnnLiteIndexer,
+        uses_with={
+            'dim': D,
+        },
+        uses_metas=metas,
+    )
+    with f:
+        f.post(on='/index', inputs=docs)
+        f.post(
+            on='/update',
+            inputs=DocumentArray(
+                [
+                    Document(
+                        id='3',
+                        blob=b'b12',
+                        embedding=np.random.rand(D).astype(np.float32),
+                        tags={'new_tag': 'new_value'},
+                    ),
+                    Document(
+                        id='4',
+                        blob=b'b12',
+                        embedding=np.random.rand(D).astype(np.float32),
+                    ),
+                ]
+            ),
+        )
+        response = f.post(on='/tags')
+        assert response[0].text == 'tags'
+        assert 'tags' in response[0].tags
+        assert 'color' in response[0].tags['tags']
+        assert 'new_tag' in response[0].tags['tags']
+        assert 'greeting' not in response[0].tags['tags']
+        assert response[0].tags['tags']['color'] == ['red', 'blue']
+        assert response[0].tags['tags']['new_tag'] == ['new_value']
+
+
 def test_clear(tmpdir):
     metas = {'workspace': str(tmpdir)}
     docs = gen_docs(N)

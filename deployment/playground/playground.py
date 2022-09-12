@@ -126,7 +126,12 @@ def deploy_streamlit():
         filters = None
         if params.host:
             client = Client(host=params.host)
-            response = client.post(on='/tags')
+            if params.secured == 'true':
+                response = client.post(
+                    on='/tags', parameters={'jwt': {'token': st.session_state.jwt_val}}
+                )
+            else:
+                response = client.post(on='/tags')
             filters = OrderedDict(response[0].tags['tags'])
 
         filter_selection = {}

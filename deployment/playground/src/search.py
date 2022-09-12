@@ -134,7 +134,6 @@ def call_flow(url_host, data, attribute_name, domain):
 
 
 def search_by_text(search_text, jwt, filter_selection) -> DocumentArray:
-    print('search by text : ', filter_selection)
     return search('text', search_text, jwt, filter_dict=filter_selection)
 
 

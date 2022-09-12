@@ -95,8 +95,8 @@ class NOWAnnLiteIndexer(Executor):
 
         self.da = DocumentArray(sorted([d for d in self.da], key=lambda x: x.id))
 
-        if os.path.isfile('./tags.pkl'):
-            with open('./tags.pkl', 'rb') as f:
+        if os.path.isfile(os.path.join(self.workspace, 'tags.pkl')):
+            with open(os.path.join(self.workspace, 'tags.pkl'), 'rb') as f:
                 self.tags_values = pickle.load(f)
         else:
             self.tags_values = defaultdict(set)
@@ -146,6 +146,19 @@ class NOWAnnLiteIndexer(Executor):
 
     @secure_request(on='/tags', level=SecurityLevel.USER)
     def get_tags_and_values(self, **kwargs):
+        """Returns tags and their possible values
+
+        for example if indexed docs are the following:
+            docs = DocumentArray([
+                Document(.., tags={'color':'red'}),
+                Document(.., tags={'color':'blue'}),
+                Document(.., tags={'greeting':'hello'}),
+            ])
+
+        the resulting response would be a document array with
+        one document containg a dictionary in tags like the following:
+        {'tags':{'color':['red', 'blue'], 'greeting':['hello']}}
+        """
         for tag, value in self.tags_values.items():
             self.tags_values[tag] = list(value)
         return DocumentArray(
@@ -176,6 +189,17 @@ class NOWAnnLiteIndexer(Executor):
         self.update_inmemory_docs(flat_docs)
         self._index.update(flat_docs)
 
+        # reconstruct tags_values
+
+        self.tags_values = defaultdict(set)
+        for cell_id in range(self._index.n_cells):
+            for docs in self._index.documents_generator(cell_id, batch_size=10240):
+                for doc in docs:
+                    for tag, value in doc.tags.items():
+                        self.tags_values[tag].add(value)
+
+        self.save_tags()
+
     @secure_request(on='/delete', level=SecurityLevel.USER)
     def delete(self, parameters: dict = {}, **kwargs):
         """
@@ -187,6 +211,15 @@ class NOWAnnLiteIndexer(Executor):
             filtered_docs = deepcopy(self.da.find(filter=filter))
             self.delete_inmemory_docs(filtered_docs)
             self._index.delete(filtered_docs)
+            for doc in filtered_docs:
+                for tag, value in doc.tags.items():
+                    if value in self.tags_values[tag]:
+                        self.tags_values[tag].remove(value)
+
+            updated_dict = {k: v for k, v in self.tags_values.items() if len(v) > 0}
+            self.tags_values = updated_dict
+
+            self.save_tags()
         return DocumentArray()
 
     @secure_request(on='/list', level=SecurityLevel.USER)
@@ -286,5 +319,5 @@ class NOWAnnLiteIndexer(Executor):
         self._index.close()
 
     def save_tags(self):
-        with open('./tags.pkl', 'wb') as f:
+        with open(os.path.join(self.workspace, 'tags.pkl'), 'wb') as f:
             pickle.dump(self.tags_values, f)
