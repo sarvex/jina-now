@@ -111,5 +111,3 @@ def test_nest_preprocessing(is_indexing, get_nest_config_path):
         assert processed_da[0].chunks[1].uri
     else:
         assert processed_da[0].text == 'query text'
-
-

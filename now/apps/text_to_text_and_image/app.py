@@ -28,7 +28,7 @@ class TextToTextAndImage(JinaNOWApp):
 
     @property
     def is_enabled(self) -> bool:
-        return False
+        return True
 
     @property
     def description(self) -> str:
@@ -147,6 +147,6 @@ class TextToTextAndImage(JinaNOWApp):
     @staticmethod
     def _loss_function(encoder_type: Optional[str] = None) -> str:
         """Loss function used during fine-tuning."""
-        if encoder_type == 'text_to_image':
+        if encoder_type == 'text-to-image':
             return 'CLIPLoss'
         return 'TripletMarginLoss'
