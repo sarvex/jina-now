@@ -55,9 +55,9 @@ def build_finetuning_dataset(
     ds.train = _create_finetune_subset(dataset[:split_index])
     ds.val = _create_finetune_subset(dataset[split_index:])
 
-    # ds.val_index = _create_finetune_subset(dataset[split_index:])
-    # ds.val_query = _create_finetune_subset(
-    #     dataset[split_index:].sample(k=finetune_settings.num_val_queries, seed=_SEED)
-    # )
+    ds.val_index = _create_finetune_subset(dataset[split_index:])
+    ds.val_query = _create_finetune_subset(
+        dataset[split_index:].sample(k=finetune_settings.num_val_queries, seed=_SEED)
+    )
 
     return ds

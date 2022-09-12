@@ -1,16 +1,17 @@
+import json
 import os
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 
 from docarray import DocumentArray
 
 from now.finetuning.run_finetuning import finetune
-from now.finetuning.settings import parse_finetune_settings
+from now.finetuning.settings import parse_finetune_settings, FinetuneSettings
 from now_common.preprocess import preprocess_nested_docs, preprocess_text
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import Apps, Modalities, NOW_PREPROCESSOR_VERSION, ModelNames
 from now.finetuning.data_builder import DataBuilder
-from now.now_dataclasses import UserInput
+from now.now_dataclasses import UserInput, DialogOptions, Task
 
 
 class TextToTextAndImage(JinaNOWApp):
@@ -48,11 +49,29 @@ class TextToTextAndImage(JinaNOWApp):
     def output_modality(self) -> Modalities:
         return Modalities.TEXT_AND_IMAGE
 
+    @property
+    def options(self) -> List[DialogOptions]:
+        task_config_option = DialogOptions(
+            name='task_config',
+            prompt_message='Please enter the path to your task configuration:',
+            prompt_type='input',
+            post_func=lambda user_input, **kwargs: self._read_task_config(
+                kwargs['task_config'], user_input
+            ),
+        )
+        return [task_config_option]
+
+    @staticmethod
+    def _read_task_config(task_config_path: str, user_input: UserInput):
+        with open(task_config_path) as f:
+            dct = json.load(f)
+            user_input.task_config = Task(**dct)
+
     def preprocess(
-            self,
-            da: DocumentArray,
-            user_input: UserInput,
-            is_indexing: Optional[bool] = False,
+        self,
+        da: DocumentArray,
+        user_input: UserInput,
+        is_indexing: Optional[bool] = False,
     ) -> DocumentArray:
         # Indexing
         if is_indexing:
@@ -62,17 +81,15 @@ class TextToTextAndImage(JinaNOWApp):
             return preprocess_text(da=da, split_by_sentences=False)
 
     def setup(
-            self, dataset: DocumentArray, user_input: UserInput, kubectl_path
+        self, dataset: DocumentArray, user_input: UserInput, kubectl_path
     ) -> Dict:
         data = DataBuilder(dataset=dataset, config=user_input.task_config).build()
         env_dict = {}
         for encoder_data, encoder_type in data:
-            finetune_settings = parse_finetune_settings(
+            finetune_settings = self._construct_finetune_settings(
                 user_input=user_input,
                 dataset=dataset,
-                model_name=self._model_name(encoder_type),
-                loss=self._loss_function(encoder_type),
-                add_embeddings=False,
+                encoder_type=encoder_type,
             )
             artifact_id, token = finetune(
                 finetune_settings=finetune_settings,
@@ -89,14 +106,35 @@ class TextToTextAndImage(JinaNOWApp):
             elif finetune_settings.model_name == ModelNames.SBERT:
                 env_dict['SBERT_ARTIFACT'] = artifact_id
             else:
-                print('unexpected model name')
+                print(f'{self.app_name} only expects CLIP or SBERT models.')
                 raise
 
-        env_dict['PREPROCESSOR_NAME'] = f'jinahub+docker://NOWPreprocessor/v{NOW_PREPROCESSOR_VERSION}'
+        env_dict[
+            'PREPROCESSOR_NAME'
+        ] = f'jinahub+docker://NOWPreprocessor/v{NOW_PREPROCESSOR_VERSION}'
         env_dict['APP'] = self.app_name
         self.set_flow_yaml()
 
         return env_dict
+
+    def _construct_finetune_settings(
+        self,
+        user_input: UserInput,
+        dataset: DocumentArray,
+        encoder_type: str,
+    ) -> FinetuneSettings:
+        finetune_settings = parse_finetune_settings(
+            user_input=user_input,
+            dataset=dataset,
+            model_name=self._model_name(encoder_type),
+            loss=self._loss_function(encoder_type),
+            add_embeddings=False,
+        )
+        # temporary adjustments to work with small nest dataset
+        finetune_settings.epochs = 2
+        finetune_settings.num_val_queries = 5
+        finetune_settings.train_val_split_ration = 0.8
+        return finetune_settings
 
     @staticmethod
     def _model_name(encoder_type: Optional[str] = None) -> str:

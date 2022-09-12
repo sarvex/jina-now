@@ -50,7 +50,7 @@ APP = DialogOptions(
             'value': Apps.MUSIC_TO_MUSIC,
         },
         {
-            'name': '🥁 ▶ 🥁 text to text+image search',
+            'name': '📝 ▶ 📝+🏞 text to text+image search',
             'value': Apps.TEXT_TO_TEXT_AND_IMAGE,
         },
     ],

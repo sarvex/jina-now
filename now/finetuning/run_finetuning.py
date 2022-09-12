@@ -13,6 +13,7 @@ from docarray import DocumentArray
 from finetuner.callback import EarlyStopping, EvaluationCallback
 
 from now.apps.base.app import JinaNOWApp
+from now.constants import ModelNames
 from now.deployment.deployment import cmd, terminate_wolf
 from now.deployment.flow import deploy_flow
 from now.finetuning.dataset import FinetuneDataset, build_finetuning_dataset
@@ -107,16 +108,19 @@ def _finetune_model(
     finetuner.login()
 
     callbacks = [
-        # EvaluationCallback(
-        #     finetune_ds.val_query,
-        #     finetune_ds.val_index,
-        #     limit=finetune_settings.eval_match_limit,
-        # ),
         EarlyStopping(
             monitor='ndcg',
             patience=finetune_settings.early_stopping_patience,
         ),
     ]
+    if finetune_settings.model_name != ModelNames.CLIP:
+        callbacks.append(
+            EvaluationCallback(
+                finetune_ds.val_query,
+                finetune_ds.val_index,
+                limit=finetune_settings.eval_match_limit,
+            )
+        )
     if 'NOW_CI_RUN' in os.environ:
         experiment_name = 'now-ci-finetuning-' + _get_random_string(8)
     else:
