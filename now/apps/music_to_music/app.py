@@ -94,6 +94,7 @@ class MusicToMusic(JinaNOWApp):
             indexer_uses='MusicRecommendationIndexerV2',
             kubectl_path=kubectl_path,
             indexer_resources={},
+            pre_trained_embedding_size=512,
         )
 
         # can reuse large part of other code but need to make some adjustments
