@@ -8,13 +8,15 @@ with:
   env:
     JINA_LOG_LEVEL: DEBUG
 jcloud:
-  version: 3.7.0
+  version: ${{ ENV.JINA_VERSION }}
   retention_days: ${{ RETENTION_DAYS }}
 executors:
   - name: preprocessor
     uses: ${{ ENV.PREPROCESSOR_NAME }}
     uses_with:
       app: ${{ ENV.APP }}
+      admin_emails: ${{ ENV.ADMIN_EMAILS }}
+      user_emails: ${{ ENV.USER_EMAILS }}
     jcloud:
       resources:
         memory: 1G
@@ -58,6 +60,8 @@ executors:
     uses_with:
       n_dim: ${{ ENV.PRE_TRAINED_EMBEDDINGS_SIZE }}
       columns: ${{ ENV.COLUMNS }}
+      admin_emails: ${{ ENV.ADMIN_EMAILS }}
+      user_emails: ${{ ENV.USER_EMAILS }}
     jcloud:
       capacity: on-demand
       resources:

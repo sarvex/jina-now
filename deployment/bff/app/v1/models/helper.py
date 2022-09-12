@@ -20,7 +20,7 @@ class BaseRequestModel(BaseModel):
     port: Optional[int] = Field(default=31080, description='Port at which to connect.')
     jwt: Optional[Dict[str, Any]] = Field(
         default=None,
-        description='User info obtained from the hubble along with token. To be passed when the flow is secure',
+        description="Dictionary with key 'token' which maps to token. To be passed when the flow is secure",
     )
     api_key: Optional[str] = Field(
         default=None,

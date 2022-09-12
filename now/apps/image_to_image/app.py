@@ -2,11 +2,12 @@ import os
 from typing import Dict, List, Tuple
 
 from docarray import DocumentArray
+from jina.helper import random_port
 from now_common.preprocess import preprocess_images
 from now_common.utils import common_setup, get_indexer_config
 
 from now.apps.base.app import JinaNOWApp
-from now.constants import CLIP_USES, Apps, DemoDatasets, Modalities
+from now.constants import CLIP_USES, EXTERNAL_CLIP_HOST, Apps, DemoDatasets, Modalities
 from now.now_dataclasses import UserInput
 
 
@@ -65,8 +66,8 @@ class ImageToImage(JinaNOWApp):
         indexer_config = get_indexer_config(len(dataset))
         is_remote = user_input.deployment_type == 'remote'
         encoder_with = {
-            'ENCODER_HOST': 'demo-cas.jina.ai' if is_remote else '0.0.0.0',
-            'ENCODER_PORT': 2096 if is_remote else None,
+            'ENCODER_HOST': EXTERNAL_CLIP_HOST if is_remote else '0.0.0.0',
+            'ENCODER_PORT': 443 if is_remote else random_port(),
             'ENCODER_USES_TLS': True if is_remote else False,
             'ENCODER_IS_EXTERNAL': True if is_remote else False,
         }

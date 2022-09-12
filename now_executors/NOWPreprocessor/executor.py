@@ -2,12 +2,15 @@ import base64
 import json
 import os
 import tempfile
+from collections.abc import MutableMapping
 from concurrent.futures import ThreadPoolExecutor
 from typing import Dict, Optional
 
 import boto3
-from jina import Document, DocumentArray, Executor, requests
+from jina import Document, DocumentArray
 from now_common.options import _construct_app
+from now_executors import NOWAuthExecutor as Executor
+from now_executors import SecurityLevel, secure_request
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import Apps, DatasetTypes, Modalities
@@ -23,8 +26,8 @@ class NOWPreprocessor(Executor):
     To update user_input, set the 'user_input' key in parameters dictionary.
     """
 
-    def __init__(self, app: str, max_workers: int = 15, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, app: str, max_workers: int = 15, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
         self.app: JinaNOWApp = _construct_app(app)
         self.max_workers = max_workers
@@ -63,15 +66,8 @@ class NOWPreprocessor(Executor):
         :param tmpdir: temporary directory in which files will be saved
         """
 
-        def convert_fn(d: Document) -> Document:
-            d.tags['uri'] = d.uri
-            session = boto3.session.Session(
-                aws_access_key_id=self.user_input.aws_access_key_id,
-                aws_secret_access_key=self.user_input.aws_secret_access_key,
-                region_name=self.user_input.aws_region_name,
-            )
-            bucket = session.resource('s3').Bucket(d.uri.split('/')[2])
-            path_s3 = '/'.join(d.uri.split('/')[3:])
+        def download(bucket, uri):
+            path_s3 = '/'.join(uri.split('/')[3:])
             path_local = os.path.join(
                 str(tmpdir),
                 base64.b64encode(bytes(path_s3, "utf-8")).decode("utf-8"),
@@ -80,7 +76,25 @@ class NOWPreprocessor(Executor):
                 path_s3,
                 path_local,
             )
-            d.uri = path_local
+            return path_local
+
+        def convert_fn(d: Document) -> Document:
+            """Downloads files and tags from S3 bucket and updates the content uri and the tags uri to the local path"""
+            d.tags['uri'] = d.uri
+            session = boto3.session.Session(
+                aws_access_key_id=self.user_input.aws_access_key_id,
+                aws_secret_access_key=self.user_input.aws_secret_access_key,
+                region_name=self.user_input.aws_region_name,
+            )
+            bucket = session.resource('s3').Bucket(d.uri.split('/')[2])
+            d.uri = download(bucket, d.uri)
+            if 'tag_uri' in d.tags:
+                d.tags['tag_uri'] = download(bucket, d.tags['tag_uri'])
+                with open(d.tags['tag_uri'], 'r') as fp:
+                    tags = json.load(fp)
+                    tags = flatten_dict(tags)
+                    d.tags.update(tags)
+                del d.tags['tag_uri']
             return d
 
         docs_to_download = []
@@ -128,7 +142,7 @@ class NOWPreprocessor(Executor):
 
         return docs
 
-    @requests(on=['/index', '/encode'])
+    @secure_request(on=['/index', '/encode'], level=SecurityLevel.USER)
     def index(
         self, docs: DocumentArray, parameters: Optional[Dict] = None, *args, **kwargs
     ) -> DocumentArray:
@@ -143,7 +157,7 @@ class NOWPreprocessor(Executor):
         self._set_user_input(parameters=parameters)
         return self._preprocess_maybe_cloud_download(docs=docs, is_indexing=True)
 
-    @requests(on='/search')
+    @secure_request(on='/search', level=SecurityLevel.USER)
     def search(
         self, docs: DocumentArray, parameters: Optional[Dict] = None, *args, **kwargs
     ) -> DocumentArray:
@@ -158,7 +172,7 @@ class NOWPreprocessor(Executor):
         self._set_user_input(parameters=parameters)
         return self._preprocess_maybe_cloud_download(docs=docs, is_indexing=False)
 
-    @requests(on='/temp_link_cloud_bucket')
+    @secure_request(on='/temp_link_cloud_bucket', level=SecurityLevel.USER)
     def temporary_link_from_cloud_bucket(
         self, docs: DocumentArray, parameters: Optional[Dict] = None, *args, **kwargs
     ) -> DocumentArray:
@@ -199,6 +213,17 @@ class NOWPreprocessor(Executor):
             convert_fn(d)
 
         return docs
+
+
+def flatten_dict(d, parent_key='', sep='_'):
+    items = []
+    for k, v in d.items():
+        new_key = parent_key + sep + k if parent_key else k
+        if isinstance(v, MutableMapping):
+            items.extend(flatten_dict(v, new_key, sep=sep).items())
+        else:
+            items.append((new_key, v))
+    return dict(items)
 
 
 if __name__ == '__main__':

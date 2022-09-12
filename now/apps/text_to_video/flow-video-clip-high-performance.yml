@@ -8,7 +8,7 @@ with:
   env:
     JINA_LOG_LEVEL: DEBUG
 jcloud:
-  version: 3.7.0
+  version: ${{ ENV.JINA_VERSION }}
   retention_days: ${{ RETENTION_DAYS }}
 executors:
   - name: preprocessor
@@ -16,6 +16,8 @@ executors:
     replicas: 5
     uses_with:
       app: ${{ ENV.APP }}
+      admin_emails: ${{ ENV.ADMIN_EMAILS }}
+      user_emails: ${{ ENV.USER_EMAILS }}
     jcloud:
       capacity: on-demand
       resources:
@@ -27,9 +29,9 @@ executors:
     replicas: 3
     uses: ${{ ENV.ENCODER_NAME }}
     host: ${{ ENV.ENCODER_HOST }}
+    port: ${{ ENV.ENCODER_PORT }}
     tls: ${{ ENV.ENCODER_USES_TLS }}
     external: ${{ ENV.ENCODER_IS_EXTERNAL }}
-    port: 2096
     uses_with:
       traversal_paths: '@c'
       access_paths: '@c'
@@ -53,6 +55,8 @@ executors:
       search_traversal_paths: '@c'
       dim: ${{ ENV.PRE_TRAINED_EMBEDDINGS_SIZE }}
       columns: ${{ ENV.COLUMNS }}
+      admin_emails: ${{ ENV.ADMIN_EMAILS }}
+      user_emails: ${{ ENV.USER_EMAILS }}
     jcloud:
       capacity: on-demand
       resources:

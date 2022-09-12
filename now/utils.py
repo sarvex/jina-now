@@ -9,7 +9,6 @@ from collections import namedtuple
 from os.path import expanduser as user
 from typing import Dict, List, Optional, Union
 
-import cowsay
 import hubble
 import numpy as np
 import yaml
@@ -336,10 +335,9 @@ class BetterEnum:
 
 
 def to_camel_case(text):
+    """Convert text to camel case in great coding style"""
     s = text.replace("_", " ")
     s = s.split()
-    if len(text) == 0:
-        return text
     return ''.join(i.capitalize() for i in s)
 
 
@@ -363,8 +361,8 @@ def get_info_hubble(user_input):
         user_token = config_val['auth_token']
     client = hubble.Client(token=user_token, max_retries=None, jsonify=True)
     response = client.get_user_info()
-    user_input.admin_emails = [response['data']['_id']]
-    user_input.jwt = {'user': response['data'], 'token': user_token}
+    user_input.admin_emails = [response['data']['email']]
+    user_input.jwt = {'token': user_token}
     return response['data'], user_token
 
 
@@ -401,12 +399,7 @@ def maybe_prompt_user(questions, attribute, **kwargs):
         return kwargs[attribute]
     else:
         answer = prompt(questions)
-        if attribute in answer:
-            return answer[attribute]
-        else:
-            print("\n" * 10)
-            cowsay.cow('see you soon 👋')
-            exit(0)
+        return answer[attribute]
 
 
 def _prompt_value(

@@ -1,3 +1,2 @@
-boto3
 git+https://github.com/jina-ai/now@${JINA_NOW_COMMIT_SHA}
-jina[filelock]>=3.9.1
+annlite==0.3.0
