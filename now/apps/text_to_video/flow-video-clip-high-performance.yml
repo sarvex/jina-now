@@ -53,7 +53,7 @@ executors:
       traversal_paths: '@c'
       index_traversal_paths: '@c'
       search_traversal_paths: '@c'
-      dim: ${{ ENV.PRE_TRAINED_EMBEDDINGS_SIZE }}
+      dim: ${{ ENV.N_DIM }}
       columns: ${{ ENV.COLUMNS }}
       admin_emails: ${{ ENV.ADMIN_EMAILS }}
       user_emails: ${{ ENV.USER_EMAILS }}
