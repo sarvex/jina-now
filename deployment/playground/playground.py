@@ -136,7 +136,6 @@ def deploy_streamlit():
 
         filter_selection = {}
         if filters:
-            print(filters)
             st.sidebar.title("Filters")
             for tag, values in filters.items():
                 values.insert(0, 'All')
