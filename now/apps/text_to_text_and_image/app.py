@@ -28,7 +28,7 @@ class TextToTextAndImage(JinaNOWApp):
 
     @property
     def is_enabled(self) -> bool:
-        return True
+        return False
 
     @property
     def description(self) -> str:
