@@ -8,7 +8,7 @@ from now.finetuning.settings import parse_finetune_settings
 from now_common.preprocess import preprocess_nested_docs, preprocess_text
 
 from now.apps.base.app import JinaNOWApp
-from now.constants import Apps, Modalities
+from now.constants import Apps, Modalities, NOW_PREPROCESSOR_VERSION, ModelNames
 from now.finetuning.data_builder import DataBuilder
 from now.now_dataclasses import UserInput
 
@@ -49,10 +49,10 @@ class TextToTextAndImage(JinaNOWApp):
         return Modalities.TEXT_AND_IMAGE
 
     def preprocess(
-        self,
-        da: DocumentArray,
-        user_input: UserInput,
-        is_indexing: Optional[bool] = False,
+            self,
+            da: DocumentArray,
+            user_input: UserInput,
+            is_indexing: Optional[bool] = False,
     ) -> DocumentArray:
         # Indexing
         if is_indexing:
@@ -62,11 +62,10 @@ class TextToTextAndImage(JinaNOWApp):
             return preprocess_text(da=da, split_by_sentences=False)
 
     def setup(
-        self, dataset: DocumentArray, user_input: UserInput, kubectl_path
+            self, dataset: DocumentArray, user_input: UserInput, kubectl_path
     ) -> Dict:
-        # only implements data generation
         data = DataBuilder(dataset=dataset, config=user_input.task_config).build()
-
+        env_dict = {}
         for encoder_data, encoder_type in data:
             finetune_settings = parse_finetune_settings(
                 user_input=user_input,
@@ -75,7 +74,6 @@ class TextToTextAndImage(JinaNOWApp):
                 loss=self._loss_function(encoder_type),
                 add_embeddings=False,
             )
-
             artifact_id, token = finetune(
                 finetune_settings=finetune_settings,
                 app_instance=self,
@@ -84,21 +82,29 @@ class TextToTextAndImage(JinaNOWApp):
                 env_dict={},
                 kubectl_path=kubectl_path,
             )
-            print('gatavda', artifact_id, token)
-        import time
 
-        time.sleep(10)
-        exit(0)
+            env_dict['JINA_TOKEN'] = token
+            if finetune_settings.model_name == ModelNames.CLIP:
+                env_dict['CLIP_ARTIFACT'] = artifact_id
+            elif finetune_settings.model_name == ModelNames.SBERT:
+                env_dict['SBERT_ARTIFACT'] = artifact_id
+            else:
+                print('unexpected model name')
+                raise
 
-        return {}
+        env_dict['PREPROCESSOR_NAME'] = f'jinahub+docker://NOWPreprocessor/v{NOW_PREPROCESSOR_VERSION}'
+        env_dict['APP'] = self.app_name
+        self.set_flow_yaml()
+
+        return env_dict
 
     @staticmethod
     def _model_name(encoder_type: Optional[str] = None) -> str:
         """Name of the model used in case of fine-tuning."""
         if encoder_type == 'text-to-text':
-            return 'sentence-transformers/msmarco-distilbert-base-v3'
+            return ModelNames.SBERT
         elif encoder_type == 'text-to-image':
-            return 'openai/clip-vit-base-patch32'
+            return ModelNames.CLIP
 
     @staticmethod
     def _loss_function(encoder_type: Optional[str] = None) -> str:

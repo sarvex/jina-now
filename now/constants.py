@@ -42,6 +42,12 @@ class Qualities(BetterEnum):
     EXCELLENT = 'excellent'
 
 
+class ModelNames(BetterEnum):
+    MLP = 'mlp'
+    SBERT = 'sentence-transformers/msmarco-distilbert-base-v3'
+    CLIP = 'openai/clip-vit-base-patch32'
+
+
 BASE_STORAGE_URL = (
     'https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets'
 )

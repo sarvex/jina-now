@@ -58,13 +58,13 @@ class EncoderDataBuilder:
             target_generator = self._generation_cls[method.target.method](
                 scope=method.target.scope, **method.target.parameters
             )
-            for doc_id, document in enumerate(es_data):
+            for document in es_data:
                 queries = query_generator.process(document=document)
                 targets = target_generator.process(document=document)
                 if self._modality == 'single_model':
                     merged_docs = []
                     for doc in [*queries, *targets]:
-                        doc.tags = {'finetuner_label': doc_id}
+                        doc.tags = {'finetuner_label': document['id']}
                         merged_docs.append(doc)
                     data.extend(merged_docs)
                 else:
@@ -103,13 +103,12 @@ class DataBuilder:
         :param threads_per_worker: Number of threads per worker.
         """
         self._dataset = dataset
-        # self._num_workers = num_workers if num_workers else os.cpu_count()
-        self._num_workers = 1
+        self._num_workers = num_workers if num_workers else os.cpu_count()
         self._enc_data_builders = self._init_enc_data_builders(config)
-        # self._dask_client = Client(
-        #     threads_per_worker=threads_per_worker,
-        #     n_workers=self._num_workers,
-        # )
+        self._dask_client = Client(
+            threads_per_worker=threads_per_worker,
+            n_workers=self._num_workers,
+        )
 
     @staticmethod
     def _init_enc_data_builders(
@@ -166,27 +165,27 @@ class DataBuilder:
 
         def _generate(data: DocumentArray, data_builder: EncoderDataBuilder):
             transformed_data = transform_es_data(data)
+            for data_dict, document in zip(transformed_data, data):
+                data_dict['id'] = document.id
             return data_builder.build(es_data=transformed_data)
 
         data = []
         for dataset_name, enc_data_builder in self._enc_data_builders:
-            # futures = []
-            generated_data = []
+            futures = []
             for chunk in self._data_chunk_generator(
                 data=self._dataset, num_chunks=self._num_workers
             ):
-                # futures.append(
-                #     self._dask_client.submit(_generate, chunk, enc_data_builder)
-                # )
-                generated_data = _generate(chunk, enc_data_builder)
-            # results = self._dask_client.gather(futures)
-            # dataset = DocumentArray(itertools.chain.from_iterable(results))
+                futures.append(
+                    self._dask_client.submit(_generate, chunk, enc_data_builder)
+                )
+            results = self._dask_client.gather(futures)
+            dataset = DocumentArray(itertools.chain.from_iterable(results))
 
-            data.append((generated_data, enc_data_builder.encoder_type))
+            data.append((dataset, enc_data_builder.encoder_type))
 
-            # if to_hubble:
-            #     dataset.push(dataset_name, show_progress=True, public=False)
-            # if data_dir:
-            #     os.makedirs(data_dir, exist_ok=True)
-            #     dataset.save_binary(os.path.join(data_dir, dataset_name))
+            if to_hubble:
+                dataset.push(dataset_name, show_progress=True, public=False)
+            if data_dir:
+                os.makedirs(data_dir, exist_ok=True)
+                dataset.save_binary(os.path.join(data_dir, dataset_name))
         return data
