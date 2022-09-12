@@ -18,8 +18,6 @@ from now.now_dataclasses import DialogOptions, UserInput
 
 cur_dir = pathlib.Path(__file__).parent.resolve()
 
-AVAILABLE_SOON = 'will be available in upcoming versions'
-
 
 def configure_app(**kwargs) -> JinaNOWApp:
     now.utils.print_headline()
