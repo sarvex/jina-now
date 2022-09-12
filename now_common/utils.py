@@ -8,7 +8,11 @@ from docarray import DocumentArray
 from jina import __version__ as jina_version
 
 from now.apps.base.app import JinaNOWApp
-from now.constants import NOW_PREPROCESSOR_VERSION, PREFETCH_NR
+from now.constants import (
+    NOW_ANNLITE_INDEXER_VERSION,
+    NOW_PREPROCESSOR_VERSION,
+    PREFETCH_NR,
+)
 from now.finetuning.run_finetuning import finetune
 from now.finetuning.settings import FinetuneSettings, parse_finetune_settings
 from now.now_dataclasses import UserInput
@@ -151,15 +155,9 @@ def get_indexer_config(num_indexed_samples: int) -> Dict:
 
     :param num_indexed_samples: number of samples which will be indexed; should incl. chunks for e.g. text-to-video app
     """
-    config = {'indexer_uses': 'AnnLiteNOWIndexer3/0.0.5'}
-    threshold1 = 50_000
-    threshold2 = 250_000
-    if 'NOW_CI_RUN' in os.environ:
-        threshold1 = 1_500
+    config = {'indexer_uses': f'NOWAnnLiteIndexer/v{NOW_ANNLITE_INDEXER_VERSION}'}
+    threshold1 = 250_000
     if num_indexed_samples <= threshold1:
-        config['indexer_uses'] = 'DocarrayIndexerV3/v1.0.1'
-        config['indexer_resources'] = {'INDEXER_CPU': 0.1, 'INDEXER_MEM': '2G'}
-    elif num_indexed_samples <= threshold2:
         config['indexer_resources'] = {'INDEXER_CPU': 0.1, 'INDEXER_MEM': '2G'}
     else:
         config['indexer_resources'] = {'INDEXER_CPU': 1.0, 'INDEXER_MEM': '4G'}

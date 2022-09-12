@@ -1,4 +1,0 @@
-jtype: DocarrayIndexerV3
-metas:
-  py_modules:
-    - docarray_indexer_v3.py

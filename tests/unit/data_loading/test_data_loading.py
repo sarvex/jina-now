@@ -4,7 +4,6 @@ from typing import Tuple
 
 import pytest
 from docarray import Document, DocumentArray
-from now_common.utils import _extract_tags_annlite
 from pytest_mock import MockerFixture
 
 from now.apps.music_to_music.app import MusicToMusic
@@ -170,8 +169,8 @@ def test_load_tags_ignore_too_many_files(user_input, gif_resource_path: str):
     )
     da_merged = _load_tags_from_json_if_needed(da, user_input)
     assert len(da_merged) == 2
-    assert da_merged[0].tags['a1'] == 'v1'
-    assert da_merged[1].tags['a3'] == 'v3'
+    assert da_merged[0].tags['tag_uri'].endswith('folder1/meta.json')
+    assert da_merged[1].tags['tag_uri'].endswith('folder2/meta.json')
 
 
 def test_load_tags_no_tags_if_missing(user_input, gif_resource_path: str):
@@ -180,21 +179,3 @@ def test_load_tags_no_tags_if_missing(user_input, gif_resource_path: str):
     )
     da_merged = _load_tags_from_json_if_needed(da, user_input)
     assert len(da_merged) == 2
-
-
-def test_extract_tags(user_input, gif_resource_path: str):
-    da = get_data(
-        gif_resource_path,
-        [
-            'folder1/file.gif',
-            'folder1/meta.json',
-            'folder1/file.txt',
-            'folder2/file.gif',
-            'folder2/meta.json',
-        ],
-    )
-    da_merged = _load_tags_from_json_if_needed(da, user_input)
-    tags = _extract_tags_annlite(da_merged)
-
-    assert tags[0][0] in ['a1', 'a2', 'a3', 'a4']
-    assert tags[0][1] == 'str'

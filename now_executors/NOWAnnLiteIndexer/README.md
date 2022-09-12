@@ -1,6 +1,6 @@
-# AnnLiteNOWIndexer3
+# NOWAnnLiteIndexer
 
-`AnnLiteNOWIndexer3` uses the [AnnLite](https://github.com/jina-ai/annlite) class for indexing Jina `Document` objects.
+`NOWAnnLiteIndexer` uses the [AnnLite](https://github.com/jina-ai/annlite) class for indexing Jina `Document` objects.
 The `AnnLite` class partitions the data into cells at index time, and instantiates a "sub-indexer" in each cell.  Search is performed aggregating results retrieved from cells.
 
 This indexer is recommended to be used when an application requires **search with filters** applied on `Document` tags.
@@ -92,7 +92,7 @@ If documents have a tag `'price'`  that stores floating point values this indexe
 columns = ['price', 'float','color','str']
 
 f = Flow().add(
-    uses='jinahub://AnnLiteNOWIndexer3/latest',
+    uses='jinahub://NOWAnnLiteIndexer/latest',
     uses_with={
       'dim': 256,
       'columns': columns,

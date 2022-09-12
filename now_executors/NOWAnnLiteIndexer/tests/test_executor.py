@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from jina import Document, DocumentArray, Flow
 
-from ..executor import AnnLiteNOWIndexer3
+from ..executor import NOWAnnLiteIndexer
 
 N = 10  # number of data points
 Nu = 9  # number of data update
@@ -54,7 +54,7 @@ def test_index(tmpdir):
     metas = {'workspace': str(tmpdir)}
     docs = gen_docs(N)
     f = Flow().add(
-        uses=AnnLiteNOWIndexer3,
+        uses=NOWAnnLiteIndexer,
         uses_with={
             'dim': D,
         },
@@ -73,7 +73,7 @@ def test_list(tmpdir, offset, limit):
     metas = {'workspace': str(tmpdir)}
     docs = gen_docs(N)
     f = Flow().add(
-        uses=AnnLiteNOWIndexer3,
+        uses=NOWAnnLiteIndexer,
         uses_with={
             'dim': D,
         },
@@ -106,7 +106,7 @@ def test_update(tmpdir):
     docs = gen_docs(N)
     docs_update = gen_docs(Nu)
     f = Flow().add(
-        uses=AnnLiteNOWIndexer3,
+        uses=NOWAnnLiteIndexer,
         uses_with={
             'dim': D,
         },
@@ -128,7 +128,7 @@ def test_search(tmpdir):
     docs = gen_docs(N)
     docs_query = gen_docs(Nq)
     f = Flow().add(
-        uses=AnnLiteNOWIndexer3,
+        uses=NOWAnnLiteIndexer,
         uses_with={
             'dim': D,
         },
@@ -152,7 +152,7 @@ def test_search_match(tmpdir):
     docs = gen_docs(N, has_chunk=True)
     docs_query = gen_docs(Nq, has_chunk=True)
     f = Flow().add(
-        uses=AnnLiteNOWIndexer3,
+        uses=NOWAnnLiteIndexer,
         uses_with={
             'dim': D,
             'index_traversal_paths': '@c',
@@ -189,7 +189,7 @@ def test_search_with_filtering(tmpdir):
     columns = ['price', 'float', 'category', 'str']
 
     f = Flow().add(
-        uses=AnnLiteNOWIndexer3,
+        uses=NOWAnnLiteIndexer,
         uses_with={'dim': D, 'columns': columns},
         uses_metas=metas,
     )
@@ -209,7 +209,7 @@ def test_delete(tmpdir):
     metas = {'workspace': str(tmpdir)}
     docs = gen_docs(N)
     f = Flow().add(
-        uses=AnnLiteNOWIndexer3,
+        uses=NOWAnnLiteIndexer,
         uses_with={
             'dim': D,
         },
@@ -241,7 +241,7 @@ def test_status(tmpdir):
     metas = {'workspace': str(tmpdir)}
     docs = gen_docs(N)
     f = Flow().add(
-        uses=AnnLiteNOWIndexer3,
+        uses=NOWAnnLiteIndexer,
         uses_with={
             'dim': D,
         },
@@ -258,7 +258,7 @@ def test_clear(tmpdir):
     metas = {'workspace': str(tmpdir)}
     docs = gen_docs(N)
     f = Flow().add(
-        uses=AnnLiteNOWIndexer3,
+        uses=NOWAnnLiteIndexer,
         uses_with={
             'dim': D,
         },

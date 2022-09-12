@@ -2,8 +2,6 @@ import json
 import os
 import uuid
 from collections import defaultdict
-from collections.abc import MutableMapping
-from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
 
 from docarray import Document, DocumentArray
@@ -109,29 +107,6 @@ def select_ending(files, endings):
     return None
 
 
-def flatten_dict(d, parent_key='', sep='_'):
-    items = []
-    for k, v in d.items():
-        new_key = parent_key + sep + k if parent_key else k
-        if isinstance(v, MutableMapping):
-            items.extend(flatten_dict(v, new_key, sep=sep).items())
-        else:
-            items.append((new_key, v))
-    return dict(items)
-
-
-def merge_documents(user_input, content_file, json_file):
-    if json_file:
-        if user_input.dataset_path.startswith('s3://'):
-            tags = _open_s3_json(json_file, user_input)
-        else:
-            tags = _open_json(json_file)
-    else:
-        tags = {}
-    tags = flatten_dict(tags)
-    return Document(uri=content_file, tags=tags)
-
-
 def _load_tags_from_json_if_needed(da: DocumentArray, user_input: UserInput):
     if any([doc.uri.endswith('.json') for doc in da]):
         return _load_tags_from_json(da, user_input)
@@ -149,27 +124,20 @@ def _load_tags_from_json(da, user_input):
     for d in da:
         folder = d.uri.rsplit('/', 1)[0]
         folder_to_files[folder].append(d.uri)
-    merged_documents = []
-    with ThreadPoolExecutor() as thread_executor:
-        futures = []
-        for files in folder_to_files.values():
-            f = thread_executor.submit(get_document, files, user_input)
-            futures.append(f)
-        for f in futures:
-            doc = f.result()
-            if doc:
-                merged_documents.append(doc)
-    return DocumentArray(merged_documents)
 
-
-def get_document(files, user_input):
-    # json and content have to exist
-    json_file = select_ending(files, ['json'])
-    content_file = select_ending(files, user_input.app_instance.supported_file_types)
-    if not content_file:
-        return None
-    document = merge_documents(user_input, content_file, json_file)
-    return document
+    docs = DocumentArray()
+    for files in folder_to_files.values():
+        tag_file = select_ending(files, ['json'])
+        content_file = select_ending(
+            files, user_input.app_instance.supported_file_types
+        )
+        if content_file:
+            if tag_file:
+                tags = {'tag_uri': tag_file}
+            else:
+                tags = {}
+            docs.append(Document(uri=content_file, tags=tags))
+    return docs
 
 
 def _pull_docarray(dataset_name: str):
