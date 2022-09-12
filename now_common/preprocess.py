@@ -78,6 +78,7 @@ def preprocess_nested_docs(da: DocumentArray, user_input: UserInput) -> Document
     containing text data. Fields for indexing should be specified in the `UserInput`.
 
     :param da: A `DocumentArray` containing nested chunks.
+    :param user_input: The configured user input.
     :return: A `DocumentArray` with `Document`s containing text and image chunks.
     """
     fields = user_input.task.indexer_scope
