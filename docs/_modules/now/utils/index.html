@@ -6,12 +6,12 @@
         <link rel="canonical" href="https://now.jina.ai/_modules/now/utils.html" />
 
     <link rel="shortcut icon" href="../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.06.21"/>
-        <title>now.utils - NOW 0.0.17 documentation</title>
+        <title>now.utils - NOW 0.0.29 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/tabs.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     <link rel="stylesheet" type="text/css" href="../../../_static/main.css" />
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta2/css/all.min.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../">
-                <div class="brand">NOW 0.0.17 documentation</div>
+                <div class="brand">NOW 0.0.29 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -279,13 +279,18 @@
 <span class="kn">import</span> <span class="nn">stat</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">namedtuple</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">expanduser</span> <span class="k">as</span> <span class="n">user</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
 
+<span class="kn">import</span> <span class="nn">hubble</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">yaml</span>
 <span class="kn">from</span> <span class="nn">docarray</span> <span class="kn">import</span> <span class="n">Document</span>
 <span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span><span class="p">,</span> <span class="n">ImageDraw</span><span class="p">,</span> <span class="n">ImageFont</span>
+<span class="kn">from</span> <span class="nn">pyfiglet</span> <span class="kn">import</span> <span class="n">Figlet</span>
 <span class="kn">from</span> <span class="nn">rich.console</span> <span class="kn">import</span> <span class="n">Console</span>
+
+<span class="kn">from</span> <span class="nn">now.thirdparty.PyInquirer.prompt</span> <span class="kn">import</span> <span class="n">prompt</span>
 
 <span class="n">colors</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">&quot;navy&quot;</span><span class="p">,</span>
@@ -603,14 +608,86 @@
 
 
 <div class="viewcode-block" id="to_camel_case"><a class="viewcode-back" href="../../../api/now.utils/#now.utils.to_camel_case">[docs]</a><span class="k">def</span> <span class="nf">to_camel_case</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
-    <span class="n">s</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">)</span>
+    <span class="sd">&quot;&quot;&quot;Convert text to camel case in great coding style&quot;&quot;&quot;</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">)</span>
     <span class="n">s</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">text</span>
     <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">s</span><span class="p">)</span></div>
 
 
 <span class="n">sigmap</span> <span class="o">=</span> <span class="p">{</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGINT</span><span class="p">:</span> <span class="n">my_handler</span><span class="p">,</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIGTERM</span><span class="p">:</span> <span class="n">my_handler</span><span class="p">}</span>
+
+
+<div class="viewcode-block" id="write_env_file"><a class="viewcode-back" href="../../../api/now.utils/#now.utils.write_env_file">[docs]</a><span class="k">def</span> <span class="nf">write_env_file</span><span class="p">(</span><span class="n">env_file</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+    <span class="n">config_string</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1">=</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">items</span><span class="p">()])</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">env_file</span><span class="p">,</span> <span class="s1">&#39;w+&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+        <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">config_string</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="jina_auth_login"><a class="viewcode-back" href="../../../api/now.utils/#now.utils.jina_auth_login">[docs]</a><span class="nd">@hubble</span><span class="o">.</span><span class="n">login_required</span>
+<span class="k">def</span> <span class="nf">jina_auth_login</span><span class="p">():</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="get_info_hubble"><a class="viewcode-back" href="../../../api/now.utils/#now.utils.get_info_hubble">[docs]</a><span class="k">def</span> <span class="nf">get_info_hubble</span><span class="p">(</span><span class="n">user_input</span><span class="p">):</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">user</span><span class="p">(</span><span class="s1">&#39;~/.jina/config.json&#39;</span><span class="p">))</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+        <span class="n">config_val</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
+        <span class="n">user_token</span> <span class="o">=</span> <span class="n">config_val</span><span class="p">[</span><span class="s1">&#39;auth_token&#39;</span><span class="p">]</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">hubble</span><span class="o">.</span><span class="n">Client</span><span class="p">(</span><span class="n">token</span><span class="o">=</span><span class="n">user_token</span><span class="p">,</span> <span class="n">max_retries</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">jsonify</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_user_info</span><span class="p">()</span>
+    <span class="n">user_input</span><span class="o">.</span><span class="n">admin_emails</span> <span class="o">=</span> <span class="p">[</span><span class="n">response</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;email&#39;</span><span class="p">]]</span>
+    <span class="n">user_input</span><span class="o">.</span><span class="n">jwt</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;token&#39;</span><span class="p">:</span> <span class="n">user_token</span><span class="p">}</span>
+    <span class="k">return</span> <span class="n">response</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span> <span class="n">user_token</span></div>
+
+
+<div class="viewcode-block" id="print_headline"><a class="viewcode-back" href="../../../api/now.utils/#now.utils.print_headline">[docs]</a><span class="k">def</span> <span class="nf">print_headline</span><span class="p">():</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">Figlet</span><span class="p">(</span><span class="n">font</span><span class="o">=</span><span class="s1">&#39;slant&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Welcome to:&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">renderText</span><span class="p">(</span><span class="s1">&#39;Jina NOW&#39;</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Get your search case up and running - end to end.</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="s1">&#39;You can choose between image and text search. </span><span class="se">\n</span><span class="s1">Jina NOW trains a model, pushes it to Jina Hub &#39;</span>
+        <span class="s1">&#39;and deploys a Flow and a playground app in the cloud or locally. </span><span class="se">\n</span><span class="s1">Check out one of our demos or bring &#39;</span>
+        <span class="s1">&#39;your own data.</span><span class="se">\n</span><span class="s1">&#39;</span>
+    <span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;If you want learn more about our framework please visit docs.jina.ai&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="s1">&#39;💡 Make sure you give enough memory to your Docker daemon. &#39;</span>
+        <span class="s1">&#39;5GB - 8GB should be okay.&#39;</span>
+    <span class="p">)</span>
+    <span class="nb">print</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="maybe_prompt_user"><a class="viewcode-back" href="../../../api/now.utils/#now.utils.maybe_prompt_user">[docs]</a><span class="k">def</span> <span class="nf">maybe_prompt_user</span><span class="p">(</span><span class="n">questions</span><span class="p">,</span> <span class="n">attribute</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Checks the `kwargs` for the `attribute` name. If present, the value is returned directly.</span>
+<span class="sd">    If not, the user is prompted via the cmd-line using the `questions` argument.</span>
+
+<span class="sd">    :param questions: A dictionary that is passed to `PyInquirer.prompt`</span>
+<span class="sd">        See docs: https://github.com/CITGuru/PyInquirer#documentation</span>
+<span class="sd">    :param attribute: Name of the value to get. Make sure this matches the name in `kwargs`</span>
+
+<span class="sd">    :return: A single value of either from `kwargs` or the user cli input.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">kwargs</span> <span class="ow">and</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attribute</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">attribute</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">answer</span> <span class="o">=</span> <span class="n">prompt</span><span class="p">(</span><span class="n">questions</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">answer</span><span class="p">[</span><span class="n">attribute</span><span class="p">]</span></div>
+
+
+<span class="k">def</span> <span class="nf">_prompt_value</span><span class="p">(</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">prompt_message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">prompt_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;input&#39;</span><span class="p">,</span>
+    <span class="n">choices</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="n">qs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="n">prompt_type</span><span class="p">,</span> <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="n">prompt_message</span><span class="p">}</span>
+
+    <span class="k">if</span> <span class="n">choices</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">qs</span><span class="p">[</span><span class="s1">&#39;choices&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">choices</span>
+        <span class="n">qs</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;list&#39;</span>
+    <span class="k">return</span> <span class="n">maybe_prompt_user</span><span class="p">(</span><span class="n">qs</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 </pre></div>
                 </article>
             </div>
@@ -628,7 +705,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Jul 07, 2022.
+                            Last updated on Sep 12, 2022.
                         </div>
                     </div>
                     <div class="right-details">

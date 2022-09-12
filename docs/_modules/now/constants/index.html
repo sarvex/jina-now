@@ -6,12 +6,12 @@
         <link rel="canonical" href="https://now.jina.ai/_modules/now/constants.html" />
 
     <link rel="shortcut icon" href="../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.06.21"/>
-        <title>now.constants - NOW 0.0.17 documentation</title>
+        <title>now.constants - NOW 0.0.29 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/tabs.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     <link rel="stylesheet" type="text/css" href="../../../_static/main.css" />
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta2/css/all.min.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../">
-                <div class="brand">NOW 0.0.17 documentation</div>
+                <div class="brand">NOW 0.0.29 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -273,14 +273,23 @@
                     <h1>Source code for now.constants</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">now.utils</span> <span class="kn">import</span> <span class="n">BetterEnum</span>
 
-<span class="n">DOCKER_BFF_PLAYGROUND_TAG</span> <span class="o">=</span> <span class="s1">&#39;0.0.75&#39;</span>
+<span class="c1"># TODO: Uncomment the DEMO_DATASET_DOCARRAY_VERSION when the DocArray datasets on GCloud has been changed</span>
+<span class="c1"># from docarray import __version__ as docarray_version</span>
+<span class="c1"># DEMO_DATASET_DOCARRAY_VERSION = docarray_version</span>
+<span class="n">DEMO_DATASET_DOCARRAY_VERSION</span> <span class="o">=</span> <span class="s1">&#39;0.13.17&#39;</span>
+
+<span class="n">DOCKER_BFF_PLAYGROUND_TAG</span> <span class="o">=</span> <span class="s1">&#39;0.0.122-auth-exec-4&#39;</span>
+<span class="n">NOW_PREPROCESSOR_VERSION</span> <span class="o">=</span> <span class="s1">&#39;0.0.82-test-preprocessing&#39;</span>
+<span class="n">NOW_AUTH_EXECUTOR_VERSION</span> <span class="o">=</span> <span class="s1">&#39;0.0.5-auth-exec-4&#39;</span>
+<span class="n">NOW_ANNLITE_INDEXER_VERSION</span> <span class="o">=</span> <span class="s1">&#39;0.0.3-annlite-secure-1&#39;</span>
 
 
 <div class="viewcode-block" id="Modalities"><a class="viewcode-back" href="../../../api/now.constants/#now.constants.Modalities">[docs]</a><span class="k">class</span> <span class="nc">Modalities</span><span class="p">(</span><span class="n">BetterEnum</span><span class="p">):</span>
     <span class="n">TEXT</span> <span class="o">=</span> <span class="s1">&#39;text&#39;</span>
     <span class="n">IMAGE</span> <span class="o">=</span> <span class="s1">&#39;image&#39;</span>
     <span class="n">MUSIC</span> <span class="o">=</span> <span class="s1">&#39;music&#39;</span>
-    <span class="n">VIDEO</span> <span class="o">=</span> <span class="s1">&#39;video&#39;</span></div>
+    <span class="n">VIDEO</span> <span class="o">=</span> <span class="s1">&#39;video&#39;</span>
+    <span class="n">TEXT_AND_IMAGE</span> <span class="o">=</span> <span class="s1">&#39;text_and_image&#39;</span></div>
 
 
 <div class="viewcode-block" id="Apps"><a class="viewcode-back" href="../../../api/now.constants/#now.constants.Apps">[docs]</a><span class="k">class</span> <span class="nc">Apps</span><span class="p">(</span><span class="n">BetterEnum</span><span class="p">):</span>
@@ -289,14 +298,16 @@
     <span class="n">IMAGE_TO_TEXT</span> <span class="o">=</span> <span class="s1">&#39;image_to_text&#39;</span>
     <span class="n">IMAGE_TO_IMAGE</span> <span class="o">=</span> <span class="s1">&#39;image_to_image&#39;</span>
     <span class="n">MUSIC_TO_MUSIC</span> <span class="o">=</span> <span class="s1">&#39;music_to_music&#39;</span>
-    <span class="n">TEXT_TO_VIDEO</span> <span class="o">=</span> <span class="s1">&#39;text_to_video&#39;</span></div>
+    <span class="n">TEXT_TO_VIDEO</span> <span class="o">=</span> <span class="s1">&#39;text_to_video&#39;</span>
+    <span class="n">TEXT_TO_TEXT_AND_IMAGE</span> <span class="o">=</span> <span class="s1">&#39;text_to_text_and_image&#39;</span></div>
 
 
 <div class="viewcode-block" id="DatasetTypes"><a class="viewcode-back" href="../../../api/now.constants/#now.constants.DatasetTypes">[docs]</a><span class="k">class</span> <span class="nc">DatasetTypes</span><span class="p">(</span><span class="n">BetterEnum</span><span class="p">):</span>
     <span class="n">DEMO</span> <span class="o">=</span> <span class="s1">&#39;demo&#39;</span>
     <span class="n">PATH</span> <span class="o">=</span> <span class="s1">&#39;path&#39;</span>
     <span class="n">URL</span> <span class="o">=</span> <span class="s1">&#39;url&#39;</span>
-    <span class="n">DOCARRAY</span> <span class="o">=</span> <span class="s1">&#39;docarray&#39;</span></div>
+    <span class="n">DOCARRAY</span> <span class="o">=</span> <span class="s1">&#39;docarray&#39;</span>
+    <span class="n">S3_BUCKET</span> <span class="o">=</span> <span class="s1">&#39;s3_bucket&#39;</span></div>
 
 
 <div class="viewcode-block" id="Qualities"><a class="viewcode-back" href="../../../api/now.constants/#now.constants.Qualities">[docs]</a><span class="k">class</span> <span class="nc">Qualities</span><span class="p">(</span><span class="n">BetterEnum</span><span class="p">):</span>
@@ -309,13 +320,14 @@
     <span class="s1">&#39;https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets&#39;</span>
 <span class="p">)</span>
 
-<span class="n">IMAGE_MODEL_QUALITY_MAP</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="n">Qualities</span><span class="o">.</span><span class="n">MEDIUM</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;ViT-B32&#39;</span><span class="p">,</span> <span class="s1">&#39;openai/clip-vit-base-patch32&#39;</span><span class="p">),</span>
-    <span class="n">Qualities</span><span class="o">.</span><span class="n">GOOD</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;ViT-B16&#39;</span><span class="p">,</span> <span class="s1">&#39;openai/clip-vit-base-patch16&#39;</span><span class="p">),</span>
-    <span class="n">Qualities</span><span class="o">.</span><span class="n">EXCELLENT</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;ViT-L14&#39;</span><span class="p">,</span> <span class="s1">&#39;openai/clip-vit-large-patch14&#39;</span><span class="p">),</span>
+<span class="n">CLIP_USES</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;local&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;CLIPOnnxEncoder/latest&#39;</span><span class="p">,</span> <span class="s1">&#39;ViT-B-32::openai&#39;</span><span class="p">,</span> <span class="mi">512</span><span class="p">),</span>
+    <span class="s1">&#39;remote&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;CLIPOnnxEncoder/latest-gpu&#39;</span><span class="p">,</span> <span class="s1">&#39;ViT-B-32::openai&#39;</span><span class="p">,</span> <span class="mi">512</span><span class="p">),</span>
 <span class="p">}</span>
 
-<span class="n">CLIP_USES</span> <span class="o">=</span> <span class="s1">&#39;CLIPEncoder/v0.2.1&#39;</span>
+<span class="n">EXTERNAL_CLIP_HOST</span> <span class="o">=</span> <span class="s1">&#39;encoderclip-bh-5f4efaff13.wolf.jina.ai&#39;</span>
+
+<span class="n">PREFETCH_NR</span> <span class="o">=</span> <span class="mi">10</span>
 
 
 <div class="viewcode-block" id="DemoDatasets"><a class="viewcode-back" href="../../../api/now.constants/#now.constants.DemoDatasets">[docs]</a><span class="k">class</span> <span class="nc">DemoDatasets</span><span class="p">:</span>
@@ -333,7 +345,10 @@
     <span class="n">POP_LYRICS</span> <span class="o">=</span> <span class="s1">&#39;pop-lyrics&#39;</span>
     <span class="n">RAP_LYRICS</span> <span class="o">=</span> <span class="s1">&#39;rap-lyrics&#39;</span>
     <span class="n">INDIE_LYRICS</span> <span class="o">=</span> <span class="s1">&#39;indie-lyrics&#39;</span>
-    <span class="n">METAL_LYRICS</span> <span class="o">=</span> <span class="s1">&#39;metal-lyrics&#39;</span></div>
+    <span class="n">METAL_LYRICS</span> <span class="o">=</span> <span class="s1">&#39;metal-lyrics&#39;</span>
+    <span class="n">TUMBLR_GIFS</span> <span class="o">=</span> <span class="s1">&#39;tumblr-gifs&#39;</span>
+    <span class="n">TUMBLR_GIFS_10K</span> <span class="o">=</span> <span class="s1">&#39;tumblr-gifs-10k&#39;</span>
+    <span class="n">ES_ONLINE_SHOP_50</span> <span class="o">=</span> <span class="s1">&#39;extracted-data-online-shop-50-flat&#39;</span></div>
 
 
 <span class="n">AVAILABLE_DATASET</span> <span class="o">=</span> <span class="p">{</span>
@@ -358,7 +373,13 @@
         <span class="p">(</span><span class="n">DemoDatasets</span><span class="o">.</span><span class="n">INDIE_LYRICS</span><span class="p">,</span> <span class="s1">&#39;🎤 indie lyrics (200K docs)&#39;</span><span class="p">),</span>
         <span class="p">(</span><span class="n">DemoDatasets</span><span class="o">.</span><span class="n">METAL_LYRICS</span><span class="p">,</span> <span class="s1">&#39;🎤 metal lyrics (200K docs)&#39;</span><span class="p">),</span>
     <span class="p">],</span>
-    <span class="n">Modalities</span><span class="o">.</span><span class="n">VIDEO</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="n">Modalities</span><span class="o">.</span><span class="n">VIDEO</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">(</span><span class="n">DemoDatasets</span><span class="o">.</span><span class="n">TUMBLR_GIFS</span><span class="p">,</span> <span class="s1">&#39;🎦 tumblr gifs (100K gifs)&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">DemoDatasets</span><span class="o">.</span><span class="n">TUMBLR_GIFS_10K</span><span class="p">,</span> <span class="s1">&#39;🎦 tumblr gifs subset (10K gifs)&#39;</span><span class="p">),</span>
+    <span class="p">],</span>
+    <span class="n">Modalities</span><span class="o">.</span><span class="n">TEXT_AND_IMAGE</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">(</span><span class="n">DemoDatasets</span><span class="o">.</span><span class="n">ES_ONLINE_SHOP_50</span><span class="p">,</span> <span class="s1">&#39;online shop data (50 products)&#39;</span><span class="p">)</span>
+    <span class="p">],</span>
 <span class="p">}</span>
 
 <span class="n">JC_SECRET</span> <span class="o">=</span> <span class="s1">&#39;~/.cache/jina-now/wolf.json&#39;</span>
@@ -381,7 +402,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Jul 07, 2022.
+                            Last updated on Sep 12, 2022.
                         </div>
                     </div>
                     <div class="right-details">

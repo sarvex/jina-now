@@ -10,7 +10,7 @@
   
 <meta property="og:url" content="https://now.jina.ai/api/now.apps.text_to_video.app/" />
   
-<meta property="og:site_name" content="NOW 0.0.17 Documentation" />
+<meta property="og:site_name" content="NOW 0.0.29 Documentation" />
   
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@JinaAI_">
@@ -33,12 +33,12 @@
         <link rel="canonical" href="https://now.jina.ai/api/now.apps.text_to_video.app.html" />
 
     <link rel="shortcut icon" href="../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.06.21"/>
-        <title>now.apps.text_to_video.app module - NOW 0.0.17 documentation</title>
+        <title>now.apps.text_to_video.app module - NOW 0.0.29 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/tabs.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     <link rel="stylesheet" type="text/css" href="../../_static/main.css" />
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta2/css/all.min.css" />
@@ -166,7 +166,7 @@
         </div>
         <div class="header-center">
             <a href="../../">
-                <div class="brand">NOW 0.0.17 documentation</div>
+                <div class="brand">NOW 0.0.29 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -304,8 +304,8 @@
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">now.apps.text_to_video.app.</span></span><span class="sig-name descname"><span class="pre">TextToVideo</span></span><a class="reference internal" href="../../_modules/now/apps/text_to_video/app/#TextToVideo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#now.apps.text_to_video.app.TextToVideo" title="Permalink to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="../now.apps.base.app/#now.apps.base.app.JinaNOWApp" title="now.apps.base.app.JinaNOWApp"><code class="xref py py-class docutils literal notranslate"><span class="pre">now.apps.base.app.JinaNOWApp</span></code></a></p>
 <dl class="py property">
-<dt class="sig sig-object py" id="now.apps.text_to_video.app.TextToVideo.app">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">app</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#now.apps.text_to_video.app.TextToVideo.app" title="Permalink to this definition">#</a></dt>
+<dt class="sig sig-object py" id="now.apps.text_to_video.app.TextToVideo.app_name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">app_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#now.apps.text_to_video.app.TextToVideo.app_name" title="Permalink to this definition">#</a></dt>
 <dd><p>Name of the app. Should be an enum value set in now.constants.Apps</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -359,53 +359,51 @@
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="now.apps.text_to_video.app.TextToVideo.options">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">options</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#now.apps.text_to_video.app.TextToVideo.options" title="Permalink to this definition">#</a></dt>
-<dd><p>Get the options which are used to configure the app.
-On CLI the user will get a prompt and at the storefront, a GUI will be generated accordingly.
-Example:
-return [</p>
-<blockquote>
-<div><dl>
-<dt>{</dt><dd><p>name=’quality’,
-choices=[</p>
-<blockquote>
-<div><p>{‘name’: ‘🦊 medium (≈3GB mem, 15q/s)’, ‘value’: ‘openai/clip-vit-base-patch32’},
-{‘name’: ‘🐻 good (≈3GB mem, 2.5q/s)’, ‘value’: ‘openai/clip-vit-base-patch16’},
-{‘name’: ‘🦄 excellent (≈4GB mem, 0.5q/s)’,’value’: ‘openai/clip-vit-large-patch14’,},</p>
-</div></blockquote>
-<p>],
-prompt_message=’What quality do you expect?’,
-prompt_type=’list’</p>
+<dt class="sig sig-object py" id="now.apps.text_to_video.app.TextToVideo.required_docker_memory_in_gb">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">required_docker_memory_in_gb</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#now.apps.text_to_video.app.TextToVideo.required_docker_memory_in_gb" title="Permalink to this definition">#</a></dt>
+<dd><p>Recommended memory limit for the docker client to run this app.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></p>
 </dd>
 </dl>
-<p>}</p>
-</div></blockquote>
-<p>]
-:rtype: <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>]
-:return:</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="now.apps.text_to_video.app.TextToVideo.set_flow_yaml">
 <span class="sig-name descname"><span class="pre">set_flow_yaml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/now/apps/text_to_video/app/#TextToVideo.set_flow_yaml"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#now.apps.text_to_video.app.TextToVideo.set_flow_yaml" title="Permalink to this definition">#</a></dt>
-<dd><p>Used to configure the flow yaml in the Jina NOW app.</p>
+<dd><p>Used to configure the flow yaml in the Jina NOW app.
+The interface is as follows:
+- if kwargs[‘finetuning’]=True, choose finetuning flow
+- if kwargs[‘encode’]=True, choose encoding flow (to get embeddings for finetuning)
+- temporarily introduced kwargs[‘dataset_len’], if app optimizes different flows to it</p>
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="now.apps.text_to_video.app.TextToVideo.pre_trained_embedding_size">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pre_trained_embedding_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../now.constants/#now.constants.Qualities" title="now.constants.Qualities"><span class="pre">now.constants.Qualities</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#now.apps.text_to_video.app.TextToVideo.pre_trained_embedding_size" title="Permalink to this definition">#</a></dt>
-<dd><p>Returns a dictionary which maps given quality to embedding size of pretrained model.</p>
+<dt class="sig sig-object py" id="now.apps.text_to_video.app.TextToVideo.supported_file_types">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">supported_file_types</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#now.apps.text_to_video.app.TextToVideo.supported_file_types" title="Permalink to this definition">#</a></dt>
+<dd><p>Used to filter files in local structure or an S3 bucket.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<a class="reference internal" href="../now.constants/#now.constants.Qualities" title="now.constants.Qualities"><code class="xref py py-class docutils literal notranslate"><span class="pre">Qualities</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]</p>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="now.apps.text_to_video.app.TextToVideo.index_query_access_paths">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">index_query_access_paths</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#now.apps.text_to_video.app.TextToVideo.index_query_access_paths" title="Permalink to this definition">#</a></dt>
+<dd><p>Gives access paths for indexing and searching.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="now.apps.text_to_video.app.TextToVideo.setup">
-<span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">da</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kubectl_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/now/apps/text_to_video/app/#TextToVideo.setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#now.apps.text_to_video.app.TextToVideo.setup" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kubectl_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/now/apps/text_to_video/app/#TextToVideo.setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#now.apps.text_to_video.app.TextToVideo.setup" title="Permalink to this definition">#</a></dt>
 <dd><p>Runs before the flow is deployed.
 Common use cases:</p>
 <blockquote>
@@ -419,8 +417,8 @@ Common use cases:</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>da</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">DocumentArray</span></code>) – </p></li>
-<li><p><strong>user_config</strong> (<a class="reference internal" href="../now.dataclasses/#now.dataclasses.UserInput" title="now.dataclasses.UserInput"><code class="xref py py-class docutils literal notranslate"><span class="pre">UserInput</span></code></a>) – user configuration based on the given options</p></li>
+<li><p><strong>dataset</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">DocumentArray</span></code>) – </p></li>
+<li><p><strong>user_input</strong> (<a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.UserInput" title="now.now_dataclasses.UserInput"><code class="xref py py-class docutils literal notranslate"><span class="pre">UserInput</span></code></a>) – user configuration based on the given options</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
@@ -430,6 +428,33 @@ Common use cases:</p>
 <dd class="field-odd"><p>dict used to replace variables in flow yaml and to clean up resources after the flow is terminated</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="now.apps.text_to_video.app.TextToVideo.preprocess">
+<span class="sig-name descname"><span class="pre">preprocess</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">da</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_indexing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/now/apps/text_to_video/app/#TextToVideo.preprocess"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#now.apps.text_to_video.app.TextToVideo.preprocess" title="Permalink to this definition">#</a></dt>
+<dd><p>Loads and preprocesses every document such that it is ready for finetuning/indexing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">DocumentArray</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="now.apps.text_to_video.app.TextToVideo.bff_mapping_fns">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bff_mapping_fns</span></span><a class="headerlink" href="#now.apps.text_to_video.app.TextToVideo.bff_mapping_fns" title="Permalink to this definition">#</a></dt>
+<dd><p>Apps usually have a custom input format and response which does not match the JinaRequestModel or JinaResponseModel.
+To create the mapping each Jina NOW app can implement the two bff mapping functions for each path
+- one for requests and one for responses</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>dictionary from path to a tuple of request model, response model,</p>
+</dd>
+</dl>
+<p>request mapping fn and response mapping fn.
+By default, the mapping is the identity function and the request model and respond model are the default models.
+The path is a regex expression.</p>
 </dd></dl>
 
 </dd></dl>
@@ -462,7 +487,7 @@ Common use cases:</p>
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Jul 07, 2022.
+                            Last updated on Sep 12, 2022.
                         </div>
                     </div>
                     <div class="right-details">

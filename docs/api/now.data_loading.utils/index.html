@@ -10,7 +10,7 @@
   
 <meta property="og:url" content="https://now.jina.ai/api/now.data_loading.utils/" />
   
-<meta property="og:site_name" content="NOW 0.0.17 Documentation" />
+<meta property="og:site_name" content="NOW 0.0.29 Documentation" />
   
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@JinaAI_">
@@ -33,12 +33,12 @@
         <link rel="canonical" href="https://now.jina.ai/api/now.data_loading.utils.html" />
 
     <link rel="shortcut icon" href="../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.06.21"/>
-        <title>now.data_loading.utils module - NOW 0.0.17 documentation</title>
+        <title>now.data_loading.utils module - NOW 0.0.29 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/tabs.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     <link rel="stylesheet" type="text/css" href="../../_static/main.css" />
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta2/css/all.min.css" />
@@ -166,7 +166,7 @@
         </div>
         <div class="header-center">
             <a href="../../">
-                <div class="brand">NOW 0.0.17 documentation</div>
+                <div class="brand">NOW 0.0.29 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -300,9 +300,48 @@
                     <section id="module-now.data_loading.utils">
 <span id="now-data-loading-utils-module"></span><h1>now.data_loading.utils module<a class="headerlink" href="#module-now.data_loading.utils" title="Permalink to this headline">#</a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="now.data_loading.utils.upload_to_gcloud_bucket">
-<span class="sig-prename descclassname"><span class="pre">now.data_loading.utils.</span></span><span class="sig-name descname"><span class="pre">upload_to_gcloud_bucket</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bucket</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">location</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fname</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/now/data_loading/utils/#upload_to_gcloud_bucket"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#now.data_loading.utils.upload_to_gcloud_bucket" title="Permalink to this definition">#</a></dt>
-<dd><p>Upload local file to Google Cloud bucket.</p>
+<dt class="sig sig-object py" id="now.data_loading.utils.get_dataset_url">
+<span class="sig-prename descclassname"><span class="pre">now.data_loading.utils.</span></span><span class="sig-name descname"><span class="pre">get_dataset_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_modality</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/now/data_loading/utils/#get_dataset_url"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#now.data_loading.utils.get_dataset_url" title="Permalink to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="now.data_loading.utils.transform_es_data">
+<span class="sig-prename descclassname"><span class="pre">now.data_loading.utils.</span></span><span class="sig-name descname"><span class="pre">transform_es_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/now/data_loading/utils/#transform_es_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#now.data_loading.utils.transform_es_data" title="Permalink to this definition">#</a></dt>
+<dd><p>Transform data extracted from Elasticsearch to a more convenient form.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">DocumentArray</span></code>) – Loaded <cite>DocumentArray</cite> containing ES data.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]]</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>List of data examples as dictionaries.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="now.data_loading.utils.transform_doc">
+<span class="sig-prename descclassname"><span class="pre">now.data_loading.utils.</span></span><span class="sig-name descname"><span class="pre">transform_doc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">document</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attributes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/now/data_loading/utils/#transform_doc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#now.data_loading.utils.transform_doc" title="Permalink to this definition">#</a></dt>
+<dd><p>Extract attributes from a <cite>Document</cite> and store it as a dictionary.</p>
+<p>Recursively iterates across different chunks of the <cite>Document</cite> and collects
+attributes with their corresponding values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>document</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Document</span></code>) – <cite>Document</cite> we want to transform.</p></li>
+<li><p><strong>attributes</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]) – Dictionary of attributes extracted from the document.</p></li>
+<li><p><strong>names</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]) – Name of an attribute (attribute names may be nested, e.g.
+info.cars, and we need to store name(s) on every level of recursion).</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
@@ -323,7 +362,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Jul 07, 2022.
+                            Last updated on Sep 12, 2022.
                         </div>
                     </div>
                     <div class="right-details">

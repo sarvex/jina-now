@@ -6,12 +6,12 @@
         <link rel="canonical" href="https://now.jina.ai/_modules/deployment/bff/app/v1/models/video.html" />
 
     <link rel="shortcut icon" href="../../../../../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.06.21"/>
-        <title>deployment.bff.app.v1.models.video - NOW 0.0.17 documentation</title>
+        <title>deployment.bff.app.v1.models.video - NOW 0.0.29 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../../../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="../../../../../../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../../../../../../_static/tabs.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../../../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
     <link rel="stylesheet" type="text/css" href="../../../../../../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     <link rel="stylesheet" type="text/css" href="../../../../../../../_static/main.css" />
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta2/css/all.min.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../../../../../">
-                <div class="brand">NOW 0.0.17 documentation</div>
+                <div class="brand">NOW 0.0.29 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -271,53 +271,33 @@
                 </div>
                 <article role="main">
                     <h1>Source code for deployment.bff.app.v1.models.video</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
 
 <span class="kn">from</span> <span class="nn">pydantic</span> <span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">Field</span>
 
 <span class="kn">from</span> <span class="nn">deployment.bff.app.v1.models.helper</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">BaseIndexRequestModel</span><span class="p">,</span>
-    <span class="n">BaseRequestModel</span><span class="p">,</span>
-    <span class="n">_NamedScore</span><span class="p">,</span>
-    <span class="n">_StructValueType</span><span class="p">,</span>
+    <span class="n">BaseSearchResponseModel</span><span class="p">,</span>
 <span class="p">)</span>
 
 
 <span class="c1"># Request Model</span>
 <div class="viewcode-block" id="NowVideoIndexRequestModel"><a class="viewcode-back" href="../../../../../../../api/deployment.bff.app.v1.models.video/#deployment.bff.app.v1.models.video.NowVideoIndexRequestModel">[docs]</a><span class="k">class</span> <span class="nc">NowVideoIndexRequestModel</span><span class="p">(</span><span class="n">BaseIndexRequestModel</span><span class="p">):</span>
-    <span class="n">videos</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+    <span class="n">videos</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
         <span class="n">default</span><span class="o">=...</span><span class="p">,</span>
         <span class="n">description</span><span class="o">=</span><span class="s1">&#39;List of Videos to index. Videos should be base64encoded in `utf-8` format&#39;</span><span class="p">,</span>
     <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="NowVideoSearchRequestModel"><a class="viewcode-back" href="../../../../../../../api/deployment.bff.app.v1.models.video/#deployment.bff.app.v1.models.video.NowVideoSearchRequestModel">[docs]</a><span class="k">class</span> <span class="nc">NowVideoSearchRequestModel</span><span class="p">(</span><span class="n">BaseRequestModel</span><span class="p">):</span>
-    <span class="n">video</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Video query. Video should be base64encoded in `utf-8` format&#39;</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Number of matching results to return&#39;</span><span class="p">)</span></div>
-
-
 <span class="c1"># Response Model</span>
-<div class="viewcode-block" id="NowVideoResponseModel"><a class="viewcode-back" href="../../../../../../../api/deployment.bff.app.v1.models.video/#deployment.bff.app.v1.models.video.NowVideoResponseModel">[docs]</a><span class="k">class</span> <span class="nc">NowVideoResponseModel</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-    <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-        <span class="n">default</span><span class="o">=...</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Id of the matching result.&#39;</span>
-    <span class="p">)</span>
+<div class="viewcode-block" id="NowVideoResponseModel"><a class="viewcode-back" href="../../../../../../../api/deployment.bff.app.v1.models.video/#deployment.bff.app.v1.models.video.NowVideoResponseModel">[docs]</a><span class="k">class</span> <span class="nc">NowVideoResponseModel</span><span class="p">(</span><span class="n">BaseSearchResponseModel</span><span class="p">):</span>
     <span class="n">blob</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
         <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Base64 encoded video in `utf-8` str format.&#39;</span>
-    <span class="p">)</span>
-    <span class="n">uri</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s1">&#39;Uri of the video file.&#39;</span><span class="p">)</span>
-    <span class="n">scores</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="s1">&#39;_NamedScore&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-        <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Similarity score with respect to the query.&#39;</span>
-    <span class="p">)</span>
-    <span class="n">tags</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="s1">&#39;_StructValueType&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-        <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Additional tags associated with the file.&#39;</span>
-    <span class="p">)</span>
+    <span class="p">)</span></div>
 
-<div class="viewcode-block" id="NowVideoResponseModel.Config"><a class="viewcode-back" href="../../../../../../../api/deployment.bff.app.v1.models.video/#deployment.bff.app.v1.models.video.NowVideoResponseModel.Config">[docs]</a>    <span class="k">class</span> <span class="nc">Config</span><span class="p">:</span>
-        <span class="n">case_sensitive</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="n">arbitrary_types_allowed</span> <span class="o">=</span> <span class="kc">True</span></div></div>
+
+<div class="viewcode-block" id="NowVideoListResponseModel"><a class="viewcode-back" href="../../../../../../../api/deployment.bff.app.v1.models.video/#deployment.bff.app.v1.models.video.NowVideoListResponseModel">[docs]</a><span class="k">class</span> <span class="nc">NowVideoListResponseModel</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">__root__</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">NowVideoResponseModel</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s1">&#39;list of video responses&#39;</span><span class="p">)</span></div>
 
 
 <span class="n">NowVideoResponseModel</span><span class="o">.</span><span class="n">update_forward_refs</span><span class="p">()</span>
@@ -338,7 +318,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Jul 07, 2022.
+                            Last updated on Sep 12, 2022.
                         </div>
                     </div>
                     <div class="right-details">

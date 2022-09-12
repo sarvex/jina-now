@@ -6,12 +6,12 @@
         <link rel="canonical" href="https://now.jina.ai/_modules/now/apps/text_to_video/app.html" />
 
     <link rel="shortcut icon" href="../../../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.06.21"/>
-        <title>now.apps.text_to_video.app - NOW 0.0.17 documentation</title>
+        <title>now.apps.text_to_video.app - NOW 0.0.29 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/tabs.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/main.css" />
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta2/css/all.min.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../../../">
-                <div class="brand">NOW 0.0.17 documentation</div>
+                <div class="brand">NOW 0.0.29 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -271,25 +271,30 @@
                 </div>
                 <article role="main">
                     <h1>Source code for now.apps.text_to_video.app</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">io</span>
+<span></span><span class="kn">import</span> <span class="nn">base64</span>
+<span class="kn">import</span> <span class="nn">io</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">PIL</span>
 <span class="kn">from</span> <span class="nn">docarray</span> <span class="kn">import</span> <span class="n">Document</span><span class="p">,</span> <span class="n">DocumentArray</span>
-<span class="kn">from</span> <span class="nn">now_common</span> <span class="kn">import</span> <span class="n">options</span>
-<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">from</span> <span class="nn">jina.helper</span> <span class="kn">import</span> <span class="n">random_port</span>
+<span class="kn">from</span> <span class="nn">jina.serve.runtimes.gateway.http.models</span> <span class="kn">import</span> <span class="n">JinaRequestModel</span><span class="p">,</span> <span class="n">JinaResponseModel</span>
+<span class="kn">from</span> <span class="nn">now_common.utils</span> <span class="kn">import</span> <span class="n">_get_email</span><span class="p">,</span> <span class="n">common_setup</span><span class="p">,</span> <span class="n">get_indexer_config</span>
+<span class="kn">from</span> <span class="nn">pydantic</span> <span class="kn">import</span> <span class="n">BaseModel</span>
 
-<span class="kn">from</span> <span class="nn">now.apps.base.app</span> <span class="kn">import</span> <span class="n">JinaNOWApp</span>
-<span class="kn">from</span> <span class="nn">now.constants</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">CLIP_USES</span><span class="p">,</span>
-    <span class="n">IMAGE_MODEL_QUALITY_MAP</span><span class="p">,</span>
-    <span class="n">Apps</span><span class="p">,</span>
-    <span class="n">Modalities</span><span class="p">,</span>
-    <span class="n">Qualities</span><span class="p">,</span>
+<span class="kn">from</span> <span class="nn">deployment.bff.app.v1.models.text</span> <span class="kn">import</span> <span class="n">NowTextSearchRequestModel</span>
+<span class="kn">from</span> <span class="nn">deployment.bff.app.v1.models.video</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">NowVideoIndexRequestModel</span><span class="p">,</span>
+    <span class="n">NowVideoListResponseModel</span><span class="p">,</span>
+    <span class="n">NowVideoResponseModel</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">now.dataclasses</span> <span class="kn">import</span> <span class="n">UserInput</span>
-<span class="kn">from</span> <span class="nn">now.run_backend</span> <span class="kn">import</span> <span class="n">finetune_flow_setup</span>
+<span class="kn">from</span> <span class="nn">now.apps.base.app</span> <span class="kn">import</span> <span class="n">JinaNOWApp</span>
+<span class="kn">from</span> <span class="nn">now.constants</span> <span class="kn">import</span> <span class="n">CLIP_USES</span><span class="p">,</span> <span class="n">EXTERNAL_CLIP_HOST</span><span class="p">,</span> <span class="n">Apps</span><span class="p">,</span> <span class="n">Modalities</span>
+<span class="kn">from</span> <span class="nn">now.now_dataclasses</span> <span class="kn">import</span> <span class="n">UserInput</span>
+
+<span class="n">NUM_FRAMES_SAMPLED</span> <span class="o">=</span> <span class="mi">3</span>
 
 
 <div class="viewcode-block" id="TextToVideo"><a class="viewcode-back" href="../../../../../api/now.apps.text_to_video.app/#now.apps.text_to_video.app.TextToVideo">[docs]</a><span class="k">class</span> <span class="nc">TextToVideo</span><span class="p">(</span><span class="n">JinaNOWApp</span><span class="p">):</span>
@@ -297,7 +302,7 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">app</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">app_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">Apps</span><span class="o">.</span><span class="n">TEXT_TO_VIDEO</span>
 
     <span class="nd">@property</span>
@@ -317,36 +322,156 @@
         <span class="k">return</span> <span class="n">Modalities</span><span class="o">.</span><span class="n">VIDEO</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">options</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">options</span><span class="o">.</span><span class="n">QUALITY_CLIP</span><span class="p">]</span>
+    <span class="k">def</span> <span class="nf">required_docker_memory_in_gb</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">12</span>
 
 <div class="viewcode-block" id="TextToVideo.set_flow_yaml"><a class="viewcode-back" href="../../../../../api/now.apps.text_to_video.app/#now.apps.text_to_video.app.TextToVideo.set_flow_yaml">[docs]</a>    <span class="k">def</span> <span class="nf">set_flow_yaml</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">finetuning</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;finetuning&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">dataset_len</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dataset_len&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">NUM_FRAMES_SAMPLED</span>
+        <span class="n">is_jina_email</span> <span class="o">=</span> <span class="n">_get_email</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;@&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;jina.ai&#39;</span>
+
         <span class="n">flow_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="vm">__file__</span><span class="p">,</span> <span class="s1">&#39;..&#39;</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">flow_yaml</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">flow_dir</span><span class="p">,</span> <span class="s1">&#39;flow-video-clip.yml&#39;</span><span class="p">)</span></div>
+
+        <span class="k">if</span> <span class="n">finetuning</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">dataset_len</span> <span class="o">&gt;</span> <span class="mi">200_000</span> <span class="ow">and</span> <span class="n">is_jina_email</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🚀🚀🚀 You are using high performance flow&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">flow_yaml</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                    <span class="n">flow_dir</span><span class="p">,</span> <span class="s1">&#39;ft-flow-video-clip-high-performance.yml&#39;</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">flow_yaml</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">flow_dir</span><span class="p">,</span> <span class="s1">&#39;ft-flow-video-clip.yml&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">dataset_len</span> <span class="o">&gt;</span> <span class="mi">200_000</span> <span class="ow">and</span> <span class="n">is_jina_email</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🚀🚀🚀 You are using high performance flow&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">flow_yaml</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                    <span class="n">flow_dir</span><span class="p">,</span> <span class="s1">&#39;flow-video-clip-high-performance.yml&#39;</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">flow_yaml</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">flow_dir</span><span class="p">,</span> <span class="s1">&#39;flow-video-clip.yml&#39;</span><span class="p">)</span></div>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">pre_trained_embedding_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Qualities</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="p">{</span>
-            <span class="n">Qualities</span><span class="o">.</span><span class="n">MEDIUM</span><span class="p">:</span> <span class="mi">512</span><span class="p">,</span>
-            <span class="n">Qualities</span><span class="o">.</span><span class="n">GOOD</span><span class="p">:</span> <span class="mi">512</span><span class="p">,</span>
-            <span class="n">Qualities</span><span class="o">.</span><span class="n">EXCELLENT</span><span class="p">:</span> <span class="mi">768</span><span class="p">,</span>
-        <span class="p">}</span>
+    <span class="k">def</span> <span class="nf">supported_file_types</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;gif&#39;</span><span class="p">,</span> <span class="s1">&#39;mp4&#39;</span><span class="p">,</span> <span class="s1">&#39;mov&#39;</span><span class="p">]</span>
 
-<div class="viewcode-block" id="TextToVideo.setup"><a class="viewcode-back" href="../../../../../api/now.apps.text_to_video.app/#now.apps.text_to_video.app.TextToVideo.setup">[docs]</a>    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">da</span><span class="p">:</span> <span class="n">DocumentArray</span><span class="p">,</span> <span class="n">user_config</span><span class="p">:</span> <span class="n">UserInput</span><span class="p">,</span> <span class="n">kubectl_path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">finetune_flow_setup</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">da</span><span class="p">,</span>
-            <span class="n">user_config</span><span class="p">,</span>
-            <span class="n">kubectl_path</span><span class="p">,</span>
-            <span class="n">encoder_uses</span><span class="o">=</span><span class="n">CLIP_USES</span><span class="p">,</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">index_query_access_paths</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s1">&#39;@c&#39;</span>
+
+<div class="viewcode-block" id="TextToVideo.setup"><a class="viewcode-back" href="../../../../../api/now.apps.text_to_video.app/#now.apps.text_to_video.app.TextToVideo.setup">[docs]</a>    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">DocumentArray</span><span class="p">,</span> <span class="n">user_input</span><span class="p">:</span> <span class="n">UserInput</span><span class="p">,</span> <span class="n">kubectl_path</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+        <span class="n">indexer_config</span> <span class="o">=</span> <span class="n">get_indexer_config</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span> <span class="o">*</span> <span class="n">NUM_FRAMES_SAMPLED</span><span class="p">)</span>
+        <span class="n">is_remote</span> <span class="o">=</span> <span class="n">user_input</span><span class="o">.</span><span class="n">deployment_type</span> <span class="o">==</span> <span class="s1">&#39;remote&#39;</span>
+        <span class="n">encoder_with</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;ENCODER_HOST&#39;</span><span class="p">:</span> <span class="n">EXTERNAL_CLIP_HOST</span> <span class="k">if</span> <span class="n">is_remote</span> <span class="k">else</span> <span class="s1">&#39;0.0.0.0&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;ENCODER_PORT&#39;</span><span class="p">:</span> <span class="mi">443</span> <span class="k">if</span> <span class="n">is_remote</span> <span class="k">else</span> <span class="n">random_port</span><span class="p">(),</span>
+            <span class="s1">&#39;ENCODER_USES_TLS&#39;</span><span class="p">:</span> <span class="kc">True</span> <span class="k">if</span> <span class="n">is_remote</span> <span class="k">else</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="s1">&#39;ENCODER_IS_EXTERNAL&#39;</span><span class="p">:</span> <span class="kc">True</span> <span class="k">if</span> <span class="n">is_remote</span> <span class="k">else</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">common_setup</span><span class="p">(</span>
+            <span class="n">app_instance</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span>
+            <span class="n">user_input</span><span class="o">=</span><span class="n">user_input</span><span class="p">,</span>
+            <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
+            <span class="n">encoder_uses</span><span class="o">=</span><span class="n">CLIP_USES</span><span class="p">[</span><span class="n">user_input</span><span class="o">.</span><span class="n">deployment_type</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">encoder_with</span><span class="o">=</span><span class="n">encoder_with</span><span class="p">,</span>
             <span class="n">encoder_uses_with</span><span class="o">=</span><span class="p">{</span>
-                <span class="s1">&#39;pretrained_model_name_or_path&#39;</span><span class="p">:</span> <span class="n">IMAGE_MODEL_QUALITY_MAP</span><span class="p">[</span>
-                    <span class="n">user_config</span><span class="o">.</span><span class="n">quality</span>
-                <span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+                <span class="s1">&#39;pretrained_model_name_or_path&#39;</span><span class="p">:</span> <span class="n">CLIP_USES</span><span class="p">[</span><span class="n">user_input</span><span class="o">.</span><span class="n">deployment_type</span><span class="p">][</span>
+                    <span class="mi">1</span>
+                <span class="p">]</span>
             <span class="p">},</span>
-            <span class="n">finetune_datasets</span><span class="o">=</span><span class="p">(),</span>
-            <span class="n">indexer_uses</span><span class="o">=</span><span class="s1">&#39;DocarrayIndexerV2&#39;</span><span class="p">,</span>
-        <span class="p">)</span></div></div>
+            <span class="n">pre_trained_embedding_size</span><span class="o">=</span><span class="n">CLIP_USES</span><span class="p">[</span><span class="n">user_input</span><span class="o">.</span><span class="n">deployment_type</span><span class="p">][</span><span class="mi">2</span><span class="p">],</span>
+            <span class="n">indexer_uses</span><span class="o">=</span><span class="n">indexer_config</span><span class="p">[</span><span class="s1">&#39;indexer_uses&#39;</span><span class="p">],</span>
+            <span class="n">kubectl_path</span><span class="o">=</span><span class="n">kubectl_path</span><span class="p">,</span>
+            <span class="n">indexer_resources</span><span class="o">=</span><span class="n">indexer_config</span><span class="p">[</span><span class="s1">&#39;indexer_resources&#39;</span><span class="p">],</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="TextToVideo.preprocess"><a class="viewcode-back" href="../../../../../api/now.apps.text_to_video.app/#now.apps.text_to_video.app.TextToVideo.preprocess">[docs]</a>    <span class="k">def</span> <span class="nf">preprocess</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">da</span><span class="p">:</span> <span class="n">DocumentArray</span><span class="p">,</span> <span class="n">user_input</span><span class="p">:</span> <span class="n">UserInput</span><span class="p">,</span> <span class="n">is_indexing</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DocumentArray</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">is_indexing</span><span class="p">:</span>
+
+            <span class="k">def</span> <span class="nf">convert_fn</span><span class="p">(</span><span class="n">d</span><span class="p">:</span> <span class="n">Document</span><span class="p">):</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">blob</span> <span class="o">==</span> <span class="sa">b</span><span class="s1">&#39;&#39;</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">uri</span><span class="p">:</span>
+                            <span class="n">d</span><span class="o">.</span><span class="n">load_uri_to_blob</span><span class="p">()</span>
+                        <span class="k">elif</span> <span class="n">d</span><span class="o">.</span><span class="n">tensor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="n">d</span><span class="o">.</span><span class="n">convert_tensor_to_blob</span><span class="p">()</span>
+                    <span class="n">sample_video</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Failed to process </span><span class="si">{</span><span class="n">d</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">d</span>
+
+            <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">da</span><span class="p">:</span>
+                <span class="n">convert_fn</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">DocumentArray</span><span class="p">(</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">da</span> <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">blob</span> <span class="o">!=</span> <span class="sa">b</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="k">def</span> <span class="nf">convert_fn</span><span class="p">(</span><span class="n">d</span><span class="p">:</span> <span class="n">Document</span><span class="p">):</span>
+                <span class="n">d</span><span class="o">.</span><span class="n">chunks</span> <span class="o">=</span> <span class="n">DocumentArray</span><span class="p">(</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">chunks</span> <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">d</span>
+
+            <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">da</span><span class="p">:</span>
+                <span class="n">convert_fn</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">DocumentArray</span><span class="p">(</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">da</span> <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">chunks</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">bff_mapping_fns</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">search_text_to_video_request_mapping_fn</span><span class="p">(</span>
+            <span class="n">request</span><span class="p">:</span> <span class="n">NowTextSearchRequestModel</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">JinaRequestModel</span><span class="p">:</span>
+            <span class="n">jina_request_model</span> <span class="o">=</span> <span class="n">JinaRequestModel</span><span class="p">()</span>
+            <span class="n">jina_request_model</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">Document</span><span class="p">(</span><span class="n">chunks</span><span class="o">=</span><span class="p">[</span><span class="n">Document</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">text</span><span class="p">)])]</span>
+            <span class="n">jina_request_model</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;limit&#39;</span><span class="p">:</span> <span class="n">request</span><span class="o">.</span><span class="n">limit</span><span class="p">,</span>
+                <span class="s1">&#39;api_key&#39;</span><span class="p">:</span> <span class="n">request</span><span class="o">.</span><span class="n">api_key</span><span class="p">,</span>
+                <span class="s1">&#39;jwt&#39;</span><span class="p">:</span> <span class="n">request</span><span class="o">.</span><span class="n">jwt</span><span class="p">,</span>
+            <span class="p">}</span>
+            <span class="k">return</span> <span class="n">jina_request_model</span>
+
+        <span class="k">def</span> <span class="nf">search_video_response_mapping_fn</span><span class="p">(</span>
+            <span class="n">request</span><span class="p">:</span> <span class="n">NowTextSearchRequestModel</span><span class="p">,</span> <span class="n">response</span><span class="p">:</span> <span class="n">JinaResponseModel</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">NowVideoResponseModel</span><span class="p">]:</span>
+            <span class="n">docs</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span>
+            <span class="n">limit</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">limit</span>
+            <span class="k">return</span> <span class="n">docs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">matches</span><span class="p">[:</span><span class="n">limit</span><span class="p">]</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+
+        <span class="k">def</span> <span class="nf">index_text_to_video_request_mapping_fn</span><span class="p">(</span>
+            <span class="n">request</span><span class="p">:</span> <span class="n">NowVideoIndexRequestModel</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">JinaRequestModel</span><span class="p">:</span>
+            <span class="n">index_docs</span> <span class="o">=</span> <span class="n">DocumentArray</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">video</span><span class="p">,</span> <span class="n">uri</span><span class="p">,</span> <span class="n">tags</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">videos</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">uris</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">tags</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">bool</span><span class="p">(</span><span class="n">video</span><span class="p">)</span> <span class="o">+</span> <span class="nb">bool</span><span class="p">(</span><span class="n">uri</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s1">&#39;Can only set one value but have video=</span><span class="si">{</span><span class="n">video</span><span class="si">}</span><span class="s1">, uri=</span><span class="si">{</span><span class="n">uri</span><span class="si">}</span><span class="s1">&#39;</span>
+                    <span class="p">)</span>
+                <span class="k">if</span> <span class="n">video</span><span class="p">:</span>
+                    <span class="n">base64_bytes</span> <span class="o">=</span> <span class="n">video</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+                    <span class="n">message</span> <span class="o">=</span> <span class="n">base64</span><span class="o">.</span><span class="n">decodebytes</span><span class="p">(</span><span class="n">base64_bytes</span><span class="p">)</span>
+                    <span class="n">index_docs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Document</span><span class="p">(</span><span class="n">blob</span><span class="o">=</span><span class="n">message</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="n">tags</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">index_docs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Document</span><span class="p">(</span><span class="n">uri</span><span class="o">=</span><span class="n">uri</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="n">tags</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">JinaRequestModel</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">index_docs</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">no_response_mapping_fn</span><span class="p">(</span><span class="n">_</span><span class="p">:</span> <span class="n">JinaResponseModel</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseModel</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">BaseModel</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;/search&#39;</span><span class="p">:</span> <span class="p">(</span>
+                <span class="n">NowTextSearchRequestModel</span><span class="p">,</span>
+                <span class="n">NowVideoListResponseModel</span><span class="p">,</span>
+                <span class="n">search_text_to_video_request_mapping_fn</span><span class="p">,</span>
+                <span class="n">search_video_response_mapping_fn</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="s1">&#39;/index&#39;</span><span class="p">:</span> <span class="p">(</span>
+                <span class="n">NowVideoIndexRequestModel</span><span class="p">,</span>
+                <span class="n">BaseModel</span><span class="p">,</span>
+                <span class="n">index_text_to_video_request_mapping_fn</span><span class="p">,</span>
+                <span class="n">no_response_mapping_fn</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">}</span></div>
 
 
 <div class="viewcode-block" id="select_frames"><a class="viewcode-back" href="../../../../../api/now.apps.text_to_video.app/#now.apps.text_to_video.app.select_frames">[docs]</a><span class="k">def</span> <span class="nf">select_frames</span><span class="p">(</span><span class="n">num_selected_frames</span><span class="p">,</span> <span class="n">num_total_frames</span><span class="p">):</span>
@@ -357,30 +482,18 @@
 <div class="viewcode-block" id="sample_video"><a class="viewcode-back" href="../../../../../api/now.apps.text_to_video.app/#now.apps.text_to_video.app.sample_video">[docs]</a><span class="k">def</span> <span class="nf">sample_video</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
     <span class="n">video</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">blob</span>
     <span class="n">video_io</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">video</span><span class="p">)</span>
-    <span class="n">gif</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">video_io</span><span class="p">)</span>
-    <span class="n">frame_indices</span> <span class="o">=</span> <span class="n">select_frames</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">gif</span><span class="o">.</span><span class="n">n_frames</span><span class="p">)</span>
+    <span class="n">gif</span> <span class="o">=</span> <span class="n">PIL</span><span class="o">.</span><span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">video_io</span><span class="p">)</span>
+    <span class="n">frame_indices</span> <span class="o">=</span> <span class="n">select_frames</span><span class="p">(</span><span class="n">NUM_FRAMES_SAMPLED</span><span class="p">,</span> <span class="n">gif</span><span class="o">.</span><span class="n">n_frames</span><span class="p">)</span>
     <span class="n">frames</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">frame_indices</span><span class="p">:</span>
         <span class="n">gif</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
         <span class="n">frame</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">gif</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;RGB&quot;</span><span class="p">))</span>
-        <span class="n">frame_pil</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+        <span class="n">frame_pil</span> <span class="o">=</span> <span class="n">PIL</span><span class="o">.</span><span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
         <span class="n">frame_pil_resized</span> <span class="o">=</span> <span class="n">frame_pil</span><span class="o">.</span><span class="n">resize</span><span class="p">((</span><span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">))</span>
         <span class="n">frames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">frame_pil_resized</span><span class="p">)</span>
         <span class="n">frame_bytes</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
         <span class="n">frame_pil_resized</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">frame_bytes</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;JPEG&quot;</span><span class="p">,</span> <span class="n">quality</span><span class="o">=</span><span class="mi">70</span><span class="p">)</span>
-        <span class="n">d</span><span class="o">.</span><span class="n">chunks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Document</span><span class="p">(</span><span class="n">blob</span><span class="o">=</span><span class="n">frame_bytes</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()))</span>
-    <span class="n">small_gif_bytes_io</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
-    <span class="n">frames</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">save</span><span class="p">(</span>
-        <span class="n">small_gif_bytes_io</span><span class="p">,</span>
-        <span class="s2">&quot;gif&quot;</span><span class="p">,</span>
-        <span class="n">save_all</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">append_images</span><span class="o">=</span><span class="n">frames</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span>
-        <span class="n">optimize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">duration</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span>
-        <span class="n">loop</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-        <span class="n">quality</span><span class="o">=</span><span class="mi">75</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">blob</span> <span class="o">=</span> <span class="n">small_gif_bytes_io</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span></div>
+        <span class="n">d</span><span class="o">.</span><span class="n">chunks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Document</span><span class="p">(</span><span class="n">uri</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">uri</span><span class="p">,</span> <span class="n">blob</span><span class="o">=</span><span class="n">frame_bytes</span><span class="o">.</span><span class="n">getvalue</span><span class="p">(),</span> <span class="n">tags</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">tags</span><span class="p">))</span></div>
 </pre></div>
                 </article>
             </div>
@@ -398,7 +511,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Jul 07, 2022.
+                            Last updated on Sep 12, 2022.
                         </div>
                     </div>
                     <div class="right-details">

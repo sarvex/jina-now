@@ -7,8 +7,9 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
+   now.finetuning.data_builder
    now.finetuning.dataset
-   now.finetuning.embeddings
+   now.finetuning.generation_fns
    now.finetuning.run_finetuning
    now.finetuning.settings
 

@@ -6,12 +6,12 @@
         <link rel="canonical" href="https://now.jina.ai/_modules/now/deployment/flow.html" />
 
     <link rel="shortcut icon" href="../../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.06.21"/>
-        <title>now.deployment.flow - NOW 0.0.17 documentation</title>
+        <title>now.deployment.flow - NOW 0.0.29 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/tabs.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/main.css" />
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta2/css/all.min.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../../">
-                <div class="brand">NOW 0.0.17 documentation</div>
+                <div class="brand">NOW 0.0.29 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -274,21 +274,22 @@
 <span></span><span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">os.path</span>
 <span class="kn">import</span> <span class="nn">pathlib</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
 <span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">expanduser</span> <span class="k">as</span> <span class="n">user</span>
 <span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">sleep</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span>
 
-<span class="kn">from</span> <span class="nn">docarray</span> <span class="kn">import</span> <span class="n">DocumentArray</span>
+<span class="kn">from</span> <span class="nn">jina</span> <span class="kn">import</span> <span class="n">Flow</span>
+<span class="kn">from</span> <span class="nn">jina.clients</span> <span class="kn">import</span> <span class="n">Client</span>
 <span class="kn">from</span> <span class="nn">kubernetes</span> <span class="kn">import</span> <span class="n">client</span> <span class="k">as</span> <span class="n">k8s_client</span>
 <span class="kn">from</span> <span class="nn">kubernetes</span> <span class="kn">import</span> <span class="n">config</span>
 <span class="kn">from</span> <span class="nn">yaspin.spinners</span> <span class="kn">import</span> <span class="n">Spinners</span>
 
-<span class="kn">from</span> <span class="nn">now.apps.base.app</span> <span class="kn">import</span> <span class="n">JinaNOWApp</span>
 <span class="kn">from</span> <span class="nn">now.cloud_manager</span> <span class="kn">import</span> <span class="n">is_local_cluster</span>
-<span class="kn">from</span> <span class="nn">now.constants</span> <span class="kn">import</span> <span class="n">JC_SECRET</span>
-<span class="kn">from</span> <span class="nn">now.dataclasses</span> <span class="kn">import</span> <span class="n">UserInput</span>
+<span class="kn">from</span> <span class="nn">now.constants</span> <span class="kn">import</span> <span class="n">JC_SECRET</span><span class="p">,</span> <span class="n">NOW_AUTH_EXECUTOR_VERSION</span>
 <span class="kn">from</span> <span class="nn">now.deployment.deployment</span> <span class="kn">import</span> <span class="n">apply_replace</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">deploy_wolf</span>
 <span class="kn">from</span> <span class="nn">now.log</span> <span class="kn">import</span> <span class="n">time_profiler</span><span class="p">,</span> <span class="n">yaspin_extended</span>
-<span class="kn">from</span> <span class="nn">now.utils</span> <span class="kn">import</span> <span class="n">sigmap</span>
+<span class="kn">from</span> <span class="nn">now.utils</span> <span class="kn">import</span> <span class="n">sigmap</span><span class="p">,</span> <span class="n">write_env_file</span>
 
 <span class="n">cur_dir</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
 
@@ -376,82 +377,90 @@
     <span class="k">return</span> <span class="n">gateway_host</span><span class="p">,</span> <span class="n">gateway_port</span><span class="p">,</span> <span class="n">gateway_host_internal</span><span class="p">,</span> <span class="n">gateway_port_internal</span></div>
 
 
+<span class="k">def</span> <span class="nf">_extend_flow_yaml</span><span class="p">(</span><span class="n">flow_yaml</span><span class="p">,</span> <span class="n">tmpdir</span><span class="p">,</span> <span class="n">secured</span><span class="p">,</span> <span class="n">admin_emails</span><span class="p">,</span> <span class="n">user_emails</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">secured</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">flow_yaml</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.yml&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">flow_yaml</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.yaml&#39;</span><span class="p">):</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">flow_yaml</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">flow_yaml</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="n">first_part</span><span class="p">,</span> <span class="n">second_part</span> <span class="o">=</span> <span class="n">flow_yaml</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;executors:&#39;</span><span class="p">)</span>
+        <span class="n">executor_string</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">  - name: security_check</span>
+<span class="s2">    uses: jinahub+docker://NOWAuthExecutor/v</span><span class="si">{</span><span class="n">NOW_AUTH_EXECUTOR_VERSION</span><span class="si">}</span><span class="s2"></span>
+<span class="s2">    uses_with:</span>
+<span class="s2">      admin_emails: </span><span class="si">{</span><span class="n">admin_emails</span> <span class="ow">or</span> <span class="p">[]</span><span class="si">}</span><span class="s2"></span>
+<span class="s2">      user_emails: </span><span class="si">{</span><span class="n">user_emails</span> <span class="ow">or</span> <span class="p">[]</span><span class="si">}</span><span class="s2"></span>
+<span class="s2">    env:</span>
+<span class="s2">      JINA_LOG_LEVEL: DEBUG&quot;&quot;&quot;</span>
+        <span class="n">full_yaml</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">first_part</span><span class="si">}</span><span class="s1">executors:</span><span class="si">{</span><span class="n">executor_string</span><span class="si">}{</span><span class="n">second_part</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="n">mod_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">,</span> <span class="s1">&#39;mod.yml&#39;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">mod_path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">full_yaml</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">mod_path</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">flow_yaml</span>
+
+
 <div class="viewcode-block" id="deploy_flow"><a class="viewcode-back" href="../../../../api/now.deployment.flow/#now.deployment.flow.deploy_flow">[docs]</a><span class="nd">@time_profiler</span>
 <span class="k">def</span> <span class="nf">deploy_flow</span><span class="p">(</span>
-    <span class="n">user_input</span><span class="p">:</span> <span class="n">UserInput</span><span class="p">,</span>
-    <span class="n">app_instance</span><span class="p">:</span> <span class="n">JinaNOWApp</span><span class="p">,</span>
+    <span class="n">deployment_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">flow_yaml</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">ns</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">env_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">index</span><span class="p">:</span> <span class="n">DocumentArray</span><span class="p">,</span>
-    <span class="n">tmpdir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">env_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span>
     <span class="n">kubectl_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">secured</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">admin_emails</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">user_emails</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
-    <span class="kn">from</span> <span class="nn">jina</span> <span class="kn">import</span> <span class="n">Flow</span>
-    <span class="kn">from</span> <span class="nn">jina.clients</span> <span class="kn">import</span> <span class="n">Client</span>
-
-    <span class="k">if</span> <span class="n">user_input</span><span class="o">.</span><span class="n">deployment_type</span> <span class="o">==</span> <span class="s1">&#39;remote&#39;</span><span class="p">:</span>
-        <span class="n">flow</span> <span class="o">=</span> <span class="n">deploy_wolf</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">app_instance</span><span class="o">.</span><span class="n">flow_yaml</span><span class="p">,</span> <span class="n">env_file</span><span class="o">=</span><span class="n">env_file</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">ns</span><span class="p">)</span>
-        <span class="n">host</span> <span class="o">=</span> <span class="n">flow</span><span class="o">.</span><span class="n">gateway</span>
-        <span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">)</span>
-
-        <span class="c1"># Dump the flow ID and gateway to keep track</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">user</span><span class="p">(</span><span class="n">JC_SECRET</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
-            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">({</span><span class="s1">&#39;flow_id&#39;</span><span class="p">:</span> <span class="n">flow</span><span class="o">.</span><span class="n">flow_id</span><span class="p">,</span> <span class="s1">&#39;gateway&#39;</span><span class="p">:</span> <span class="n">host</span><span class="p">},</span> <span class="n">fp</span><span class="p">)</span>
-
-        <span class="c1"># host &amp; port</span>
-        <span class="n">gateway_host</span> <span class="o">=</span> <span class="s1">&#39;remote&#39;</span>
-        <span class="n">gateway_port</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="n">gateway_host_internal</span> <span class="o">=</span> <span class="n">host</span>
-        <span class="n">gateway_port_internal</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Since host contains protocol</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="kn">from</span> <span class="nn">dotenv</span> <span class="kn">import</span> <span class="n">load_dotenv</span>
-
-        <span class="n">load_dotenv</span><span class="p">(</span><span class="n">env_file</span><span class="p">)</span>
-        <span class="n">f</span> <span class="o">=</span> <span class="n">Flow</span><span class="o">.</span><span class="n">load_config</span><span class="p">(</span><span class="n">app_instance</span><span class="o">.</span><span class="n">flow_yaml</span><span class="p">)</span>
-        <span class="p">(</span>
-            <span class="n">gateway_host</span><span class="p">,</span>
-            <span class="n">gateway_port</span><span class="p">,</span>
-            <span class="n">gateway_host_internal</span><span class="p">,</span>
-            <span class="n">gateway_port_internal</span><span class="p">,</span>
-        <span class="p">)</span> <span class="o">=</span> <span class="n">deploy_k8s</span><span class="p">(</span>
-            <span class="n">f</span><span class="p">,</span>
-            <span class="n">ns</span><span class="p">,</span>
-            <span class="n">tmpdir</span><span class="p">,</span>
-            <span class="n">kubectl_path</span><span class="o">=</span><span class="n">kubectl_path</span><span class="p">,</span>
+    <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">tmpdir</span><span class="p">:</span>
+        <span class="n">flow_yaml</span> <span class="o">=</span> <span class="n">_extend_flow_yaml</span><span class="p">(</span>
+            <span class="n">flow_yaml</span><span class="p">,</span> <span class="n">tmpdir</span><span class="p">,</span> <span class="n">secured</span><span class="p">,</span> <span class="n">admin_emails</span><span class="p">,</span> <span class="n">user_emails</span>
         <span class="p">)</span>
-        <span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="n">gateway_host</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">gateway_port</span><span class="p">)</span>
+        <span class="n">env_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">,</span> <span class="s1">&#39;dot.env&#39;</span><span class="p">)</span>
+        <span class="n">write_env_file</span><span class="p">(</span><span class="n">env_file</span><span class="p">,</span> <span class="n">env_dict</span><span class="p">)</span>
 
-    <span class="c1"># delete the env file</span>
-    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">env_file</span><span class="p">):</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">env_file</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">deployment_type</span> <span class="o">==</span> <span class="s1">&#39;remote&#39;</span><span class="p">:</span>
+            <span class="n">flow</span> <span class="o">=</span> <span class="n">deploy_wolf</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">flow_yaml</span><span class="p">,</span> <span class="n">env_file</span><span class="o">=</span><span class="n">env_file</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">ns</span><span class="p">)</span>
+            <span class="n">host</span> <span class="o">=</span> <span class="n">flow</span><span class="o">.</span><span class="n">gateway</span>
+            <span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">app_instance</span><span class="o">.</span><span class="n">output_modality</span> <span class="o">==</span> <span class="s1">&#39;image&#39;</span><span class="p">:</span>
-        <span class="n">index</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">index</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">]</span>
-    <span class="k">elif</span> <span class="n">app_instance</span><span class="o">.</span><span class="n">output_modality</span> <span class="o">==</span> <span class="s1">&#39;text&#39;</span><span class="p">:</span>
-        <span class="n">index</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">index</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">text</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">]</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;▶ indexing </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">index</span><span class="p">)</span><span class="si">}</span><span class="s1"> documents&#39;</span><span class="p">)</span>
-    <span class="n">request_size</span> <span class="o">=</span> <span class="mi">4</span>
+            <span class="c1"># Dump the flow ID and gateway to keep track</span>
+            <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">user</span><span class="p">(</span><span class="n">JC_SECRET</span><span class="p">))</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">user</span><span class="p">(</span><span class="n">JC_SECRET</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+                <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">({</span><span class="s1">&#39;flow_id&#39;</span><span class="p">:</span> <span class="n">flow</span><span class="o">.</span><span class="n">flow_id</span><span class="p">,</span> <span class="s1">&#39;gateway&#39;</span><span class="p">:</span> <span class="n">host</span><span class="p">},</span> <span class="n">fp</span><span class="p">)</span>
 
-    <span class="c1"># double check that flow is up and running - should be done by wolf/core in the future</span>
-    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
-                <span class="s1">&#39;/index&#39;</span><span class="p">,</span>
-                <span class="n">inputs</span><span class="o">=</span><span class="n">DocumentArray</span><span class="p">(),</span>
+            <span class="c1"># host &amp; port</span>
+            <span class="n">gateway_host</span> <span class="o">=</span> <span class="s1">&#39;remote&#39;</span>
+            <span class="n">gateway_port</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">gateway_host_internal</span> <span class="o">=</span> <span class="n">host</span>
+            <span class="n">gateway_port_internal</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Since host contains protocol</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">dotenv</span> <span class="kn">import</span> <span class="n">load_dotenv</span>
+
+            <span class="n">load_dotenv</span><span class="p">(</span><span class="n">env_file</span><span class="p">,</span> <span class="n">override</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">Flow</span><span class="o">.</span><span class="n">load_config</span><span class="p">(</span><span class="n">flow_yaml</span><span class="p">)</span>
+            <span class="p">(</span>
+                <span class="n">gateway_host</span><span class="p">,</span>
+                <span class="n">gateway_port</span><span class="p">,</span>
+                <span class="n">gateway_host_internal</span><span class="p">,</span>
+                <span class="n">gateway_port_internal</span><span class="p">,</span>
+            <span class="p">)</span> <span class="o">=</span> <span class="n">deploy_k8s</span><span class="p">(</span>
+                <span class="n">f</span><span class="p">,</span>
+                <span class="n">ns</span><span class="p">,</span>
+                <span class="n">tmpdir</span><span class="p">,</span>
+                <span class="n">kubectl_path</span><span class="o">=</span><span class="n">kubectl_path</span><span class="p">,</span>
             <span class="p">)</span>
-            <span class="k">break</span>
-        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">if</span> <span class="s1">&#39;NOW_CI_RUN&#39;</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
-                <span class="kn">import</span> <span class="nn">traceback</span>
+            <span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="n">gateway_host</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">gateway_port</span><span class="p">)</span>
 
-                <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
-                <span class="nb">print</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span>
-            <span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">env_file</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">env_file</span><span class="p">)</span>
 
-    <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s1">&#39;/index&#39;</span><span class="p">,</span> <span class="n">request_size</span><span class="o">=</span><span class="n">request_size</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="n">index</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;⭐ Success - your data is indexed&#39;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">gateway_host</span><span class="p">,</span> <span class="n">gateway_port</span><span class="p">,</span> <span class="n">gateway_host_internal</span><span class="p">,</span> <span class="n">gateway_port_internal</span></div>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">client</span><span class="p">,</span>
+        <span class="n">gateway_host</span><span class="p">,</span>
+        <span class="n">gateway_port</span><span class="p">,</span>
+        <span class="n">gateway_host_internal</span><span class="p">,</span>
+        <span class="n">gateway_port_internal</span><span class="p">,</span>
+    <span class="p">)</span></div>
 </pre></div>
                 </article>
             </div>
@@ -469,7 +478,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Jul 07, 2022.
+                            Last updated on Sep 12, 2022.
                         </div>
                     </div>
                     <div class="right-details">
