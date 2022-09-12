@@ -154,9 +154,8 @@ class NOWPreprocessor(Executor):
         """
         if docs is None or len(docs) == 0:
             return DocumentArray()
-        is_indexing = parameters.get('is_indexing', True)
         self._set_user_input(parameters=parameters)
-        return self._preprocess_maybe_cloud_download(docs=docs, is_indexing=is_indexing)
+        return self._preprocess_maybe_cloud_download(docs=docs, is_indexing=True)
 
     @secure_request(on='/search', level=SecurityLevel.USER)
     def search(
