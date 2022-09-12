@@ -16,4 +16,3 @@ sphinx-design
 sphinx-inline-tabs
 # sphinx-multiversion
 git+https://github.com/Holzhaus/sphinx-multiversion.git
-git+https://github.com/Dzordzu/sphinx-markdown-tables.git@markdown-patch
