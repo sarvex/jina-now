@@ -9,7 +9,7 @@ from now import run_backend, run_bff_playground
 from now.cloud_manager import setup_cluster
 from now.constants import DOCKER_BFF_PLAYGROUND_TAG, JC_SECRET, SURVEY_LINK
 from now.deployment.deployment import cmd, list_all_wolf, status_wolf, terminate_wolf
-from now.dialog import configure_user_input
+from now.dialog import configure_app, configure_user_input
 from now.log import yaspin_extended
 from now.system_information import get_system_state
 from now.utils import maybe_prompt_user, sigmap
@@ -21,7 +21,7 @@ def get_remote_flow_details():
     return flow_details
 
 
-def stop_now(user_input, contexts, active_context, **kwargs):
+def stop_now(app_instance, contexts, active_context, **kwargs):
     choices = _get_context_names(contexts, active_context)
     # Add remote Flow if it exists
     if os.path.exists(user(JC_SECRET)):
@@ -90,7 +90,7 @@ def stop_now(user_input, contexts, active_context, **kwargs):
             cmd(f'{kwargs["kubectl_path"]} delete ns nowapi')
             spinner.ok('💀')
         cowsay.cow(f'nowapi namespace removed from {cluster}')
-    user_input.app_instance.cleanup()
+    app_instance.cleanup(app_config=dict())
 
 
 def get_task(kwargs):
@@ -100,8 +100,8 @@ def get_task(kwargs):
     raise Exception('kwargs do not contain a task')
 
 
-def start_now(user_input, **kwargs):
-    app_instance = user_input.app_instance
+def start_now(app_instance, **kwargs):
+    user_input = configure_user_input(app_instance, **kwargs)
     setup_cluster(user_input, **kwargs)
     (
         gateway_host,
@@ -157,17 +157,18 @@ def start_now(user_input, **kwargs):
 def run_k8s(os_type: str = 'linux', arch: str = 'x86_64', **kwargs):
     contexts, active_context = get_system_state(**kwargs)
     task = get_task(kwargs)
-    user_input = configure_user_input(
-        contexts=contexts,
-        active_context=active_context,
-        os_type=os_type,
-        arch=arch,
-        **kwargs,
-    )
+    app = configure_app(**kwargs)
     if task == 'start':
-        return start_now(user_input, **kwargs)
+        return start_now(
+            app,
+            contexts=contexts,
+            active_context=active_context,
+            os_type=os_type,
+            arch=arch,
+            **kwargs,
+        )
     elif task == 'stop':
-        return stop_now(user_input, contexts, active_context, **kwargs)
+        return stop_now(app, contexts, active_context, **kwargs)
     elif task == 'survey':
         import webbrowser
 
