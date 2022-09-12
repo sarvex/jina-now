@@ -365,6 +365,18 @@
 </dl>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="now.apps.text_to_text_and_image.app.TextToTextAndImage.options">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">options</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.DialogOptions" title="now.now_dataclasses.DialogOptions"><span class="pre">now.now_dataclasses.DialogOptions</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#now.apps.text_to_text_and_image.app.TextToTextAndImage.options" title="Permalink to this definition">#</a></dt>
+<dd><p>Get the options which are used to configure the app. Base class should override this function and
+return the list of their option. Check <code class="docutils literal notranslate"><span class="pre">DialogOptions</span></code> for the format of the options
+On CLI the user will get a prompt and at the storefront, a GUI will be generated accordingly.
+Example:
+<code class="docutils literal notranslate"><span class="pre">return</span> <span class="pre">[options.your_custom_options`]</span></code>
+:rtype: <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.DialogOptions" title="now.now_dataclasses.DialogOptions"><code class="xref py py-class docutils literal notranslate"><span class="pre">DialogOptions</span></code></a>]
+:return: List[DialogOptions]</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="now.apps.text_to_text_and_image.app.TextToTextAndImage.preprocess">
 <span class="sig-name descname"><span class="pre">preprocess</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">da</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_indexing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/now/apps/text_to_text_and_image/app/#TextToTextAndImage.preprocess"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#now.apps.text_to_text_and_image.app.TextToTextAndImage.preprocess" title="Permalink to this definition">#</a></dt>

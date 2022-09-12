@@ -302,32 +302,35 @@
 
 
 <div class="viewcode-block" id="build_finetuning_dataset"><a class="viewcode-back" href="../../../../api/now.finetuning.dataset/#now.finetuning.dataset.build_finetuning_dataset">[docs]</a><span class="k">def</span> <span class="nf">build_finetuning_dataset</span><span class="p">(</span>
-    <span class="n">dataset</span><span class="p">:</span> <span class="n">DocumentArray</span><span class="p">,</span> <span class="n">finetune_setting</span><span class="p">:</span> <span class="n">FinetuneSettings</span>
+    <span class="n">dataset</span><span class="p">:</span> <span class="n">DocumentArray</span><span class="p">,</span> <span class="n">finetune_settings</span><span class="p">:</span> <span class="n">FinetuneSettings</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FinetuneDataset</span><span class="p">:</span>
     <span class="n">ds</span> <span class="o">=</span> <span class="n">FinetuneDataset</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">dataset</span><span class="p">)</span>
 
     <span class="n">split_index</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span>
-        <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span> <span class="o">*</span> <span class="n">finetune_setting</span><span class="o">.</span><span class="n">train_val_split_ration</span><span class="p">),</span>
+        <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span> <span class="o">*</span> <span class="n">finetune_settings</span><span class="o">.</span><span class="n">train_val_split_ration</span><span class="p">),</span>
         <span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span> <span class="o">-</span> <span class="n">MAX_VAL_SET_SIZE</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_create_finetune_subset</span><span class="p">(</span><span class="n">subset</span><span class="p">:</span> <span class="n">DocumentArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DocumentArray</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">DocumentArray</span><span class="p">(</span>
-            <span class="p">[</span>
-                <span class="n">Document</span><span class="p">(</span>
-                    <span class="n">tensor</span><span class="o">=</span><span class="n">doc</span><span class="o">.</span><span class="n">embedding</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float32&#39;</span><span class="p">),</span>
-                    <span class="n">tags</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;finetuner_label&#39;</span><span class="p">:</span> <span class="n">doc</span><span class="o">.</span><span class="n">tags</span><span class="p">[</span><span class="s1">&#39;finetuner_label&#39;</span><span class="p">]},</span>
-                <span class="p">)</span>
-                <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">subset</span>
-            <span class="p">]</span>
-        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">finetune_settings</span><span class="o">.</span><span class="n">add_embeddings</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">DocumentArray</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="n">Document</span><span class="p">(</span>
+                        <span class="n">tensor</span><span class="o">=</span><span class="n">doc</span><span class="o">.</span><span class="n">embedding</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float32&#39;</span><span class="p">),</span>
+                        <span class="n">tags</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;finetuner_label&#39;</span><span class="p">:</span> <span class="n">doc</span><span class="o">.</span><span class="n">tags</span><span class="p">[</span><span class="s1">&#39;finetuner_label&#39;</span><span class="p">]},</span>
+                    <span class="p">)</span>
+                    <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">subset</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">subset</span>
 
     <span class="n">ds</span><span class="o">.</span><span class="n">train</span> <span class="o">=</span> <span class="n">_create_finetune_subset</span><span class="p">(</span><span class="n">dataset</span><span class="p">[:</span><span class="n">split_index</span><span class="p">])</span>
     <span class="n">ds</span><span class="o">.</span><span class="n">val</span> <span class="o">=</span> <span class="n">_create_finetune_subset</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="n">split_index</span><span class="p">:])</span>
 
     <span class="n">ds</span><span class="o">.</span><span class="n">val_index</span> <span class="o">=</span> <span class="n">_create_finetune_subset</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="n">split_index</span><span class="p">:])</span>
     <span class="n">ds</span><span class="o">.</span><span class="n">val_query</span> <span class="o">=</span> <span class="n">_create_finetune_subset</span><span class="p">(</span>
-        <span class="n">dataset</span><span class="p">[</span><span class="n">split_index</span><span class="p">:]</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="n">finetune_setting</span><span class="o">.</span><span class="n">num_val_queries</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">_SEED</span><span class="p">)</span>
+        <span class="n">dataset</span><span class="p">[</span><span class="n">split_index</span><span class="p">:]</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="n">finetune_settings</span><span class="o">.</span><span class="n">num_val_queries</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">_SEED</span><span class="p">)</span>
     <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">ds</span></div>

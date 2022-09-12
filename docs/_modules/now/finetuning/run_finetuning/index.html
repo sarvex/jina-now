@@ -287,6 +287,7 @@
 <span class="kn">from</span> <span class="nn">finetuner.callback</span> <span class="kn">import</span> <span class="n">EarlyStopping</span><span class="p">,</span> <span class="n">EvaluationCallback</span>
 
 <span class="kn">from</span> <span class="nn">now.apps.base.app</span> <span class="kn">import</span> <span class="n">JinaNOWApp</span>
+<span class="kn">from</span> <span class="nn">now.constants</span> <span class="kn">import</span> <span class="n">ModelNames</span>
 <span class="kn">from</span> <span class="nn">now.deployment.deployment</span> <span class="kn">import</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">terminate_wolf</span>
 <span class="kn">from</span> <span class="nn">now.deployment.flow</span> <span class="kn">import</span> <span class="n">deploy_flow</span>
 <span class="kn">from</span> <span class="nn">now.finetuning.dataset</span> <span class="kn">import</span> <span class="n">FinetuneDataset</span><span class="p">,</span> <span class="n">build_finetuning_dataset</span>
@@ -381,16 +382,19 @@
     <span class="n">finetuner</span><span class="o">.</span><span class="n">login</span><span class="p">()</span>
 
     <span class="n">callbacks</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="n">EvaluationCallback</span><span class="p">(</span>
-            <span class="n">finetune_ds</span><span class="o">.</span><span class="n">val_query</span><span class="p">,</span>
-            <span class="n">finetune_ds</span><span class="o">.</span><span class="n">val_index</span><span class="p">,</span>
-            <span class="n">limit</span><span class="o">=</span><span class="n">finetune_settings</span><span class="o">.</span><span class="n">eval_match_limit</span><span class="p">,</span>
-        <span class="p">),</span>
         <span class="n">EarlyStopping</span><span class="p">(</span>
             <span class="n">monitor</span><span class="o">=</span><span class="s1">&#39;ndcg&#39;</span><span class="p">,</span>
             <span class="n">patience</span><span class="o">=</span><span class="n">finetune_settings</span><span class="o">.</span><span class="n">early_stopping_patience</span><span class="p">,</span>
         <span class="p">),</span>
     <span class="p">]</span>
+    <span class="k">if</span> <span class="n">finetune_settings</span><span class="o">.</span><span class="n">model_name</span> <span class="o">!=</span> <span class="n">ModelNames</span><span class="o">.</span><span class="n">CLIP</span><span class="p">:</span>
+        <span class="n">callbacks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">EvaluationCallback</span><span class="p">(</span>
+                <span class="n">finetune_ds</span><span class="o">.</span><span class="n">val_query</span><span class="p">,</span>
+                <span class="n">finetune_ds</span><span class="o">.</span><span class="n">val_index</span><span class="p">,</span>
+                <span class="n">limit</span><span class="o">=</span><span class="n">finetune_settings</span><span class="o">.</span><span class="n">eval_match_limit</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
     <span class="k">if</span> <span class="s1">&#39;NOW_CI_RUN&#39;</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
         <span class="n">experiment_name</span> <span class="o">=</span> <span class="s1">&#39;now-ci-finetuning-&#39;</span> <span class="o">+</span> <span class="n">_get_random_string</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>

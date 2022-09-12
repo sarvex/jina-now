@@ -351,9 +351,10 @@
 <span class="sd">    containing text data. Fields for indexing should be specified in the `UserInput`.</span>
 
 <span class="sd">    :param da: A `DocumentArray` containing nested chunks.</span>
+<span class="sd">    :param user_input: The configured user input.</span>
 <span class="sd">    :return: A `DocumentArray` with `Document`s containing text and image chunks.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">fields</span> <span class="o">=</span> <span class="n">user_input</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">indexer_scope</span>
+    <span class="n">fields</span> <span class="o">=</span> <span class="n">user_input</span><span class="o">.</span><span class="n">task_config</span><span class="o">.</span><span class="n">indexer_scope</span>
     <span class="n">transformed_da</span> <span class="o">=</span> <span class="n">transform_es_data</span><span class="p">(</span><span class="n">da</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">DocumentArray</span><span class="p">(</span>
         <span class="p">[</span>
