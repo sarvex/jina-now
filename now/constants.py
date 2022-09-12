@@ -5,10 +5,10 @@ from now.utils import BetterEnum
 # DEMO_DATASET_DOCARRAY_VERSION = docarray_version
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.123-filtering-playground-6'
-NOW_PREPROCESSOR_VERSION = '0.0.82-test-preprocessing'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.123-adapt-playground-7'
+NOW_PREPROCESSOR_VERSION = '0.0.83-finetuning5'
 NOW_AUTH_EXECUTOR_VERSION = '0.0.5-auth-exec-4'
-NOW_ANNLITE_INDEXER_VERSION = '0.0.3-annlite-add-tags-2'
+NOW_ANNLITE_INDEXER_VERSION = '0.0.3-annlite-adapt-playground-5'
 
 
 class Modalities(BetterEnum):
@@ -41,6 +41,12 @@ class Qualities(BetterEnum):
     MEDIUM = 'medium'
     GOOD = 'good'
     EXCELLENT = 'excellent'
+
+
+class ModelNames(BetterEnum):
+    MLP = 'mlp'
+    SBERT = 'sentence-transformers/msmarco-distilbert-base-v3'
+    CLIP = 'openai/clip-vit-base-patch32'
 
 
 BASE_STORAGE_URL = (

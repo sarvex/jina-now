@@ -28,13 +28,15 @@ def test_data_generation(get_nest_config_path):
     number_of_uris = 66  # pre-computed
     data = DataBuilder(dataset=dataset, config=task).build()
     assert len(data) == 2
-    text_dataset = data['text_encoder']
+    text_dataset, encoder_type = data[0]
+    assert encoder_type == 'text-to-text'
     # for queries, we do powerset and permutations for 2 fields - >
     # 4 combinations. plus number of target values. In the end we,
     # should get (5 * initial length) examples.
     assert len(text_dataset) == 5 * initial_length
     assert text_dataset[0].text
-    vision_datset = data['vision_encoder']
+    vision_datset, encoder_type = data[1]
+    assert encoder_type == 'text-to-image'
     # for queries, we generate powerset of 2 fields -> 3 combinations
     # and we do product with number of uris for image data.
     # in the end we should get (3 * number of uris) examples.

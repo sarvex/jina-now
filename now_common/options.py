@@ -15,6 +15,7 @@ from kubernetes import client, config
 
 from now.constants import AVAILABLE_DATASET, Apps, DatasetTypes, Qualities
 from now.deployment.deployment import cmd
+from now.dialog import AVAILABLE_SOON
 from now.log import time_profiler, yaspin_extended
 from now.now_dataclasses import DialogOptions, UserInput
 from now.thirdparty.PyInquirer import Separator
@@ -49,14 +50,16 @@ APP = DialogOptions(
             'name': '🥁 ▶ 🥁 music to music search',
             'value': Apps.MUSIC_TO_MUSIC,
         },
+        {
+            'name': '📝 ▶ 📝+🏞 text to text+image search',
+            'value': Apps.TEXT_TO_TEXT_AND_IMAGE,
+            'disabled': AVAILABLE_SOON,
+        },
     ],
     prompt_message='What sort of search engine would you like to build?',
     prompt_type='list',
     is_terminal_command=True,
     description='What sort of search engine would you like to build?',
-    post_func=lambda user_input, **kwargs: _construct_app(
-        kwargs['app'], user_input, **kwargs
-    ),
 )
 
 # ------------------------------------ #
@@ -270,16 +273,11 @@ def _check_if_namespace_exist():
     return 'nowapi' in [item.metadata.name for item in v1.list_namespace().items]
 
 
-def _construct_app(jina_app: str, user_input: UserInput = None, **kwargs):
-    app_instance = getattr(
-        importlib.import_module(f'now.apps.{jina_app}.app'),
-        f'{to_camel_case(jina_app)}',
+def _construct_app(app_name: str):
+    return getattr(
+        importlib.import_module(f'now.apps.{app_name}.app'),
+        f'{to_camel_case(app_name)}',
     )()
-
-    if user_input:
-        user_input.app_instance = app_instance
-
-    return app_instance
 
 
 @time_profiler

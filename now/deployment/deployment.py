@@ -1,8 +1,8 @@
+import asyncio
 import subprocess
 import tempfile
 
 from jcloud.flow import CloudFlow
-from jina.helper import get_or_reuse_loop
 
 
 def deploy_wolf(path: str, name: str, env_file: str = None):
@@ -14,12 +14,12 @@ def terminate_wolf(flow_id: str):
 
 
 def status_wolf(flow_id):
-    loop = get_or_reuse_loop()
+    loop = asyncio.get_event_loop()
     return loop.run_until_complete(CloudFlow(flow_id=flow_id).status)
 
 
 def list_all_wolf(status=None):
-    loop = get_or_reuse_loop()
+    loop = asyncio.get_event_loop()
     flows = loop.run_until_complete(CloudFlow().list_all(status=status))
     if flows is None:
         flows = []

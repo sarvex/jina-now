@@ -7,7 +7,7 @@ from docarray import DocumentArray
 from now.constants import Apps
 from now.now_dataclasses import UserInput
 
-DEFAULT_EPOCHS = 5
+DEFAULT_EPOCHS = 50
 DEFAULT_HIDDEN_SIZES = (128,)
 DEFAULT_NUM_VAL_QUERIES = 50
 DEFAULT_FINETUNED_EMBEDDING_SIZE = 128

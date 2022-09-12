@@ -97,9 +97,9 @@ class NOWAnnLiteIndexer(Executor):
 
         if os.path.isfile(os.path.join(self.workspace, 'tags.pkl')):
             with open(os.path.join(self.workspace, 'tags.pkl'), 'rb') as f:
-                self.tags_values = pickle.load(f)
+                self.doc_id_tags = pickle.load(f)
         else:
-            self.tags_values = defaultdict(set)
+            self.doc_id_tags = defaultdict(dict)
 
     def extend_inmemory_docs(self, docs):
         """Extend the in-memory DocumentArray with new documents"""
@@ -138,8 +138,7 @@ class NOWAnnLiteIndexer(Executor):
         self.extend_inmemory_docs(flat_docs)
 
         for doc in flat_docs:
-            for tag, value in doc.tags.items():
-                self.tags_values[tag].add(value)
+            self.doc_id_tags[doc.id] = doc.tags
 
         self.save_tags()
         return DocumentArray([])
@@ -159,11 +158,13 @@ class NOWAnnLiteIndexer(Executor):
         one document containg a dictionary in tags like the following:
         {'tags':{'color':['red', 'blue'], 'greeting':['hello']}}
         """
-        for tag, value in self.tags_values.items():
-            self.tags_values[tag] = list(value)
-        return DocumentArray(
-            [Document(text='tags', tags={'tags': dict(self.tags_values)})]
-        )
+        tag_values = defaultdict(set)
+        for id, tags in self.doc_id_tags.items():
+            for tag, value in tags.items():
+                tag_values[tag].add(value)
+        for tag, value in tag_values.items():
+            tag_values[tag] = list(value)
+        return DocumentArray([Document(text='tags', tags={'tags': dict(tag_values)})])
 
     @secure_request(on='/update', level=SecurityLevel.USER)
     def update(
@@ -189,14 +190,8 @@ class NOWAnnLiteIndexer(Executor):
         self.update_inmemory_docs(flat_docs)
         self._index.update(flat_docs)
 
-        # reconstruct tags_values
-
-        self.tags_values = defaultdict(set)
-        for cell_id in range(self._index.n_cells):
-            for docs in self._index.documents_generator(cell_id, batch_size=10240):
-                for doc in docs:
-                    for tag, value in doc.tags.items():
-                        self.tags_values[tag].add(value)
+        for doc in flat_docs:
+            self.doc_id_tags[doc.id] = doc.tags
 
         self.save_tags()
 
@@ -212,13 +207,7 @@ class NOWAnnLiteIndexer(Executor):
             self.delete_inmemory_docs(filtered_docs)
             self._index.delete(filtered_docs)
             for doc in filtered_docs:
-                for tag, value in doc.tags.items():
-                    if value in self.tags_values[tag]:
-                        self.tags_values[tag].remove(value)
-
-            updated_dict = {k: v for k, v in self.tags_values.items() if len(v) > 0}
-            self.tags_values = updated_dict
-
+                self.doc_id_tags.pop(doc.id, None)
             self.save_tags()
         return DocumentArray()
 
@@ -320,4 +309,4 @@ class NOWAnnLiteIndexer(Executor):
 
     def save_tags(self):
         with open(os.path.join(self.workspace, 'tags.pkl'), 'wb') as f:
-            pickle.dump(self.tags_values, f)
+            pickle.dump(self.doc_id_tags, f)

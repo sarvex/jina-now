@@ -288,7 +288,9 @@ def test_get_tags(tmpdir):
         assert response[0].text == 'tags'
         assert 'tags' in response[0].tags
         assert 'color' in response[0].tags['tags']
-        assert response[0].tags['tags']['color'] == ['blue', 'red']
+        assert response[0].tags['tags']['color'] == ['red', 'blue'] or response[0].tags[
+            'tags'
+        ]['color'] == ['blue', 'red']
 
 
 def test_delete_tags(tmpdir):
