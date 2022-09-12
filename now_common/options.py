@@ -15,6 +15,7 @@ from kubernetes import client, config
 
 from now.constants import AVAILABLE_DATASET, Apps, DatasetTypes, Qualities
 from now.deployment.deployment import cmd
+from now.dialog import AVAILABLE_SOON
 from now.log import time_profiler, yaspin_extended
 from now.now_dataclasses import DialogOptions, UserInput
 from now.thirdparty.PyInquirer import Separator
@@ -48,6 +49,11 @@ APP = DialogOptions(
         {
             'name': '🥁 ▶ 🥁 music to music search',
             'value': Apps.MUSIC_TO_MUSIC,
+        },
+        {
+            'name': '📝 ▶ 📝+🏞 text to text+image search',
+            'value': Apps.TEXT_TO_TEXT_AND_IMAGE,
+            'disabled': AVAILABLE_SOON,
         },
     ],
     prompt_message='What sort of search engine would you like to build?',

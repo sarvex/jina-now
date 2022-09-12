@@ -37,7 +37,7 @@ class ImageNormalizer(GeneratorFunction):
         normalized_imgs = DocumentArray()
         for field in self._scope:
             normalized_imgs.extend([Document(uri=uri) for uri in document[field]])
-        normalized_imgs.apply(self._process, show_progress=True)
+        normalized_imgs.apply(self._process)
         return normalized_imgs
 
     @staticmethod
