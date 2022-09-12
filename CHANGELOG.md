@@ -22,6 +22,7 @@
 
 
 
+
 <a name=release-note-0-0-7></a>
 ## Release Note (`0.0.7`)
 
@@ -731,4 +732,48 @@
  - [[```c803f18c```](https://github.com/jina-ai/now/commit/c803f18c46d828e8a2ae08a797a62c77c3a23638)] __-__ Refactor dialog app options (#459) (*Mohammad Kalim Akram*)
  - [[```e80498ff```](https://github.com/jina-ai/now/commit/e80498fff7948772bbdf2eb100fe25382667691f)] __-__ smaller retention days to save budget (*Han Xiao*)
  - [[```6b477ab8```](https://github.com/jina-ai/now/commit/6b477ab81b986891ba745bd33fd61cc1969d55e6)] __-__ __version__: the next version will be 0.0.28 (*Jina Dev Bot*)
+
+<a name=release-note-0-0-29></a>
+## Release Note (`0.0.29`)
+
+> Release time: 2022-09-12 14:25:40
+
+
+
+🙇 We'd like to thank all contributors for this new release! In particular,
+ Florian Hönicke,  Saba Sturua,  Joschka Braun,  Aziz Belaweid,  Mohammad Kalim Akram,  Jina Dev Bot,  🙇
+
+
+### 🆕 New Features
+
+ - [[```5c844174```](https://github.com/jina-ai/now/commit/5c844174355510559296a742da28163ceeebdf04)] __-__ nest setup (#472) (*Saba Sturua*)
+ - [[```d84cdb1a```](https://github.com/jina-ai/now/commit/d84cdb1aa2825ac97670ea8a693f7c3df0c9c22a)] __-__ improve code coverage (#492) (*Florian Hönicke*)
+ - [[```10edb844```](https://github.com/jina-ai/now/commit/10edb844055c01832b291dfc4a6463d27c7b1f71)] __-__ preprocessor gets tags (#490) (*Florian Hönicke*)
+ - [[```dea53bfc```](https://github.com/jina-ai/now/commit/dea53bfc89bb27f9543aefda70c25e4a1771cd0b)] __-__ AnnLite indexer on ci + secure + only AnnLite indexer + replace CaS CLIP executor (#487) (*Joschka Braun*)
+ - [[```26521cde```](https://github.com/jina-ai/now/commit/26521cdee7f8975928750d5376b2f3a33f63ef89)] __-__ adapt finetuning to nest (#470) (*Saba Sturua*)
+ - [[```36f94749```](https://github.com/jina-ai/now/commit/36f94749fa98742a3a14001a168c97bc65bdabbe)] __-__ set jina log level of gateway to debug (#477) (*Joschka Braun*)
+ - [[```a26439b4```](https://github.com/jina-ai/now/commit/a26439b421bda23563c1eef69e2a186254b3644f)] __-__ index delete by filter (#476) (*Florian Hönicke*)
+ - [[```64507fcb```](https://github.com/jina-ai/now/commit/64507fcb15fef12f83d4355a1eaa82e920881f23)] __-__ add list endpoint (#471) (*Florian Hönicke*)
+
+### 🐞 Bug fixes
+
+ - [[```ffa74511```](https://github.com/jina-ai/now/commit/ffa7451112d4b62732cdb8259ebe659b01a551d2)] __-__ missing arg in music app (#500) (*Joschka Braun*)
+ - [[```715152c3```](https://github.com/jina-ai/now/commit/715152c30dd883839319a538eaae04f1b0557c59)] __-__ no email ignore error (#496) (*Florian Hönicke*)
+ - [[```9a6ebcf4```](https://github.com/jina-ai/now/commit/9a6ebcf45b771fc84ec20af58921dc872d5d10fc)] __-__ docs build (#497) (*Aziz Belaweid*)
+ - [[```6debb964```](https://github.com/jina-ai/now/commit/6debb964fbc70bb2b3d1dbf3e25348bafb6e80e7)] __-__ add api keys (#494) (*Florian Hönicke*)
+ - [[```f116de09```](https://github.com/jina-ai/now/commit/f116de0978cbe6f3eee49845c0e923fc50e6391b)] __-__ remove docarray indexer (#491) (*Joschka Braun*)
+ - [[```cbbfc1a7```](https://github.com/jina-ai/now/commit/cbbfc1a75ab48aa6127e7f4d07a8cd57ddc9a151)] __-__ update cli parser (#483) (*Mohammad Kalim Akram*)
+ - [[```d94338eb```](https://github.com/jina-ai/now/commit/d94338ebdab27f9b66ad39c715a865fa415441f0)] __-__ secure preprocessor (#465) (*Joschka Braun*)
+
+### 🧼 Code Refactoring
+
+ - [[```28a45303```](https://github.com/jina-ai/now/commit/28a45303e04206f3d76f806ccde3a2f3915a663a)] __-__ remove security executor deployment (#495) (*Florian Hönicke*)
+
+### 🏁 Unit Test and CICD
+
+ - [[```e44dee1c```](https://github.com/jina-ai/now/commit/e44dee1c0f5568987ae0c2d664b20514f12eba49)] __-__ preprocessing (#493) (*Florian Hönicke*)
+
+### 🍹 Other Improvements
+
+ - [[```0719b450```](https://github.com/jina-ai/now/commit/0719b45061e26f33a74dde5102e5a354fd189577)] __-__ __version__: the next version will be 0.0.29 (*Jina Dev Bot*)
 
