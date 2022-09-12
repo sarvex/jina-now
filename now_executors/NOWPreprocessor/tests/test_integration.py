@@ -10,26 +10,23 @@ from now.now_dataclasses import UserInput
 
 
 def test_executor_persistence():
-    e = NOWPreprocessor('image_to_image', metas={'workspace': './workspace'})
+    e = NOWPreprocessor('text_to_text', metas={'workspace': './workspace'})
     user_input = UserInput()
     text_docs = DocumentArray(
         [
             Document(text='test'),
-            Document(uri='test.jpg'),
-            # chunks=DocumentArray([Document(uri='test.jpg'), Document(text='hi')])
-            # ),
+            Document(
+                chunks=DocumentArray([Document(uri='test.jpg'), Document(text='hi')])
+            ),
         ]
     )
 
-    ret = e.index(
+    e.index(
         docs=text_docs,
         parameters={'user_input': user_input.__dict__, 'is_indexing': False},
     )
     with open(e.user_input_path, 'r') as fp:
         json.load(fp)
-
-
-# def test_text_image_encoding():
 
 
 def test_text_to_video():
