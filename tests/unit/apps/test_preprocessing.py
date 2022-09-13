@@ -95,7 +95,7 @@ def test_nested_preprocessing(is_indexing, get_nest_config_path):
     user_input.data = DemoDatasets.ES_ONLINE_SHOP_50
     user_input.quality = None
     app = TextToTextAndImage()
-    app._read_task_config(task_config_path=get_nest_config_path, user_input=user_input)
+    app._read_task_config(task_config_path=get_task_config_path, user_input=user_input)
 
     if is_indexing:
         da = DocumentArray(load_data(app, user_input)[0])
