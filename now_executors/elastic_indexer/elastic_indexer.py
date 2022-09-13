@@ -6,7 +6,7 @@ from docarray import Document, DocumentArray
 from docarray.score import NamedScore
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
-from jina import Executor, Flow, requests
+from jina import Executor, requests
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 metrics_mapping = {
@@ -31,8 +31,9 @@ MAPPING = {
 class ElasticIndexer(Executor):
     def __init__(
         self,
-        hosts: Union[str, List[Union[
-                str, Mapping[str, Union[str, int]]]], None] = 'http://localhost:9200',
+        hosts: Union[
+            str, List[Union[str, Mapping[str, Union[str, int]]]], None
+        ] = 'http://localhost:9200',
         es_config: Optional[Dict[str, Any]] = {},
         metric: str = 'cosine',
         index_name: str = 'nestxxx',
@@ -113,7 +114,9 @@ class ElasticIndexer(Executor):
         # if query has embeddings then search using hybrid search, otherwise only bm25
         if query_embeddings:
             for k, v in query_embeddings.items():
-                source += f"+ 0.5*{metrics_mapping[self.metric]}(params.query_{k}, '{k}')"
+                source += (
+                    f"+ 0.5*{metrics_mapping[self.metric]}(params.query_{k}, '{k}')"
+                )
                 params[f'query_{k}'] = v
             source += "+ 1.0"
         query_json = {
@@ -121,10 +124,7 @@ class ElasticIndexer(Executor):
                 "query": {
                     "bool": {},
                 },
-                "script": {
-                    "source": source,
-                    "params": params
-                },
+                "script": {"source": source, "params": params},
             }
         }
         return query_json
