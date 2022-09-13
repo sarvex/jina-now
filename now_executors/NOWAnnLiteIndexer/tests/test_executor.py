@@ -408,7 +408,9 @@ def test_update_tags(tmpdir):
         assert 'color' in response[0].tags['tags']
         assert 'new_tag' in response[0].tags['tags']
         assert 'greeting' not in response[0].tags['tags']
-        assert response[0].tags['tags']['color'] == ['red', 'blue']
+        assert response[0].tags['tags']['color'] == ['red', 'blue'] or response[0].tags[
+            'tags'
+        ]['color'] == ['blue', 'red']
         assert response[0].tags['tags']['new_tag'] == ['new_value']
 
 

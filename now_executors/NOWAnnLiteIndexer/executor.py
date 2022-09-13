@@ -101,19 +101,26 @@ class NOWAnnLiteIndexer(Executor):
         else:
             self.doc_id_tags = defaultdict(dict)
 
-    def extend_inmemory_docs(self, docs):
+    def extend_inmemory_docs_and_tags(self, docs):
         """Extend the in-memory DocumentArray with new documents"""
-        self.da.extend(Document(id=d.id, uri=d.uri, tags=d.tags) for d in docs)
+        for d in docs:
+            self.da.append(Document(id=d.id, uri=d.uri, tags=d.tags))
+            self.doc_id_tags[d.id] = d.tags
+        self.save_tags()
 
-    def update_inmemory_docs(self, docs):
+    def update_inmemory_docs_and_tags(self, docs):
         """Update documents in the in-memory DocumentArray"""
         for d in docs:
             self.da[d.id] = d
+            self.doc_id_tags[d.id] = d.tags
+        self.save_tags()
 
-    def delete_inmemory_docs(self, docs):
+    def delete_inmemory_docs_and_tags(self, docs):
         """Delete documents from the in-memory DocumentArray"""
         for d in docs:
             del self.da[d.id]
+            self.doc_id_tags.pop(d.id, None)
+        self.save_tags()
 
     @secure_request(on='/index', level=SecurityLevel.USER)
     def index(
@@ -135,12 +142,8 @@ class NOWAnnLiteIndexer(Executor):
             return
 
         self._index.index(flat_docs)
-        self.extend_inmemory_docs(flat_docs)
+        self.extend_inmemory_docs_and_tags(flat_docs)
 
-        for doc in flat_docs:
-            self.doc_id_tags[doc.id] = doc.tags
-
-        self.save_tags()
         return DocumentArray([])
 
     @secure_request(on='/tags', level=SecurityLevel.USER)
@@ -187,13 +190,8 @@ class NOWAnnLiteIndexer(Executor):
         if len(flat_docs) == 0:
             return
 
-        self.update_inmemory_docs(flat_docs)
+        self.update_inmemory_docs_and_tags(flat_docs)
         self._index.update(flat_docs)
-
-        for doc in flat_docs:
-            self.doc_id_tags[doc.id] = doc.tags
-
-        self.save_tags()
 
     @secure_request(on='/delete', level=SecurityLevel.USER)
     def delete(self, parameters: dict = {}, **kwargs):
@@ -204,11 +202,9 @@ class NOWAnnLiteIndexer(Executor):
         filter = parameters.get("filter", {})
         if filter:
             filtered_docs = deepcopy(self.da.find(filter=filter))
-            self.delete_inmemory_docs(filtered_docs)
+            self.delete_inmemory_docs_and_tags(filtered_docs)
             self._index.delete(filtered_docs)
-            for doc in filtered_docs:
-                self.doc_id_tags.pop(doc.id, None)
-            self.save_tags()
+
         return DocumentArray()
 
     @secure_request(on='/list', level=SecurityLevel.USER)
