@@ -90,7 +90,11 @@ def test_list(tmpdir, offset, limit):
             else {}
         )
         list_res = f.post(on='/list', parameters=parameters, return_results=True)
-        l = N if offset is None else limit
+        if offset is None:
+            l = N
+        else:
+            l = max(limit - offset, 0)
+
         assert len(list_res) == l
         if l > 0:
             assert list_res[0].id == str(offset) if offset is not None else '0'

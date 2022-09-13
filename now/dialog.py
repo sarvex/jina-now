@@ -11,17 +11,15 @@ import pathlib
 
 from now_common import options
 
+import now.utils
 from now.apps.base.app import JinaNOWApp
 from now.now_dataclasses import DialogOptions, UserInput
-from now.utils import _prompt_value, print_headline
 
 cur_dir = pathlib.Path(__file__).parent.resolve()
 
-AVAILABLE_SOON = 'will be available in upcoming versions'
-
 
 def configure_app(**kwargs) -> JinaNOWApp:
-    print_headline()
+    now.utils.print_headline()
     app_name = configure_option(options.APP, None, **kwargs)
     return options._construct_app(app_name)
 
@@ -52,7 +50,7 @@ def configure_option(option: DialogOptions, user_input: UserInput, **kwargs):
     if option.choices and inspect.isfunction(option.choices):
         option.choices = option.choices(user_input, **kwargs)
 
-    val = _prompt_value(
+    val = now.utils._prompt_value(
         **option.__dict__,
         **kwargs,
     )

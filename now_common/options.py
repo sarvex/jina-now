@@ -15,13 +15,13 @@ from kubernetes import client, config
 
 from now.constants import AVAILABLE_DATASET, Apps, DatasetTypes, Qualities
 from now.deployment.deployment import cmd
-from now.dialog import AVAILABLE_SOON
 from now.log import time_profiler, yaspin_extended
 from now.now_dataclasses import DialogOptions, UserInput
 from now.thirdparty.PyInquirer import Separator
 from now.utils import get_info_hubble, jina_auth_login, sigmap, to_camel_case
 
 NEW_CLUSTER = {'name': '🐣 create new', 'value': 'new'}
+AVAILABLE_SOON = 'will be available in upcoming versions'
 
 # Make sure you add this dialog option to your app in order of dependency, i.e., if some dialog option depends on other
 # then the parent should be called first before the dependant can called.

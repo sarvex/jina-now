@@ -130,7 +130,7 @@ class TextToTextAndImage(JinaNOWApp):
             loss=self._loss_function(encoder_type),
             add_embeddings=False,
         )
-        # temporary adjustments to work with small nest dataset
+        # temporary adjustments to work with small text+image dataset
         finetune_settings.epochs = 2
         finetune_settings.num_val_queries = 5
         finetune_settings.train_val_split_ration = 0.8
@@ -147,6 +147,6 @@ class TextToTextAndImage(JinaNOWApp):
     @staticmethod
     def _loss_function(encoder_type: Optional[str] = None) -> str:
         """Loss function used during fine-tuning."""
-        if encoder_type == 'text_to_image':
+        if encoder_type == 'text-to-image':
             return 'CLIPLoss'
         return 'TripletMarginLoss'

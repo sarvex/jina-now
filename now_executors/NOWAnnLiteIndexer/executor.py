@@ -101,12 +101,9 @@ class NOWAnnLiteIndexer(Executor):
         else:
             self.doc_id_tags = defaultdict(dict)
 
-    def extend_inmemory_docs_and_tags(self, docs):
+    def extend_inmemory_docs(self, docs):
         """Extend the in-memory DocumentArray with new documents"""
-        for d in docs:
-            self.da.append(Document(id=d.id, uri=d.uri, tags=d.tags))
-            self.doc_id_tags[d.id] = d.tags
-        self.save_tags()
+        self.da.extend(Document(id=d.id, uri=d.uri, tags=d.tags) for d in docs)
 
     def update_inmemory_docs_and_tags(self, docs):
         """Update documents in the in-memory DocumentArray"""
@@ -142,7 +139,11 @@ class NOWAnnLiteIndexer(Executor):
             return
 
         self._index.index(flat_docs)
-        self.extend_inmemory_docs_and_tags(flat_docs)
+        self.extend_inmemory_docs(flat_docs)
+
+        for d in docs:
+            self.doc_id_tags[d.id] = d.tags
+        self.save_tags()
 
         return DocumentArray([])
 

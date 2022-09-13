@@ -5,7 +5,7 @@ import string
 import sys
 from copy import deepcopy
 from time import sleep
-from typing import Dict, Tuple, Any
+from typing import Any, Dict, Tuple
 
 import cowsay
 import finetuner
@@ -21,7 +21,7 @@ from now.finetuning.dataset import FinetuneDataset, build_finetuning_dataset
 from now.finetuning.settings import FinetuneSettings
 from now.log import time_profiler, yaspin_extended
 from now.now_dataclasses import UserInput
-from now.run_backend import call_index
+from now.run_backend import call_flow
 from now.utils import sigmap
 
 
@@ -245,9 +245,10 @@ def _maybe_add_embeddings(
         kubectl_path=kubectl_path,
     )
     print(f'▶ create embeddings for {len(documents_without_embedding)} documents')
-    result = call_index(
+    result = call_flow(
         client=client,
         dataset=documents_without_embedding,
+        endpoint='/encode',
         parameters={'user_input': deepcopy(user_input.__dict__)},
         return_results=True,
     )
@@ -255,9 +256,11 @@ def _maybe_add_embeddings(
     for doc in result:
         dataset[doc.id].embedding = doc.embedding
 
-    assert all([d.embedding is not None for d in dataset]), (
-        "Some docs slipped through and" " still have no embedding..."
-    )
+    if not all([d.embedding is not None for d in dataset]):
+        print(
+            "Some docs slipped through and still have no embeddings. Re-run the program or continue with "
+            "the next step."
+        )
 
     # removes normal flow as it is unused from now on
     if user_input.deployment_type == 'local':
@@ -274,3 +277,5 @@ def _maybe_add_embeddings(
             '.wolf.jina.ai', ''
         )
         terminate_wolf(flow_id=flow_id)
+
+    return dataset

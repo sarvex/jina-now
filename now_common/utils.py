@@ -43,7 +43,9 @@ def common_get_flow_env_dict(
     config = {
         'JINA_VERSION': jina_version,
         'ENCODER_NAME': f'jinahub+docker://{encoder_uses}',
-        'FINETUNE_LAYER_SIZE': finetune_settings.finetune_layer_size,
+        'N_DIM': finetune_settings.finetune_layer_size
+        if finetune_settings.perform_finetuning
+        else pre_trained_embedding_size,
         'PRE_TRAINED_EMBEDDINGS_SIZE': pre_trained_embedding_size,
         'INDEXER_NAME': f'jinahub+docker://{indexer_uses}',
         'PREFETCH': PREFETCH_NR,
