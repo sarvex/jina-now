@@ -111,7 +111,10 @@ class NOWPreprocessor(Executor):
                 f.result()
 
     def _preprocess_maybe_cloud_download(
-        self, docs: DocumentArray, is_indexing
+        self,
+        docs: DocumentArray,
+        is_indexing,
+        encode: bool = False,
     ) -> DocumentArray:
         with tempfile.TemporaryDirectory() as tmpdir:
             if (
@@ -120,7 +123,15 @@ class NOWPreprocessor(Executor):
             ):
                 self._maybe_download_from_s3(docs=docs, tmpdir=tmpdir)
 
-            docs = self.app.preprocess(docs, self.user_input, is_indexing=is_indexing)
+            pre_docs = self.app.preprocess(
+                docs, self.user_input, is_indexing=is_indexing
+            )
+            if encode:
+                remaining_docs = self.app.preprocess(
+                    docs, self.user_input, is_indexing=not is_indexing
+                )
+                pre_docs.extend(remaining_docs)
+            docs = pre_docs
 
             # as _maybe_download_from_s3 moves S3 URI to tags['uri'], need to move it back for post-processor & accurate
             # results
@@ -142,7 +153,7 @@ class NOWPreprocessor(Executor):
 
         return docs
 
-    @secure_request(on=['/index', '/encode'], level=SecurityLevel.USER)
+    @secure_request(on='/index', level=SecurityLevel.USER)
     def index(
         self, docs: DocumentArray, parameters: Optional[Dict] = None, *args, **kwargs
     ) -> DocumentArray:
@@ -157,6 +168,24 @@ class NOWPreprocessor(Executor):
         self._set_user_input(parameters=parameters)
         return self._preprocess_maybe_cloud_download(docs=docs, is_indexing=True)
 
+    @secure_request(on='/encode', level=SecurityLevel.USER)
+    def encode(
+        self, docs: DocumentArray, parameters: Optional[Dict] = None, *args, **kwargs
+    ):
+        """Encodes the documents and returns the embeddings. It merges index and search endpoint results as the
+        documents for encoding can be multimodal.
+
+        :param docs: loaded data but not preprocessed
+        :param parameters: user input, used to construct UserInput object
+        :return: preprocessed documents which are ready to be encoded and indexed
+        """
+        if docs is None or len(docs) == 0:
+            return DocumentArray()
+        self._set_user_input(parameters=parameters)
+        return self._preprocess_maybe_cloud_download(
+            docs=docs, is_indexing=True, encode=True
+        )
+
     @secure_request(on='/search', level=SecurityLevel.USER)
     def search(
         self, docs: DocumentArray, parameters: Optional[Dict] = None, *args, **kwargs
@@ -168,7 +197,7 @@ class NOWPreprocessor(Executor):
         :return: preprocessed documents which are ready to be used for search
         """
         if docs is None or len(docs) == 0:
-            return
+            return DocumentArray()
         self._set_user_input(parameters=parameters)
         return self._preprocess_maybe_cloud_download(docs=docs, is_indexing=False)
 

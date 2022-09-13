@@ -3,9 +3,8 @@ import json
 from docarray import Document, DocumentArray
 from executor import NOWPreprocessor
 from jina import Flow
-from now_common.options import _construct_app
 
-from now.constants import Apps, Modalities
+from now.constants import Apps
 from now.now_dataclasses import UserInput
 
 
@@ -30,20 +29,12 @@ def test_executor_persistence():
 
 
 def test_text_to_video():
-    app = Apps.TEXT_TO_VIDEO
-
+    app = Apps.TEXT_TO_IMAGE
     user_input = UserInput()
-    user_input.output_modality = Modalities.VIDEO
-    user_input.app_instance = _construct_app(app)
-    user_input.data = 'custom'
-    user_input.dataset_path = '/Users/joschkabraun/dev/now/da_tgif.30000.bin'
-
     text_docs = DocumentArray(
         [
             Document(text='test'),
-            Document(
-                chunks=DocumentArray([Document(uri='test.jpg'), Document(text='hi')])
-            ),
+            Document(uri='test.jpg'),
         ]
     )
 
@@ -54,8 +45,17 @@ def test_text_to_video():
             parameters={'user_input': user_input.__dict__},
             show_progress=True,
         )
-
         result = DocumentArray.from_json(result.to_json())
 
+        encode_result = f.post(
+            on='/encode',
+            inputs=text_docs,
+            parameters={'user_input': user_input.__dict__},
+            show_progress=True,
+        )
+        encode_result = DocumentArray.from_json(encode_result.to_json())
+
     assert len(result) == 1
-    assert len(result[0].chunks) == 1
+    assert len(encode_result) == 2
+    assert len([text for text in encode_result.texts if text != '']) == 1
+    assert len([blob for blob in encode_result.blobs if blob != b'']) == 1
