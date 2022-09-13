@@ -10,7 +10,6 @@ import inspect
 import pathlib
 
 from now_common import options
-from now_common.options import _construct_app
 
 from now.apps.base.app import JinaNOWApp
 from now.now_dataclasses import DialogOptions, UserInput
@@ -24,7 +23,7 @@ AVAILABLE_SOON = 'will be available in upcoming versions'
 def configure_app(**kwargs) -> JinaNOWApp:
     print_headline()
     app_name = configure_option(options.APP, None, **kwargs)
-    return _construct_app(app_name)
+    return options._construct_app(app_name)
 
 
 def configure_user_input(app_instance: JinaNOWApp, **kwargs) -> UserInput:
