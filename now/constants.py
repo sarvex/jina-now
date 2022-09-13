@@ -5,10 +5,10 @@ from now.utils import BetterEnum
 # DEMO_DATASET_DOCARRAY_VERSION = docarray_version
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.123-playground-filter-1'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.123-playground-filter-2'
 NOW_PREPROCESSOR_VERSION = '0.0.84-fix-cd-2'
 NOW_AUTH_EXECUTOR_VERSION = '0.0.5-auth-exec-4'
-NOW_ANNLITE_INDEXER_VERSION = '0.0.4-annlite-adapt-playground-1'
+NOW_ANNLITE_INDEXER_VERSION = '0.0.4-annlite-adapt-playground-2'
 
 
 class Modalities(BetterEnum):

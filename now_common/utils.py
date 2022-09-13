@@ -172,7 +172,7 @@ def get_indexer_config(num_indexed_samples: int) -> Dict:
 
 def _extract_tags_annlite(d: Document, user_input):
     print(
-        'We assume all tags follow th same structure, only first json file will be used to determine structure'
+        'We assume all tags follow the same structure, only first json file will be used to determine structure'
     )
     with tempfile.TemporaryDirectory() as tmpdir:
         if user_input and user_input.custom_dataset_type == DatasetTypes.S3_BUCKET:
