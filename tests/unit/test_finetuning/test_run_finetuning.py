@@ -32,7 +32,7 @@ def test_get_model_options():
 
 
 @pytest.mark.parametrize('encoder_type', ['text-to-text', 'text-to-image'])
-def test_nest_construct_finetune_settings(encoder_type, get_nest_config_path):
+def test_nest_construct_finetune_settings(encoder_type, get_task_config_path):
     user_input = UserInput()
     app = TextToTextAndImage()
     user_input.app_instance = app

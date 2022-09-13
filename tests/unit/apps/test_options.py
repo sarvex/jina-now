@@ -3,7 +3,7 @@ from now.dialog import configure_option
 from now.now_dataclasses import UserInput
 
 
-def test_text_to_text_and_image_options(mocker, get_nest_config_path):
+def test_text_to_text_and_image_options(mocker, get_task_config_path):
     mocker.patch('now.utils._prompt_value', return_value=get_task_config_path)
 
     app = TextToTextAndImage()
