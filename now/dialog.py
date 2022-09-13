@@ -11,7 +11,8 @@ import pathlib
 
 from now_common import options
 
-from now.now_dataclasses import UserInput
+from now.apps.base.app import JinaNOWApp
+from now.now_dataclasses import DialogOptions, UserInput
 from now.utils import _prompt_value, print_headline
 
 cur_dir = pathlib.Path(__file__).parent.resolve()
@@ -19,29 +20,26 @@ cur_dir = pathlib.Path(__file__).parent.resolve()
 AVAILABLE_SOON = 'will be available in upcoming versions'
 
 
-def configure_user_input(**kwargs) -> UserInput:
+def configure_app(**kwargs) -> JinaNOWApp:
     print_headline()
+    app_name = configure_option(options.APP, None, **kwargs)
+    return options._construct_app(app_name)
 
+
+def configure_user_input(app_instance: JinaNOWApp, **kwargs) -> UserInput:
     user_input = UserInput()
-    _configure_app_options(user_input, **kwargs)
-
-    return user_input
-
-
-def _configure_app_options(user_input, **kwargs):
-    # First we configure the app and initialize it
-    configure_option(options.APP, user_input, **kwargs)
-
+    user_input.app_instance = app_instance
     # Ask the base/common options
     for option in options.base_options:
         configure_option(option, user_input, **kwargs)
-
     # Ask app specific options
     for option in user_input.app_instance.options:
         configure_option(option, user_input, **kwargs)
 
+    return user_input
 
-def configure_option(option, user_input, **kwargs):
+
+def configure_option(option: DialogOptions, user_input: UserInput, **kwargs):
     # If there is any pre function then invoke that - commonly used to fill choices if needed
     # if inspect.isfunction(option.pre_func):
     #     option.post_func(user_input, option, **kwargs)
@@ -66,3 +64,5 @@ def configure_option(option, user_input, **kwargs):
     kwargs[option.name] = val
     if inspect.isfunction(option.post_func):
         option.post_func(user_input, **kwargs)
+
+    return val

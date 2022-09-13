@@ -9,11 +9,7 @@ from jina import Flow
 from tests.integration.test_end_to_end import assert_search, get_default_request_body
 
 from deployment.bff.app.app import run_server
-from now.constants import (
-    CLIP_USES,
-    NOW_ANNLITE_INDEXER_VERSION,
-    NOW_AUTH_EXECUTOR_VERSION,
-)
+from now.constants import EXTERNAL_CLIP_HOST, NOW_ANNLITE_INDEXER_VERSION
 
 API_KEY = 'my_key'
 base_url = 'http://localhost:8080/api/v1'
@@ -32,7 +28,6 @@ def get_reqest_body():
 
 
 def get_flow():
-    clip_uses = CLIP_USES['local'][0]
     client = hubble.Client(
         token=get_reqest_body()['jwt']['token'], max_retries=None, jsonify=True
     )
@@ -40,14 +35,10 @@ def get_flow():
     f = (
         Flow(port_expose=9089)
         .add(
-            uses=f'jinahub+docker://NOWAuthExecutor/v{NOW_AUTH_EXECUTOR_VERSION}',
-            uses_with={
-                'admin_emails': [admin_email],
-                'user_emails': [],
-            },
-        )
-        .add(
-            uses=f'jinahub+docker://{clip_uses}',
+            host=EXTERNAL_CLIP_HOST,
+            port=443,
+            tls=True,
+            external=True,
         )
         .add(
             uses=f'jinahub+docker://NOWAnnLiteIndexer/v{NOW_ANNLITE_INDEXER_VERSION}',

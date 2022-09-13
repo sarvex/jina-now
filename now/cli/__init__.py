@@ -117,6 +117,7 @@ def cli(args=None):
     """The main entrypoint of the CLI"""
     if not args:
         args = _get_run_args()
+    args = vars(args)  # Make it a dict from Namespace
 
     if '--version' in sys.argv[1:]:
         from now import __version__
@@ -134,7 +135,6 @@ def cli(args=None):
             arch = platform.machine()
     elif os_type == 'linux':
         arch = platform.machine()
-    args = vars(args)  # Make it a dict from Namespace
 
     args['kubectl_path'] = _get_kubectl_path()
     args['kind_path'] = _get_kind_path()

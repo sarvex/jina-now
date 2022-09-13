@@ -6,7 +6,7 @@ from now.utils import BetterEnum
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.122-auth-exec-4'
-NOW_PREPROCESSOR_VERSION = '0.0.82-finetune-7'
+NOW_PREPROCESSOR_VERSION = '0.0.84-finetune-7'
 NOW_AUTH_EXECUTOR_VERSION = '0.0.5-auth-exec-4'
 NOW_ANNLITE_INDEXER_VERSION = '0.0.3-annlite-secure-1'
 
@@ -41,6 +41,12 @@ class Qualities(BetterEnum):
     MEDIUM = 'medium'
     GOOD = 'good'
     EXCELLENT = 'excellent'
+
+
+class ModelNames(BetterEnum):
+    MLP = 'mlp'
+    SBERT = 'sentence-transformers/msmarco-distilbert-base-v3'
+    CLIP = 'openai/clip-vit-base-patch32'
 
 
 BASE_STORAGE_URL = (
