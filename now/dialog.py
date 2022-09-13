@@ -10,7 +10,6 @@ import inspect
 import pathlib
 
 from now_common import options
-from now_common.options import _construct_app
 
 import now.utils
 from now.apps.base.app import JinaNOWApp
@@ -22,7 +21,7 @@ cur_dir = pathlib.Path(__file__).parent.resolve()
 def configure_app(**kwargs) -> JinaNOWApp:
     now.utils.print_headline()
     app_name = configure_option(options.APP, None, **kwargs)
-    return _construct_app(app_name)
+    return options._construct_app(app_name)
 
 
 def configure_user_input(app_instance: JinaNOWApp, **kwargs) -> UserInput:
