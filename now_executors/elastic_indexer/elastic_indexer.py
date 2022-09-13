@@ -1,5 +1,5 @@
 import warnings
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Mapping, Optional, Union
 
 import numpy as np
 from docarray import Document, DocumentArray
@@ -20,13 +20,7 @@ MAPPING = {
         "text": {"type": "text", "analyzer": "standard"},
         "text_embedding": {
             "type": "dense_vector",
-            "dims": 768,
-            "similarity": "cosine",
-            "index": "true",
-        },
-        "image_embedding": {
-            "type": "dense_vector",
-            "dims": 512,
+            "dims": 5,
             "similarity": "cosine",
             "index": "true",
         },
@@ -37,31 +31,31 @@ MAPPING = {
 class ElasticIndexer(Executor):
     def __init__(
         self,
-        es_connection_str: Optional[str] = 'http://localhost:9200',
-        distance: str = 'cosine',
-        index_name: str = 'nest',
-        es_mapping: Optional[Dict] = None,
+        hosts: Union[str, List[Union[
+                str, Mapping[str, Union[str, int]]]], None] = 'http://localhost:9200',
+        es_config: Optional[Dict[str, Any]] = {},
+        metric: str = 'cosine',
+        index_name: str = 'nestxxx',
+        es_mapping: Optional[Dict] = MAPPING,
         **kwargs,
     ):
         """
         Initializer function for the ElasticIndexer
 
-        :param es_connection_str: host configuration of the ElasticSearch node or cluster
-        :param distance: The distance metric used for the vector index and vector search
+        :param hosts: host configuration of the Elasticsearch node or cluster
+        :param es_config: Elasticsearch cluster configuration object
+        :param metric: The distance metric used for the vector index and vector search
         :param index_name: ElasticSearch Index name used for the storage
         :param es_mapping: Mapping for new index.
         """
         super().__init__(**kwargs)
 
-        self.es_connection_str = es_connection_str
-        self.distance = distance
+        self.hosts = hosts
+        self.metric = metric
         self.index_name = index_name
-        if not es_mapping:
-            self.es_mapping = MAPPING
-        else:
-            self.es_mapping = es_mapping
+        self.es_mapping = es_mapping
 
-        self.es = Elasticsearch(es_connection_str, verify_certs=False)
+        self.es = Elasticsearch(hosts=self.hosts, **es_config)
         if not self.es.indices.exists(index=self.index_name):
             self.es.indices.create(index=self.index_name, mappings=self.es_mapping)
 
@@ -102,30 +96,34 @@ class ElasticIndexer(Executor):
 
     def _build_es_query(
         self,
-        query: DocumentArray,
+        query: Document,
     ) -> Dict:
         """
-        Build script-score query used in Elasticsearch.
+        Build script-score query used in Elasticsearch. To do this, we extract
+        embeddings from the query document and pass them in the script-score
+        query together with the fields to search on in the Elasticsearch index.
 
-        :param query: two `Document`s in this `DocumentArray`, one with the query encoded with
-            text encoder and another with the query encoded with clip-text encoder.
-        :return: query dict containing query and filter.
+        :param query: a `Document` with chunks containing a text embedding and
+            image embedding.
+        :return: a dictionary containing query and filter.
         """
         query_embeddings = self._extract_embeddings(doc=query)
+        source = "_score / (_score + 10.0)"
+        params = {}
+        # if query has embeddings then search using hybrid search, otherwise only bm25
+        if query_embeddings:
+            for k, v in query_embeddings.items():
+                source += f"+ 0.5*{metrics_mapping[self.metric]}(params.query_{k}, '{k}')"
+                params[f'query_{k}'] = v
+            source += "+ 1.0"
         query_json = {
             "script_score": {
                 "query": {
                     "bool": {},
                 },
                 "script": {
-                    "source": f"""_score / (_score + 10.0)
-                            + 0.5*{metrics_mapping[self.distance]}(params.query_ImageVector, 'image_embedding')
-                            + 0.5*{metrics_mapping[self.distance]}(params.query_TextVector, 'text_embedding')
-                            + 1.0""",
-                    "params": {
-                        "query_TextVector": query_embeddings['query_TextEmbedding'],
-                        "query_ImageVector": query_embeddings['query_ImageEmbedding'],
-                    },
+                    "source": source,
+                    "params": params
                 },
             }
         }
@@ -168,11 +166,7 @@ class ElasticIndexer(Executor):
                     new_doc['image_embedding'] = chunk.embedding
             new_doc["_op_type"] = "index"
             new_doc["_index"] = self.index_name
-            if all(
-                field in new_doc
-                for field in ("text", "text_embedding", "image_embedding")
-            ):
-                new_docs.append(new_doc)
+            new_docs.append(new_doc)
         return new_docs
 
     def _transform_es_results_to_matches(self, es_results: List[Dict]) -> DocumentArray:
@@ -185,95 +179,27 @@ class ElasticIndexer(Executor):
         matches = DocumentArray()
         for result in es_results:
             d = Document(id=result['_id'])
-            d.scores[self.distance] = NamedScore(value=result['_score'])
+            d.scores[self.metric] = NamedScore(value=result['_score'])
             matches.append(d)
         return matches
 
     def _extract_embeddings(self, doc: Document) -> Dict[str, np.ndarray]:
         """
-        Get embeddings from the document.
+        Get embeddings from the document. Currently supports at most two
+        modalities and two embeddings (text and image).
 
-        :param doc: `Document` with chunks of text document and image document
-        :return: Two embeddings in a dictionary, one for image and one for text
+        :param doc: `Document` with chunks of text document and/or image document.
+        :return: Embeddings as values in a dictionary, modality specified in key.
         """
         embeddings = {}
         for c in doc.chunks:
             if c.modality == 'text':
-                embeddings['query_TextEmbedding'] = c.embedding
+                embeddings['text_embedding'] = c.embedding
             elif c.modality == 'image':
-                embeddings['query_ImageEmbedding'] = c.embedding
+                embeddings['image_embedding'] = c.embedding
             else:
                 print("Modality not found")
                 raise
-        if embeddings and len(embeddings) == 2:
-            return embeddings
-        else:
-            print("No/not all embeddings extracted")
-            raise
-
-
-if __name__ == "__main__":
-    with Flow().add(uses=ElasticIndexer) as f:
-        f.index(
-            DocumentArray(
-                [
-                    Document(
-                        id='123',
-                        chunks=[
-                            Document(
-                                id='x',
-                                text='this is a flower',
-                                embedding=np.random.rand(768),
-                                modality='text',
-                            ),
-                            Document(
-                                id='xx',
-                                uri='https://cdn.pixabay.com/photo/2015/04/23/21/59/tree-736877_1280.jpg',
-                                embedding=np.random.rand(512),
-                                modality='image',
-                            ),
-                        ],
-                    ),
-                    Document(
-                        id='456',
-                        chunks=[
-                            Document(
-                                id='xxx',
-                                text='this is a cat',
-                                embedding=np.random.rand(768),
-                                modality='text',
-                            ),
-                            Document(
-                                id='xxxx',
-                                uri='https://cdn.pixabay.com/photo/2015/04/23/21/59/tree-736877_1280.jpg',
-                                embedding=np.random.rand(512),
-                                modality='image',
-                            ),
-                        ],
-                    ),
-                ]
-            )
-        )
-
-        x = f.search(
-            DocumentArray(
-                [
-                    Document(
-                        chunks=[
-                            Document(
-                                text='this is a flower',
-                                embedding=np.random.rand(768),
-                                modality='text',
-                            ),
-                            Document(
-                                uri='https://cdn.pixabay.com/photo/2015/04/23/21/59/tree-736877_1280.jpg',
-                                embedding=np.random.rand(512),
-                                modality='image',
-                            ),
-                        ]
-                    )
-                ]
-            )
-        )
-        x.summary()
-        x[0].matches.summary()
+        if not embeddings:
+            print("No embeddings extracted")
+        return embeddings
