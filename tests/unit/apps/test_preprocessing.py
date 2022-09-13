@@ -6,7 +6,10 @@ from now.apps.image_to_text.app import ImageToText
 from now.apps.music_to_music.app import MusicToMusic
 from now.apps.text_to_image.app import TextToImage
 from now.apps.text_to_text.app import TextToText
+from now.apps.text_to_text_and_image.app import TextToTextAndImage
 from now.apps.text_to_video.app import TextToVideo
+from now.constants import DemoDatasets
+from now.data_loading.data_loading import load_data
 from now.now_dataclasses import UserInput
 
 
@@ -83,3 +86,28 @@ def test_music_preprocessing(is_indexing):
     assert len(da) == 1
     assert len(da[0].chunks) == 0
     assert da[0].blob != b''
+
+
+@pytest.mark.parametrize('is_indexing', [False, True])
+def test_nested_preprocessing(is_indexing, get_task_config_path):
+    user_input = UserInput()
+    user_input.data = 'custom'
+    user_input.data = DemoDatasets.ES_ONLINE_SHOP_50
+    user_input.quality = None
+    app = TextToTextAndImage()
+    app._read_task_config(task_config_path=get_task_config_path, user_input=user_input)
+
+    if is_indexing:
+        da = DocumentArray(load_data(app, user_input)[0])
+    else:
+        da = DocumentArray(Document(text='query text'))
+
+    processed_da = app.preprocess(da=da, user_input=user_input, is_indexing=is_indexing)
+
+    assert len(processed_da) == 1
+    if is_indexing:
+        assert len(processed_da[0].chunks) == 2
+        assert processed_da[0].chunks[0].text
+        assert processed_da[0].chunks[1].uri
+    else:
+        assert processed_da[0].text == 'query text'
