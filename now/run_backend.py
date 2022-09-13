@@ -1,4 +1,3 @@
-import json
 import os
 import pathlib
 import random
@@ -14,7 +13,7 @@ from now.apps.base.app import JinaNOWApp
 from now.data_loading.data_loading import load_data
 from now.deployment.flow import deploy_flow
 from now.log import time_profiler
-from now.now_dataclasses import UserInput, Task
+from now.now_dataclasses import UserInput
 
 cur_dir = pathlib.Path(__file__).parent.resolve()
 
@@ -56,7 +55,7 @@ def run(app_instance: JinaNOWApp, user_input: UserInput, kubectl_path: str):
     }
     if user_input.secured:
         params['jwt'] = user_input.jwt
-    call_index(
+    call_flow(
         client=client,
         dataset=dataset,
         parameters=deepcopy(params),
@@ -68,21 +67,22 @@ def run(app_instance: JinaNOWApp, user_input: UserInput, kubectl_path: str):
 
 
 @time_profiler
-def call_index(
+def call_flow(
     client: Client,
     dataset: DocumentArray,
+    endpoint: str = '/index',
     parameters: Optional[Dict] = None,
     return_results: Optional[bool] = False,
 ):
     request_size = estimate_request_size(dataset)
 
-    # Deep copy of the user_input without app_instance from parameters
+    # Pop app_instance from parameters to be passed to the flow
     parameters['user_input'].pop('app_instance', None)
 
     # double check that flow is up and running - should be done by wolf/core in the future
     while True:
         try:
-            client.post('/index', inputs=DocumentArray(), parameters=parameters)
+            client.post(on=endpoint, inputs=DocumentArray(), parameters=parameters)
             break
         except Exception as e:
             if 'NOW_CI_RUN' in os.environ:
@@ -93,11 +93,12 @@ def call_index(
             sleep(1)
 
     response = client.post(
-        '/index',
+        on=endpoint,
         request_size=request_size,
         inputs=dataset,
         show_progress=True,
         parameters=parameters,
+        return_results=return_results,
     )
 
     if return_results and response:
