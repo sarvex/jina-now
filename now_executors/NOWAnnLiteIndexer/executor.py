@@ -145,6 +145,10 @@ class NOWAnnLiteIndexer(Executor):
             self.doc_id_tags[d.id] = d.tags
         self.save_tags()
 
+        print('****************** index logs annlite ********************')
+        for doc in self.da:
+            print(doc.summary())
+
         return DocumentArray([])
 
     @secure_request(on='/tags', level=SecurityLevel.USER)
@@ -215,6 +219,11 @@ class NOWAnnLiteIndexer(Executor):
         - offset (int): number of documents to skip
         - limit (int): number of retrieved documents
         """
+
+        print('****************** list logs annlite ********************')
+        for doc in self.da:
+            print(doc.summary())
+
         limit = int(parameters.get('limit', maxsize))
         offset = int(parameters.get('offset', 0))
         return self.da[offset : offset + limit]
