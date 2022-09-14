@@ -5,7 +5,7 @@ from docarray import Document, DocumentArray
 from jina import Executor, requests
 
 
-class DocarrayIndexerV3(Executor):
+class DocarrayIndexerV3_EXPERIMENT(Executor):
     def __init__(self, traversal_paths: str = "@r", *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.traversal_paths = traversal_paths
@@ -13,7 +13,11 @@ class DocarrayIndexerV3(Executor):
 
     @requests(on="/index")
     def index(self, docs: DocumentArray, **kwargs):
-        docs.summary()
+        # for the experiment, we don't need blobs in the root and chunk level
+        for d in docs:
+            d.blob = None
+            for c in d.chunks:
+                c.blob = None
         self.index.extend(docs)
         return DocumentArray()
         #  prevent sending the data back by returning an empty DocumentArray
@@ -43,13 +47,11 @@ class DocarrayIndexerV3(Executor):
         """
         limit = parameters.get("limit", 20)
         traversal_paths = parameters.get("traversal_paths", self.traversal_paths)
-        self.index = self.index[traversal_paths]
-
-        filtered_docs = self.filter_docs(parameters)
+        docs = docs[traversal_paths]
+        filtered_docs = self.filter_docs(self.index[traversal_paths], parameters)
 
         match_limit = limit
         if traversal_paths == "@c":
-            docs = docs[0].chunks
             match_limit = limit * 10
         docs.match(filtered_docs, limit=match_limit)
         if traversal_paths == "@c":
@@ -103,7 +105,7 @@ class DocarrayIndexerV3(Executor):
                     break
             d.matches = parents
 
-    def filter_docs(self, parameters):
+    def filter_docs(self, documents, parameters):
         filter = parameters.get("filter", {})
         if '$and' in filter.keys():
             for query in filter['$and']:
@@ -111,5 +113,5 @@ class DocarrayIndexerV3(Executor):
                 tag = list(query.keys())[0]
                 query['tags__' + tag] = query[tag]
                 del query[tag]
-        filtered_docs = self.index.find(filter=filter)
+        filtered_docs = documents.find(filter=filter)
         return filtered_docs

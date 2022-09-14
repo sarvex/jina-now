@@ -1,4 +1,4 @@
-jtype: DocarrayIndexerV3
+jtype: DocarrayIndexerV3_EXPERIMENT
 metas:
   py_modules:
     - docarray_indexer_v3.py

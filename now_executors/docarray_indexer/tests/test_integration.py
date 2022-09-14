@@ -1,12 +1,15 @@
 import numpy as np
+import pytest
 from docarray import Document, DocumentArray
 from jina import Flow
-from now_executors.docarray_indexer.docarray_indexer_v3 import DocarrayIndexerV3
+from now_executors.docarray_indexer.docarray_indexer_v3 import (
+    DocarrayIndexerV3_EXPERIMENT,
+)
 
 
 def test_delete():
     """testing deleting of docs using filter conditions"""
-    with Flow().add(uses=DocarrayIndexerV3) as f:
+    with Flow().add(uses=DocarrayIndexerV3_EXPERIMENT) as f:
         f.index(
             DocumentArray(
                 [
@@ -31,7 +34,7 @@ def test_delete():
 
 
 def test_list():
-    with Flow().add(uses=DocarrayIndexerV3) as f:
+    with Flow().add(uses=DocarrayIndexerV3_EXPERIMENT) as f:
         f.index(
             DocumentArray(
                 [
@@ -60,7 +63,9 @@ def test_list():
 
 
 def test_filtering():
-    with Flow().add(uses=DocarrayIndexerV3, uses_with={"traversal_paths": "@r"}) as f:
+    with Flow().add(
+        uses=DocarrayIndexerV3_EXPERIMENT, uses_with={"traversal_paths": "@r"}
+    ) as f:
         f.index(
             DocumentArray(
                 [
@@ -134,45 +139,58 @@ def test_filtering():
         assert len(result) == 1
 
 
-def test_search():
-    with Flow().add(uses=DocarrayIndexerV3, uses_with={"traversal_paths": "@r"}) as f:
-        f.index(
-            DocumentArray(
-                [
+@pytest.fixture()
+def documents():
+    return DocumentArray(
+        [
+            Document(
+                id="doc1",
+                blob=b"gif...",
+                embedding=np.ones(5),
+                chunks=[
                     Document(
-                        id="doc1",
-                        blob=b"gif...",
-                        embedding=np.ones(5),
-                        chunks=[
-                            Document(
-                                id="chunk1",
-                                blob=b"jpg...",
-                                embedding=np.ones(5),
-                                tags={'color': 'red'},
-                            ),
-                            Document(
-                                id="chunk1",
-                                blob=b"jpg...",
-                                embedding=np.ones(5),
-                                tags={'color': 'blue'},
-                            ),
-                        ],
-                    ),
-                    Document(
-                        id="doc2",
+                        id="chunk1",
                         blob=b"jpg...",
                         embedding=np.ones(5),
-                        tags={'color': 'red', 'length': 18},
+                        tags={'color': 'red'},
                     ),
                     Document(
-                        id="doc3",
+                        id="chunk1",
                         blob=b"jpg...",
                         embedding=np.ones(5),
                         tags={'color': 'blue'},
                     ),
-                ]
-            )
-        )
+                ],
+            ),
+            Document(
+                id="doc2",
+                blob=b"jpg...",
+                embedding=np.ones(5),
+                tags={'color': 'red', 'length': 18},
+                chunks=[
+                    Document(
+                        id="chunk21",
+                        blob=b"jpg...",
+                        embedding=np.ones(5),
+                        tags={'color': 'red'},
+                    ),
+                ],
+            ),
+            Document(
+                id="doc3",
+                blob=b"jpg...",
+                embedding=np.ones(5),
+                tags={'color': 'blue'},
+            ),
+        ]
+    )
+
+
+def test_search(documents):
+    with Flow().add(
+        uses=DocarrayIndexerV3_EXPERIMENT, uses_with={"traversal_paths": "@r"}
+    ) as f:
+        f.index(documents)
         result = f.search(
             Document(
                 id="doc1",
@@ -193,3 +211,37 @@ def test_search():
             return_results=True,
         )
         assert len(result2[0].matches) == 3
+
+
+def test_search_chunk(documents):
+    with Flow().add(
+        uses=DocarrayIndexerV3_EXPERIMENT, uses_with={"traversal_paths": "@c"}
+    ) as f:
+        f.index(
+            documents,
+        )
+        result = f.search(
+            Document(
+                id="doc_search",
+                chunks=Document(
+                    id="chunk_search",
+                    blob=b"jpg...",
+                    embedding=np.ones(5),
+                ),
+            ),
+            return_results=True,
+            parameters={'filter': {'tags__color': {'$eq': 'blue'}}},
+        )
+        assert len(result[0].matches) == 1
+
+        result2 = f.search(
+            Document(
+                chunks=Document(
+                    id="doc2",
+                    blob=b"jpg...",
+                    embedding=np.ones(5),
+                )
+            ),
+            return_results=True,
+        )
+        assert len(result2[0].matches) == 2
