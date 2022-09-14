@@ -1,5 +1,6 @@
 import warnings
 from typing import Any, Dict, List, Mapping, Optional, Union
+import traceback
 
 import numpy as np
 from docarray import Document, DocumentArray
@@ -16,7 +17,7 @@ metrics_mapping = {
 
 MAPPING = {
     'properties': {
-        'id': {'type': 'text', 'analyzer': 'standard'},
+        'id': {'type': 'keyword'},
         'text': {'type': 'text', 'analyzer': 'standard'},
         'text_embedding': {
             'type': 'dense_vector',
@@ -36,7 +37,7 @@ class ElasticIndexer(Executor):
         ] = 'http://localhost:9200',
         es_config: Optional[Dict[str, Any]] = {},
         metric: str = 'cosine',
-        index_name: str = 'nestxxx',
+        index_name: str = 'nest',
         es_mapping: Optional[Dict] = MAPPING,
         **kwargs,
     ):
@@ -69,7 +70,10 @@ class ElasticIndexer(Executor):
         :return: empty `DocumentArray`.
         """
         es_docs = self._transform_docs_to_es(docs)
-        success, _ = bulk(self.es, es_docs, refresh='wait_for')
+        try:
+            success, _ = bulk(self.es, es_docs, refresh='wait_for')
+        except Exception:
+            print(traceback.format_exc())
         if success:
             print(
                 f'Inserted {success} documents into Elasticsearch index {self.index_name}'
@@ -89,14 +93,17 @@ class ElasticIndexer(Executor):
         """
         for doc in docs:
             query = self._build_es_query(doc)
-            result = self.es.search(
-                index=self.index_name,
-                query=query,
-                fields=['text'],
-                source=False,
-                size=limit,
-            )['hits']['hits']
-            doc.matches = self._transform_es_results_to_matches(result)
+            try:
+                result = self.es.search(
+                    index=self.index_name,
+                    query=query,
+                    fields=['text'],
+                    source=False,
+                    size=limit,
+                )['hits']['hits']
+                doc.matches = self._transform_es_results_to_matches(result)
+            except Exception:
+                print(traceback.format_exc())
         return docs
 
     def _build_es_query(
