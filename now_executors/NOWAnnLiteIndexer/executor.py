@@ -162,7 +162,7 @@ class NOWAnnLiteIndexer(Executor):
         {'tags':{'color':['red', 'blue'], 'greeting':['hello']}}
         """
         tag_values = defaultdict(set)
-        for id, tags in self.doc_id_tags.items():
+        for tags in self.doc_id_tags.values():
             for tag, value in tags.items():
                 tag_values[tag].add(value)
         for tag, value in tag_values.items():
