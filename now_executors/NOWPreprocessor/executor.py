@@ -151,9 +151,6 @@ class NOWPreprocessor(Executor):
                 for d in docs:
                     move_uri(d)
 
-        print('****************** index logs preprocessor ********************')
-        for doc in docs:
-            print(doc.summary())
         return docs
 
     @secure_request(on='/index', level=SecurityLevel.USER)

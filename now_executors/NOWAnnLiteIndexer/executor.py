@@ -101,9 +101,12 @@ class NOWAnnLiteIndexer(Executor):
         else:
             self.doc_id_tags = defaultdict(dict)
 
-    def extend_inmemory_docs(self, docs):
+    def extend_inmemory_docs_and_tags(self, docs):
         """Extend the in-memory DocumentArray with new documents"""
-        self.da.extend(Document(id=d.id, uri=d.uri, tags=d.tags) for d in docs)
+        for d in docs:
+            self.da.append(Document(id=d.id, uri=d.uri, tags=d.tags))
+            self.doc_id_tags[d.id] = d.tags
+        self.save_tags()
 
     def update_inmemory_docs_and_tags(self, docs):
         """Update documents in the in-memory DocumentArray"""
@@ -139,15 +142,7 @@ class NOWAnnLiteIndexer(Executor):
             return
 
         self._index.index(flat_docs)
-        self.extend_inmemory_docs(flat_docs)
-
-        for d in docs:
-            self.doc_id_tags[d.id] = d.tags
-        self.save_tags()
-
-        print('****************** index logs annlite ********************')
-        for doc in self.da:
-            print(doc.summary())
+        self.extend_inmemory_docs_and_tags(flat_docs)
 
         return DocumentArray([])
 
@@ -219,10 +214,6 @@ class NOWAnnLiteIndexer(Executor):
         - offset (int): number of documents to skip
         - limit (int): number of retrieved documents
         """
-
-        print('****************** list logs annlite ********************')
-        for doc in self.da:
-            print(doc.summary())
 
         limit = int(parameters.get('limit', maxsize))
         offset = int(parameters.get('offset', 0))
