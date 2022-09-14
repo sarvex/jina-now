@@ -8,21 +8,21 @@ from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 from jina import Executor, requests
 
-warnings.filterwarnings("ignore", category=DeprecationWarning)
+warnings.filterwarnings('ignore', category=DeprecationWarning)
 metrics_mapping = {
     'cosine': 'cosineSimilarity',
     'l2_norm': 'l2norm',
 }
 
 MAPPING = {
-    "properties": {
-        "id": {"type": "text", "analyzer": "standard"},
-        "text": {"type": "text", "analyzer": "standard"},
-        "text_embedding": {
-            "type": "dense_vector",
-            "dims": 5,
-            "similarity": "cosine",
-            "index": "true",
+    'properties': {
+        'id': {'type': 'text', 'analyzer': 'standard'},
+        'text': {'type': 'text', 'analyzer': 'standard'},
+        'text_embedding': {
+            'type': 'dense_vector',
+            'dims': 768,
+            'similarity': 'cosine',
+            'index': 'true',
         },
     }
 }
@@ -56,25 +56,27 @@ class ElasticIndexer(Executor):
         self.index_name = index_name
         self.es_mapping = es_mapping
 
-        self.es = Elasticsearch(hosts=self.hosts, **es_config)
+        self.es = Elasticsearch(hosts=self.hosts, **es_config, ssl_show_warn=False)
         if not self.es.indices.exists(index=self.index_name):
             self.es.indices.create(index=self.index_name, mappings=self.es_mapping)
 
-    @requests(on="/index")
+    @requests(on='/index')
     def index(self, docs: DocumentArray, **kwargs) -> DocumentArray:
         """
-        Index new `Document`s by adding them to the Elasticsearch indeex.
+        Index new `Document`s by adding them to the Elasticsearch index.
 
         :param docs: Documents to be indexed.
         :return: empty `DocumentArray`.
         """
         es_docs = self._transform_docs_to_es(docs)
-        bulk(self.es, es_docs, refresh="wait_for")
+        success, _ = bulk(self.es, es_docs, refresh='wait_for')
+        if success:
+            print(f'Inserted {success} documents into Elasticsearch index {self.index_name}')
         return (
             DocumentArray()
         )  # prevent sending the data back by returning an empty DocumentArray
 
-    @requests(on="/search")
+    @requests(on='/search')
     def search(
         self, docs: Union[Document, DocumentArray], limit: Optional[int] = 20, **kwargs
     ):
@@ -91,7 +93,7 @@ class ElasticIndexer(Executor):
                 fields=['text'],
                 source=False,
                 size=limit,
-            )["hits"]["hits"]
+            )['hits']['hits']
             doc.matches = self._transform_es_results_to_matches(result)
         return docs
 
@@ -109,7 +111,7 @@ class ElasticIndexer(Executor):
         :return: a dictionary containing query and filter.
         """
         query_embeddings = self._extract_embeddings(doc=query)
-        source = "_score / (_score + 10.0)"
+        source = '_score / (_score + 10.0)'
         params = {}
         # if query has embeddings then search using hybrid search, otherwise only bm25
         if query_embeddings:
@@ -118,25 +120,25 @@ class ElasticIndexer(Executor):
                     f"+ 0.5*{metrics_mapping[self.metric]}(params.query_{k}, '{k}')"
                 )
                 params[f'query_{k}'] = v
-            source += "+ 1.0"
+            source += '+ 1.0'
         query_json = {
-            "script_score": {
-                "query": {
-                    "bool": {},
+            'script_score': {
+                'query': {
+                    'bool': {},
                 },
-                "script": {"source": source, "params": params},
+                'script': {'source': source, 'params': params},
             }
         }
         return query_json
 
-    @requests(on="/update")
+    @requests(on='/update')
     def update(self, docs: DocumentArray, **kwargs) -> DocumentArray:
         """
         TODO: implement update endpoint, eg. update ES docs with new embeddings etc.
         """
         raise NotImplementedError()
 
-    @requests(on="/filter")
+    @requests(on='/filter')
     def filter(self, parameters: dict = {}, **kwargs):
         """
         TODO: implement filter query for Elasticsearch
@@ -159,13 +161,13 @@ class ElasticIndexer(Executor):
             new_doc = dict()
             new_doc['_id'] = doc.id
             for chunk in doc.chunks:
-                if chunk.modality == "text":
+                if chunk.modality == 'text':
                     new_doc['text'] = chunk.text
                     new_doc['text_embedding'] = chunk.embedding
-                elif chunk.modality == "image":
+                elif chunk.modality == 'image':
                     new_doc['image_embedding'] = chunk.embedding
-            new_doc["_op_type"] = "index"
-            new_doc["_index"] = self.index_name
+            new_doc['_op_type'] = 'index'
+            new_doc['_index'] = self.index_name
             new_docs.append(new_doc)
         return new_docs
 
@@ -198,8 +200,9 @@ class ElasticIndexer(Executor):
             elif c.modality == 'image':
                 embeddings['image_embedding'] = c.embedding
             else:
-                print("Modality not found")
+                print('Modality not found')
                 raise
         if not embeddings:
-            print("No embeddings extracted")
+            print('No embeddings extracted')
+            raise
         return embeddings
