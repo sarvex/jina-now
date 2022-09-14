@@ -3,6 +3,7 @@ import json
 import os
 import tempfile
 from collections.abc import MutableMapping
+from copy import deepcopy
 from os.path import expanduser as user
 from typing import Dict, List, Optional
 
@@ -98,7 +99,7 @@ def common_setup(
         add_embeddings=True,
         loss='TripletMarginLoss',
     )
-    tags = _extract_tags_annlite(dataset[0], user_input)
+    tags = _extract_tags_annlite(deepcopy(dataset[0]), user_input)
     env_dict = common_get_flow_env_dict(
         finetune_settings=finetune_settings,
         encoder_uses=encoder_uses,
