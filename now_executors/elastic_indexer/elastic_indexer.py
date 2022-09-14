@@ -71,7 +71,9 @@ class ElasticIndexer(Executor):
         es_docs = self._transform_docs_to_es(docs)
         success, _ = bulk(self.es, es_docs, refresh='wait_for')
         if success:
-            print(f'Inserted {success} documents into Elasticsearch index {self.index_name}')
+            print(
+                f'Inserted {success} documents into Elasticsearch index {self.index_name}'
+            )
         return (
             DocumentArray()
         )  # prevent sending the data back by returning an empty DocumentArray
