@@ -146,18 +146,17 @@ def documents():
             Document(
                 id="doc1",
                 blob=b"gif...",
-                embedding=np.ones(5),
                 chunks=[
                     Document(
-                        id="chunk1",
+                        id="chunk11",
                         blob=b"jpg...",
-                        embedding=np.ones(5),
+                        embedding=np.array([1, 1, 1, 1, 1]),
                         tags={'color': 'red'},
                     ),
                     Document(
-                        id="chunk1",
+                        id="chunk12",
                         blob=b"jpg...",
-                        embedding=np.ones(5),
+                        embedding=np.array([1, 1, 1, 1, 1]),
                         tags={'color': 'blue'},
                     ),
                 ],
@@ -165,13 +164,18 @@ def documents():
             Document(
                 id="doc2",
                 blob=b"jpg...",
-                embedding=np.ones(5),
                 tags={'color': 'red', 'length': 18},
                 chunks=[
                     Document(
                         id="chunk21",
                         blob=b"jpg...",
-                        embedding=np.ones(5),
+                        embedding=np.array([1, 0, 0, 0, 0]),
+                        tags={'color': 'red'},
+                    ),
+                    Document(
+                        id="chunk22",
+                        blob=b"jpg...",
+                        embedding=np.array([1, 1, 1, 1, 1]),
                         tags={'color': 'red'},
                     ),
                 ],
@@ -245,3 +249,27 @@ def test_search_chunk(documents):
             return_results=True,
         )
         assert len(result2[0].matches) == 2
+
+
+def test_search_chunk_using_sum_ranker(documents):
+    with Flow().add(
+        uses=DocarrayIndexerV3_EXPERIMENT, uses_with={"traversal_paths": "@c"}
+    ) as f:
+        f.index(
+            documents,
+        )
+        result = f.search(
+            Document(
+                id="doc_search",
+                chunks=Document(
+                    id="chunk_search",
+                    blob=b"jpg...",
+                    embedding=np.array([1, 1, 1, 1, 1]),
+                ),
+            ),
+            return_results=True,
+            parameters={'ranking_method': 'sum'},
+        )
+        assert len(result[0].matches) == 2
+        assert result[0].matches[0].id == 'doc1'
+        assert result[0].matches[1].id == 'doc2'

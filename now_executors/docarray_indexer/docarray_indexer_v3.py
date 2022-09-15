@@ -1,3 +1,4 @@
+from collections import defaultdict
 from copy import deepcopy
 from sys import maxsize
 
@@ -47,15 +48,19 @@ class DocarrayIndexerV3_EXPERIMENT(Executor):
         """
         limit = parameters.get("limit", 20)
         traversal_paths = parameters.get("traversal_paths", self.traversal_paths)
+        ranking_method = parameters.get("ranking_method", "min")
         docs = docs[traversal_paths]
         filtered_docs = self.filter_docs(self.index[traversal_paths], parameters)
 
         match_limit = limit
         if traversal_paths == "@c":
-            match_limit = limit * 10
+            match_limit = limit * 3
         docs.match(filtered_docs, limit=match_limit)
         if traversal_paths == "@c":
-            self.merge_matches(docs, limit)
+            if ranking_method == "min":
+                self.merge_matches_min(docs, limit)
+            elif ranking_method == "sum":
+                self.merge_matches_sum(docs, limit)
         return docs
 
     @requests(on="/delete")
@@ -82,7 +87,7 @@ class DocarrayIndexerV3_EXPERIMENT(Executor):
         result = self.index[traversal_paths].find(filtering_condition)
         return result
 
-    def merge_matches(self, docs, limit):
+    def merge_matches_min(self, docs, limit):
         #   to avoid having duplicate root level matches, we have to:
         #   0. matching happening on chunk level
         #   1. retrieve more docs since some of them could be duplicates
@@ -104,6 +109,19 @@ class DocarrayIndexerV3_EXPERIMENT(Executor):
                 if len(parents) == limit:
                     break
             d.matches = parents
+
+    def merge_matches_sum(self, docs, limit):
+        # in contrast to merge_matches_min, merge_matches_sum adds up all the scores of the matches on chunk level
+        # and returns the top k matches on root level
+        # m.score.value is a distance metric
+        for d in docs:
+            parents = defaultdict(float)
+            for m in d.matches:
+                parents[m.parent_id] += m.scores['cosine'].value
+            parents = sorted(parents.items(), key=lambda x: x[1])
+            parents = parents[:limit]
+            parent_docs = [self.index[parent_id] for parent_id, _ in parents]
+            d.matches = parent_docs
 
     def filter_docs(self, documents, parameters):
         filter = parameters.get("filter", {})
