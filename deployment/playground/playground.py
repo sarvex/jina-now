@@ -76,6 +76,15 @@ def get_cookie_value(cookie_name):
             return v
 
 
+def nav_to(url):
+    nav_script = """
+        <meta http-equiv="refresh" content="0; url='%s'">
+    """ % (
+        url
+    )
+    st.write(nav_script, unsafe_allow_html=True)
+
+
 def deploy_streamlit():
     """
     We want to provide the end-to-end experience to the user.
@@ -100,12 +109,7 @@ def deploy_streamlit():
         st.write(html, unsafe_allow_html=True)
 
     if redirect_to and st.session_state.login:
-        st.write('')
-        st.write('You are not Logged in. Please Login.')
-        st.markdown(
-            get_login_button(redirect_to),
-            unsafe_allow_html=True,
-        )
+        nav_to(redirect_to)
     else:
         da_img = None
         da_txt = None
