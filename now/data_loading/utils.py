@@ -1,7 +1,7 @@
 import base64
 import os
 from os.path import join as osp
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from docarray import Document, DocumentArray
 
@@ -55,22 +55,25 @@ def get_dataset_url(dataset: str, output_modality: Modalities) -> str:
         return f'{BASE_STORAGE_URL}/{data_folder}/{dataset}-{docarray_version}.bin'
 
 
-def transform_es_data(data: DocumentArray) -> List[Dict[str, Any]]:
+def transform_es_doc(document: Document) -> Document:
     """
     Transform data extracted from Elasticsearch to a more convenient form.
 
-    :param data: Loaded `DocumentArray` containing ES data.
-    :return: List of data examples as dictionaries.
+    :param document: `Document` containing ES data.
+    :return: Transformed `Document`.
     """
-    transformed_data = []
-    for document in data:
-        attributes = {}
-        transform_doc(document, attributes, [])
-        transformed_data.append(attributes)
-    return transformed_data
+    attributes = []
+    _transform_es_doc(document, attributes, [])
+    transformed_doc = Document(
+        chunks=[
+            Document(content=value, modality=modality, tags={'field_name': name})
+            for name, value, modality in attributes
+        ]
+    )
+    return transformed_doc
 
 
-def transform_doc(document: Document, attributes: Dict[str, Any], names: List[str]):
+def _transform_es_doc(document: Document, attributes: List[Tuple], names: List[str]):
     """
     Extract attributes from a `Document` and store it as a dictionary.
 
@@ -88,11 +91,9 @@ def transform_doc(document: Document, attributes: Dict[str, Any], names: List[st
         attr_val = (
             document.text if document.tags['modality'] == 'text' else document.uri
         )
-        if attr_name not in attributes:
-            attributes[attr_name] = []
-        attributes[attr_name].append(attr_val)
+        attributes.append((attr_name, attr_val, document.tags['modality']))
     else:
         if 'field_name' in document.tags:
             names.append(document.tags['field_name'])
         for doc in document.chunks:
-            transform_doc(doc, attributes, names[:])
+            _transform_es_doc(doc, attributes, names[:])

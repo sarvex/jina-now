@@ -106,6 +106,7 @@ class UserInput(BaseModel):
     aws_region_name: Optional[str] = None
 
     # ES related
+
     task_config: Optional[Task] = None
 
     # model related
