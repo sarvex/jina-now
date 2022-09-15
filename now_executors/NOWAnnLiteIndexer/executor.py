@@ -161,13 +161,25 @@ class NOWAnnLiteIndexer(Executor):
         one document containg a dictionary in tags like the following:
         {'tags':{'color':['red', 'blue'], 'greeting':['hello']}}
         """
-        tag_values = defaultdict(set)
+        count_dict = defaultdict(dict)
         for tags in self.doc_id_tags.values():
-            for tag, value in tags.items():
-                tag_values[tag].add(value)
-        for tag, value in tag_values.items():
-            tag_values[tag] = list(value)
-        return DocumentArray([Document(text='tags', tags={'tags': dict(tag_values)})])
+            for key, value in tags.items():
+                if key in count_dict:
+                    if value in count_dict[key]:
+                        count_dict[key][value] += 1
+                    else:
+                        count_dict[key][value] = 1
+                else:
+                    count_dict[key] = {}
+                    count_dict[key][value] = 1
+
+        for key, inside_dict in count_dict.items():
+            count_dict[key] = dict(
+                sorted(inside_dict.items(), key=lambda item: item[1])
+            )
+            count_dict[key] = list((count_dict[key]))[-10:]
+
+        return DocumentArray([Document(text='tags', tags={'tags': dict(count_dict)})])
 
     @secure_request(on='/update', level=SecurityLevel.USER)
     def update(
