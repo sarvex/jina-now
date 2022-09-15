@@ -150,13 +150,13 @@ def documents():
                     Document(
                         id="chunk11",
                         blob=b"jpg...",
-                        embedding=np.array([1, 1, 1, 1, 1]),
+                        embedding=np.array([0.1, 0.1]),
                         tags={'color': 'red'},
                     ),
                     Document(
                         id="chunk12",
                         blob=b"jpg...",
-                        embedding=np.array([1, 1, 1, 1, 1]),
+                        embedding=np.array([0.2, 0.1]),
                         tags={'color': 'blue'},
                     ),
                 ],
@@ -169,13 +169,13 @@ def documents():
                     Document(
                         id="chunk21",
                         blob=b"jpg...",
-                        embedding=np.array([1, 0, 0, 0, 0]),
+                        embedding=np.array([0.3, 0.1]),
                         tags={'color': 'red'},
                     ),
                     Document(
                         id="chunk22",
                         blob=b"jpg...",
-                        embedding=np.array([1, 1, 1, 1, 1]),
+                        embedding=np.array([0.4, 0.1]),
                         tags={'color': 'red'},
                     ),
                 ],
@@ -183,7 +183,20 @@ def documents():
             Document(
                 id="doc3",
                 blob=b"jpg...",
-                embedding=np.ones(5),
+                tags={'color': 'red', 'length': 18},
+                chunks=[
+                    Document(
+                        id="chunk31",
+                        blob=b"jpg...",
+                        embedding=np.array([0.5, 0.1]),
+                        tags={'color': 'red'},
+                    ),
+                ],
+            ),
+            Document(
+                id="doc4",
+                blob=b"jpg...",
+                embedding=np.ones(6),
                 tags={'color': 'blue'},
             ),
         ]
@@ -264,12 +277,13 @@ def test_search_chunk_using_sum_ranker(documents):
                 chunks=Document(
                     id="chunk_search",
                     blob=b"jpg...",
-                    embedding=np.array([1, 1, 1, 1, 1]),
+                    embedding=np.array([0.5, 0.1]),
                 ),
             ),
             return_results=True,
             parameters={'ranking_method': 'sum'},
         )
-        assert len(result[0].matches) == 2
-        assert result[0].matches[0].id == 'doc1'
-        assert result[0].matches[1].id == 'doc2'
+        assert len(result[0].matches) == 3
+        assert result[0].matches[0].id == 'doc2'
+        assert result[0].matches[1].id == 'doc1'
+        assert result[0].matches[2].id == 'doc3'

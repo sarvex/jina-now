@@ -46,9 +46,9 @@ class DocarrayIndexerV3_EXPERIMENT(Executor):
         We adapt this query by parsing the above query and add the prefix tags__
         to all tags.
         """
-        limit = parameters.get("limit", 20)
+        limit = int(parameters.get("limit", 20))
         traversal_paths = parameters.get("traversal_paths", self.traversal_paths)
-        ranking_method = parameters.get("ranking_method", "min")
+        ranking_method = parameters.get("ranking_method", "sum")
         docs = docs[traversal_paths]
         filtered_docs = self.filter_docs(self.index[traversal_paths], parameters)
 
@@ -111,17 +111,30 @@ class DocarrayIndexerV3_EXPERIMENT(Executor):
             d.matches = parents
 
     def merge_matches_sum(self, docs, limit):
-        # in contrast to merge_matches_min, merge_matches_sum adds up all the scores of the matches on chunk level
-        # and returns the top k matches on root level
+        # in contrast to merge_matches_min, merge_matches_avg sorts the parent matches by the average distance of all chunk matches
+        # we have 3 chunks indexed for each root document but the matches might contain less than 3 chunks
+        # in case of less than 3 chunks, we assume that the distance of the missing chunks is the same to the last match
         # m.score.value is a distance metric
         for d in docs:
-            parents = defaultdict(float)
+            parent_id_count_and_sum = defaultdict(lambda: [0, 0])
             for m in d.matches:
-                parents[m.parent_id] += m.scores['cosine'].value
-            parents = sorted(parents.items(), key=lambda x: x[1])
-            parents = parents[:limit]
-            parent_docs = [self.index[parent_id] for parent_id, _ in parents]
-            d.matches = parent_docs
+                count_and_sum = parent_id_count_and_sum[m.parent_id]
+                distance = m.scores['cosine'].value
+                count_and_sum[0] += 1
+                count_and_sum[1] += distance
+            all_parent_ids = []
+            for group in (3, 2, 1):
+                parent_to_sum = {
+                    parent: count_and_sum[1]
+                    for parent, count_and_sum in parent_id_count_and_sum.items()
+                    if count_and_sum[0] == group
+                }
+                parent_to_sum_sorted = sorted(parent_to_sum.items(), key=lambda x: x[1])
+                parent_ids = [parent for parent, _ in parent_to_sum_sorted]
+                all_parent_ids.extend(parent_ids)
+                print(f'# num parents for group {group}: {len(parent_ids)}')
+            parent_docs = [self.index[parent_id] for parent_id in all_parent_ids]
+            d.matches = parent_docs[:limit]
 
     def filter_docs(self, documents, parameters):
         filter = parameters.get("filter", {})
