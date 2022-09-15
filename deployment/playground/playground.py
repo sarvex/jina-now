@@ -221,17 +221,26 @@ def _do_login(params):
     redirect_uri = quote(redirect_uri)
     rsp = requests.get(
         url=f'https://api.hubble.jina.ai/v2/rpc/user.identity.authorize'
-        f'?provider=jina-login&response_mode=query&redirect_uri={redirect_uri}&scope=email%20profile%20openid'
+        f'?provider=jina-login&response_mode=query&redirect_uri={redirect_uri}&scope=email%20profile%20openid&prompt=login'
     ).json()
     redirect_to = rsp['data']['redirectTo']
     return redirect_to
 
 
 def _do_logout():
+
+    headers = {
+        "Content-Type": "application/json; charset=utf-8",
+        "Authorization": 'Token ' + st.session_state.token_val,
+    }
     st.session_state.jwt_val = None
     st.session_state.avatar_val = None
     st.session_state.token_val = None
     st.session_state.login = True
+    response = requests.post(
+        'https://api.hubble.jina.ai/v2/rpc/user.session.dismiss',
+        headers=headers,
+    )
     cookie_manager.delete(cookie=JWT_COOKIE, key=JWT_COOKIE)
 
 
