@@ -2,7 +2,6 @@ import numpy as np
 from docarray import Document, DocumentArray
 from jina import Flow
 from ..elastic_indexer import ElasticIndexer
-from now_executors.elastic_indexer import ElasticIndexer
 from elasticsearch import Elasticsearch
 
 MAPPING = {
@@ -24,6 +23,7 @@ MAPPING = {
     }
 }
 
+<<<<<<< HEAD
 
 def test_indexing():
     index_name = "test-nest"
@@ -32,6 +32,12 @@ def test_indexing():
         uses=ElasticIndexer,
         uses_with={"hosts": hosts, "index_name": index_name, "es_mapping": MAPPING},
     ) as f:
+=======
+def test_indexing():
+    index_name = "test-nest"
+    hosts = "http://localhost:9200"
+    with Flow().add(uses=ElasticIndexer, uses_with={"hosts": hosts, "index_name": index_name,"es_mapping": MAPPING}) as f:
+>>>>>>> main
         f.index(
             DocumentArray(
                 [
@@ -74,6 +80,7 @@ def test_indexing():
         )
         es = Elasticsearch(hosts=hosts)
         # fetch all indexed documents
+<<<<<<< HEAD
         res = es.search(
             index=index_name, body={'size': 100, 'query': {'match_all': {}}}
         )
@@ -87,6 +94,15 @@ def test_search():
         uses=ElasticIndexer,
         uses_with={"hosts": hosts, "index_name": index_name, "es_mapping": MAPPING},
     ) as f:
+=======
+        res = es.search(index=index_name, body={'size':100, 'query': {'match_all': {} }})
+        assert len(res['hits']['hits']) == 2
+
+def test_search():
+    index_name = "test-nest"
+    hosts = "http://localhost:9200"
+    with Flow().add(uses=ElasticIndexer, uses_with={"hosts": hosts, "index_name": index_name,"es_mapping": MAPPING}) as f:
+>>>>>>> main
         f.index(
             DocumentArray(
                 [
@@ -128,6 +144,7 @@ def test_search():
             )
         )
         x = f.search(
+<<<<<<< HEAD
             DocumentArray(
                 [
                     Document(
@@ -142,5 +159,21 @@ def test_search():
                 ]
             )
         )
+=======
+                DocumentArray(
+                    [
+                        Document(
+                            chunks=[
+                                Document(
+                                    text='this is a flower',
+                                    embedding=np.random.rand(5),
+                                    modality='text',
+                                )
+                            ]
+                        )
+                    ]
+                )
+            )
+>>>>>>> main
         assert len(x) != 0
         assert len(x.matches) != 0
