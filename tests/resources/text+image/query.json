@@ -1,0 +1,4 @@
+{
+  "query": {"match_all": {}},
+  "fields" : ["uris", "text", "title"]
+}

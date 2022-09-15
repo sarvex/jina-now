@@ -37,6 +37,9 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
         elif user_input.custom_dataset_type == DatasetTypes.S3_BUCKET:
             da = _list_files_from_s3_bucket(app=app, user_input=user_input)
             da = _load_tags_from_json_if_needed(da, user_input)
+        elif user_input.custom_dataset_type == DatasetTypes.ELASTICSEARCH:
+            da = _extract_es_data(user_input)
+
     else:
         print('⬇  Download DocArray dataset')
         url = get_dataset_url(user_input.data, app.output_modality)
@@ -138,6 +141,11 @@ def match_types(uri, supported_file_types):
         if t == '**' or uri.split('.')[-1] == t:
             return True
     return False
+
+
+def _extract_es_data(user_input: UserInput) -> DocumentArray:
+
+    return DocumentArray()
 
 
 def _load_from_disk(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:

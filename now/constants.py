@@ -35,6 +35,7 @@ class DatasetTypes(BetterEnum):
     URL = 'url'
     DOCARRAY = 'docarray'
     S3_BUCKET = 's3_bucket'
+    ELASTICSEARCH = 'es'
 
 
 class Qualities(BetterEnum):
