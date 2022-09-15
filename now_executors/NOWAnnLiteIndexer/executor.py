@@ -164,14 +164,7 @@ class NOWAnnLiteIndexer(Executor):
         count_dict = defaultdict(dict)
         for tags in self.doc_id_tags.values():
             for key, value in tags.items():
-                if key in count_dict:
-                    if value in count_dict[key]:
-                        count_dict[key][value] += 1
-                    else:
-                        count_dict[key][value] = 1
-                else:
-                    count_dict[key] = {}
-                    count_dict[key][value] = 1
+                count_dict[key][value] += 1
 
         for key, inside_dict in count_dict.items():
             count_dict[key] = dict(
