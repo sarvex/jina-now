@@ -161,7 +161,8 @@ class NOWAnnLiteIndexer(Executor):
         one document containg a dictionary in tags like the following:
         {'tags':{'color':['red', 'blue'], 'greeting':['hello']}}
         """
-        count_dict = defaultdict(dict)
+
+        count_dict = defaultdict(lambda: defaultdict(int))
         for tags in self.doc_id_tags.values():
             for key, value in tags.items():
                 count_dict[key][value] += 1
