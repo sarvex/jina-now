@@ -1,11 +1,12 @@
 from typing import Dict, Generator, List, Optional
 
-import urllib3
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 
-# disable SSL warnings until tests using certificates
-urllib3.disable_warnings()
+import logging
+
+logging.getLogger("urllib3").setLevel(logging.WARNING)
+logging.getLogger("elastic_transport").setLevel(logging.WARNING)
 
 
 class ElasticsearchConnector:

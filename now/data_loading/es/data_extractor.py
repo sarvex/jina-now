@@ -1,10 +1,15 @@
 import os
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union, Set
 
 from docarray import Document
 from PIL import Image
 
 from .connector import ElasticsearchConnector
+
+import logging
+
+logging.getLogger("PIL.Image").setLevel(logging.CRITICAL + 1)
+
 
 ID_TAG = 'id'
 FIELD_TAG = 'field_name'
@@ -147,6 +152,7 @@ class ElasticsearchExtractor:
             frontier = new_frontier
         return root[1]
 
-    def _get_supported_image_extensions(self) -> List[str]:
-        exts = Image.registered_extensions()
-        return {ex for ex, f in exts.items() if f in Image.OPEN}
+    @staticmethod
+    def _get_supported_image_extensions() -> Set[str]:
+        extensions = Image.registered_extensions()
+        return {ex for ex, f in extensions.items() if f in Image.OPEN}

@@ -4,7 +4,6 @@ from warnings import filterwarnings, catch_warnings
 
 import pytest
 from urllib3.exceptions import InsecureRequestWarning, SecurityWarning
-
 from now.data_loading.es import ElasticsearchConnector, ElasticsearchExtractor
 from tests.integration.data_loading.es.example_dataset import ExampleDataset
 
@@ -54,11 +53,8 @@ def es_query_path(resources_folder_path):
 @pytest.fixture()
 def setup_online_shop_db(setup_elastic_db, es_connection_params, online_shop_resources):
     """
-    This fixture loads data from Online shop data into an Elasticsearch instance setup via
-    docker by the tests/resources/setup_es_docker.sh script
-    :return: ElasticsearchConnector and index name
+    This fixture loads data from Online shop data into an Elasticsearch instance.
     """
-
     es_connector = setup_elastic_db
     connection_str, connection_args = es_connection_params
     corpus_path, mapping_path, index_name = online_shop_resources

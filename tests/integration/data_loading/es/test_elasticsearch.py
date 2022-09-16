@@ -1,11 +1,14 @@
+from docarray import DocumentArray, Document
+
 from now.data_loading.utils import transform_es_doc
 
 
 def test_extraction(setup_extractor):
-    extractor, index_name = setup_extractor
-    for doc in extractor:
-        trans = transform_es_doc(doc)
-        for chunk in trans.chunks:
-            print(chunk.tags['field_name'])
-            print(chunk.content, chunk.text, chunk.uri, chunk.modality)
-        break
+    extractor, _ = setup_extractor
+    transformed_docs = DocumentArray([transform_es_doc(doc) for doc in extractor])
+    assert len(transformed_docs) == 50
+    assert isinstance(transformed_docs[0], Document)
+    assert len(transformed_docs[0].chunks) == 3
+    assert sorted(
+        [doc.tags['field_name'] for doc in transformed_docs[0].chunks]
+    ) == sorted(['title', 'text', 'uris'])
