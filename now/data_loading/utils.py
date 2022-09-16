@@ -1,7 +1,7 @@
 import base64
 import os
 from os.path import join as osp
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 from docarray import Document, DocumentArray
 
@@ -61,24 +61,31 @@ def transform_es_doc(document: Document) -> Document:
     :param document: `Document` containing ES data.
     :return: Transformed `Document`.
     """
-    attributes = []
-    _transform_es_doc(document, attributes, [])
+    attr_values, attr_modalities = {}, {}
+    _transform_es_doc(document, attr_values, attr_modalities, [])
     transformed_doc = Document(
         chunks=[
-            Document(content=value, modality=modality, tags={'field_name': name})
-            for name, value, modality in attributes
+            Document(
+                content=attr_values[name],
+                modality=attr_modalities[name],
+                tags={'field_name': name},
+            )
+            for name in attr_values
         ]
     )
     return transformed_doc
 
 
-def _transform_es_doc(document: Document, attributes: List[Tuple], names: List[str]):
+def _transform_es_doc(
+    document: Document, attr_values: Dict, attr_modalities: Dict, names: List[str]
+):
     """
     Extract attributes from a `Document` and store it as a dictionary.
     Recursively iterates across different chunks of the `Document` and collects
     attributes with their corresponding values.
     :param document: `Document` we want to transform.
-    :param attributes: Dictionary of attributes extracted from the document.
+    :param attr_values: Dictionary of attribute values extracted from the document.
+    :param attr_modalities: Dictionary of attribute modalities extracted from the document.
     :param names: Name of an attribute (attribute names may be nested, e.g.
         info.cars, and we need to store name(s) on every level of recursion).
     """
@@ -88,9 +95,12 @@ def _transform_es_doc(document: Document, attributes: List[Tuple], names: List[s
         attr_val = (
             document.text if document.tags['modality'] == 'text' else document.uri
         )
-        attributes.append((attr_name, attr_val, document.tags['modality']))
+        if attr_name not in attr_modalities:
+            attr_modalities[attr_name] = document.tags['modality']
+            attr_values[attr_name] = []
+        attr_values[attr_name].append(attr_val)
     else:
         if 'field_name' in document.tags:
             names.append(document.tags['field_name'])
         for doc in document.chunks:
-            _transform_es_doc(doc, attributes, names[:])
+            _transform_es_doc(doc, attr_values, attr_modalities, names[:])

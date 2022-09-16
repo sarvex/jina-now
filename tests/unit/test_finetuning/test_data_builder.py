@@ -47,11 +47,13 @@ def test_data_generation(get_task_config_path):
 
 def test_image_normalizer():
     uri = 'https://product-finder.wordlift.io/wp-content/uploads/2021/06/93217825.jpeg'
-    document = {
-        'other_attr': 10,
-        'uris': [uri],
-        'better_uris': [uri, uri],
-    }
+    document = Document(
+        chunks=[
+            Document(tags={'field_name': 'other_attr'}, content=[10]),
+            Document(tags={'field_name': 'uris'}, content=[uri]),
+            Document(tags={'field_name': 'better_uris'}, content=[uri, uri]),
+        ]
+    )
     scope = ['uris', 'better_uris']
     img_proc = ImageNormalizer(scope=scope)
     processed_imgs = img_proc.process(document=document)
@@ -72,7 +74,13 @@ def test_image_normalizer():
     ],
 )
 def test_text_processor(scope, permute, powerset, example, length):
-    document = {'attr1': ['hello'], 'attr2': ['hi', 'hey'], 'irrelevant_attr': ['bye']}
+    document = Document(
+        chunks=[
+            Document(tags={'field_name': 'attr1'}, content=['hello']),
+            Document(tags={'field_name': 'attr2'}, content=['hi', 'hey']),
+            Document(tags={'field_name': 'irrelevant_attr'}, content=['bye']),
+        ]
+    )
     text_proc = TextProcessor(scope=scope, powerset=powerset, permute=permute)
     processed_docs = text_proc.process(document)
     assert len(processed_docs) == length

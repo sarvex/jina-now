@@ -40,7 +40,7 @@ class EncoderDataBuilder:
             if issubclass(cls, GeneratorFunction)
         }
 
-    def build(self, es_data: List[Dict[str, Any]]) -> DocumentArray:
+    def build(self, es_data: DocumentArray) -> DocumentArray:
         """
         Generates query and target data based on method(s).
 
@@ -64,7 +64,7 @@ class EncoderDataBuilder:
                 if self._modality == 'single_model':
                     merged_docs = []
                     for doc in [*queries, *targets]:
-                        doc.tags = {'finetuner_label': document['id']}
+                        doc.tags = {'finetuner_label': document.id}
                         merged_docs.append(doc)
                     data.extend(merged_docs)
                 else:
@@ -165,8 +165,6 @@ class DataBuilder:
 
         def _generate(data: DocumentArray, data_builder: EncoderDataBuilder):
             transformed_data = DocumentArray([transform_es_doc(doc) for doc in data])
-            for data_dict, document in zip(transformed_data, data):
-                data_dict['id'] = document.id
             return data_builder.build(es_data=transformed_data)
 
         data = []
