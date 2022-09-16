@@ -125,3 +125,7 @@ You can perform all the usual operations on the respective endpoints
   - `dim`: the dimension of the embeddings
   - `metric`: the distance metric type
   - `is_trained`: whether the index is already trained
+
+## Extra Operations
+
+Keeps track of the existing tags and their values inside a saved dictionary, these tags can be accessed using the endpoint `/tags`
