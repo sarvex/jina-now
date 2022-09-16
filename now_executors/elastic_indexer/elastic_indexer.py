@@ -17,16 +17,16 @@ metrics_mapping = {
 
 class ElasticIndexer(Executor):
     def __init__(
-            self,
-            hosts: Union[
-                str, List[Union[str, Mapping[str, Union[str, int]]]], None
-            ] = 'http://localhost:9200',
-            es_config: Optional[Dict[str, Any]] = {},
-            metric: str = 'cosine',
-            dims: Union[List[int], int] = None,
-            index_name: str = 'nest',
-            traversal_paths: str = '@r',
-            **kwargs,
+        self,
+        hosts: Union[
+            str, List[Union[str, Mapping[str, Union[str, int]]]], None
+        ] = 'http://localhost:9200',
+        es_config: Optional[Dict[str, Any]] = {},
+        metric: str = 'cosine',
+        dims: Union[List[int], int] = None,
+        index_name: str = 'nest',
+        traversal_paths: str = '@r',
+        **kwargs,
     ):
         """
         Initializer function for the ElasticIndexer
@@ -81,7 +81,7 @@ class ElasticIndexer(Executor):
 
     @secure_request(on='/index', level=SecurityLevel.USER)
     def index(
-            self, docs: DocumentArray, parameters: dict = {}, **kwargs
+        self, docs: DocumentArray, parameters: dict = {}, **kwargs
     ) -> DocumentArray:
         """
         Index new `Document`s by adding them to the Elasticsearch index.
@@ -109,7 +109,7 @@ class ElasticIndexer(Executor):
 
     @secure_request(on='/search', level=SecurityLevel.USER)
     def search(
-            self, docs: Union[Document, DocumentArray], parameters: dict = {}, **kwargs
+        self, docs: Union[Document, DocumentArray], parameters: dict = {}, **kwargs
     ):
         """Perform traditional bm25 + vector search. By convention, BM25 will search on
         the 'text' field of the index. For now, this field contains a concatenation of
@@ -136,8 +136,6 @@ class ElasticIndexer(Executor):
             except Exception:
                 print(traceback.format_exc())
         return docs
-
-
 
     @secure_request(on='/update', level=SecurityLevel.USER)
     def update(self, docs: DocumentArray, **kwargs) -> DocumentArray:
@@ -174,9 +172,9 @@ class ElasticIndexer(Executor):
         return result[offset:limit]
 
     def _build_es_query(
-            self,
-            query: Document,
-            apply_bm25: bool,
+        self,
+        query: Document,
+        apply_bm25: bool,
     ) -> Dict:
         """
         Build script-score query used in Elasticsearch. To do this, we extract
@@ -233,7 +231,9 @@ class ElasticIndexer(Executor):
         }
         return query_json
 
-    def _transform_es_to_da(self, result: List[Dict], with_embedding: bool) -> DocumentArray:
+    def _transform_es_to_da(
+        self, result: List[Dict], with_embedding: bool
+    ) -> DocumentArray:
         """
         Transform Elasticsearch documents into DocumentArray. Assumes that all Elasticsearch
         documents have a 'text' field.
@@ -247,7 +247,9 @@ class ElasticIndexer(Executor):
             source = es_doc['_source']
             doc = Document(id=es_doc['_id'], text=source['text'])
             if with_embedding:
-                embeddings = [source[key] for key in source.keys() if key.startswith('embedding_')]
+                embeddings = [
+                    source[key] for key in source.keys() if key.startswith('embedding_')
+                ]
                 doc.chunks = [Document(embedding=e) for e in embeddings]
             da.append(doc)
         return da
