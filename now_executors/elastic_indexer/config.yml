@@ -1,4 +1,8 @@
 jtype: ElasticIndexer
+py_modules:
+  - elastic_indexer.py
 metas:
-  py_modules:
-    - elastic_indexer.py
+  name: ElasticIndexer
+  description: indexer for elasticsearch
+  url: none
+  keywords: [indexer, elastic, bm25, vector_search]
