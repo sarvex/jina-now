@@ -60,7 +60,7 @@ def search(data: NowTextSearchRequestModel):
     Retrieve matching videos for a given text as query.
     """
     query_doc, filter_query = process_query(
-        text=data.text, uri=data.uri, conditions=data.filters
+        text=data.text, uri=data.uri, conditions=data.conditions
     )
 
     # for video the search requests have to be on chunk-level

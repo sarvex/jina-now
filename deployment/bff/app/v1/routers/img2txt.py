@@ -51,7 +51,7 @@ def search(data: NowImageSearchRequestModel):
     `base64` encoded using human-readable characters - `utf-8`.
     """
     query_doc, filter_query = process_query(
-        blob=data.image, uri=data.uri, conditions=data.filters
+        blob=data.image, uri=data.uri, conditions=data.conditions
     )
 
     docs = jina_client_post(
