@@ -83,14 +83,21 @@ def preprocess_nested_docs(da: DocumentArray, user_input: UserInput) -> Document
     """
     fields = user_input.task_config.indexer_scope
     transformed_da = DocumentArray([transform_es_doc(doc) for doc in da])
+    texts, uris = [], []
+    for doc in transformed_da:
+        for chunk in doc.chunks:
+            if chunk.tags['field_name'] == fields['text']:
+                texts.append(chunk.content)
+            elif chunk.tags['field_name'] == fields['image']:
+                uris.append(chunk.content)
     return DocumentArray(
         [
             Document(
                 chunks=[
-                    Document(text=doc[fields['text']][0]),
-                    Document(uri=doc[fields['image']][0]),
+                    Document(text=text),
+                    Document(uri=uri),
                 ]
             )
-            for doc in transformed_da
+            for text, uri in zip(texts, uris)
         ]
     )
