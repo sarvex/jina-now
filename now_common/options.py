@@ -188,15 +188,52 @@ AWS_REGION_NAME = DialogOptions(
     == DatasetTypes.S3_BUCKET,
 )
 
-AWS_REGION_NAME = DialogOptions(
-    name='aws_region_name',
-    prompt_message='Please enter the AWS region:',
+# --------------------------------------------- #
+
+ES_TEXT_FIELDS = DialogOptions(
+    name='es_text_fields',
+    prompt_message='Please enter text fields of your Elasticsearch data:',
     prompt_type='input',
     depends_on=CUSTOM_DATASET_TYPE,
     conditional_check=lambda user_input: user_input.custom_dataset_type
-    == DatasetTypes.S3_BUCKET,
+    == DatasetTypes.ELASTICSEARCH,
 )
 
+ES_IMAGE_FIELDS = DialogOptions(
+    name='es_image_fields',
+    prompt_message='Please enter image fields of your Elasticsearch data:',
+    prompt_type='input',
+    depends_on=CUSTOM_DATASET_TYPE,
+    conditional_check=lambda user_input: user_input.custom_dataset_type
+    == DatasetTypes.ELASTICSEARCH,
+)
+
+ES_INDEX_NAME = DialogOptions(
+    name='es_index_name',
+    prompt_message='Please enter the name of your Elasticsearch index:',
+    prompt_type='input',
+    depends_on=CUSTOM_DATASET_TYPE,
+    conditional_check=lambda user_input: user_input.custom_dataset_type
+    == DatasetTypes.ELASTICSEARCH,
+)
+
+ES_HOST_NAME = DialogOptions(
+    name='es_host_name',
+    prompt_message='Please enter the address of your Elasticsearch node:',
+    prompt_type='input',
+    depends_on=CUSTOM_DATASET_TYPE,
+    conditional_check=lambda user_input: user_input.custom_dataset_type
+    == DatasetTypes.ELASTICSEARCH,
+)
+
+ES_ADDITIONAL_ARGS = DialogOptions(
+    name='es_additional_args',
+    prompt_message='Please enter additional arguments for your Elasticsearch node if there are any:',
+    prompt_type='input',
+    depends_on=CUSTOM_DATASET_TYPE,
+    conditional_check=lambda user_input: user_input.custom_dataset_type
+    == DatasetTypes.ELASTICSEARCH,
+)
 
 # --------------------------------------------- #
 
