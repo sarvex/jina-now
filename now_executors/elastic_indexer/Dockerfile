@@ -1,9 +1,11 @@
-FROM jinaai/jina:3.2.8-py37-perf
+FROM jinaai/jina:3-py38-perf
 
-COPY requirements.txt requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+RUN apt-get update && apt-get install --no-install-recommends -y gcc g++ git \
+    && rm -rf /var/lib/apt/lists/*
 
-COPY . /workdir/
-WORKDIR /workdir
+COPY . /workspace
+WORKDIR /workspace
+
+RUN pip install -r requirements.txt --no-cache-dir
 
 ENTRYPOINT ["jina", "executor", "--uses", "config.yml"]
