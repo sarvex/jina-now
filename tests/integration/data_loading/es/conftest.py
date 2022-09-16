@@ -19,6 +19,7 @@ def es_connection_params():
 
 @pytest.fixture
 def setup_elastic_db(es_connection_params):
+    os.system('docker-compose -f tests/resources/text+image/docker-compose.yml up -d')
     connection_str, connection_args = es_connection_params
     with catch_warnings():
         filterwarnings('ignore', category=InsecureRequestWarning)
@@ -93,4 +94,6 @@ def setup_extractor(
     es_extractor = ElasticsearchExtractor(
         query, index_name, connection_str, connection_args=connection_args
     )
-    return es_extractor, index_name
+    yield es_extractor, index_name
+
+    os.system('docker-compose -f tests/resources/text+image/docker-compose.yml down')
