@@ -6,7 +6,7 @@ from now.utils import BetterEnum
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.122-fix-log-out-2'
-NOW_PREPROCESSOR_VERSION = '0.0.85-finetune3'
+NOW_PREPROCESSOR_VERSION = '0.0.85-finetune4'
 NOW_AUTH_EXECUTOR_VERSION = '0.0.5-auth-exec-4'
 NOW_ANNLITE_INDEXER_VERSION = '0.0.3-annlite-secure-1'
 
@@ -35,7 +35,7 @@ class DatasetTypes(BetterEnum):
     URL = 'url'
     DOCARRAY = 'docarray'
     S3_BUCKET = 's3_bucket'
-    ELASTICSEARCH = 'es'
+    ELASTICSEARCH = 'elasticsearch'
 
 
 class Qualities(BetterEnum):
