@@ -63,12 +63,7 @@ def run(app_instance: JinaNOWApp, user_input: UserInput, kubectl_path: str):
     )
     print('⭐ Success - your data is indexed')
 
-    return (
-        gateway_host,
-        gateway_port,
-        gateway_host_internal,
-        gateway_port_internal,
-    )
+    return gateway_host, gateway_port, gateway_host_internal, gateway_port_internal
 
 
 @time_profiler
