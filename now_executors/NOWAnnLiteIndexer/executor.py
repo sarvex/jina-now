@@ -1,3 +1,6 @@
+import os.path
+import pickle
+from collections import defaultdict
 from copy import deepcopy
 from sys import maxsize
 from typing import Dict, List, Optional
@@ -92,19 +95,32 @@ class NOWAnnLiteIndexer(Executor):
 
         self.da = DocumentArray(sorted([d for d in self.da], key=lambda x: x.id))
 
-    def extend_inmemory_docs(self, docs):
-        """Extend the in-memory DocumentArray with new documents"""
-        self.da.extend(Document(id=d.id, uri=d.uri, tags=d.tags) for d in docs)
+        if os.path.isfile(os.path.join(self.workspace, 'tags.pkl')):
+            with open(os.path.join(self.workspace, 'tags.pkl'), 'rb') as f:
+                self.doc_id_tags = pickle.load(f)
+        else:
+            self.doc_id_tags = defaultdict(dict)
 
-    def update_inmemory_docs(self, docs):
+    def extend_inmemory_docs_and_tags(self, docs):
+        """Extend the in-memory DocumentArray with new documents"""
+        for d in docs:
+            self.da.append(Document(id=d.id, uri=d.uri, tags=d.tags))
+            self.doc_id_tags[d.id] = d.tags
+        self.save_tags()
+
+    def update_inmemory_docs_and_tags(self, docs):
         """Update documents in the in-memory DocumentArray"""
         for d in docs:
             self.da[d.id] = d
+            self.doc_id_tags[d.id] = d.tags
+        self.save_tags()
 
-    def delete_inmemory_docs(self, docs):
+    def delete_inmemory_docs_and_tags(self, docs):
         """Delete documents from the in-memory DocumentArray"""
         for d in docs:
             del self.da[d.id]
+            self.doc_id_tags.pop(d.id, None)
+        self.save_tags()
 
     @secure_request(on='/index', level=SecurityLevel.USER)
     def index(
@@ -126,8 +142,38 @@ class NOWAnnLiteIndexer(Executor):
             return
 
         self._index.index(flat_docs)
-        self.extend_inmemory_docs(flat_docs)
+        self.extend_inmemory_docs_and_tags(flat_docs)
+
         return DocumentArray([])
+
+    @secure_request(on='/tags', level=SecurityLevel.USER)
+    def get_tags_and_values(self, **kwargs):
+        """Returns tags and their possible values
+
+        for example if indexed docs are the following:
+            docs = DocumentArray([
+                Document(.., tags={'color':'red'}),
+                Document(.., tags={'color':'blue'}),
+                Document(.., tags={'greeting':'hello'}),
+            ])
+
+        the resulting response would be a document array with
+        one document containg a dictionary in tags like the following:
+        {'tags':{'color':['red', 'blue'], 'greeting':['hello']}}
+        """
+
+        count_dict = defaultdict(lambda: defaultdict(int))
+        for tags in self.doc_id_tags.values():
+            for key, value in tags.items():
+                count_dict[key][value] += 1
+
+        for key, inside_dict in count_dict.items():
+            count_dict[key] = dict(
+                sorted(inside_dict.items(), key=lambda item: item[1])
+            )
+            count_dict[key] = list((count_dict[key]))[-10:]
+
+        return DocumentArray([Document(text='tags', tags={'tags': dict(count_dict)})])
 
     @secure_request(on='/update', level=SecurityLevel.USER)
     def update(
@@ -150,7 +196,7 @@ class NOWAnnLiteIndexer(Executor):
         if len(flat_docs) == 0:
             return
 
-        self.update_inmemory_docs(flat_docs)
+        self.update_inmemory_docs_and_tags(flat_docs)
         self._index.update(flat_docs)
 
     @secure_request(on='/delete', level=SecurityLevel.USER)
@@ -162,8 +208,9 @@ class NOWAnnLiteIndexer(Executor):
         filter = parameters.get("filter", {})
         if filter:
             filtered_docs = deepcopy(self.da.find(filter=filter))
-            self.delete_inmemory_docs(filtered_docs)
+            self.delete_inmemory_docs_and_tags(filtered_docs)
             self._index.delete(filtered_docs)
+
         return DocumentArray()
 
     @secure_request(on='/list', level=SecurityLevel.USER)
@@ -173,6 +220,7 @@ class NOWAnnLiteIndexer(Executor):
         - offset (int): number of documents to skip
         - limit (int): number of retrieved documents
         """
+
         limit = int(parameters.get('limit', maxsize))
         offset = int(parameters.get('offset', 0))
         return self.da[offset : offset + limit]
@@ -261,3 +309,7 @@ class NOWAnnLiteIndexer(Executor):
     def close(self, **kwargs):
         """Close the index."""
         self._index.close()
+
+    def save_tags(self):
+        with open(os.path.join(self.workspace, 'tags.pkl'), 'wb') as f:
+            pickle.dump(self.doc_id_tags, f)

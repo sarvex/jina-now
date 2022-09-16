@@ -1,10 +1,15 @@
+import base64
 import json
 import os
+import tempfile
+from collections.abc import MutableMapping
+from copy import deepcopy
 from os.path import expanduser as user
 from typing import Dict, List, Optional
 
+import boto3
 import hubble
-from docarray import DocumentArray
+from docarray import Document, DocumentArray
 from jina import __version__ as jina_version
 
 from now.apps.base.app import JinaNOWApp
@@ -12,6 +17,7 @@ from now.constants import (
     NOW_ANNLITE_INDEXER_VERSION,
     NOW_PREPROCESSOR_VERSION,
     PREFETCH_NR,
+    DatasetTypes,
 )
 from now.finetuning.run_finetuning import finetune
 from now.finetuning.settings import FinetuneSettings, parse_finetune_settings
@@ -93,7 +99,7 @@ def common_setup(
         add_embeddings=True,
         loss='TripletMarginLoss',
     )
-    tags = _extract_tags_annlite(dataset)
+    tags = _extract_tags_annlite(deepcopy(dataset[0]), user_input)
     env_dict = common_get_flow_env_dict(
         finetune_settings=finetune_settings,
         encoder_uses=encoder_uses,
@@ -167,10 +173,71 @@ def get_indexer_config(num_indexed_samples: int) -> Dict:
     return config
 
 
-def _extract_tags_annlite(da: DocumentArray):
+def _extract_tags_annlite(d: Document, user_input):
+    print(
+        'We assume all tags follow the same structure, only first json file will be used to determine structure'
+    )
+    with tempfile.TemporaryDirectory() as tmpdir:
+        if user_input and user_input.custom_dataset_type == DatasetTypes.S3_BUCKET:
+            _maybe_download_from_s3(doc=d, tmpdir=tmpdir, user_input=user_input)
     tags = set()
-    for doc in da:
-        for tag, _ in doc.tags.items():
-            tags.add((tag, str(tag.__class__.__name__)))
+    for tag, _ in d.tags.items():
+        tags.add((tag, str(tag.__class__.__name__)))
     final_tags = [list(tag) for tag in tags]
     return final_tags
+
+
+def _maybe_download_from_s3(
+    doc: Document, tmpdir: tempfile.TemporaryDirectory, user_input
+):
+    """Downloads files to local temporary dictionary, saves S3 URI to `tags['uri']` and modifies `uri` attribute of
+    document to local path in-place.
+
+    :param docs: documents containing URIs pointing to the location on S3 bucket
+    :param tmpdir: temporary directory in which files will be saved
+    """
+
+    def download(bucket, uri):
+        path_s3 = '/'.join(uri.split('/')[3:])
+        path_local = os.path.join(
+            str(tmpdir),
+            base64.b64encode(bytes(path_s3, "utf-8")).decode("utf-8"),
+        )
+        bucket.download_file(
+            path_s3,
+            path_local,
+        )
+        return path_local
+
+    def convert_fn(d: Document, user_input) -> Document:
+        """Downloads files and tags from S3 bucket and updates the content uri and the tags uri to the local path"""
+        d.tags['uri'] = d.uri
+        session = boto3.session.Session(
+            aws_access_key_id=user_input.aws_access_key_id,
+            aws_secret_access_key=user_input.aws_secret_access_key,
+            region_name=user_input.aws_region_name,
+        )
+        bucket = session.resource('s3').Bucket(d.uri.split('/')[2])
+        d.uri = download(bucket, d.uri)
+        if 'tag_uri' in d.tags:
+            d.tags['tag_uri'] = download(bucket, d.tags['tag_uri'])
+            with open(d.tags['tag_uri'], 'r') as fp:
+                tags = json.load(fp)
+                tags = flatten_dict(tags)
+                d.tags.update(tags)
+            del d.tags['tag_uri']
+        return d
+
+    if doc.uri.startswith('s3://'):
+        doc = convert_fn(doc, user_input)
+
+
+def flatten_dict(d, parent_key='', sep='_'):
+    items = []
+    for k, v in d.items():
+        new_key = parent_key + sep + k if parent_key else k
+        if isinstance(v, MutableMapping):
+            items.extend(flatten_dict(v, new_key, sep=sep).items())
+        else:
+            items.append((new_key, v))
+    return dict(items)
