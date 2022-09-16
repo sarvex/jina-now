@@ -188,6 +188,16 @@ AWS_REGION_NAME = DialogOptions(
     == DatasetTypes.S3_BUCKET,
 )
 
+AWS_REGION_NAME = DialogOptions(
+    name='aws_region_name',
+    prompt_message='Please enter the AWS region:',
+    prompt_type='input',
+    depends_on=CUSTOM_DATASET_TYPE,
+    conditional_check=lambda user_input: user_input.custom_dataset_type
+    == DatasetTypes.S3_BUCKET,
+)
+
+
 # --------------------------------------------- #
 
 DEPLOYMENT_TYPE = DialogOptions(
