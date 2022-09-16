@@ -1,14 +1,13 @@
-import base64
 import json
 import os
 import tempfile
-from collections.abc import MutableMapping
 from concurrent.futures import ThreadPoolExecutor
 from typing import Dict, Optional
 
 import boto3
 from jina import Document, DocumentArray
 from now_common.options import _construct_app
+from now_common.utils import convert_fn
 from now_executors import NOWAuthExecutor as Executor
 from now_executors import SecurityLevel, secure_request
 
@@ -66,37 +65,6 @@ class NOWPreprocessor(Executor):
         :param tmpdir: temporary directory in which files will be saved
         """
 
-        def download(bucket, uri):
-            path_s3 = '/'.join(uri.split('/')[3:])
-            path_local = os.path.join(
-                str(tmpdir),
-                base64.b64encode(bytes(path_s3, "utf-8")).decode("utf-8"),
-            )
-            bucket.download_file(
-                path_s3,
-                path_local,
-            )
-            return path_local
-
-        def convert_fn(d: Document) -> Document:
-            """Downloads files and tags from S3 bucket and updates the content uri and the tags uri to the local path"""
-            d.tags['uri'] = d.uri
-            session = boto3.session.Session(
-                aws_access_key_id=self.user_input.aws_access_key_id,
-                aws_secret_access_key=self.user_input.aws_secret_access_key,
-                region_name=self.user_input.aws_region_name,
-            )
-            bucket = session.resource('s3').Bucket(d.uri.split('/')[2])
-            d.uri = download(bucket, d.uri)
-            if 'tag_uri' in d.tags:
-                d.tags['tag_uri'] = download(bucket, d.tags['tag_uri'])
-                with open(d.tags['tag_uri'], 'r') as fp:
-                    tags = json.load(fp)
-                    tags = flatten_dict(tags)
-                    d.tags.update(tags)
-                del d.tags['tag_uri']
-            return d
-
         docs_to_download = []
         for d in docs:
             if d.uri.startswith('s3://'):
@@ -105,7 +73,7 @@ class NOWPreprocessor(Executor):
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
             futures = []
             for d in docs_to_download:
-                f = executor.submit(convert_fn, d)
+                f = executor.submit(convert_fn, d, self.user_input, tmpdir)
                 futures.append(f)
             for f in futures:
                 f.result()
@@ -242,17 +210,6 @@ class NOWPreprocessor(Executor):
             convert_fn(d)
 
         return docs
-
-
-def flatten_dict(d, parent_key='', sep='_'):
-    items = []
-    for k, v in d.items():
-        new_key = parent_key + sep + k if parent_key else k
-        if isinstance(v, MutableMapping):
-            items.extend(flatten_dict(v, new_key, sep=sep).items())
-        else:
-            items.append((new_key, v))
-    return dict(items)
 
 
 if __name__ == '__main__':

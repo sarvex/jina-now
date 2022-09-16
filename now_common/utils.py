@@ -187,49 +187,51 @@ def _extract_tags_annlite(d: Document, user_input):
     return final_tags
 
 
+def download(bucket, uri, tmpdir):
+    path_s3 = '/'.join(uri.split('/')[3:])
+    path_local = os.path.join(
+        str(tmpdir),
+        base64.b64encode(bytes(path_s3, "utf-8")).decode("utf-8"),
+    )
+    bucket.download_file(
+        path_s3,
+        path_local,
+    )
+    return path_local
+
+
+def convert_fn(d: Document, user_input, tmpdir) -> Document:
+    """Downloads files and tags from S3 bucket and updates the content uri and the tags uri to the local path"""
+    d.tags['uri'] = d.uri
+    session = boto3.session.Session(
+        aws_access_key_id=user_input.aws_access_key_id,
+        aws_secret_access_key=user_input.aws_secret_access_key,
+        region_name=user_input.aws_region_name,
+    )
+    bucket = session.resource('s3').Bucket(d.uri.split('/')[2])
+    d.uri = download(bucket, d.uri)
+    if 'tag_uri' in d.tags:
+        d.tags['tag_uri'] = download(bucket, d.tags['tag_uri'], tmpdir)
+        with open(d.tags['tag_uri'], 'r') as fp:
+            tags = json.load(fp)
+            tags = flatten_dict(tags)
+            d.tags.update(tags)
+        del d.tags['tag_uri']
+    return d
+
+
 def _maybe_download_from_s3(
     doc: Document, tmpdir: tempfile.TemporaryDirectory, user_input
 ):
-    """Downloads files to local temporary dictionary, saves S3 URI to `tags['uri']` and modifies `uri` attribute of
+    """Downloads file to local temporary dictionary, saves S3 URI to `tags['uri']` and modifies `uri` attribute of
     document to local path in-place.
 
-    :param docs: documents containing URIs pointing to the location on S3 bucket
+    :param doc: document containing URI pointing to the location on S3 bucket
     :param tmpdir: temporary directory in which files will be saved
     """
 
-    def download(bucket, uri):
-        path_s3 = '/'.join(uri.split('/')[3:])
-        path_local = os.path.join(
-            str(tmpdir),
-            base64.b64encode(bytes(path_s3, "utf-8")).decode("utf-8"),
-        )
-        bucket.download_file(
-            path_s3,
-            path_local,
-        )
-        return path_local
-
-    def convert_fn(d: Document, user_input) -> Document:
-        """Downloads files and tags from S3 bucket and updates the content uri and the tags uri to the local path"""
-        d.tags['uri'] = d.uri
-        session = boto3.session.Session(
-            aws_access_key_id=user_input.aws_access_key_id,
-            aws_secret_access_key=user_input.aws_secret_access_key,
-            region_name=user_input.aws_region_name,
-        )
-        bucket = session.resource('s3').Bucket(d.uri.split('/')[2])
-        d.uri = download(bucket, d.uri)
-        if 'tag_uri' in d.tags:
-            d.tags['tag_uri'] = download(bucket, d.tags['tag_uri'])
-            with open(d.tags['tag_uri'], 'r') as fp:
-                tags = json.load(fp)
-                tags = flatten_dict(tags)
-                d.tags.update(tags)
-            del d.tags['tag_uri']
-        return d
-
     if doc.uri.startswith('s3://'):
-        doc = convert_fn(doc, user_input)
+        doc = convert_fn(doc, user_input, tmpdir)
 
 
 def flatten_dict(d, parent_key='', sep='_'):

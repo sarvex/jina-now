@@ -130,7 +130,7 @@ def deploy_streamlit():
         filters = None
         if params.host:
             client = Client(host=params.host)
-            if params.secured == 'true':
+            if params.secured == 'True':
                 response = client.post(
                     on='/tags', parameters={'jwt': {'token': st.session_state.jwt_val}}
                 )
@@ -209,7 +209,6 @@ def _do_login(params):
             'input_modality': params.input_modality,
             'output_modality': params.output_modality,
             'data': params.data,
-            'filter': params.filter,
         }
         if params.secured:
             query_params_var['secured'] = params.secured
