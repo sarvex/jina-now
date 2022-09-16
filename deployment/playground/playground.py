@@ -76,6 +76,15 @@ def get_cookie_value(cookie_name):
             return v
 
 
+def nav_to(url):
+    nav_script = """
+        <meta http-equiv="refresh" content="0; url='%s'">
+    """ % (
+        url
+    )
+    st.write(nav_script, unsafe_allow_html=True)
+
+
 def deploy_streamlit():
     """
     We want to provide the end-to-end experience to the user.
@@ -100,12 +109,7 @@ def deploy_streamlit():
         st.write(html, unsafe_allow_html=True)
 
     if redirect_to and st.session_state.login:
-        st.write('')
-        st.write('You are not Logged in. Please Login.')
-        st.markdown(
-            get_login_button(redirect_to),
-            unsafe_allow_html=True,
-        )
+        nav_to(redirect_to)
     else:
         da_img = None
         da_txt = None
@@ -221,17 +225,26 @@ def _do_login(params):
     redirect_uri = quote(redirect_uri)
     rsp = requests.get(
         url=f'https://api.hubble.jina.ai/v2/rpc/user.identity.authorize'
-        f'?provider=jina-login&response_mode=query&redirect_uri={redirect_uri}&scope=email%20profile%20openid'
+        f'?provider=jina-login&response_mode=query&redirect_uri={redirect_uri}&scope=email%20profile%20openid&prompt=login'
     ).json()
     redirect_to = rsp['data']['redirectTo']
     return redirect_to
 
 
 def _do_logout():
+
+    headers = {
+        "Content-Type": "application/json; charset=utf-8",
+        "Authorization": 'Token ' + st.session_state.token_val,
+    }
     st.session_state.jwt_val = None
     st.session_state.avatar_val = None
     st.session_state.token_val = None
     st.session_state.login = True
+    response = requests.post(
+        'https://api.hubble.jina.ai/v2/rpc/user.session.dismiss',
+        headers=headers,
+    )
     cookie_manager.delete(cookie=JWT_COOKIE, key=JWT_COOKIE)
 
 
