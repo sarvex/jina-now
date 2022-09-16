@@ -38,7 +38,6 @@ class NOWPostprocessor(Executor):
                         doc.tensor = None
                     except FileNotFoundError:
                         continue
-
         return docs
 
 

@@ -21,7 +21,7 @@ def process_query(
     :param text: text of the query
     :param blob: the blob of the image
     :param uri: uri of the ressource provided
-    :param conditions: dictionary with the conditions to apply as filter
+    :conditions: dictionary with the conditions to apply as filter
         tag should be the key and desired value is assigned as value
         to the key
     """

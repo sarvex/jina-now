@@ -55,7 +55,7 @@ def search(data: NowMusicSearchRequestModel):
     using human-readable characters - `utf-8`. In the case of music, the docs are already the matches.
     """
     query_doc, filter_query = process_query(
-        blob=data.song, uri=data.uri, conditions=data.filters
+        blob=data.song, uri=data.uri, conditions=data.conditions
     )
 
     docs = jina_client_post(
