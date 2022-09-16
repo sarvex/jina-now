@@ -8,6 +8,7 @@ DOCKER_BFF_PLAYGROUND_TAG = '0.0.126-playground-demo-url-2'
 NOW_PREPROCESSOR_VERSION = '0.0.86-finetune'
 NOW_AUTH_EXECUTOR_VERSION = '0.0.5-auth-exec-4'
 NOW_ANNLITE_INDEXER_VERSION = '0.0.4-revert-playground-1'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.1'
 
 
 class Modalities(BetterEnum):
