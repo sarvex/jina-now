@@ -130,7 +130,7 @@ def deploy_streamlit():
         filters = None
         if params.host:
             client = Client(host=params.host)
-            if params.secured == 'True':
+            if params.secured.lower() == 'true':
                 response = client.post(
                     on='/tags', parameters={'jwt': {'token': st.session_state.jwt_val}}
                 )

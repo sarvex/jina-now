@@ -209,7 +209,7 @@ def convert_fn(d: Document, user_input, tmpdir) -> Document:
         region_name=user_input.aws_region_name,
     )
     bucket = session.resource('s3').Bucket(d.uri.split('/')[2])
-    d.uri = download(bucket, d.uri)
+    d.uri = download(bucket, d.uri, tmpdir)
     if 'tag_uri' in d.tags:
         d.tags['tag_uri'] = download(bucket, d.tags['tag_uri'], tmpdir)
         with open(d.tags['tag_uri'], 'r') as fp:
