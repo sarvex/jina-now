@@ -6,7 +6,7 @@ from docarray import Document, DocumentArray
 from jina import Executor, requests
 
 
-class DocarrayIndexerV3_EXPERIMENT(Executor):
+class DocarrayIndexerV3_EXPERIMENT2(Executor):
     def __init__(self, traversal_paths: str = "@r", *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.traversal_paths = traversal_paths
@@ -54,7 +54,7 @@ class DocarrayIndexerV3_EXPERIMENT(Executor):
 
         match_limit = limit
         if traversal_paths == "@c":
-            match_limit = limit * 3
+            match_limit = limit * 3 * 100000
         docs.match(filtered_docs, limit=match_limit)
         if traversal_paths == "@c":
             if ranking_method == "min":
@@ -134,6 +134,7 @@ class DocarrayIndexerV3_EXPERIMENT(Executor):
                 all_parent_ids.extend(parent_ids)
                 print(f'# num parents for group {group}: {len(parent_ids)}')
             parent_docs = [self.index[parent_id] for parent_id in all_parent_ids]
+            parent_docs = self.filter_by_title(parent_docs, d.text)
             d.matches = parent_docs[:limit]
 
     def filter_docs(self, documents, parameters):
@@ -146,3 +147,16 @@ class DocarrayIndexerV3_EXPERIMENT(Executor):
                 del query[tag]
         filtered_docs = documents.find(filter=filter)
         return filtered_docs
+
+    def filter_by_title(self, parent_docs, text):
+        if len(text.split()) > 1:
+            return parent_docs
+        else:
+            return [
+                parent_doc
+                for parent_doc in parent_docs
+                if (
+                    'title' in parent_doc.tags
+                    and text in parent_doc.tags['title'].lower().split()
+                )
+            ]

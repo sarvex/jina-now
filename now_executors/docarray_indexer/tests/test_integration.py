@@ -3,13 +3,13 @@ import pytest
 from docarray import Document, DocumentArray
 from jina import Flow
 from now_executors.docarray_indexer.docarray_indexer_v3 import (
-    DocarrayIndexerV3_EXPERIMENT,
+    DocarrayIndexerV3_EXPERIMENT2,
 )
 
 
 def test_delete():
     """testing deleting of docs using filter conditions"""
-    with Flow().add(uses=DocarrayIndexerV3_EXPERIMENT) as f:
+    with Flow().add(uses=DocarrayIndexerV3_EXPERIMENT2) as f:
         f.index(
             DocumentArray(
                 [
@@ -34,7 +34,7 @@ def test_delete():
 
 
 def test_list():
-    with Flow().add(uses=DocarrayIndexerV3_EXPERIMENT) as f:
+    with Flow().add(uses=DocarrayIndexerV3_EXPERIMENT2) as f:
         f.index(
             DocumentArray(
                 [
@@ -64,7 +64,7 @@ def test_list():
 
 def test_filtering():
     with Flow().add(
-        uses=DocarrayIndexerV3_EXPERIMENT, uses_with={"traversal_paths": "@r"}
+        uses=DocarrayIndexerV3_EXPERIMENT2, uses_with={"traversal_paths": "@r"}
     ) as f:
         f.index(
             DocumentArray(
@@ -151,45 +151,45 @@ def documents():
                         id="chunk11",
                         blob=b"jpg...",
                         embedding=np.array([0.1, 0.1]),
-                        tags={'color': 'red'},
+                        tags={'title': 'red'},
                     ),
                     Document(
                         id="chunk12",
                         blob=b"jpg...",
                         embedding=np.array([0.2, 0.1]),
-                        tags={'color': 'blue'},
+                        tags={'title': 'blue'},
                     ),
                 ],
             ),
             Document(
                 id="doc2",
                 blob=b"jpg...",
-                tags={'color': 'red', 'length': 18},
+                tags={'title': 'red', 'length': 18},
                 chunks=[
                     Document(
                         id="chunk21",
                         blob=b"jpg...",
                         embedding=np.array([0.3, 0.1]),
-                        tags={'color': 'red'},
+                        tags={'title': 'red'},
                     ),
                     Document(
                         id="chunk22",
                         blob=b"jpg...",
                         embedding=np.array([0.4, 0.1]),
-                        tags={'color': 'red'},
+                        tags={'title': 'red'},
                     ),
                 ],
             ),
             Document(
                 id="doc3",
                 blob=b"jpg...",
-                tags={'color': 'red', 'length': 18},
+                tags={'title': 'blue', 'length': 18},
                 chunks=[
                     Document(
                         id="chunk31",
                         blob=b"jpg...",
                         embedding=np.array([0.5, 0.1]),
-                        tags={'color': 'red'},
+                        tags={'title': 'red'},
                     ),
                 ],
             ),
@@ -197,7 +197,7 @@ def documents():
                 id="doc4",
                 blob=b"jpg...",
                 embedding=np.ones(6),
-                tags={'color': 'blue'},
+                tags={'title': 'blue'},
             ),
         ]
     )
@@ -205,7 +205,7 @@ def documents():
 
 def test_search(documents):
     with Flow().add(
-        uses=DocarrayIndexerV3_EXPERIMENT, uses_with={"traversal_paths": "@r"}
+        uses=DocarrayIndexerV3_EXPERIMENT2, uses_with={"traversal_paths": "@r"}
     ) as f:
         f.index(documents)
         result = f.search(
@@ -232,7 +232,7 @@ def test_search(documents):
 
 def test_search_chunk(documents):
     with Flow().add(
-        uses=DocarrayIndexerV3_EXPERIMENT, uses_with={"traversal_paths": "@c"}
+        uses=DocarrayIndexerV3_EXPERIMENT2, uses_with={"traversal_paths": "@c"}
     ) as f:
         f.index(
             documents,
@@ -266,7 +266,7 @@ def test_search_chunk(documents):
 
 def test_search_chunk_using_sum_ranker(documents):
     with Flow().add(
-        uses=DocarrayIndexerV3_EXPERIMENT, uses_with={"traversal_paths": "@c"}
+        uses=DocarrayIndexerV3_EXPERIMENT2, uses_with={"traversal_paths": "@c"}
     ) as f:
         f.index(
             documents,
@@ -276,7 +276,8 @@ def test_search_chunk_using_sum_ranker(documents):
                 id="doc_search",
                 chunks=Document(
                     id="chunk_search",
-                    blob=b"jpg...",
+                    text='blue',
+                    # blob=b"jpg...",
                     embedding=np.array([0.5, 0.1]),
                 ),
             ),
