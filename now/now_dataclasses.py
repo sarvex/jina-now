@@ -107,6 +107,11 @@ class UserInput(BaseModel):
 
     # ES related
     task_config: Optional[Task] = None
+    es_text_fields: Optional[List] = None
+    es_image_fields: Optional[List] = None
+    es_index_name: Optional[str] = None
+    es_host_name: Optional[str] = None
+    es_additional_args: Optional[Dict] = None
 
     # model related
     quality: Optional[Qualities] = Qualities.MEDIUM

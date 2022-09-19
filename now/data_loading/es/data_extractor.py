@@ -20,7 +20,7 @@ MODALITY_TAG = 'modality'
 class ElasticsearchExtractor:
     def __init__(
         self,
-        query: str,
+        query: Dict,
         index: str,
         connection_str: str,
         connection_args: Optional[Dict] = None,
