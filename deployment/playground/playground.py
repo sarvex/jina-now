@@ -133,7 +133,9 @@ def deploy_streamlit():
                 if params.secured.lower() == 'true':
                     response = client.post(
                         on='/tags',
-                        parameters={'jwt': {'token': st.session_state.jwt_val}},
+                        parameters={
+                            'jwt': {'token': json.dumps(st.session_state.jwt_val)}
+                        },
                     )
                 else:
                     response = client.post(on='/tags')
