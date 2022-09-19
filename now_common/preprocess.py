@@ -94,8 +94,8 @@ def preprocess_nested_docs(da: DocumentArray, user_input: UserInput) -> Document
         [
             Document(
                 chunks=[
-                    Document(text=text),
-                    Document(uri=uri),
+                    Document(text=text[0]),
+                    Document(uri=uri[0]),
                 ]
             )
             for text, uri in zip(texts, uris)
