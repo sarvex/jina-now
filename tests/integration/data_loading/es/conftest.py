@@ -1,11 +1,15 @@
 import json
 import os
+from time import sleep
 from warnings import filterwarnings, catch_warnings
 
 import pytest
 from urllib3.exceptions import InsecureRequestWarning, SecurityWarning
 from now.data_loading.es import ElasticsearchConnector, ElasticsearchExtractor
 from tests.integration.data_loading.es.example_dataset import ExampleDataset
+import requests
+
+MAX_RETRIES = 20
 
 
 @pytest.fixture(scope="session")
@@ -17,9 +21,42 @@ def es_connection_params():
     return connection_str, connection_args
 
 
+@pytest.mark.docker
+@pytest.fixture(scope='session', autouse=True)
+def setup_service_running(es_connection_params) -> None:
+    os.system('docker-compose -f tests/resources/text+image/docker-compose.yml up -d')
+    es_connection_str, _ = es_connection_params
+    with catch_warnings():
+        filterwarnings('ignore', category=InsecureRequestWarning)
+        connection_str = es_connection_str
+        retries = 0
+        while True:
+            try:
+                retries += 1
+                if retries > MAX_RETRIES:
+                    raise RuntimeError(
+                        f'Maximal number of retries ({MAX_RETRIES}) reached for '
+                        f'connecting to {connection_str}'
+                    )
+                r = requests.get(connection_str, verify=False)
+                if r.status_code in [200, 401]:
+                    break
+                else:
+                    print(r.status_code)
+                    sleep(5)
+            except Exception:
+                if retries > MAX_RETRIES:
+                    raise RuntimeError(
+                        f'Maximal number of retries ({MAX_RETRIES}) reached for '
+                        f'connecting to {connection_str}'
+                    )
+                sleep(3)
+    yield
+    os.system('docker-compose -f tests/resources/text+image/docker-compose.yml down')
+
+
 @pytest.fixture
 def setup_elastic_db(es_connection_params):
-    os.system('docker-compose -f tests/resources/text+image/docker-compose.yml up -d')
     connection_str, connection_args = es_connection_params
     with catch_warnings():
         filterwarnings('ignore', category=InsecureRequestWarning)
@@ -95,5 +132,3 @@ def setup_extractor(
         query, index_name, connection_str, connection_args=connection_args
     )
     yield es_extractor, index_name
-
-    os.system('docker-compose -f tests/resources/text+image/docker-compose.yml down')

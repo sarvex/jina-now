@@ -9,9 +9,3 @@ services:
       ELASTIC_USERNAME: "elastic"
       ELASTIC_PASSWORD: "elastic"
     restart: always
-  mongodb:
-    image: "mongo:latest"
-    container_name: "test-mongo"
-    ports:
-      - "27017:27017"
-    restart: always
