@@ -87,8 +87,9 @@ If you don't want to use an existing cluster, you can create a new one locally.
 
 <img width="643" alt="question-cluster" src="https://user-images.githubusercontent.com/11627845/170256027-99798fae-3ec4-42dc-8737-843f4a23f941.png">
 
-After the program execution is finished, two links will be shown to you. The first one brings you to a playground where you can run example queries and experiment with the search case.
-The second URL leads you to the swagger UI which is useful for Frontend integration.
+After the program execution is finished, two links will be shown to you. The first one brings you to the
+swagger UI which is useful for Frontend integration.
+The second URL leads you to a playground where you can run example queries and experiment with the search case.
 
 <img width="709" alt="Screenshot 2022-05-26 at 16 34 56" src="https://user-images.githubusercontent.com/11627845/170511632-c741a418-1246-4c23-aadd-cfd74d783f6b.png">
 
@@ -184,3 +185,41 @@ jina now stop
 
 ### Now use your custom data :)
 <!-- end elevator-pitch -->
+
+#### AWS S3 Bucket support
+
+We now support S3 Bucket, after selecting custom data you can select S3 Bucket.
+Then you can provide your `AWS access key ID` and `AWS secret key`, you can choose to secure your Flow
+and provide a list of emails of anyone you want to share your flow with.
+
+<img width="506" alt="question-s3-bucket" src="https://user-images.githubusercontent.com/40893766/191000917-88a903ec-bf0d-4206-9e9b-029401c34843.png">
+
+Your data is automatically loaded from the S3 bucket, however it is totally secure. It will not be downloaded
+or seen by anyone and it will also be removed when the flow is stopped.
+
+#### Security
+
+You can choose to secure your Flow:
+
+<img width="506" alt="question-security" src="https://user-images.githubusercontent.com/40893766/191002151-4cb2d223-a266-45ea-87cd-57c4968059de.png">
+
+You can also choose to grant additional users access to the flow:
+
+<img width="506" alt="question-other-users" src="https://user-images.githubusercontent.com/40893766/191002373-b660df33-0f36-44d4-9f81-3e8ad8e026ab.png
+">
+
+You can do this by specifying their email addresses and seperate them using commas:
+
+<img width="506" alt="question-emails" src="https://user-images.githubusercontent.com/40893766/191002764-049037fb-6eb7-44a6-8b22-c86687b95e0f.png
+">
+
+#### Finetuning
+
+We also support finetuning, to enable this when you create your `DocumentArray` you also provide labels inside
+the tags more specifically the tag `finetuner_label`. This will automatically trigger the finetuning and your embeddings
+will be improved thus enhancing the quality of your final NOW search application.
+
+More information on the training data format can be found [here](https://finetuner.jina.ai/walkthrough/create-training-data/#prepare-training-data)
+
+#### Backend for Frontend
+
