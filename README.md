@@ -135,7 +135,7 @@ jina now stop
 - 10 GB assigned to docker
 - User must be permitted to run docker containers
 
-### Production Readiness
+### Production readiness
 
 Jina NOW apps are production ready, our goal is to provide you with a search pipeline that is easy to integrate in your production
 system. We also come with other aspects such as AWS S3 Bucket data integration, security and finetuning.
@@ -144,7 +144,7 @@ From our experiments you can expect:
 - Queries per second: 13
 - Latency: 300 ms
 
-#### AWS S3 Bucket support
+#### AWS S3 bucket support
 
 We now support S3 Bucket, after selecting custom data you can select S3 Bucket.
 Then you can provide your `AWS access key ID` and `AWS secret key`, you can choose to secure your Flow
@@ -179,9 +179,9 @@ will be improved thus enhancing the quality of your final NOW search application
 
 More information on the training data format can be found [here](https://finetuner.jina.ai/walkthrough/create-training-data/#prepare-training-data)
 
-#### Backend for Frontend
+#### Backend for frontend
 
-We provide users with Backend For Frontend API that you can call for your search application, which makes integrating to your custom
+We provide users with BFF (Backend For Frontend) API that you can call for your search application, which makes integrating to your custom
 frontend easy and seamless.
 
 <img width="506" alt="question-emails" src="https://user-images.githubusercontent.com/40893766/191207810-e1a1df17-acf3-4de2-8211-9a297b52e3a8.png
