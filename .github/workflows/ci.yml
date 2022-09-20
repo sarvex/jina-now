@@ -316,7 +316,7 @@ jobs:
         env:
           NOW_ELASTIC_INDEXER_VERSION: ${{ env.NOW_ELASTIC_INDEXER_VERSION }}
         run: |
-          if jina hub pull jinahub+docker://1uhbvygw/v$NOW_ELASTIC_INDEXER_VERSION; then
+          if jina hub pull jinahub+docker://i7asjny7/v$NOW_ELASTIC_INDEXER_VERSION; then
             echo "NOW Elastic Indexer version is used already. Please update the tag"
             exit 1
           else
