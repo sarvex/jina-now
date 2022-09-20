@@ -1,5 +1,5 @@
 {
-  "name": "",
+  "name": "text to text+image app configuration",
   "encoders": [
     {
       "name": "text_encoder",

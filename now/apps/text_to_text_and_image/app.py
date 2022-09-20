@@ -52,10 +52,11 @@ class TextToTextAndImage(JinaNOWApp):
     @staticmethod
     def _create_task_config(user_input: UserInput) -> Task:
         template_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'task_config.json')
+        user_input.es_text_fields = ['text', 'title']
+        user_input.es_image_fields = ['uris']
         with open(template_path) as f:
             config_dict = json.load(f)
             config = Task(**config_dict)
-        config.name = user_input.es_index_name
         for encoder in config.encoders:
             if encoder.name == 'text_encoder':
                 encoder.training_data_generation_methods[0].query.scope = user_input.es_text_fields
@@ -69,7 +70,6 @@ class TextToTextAndImage(JinaNOWApp):
 
         user_input.task_config = config
         return user_input.task_config
-
 
 
     def preprocess(
