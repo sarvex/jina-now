@@ -1,4 +1,4 @@
-jtype: QdrantIndexer3
+jtype: QdrantIndexer4
 metas:
   py_modules:
     - executor.py

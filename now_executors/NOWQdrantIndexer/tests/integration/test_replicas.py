@@ -1,6 +1,6 @@
 import numpy as np
 from docarray import Document
-from executor import QdrantIndexer3
+from executor import QdrantIndexer4
 from jina import Flow
 
 
@@ -8,7 +8,7 @@ def test_replicas(docker_compose):
     n_dim = 10
 
     f = Flow().add(
-        uses=QdrantIndexer3,
+        uses=QdrantIndexer4,
         uses_with={'collection_name': 'test', 'n_dim': n_dim},
     )
 
@@ -25,7 +25,7 @@ def test_replicas(docker_compose):
         )
 
     f_with_replicas = Flow().add(
-        uses=QdrantIndexer3,
+        uses=QdrantIndexer4,
         uses_with={'collection_name': 'test', 'n_dim': n_dim},
         replicas=4,
     )
@@ -43,7 +43,7 @@ def test_replicas_reindex(docker_compose):
     n_dim = 10
 
     f = Flow().add(
-        uses=QdrantIndexer3,
+        uses=QdrantIndexer4,
         uses_with={'collection_name': 'test2', 'n_dim': n_dim},
     )
 
@@ -63,7 +63,7 @@ def test_replicas_reindex(docker_compose):
         )
 
     f_with_replicas = Flow().add(
-        uses=QdrantIndexer3,
+        uses=QdrantIndexer4,
         uses_with={'collection_name': 'test2', 'n_dim': n_dim},
         replicas=4,
     )

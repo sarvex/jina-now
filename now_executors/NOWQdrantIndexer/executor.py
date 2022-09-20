@@ -9,8 +9,8 @@ from jina import Executor, requests
 from jina.logging.logger import JinaLogger
 
 
-class QdrantIndexer3(Executor):
-    """QdrantIndexer3 indexes Documents into a Qdrant server using DocumentArray  with `storage='qdrant'`"""
+class QdrantIndexer4(Executor):
+    """QdrantIndexer4 indexes Documents into a Qdrant server using DocumentArray  with `storage='qdrant'`"""
 
     def __init__(
         self,

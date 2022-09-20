@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from docarray import Document, DocumentArray
 from jina import Flow
-from now_executors.NOWQdrantIndexer.executor import QdrantIndexer3
+from now_executors.NOWQdrantIndexer.executor import QdrantIndexer4
 
 
 @pytest.fixture()
@@ -71,8 +71,8 @@ def documents():
 
 def test_search_chunk_using_sum_ranker(documents, docker_compose):
     with Flow().add(
-        # uses='jinahub+docker://QdrantIndexer3/experiment8',
-        uses=QdrantIndexer3,
+        # uses='jinahub+docker://QdrantIndexer4/experiment8',
+        uses=QdrantIndexer4,
         uses_with={"traversal_paths": "@c", "dim": 2},
     ) as f:
         f.index(
