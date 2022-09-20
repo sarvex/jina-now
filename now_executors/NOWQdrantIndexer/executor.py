@@ -1,5 +1,6 @@
 import subprocess
 from collections import defaultdict
+from copy import deepcopy
 from time import sleep
 from typing import Dict, List, Optional, Tuple, Union
 
@@ -84,7 +85,7 @@ class QdrantIndexer3(Executor):
             d.blob = None
         # qdrant needs a list of values when filtering on sentences
         for d in docs:
-            d.tags['title'] = d.tags['title'].split()
+            d.tags['title'] = d.tags['title'].lower().split()
         self._index.extend(docs)
         #  prevent sending the data back by returning an empty DocumentArray
         return DocumentArray()
@@ -103,25 +104,19 @@ class QdrantIndexer3(Executor):
         :param kwargs: additional kwargs for the endpoint
 
         """
-
-        # docs = docs[traversal_paths]
-        # filtered_docs = self.filter_docs(self.index[traversal_paths], parameters)
-        #
-        # match_limit = limit
-        # if traversal_paths == "@c":
-        #     match_limit = limit * 3 * 100000
-        # docs.match(filtered_docs, limit=match_limit)
-        # if traversal_paths == "@c":
-        #     if ranking_method == "min":
-        #         self.merge_matches_min(docs, limit)
-        #     elif ranking_method == "sum":
-        #         self.merge_matches_sum(docs, limit)
-        # return docs
         docs = docs["@c"]
-        filter = {'must': [{'key': 'title', 'match': {'value': docs[0].text}}]}
-        docs.match(self._index, filter=filter, limit=180)
-        self.merge_matches_sum(docs, 60)
-        return docs
+
+        filter = {'must': [{'key': 'title', 'match': {'value': docs[0].text.lower()}}]}
+        docs_with_matches = self.create_matches(docs)
+
+        if len(docs[0].text.split()) == 1:
+            docs_with_matches_filter = self.create_matches(docs, filter)
+            self.append_matches_if_not_exists(
+                docs_with_matches_filter, docs_with_matches
+            )
+            return docs_with_matches_filter
+        else:
+            return docs_with_matches
 
     @requests(on='/delete')
     def delete(self, parameters: Dict, **kwargs):
@@ -210,3 +205,23 @@ class QdrantIndexer3(Executor):
                 all_matches.extend(matches)
                 print(f'# num parents for group {group}: {len(matches)}')
             d.matches = all_matches[:limit]
+
+    def create_matches(self, docs, filter={}):
+        docs_copy = deepcopy(docs)
+        docs_copy.match(self._index, filter=filter, limit=180)
+        self.merge_matches_sum(docs_copy, 180)
+        return docs_copy
+
+    def append_matches_if_not_exists(self, docs_with_matches, docs_with_matches_to_add):
+        # get all parent_ids of the matches of the docs_with_matches
+        parent_ids = set()
+        for doc, doc_to_add in zip(docs_with_matches, docs_with_matches_to_add):
+            for match in doc.matches:
+                parent_ids.add(match.parent_id)
+
+            # append matches to docs_with_matches if they are not already in the matches
+            for match in doc_to_add.matches:
+                if match.parent_id not in parent_ids:
+                    if len(doc.matches) >= 60:
+                        break
+                    doc.matches.append(match)
