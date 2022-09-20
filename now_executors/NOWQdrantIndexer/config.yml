@@ -1,0 +1,4 @@
+jtype: QdrantIndexer3
+metas:
+  py_modules:
+    - executor.py
