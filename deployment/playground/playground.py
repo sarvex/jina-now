@@ -127,24 +127,36 @@ def deploy_streamlit():
             profanity.load_censor_words()
         setup_design()
 
-        if params.host and st.session_state.filters is None:
+        if params.host and st.session_state.filters == 'notags':
             client = Client(host=params.host)
             try:
                 if params.secured.lower() == 'true':
                     response = client.post(
                         on='/tags',
                         parameters={
-                            'jwt': {'token': json.dumps(st.session_state.jwt_val)}
+                            'jwt': {'token': st.session_state.jwt_val['token']}
                         },
                     )
                 else:
                     response = client.post(on='/tags')
                 st.session_state.filters = OrderedDict(response[0].tags['tags'])
-            except:
-                print("Filters couldn't be loaded from the endpoint properly.")
+            except Exception as e:
+                print("Filters couldn't be loaded from the endpoint properly.", e)
+                st.session_state.filters = 'notags'
 
         filter_selection = {}
-        if st.session_state.filters:
+        if st.session_state.filters != 'notags':
+            st.sidebar.title("Filters")
+            if not st.session_state.filters_set:
+                for tag, values in st.session_state.filters.items():
+                    values.insert(0, 'All')
+                    filter_selection[tag] = st.sidebar.selectbox(tag, values)
+                st.session_state.filters_set = True
+            else:
+                for tag, values in st.session_state.filters.items():
+                    filter_selection[tag] = st.sidebar.selectbox(tag, values)
+
+        if st.session_state.filters != 'notags' and not st.session_state.filters_set:
             st.sidebar.title("Filters")
             for tag, values in st.session_state.filters.items():
                 values.insert(0, 'All')
@@ -763,7 +775,10 @@ def setup_session_state():
         st.session_state.disable_prev = True
 
     if 'filters' not in st.session_state:
-        st.session_state.filters = None
+        st.session_state.filters = 'notags'
+
+    if 'filters_set' not in st.session_state:
+        st.session_state.filters_set = False
 
 
 if __name__ == '__main__':
