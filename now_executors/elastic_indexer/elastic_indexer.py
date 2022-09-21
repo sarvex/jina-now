@@ -67,15 +67,19 @@ class ElasticIndexer(Executor):
         es_mapping = {
             'properties': {
                 'id': {'type': 'keyword'},
-                'text': {'type': 'text', 'analyzer': 'standard'},
+                'bm25_text': {'type': 'text', 'analyzer': 'standard'},
             }
         }
         for i, dim in enumerate(self.dims):
-            es_mapping['properties'][f'embedding_{i}'] = {
-                'type': 'dense_vector',
-                'dims': dim,
-                'similarity': self.metric,
-                'index': 'true',
+            es_mapping['properties'][f'chunk_{i}'] = {
+                'properties': {
+                    f'embedding': {
+                        'type': 'dense_vector',
+                        'dims': dim,
+                        'similarity': self.metric,
+                        'index': 'true',
+                    }
+                }
             }
         return es_mapping
 
@@ -95,7 +99,8 @@ class ElasticIndexer(Executor):
 
         es_docs = self._transform_docs_to_es(docs)
         try:
-            success, _ = bulk(self.es, es_docs, refresh='wait_for')
+            success, _ = bulk(self.es, es_docs)
+            self.es.indices.refresh(index=self.index_name)
         except Exception:
             print(traceback.format_exc())
             raise
@@ -112,24 +117,35 @@ class ElasticIndexer(Executor):
         self, docs: Union[Document, DocumentArray], parameters: dict = {}, **kwargs
     ):
         """Perform traditional bm25 + vector search. By convention, BM25 will search on
-        the 'text' field of the index. For now, this field contains a concatenation of
+        the 'bm25_text' field of the index. For now, this field contains a concatenation of
         all text chunks of the documents.
+
+        Search can be performed with candidate filtering. Filters are a triplet (column,operator,value).
+        More than a filter can be applied during search. Therefore, conditions for a filter are specified as a list triplets.
+        Each triplet contains:
+            - field: Field used to filter.
+            - operator: Binary operation between two values. Some supported operators include `['>','<','=','<=','>=']`.
+            - value: value used to compare a candidate.
 
         :param docs: query `Document`s.
         :param parameters: dictionary of options for searching.
+            Keys accepted:
+                - 'filter' (dict): the filtering conditions on document tags
+                - 'traversal_paths' (str): traversal paths for the docs
+                - 'limit' (int): nr of matches to get per Document
         """
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
+        search_filter = parameters.get('filter', None)
         limit = parameters.get('limit', 20)
         apply_bm25 = parameters.get('apply_bm25', False)
         docs = docs[traversal_paths]
         for doc in docs:
-            query = self._build_es_query(doc, apply_bm25)
+            query = self._build_es_query(doc, apply_bm25, search_filter)
             try:
                 result = self.es.search(
                     index=self.index_name,
                     query=query,
-                    fields=['text'],
-                    source=False,
+                    source=True,
                     size=limit,
                 )['hits']['hits']
                 doc.matches = self._transform_es_results_to_matches(result)
@@ -158,23 +174,23 @@ class ElasticIndexer(Executor):
         """
         limit = int(parameters.get('limit', 20))
         offset = int(parameters.get('offset', 0))
-        with_embedding = parameters.get('with_embedding', False)
         try:
-            result = self.es.search(
-                index=self.index_name, size=limit, query={'match_all': {}}
-            )['hits']['hits']
+            result = self.es.search(index=self.index_name, query={'match_all': {}})[
+                'hits'
+            ]['hits']
         except Exception:
             print(traceback.format_exc())
         if result:
-            result_da = self._transform_es_results_to_da(result, with_embedding)
+            result_da = self._transform_es_to_da(result)
+            return result_da[offset : offset + limit]
         else:
             return result
-        return result[offset:limit]
 
     def _build_es_query(
         self,
-        query: Document,
+        doc: Document,
         apply_bm25: bool,
+        search_filter: Optional[Dict] = None,
     ) -> Dict:
         """
         Build script-score query used in Elasticsearch. To do this, we extract
@@ -188,69 +204,74 @@ class ElasticIndexer(Executor):
             field for bm25 searching.
         :return: a dictionary containing query and filter.
         """
+        source = ''
+        query = {
+            'bool': {
+                'should': [
+                    {'match_all': {}},
+                ],
+            },
+        }
+
         # build bm25 part
         if apply_bm25:
-            source = '_score / (_score + 10.0)'
-            text = query.text
-            query_script_score = {
-                'bool': {
-                    "should": [
-                        {
-                            "multi_match": {
-                                "query": text,
-                                "fields": ['text'],
-                            }
-                        },
-                        {"match_all": {}},
-                    ],
-                },
-            }
-        else:
-            source = ''
-            query_script_score = {
-                'bool': {
-                    "should": [
-                        {"match_all": {}},
-                    ],
-                },
-            }
+            source += '_score / (_score + 10.0)'
+            text = doc.text
+            multi_match = {'multi_match': {'query': text, 'fields': ['bm25_text']}}
+            query['bool']['should'].append(multi_match)
+
+        # add filter
+        if search_filter:
+            es_search_filter = {}
+            for field, filters in search_filter.items():
+                for operator, filter in filters.items():
+                    if isinstance(filter, str):
+                        es_search_filter['term'] = {"tags." + field: filter}
+                    elif isinstance(filter, int) or isinstance(filter, float):
+                        operator = operator.replace('$', '')
+                        es_search_filter['range'] = {
+                            "tags." + field: {operator: filter}
+                        }
+            query['bool']['filter'] = es_search_filter
+
         # build vector search part
-        query_embeddings = self._extract_embeddings(doc=query)
+        query_embeddings = self._extract_embeddings(doc=doc)
         params = {}
         for key, embedding in query_embeddings.items():
-            source += (
-                f"+ 0.5*{metrics_mapping[self.metric]}(params.query_{key}, '{key}')"
-            )
+            source += f"+ 0.5*{metrics_mapping[self.metric]}(params.query_{key}, '{key}.embedding')"
             params[f'query_{key}'] = embedding
         source += '+ 1.0'
         query_json = {
             'script_score': {
-                'query': query_script_score,
+                'query': query,
                 'script': {'source': source, 'params': params},
             }
         }
         return query_json
 
-    def _transform_es_to_da(
-        self, result: List[Dict], with_embedding: bool
-    ) -> DocumentArray:
+    def _transform_es_to_da(self, result: Union[Dict, List[Dict]]) -> DocumentArray:
         """
         Transform Elasticsearch documents into DocumentArray. Assumes that all Elasticsearch
-        documents have a 'text' field.
+        documents have a 'text' field. It does not return embeddings as part of the Document.
 
         :param result: results from an Elasticsearch query.
-        :param with_embedding: whether to add embeddings to the final documents.
         :return: a DocumentArray containing all results.
         """
+        if isinstance(result, Dict):
+            result = [result]
         da = DocumentArray()
         for es_doc in result:
-            source = es_doc['_source']
-            doc = Document(id=es_doc['_id'], text=source['text'])
-            if with_embedding:
-                embeddings = [
-                    source[key] for key in source.keys() if key.startswith('embedding_')
-                ]
-                doc.chunks = [Document(embedding=e) for e in embeddings]
+            doc = Document(id=es_doc['_id'])
+            for k, v in es_doc['_source'].items():
+                if k.startswith('chunk'):
+                    chunk = Document.from_dict(v)
+                    doc.chunks.append(chunk)
+                elif k.startswith('embedding'):
+                    continue
+                elif k in ['bm25_text', '_score']:
+                    continue
+                else:
+                    doc.k = v
             da.append(doc)
         return da
 
@@ -264,14 +285,15 @@ class ElasticIndexer(Executor):
         """
         es_docs = list()
         for doc in docs:
-            es_doc = dict()
+            es_doc = {k: v for k, v in doc.to_dict().items() if v}
             es_doc['_id'] = doc.id
-            es_doc['text'] = ''
-            for i, chunk in enumerate(doc.chunks):
-                # concatenate text fields
-                if chunk.text:
-                    es_doc['text'] += chunk.text + " "
-                es_doc[f"embedding_{i}"] = chunk.embedding
+            es_doc['bm25_text'] = doc.text
+            chunks = es_doc.pop('chunks')
+            if chunks:
+                for i, chunk in enumerate(chunks):
+                    es_doc[f'chunk_{i}'] = {k: v for k, v in chunk.items() if v}
+                    if chunk['text']:
+                        es_doc['bm25_text'] += " " + chunk['text']
             es_doc['_op_type'] = 'index'
             es_doc['_index'] = self.index_name
             es_docs.append(es_doc)
@@ -286,8 +308,7 @@ class ElasticIndexer(Executor):
         """
         matches = DocumentArray()
         for result in es_results:
-            d = Document(id=result['_id'])
-            d.text = result['fields']['text'][0]
+            d = self._transform_es_to_da(result)[0]
             d.scores[self.metric] = NamedScore(value=result['_score'])
             matches.append(d)
         return matches
@@ -302,7 +323,7 @@ class ElasticIndexer(Executor):
         """
         embeddings = {}
         for i, chunk in enumerate(doc.chunks):
-            embeddings[f"embedding_{i}"] = chunk.embedding
+            embeddings[f"chunk_{i}"] = chunk.embedding
         if not embeddings:
             print('No embeddings extracted')
             raise
