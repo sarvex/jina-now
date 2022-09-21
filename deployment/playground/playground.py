@@ -261,8 +261,8 @@ def load_example_queries(data, output_modality):
                 output_modality_dir = 'text'
                 data_dir = root_data_dir + output_modality_dir + '/'
                 da_txt = load_data(data_dir + data + f'.txt10-{docarray_version}.bin')
-        except HTTPError:
-            pass
+        except HTTPError as exc:
+            print('Could not load samples for the demo dataset', exc)
     return da_img, da_txt
 
 
