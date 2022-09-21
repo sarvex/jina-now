@@ -1,7 +1,7 @@
 import base64
 import os
 from os.path import join as osp
-from typing import List, Tuple, Dict
+from typing import List, Dict
 
 from docarray import Document, DocumentArray
 
@@ -93,14 +93,14 @@ def _transform_es_doc(
         names.append(document.tags['field_name'])
         attr_name = '.'.join(names)
         attr_val = (
-            document.text if document.tags['modality'] == 'text' else document.uri
+            document.text if document.modality == 'text' else document.uri
         )
         if attr_name not in attr_modalities:
-            attr_modalities[attr_name] = document.tags['modality']
+            attr_modalities[attr_name] = document.modality
             attr_values[attr_name] = []
         attr_values[attr_name].append(attr_val)
     else:
         if 'field_name' in document.tags:
-            names.append(document.tags['field_name'])
+            names.append(document.modality)
         for doc in document.chunks:
             _transform_es_doc(doc, attr_values, attr_modalities, names[:])

@@ -24,7 +24,9 @@ class ElasticsearchConnector:
             e.g., information about certificates
         """
         self._connection_str = connection_str
-        self._connection_args = connection_args if connection_args else {'verify_certs': False}
+        self._connection_args = (
+            connection_args if connection_args else {'verify_certs': False}
+        )
         self._es = Elasticsearch(self._connection_str, **self._connection_args)
 
     def __enter__(self) -> 'ElasticsearchConnector':

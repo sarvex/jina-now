@@ -2,7 +2,7 @@ import json
 import os
 from typing import Dict, Optional, List
 
-from docarray import DocumentArray
+from docarray import DocumentArray, Document
 
 from now.finetuning.run_finetuning import finetune
 from now.finetuning.settings import parse_finetune_settings, FinetuneSettings
@@ -50,27 +50,43 @@ class TextToTextAndImage(JinaNOWApp):
         return Modalities.TEXT_AND_IMAGE
 
     @staticmethod
-    def _create_task_config(user_input: UserInput) -> Task:
-        template_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'task_config.json')
-        user_input.es_text_fields = ['text', 'title']
-        user_input.es_image_fields = ['uris']
+    def _create_task_config(user_input: UserInput, data_example: Document) -> Task:
+        """
+        Read task configuration template and replace field names.
+        """
+        template_path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), 'task_config.json'
+        )
         with open(template_path) as f:
             config_dict = json.load(f)
             config = Task(**config_dict)
+        if not user_input.es_text_fields:
+            user_input.es_text_fields = [
+                chunk.tags['field_name']
+                for chunk in data_example.chunks
+                if chunk.modality == 'text'
+            ]
+        if not user_input.es_image_fields:
+            user_input.es_image_fields = [
+                chunk.tags['field_name']
+                for chunk in data_example.chunks
+                if chunk.modality == 'image'
+            ]
         for encoder in config.encoders:
             if encoder.name == 'text_encoder':
-                encoder.training_data_generation_methods[0].query.scope = user_input.es_text_fields
-                encoder.training_data_generation_methods[0].target.scope = user_input.es_text_fields
+                for method in encoder.training_data_generation_methods:
+                    method.query.scope = user_input.es_text_fields
+                    method.target.scope = user_input.es_text_fields
             elif encoder.name == 'vision_encoder':
-                encoder.training_data_generation_methods[0].query.scope = user_input.es_text_fields
-                encoder.training_data_generation_methods[0].target.scope = user_input.es_image_fields
+                for method in encoder.training_data_generation_methods:
+                    method.query.scope = user_input.es_text_fields
+                    method.target.scope = user_input.es_image_fields
 
         config.indexer_scope['text'] = user_input.es_text_fields[0]
         config.indexer_scope['image'] = user_input.es_image_fields[0]
 
         user_input.task_config = config
         return user_input.task_config
-
 
     def preprocess(
         self,
@@ -88,7 +104,7 @@ class TextToTextAndImage(JinaNOWApp):
     def setup(
         self, dataset: DocumentArray, user_input: UserInput, kubectl_path
     ) -> Dict:
-        task_config = self._create_task_config(user_input)
+        task_config = self._create_task_config(user_input, dataset[0])
         data = DataBuilder(dataset=dataset, config=task_config).build()
         env_dict = {}
         for encoder_data, encoder_type in data:

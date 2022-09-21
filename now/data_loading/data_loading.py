@@ -144,9 +144,14 @@ def match_types(uri, supported_file_types):
 
 
 def _extract_es_data(user_input: UserInput) -> DocumentArray:
-    query = {'query': {'match_all': {}}, 'fields': user_input.es_image_fields + user_input.es_text_fields}
+    query = {
+        'query': {'match_all': {}},
+        'fields': user_input.es_image_fields + user_input.es_text_fields,
+    }
     es_extractor = ElasticsearchExtractor(
-        query=query, index=user_input.es_index_name, connection_str=user_input.es_host_name,
+        query=query,
+        index=user_input.es_index_name,
+        connection_str=user_input.es_host_name,
     )
     docs = DocumentArray([transform_es_doc(doc) for doc in es_extractor])
     return docs
