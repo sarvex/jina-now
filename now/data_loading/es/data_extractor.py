@@ -1,7 +1,7 @@
 import os
 from typing import Dict, List, Optional, Union, Set
 
-from docarray import Document
+from docarray import Document, DocumentArray
 from PIL import Image
 
 from .connector import ElasticsearchConnector
@@ -51,16 +51,73 @@ class ElasticsearchExtractor:
         )
         self._supported_pil_extensions = self._get_supported_image_extensions()
 
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        next_doc = self._get_next_document()
-        if next_doc:
-            return next_doc
-        else:
+    def _extract_documents(self):
+        try:
+            while next_doc := self._get_next_document():
+                yield next_doc
+        except StopIteration:
             self._es_connector.close()
-            raise StopIteration()
+            return
+
+    def extract(self):
+        return DocumentArray(
+            [self._transform_es_doc(doc) for doc in self._extract_documents()]
+        )
+
+    @classmethod
+    def _transform_es_doc(cls, document: Document) -> Document:
+        """
+        Transform data extracted from Elasticsearch to a more convenient form.
+        :param document: `Document` containing ES data.
+        :return: Transformed `Document`.
+        """
+        attr_values, attr_modalities = {}, {}
+        cls._parse_es_doc(document, attr_values, attr_modalities, [])
+        transformed_doc = Document(
+            chunks=[
+                Document(
+                    content=attr_values[name],
+                    modality=attr_modalities[name],
+                    tags={'field_name': name},
+                )
+                for name in attr_values
+            ]
+        )
+        return transformed_doc
+
+    @classmethod
+    def _parse_es_doc(
+        cls,
+        document: Document,
+        attr_values: Dict,
+        attr_modalities: Dict,
+        names: List[str],
+    ):
+        """
+        Extract attributes and modalities from a `Document` and store it as a dictionary.
+        Recursively iterates across different chunks of the `Document` and collects
+        attributes with their corresponding values.
+        :param document: `Document` we want to transform.
+        :param attr_values: Dictionary of attribute values extracted from the document.
+        :param attr_modalities: Dictionary of attribute modalities extracted from the document.
+        :param names: Name of an attribute (attribute names may be nested, e.g.
+            info.cars, and we need to store name(s) on every level of recursion).
+        """
+        if not document.chunks:
+            names.append(document.tags['field_name'])
+            attr_name = '.'.join(names)
+            attr_val = (
+                document.text if document.tags['modality'] == 'text' else document.uri
+            )
+            if attr_name not in attr_modalities:
+                attr_modalities[attr_name] = document.tags['modality']
+                attr_values[attr_name] = []
+            attr_values[attr_name].append(attr_val)
+        else:
+            if 'field_name' in document.tags:
+                names.append(document.tags['field_name'])
+            for doc in document.chunks:
+                cls._parse_es_doc(doc, attr_values, attr_modalities, names[:])
 
     def _get_next_document(self) -> Union[Document, None]:
         """
