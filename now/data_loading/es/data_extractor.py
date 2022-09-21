@@ -53,8 +53,10 @@ class ElasticsearchExtractor:
 
     def _extract_documents(self):
         try:
-            while next_doc := self._get_next_document():
+            next_doc = self._get_next_document()
+            while next_doc:
                 yield next_doc
+                next_doc = self._get_next_document()
         except StopIteration:
             self._es_connector.close()
             return
