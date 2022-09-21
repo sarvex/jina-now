@@ -16,7 +16,7 @@ Tell us what you think: <a href="https://10sw1tcpld4.typeform.com/to/VTAyYRpR?ut
 <!-- start elevator-pitch -->
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/11627845/164569398-5ef22a41-e2e1-438a-88a5-2ac43ad9426d.gif" alt="Jina NOW logo: The data structure for unstructured data" width="600px">
+<img src="https://user-images.githubusercontent.com/40893766/191584585-93b8b24f-4e90-4a61-aabf-c4eb57985d58.gif" alt="Jina NOW logo: The data structure for unstructured data" width="600px">
 
 
 NOW gives the world access to neural image search in just one command execution.
