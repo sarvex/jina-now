@@ -1,7 +1,6 @@
-FROM jinaai/jina:3-py38-perf
-
-RUN apt-get update && apt-get install --no-install-recommends -y gcc g++ git \
-    && rm -rf /var/lib/apt/lists/*
+FROM docker.elastic.co/elasticsearch/elasticsearch:8.4.2
+USER root
+RUN apt-get update && apt-get install --no-install-recommends -y gcc g++ git python3 python3-pip
 
 COPY . /workspace
 WORKDIR /workspace

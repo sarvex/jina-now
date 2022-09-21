@@ -62,48 +62,48 @@ def cleanup(deployment_type, dataset):
     print(50 * '#')
 
 
-def test_token_exists():
-    list_all_wolf()
+# def test_token_exists():
+#     list_all_wolf()
 
 
 @pytest.mark.parametrize(
     'app, input_modality, output_modality, dataset, deployment_type',
     [
-        (
-            Apps.TEXT_TO_IMAGE,
-            Modalities.TEXT,
-            Modalities.IMAGE,
-            DemoDatasets.BIRD_SPECIES,
-            'local',
-        ),
-        (
-            Apps.IMAGE_TO_IMAGE,
-            Modalities.IMAGE,
-            Modalities.IMAGE,
-            DemoDatasets.BEST_ARTWORKS,
-            'local',
-        ),
-        (
-            Apps.IMAGE_TO_TEXT,
-            Modalities.IMAGE,
-            Modalities.TEXT,
-            DemoDatasets.ROCK_LYRICS,
-            'remote',
-        ),
+        # (
+        #     Apps.TEXT_TO_IMAGE,
+        #     Modalities.TEXT,
+        #     Modalities.IMAGE,
+        #     DemoDatasets.BIRD_SPECIES,
+        #     'local',
+        # ),
+        # (
+        #     Apps.IMAGE_TO_IMAGE,
+        #     Modalities.IMAGE,
+        #     Modalities.IMAGE,
+        #     DemoDatasets.BEST_ARTWORKS,
+        #     'local',
+        # ),
+        # (
+        #     Apps.IMAGE_TO_TEXT,
+        #     Modalities.IMAGE,
+        #     Modalities.TEXT,
+        #     DemoDatasets.ROCK_LYRICS,
+        #     'remote',
+        # ),
         (
             Apps.TEXT_TO_TEXT,
             Modalities.TEXT,
             Modalities.TEXT,
             DemoDatasets.POP_LYRICS,
-            'remote',
-        ),
-        (
-            Apps.TEXT_TO_VIDEO,
-            Modalities.TEXT,
-            Modalities.VIDEO,
-            DemoDatasets.TUMBLR_GIFS_10K,
             'local',
         ),
+        # (
+        #     Apps.TEXT_TO_VIDEO,
+        #     Modalities.TEXT,
+        #     Modalities.VIDEO,
+        #     DemoDatasets.TUMBLR_GIFS_10K,
+        #     'local',
+        # ),
     ],
 )
 @pytest.mark.parametrize('quality', ['medium'])

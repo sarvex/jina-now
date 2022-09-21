@@ -10,6 +10,7 @@ from jina import __version__ as jina_version
 from now.apps.base.app import JinaNOWApp
 from now.constants import (
     NOW_ANNLITE_INDEXER_VERSION,
+    NOW_ELASTIC_INDEXER_VERSION,
     NOW_PREPROCESSOR_VERSION,
     PREFETCH_NR,
 )
@@ -152,12 +153,18 @@ def _get_email():
         return ''
 
 
-def get_indexer_config(num_indexed_samples: int) -> Dict:
+def get_indexer_config(
+    num_indexed_samples: int, elastic: Optional[bool] = False
+) -> Dict:
     """Depending on the number of samples, which will be indexed, indexer and its resources are determined.
 
     :param num_indexed_samples: number of samples which will be indexed; should incl. chunks for e.g. text-to-video app
+    :param elastic: hack to use ElasticIndexer, should be changed in future.
     """
-    config = {'indexer_uses': f'NOWAnnLiteIndexer/v{NOW_ANNLITE_INDEXER_VERSION}'}
+    if elastic:
+        config = {'indexer_uses': f'ElasticIndexer/v{NOW_ELASTIC_INDEXER_VERSION}'}
+    else:
+        config = {'indexer_uses': f'NOWAnnLiteIndexer/v{NOW_ANNLITE_INDEXER_VERSION}'}
     threshold1 = 250_000
     if num_indexed_samples <= threshold1:
         config['indexer_resources'] = {'INDEXER_CPU': 0.1, 'INDEXER_MEM': '2G'}
