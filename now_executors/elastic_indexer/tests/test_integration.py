@@ -128,3 +128,21 @@ def test_list(multimodal_da):
         f.index(da)
         list_res = f.post(on='/list', parameters={'limit': 1, 'offset': 1})
         assert list_res[0].id == '456'
+
+
+def test_delete(multimodal_da):
+    da = multimodal_da
+    index_name = 'test-delete'
+    hosts = 'http://localhost:9200'
+    with Flow().add(
+        uses=ElasticIndexer,
+        uses_with={'hosts': hosts, 'index_name': index_name, 'dims': [7, 5]},
+    ) as f:
+        f.index(da)
+        es = Elasticsearch(hosts=hosts)
+        # fetch all indexed documents
+        res = es.search(index=index_name, size=100, query={'match_all': {}})
+        assert len(res['hits']['hits']) == 2
+        f.post(on='/delete', parameters={'filter': {'cost': {'gte': 15.0}}})
+        res = es.search(index=index_name, size=100, query={'match_all': {}})
+        assert len(res['hits']['hits']) == 0

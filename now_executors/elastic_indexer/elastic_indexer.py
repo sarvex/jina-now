@@ -186,6 +186,40 @@ class ElasticIndexer(Executor):
         else:
             return result
 
+    @secure_request(on='/delete', level=SecurityLevel.USER)
+    def delete(self, parameters: dict = {}, **kwargs):
+        """
+        Delete endpoint to delete document/documents from the index.
+
+        :param parameters: dictionary with filter conditions to select
+            documents for deletion.
+        """
+        search_filter = parameters.get('filter', None)
+        if search_filter:
+            es_search_filter = {'query': {'bool': {}}}
+            for field, filters in search_filter.items():
+                for operator, filter in filters.items():
+                    if isinstance(filter, str):
+                        es_search_filter['query']['bool']['filter'] = {
+                            'term': {'tags.' + field: filter}
+                        }
+                    elif isinstance(filter, int) or isinstance(filter, float):
+                        operator = operator.replace('$', '')
+                        es_search_filter['query']['bool']['filter'] = {
+                            'range': {'tags.' + field: {operator: filter}}
+                        }
+        try:
+            resp = self.es.delete_by_query(index=self.index_name, body=es_search_filter)
+            self.es.indices.refresh(index=self.index_name)
+        except Exception:
+            print(traceback.format_exc())
+            raise
+        if resp:
+            print(
+                f"Deleted {resp['deleted']} documents in Elasticsearch index {self.index_name}"
+            )
+        return DocumentArray()
+
     def _build_es_query(
         self,
         doc: Document,
