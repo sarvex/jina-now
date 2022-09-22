@@ -100,9 +100,6 @@ def test_nested_preprocessing(is_indexing, get_task_config_path):
 
     if is_indexing:
         da = DocumentArray(load_data(app, user_input)[0])
-        da = DocumentArray(
-            [ElasticsearchExtractor._transform_es_doc(doc) for doc in da]
-        )
     else:
         da = DocumentArray(Document(text='query text'))
 

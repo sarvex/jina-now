@@ -9,7 +9,7 @@ from docarray import Document, DocumentArray
 from now.apps.base.app import JinaNOWApp
 from now.constants import DatasetTypes, DemoDatasets
 from now.data_loading.es import ElasticsearchExtractor
-from now.data_loading.utils import _fetch_da_from_url, get_dataset_url, transform_es_doc
+from now.data_loading.utils import _fetch_da_from_url, get_dataset_url
 from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
 from now.utils import sigmap
@@ -153,8 +153,8 @@ def _extract_es_data(user_input: UserInput) -> DocumentArray:
         index=user_input.es_index_name,
         connection_str=user_input.es_host_name,
     )
-    docs = DocumentArray([transform_es_doc(doc) for doc in es_extractor])
-    return docs
+    # docs = DocumentArray([ElasticsearchExtractor._transform_es_doc(doc) for doc in es_extractor])
+    return DocumentArray()
 
 
 def _load_from_disk(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:

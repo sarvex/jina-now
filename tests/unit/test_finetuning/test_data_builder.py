@@ -24,9 +24,6 @@ def test_data_generation(get_task_config_path):
     user_input.data = DemoDatasets.ES_ONLINE_SHOP_50
     user_input.quality = None
     dataset = load_data(TextToTextAndImage(), user_input)
-    dataset = DocumentArray(
-        [ElasticsearchExtractor._transform_es_doc(doc) for doc in dataset]
-    )
 
     initial_length = len(dataset)
     number_of_uris = 66  # pre-computed
