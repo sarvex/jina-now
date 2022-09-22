@@ -5,10 +5,10 @@ from now.utils import BetterEnum
 # DEMO_DATASET_DOCARRAY_VERSION = docarray_version
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.126-playground-secured-tags-2'
-NOW_PREPROCESSOR_VERSION = '0.0.86-playground-secured-tags-2'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.126-playground-secured-tags-3'
+NOW_PREPROCESSOR_VERSION = '0.0.86-playground-secured-tags-3'
 NOW_AUTH_EXECUTOR_VERSION = '0.0.5-auth-exec-4'
-NOW_ANNLITE_INDEXER_VERSION = '0.0.5-annlite-playground-secured-tags-2'
+NOW_ANNLITE_INDEXER_VERSION = '0.0.5-annlite-playground-secured-tags-3'
 
 
 class Modalities(BetterEnum):
@@ -35,6 +35,7 @@ class DatasetTypes(BetterEnum):
     URL = 'url'
     DOCARRAY = 'docarray'
     S3_BUCKET = 's3_bucket'
+    ELASTICSEARCH = 'elasticsearch'
 
 
 class Qualities(BetterEnum):

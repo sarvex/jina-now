@@ -112,9 +112,13 @@ CUSTOM_DATASET_TYPE = DialogOptions(
             'value': DatasetTypes.PATH,
         },
         {
-            'name': 'Download from S3 bucket',
+            'name': 'S3 bucket',
             'value': DatasetTypes.S3_BUCKET,
         },
+        # {
+        #     'name': 'Elasticsearch',
+        #     'value': DatasetTypes.ELASTICSEARCH,
+        # },
     ],
     prompt_type='list',
     depends_on=DATA,
