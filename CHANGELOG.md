@@ -23,6 +23,7 @@
 
 
 
+
 <a name=release-note-0-0-7></a>
 ## Release Note (`0.0.7`)
 
@@ -776,4 +777,38 @@
 ### 🍹 Other Improvements
 
  - [[```0719b450```](https://github.com/jina-ai/now/commit/0719b45061e26f33a74dde5102e5a354fd189577)] __-__ __version__: the next version will be 0.0.29 (*Jina Dev Bot*)
+
+<a name=release-note-0-0-30></a>
+## Release Note (`0.0.30`)
+
+> Release time: 2022-09-20 15:12:50
+
+
+
+🙇 We'd like to thank all contributors for this new release! In particular,
+ Florian Hönicke,  Aziz Belaweid,  Saba Sturua,  Mohammad Kalim Akram,  Joschka Braun,  Jina Dev Bot,  🙇
+
+
+### 🆕 New Features
+
+ - [[```72613a0d```](https://github.com/jina-ai/now/commit/72613a0dc7295344d338da4c6463166d9a3f85eb)] __-__ add filtering playground (#473) (*Aziz Belaweid*)
+
+### 🐞 Bug fixes
+
+ - [[```23cdab82```](https://github.com/jina-ai/now/commit/23cdab826b04d80357ef3cf857b139d5a23897a7)] __-__ add jina requirement (#519) (*Aziz Belaweid*)
+ - [[```1a50cde9```](https://github.com/jina-ai/now/commit/1a50cde981328aeea1843acb7831e5b32ffeab02)] __-__ logout issue (#511) (*Aziz Belaweid*)
+ - [[```683027f7```](https://github.com/jina-ai/now/commit/683027f7f9bdb8ce7b343862a20ee90af202bd15)] __-__ cd (#505) (*Aziz Belaweid*)
+
+### 🧼 Code Refactoring
+
+ - [[```00cf976e```](https://github.com/jina-ai/now/commit/00cf976e64c489806c7658af81a809a5ad91a598)] __-__ helpful script to deploy text to video (#510) (*Florian Hönicke*)
+
+### 🏁 Unit Test and CICD
+
+ - [[```2cb6d082```](https://github.com/jina-ai/now/commit/2cb6d082700adcb93f162b182d071a8c291d8d9e)] __-__ add tests for nest (#502) (*Saba Sturua*)
+
+### 🍹 Other Improvements
+
+ - [[```1bf13ea6```](https://github.com/jina-ai/now/commit/1bf13ea641bf99c03119aaca867f8099dbbbc5d0)] __-__ Fix revert playground tags (#520) (*Florian Hönicke*)
+ - [[```8c61d496```](https://github.com/jina-ai/now/commit/8c61d49640f7aab70f7b82512cd09b27f80c79fe)] __-__ __version__: the next version will be 0.0.30 (*Jina Dev Bot*)
 
