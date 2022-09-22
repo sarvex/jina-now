@@ -26,13 +26,12 @@ For hardware we use AWS EC2 instances, from our experiments you can expect:
 ## AWS S3 bucket support
 
 We now support S3 Bucket, after selecting custom data you can select S3 Bucket.
-Then you can provide your `AWS access key ID` and `AWS secret key`, you can choose to secure your Flow
-and provide a list of emails of anyone you want to share your flow with.
+Then you can provide your `AWS access key ID` and `AWS secret key`, you can provide a list of emails of anyone you want to share your flow with.
 
 <img width="506" alt="question-s3-bucket" src="https://user-images.githubusercontent.com/40893766/191000917-88a903ec-bf0d-4206-9e9b-029401c34843.png">
 
-Your data is automatically loaded from the S3 bucket, however it is totally secure. It will not be downloaded
-or seen by anyone and it will also be removed when the flow is stopped.
+Your data is automatically loaded from the S3 bucket. It will be temporary stored on EC2 machines while processing the data
+but it will not be stored.
 
 ## Security
 
@@ -58,7 +57,7 @@ will be improved thus enhancing the quality of your final NOW search application
 
 More information on the training data format can be found [here](https://finetuner.jina.ai/walkthrough/create-training-data/#prepare-training-data)
 
-## Backend for frontend
+## Backend for Frontend
 
 We provide users with BFF (Backend For Frontend) API that you can call for your search application, which makes integrating to your custom
 frontend easy and seamless.
