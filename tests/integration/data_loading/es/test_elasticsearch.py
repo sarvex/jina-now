@@ -1,11 +1,9 @@
-from docarray import DocumentArray, Document
-
-from now.data_loading.utils import transform_es_doc
+from docarray import Document
 
 
 def test_extraction(setup_extractor):
     extractor, _ = setup_extractor
-    transformed_docs = DocumentArray([transform_es_doc(doc) for doc in extractor])
+    transformed_docs = extractor.extract()
     assert len(transformed_docs) == 50
     assert isinstance(transformed_docs[0], Document)
     assert len(transformed_docs[0].chunks) == 3

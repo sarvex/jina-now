@@ -4,6 +4,7 @@ import pathlib
 from typing import Dict, Optional
 
 from now.data_loading.es import ElasticsearchConnector
+from tests.integration.data_loading.es.utils import create_es_index, es_insert
 
 
 class ExampleDataset:
@@ -42,9 +43,9 @@ class ExampleDataset:
         with ElasticsearchConnector(
             connection_str=connection_str, connection_args=connection_args
         ) as es_connector:
-            es_connector.create_index(index_name, mapping=mapping)
+            create_es_index(es_connector, index_name, mapping=mapping)
             corpus = self._corpus if size is None else self._corpus[:size]
-            es_connector.insert(index_name, corpus)
+            es_insert(es_connector, index_name, corpus)
 
     def _parse_corpus_file(self):
         if self._filepath.suffix == '.gz':

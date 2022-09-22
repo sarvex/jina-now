@@ -35,39 +35,6 @@ class ElasticsearchConnector:
     def __exit__(self, type, value, traceback) -> None:
         self.close()
 
-    def create_index(self, name: str, mapping: Optional[Dict] = None) -> None:
-        """
-        Creates a new index.
-        :param name: Name of the index in the Elasticsearch database
-        :param mapping: Elasticsearch
-            `mapping <https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html>`_
-            which describes the fields of an ES document and how they are stored
-        """  # noqa: E501
-        if self._es.indices.exists(index=name):
-            self._es.indices.delete(index=name)
-        self._es.indices.create(index=name, mappings=mapping)
-
-    def delete_index(self, name: str) -> None:
-        """
-        Deletes an index.
-        :param name: Name of the index in the Elasticsearch database
-        """
-        self._es.indices.delete(index=name)
-
-    def insert(self, index_name: str, documents: List[Dict]) -> int:
-        """
-        Inserts a given list of documents into the Elasticsearch index with the given
-            name.
-        :param index_name: Name of the Elasticsearch index for inserting the documents
-        :param documents: List of documents in the form of a dictionary
-        :return: Number of successfully inserted documents
-        """
-        for doc in documents:
-            doc['_op_type'] = 'index'
-            doc['_index'] = index_name
-        success, _ = bulk(self._es, documents, refresh='wait_for')
-        return success
-
     def get_documents(
         self, index_name: str, page_size: Optional[int] = 10
     ) -> List[Dict]:

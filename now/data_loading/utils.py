@@ -1,9 +1,8 @@
 import base64
 import os
 from os.path import join as osp
-from typing import List, Dict
 
-from docarray import Document, DocumentArray
+from docarray import DocumentArray
 
 from now.constants import BASE_STORAGE_URL, DEMO_DATASET_DOCARRAY_VERSION, Modalities
 from now.log import yaspin_extended
@@ -53,54 +52,3 @@ def get_dataset_url(dataset: str, output_modality: Modalities) -> str:
         return f'{BASE_STORAGE_URL}/{data_folder}/{dataset}.{model_name}-{docarray_version}.bin'
     else:
         return f'{BASE_STORAGE_URL}/{data_folder}/{dataset}-{docarray_version}.bin'
-
-
-def transform_es_doc(document: Document) -> Document:
-    """
-    Transform data extracted from Elasticsearch to a more convenient form.
-    :param document: `Document` containing ES data.
-    :return: Transformed `Document`.
-    """
-    attr_values, attr_modalities = {}, {}
-    _transform_es_doc(document, attr_values, attr_modalities, [])
-    transformed_doc = Document(
-        chunks=[
-            Document(
-                content=attr_values[name],
-                modality=attr_modalities[name],
-                tags={'field_name': name},
-            )
-            for name in attr_values
-        ]
-    )
-    return transformed_doc
-
-
-def _transform_es_doc(
-    document: Document, attr_values: Dict, attr_modalities: Dict, names: List[str]
-):
-    """
-    Extract attributes from a `Document` and store it as a dictionary.
-    Recursively iterates across different chunks of the `Document` and collects
-    attributes with their corresponding values.
-    :param document: `Document` we want to transform.
-    :param attr_values: Dictionary of attribute values extracted from the document.
-    :param attr_modalities: Dictionary of attribute modalities extracted from the document.
-    :param names: Name of an attribute (attribute names may be nested, e.g.
-        info.cars, and we need to store name(s) on every level of recursion).
-    """
-    if not document.chunks:
-        names.append(document.tags['field_name'])
-        attr_name = '.'.join(names)
-        attr_val = (
-            document.text if document.modality == 'text' else document.uri
-        )
-        if attr_name not in attr_modalities:
-            attr_modalities[attr_name] = document.modality
-            attr_values[attr_name] = []
-        attr_values[attr_name].append(attr_val)
-    else:
-        if 'field_name' in document.tags:
-            names.append(document.modality)
-        for doc in document.chunks:
-            _transform_es_doc(doc, attr_values, attr_modalities, names[:])

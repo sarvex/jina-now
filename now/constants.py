@@ -4,8 +4,8 @@ from now.utils import BetterEnum
 # from docarray import __version__ as docarray_version
 # DEMO_DATASET_DOCARRAY_VERSION = docarray_version
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.126-revert-playground-1'
-NOW_PREPROCESSOR_VERSION = '0.0.85-finetune14'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.126-playground-demo-url-2'
+NOW_PREPROCESSOR_VERSION = '0.0.86-finetune'
 NOW_AUTH_EXECUTOR_VERSION = '0.0.5-auth-exec-4'
 NOW_ANNLITE_INDEXER_VERSION = '0.0.4-revert-playground-1'
 

@@ -2,12 +2,11 @@ import itertools
 import math
 import os
 from inspect import getmembers, isclass
-from typing import Any, Dict, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 from dask.distributed import Client
 from docarray import Document, DocumentArray
 
-from now.data_loading.utils import transform_es_doc
 from now.finetuning import generation_fns
 from now.finetuning.generation_fns import GeneratorFunction
 from now.now_dataclasses import Task, TrainDataGenerationConfig
