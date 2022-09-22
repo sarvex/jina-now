@@ -1,14 +1,10 @@
-import base64
 import json
 import os
 import tempfile
-from collections.abc import MutableMapping
-from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
 from os.path import expanduser as user
 from typing import Dict, List, Optional
 
-import boto3
 import hubble
 from docarray import Document, DocumentArray
 from jina import __version__ as jina_version
@@ -23,6 +19,7 @@ from now.constants import (
 from now.finetuning.run_finetuning import finetune
 from now.finetuning.settings import FinetuneSettings, parse_finetune_settings
 from now.now_dataclasses import UserInput
+from now.utils import _maybe_download_from_s3
 
 
 def common_get_flow_env_dict(
@@ -188,69 +185,3 @@ def _extract_tags_annlite(d: Document, user_input):
         tags.add((tag, str(tag.__class__.__name__)))
     final_tags = [list(tag) for tag in tags]
     return final_tags
-
-
-def _maybe_download_from_s3(
-    docs: DocumentArray, tmpdir: tempfile.TemporaryDirectory, user_input
-):
-    """Downloads file to local temporary dictionary, saves S3 URI to `tags['uri']` and modifies `uri` attribute of
-    document to local path in-place.
-
-    :param doc: document containing URI pointing to the location on S3 bucket
-    :param tmpdir: temporary directory in which files will be saved
-    """
-
-    def download(bucket, uri):
-        path_s3 = '/'.join(uri.split('/')[3:])
-        path_local = os.path.join(
-            str(tmpdir),
-            base64.b64encode(bytes(path_s3, "utf-8")).decode("utf-8"),
-        )
-        bucket.download_file(
-            path_s3,
-            path_local,
-        )
-        return path_local
-
-    def convert_fn(d: Document) -> Document:
-        """Downloads files and tags from S3 bucket and updates the content uri and the tags uri to the local path"""
-        d.tags['uri'] = d.uri
-        session = boto3.session.Session(
-            aws_access_key_id=user_input.aws_access_key_id,
-            aws_secret_access_key=user_input.aws_secret_access_key,
-            region_name=user_input.aws_region_name,
-        )
-        bucket = session.resource('s3').Bucket(d.uri.split('/')[2])
-        d.uri = download(bucket=bucket, uri=d.uri)
-        if 'tag_uri' in d.tags:
-            d.tags['tag_uri'] = download(bucket, d.tags['tag_uri'])
-            with open(d.tags['tag_uri'], 'r') as fp:
-                tags = json.load(fp)
-                tags = flatten_dict(tags)
-                d.tags.update(tags)
-            del d.tags['tag_uri']
-        return d
-
-    docs_to_download = []
-    for d in docs:
-        if d.uri.startswith('s3://'):
-            docs_to_download.append(d)
-
-    with ThreadPoolExecutor() as executor:
-        futures = []
-        for d in docs_to_download:
-            f = executor.submit(convert_fn, d)
-            futures.append(f)
-        for f in futures:
-            f.result()
-
-
-def flatten_dict(d, parent_key='', sep='_'):
-    items = []
-    for k, v in d.items():
-        new_key = parent_key + sep + k if parent_key else k
-        if isinstance(v, MutableMapping):
-            items.extend(flatten_dict(v, new_key, sep=sep).items())
-        else:
-            items.append((new_key, v))
-    return dict(items)
