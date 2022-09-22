@@ -1,8 +1,24 @@
 # Production readiness
 
+Jina NOW supports multiple cross modal applications such as:
+
+- Text-to-text
+- Text-to-image
+- Image-to-text
+- Image-to-image
+- Text-to-video
+- Music-to-music
+
 Jina NOW apps are production ready, our goal is to provide you with a search pipeline that is easy to integrate in your production
 system. We also come with other aspects such as AWS S3 Bucket data integration, security and finetuning.
-From our experiments you can expect:
+
+Models we use:
+
+SBERT : 'sentence-transformers/msmarco-distilbert-base-v3'
+CLIP : 'openai/clip-vit-base-patch32'
+Music Encoder: 'BiModalMusicTextEncoderV2'
+
+For hardware we use AWS EC2 instances, from our experiments you can expect:
 
 - Queries per second: 13
 - Latency: 300 ms
