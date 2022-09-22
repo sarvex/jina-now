@@ -1,9 +1,20 @@
 from docarray import Document
 
+from now.now_dataclasses import UserInput
+from now.data_loading.data_loading import _extract_es_data
 
-def test_extraction(setup_extractor):
-    extractor, _ = setup_extractor
-    transformed_docs = extractor.extract()
+
+def test_extraction(setup_online_shop_db, es_connection_params):
+    _, index_name = setup_online_shop_db
+    connection_str, _ = es_connection_params
+    user_input = UserInput()
+    user_input.es_index_name = index_name
+    user_input.es_image_fields = ['uris']
+    user_input.es_text_fields = ['title', 'text']
+    user_input.es_host_name = connection_str
+
+    transformed_docs = _extract_es_data(user_input)
+
     assert len(transformed_docs) == 50
     assert isinstance(transformed_docs[0], Document)
     assert len(transformed_docs[0].chunks) == 3

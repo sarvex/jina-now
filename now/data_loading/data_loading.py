@@ -153,8 +153,8 @@ def _extract_es_data(user_input: UserInput) -> DocumentArray:
         index=user_input.es_index_name,
         connection_str=user_input.es_host_name,
     )
-    # docs = DocumentArray([ElasticsearchExtractor._transform_es_doc(doc) for doc in es_extractor])
-    return DocumentArray()
+    extracted_docs = es_extractor.extract()
+    return extracted_docs
 
 
 def _load_from_disk(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:

@@ -70,20 +70,3 @@ def setup_online_shop_db(setup_elastic_db, es_connection_params, online_shop_res
 
     # delete index
     delete_es_index(connector=es_connector, name=index_name)
-
-
-@pytest.fixture
-def setup_extractor(
-    setup_online_shop_db,
-    es_connection_params,
-    es_query_path,
-):
-    _, index_name = setup_online_shop_db
-
-    connection_str, connection_args = es_connection_params
-    with open(es_query_path) as f:
-        query = json.load(f)
-    es_extractor = ElasticsearchExtractor(
-        query, index_name, connection_str, connection_args=connection_args
-    )
-    yield es_extractor, index_name

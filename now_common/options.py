@@ -192,7 +192,7 @@ AWS_REGION_NAME = DialogOptions(
 
 ES_TEXT_FIELDS = DialogOptions(
     name='es_text_fields',
-    prompt_message='Please enter text fields of your Elasticsearch data:',
+    prompt_message='Please enter comma-separated text fields of your data:',
     prompt_type='input',
     depends_on=CUSTOM_DATASET_TYPE,
     conditional_check=lambda user_input: user_input.custom_dataset_type
@@ -209,7 +209,7 @@ def _parse_text_fields(user_input: UserInput):
 
 ES_IMAGE_FIELDS = DialogOptions(
     name='es_image_fields',
-    prompt_message='Please enter image fields of your Elasticsearch data:',
+    prompt_message='Please enter comma-separated image fields of your data:',
     prompt_type='input',
     depends_on=CUSTOM_DATASET_TYPE,
     conditional_check=lambda user_input, **kwargs: user_input.custom_dataset_type

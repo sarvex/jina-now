@@ -54,12 +54,14 @@ class TextToTextAndImage(JinaNOWApp):
         """
         Read task configuration template and replace field names.
         """
+        # read task config template
         template_path = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), 'task_config.json'
         )
         with open(template_path) as f:
             config_dict = json.load(f)
             config = Task(**config_dict)
+        # get text and image field names if they're not specified
         if not user_input.es_text_fields:
             user_input.es_text_fields = [
                 chunk.tags['field_name']
@@ -72,6 +74,7 @@ class TextToTextAndImage(JinaNOWApp):
                 for chunk in data_example.chunks
                 if chunk.modality == 'image'
             ]
+        # put field names into generation function configurations
         for encoder in config.encoders:
             if encoder.name == 'text_encoder':
                 for method in encoder.training_data_generation_methods:
@@ -81,7 +84,7 @@ class TextToTextAndImage(JinaNOWApp):
                 for method in encoder.training_data_generation_methods:
                     method.query.scope = user_input.es_text_fields
                     method.target.scope = user_input.es_image_fields
-
+        # specify text and image field for the indexer
         config.indexer_scope['text'] = user_input.es_text_fields[0]
         config.indexer_scope['image'] = user_input.es_image_fields[0]
 
