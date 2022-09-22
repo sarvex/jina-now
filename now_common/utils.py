@@ -221,9 +221,9 @@ def _maybe_download_from_s3(
             region_name=user_input.aws_region_name,
         )
         bucket = session.resource('s3').Bucket(d.uri.split('/')[2])
-        d.uri = download(bucket=bucket, uri=d.uri, tmpdir=tmpdir)
+        d.uri = download(bucket=bucket, uri=d.uri)
         if 'tag_uri' in d.tags:
-            d.tags['tag_uri'] = download(bucket, d.tags['tag_uri'], tmpdir)
+            d.tags['tag_uri'] = download(bucket, d.tags['tag_uri'])
             with open(d.tags['tag_uri'], 'r') as fp:
                 tags = json.load(fp)
                 tags = flatten_dict(tags)
