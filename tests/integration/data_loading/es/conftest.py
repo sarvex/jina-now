@@ -38,11 +38,6 @@ def online_shop_resources(resources_folder_path):
     return corpus_path, mapping_path, 'online_shop_data'
 
 
-@pytest.fixture
-def es_query_path(resources_folder_path):
-    return os.path.join(resources_folder_path, 'text+image/query.json')
-
-
 @pytest.fixture()
 def setup_online_shop_db(setup_elastic_db, es_connection_params, online_shop_resources):
     """
