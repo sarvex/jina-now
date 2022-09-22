@@ -6,13 +6,13 @@ from typing import Dict, Optional
 import boto3
 from jina import Document, DocumentArray
 from now_common.options import _construct_app
-from now_common.utils import _maybe_download_from_s3
 from now_executors import NOWAuthExecutor as Executor
 from now_executors import SecurityLevel, secure_request
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import Apps, DatasetTypes, Modalities
 from now.now_dataclasses import UserInput
+from now.utils import _maybe_download_from_s3
 
 
 class NOWPreprocessor(Executor):
