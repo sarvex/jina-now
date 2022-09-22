@@ -51,6 +51,21 @@ class ElasticsearchExtractor:
         )
         self._supported_pil_extensions = self._get_supported_image_extensions()
 
+    def extract(self) -> DocumentArray:
+        """
+        Returns extracted data as a `DocumentArray` where every `Document`
+        contains chunks for each field.
+        For Example:
+        Document(chunks=[
+            Document(content='hello', modality='text', tags={'field_name': 'title'}),
+            Document(content='https://bla.com/img.jpeg', modality='image', tags={'field_name': 'uris'}),
+            ]
+        )
+        """
+        return DocumentArray(
+            [self._transform_es_doc(doc) for doc in self._extract_documents()]
+        )
+
     def _extract_documents(self):
         try:
             next_doc = self._get_next_document()
@@ -60,11 +75,6 @@ class ElasticsearchExtractor:
         except StopIteration:
             self._es_connector.close()
             return
-
-    def extract(self):
-        return DocumentArray(
-            [self._transform_es_doc(doc) for doc in self._extract_documents()]
-        )
 
     @classmethod
     def _transform_es_doc(cls, document: Document) -> Document:
