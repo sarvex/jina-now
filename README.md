@@ -16,7 +16,7 @@ Tell us what you think: <a href="https://10sw1tcpld4.typeform.com/to/VTAyYRpR?ut
 <!-- start elevator-pitch -->
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/11627845/164569398-5ef22a41-e2e1-438a-88a5-2ac43ad9426d.gif" alt="Jina NOW logo: The data structure for unstructured data" width="600px">
+<img src="https://user-images.githubusercontent.com/40893766/191586156-d9e4839b-8cc6-4f68-8c13-b4e9352de21d.gif" alt="Jina NOW logo: The data structure for unstructured data" width="1225px" height="497px">
 
 
 NOW gives the world access to neural image search in just one command execution.
@@ -82,13 +82,14 @@ Alternatively, you can select the local deployment option.
 
 <img width="547" alt="question-deployment" src="https://user-images.githubusercontent.com/11627845/170256038-8c44a5b8-985a-4fe7-af5d-16df0244f4bb.png">
 
-In case of local deployment, you will be asked where you want to deploy it. Jina NOW reads your local .kube/config and lists all kubernetes clusters you have access to. 
+In case of local deployment, you will be asked where you want to deploy it. Jina NOW reads your local .kube/config and lists all kubernetes clusters you have access to.
 If you don't want to use an existing cluster, you can create a new one locally.
 
 <img width="643" alt="question-cluster" src="https://user-images.githubusercontent.com/11627845/170256027-99798fae-3ec4-42dc-8737-843f4a23f941.png">
 
-After the program execution is finished, two links will be shown to you. The first one brings you to a playground where you can run example queries and experiment with the search case.
-The second URL leads you to the swagger UI which is useful for Frontend integration.
+After the program execution is finished, two links will be shown to you. The first one brings you to the
+swagger UI which is useful for frontend integration.
+The second URL leads you to a playground where you can run example queries and experiment with the search case.
 
 <img width="709" alt="Screenshot 2022-05-26 at 16 34 56" src="https://user-images.githubusercontent.com/11627845/170511632-c741a418-1246-4c23-aadd-cfd74d783f6b.png">
 
@@ -99,42 +100,6 @@ Example of the playground.
 Example of the swagger ui.
 
 <img width="350" alt="Screenshot 2022-05-26 at 16 36 06" src="https://user-images.githubusercontent.com/11627845/170511580-230d1e41-5e14-4623-adb6-3d4b2d400dc9.png">
-
-
-  
-### Use CLI Parameters
-Instead of answering the questions manually, you can also provide command-line arguments when starting Jina NOW like shown here.
-```bash
-jina now start --quality medium --data /local/img/folder
-```
-  
-### Use API
-You can now send requests to the API using the jina client. This case shows a local deployment.
-```bash
-from jina import Client    
-client = Client(
-        host='localhost',
-        port=31080,
-) 
-response = client.search(
-        Document(text=search_text), # or in case you send an image: Document(url=image_path),
-        parameters={"limit": 9, "filter": {}},
-)
-```
-  
-### Cleanup
-```bash
-jina now stop
-```
-
-### Requirements
-- `Linux` or `Mac`
-- `Python 3.7`, `3.8`, `3.9` or `3.10`
-#### Local execution
-- `Docker` installation
-- 10 GB assigned to docker
-- User must be permitted to run docker containers
-
 
 ## Supported apps (more will be added)
 
@@ -184,3 +149,4 @@ jina now stop
 
 ### Now use your custom data :)
 <!-- end elevator-pitch -->
+
