@@ -117,9 +117,7 @@ class ElasticsearchExtractor:
         if not document.chunks:
             names.append(document.tags['field_name'])
             attr_name = '.'.join(names)
-            attr_val = (
-                document.text if document.modality == 'text' else document.uri
-            )
+            attr_val = document.text if document.modality == 'text' else document.uri
             if attr_name not in attr_modalities:
                 attr_modalities[attr_name] = document.modality
                 attr_values[attr_name] = []
