@@ -14,7 +14,6 @@ logging.getLogger("PIL.Image").setLevel(logging.CRITICAL + 1)
 ID_TAG = 'id'
 FIELD_TAG = 'field_name'
 EXTRACTION_TYPE_TAG = 'extraction_type'
-MODALITY_TAG = 'modality'
 
 
 class ElasticsearchExtractor:
@@ -119,10 +118,10 @@ class ElasticsearchExtractor:
             names.append(document.tags['field_name'])
             attr_name = '.'.join(names)
             attr_val = (
-                document.text if document.tags['modality'] == 'text' else document.uri
+                document.text if document.modality == 'text' else document.uri
             )
             if attr_name not in attr_modalities:
-                attr_modalities[attr_name] = document.tags['modality']
+                attr_modalities[attr_name] = document.modality
                 attr_values[attr_name] = []
             attr_values[attr_name].append(attr_val)
         else:
@@ -161,19 +160,19 @@ class ElasticsearchExtractor:
         if os.path.splitext(content)[-1] in self._supported_pil_extensions:
             return Document(
                 uri=content,
+                modality='image',
                 tags={
                     FIELD_TAG: key,
                     EXTRACTION_TYPE_TAG: 'literal',
-                    MODALITY_TAG: 'image',
                 },
             )
         else:
             return Document(
                 text=content,
+                modality='text',
                 tags={
                     FIELD_TAG: key,
                     EXTRACTION_TYPE_TAG: 'literal',
-                    MODALITY_TAG: 'text',
                 },
             )
 

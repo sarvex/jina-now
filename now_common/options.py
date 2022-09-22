@@ -53,7 +53,7 @@ APP = DialogOptions(
         {
             'name': '📝 ▶ 📝+🏞 text to text+image search',
             'value': Apps.TEXT_TO_TEXT_AND_IMAGE,
-            # 'disabled': AVAILABLE_SOON,
+            'disabled': AVAILABLE_SOON,
         },
     ],
     prompt_message='What sort of search engine would you like to build?',
@@ -118,6 +118,7 @@ CUSTOM_DATASET_TYPE = DialogOptions(
         {
             'name': 'Elasticsearch',
             'value': DatasetTypes.ELASTICSEARCH,
+            'disabled': AVAILABLE_SOON,
         },
     ],
     prompt_type='list',
