@@ -18,12 +18,12 @@ metrics_mapping = {
 class ElasticIndexer(Executor):
     def __init__(
         self,
+        dims: Union[List[int], int],
         hosts: Union[
             str, List[Union[str, Mapping[str, Union[str, int]]]], None
         ] = 'https://elastic:elastic@localhost:9200',
         es_config: Optional[Dict[str, Any]] = None,
         metric: str = 'cosine',
-        dims: Union[List[int], int] = None,
         index_name: str = 'now-index',
         traversal_paths: str = '@r',
         **kwargs,
@@ -50,13 +50,8 @@ class ElasticIndexer(Executor):
         self.index_name = index_name
         self.traversal_paths = traversal_paths
         self.es_config = {'verify_certs': False} if not es_config else es_config
-        if dims:
-            self.es_mapping = self._generate_es_mapping()
-        else:
-            print('Cannot create Elasticsearch mapping. Please specify `dims`')
-            raise
         self.dims = dims if isinstance(dims, list) else [dims]
-
+        self.es_mapping = self._generate_es_mapping()
         self.es = Elasticsearch(hosts=self.hosts, **es_config, ssl_show_warn=False)
         if not self.es.indices.exists(index=self.index_name):
             self.es.indices.create(index=self.index_name, mappings=self.es_mapping)
