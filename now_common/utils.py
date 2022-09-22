@@ -3,6 +3,7 @@ import json
 import os
 import tempfile
 from collections.abc import MutableMapping
+from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
 from os.path import expanduser as user
 from typing import Dict, List, Optional
@@ -179,7 +180,9 @@ def _extract_tags_annlite(d: Document, user_input):
     )
     with tempfile.TemporaryDirectory() as tmpdir:
         if user_input and user_input.custom_dataset_type == DatasetTypes.S3_BUCKET:
-            _maybe_download_from_s3(doc=d, tmpdir=tmpdir, user_input=user_input)
+            _maybe_download_from_s3(
+                docs=DocumentArray([d]), tmpdir=tmpdir, user_input=user_input
+            )
     tags = set()
     for tag, _ in d.tags.items():
         tags.add((tag, str(tag.__class__.__name__)))
@@ -187,41 +190,8 @@ def _extract_tags_annlite(d: Document, user_input):
     return final_tags
 
 
-def download(bucket, uri, tmpdir):
-    path_s3 = '/'.join(uri.split('/')[3:])
-    path_local = os.path.join(
-        str(tmpdir),
-        base64.b64encode(bytes(path_s3, "utf-8")).decode("utf-8"),
-    )
-    bucket.download_file(
-        path_s3,
-        path_local,
-    )
-    return path_local
-
-
-def convert_fn(d: Document, user_input, tmpdir) -> Document:
-    """Downloads files and tags from S3 bucket and updates the content uri and the tags uri to the local path"""
-    d.tags['uri'] = d.uri
-    session = boto3.session.Session(
-        aws_access_key_id=user_input.aws_access_key_id,
-        aws_secret_access_key=user_input.aws_secret_access_key,
-        region_name=user_input.aws_region_name,
-    )
-    bucket = session.resource('s3').Bucket(d.uri.split('/')[2])
-    d.uri = download(bucket=bucket, uri=d.uri, tmpdir=tmpdir)
-    if 'tag_uri' in d.tags:
-        d.tags['tag_uri'] = download(bucket, d.tags['tag_uri'], tmpdir)
-        with open(d.tags['tag_uri'], 'r') as fp:
-            tags = json.load(fp)
-            tags = flatten_dict(tags)
-            d.tags.update(tags)
-        del d.tags['tag_uri']
-    return d
-
-
 def _maybe_download_from_s3(
-    doc: Document, tmpdir: tempfile.TemporaryDirectory, user_input
+    docs: DocumentArray, tmpdir: tempfile.TemporaryDirectory, user_input
 ):
     """Downloads file to local temporary dictionary, saves S3 URI to `tags['uri']` and modifies `uri` attribute of
     document to local path in-place.
@@ -230,8 +200,49 @@ def _maybe_download_from_s3(
     :param tmpdir: temporary directory in which files will be saved
     """
 
-    if doc.uri.startswith('s3://'):
-        doc = convert_fn(doc, user_input, tmpdir)
+    def download(bucket, uri):
+        path_s3 = '/'.join(uri.split('/')[3:])
+        path_local = os.path.join(
+            str(tmpdir),
+            base64.b64encode(bytes(path_s3, "utf-8")).decode("utf-8"),
+        )
+        bucket.download_file(
+            path_s3,
+            path_local,
+        )
+        return path_local
+
+    def convert_fn(d: Document) -> Document:
+        """Downloads files and tags from S3 bucket and updates the content uri and the tags uri to the local path"""
+        d.tags['uri'] = d.uri
+        session = boto3.session.Session(
+            aws_access_key_id=user_input.aws_access_key_id,
+            aws_secret_access_key=user_input.aws_secret_access_key,
+            region_name=user_input.aws_region_name,
+        )
+        bucket = session.resource('s3').Bucket(d.uri.split('/')[2])
+        d.uri = download(bucket=bucket, uri=d.uri, tmpdir=tmpdir)
+        if 'tag_uri' in d.tags:
+            d.tags['tag_uri'] = download(bucket, d.tags['tag_uri'], tmpdir)
+            with open(d.tags['tag_uri'], 'r') as fp:
+                tags = json.load(fp)
+                tags = flatten_dict(tags)
+                d.tags.update(tags)
+            del d.tags['tag_uri']
+        return d
+
+    docs_to_download = []
+    for d in docs:
+        if d.uri.startswith('s3://'):
+            docs_to_download.append(d)
+
+    with ThreadPoolExecutor() as executor:
+        futures = []
+        for d in docs_to_download:
+            f = executor.submit(convert_fn, d)
+            futures.append(f)
+        for f in futures:
+            f.result()
 
 
 def flatten_dict(d, parent_key='', sep='_'):

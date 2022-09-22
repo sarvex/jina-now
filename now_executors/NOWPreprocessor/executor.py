@@ -1,13 +1,12 @@
 import json
 import os
 import tempfile
-from concurrent.futures import ThreadPoolExecutor
 from typing import Dict, Optional
 
 import boto3
 from jina import Document, DocumentArray
 from now_common.options import _construct_app
-from now_common.utils import convert_fn
+from now_common.utils import _maybe_download_from_s3
 from now_executors import NOWAuthExecutor as Executor
 from now_executors import SecurityLevel, secure_request
 
@@ -55,29 +54,6 @@ class NOWPreprocessor(Executor):
                 with open(self.user_input_path, 'w') as fp:
                     json.dump(self.user_input.__dict__, fp)
 
-    def _maybe_download_from_s3(
-        self, docs: DocumentArray, tmpdir: tempfile.TemporaryDirectory
-    ):
-        """Downloads files to local temporary dictionary, saves S3 URI to `tags['uri']` and modifies `uri` attribute of
-        document to local path in-place.
-
-        :param docs: documents containing URIs pointing to the location on S3 bucket
-        :param tmpdir: temporary directory in which files will be saved
-        """
-
-        docs_to_download = []
-        for d in docs:
-            if d.uri.startswith('s3://'):
-                docs_to_download.append(d)
-
-        with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
-            futures = []
-            for d in docs_to_download:
-                f = executor.submit(convert_fn, d, self.user_input, tmpdir)
-                futures.append(f)
-            for f in futures:
-                f.result()
-
     def _preprocess_maybe_cloud_download(
         self,
         docs: DocumentArray,
@@ -89,7 +65,9 @@ class NOWPreprocessor(Executor):
                 self.user_input
                 and self.user_input.custom_dataset_type == DatasetTypes.S3_BUCKET
             ):
-                self._maybe_download_from_s3(docs=docs, tmpdir=tmpdir)
+                _maybe_download_from_s3(
+                    docs=docs, tmpdir=tmpdir, user_input=self.user_input
+                )
 
             pre_docs = self.app.preprocess(
                 docs, self.user_input, is_indexing=is_indexing
