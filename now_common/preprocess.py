@@ -1,7 +1,6 @@
 from docarray import Document, DocumentArray
 
 from now.data_loading.convert_datasets_to_jpeg import to_thumbnail_jpg
-from now.data_loading.utils import transform_es_data
 from now.now_dataclasses import UserInput
 
 
@@ -82,15 +81,21 @@ def preprocess_nested_docs(da: DocumentArray, user_input: UserInput) -> Document
     :return: A `DocumentArray` with `Document`s containing text and image chunks.
     """
     fields = user_input.task_config.indexer_scope
-    transformed_da = transform_es_data(da)
+    texts, uris = [], []
+    for doc in da:
+        for chunk in doc.chunks:
+            if chunk.tags['field_name'] == fields['text']:
+                texts.append(chunk.content)
+            elif chunk.tags['field_name'] == fields['image']:
+                uris.append(chunk.content)
     return DocumentArray(
         [
             Document(
                 chunks=[
-                    Document(text=doc[fields['text']][0]),
-                    Document(uri=doc[fields['image']][0]),
+                    Document(text=text[0]),
+                    Document(uri=uri[0]),
                 ]
             )
-            for doc in transformed_da
+            for text, uri in zip(texts, uris)
         ]
     )

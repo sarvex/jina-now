@@ -10,6 +10,7 @@ from now.apps.text_to_text_and_image.app import TextToTextAndImage
 from now.apps.text_to_video.app import TextToVideo
 from now.constants import DemoDatasets
 from now.data_loading.data_loading import load_data
+from now.data_loading.es import ElasticsearchExtractor
 from now.now_dataclasses import UserInput
 
 
@@ -99,11 +100,13 @@ def test_nested_preprocessing(is_indexing, get_task_config_path):
 
     if is_indexing:
         da = DocumentArray(load_data(app, user_input)[0])
+        da = DocumentArray(
+            [ElasticsearchExtractor._transform_es_doc(doc) for doc in da]
+        )
     else:
         da = DocumentArray(Document(text='query text'))
 
     processed_da = app.preprocess(da=da, user_input=user_input, is_indexing=is_indexing)
-
     assert len(processed_da) == 1
     if is_indexing:
         assert len(processed_da[0].chunks) == 2

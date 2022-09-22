@@ -7,7 +7,7 @@ from docarray import Document, DocumentArray
 
 class GeneratorFunction(ABC):
     @abstractmethod
-    def process(self, document: Dict[str, Any]) -> DocumentArray:
+    def process(self, document: Document) -> DocumentArray:
         """Generation function that produces a `DocumentArray` given a `Document`."""
         pass
 
@@ -27,7 +27,7 @@ class ImageNormalizer(GeneratorFunction):
         """
         self._scope = scope
 
-    def process(self, document: Dict[str, Any]) -> DocumentArray:
+    def process(self, document: Document) -> DocumentArray:
         """
         Processes a `Document` containing image information.
 
@@ -35,8 +35,9 @@ class ImageNormalizer(GeneratorFunction):
         :return: `DocumentArray` of processed images.
         """
         normalized_imgs = DocumentArray()
-        for field in self._scope:
-            normalized_imgs.extend([Document(uri=uri) for uri in document[field]])
+        for chunk in document.chunks:
+            if chunk.tags['field_name'] in self._scope:
+                normalized_imgs.extend([Document(uri=uri) for uri in chunk.content])
         normalized_imgs.apply(self._process)
         return normalized_imgs
 
@@ -64,7 +65,7 @@ class TextProcessor(GeneratorFunction):
         self._powerset = powerset
         self._permute = permute
 
-    def process(self, document: Dict[str, Any]) -> DocumentArray:
+    def process(self, document: Document) -> DocumentArray:
         """
         Processes a `Document` containing text information.
 
@@ -72,6 +73,9 @@ class TextProcessor(GeneratorFunction):
         :param scope: List of fields to consider for processing.
         :return: `DocumentArray` of processed (and concatenated) text data.
         """
+        document = {
+            chunk.tags['field_name']: chunk.content for chunk in document.chunks
+        }
         if self._powerset:
             key_sets = chain.from_iterable(
                 combinations(self._scope, r) for r in range(1, len(self._scope) + 1)

@@ -1,0 +1,10 @@
+{
+    "properties": {
+        "id": {"type": "text", "analyzer": "standard"},
+        "product_id": {"type": "text", "analyzer": "standard"},
+        "uris": {"type": "text", "analyzer": "standard"},
+        "text": {"type": "text", "analyzer": "standard"},
+        "title": {"type": "text", "analyzer": "standard"},
+        "url": {"type": "text", "analyzer": "standard"}
+    }
+}
