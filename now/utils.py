@@ -429,13 +429,15 @@ def _prompt_value(
 
 
 def _maybe_download_from_s3(
-    docs: DocumentArray, tmpdir: tempfile.TemporaryDirectory, user_input
+    docs: DocumentArray, tmpdir: tempfile.TemporaryDirectory, user_input, max_workers
 ):
     """Downloads file to local temporary dictionary, saves S3 URI to `tags['uri']` and modifies `uri` attribute of
     document to local path in-place.
 
     :param doc: document containing URI pointing to the location on S3 bucket
     :param tmpdir: temporary directory in which files will be saved
+    :param user_input: User iput which contain aws credentials
+    :param max_workers: number of threads to create in the threadpool executor to make execution faster
     """
 
     def download(bucket, uri):
@@ -474,7 +476,7 @@ def _maybe_download_from_s3(
         if d.uri.startswith('s3://'):
             docs_to_download.append(d)
 
-    with ThreadPoolExecutor() as executor:
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = []
         for d in docs_to_download:
             f = executor.submit(convert_fn, d)

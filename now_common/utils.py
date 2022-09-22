@@ -178,7 +178,10 @@ def _extract_tags_annlite(d: Document, user_input):
     with tempfile.TemporaryDirectory() as tmpdir:
         if user_input and user_input.custom_dataset_type == DatasetTypes.S3_BUCKET:
             _maybe_download_from_s3(
-                docs=DocumentArray([d]), tmpdir=tmpdir, user_input=user_input
+                docs=DocumentArray([d]),
+                tmpdir=tmpdir,
+                user_input=user_input,
+                max_workers=1,
             )
     tags = set()
     for tag, _ in d.tags.items():

@@ -66,7 +66,10 @@ class NOWPreprocessor(Executor):
                 and self.user_input.custom_dataset_type == DatasetTypes.S3_BUCKET
             ):
                 _maybe_download_from_s3(
-                    docs=docs, tmpdir=tmpdir, user_input=self.user_input
+                    docs=docs,
+                    tmpdir=tmpdir,
+                    user_input=self.user_input,
+                    max_workers=self.max_workers,
                 )
 
             pre_docs = self.app.preprocess(
