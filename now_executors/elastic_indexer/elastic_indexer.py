@@ -52,7 +52,7 @@ class ElasticIndexer(Executor):
         self.es_config = {'verify_certs': False} if not es_config else es_config
         self.dims = dims if isinstance(dims, list) else [dims]
         self.es_mapping = self._generate_es_mapping()
-        self.es = Elasticsearch(hosts=self.hosts, **es_config, ssl_show_warn=False)
+        self.es = Elasticsearch(hosts=self.hosts, **self.es_config, ssl_show_warn=False)
         if not self.es.indices.exists(index=self.index_name):
             self.es.indices.create(index=self.index_name, mappings=self.es_mapping)
 
