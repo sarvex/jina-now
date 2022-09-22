@@ -50,6 +50,7 @@ def cleanup(deployment_type, dataset):
             cli(args=kwargs)
     except Exception as e:
         print('no clean up')
+        print(e)
         return
     print('cleaned up')
     now = time.time() - start
