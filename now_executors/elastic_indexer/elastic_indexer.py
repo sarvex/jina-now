@@ -57,7 +57,6 @@ class ElasticIndexer(Executor):
             raise
         self.dims = dims if isinstance(dims, list) else [dims]
 
-
         self.es = Elasticsearch(hosts=self.hosts, **es_config, ssl_show_warn=False)
         if not self.es.indices.exists(index=self.index_name):
             self.es.indices.create(index=self.index_name, mappings=self.es_mapping)
