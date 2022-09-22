@@ -14,9 +14,9 @@ system. We also come with other aspects such as AWS S3 Bucket data integration, 
 
 Models we use:
 
-SBERT : 'sentence-transformers/msmarco-distilbert-base-v3'
-CLIP : 'openai/clip-vit-base-patch32'
-Music Encoder: 'BiModalMusicTextEncoderV2'
+- SBERT : 'sentence-transformers/msmarco-distilbert-base-v3'
+- CLIP : 'openai/clip-vit-base-patch32'
+- Music Encoder: 'BiModalMusicTextEncoderV2'
 
 For hardware we use AWS EC2 instances, from our experiments you can expect:
 
