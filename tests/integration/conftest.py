@@ -46,7 +46,6 @@ def es_connection_params():
     return connection_str, connection_args
 
 
-@pytest.mark.docker
 @pytest.fixture(scope='session', autouse=True)
 def setup_service_running(es_connection_params) -> None:
     os.system('docker-compose -f tests/resources/text+image/docker-compose.yml up -d')
