@@ -59,14 +59,12 @@ class EncoderConfig:
     name : Encoder name.
     encoder_type : Datatypes which are matched by this encoder pair - in the first
         version either "text-to-text" or "text-to-image".
-    target_fields : Properties of an elastic search document encoded by this encoder.
     train_dataset_name: Name of a dataset generated for this encoder.
     training_data_generation_methods: Configuration of methods to generate training data.
     """
 
     name: str
     encoder_type: str
-    target_fields: List[str]
     train_dataset_name: str
     training_data_generation_methods: List[TrainDataGenerationConfig]
 
@@ -79,14 +77,12 @@ class Task:
     Fields
     ------
     name : Unique name for the task.
-    data : Name of the dataset.
     encoders : Configuration of the models to encode queries and
         elastic search documents.
     indexer_scope: Fields to consider during indexing for each modality.
     """
 
     name: str
-    data: str
     encoders: List[EncoderConfig]
     indexer_scope: Dict[str, str]
 
@@ -107,6 +103,11 @@ class UserInput(BaseModel):
 
     # ES related
     task_config: Optional[Task] = None
+    es_text_fields: Optional[List] = None
+    es_image_fields: Optional[List] = None
+    es_index_name: Optional[str] = None
+    es_host_name: Optional[str] = None
+    es_additional_args: Optional[Dict] = None
 
     # model related
     quality: Optional[Qualities] = Qualities.MEDIUM

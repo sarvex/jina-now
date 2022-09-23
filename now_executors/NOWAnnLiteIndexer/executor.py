@@ -78,7 +78,7 @@ class NOWAnnLiteIndexer(Executor):
             columns = cols
 
         self._index = annlite.AnnLite(
-            dim=dim,
+            n_dim=dim,
             metric=metric,
             columns=columns,
             ef_construction=ef_construction,
