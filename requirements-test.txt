@@ -8,4 +8,4 @@ pytest-custom_exit_code
 mock
 black==22.3.0
 pytest-split==0.8.0
-fix-cannot-return @ git+https://github.com/jina-ai/annlite.git#egg=fix-cannot-return
+-e git+git@github.com:jina-ai/annlite.git@branch/fix-cannot-return
