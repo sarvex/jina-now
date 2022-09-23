@@ -2,6 +2,7 @@
 
 import os
 
+import hubble
 import pytest
 
 
@@ -35,3 +36,44 @@ def gif_resource_path(resources_folder_path: str) -> str:
 @pytest.fixture
 def get_task_config_path(resources_folder_path: str) -> str:
     return os.path.join(resources_folder_path, 'text+image/config.json')
+
+
+@pytest.fixture
+def admin_email():
+    return 'alpha.omega@jina.ai'
+
+
+@pytest.fixture
+def user_email():
+    return 'abc.def@jina.ai'
+
+
+@pytest.fixture
+def mock_hubble_user_email(monkeypatch, user_email):
+    class MockedClient:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def get_user_info(self, *args, **kwargs):
+            return {
+                'code': 200,
+                'data': {'email': user_email},
+            }
+
+    monkeypatch.setattr(hubble, 'Client', MockedClient)
+
+
+@pytest.fixture()
+def mock_hubble_admin_email(monkeypatch, admin_email):
+    class MockedClient:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def get_user_info(self, *args, **kwargs):
+            return {
+                'code': 200,
+                'data': {'email': admin_email},
+            }
+
+    monkeypatch.setattr(hubble, 'Client', MockedClient)
+    # hubble.Client = MockedClient

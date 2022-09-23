@@ -3,10 +3,10 @@ import re
 
 import requests
 from jina.serve.runtimes.gateway.http.models import JinaResponseModel
+from now_common.options import _construct_app
 from pydantic import parse_obj_as
 
 from deployment.bff.app.v1.routers.helper import jina_client_post
-from now.dialog import _construct_app
 
 
 class Client:

@@ -1,8 +1,7 @@
 import numpy as np
 import pytest
 from jina import Document, DocumentArray, Flow
-
-from ..executor import NOWAnnLiteIndexer
+from now_executors.NOWAnnLiteIndexer.executor import NOWAnnLiteIndexer
 
 N = 10  # number of data points
 Nu = 9  # number of data update
@@ -90,7 +89,10 @@ def test_list(tmpdir, offset, limit):
             else {}
         )
         list_res = f.post(on='/list', parameters=parameters, return_results=True)
-        l = N if offset is None else limit
+        if offset is None:
+            l = N
+        else:
+            l = max(limit - offset, 0)
         assert len(list_res) == l
         if l > 0:
             assert list_res[0].id == str(offset) if offset is not None else '0'
@@ -172,7 +174,7 @@ def test_search_match(tmpdir):
         c = query_res[0]
         assert c.embedding is None
         assert c.matches[0].embedding is None
-        assert len(c.matches) == 15
+        assert len(c.matches) == N
 
         for i in range(len(c.matches) - 1):
             assert (
