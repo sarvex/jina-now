@@ -96,13 +96,10 @@ def test_nested_preprocessing(is_indexing, get_task_config_path):
     user_input.data = DemoDatasets.ES_ONLINE_SHOP_50
     user_input.quality = None
     app = TextToTextAndImage()
-    app._read_task_config(task_config_path=get_task_config_path, user_input=user_input)
 
     if is_indexing:
         da = DocumentArray(load_data(app, user_input)[0])
-        da = DocumentArray(
-            [ElasticsearchExtractor._transform_es_doc(doc) for doc in da]
-        )
+        app._create_task_config(user_input=user_input, data_example=da[0])
     else:
         da = DocumentArray(Document(text='query text'))
 

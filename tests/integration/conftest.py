@@ -8,6 +8,8 @@ from urllib3.exceptions import InsecureRequestWarning
 from warnings import filterwarnings, catch_warnings
 import requests
 
+from now.deployment.deployment import cmd
+
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__name__)
 
@@ -46,10 +48,9 @@ def es_connection_params():
     return connection_str, connection_args
 
 
-@pytest.mark.docker
 @pytest.fixture(scope='session', autouse=True)
 def setup_service_running(es_connection_params) -> None:
-    os.system('docker-compose -f tests/resources/text+image/docker-compose.yml up -d')
+    cmd('docker-compose -f tests/resources/text+image/docker-compose.yml up -d')
     es_connection_str, _ = es_connection_params
     with catch_warnings():
         filterwarnings('ignore', category=InsecureRequestWarning)
@@ -77,4 +78,4 @@ def setup_service_running(es_connection_params) -> None:
                     )
                 sleep(3)
     yield
-    os.system('docker-compose -f tests/resources/text+image/docker-compose.yml down')
+    cmd('docker-compose -f tests/resources/text+image/docker-compose.yml down')

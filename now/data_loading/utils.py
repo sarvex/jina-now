@@ -1,9 +1,8 @@
 import base64
 import os
 from os.path import join as osp
-from typing import List, Tuple, Dict
 
-from docarray import Document, DocumentArray
+from docarray import DocumentArray
 
 from now.constants import BASE_STORAGE_URL, DEMO_DATASET_DOCARRAY_VERSION, Modalities
 from now.log import yaspin_extended
