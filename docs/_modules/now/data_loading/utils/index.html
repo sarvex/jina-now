@@ -6,7 +6,7 @@
         <link rel="canonical" href="https://now.jina.ai/_modules/now/data_loading/utils.html" />
 
     <link rel="shortcut icon" href="../../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.09.15"/>
-        <title>now.data_loading.utils - NOW 0.0.30 documentation</title>
+        <title>now.data_loading.utils - NOW 0.0.31 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?digest=9ec31e2665bf879c1d47d93a8ec4893870ee1e45" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../../">
-                <div class="brand">NOW 0.0.30 documentation</div>
+                <div class="brand">NOW 0.0.31 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -190,6 +190,8 @@
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
     <p class="caption" role="heading"><span class="caption-text">User Guides</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../user-guides/cli_api/">How to use Jina NOW’s CLI and API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../user-guides/production/">Production readiness</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../user-guides/faq/">FAQ</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Developer References</span></p>
@@ -274,9 +276,8 @@
 <span></span><span class="kn">import</span> <span class="nn">base64</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">join</span> <span class="k">as</span> <span class="n">osp</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
 
-<span class="kn">from</span> <span class="nn">docarray</span> <span class="kn">import</span> <span class="n">Document</span><span class="p">,</span> <span class="n">DocumentArray</span>
+<span class="kn">from</span> <span class="nn">docarray</span> <span class="kn">import</span> <span class="n">DocumentArray</span>
 
 <span class="kn">from</span> <span class="nn">now.constants</span> <span class="kn">import</span> <span class="n">BASE_STORAGE_URL</span><span class="p">,</span> <span class="n">DEMO_DATASET_DOCARRAY_VERSION</span><span class="p">,</span> <span class="n">Modalities</span>
 <span class="kn">from</span> <span class="nn">now.log</span> <span class="kn">import</span> <span class="n">yaspin_extended</span>
@@ -326,49 +327,6 @@
         <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">BASE_STORAGE_URL</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">data_folder</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">dataset</span><span class="si">}</span><span class="s1">.</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s1">-</span><span class="si">{</span><span class="n">docarray_version</span><span class="si">}</span><span class="s1">.bin&#39;</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">BASE_STORAGE_URL</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">data_folder</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">dataset</span><span class="si">}</span><span class="s1">-</span><span class="si">{</span><span class="n">docarray_version</span><span class="si">}</span><span class="s1">.bin&#39;</span></div>
-
-
-<div class="viewcode-block" id="transform_es_data"><a class="viewcode-back" href="../../../../api/now.data_loading.utils/#now.data_loading.utils.transform_es_data">[docs]</a><span class="k">def</span> <span class="nf">transform_es_data</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">DocumentArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Transform data extracted from Elasticsearch to a more convenient form.</span>
-
-<span class="sd">    :param data: Loaded `DocumentArray` containing ES data.</span>
-<span class="sd">    :return: List of data examples as dictionaries.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">transformed_data</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">document</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
-        <span class="n">attributes</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">transform_doc</span><span class="p">(</span><span class="n">document</span><span class="p">,</span> <span class="n">attributes</span><span class="p">,</span> <span class="p">[])</span>
-        <span class="n">transformed_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">attributes</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">transformed_data</span></div>
-
-
-<div class="viewcode-block" id="transform_doc"><a class="viewcode-back" href="../../../../api/now.data_loading.utils/#now.data_loading.utils.transform_doc">[docs]</a><span class="k">def</span> <span class="nf">transform_doc</span><span class="p">(</span><span class="n">document</span><span class="p">:</span> <span class="n">Document</span><span class="p">,</span> <span class="n">attributes</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">names</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Extract attributes from a `Document` and store it as a dictionary.</span>
-
-<span class="sd">    Recursively iterates across different chunks of the `Document` and collects</span>
-<span class="sd">    attributes with their corresponding values.</span>
-
-<span class="sd">    :param document: `Document` we want to transform.</span>
-<span class="sd">    :param attributes: Dictionary of attributes extracted from the document.</span>
-<span class="sd">    :param names: Name of an attribute (attribute names may be nested, e.g.</span>
-<span class="sd">        info.cars, and we need to store name(s) on every level of recursion).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">document</span><span class="o">.</span><span class="n">chunks</span><span class="p">:</span>
-        <span class="n">names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">document</span><span class="o">.</span><span class="n">tags</span><span class="p">[</span><span class="s1">&#39;field_name&#39;</span><span class="p">])</span>
-        <span class="n">attr_name</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">names</span><span class="p">)</span>
-        <span class="n">attr_val</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">document</span><span class="o">.</span><span class="n">text</span> <span class="k">if</span> <span class="n">document</span><span class="o">.</span><span class="n">tags</span><span class="p">[</span><span class="s1">&#39;modality&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;text&#39;</span> <span class="k">else</span> <span class="n">document</span><span class="o">.</span><span class="n">uri</span>
-        <span class="p">)</span>
-        <span class="k">if</span> <span class="n">attr_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">attributes</span><span class="p">:</span>
-            <span class="n">attributes</span><span class="p">[</span><span class="n">attr_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">attributes</span><span class="p">[</span><span class="n">attr_name</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">attr_val</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">if</span> <span class="s1">&#39;field_name&#39;</span> <span class="ow">in</span> <span class="n">document</span><span class="o">.</span><span class="n">tags</span><span class="p">:</span>
-            <span class="n">names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">document</span><span class="o">.</span><span class="n">tags</span><span class="p">[</span><span class="s1">&#39;field_name&#39;</span><span class="p">])</span>
-        <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">document</span><span class="o">.</span><span class="n">chunks</span><span class="p">:</span>
-            <span class="n">transform_doc</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="n">attributes</span><span class="p">,</span> <span class="n">names</span><span class="p">[:])</span></div>
 </pre></div>
                 </article>
             </div>
@@ -386,7 +344,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Sep 20, 2022.
+                            Last updated on Sep 23, 2022.
                         </div>
                     </div>
                     <div class="right-details">

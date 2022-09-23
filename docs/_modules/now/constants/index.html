@@ -6,7 +6,7 @@
         <link rel="canonical" href="https://now.jina.ai/_modules/now/constants.html" />
 
     <link rel="shortcut icon" href="../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.09.15"/>
-        <title>now.constants - NOW 0.0.30 documentation</title>
+        <title>now.constants - NOW 0.0.31 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=9ec31e2665bf879c1d47d93a8ec4893870ee1e45" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../">
-                <div class="brand">NOW 0.0.30 documentation</div>
+                <div class="brand">NOW 0.0.31 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -190,6 +190,8 @@
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
     <p class="caption" role="heading"><span class="caption-text">User Guides</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../user-guides/cli_api/">How to use Jina NOW’s CLI and API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user-guides/production/">Production readiness</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../user-guides/faq/">FAQ</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Developer References</span></p>
@@ -277,11 +279,9 @@
 <span class="c1"># from docarray import __version__ as docarray_version</span>
 <span class="c1"># DEMO_DATASET_DOCARRAY_VERSION = docarray_version</span>
 <span class="n">DEMO_DATASET_DOCARRAY_VERSION</span> <span class="o">=</span> <span class="s1">&#39;0.13.17&#39;</span>
-
-<span class="n">DOCKER_BFF_PLAYGROUND_TAG</span> <span class="o">=</span> <span class="s1">&#39;0.0.126-revert-playground-1&#39;</span>
-<span class="n">NOW_PREPROCESSOR_VERSION</span> <span class="o">=</span> <span class="s1">&#39;0.0.85-finetune3&#39;</span>
-<span class="n">NOW_AUTH_EXECUTOR_VERSION</span> <span class="o">=</span> <span class="s1">&#39;0.0.5-auth-exec-4&#39;</span>
-<span class="n">NOW_ANNLITE_INDEXER_VERSION</span> <span class="o">=</span> <span class="s1">&#39;0.0.4-revert-playground-1&#39;</span>
+<span class="n">DOCKER_BFF_PLAYGROUND_TAG</span> <span class="o">=</span> <span class="s1">&#39;0.0.126-playground-demo-url-2&#39;</span>
+<span class="n">NOW_PREPROCESSOR_VERSION</span> <span class="o">=</span> <span class="s1">&#39;0.0.87-ci-executors-tests-18&#39;</span>
+<span class="n">NOW_ANNLITE_INDEXER_VERSION</span> <span class="o">=</span> <span class="s1">&#39;0.0.5-ci-executors-tests-18&#39;</span>
 
 
 <div class="viewcode-block" id="Modalities"><a class="viewcode-back" href="../../../api/now.constants/#now.constants.Modalities">[docs]</a><span class="k">class</span> <span class="nc">Modalities</span><span class="p">(</span><span class="n">BetterEnum</span><span class="p">):</span>
@@ -307,7 +307,8 @@
     <span class="n">PATH</span> <span class="o">=</span> <span class="s1">&#39;path&#39;</span>
     <span class="n">URL</span> <span class="o">=</span> <span class="s1">&#39;url&#39;</span>
     <span class="n">DOCARRAY</span> <span class="o">=</span> <span class="s1">&#39;docarray&#39;</span>
-    <span class="n">S3_BUCKET</span> <span class="o">=</span> <span class="s1">&#39;s3_bucket&#39;</span></div>
+    <span class="n">S3_BUCKET</span> <span class="o">=</span> <span class="s1">&#39;s3_bucket&#39;</span>
+    <span class="n">ELASTICSEARCH</span> <span class="o">=</span> <span class="s1">&#39;elasticsearch&#39;</span></div>
 
 
 <div class="viewcode-block" id="Qualities"><a class="viewcode-back" href="../../../api/now.constants/#now.constants.Qualities">[docs]</a><span class="k">class</span> <span class="nc">Qualities</span><span class="p">(</span><span class="n">BetterEnum</span><span class="p">):</span>
@@ -408,7 +409,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Sep 20, 2022.
+                            Last updated on Sep 23, 2022.
                         </div>
                     </div>
                     <div class="right-details">
