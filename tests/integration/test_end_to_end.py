@@ -95,7 +95,7 @@ def cleanup(deployment_type, dataset):
             Modalities.TEXT,
             Modalities.TEXT,
             DemoDatasets.POP_LYRICS,
-            'local',
+            'remote',
         ),
         # (
         #     Apps.TEXT_TO_VIDEO,
