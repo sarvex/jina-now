@@ -8,8 +8,8 @@ from typing import Dict, List, Optional
 import annlite
 from jina import Document, DocumentArray
 from jina.logging.logger import JinaLogger
-from now_executors import NOWAuthExecutor as Executor
-from now_executors import SecurityLevel, secure_request
+from now_executors.NOWAuthExecutor.executor import NOWAuthExecutor as Executor
+from now_executors.NOWAuthExecutor.executor import SecurityLevel, secure_request
 
 
 class NOWAnnLiteIndexer(Executor):
