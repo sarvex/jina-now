@@ -1,2 +1,3 @@
 docarray[qdrant]
 jina
+git+https://github.com/jina-ai/now@${JINA_NOW_COMMIT_SHA}

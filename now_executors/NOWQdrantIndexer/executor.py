@@ -1,12 +1,16 @@
+import os
 import subprocess
 from collections import defaultdict
 from copy import deepcopy
 from time import sleep
 from typing import Dict, List, Optional, Tuple, Union
 
+import yaml
 from docarray import DocumentArray
 from jina import Executor, requests
 from jina.logging.logger import JinaLogger
+
+QDRANT_CONFIG_PATH = '/qdrant/config/production.yaml'
 
 
 class QdrantIndexer4(Executor):
@@ -25,6 +29,7 @@ class QdrantIndexer4(Executor):
         scroll_batch_size: int = 64,
         serialize_config: Optional[Dict] = None,
         columns: Optional[Union[List[Tuple[str, str]], Dict[str, str]]] = None,
+        traversal_paths: Tuple[str] = ('r',),
         **kwargs,
     ):
         """
@@ -45,9 +50,17 @@ class QdrantIndexer4(Executor):
         :param columns: precise columns for the Indexer (used for filtering).
         """
         super().__init__(**kwargs)
-        # if qdrant exists, then start it
+
+        if self.workspace:
+            # set new storage to network file system location in WOLF
+            qdrant_config = yaml.safe_load(open(QDRANT_CONFIG_PATH))
+            qdrant_config['storage']['storage_path'] = os.path.join(
+                self.workspace, 'user_input.json'
+            )
+            yaml.safe_dump(qdrant_config, open(QDRANT_CONFIG_PATH, 'w'))
+            # if qdrant exists, then start it
         try:
-            process = subprocess.Popen(['./run-qdrant.sh'])
+            subprocess.Popen(['./run-qdrant.sh'])
             sleep(3)
             self.logger.info('Qdrant server started')
         except FileNotFoundError:
