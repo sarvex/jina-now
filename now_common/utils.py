@@ -9,8 +9,8 @@ from jina import __version__ as jina_version
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import (
-    NOW_ANNLITE_INDEXER_VERSION,
     NOW_PREPROCESSOR_VERSION,
+    NOW_QDRANT_INDEXER_VERSION,
     PREFETCH_NR,
 )
 from now.finetuning.run_finetuning import finetune
@@ -157,7 +157,8 @@ def get_indexer_config(num_indexed_samples: int) -> Dict:
 
     :param num_indexed_samples: number of samples which will be indexed; should incl. chunks for e.g. text-to-video app
     """
-    config = {'indexer_uses': f'NOWAnnLiteIndexer/v{NOW_ANNLITE_INDEXER_VERSION}'}
+    config = {'indexer_uses': f'QdrantIndexer4/{NOW_QDRANT_INDEXER_VERSION}'}
+
     threshold1 = 250_000
     if num_indexed_samples <= threshold1:
         config['indexer_resources'] = {'INDEXER_CPU': 0.1, 'INDEXER_MEM': '2G'}
