@@ -13,7 +13,7 @@ from typing import Dict, List
 from hubble import AuthenticationRequiredError
 from kubernetes import client, config
 
-from now.constants import AVAILABLE_DATASET, Apps, DatasetTypes, Qualities
+from now.constants import AVAILABLE_DATASET, Apps, DatasetTypes
 from now.deployment.deployment import cmd
 from now.log import time_profiler, yaspin_extended
 from now.now_dataclasses import DialogOptions, UserInput
@@ -61,26 +61,6 @@ APP = DialogOptions(
     is_terminal_command=True,
     description='What sort of search engine would you like to build?',
 )
-
-# ------------------------------------ #
-
-QUALITY = DialogOptions(
-    name='quality',
-    choices=[
-        {'name': '🦊 medium (≈3GB mem, 15q/s)', 'value': Qualities.MEDIUM},
-        {'name': '🐻 good (≈3GB mem, 2.5q/s)', 'value': Qualities.GOOD},
-        {
-            'name': '🦄 excellent (≈4GB mem, 0.5q/s)',
-            'value': Qualities.EXCELLENT,
-        },
-    ],
-    prompt_message='What quality do you expect?',
-    prompt_type='list',
-    description='Choose the quality of the model that you would like to finetune',
-)
-
-
-# --------------------------------------------- #
 
 DATA = DialogOptions(
     name='data',
