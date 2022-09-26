@@ -130,7 +130,6 @@ def test_es_online_shop_ds(da: DocumentArray):
     user_input = UserInput()
     user_input.data = 'custom'
     user_input.data = DemoDatasets.ES_ONLINE_SHOP_50
-    user_input.quality = None
 
     app = TextToTextAndImage()
     loaded_da = load_data(app, user_input)

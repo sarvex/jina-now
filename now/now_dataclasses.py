@@ -12,7 +12,7 @@ from typing import Any, Callable, Dict, List, Optional, Union
 from pydantic import BaseModel, StrictBool
 from pydantic.dataclasses import dataclass
 
-from now.constants import DatasetTypes, Qualities
+from now.constants import DatasetTypes
 
 
 @dataclass
@@ -108,9 +108,6 @@ class UserInput(BaseModel):
     es_index_name: Optional[str] = None
     es_host_name: Optional[str] = None
     es_additional_args: Optional[Dict] = None
-
-    # model related
-    quality: Optional[Qualities] = Qualities.MEDIUM
 
     # cluster related
     cluster: Optional[str] = None
