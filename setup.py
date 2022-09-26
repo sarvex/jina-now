@@ -41,7 +41,7 @@ import pathlib
 install_requires = get_requirements_list('requirements.txt')
 extra_require = get_requirements_list('requirements-test.txt')
 extra_require.append(
-    'annlite @ git+https://github.com/jina-ai/annlite.git@fix-cannot-return'
+    'annlite @ git+https://github.com/jina-ai/annlite.git@b5f8694fb5c33af15cc9b4a140a0165bf3aa01f4'
 )
 sys_platform = platform.system().lower()
 # if sys_platform == 'darwin':
