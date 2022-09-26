@@ -91,7 +91,7 @@ class NOWAnnLiteIndexer(Executor):
         self.da = DocumentArray()
         for cell_id in range(self._index.n_cells):
             for docs in self._index.documents_generator(cell_id, batch_size=10240):
-                self.extend_inmemory_docs(docs)
+                self.extend_inmemory_docs_and_tags(docs)
 
         self.da = DocumentArray(sorted([d for d in self.da], key=lambda x: x.id))
 
@@ -104,7 +104,9 @@ class NOWAnnLiteIndexer(Executor):
     def extend_inmemory_docs_and_tags(self, docs):
         """Extend the in-memory DocumentArray with new documents"""
         for d in docs:
-            self.da.append(Document(id=d.id, uri=d.uri, tags=d.tags))
+            self.da.append(
+                Document(id=d.id, uri=d.uri, tags=d.tags, parent_id=d.parent_id)
+            )
             self.doc_id_tags[d.id] = d.tags
         self.save_tags()
 
@@ -220,10 +222,32 @@ class NOWAnnLiteIndexer(Executor):
         - offset (int): number of documents to skip
         - limit (int): number of retrieved documents
         """
-
-        limit = int(parameters.get('limit', maxsize))
-        offset = int(parameters.get('offset', 0))
-        return self.da[offset : offset + limit]
+        limit = (
+            int(parameters.get('limit'))
+            if parameters.get('limit') is not None
+            else maxsize
+        )
+        offset = (
+            int(parameters.get('offset')) if parameters.get('offset') is not None else 0
+        )
+        # add removal of duplicates
+        traversal_paths = parameters.get('traversal_paths', self.search_traversal_paths)
+        docs = DocumentArray()
+        if traversal_paths == '@c':
+            chunks_size = (
+                int(parameters.get('chunks_size'))
+                if parameters.get('chunks_size')
+                else 3
+            )
+            parent_ids = set()
+            for d in self.da[offset * chunks_size :]:
+                if len(parent_ids) == limit:
+                    break
+                if d.parent_id in parent_ids:
+                    continue
+                parent_ids.add(d.parent_id)
+                docs.append(d)
+        return docs
 
     @secure_request(on='/search', level=SecurityLevel.USER)
     def search(

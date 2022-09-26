@@ -65,12 +65,13 @@ def test_index(tmpdir):
 
 
 @pytest.mark.parametrize(
-    'offset, limit', [(0, 0), (10, 0), (0, 10), (10, 10), (None, None)]
+    'offset, limit', [(0, 0)]  # , (10, 0), (0, 10), (10, 10), (None, None)]
 )
-def test_list(tmpdir, offset, limit):
+@pytest.mark.parametrize('has_chunk', [True])
+def test_list(tmpdir, offset, limit, has_chunk):
     """Test list returns all indexed docs"""
     metas = {'workspace': str(tmpdir)}
-    docs = gen_docs(N)
+    docs = gen_docs(N, has_chunk=has_chunk)
     f = Flow().add(
         uses=NOWAnnLiteIndexer,
         uses_with={
@@ -79,28 +80,35 @@ def test_list(tmpdir, offset, limit):
         uses_metas=metas,
     )
     with f:
-        f.post(on='/index', inputs=docs)
         parameters = (
             {
                 'offset': offset,
                 'limit': limit,
+                'traversal_paths': '@c',
+                'chunks_size': 2,
             }
-            if offset is not None
-            else {}
+            if has_chunk
+            else {
+                'offset': offset,
+                'limit': limit,
+            }
         )
+        f.post(on='/index', inputs=docs, parameters=parameters)
         list_res = f.post(on='/list', parameters=parameters, return_results=True)
-        if offset is None:
-            l = N
-        else:
-            l = max(limit - offset, 0)
+        print(limit)
+        l = N if limit is None else limit
         assert len(list_res) == l
         if l > 0:
-            assert list_res[0].id == str(offset) if offset is not None else '0'
-            assert list_res[0].uri == 'my-parent-uri'
-            assert len(list_res[0].chunks) == 0
-            assert list_res[0].embedding is None
-            assert list_res[0].text == ''
-            assert list_res[0].tags == {'parent_tag': 'value'}
+            if has_chunk:
+                assert len(list_res[0].chunks) == 0
+                assert len(set([d.id for d in list_res])) == l
+            else:
+                assert list_res[0].id == str(offset) if offset is not None else '0'
+                assert list_res[0].uri == 'my-parent-uri'
+                assert len(list_res[0].chunks) == 0
+                assert list_res[0].embedding is None
+                assert list_res[0].text == ''
+                assert list_res[0].tags == {'parent_tag': 'value'}
 
 
 def test_update(tmpdir):
