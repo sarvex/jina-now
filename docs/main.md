@@ -42,6 +42,7 @@ Main features
 - 🌈 **Quality**: If you provide labels to your documents, Jina NOW fine-tunes a model for you
 - ✨ **Nocode**: Deployment can be done by non-technical people
 
+You can read more on how Jina NOW is production ready [here](https://now.jina.ai/user-guides/production/).
 
 ### Installation
 
