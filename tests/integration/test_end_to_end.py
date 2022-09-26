@@ -95,7 +95,7 @@ def cleanup(deployment_type, dataset):
             Modalities.TEXT,
             Modalities.TEXT,
             DemoDatasets.POP_LYRICS,
-            'remote',
+            'local',
         ),
         # (
         #     Apps.TEXT_TO_VIDEO,
@@ -269,7 +269,7 @@ def assert_deployment_response(
     assert response['port'] == 8080 or response['port'] is None
 
 
-@pytest.mark.parametrize('deployment_type', ['remote'])
+@pytest.mark.parametrize('deployment_type', ['local'])
 @pytest.mark.parametrize('dataset', ['custom_s3_bucket'])
 def test_backend_custom_data(
     deployment_type: str,

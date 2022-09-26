@@ -4,6 +4,7 @@ from os.path import expanduser as user
 from typing import Dict, List, Optional
 
 import hubble
+from now.deployment.deployment import cmd
 from docarray import DocumentArray
 from jina import __version__ as jina_version
 
@@ -30,15 +31,17 @@ def common_get_flow_env_dict(
     user_input: UserInput,
     tags: List,
 ):
+    import subprocess
     """Returns dictionary for the environments variables for the clip & music flow.yml files."""
     if (
         finetune_settings.perform_finetuning and finetune_settings.bi_modal
     ) or user_input.app_instance.app_name == 'music_to_music':
         pre_trained_embedding_size = pre_trained_embedding_size * 2
-
+    es_password = subprocess.check_output("kubectl get secret quickstart-es-elastic-user -o go-template='{{.data.elastic | base64decode}}'")
     config = {
         'JINA_VERSION': jina_version,
         'ENCODER_NAME': f'jinahub+docker://{encoder_uses}',
+        'HOSTS': f"https://elastic:{es_password}@quickstart-es-http.nowapi:9200",
         'N_DIM': finetune_settings.finetune_layer_size
         if finetune_settings.perform_finetuning
         else pre_trained_embedding_size,
@@ -161,8 +164,12 @@ def get_indexer_config(
     :param num_indexed_samples: number of samples which will be indexed; should incl. chunks for e.g. text-to-video app
     :param elastic: hack to use ElasticIndexer, should be changed in future.
     """
+    import pathlib
     if elastic:
         config = {'indexer_uses': f'ElasticIndexer/v{NOW_ELASTIC_INDEXER_VERSION}'}
+        cur_dir = pathlib.Path(__file__).parent.resolve()
+        cmd(f'kubectl apply -f {cur_dir}/../now/deployment/elastic_kind.yml')
+        print("Setup elastic in kubectl")
     else:
         config = {'indexer_uses': f'NOWAnnLiteIndexer/v{NOW_ANNLITE_INDEXER_VERSION}'}
     threshold1 = 250_000
