@@ -19,19 +19,19 @@ Tell us what you think: <a href="https://10sw1tcpld4.typeform.com/to/VTAyYRpR?ut
 
 
 ````{tab} Text-to-image
-<a href="https://nowrun.jina.ai/?host=grpcs://nowapi-b6c2a2268f.wolf.jina.ai&input_modality=text&output_modality=image&data=best-artworks"><img src="https://user-images.githubusercontent.com/40893766/192243104-7f7b22a2-0264-4bef-887e-ece241b103eb.png" alt="text to image search example" width="1225px" height="497px"></a>
+<a href="https://nowrun.jina.ai/?host=grpcs://nowapi-b6c2a2268f.wolf.jina.ai&input_modality=text&output_modality=image&data=best-artworks"  target="_blank"><img src="https://user-images.githubusercontent.com/40893766/192243104-7f7b22a2-0264-4bef-887e-ece241b103eb.png" alt="text to image search example" width="1225px" height="497px"></a>
 ````
 
 ````{tab} Text-to-video
-<a href="https://pypi.org/project/jina-now/"><img src="https://user-images.githubusercontent.com/40893766/192243437-9fd6c852-d1b1-4ed1-8ac8-ed7b3c02527f.png" alt="text to video" width="1225px" height="497px"></a>
+<a href="https://pypi.org/project/jina-now/  target="_blank""><img src="https://user-images.githubusercontent.com/40893766/192243437-9fd6c852-d1b1-4ed1-8ac8-ed7b3c02527f.png" alt="text to video" width="1225px" height="497px"></a>
 ````
 
 ````{tab} Image-to-image
-<a href="https://nowrun.jina.ai/?host=grpcs://nowapi-5dff5320c8.wolf.jina.ai&input_modality=image&output_modality=image&data=tll"><img src="https://user-images.githubusercontent.com/40893766/192243720-a4881579-7346-4fe0-b41b-b1877eeec103.png" alt="image to image" width="1225px" height="497px"></a>
+<a href="https://nowrun.jina.ai/?host=grpcs://nowapi-5dff5320c8.wolf.jina.ai&input_modality=image&output_modality=image&data=tll"  target="_blank"><img src="https://user-images.githubusercontent.com/40893766/192243720-a4881579-7346-4fe0-b41b-b1877eeec103.png" alt="image to image" width="1225px" height="497px"></a>
 ````
 
 ````{tab} Text-to-text
-<a href="https://nowrun.jina.ai/?host=grpcs://nowapi-7e42539583.wolf.jina.ai&input_modality=text&output_modality=text&data=rock-lyrics"><img src="https://user-images.githubusercontent.com/40893766/192243962-6cf9c1d1-deb8-4f06-a65e-47271a472d92.png" alt="text to text" width="1225px" height="497px"></a>
+<a href="https://nowrun.jina.ai/?host=grpcs://nowapi-7e42539583.wolf.jina.ai&input_modality=text&output_modality=text&data=rock-lyrics"  target="_blank"><img src="https://user-images.githubusercontent.com/40893766/192243962-6cf9c1d1-deb8-4f06-a65e-47271a472d92.png" alt="text to text" width="1225px" height="497px"></a>
 ````
 
 NOW gives the world access to neural image search in just one command execution.
