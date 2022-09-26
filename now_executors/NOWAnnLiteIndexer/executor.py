@@ -232,8 +232,8 @@ class NOWAnnLiteIndexer(Executor):
         )
         # add removal of duplicates
         traversal_paths = parameters.get('traversal_paths', self.search_traversal_paths)
-        docs = DocumentArray()
         if traversal_paths == '@c':
+            docs = DocumentArray()
             chunks_size = (
                 int(parameters.get('chunks_size'))
                 if parameters.get('chunks_size')
@@ -247,6 +247,8 @@ class NOWAnnLiteIndexer(Executor):
                     continue
                 parent_ids.add(d.parent_id)
                 docs.append(d)
+        else:
+            docs = self.da[offset : offset + limit]
         return docs
 
     @secure_request(on='/search', level=SecurityLevel.USER)

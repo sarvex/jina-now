@@ -65,9 +65,9 @@ def test_index(tmpdir):
 
 
 @pytest.mark.parametrize(
-    'offset, limit', [(0, 0)]  # , (10, 0), (0, 10), (10, 10), (None, None)]
+    'offset, limit', [(0, 0), (10, 0), (0, 10), (10, 10), (None, None)]
 )
-@pytest.mark.parametrize('has_chunk', [True])
+@pytest.mark.parametrize('has_chunk', [True, False])
 def test_list(tmpdir, offset, limit, has_chunk):
     """Test list returns all indexed docs"""
     metas = {'workspace': str(tmpdir)}
@@ -96,7 +96,10 @@ def test_list(tmpdir, offset, limit, has_chunk):
         f.post(on='/index', inputs=docs, parameters=parameters)
         list_res = f.post(on='/list', parameters=parameters, return_results=True)
         print(limit)
-        l = N if limit is None else limit
+        if offset is None:
+            l = N
+        else:
+            l = max(limit - offset, 0)
         assert len(list_res) == l
         if l > 0:
             if has_chunk:
