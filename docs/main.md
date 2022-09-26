@@ -16,7 +16,8 @@ Tell us what you think: <a href="https://10sw1tcpld4.typeform.com/to/VTAyYRpR?ut
 <!-- start elevator-pitch -->
 
 <p align="center">
-(dummy-example)=
+
+
 ````{tab} Text-to-image
 <a href="https://nowrun.jina.ai/?host=grpcs://nowapi-b6c2a2268f.wolf.jina.ai&input_modality=text&output_modality=image&data=best-artworks"><img src="https://user-images.githubusercontent.com/40893766/192243104-7f7b22a2-0264-4bef-887e-ece241b103eb.png" alt="text to image search example" width="1225px" height="497px"></a>
 ````
