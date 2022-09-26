@@ -120,10 +120,12 @@ class NOWQdrantIndexer6(Executor):
         """
         docs = docs["@c"]
 
-        filter = {'must': [{'key': 'title', 'match': {'value': docs[0].text.lower()}}]}
         docs_with_matches = self.create_matches(docs)
 
         if len(docs[0].text.split()) == 1:
+            filter = {
+                'must': [{'key': 'title', 'match': {'value': docs[0].text.lower()}}]
+            }
             docs_with_matches_filter = self.create_matches(docs, filter)
             self.append_matches_if_not_exists(
                 docs_with_matches_filter, docs_with_matches
