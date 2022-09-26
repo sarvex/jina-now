@@ -222,23 +222,13 @@ class NOWAnnLiteIndexer(Executor):
         - offset (int): number of documents to skip
         - limit (int): number of retrieved documents
         """
-        limit = (
-            int(parameters.get('limit'))
-            if parameters.get('limit') is not None
-            else maxsize
-        )
-        offset = (
-            int(parameters.get('offset')) if parameters.get('offset') is not None else 0
-        )
+        limit = int(parameters.get('limit', maxsize))
+        offset = int(parameters.get('offset', 0))
         # add removal of duplicates
         traversal_paths = parameters.get('traversal_paths', self.search_traversal_paths)
         if traversal_paths == '@c':
             docs = DocumentArray()
-            chunks_size = (
-                int(parameters.get('chunks_size'))
-                if parameters.get('chunks_size')
-                else 3
-            )
+            chunks_size = int(parameters.get('chunks_size', 3))
             parent_ids = set()
             for d in self.da[offset * chunks_size :]:
                 if len(parent_ids) == limit:
