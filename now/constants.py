@@ -9,6 +9,7 @@ DOCKER_BFF_PLAYGROUND_TAG = '0.0.126-revert-playground-1'
 NOW_PREPROCESSOR_VERSION = '0.0.85-finetune3'
 NOW_AUTH_EXECUTOR_VERSION = '0.0.5-auth-exec-4'
 NOW_ANNLITE_INDEXER_VERSION = '0.0.4-revert-playground-1'
+NOW_QDRANT_INDEXER_VERSION = '0.0.1-feat-add-qdrant-indexer'
 
 
 class Modalities(BetterEnum):

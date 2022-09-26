@@ -1,5 +1,5 @@
 manifest_version: 1
-name: QdrantIndexer4
-description: QdrantIndexer4 indexes Documents into a Qdrant server using DocumentArray with `storage='qdrant'`
+name: NOWQdrantIndexer6
+description: NOWQdrantIndexer6 indexes Documents into a Qdrant server using DocumentArray with `storage='qdrant'`
 url: https://github.com/jina-ai/executor-qdrant-indexer
 keywords: ['indexer', 'qdrant', 'ann', 'similarity_search', 'pre-filtering', 'database']

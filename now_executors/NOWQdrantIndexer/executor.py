@@ -3,18 +3,19 @@ import subprocess
 from collections import defaultdict
 from copy import deepcopy
 from time import sleep
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple
 
 import yaml
 from docarray import DocumentArray
-from jina import Executor, requests
 from jina.logging.logger import JinaLogger
+from now_executors import NOWAuthExecutor as Executor
+from now_executors import SecurityLevel, secure_request
 
 QDRANT_CONFIG_PATH = '/qdrant/config/production.yaml'
 
 
-class QdrantIndexer4(Executor):
-    """QdrantIndexer4 indexes Documents into a Qdrant server using DocumentArray  with `storage='qdrant'`"""
+class NOWQdrantIndexer6(Executor):
+    """NOWQdrantIndexer6 indexes Documents into a Qdrant server using DocumentArray  with `storage='qdrant'`"""
 
     def __init__(
         self,
@@ -28,7 +29,7 @@ class QdrantIndexer4(Executor):
         m: Optional[int] = None,
         scroll_batch_size: int = 64,
         serialize_config: Optional[Dict] = None,
-        columns: Optional[Union[List[Tuple[str, str]], Dict[str, str]]] = None,
+        columns: List[Tuple[str, str]] = None,
         traversal_paths: Tuple[str] = ('r',),
         **kwargs,
     ):
@@ -66,8 +67,8 @@ class QdrantIndexer4(Executor):
         except FileNotFoundError:
             self.logger.info('Qdrant not found, locally. So it won\'t be started.')
 
-        # TODO: remove this hack
-        columns = {'title': '<this value is not used>'}
+        # TODO make original work columns = {'title': '<this value is not used>'}
+        column_dict = {[c[0]]: c[1] for c in columns}
         self._index = DocumentArray(
             storage='qdrant',
             config={
@@ -81,13 +82,13 @@ class QdrantIndexer4(Executor):
                 'scroll_batch_size': scroll_batch_size,
                 'full_scan_threshold': full_scan_threshold,
                 'serialize_config': serialize_config or {},
-                'columns': columns,
+                'columns': column_dict,
             },
         )
 
         self.logger = JinaLogger(self.metas.name)
 
-    @requests(on='/index')
+    @secure_request(on='/index', level=SecurityLevel.USER)
     def index(self, docs: DocumentArray, **kwargs):
         """Index new documents
         :param docs: the Documents to index
@@ -103,7 +104,7 @@ class QdrantIndexer4(Executor):
         #  prevent sending the data back by returning an empty DocumentArray
         return DocumentArray()
 
-    @requests(on='/search')
+    @secure_request(on='/search', level=SecurityLevel.USER)
     def search(
         self,
         docs: 'DocumentArray',
@@ -131,7 +132,7 @@ class QdrantIndexer4(Executor):
         else:
             return docs_with_matches
 
-    @requests(on='/delete')
+    @secure_request(on='/delete', level=SecurityLevel.USER)
     def delete(self, parameters: Dict, **kwargs):
         """Delete entries from the index by id
 
@@ -145,7 +146,7 @@ class QdrantIndexer4(Executor):
             return
         del self._index[deleted_ids]
 
-    @requests(on='/update')
+    @secure_request(on='/update', level=SecurityLevel.USER)
     def update(self, docs: DocumentArray, **kwargs):
         """Update existing documents
         :param docs: the Documents to update
@@ -159,7 +160,7 @@ class QdrantIndexer4(Executor):
                     f'cannot update doc {doc.id} as it does not exist in storage'
                 )
 
-    @requests(on='/filter')
+    @secure_request(on='/filter', level=SecurityLevel.USER)
     def filter(self, parameters: Dict, **kwargs):
         """
         Query documents from the indexer by the filter `query` object in parameters. The `query` object must follow the
@@ -168,7 +169,7 @@ class QdrantIndexer4(Executor):
         """
         return self._index.find(parameters['query'])
 
-    @requests(on='/fill_embedding')
+    @secure_request(on='/fill_embedding', level=SecurityLevel.USER)
     def fill_embedding(self, docs: DocumentArray, **kwargs):
         """Fill embedding of Documents by id
 
@@ -177,7 +178,7 @@ class QdrantIndexer4(Executor):
         for doc in docs:
             doc.embedding = self._index[doc.id].embedding
 
-    @requests(on='/clear')
+    @secure_request(on='/clear', level=SecurityLevel.USER)
     def clear(self, **kwargs):
         """Clear the index"""
         self._index.clear()
