@@ -95,7 +95,6 @@ def test_list(tmpdir, offset, limit, has_chunk):
 
         f.post(on='/index', inputs=docs, parameters=parameters)
         list_res = f.post(on='/list', parameters=parameters, return_results=True)
-        print(limit)
         if offset is None:
             l = N
         else:
