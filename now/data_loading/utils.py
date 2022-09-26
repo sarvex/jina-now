@@ -7,8 +7,7 @@ from os.path import join as osp
 from docarray import DocumentArray
 
 from now.constants import BASE_STORAGE_URL, DEMO_DATASET_DOCARRAY_VERSION, Modalities
-from now.log import yaspin_extended
-from now.utils import download, sigmap
+from now.utils import download
 
 
 def _fetch_da_from_url(
@@ -25,11 +24,7 @@ def _fetch_da_from_url(
         download(url, data_path)
 
     try:
-        with yaspin_extended(
-            sigmap=sigmap, text="Extracting dataset from DocArray", color="green"
-        ) as spinner:
-            da = DocumentArray.load_binary(data_path)
-            spinner.ok("📂")
+        da = DocumentArray.load_binary(data_path)
     except pickle.UnpicklingError:
         path = pathlib.Path(data_path).expanduser().resolve()
         os.remove(path)
