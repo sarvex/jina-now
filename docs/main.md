@@ -1,6 +1,6 @@
 <p align="center">
 
-<img src="https://github.com/jina-ai/now/blob/main/docs/_static/logo-light.svg?raw=true" alt="Jina NOW logo: The data structure for unstructured data" width="300px">  
+<img src="https://user-images.githubusercontent.com/11627845/164569398-5ef22a41-e2e1-438a-88a5-2ac43ad9426d.gif" alt="Jina NOW logo: The data structure for unstructured data" width="300px">  
 
 
 <br>
@@ -16,8 +16,22 @@ Tell us what you think: <a href="https://10sw1tcpld4.typeform.com/to/VTAyYRpR?ut
 <!-- start elevator-pitch -->
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/11627845/164569398-5ef22a41-e2e1-438a-88a5-2ac43ad9426d.gif" alt="Jina NOW logo: The data structure for unstructured data" width="1225px" height="497px">
+(dummy-example)=
+````{tab} Text-to-image
+<a href="https://pypi.org/project/jina-now/"><img src="https://user-images.githubusercontent.com/40893766/192243104-7f7b22a2-0264-4bef-887e-ece241b103eb.png" alt="text to image search example" width="1225px" height="497px"></a>
+````
 
+````{tab} Text-to-video
+<a href="https://pypi.org/project/jina-now/"><img src="https://user-images.githubusercontent.com/40893766/192243437-9fd6c852-d1b1-4ed1-8ac8-ed7b3c02527f.png" alt="text to video" width="1225px" height="497px"></a>
+````
+
+````{tab} Image-to-image
+<a href="https://pypi.org/project/jina-now/"><img src="https://user-images.githubusercontent.com/40893766/192243720-a4881579-7346-4fe0-b41b-b1877eeec103.png" alt="image to image" width="1225px" height="497px"></a>
+````
+
+````{tab} Text-to-text
+<a href="https://pypi.org/project/jina-now/"><img src="https://user-images.githubusercontent.com/40893766/192243962-6cf9c1d1-deb8-4f06-a65e-47271a472d92.png" alt="text to text" width="1225px" height="497px"></a>
+````
 
 NOW gives the world access to neural image search in just one command execution.
 Main features
@@ -27,7 +41,6 @@ Main features
 - 🌈 **Quality**: If you provide labels to your documents, Jina NOW fine-tunes a model for you
 - ✨ **Nocode**: Deployment can be done by non-technical people
 
-You can read more on how Jina NOW is production ready [here](https://now.jina.ai/user-guides/production/).
 
 ### Installation
 
@@ -148,4 +161,3 @@ For more information on how to use Jina NOW CLI and API click [here](https://now
 
 ### Now use your custom data :)
 <!-- end elevator-pitch -->
-
