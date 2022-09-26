@@ -1,10 +1,12 @@
 import json
 import os
+import tempfile
+from copy import deepcopy
 from os.path import expanduser as user
 from typing import Dict, List, Optional
 
 import hubble
-from docarray import DocumentArray
+from docarray import Document, DocumentArray
 from jina import __version__ as jina_version
 
 from now.apps.base.app import JinaNOWApp
@@ -12,10 +14,12 @@ from now.constants import (
     NOW_ANNLITE_INDEXER_VERSION,
     NOW_PREPROCESSOR_VERSION,
     PREFETCH_NR,
+    DatasetTypes,
 )
 from now.finetuning.run_finetuning import finetune
 from now.finetuning.settings import FinetuneSettings, parse_finetune_settings
 from now.now_dataclasses import UserInput
+from now.utils import _maybe_download_from_s3
 
 
 def common_get_flow_env_dict(
@@ -93,7 +97,7 @@ def common_setup(
         add_embeddings=True,
         loss='TripletMarginLoss',
     )
-    tags = _extract_tags_annlite(dataset)
+    tags = _extract_tags_annlite(deepcopy(dataset[0]), user_input)
     env_dict = common_get_flow_env_dict(
         finetune_settings=finetune_settings,
         encoder_uses=encoder_uses,
@@ -167,10 +171,20 @@ def get_indexer_config(num_indexed_samples: int) -> Dict:
     return config
 
 
-def _extract_tags_annlite(da: DocumentArray):
+def _extract_tags_annlite(d: Document, user_input):
+    print(
+        'We assume all tags follow the same structure, only first json file will be used to determine structure'
+    )
+    with tempfile.TemporaryDirectory() as tmpdir:
+        if user_input and user_input.custom_dataset_type == DatasetTypes.S3_BUCKET:
+            _maybe_download_from_s3(
+                docs=DocumentArray([d]),
+                tmpdir=tmpdir,
+                user_input=user_input,
+                max_workers=1,
+            )
     tags = set()
-    for doc in da:
-        for tag, _ in doc.tags.items():
-            tags.add((tag, str(tag.__class__.__name__)))
+    for tag, _ in d.tags.items():
+        tags.add((tag, str(tag.__class__.__name__)))
     final_tags = [list(tag) for tag in tags]
     return final_tags
