@@ -1,8 +1,8 @@
 from copy import deepcopy
 
 from docarray import Document, DocumentArray
-from executor import NOWPostprocessor
 from jina import Flow
+from now_executors.NOWPostprocessor.executor import NOWPostprocessor
 
 
 def test_postprocessing():

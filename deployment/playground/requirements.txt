@@ -8,3 +8,4 @@ docarray==0.16.2
 pydantic==1.8.2
 protobuf~=3.19
 frozendict==2.3.4
+jina==3.7.0

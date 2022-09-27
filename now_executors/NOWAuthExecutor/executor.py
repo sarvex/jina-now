@@ -143,7 +143,7 @@ class NOWAuthExecutor(Executor):
                 json.dump(self.api_keys, fp)
 
     @secure_request(level=SecurityLevel.USER)
-    def check(self, docs: DocumentArray, **kwargs):
+    def check(self, docs: DocumentArray = None, **kwargs):
         """
         Check the authorization for each incoming request. The logic of the function is in the decorator.
         """

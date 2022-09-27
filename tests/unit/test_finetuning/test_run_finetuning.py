@@ -36,7 +36,6 @@ def test_nest_construct_finetune_settings(encoder_type, get_task_config_path):
     user_input = UserInput()
     app = TextToTextAndImage()
     user_input.app_instance = app
-    app._read_task_config(task_config_path=get_task_config_path, user_input=user_input)
     dataset = DocumentArray().empty(2)
 
     settings = app._construct_finetune_settings(

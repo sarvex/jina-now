@@ -12,8 +12,6 @@ from now.deployment.deployment import cmd
 
 warnings.filterwarnings("ignore")
 
-if len(sys.argv) != 1 and not ('-h' in sys.argv[1:] or '--help' in sys.argv[1:]):
-    print(f'Initialising Jina NOW v{version} ...')
 cur_dir = pathlib.Path(__file__).parents[1].resolve()
 
 os.environ['JINA_CHECK_VERSION'] = 'False'
@@ -115,6 +113,9 @@ def _get_kubectl_path() -> str:
 
 def cli(args=None):
     """The main entrypoint of the CLI"""
+    if len(sys.argv) != 1 and not ('-h' in sys.argv[1:] or '--help' in sys.argv[1:]):
+        print(f'Initialising Jina NOW v{version} ...')
+
     if not args:
         args = _get_run_args()
     args = vars(args)  # Make it a dict from Namespace

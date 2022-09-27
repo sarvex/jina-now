@@ -8,6 +8,7 @@ from docarray import Document, DocumentArray
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import DatasetTypes, DemoDatasets
+from now.data_loading.es import ElasticsearchExtractor
 from now.data_loading.utils import _fetch_da_from_url, get_dataset_url
 from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
@@ -39,7 +40,6 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
             da = _load_tags_from_json_if_needed(da, user_input)
         elif user_input.custom_dataset_type == DatasetTypes.ELASTICSEARCH:
             da = _extract_es_data(user_input)
-
     else:
         print('⬇  Download DocArray dataset')
         url = get_dataset_url(user_input.data, app.output_modality)
@@ -50,11 +50,11 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
         )
     if 'NOW_CI_RUN' in os.environ:
         if user_input.data == DemoDatasets.BEST_ARTWORKS:
-            da = da[:2000]
+            da = da[:300]
         elif user_input.data == DemoDatasets.TUMBLR_GIFS_10K:
-            da = da[:600]
+            da = da[:300]
         else:
-            da = da[:1000]
+            da = da[:300]
     return da
 
 
@@ -144,8 +144,17 @@ def match_types(uri, supported_file_types):
 
 
 def _extract_es_data(user_input: UserInput) -> DocumentArray:
-
-    return DocumentArray()
+    query = {
+        'query': {'match_all': {}},
+        'fields': user_input.es_image_fields + user_input.es_text_fields,
+    }
+    es_extractor = ElasticsearchExtractor(
+        query=query,
+        index=user_input.es_index_name,
+        connection_str=user_input.es_host_name,
+    )
+    extracted_docs = es_extractor.extract()
+    return extracted_docs
 
 
 def _load_from_disk(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
