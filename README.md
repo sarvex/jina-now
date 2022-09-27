@@ -13,11 +13,11 @@ Tell us what you think: <a href="https://10sw1tcpld4.typeform.com/to/VTAyYRpR?ut
 <a href="https://pypi.org/project/jina-now/"><img src="https://img.shields.io/pypi/v/jina-now?color=%23099cec&amp;label=PyPI&amp;logo=pypi&amp;logoColor=white" alt="PyPI"></a>
 </p>
 
-<!-- start elevator-pitch -->
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/40893766/191586156-d9e4839b-8cc6-4f68-8c13-b4e9352de21d.gif" alt="Jina NOW logo: The data structure for unstructured data" width="1225px" height="497px">
+<img src="https://user-images.githubusercontent.com/11627845/164569398-5ef22a41-e2e1-438a-88a5-2ac43ad9426d.gif" alt="Jina NOW logo: The data structure for unstructured data" width="600px">
 
+<!-- start elevator-pitch -->
 
 NOW gives the world access to neural image search in just one command execution.
 Main features
@@ -27,6 +27,7 @@ Main features
 - 🌈 **Quality**: If you provide labels to your documents, Jina NOW fine-tunes a model for you
 - ✨ **Nocode**: Deployment can be done by non-technical people
 
+You can read more on how Jina NOW is production ready [here](https://now.jina.ai/user-guides/production/).
 
 ### Installation
 
@@ -55,7 +56,7 @@ jina now start
 ```
 First, you will be prompted to choose an app. As for now, we support images or text searches. But in the future, we will add many more options here.
 
-<img width="613" alt="Screenshot 2022-05-31 at 01 08 25" src="https://user-images.githubusercontent.com/11627845/171066876-b01bb76d-80f0-4f7c-8e5b-f329ef59e147.png">
+<img width="613" alt="Screenshot 2022-05-31 at 01 08 25" src="https://user-images.githubusercontent.com/40893766/192245825-c19274a5-2514-4c93-94ff-4d507dfef429.png">
 
 In the next step, you get asked to select the dataset for your search app. You could either choose one of our existing datasets or select `custom` to index your own data.
 
@@ -65,17 +66,13 @@ When choosing `custom`, you can decide in what format you provide your data. The
 Alternatively, you can specify a URL where a document array can be downloaded from.
 Also, it is possible to provide a local folder where the Images are located. In case of text search it would be a local text file.
 
-<img width="724" alt="question-custom" src="https://user-images.githubusercontent.com/11627845/170256031-b868058b-dec6-46aa-b2cf-afac4b33d996.png">
+<img width="724" alt="question-custom" src="https://user-images.githubusercontent.com/40893766/192245979-66376fc2-2629-4932-a747-b3f526bfd53a.png">
 
 If you chose `docarray.pull`, you will be asked to insert your docarray id. 
 Likewise, if you chose docarray URL, you will be prompted to enter the URL.
 In case you selected local path, `jina-now` will ask you to enter the local path of the data folder as shown bellow.
 
 <img width="506" alt="question-local-path" src="https://user-images.githubusercontent.com/11627845/170256044-67e82e86-6439-4a3e-98f1-dbdf1940de67.png">
-
-The search app can be deployed in different qualities. Have in mind that a better quality leads to a larger ai model being deployed and therefore inference will be a bit slower.
-
-<img width="497" alt="question-quality" src="https://user-images.githubusercontent.com/11627845/170256049-18add461-f666-48f4-9dfe-52be9404a73d.png">
 
 Currently, we provide two deployment options. We recommend using the cloud deployment. This will run your search app on our servers.
 Alternatively, you can select the local deployment option.
@@ -100,6 +97,8 @@ Example of the playground.
 Example of the swagger ui.
 
 <img width="350" alt="Screenshot 2022-05-26 at 16 36 06" src="https://user-images.githubusercontent.com/11627845/170511580-230d1e41-5e14-4623-adb6-3d4b2d400dc9.png">
+
+For more information on how to use Jina NOW CLI and API click [here](https://now.jina.ai/user-guides/cli_api/)
 
 ## Supported apps (more will be added)
 
