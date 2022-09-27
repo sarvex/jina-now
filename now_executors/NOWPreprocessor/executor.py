@@ -201,7 +201,6 @@ if __name__ == '__main__':
     user_inpuT = UserInput()
     user_inpuT.output_modality = Modalities.VIDEO
     user_inpuT.app_instance = _construct_app(app)
-    user_inpuT.data = 'custom'
     user_inpuT.dataset_type = DatasetTypes.S3_BUCKET
     user_inpuT.dataset_path = 's3://bucket/folder'
 

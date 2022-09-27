@@ -91,8 +91,8 @@ def test_music_preprocessing(is_indexing):
 @pytest.mark.parametrize('is_indexing', [False, True])
 def test_nested_preprocessing(is_indexing, get_task_config_path):
     user_input = UserInput()
-    user_input.data = 'custom'
-    user_input.data = DemoDatasetNames.ES_ONLINE_SHOP_50
+    user_input.dataset_type = DatasetTypes.DEMO
+    user_input.dataset_name = DemoDatasetNames.ES_ONLINE_SHOP_50
     app = TextToTextAndImage()
 
     if is_indexing:
