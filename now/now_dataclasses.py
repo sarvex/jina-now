@@ -6,11 +6,9 @@ the dialog won't ask for the value.
 """
 from __future__ import annotations, print_function, unicode_literals
 
-import abc
 import dataclasses
 from typing import Any, Callable, Dict, List, Optional, Union
 
-from docarray import DocumentArray
 from pydantic import BaseModel, StrictBool
 from pydantic.dataclasses import dataclass
 
@@ -140,12 +138,3 @@ class DialogOptions:
     depends_on: Optional['DialogOptions'] = None
     conditional_check: Callable[[Any], bool] = None
     post_func: Callable[[Any], None] = None
-
-
-@dataclasses.dataclass
-class Dataset(abc.ABC):
-    datasource_type: DatasetTypes
-
-    @abc.abstractmethod
-    def get_data(self, *args, **kwargs) -> DocumentArray:
-        pass
