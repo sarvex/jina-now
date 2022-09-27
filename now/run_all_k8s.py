@@ -12,7 +12,7 @@ from now.deployment.deployment import cmd, list_all_wolf, status_wolf, terminate
 from now.dialog import configure_app, configure_user_input
 from now.log import yaspin_extended
 from now.system_information import get_system_state
-from now.utils import maybe_prompt_user, sigmap
+from now.utils import bcolors, maybe_prompt_user, sigmap
 
 
 def get_remote_flow_details():
@@ -141,8 +141,12 @@ def start_now(app_instance, **kwargs):
         + (f'&port={gateway_port_internal}' if gateway_port_internal else '')
     )
     print()
-    print(f'BFF docs are accessible at:\n{bff_url}')
-    print(f'Playground is accessible at:\n{playground_url}')
+    print(
+        f'BFF docs are accessible at:\n{bcolors.BOLD}{bcolors.UNDERLINE}{bcolors.HEADER}{bff_url}{bcolors.ENDC}'
+    )
+    print(
+        f'Playground is accessible at:\n{bcolors.BOLD}{bcolors.UNDERLINE}{bcolors.OKCYAN}{playground_url}{bcolors.ENDC}'
+    )
     return {
         'bff': bff_url,
         'playground': playground_url,
