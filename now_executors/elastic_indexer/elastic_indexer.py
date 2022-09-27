@@ -7,7 +7,7 @@ from docarray.score import NamedScore
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 from now_executors import NOWAuthExecutor as Executor
-from now_executors import SecurityLevel, secure_request
+from now_executors.NOWAuthExecutor.executor import SecurityLevel, secure_request
 
 metrics_mapping = {
     'cosine': 'cosineSimilarity',
