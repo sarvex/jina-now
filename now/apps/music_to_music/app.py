@@ -99,12 +99,12 @@ class MusicToMusic(JinaNOWApp):
         )
 
         # can reuse large part of other code but need to make some adjustments
-        if user_input.data in pre_trained_head_map:
+        if user_input.dataset_name in pre_trained_head_map:
             print(f'⚡️ Using cached hub model for speed')
 
             env_dict[
                 'LINEAR_HEAD_NAME'
-            ] = f"jinahub+docker://{pre_trained_head_map[user_input.data]}"
+            ] = f"jinahub+docker://{pre_trained_head_map[user_input.dataset_name]}"
 
             self.set_flow_yaml(demo_data=True)
 

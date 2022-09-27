@@ -114,7 +114,7 @@ DEMO_DATA = DialogOptions(
     == DatasetTypes.DEMO,
 )
 
-DATASET_NAME = DialogOptions(
+DOCARRAY_NAME = DialogOptions(
     name='dataset_name',
     prompt_message='Please enter your DocArray name:',
     prompt_type='input',
@@ -406,7 +406,7 @@ def _cluster_running(cluster):
 
 data_type = [DATASET_TYPE]
 data_demo = [DEMO_DATA]
-data_da = [DATASET_NAME, DATASET_PATH, DATASET_URL]
+data_da = [DOCARRAY_NAME, DATASET_PATH, DATASET_URL]
 data_s3 = [DATASET_PATH_S3, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION_NAME]
 data_es = [
     ES_HOST_NAME,

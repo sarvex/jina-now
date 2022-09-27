@@ -25,23 +25,22 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
     :return: The loaded DocumentArray.
     """
     da = None
-    if user_input.data == 'custom':
-        if user_input.dataset_type == DatasetTypes.DOCARRAY:
-            print('⬇  Pull DocArray dataset')
-            da = _pull_docarray(user_input.dataset_name)
-        elif user_input.dataset_type == DatasetTypes.URL:
-            print('⬇  Pull DocArray dataset')
-            da = _fetch_da_from_url(user_input.dataset_url)
-        elif user_input.dataset_type == DatasetTypes.PATH:
-            print('💿  Loading files from disk')
-            da = _load_from_disk(app, user_input)
-            da = _load_tags_from_json_if_needed(da, user_input)
-        elif user_input.dataset_type == DatasetTypes.S3_BUCKET:
-            da = _list_files_from_s3_bucket(app=app, user_input=user_input)
-            da = _load_tags_from_json_if_needed(da, user_input)
-        elif user_input.dataset_type == DatasetTypes.ELASTICSEARCH:
-            da = _extract_es_data(user_input)
-    else:
+    if user_input.dataset_type == DatasetTypes.DOCARRAY:
+        print('⬇  Pull DocArray dataset')
+        da = _pull_docarray(user_input.dataset_name)
+    elif user_input.dataset_type == DatasetTypes.URL:
+        print('⬇  Pull DocArray dataset')
+        da = _fetch_da_from_url(user_input.dataset_url)
+    elif user_input.dataset_type == DatasetTypes.PATH:
+        print('💿  Loading files from disk')
+        da = _load_from_disk(app, user_input)
+        da = _load_tags_from_json_if_needed(da, user_input)
+    elif user_input.dataset_type == DatasetTypes.S3_BUCKET:
+        da = _list_files_from_s3_bucket(app=app, user_input=user_input)
+        da = _load_tags_from_json_if_needed(da, user_input)
+    elif user_input.dataset_type == DatasetTypes.ELASTICSEARCH:
+        da = _extract_es_data(user_input)
+    elif user_input.dataset_type == DatasetTypes.DEMO:
         print('⬇  Download DocArray dataset')
         url = get_dataset_url(user_input.data, app.output_modality)
         da = _fetch_da_from_url(url)
