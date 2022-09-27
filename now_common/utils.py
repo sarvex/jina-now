@@ -1,5 +1,6 @@
 import json
 import os
+import time
 from os.path import expanduser as user
 from typing import Dict, List, Optional
 
@@ -19,6 +20,8 @@ from now.finetuning.run_finetuning import finetune
 from now.finetuning.settings import FinetuneSettings, parse_finetune_settings
 from now.now_dataclasses import UserInput
 
+MAX_RETRIES = 20
+
 
 def common_get_flow_env_dict(
     finetune_settings: FinetuneSettings,
@@ -31,13 +34,34 @@ def common_get_flow_env_dict(
     user_input: UserInput,
     tags: List,
 ):
-    import subprocess
     """Returns dictionary for the environments variables for the clip & music flow.yml files."""
     if (
         finetune_settings.perform_finetuning and finetune_settings.bi_modal
     ) or user_input.app_instance.app_name == 'music_to_music':
         pre_trained_embedding_size = pre_trained_embedding_size * 2
-    es_password = subprocess.check_output("kubectl get secret quickstart-es-elastic-user -o go-template='{{.data.elastic | base64decode}}'")
+
+    num_retries = 0
+    es_password = ''
+    while num_retries < MAX_RETRIES:
+        es_password, _ = cmd(
+            [
+                "kubectl",
+                "get",
+                "secret",
+                "quickstart-es-elastic-user",
+                "-o",
+                "go-template='{{.data.elastic | base64decode}}'",
+            ]
+        )
+        if es_password:
+            es_password = es_password.decode("utf-8")[1:-1]
+            break
+        else:
+            num_retries += 1
+            time.sleep(2)
+    if not es_password:
+        raise Exception("Couldn't get `quickstart-es-elastic-user` secret.")
+
     config = {
         'JINA_VERSION': jina_version,
         'ENCODER_NAME': f'jinahub+docker://{encoder_uses}',
@@ -165,10 +189,18 @@ def get_indexer_config(
     :param elastic: hack to use ElasticIndexer, should be changed in future.
     """
     import pathlib
+
     if elastic:
         config = {'indexer_uses': f'ElasticIndexer/v{NOW_ELASTIC_INDEXER_VERSION}'}
         cur_dir = pathlib.Path(__file__).parent.resolve()
-        cmd(f'kubectl apply -f {cur_dir}/../now/deployment/elastic_kind.yml')
+        _, error = cmd(
+            'kubectl create -f https://download.elastic.co/downloads/eck/2.4.0/crds.yaml'
+        )
+        _, error = cmd(
+            'kubectl apply -f https://download.elastic.co/downloads/eck/2.4.0/operator.yaml'
+        )
+        _, error = cmd('kubectl create ns nowapi')
+        _, error = cmd(f'kubectl apply -f {cur_dir}/../now/deployment/elastic_kind.yml')
         print("Setup elastic in kubectl")
     else:
         config = {'indexer_uses': f'NOWAnnLiteIndexer/v{NOW_ANNLITE_INDEXER_VERSION}'}
