@@ -4,8 +4,8 @@ import pytest
 from docarray import Document
 
 from now.apps.text_to_text_and_image.app import TextToTextAndImage
-from now.constants import DemoDatasetNames
 from now.data_loading.data_loading import load_data
+from now.demo_data import DemoDatasetNames
 from now.finetuning.data_builder import DataBuilder
 from now.finetuning.generation_fns import ImageNormalizer, TextProcessor
 from now.now_dataclasses import Task, UserInput

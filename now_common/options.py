@@ -14,9 +14,15 @@ from kubernetes import client, config
 
 from now.constants import Apps, DatasetTypes
 from now.deployment.deployment import cmd
-from now.log import time_profiler, yaspin_extended
+from now.log import yaspin_extended
 from now.now_dataclasses import DialogOptions, UserInput
-from now.utils import get_info_hubble, jina_auth_login, sigmap, to_camel_case
+from now.utils import (
+    _get_context_names,
+    get_info_hubble,
+    jina_auth_login,
+    sigmap,
+    to_camel_case,
+)
 
 NEW_CLUSTER = {'name': '🐣 create new', 'value': 'new'}
 AVAILABLE_SOON = 'will be available in upcoming versions'
@@ -266,7 +272,9 @@ LOCAL_CLUSTER = DialogOptions(
     description='Reference an existing `local` cluster or select `new` to create a new one. '
     'Use this only when the `--deployment-type=local`',
     conditional_check=lambda user_inp: user_inp.deployment_type == 'local',
-    post_func=lambda user_input, **kwargs: _check_requirements(user_input, **kwargs),
+    post_func=lambda user_input, **kwargs: user_input.app_instance.run_checks(
+        user_input
+    ),
 )
 
 PROCEED = DialogOptions(
@@ -328,11 +336,6 @@ def _construct_app(app_name: str):
     )()
 
 
-@time_profiler
-def _check_requirements(user_input: UserInput, **kwargs) -> None:
-    user_input.app_instance.run_checks(user_input)
-
-
 def _jina_auth_login(user_input, **kwargs):
     if user_input.deployment_type != 'remote':
         return
@@ -364,14 +367,6 @@ def _construct_local_cluster_choices(user_input, **kwargs):
         ]
         choices = context_names + choices
     return choices
-
-
-def _get_context_names(contexts, active_context=None):
-    names = [c for c in contexts] if contexts is not None else []
-    if active_context is not None:
-        names.remove(active_context)
-        names = [active_context] + names
-    return names
 
 
 def _cluster_running(cluster):
