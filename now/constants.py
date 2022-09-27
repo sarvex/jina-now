@@ -1,3 +1,4 @@
+from now.now_dataclasses import DemoDataset
 from now.utils import BetterEnum
 
 # TODO: Uncomment the DEMO_DATASET_DOCARRAY_VERSION when the DocArray datasets on GCloud has been changed
@@ -63,7 +64,7 @@ EXTERNAL_CLIP_HOST = 'encoderclip-bh-5f4efaff13.wolf.jina.ai'
 PREFETCH_NR = 10
 
 
-class DemoDatasets:
+class DemoDatasetNames(BetterEnum):
     BEST_ARTWORKS = 'best-artworks'
     NFT_MONKEY = 'nft-monkey'
     TLL = 'tll'
@@ -86,32 +87,104 @@ class DemoDatasets:
 
 AVAILABLE_DATASET = {
     Modalities.IMAGE: [
-        (DemoDatasets.BEST_ARTWORKS, '🖼 artworks (≈8K docs)'),
-        (DemoDatasets.NFT_MONKEY, '💰 nft - bored apes (10K docs)'),
-        (DemoDatasets.TLL, '👬 totally looks like (≈12K docs)'),
-        (DemoDatasets.BIRD_SPECIES, '🦆 birds (≈12K docs)'),
-        (DemoDatasets.STANFORD_CARS, '🚗 cars (≈16K docs)'),
-        (DemoDatasets.GEOLOCATION_GEOGUESSR, '🏞 geolocation (≈50K docs)'),
-        (DemoDatasets.DEEP_FASHION, '👕 fashion (≈53K docs)'),
-        (DemoDatasets.NIH_CHEST_XRAYS, '☢️ chest x-ray (≈100K docs)'),
+        DemoDataset(
+            name=DemoDatasetNames.BEST_ARTWORKS,
+            display_modality=Modalities.IMAGE,
+            display_name='🖼 artworks (≈8K docs)',
+        ),
+        DemoDataset(
+            name=DemoDatasetNames.NFT_MONKEY,
+            display_modality=Modalities.IMAGE,
+            display_name='💰 nft - bored apes (10K docs)',
+        ),
+        DemoDataset(
+            name=DemoDatasetNames.TLL,
+            display_modality=Modalities.IMAGE,
+            display_name='👬 totally looks like (≈12K docs)',
+        ),
+        DemoDataset(
+            name=DemoDatasetNames.BIRD_SPECIES,
+            display_modality=Modalities.IMAGE,
+            display_name='🦆 birds (≈12K docs)',
+        ),
+        DemoDataset(
+            name=DemoDatasetNames.STANFORD_CARS,
+            display_modality=Modalities.IMAGE,
+            display_name='🚗 cars (≈16K docs)',
+        ),
+        DemoDataset(
+            name=DemoDatasetNames.GEOLOCATION_GEOGUESSR,
+            display_modality=Modalities.IMAGE,
+            display_name='🌍 geolocation (≈50K docs)',
+        ),
+        DemoDataset(
+            name=DemoDatasetNames.DEEP_FASHION,
+            display_modality=Modalities.IMAGE,
+            display_name='👕 fashion (≈53K docs)',
+        ),
+        DemoDataset(
+            name=DemoDatasetNames.NIH_CHEST_XRAYS,
+            display_modality=Modalities.IMAGE,
+            display_name='☢ chest x-rays (≈100K docs)',
+        ),
     ],
     Modalities.MUSIC: [
-        (DemoDatasets.MUSIC_GENRES_ROCK, '🎸 rock music (≈2K songs)'),
-        (DemoDatasets.MUSIC_GENRES_MIX, '🎸 multiple genres (≈2K songs)'),
+        DemoDataset(
+            name=DemoDatasetNames.MUSIC_GENRES_ROCK,
+            display_modality=Modalities.MUSIC,
+            display_name='🎸 rock music (≈2K songs)',
+        ),
+        DemoDataset(
+            name=DemoDatasetNames.MUSIC_GENRES_MIX,
+            display_modality=Modalities.MUSIC,
+            display_name='🎸 multiple genres (≈2K songs)',
+        ),
     ],
     Modalities.TEXT: [
-        (DemoDatasets.ROCK_LYRICS, '🎤 rock lyrics (200K docs)'),
-        (DemoDatasets.POP_LYRICS, '🎤 pop lyrics (200K docs)'),
-        (DemoDatasets.RAP_LYRICS, '🎤 rap lyrics (200K docs)'),
-        (DemoDatasets.INDIE_LYRICS, '🎤 indie lyrics (200K docs)'),
-        (DemoDatasets.METAL_LYRICS, '🎤 metal lyrics (200K docs)'),
+        DemoDataset(
+            name=DemoDatasetNames.ROCK_LYRICS,
+            display_modality=Modalities.TEXT,
+            display_name='🎤 rock lyrics (200K docs)',
+        ),
+        DemoDataset(
+            name=DemoDatasetNames.POP_LYRICS,
+            display_modality=Modalities.TEXT,
+            display_name='🎤 pop lyrics (200K docs)',
+        ),
+        DemoDataset(
+            name=DemoDatasetNames.RAP_LYRICS,
+            display_modality=Modalities.TEXT,
+            display_name='🎤 rap lyrics (200K docs)',
+        ),
+        DemoDataset(
+            name=DemoDatasetNames.INDIE_LYRICS,
+            display_modality=Modalities.TEXT,
+            display_name='🎤 indie lyrics (200K docs)',
+        ),
+        DemoDataset(
+            name=DemoDatasetNames.METAL_LYRICS,
+            display_modality=Modalities.TEXT,
+            display_name='🎤 metal lyrics (200K docs)',
+        ),
     ],
     Modalities.VIDEO: [
-        (DemoDatasets.TUMBLR_GIFS, '🎦 tumblr gifs (100K gifs)'),
-        (DemoDatasets.TUMBLR_GIFS_10K, '🎦 tumblr gifs subset (10K gifs)'),
+        DemoDataset(
+            name=DemoDatasetNames.TUMBLR_GIFS,
+            display_modality=Modalities.VIDEO,
+            display_name='🎦 tumblr gifs (100K gifs)',
+        ),
+        DemoDataset(
+            name=DemoDatasetNames.TUMBLR_GIFS_10K,
+            display_modality=Modalities.VIDEO,
+            display_name='🎦 tumblr gifs subset (10K gifs)',
+        ),
     ],
     Modalities.TEXT_AND_IMAGE: [
-        (DemoDatasets.ES_ONLINE_SHOP_50, 'online shop data (50 products)')
+        DemoDataset(
+            name=DemoDatasetNames.ES_ONLINE_SHOP_50,
+            display_modality=Modalities.TEXT_AND_IMAGE,
+            display_name='online shop data (50 products)',
+        )
     ],
 }
 

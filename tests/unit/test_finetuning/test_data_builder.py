@@ -4,7 +4,7 @@ import pytest
 from docarray import Document
 
 from now.apps.text_to_text_and_image.app import TextToTextAndImage
-from now.constants import DemoDatasets
+from now.constants import DemoDatasetNames
 from now.data_loading.data_loading import load_data
 from now.finetuning.data_builder import DataBuilder
 from now.finetuning.generation_fns import ImageNormalizer, TextProcessor
@@ -20,7 +20,7 @@ def test_data_generation(get_task_config_path):
 
     # load dataset
     user_input = UserInput()
-    user_input.data = DemoDatasets.ES_ONLINE_SHOP_50
+    user_input.data = DemoDatasetNames.ES_ONLINE_SHOP_50
     dataset = load_data(TextToTextAndImage(), user_input)
 
     initial_length = len(dataset)

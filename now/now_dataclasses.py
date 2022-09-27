@@ -6,13 +6,16 @@ the dialog won't ask for the value.
 """
 from __future__ import annotations, print_function, unicode_literals
 
+import abc
 import dataclasses
 from typing import Any, Callable, Dict, List, Optional, Union
 
+from docarray import DocumentArray
 from pydantic import BaseModel, StrictBool
 from pydantic.dataclasses import dataclass
 
-from now.constants import DatasetTypes
+from now.constants import DatasetTypes, DemoDatasetNames
+from now.data_loading.utils import _fetch_da_from_url, get_dataset_url
 
 
 @dataclass
@@ -91,7 +94,7 @@ class UserInput(BaseModel):
     app_instance: Optional['JinaNOWApp'] = None  # noqa: F821
     # data related
     data: Optional[str] = None
-    custom_dataset_type: Optional[DatasetTypes] = None
+    dataset_type: Optional[DatasetTypes] = None
     dataset_name: Optional[str] = None
     dataset_url: Optional[str] = None
     dataset_path: Optional[str] = None
@@ -138,3 +141,24 @@ class DialogOptions:
     depends_on: Optional['DialogOptions'] = None
     conditional_check: Callable[[Any], bool] = None
     post_func: Callable[[Any], None] = None
+
+
+@dataclasses.dataclass
+class Dataset(abc.ABC):
+    datasource_type: DatasetTypes
+
+    @abc.abstractmethod
+    def get_data(self, *args, **kwargs) -> DocumentArray:
+        pass
+
+
+@dataclasses.dataclass
+class DemoDataset(Dataset):
+    name: DemoDatasetNames
+    display_name: str
+    display_modality: str
+    datasource_type = DatasetTypes.DEMO
+
+    def get_data(self, *args, **kwargs) -> DocumentArray:
+        url = get_dataset_url(dataset=self.name, output_modality=self.display_modality)
+        return _fetch_da_from_url(url)

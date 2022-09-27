@@ -7,7 +7,7 @@ from copy import deepcopy
 from docarray import Document, DocumentArray
 
 from now.apps.base.app import JinaNOWApp
-from now.constants import DatasetTypes, DemoDatasets
+from now.constants import DatasetTypes, DemoDatasetNames
 from now.data_loading.es import ElasticsearchExtractor
 from now.data_loading.utils import _fetch_da_from_url, get_dataset_url
 from now.log import yaspin_extended
@@ -25,20 +25,20 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
     """
     da = None
     if user_input.data == 'custom':
-        if user_input.custom_dataset_type == DatasetTypes.DOCARRAY:
+        if user_input.dataset_type == DatasetTypes.DOCARRAY:
             print('⬇  Pull DocArray dataset')
             da = _pull_docarray(user_input.dataset_name)
-        elif user_input.custom_dataset_type == DatasetTypes.URL:
+        elif user_input.dataset_type == DatasetTypes.URL:
             print('⬇  Pull DocArray dataset')
             da = _fetch_da_from_url(user_input.dataset_url)
-        elif user_input.custom_dataset_type == DatasetTypes.PATH:
+        elif user_input.dataset_type == DatasetTypes.PATH:
             print('💿  Loading files from disk')
             da = _load_from_disk(app, user_input)
             da = _load_tags_from_json_if_needed(da, user_input)
-        elif user_input.custom_dataset_type == DatasetTypes.S3_BUCKET:
+        elif user_input.dataset_type == DatasetTypes.S3_BUCKET:
             da = _list_files_from_s3_bucket(app=app, user_input=user_input)
             da = _load_tags_from_json_if_needed(da, user_input)
-        elif user_input.custom_dataset_type == DatasetTypes.ELASTICSEARCH:
+        elif user_input.dataset_type == DatasetTypes.ELASTICSEARCH:
             da = _extract_es_data(user_input)
     else:
         print('⬇  Download DocArray dataset')
@@ -49,9 +49,9 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
             f'Could not load DocArray dataset. Please check your configuration: {user_input}.'
         )
     if 'NOW_CI_RUN' in os.environ:
-        if user_input.data == DemoDatasets.BEST_ARTWORKS:
+        if user_input.data == DemoDatasetNames.BEST_ARTWORKS:
             da = da[:300]
-        elif user_input.data == DemoDatasets.TUMBLR_GIFS_10K:
+        elif user_input.data == DemoDatasetNames.TUMBLR_GIFS_10K:
             da = da[:300]
         else:
             da = da[:300]

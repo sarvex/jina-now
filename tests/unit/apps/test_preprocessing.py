@@ -8,7 +8,7 @@ from now.apps.text_to_image.app import TextToImage
 from now.apps.text_to_text.app import TextToText
 from now.apps.text_to_text_and_image.app import TextToTextAndImage
 from now.apps.text_to_video.app import TextToVideo
-from now.constants import DemoDatasets
+from now.constants import DemoDatasetNames
 from now.data_loading.data_loading import load_data
 from now.now_dataclasses import UserInput
 
@@ -92,7 +92,7 @@ def test_music_preprocessing(is_indexing):
 def test_nested_preprocessing(is_indexing, get_task_config_path):
     user_input = UserInput()
     user_input.data = 'custom'
-    user_input.data = DemoDatasets.ES_ONLINE_SHOP_50
+    user_input.data = DemoDatasetNames.ES_ONLINE_SHOP_50
     app = TextToTextAndImage()
 
     if is_indexing:

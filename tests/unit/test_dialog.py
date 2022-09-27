@@ -8,7 +8,7 @@ from typing import Dict
 import pytest
 from pytest_mock import MockerFixture
 
-from now.constants import Apps, DemoDatasets
+from now.constants import Apps, DemoDatasetNames
 from now.dialog import configure_app, configure_user_input
 from now.now_dataclasses import UserInput
 
@@ -123,7 +123,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'data': DemoDatasets.TLL,
+            'data': DemoDatasetNames.TLL,
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -131,7 +131,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'data': DemoDatasets.ROCK_LYRICS,
+            'data': DemoDatasetNames.ROCK_LYRICS,
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -142,7 +142,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'app': Apps.IMAGE_TO_TEXT,
         },
         {
-            'data': DemoDatasets.POP_LYRICS,
+            'data': DemoDatasetNames.POP_LYRICS,
             'cluster': 'new',
             'deployment_type': 'local',
         },

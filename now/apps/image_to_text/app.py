@@ -12,7 +12,7 @@ from now.constants import (
     EXTERNAL_CLIP_HOST,
     Apps,
     DatasetTypes,
-    DemoDatasets,
+    DemoDatasetNames,
     Modalities,
 )
 from now.now_dataclasses import UserInput
@@ -48,7 +48,7 @@ class ImageToText(JinaNOWApp):
 
     @property
     def finetune_datasets(self) -> [Tuple]:
-        return (DemoDatasets.DEEP_FASHION, DemoDatasets.BIRD_SPECIES)
+        return (DemoDatasetNames.DEEP_FASHION, DemoDatasetNames.BIRD_SPECIES)
 
     def set_flow_yaml(self, **kwargs):
         finetuning = kwargs.get('finetuning', False)
@@ -102,8 +102,7 @@ class ImageToText(JinaNOWApp):
             split_by_sentences = False
             if (
                 user_input
-                and user_input.data == 'custom'
-                and user_input.custom_dataset_type == DatasetTypes.PATH
+                and user_input.dataset_type == DatasetTypes.PATH
                 and user_input.dataset_path
                 and os.path.isdir(user_input.dataset_path)
             ):

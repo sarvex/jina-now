@@ -6,7 +6,7 @@ from docarray import Document, DocumentArray
 from now_common.utils import common_setup
 
 from now.apps.base.app import JinaNOWApp
-from now.constants import Apps, DemoDatasets, Modalities
+from now.constants import Apps, DemoDatasetNames, Modalities
 from now.deployment.deployment import which
 from now.now_dataclasses import UserInput
 
@@ -80,8 +80,8 @@ class MusicToMusic(JinaNOWApp):
         # needed to write a custom solution for music 2 music app as we need to allow to integrate
         # externally pretrained executors for the demo datasets
         pre_trained_head_map = {
-            DemoDatasets.MUSIC_GENRES_ROCK: 'FinetunedLinearHeadEncoderMusicRock',
-            DemoDatasets.MUSIC_GENRES_MIX: 'FineTunedLinearHeadEncoderMusicMix',
+            DemoDatasetNames.MUSIC_GENRES_ROCK: 'FinetunedLinearHeadEncoderMusicRock',
+            DemoDatasetNames.MUSIC_GENRES_MIX: 'FineTunedLinearHeadEncoderMusicMix',
         }
 
         # will execute finetuning on custom datasets (if possible) but not for demo datasets

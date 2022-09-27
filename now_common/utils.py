@@ -176,7 +176,7 @@ def _extract_tags_annlite(d: Document, user_input):
         'We assume all tags follow the same structure, only first json file will be used to determine structure'
     )
     with tempfile.TemporaryDirectory() as tmpdir:
-        if user_input and user_input.custom_dataset_type == DatasetTypes.S3_BUCKET:
+        if user_input and user_input.dataset_type == DatasetTypes.S3_BUCKET:
             _maybe_download_from_s3(
                 docs=DocumentArray([d]),
                 tmpdir=tmpdir,
