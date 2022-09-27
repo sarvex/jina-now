@@ -182,7 +182,6 @@ if __name__ == '__main__':
         app='text_to_image',
         data='bird-species',
         cluster='kind-jina-now',
-        quality='medium',
         deployment_type='local',
         kubectl_path='/usr/local/bin/kubectl',
         kind_path='/Users/sebastianlettner/.cache/jina-now/kind',

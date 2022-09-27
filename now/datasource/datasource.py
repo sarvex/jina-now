@@ -53,9 +53,3 @@ class DemoDatasource(Datasource):
     def get_data(self) -> DocumentArray:
         url = get_dataset_url(self.id, self.modalities_folder)
         return _fetch_da_from_url(url)
-
-
-# example_datasources = [
-#     DocarrayURLDatasource('bird-species', '🦆 birds (≈12K docs)', Modalities.IMAGE),
-#     ...,
-# ]

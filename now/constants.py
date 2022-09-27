@@ -4,9 +4,10 @@ from now.utils import BetterEnum
 # from docarray import __version__ as docarray_version
 # DEMO_DATASET_DOCARRAY_VERSION = docarray_version
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.126-playground-demo-url-2'
-NOW_PREPROCESSOR_VERSION = '0.0.88-refactor-request-size-1'
-NOW_ANNLITE_INDEXER_VERSION = '0.0.5-ci-executors-tests-18'
+
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.127-secure-playgound-3'
+NOW_PREPROCESSOR_VERSION = '0.0.88-refactor-request-size-2'
+NOW_ANNLITE_INDEXER_VERSION = '0.0.6-annlite-secure-playground-3'
 
 
 class Modalities(BetterEnum):
