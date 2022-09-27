@@ -6,8 +6,8 @@ import docker
 from docarray import DocumentArray
 from jina.serve.runtimes.gateway.http.models import JinaRequestModel, JinaResponseModel
 
-from now.constants import DemoDataset, Modalities
-from now.demo_data import AVAILABLE_DATASET
+from now.constants import Modalities
+from now.demo_data import AVAILABLE_DATASET, DemoDataset
 from now.now_dataclasses import DialogOptions, UserInput
 
 
