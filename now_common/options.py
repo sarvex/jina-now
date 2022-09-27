@@ -108,6 +108,7 @@ DEMO_DATA = DialogOptions(
         for demo_data in user_input.app_instance.demo_datasets
     ],
     prompt_type='list',
+    depends_on=DATASET_TYPE,
     is_terminal_command=True,
     description='Select one of the available demo datasets',
     conditional_check=lambda user_input, **kwargs: user_input.dataset_type
@@ -119,6 +120,7 @@ DOCARRAY_NAME = DialogOptions(
     prompt_message='Please enter your DocArray name:',
     prompt_type='input',
     depends_on=DATASET_TYPE,
+    is_terminal_command=True,
     conditional_check=lambda user_input: user_input.dataset_type
     == DatasetTypes.DOCARRAY,
 )
@@ -128,6 +130,7 @@ DATASET_URL = DialogOptions(
     prompt_message='Please paste in the URL to download your DocArray from:',
     prompt_type='input',
     depends_on=DATASET_TYPE,
+    is_terminal_command=True,
     conditional_check=lambda user_input: user_input.dataset_type == DatasetTypes.URL,
 )
 
@@ -136,6 +139,7 @@ DATASET_PATH = DialogOptions(
     prompt_message='Please enter the path to the local folder:',
     prompt_type='input',
     depends_on=DATASET_TYPE,
+    is_terminal_command=True,
     conditional_check=lambda user_input: user_input.dataset_type == DatasetTypes.PATH,
 )
 

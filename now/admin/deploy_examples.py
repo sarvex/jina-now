@@ -3,7 +3,7 @@ from argparse import Namespace
 from concurrent.futures import ProcessPoolExecutor
 
 from now.cli import cli
-from now.constants import Apps
+from now.constants import Apps, DatasetTypes
 from now.demo_data import DemoDatasetNames
 
 os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
@@ -23,7 +23,8 @@ def deploy(app, data):
     kwargs = {
         'now': 'start',
         'app': app,
-        'data': data,
+        'dataset_type': DatasetTypes.DEMO,
+        'dataset_name': data,
         # 'custom_dataset_type': DatasetTypes.S3_BUCKET,
         # 'dataset_path': os.environ.get('S3_IMAGE_TEST_DATA_PATH'),
         # 'aws_access_key_id': os.environ.get('AWS_ACCESS_KEY_ID'),

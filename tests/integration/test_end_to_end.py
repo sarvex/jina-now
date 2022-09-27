@@ -125,7 +125,8 @@ def test_backend_demo_data(
     kwargs = {
         'now': 'start',
         'app': app,
-        'data': dataset,
+        'dataset_type': DatasetTypes.DEMO,
+        'dataset_name': dataset,
         'cluster': cluster,
         'secured': deployment_type == 'remote',
         'additional_user': False,
@@ -282,8 +283,7 @@ def test_backend_custom_data(
     kwargs = {
         'now': 'start',
         'app': app,
-        'data': 'custom',
-        'custom_dataset_type': DatasetTypes.S3_BUCKET,
+        'dataset_type': DatasetTypes.S3_BUCKET,
         'dataset_path': os.environ.get('S3_IMAGE_TEST_DATA_PATH'),
         'aws_access_key_id': os.environ.get('AWS_ACCESS_KEY_ID'),
         'aws_secret_access_key': os.environ.get('AWS_SECRET_ACCESS_KEY'),
