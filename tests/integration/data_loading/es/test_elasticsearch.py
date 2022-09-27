@@ -10,7 +10,6 @@ def test_elasticsearch_data_loading(setup_online_shop_db, es_connection_params):
     _, index_name = setup_online_shop_db
     connection_str, _ = es_connection_params
     user_input = UserInput()
-    user_input.data = 'custom'
     user_input.dataset_type = DatasetTypes.ELASTICSEARCH
     user_input.es_index_name = index_name
     user_input.es_image_fields = ['uris']

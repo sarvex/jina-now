@@ -4,6 +4,7 @@ import pytest
 from docarray import Document
 
 from now.apps.text_to_text_and_image.app import TextToTextAndImage
+from now.constants import DatasetTypes
 from now.data_loading.data_loading import load_data
 from now.demo_data import DemoDatasetNames
 from now.finetuning.data_builder import DataBuilder
@@ -20,7 +21,8 @@ def test_data_generation(get_task_config_path):
 
     # load dataset
     user_input = UserInput()
-    user_input.data = DemoDatasetNames.ES_ONLINE_SHOP_50
+    user_input.dataset_type = DatasetTypes.DEMO
+    user_input.dataset_name = DemoDatasetNames.ES_ONLINE_SHOP_50
     dataset = load_data(TextToTextAndImage(), user_input)
 
     initial_length = len(dataset)
