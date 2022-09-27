@@ -28,13 +28,14 @@ def test_search_image(resources_folder_path: str):
 
 @pytest.fixture()
 def cleanup(deployment_type, dataset):
+    print('start cleanup')
     start = time.time()
     with tempfile.TemporaryDirectory() as tmpdir:
         yield tmpdir
         try:
             if deployment_type == 'remote':
                 flow_details = {}
-                with open(f'{cleanup}/flow_details.json', 'r') as f:
+                with open(f'{tmpdir}/flow_details.json', 'r') as f:
                     flow_details = json.load(f)
                 if 'host' not in flow_details:
                     print('nothing to clean up')

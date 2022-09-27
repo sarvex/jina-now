@@ -9,7 +9,7 @@ def get_default_request_body(deployment_type, secured, remote_host=None):
         request_body['host'] = 'gateway'
         request_body['port'] = 8080
     elif deployment_type == 'remote':
-        if not remote_host:
+        if remote_host:
             request_body['host'] = remote_host
         else:
             raise ValueError('Remote host must be provided for remote deployment')
