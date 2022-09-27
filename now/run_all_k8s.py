@@ -129,7 +129,7 @@ def start_now(app_instance, **kwargs):
     bff_url = (
         bff_playground_host
         + ('' if str(bff_port) == '80' else f':{bff_port}')
-        + f'/api/v1/{app_instance.input_modality}-to-{app_instance.output_modality}/redoc'
+        + f'/api/v1/{app_instance.input_modality}-to-{app_instance.output_modality}/docs'
     )
     playground_url = (
         bff_playground_host
@@ -148,7 +148,7 @@ def start_now(app_instance, **kwargs):
     my_table = Table(
         'Attribute', 'Value', show_header=False, box=box.SIMPLE, highlight=True
     )
-    my_table.add_row('BFF docs', bff_url)
+    my_table.add_row('Api docs', bff_url)
     my_table.add_row('Playground', playground_url)
     console = Console()
     console.print(
