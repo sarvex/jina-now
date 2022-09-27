@@ -77,7 +77,7 @@ class TextToText(JinaNOWApp):
         if (
             is_indexing
             and user_input.data == 'custom'
-            and user_input.custom_dataset_type == DatasetTypes.PATH
+            and user_input.dataset_type == DatasetTypes.PATH
             and user_input.dataset_path
             and os.path.isdir(user_input.dataset_path)
         ):

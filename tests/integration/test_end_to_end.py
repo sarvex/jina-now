@@ -12,7 +12,7 @@ from now_common.options import NEW_CLUSTER
 
 from now.cli import _get_kind_path, _get_kubectl_path, cli
 from now.cloud_manager import create_local_cluster
-from now.constants import JC_SECRET, Apps, DatasetTypes, DemoDatasets, Modalities
+from now.constants import JC_SECRET, Apps, DatasetTypes, DemoDatasetNames, Modalities
 from now.deployment.deployment import cmd, list_all_wolf, terminate_wolf
 from now.run_all_k8s import get_remote_flow_details
 
@@ -74,35 +74,35 @@ def test_token_exists():
             Apps.TEXT_TO_IMAGE,
             Modalities.TEXT,
             Modalities.IMAGE,
-            DemoDatasets.BIRD_SPECIES,
+            DemoDatasetNames.BIRD_SPECIES,
             'local',
         ),
         (
             Apps.IMAGE_TO_IMAGE,
             Modalities.IMAGE,
             Modalities.IMAGE,
-            DemoDatasets.BEST_ARTWORKS,
+            DemoDatasetNames.BEST_ARTWORKS,
             'local',
         ),
         (
             Apps.IMAGE_TO_TEXT,
             Modalities.IMAGE,
             Modalities.TEXT,
-            DemoDatasets.ROCK_LYRICS,
+            DemoDatasetNames.ROCK_LYRICS,
             'remote',
         ),
         (
             Apps.TEXT_TO_TEXT,
             Modalities.TEXT,
             Modalities.TEXT,
-            DemoDatasets.POP_LYRICS,
+            DemoDatasetNames.POP_LYRICS,
             'remote',
         ),
         (
             Apps.TEXT_TO_VIDEO,
             Modalities.TEXT,
             Modalities.VIDEO,
-            DemoDatasets.TUMBLR_GIFS_10K,
+            DemoDatasetNames.TUMBLR_GIFS_10K,
             'local',
         ),
     ],
@@ -222,9 +222,9 @@ def get_search_request_body(app, dataset, deployment_type, kwargs, test_search_i
     if app in [Apps.IMAGE_TO_IMAGE, Apps.IMAGE_TO_TEXT]:
         request_body['image'] = test_search_image
     elif app in [Apps.TEXT_TO_IMAGE, Apps.TEXT_TO_TEXT, Apps.TEXT_TO_VIDEO]:
-        if dataset == DemoDatasets.BEST_ARTWORKS:
+        if dataset == DemoDatasetNames.BEST_ARTWORKS:
             search_text = 'impressionism'
-        elif dataset == DemoDatasets.NFT_MONKEY:
+        elif dataset == DemoDatasetNames.NFT_MONKEY:
             search_text = 'laser eyes'
         else:
             search_text = 'test'

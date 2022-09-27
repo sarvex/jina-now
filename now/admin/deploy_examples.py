@@ -3,18 +3,18 @@ from argparse import Namespace
 from concurrent.futures import ProcessPoolExecutor
 
 from now.cli import cli
-from now.constants import Apps, DemoDatasets
+from now.constants import Apps, DemoDatasetNames
 
 os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
 app = Apps.TEXT_TO_IMAGE
 
 params = [
-    (Apps.TEXT_TO_IMAGE, DemoDatasets.BEST_ARTWORKS),
-    (Apps.TEXT_TO_IMAGE, DemoDatasets.DEEP_FASHION),
-    (Apps.IMAGE_TO_TEXT, DemoDatasets.RAP_LYRICS),
-    (Apps.IMAGE_TO_IMAGE, DemoDatasets.TLL),
-    (Apps.TEXT_TO_TEXT, DemoDatasets.ROCK_LYRICS),
-    (Apps.MUSIC_TO_MUSIC, DemoDatasets.MUSIC_GENRES_MIX),
+    (Apps.TEXT_TO_IMAGE, DemoDatasetNames.BEST_ARTWORKS),
+    (Apps.TEXT_TO_IMAGE, DemoDatasetNames.DEEP_FASHION),
+    (Apps.IMAGE_TO_TEXT, DemoDatasetNames.RAP_LYRICS),
+    (Apps.IMAGE_TO_IMAGE, DemoDatasetNames.TLL),
+    (Apps.TEXT_TO_TEXT, DemoDatasetNames.ROCK_LYRICS),
+    (Apps.MUSIC_TO_MUSIC, DemoDatasetNames.MUSIC_GENRES_MIX),
 ]
 
 

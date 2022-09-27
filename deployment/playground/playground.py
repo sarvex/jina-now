@@ -222,7 +222,7 @@ def _do_login(params):
             'host': unquote(params.host),
             'input_modality': params.input_modality,
             'output_modality': params.output_modality,
-            'data': params.data,
+            'data': params.data_type,
         }
         if params.secured:
             query_params_var['secured'] = params.secured
@@ -249,7 +249,7 @@ def _do_login(params):
     st.session_state.login = True
     redirect_uri = (
         f'https://nowrun.jina.ai/?host={params.host}&input_modality={params.input_modality}'
-        f'&output_modality={params.output_modality}&data={params.data}'
+        f'&output_modality={params.output_modality}&data={params.data_type}'
         + f'&secured={params.secured}'
         if params.secured
         else ''

@@ -7,8 +7,7 @@ from docarray import DocumentArray
 from jina.serve.runtimes.gateway.http.models import JinaRequestModel, JinaResponseModel
 
 from now.constants import AVAILABLE_DATASET, Modalities
-from now.datasource.datasource import DemoDatasource
-from now.now_dataclasses import DialogOptions, UserInput
+from now.now_dataclasses import DemoDataset, DialogOptions, UserInput
 
 
 class JinaNOWApp:
@@ -106,21 +105,9 @@ class JinaNOWApp:
         return ['**']
 
     @property
-    def example_datasource(self) -> List[DemoDatasource]:
-        """
-        # TODO just a prototype - needs to be implemented in the future
-        Get a list of example datasets for the app.
-
-        """
-        if self.output_modality in AVAILABLE_DATASET:
-            return [
-                DemoDatasource(
-                    id_=ds[0], display_name=ds[1], modality_folder=self.output_modality
-                )
-                for ds in AVAILABLE_DATASET[self.output_modality]
-            ]
-        else:
-            return []
+    def demo_datasets(self) -> List[DemoDataset]:
+        """Get a list of example datasets for the app."""
+        return AVAILABLE_DATASET.get(self.output_modality, [])
 
     @property
     def required_docker_memory_in_gb(self) -> int:

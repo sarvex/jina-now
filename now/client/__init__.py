@@ -67,7 +67,7 @@ class Client:
         jina_response = jina_client_post(
             app_request,
             endpoint,
-            jina_request.data,
+            jina_request.data_type,
             jina_request.parameters,
         )
         jina_response_model = JinaResponseModel()
