@@ -47,6 +47,6 @@ executors:
       capacity: on-demand
       resources:
         memory: ${{ ENV.INDEXER_MEM }}
-        cpu: 1.0
+        cpu: 0.1
     env:
       JINA_LOG_LEVEL: DEBUG
