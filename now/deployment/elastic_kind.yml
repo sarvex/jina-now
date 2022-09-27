@@ -8,4 +8,4 @@ spec:
   - name: default
     count: 1
     config:
-      node.store.allow_mmap: False
+      node.store.allow_mmap: false
