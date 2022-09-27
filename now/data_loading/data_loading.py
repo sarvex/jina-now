@@ -50,11 +50,11 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
         )
     if 'NOW_CI_RUN' in os.environ:
         if user_input.data == DemoDatasets.BEST_ARTWORKS:
-            da = da[:200]
+            da = da[:300]
         elif user_input.data == DemoDatasets.TUMBLR_GIFS_10K:
-            da = da[:200]
+            da = da[:300]
         else:
-            da = da[:200]
+            da = da[:300]
     return da
 
 
