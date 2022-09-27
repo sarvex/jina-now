@@ -4,6 +4,10 @@ from os.path import expanduser as user
 
 import cowsay
 from now_common.options import _get_context_names
+from rich import box
+from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
 
 from now import run_backend, run_bff_playground
 from now.cloud_manager import setup_cluster
@@ -12,7 +16,7 @@ from now.deployment.deployment import cmd, list_all_wolf, status_wolf, terminate
 from now.dialog import configure_app, configure_user_input
 from now.log import yaspin_extended
 from now.system_information import get_system_state
-from now.utils import bcolors, maybe_prompt_user, sigmap
+from now.utils import maybe_prompt_user, sigmap
 
 
 def get_remote_flow_details():
@@ -141,11 +145,14 @@ def start_now(app_instance, **kwargs):
         + (f'&port={gateway_port_internal}' if gateway_port_internal else '')
     )
     print()
-    print(
-        f'BFF docs are accessible at:\n{bcolors.BOLD}{bcolors.UNDERLINE}{bcolors.HEADER}{bff_url}{bcolors.ENDC}'
+    my_table = Table(
+        'Attribute', 'Value', show_header=False, box=box.SIMPLE, highlight=True
     )
-    print(
-        f'Playground is accessible at:\n{bcolors.BOLD}{bcolors.UNDERLINE}{bcolors.OKCYAN}{playground_url}{bcolors.ENDC}'
+    my_table.add_row('BFF docs', bff_url)
+    my_table.add_row('Playground', playground_url)
+    console = Console()
+    console.print(
+        Panel(my_table, title=':tada: Bff & Playground are accessible!', expand=False)
     )
     return {
         'bff': bff_url,
