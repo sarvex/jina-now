@@ -1,13 +1,13 @@
 import base64
 import os
+import pathlib
+import pickle
 from os.path import join as osp
-from typing import List, Tuple, Dict
 
-from docarray import Document, DocumentArray
+from docarray import DocumentArray
 
 from now.constants import BASE_STORAGE_URL, DEMO_DATASET_DOCARRAY_VERSION, Modalities
-from now.log import yaspin_extended
-from now.utils import download, sigmap
+from now.utils import download
 
 
 def _fetch_da_from_url(
@@ -23,11 +23,13 @@ def _fetch_da_from_url(
     if not os.path.exists(data_path):
         download(url, data_path)
 
-    with yaspin_extended(
-        sigmap=sigmap, text="Extracting dataset from DocArray", color="green"
-    ) as spinner:
+    try:
         da = DocumentArray.load_binary(data_path)
-        spinner.ok("📂")
+    except pickle.UnpicklingError:
+        path = pathlib.Path(data_path).expanduser().resolve()
+        os.remove(path)
+        download(url, data_path)
+        da = DocumentArray.load_binary(data_path)
     return da
 
 

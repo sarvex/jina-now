@@ -1,15 +1,16 @@
 import json
+import os
 
 from docarray import Document, DocumentArray
-from executor import NOWPreprocessor
 from jina import Flow
+from now_executors.NOWPreprocessor.executor import NOWPreprocessor
 
 from now.constants import Apps
 from now.now_dataclasses import UserInput
 
 
 def test_executor_persistence():
-    e = NOWPreprocessor('text_to_text', metas={'workspace': './workspace'})
+    e = NOWPreprocessor(Apps.TEXT_TO_TEXT, metas={'workspace': './workspace'})
     user_input = UserInput()
     text_docs = DocumentArray(
         [
@@ -28,13 +29,15 @@ def test_executor_persistence():
         json.load(fp)
 
 
-def test_text_to_video():
+def test_text_to_video(resources_folder_path):
     app = Apps.TEXT_TO_IMAGE
     user_input = UserInput()
     text_docs = DocumentArray(
         [
             Document(text='test'),
-            Document(uri='test.jpg'),
+            Document(
+                uri=os.path.join(resources_folder_path, 'image', '5109112832.jpg')
+            ),
         ]
     )
 

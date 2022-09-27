@@ -50,6 +50,7 @@ def cleanup(deployment_type, dataset):
             cli(args=kwargs)
     except Exception as e:
         print('no clean up')
+        print(e)
         return
     print('cleaned up')
     now = time.time() - start
@@ -106,12 +107,10 @@ def cleanup(deployment_type, dataset):
         # ),
     ],
 )
-@pytest.mark.parametrize('quality', ['medium'])
 @pytest.mark.timeout(60 * 15)
 def test_backend_demo_data(
     app: str,
     dataset: str,
-    quality: str,
     deployment_type: str,
     test_search_image,
     cleanup,
@@ -126,7 +125,6 @@ def test_backend_demo_data(
         'now': 'start',
         'app': app,
         'data': dataset,
-        'quality': quality,
         'cluster': cluster,
         'secured': deployment_type == 'remote',
         'additional_user': False,
@@ -289,7 +287,6 @@ def test_backend_custom_data(
         'aws_access_key_id': os.environ.get('AWS_ACCESS_KEY_ID'),
         'aws_secret_access_key': os.environ.get('AWS_SECRET_ACCESS_KEY'),
         'aws_region_name': 'eu-west-1',
-        'quality': 'medium',
         'cluster': NEW_CLUSTER['value'],
         'deployment_type': deployment_type,
         'proceed': True,

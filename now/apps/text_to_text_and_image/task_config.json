@@ -1,0 +1,49 @@
+{
+  "name": "text to text+image app configuration",
+  "encoders": [
+    {
+      "name": "text_encoder",
+      "encoder_type": "text-to-text",
+      "train_dataset_name": "text_encoder_pairs",
+      "training_data_generation_methods": [
+        {
+          "query": {
+            "method": "text_processing",
+            "parameters": {
+              "powerset": true,
+              "permute": true
+            },
+            "scope": []
+          },
+          "target": {
+            "method": "text_processing",
+            "parameters":{},
+            "scope": []
+          }
+        }
+      ]
+    },
+    {
+      "name": "vision_encoder",
+      "encoder_type": "text-to-image",
+      "train_dataset_name": "vision_encoder_pairs",
+      "training_data_generation_methods": [
+        {
+          "query": {
+            "method": "text_processing",
+            "parameters": {
+              "powerset": true
+            },
+            "scope": []
+          },
+          "target": {
+            "method": "image_normalization",
+            "parameters": {},
+            "scope": []
+          }
+        }
+      ]
+    }
+  ],
+  "indexer_scope": {"text": "", "image": ""}
+}

@@ -248,6 +248,7 @@ def _maybe_add_embeddings(
     result = call_flow(
         client=client,
         dataset=documents_without_embedding,
+        max_request_size=app_instance.max_request_size,
         endpoint='/encode',
         parameters={'user_input': deepcopy(user_input.__dict__)},
         return_results=True,

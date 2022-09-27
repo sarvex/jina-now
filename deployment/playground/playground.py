@@ -2,6 +2,7 @@ import base64
 import io
 import json
 import os
+from collections import OrderedDict
 from copy import deepcopy
 from urllib.error import HTTPError
 from urllib.parse import quote, unquote
@@ -14,6 +15,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 from better_profanity import profanity
 from docarray import Document, DocumentArray
+from jina import Client
 from src.constants import (
     BUTTONS,
     JWT_COOKIE,
@@ -98,7 +100,6 @@ def deploy_streamlit():
 
     # Retrieve query params
     params = get_query_params()
-
     redirect_to = render_auth_components(params)
 
     _, mid, _ = st.columns([0.8, 1, 1])
@@ -121,8 +122,42 @@ def deploy_streamlit():
             from better_profanity import profanity
 
             profanity.load_censor_words()
-
         setup_design()
+
+        if params.host and st.session_state.filters == 'notags':
+            client = Client(host=params.host)
+            try:
+                if params.secured.lower() == 'true':
+                    response = client.post(
+                        on='/tags',
+                        parameters={
+                            'jwt': {'token': st.session_state.jwt_val['token']}
+                        },
+                    )
+                else:
+                    response = client.post(on='/tags')
+                st.session_state.filters = OrderedDict(response[0].tags['tags'])
+            except Exception as e:
+                print("Filters couldn't be loaded from the endpoint properly.", e)
+                st.session_state.filters = 'notags'
+
+        filter_selection = {}
+        if st.session_state.filters != 'notags':
+            st.sidebar.title("Filters")
+            if not st.session_state.filters_set:
+                for tag, values in st.session_state.filters.items():
+                    values.insert(0, 'All')
+                    filter_selection[tag] = st.sidebar.selectbox(tag, values)
+                st.session_state.filters_set = True
+            else:
+                for tag, values in st.session_state.filters.items():
+                    filter_selection[tag] = st.sidebar.selectbox(tag, values)
+
+        if st.session_state.filters != 'notags' and not st.session_state.filters_set:
+            st.sidebar.title("Filters")
+            for tag, values in st.session_state.filters.items():
+                values.insert(0, 'All')
+                filter_selection[tag] = st.sidebar.selectbox(tag, values)
 
         if params.input_modality == 'image':
             media_type = st.radio(
@@ -136,16 +171,16 @@ def deploy_streamlit():
             media_type = 'Music'
 
         if media_type == "Image":
-            render_image(da_img)
+            render_image(da_img, deepcopy(filter_selection))
 
         elif media_type == "Text":
-            render_text(da_txt)
+            render_text(da_txt, deepcopy(filter_selection))
 
         elif media_type == 'Webcam':
-            render_webcam()
+            render_webcam(deepcopy(filter_selection))
 
         elif media_type == 'Music':
-            render_music_app(params.data)
+            render_music_app(params.data, deepcopy(filter_selection))
 
         render_matches(params.output_modality)
 
@@ -309,14 +344,16 @@ def setup_design():
     )
 
 
-def render_image(da_img):
+def render_image(da_img, filter_selection):
     upload_c, preview_c = st.columns([12, 1])
     query = upload_c.file_uploader("", on_change=clear_match)
     if query:
         doc = convert_file_to_document(query)
         st.image(doc.blob, width=160)
         st.session_state.matches = search_by_image(
-            document=doc, jwt=st.session_state.jwt_val
+            document=doc,
+            jwt=st.session_state.jwt_val,
+            filter_selection=filter_selection,
         )
     if da_img is not None:
         st.subheader("samples:")
@@ -328,19 +365,25 @@ def render_image(da_img):
             with txt:
                 if st.button('Search', key=doc.id, on_click=clear_match):
                     st.session_state.matches = search_by_image(
-                        document=doc, jwt=st.session_state.jwt_val
+                        document=doc,
+                        jwt=st.session_state.jwt_val,
+                        filter_selection=filter_selection,
                     )
 
 
-def render_text(da_txt):
+def render_text(da_txt, filter_selection):
     query = st.text_input("", key="text_search_box", on_change=clear_match)
     if query:
         st.session_state.matches = search_by_text(
-            search_text=query, jwt=st.session_state.jwt_val
+            search_text=query,
+            jwt=st.session_state.jwt_val,
+            filter_selection=filter_selection,
         )
     if st.button("Search", key="text_search", on_click=clear_match):
         st.session_state.matches = search_by_text(
-            search_text=query, jwt=st.session_state.jwt_val
+            search_text=query,
+            jwt=st.session_state.jwt_val,
+            filter_selection=filter_selection,
         )
     if da_txt is not None:
         st.subheader("samples:")
@@ -350,7 +393,9 @@ def render_text(da_txt):
             with col:
                 if st.button(doc.content, key=doc.id, on_click=clear_text):
                     st.session_state.matches = search_by_text(
-                        search_text=doc.content, jwt=st.session_state.jwt_val
+                        search_text=doc.content,
+                        jwt=st.session_state.jwt_val,
+                        filter_selection=filter_selection,
                     )
 
 
@@ -477,7 +522,7 @@ def render_matches(OUTPUT_MODALITY):
             st.text(st.session_state.error_msg)
 
 
-def render_music_app(DATA):
+def render_music_app(DATA, filter_selection):
     st.header('Welcome to JinaNOW music search 👋🏽')
     st.text('Upload a song to search with or select one of the examples.')
     st.text('Pro tip: You can download search results and use them to search again :)')
@@ -487,7 +532,9 @@ def render_music_app(DATA):
         st.subheader('Play your song')
         st.audio(doc.blob)
         st.session_state.matches = search_by_audio(
-            document=doc, jwt=st.session_state.jwt_val
+            document=doc,
+            jwt=st.session_state.jwt_val,
+            filter_selection=filter_selection,
         )
 
     else:
@@ -497,7 +544,9 @@ def render_music_app(DATA):
         def on_button_click(doc_id: str):
             def callback():
                 st.session_state.matches = search_by_audio(
-                    music_examples[doc_id], jwt=st.session_state.jwt_val
+                    music_examples[doc_id],
+                    jwt=st.session_state.jwt_val,
+                    filter_selection=filter_selection,
                 )
 
             return callback
@@ -507,7 +556,7 @@ def render_music_app(DATA):
             c.button('Search', on_click=on_button_click(song.id), key=song.id)
 
 
-def render_webcam():
+def render_webcam(filter_selection):
     snapshot = st.button('Snapshot', on_click=clear_match)
 
     class VideoProcessor:
@@ -534,7 +583,9 @@ def render_webcam():
             doc = Document(tensor=query)
             doc.convert_image_tensor_to_blob()
             st.session_state.matches = search_by_image(
-                document=doc, jwt=st.session_state.jwt_val
+                document=doc,
+                jwt=st.session_state.jwt_val,
+                filter_selection=filter_selection,
             )
         elif st.session_state.snap is not None:
             st.image(st.session_state.snap, width=160)
@@ -716,6 +767,12 @@ def setup_session_state():
 
     if 'disable_prev' not in st.session_state:
         st.session_state.disable_prev = True
+
+    if 'filters' not in st.session_state:
+        st.session_state.filters = 'notags'
+
+    if 'filters_set' not in st.session_state:
+        st.session_state.filters_set = False
 
 
 if __name__ == '__main__':

@@ -13,7 +13,7 @@ class ElasticsearchConnector:
     def __init__(
         self,
         connection_str: str = 'http://localhost:9200',
-        connection_args: Dict = None,
+        connection_args: Optional[Dict] = None,
     ):
         """
         Provides an interface to an Elasticsearch database.
@@ -24,7 +24,9 @@ class ElasticsearchConnector:
             e.g., information about certificates
         """
         self._connection_str = connection_str
-        self._connection_args = connection_args if connection_args else {}
+        self._connection_args = (
+            connection_args if connection_args else {'verify_certs': False}
+        )
         self._es = Elasticsearch(self._connection_str, **self._connection_args)
 
     def __enter__(self) -> 'ElasticsearchConnector':
@@ -60,7 +62,7 @@ class ElasticsearchConnector:
         return documents
 
     def get_documents_by_query(
-        self, query: str, index_name: str, page_size: Optional[int] = 10
+        self, query: Dict, index_name: str, page_size: Optional[int] = 10
     ) -> Generator[List[Dict], None, None]:
         """
         Executes an Elasticsearch query on a given index and returns a generator which

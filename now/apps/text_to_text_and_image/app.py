@@ -2,7 +2,7 @@ import json
 import os
 from typing import Dict, Optional, List
 
-from docarray import DocumentArray
+from docarray import DocumentArray, Document
 
 from now.finetuning.run_finetuning import finetune
 from now.finetuning.settings import parse_finetune_settings, FinetuneSettings
@@ -49,23 +49,47 @@ class TextToTextAndImage(JinaNOWApp):
     def output_modality(self) -> Modalities:
         return Modalities.TEXT_AND_IMAGE
 
-    @property
-    def options(self) -> List[DialogOptions]:
-        task_config_option = DialogOptions(
-            name='task_config',
-            prompt_message='Please enter the path to your task configuration:',
-            prompt_type='input',
-            post_func=lambda user_input, **kwargs: self._read_task_config(
-                kwargs['task_config'], user_input
-            ),
-        )
-        return [task_config_option]
-
     @staticmethod
-    def _read_task_config(task_config_path: str, user_input: UserInput):
-        with open(task_config_path) as f:
-            dct = json.load(f)
-            user_input.task_config = Task(**dct)
+    def _create_task_config(user_input: UserInput, data_example: Document) -> Task:
+        """
+        Read task configuration template and replace field names.
+        """
+        # read task config template
+        template_path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), 'task_config.json'
+        )
+        with open(template_path) as f:
+            config_dict = json.load(f)
+            config = Task(**config_dict)
+        # get text and image field names if they're not specified
+        if not user_input.es_text_fields:
+            user_input.es_text_fields = [
+                chunk.tags['field_name']
+                for chunk in data_example.chunks
+                if chunk.modality == 'text'
+            ]
+        if not user_input.es_image_fields:
+            user_input.es_image_fields = [
+                chunk.tags['field_name']
+                for chunk in data_example.chunks
+                if chunk.modality == 'image'
+            ]
+        # put field names into generation function configurations
+        for encoder in config.encoders:
+            if encoder.name == 'text_encoder':
+                for method in encoder.training_data_generation_methods:
+                    method.query.scope = user_input.es_text_fields
+                    method.target.scope = user_input.es_text_fields
+            elif encoder.name == 'vision_encoder':
+                for method in encoder.training_data_generation_methods:
+                    method.query.scope = user_input.es_text_fields
+                    method.target.scope = user_input.es_image_fields
+        # specify text and image field for the indexer
+        config.indexer_scope['text'] = user_input.es_text_fields[0]
+        config.indexer_scope['image'] = user_input.es_image_fields[0]
+
+        user_input.task_config = config
+        return user_input.task_config
 
     def preprocess(
         self,
@@ -83,7 +107,8 @@ class TextToTextAndImage(JinaNOWApp):
     def setup(
         self, dataset: DocumentArray, user_input: UserInput, kubectl_path
     ) -> Dict:
-        data = DataBuilder(dataset=dataset, config=user_input.task_config).build()
+        task_config = self._create_task_config(user_input, dataset[0])
+        data = DataBuilder(dataset=dataset, config=task_config).build()
         env_dict = {}
         for encoder_data, encoder_type in data:
             finetune_settings = self._construct_finetune_settings(
