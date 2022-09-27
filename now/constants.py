@@ -7,7 +7,7 @@ DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.127-secure-playgound-3'
 NOW_PREPROCESSOR_VERSION = '0.0.87-secure-playground-3'
-NOW_ANNLITE_INDEXER_VERSION = '0.0.6-annlite-secure-playground-3'
+NOW_ANNLITE_INDEXER_VERSION = '0.0.6-annlite-update-list-endpoint-4'
 
 
 class Modalities(BetterEnum):
