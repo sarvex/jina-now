@@ -13,7 +13,7 @@ from typing import Dict, List
 from hubble import AuthenticationRequiredError
 from kubernetes import client, config
 
-from now.constants import AVAILABLE_DATASET, Apps, DatasetTypes, Qualities
+from now.constants import AVAILABLE_DATASET, Apps, DatasetTypes
 from now.deployment.deployment import cmd
 from now.log import time_profiler, yaspin_extended
 from now.now_dataclasses import DialogOptions, UserInput
@@ -62,26 +62,6 @@ APP = DialogOptions(
     description='What sort of search engine would you like to build?',
 )
 
-# ------------------------------------ #
-
-QUALITY = DialogOptions(
-    name='quality',
-    choices=[
-        {'name': '🦊 medium (≈3GB mem, 15q/s)', 'value': Qualities.MEDIUM},
-        {'name': '🐻 good (≈3GB mem, 2.5q/s)', 'value': Qualities.GOOD},
-        {
-            'name': '🦄 excellent (≈4GB mem, 0.5q/s)',
-            'value': Qualities.EXCELLENT,
-        },
-    ],
-    prompt_message='What quality do you expect?',
-    prompt_type='list',
-    description='Choose the quality of the model that you would like to finetune',
-)
-
-
-# --------------------------------------------- #
-
 DATA = DialogOptions(
     name='data',
     prompt_message='What dataset do you want to use?',
@@ -112,8 +92,13 @@ CUSTOM_DATASET_TYPE = DialogOptions(
             'value': DatasetTypes.PATH,
         },
         {
-            'name': 'Download from S3 bucket',
+            'name': 'S3 bucket',
             'value': DatasetTypes.S3_BUCKET,
+        },
+        {
+            'name': 'Elasticsearch',
+            'value': DatasetTypes.ELASTICSEARCH,
+            'disabled': AVAILABLE_SOON,
         },
     ],
     prompt_type='list',
@@ -182,6 +167,69 @@ AWS_REGION_NAME = DialogOptions(
     depends_on=CUSTOM_DATASET_TYPE,
     conditional_check=lambda user_input: user_input.custom_dataset_type
     == DatasetTypes.S3_BUCKET,
+)
+
+# --------------------------------------------- #
+
+ES_TEXT_FIELDS = DialogOptions(
+    name='es_text_fields',
+    prompt_message='Please enter comma-separated text fields of your data:',
+    prompt_type='input',
+    depends_on=CUSTOM_DATASET_TYPE,
+    conditional_check=lambda user_input: user_input.custom_dataset_type
+    == DatasetTypes.ELASTICSEARCH,
+    post_func=lambda user_input, **kwargs: _parse_text_fields(user_input),
+)
+
+
+def _parse_text_fields(user_input: UserInput):
+    user_input.es_text_fields = [
+        field.strip() for field in user_input.es_text_fields.split(',')
+    ]
+
+
+ES_IMAGE_FIELDS = DialogOptions(
+    name='es_image_fields',
+    prompt_message='Please enter comma-separated image fields of your data:',
+    prompt_type='input',
+    depends_on=CUSTOM_DATASET_TYPE,
+    conditional_check=lambda user_input, **kwargs: user_input.custom_dataset_type
+    == DatasetTypes.ELASTICSEARCH,
+    post_func=lambda user_input, **kwargs: _parse_image_fields(user_input),
+)
+
+
+def _parse_image_fields(user_input: UserInput):
+    user_input.es_image_fields = [
+        field.strip() for field in user_input.es_image_fields.split(',')
+    ]
+
+
+ES_INDEX_NAME = DialogOptions(
+    name='es_index_name',
+    prompt_message='Please enter the name of your Elasticsearch index:',
+    prompt_type='input',
+    depends_on=CUSTOM_DATASET_TYPE,
+    conditional_check=lambda user_input: user_input.custom_dataset_type
+    == DatasetTypes.ELASTICSEARCH,
+)
+
+ES_HOST_NAME = DialogOptions(
+    name='es_host_name',
+    prompt_message='Please enter the address of your Elasticsearch node:',
+    prompt_type='input',
+    depends_on=CUSTOM_DATASET_TYPE,
+    conditional_check=lambda user_input: user_input.custom_dataset_type
+    == DatasetTypes.ELASTICSEARCH,
+)
+
+ES_ADDITIONAL_ARGS = DialogOptions(
+    name='es_additional_args',
+    prompt_message='Please enter additional arguments for your Elasticsearch node if there are any:',
+    prompt_type='input',
+    depends_on=CUSTOM_DATASET_TYPE,
+    conditional_check=lambda user_input: user_input.custom_dataset_type
+    == DatasetTypes.ELASTICSEARCH,
 )
 
 # --------------------------------------------- #
@@ -378,8 +426,15 @@ def _parse_custom_data_from_cli(user_input: UserInput, **kwargs) -> None:
 data = [DATA]
 data_da = [CUSTOM_DATASET_TYPE, DATASET_NAME, DATASET_PATH, DATASET_URL]
 data_s3 = [DATASET_PATH_S3, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION_NAME]
+data_es = [
+    ES_HOST_NAME,
+    ES_INDEX_NAME,
+    ES_TEXT_FIELDS,
+    ES_IMAGE_FIELDS,
+    ES_ADDITIONAL_ARGS,
+]
 cluster = [DEPLOYMENT_TYPE, LOCAL_CLUSTER]
 remote_cluster = [SECURED, ADDITIONAL_USERS, USER_EMAILS]
 
 
-base_options = data + data_da + data_s3 + cluster + remote_cluster
+base_options = data + data_da + data_s3 + data_es + cluster + remote_cluster

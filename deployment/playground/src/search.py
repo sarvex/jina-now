@@ -59,7 +59,7 @@ def get_query_params() -> Parameters:
     return parameters
 
 
-def search(attribute_name, attribute_value, jwt, top_k=None):
+def search(attribute_name, attribute_value, jwt, top_k=None, filter_dict=None):
     print(f'Searching by {attribute_name}')
     params = get_query_params()
     if params.host == 'gateway':  # need to call now-bff as we communicate between pods
@@ -70,10 +70,13 @@ def search(attribute_name, attribute_value, jwt, top_k=None):
         f"{domain}/api/v1/{params.input_modality}-to-{params.output_modality}/search"
     )
 
+    updated_dict = {k: v for k, v in filter_dict.items() if v != 'All'}
+
     data = {
         'host': params.host,
         attribute_name: attribute_value,
         'limit': top_k if top_k else params.top_k,
+        'filters': updated_dict if updated_dict else {},
     }
     # in case the jwt is none, no jwt will be sent. This is the case when no authentication is used for that flow
     if jwt is not None:
@@ -130,11 +133,11 @@ def call_flow(url_host, data, attribute_name, domain):
     return docs
 
 
-def search_by_text(search_text, jwt) -> DocumentArray:
-    return search('text', search_text, jwt)
+def search_by_text(search_text, jwt, filter_selection) -> DocumentArray:
+    return search('text', search_text, jwt, filter_dict=filter_selection)
 
 
-def search_by_image(document: Document, jwt) -> DocumentArray:
+def search_by_image(document: Document, jwt, filter_selection) -> DocumentArray:
     """
     Wrap file in Jina Document for searching, and do all necessary conversion to make similar to indexed Docs
     """
@@ -145,14 +148,23 @@ def search_by_image(document: Document, jwt) -> DocumentArray:
         elif (query_doc.uri is not None) and query_doc.uri != '':
             query_doc.load_uri_to_blob()
 
-    return search('image', base64.b64encode(query_doc.blob).decode('utf-8'), jwt)
+    return search(
+        'image',
+        base64.b64encode(query_doc.blob).decode('utf-8'),
+        jwt,
+        filter_dict=filter_selection,
+    )
 
 
-def search_by_audio(document: Document, jwt):
+def search_by_audio(document: Document, jwt, filter_selection):
     params = get_query_params()
     TOP_K = params.top_k
     result = search(
-        'song', base64.b64encode(document.blob).decode('utf-8'), jwt, TOP_K * 3
+        'song',
+        base64.b64encode(document.blob).decode('utf-8'),
+        jwt,
+        TOP_K * 3,
+        filter_dict=filter_selection,
     )
 
     already_added_tracks = set()

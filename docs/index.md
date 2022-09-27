@@ -11,6 +11,8 @@ One line to host them all. Bootstrap your image search case in minutes.
 :caption: User Guides
 :hidden:
 
+user-guides/cli_api
+user-guides/production
 user-guides/faq
 
 ```

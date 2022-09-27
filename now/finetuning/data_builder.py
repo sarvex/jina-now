@@ -2,12 +2,11 @@ import itertools
 import math
 import os
 from inspect import getmembers, isclass
-from typing import Any, Dict, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 from dask.distributed import Client
 from docarray import Document, DocumentArray
 
-from now.data_loading.utils import transform_es_data
 from now.finetuning import generation_fns
 from now.finetuning.generation_fns import GeneratorFunction
 from now.now_dataclasses import Task, TrainDataGenerationConfig
@@ -40,7 +39,7 @@ class EncoderDataBuilder:
             if issubclass(cls, GeneratorFunction)
         }
 
-    def build(self, es_data: List[Dict[str, Any]]) -> DocumentArray:
+    def build(self, es_data: DocumentArray) -> DocumentArray:
         """
         Generates query and target data based on method(s).
 
@@ -64,7 +63,7 @@ class EncoderDataBuilder:
                 if self._modality == 'single_model':
                     merged_docs = []
                     for doc in [*queries, *targets]:
-                        doc.tags = {'finetuner_label': document['id']}
+                        doc.tags = {'finetuner_label': document.id}
                         merged_docs.append(doc)
                     data.extend(merged_docs)
                 else:
@@ -164,10 +163,7 @@ class DataBuilder:
         """
 
         def _generate(data: DocumentArray, data_builder: EncoderDataBuilder):
-            transformed_data = transform_es_data(data)
-            for data_dict, document in zip(transformed_data, data):
-                data_dict['id'] = document.id
-            return data_builder.build(es_data=transformed_data)
+            return data_builder.build(es_data=data)
 
         data = []
         for dataset_name, enc_data_builder in self._enc_data_builders:

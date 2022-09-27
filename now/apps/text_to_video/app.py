@@ -200,6 +200,11 @@ class TextToVideo(JinaNOWApp):
             ),
         }
 
+    @property
+    def max_request_size(self) -> int:
+        """Max number of documents in one request"""
+        return 2
+
 
 def select_frames(num_selected_frames, num_total_frames):
     partition_size = num_total_frames / (num_selected_frames + 1)
