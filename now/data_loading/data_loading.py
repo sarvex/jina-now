@@ -42,16 +42,16 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
         da = _extract_es_data(user_input)
     elif user_input.dataset_type == DatasetTypes.DEMO:
         print('⬇  Download DocArray dataset')
-        url = get_dataset_url(user_input.data, app.output_modality)
+        url = get_dataset_url(user_input.dataset_name, app.output_modality)
         da = _fetch_da_from_url(url)
     if da is None:
         raise ValueError(
             f'Could not load DocArray dataset. Please check your configuration: {user_input}.'
         )
     if 'NOW_CI_RUN' in os.environ:
-        if user_input.data == DemoDatasetNames.BEST_ARTWORKS:
+        if user_input.dataset_name == DemoDatasetNames.BEST_ARTWORKS:
             da = da[:300]
-        elif user_input.data == DemoDatasetNames.TUMBLR_GIFS_10K:
+        elif user_input.dataset_name == DemoDatasetNames.TUMBLR_GIFS_10K:
             da = da[:300]
         else:
             da = da[:300]
