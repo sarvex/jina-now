@@ -13,7 +13,7 @@ from now.demo_data import AVAILABLE_DATASET
 
 @pytest.mark.parametrize(
     'modality, ds_name',
-    [(m, d[0]) for m in Modalities() for d in AVAILABLE_DATASET[m]],
+    [(m, d.name) for m in Modalities() for d in AVAILABLE_DATASET[m]],
 )
 def test_dataset_is_available(
     ds_name: str,
