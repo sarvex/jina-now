@@ -58,6 +58,7 @@ def run(app_instance: JinaNOWApp, user_input: UserInput, kubectl_path: str):
     call_flow(
         client=client,
         dataset=dataset,
+        max_request_size=app_instance.max_request_size,
         parameters=deepcopy(params),
         return_results=False,
     )
@@ -75,11 +76,12 @@ def run(app_instance: JinaNOWApp, user_input: UserInput, kubectl_path: str):
 def call_flow(
     client: Client,
     dataset: DocumentArray,
+    max_request_size: int,
     endpoint: str = '/index',
     parameters: Optional[Dict] = None,
     return_results: Optional[bool] = False,
 ):
-    request_size = estimate_request_size(dataset)
+    request_size = estimate_request_size(dataset, max_request_size)
 
     # Pop app_instance from parameters to be passed to the flow
     parameters['user_input'].pop('app_instance', None)
@@ -110,13 +112,12 @@ def call_flow(
         return DocumentArray.from_json(response.to_json())
 
 
-def estimate_request_size(index):
+def estimate_request_size(index, max_request_size):
     if len(index) > 30:
         sample = random.sample(index, 30)
     else:
         sample = index
     size = sum([sys.getsizeof(x.content) for x in sample]) / 30
     max_size = 50_000
-    max_request_size = 32
     request_size = max(min(max_request_size, int(max_size / size)), 1)
     return request_size
