@@ -251,3 +251,8 @@ class JinaNOWApp:
     def index_query_access_paths(self) -> str:
         """Gives access paths for indexing and searching."""
         return '@r'
+
+    @property
+    def max_request_size(self) -> int:
+        """Max number of documents in one request"""
+        return 32
