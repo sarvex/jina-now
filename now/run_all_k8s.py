@@ -6,7 +6,12 @@ import cowsay
 
 from now import run_backend, run_bff_playground
 from now.cloud_manager import setup_cluster
-from now.constants import DOCKER_BFF_PLAYGROUND_TAG, JC_SECRET, SURVEY_LINK
+from now.constants import (
+    DOCKER_BFF_PLAYGROUND_TAG,
+    JC_SECRET,
+    SURVEY_LINK,
+    DatasetTypes,
+)
 from now.deployment.deployment import cmd, list_all_wolf, status_wolf, terminate_wolf
 from now.dialog import configure_app, configure_user_input
 from now.log import yaspin_extended
@@ -134,7 +139,11 @@ def start_now(app_instance, **kwargs):
             + (gateway_host_internal if gateway_host != 'localhost' else 'gateway')
             + f'&input_modality={app_instance.input_modality}'
             + f'&output_modality={app_instance.output_modality}'
-            + f'&data={user_input.data}'
+            + (
+                f'&data={user_input.dataset_name}'
+                if user_input.dataset_type == DatasetTypes.DEMO
+                else 'custom'
+            )
             + (f'&secured={user_input.secured}' if user_input.secured else '')
         )
         + (f'&port={gateway_port_internal}' if gateway_port_internal else '')
