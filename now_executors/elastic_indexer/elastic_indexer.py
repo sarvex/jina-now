@@ -78,7 +78,7 @@ class ElasticIndexer(Executor):
 
     @secure_request(on='/index', level=SecurityLevel.USER)
     def index(
-        self, docs: DocumentArray, parameters: dict = {}, **kwargs
+        self, docs: DocumentArray, parameters: dict = None, **kwargs
     ) -> DocumentArray:
         """
         Index new `Document`s by adding them to the Elasticsearch index.
@@ -87,14 +87,26 @@ class ElasticIndexer(Executor):
         :param parameters: dictionary with options for indexing.
         :return: empty `DocumentArray`.
         """
+        if not parameters:
+            parameters = {}
+        print('indexing started')
+        print('number of docs', len(docs))
+        print('document', docs[0].__dict__)
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
+        print('get traversal path', traversal_paths)
         docs = docs[traversal_paths]
-
+        print('get docs with traversal paths - done')
         es_docs = self._transform_docs_to_es(docs)
+        print('transforming es docs - done')
         try:
+            print('started trying')
             success, _ = bulk(self.es, es_docs)
+            print('success in trying', success)
             self.es.indices.refresh(index=self.index_name)
-        except Exception:
+            print('success in refreshing')
+        except Exception as e:
+            print('trying failed')
+            print(e)
             print(traceback.format_exc())
             raise
         if success:
