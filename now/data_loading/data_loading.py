@@ -7,9 +7,10 @@ from copy import deepcopy
 from docarray import Document, DocumentArray
 
 from now.apps.base.app import JinaNOWApp
-from now.constants import DatasetTypes, DemoDatasetNames
+from now.constants import DatasetTypes
 from now.data_loading.es import ElasticsearchExtractor
 from now.data_loading.utils import _fetch_da_from_url, get_dataset_url
+from now.demo_data import DemoDatasetNames
 from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
 from now.utils import sigmap

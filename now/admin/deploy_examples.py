@@ -3,7 +3,8 @@ from argparse import Namespace
 from concurrent.futures import ProcessPoolExecutor
 
 from now.cli import cli
-from now.constants import Apps, DemoDatasetNames
+from now.constants import Apps
+from now.demo_data import DemoDatasetNames
 
 os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
 app = Apps.TEXT_TO_IMAGE

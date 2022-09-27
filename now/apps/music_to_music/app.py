@@ -6,7 +6,8 @@ from docarray import Document, DocumentArray
 from now_common.utils import common_setup
 
 from now.apps.base.app import JinaNOWApp
-from now.constants import Apps, DemoDatasetNames, Modalities
+from now.constants import Apps, Modalities
+from now.demo_data import DemoDatasetNames
 from now.deployment.deployment import which
 from now.now_dataclasses import UserInput
 

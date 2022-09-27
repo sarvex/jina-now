@@ -3,7 +3,6 @@ import os
 from os.path import expanduser as user
 
 import cowsay
-from now_common.options import _get_context_names
 
 from now import run_backend, run_bff_playground
 from now.cloud_manager import setup_cluster
@@ -12,7 +11,7 @@ from now.deployment.deployment import cmd, list_all_wolf, status_wolf, terminate
 from now.dialog import configure_app, configure_user_input
 from now.log import yaspin_extended
 from now.system_information import get_system_state
-from now.utils import maybe_prompt_user, sigmap
+from now.utils import _get_context_names, maybe_prompt_user, sigmap
 
 
 def get_remote_flow_details():

@@ -14,8 +14,7 @@ from docarray import DocumentArray
 from pydantic import BaseModel, StrictBool
 from pydantic.dataclasses import dataclass
 
-from now.constants import DatasetTypes, DemoDatasetNames
-from now.data_loading.utils import _fetch_da_from_url, get_dataset_url
+from now.constants import DatasetTypes
 
 
 @dataclass
@@ -150,15 +149,3 @@ class Dataset(abc.ABC):
     @abc.abstractmethod
     def get_data(self, *args, **kwargs) -> DocumentArray:
         pass
-
-
-@dataclasses.dataclass
-class DemoDataset(Dataset):
-    name: DemoDatasetNames
-    display_name: str
-    display_modality: str
-    datasource_type = DatasetTypes.DEMO
-
-    def get_data(self, *args, **kwargs) -> DocumentArray:
-        url = get_dataset_url(dataset=self.name, output_modality=self.display_modality)
-        return _fetch_da_from_url(url)

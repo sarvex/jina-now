@@ -8,7 +8,8 @@ from typing import Dict
 import pytest
 from pytest_mock import MockerFixture
 
-from now.constants import Apps, DemoDatasetNames
+from now.constants import Apps
+from now.demo_data import DemoDatasetNames
 from now.dialog import configure_app, configure_user_input
 from now.now_dataclasses import UserInput
 

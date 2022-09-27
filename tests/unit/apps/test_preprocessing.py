@@ -8,8 +8,8 @@ from now.apps.text_to_image.app import TextToImage
 from now.apps.text_to_text.app import TextToText
 from now.apps.text_to_text_and_image.app import TextToTextAndImage
 from now.apps.text_to_video.app import TextToVideo
-from now.constants import DemoDatasetNames
 from now.data_loading.data_loading import load_data
+from now.demo_data import DemoDatasetNames
 from now.now_dataclasses import UserInput
 
 
