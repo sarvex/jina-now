@@ -41,7 +41,9 @@ def cleanup(deployment_type, dataset):
                     print('nothing to clean up')
                     return
                 host = flow_details['host']
-                flow_id = host.replace('grpcs://nowapi-', '').replace('.jina.ai', '')
+                flow_id = host.replace('grpcs://nowapi-', '').replace(
+                    'wolf.jina.ai', ''
+                )
                 terminate_wolf(flow_id)
             else:
                 kwargs = {
