@@ -152,7 +152,11 @@ def start_now(app_instance, **kwargs):
     my_table.add_row('Playground', playground_url)
     console = Console()
     console.print(
-        Panel(my_table, title=':tada: Bff & Playground are accessible!', expand=False)
+        Panel(
+            my_table,
+            title=f':tada: {app_instance.input_modality}-{app_instance.output_modality} App is NOW ready!',
+            expand=False,
+        )
     )
     return {
         'bff': bff_url,
