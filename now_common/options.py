@@ -104,8 +104,8 @@ DEMO_DATA = DialogOptions(
     name='dataset_name',
     prompt_message='What demo dataset do you want to use?',
     choices=lambda user_input, **kwargs: [
-        {'name': demo_data.display_modality, 'value': demo_data.name}
-        for demo_data in user_input.app_instance.data_demo
+        {'name': demo_data.display_name, 'value': demo_data.name}
+        for demo_data in user_input.app_instance.demo_datasets
     ],
     prompt_type='list',
     is_terminal_command=True,
