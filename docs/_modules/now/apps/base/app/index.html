@@ -525,7 +525,12 @@
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">index_query_access_paths</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Gives access paths for indexing and searching.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="s1">&#39;@r&#39;</span></div>
+        <span class="k">return</span> <span class="s1">&#39;@r&#39;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">max_request_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Max number of documents in one request&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="mi">32</span></div>
 </pre></div>
                 </article>
             </div>
@@ -543,7 +548,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Sep 23, 2022.
+                            Last updated on Sep 27, 2022.
                         </div>
                     </div>
                     <div class="right-details">

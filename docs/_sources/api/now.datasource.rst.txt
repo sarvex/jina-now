@@ -8,7 +8,6 @@ Submodules
    :maxdepth: 4
 
    now.datasource.datasource
-   now.datasource.example
 
 Module contents
 ---------------

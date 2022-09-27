@@ -523,6 +523,7 @@
     <span class="n">result</span> <span class="o">=</span> <span class="n">call_flow</span><span class="p">(</span>
         <span class="n">client</span><span class="o">=</span><span class="n">client</span><span class="p">,</span>
         <span class="n">dataset</span><span class="o">=</span><span class="n">documents_without_embedding</span><span class="p">,</span>
+        <span class="n">max_request_size</span><span class="o">=</span><span class="n">app_instance</span><span class="o">.</span><span class="n">max_request_size</span><span class="p">,</span>
         <span class="n">endpoint</span><span class="o">=</span><span class="s1">&#39;/encode&#39;</span><span class="p">,</span>
         <span class="n">parameters</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;user_input&#39;</span><span class="p">:</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">user_input</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)},</span>
         <span class="n">return_results</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -571,7 +572,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Sep 23, 2022.
+                            Last updated on Sep 27, 2022.
                         </div>
                     </div>
                     <div class="right-details">
