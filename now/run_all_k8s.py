@@ -84,7 +84,7 @@ def stop_now(app_instance, contexts, active_context, **kwargs):
             cmd(f'{kwargs["kubectl_path"]} delete ns nowapi')
             spinner.ok('💀')
         cowsay.cow(f'nowapi namespace removed from {cluster}')
-    app_instance.cleanup(app_config={})
+    app_instance.cleanup(app_config=dict())
 
 
 def get_task(kwargs):
