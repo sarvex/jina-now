@@ -312,7 +312,14 @@ USER_EMAILS = DialogOptions(
     prompt_type='input',
     depends_on=ADDITIONAL_USERS,
     conditional_check=lambda user_inp: user_inp.additional_user,
+    post_func=lambda user_input, **kwargs: _add_additional_users(user_input, **kwargs),
 )
+
+
+def _add_additional_users(user_input: UserInput, **kwargs):
+    user_input.user_emails = [
+        email.strip() for email in kwargs['user_emails'].split(',')
+    ]
 
 
 def _check_if_namespace_exist():
