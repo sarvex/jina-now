@@ -17,7 +17,7 @@ from now.system_information import get_system_state
 from now.utils import maybe_prompt_user, sigmap
 
 
-def stop_now(contexts, active_context, **kwargs):
+def stop_now(app_instance, contexts, active_context, **kwargs):
     choices = _get_context_names(contexts, active_context)
     # Add all remote Flows that exists with the namespace `nowapi`
     alive_flows = list_all_wolf()
@@ -37,8 +37,6 @@ def stop_now(contexts, active_context, **kwargs):
         ]
         cluster = maybe_prompt_user(questions, 'cluster', **kwargs)
     if cluster == 'kind-jina-now':
-        # In case of a local cluster, all resources deployed will have namespace nowapi
-        # and can be deleted by deleting the namespace.
         delete_cluster = maybe_prompt_user(
             [
                 {
@@ -78,8 +76,6 @@ def stop_now(contexts, active_context, **kwargs):
             print(f'❎ Flow not found in JCloud. Likely, it has been deleted already')
         if _result is not None and _result['status'] == 'ALIVE':
             terminate_wolf(flow_id)
-            app_instance = configure_app({'app': flow['envs']['APP']})
-            app_instance.cleanup(app_config={})
         cowsay.cow(f'remote Flow `{cluster}` removed')
     else:
         with yaspin_extended(
@@ -88,6 +84,7 @@ def stop_now(contexts, active_context, **kwargs):
             cmd(f'{kwargs["kubectl_path"]} delete ns nowapi')
             spinner.ok('💀')
         cowsay.cow(f'nowapi namespace removed from {cluster}')
+    app_instance.cleanup(app_config={})
 
 
 def get_task(kwargs):
@@ -165,9 +162,8 @@ def start_now(app_instance, **kwargs):
 def run_k8s(os_type: str = 'linux', arch: str = 'x86_64', **kwargs):
     contexts, active_context = get_system_state(**kwargs)
     task = get_task(kwargs)
-
+    app = configure_app(**kwargs)
     if task == 'start':
-        app = configure_app(**kwargs)
         return start_now(
             app,
             contexts=contexts,
@@ -177,7 +173,7 @@ def run_k8s(os_type: str = 'linux', arch: str = 'x86_64', **kwargs):
             **kwargs,
         )
     elif task == 'stop':
-        return stop_now(contexts, active_context, **kwargs)
+        return stop_now(app, contexts, active_context, **kwargs)
     elif task == 'survey':
         import webbrowser
 
