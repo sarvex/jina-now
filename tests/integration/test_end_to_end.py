@@ -189,9 +189,7 @@ def assert_deployment_queries(
     response,
 ):
     url = f'http://localhost:30090/api/v1'
-    host = None
-    if 'host' in response:
-        host = response['host']
+    host = response.get('host')
     # normal case
     request_body = get_search_request_body(
         app, dataset, deployment_type, kwargs, test_search_image, host
