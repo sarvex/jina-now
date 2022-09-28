@@ -365,8 +365,11 @@ class ElasticIndexer(Executor):
         :return: Embeddings as values in a dictionary, modality specified in key.
         """
         embeddings = {}
-        for i, chunk in enumerate(doc.chunks):
-            embeddings[f"chunk_{i}"] = chunk.embedding
+        if not doc.chunks:
+            embeddings['chunk_1'] = doc.embedding
+        else:
+            for i, chunk in enumerate(doc.chunks):
+                embeddings[f"chunk_{i}"] = chunk.embedding
         if not embeddings:
             print('No embeddings extracted')
             raise
