@@ -253,7 +253,8 @@ def assert_deployment_response(
     app, deployment_type, input_modality, output_modality, response
 ):
     assert (
-        response['bff'] == f'http://localhost:30090/api/v1/{app.replace("_", "-")}/docs'
+        response['bff']
+        == f'http://localhost:30090/api/v1/{app.replace("_", "-")}/redoc'
     )
     assert response['playground'].startswith('http://localhost:30080/?')
     assert response['input_modality'] == input_modality
@@ -301,7 +302,8 @@ def test_backend_custom_data(
     response = cli(args=kwargs)
 
     assert (
-        response['bff'] == f'http://localhost:30090/api/v1/{app.replace("_", "-")}/docs'
+        response['bff']
+        == f'http://localhost:30090/api/v1/{app.replace("_", "-")}/redoc'
     )
     assert response['playground'].startswith('http://localhost:30080/?')
     assert response['input_modality'] == 'text'
