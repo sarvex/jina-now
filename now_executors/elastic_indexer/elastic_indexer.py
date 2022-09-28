@@ -331,7 +331,7 @@ class ElasticIndexer(Executor):
             es_doc = {k: v for k, v in doc.to_dict().items() if v}
             es_doc['_id'] = doc.id
             es_doc['bm25_text'] = doc.text
-            chunks = es_doc.pop('chunks')
+            chunks = es_doc.pop('chunks', None)
             if chunks:
                 for i, chunk in enumerate(chunks):
                     es_doc[f'chunk_{i}'] = {k: v for k, v in chunk.items() if v}
