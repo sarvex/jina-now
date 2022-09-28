@@ -6,9 +6,10 @@ import pytest
 import requests
 from docarray import Document
 from jina import Flow
-from tests.integration.test_end_to_end import assert_search, get_default_request_body
+from tests.integration.test_end_to_end import assert_search
 
 from deployment.bff.app.app import run_server
+from now.admin.utils import get_default_request_body
 from now.constants import EXTERNAL_CLIP_HOST, NOW_ANNLITE_INDEXER_VERSION
 
 API_KEY = 'my_key'
@@ -20,8 +21,8 @@ host = 'grpc://0.0.0.0'
 port = 9090
 
 
-def get_reqest_body():
-    request_body = get_default_request_body('local', True)
+def get_request_body():
+    request_body = get_default_request_body('local', True, None)
     request_body['host'] = 'grpc://0.0.0.0'
     request_body['port'] = 9089
     return request_body
@@ -29,7 +30,7 @@ def get_reqest_body():
 
 def get_flow():
     client = hubble.Client(
-        token=get_reqest_body()['jwt']['token'], max_retries=None, jsonify=True
+        token=get_request_body()['jwt']['token'], max_retries=None, jsonify=True
     )
     admin_email = client.get_user_info()['data'].get('email')
     f = (
@@ -51,7 +52,7 @@ def get_flow():
 def index(f):
     f.index(
         [Document(text='test') for i in range(10)],
-        parameters={'jwt': get_reqest_body()['jwt']},
+        parameters={'jwt': get_request_body()['jwt']},
     )
 
 
@@ -69,7 +70,7 @@ def test_add_key():
         start_bff()
         sleep(10)
 
-        request_body = get_reqest_body()
+        request_body = get_request_body()
         print('# Test adding user email')
         request_body['user_emails'] = ['florian.hoenicke@jina.ai']
         response = requests.post(
@@ -80,7 +81,7 @@ def test_add_key():
 
         print('# test api keys')
         print('# search with invalid api key')
-        request_body = get_reqest_body()
+        request_body = get_request_body()
         request_body['text'] = 'girl on motorbike'
         del request_body['jwt']
         request_body['api_key'] = 'my_key'
@@ -88,7 +89,7 @@ def test_add_key():
         with pytest.raises(Exception):
             assert_search(search_url, request_body)
         print('# add api key')
-        request_body_update_keys = get_reqest_body()
+        request_body_update_keys = get_request_body()
         request_body_update_keys['api_keys'] = ['my_key']
         response = requests.post(
             update_api_keys_url,
