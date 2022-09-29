@@ -91,13 +91,13 @@ def cleanup(deployment_type, dataset):
         #     DemoDatasets.ROCK_LYRICS,
         #     'remote',
         # ),
-        (
-            Apps.TEXT_TO_TEXT,
-            Modalities.TEXT,
-            Modalities.TEXT,
-            DemoDatasets.POP_LYRICS,
-            'local',
-        ),
+        # (
+        #     Apps.TEXT_TO_TEXT,
+        #     Modalities.TEXT,
+        #     Modalities.TEXT,
+        #     DemoDatasets.POP_LYRICS,
+        #     'local',
+        # ),
         # (
         #     Apps.TEXT_TO_VIDEO,
         #     Modalities.TEXT,
@@ -105,6 +105,13 @@ def cleanup(deployment_type, dataset):
         #     DemoDatasets.TUMBLR_GIFS_10K,
         #     'local',
         # ),
+        (
+            Apps.TEXT_TO_TEXT_AND_IMAGE,
+            Modalities.TEXT,
+            Modalities.TEXT_AND_IMAGE,
+            DemoDatasets.ES_ONLINE_SHOP_50,
+            'local',
+        )
     ],
 )
 @pytest.mark.timeout(60 * 15)

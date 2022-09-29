@@ -1,6 +1,5 @@
 import json
 import os
-import time
 import tempfile
 from copy import deepcopy
 from os.path import expanduser as user
@@ -44,32 +43,9 @@ def common_get_flow_env_dict(
     ) or user_input.app_instance.app_name == 'music_to_music':
         pre_trained_embedding_size = pre_trained_embedding_size * 2
 
-    num_retries = 0
-    es_password, error_msg = '', b''
-    while num_retries < MAX_RETRIES:
-        es_password, error_msg = cmd(
-            [
-                "kubectl",
-                "get",
-                "secret",
-                "quickstart-es-elastic-user",
-                "-o",
-                "go-template='{{.data.elastic | base64decode}}'",
-            ]
-        )
-        if es_password:
-            es_password = es_password.decode("utf-8")[1:-1]
-            break
-        else:
-            num_retries += 1
-            time.sleep(2)
-    if not es_password:
-        raise Exception(error_msg.decode("utf-8"))
-
     config = {
         'JINA_VERSION': jina_version,
         'ENCODER_NAME': f'jinahub+docker://{encoder_uses}',
-        'HOSTS': f"https://elastic:{es_password}@quickstart-es-http.default:9200",
         'N_DIM': finetune_settings.finetune_layer_size
         if finetune_settings.perform_finetuning
         else pre_trained_embedding_size,

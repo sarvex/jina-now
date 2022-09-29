@@ -1,12 +1,17 @@
 import json
 import os
 from typing import Dict, Optional, List
+import time
 
+import finetuner
 from docarray import DocumentArray, Document
 
 from now.finetuning.run_finetuning import finetune
 from now.finetuning.settings import parse_finetune_settings, FinetuneSettings
 from now_common.preprocess import preprocess_nested_docs, preprocess_text
+from now_common.utils import get_indexer_config, MAX_RETRIES
+from now.deployment.deployment import cmd
+from jina import __version__ as jina_version
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import Apps, Modalities, NOW_PREPROCESSOR_VERSION, ModelNames
@@ -109,7 +114,7 @@ class TextToTextAndImage(JinaNOWApp):
     ) -> Dict:
         task_config = self._create_task_config(user_input, dataset[0])
         data = DataBuilder(dataset=dataset, config=task_config).build()
-        env_dict = {}
+        env_dict = {'N_DIM': []}
         for encoder_data, encoder_type in data:
             finetune_settings = self._construct_finetune_settings(
                 user_input=user_input,
@@ -128,8 +133,10 @@ class TextToTextAndImage(JinaNOWApp):
             env_dict['JINA_TOKEN'] = token
             if finetune_settings.model_name == ModelNames.CLIP:
                 env_dict['CLIP_ARTIFACT'] = artifact_id
+                env_dict['N_DIM'].append(512)
             elif finetune_settings.model_name == ModelNames.SBERT:
                 env_dict['SBERT_ARTIFACT'] = artifact_id
+                env_dict['N_DIM'].append(768)
             else:
                 print(f'{self.app_name} only expects CLIP or SBERT models.')
                 raise
@@ -138,6 +145,42 @@ class TextToTextAndImage(JinaNOWApp):
             'PREPROCESSOR_NAME'
         ] = f'jinahub+docker://NOWPreprocessor/v{NOW_PREPROCESSOR_VERSION}'
         env_dict['APP'] = self.app_name
+
+        indexer_config = get_indexer_config(len(dataset), elastic=True)
+        # get elastic host
+        num_retries = 0
+        es_password, error_msg = '', b''
+        while num_retries < MAX_RETRIES:
+            es_password, error_msg = cmd(
+                [
+                    "kubectl",
+                    "get",
+                    "secret",
+                    "quickstart-es-elastic-user",
+                    "-o",
+                    "go-template='{{.data.elastic | base64decode}}'",
+                ]
+            )
+            if es_password:
+                es_password = es_password.decode("utf-8")[1:-1]
+                break
+            else:
+                num_retries += 1
+                time.sleep(2)
+        if not es_password:
+            raise Exception(error_msg.decode("utf-8"))
+        env_dict['HOSTS'] = f"https://elastic:{es_password}@quickstart-es-http.default:9200",
+        env_dict['INDEXER_NAME'] = f"jinahub+docker://{indexer_config['indexer_uses']}",
+        env_dict['INDEXER_MEM'] = indexer_config['indexer_resources']['INDEXER_MEM'],
+        env_dict['JINA_VERSION'] = jina_version
+        # retention days
+        if 'NOW_CI_RUN' in os.environ:
+            env_dict[
+                'RETENTION_DAYS'
+            ] = 0  # JCloud will delete after 24hrs of being idle if not deleted in CI
+        else:
+            env_dict['RETENTION_DAYS'] = 7  # for user deployment set it to 30 days
+
         self.set_flow_yaml()
 
         return env_dict
