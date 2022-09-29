@@ -56,7 +56,7 @@ def process_query(
 
 
 def get_jina_client(host: str, port: int) -> Client:
-    if 'wolf.jina.ai' in host:
+    if 'wolf.jina.ai' in host or 'nowrun.jina.ai' in host:
         return Client(host=host)
     else:
         return Client(host=host, port=port)
