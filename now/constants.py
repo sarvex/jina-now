@@ -64,6 +64,4 @@ EXTERNAL_CLIP_HOST = 'encoderclip-bh-5f4efaff13.wolf.jina.ai'
 
 PREFETCH_NR = 10
 
-JC_SECRET = '~/.cache/jina-now/wolf.json'
-
 SURVEY_LINK = 'https://10sw1tcpld4.typeform.com/to/VTAyYRpR?utm_source=cli'
