@@ -5,6 +5,7 @@ import time
 
 import finetuner
 from docarray import DocumentArray, Document
+import hubble
 
 from now.finetuning.run_finetuning import finetune
 from now.finetuning.settings import parse_finetune_settings, FinetuneSettings
@@ -109,6 +110,7 @@ class TextToTextAndImage(JinaNOWApp):
         else:
             return preprocess_text(da=da, split_by_sentences=False)
 
+    @hubble.login_required
     def setup(
         self, dataset: DocumentArray, user_input: UserInput, kubectl_path
     ) -> Dict:
@@ -169,9 +171,13 @@ class TextToTextAndImage(JinaNOWApp):
                 time.sleep(2)
         if not es_password:
             raise Exception(error_msg.decode("utf-8"))
-        env_dict['HOSTS'] = f"https://elastic:{es_password}@quickstart-es-http.default:9200",
-        env_dict['INDEXER_NAME'] = f"jinahub+docker://{indexer_config['indexer_uses']}",
-        env_dict['INDEXER_MEM'] = indexer_config['indexer_resources']['INDEXER_MEM'],
+        env_dict['HOSTS'] = (
+            f"https://elastic:{es_password}@quickstart-es-http.default:9200",
+        )
+        env_dict['INDEXER_NAME'] = (
+            f"jinahub+docker://{indexer_config['indexer_uses']}",
+        )
+        env_dict['INDEXER_MEM'] = (indexer_config['indexer_resources']['INDEXER_MEM'],)
         env_dict['JINA_VERSION'] = jina_version
         # retention days
         if 'NOW_CI_RUN' in os.environ:
