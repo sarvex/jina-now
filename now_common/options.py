@@ -120,7 +120,6 @@ DOCARRAY_NAME = DialogOptions(
     prompt_message='Please enter your DocArray name:',
     prompt_type='input',
     depends_on=DATASET_TYPE,
-    is_terminal_command=True,
     conditional_check=lambda user_input: user_input.dataset_type
     == DatasetTypes.DOCARRAY,
 )

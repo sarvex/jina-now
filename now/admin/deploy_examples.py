@@ -7,7 +7,6 @@ from now.constants import Apps, DatasetTypes
 from now.demo_data import DemoDatasetNames
 
 os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
-app = Apps.TEXT_TO_IMAGE
 
 params = [
     (Apps.TEXT_TO_IMAGE, DemoDatasetNames.BEST_ARTWORKS),
