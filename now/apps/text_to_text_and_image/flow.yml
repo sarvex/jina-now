@@ -21,7 +21,7 @@ executors:
   env:
     JINA_LOG_LEVEL: DEBUG
 - name: sbert_encoder
-  uses:
+  uses: jinahub+docker://FinetunerExecutor
   uses_requests:
     '/query_text': encode
     '/index_text': encode
