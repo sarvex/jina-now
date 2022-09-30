@@ -1,12 +1,12 @@
-# NOWQdrantIndexer6
+# NewExecutorNotTakenBeforeTest
 
-`NOWQdrantIndexer6` indexes Documents into a `DocumentArray`  using `storage='qdrant'`. Underneath, the `DocumentArray`  uses 
+`NewExecutorNotTakenBeforeTest` indexes Documents into a `DocumentArray`  using `storage='qdrant'`. Underneath, the `DocumentArray`  uses 
  [qdrant](https://github.com/qdrant/qdrant) to store and search Documents efficiently. 
 The indexer relies on `DocumentArray` as a client for Qdrant, you can read more about the integration here: 
 https://docarray.jina.ai/advanced/document-store/qdrant/
 
 ## Setup
-`NOWQdrantIndexer6` requires a running Qdrant server. Make sure a server is up and running and your indexer is configured 
+`NewExecutorNotTakenBeforeTest` requires a running Qdrant server. Make sure a server is up and running and your indexer is configured 
 to use it before starting to index documents. For quick testing, you can run a containerized version locally using 
 docker-compose :
 
@@ -15,7 +15,7 @@ docker-compose -f tests/docker-compose.yml up -d
 ```
 
 
-Note that if you run a `Qdrant` service locally and try to run the `NOWQdrantIndexer6` via `docker`, you 
+Note that if you run a `Qdrant` service locally and try to run the `NewExecutorNotTakenBeforeTest` via `docker`, you 
 have to specify `'host': 'host.docker.internal'` instead of `localhost`, otherwise the client will not be 
 able to reach the service from within the container.
 
@@ -29,7 +29,7 @@ from docarray import Document
 import numpy as np
 	
 f = Flow().add(
-    uses='jinahub+docker://NOWQdrantIndexer6',
+    uses='jinahub+docker://NewExecutorNotTakenBeforeTest',
     uses_with={
         'host': 'localhost',
         'port': 6333,
@@ -49,7 +49,7 @@ with f:
 from jina import Flow
 from docarray import Document
 	
-f = Flow().add(uses='jinahub://NOWQdrantIndexer6',
+f = Flow().add(uses='jinahub://NewExecutorNotTakenBeforeTest',
     uses_with={
         'host': 'localhost',
         'port': 6333,
@@ -85,7 +85,7 @@ from jina import Flow
 from docarray import Document
 
 f = Flow().add(
-         uses='jinahub://NOWQdrantIndexer6',
+         uses='jinahub://NewExecutorNotTakenBeforeTest',
          uses_with={'collection_name': 'test', 'n_dim': 2},
      )
 
@@ -108,14 +108,14 @@ print('The ID of the best match of [1,1] is: ', docs[0].matches[0].id)
 ```
 
 ### Using filtering
-To do filtering with the NOWQdrantIndexer6 you should first define columns and precise the dimension of your embedding space.
+To do filtering with the NewExecutorNotTakenBeforeTest you should first define columns and precise the dimension of your embedding space.
 For instance :
 
 ```python
 from jina import Flow
 
 f = Flow().add(
-    uses='jinahub+docker://NOWQdrantIndexer6',
+    uses='jinahub+docker://NewExecutorNotTakenBeforeTest',
     uses_with={
         'collection_name': 'test',
         'n_dim': 3,

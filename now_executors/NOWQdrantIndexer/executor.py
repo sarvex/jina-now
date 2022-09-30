@@ -9,13 +9,13 @@ import yaml
 from docarray import DocumentArray
 from jina.logging.logger import JinaLogger
 from now_executors import NOWAuthExecutor as Executor
-from now_executors import SecurityLevel, secure_request
+from now_executors.NOWAuthExecutor.executor import SecurityLevel, secure_request
 
 QDRANT_CONFIG_PATH = '/qdrant/config/production.yaml'
 
 
-class NOWQdrantIndexer6(Executor):
-    """NOWQdrantIndexer6 indexes Documents into a Qdrant server using DocumentArray  with `storage='qdrant'`"""
+class NOWQdrantIndexer(Executor):
+    """NewExecutorNotTakenBeforeTest indexes Documents into a Qdrant server using DocumentArray  with `storage='qdrant'`"""
 
     def __init__(
         self,
@@ -99,7 +99,10 @@ class NOWQdrantIndexer6(Executor):
             d.blob = None
         # qdrant needs a list of values when filtering on sentences
         for d in docs:
-            d.tags['title'] = d.tags['title'].lower().split()
+            if 'title' in d.tags:
+                d.tags['title'] = d.tags['title'].lower().split()
+            else:
+                d.tags['title'] = []
         self._index.extend(docs)
         #  prevent sending the data back by returning an empty DocumentArray
         return DocumentArray()
