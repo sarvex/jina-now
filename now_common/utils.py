@@ -171,7 +171,7 @@ def get_indexer_config(
     import pathlib
 
     if elastic:
-        config = {'indexer_uses': f'ElasticIndexer/v{NOW_ELASTIC_INDEXER_VERSION}'}
+        config = {'indexer_uses': f'ElasticIndexer/latest'}
         cur_dir = pathlib.Path(__file__).parent.resolve()
         _, error = cmd(
             'kubectl create -f https://download.elastic.co/downloads/eck/2.4.0/crds.yaml'
