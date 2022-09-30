@@ -15,7 +15,13 @@ from now.deployment.deployment import cmd
 from jina import __version__ as jina_version
 
 from now.apps.base.app import JinaNOWApp
-from now.constants import Apps, Modalities, NOW_PREPROCESSOR_VERSION, NOW_ELASTIC_INDEXER_VERSION, ModelNames
+from now.constants import (
+    Apps,
+    Modalities,
+    NOW_PREPROCESSOR_VERSION,
+    NOW_ELASTIC_INDEXER_VERSION,
+    ModelNames,
+)
 from now.finetuning.data_builder import DataBuilder
 from now.now_dataclasses import UserInput, DialogOptions, Task
 
@@ -174,7 +180,9 @@ class TextToTextAndImage(JinaNOWApp):
         env_dict['HOSTS'] = (
             f"https://elastic:{es_password}@quickstart-es-http.default:9200",
         )
-        env_dict['INDEXER_NAME'] = (f"jinahub+docker://ElasticIndexer/v{NOW_ELASTIC_INDEXER_VERSION}",)
+        env_dict['INDEXER_NAME'] = (
+            f"jinahub+docker://ElasticIndexer/v{NOW_ELASTIC_INDEXER_VERSION}",
+        )
         env_dict['INDEXER_MEM'] = (indexer_config['indexer_resources']['INDEXER_MEM'],)
         env_dict['JINA_VERSION'] = jina_version
         # retention days
