@@ -174,9 +174,7 @@ class TextToTextAndImage(JinaNOWApp):
         env_dict['HOSTS'] = (
             f"https://elastic:{es_password}@quickstart-es-http.default:9200",
         )
-        env_dict['INDEXER_NAME'] = (
-            f"jinahub+docker://ElasticIndexer",
-        )
+        env_dict['INDEXER_NAME'] = (f"jinahub+docker://ElasticIndexer",)
         env_dict['INDEXER_MEM'] = (indexer_config['indexer_resources']['INDEXER_MEM'],)
         env_dict['JINA_VERSION'] = jina_version
         # retention days
