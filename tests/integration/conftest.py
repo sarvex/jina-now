@@ -3,6 +3,7 @@ import os
 from time import sleep
 
 import pytest
+import hubble
 from pytest_mock import MockerFixture
 from urllib3.exceptions import InsecureRequestWarning
 from warnings import filterwarnings, catch_warnings
@@ -33,6 +34,12 @@ class HubbleAuthPatch:
 
 @pytest.fixture
 def with_hubble_login_patch(mocker: MockerFixture) -> None:
+    # WOLF token is required for deployment, but not set locally (only in the CI)
+    # If you are running this locally, the WOLF_TOKEN env variable will be set using hubble
+    # Otherwise, it will be set in the CI.
+    if 'WOLF_TOKEN' not in os.environ:
+        hubble.login()
+        os.environ['WOLF_TOKEN'] = hubble.Auth.get_auth_token()
     mocker.patch(target='finetuner.client.base.hubble.Auth', new=HubbleAuthPatch)
 
 
