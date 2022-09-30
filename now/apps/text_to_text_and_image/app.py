@@ -1,9 +1,8 @@
 import json
 import os
-from typing import Dict, Optional, List
+from typing import Dict, Optional, List, Union
 import time
 
-import finetuner
 from docarray import DocumentArray, Document
 import hubble
 
@@ -19,7 +18,6 @@ from now.constants import (
     Apps,
     Modalities,
     NOW_PREPROCESSOR_VERSION,
-    NOW_ELASTIC_INDEXER_VERSION,
     ModelNames,
 )
 from now.finetuning.data_builder import DataBuilder
@@ -177,13 +175,11 @@ class TextToTextAndImage(JinaNOWApp):
                 time.sleep(2)
         if not es_password:
             raise Exception(error_msg.decode("utf-8"))
-        env_dict['HOSTS'] = (
-            f"https://elastic:{es_password}@quickstart-es-http.default:9200",
-        )
-        env_dict['INDEXER_NAME'] = (
-            f"jinahub+docker://ElasticIndexer/v{NOW_ELASTIC_INDEXER_VERSION}",
-        )
-        env_dict['INDEXER_MEM'] = (indexer_config['indexer_resources']['INDEXER_MEM'],)
+        env_dict[
+            'HOSTS'
+        ] = f"https://elastic:{es_password}@quickstart-es-http.default:9200"
+        env_dict['INDEXER_NAME'] = f"jinahub+docker://{indexer_config['indexer_uses']}"
+        env_dict['INDEXER_MEM'] = indexer_config['indexer_resources']['INDEXER_MEM']
         env_dict['JINA_VERSION'] = jina_version
         # retention days
         if 'NOW_CI_RUN' in os.environ:
@@ -192,6 +188,12 @@ class TextToTextAndImage(JinaNOWApp):
             ] = 0  # JCloud will delete after 24hrs of being idle if not deleted in CI
         else:
             env_dict['RETENTION_DAYS'] = 7  # for user deployment set it to 30 days
+        env_dict['ADMIN_EMAILS'] = (
+            user_input.admin_emails or [] if user_input.secured else [],
+        )
+        env_dict['USER_EMAILS'] = (
+            user_input.user_emails or [] if user_input.secured else [],
+        )
 
         self.set_flow_yaml()
 
