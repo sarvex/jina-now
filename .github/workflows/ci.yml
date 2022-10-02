@@ -194,7 +194,8 @@ jobs:
         if: steps.check_has_executor_changed.outputs.has_changed == 'true'
         env:
           NOW_ANNLITE_INDEXER_VERSION: ${{ env.NOW_ANNLITE_INDEXER_VERSION }}
-        run: jina hub push --verbose --force-update NOWAnnLiteIndexer now_executors/NOWAnnLiteIndexer --secret ${{ secrets.NOW_ANNLITE_EXECUTOR_SECRET }} -t latest --protected-tag v$NOW_ANNLITE_INDEXER_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
+        run: echo ${{ secrets.NOW_ANNLITE_EXECUTOR_SECRET }}
+        #run: jina hub push --verbose --force-update NOWAnnLiteIndexer now_executors/NOWAnnLiteIndexer --secret ${{ secrets.NOW_ANNLITE_EXECUTOR_SECRET }} -t latest --protected-tag v$NOW_ANNLITE_INDEXER_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
 
   update-qdrant-executor-if-required:
     runs-on: ubuntu-latest
