@@ -14,8 +14,8 @@ from now_executors.NOWAuthExecutor.executor import SecurityLevel, secure_request
 QDRANT_CONFIG_PATH = '/qdrant/config/production.yaml'
 
 
-class NOWQdrantIndexer(Executor):
-    """NewExecutorNotTakenBeforeTest indexes Documents into a Qdrant server using DocumentArray  with `storage='qdrant'`"""
+class NOWQdrantIndexer15(Executor):
+    """NOWQdrantIndexer15 indexes Documents into a Qdrant server using DocumentArray  with `storage='qdrant'`"""
 
     def __init__(
         self,
@@ -51,6 +51,7 @@ class NOWQdrantIndexer(Executor):
         :param columns: precise columns for the Indexer (used for filtering).
         """
         super().__init__(**kwargs)
+        self.traversal_paths = traversal_paths
 
         if self.workspace:
             # set new storage to network file system location in WOLF
@@ -121,7 +122,7 @@ class NOWQdrantIndexer(Executor):
         :param kwargs: additional kwargs for the endpoint
 
         """
-        docs = docs["@c"]
+        docs = docs[self.traversal_paths[0]]
 
         docs_with_matches = self.create_matches(docs)
 

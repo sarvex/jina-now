@@ -1,8 +1,8 @@
-jtype: NOWQdrantIndexer
+jtype: NOWQdrantIndexer15
 py_modules:
   - executor.py
 metas:
-  name: NOWQdrantIndexer
+  name: NOWQdrantIndexer15
   description:
   url:
   keywords: []

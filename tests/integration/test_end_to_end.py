@@ -232,16 +232,14 @@ def get_search_request_body(app, dataset, deployment_type, kwargs, test_search_i
     return request_body
 
 
-def get_default_request_body(deployment_type, secured):
+def get_default_request_body(deployment_type, secured, flow_id):
     request_body = {}
     if deployment_type == 'local':
         request_body['host'] = 'gateway'
         request_body['port'] = 8080
     elif deployment_type == 'remote':
         print(f"Getting gateway from flow_details")
-        with open(user(JC_SECRET), 'r') as fp:
-            flow_details = json.load(fp)
-        request_body['host'] = flow_details['gateway']
+        request_body['host'] = f'grpcs://nowapi-{flow_id}.wolf.jina.ai'
     if secured:
         if 'WOLF_TOKEN' in os.environ:
             os.environ['JINA_AUTH_TOKEN'] = os.environ['WOLF_TOKEN']

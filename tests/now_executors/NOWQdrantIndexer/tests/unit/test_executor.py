@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from docarray import Document, DocumentArray
 from docarray.array.qdrant import DocumentArrayQdrant
-from executor import NewExecutorNotTakenBeforeTest
+from executor import NOWQdrantIndexer15
 from helper import numeric_operators_qdrant
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
@@ -44,7 +44,7 @@ def update_docs():
 
 
 def test_init(docker_compose):
-    qindex = NewExecutorNotTakenBeforeTest(collection_name='test')
+    qindex = NOWQdrantIndexer15(collection_name='test')
 
     assert isinstance(qindex._index, DocumentArrayQdrant)
     assert qindex._index.collection_name == 'test'
@@ -52,14 +52,14 @@ def test_init(docker_compose):
 
 
 def test_index(docs, docker_compose):
-    qindex = NewExecutorNotTakenBeforeTest(collection_name='test')
+    qindex = NOWQdrantIndexer15(collection_name='test')
     qindex.index(docs)
 
     assert len(qindex._index) == len(docs)
 
 
 def test_delete(docs, docker_compose):
-    qindex = NewExecutorNotTakenBeforeTest(collection_name='test')
+    qindex = NOWQdrantIndexer15(collection_name='test')
     qindex.index(docs)
 
     ids = ['doc1', 'doc2', 'doc3']
@@ -71,7 +71,7 @@ def test_delete(docs, docker_compose):
 
 def test_update(docs, update_docs, docker_compose):
     # index docs first
-    qindex = NewExecutorNotTakenBeforeTest(collection_name='test')
+    qindex = NOWQdrantIndexer15(collection_name='test')
     qindex.index(docs)
     assert_document_arrays_equal(qindex._index, docs)
 
@@ -82,9 +82,7 @@ def test_update(docs, update_docs, docker_compose):
 
 
 def test_fill_embeddings(docker_compose):
-    qindex = NewExecutorNotTakenBeforeTest(
-        collection_name='test', distance='euclidean', n_dim=1
-    )
+    qindex = NOWQdrantIndexer15(collection_name='test', distance='euclidean', n_dim=1)
 
     qindex.index(DocumentArray([Document(id='a', embedding=np.array([1]))]))
     search_docs = DocumentArray([Document(id='a')])
@@ -104,7 +102,7 @@ def test_filter(docker_compose):
     docs[2].tags['y'] = 0.6
     docs[3].tags['x'] = 0.8
 
-    qindex = NewExecutorNotTakenBeforeTest(collection_name='test')
+    qindex = NOWQdrantIndexer15(collection_name='test')
     qindex.index(docs)
 
     result = qindex.filter(parameters={'query': {'text': {'$eq': 'hello'}}})
@@ -117,13 +115,9 @@ def test_filter(docker_compose):
 
 
 def test_persistence(docs, docker_compose):
-    qindex1 = NewExecutorNotTakenBeforeTest(
-        collection_name='test', distance='euclidean'
-    )
+    qindex1 = NOWQdrantIndexer15(collection_name='test', distance='euclidean')
     qindex1.index(docs)
-    qindex2 = NewExecutorNotTakenBeforeTest(
-        collection_name='test', distance='euclidean'
-    )
+    qindex2 = NOWQdrantIndexer15(collection_name='test', distance='euclidean')
     assert_document_arrays_equal(qindex2._index, docs)
 
 
@@ -133,7 +127,7 @@ def test_persistence(docs, docker_compose):
 )
 def test_search(metric, metric_name, docs, docker_compose):
     # test general/normal case
-    indexer = NewExecutorNotTakenBeforeTest(collection_name='test', distance=metric)
+    indexer = NOWQdrantIndexer15(collection_name='test', distance=metric)
     indexer.index(docs)
     query = DocumentArray([Document(embedding=np.random.rand(128)) for _ in range(10)])
     indexer.search(query)
@@ -144,7 +138,7 @@ def test_search(metric, metric_name, docs, docker_compose):
 
 
 def test_clear(docs, docker_compose):
-    indexer = NewExecutorNotTakenBeforeTest(collection_name='test')
+    indexer = NOWQdrantIndexer15(collection_name='test')
     indexer.index(docs)
     assert len(indexer._index) == 6
     indexer.clear()
@@ -153,7 +147,7 @@ def test_clear(docs, docker_compose):
 
 def test_columns(docker_compose):
     n_dim = 3
-    indexer = NewExecutorNotTakenBeforeTest(
+    indexer = NOWQdrantIndexer15(
         collection_name='test', n_dim=n_dim, columns=[('price', 'float')]
     )
 
@@ -170,7 +164,7 @@ def test_columns(docker_compose):
 @pytest.mark.parametrize('operator', list(numeric_operators_qdrant.keys()))
 def test_filtering(docker_compose, operator: str):
     n_dim = 3
-    indexer = NewExecutorNotTakenBeforeTest(
+    indexer = NOWQdrantIndexer15(
         collection_name='test', n_dim=n_dim, columns=[('price', 'int')]
     )
 

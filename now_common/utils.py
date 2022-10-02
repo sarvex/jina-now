@@ -161,7 +161,7 @@ def get_indexer_config(num_indexed_samples: int) -> Dict:
 
     :param num_indexed_samples: number of samples which will be indexed; should incl. chunks for e.g. text-to-video app
     """
-    config = {'indexer_uses': f'QdrantIndexer4/{NOW_QDRANT_INDEXER_VERSION}'}
+    config = {'indexer_uses': f'NOWQdrantIndexer15/{NOW_QDRANT_INDEXER_VERSION}'}
 
     threshold1 = 250_000
     if num_indexed_samples <= threshold1:
