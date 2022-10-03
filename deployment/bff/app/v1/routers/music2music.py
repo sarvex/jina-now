@@ -65,4 +65,4 @@ def search(data: NowMusicSearchRequestModel):
         endpoint='/search',
     )
 
-    return docs.to_dict()
+    return docs[0].matches.to_dict()

@@ -55,7 +55,14 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
             da = da[:300]
         else:
             da = da[:300]
-    return da
+    if (
+        user_input.data == DemoDatasets.MUSIC_GENRES_MIX
+        or user_input.data == DemoDatasets.MUSIC_GENRES_ROCK
+    ):
+        for doc in da[:100]:
+            if 'genre_tags' in doc.tags and isinstance(doc.tags['genre_tags'], list):
+                doc.tags['genre_tags'] = ' '.join(doc.tags['genre_tags'])
+    return da[:100]
 
 
 def _open_json(path: str):
