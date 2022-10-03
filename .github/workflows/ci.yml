@@ -238,8 +238,8 @@ jobs:
         if: steps.check_has_executor_changed.outputs.has_changed == 'true'
         env:
           NOW_QDRANT_INDEXER_VERSION: ${{ env.NOW_QDRANT_INDEXER_VERSION }}
-        # run: jina hub push --verbose --force-update NOWQdrantIndexer now_executors/NOWQdrantIndexer --secret ${{ secrets.NOW_QDRANT_EXECUTOR_SECRET }} -t latest --protected-tag v$NOW_QDRANT_INDEXER_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
-        run: echo ${{ secrets.NOW_QDRANT_EXECUTOR_SECRET }}
+        run: jina auth logout && jina hub push --verbose --force-update NOWQdrantIndexer now_executors/NOWQdrantIndexer --secret ${{ secrets.NOW_QDRANT_EXECUTOR_SECRET }} -t latest --protected-tag v$NOW_QDRANT_INDEXER_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
+#        run: echo ${{ secrets.NOW_QDRANT_EXECUTOR_SECRET }}
   update-bff-playground-if-required:
     runs-on: ubuntu-latest
     needs: [commit-lint, lint-flake-8, check-black]
