@@ -61,7 +61,7 @@ def get_app_instance():
         Root path welcome message.
         """
         return (
-            f'{TITLE} v{__version__} 🚀 {DESCRIPTION} ✨ '
+            f'{TITLE} {__version__} 🚀 {DESCRIPTION} ✨ '
             f'author: {AUTHOR} email: {EMAIL} 📄  '
             'Check out /docs or /redoc for the API documentation!'
         )

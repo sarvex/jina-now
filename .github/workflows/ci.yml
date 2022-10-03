@@ -120,7 +120,7 @@ jobs:
         env:
           NOW_PREPROCESSOR_VERSION: ${{ env.NOW_PREPROCESSOR_VERSION }}
         run: |
-          if jina hub pull jinahub+docker://vlxgoxlv/v$NOW_PREPROCESSOR_VERSION; then
+          if jina hub pull jinahub+docker://vlxgoxlv/$NOW_PREPROCESSOR_VERSION; then
             echo "NOW preprocessor version is used already. Please update the tag"
             exit 1
           else
@@ -140,7 +140,7 @@ jobs:
         if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
         env:
           NOW_PREPROCESSOR_VERSION: ${{ env.NOW_PREPROCESSOR_VERSION }}
-        run: JINA_AUTH_TOKEN=${{ secrets.NOW_PREPROCESSOR_JCLOUD_TOKEN }} jina hub push --verbose --force-update NOWPreprocessor now_executors/NOWPreprocessor/. -t latest --protected-tag v$NOW_PREPROCESSOR_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
+        run: JINA_AUTH_TOKEN=${{ secrets.NOW_PREPROCESSOR_JCLOUD_TOKEN }} jina hub push --verbose --force-update NOWPreprocessor now_executors/NOWPreprocessor/. -t latest --protected-tag $NOW_PREPROCESSOR_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
 
   update-annlite-executor-if-required:
     runs-on: ubuntu-latest
@@ -174,7 +174,7 @@ jobs:
         env:
           NOW_ANNLITE_INDEXER_VERSION: ${{ env.NOW_ANNLITE_INDEXER_VERSION }}
         run: |
-          if jina hub pull jinahub+docker://tiv9x4mm/v$NOW_ANNLITE_INDEXER_VERSION; then
+          if jina hub pull jinahub+docker://tiv9x4mm/$NOW_ANNLITE_INDEXER_VERSION; then
             echo "NOW AnnLite Indexer version is used already. Please update the tag"
             exit 1
           else
@@ -194,7 +194,7 @@ jobs:
         if: steps.check_has_executor_changed.outputs.has_changed == 'true'
         env:
           NOW_ANNLITE_INDEXER_VERSION: ${{ env.NOW_ANNLITE_INDEXER_VERSION }}
-        run: jina hub push --verbose --force-update NOWAnnLiteIndexer now_executors/NOWAnnLiteIndexer --secret ${{ secrets.NOW_ANNLITE_EXECUTOR_SECRET }} -t latest --protected-tag v$NOW_ANNLITE_INDEXER_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
+        run: jina hub push --verbose --force-update NOWAnnLiteIndexer now_executors/NOWAnnLiteIndexer --secret ${{ secrets.NOW_ANNLITE_EXECUTOR_SECRET }} -t latest --protected-tag $NOW_ANNLITE_INDEXER_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
 
   update-bff-playground-if-required:
     runs-on: ubuntu-latest

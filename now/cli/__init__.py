@@ -114,7 +114,7 @@ def _get_kubectl_path() -> str:
 def cli(args=None):
     """The main entrypoint of the CLI"""
     if len(sys.argv) != 1 and not ('-h' in sys.argv[1:] or '--help' in sys.argv[1:]):
-        print(f'Initialising Jina NOW v{version} ...')
+        print(f'Initialising Jina NOW {version} ...')
 
     if not args:
         args = _get_run_args()

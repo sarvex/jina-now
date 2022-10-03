@@ -43,7 +43,7 @@ function pub_pypi {
 function git_commit {
     git config --local user.email "dev-bot@jina.ai"
     git config --local user.name "Jina Dev Bot"
-    git tag "v$RELEASE_VER" -m "$(cat ./CHANGELOG.tmp)"
+    git tag "$RELEASE_VER" -m "$(cat ./CHANGELOG.tmp)"
     git add $INIT_FILE ./CHANGELOG.md
     git commit -m "chore(version): the next version will be $NEXT_VER" -m "build($RELEASE_ACTOR): $RELEASE_REASON"
 }
