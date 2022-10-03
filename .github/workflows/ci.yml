@@ -228,7 +228,7 @@ jobs:
         env:
           NOW_QDRANT_INDEXER_VERSION: ${{ env.NOW_QDRANT_INDEXER_VERSION }}
         run: |
-          if jina hub pull jinahub+docker://tiv9x4mm/v$NOW_QDRANT_INDEXER_VERSION; then
+          if jina hub pull jinahub+docker://2b1opoje/$NOW_QDRANT_INDEXER_VERSION; then
             echo "NOW Qdrant Indexer version is used already. Please update the tag"
             exit 1
           else
