@@ -131,13 +131,6 @@ def test_token_exists():
             Modalities.MUSIC,
             Modalities.MUSIC,
             DemoDatasets.MUSIC_GENRES_ROCK,
-            'local',
-        ),
-        (
-            Apps.MUSIC_TO_MUSIC,
-            Modalities.MUSIC,
-            Modalities.MUSIC,
-            DemoDatasets.MUSIC_GENRES_ROCK,
             'remote',
         ),
     ],
