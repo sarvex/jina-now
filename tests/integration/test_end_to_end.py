@@ -1,20 +1,19 @@
 import base64
 import json
 import os
+import tempfile
 import time
 from argparse import Namespace
-from os.path import expanduser as user
 
-import hubble
 import pytest
 import requests
 from now_common.options import NEW_CLUSTER
 
+from now.admin.utils import get_default_request_body
 from now.cli import _get_kind_path, _get_kubectl_path, cli
 from now.cloud_manager import create_local_cluster
-from now.constants import JC_SECRET, Apps, DatasetTypes, DemoDatasets, Modalities
+from now.constants import Apps, DatasetTypes, DemoDatasets, Modalities
 from now.deployment.deployment import cmd, list_all_wolf, terminate_wolf
-from now.run_all_k8s import get_remote_flow_details
 
 
 @pytest.fixture
@@ -27,40 +26,62 @@ def test_search_image(resources_folder_path: str):
     return img_query
 
 
+@pytest.fixture
+def test_search_music(resources_folder_path: str):
+    with open(
+        os.path.join(
+            resources_folder_path,
+            'music',
+            '0ac463f952880e622bc15962f4f75ea51a1861a1.mp3',
+        ),
+        'rb',
+    ) as f:
+        binary = f.read()
+        music_query = base64.b64encode(binary).decode('utf-8')
+    return music_query
+
+
 @pytest.fixture()
 def cleanup(deployment_type, dataset):
+    print('start cleanup')
     start = time.time()
-    yield
-    try:
-        if deployment_type == 'remote':
-            flow_details = get_remote_flow_details()
-            if 'flow_id' not in flow_details:
-                print('nothing to clean up')
-                return
-            flow_id = flow_details['flow_id']
-            terminate_wolf(flow_id)
-        else:
-            kwargs = {
-                'deployment_type': deployment_type,
-                'now': 'stop',
-                'cluster': 'kind-jina-now',
-                'delete-cluster': True,
-            }
-            kwargs = Namespace(**kwargs)
-            cli(args=kwargs)
-    except Exception as e:
-        print('no clean up')
-        print(e)
-        return
-    print('cleaned up')
-    now = time.time() - start
-    mins = int(now / 60)
-    secs = int(now % 60)
-    print(50 * '#')
-    print(
-        f'Time taken to execute `{deployment_type}` deployment with dataset `{dataset}`: {mins}m {secs}s'
-    )
-    print(50 * '#')
+    with tempfile.TemporaryDirectory() as tmpdir:
+        yield tmpdir
+        try:
+            if deployment_type == 'remote':
+                flow_details = {}
+                with open(f'{tmpdir}/flow_details.json', 'r') as f:
+                    flow_details = json.load(f)
+                if 'host' not in flow_details:
+                    print('nothing to clean up')
+                    return
+                host = flow_details['host']
+                flow_id = host.replace('grpcs://nowapi-', '').replace(
+                    '.wolf.jina.ai', ''
+                )
+                terminate_wolf(flow_id)
+            else:
+                kwargs = {
+                    'deployment_type': deployment_type,
+                    'now': 'stop',
+                    'cluster': 'kind-jina-now',
+                    'delete-cluster': True,
+                }
+                kwargs = Namespace(**kwargs)
+                cli(args=kwargs)
+        except Exception as e:
+            print('no clean up')
+            print(e)
+            return
+        print('cleaned up')
+        now = time.time() - start
+        mins = int(now / 60)
+        secs = int(now % 60)
+        print(50 * '#')
+        print(
+            f'Time taken to execute `{deployment_type}` deployment with dataset `{dataset}`: {mins}m {secs}s'
+        )
+        print(50 * '#')
 
 
 # def test_token_exists():
@@ -112,6 +133,13 @@ def cleanup(deployment_type, dataset):
         #     DemoDatasets.ES_ONLINE_SHOP_50,
         #     'local',
         # )
+        # (
+        #    Apps.MUSIC_TO_MUSIC,
+        #    Modalities.MUSIC,
+        #    Modalities.MUSIC,
+        #    DemoDatasets.MUSIC_GENRES_ROCK,
+        #    'remote',
+        # ),
     ],
 )
 @pytest.mark.timeout(60 * 30)
@@ -120,6 +148,7 @@ def test_backend_demo_data(
     dataset: str,
     deployment_type: str,
     test_search_image,
+    test_search_music,
     cleanup,
     input_modality,
     output_modality,
@@ -158,7 +187,15 @@ def test_backend_demo_data(
         kwargs,
         output_modality,
         test_search_image,
+        test_search_music,
+        response,
     )
+
+    # Dump the flow details from response host to a tmp file if the deployment is remote
+    if deployment_type == 'remote':
+        flow_details = {'host': response['host']}
+        with open(f'{cleanup}/flow_details.json', 'w') as f:
+            json.dump(flow_details, f)
 
 
 def assert_search(search_url, request_body):
@@ -180,18 +217,29 @@ def assert_deployment_queries(
     kwargs,
     output_modality,
     test_search_image,
+    test_search_music,
+    response,
 ):
     url = f'http://localhost:30090/api/v1'
+    host = response.get('host')
     # normal case
     request_body = get_search_request_body(
-        app, dataset, deployment_type, kwargs, test_search_image
+        app,
+        dataset,
+        deployment_type,
+        kwargs,
+        test_search_image,
+        test_search_music,
+        host,
     )
     search_url = f'{url}/{input_modality}-to-{output_modality}/search'
     assert_search(search_url, request_body)
 
     if kwargs.secured:
         # test add email
-        request_body = get_default_request_body(deployment_type, kwargs.secured)
+        request_body = get_default_request_body(
+            deployment_type, kwargs.secured, remote_host=host
+        )
         request_body['user_emails'] = ['florian.hoenicke@jina.ai']
         response = requests.post(
             f'{url}/admin/updateUserEmails',
@@ -212,7 +260,13 @@ def assert_deployment_queries(
             raise Exception(f'Response status is {response.status_code}')
         # the same search should work now
         request_body = get_search_request_body(
-            app, dataset, deployment_type, kwargs, test_search_image
+            app,
+            dataset,
+            deployment_type,
+            kwargs,
+            test_search_image,
+            test_search_music,
+            host,
         )
         assert_search(search_url, request_body)
         # search with invalid api key
@@ -222,12 +276,18 @@ def assert_deployment_queries(
             assert_search(search_url, request_body)
 
 
-def get_search_request_body(app, dataset, deployment_type, kwargs, test_search_image):
-    request_body = get_default_request_body(deployment_type, kwargs.secured)
+def get_search_request_body(
+    app, dataset, deployment_type, kwargs, test_search_image, test_search_music, host
+):
+    request_body = get_default_request_body(
+        deployment_type, kwargs.secured, remote_host=host
+    )
     request_body['limit'] = 9
     # Perform end-to-end check via bff
     if app in [Apps.IMAGE_TO_IMAGE, Apps.IMAGE_TO_TEXT]:
         request_body['image'] = test_search_image
+    elif app == Apps.MUSIC_TO_MUSIC:
+        request_body['song'] = test_search_music
     elif app in [Apps.TEXT_TO_IMAGE, Apps.TEXT_TO_TEXT, Apps.TEXT_TO_VIDEO]:
         if dataset == DemoDatasets.BEST_ARTWORKS:
             search_text = 'impressionism'
@@ -239,29 +299,11 @@ def get_search_request_body(app, dataset, deployment_type, kwargs, test_search_i
     return request_body
 
 
-def get_default_request_body(deployment_type, secured):
-    request_body = {}
-    if deployment_type == 'local':
-        request_body['host'] = 'gateway'
-        request_body['port'] = 8080
-    elif deployment_type == 'remote':
-        print(f"Getting gateway from flow_details")
-        with open(user(JC_SECRET), 'r') as fp:
-            flow_details = json.load(fp)
-        request_body['host'] = flow_details['gateway']
-    if secured:
-        if 'WOLF_TOKEN' in os.environ:
-            os.environ['JINA_AUTH_TOKEN'] = os.environ['WOLF_TOKEN']
-        request_body['jwt'] = {'token': hubble.get_token()}
-    return request_body
-
-
 def assert_deployment_response(
     app, deployment_type, input_modality, output_modality, response
 ):
     assert (
-        response['bff']
-        == f'http://localhost:30090/api/v1/{app.replace("_", "-")}/redoc'
+        response['bff'] == f'http://localhost:30090/api/v1/{app.replace("_", "-")}/docs'
     )
     assert response['playground'].startswith('http://localhost:30080/?')
     assert response['input_modality'] == input_modality
@@ -309,8 +351,7 @@ def test_backend_custom_data(
     response = cli(args=kwargs)
 
     assert (
-        response['bff']
-        == f'http://localhost:30090/api/v1/{app.replace("_", "-")}/redoc'
+        response['bff'] == f'http://localhost:30090/api/v1/{app.replace("_", "-")}/docs'
     )
     assert response['playground'].startswith('http://localhost:30080/?')
     assert response['input_modality'] == 'text'
@@ -321,10 +362,13 @@ def test_backend_custom_data(
 
     request_body = {'text': 'test', 'limit': 9}
 
-    print(f"Getting gateway from flow_details")
-    with open(user(JC_SECRET), 'r') as fp:
-        flow_details = json.load(fp)
-    request_body['host'] = flow_details['gateway']
+    print(f"Getting gateway from response")
+    request_body['host'] = response['host']
+    # Dump the flow details from response host to a tmp file for post cleanup
+    if deployment_type == 'remote':
+        flow_details = {'host': response['host']}
+        with open(f'{cleanup}/flow_details.json', 'w') as f:
+            json.dump(flow_details, f)
 
     response = requests.post(
         f'http://localhost:30090/api/v1/text-to-image/search',

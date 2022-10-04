@@ -1,13 +1,15 @@
-import json
 import os
-from os.path import expanduser as user
 
 import cowsay
 from now_common.options import _get_context_names
+from rich import box
+from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
 
 from now import run_backend, run_bff_playground
 from now.cloud_manager import setup_cluster
-from now.constants import DOCKER_BFF_PLAYGROUND_TAG, JC_SECRET, SURVEY_LINK
+from now.constants import DOCKER_BFF_PLAYGROUND_TAG, SURVEY_LINK
 from now.deployment.deployment import cmd, list_all_wolf, status_wolf, terminate_wolf
 from now.dialog import configure_app, configure_user_input
 from now.log import yaspin_extended
@@ -15,19 +17,12 @@ from now.system_information import get_system_state
 from now.utils import maybe_prompt_user, sigmap
 
 
-def get_remote_flow_details():
-    with open(user(JC_SECRET), 'r') as fp:
-        flow_details = json.load(fp)
-    return flow_details
-
-
 def stop_now(app_instance, contexts, active_context, **kwargs):
     choices = _get_context_names(contexts, active_context)
-    # Add remote Flow if it exists
-    if os.path.exists(user(JC_SECRET)):
-        alive_flows = list_all_wolf(status='ALIVE')
-        for flow_details in alive_flows:
-            choices.append(flow_details['gateway'])
+    # Add all remote Flows that exists with the namespace `nowapi`
+    alive_flows = list_all_wolf()
+    for flow_details in alive_flows:
+        choices.append(flow_details['gateway'])
     if len(choices) == 0:
         cowsay.cow('nothing to stop')
         return
@@ -74,14 +69,13 @@ def stop_now(app_instance, contexts, active_context, **kwargs):
                 spinner.ok('💀')
             cowsay.cow(f'nowapi namespace removed from {cluster}')
     elif 'wolf.jina.ai' in cluster:
-        flow_details = get_remote_flow_details()
-        flow_id = flow_details['flow_id']
+        flow = [x for x in alive_flows if x['gateway'] == cluster][0]
+        flow_id = flow['name_id'].replace('nowapi-', '')
         _result = status_wolf(flow_id)
         if _result is None:
             print(f'❎ Flow not found in JCloud. Likely, it has been deleted already')
         if _result is not None and _result['status'] == 'ALIVE':
             terminate_wolf(flow_id)
-        os.remove(user(JC_SECRET))
         cowsay.cow(f'remote Flow `{cluster}` removed')
     else:
         with yaspin_extended(
@@ -125,7 +119,7 @@ def start_now(app_instance, **kwargs):
     bff_url = (
         bff_playground_host
         + ('' if str(bff_port) == '80' else f':{bff_port}')
-        + f'/api/v1/{app_instance.input_modality}-to-{app_instance.output_modality}/redoc'
+        + f'/api/v1/{app_instance.input_modality}-to-{app_instance.output_modality}/docs'
     )
     playground_url = (
         bff_playground_host
@@ -141,8 +135,19 @@ def start_now(app_instance, **kwargs):
         + (f'&port={gateway_port_internal}' if gateway_port_internal else '')
     )
     print()
-    print(f'BFF docs are accessible at:\n{bff_url}')
-    print(f'Playground is accessible at:\n{playground_url}')
+    my_table = Table(
+        'Attribute', 'Value', show_header=False, box=box.SIMPLE, highlight=True
+    )
+    my_table.add_row('Api docs', bff_url)
+    my_table.add_row('Playground', playground_url)
+    console = Console()
+    console.print(
+        Panel(
+            my_table,
+            title=f':tada: {app_instance.input_modality}-{app_instance.output_modality} app is NOW ready!',
+            expand=False,
+        )
+    )
     return {
         'bff': bff_url,
         'playground': playground_url,

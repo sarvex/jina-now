@@ -4,11 +4,11 @@ from now.utils import BetterEnum
 # from docarray import __version__ as docarray_version
 # DEMO_DATASET_DOCARRAY_VERSION = docarray_version
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.126-playground-demo-url-2'
-NOW_PREPROCESSOR_VERSION = '0.0.88-elastic-indexer15'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.127-fix-music-to-music-app-4'
+NOW_PREPROCESSOR_VERSION = '0.0.88-elastic-indexer16'
 NOW_AUTH_EXECUTOR_VERSION = '0.0.5-auth-exec-4'
-NOW_ANNLITE_INDEXER_VERSION = '0.0.4-revert-playground-1'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.1-feat-elastic27'
+NOW_ANNLITE_INDEXER_VERSION = '0.0.6-annlite-update-list-endpoint-4'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.1-feat-elastic28'
 
 
 class Modalities(BetterEnum):
@@ -115,7 +115,5 @@ AVAILABLE_DATASET = {
         (DemoDatasets.ES_ONLINE_SHOP_50, 'online shop data (50 products)')
     ],
 }
-
-JC_SECRET = '~/.cache/jina-now/wolf.json'
 
 SURVEY_LINK = 'https://10sw1tcpld4.typeform.com/to/VTAyYRpR?utm_source=cli'
