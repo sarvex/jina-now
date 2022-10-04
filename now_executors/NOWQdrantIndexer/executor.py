@@ -70,6 +70,7 @@ class NOWQdrantIndexer15(Executor):
             self.logger.info('Qdrant not found, locally. So it won\'t be started.')
 
         # TODO make original work columns = {'title': '<this value is not used>'}
+        print('# columns', columns)
         column_dict = {[c[0]]: c[1] for c in columns}
         self._index = DocumentArray(
             storage='qdrant',
