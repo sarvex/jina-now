@@ -29,7 +29,7 @@ class NOWQdrantIndexer15(Executor):
         m: Optional[int] = None,
         scroll_batch_size: int = 64,
         serialize_config: Optional[Dict] = None,
-        columns: List[Tuple[str, str]] = None,
+        columns: Optional[List] = None,
         traversal_paths: Tuple[str] = ('r',),
         *args,
         **kwargs,
