@@ -4,8 +4,8 @@ import numpy as np
 import pytest
 from docarray import Document, DocumentArray
 from docarray.array.qdrant import DocumentArrayQdrant
-from executor import NOWQdrantIndexer15
-from helper import numeric_operators_qdrant
+from now_executors.NOWQdrantIndexer.executor import NOWQdrantIndexer15
+from tests.now_executors.NOWQdrantIndexer.tests.helper import numeric_operators_qdrant
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 compose_yml = os.path.abspath(os.path.join(cur_dir, '../docker-compose.yml'))

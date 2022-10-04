@@ -1,7 +1,7 @@
 import numpy as np
 from docarray import Document
-from executor import NOWQdrantIndexer15
 from jina import Flow
+from now_executors.NOWQdrantIndexer.executor import NOWQdrantIndexer15
 
 
 def test_replicas(docker_compose):

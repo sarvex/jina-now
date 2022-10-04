@@ -56,48 +56,48 @@ class NOWQdrantIndexer15(Executor):
         self.index_traversal_paths = index_traversal_paths
         self.search_traversal_paths = search_traversal_paths
 
-        print(
-            '### all arguments:',
-            'host:',
-            host,
-            'port:',
-            port,
-            'collection_name:',
-            collection_name,
-            'distance:',
-            distance,
-            'dim:',
-            dim,
-            'ef_construct:',
-            ef_construct,
-            'full_scan_threshold:',
-            full_scan_threshold,
-            'm:',
-            m,
-            'scroll_batch_size:',
-            scroll_batch_size,
-            'serialize_config:',
-            serialize_config,
-            'columns:',
-            columns,
-            'index_traversal_paths:',
-            index_traversal_paths,
-            'search_traversal_paths:',
-            search_traversal_paths,
-            'args',
-            args,
-            'kwargs',
-            kwargs,
-        )
+        # print(
+        #     '### all arguments:',
+        #     'host:',
+        #     host,
+        #     'port:',
+        #     port,
+        #     'collection_name:',
+        #     collection_name,
+        #     'distance:',
+        #     distance,
+        #     'dim:',
+        #     dim,
+        #     'ef_construct:',
+        #     ef_construct,
+        #     'full_scan_threshold:',
+        #     full_scan_threshold,
+        #     'm:',
+        #     m,
+        #     'scroll_batch_size:',
+        #     scroll_batch_size,
+        #     'serialize_config:',
+        #     serialize_config,
+        #     'columns:',
+        #     columns,
+        #     'index_traversal_paths:',
+        #     index_traversal_paths,
+        #     'search_traversal_paths:',
+        #     search_traversal_paths,
+        #     'args',
+        #     args,
+        #     'kwargs',
+        #     kwargs,
+        # )
 
-        if self.workspace:
-            # set new storage to network file system location in WOLF
+        if self.workspace and os.path.exists(QDRANT_CONFIG_PATH):
+            self.logger.info('set new storage to network file system location in WOLF')
             qdrant_config = yaml.safe_load(open(QDRANT_CONFIG_PATH))
             qdrant_config['storage'] = {
                 'storage_path': os.path.join(self.workspace, 'user_input.json')
             }
             yaml.safe_dump(qdrant_config, open(QDRANT_CONFIG_PATH, 'w'))
-            # if qdrant exists, then start it
+            self.logger.info('if qdrant exists, then start it')
         try:
             subprocess.Popen(['./run-qdrant.sh'])
             sleep(3)
@@ -107,10 +107,11 @@ class NOWQdrantIndexer15(Executor):
 
         # TODO make original work columns = {'title': '<this value is not used>'}
         print('### columns', columns)
-        column_dict = {}
+        column_qdrant = []
         for i in range(0, len(columns), 2):
-            column_dict[columns[i]] = '<this value is not used>'
+            column_qdrant.append((columns[i], '<this value is not used>'))
 
+        column_qdrant = [('title', '<this value is not used>')]
         self._index = DocumentArray(
             storage='qdrant',
             config={
@@ -124,7 +125,7 @@ class NOWQdrantIndexer15(Executor):
                 'scroll_batch_size': scroll_batch_size,
                 'full_scan_threshold': full_scan_threshold,
                 'serialize_config': serialize_config or {},
-                'columns': column_dict,
+                'columns': column_qdrant,
             },
         )
 

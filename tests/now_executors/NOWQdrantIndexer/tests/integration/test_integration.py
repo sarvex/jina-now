@@ -1,9 +1,9 @@
 import numpy as np
 import pytest
 from docarray import Document, DocumentArray
-from executor import NOWQdrantIndexer15
-from helper import numeric_operators_qdrant
 from jina import Flow
+from now_executors.NOWQdrantIndexer.executor import NOWQdrantIndexer15
+from tests.now_executors.NOWQdrantIndexer.tests.helper import numeric_operators_qdrant
 
 
 def test_flow(docker_compose):

@@ -62,7 +62,7 @@ def documents():
             Document(
                 id="doc4",
                 blob=b"jpg...",
-                embedding=np.ones(6),
+                embedding=np.ones(9999),
                 tags={'title': 'blue'},
             ),
         ]
@@ -73,7 +73,12 @@ def test_search_chunk_using_sum_ranker(documents, docker_compose):
     with Flow().add(
         # uses='jinahub+docker://NOWQdrantIndexer15/experiment8',
         uses=NOWQdrantIndexer15,
-        uses_with={"traversal_paths": "@c", "dim": 2},
+        uses_with={
+            "index_traversal_paths": "@c",
+            "search_traversal_paths": "@c",
+            "dim": 2,
+            'columns': ['title', 'str'],
+        },
     ) as f:
         f.index(
             documents,
