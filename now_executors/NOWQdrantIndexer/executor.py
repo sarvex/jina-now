@@ -71,7 +71,10 @@ class NOWQdrantIndexer15(Executor):
 
         # TODO make original work columns = {'title': '<this value is not used>'}
         print('# columns', columns)
-        column_dict = {[c[0]]: c[1] for c in columns}
+        column_dict = {}
+        for i in range(0, len(columns), 2):
+            column_dict[columns[i]] = '<this value is not used>'
+
         self._index = DocumentArray(
             storage='qdrant',
             config={
