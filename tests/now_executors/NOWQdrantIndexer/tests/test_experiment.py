@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from docarray import Document, DocumentArray
 from jina import Flow
-from now_executors.NOWQdrantIndexer15.executor import NOWQdrantIndexer15
+from now_executors.NOWQdrantIndexer.executor import NOWQdrantIndexer15
 
 
 @pytest.fixture()

@@ -3,7 +3,7 @@ import subprocess
 from collections import defaultdict
 from copy import deepcopy
 from time import sleep
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 import yaml
 from docarray import DocumentArray
@@ -30,7 +30,8 @@ class NOWQdrantIndexer15(Executor):
         scroll_batch_size: int = 64,
         serialize_config: Optional[Dict] = None,
         columns: Optional[List] = None,
-        traversal_paths: Tuple[str] = '@r',
+        index_traversal_paths: str = '@r',
+        search_traversal_paths: str = '@r',
         *args,
         **kwargs,
     ):
@@ -52,7 +53,8 @@ class NOWQdrantIndexer15(Executor):
         :param columns: precise columns for the Indexer (used for filtering).
         """
         super().__init__(*args, **kwargs)
-        self.traversal_paths = traversal_paths
+        self.index_traversal_paths = index_traversal_paths
+        self.search_traversal_paths = search_traversal_paths
 
         print(
             '### all arguments:',
@@ -78,8 +80,10 @@ class NOWQdrantIndexer15(Executor):
             serialize_config,
             'columns:',
             columns,
-            'traversal_paths:',
-            traversal_paths,
+            'index_traversal_paths:',
+            index_traversal_paths,
+            'search_traversal_paths:',
+            search_traversal_paths,
             'args',
             args,
             'kwargs',
@@ -133,7 +137,10 @@ class NOWQdrantIndexer15(Executor):
         """
         print('###', 'docs', docs, 'parameters', parameters)
         # for the experiment, we don't need blobs in the root and chunk level also, we set traversal_paths to '@c'
-        docs = docs['@c']
+        index_traversal_paths = parameters.get(
+            "index_traversal_paths", self.index_traversal_paths
+        )
+        docs = docs[index_traversal_paths]
         for d in docs:
             d.blob = None
         # qdrant needs a list of values when filtering on sentences
@@ -161,8 +168,10 @@ class NOWQdrantIndexer15(Executor):
 
         """
         print('###', 'docs', docs, 'parameters', parameters)
-        traversal_paths = parameters.get("traversal_paths", self.traversal_paths)
-        docs = docs[traversal_paths]
+        search_traversal_paths = parameters.get(
+            "search_traversal_paths", self.search_traversal_paths
+        )
+        docs = docs[search_traversal_paths]
 
         docs_with_matches = self.create_matches(docs)
 
