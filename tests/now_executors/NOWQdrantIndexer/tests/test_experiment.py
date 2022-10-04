@@ -99,10 +99,10 @@ def test_search_chunk_using_sum_ranker(documents, docker_compose):
         )
         print('all match ids', [match.id for match in result[0].matches])
         # assert len(result[0].matches) == 3
-        # #blue
-        # assert result[0].matches[0].id == 'chunk12'
-        # assert result[0].matches[1].id == 'chunk22'
-        # assert result[0].matches[2].id == 'chunk31'
+        # blue
+        assert result[0].matches[0].id == 'chunk12'
+        assert result[0].matches[1].id == 'chunk22'
+        assert result[0].matches[2].id == 'chunk31'
         # #red
         # assert result[0].matches[0].id == 'chunk22'
         # assert result[0].matches[1].id == 'chunk31'
