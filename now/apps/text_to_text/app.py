@@ -55,7 +55,7 @@ class TextToText(JinaNOWApp):
     def setup(
         self, dataset: DocumentArray, user_input: UserInput, kubectl_path: str
     ) -> Dict:
-        indexer_config = get_indexer_config(len(dataset))
+        indexer_config = get_indexer_config(len(dataset), elastic=True)
         return common_setup(
             app_instance=self,
             user_input=user_input,
@@ -68,6 +68,7 @@ class TextToText(JinaNOWApp):
             indexer_uses=indexer_config['indexer_uses'],
             kubectl_path=kubectl_path,
             indexer_resources=indexer_config['indexer_resources'],
+            elastic=True,
         )
 
     def preprocess(

@@ -44,6 +44,7 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
         print('⬇  Download DocArray dataset')
         url = get_dataset_url(user_input.data, app.output_modality)
         da = _fetch_da_from_url(url)
+        da.summary()
     if da is None:
         raise ValueError(
             f'Could not load DocArray dataset. Please check your configuration: {user_input}.'
@@ -55,7 +56,7 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
             da = da[:300]
         else:
             da = da[:300]
-    return da
+    return da[:3]
 
 
 def _open_json(path: str):

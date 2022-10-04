@@ -1,5 +1,6 @@
 import json
 import os
+import time
 import tempfile
 from copy import deepcopy
 from os.path import expanduser as user
@@ -36,6 +37,7 @@ def common_get_flow_env_dict(
     indexer_resources: Dict,
     user_input: UserInput,
     tags: List,
+    elastic: bool,
 ):
     """Returns dictionary for the environments variables for the clip & music flow.yml files."""
     if (
@@ -60,6 +62,30 @@ def common_get_flow_env_dict(
         **encoder_with,
         **indexer_resources,
     }
+
+    if elastic:
+        num_retries = 0
+        es_password, error_msg = '', b''
+        while num_retries < MAX_RETRIES:
+            es_password, error_msg = cmd(
+                [
+                    "kubectl",
+                    "get",
+                    "secret",
+                    "quickstart-es-elastic-user",
+                    "-o",
+                    "go-template='{{.data.elastic | base64decode}}'",
+                ]
+            )
+            if es_password:
+                es_password = es_password.decode("utf-8")[1:-1]
+                break
+            else:
+                num_retries += 1
+                time.sleep(2)
+        if not es_password:
+            raise Exception(error_msg.decode("utf-8"))
+        config['HOSTS'] = f"https://elastic:{es_password}@quickstart-es-http.default:9200"
     if encoder_uses_with.get('pretrained_model_name_or_path'):
         config['PRE_TRAINED_MODEL_NAME'] = encoder_uses_with[
             "pretrained_model_name_or_path"
@@ -90,6 +116,7 @@ def common_setup(
     kubectl_path: str,
     encoder_with: Optional[Dict] = {},
     indexer_resources: Optional[Dict] = {},
+    elastic: bool = False,
 ) -> Dict:
     # should receive pre embedding size
     finetune_settings = parse_finetune_settings(
@@ -112,6 +139,7 @@ def common_setup(
         indexer_resources=indexer_resources,
         user_input=user_input,
         tags=tags,
+        elastic=elastic,
     )
 
     if finetune_settings.perform_finetuning:
@@ -171,16 +199,12 @@ def get_indexer_config(
     import pathlib
 
     if elastic:
-        config = {'indexer_uses': f'ElasticIndexer/latest'}
+        config = {'indexer_uses': f'ElasticIndexer/v{NOW_ELASTIC_INDEXER_VERSION}'}
         cur_dir = pathlib.Path(__file__).parent.resolve()
-        _, error = cmd(
-            'kubectl create -f https://download.elastic.co/downloads/eck/2.4.0/crds.yaml'
-        )
-        _, error = cmd(
-            'kubectl apply -f https://download.elastic.co/downloads/eck/2.4.0/operator.yaml'
-        )
-        _, error = cmd('kubectl create ns nowapi')
-        _, error = cmd(f'kubectl apply -f {cur_dir}/../now/deployment/elastic_kind.yml')
+        cmd('kubectl create -f https://download.elastic.co/downloads/eck/2.4.0/crds.yaml')
+        cmd('kubectl apply -f https://download.elastic.co/downloads/eck/2.4.0/operator.yaml')
+        cmd('kubectl create ns nowapi')
+        cmd(f'kubectl apply -f {cur_dir}/../now/deployment/elastic_kind.yml')
         print("Setup elastic in kubectl")
     else:
         config = {'indexer_uses': f'NOWAnnLiteIndexer/v{NOW_ANNLITE_INDEXER_VERSION}'}
