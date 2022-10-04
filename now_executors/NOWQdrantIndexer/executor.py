@@ -57,9 +57,9 @@ class NOWQdrantIndexer15(Executor):
         if self.workspace:
             # set new storage to network file system location in WOLF
             qdrant_config = yaml.safe_load(open(QDRANT_CONFIG_PATH))
-            qdrant_config['storage']['storage_path'] = os.path.join(
-                self.workspace, 'user_input.json'
-            )
+            qdrant_config['storage'] = {
+                'storage_path': os.path.join(self.workspace, 'user_input.json')
+            }
             yaml.safe_dump(qdrant_config, open(QDRANT_CONFIG_PATH, 'w'))
             # if qdrant exists, then start it
         try:
