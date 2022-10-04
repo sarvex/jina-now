@@ -54,6 +54,38 @@ class NOWQdrantIndexer15(Executor):
         super().__init__(*args, **kwargs)
         self.traversal_paths = traversal_paths
 
+        print(
+            '### all arguments:',
+            'host:',
+            host,
+            'port:',
+            port,
+            'collection_name:',
+            collection_name,
+            'distance:',
+            distance,
+            'dim:',
+            dim,
+            'ef_construct:',
+            ef_construct,
+            'full_scan_threshold:',
+            full_scan_threshold,
+            'm:',
+            m,
+            'scroll_batch_size:',
+            scroll_batch_size,
+            'serialize_config:',
+            serialize_config,
+            'columns:',
+            columns,
+            'traversal_paths:',
+            traversal_paths,
+            'args',
+            args,
+            'kwargs',
+            kwargs,
+        )
+
         if self.workspace:
             # set new storage to network file system location in WOLF
             qdrant_config = yaml.safe_load(open(QDRANT_CONFIG_PATH))
@@ -70,7 +102,7 @@ class NOWQdrantIndexer15(Executor):
             self.logger.info('Qdrant not found, locally. So it won\'t be started.')
 
         # TODO make original work columns = {'title': '<this value is not used>'}
-        print('# columns', columns)
+        print('### columns', columns)
         column_dict = {}
         for i in range(0, len(columns), 2):
             column_dict[columns[i]] = '<this value is not used>'
@@ -95,10 +127,11 @@ class NOWQdrantIndexer15(Executor):
         self.logger = JinaLogger(self.metas.name)
 
     @secure_request(on='/index', level=SecurityLevel.USER)
-    def index(self, docs: DocumentArray, **kwargs):
+    def index(self, docs: DocumentArray, parameters: Dict = {}, **kwargs):
         """Index new documents
         :param docs: the Documents to index
         """
+        print('###', 'docs', docs, 'parameters', parameters)
         # for the experiment, we don't need blobs in the root and chunk level also, we set traversal_paths to '@c'
         docs = docs['@c']
         for d in docs:
@@ -127,6 +160,7 @@ class NOWQdrantIndexer15(Executor):
         :param kwargs: additional kwargs for the endpoint
 
         """
+        print('###', 'docs', docs, 'parameters', parameters)
         traversal_paths = parameters.get("traversal_paths", self.traversal_paths)
         docs = docs[traversal_paths]
 
