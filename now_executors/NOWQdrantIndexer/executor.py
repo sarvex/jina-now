@@ -30,7 +30,7 @@ class NOWQdrantIndexer15(Executor):
         scroll_batch_size: int = 64,
         serialize_config: Optional[Dict] = None,
         columns: Optional[List] = None,
-        traversal_paths: Tuple[str] = ('r',),
+        traversal_paths: Tuple[str] = '@r',
         *args,
         **kwargs,
     ):
@@ -127,7 +127,8 @@ class NOWQdrantIndexer15(Executor):
         :param kwargs: additional kwargs for the endpoint
 
         """
-        docs = docs[self.traversal_paths[0]]
+        traversal_paths = parameters.get("traversal_paths", self.traversal_paths)
+        docs = docs[traversal_paths]
 
         docs_with_matches = self.create_matches(docs)
 
