@@ -143,6 +143,8 @@ class ElasticIndexer(Executor):
         """
         if not docs:
             return
+        print("DOCS BEFORE ADDING MATCHES")
+        docs.summary()
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
         search_filter = parameters.get('filter', None)
         limit = parameters.get('limit', 20)
@@ -160,6 +162,8 @@ class ElasticIndexer(Executor):
                 doc.matches = self._transform_es_results_to_matches(result)
             except Exception:
                 print(traceback.format_exc())
+        print("DOCS AFTER ADDING MATCHES")
+        docs.summary()
         return docs
 
     @secure_request(on='/update', level=SecurityLevel.USER)
@@ -302,6 +306,7 @@ class ElasticIndexer(Executor):
         """
         if isinstance(result, Dict):
             result = [result]
+        print(result)
         da = DocumentArray()
         for es_doc in result:
             doc = Document(id=es_doc['_id'])
