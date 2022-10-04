@@ -86,7 +86,9 @@ def common_get_flow_env_dict(
                 time.sleep(2)
         if not es_password:
             raise Exception(error_msg.decode("utf-8"))
-        config['HOSTS'] = f"https://elastic:{es_password}@quickstart-es-http.default:9200"
+        config[
+            'HOSTS'
+        ] = f"https://elastic:{es_password}@quickstart-es-http.default:9200"
     if encoder_uses_with.get('pretrained_model_name_or_path'):
         config['PRE_TRAINED_MODEL_NAME'] = encoder_uses_with[
             "pretrained_model_name_or_path"
@@ -202,8 +204,12 @@ def get_indexer_config(
     if elastic:
         config = {'indexer_uses': f'ElasticIndexer/v{NOW_ELASTIC_INDEXER_VERSION}'}
         cur_dir = pathlib.Path(__file__).parent.resolve()
-        cmd('kubectl create -f https://download.elastic.co/downloads/eck/2.4.0/crds.yaml')
-        cmd('kubectl apply -f https://download.elastic.co/downloads/eck/2.4.0/operator.yaml')
+        cmd(
+            'kubectl create -f https://download.elastic.co/downloads/eck/2.4.0/crds.yaml'
+        )
+        cmd(
+            'kubectl apply -f https://download.elastic.co/downloads/eck/2.4.0/operator.yaml'
+        )
         cmd('kubectl create ns nowapi')
         cmd(f'kubectl apply -f {cur_dir}/../now/deployment/elastic_kind.yml')
         print("Setup elastic in kubectl")
