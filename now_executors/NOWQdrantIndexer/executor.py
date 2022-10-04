@@ -8,7 +8,7 @@ from typing import Dict, List, Optional, Tuple
 import yaml
 from docarray import DocumentArray
 from jina.logging.logger import JinaLogger
-from now_executors import NOWAuthExecutor as Executor
+from now_executors.NOWAuthExecutor.executor import NOWAuthExecutor as Executor
 from now_executors.NOWAuthExecutor.executor import SecurityLevel, secure_request
 
 QDRANT_CONFIG_PATH = '/qdrant/config/production.yaml'
@@ -31,6 +31,7 @@ class NOWQdrantIndexer15(Executor):
         serialize_config: Optional[Dict] = None,
         columns: List[Tuple[str, str]] = None,
         traversal_paths: Tuple[str] = ('r',),
+        *args,
         **kwargs,
     ):
         """
@@ -50,7 +51,7 @@ class NOWQdrantIndexer15(Executor):
             `m` in the Qdrant server.
         :param columns: precise columns for the Indexer (used for filtering).
         """
-        super().__init__(**kwargs)
+        super().__init__(*args, **kwargs)
         self.traversal_paths = traversal_paths
 
         if self.workspace:
