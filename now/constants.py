@@ -116,3 +116,11 @@ AVAILABLE_DATASET = {
 }
 
 SURVEY_LINK = 'https://10sw1tcpld4.typeform.com/to/VTAyYRpR?utm_source=cli'
+
+DEFAULT_EXAMPLE_HOSTED = {
+    'text-to-image': [DemoDatasets.BEST_ARTWORKS, DemoDatasets.DEEP_FASHION],
+    'image-to-text': [DemoDatasets.RAP_LYRICS],
+    'image-to-image': [DemoDatasets.TLL],
+    'text-to-text': [DemoDatasets.ROCK_LYRICS],
+    'music-to-music': [DemoDatasets.MUSIC_GENRES_ROCK],
+}

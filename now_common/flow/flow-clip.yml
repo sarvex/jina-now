@@ -10,6 +10,8 @@ with:
 jcloud:
   version: ${{ ENV.JINA_VERSION }}
   retention_days: ${{ RETENTION_DAYS }}
+  custom_dns:
+    - now-example-text-to-image.dev.jina.ai
 executors:
   - name: preprocessor
     uses: ${{ ENV.PREPROCESSOR_NAME }}
