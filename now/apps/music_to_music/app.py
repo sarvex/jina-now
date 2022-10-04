@@ -6,7 +6,7 @@ from docarray import Document, DocumentArray
 from now_common.utils import common_setup
 
 from now.apps.base.app import JinaNOWApp
-from now.constants import Apps, DemoDatasets, Modalities
+from now.constants import NOW_ANNLITE_INDEXER_VERSION, Apps, DemoDatasets, Modalities
 from now.deployment.deployment import which
 from now.now_dataclasses import UserInput
 
@@ -91,7 +91,7 @@ class MusicToMusic(JinaNOWApp):
             dataset=dataset,
             encoder_uses='BiModalMusicTextEncoderV2',
             encoder_uses_with={},
-            indexer_uses='MusicRecommendationIndexerV2',
+            indexer_uses=f'NOWAnnLiteIndexer/v{NOW_ANNLITE_INDEXER_VERSION}',
             kubectl_path=kubectl_path,
             indexer_resources={},
             pre_trained_embedding_size=512,

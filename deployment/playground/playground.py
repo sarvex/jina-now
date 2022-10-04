@@ -606,11 +606,16 @@ def add_social_share_buttons():
 
 
 def display_song(attach_to, song_doc: Document):
+    genre = (
+        song_doc.tags['genre_tags'].split(' ')[:3]
+        if isinstance(song_doc.tags['genre_tags'], str)
+        else song_doc.tags['genre_tags'][:3]
+    )
     attach_to.markdown(
         body=f"<!DOCTYPE html><html><body>"
         f"<p style=\"font-size: 20px; font-weight: 700; margin-bottom: -8px\">{song_doc.tags['name']}</p>"
         f"<p style=\"margin-bottom: -5px\">{song_doc.tags['artist']}</p>"
-        f"<p style=\"font-size: 10px\">{' | '.join(song_doc.tags['genre_tags'][:3])}</p>"
+        f"<p style=\"font-size: 10px\">{' | '.join(genre)}</p>"
         f"</body></html>",
         unsafe_allow_html=True,
     )

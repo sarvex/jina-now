@@ -44,6 +44,7 @@ def common_get_flow_env_dict(
         'ENCODER_NAME': f'jinahub+docker://{encoder_uses}',
         'N_DIM': finetune_settings.finetune_layer_size
         if finetune_settings.perform_finetuning
+        or user_input.app_instance.app_name == 'music_to_music'
         else pre_trained_embedding_size,
         'PRE_TRAINED_EMBEDDINGS_SIZE': pre_trained_embedding_size,
         'INDEXER_NAME': f'jinahub+docker://{indexer_uses}',
