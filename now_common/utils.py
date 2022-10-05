@@ -11,6 +11,7 @@ from jina import __version__ as jina_version
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import (
+    DEFAULT_EXAMPLE_HOSTED,
     NOW_ANNLITE_INDEXER_VERSION,
     NOW_PREPROCESSOR_VERSION,
     PREFETCH_NR,
@@ -73,6 +74,15 @@ def common_get_flow_env_dict(
     else:
         config['RETENTION_DAYS'] = 7  # for user deployment set it to 30 days
 
+    if 'NOW_EXAMPLES' in os.environ:
+        valid_app = DEFAULT_EXAMPLE_HOSTED.get(user_input.app_instance.app_name, {})
+        is_demo_ds = user_input.data in valid_app
+        if is_demo_ds:
+            config[
+                'CUSTOM_DNS'
+            ] = f'now-example-{user_input.app_instance.app_name}-{user_input.data}.dev.jina.ai'
+            config['CUSTOM_DNS'] = config['CUSTOM_DNS'].replace('_', '-')
+        print('Custom domain: ', config['CUSTOM_DNS'])
     return config
 
 

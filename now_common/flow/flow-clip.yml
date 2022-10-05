@@ -11,7 +11,7 @@ jcloud:
   version: ${{ ENV.JINA_VERSION }}
   retention_days: ${{ RETENTION_DAYS }}
   custom_dns:
-    - now-example-text-to-image.dev.jina.ai
+    - ${{ ENV.CUSTOM_DNS }}
 executors:
   - name: preprocessor
     uses: ${{ ENV.PREPROCESSOR_NAME }}
