@@ -5,7 +5,7 @@ from now_common.options import _get_context_names
 from rich import box
 from rich.console import Console
 from rich.panel import Panel
-from rich.table import Table
+from rich.table import Column, Table
 
 from now import run_backend, run_bff_playground
 from now.cloud_manager import setup_cluster
@@ -136,7 +136,11 @@ def start_now(app_instance, **kwargs):
     )
     print()
     my_table = Table(
-        'Attribute', 'Value', show_header=False, box=box.SIMPLE, highlight=True
+        'Attribute',
+        Column(header="Value", overflow="fold"),
+        show_header=False,
+        box=box.SIMPLE,
+        highlight=True,
     )
     my_table.add_row('Api docs', bff_url)
     my_table.add_row('Playground', playground_url)
