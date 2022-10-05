@@ -5,10 +5,10 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex/" /><link rel="search" title="Search" href="../../../search/" />
         <link rel="canonical" href="https://now.jina.ai/_modules/now/cli.html" />
 
-    <link rel="shortcut icon" href="../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.09.15"/>
-        <title>now.cli - NOW 0.0.31 documentation</title>
+    <link rel="shortcut icon" href="../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.09.29"/>
+        <title>now.cli - NOW 0.0.32 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=9ec31e2665bf879c1d47d93a8ec4893870ee1e45" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/tabs.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../">
-                <div class="brand">NOW 0.0.31 documentation</div>
+                <div class="brand">NOW 0.0.32 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -287,8 +287,6 @@
 
 <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
 
-<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span><span class="s1">&#39;-h&#39;</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="ow">or</span> <span class="s1">&#39;--help&#39;</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Initialising Jina NOW v</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s1"> ...&#39;</span><span class="p">)</span>
 <span class="n">cur_dir</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parents</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
 
 <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;JINA_CHECK_VERSION&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;False&#39;</span>
@@ -390,6 +388,9 @@
 
 <div class="viewcode-block" id="cli"><a class="viewcode-back" href="../../../api/now.cli/#now.cli.cli">[docs]</a><span class="k">def</span> <span class="nf">cli</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;The main entrypoint of the CLI&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span><span class="s1">&#39;-h&#39;</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="ow">or</span> <span class="s1">&#39;--help&#39;</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Initialising Jina NOW v</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s1"> ...&#39;</span><span class="p">)</span>
+
     <span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="p">:</span>
         <span class="n">args</span> <span class="o">=</span> <span class="n">_get_run_args</span><span class="p">()</span>
     <span class="n">args</span> <span class="o">=</span> <span class="nb">vars</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>  <span class="c1"># Make it a dict from Namespace</span>
@@ -437,7 +438,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Sep 27, 2022.
+                            Last updated on Oct 05, 2022.
                         </div>
                     </div>
                     <div class="right-details">
