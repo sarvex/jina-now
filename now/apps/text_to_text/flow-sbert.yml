@@ -41,7 +41,6 @@ executors:
     uses_with:
       hosts: ${{ ENV.HOSTS }}
       dims: ${{ ENV.N_DIM }}
-      traversal_paths: @r
       columns: ${{ ENV.COLUMNS }}
       admin_emails: ${{ ENV.ADMIN_EMAILS }}
       user_emails: ${{ ENV.USER_EMAILS }}
