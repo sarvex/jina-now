@@ -99,7 +99,7 @@ def start_now(app_instance, **kwargs):
 
     # Only if the deployment is remote and the demo examples is available for the selected app
     # Should not be triggered for CI tests
-    if 'NOW_CI_RUN' not in os.environ and app_instance.is_demo_available(user_input):
+    if app_instance.is_demo_available(user_input):
         gateway_host = 'remote'
         gateway_host_internal = f'grpcs://now-example-{app_instance.app_name}-{user_input.data}.dev.jina.ai'.replace(
             '_', '-'
