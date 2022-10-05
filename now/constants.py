@@ -121,7 +121,6 @@ DEFAULT_EXAMPLE_HOSTED = {
     'text_to_image': [
         DemoDatasets.BEST_ARTWORKS,
         DemoDatasets.DEEP_FASHION,
-        DemoDatasets.NFT_MONKEY,
     ],
     'image_to_text': [DemoDatasets.RAP_LYRICS],
     'image_to_image': [DemoDatasets.TLL],
