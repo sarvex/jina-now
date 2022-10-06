@@ -19,10 +19,11 @@ def test_image_index_fails_with_no_flow_running(
 def test_image_search_fails_with_no_flow_running(
     client: requests.Session, base64_image_string: str
 ):
-    client.post(
-        f'/api/v1/image-to-image/search',
-        json={'image': base64_image_string},
-    )
+    with pytest.raises(ConnectionError):
+        client.post(
+            f'/api/v1/image-to-image/search',
+            json={'image': base64_image_string},
+        )
 
 
 def test_image_search_fails_with_incorrect_query(client: requests.Session):
