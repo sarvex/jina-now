@@ -4,6 +4,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import docker
 from docarray import DocumentArray
+from jina import Client
 from jina.serve.runtimes.gateway.http.models import JinaRequestModel, JinaResponseModel
 
 from now.constants import AVAILABLE_DATASET, DEFAULT_EXAMPLE_HOSTED, Modalities
@@ -232,6 +233,15 @@ class JinaNOWApp:
             and 'NOW_EXAMPLES' not in os.environ
             and 'NOW_CI_RUN' not in os.environ
         ):
+            client = Client(
+                host=f'grpcs://noow-example-{self.app_name}-{user_input.data}.dev.jina.ai'.replace(
+                    '_', '-'
+                )
+            )
+            try:
+                client.post('/dry_run', timeout=2)
+            except ConnectionError:
+                return False
             return True
         return False
 
