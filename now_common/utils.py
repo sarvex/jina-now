@@ -82,7 +82,6 @@ def common_get_flow_env_dict(
                 'CUSTOM_DNS'
             ] = f'now-example-{user_input.app_instance.app_name}-{user_input.data}.dev.jina.ai'
             config['CUSTOM_DNS'] = config['CUSTOM_DNS'].replace('_', '-')
-        print('Custom domain: ', config['CUSTOM_DNS'])
     return config
 
 

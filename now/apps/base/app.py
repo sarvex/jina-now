@@ -234,7 +234,7 @@ class JinaNOWApp:
             and 'NOW_CI_RUN' not in os.environ
         ):
             client = Client(
-                host=f'grpcs://noow-example-{self.app_name}-{user_input.data}.dev.jina.ai'.replace(
+                host=f'grpcs://now-example-{self.app_name}-{user_input.data}.dev.jina.ai'.replace(
                     '_', '-'
                 )
             )
