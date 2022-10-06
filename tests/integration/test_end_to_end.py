@@ -127,11 +127,11 @@ def test_token_exists():
             'local',
         ),
         (
-                Apps.MUSIC_TO_MUSIC,
-                Modalities.MUSIC,
-                Modalities.MUSIC,
-                DemoDatasets.MUSIC_GENRES_ROCK,
-                'remote',
+            Apps.MUSIC_TO_MUSIC,
+            Modalities.MUSIC,
+            Modalities.MUSIC,
+            DemoDatasets.MUSIC_GENRES_ROCK,
+            'remote',
         ),
         (
             Apps.TEXT_TO_TEXT_AND_IMAGE,
