@@ -52,8 +52,6 @@ def search(data: NowTextSearchRequestModel):
     query_doc, filter_query = process_query(
         text=data.text, uri=data.uri, conditions=data.filters
     )
-    query_doc.summary()
-    print(filter_query)
 
     docs = jina_client_post(
         data=data,
@@ -61,6 +59,5 @@ def search(data: NowTextSearchRequestModel):
         parameters={'limit': data.limit, 'filter': filter_query},
         endpoint='/search',
     )
-    docs.summary()
 
     return docs[0].matches.to_dict()
