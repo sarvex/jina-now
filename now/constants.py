@@ -4,11 +4,11 @@ from now.utils import BetterEnum
 # from docarray import __version__ as docarray_version
 # DEMO_DATASET_DOCARRAY_VERSION = docarray_version
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.127-elastic-indexer-6'
-NOW_PREPROCESSOR_VERSION = '0.0.88-elastic-indexer25'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.127-elastic-indexer-7'
+NOW_PREPROCESSOR_VERSION = '0.0.88-elastic-indexer26'
 NOW_AUTH_EXECUTOR_VERSION = '0.0.5-auth-exec-4'
 NOW_ANNLITE_INDEXER_VERSION = '0.0.6-annlite-update-list-endpoint-4'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.1-feat-elastic37'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.1-feat-elastic38'
 
 
 class Modalities(BetterEnum):
