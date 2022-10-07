@@ -5,10 +5,10 @@ from now.utils import BetterEnum
 # DEMO_DATASET_DOCARRAY_VERSION = docarray_version
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.128-add-cname-1'
-NOW_PREPROCESSOR_VERSION = '0.0.88-elastic-indexer-36'
+NOW_PREPROCESSOR_VERSION = '0.0.88-elastic-indexer-37'
 NOW_AUTH_EXECUTOR_VERSION = '0.0.5-auth-exec-4'
 NOW_ANNLITE_INDEXER_VERSION = '0.0.6-annlite-update-list-endpoint-4'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.1-feat-elastic-58'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.1-feat-elastic-59'
 
 
 class Modalities(BetterEnum):
@@ -117,3 +117,14 @@ AVAILABLE_DATASET = {
 }
 
 SURVEY_LINK = 'https://10sw1tcpld4.typeform.com/to/VTAyYRpR?utm_source=cli'
+
+DEFAULT_EXAMPLE_HOSTED = {
+    'text_to_image': [
+        DemoDatasets.BEST_ARTWORKS,
+        DemoDatasets.DEEP_FASHION,
+    ],
+    'image_to_text': [DemoDatasets.RAP_LYRICS],
+    'image_to_image': [DemoDatasets.TLL],
+    'text_to_text': [DemoDatasets.ROCK_LYRICS],
+    'music_to_music': [DemoDatasets.MUSIC_GENRES_ROCK],
+}
