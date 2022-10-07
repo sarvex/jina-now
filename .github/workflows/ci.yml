@@ -299,6 +299,16 @@ jobs:
           else
             echo "NOW Elastic Indexer version isn't used already, continue to build..."
           fi
+      - name: Run tests for executor and parents
+        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
+        timeout-minutes: 10
+        run: |
+          sudo apt update && sudo apt install ffmpeg
+          python -m pip install --upgrade pip
+          python -m pip install wheel
+          pip install --no-cache-dir ".[full,test]"
+          pytest --suppress-no-test-exit-code -v -s tests/now_executors/NOWAuthExecutor
+          pytest --suppress-no-test-exit-code -v -s tests/now_executors/elastic_indexer
       - name: Build and push executor
         if: steps.check_has_executor_changed.outputs.has_changed == 'true'
         env:
