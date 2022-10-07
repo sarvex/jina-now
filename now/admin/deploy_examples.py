@@ -1,6 +1,6 @@
 import os
 from argparse import Namespace
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 
 import boto3
 
@@ -8,17 +8,13 @@ from now.cli import cli
 from now.constants import DEFAULT_EXAMPLE_HOSTED
 from now.deployment.deployment import list_all_wolf, terminate_wolf
 
-os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
-
-
-client = boto3.client(
-    'route53',
-    aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
-    aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'],
-)
-
 
 def upsert_cname_record(source, target):
+    client = boto3.client(
+        'route53',
+        aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
+        aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'],
+    )
     try:
         response = client.change_resource_record_sets(
             HostedZoneId=os.environ['AWS_HOSTED_ZONE_ID'],
@@ -42,7 +38,7 @@ def upsert_cname_record(source, target):
 
 
 def deploy(app, data):
-    NAMESPACE = f'examples-{app}-{app}'.replace('_', '-')
+    NAMESPACE = f'examples-{app}-{data}'.replace('_', '-')
     kwargs = {
         'now': 'start',
         'app': app,
@@ -78,7 +74,7 @@ if __name__ == '__main__':
     os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
 
     # List all deployments and delete them
-    flows = list_all_wolf()
+    flows = list_all_wolf(namespace=None)
     flow_ids = [f['id'].replace('jflow-', '') for f in flows]
     with ThreadPoolExecutor() as thread_executor:
         # call delete function with each flow
@@ -89,7 +85,7 @@ if __name__ == '__main__':
 
     # Create new deployments
     results = []
-    with ThreadPoolExecutor() as thread_executor:
+    with ProcessPoolExecutor() as thread_executor:
         futures = []
         for app, data in DEFAULT_EXAMPLE_HOSTED.items():
             for ds_name in data:
