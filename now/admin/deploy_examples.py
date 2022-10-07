@@ -5,22 +5,10 @@ from concurrent.futures import ThreadPoolExecutor
 import boto3
 
 from now.cli import cli
-from now.constants import DemoDatasets
+from now.constants import DEFAULT_EXAMPLE_HOSTED
 from now.deployment.deployment import list_all_wolf, terminate_wolf
 
-NAMESPACE = 'examples'
 os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
-DEFAULT_EXAMPLE_HOSTED = {
-    'image_to_image': [
-        DemoDatasets.BEST_ARTWORKS,
-        DemoDatasets.TLL,
-        # DemoDatasets.DEEP_FASHION,
-    ],
-    # 'image_to_text': [DemoDatasets.RAP_LYRICS],
-    # 'image_to_imaage': [DemoDatasets.TLL],
-    # 'text_to_text': [DemoDatasets.ROCK_LYRICS],
-    # 'music_to_music': [DemoDatasets.MUSIC_GENRES_ROCK],
-}
 
 
 client = boto3.client(
@@ -54,6 +42,7 @@ def upsert_cname_record(source, target):
 
 
 def deploy(app, data):
+    NAMESPACE = f'examples-{app}-{app}'.replace('_', '-')
     kwargs = {
         'now': 'start',
         'app': app,
@@ -74,6 +63,12 @@ def deploy(app, data):
             host_source = f'now-example-{app}-{data}.dev.jina.ai'.replace('_', '-')
             # update the CNAME entry in the Route53 records
             upsert_cname_record(host_source, host_target)
+        else:
+            print(
+                'No host returned starting with "grpcs://". Make sure Jina NOW returns host'
+            )
+    else:
+        raise ValueError(f'Deployment failed for {app} and {data}. Re-run it')
     return response
 
 
@@ -81,17 +76,16 @@ if __name__ == '__main__':
     os.environ['JINA_AUTH_TOKEN'] = os.environ.get('WOLF_TOKEN')
     os.environ['NOW_EXAMPLES'] = 'True'
     os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
-    os.environ['NOW_CI_RUN'] = 'True'
 
     # List all deployments and delete them
-    flows = list_all_wolf(namespace=NAMESPACE)
+    flows = list_all_wolf()
     flow_ids = [f['id'].replace('jflow-', '') for f in flows]
     with ThreadPoolExecutor() as thread_executor:
         # call delete function with each flow
         delete_results = thread_executor.map(lambda x: terminate_wolf(x), flow_ids)
 
     for i, result in enumerate(delete_results):
-        print(f'Deleted {i} deployment', result)
+        print(f'Deleted {i} deployment ', result if result else '')
 
     # Create new deployments
     results = []
