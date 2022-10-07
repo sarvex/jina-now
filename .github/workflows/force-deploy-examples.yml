@@ -35,7 +35,7 @@ jobs:
         env:
           WOLF_TOKEN: ${{ secrets.WOLF_EXAMPLES_TOKEN }}
       - name: Deploy examples
-        run: python -m now/admin/deploy_examples.py
+        run: python -m ./now/admin/deploy_examples.py
         env:
           WOLF_TOKEN: ${{ secrets.WOLF_EXAMPLES_TOKEN }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
