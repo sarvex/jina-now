@@ -27,6 +27,21 @@ def test_search_image(resources_folder_path: str):
     return img_query
 
 
+@pytest.fixture
+def test_search_music(resources_folder_path: str):
+    with open(
+        os.path.join(
+            resources_folder_path,
+            'music',
+            '0ac463f952880e622bc15962f4f75ea51a1861a1.mp3',
+        ),
+        'rb',
+    ) as f:
+        binary = f.read()
+        music_query = base64.b64encode(binary).decode('utf-8')
+    return music_query
+
+
 @pytest.fixture()
 def cleanup(deployment_type, dataset):
     print('start cleanup')
@@ -111,6 +126,13 @@ def test_token_exists():
             DemoDatasetNames.TUMBLR_GIFS_10K,
             'local',
         ),
+        (
+            Apps.MUSIC_TO_MUSIC,
+            Modalities.MUSIC,
+            Modalities.MUSIC,
+            DemoDatasets.MUSIC_GENRES_ROCK,
+            'remote',
+        ),
     ],
 )
 @pytest.mark.timeout(60 * 15)
@@ -119,6 +141,7 @@ def test_backend_demo_data(
     dataset: str,
     deployment_type: str,
     test_search_image,
+    test_search_music,
     cleanup,
     input_modality,
     output_modality,
@@ -158,6 +181,7 @@ def test_backend_demo_data(
         kwargs,
         output_modality,
         test_search_image,
+        test_search_music,
         response,
     )
 
@@ -187,13 +211,20 @@ def assert_deployment_queries(
     kwargs,
     output_modality,
     test_search_image,
+    test_search_music,
     response,
 ):
     url = f'http://localhost:30090/api/v1'
     host = response.get('host')
     # normal case
     request_body = get_search_request_body(
-        app, dataset, deployment_type, kwargs, test_search_image, host
+        app,
+        dataset,
+        deployment_type,
+        kwargs,
+        test_search_image,
+        test_search_music,
+        host,
     )
     search_url = f'{url}/{input_modality}-to-{output_modality}/search'
     assert_search(search_url, request_body)
@@ -223,7 +254,13 @@ def assert_deployment_queries(
             raise Exception(f'Response status is {response.status_code}')
         # the same search should work now
         request_body = get_search_request_body(
-            app, dataset, deployment_type, kwargs, test_search_image, host
+            app,
+            dataset,
+            deployment_type,
+            kwargs,
+            test_search_image,
+            test_search_music,
+            host,
         )
         assert_search(search_url, request_body)
         # search with invalid api key
@@ -234,7 +271,7 @@ def assert_deployment_queries(
 
 
 def get_search_request_body(
-    app, dataset, deployment_type, kwargs, test_search_image, host
+    app, dataset, deployment_type, kwargs, test_search_image, test_search_music, host
 ):
     request_body = get_default_request_body(
         deployment_type, kwargs.secured, remote_host=host
@@ -243,6 +280,8 @@ def get_search_request_body(
     # Perform end-to-end check via bff
     if app in [Apps.IMAGE_TO_IMAGE, Apps.IMAGE_TO_TEXT]:
         request_body['image'] = test_search_image
+    elif app == Apps.MUSIC_TO_MUSIC:
+        request_body['song'] = test_search_music
     elif app in [Apps.TEXT_TO_IMAGE, Apps.TEXT_TO_TEXT, Apps.TEXT_TO_VIDEO]:
         if dataset == DemoDatasetNames.BEST_ARTWORKS:
             search_text = 'impressionism'

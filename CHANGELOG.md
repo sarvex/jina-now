@@ -24,6 +24,7 @@
 
 
 
+
 <a name=release-note-0-0-7></a>
 ## Release Note (`0.0.7`)
 
@@ -811,4 +812,35 @@
 
  - [[```1bf13ea6```](https://github.com/jina-ai/now/commit/1bf13ea641bf99c03119aaca867f8099dbbbc5d0)] __-__ Fix revert playground tags (#520) (*Florian Hönicke*)
  - [[```8c61d496```](https://github.com/jina-ai/now/commit/8c61d49640f7aab70f7b82512cd09b27f80c79fe)] __-__ __version__: the next version will be 0.0.30 (*Jina Dev Bot*)
+
+<a name=release-note-0-0-32></a>
+## Release Note (`0.0.32`)
+
+> Release time: 2022-10-05 12:39:26
+
+
+
+🙇 We'd like to thank all contributors for this new release! In particular,
+ Mohammad Kalim Akram,  Aziz Belaweid,  Florian Hönicke,  Saba Sturua,  🙇
+
+
+### 🐞 Bug fixes
+
+ - [[```ec9da2e7```](https://github.com/jina-ai/now/commit/ec9da2e75f892d5705c9583ca5bfbf88794959ca)] __-__ url playground not showing (#564) (*Aziz Belaweid*)
+ - [[```c7cfc5e6```](https://github.com/jina-ai/now/commit/c7cfc5e6e658edc1e6b69da5e3adcc3f68b34bbe)] __-__ music to music app (#560) (*Aziz Belaweid*)
+ - [[```ea84e182```](https://github.com/jina-ai/now/commit/ea84e1821c104867ce519c37b83304e639500aa5)] __-__ convert user emails to list (#553) (*Mohammad Kalim Akram*)
+ - [[```98f9b598```](https://github.com/jina-ai/now/commit/98f9b5985c283216fd9a947c79c31f315c303814)] __-__ infra params (#547) (*Florian Hönicke*)
+ - [[```287b57a9```](https://github.com/jina-ai/now/commit/287b57a9cfbbc88aa91dacb6e7f9fd6269c55f46)] __-__ bump version (#551) (*Aziz Belaweid*)
+ - [[```a7b25879```](https://github.com/jina-ai/now/commit/a7b258791f51663f9346c2cd43d986d32084fc7e)] __-__ make url more obvious (#544) (*Aziz Belaweid*)
+ - [[```1f6f09fa```](https://github.com/jina-ai/now/commit/1f6f09fa69c1ceeb7dfb0c818afbde4514a1c413)] __-__ multiple initialisation prints (#545) (*Saba Sturua*)
+ - [[```e6d94cfd```](https://github.com/jina-ai/now/commit/e6d94cfd9adb0989a1978a10ce8420e04051a0c7)] __-__ bug unpickling error (#541) (*Aziz Belaweid*)
+
+### 📗 Documentation
+
+ - [[```cdeee4bd```](https://github.com/jina-ai/now/commit/cdeee4bdbff74ebb8a06817720bfe99fbea23e36)] __-__ fix gifs (#538) (*Aziz Belaweid*)
+
+### 🍹 Other Improvements
+
+ - [[```195f7b34```](https://github.com/jina-ai/now/commit/195f7b343d326d8165fd3be208d86e822a273594)] __-__ Fix enable static cname (#566) (*Mohammad Kalim Akram*)
+ - [[```f51f59c9```](https://github.com/jina-ai/now/commit/f51f59c9d676a994dec1a3ab1733027d695dac8c)] __-__ bump finetuner version (#549) (*Saba Sturua*)
 
