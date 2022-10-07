@@ -8,4 +8,6 @@ with:
 jcloud:
   version: ${{ ENV.JINA_VERSION }}
   retention_days: ${{ RETENTION_DAYS }}
+  custom_dns:
+    - ${{ ENV.CUSTOM_DNS }}
 executors:
