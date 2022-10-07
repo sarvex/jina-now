@@ -41,6 +41,7 @@ executors:
   - name: indexer
     uses: ${{ ENV.INDEXER_NAME }}
     uses_with:
+      dim: ${{ ENV.N_DIM }}
       hosts: ${{ ENV.HOSTS }}
       dims: ${{ ENV.N_DIM }}
       columns: ${{ ENV.COLUMNS }}

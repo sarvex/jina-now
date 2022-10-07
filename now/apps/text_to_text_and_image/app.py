@@ -151,33 +151,13 @@ class TextToTextAndImage(JinaNOWApp):
             'PREPROCESSOR_NAME'
         ] = f'jinahub+docker://NOWPreprocessor/v{NOW_PREPROCESSOR_VERSION}'
         env_dict['APP'] = self.app_name
-
-        indexer_config = get_indexer_config(len(dataset), elastic=True)
-        # get elastic host
-        num_retries = 0
-        es_password, error_msg = '', b''
-        while num_retries < MAX_RETRIES:
-            es_password, error_msg = cmd(
-                [
-                    "kubectl",
-                    "get",
-                    "secret",
-                    "quickstart-es-elastic-user",
-                    "-o",
-                    "go-template='{{.data.elastic | base64decode}}'",
-                ]
-            )
-            if es_password:
-                es_password = es_password.decode("utf-8")[1:-1]
-                break
-            else:
-                num_retries += 1
-                time.sleep(2)
-        if not es_password:
-            raise Exception(error_msg.decode("utf-8"))
-        env_dict[
-            'HOSTS'
-        ] = f"https://elastic:{es_password}@quickstart-es-http.default:9200"
+        indexer_config = get_indexer_config(
+            len(dataset),
+            elastic=True,
+            kubectl_path=kubectl_path,
+            deployment_type=user_input.deployment_type,
+        )
+        env_dict['HOSTS'] = indexer_config['hosts']
         env_dict['INDEXER_NAME'] = f"jinahub+docker://{indexer_config['indexer_uses']}"
         env_dict['INDEXER_MEM'] = indexer_config['indexer_resources']['INDEXER_MEM']
         env_dict['JINA_VERSION'] = jina_version
