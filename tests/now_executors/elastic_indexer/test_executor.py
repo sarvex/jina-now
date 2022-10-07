@@ -1,104 +1,11 @@
 from typing import Union, List
 
-import numpy as np
 import pytest
-from docarray import Document, DocumentArray
+from docarray import DocumentArray
 from elasticsearch import Elasticsearch
 from jina import Flow
 
 from now_executors.elastic_indexer.elastic_indexer import ElasticIndexer
-
-
-@pytest.fixture
-def multimodal_da():
-    return DocumentArray(
-        [
-            Document(
-                id='123',
-                tags={'cost': 18.0},
-                chunks=[
-                    Document(
-                        id='x',
-                        text='this is a flower',
-                        embedding=np.ones(7),
-                    ),
-                    Document(
-                        id='xx',
-                        uri='https://cdn.pixabay.com/photo/2015/04/23/21/59/tree-736877_1280.jpg',
-                        embedding=np.ones(5),
-                    ),
-                ],
-            ),
-            Document(
-                id='456',
-                tags={'cost': 21.0},
-                chunks=[
-                    Document(
-                        id='xxx',
-                        text='this is a cat',
-                        embedding=np.array([1, 2, 3, 4, 5, 6, 7]),
-                    ),
-                    Document(
-                        id='xxxx',
-                        uri='https://cdn.pixabay.com/photo/2015/04/23/21/59/tree-736877_1280.jpg',
-                        embedding=np.array([1, 2, 3, 4, 5]),
-                    ),
-                ],
-            ),
-        ]
-    )
-
-
-@pytest.fixture
-def multimodal_query():
-    return DocumentArray(
-        [
-            Document(
-                text='cat',
-                chunks=[
-                    Document(
-                        embedding=np.array([1, 2, 3, 4, 5, 6, 7]),
-                    ),
-                    Document(
-                        embedding=np.array([1, 2, 3, 4, 5]),
-                    ),
-                ],
-            )
-        ]
-    )
-
-
-@pytest.fixture
-def text_da():
-    return DocumentArray(
-        [
-            Document(
-                id='123',
-                tags={'cost': 18.0},
-                text='test text',
-                embedding=np.ones(7),
-            ),
-            Document(
-                id='456',
-                tags={'cost': 21.0},
-                text='another text',
-                embedding=np.array([1, 2, 3, 4, 5, 6, 7]),
-            ),
-        ]
-    )
-
-
-@pytest.fixture
-def text_query():
-    return DocumentArray([Document(text='text', embedding=np.ones(7))])
-
-
-@pytest.fixture
-def pop_lyrics_dataset():
-    da = DocumentArray.load_binary(
-        '/Users/jinadev/Downloads/data_one-line_datasets_text_pop-lyrics.ViT-B16-0.13.17.bin'
-    )
-    return da[:300]
 
 
 @pytest.mark.parametrize(
@@ -106,11 +13,16 @@ def pop_lyrics_dataset():
     [('text_da', '@r', 7), ('multimodal_da', '@c', [7, 5])],
 )
 def test_indexing(
-    da: DocumentArray, traversal_paths: str, dims: Union[str, List[int]], request
+    da: DocumentArray,
+    traversal_paths: str,
+    dims: Union[str, List[int]],
+    setup_service_running,
+    es_connection_params,
+    request,
 ):
     da = request.getfixturevalue(da)
     index_name = 'test-indexing'
-    hosts = 'http://localhost:9200'
+    hosts, _ = es_connection_params
     with Flow().add(
         uses=ElasticIndexer,
         uses_with={
@@ -146,11 +58,13 @@ def test_search_with_bm25(
     traversal_paths: str,
     dims: Union[int, List[int]],
     index_name: str,
+    setup_service_running,
+    es_connection_params,
     request,
 ):
     da = request.getfixturevalue(da)
     query_da = request.getfixturevalue(query_da)
-    hosts = 'http://localhost:9200'
+    hosts, _ = es_connection_params
     with Flow().add(
         uses=ElasticIndexer,
         uses_with={
@@ -188,11 +102,13 @@ def test_search_with_filter(
     traversal_paths: str,
     index_name: str,
     dims: Union[int, List[int]],
+    setup_service_running,
+    es_connection_params,
     request,
 ):
     da = request.getfixturevalue(da)
     query_da = request.getfixturevalue(query_da)
-    hosts = 'http://localhost:9200'
+    hosts, _ = es_connection_params
     with Flow().add(
         uses=ElasticIndexer,
         uses_with={
@@ -223,10 +139,12 @@ def test_list(
     traversal_paths: str,
     dims: Union[int, List[int]],
     index_name: str,
+    setup_service_running,
+    es_connection_params,
     request,
 ):
     da = request.getfixturevalue(da)
-    hosts = 'http://localhost:9200'
+    hosts, _ = es_connection_params
     with Flow().add(
         uses=ElasticIndexer,
         uses_with={
@@ -253,10 +171,12 @@ def test_delete(
     traversal_paths: str,
     dims: Union[int, List[int]],
     index_name: str,
+    setup_service_running,
+    es_connection_params,
     request,
 ):
     da = request.getfixturevalue(da)
-    hosts = 'http://elastic:elastic@localhost:9200'
+    hosts, _ = es_connection_params
     with Flow().add(
         uses=ElasticIndexer,
         uses_with={
