@@ -56,8 +56,8 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
         else:
             da = da[:300]
     if (
-        user_input.data == DemoDatasetNames.MUSIC_GENRES_MIX
-        or user_input.data == DemoDatasetNames.MUSIC_GENRES_ROCK
+        user_input.dataset_name == DemoDatasetNames.MUSIC_GENRES_MIX
+        or user_input.dataset_name == DemoDatasetNames.MUSIC_GENRES_ROCK
     ):
         for doc in da:
             if 'genre_tags' in doc.tags and isinstance(doc.tags['genre_tags'], list):

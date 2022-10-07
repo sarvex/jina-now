@@ -8,7 +8,7 @@ from now.utils import BetterEnum
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.128-add-cname-1'
-NOW_PREPROCESSOR_VERSION = '0.0.89-refactor-dialog-2'
+NOW_PREPROCESSOR_VERSION = '0.0.89-refactor-dialog-3'
 NOW_ANNLITE_INDEXER_VERSION = '0.0.6-annlite-update-list-endpoint-4'
 
 
