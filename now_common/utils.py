@@ -38,6 +38,7 @@ def common_get_flow_env_dict(
     user_input: UserInput,
     tags: List,
     elastic: bool,
+    kubectl_path: str,
 ):
     """Returns dictionary for the environments variables for the clip & music flow.yml files."""
     if (
@@ -70,7 +71,7 @@ def common_get_flow_env_dict(
         while num_retries < MAX_RETRIES:
             es_password, error_msg = cmd(
                 [
-                    "kubectl",
+                    kubectl_path,
                     "get",
                     "secret",
                     "quickstart-es-elastic-user",
@@ -143,6 +144,7 @@ def common_setup(
         user_input=user_input,
         tags=tags,
         elastic=elastic,
+        kubectl_path=kubectl_path,
     )
 
     if finetune_settings.perform_finetuning:
@@ -192,27 +194,32 @@ def _get_email():
 
 
 def get_indexer_config(
-    num_indexed_samples: int, elastic: Optional[bool] = False
+    num_indexed_samples: int,
+    elastic: Optional[bool] = False,
+    kubectl_path: str = None,
+    deployment_type: str = None,
 ) -> Dict:
     """Depending on the number of samples, which will be indexed, indexer and its resources are determined.
 
     :param num_indexed_samples: number of samples which will be indexed; should incl. chunks for e.g. text-to-video app
     :param elastic: hack to use ElasticIndexer, should be changed in future.
+    :param kubectl_path: path to kubectl binary
+    :param deployment_type: deployment type, e.g. 'remote' or 'local'
+    :return: dict with indexer and its resource config
     """
     import pathlib
 
-    if elastic:
+    if elastic and deployment_type == 'local':
         config = {'indexer_uses': f'ElasticIndexer/v{NOW_ELASTIC_INDEXER_VERSION}'}
         cur_dir = pathlib.Path(__file__).parent.resolve()
         cmd(
-            'kubectl create -f https://download.elastic.co/downloads/eck/2.4.0/crds.yaml'
+            f'{kubectl_path} create -f https://download.elastic.co/downloads/eck/2.4.0/crds.yaml'
         )
         cmd(
-            'kubectl apply -f https://download.elastic.co/downloads/eck/2.4.0/operator.yaml'
+            f'{kubectl_path} apply -f https://download.elastic.co/downloads/eck/2.4.0/operator.yaml'
         )
-        cmd('kubectl create ns nowapi')
-        cmd(f'kubectl apply -f {cur_dir}/../now/deployment/elastic_kind.yml')
-        print("Setup elastic in kubectl")
+        cmd(f'{kubectl_path} create ns nowapi')
+        cmd(f'{kubectl_path} apply -f {cur_dir}/../now/deployment/elastic_kind.yml')
     else:
         config = {'indexer_uses': f'NOWAnnLiteIndexer/v{NOW_ANNLITE_INDEXER_VERSION}'}
     threshold1 = 250_000
