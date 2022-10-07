@@ -1,21 +1,55 @@
 import os
 from argparse import Namespace
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
+
+import boto3
 
 from now.cli import cli
-from now.constants import Apps, DemoDatasets
+from now.constants import DemoDatasets
+from now.deployment.deployment import list_all_wolf, terminate_wolf
 
+NAMESPACE = None
 os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
-app = Apps.TEXT_TO_IMAGE
+DEFAULT_EXAMPLE_HOSTED = {
+    'image_to_image': [
+        DemoDatasets.BEST_ARTWORKS,
+        DemoDatasets.DEEP_FASHION,
+    ],
+    # 'image_to_text': [DemoDatasets.RAP_LYRICS],
+    # 'image_to_imaage': [DemoDatasets.TLL],
+    # 'text_to_text': [DemoDatasets.ROCK_LYRICS],
+    # 'music_to_music': [DemoDatasets.MUSIC_GENRES_ROCK],
+}
 
-params = [
-    (Apps.TEXT_TO_IMAGE, DemoDatasets.BEST_ARTWORKS),
-    (Apps.TEXT_TO_IMAGE, DemoDatasets.DEEP_FASHION),
-    (Apps.IMAGE_TO_TEXT, DemoDatasets.RAP_LYRICS),
-    (Apps.IMAGE_TO_IMAGE, DemoDatasets.TLL),
-    (Apps.TEXT_TO_TEXT, DemoDatasets.ROCK_LYRICS),
-    (Apps.MUSIC_TO_MUSIC, DemoDatasets.MUSIC_GENRES_MIX),
-]
+
+client = boto3.client(
+    'route53',
+    aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
+    aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'],
+)
+
+
+def upsert_cname_record(source, target):
+    try:
+        response = client.change_resource_record_sets(
+            HostedZoneId=os.environ['AWS_HOSTED_ZONE_ID'],
+            ChangeBatch={
+                'Comment': 'add %s -> %s' % (source, target),
+                'Changes': [
+                    {
+                        'Action': 'UPSERT',
+                        'ResourceRecordSet': {
+                            'Name': source,
+                            'Type': 'CNAME',
+                            'TTL': 300,
+                            'ResourceRecords': [{'Value': target}],
+                        },
+                    }
+                ],
+            },
+        )
+    except Exception as e:
+        print(e)
 
 
 def deploy(app, data):
@@ -23,34 +57,51 @@ def deploy(app, data):
         'now': 'start',
         'app': app,
         'data': data,
-        # 'custom_dataset_type': DatasetTypes.S3_BUCKET,
-        # 'dataset_path': os.environ.get('S3_IMAGE_TEST_DATA_PATH'),
-        # 'aws_access_key_id': os.environ.get('AWS_ACCESS_KEY_ID'),
-        # 'aws_secret_access_key': os.environ.get('AWS_SECRET_ACCESS_KEY'),
-        # 'aws_region_name': 'eu-west-1',
         'deployment_type': 'remote',
         'proceed': True,
         'secured': False,
+        'ns': NAMESPACE,
     }
     kwargs = Namespace(**kwargs)
     response = cli(args=kwargs)
+
+    # parse the response
+    if response:
+        host_target = response.get('host')
+        if host_target and host_target.startswith('grpcs://'):
+            host_target = host_target.replace('grpcs://', '')
+            host_source = f'now-example-{app}-{data}.dev.jina.ai'.replace('_', '-')
+            # update the CNAME entry in the Route53 records
+            upsert_cname_record(host_source, host_target)
     return response
 
 
 if __name__ == '__main__':
-    parallel = False
+    os.environ['JINA_AUTH_TOKEN'] = os.environ.get('WOLF_TOKEN')
+    os.environ['NOW_EXAMPLES'] = 'True'
+
+    # List all deployments and delete them
+    flows = list_all_wolf(namespace=NAMESPACE)[:2]
+    flow_ids = [f['id'].replace('jflow-', '') for f in flows]
+    with ThreadPoolExecutor() as thread_executor:
+        # call delete function with each flow
+        delete_results = thread_executor.map(lambda x: terminate_wolf(x), flow_ids)
+
+    [
+        print(f'Deleted {i} deployment', result)
+        for i, result in enumerate(delete_results)
+    ]
+
+    # Create new deployments
     results = []
-    if parallel:
-        with ProcessPoolExecutor() as thread_executor:
-            futures = []
-            for app, data in params:
-                f = thread_executor.submit(deploy, app, data)
+    with ThreadPoolExecutor() as thread_executor:
+        futures = []
+        for app, data in DEFAULT_EXAMPLE_HOSTED.items():
+            for ds_name in data:
+                f = thread_executor.submit(deploy, app, ds_name)
                 futures.append(f)
-            for f in futures:
-                results.append(f.result())
-    else:
-        for app, data in params:
-            result = deploy(app, data)
-            results.append(result)
-            print(result)
+                break
+            break
+        for f in futures:
+            results.append(f.result())
     print(results)
