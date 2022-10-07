@@ -8,12 +8,13 @@ from now.cli import cli
 from now.constants import DemoDatasets
 from now.deployment.deployment import list_all_wolf, terminate_wolf
 
-NAMESPACE = None
+NAMESPACE = 'examples'
 os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
 DEFAULT_EXAMPLE_HOSTED = {
     'image_to_image': [
         DemoDatasets.BEST_ARTWORKS,
-        DemoDatasets.DEEP_FASHION,
+        DemoDatasets.TLL,
+        # DemoDatasets.DEEP_FASHION,
     ],
     # 'image_to_text': [DemoDatasets.RAP_LYRICS],
     # 'image_to_imaage': [DemoDatasets.TLL],
@@ -79,18 +80,18 @@ def deploy(app, data):
 if __name__ == '__main__':
     os.environ['JINA_AUTH_TOKEN'] = os.environ.get('WOLF_TOKEN')
     os.environ['NOW_EXAMPLES'] = 'True'
+    os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
+    os.environ['NOW_CI_RUN'] = 'True'
 
     # List all deployments and delete them
-    flows = list_all_wolf(namespace=NAMESPACE)[:2]
+    flows = list_all_wolf(namespace=NAMESPACE)
     flow_ids = [f['id'].replace('jflow-', '') for f in flows]
     with ThreadPoolExecutor() as thread_executor:
         # call delete function with each flow
         delete_results = thread_executor.map(lambda x: terminate_wolf(x), flow_ids)
 
-    [
+    for i, result in enumerate(delete_results):
         print(f'Deleted {i} deployment', result)
-        for i, result in enumerate(delete_results)
-    ]
 
     # Create new deployments
     results = []
@@ -100,8 +101,6 @@ if __name__ == '__main__':
             for ds_name in data:
                 f = thread_executor.submit(deploy, app, ds_name)
                 futures.append(f)
-                break
-            break
         for f in futures:
             results.append(f.result())
     print(results)
