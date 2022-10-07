@@ -6,7 +6,7 @@ from now.utils import BetterEnum
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.128-add-cname-1'
-NOW_PREPROCESSOR_VERSION = '0.0.88-fix-music-to-music-app-4'
+NOW_PREPROCESSOR_VERSION = '0.0.88-add-custom-domain-4'
 NOW_ANNLITE_INDEXER_VERSION = '0.0.6-annlite-update-list-endpoint-4'
 
 
@@ -116,3 +116,14 @@ AVAILABLE_DATASET = {
 }
 
 SURVEY_LINK = 'https://10sw1tcpld4.typeform.com/to/VTAyYRpR?utm_source=cli'
+
+DEFAULT_EXAMPLE_HOSTED = {
+    'text_to_image': [
+        DemoDatasets.BEST_ARTWORKS,
+        DemoDatasets.DEEP_FASHION,
+    ],
+    'image_to_text': [DemoDatasets.RAP_LYRICS],
+    'image_to_image': [DemoDatasets.TLL],
+    'text_to_text': [DemoDatasets.ROCK_LYRICS],
+    'music_to_music': [DemoDatasets.MUSIC_GENRES_ROCK],
+}
