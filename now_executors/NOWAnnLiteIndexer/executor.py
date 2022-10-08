@@ -1,331 +1,66 @@
-import os.path
-import pickle
-from collections import defaultdict
-from copy import deepcopy
-from sys import maxsize
-from typing import Dict, List, Optional
+from typing import Optional
 
 import annlite
-from jina import Document, DocumentArray
-from jina.logging.logger import JinaLogger
-from now_executors.NOWAuthExecutor.executor import NOWAuthExecutor as Executor
-from now_executors.NOWAuthExecutor.executor import SecurityLevel, secure_request
+from jina import DocumentArray
+from now_common.abstract_executors.NOWBaseIndexer.base_indexer import (
+    NOWBaseIndexer as Executor,
+)
 
 
 class NOWAnnLiteIndexer(Executor):
     """
     A simple Indexer based on PQLite that stores all the Document data together in a local LMDB store.
-
-    To be used as a hybrid indexer, supporting pre-filtering searching.
     """
 
-    def __init__(
-        self,
-        dim: int = 0,
-        metric: str = 'cosine',
-        limit: int = 10,
-        ef_construction: int = 200,
-        ef_query: int = 50,
-        max_connection: int = 16,
-        include_metadata: bool = True,
-        index_traversal_paths: str = '@r',
-        search_traversal_paths: str = '@r',
-        columns: Optional[List] = None,
-        serialize_config: Optional[Dict] = None,
-        *args,
-        **kwargs,
-    ):
-        """
-        :param dim: Dimensionality of vectors to index
-        :param metric: Distance metric type. Can be 'euclidean', 'inner_product', or 'cosine'
-        :param include_metadata: If True, return the document metadata in response
-        :param limit: Number of results to get for each query document in search
-        :param ef_construction: The construction time/accuracy trade-off
-        :param ef_query: The query time accuracy/speed trade-off
-        :param max_connection: The maximum number of outgoing connections in the
-            graph (the "M" parameter)
-        :param index_traversal_paths: Default traversal paths on docs
-                (used for indexing, delete and update), e.g. '@r', '@c', '@r,c'
-        :param search_traversal_paths: Default traversal paths on docs
-        (used for search), e.g. '@r', '@c', '@r,c'
-        :param columns: List of tuples of the form (column_name, str_type). Here str_type must be a string that can be
-                parsed as a valid Python type.
-        :param serialize_config: The configurations used for serializing documents, e.g., {'protocol': 'pickle'}
-        """
-        super().__init__(*args, **kwargs)
-        self.logger = JinaLogger(self.__class__.__name__)
-
-        assert dim > 0, 'Please specify the dimension of the vectors to index!'
-
-        self.metric = metric
-        self.limit = limit
-        self.include_metadata = include_metadata
-        self.index_traversal_paths = index_traversal_paths
-        self.search_traversal_paths = search_traversal_paths
-        self._valid_input_columns = ['str', 'float', 'int']
-
-        if columns:
-            corrected_list = []
-            for i in range(0, len(columns), 2):
-                corrected_list.append((columns[i], columns[i + 1]))
-            columns = corrected_list
-            cols = []
-            for n, t in columns:
-                assert (
-                    t in self._valid_input_columns
-                ), f'column of type={t} is not supported. Supported types are {self._valid_input_columns}'
-                cols.append((n, eval(t)))
-            columns = cols
-
+    # override
+    def construct(self, **kwargs):
+        """Construct the Indexer"""
         self._index = annlite.AnnLite(
-            n_dim=dim,
-            metric=metric,
-            columns=columns,
-            ef_construction=ef_construction,
-            ef_query=ef_query,
-            max_connection=max_connection,
+            n_dim=self.dim,
+            metric=self.metric,
+            columns=self.columns,
+            ef_construction=200,
+            ef_query=50,
+            max_connection=16,
             data_path=self.workspace or './workspace',
-            serialize_config=serialize_config or {},
+            serialize_config={},
             **kwargs,
         )
-        self.da = DocumentArray()
+
+    # override
+    def batch_iterator(self):
+        """Return a batch iterator over the indexed documents"""
         for cell_id in range(self._index.n_cells):
             for docs in self._index.documents_generator(cell_id, batch_size=10240):
-                self.extend_inmemory_docs_and_tags(docs)
+                yield docs
 
-        self.da = DocumentArray(sorted([d for d in self.da], key=lambda x: x.id))
-
-        if os.path.isfile(os.path.join(self.workspace, 'tags.pkl')):
-            with open(os.path.join(self.workspace, 'tags.pkl'), 'rb') as f:
-                self.doc_id_tags = pickle.load(f)
-        else:
-            self.doc_id_tags = defaultdict(dict)
-
-    def extend_inmemory_docs_and_tags(self, docs):
-        """Extend the in-memory DocumentArray with new documents"""
-        for d in docs:
-            self.da.append(
-                Document(id=d.id, uri=d.uri, tags=d.tags, parent_id=d.parent_id)
-            )
-            self.doc_id_tags[d.id] = d.tags
-        self.save_tags()
-
-    def update_inmemory_docs_and_tags(self, docs):
-        """Update documents in the in-memory DocumentArray"""
-        for d in docs:
-            self.da[d.id] = d
-            self.doc_id_tags[d.id] = d.tags
-        self.save_tags()
-
-    def delete_inmemory_docs_and_tags(self, docs):
-        """Delete documents from the in-memory DocumentArray"""
-        for d in docs:
-            del self.da[d.id]
-            self.doc_id_tags.pop(d.id, None)
-        self.save_tags()
-
-    @secure_request(on='/index', level=SecurityLevel.USER)
+    # override
     def index(
         self, docs: Optional[DocumentArray] = None, parameters: dict = {}, **kwargs
     ):
-        """Index new documents
+        """Index new documents"""
+        self._index.index(docs)
 
-        :param docs: the Documents to index
-        :param parameters: dictionary with options for indexing
-        Keys accepted:
-            - 'traversal_paths' (str): traversal path for the docs
-        """
-        if not docs:
-            return
-
-        traversal_paths = parameters.get('traversal_paths', self.index_traversal_paths)
-        flat_docs = docs[traversal_paths]
-        if len(flat_docs) == 0:
-            return
-
-        self._index.index(flat_docs)
-        self.extend_inmemory_docs_and_tags(flat_docs)
-
-        return DocumentArray([])
-
-    @secure_request(on='/tags', level=SecurityLevel.USER)
-    def get_tags_and_values(self, **kwargs):
-        """Returns tags and their possible values
-
-        for example if indexed docs are the following:
-            docs = DocumentArray([
-                Document(.., tags={'color':'red'}),
-                Document(.., tags={'color':'blue'}),
-                Document(.., tags={'greeting':'hello'}),
-            ])
-
-        the resulting response would be a document array with
-        one document containg a dictionary in tags like the following:
-        {'tags':{'color':['red', 'blue'], 'greeting':['hello']}}
-        """
-
-        count_dict = defaultdict(lambda: defaultdict(int))
-        for tags in self.doc_id_tags.values():
-            for key, value in tags.items():
-                count_dict[key][value] += 1
-
-        for key, inside_dict in count_dict.items():
-            count_dict[key] = dict(
-                sorted(inside_dict.items(), key=lambda item: item[1])
-            )
-            count_dict[key] = list((count_dict[key]))[-10:]
-
-        return DocumentArray([Document(text='tags', tags={'tags': dict(count_dict)})])
-
-    @secure_request(on='/update', level=SecurityLevel.USER)
-    def update(
-        self, docs: Optional[DocumentArray] = None, parameters: dict = {}, **kwargs
-    ):
-        """Update existing documents
-
-        :param docs: the Documents to update
-        :param parameters: dictionary with options for updating
-        Keys accepted:
-
-            - 'traversal_paths' (str): traversal path for the docs
-        """
-
-        if not docs:
-            return
-
-        traversal_paths = parameters.get('traversal_paths', self.index_traversal_paths)
-        flat_docs = docs[traversal_paths]
-        if len(flat_docs) == 0:
-            return
-
-        self.update_inmemory_docs_and_tags(flat_docs)
-        self._index.update(flat_docs)
-
-    @secure_request(on='/delete', level=SecurityLevel.USER)
-    def delete(self, parameters: dict = {}, **kwargs):
+    # override
+    def delete(self, documents_to_delete, parameters: dict = {}, **kwargs):
         """
         Delete endpoint to delete document/documents from the index.
         Filter conditions can be passed to select documents for deletion.
         """
-        filter = parameters.get("filter", {})
-        if filter:
-            filtered_docs = deepcopy(self.da.find(filter=filter))
-            self.delete_inmemory_docs_and_tags(filtered_docs)
-            self._index.delete(filtered_docs)
+        self._index.delete(documents_to_delete)
 
-        return DocumentArray()
-
-    @secure_request(on='/list', level=SecurityLevel.USER)
-    def list(self, parameters: dict = {}, **kwargs):
-        """List all indexed documents.
-        :param parameters: dictionary with limit and offset
-        - offset (int): number of documents to skip
-        - limit (int): number of retrieved documents
-        """
-        limit = int(parameters.get('limit', maxsize))
-        offset = int(parameters.get('offset', 0))
-        # add removal of duplicates
-        traversal_paths = parameters.get('traversal_paths', self.search_traversal_paths)
-        if traversal_paths == '@c':
-            docs = DocumentArray()
-            chunks_size = int(parameters.get('chunks_size', 3))
-            parent_ids = set()
-            for d in self.da[offset * chunks_size :]:
-                if len(parent_ids) == limit:
-                    break
-                if d.parent_id in parent_ids:
-                    continue
-                parent_ids.add(d.parent_id)
-                docs.append(d)
-        else:
-            docs = self.da[offset : offset + limit]
-        return docs
-
-    @secure_request(on='/search', level=SecurityLevel.USER)
+    # override
     def search(
-        self, docs: Optional[DocumentArray] = None, parameters: dict = {}, **kwargs
+        self,
+        docs: DocumentArray,
+        parameters: dict,
+        limit: int,
+        search_filter: dict,
+        **kwargs
     ):
-        """Perform a vector similarity search and retrieve Document matches
-
-        Search can be performed with candidate filtering. Filters are a triplet (column,operator,value).
-        More than a filter can be applied during search. Therefore, conditions for a filter are specified as a list triplets.
-        Each triplet contains:
-
-        - column: Column used to filter.
-        - operator: Binary operation between two values. Some supported operators include `['>','<','=','<=','>=']`.
-        - value: value used to compare a candidate.
-
-        :param docs: the Documents to search with
-        :param parameters: dictionary for parameters for the search operation
-        Keys accepted:
-
-            - 'filter' (dict): the filtering conditions on document tags
-            - 'traversal_paths' (str): traversal paths for the docs
-            - 'limit' (int): nr of matches to get per Document
-        """
-        if not docs:
-            return
-
-        limit = int(parameters.get('limit', self.limit))
-        search_filter = parameters.get('filter', {})
-        include_metadata = bool(
-            parameters.get('include_metadata', self.include_metadata)
-        )
-
-        traversal_paths = parameters.get('traversal_paths', self.search_traversal_paths)
-        flat_docs = docs[traversal_paths]
-        if len(flat_docs) == 0:
-            return
-
-        if self.search_traversal_paths == '@c':
-            retrieval_limit = limit * 3
-        else:
-            retrieval_limit = limit
-
+        """Perform a vector similarity search and retrieve Document matches"""
         self._index.search(
-            flat_docs,
+            docs,
             filter=search_filter,
-            limit=retrieval_limit,
-            include_metadata=include_metadata,
+            limit=limit,
         )
-
-        if self.search_traversal_paths == '@c':
-            docs = docs[0].chunks
-            for d in docs:
-                unique_matches = []
-                parent_ids = set()
-                d.embedding = None
-                for m in d.matches:
-                    m.embedding = None
-                    if m.parent_id in parent_ids:
-                        continue
-                    unique_matches.append(m)
-                    parent_ids.add(m.parent_id)
-                    if len(unique_matches) == limit:
-                        break
-                d.matches = unique_matches
-        return docs
-
-    @secure_request(on='/status', level=SecurityLevel.USER)
-    def status(self, **kwargs) -> DocumentArray:
-        """Return the document containing status information about the indexer.
-
-        The status will contain information on the total number of indexed and deleted
-        documents, and on the number of (searchable) documents currently in the index.
-        """
-
-        status = Document(tags=self._index.stat)
-        return DocumentArray([status])
-
-    @secure_request(on='/clear', level=SecurityLevel.USER)
-    def clear(self, **kwargs):
-        """Clear the index of all entries."""
-        self._index.clear()
-
-    def close(self, **kwargs):
-        """Close the index."""
-        self._index.close()
-
-    def save_tags(self):
-        with open(os.path.join(self.workspace, 'tags.pkl'), 'wb') as f:
-            pickle.dump(self.doc_id_tags, f)
