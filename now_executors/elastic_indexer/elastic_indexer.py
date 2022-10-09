@@ -1,13 +1,18 @@
-from typing import Any, Dict, List, Mapping, Optional, Union
 import traceback
+from typing import Any, Dict, List, Mapping, Optional, Union
 
 import numpy as np
 from docarray import Document, DocumentArray
 from docarray.score import NamedScore
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
-from now_executors.NOWAuthExecutor.executor import NOWAuthExecutor as Executor
-from now_executors.NOWAuthExecutor.executor import SecurityLevel, secure_request
+from now_common.abstract_executors.NOWAuthExecutor.executor import (
+    NOWAuthExecutor as Executor,
+)
+from now_common.abstract_executors.NOWAuthExecutor.executor import (
+    SecurityLevel,
+    secure_request,
+)
 
 metrics_mapping = {
     'cosine': 'cosineSimilarity',
