@@ -5,9 +5,14 @@ from typing import Dict, Optional
 
 import boto3
 from jina import Document, DocumentArray
+from now_common.abstract_executors.NOWAuthExecutor.executor import (
+    NOWAuthExecutor as Executor,
+)
+from now_common.abstract_executors.NOWAuthExecutor.executor import (
+    SecurityLevel,
+    secure_request,
+)
 from now_common.options import _construct_app
-from now_executors.NOWAuthExecutor.executor import NOWAuthExecutor as Executor
-from now_executors.NOWAuthExecutor.executor import SecurityLevel, secure_request
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import Apps, DatasetTypes, Modalities
