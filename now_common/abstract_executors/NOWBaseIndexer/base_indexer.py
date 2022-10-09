@@ -11,6 +11,7 @@ from now_common.abstract_executors.NOWAuthExecutor.executor import (
     SecurityLevel,
     secure_request,
 )
+from now_common.abstract_executors.NOWBaseIndexer.ranking import merge_matches_sum
 
 
 class NOWBaseIndexer(Executor):
@@ -145,7 +146,9 @@ class NOWBaseIndexer(Executor):
         limit = int(parameters.get('limit', self.limit))
         search_filter = parameters.get('filter', {})
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
-        flat_docs = docs[traversal_paths]
+        flat_docs = docs[traversal_paths][
+            :1
+        ]  # only search on the first document for now
 
         if self.traversal_paths == '@c':
             retrieval_limit = limit * 3
@@ -155,21 +158,17 @@ class NOWBaseIndexer(Executor):
         self.search(flat_docs, parameters, retrieval_limit, search_filter)
 
         if self.traversal_paths == '@c':
-            docs = docs[0].chunks
-            for d in docs:
-                unique_matches = []
-                parent_ids = set()
-                d.embedding = None
-                for m in d.matches:
-                    m.embedding = None
-                    if m.parent_id in parent_ids:
-                        continue
-                    unique_matches.append(m)
-                    parent_ids.add(m.parent_id)
-                    if len(unique_matches) == limit:
-                        break
-                d.matches = unique_matches
-        return docs
+            merge_matches_sum(flat_docs, limit)
+
+        self.clean_response(flat_docs)
+        return flat_docs
+
+    def clean_response(self, docs):
+        """removes the embedding from the root level and also from the matches."""
+        for doc in docs:
+            doc.embedding = None
+            for match in doc.matches:
+                match.embedding = None
 
     def parse_columns(self, columns):
         """Parse the columns to index"""

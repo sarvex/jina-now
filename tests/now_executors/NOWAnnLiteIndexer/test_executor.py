@@ -117,7 +117,7 @@ def test_list(tmpdir, offset, limit, has_chunk):
 def test_search(tmpdir):
     metas = {'workspace': str(tmpdir)}
     docs = gen_docs(NUMBER_OF_DOCS)
-    docs_query = gen_docs(NUMBER_OF_DOCS)
+    docs_query = gen_docs(1)
     f = Flow().add(
         uses=NOWAnnLiteIndexer,
         uses_with={
@@ -129,7 +129,7 @@ def test_search(tmpdir):
         f.post(on='/index', inputs=docs)
 
         query_res = f.post(on='/search', inputs=docs_query, return_results=True)
-        assert len(query_res) == NUMBER_OF_DOCS
+        assert len(query_res) == 1
 
         for i in range(len(query_res[0].matches) - 1):
             assert (
