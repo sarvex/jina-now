@@ -85,36 +85,17 @@ if __name__ == '__main__':
         flow_ids = [f['id'].replace('jflow-', '') for f in flows]
         with ThreadPoolExecutor() as thread_executor:
             # call delete function with each flow
-            delete_results = thread_executor.map(lambda x: terminate_wolf(x), flow_ids)
+            thread_executor.map(lambda x: terminate_wolf(x), flow_ids)
     else:
-        # check if deployment is already running else delete it
+        # check if deployment is already running else add to deploy_list
         for app, data in DEFAULT_EXAMPLE_HOSTED.items():
             for ds_name in data:
-                host = f'noow-example-{app}-{ds_name}.dev.jina.ai'.replace('_', '-')
+                host = f'now-example-{app}-{ds_name}.dev.jina.ai'.replace('_', '-')
                 jina_client = Client(host=host)
                 try:
                     jina_client.post('/dry_run', timeout=2)
                 except ConnectionError:
-                    # This deployment is not running. Get its host_target from CNAME record and delete it
-                    try:
-                        response = aws_client.list_resource_record_sets(
-                            HostedZoneId=os.environ['AWS_HOSTED_ZONE_ID'],
-                            StartRecordName=host,
-                            StartRecordType='CNAME',
-                            MaxItems='1',
-                        )
-                        host_target = response['ResourceRecordSets'][0][
-                            'ResourceRecords'
-                        ][0]['Value']
-                        if host == host_target:
-                            terminate_wolf(host_target)
-                        else:
-                            to_deploy.add((app, ds_name))
-                    except Exception as e:
-                        print(e)
-
-    for i, result in enumerate(delete_results):
-        print(f'Deleted {i} deployment ', result if result else '')
+                    to_deploy.add((app, ds_name))
 
     # Create new deployments
     results = []
