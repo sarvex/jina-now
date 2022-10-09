@@ -7,6 +7,7 @@ import hubble
 from docarray import DocumentArray
 from hubble.excepts import AuthenticationRequiredError
 from jina import Executor, requests
+from jina.logging.logger import JinaLogger
 
 
 class SecurityLevel:
@@ -102,7 +103,7 @@ class NOWAuthExecutor(Executor):
         :param pats: List of PATs of the allowed users with access to this flow.
         """
         super().__init__(*args, **kwargs)
-
+        self.logger = JinaLogger(self.__class__.__name__)
         self.admin_emails = admin_emails
         self.user_emails = user_emails
         self.api_keys = api_keys
