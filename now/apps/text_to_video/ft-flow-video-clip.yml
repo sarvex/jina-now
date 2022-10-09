@@ -66,8 +66,6 @@ executors:
     uses: ${{ ENV.INDEXER_NAME }}
     uses_with:
       traversal_paths: '@c'
-      index_traversal_paths: '@c'
-      search_traversal_paths: '@c'
       dim: ${{ ENV.N_DIM }}
       columns: ${{ ENV.COLUMNS }}
       admin_emails: ${{ ENV.ADMIN_EMAILS }}
