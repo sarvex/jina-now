@@ -5,9 +5,9 @@ from now.utils import BetterEnum
 # DEMO_DATASET_DOCARRAY_VERSION = docarray_version
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.128-add-cname-1'
-NOW_PREPROCESSOR_VERSION = '0.0.90-feat-elastic-67'
+NOW_PREPROCESSOR_VERSION = '0.0.90-feat-elastic-68'
 NOW_ANNLITE_INDEXER_VERSION = '0.0.9-feat-sum-ranker-3'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.1-feat-elastic-67'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.1-feat-elastic-68'
 
 
 class Modalities(BetterEnum):
