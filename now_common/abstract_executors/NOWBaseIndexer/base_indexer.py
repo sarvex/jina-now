@@ -115,8 +115,11 @@ class NOWBaseIndexer(Executor):
         :param docs: the Documents to index
         :param parameters: dictionary with options for indexing
         """
+        docs.summary()
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
+        print('# traversal_paths', traversal_paths)
         flat_docs = docs[traversal_paths]
+        flat_docs.summary()
         self.index(flat_docs, parameters, **kwargs)
         self.extend_inmemory_docs_and_tags(flat_docs)
         return DocumentArray([])
