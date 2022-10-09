@@ -1,17 +1,19 @@
 import json
 import os
-from typing import Dict, Optional, List
+from typing import Dict, Optional
 
-from docarray import DocumentArray, Document
-
-from now.finetuning.run_finetuning import finetune
-from now.finetuning.settings import parse_finetune_settings, FinetuneSettings
+import hubble
+from docarray import Document, DocumentArray
+from jina import __version__ as jina_version
 from now_common.preprocess import preprocess_nested_docs, preprocess_text
+from now_common.utils import get_indexer_config
 
 from now.apps.base.app import JinaNOWApp
-from now.constants import Apps, Modalities, NOW_PREPROCESSOR_VERSION, ModelNames
+from now.constants import NOW_PREPROCESSOR_VERSION, Apps, Modalities, ModelNames
 from now.finetuning.data_builder import DataBuilder
-from now.now_dataclasses import UserInput, DialogOptions, Task
+from now.finetuning.run_finetuning import finetune
+from now.finetuning.settings import FinetuneSettings, parse_finetune_settings
+from now.now_dataclasses import Task, UserInput
 
 
 class TextToTextAndImage(JinaNOWApp):
@@ -104,12 +106,13 @@ class TextToTextAndImage(JinaNOWApp):
         else:
             return preprocess_text(da=da, split_by_sentences=False)
 
+    @hubble.login_required
     def setup(
         self, dataset: DocumentArray, user_input: UserInput, kubectl_path
     ) -> Dict:
         task_config = self._create_task_config(user_input, dataset[0])
         data = DataBuilder(dataset=dataset, config=task_config).build()
-        env_dict = {}
+        env_dict = {'N_DIM': []}
         for encoder_data, encoder_type in data:
             finetune_settings = self._construct_finetune_settings(
                 user_input=user_input,
@@ -128,16 +131,42 @@ class TextToTextAndImage(JinaNOWApp):
             env_dict['JINA_TOKEN'] = token
             if finetune_settings.model_name == ModelNames.CLIP:
                 env_dict['CLIP_ARTIFACT'] = artifact_id
+                env_dict['N_DIM'].append(512)
             elif finetune_settings.model_name == ModelNames.SBERT:
                 env_dict['SBERT_ARTIFACT'] = artifact_id
+                env_dict['N_DIM'].append(768)
             else:
                 print(f'{self.app_name} only expects CLIP or SBERT models.')
                 raise
 
         env_dict[
             'PREPROCESSOR_NAME'
-        ] = f'jinahub+docker://NOWPreprocessor/v{NOW_PREPROCESSOR_VERSION}'
+        ] = f'jinahub+docker://NOWPreprocessor/{NOW_PREPROCESSOR_VERSION}'
         env_dict['APP'] = self.app_name
+        indexer_config = get_indexer_config(
+            len(dataset),
+            elastic=True,
+            kubectl_path=kubectl_path,
+            deployment_type=user_input.deployment_type,
+        )
+        env_dict['HOSTS'] = indexer_config['hosts']
+        env_dict['INDEXER_NAME'] = f"jinahub+docker://{indexer_config['indexer_uses']}"
+        env_dict['INDEXER_MEM'] = indexer_config['indexer_resources']['INDEXER_MEM']
+        env_dict['JINA_VERSION'] = jina_version
+        # retention days
+        if 'NOW_CI_RUN' in os.environ:
+            env_dict[
+                'RETENTION_DAYS'
+            ] = 0  # JCloud will delete after 24hrs of being idle if not deleted in CI
+        else:
+            env_dict['RETENTION_DAYS'] = 7  # for user deployment set it to 30 days
+        env_dict['ADMIN_EMAILS'] = (
+            user_input.admin_emails or [] if user_input.secured else [],
+        )
+        env_dict['USER_EMAILS'] = (
+            user_input.user_emails or [] if user_input.secured else [],
+        )
+
         self.set_flow_yaml()
 
         return env_dict

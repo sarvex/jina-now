@@ -5,6 +5,9 @@ with:
   port_expose: 8080
   env:
     JINA_LOG_LEVEL: DEBUG
+jcloud:
+  version: ${{ ENV.JINA_VERSION }}
+  retention_days: ${{ RETENTION_DAYS }}
 executors:
 - name: preprocessor
   uses: ${{ ENV.PREPROCESSOR_NAME }}
@@ -27,6 +30,9 @@ executors:
     token: ${{ ENV.JINA_TOKEN }}
   env:
     JINA_LOG_LEVEL: DEBUG
+  when:
+    modality:
+      $eq: text
 - name: clip_text_encoder
   uses: jinahub+docker://FinetunerExecutor
   uses_requests:
@@ -37,6 +43,9 @@ executors:
     select_model: clip-text
   env:
     JINA_LOG_LEVEL: DEBUG
+  when:
+    modality:
+      $eq: text
 - name: clip_vision_encoder
   uses: jinahub+docker://FinetunerExecutor
   uses_requests:
@@ -45,5 +54,23 @@ executors:
     artifact: ${{ ENV.CLIP_ARTIFACT }}
     token: ${{ ENV.JINA_TOKEN }}
     select_model: clip-vision
+  env:
+    JINA_LOG_LEVEL: DEBUG
+  when:
+    modalities:
+      $eq: image
+- name: indexer
+  uses: ${{ ENV.INDEXER_NAME }}
+  uses_with:
+    hosts: ${{ ENV.HOSTS }}
+    dims: ${{ ENV.N_DIM }}
+    columns: ${{ ENV.COLUMNS }}
+    admin_emails: ${{ ENV.ADMIN_EMAILS }}
+    user_emails: ${{ ENV.USER_EMAILS }}
+  jcloud:
+    capacity: on-demand
+    resources:
+      memory: ${{ ENV.INDEXER_MEM }}
+      cpu: 1.0
   env:
     JINA_LOG_LEVEL: DEBUG

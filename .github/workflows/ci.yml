@@ -120,7 +120,7 @@ jobs:
         env:
           NOW_PREPROCESSOR_VERSION: ${{ env.NOW_PREPROCESSOR_VERSION }}
         run: |
-          if jina hub pull jinahub+docker://vlxgoxlv/v$NOW_PREPROCESSOR_VERSION; then
+          if jina hub pull jinahub+docker://vlxgoxlv/$NOW_PREPROCESSOR_VERSION; then
             echo "NOW preprocessor version is used already. Please update the tag"
             exit 1
           else
@@ -140,7 +140,7 @@ jobs:
         if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
         env:
           NOW_PREPROCESSOR_VERSION: ${{ env.NOW_PREPROCESSOR_VERSION }}
-        run: JINA_AUTH_TOKEN=${{ secrets.NOW_PREPROCESSOR_JCLOUD_TOKEN }} jina hub push --verbose --force-update NOWPreprocessor now_executors/NOWPreprocessor/. -t latest --protected-tag v$NOW_PREPROCESSOR_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
+        run: JINA_AUTH_TOKEN=${{ secrets.NOW_PREPROCESSOR_JCLOUD_TOKEN }} jina hub push --verbose --force-update NOWPreprocessor now_executors/NOWPreprocessor/. -t latest --protected-tag $NOW_PREPROCESSOR_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
 
   update-annlite-executor-if-required:
     runs-on: ubuntu-latest
@@ -175,7 +175,7 @@ jobs:
         env:
           NOW_ANNLITE_INDEXER_VERSION: ${{ env.NOW_ANNLITE_INDEXER_VERSION }}
         run: |
-          if jina hub pull jinahub+docker://tiv9x4mm/v$NOW_ANNLITE_INDEXER_VERSION; then
+          if jina hub pull jinahub+docker://tiv9x4mm/$NOW_ANNLITE_INDEXER_VERSION; then
             echo "NOW AnnLite Indexer version is used already. Please update the tag"
             exit 1
           else
@@ -195,7 +195,7 @@ jobs:
         if: steps.check_has_executor_changed.outputs.has_changed == 'true'
         env:
           NOW_ANNLITE_INDEXER_VERSION: ${{ env.NOW_ANNLITE_INDEXER_VERSION }}
-        run: jina hub push --verbose --force-update NOWAnnLiteIndexer now_executors/NOWAnnLiteIndexer --secret ${{ secrets.NOW_ANNLITE_EXECUTOR_SECRET }} -t latest --protected-tag v$NOW_ANNLITE_INDEXER_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
+        run: jina hub push --verbose --force-update NOWAnnLiteIndexer now_executors/NOWAnnLiteIndexer --secret ${{ secrets.NOW_ANNLITE_EXECUTOR_SECRET }} -t latest --protected-tag $NOW_ANNLITE_INDEXER_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
 
   update-bff-playground-if-required:
     runs-on: ubuntu-latest
@@ -261,6 +261,60 @@ jobs:
           context: deployment/playground/.
           push: true
           tags: jinaai/now-playground:${{ env.BFF_PLAYGROUND_TAG }}
+
+  update-elastic-executor-if-required:
+    runs-on: ubuntu-latest
+    needs: [commit-lint, lint-flake-8, check-black]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Check if executor has changed
+        uses: dorny/paths-filter@v2
+        id: check_has_executor_changed
+        with:
+          filters: |
+            has_changed:
+            - 'now_executors/NOWAuthExecutor/**'
+            - 'now_executors/elastic_indexer/**'
+      - name: Get executor tag
+        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
+        run: |
+          FILE='now/constants.py'
+          NOW_ELASTIC_INDEXER_VERSION=$(sed -n '/NOW_ELASTIC_INDEXER_VERSION =/p' $FILE | cut -d \' -f2)
+          echo "NOW_ELASTIC_INDEXER_VERSION=$NOW_ELASTIC_INDEXER_VERSION" >> $GITHUB_ENV
+      - name: Set up Python 3.7
+        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+      - name: Pip install jina
+        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
+        run: pip install "jina[perf]"
+      - name: Check that tag isn't used already for executor
+        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
+        env:
+          NOW_ELASTIC_INDEXER_VERSION: ${{ env.NOW_ELASTIC_INDEXER_VERSION }}
+        run: |
+          if jina hub pull jinahub+docker://i7asjny7/$NOW_ELASTIC_INDEXER_VERSION; then
+            echo "NOW Elastic Indexer version is used already. Please update the tag"
+            exit 1
+          else
+            echo "NOW Elastic Indexer version isn't used already, continue to build..."
+          fi
+      - name: Run tests for executor and parents
+        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
+        timeout-minutes: 10
+        run: |
+          sudo apt update && sudo apt install ffmpeg
+          python -m pip install --upgrade pip
+          python -m pip install wheel
+          pip install --no-cache-dir ".[full,test]"
+          pytest --suppress-no-test-exit-code -v -s tests/now_executors/NOWAuthExecutor
+          pytest --suppress-no-test-exit-code -v -s tests/now_executors/elastic_indexer
+      - name: Build and push executor
+        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
+        env:
+          NOW_ELASTIC_INDEXER_VERSION: ${{ env.NOW_ELASTIC_INDEXER_VERSION }}
+        run: jina hub push --verbose --force-update ElasticIndexer now_executors/elastic_indexer --secret ${{ secrets.NOW_ELASTIC_EXECUTOR_SECRET }} -t latest --protected-tag $NOW_ELASTIC_INDEXER_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
 
   core-test:
     runs-on: ubuntu-latest

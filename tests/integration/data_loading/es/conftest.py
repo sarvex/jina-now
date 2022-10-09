@@ -11,7 +11,7 @@ from tests.integration.data_loading.es.utils import delete_es_index
 
 
 @pytest.fixture
-def setup_elastic_db(es_connection_params):
+def setup_elastic_db(setup_service_running, es_connection_params):
     connection_str, connection_args = es_connection_params
     with catch_warnings():
         filterwarnings('ignore', category=InsecureRequestWarning)
