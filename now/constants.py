@@ -6,8 +6,8 @@ from now.utils import BetterEnum
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.128-add-cname-1'
-NOW_PREPROCESSOR_VERSION = '0.0.89-refactor-base-indexer-4'
-NOW_ANNLITE_INDEXER_VERSION = '0.0.7-refactor-base-indexer-4'
+NOW_PREPROCESSOR_VERSION = '0.0.90-refactor-faster-docker-build-1'
+NOW_ANNLITE_INDEXER_VERSION = '0.0.8-refactor-faster-docker-build-1'
 
 
 class Modalities(BetterEnum):
