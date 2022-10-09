@@ -10,7 +10,7 @@ on:
       deployment_type:
         description: 'Deployment type? ALL | PARTIAL'
         required: false
-        default: ALL
+        default: PARTIAL
 
   pull_request:
 
