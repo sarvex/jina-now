@@ -1,3 +1,0 @@
-manifest_version: 1
-name: NOWAuthExecutor
-description: NOWAuthExecutor performs the JWT and USER_ID check for authorization
