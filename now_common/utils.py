@@ -1,14 +1,13 @@
 import json
 import os
-import time
+import pathlib
 import tempfile
+import time
 from copy import deepcopy
 from os.path import expanduser as user
 from typing import Dict, List, Optional
-import pathlib
 
 import hubble
-from now.deployment.deployment import cmd
 from docarray import Document, DocumentArray
 from jina import __version__ as jina_version
 
@@ -21,6 +20,7 @@ from now.constants import (
     PREFETCH_NR,
     DatasetTypes,
 )
+from now.deployment.deployment import cmd
 from now.finetuning.run_finetuning import finetune
 from now.finetuning.settings import FinetuneSettings, parse_finetune_settings
 from now.now_dataclasses import UserInput
@@ -58,7 +58,7 @@ def common_get_flow_env_dict(
         'PRE_TRAINED_EMBEDDINGS_SIZE': pre_trained_embedding_size,
         'INDEXER_NAME': f'jinahub+docker://{indexer_uses}',
         'PREFETCH': PREFETCH_NR,
-        'PREPROCESSOR_NAME': f'jinahub+docker://NOWPreprocessor/v{NOW_PREPROCESSOR_VERSION}',
+        'PREPROCESSOR_NAME': f'jinahub+docker://NOWPreprocessor/{NOW_PREPROCESSOR_VERSION}',
         'APP': user_input.app_instance.app_name,
         'COLUMNS': tags,
         'ADMIN_EMAILS': user_input.admin_emails or [] if user_input.secured else [],
@@ -219,11 +219,11 @@ def get_indexer_config(
     """
     if elastic and deployment_type == 'local':
         config = {
-            'indexer_uses': f'ElasticIndexer/v{NOW_ELASTIC_INDEXER_VERSION}',
+            'indexer_uses': f'ElasticIndexer/{NOW_ELASTIC_INDEXER_VERSION}',
             'hosts': setup_elastic_service(kubectl_path),
         }
     else:
-        config = {'indexer_uses': f'NOWAnnLiteIndexer/v{NOW_ANNLITE_INDEXER_VERSION}'}
+        config = {'indexer_uses': f'NOWAnnLiteIndexer/{NOW_ANNLITE_INDEXER_VERSION}'}
     threshold1 = 250_000
     if num_indexed_samples <= threshold1:
         config['indexer_resources'] = {'INDEXER_CPU': 0.1, 'INDEXER_MEM': '2G'}

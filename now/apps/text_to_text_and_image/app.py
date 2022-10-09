@@ -1,27 +1,19 @@
 import json
 import os
-from typing import Dict, Optional, List, Union
-import time
+from typing import Dict, Optional
 
-from docarray import DocumentArray, Document
 import hubble
-
-from now.finetuning.run_finetuning import finetune
-from now.finetuning.settings import parse_finetune_settings, FinetuneSettings
-from now_common.preprocess import preprocess_nested_docs, preprocess_text
-from now_common.utils import get_indexer_config, MAX_RETRIES
-from now.deployment.deployment import cmd
+from docarray import Document, DocumentArray
 from jina import __version__ as jina_version
+from now_common.preprocess import preprocess_nested_docs, preprocess_text
+from now_common.utils import get_indexer_config
 
 from now.apps.base.app import JinaNOWApp
-from now.constants import (
-    Apps,
-    Modalities,
-    NOW_PREPROCESSOR_VERSION,
-    ModelNames,
-)
+from now.constants import NOW_PREPROCESSOR_VERSION, Apps, Modalities, ModelNames
 from now.finetuning.data_builder import DataBuilder
-from now.now_dataclasses import UserInput, DialogOptions, Task
+from now.finetuning.run_finetuning import finetune
+from now.finetuning.settings import FinetuneSettings, parse_finetune_settings
+from now.now_dataclasses import Task, UserInput
 
 
 class TextToTextAndImage(JinaNOWApp):
@@ -149,7 +141,7 @@ class TextToTextAndImage(JinaNOWApp):
 
         env_dict[
             'PREPROCESSOR_NAME'
-        ] = f'jinahub+docker://NOWPreprocessor/v{NOW_PREPROCESSOR_VERSION}'
+        ] = f'jinahub+docker://NOWPreprocessor/{NOW_PREPROCESSOR_VERSION}'
         env_dict['APP'] = self.app_name
         indexer_config = get_indexer_config(
             len(dataset),
