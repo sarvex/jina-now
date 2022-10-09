@@ -294,7 +294,7 @@ jobs:
         env:
           NOW_ELASTIC_INDEXER_VERSION: ${{ env.NOW_ELASTIC_INDEXER_VERSION }}
         run: |
-          if jina hub pull jinahub+docker://i7asjny7/v$NOW_ELASTIC_INDEXER_VERSION; then
+          if jina hub pull jinahub+docker://i7asjny7/$NOW_ELASTIC_INDEXER_VERSION; then
             echo "NOW Elastic Indexer version is used already. Please update the tag"
             exit 1
           else
@@ -314,7 +314,7 @@ jobs:
         if: steps.check_has_executor_changed.outputs.has_changed == 'true'
         env:
           NOW_ELASTIC_INDEXER_VERSION: ${{ env.NOW_ELASTIC_INDEXER_VERSION }}
-        run: jina hub push --verbose --force-update ElasticIndexer now_executors/elastic_indexer --secret ${{ secrets.NOW_ELASTIC_EXECUTOR_SECRET }} -t latest --protected-tag v$NOW_ELASTIC_INDEXER_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
+        run: jina hub push --verbose --force-update ElasticIndexer now_executors/elastic_indexer --secret ${{ secrets.NOW_ELASTIC_EXECUTOR_SECRET }} -t latest --protected-tag $NOW_ELASTIC_INDEXER_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
 
   core-test:
     runs-on: ubuntu-latest
