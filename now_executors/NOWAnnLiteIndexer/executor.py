@@ -1,5 +1,3 @@
-from typing import Optional
-
 import annlite
 from jina import DocumentArray
 from now_common.abstract_executors.NOWBaseIndexer.base_indexer import (
@@ -35,9 +33,7 @@ class NOWAnnLiteIndexer(Executor):
                 yield docs
 
     # override
-    def index(
-        self, docs: Optional[DocumentArray] = None, parameters: dict = {}, **kwargs
-    ):
+    def index(self, docs: DocumentArray, parameters: dict, **kwargs):
         """Index new documents"""
         self._index.index(docs)
 
