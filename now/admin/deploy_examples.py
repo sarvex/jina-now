@@ -1,6 +1,6 @@
 import os
 from argparse import Namespace
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor
 
 import boto3
 from jina import Client
@@ -83,7 +83,7 @@ if __name__ == '__main__':
         # List all deployments and delete them
         flows = list_all_wolf(namespace=None)
         flow_ids = [f['id'].replace('jflow-', '') for f in flows]
-        with ThreadPoolExecutor() as thread_executor:
+        with ProcessPoolExecutor() as thread_executor:
             # call delete function with each flow
             thread_executor.map(lambda x: terminate_wolf(x), flow_ids)
         print('Deploying all examples!!')
@@ -101,7 +101,7 @@ if __name__ == '__main__':
         print('Total Apps to re-deploy: ', len(to_deploy))
 
     results = []
-    with ThreadPoolExecutor(max_workers=2) as thread_executor:
+    with ProcessPoolExecutor() as thread_executor:
         futures = []
         if deployment_type == 'all':
             # Create all new deployments and update CNAME records
