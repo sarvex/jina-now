@@ -12,7 +12,6 @@ NOW_QDRANT_INDEXER_VERSION = '0.0.1-feat-add-qdrant-indexer-21'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.1-feat-elastic-69'
 
 
-
 class Modalities(BetterEnum):
     TEXT = 'text'
     IMAGE = 'image'
