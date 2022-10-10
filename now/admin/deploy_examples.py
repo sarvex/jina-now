@@ -89,20 +89,19 @@ if __name__ == '__main__':
         print('Deploying all examples!!')
     else:
         # check if deployment is already running else add to deploy_list
+        jina_client = Client()
         for app, data in DEFAULT_EXAMPLE_HOSTED.items():
             for ds_name in data:
                 host = f'grpcs://now-example-{app}-{ds_name}.dev.jina.ai'.replace(
                     '_', '-'
                 )
                 jina_client = Client(host=host)
-                try:
-                    jina_client.post('/dry_run', timeout=2)
-                except ConnectionError:
+                if not jina_client.is_flow_ready(timeout=2):
                     to_deploy.add((app, ds_name))
-        print('Total Apps to deploy: ', len(to_deploy))
+        print('Total Apps to re-deploy: ', len(to_deploy))
 
     results = []
-    with ThreadPoolExecutor() as thread_executor:
+    with ThreadPoolExecutor(max_workers=2) as thread_executor:
         futures = []
         if deployment_type == 'all':
             # Create all new deployments and update CNAME records
