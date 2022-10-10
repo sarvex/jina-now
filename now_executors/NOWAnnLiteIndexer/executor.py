@@ -7,7 +7,7 @@ from now_common.abstract_executors.NOWBaseIndexer.base_indexer import (
 
 class NOWAnnLiteIndexer(Executor):
     """
-    A simple Indexer based on PQLite that stores all the Document data together in a local LMDB store.
+    A simple Indexer based on PQLite that stores all the Document data together in a local LMDB store. (Deprecated)
     """
 
     # override

@@ -1,9 +1,13 @@
 """ Module holds reusable fixtures """
 
 import os
+import time
 
 import hubble
 import pytest
+
+from elasticsearch import Elasticsearch
+from now.deployment.deployment import cmd
 
 
 @pytest.fixture()
@@ -77,3 +81,34 @@ def mock_hubble_admin_email(monkeypatch, admin_email):
 
     monkeypatch.setattr(hubble, 'Client', MockedClient)
     # hubble.Client = MockedClient
+
+
+MAX_RETRIES = 20
+
+
+@pytest.fixture(scope="session")
+def es_connection_params():
+    connection_str = 'http://localhost:9200'
+    connection_args = {'verify_certs': False}
+    return connection_str, connection_args
+
+
+@pytest.fixture(scope='session')
+def setup_service_running(es_connection_params) -> None:
+    cmd('docker-compose -f tests/resources/elastic/docker-compose.yml up -d')
+    hosts, _ = es_connection_params
+    retries = 0
+    while retries < MAX_RETRIES:
+        try:
+            es = Elasticsearch(hosts=hosts)
+            if es.ping():
+                break
+            else:
+                retries += 1
+                time.sleep(5)
+        except Exception:
+            print('Elasticsearch is not running')
+    if retries >= MAX_RETRIES:
+        raise RuntimeError('Elasticsearch is not running')
+    yield
+    cmd('docker-compose -f tests/resources/elastic/docker-compose.yml down')
