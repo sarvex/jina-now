@@ -125,5 +125,5 @@ DEFAULT_EXAMPLE_HOSTED = {
     'image_to_text': [DemoDatasets.RAP_LYRICS],
     'image_to_image': [DemoDatasets.TLL],
     'text_to_text': [DemoDatasets.ROCK_LYRICS],
-    'music_to_music': [DemoDatasets.MUSIC_GENRES_ROCK],
+    'music_to_music': [DemoDatasets.MUSIC_GENRES_MIX],
 }
