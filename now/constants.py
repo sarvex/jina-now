@@ -7,8 +7,8 @@ DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.128-add-cname-1'
 NOW_PREPROCESSOR_VERSION = '0.0.89-refactor-base-indexer-4'
-NOW_ANNLITE_INDEXER_VERSION = '0.0.9-feat-sum-ranker-3'
-NOW_QDRANT_INDEXER_VERSION = '0.0.1-feat-add-qdrant-indexer-19'
+NOW_ANNLITE_INDEXER_VERSION = '0.0.10-feat-add-qdrant-indexer-20'
+NOW_QDRANT_INDEXER_VERSION = '0.0.1-feat-add-qdrant-indexer-20'
 
 
 class Modalities(BetterEnum):
