@@ -1,6 +1,6 @@
 import os
 from argparse import Namespace
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
 
 import boto3
 from jina import Client
@@ -39,6 +39,7 @@ def upsert_cname_record(source, target):
 
 
 def deploy(app_name, app_data):
+    print(f'Deploying {app_name} app with data: {app_data}')
     NAMESPACE = f'examples-{app_name}-{app_data}'.replace('_', '-')
     kwargs = {
         'now': 'start',
@@ -101,7 +102,7 @@ if __name__ == '__main__':
         print('Total Apps to deploy: ', len(to_deploy))
 
     results = []
-    with ProcessPoolExecutor() as thread_executor:
+    with ThreadPoolExecutor() as thread_executor:
         futures = []
         if deployment_type == 'all':
             # Create all new deployments and update CNAME records
