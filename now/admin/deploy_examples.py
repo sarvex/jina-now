@@ -9,14 +9,13 @@ from now.cli import cli
 from now.constants import DEFAULT_EXAMPLE_HOSTED
 from now.deployment.deployment import list_all_wolf, terminate_wolf
 
-aws_client = boto3.client(
-    'route53',
-    aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
-    aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'],
-)
-
 
 def upsert_cname_record(source, target):
+    aws_client = boto3.client(
+        'route53',
+        aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
+        aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'],
+    )
     try:
         aws_client.change_resource_record_sets(
             HostedZoneId=os.environ['AWS_HOSTED_ZONE_ID'],
@@ -76,7 +75,7 @@ if __name__ == '__main__':
     os.environ['JINA_AUTH_TOKEN'] = os.environ.get('WOLF_TOKEN')
     os.environ['NOW_EXAMPLES'] = 'True'
     os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
-    deployment_type = os.environ.get('DEPLOYMENT_TYPE', 'partial')
+    deployment_type = os.environ.get('DEPLOYMENT_TYPE', 'partial').lower()
     to_deploy = set()
 
     if deployment_type == 'all':
@@ -86,28 +85,33 @@ if __name__ == '__main__':
         with ThreadPoolExecutor() as thread_executor:
             # call delete function with each flow
             thread_executor.map(lambda x: terminate_wolf(x), flow_ids)
+        print('Deploying all examples!!')
     else:
         # check if deployment is already running else add to deploy_list
         for app, data in DEFAULT_EXAMPLE_HOSTED.items():
             for ds_name in data:
-                host = f'now-example-{app}-{ds_name}.dev.jina.ai'.replace('_', '-')
+                host = f'grpcs://now-example-{app}-{ds_name}.dev.jina.ai'.replace(
+                    '_', '-'
+                )
                 jina_client = Client(host=host)
                 try:
                     jina_client.post('/dry_run', timeout=2)
                 except ConnectionError:
                     to_deploy.add((app, ds_name))
+        print('Total Apps to deploy: ', len(to_deploy))
 
-    # Create new deployments
     results = []
-    with ProcessPoolExecutor(max_workers=2) as thread_executor:
+    with ProcessPoolExecutor() as thread_executor:
         futures = []
         if deployment_type == 'all':
+            # Create all new deployments and update CNAME records
             for app, data in DEFAULT_EXAMPLE_HOSTED.items():
                 for ds_name in data:
                     f = thread_executor.submit(deploy, app, ds_name)
                     futures.append(f)
         else:
             for app, ds_name in to_deploy:
+                # Create the failed deployments and update CNAME records
                 f = thread_executor.submit(deploy, app, ds_name)
                 futures.append(f)
         for f in futures:
