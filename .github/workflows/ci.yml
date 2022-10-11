@@ -316,6 +316,60 @@ jobs:
           NOW_ELASTIC_INDEXER_VERSION: ${{ env.NOW_ELASTIC_INDEXER_VERSION }}
         run: jina hub push --verbose --force-update ElasticIndexer now_executors/elastic_indexer --secret ${{ secrets.NOW_ELASTIC_EXECUTOR_SECRET }} -t latest --protected-tag $NOW_ELASTIC_INDEXER_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
 
+  update-autocomplete-executor-if-required:
+    runs-on: ubuntu-latest
+    needs: [commit-lint, lint-flake-8, check-black]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Check if executor has changed
+        uses: dorny/paths-filter@v2
+        id: check_has_executor_changed
+        with:
+          filters: |
+            has_changed:
+            - 'now_executors/NOWAuthExecutor/**'
+            - 'now_executors/NOWAutoCompleteExecutor/**'
+      - name: Get executor tag
+        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
+        run: |
+          FILE='now/constants.py'
+          NOW_AUTOCOMPLETE_VERSION=$(sed -n '/NOW_AUTOCOMPLETE_VERSION =/p' $FILE | cut -d \' -f2)
+          echo "NOW_AUTOCOMPLETE_VERSION=$NOW_AUTOCOMPLETE_VERSION" >> $GITHUB_ENV
+      - name: Set up Python 3.7
+        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+      - name: Pip install jina
+        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
+        run: pip install "jina[perf]"
+      - name: Check that tag isn't used already for executor
+        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
+        env:
+          NOW_AUTOCOMPLETE_VERSION: ${{ env.NOW_AUTOCOMPLETE_VERSION}}
+        run: |
+          if jina hub pull jinahub+docker://s5peqqvb/$NOW_AUTOCOMPLETE_VERSION; then
+            echo "NOW Autocomplete version is used already. Please update the tag"
+            exit 1
+          else
+            echo "NOW Autocomplete version isn't used already, continue to build..."
+          fi
+      - name: Run tests for executor and parents
+        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
+        timeout-minutes: 10
+        run: |
+          sudo apt update && sudo apt install ffmpeg
+          python -m pip install --upgrade pip
+          python -m pip install wheel
+          pip install --no-cache-dir ".[full,test]"
+          pytest --suppress-no-test-exit-code -v -s tests/now_executors/NOWAuthExecutor
+          pytest --suppress-no-test-exit-code -v -s tests/now_executors/NOWAutoCompleteExecutor
+      - name: Build and push executor
+        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
+        env:
+          NOW_AUTOCOMPLETE_VERSION: ${{ env.NOW_AUTOCOMPLETE_VERSION }}
+        run: jina hub push --verbose --force-update NOWAutoCompleteExecutor now_executors/NOWAutoCompleteExecutor --secret ${{ secrets.NOW_AUTOCOMPLETE_SECRET }} -t latest --protected-tag $NOW_AUTOCOMPLETE_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
+
   core-test:
     runs-on: ubuntu-latest
     needs: [update-preprocessor-if-required, update-annlite-executor-if-required, update-bff-playground-if-required]

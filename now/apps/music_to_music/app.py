@@ -106,6 +106,7 @@ class MusicToMusic(JinaNOWApp):
             ] = f"jinahub+docker://{pre_trained_head_map[user_input.data]}"
 
             self.set_flow_yaml(demo_data=True)
+            super().setup()
 
         return env_dict
 

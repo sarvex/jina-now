@@ -79,8 +79,9 @@ def test_search_update_profanity():
             Document(text='shit'),
             Document(text='loading'),
             Document(text='fuck'),
+            Document(text='f*ck'),
             Document(text='laugh'),
-            Document(text='l3sbi4n sorry I feel bad whe writing this test'),
+            Document(text='fuck shit somethings'),
         ]
     )
 
@@ -89,7 +90,6 @@ def test_search_update_profanity():
     assert executor.words['loading']['count'] == 1
     assert 'fuck' not in executor.words
     assert 'shit' not in executor.words
-    assert 'l3sbian' not in executor.words
 
 
 def test_get_suggestion():

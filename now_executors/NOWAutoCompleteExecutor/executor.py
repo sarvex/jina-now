@@ -1,16 +1,20 @@
-from collections import defaultdict
 from typing import Optional
 
 from better_profanity import profanity
 from docarray import DocumentArray
 from fast_autocomplete import AutoComplete
-from now_executors.NOWAuthExecutor.executor import NOWAuthExecutor as Executor
-from now_executors.NOWAuthExecutor.executor import SecurityLevel, secure_request
+from now_common.abstract_executors.NOWAuthExecutor.executor import (
+    NOWAuthExecutor as Executor,
+)
+from now_common.abstract_executors.NOWAuthExecutor.executor import (
+    SecurityLevel,
+    secure_request,
+)
 
 
 class NOWAutoCompleteExecutor(Executor):
     def __init__(self, search_traversal_paths: str = '@r', words=None, *args, **kwargs):
-        self.words = words if words else defaultdict(lambda: {'count': 1})
+        self.words = words if words else {}
         self.search_traversal_paths = search_traversal_paths
         self.autocomplete = None
 
@@ -43,9 +47,10 @@ class NOWAutoCompleteExecutor(Executor):
                 if not NOWAutoCompleteExecutor.contains_profanity(word):
                     if word in self.words:
                         self.words[word]['count'] += 1
+                    else:
+                        self.words[word] = {'count': 1}
 
         self.auto_complete = AutoComplete(words=self.words)
-        # TODO check if there's an update method
 
     @secure_request(on='/suggestion', level=SecurityLevel.USER)
     def get_suggestion(

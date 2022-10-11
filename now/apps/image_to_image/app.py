@@ -63,6 +63,9 @@ class ImageToImage(JinaNOWApp):
     def setup(
         self, dataset: DocumentArray, user_input: UserInput, kubectl_path
     ) -> Dict:
+        super().setup(
+            dataset=dataset,
+        )
         indexer_config = get_indexer_config(len(dataset))
         is_remote = user_input.deployment_type == 'remote'
         encoder_with = {
