@@ -67,6 +67,7 @@ executors:
     columns: ${{ ENV.COLUMNS }}
     admin_emails: ${{ ENV.ADMIN_EMAILS }}
     user_emails: ${{ ENV.USER_EMAILS }}
+    traversal_paths: '@c'
   jcloud:
     capacity: on-demand
     resources:
