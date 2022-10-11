@@ -10,7 +10,7 @@ from tests.integration.test_end_to_end import assert_search
 
 from deployment.bff.app.app import run_server
 from now.admin.utils import get_default_request_body
-from now.constants import EXTERNAL_CLIP_HOST, NOW_ANNLITE_INDEXER_VERSION
+from now.constants import EXTERNAL_CLIP_HOST, NOW_QDRANT_INDEXER_VERSION
 
 API_KEY = 'my_key'
 base_url = 'http://localhost:8080/api/v1'
@@ -42,7 +42,7 @@ def get_flow():
             external=True,
         )
         .add(
-            uses=f'jinahub+docker://NOWAnnLiteIndexer/{NOW_ANNLITE_INDEXER_VERSION}',
+            uses=f'jinahub+docker://NOWQdrantIndexer15/{NOW_QDRANT_INDEXER_VERSION}',
             uses_with={'dim': 512, 'admin_emails': [admin_email]},
         )
     )
