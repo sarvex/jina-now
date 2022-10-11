@@ -1,0 +1,4 @@
+jtype: NOWAutoCompleteExecutor
+metas:
+  py_modules:
+    - executor.py

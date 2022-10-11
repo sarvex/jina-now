@@ -61,3 +61,22 @@ def search(data: NowTextSearchRequestModel):
     )
 
     return docs[0].matches.to_dict()
+
+
+@router.post(
+    "/suggestion",
+    response_model=List[NowTextResponseModel],
+    summary='Get auto complete suggestion for query',
+)
+def suggestion(data: NowTextSearchRequestModel):
+    """
+    Return text suggestions for the rest of the query text
+    """
+    query_doc, _ = process_query(text=data.text, uri=data.uri, conditions=data.filters)
+
+    docs = jina_client_post(
+        data=data,
+        inputs=query_doc,
+        endpoint='/suggestion',
+    )
+    return docs[0]
