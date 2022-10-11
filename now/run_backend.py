@@ -19,12 +19,20 @@ cur_dir = pathlib.Path(__file__).parent.resolve()
 
 
 @time_profiler
-def run(app_instance: JinaNOWApp, user_input: UserInput, kubectl_path: str):
+def run(
+    app_instance: JinaNOWApp,
+    user_input: UserInput,
+    kubectl_path: str,
+    ns: str = 'nowapi',
+    **kwargs,
+):
     """
     TODO: Write docs
 
+    :param app_instance:
     :param user_input:
     :param kubectl_path:
+    :param ns:
     :return:
     """
     dataset = load_data(app_instance, user_input)
@@ -43,7 +51,7 @@ def run(app_instance: JinaNOWApp, user_input: UserInput, kubectl_path: str):
         deployment_type=user_input.deployment_type,
         flow_yaml=app_instance.flow_yaml,
         env_dict=env_dict,
-        ns='nowapi',
+        ns=ns,
         kubectl_path=kubectl_path,
     )
 

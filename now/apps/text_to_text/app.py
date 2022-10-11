@@ -55,8 +55,13 @@ class TextToText(JinaNOWApp):
     def setup(
         self, dataset: DocumentArray, user_input: UserInput, kubectl_path: str
     ) -> Dict:
-        indexer_config = get_indexer_config(len(dataset))
-        return common_setup(
+        indexer_config = get_indexer_config(
+            len(dataset),
+            elastic=True,
+            kubectl_path=kubectl_path,
+            deployment_type=user_input.deployment_type,
+        )
+        env_dict = common_setup(
             app_instance=self,
             user_input=user_input,
             dataset=dataset,
@@ -68,7 +73,10 @@ class TextToText(JinaNOWApp):
             indexer_uses=indexer_config['indexer_uses'],
             kubectl_path=kubectl_path,
             indexer_resources=indexer_config['indexer_resources'],
+            elastic=True,
         )
+        env_dict['HOSTS'] = indexer_config.get('hosts', None)
+        return env_dict
 
     def preprocess(
         self, da: DocumentArray, user_input: UserInput, is_indexing=False

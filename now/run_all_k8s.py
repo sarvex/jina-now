@@ -96,13 +96,23 @@ def get_task(kwargs):
 
 def start_now(app_instance, **kwargs):
     user_input = configure_user_input(app_instance, **kwargs)
-    setup_cluster(user_input, **kwargs)
-    (
-        gateway_host,
-        gateway_port,
-        gateway_host_internal,
-        gateway_port_internal,
-    ) = run_backend.run(app_instance, user_input, kubectl_path=kwargs['kubectl_path'])
+
+    # Only if the deployment is remote and the demo examples is available for the selected app
+    # Should not be triggered for CI tests
+    if app_instance.is_demo_available(user_input):
+        gateway_host = 'remote'
+        gateway_host_internal = f'grpcs://now-example-{app_instance.app_name}-{user_input.data}.dev.jina.ai'.replace(
+            '_', '-'
+        )
+        gateway_port_internal = None
+    else:
+        setup_cluster(user_input, **kwargs)
+        (
+            gateway_host,
+            gateway_port,
+            gateway_host_internal,
+            gateway_port_internal,
+        ) = run_backend.run(app_instance, user_input, **kwargs)
 
     if gateway_host == 'localhost' or 'NOW_CI_RUN' in os.environ:
         # only deploy playground when running locally or when testing

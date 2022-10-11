@@ -18,13 +18,14 @@ def status_wolf(flow_id):
     return loop.run_until_complete(CloudFlow(flow_id=flow_id).status)
 
 
-def list_all_wolf(status='READY', namespace='nowapi'):
+def list_all_wolf(status='ALIVE', namespace='nowapi'):
     loop = asyncio.get_event_loop()
     flows = loop.run_until_complete(CloudFlow().list_all(status=status))
     if flows is None:
         return []
     # filter by namespace - if the namespace is contained in the flow name
-    flows = [flow for flow in flows if namespace in flow['name']]
+    if namespace:
+        return [f for f in flows if namespace in f['name']]
     return flows
 
 

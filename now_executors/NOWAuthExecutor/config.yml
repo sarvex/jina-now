@@ -1,4 +1,0 @@
-jtype: NOWAuthExecutor
-metas:
-  py_modules:
-    - executor.py

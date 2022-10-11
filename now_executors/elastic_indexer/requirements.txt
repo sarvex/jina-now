@@ -1,0 +1,2 @@
+git+https://github.com/jina-ai/now@${JINA_NOW_COMMIT_SHA}
+elasticsearch==8.4.1

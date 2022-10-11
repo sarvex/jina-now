@@ -3,15 +3,13 @@ import pytest
 from jina import Document, DocumentArray, Flow
 from now_executors.NOWAnnLiteIndexer.executor import NOWAnnLiteIndexer
 
-N = 10  # number of data points
-Nu = 9  # number of data update
-Nq = 10
-D = 128  # dimentionality / number of features
+NUMBER_OF_DOCS = 10
+DIM = 128
 
 
 def gen_docs(num, has_chunk=False):
     res = DocumentArray()
-    k = np.random.random((num, D)).astype(np.float32)
+    k = np.random.random((num, DIM)).astype(np.float32)
     for i in range(num):
         doc = Document(
             id=f'{i}',
@@ -35,10 +33,10 @@ def gen_docs(num, has_chunk=False):
     return res
 
 
-def docs_with_tags(N):
+def docs_with_tags(NUMBER_OF_DOCS):
     prices = [10.0, 25.0, 50.0, 100.0]
     categories = ['comics', 'movies', 'audiobook']
-    X = np.random.random((N, D)).astype(np.float32)
+    X = np.random.random((NUMBER_OF_DOCS, DIM)).astype(np.float32)
     docs = [
         Document(
             id=f'{i}',
@@ -48,7 +46,7 @@ def docs_with_tags(N):
                 'category': np.random.choice(categories),
             },
         )
-        for i in range(N)
+        for i in range(NUMBER_OF_DOCS)
     ]
     da = DocumentArray(docs)
 
@@ -58,11 +56,11 @@ def docs_with_tags(N):
 def test_index(tmpdir):
     """Test indexing does not return anything"""
     metas = {'workspace': str(tmpdir)}
-    docs = gen_docs(N)
+    docs = gen_docs(NUMBER_OF_DOCS)
     f = Flow().add(
         uses=NOWAnnLiteIndexer,
         uses_with={
-            'dim': D,
+            'dim': DIM,
         },
         uses_metas=metas,
     )
@@ -78,11 +76,11 @@ def test_index(tmpdir):
 def test_list(tmpdir, offset, limit, has_chunk):
     """Test list returns all indexed docs"""
     metas = {'workspace': str(tmpdir)}
-    docs = gen_docs(N, has_chunk=has_chunk)
+    docs = gen_docs(NUMBER_OF_DOCS, has_chunk=has_chunk)
     f = Flow().add(
         uses=NOWAnnLiteIndexer,
         uses_with={
-            'dim': D,
+            'dim': DIM,
         },
         uses_metas=metas,
     )
@@ -96,7 +94,7 @@ def test_list(tmpdir, offset, limit, has_chunk):
         f.post(on='/index', inputs=docs, parameters=parameters)
         list_res = f.post(on='/list', parameters=parameters, return_results=True)
         if offset is None:
-            l = N
+            l = NUMBER_OF_DOCS
         else:
             l = max(limit - offset, 0)
         assert len(list_res) == l
@@ -116,36 +114,14 @@ def test_list(tmpdir, offset, limit, has_chunk):
                 assert list_res[0].tags == {'parent_tag': 'value'}
 
 
-def test_update(tmpdir):
-    metas = {'workspace': str(tmpdir)}
-    docs = gen_docs(N)
-    docs_update = gen_docs(Nu)
-    f = Flow().add(
-        uses=NOWAnnLiteIndexer,
-        uses_with={
-            'dim': D,
-        },
-        uses_metas=metas,
-    )
-    with f:
-        f.post(on='/index', inputs=docs)
-        update_res = f.post(on='/update', inputs=docs_update, return_results=True)
-        assert len(update_res) == Nu
-
-        status = f.post(on='/status', return_results=True)[0]
-
-        assert int(status.tags['total_docs']) == N
-        assert int(status.tags['index_size']) == N
-
-
 def test_search(tmpdir):
     metas = {'workspace': str(tmpdir)}
-    docs = gen_docs(N)
-    docs_query = gen_docs(Nq)
+    docs = gen_docs(NUMBER_OF_DOCS)
+    docs_query = gen_docs(1)
     f = Flow().add(
         uses=NOWAnnLiteIndexer,
         uses_with={
-            'dim': D,
+            'dim': DIM,
         },
         uses_metas=metas,
     )
@@ -153,7 +129,7 @@ def test_search(tmpdir):
         f.post(on='/index', inputs=docs)
 
         query_res = f.post(on='/search', inputs=docs_query, return_results=True)
-        assert len(query_res) == Nq
+        assert len(query_res) == 1
 
         for i in range(len(query_res[0].matches) - 1):
             assert (
@@ -164,14 +140,13 @@ def test_search(tmpdir):
 
 def test_search_match(tmpdir):
     metas = {'workspace': str(tmpdir)}
-    docs = gen_docs(N, has_chunk=True)
-    docs_query = gen_docs(Nq, has_chunk=True)
+    docs = gen_docs(NUMBER_OF_DOCS, has_chunk=True)
+    docs_query = gen_docs(NUMBER_OF_DOCS, has_chunk=True)
     f = Flow().add(
         uses=NOWAnnLiteIndexer,
         uses_with={
-            'dim': D,
-            'index_traversal_paths': '@c',
-            'search_traversal_paths': '@c',
+            'dim': DIM,
+            'traversal_paths': '@c',
         },
         uses_metas=metas,
     )
@@ -187,7 +162,7 @@ def test_search_match(tmpdir):
         c = query_res[0]
         assert c.embedding is None
         assert c.matches[0].embedding is None
-        assert len(c.matches) == N
+        assert len(c.matches) == NUMBER_OF_DOCS
 
         for i in range(len(c.matches) - 1):
             assert (
@@ -199,13 +174,13 @@ def test_search_match(tmpdir):
 def test_search_with_filtering(tmpdir):
     metas = {'workspace': str(tmpdir)}
 
-    docs = docs_with_tags(N)
+    docs = docs_with_tags(NUMBER_OF_DOCS)
     docs_query = gen_docs(1)
     columns = ['price', 'float', 'category', 'str']
 
     f = Flow().add(
         uses=NOWAnnLiteIndexer,
-        uses_with={'dim': D, 'columns': columns},
+        uses_with={'dim': DIM, 'columns': columns},
         uses_metas=metas,
     )
 
@@ -215,58 +190,34 @@ def test_search_with_filtering(tmpdir):
             on='/search',
             inputs=docs_query,
             return_results=True,
-            parameters={'filter': {'price': {'$lt': 50.0}}, 'include_metadata': True},
+            parameters={'filter': {'price': {'$lt': 50.0}}},
         )
         assert all([m.tags['price'] < 50 for m in query_res[0].matches])
 
 
 def test_delete(tmpdir):
     metas = {'workspace': str(tmpdir)}
-    docs = gen_docs(N)
+    docs = gen_docs(NUMBER_OF_DOCS)
     f = Flow().add(
         uses=NOWAnnLiteIndexer,
         uses_with={
-            'dim': D,
+            'dim': DIM,
         },
         uses_metas=metas,
     )
     with f:
         docs[0].tags['parent_tag'] = 'different_value'
         f.post(on='/index', inputs=docs)
-        status = f.post(on='/status', return_results=True)[0]
-        assert int(status.tags['total_docs']) == N
-        assert int(status.tags['index_size']) == N
-
+        listed_docs = f.post(on='/list', return_results=True)
+        assert len(listed_docs) == NUMBER_OF_DOCS
         f.post(
             on='/delete',
             parameters={'filter': {'tags__parent_tag': {'$eq': 'different_value'}}},
         )
-        status = f.post(on='/status', return_results=True)[0]
-        assert int(status.tags['total_docs']) == N - 1
-        assert int(status.tags['index_size']) == N - 1
-
-        doc_list = f.post(on='/list')
-        assert len(doc_list) == N - 1
-
-        docs_query = gen_docs(Nq)
+        listed_docs = f.post(on='/list', return_results=True)
+        assert len(listed_docs) == NUMBER_OF_DOCS - 1
+        docs_query = gen_docs(NUMBER_OF_DOCS)
         f.post(on='/search', inputs=docs_query, return_results=True)
-
-
-def test_status(tmpdir):
-    metas = {'workspace': str(tmpdir)}
-    docs = gen_docs(N)
-    f = Flow().add(
-        uses=NOWAnnLiteIndexer,
-        uses_with={
-            'dim': D,
-        },
-        uses_metas=metas,
-    )
-    with f:
-        f.post(on='/index', inputs=docs)
-        status = f.post(on='/status', return_results=True)[0]
-        assert int(status.tags['total_docs']) == N
-        assert int(status.tags['index_size']) == N
 
 
 def test_get_tags(tmpdir):
@@ -275,17 +226,17 @@ def test_get_tags(tmpdir):
         [
             Document(
                 text='hi',
-                embedding=np.random.rand(D).astype(np.float32),
+                embedding=np.random.rand(DIM).astype(np.float32),
                 tags={'color': 'red'},
             ),
             Document(
                 blob=b'b12',
-                embedding=np.random.rand(D).astype(np.float32),
+                embedding=np.random.rand(DIM).astype(np.float32),
                 tags={'color': 'blue'},
             ),
             Document(
                 blob=b'b12',
-                embedding=np.random.rand(D).astype(np.float32),
+                embedding=np.random.rand(DIM).astype(np.float32),
                 uri='file_will.never_exist',
             ),
         ]
@@ -293,7 +244,7 @@ def test_get_tags(tmpdir):
     f = Flow().add(
         uses=NOWAnnLiteIndexer,
         uses_with={
-            'dim': D,
+            'dim': DIM,
         },
         uses_metas=metas,
     )
@@ -314,22 +265,22 @@ def test_delete_tags(tmpdir):
         [
             Document(
                 text='hi',
-                embedding=np.random.rand(D).astype(np.float32),
+                embedding=np.random.rand(DIM).astype(np.float32),
                 tags={'color': 'red'},
             ),
             Document(
                 blob=b'b12',
-                embedding=np.random.rand(D).astype(np.float32),
+                embedding=np.random.rand(DIM).astype(np.float32),
                 tags={'color': 'blue'},
             ),
             Document(
                 blob=b'b12',
-                embedding=np.random.rand(D).astype(np.float32),
+                embedding=np.random.rand(DIM).astype(np.float32),
                 uri='file_will.never_exist',
             ),
             Document(
                 blob=b'b12',
-                embedding=np.random.rand(D).astype(np.float32),
+                embedding=np.random.rand(DIM).astype(np.float32),
                 tags={'greeting': 'hello'},
             ),
         ]
@@ -337,7 +288,7 @@ def test_delete_tags(tmpdir):
     f = Flow().add(
         uses=NOWAnnLiteIndexer,
         uses_with={
-            'dim': D,
+            'dim': DIM,
         },
         uses_metas=metas,
     )
@@ -358,90 +309,3 @@ def test_delete_tags(tmpdir):
         )
         response = f.post(on='/tags')
         assert 'greeting' not in response[0].tags['tags']
-
-
-def test_update_tags(tmpdir):
-    metas = {'workspace': str(tmpdir)}
-    docs = DocumentArray(
-        [
-            Document(
-                id='1',
-                text='hi',
-                embedding=np.random.rand(D).astype(np.float32),
-                tags={'color': 'red'},
-            ),
-            Document(
-                id='2',
-                blob=b'b12',
-                embedding=np.random.rand(D).astype(np.float32),
-                tags={'color': 'blue'},
-            ),
-            Document(
-                id='3',
-                blob=b'b12',
-                embedding=np.random.rand(D).astype(np.float32),
-                uri='file_will.never_exist',
-            ),
-            Document(
-                id='4',
-                blob=b'b12',
-                embedding=np.random.rand(D).astype(np.float32),
-                tags={'greeting': 'hello'},
-            ),
-        ]
-    )
-    f = Flow().add(
-        uses=NOWAnnLiteIndexer,
-        uses_with={
-            'dim': D,
-        },
-        uses_metas=metas,
-    )
-    with f:
-        f.post(on='/index', inputs=docs)
-        f.post(
-            on='/update',
-            inputs=DocumentArray(
-                [
-                    Document(
-                        id='3',
-                        blob=b'b12',
-                        embedding=np.random.rand(D).astype(np.float32),
-                        tags={'new_tag': 'new_value'},
-                    ),
-                    Document(
-                        id='4',
-                        blob=b'b12',
-                        embedding=np.random.rand(D).astype(np.float32),
-                    ),
-                ]
-            ),
-        )
-        response = f.post(on='/tags')
-        assert response[0].text == 'tags'
-        assert 'tags' in response[0].tags
-        assert 'color' in response[0].tags['tags']
-        assert 'new_tag' in response[0].tags['tags']
-        assert 'greeting' not in response[0].tags['tags']
-        assert response[0].tags['tags']['color'] == ['red', 'blue'] or response[0].tags[
-            'tags'
-        ]['color'] == ['blue', 'red']
-        assert response[0].tags['tags']['new_tag'] == ['new_value']
-
-
-def test_clear(tmpdir):
-    metas = {'workspace': str(tmpdir)}
-    docs = gen_docs(N)
-    f = Flow().add(
-        uses=NOWAnnLiteIndexer,
-        uses_with={
-            'dim': D,
-        },
-        uses_metas=metas,
-    )
-    with f:
-        f.post(on='/index', inputs=docs)
-        f.post(on='/clear', return_results=True)
-        status = f.post(on='/status', return_results=True)[0]
-        assert int(status.tags['total_docs']) == 0
-        assert int(status.tags['index_size']) == 0

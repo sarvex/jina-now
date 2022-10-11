@@ -4,9 +4,10 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import docker
 from docarray import DocumentArray
+from jina import Client
 from jina.serve.runtimes.gateway.http.models import JinaRequestModel, JinaResponseModel
 
-from now.constants import AVAILABLE_DATASET, Modalities
+from now.constants import AVAILABLE_DATASET, DEFAULT_EXAMPLE_HOSTED, Modalities
 from now.datasource.datasource import DemoDatasource
 from now.now_dataclasses import DialogOptions, UserInput
 
@@ -224,6 +225,27 @@ class JinaNOWApp:
     ) -> DocumentArray:
         """Loads and preprocesses every document such that it is ready for finetuning/indexing."""
         return da
+
+    def is_demo_available(self, user_input) -> bool:
+        hosted_ds = DEFAULT_EXAMPLE_HOSTED.get(self.app_name, {})
+        if (
+            hosted_ds
+            and user_input.data in hosted_ds
+            and user_input.deployment_type == 'remote'
+            and 'NOW_EXAMPLES' not in os.environ
+            and 'NOW_CI_RUN' not in os.environ
+        ):
+            client = Client(
+                host=f'grpcs://now-example-{self.app_name}-{user_input.data}.dev.jina.ai'.replace(
+                    '_', '-'
+                )
+            )
+            try:
+                client.post('/dry_run', timeout=2)
+            except ConnectionError:
+                return False
+            return True
+        return False
 
     @property
     def bff_mapping_fns(

@@ -2,7 +2,7 @@ from concurrent.futures import Executor
 from typing import Dict
 
 import pytest
-from now_executors.NOWAuthExecutor.executor import (
+from now_common.abstract_executors.NOWAuthExecutor.executor import (
     NOWAuthExecutor,
     SecurityLevel,
     secure_request,

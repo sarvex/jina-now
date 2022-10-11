@@ -3,7 +3,7 @@ import json
 import pytest
 from docarray import Document
 from jina import Executor, Flow, requests
-from now_executors.NOWAuthExecutor.executor import NOWAuthExecutor
+from now_common.abstract_executors.NOWAuthExecutor.executor import NOWAuthExecutor
 
 
 def test_executor_persistance():
