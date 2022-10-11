@@ -126,8 +126,6 @@ def common_setup(
         indexer_resources=indexer_resources,
         user_input=user_input,
         tags=tags,
-        elastic=elastic,
-        kubectl_path=kubectl_path,
     )
 
     if finetune_settings.perform_finetuning:
