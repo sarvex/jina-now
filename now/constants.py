@@ -1,5 +1,6 @@
 from __future__ import annotations, print_function, unicode_literals
 
+from now.demo_data import DemoDatasetNames
 from now.utils import BetterEnum
 
 # TODO: Uncomment the DEMO_DATASET_DOCARRAY_VERSION when the DocArray datasets on GCloud has been changed
@@ -69,11 +70,11 @@ SURVEY_LINK = 'https://10sw1tcpld4.typeform.com/to/VTAyYRpR?utm_source=cli'
 
 DEFAULT_EXAMPLE_HOSTED = {
     'text_to_image': [
-        DemoDatasets.BEST_ARTWORKS,
-        DemoDatasets.DEEP_FASHION,
+        DemoDatasetNames.BEST_ARTWORKS,
+        DemoDatasetNames.DEEP_FASHION,
     ],
-    'image_to_text': [DemoDatasets.RAP_LYRICS],
-    'image_to_image': [DemoDatasets.TLL],
-    'text_to_text': [DemoDatasets.ROCK_LYRICS],
-    'music_to_music': [DemoDatasets.MUSIC_GENRES_MIX],
+    'image_to_text': [DemoDatasetNames.RAP_LYRICS],
+    'image_to_image': [DemoDatasetNames.TLL],
+    'text_to_text': [DemoDatasetNames.ROCK_LYRICS],
+    'music_to_music': [DemoDatasetNames.MUSIC_GENRES_MIX],
 }
