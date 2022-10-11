@@ -43,7 +43,8 @@ class NOWAnnLiteIndexer(Executor):
         Delete endpoint to delete document/documents from the index.
         Filter conditions can be passed to select documents for deletion.
         """
-        self._index.delete(documents_to_delete)
+        for d in documents_to_delete:
+            del self._index[d.id]
 
     # override
     def search(

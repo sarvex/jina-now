@@ -146,22 +146,56 @@ class NOWBaseIndexer(Executor):
         limit = int(parameters.get('limit', self.limit))
         search_filter = parameters.get('filter', {})
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
-        flat_docs = docs[traversal_paths][
-            :1
-        ]  # only search on the first document for now
+        docs = docs[traversal_paths][:1]  # only search on the first document for now
 
         if self.traversal_paths == '@c':
             retrieval_limit = limit * 3
         else:
             retrieval_limit = limit
 
-        self.search(flat_docs, parameters, retrieval_limit, search_filter)
+        # first get with title and then merge matches each
+        docs_with_matches = self.create_matches(
+            docs, parameters, limit, retrieval_limit, search_filter={}
+        )
 
+        if len(docs[0].text.split()) == 1:
+            if not search_filter:
+                search_filter = {
+                    'must': [{'key': 'title', 'match': {'value': docs[0].text.lower()}}]
+                }
+            docs_with_matches_filter = self.create_matches(
+                docs, parameters, limit, retrieval_limit, search_filter
+            )
+            self.append_matches_if_not_exists(
+                docs_with_matches_filter, docs_with_matches, limit
+            )
+            docs_with_matches = docs_with_matches_filter
+
+        self.clean_response(docs_with_matches)
+        return docs_with_matches
+
+    def create_matches(self, docs, parameters, limit, retrieval_limit, search_filter):
+        docs_copy = deepcopy(docs)
+        self.search(docs_copy, parameters, retrieval_limit, search_filter)
         if self.traversal_paths == '@c':
-            merge_matches_sum(flat_docs, limit)
+            merge_matches_sum(docs_copy, limit)
+        return docs_copy
 
-        self.clean_response(flat_docs)
-        return flat_docs
+    def append_matches_if_not_exists(
+        self, docs_with_matches, docs_with_matches_to_add, limit
+    ):
+        # get all parent_ids of the matches of the docs_with_matches
+        parent_ids = set()
+        for doc, doc_to_add in zip(docs_with_matches, docs_with_matches_to_add):
+            for match in doc.matches:
+                parent_ids.add(match.parent_id)
+
+            # append matches to docs_with_matches if they are not already in the matches
+            for match in doc_to_add.matches:
+                if match.parent_id not in parent_ids:
+                    if len(doc.matches) >= limit:
+                        break
+                    doc.matches.append(match)
 
     def clean_response(self, docs):
         """removes the embedding from the root level and also from the matches."""
