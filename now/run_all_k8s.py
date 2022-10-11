@@ -112,9 +112,7 @@ def start_now(app_instance, **kwargs):
             gateway_port,
             gateway_host_internal,
             gateway_port_internal,
-        ) = run_backend.run(
-            app_instance, user_input, kubectl_path=kwargs['kubectl_path']
-        )
+        ) = run_backend.run(app_instance, user_input, **kwargs)
 
     if gateway_host == 'localhost' or 'NOW_CI_RUN' in os.environ:
         # only deploy playground when running locally or when testing
