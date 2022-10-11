@@ -127,8 +127,8 @@ class TextToVideo(JinaNOWApp):
                         elif d.tensor is not None:
                             d.convert_tensor_to_blob()
                     sample_video(d)
-                except:
-                    print(f'Failed to process {d.id}')
+                except Exception as e:
+                    print(f'Failed to process {d.id}, error: {e}')
                 return d
 
             for d in da:
