@@ -372,7 +372,7 @@ jobs:
 
   core-test:
     runs-on: ubuntu-latest
-    needs: [update-preprocessor-if-required, update-annlite-executor-if-required, update-bff-playground-if-required]
+    needs: [update-preprocessor-if-required, update-annlite-executor-if-required, update-bff-playground-if-required,  update-autocomplete-executor-if-required]
     strategy:
       fail-fast: false
       matrix:
@@ -420,7 +420,7 @@ jobs:
 
   executor-test:
     runs-on: ubuntu-latest
-    needs: [ update-preprocessor-if-required, update-annlite-executor-if-required, update-bff-playground-if-required ]
+    needs: [ update-preprocessor-if-required, update-annlite-executor-if-required, update-bff-playground-if-required,  update-autocomplete-executor-if-required ]
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.7
