@@ -111,7 +111,8 @@ class TextToVideo(JinaNOWApp):
             kubectl_path=kubectl_path,
             indexer_resources=indexer_config['indexer_resources'],
         )
-        super().setup()
+        super().setup(dataset=dataset, user_input=user_input, kubectl_path=kubectl_path)
+        return env_dict
 
     def preprocess(
         self, da: DocumentArray, user_input: UserInput, is_indexing=False
