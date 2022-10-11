@@ -42,7 +42,7 @@ def get_flow():
             external=True,
         )
         .add(
-            uses=f'jinahub+docker://NOWAnnLiteIndexer/v{NOW_ANNLITE_INDEXER_VERSION}',
+            uses=f'jinahub+docker://NOWAnnLiteIndexer/{NOW_ANNLITE_INDEXER_VERSION}',
             uses_with={'dim': 512, 'admin_emails': [admin_email]},
         )
     )

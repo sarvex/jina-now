@@ -278,7 +278,7 @@ def download(url, filename):
         r.raw.read, decode_content=True
     )  # Decompress if needed
 
-    if 'NOW_CI_RUN' in os.environ:
+    if any(map(lambda x: x in os.environ, ['NOW_CI_RUN', 'NOW_EXAMPLES'])):
         download_file(path, r.raw)
     else:
         with tqdm.wrapattr(r.raw, "read", total=file_size, desc=desc) as r_raw:
@@ -294,7 +294,7 @@ def get_rich_console():
     """
     return Console(
         force_terminal=True, force_interactive=True
-    )  # It forces render in any terminal, especily in PyCharm
+    )  # It forces render in any terminal, especially in PyCharm
 
 
 def copytree(src, dst, symlinks=False, ignore=None):

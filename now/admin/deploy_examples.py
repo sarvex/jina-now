@@ -1,57 +1,119 @@
 import os
 from argparse import Namespace
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+
+import boto3
+from jina import Client
 
 from now.cli import cli
-from now.constants import Apps, DatasetTypes
-from now.demo_data import DemoDatasetNames
-
-os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
-
-params = [
-    (Apps.TEXT_TO_IMAGE, DemoDatasetNames.BEST_ARTWORKS),
-    (Apps.TEXT_TO_IMAGE, DemoDatasetNames.DEEP_FASHION),
-    (Apps.IMAGE_TO_TEXT, DemoDatasetNames.RAP_LYRICS),
-    (Apps.IMAGE_TO_IMAGE, DemoDatasetNames.TLL),
-    (Apps.TEXT_TO_TEXT, DemoDatasetNames.ROCK_LYRICS),
-    (Apps.MUSIC_TO_MUSIC, DemoDatasetNames.MUSIC_GENRES_MIX),
-]
+from now.constants import DEFAULT_EXAMPLE_HOSTED
+from now.deployment.deployment import list_all_wolf, terminate_wolf
 
 
-def deploy(app, data):
+def upsert_cname_record(source, target):
+    aws_client = boto3.client(
+        'route53',
+        aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
+        aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'],
+    )
+    try:
+        aws_client.change_resource_record_sets(
+            HostedZoneId=os.environ['AWS_HOSTED_ZONE_ID'],
+            ChangeBatch={
+                'Comment': 'add %s -> %s' % (source, target),
+                'Changes': [
+                    {
+                        'Action': 'UPSERT',
+                        'ResourceRecordSet': {
+                            'Name': source,
+                            'Type': 'CNAME',
+                            'TTL': 300,
+                            'ResourceRecords': [{'Value': target}],
+                        },
+                    }
+                ],
+            },
+        )
+    except Exception as e:
+        print(e)
+
+
+def deploy(app_name, app_data):
+    print(f'Deploying {app_name} app with data: {app_data}')
+    NAMESPACE = f'examples-{app_name}-{app_data}'.replace('_', '-')
     kwargs = {
         'now': 'start',
-        'app': app,
-        'dataset_type': DatasetTypes.DEMO,
-        'dataset_name': data,
-        # 'custom_dataset_type': DatasetTypes.S3_BUCKET,
-        # 'dataset_path': os.environ.get('S3_IMAGE_TEST_DATA_PATH'),
-        # 'aws_access_key_id': os.environ.get('AWS_ACCESS_KEY_ID'),
-        # 'aws_secret_access_key': os.environ.get('AWS_SECRET_ACCESS_KEY'),
-        # 'aws_region_name': 'eu-west-1',
+        'app': app_name,
+        'data': app_data,
         'deployment_type': 'remote',
         'proceed': True,
         'secured': False,
+        'ns': NAMESPACE,
     }
     kwargs = Namespace(**kwargs)
-    response = cli(args=kwargs)
-    return response
+    response_cli = cli(args=kwargs)
+
+    # parse the response
+    if response_cli:
+        host_target_ = response_cli.get('host')
+        if host_target_ and host_target_.startswith('grpcs://'):
+            host_target_ = host_target_.replace('grpcs://', '')
+            host_source = f'now-example-{app_name}-{app_data}.dev.jina.ai'.replace(
+                '_', '-'
+            )
+            # update the CNAME entry in the Route53 records
+            upsert_cname_record(host_source, host_target_)
+        else:
+            print(
+                'No host returned starting with "grpcs://". Make sure Jina NOW returns host'
+            )
+    else:
+        raise ValueError(f'Deployment failed for {app_name} and {app_data}. Re-run it')
+    return response_cli
 
 
 if __name__ == '__main__':
-    parallel = False
-    results = []
-    if parallel:
+    os.environ['JINA_AUTH_TOKEN'] = os.environ.get('WOLF_TOKEN')
+    os.environ['NOW_EXAMPLES'] = 'True'
+    os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
+    deployment_type = os.environ.get('DEPLOYMENT_TYPE', 'partial').lower()
+    to_deploy = set()
+
+    if deployment_type == 'all':
+        # List all deployments and delete them
+        flows = list_all_wolf(namespace=None)
+        flow_ids = [f['id'].replace('jflow-', '') for f in flows]
         with ProcessPoolExecutor() as thread_executor:
-            futures = []
-            for app, data in params:
-                f = thread_executor.submit(deploy, app, data)
-                futures.append(f)
-            for f in futures:
-                results.append(f.result())
+            # call delete function with each flow
+            thread_executor.map(lambda x: terminate_wolf(x), flow_ids)
+        print('Deploying all examples!!')
     else:
-        for app, data in params:
-            result = deploy(app, data)
-            results.append(result)
-            print(result)
+        # check if deployment is already running else add to deploy_list
+        jina_client = Client()
+        for app, data in DEFAULT_EXAMPLE_HOSTED.items():
+            for ds_name in data:
+                host = f'grpcs://now-example-{app}-{ds_name}.dev.jina.ai'.replace(
+                    '_', '-'
+                )
+                jina_client = Client(host=host)
+                if not jina_client.is_flow_ready(timeout=2):
+                    to_deploy.add((app, ds_name))
+        print('Total Apps to re-deploy: ', len(to_deploy))
+
+    results = []
+    with ThreadPoolExecutor(max_workers=2) as thread_executor:
+        futures = []
+        if deployment_type == 'all':
+            # Create all new deployments and update CNAME records
+            for app, data in DEFAULT_EXAMPLE_HOSTED.items():
+                for ds_name in data:
+                    f = thread_executor.submit(deploy, app, ds_name)
+                    futures.append(f)
+        else:
+            for app, ds_name in to_deploy:
+                # Create the failed deployments and update CNAME records
+                f = thread_executor.submit(deploy, app, ds_name)
+                futures.append(f)
+        for f in futures:
+            results.append(f.result())
     print(results)

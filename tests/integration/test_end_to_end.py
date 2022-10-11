@@ -117,7 +117,7 @@ def test_token_exists():
             Modalities.TEXT,
             Modalities.TEXT,
             DemoDatasetNames.POP_LYRICS,
-            'remote',
+            'local',
         ),
         (
             Apps.TEXT_TO_VIDEO,
@@ -133,9 +133,16 @@ def test_token_exists():
             DemoDatasetNames.MUSIC_GENRES_ROCK,
             'remote',
         ),
+        # (
+        #     Apps.TEXT_TO_TEXT_AND_IMAGE,
+        #     Modalities.TEXT,
+        #     Modalities.TEXT_AND_IMAGE,
+        #     DemoDatasets.ES_ONLINE_SHOP_50,
+        #     'local',
+        # ),
     ],
 )
-@pytest.mark.timeout(60 * 15)
+@pytest.mark.timeout(60 * 30)
 def test_backend_demo_data(
     app: str,
     dataset: str,
