@@ -15,7 +15,7 @@ from now.apps.base.app import JinaNOWApp
 from now.constants import (
     DEFAULT_EXAMPLE_HOSTED,
     NOW_ANNLITE_INDEXER_VERSION,
-    NOW_AUTCOMPLETE_VERSION,
+    NOW_AUTOCOMPLETE_VERSION,
     NOW_ELASTIC_INDEXER_VERSION,
     NOW_PREPROCESSOR_VERSION,
     PREFETCH_NR,
@@ -60,7 +60,7 @@ def common_get_flow_env_dict(
         'INDEXER_NAME': f'jinahub+docker://{indexer_uses}',
         'PREFETCH': PREFETCH_NR,
         'PREPROCESSOR_NAME': f'jinahub+docker://NOWPreprocessor/{NOW_PREPROCESSOR_VERSION}',
-        'AUTOCOMPLETE_EXECUTOR_NAME': f'jinahub+docker://NOWAutoCompleteExecutor/{NOW_AUTCOMPLETE_VERSION}',
+        'AUTOCOMPLETE_EXECUTOR_NAME': f'jinahub+docker://NOWAutoCompleteExecutor/{NOW_AUTOCOMPLETE_VERSION}',
         'APP': user_input.app_instance.app_name,
         'COLUMNS': tags,
         'ADMIN_EMAILS': user_input.admin_emails or [] if user_input.secured else [],
