@@ -8,4 +8,6 @@ RUN pip install -r /requirements.txt --no-cache-dir
 COPY . /workspace
 WORKDIR /workspace
 
+
+
 ENTRYPOINT ["jina", "executor", "--uses", "config.yml"]
