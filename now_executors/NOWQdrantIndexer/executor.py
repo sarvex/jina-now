@@ -1,8 +1,12 @@
+import os
+import subprocess
+from time import sleep
+
+import yaml
 from jina import DocumentArray
 from now_common.abstract_executors.NOWBaseIndexer.base_indexer import (
     NOWBaseIndexer as Executor,
 )
-from now_executors.NOWQdrantIndexer.server import setup_qdrant_server
 
 
 class NOWQdrantIndexer15(Executor):
@@ -71,3 +75,21 @@ class NOWQdrantIndexer15(Executor):
     ):
         """Perform a vector similarity search and retrieve Document matches"""
         docs.match(self._index, filter=search_filter, limit=limit)
+
+
+def setup_qdrant_server(workspace, logger):
+    qdrant_config_path = '/qdrant/config/production.yaml'
+    if workspace and os.path.exists(qdrant_config_path):
+        logger.info('set new storage to network file system location in WOLF')
+        qdrant_config = yaml.safe_load(open(qdrant_config_path))
+        qdrant_config['storage'] = {
+            'storage_path': os.path.join(workspace, 'user_input.json')
+        }
+        yaml.safe_dump(qdrant_config, open(qdrant_config_path, 'w'))
+        logger.info('if qdrant exists, then start it')
+    try:
+        subprocess.Popen(['./run-qdrant.sh'])
+        sleep(3)
+        logger.info('Qdrant server started')
+    except FileNotFoundError:
+        logger.info('Qdrant not found, locally. So it won\'t be started.')
