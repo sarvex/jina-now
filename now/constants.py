@@ -9,7 +9,7 @@ DOCKER_BFF_PLAYGROUND_TAG = '0.0.128-add-cname-1'
 NOW_PREPROCESSOR_VERSION = '0.0.91-feat-add-qdrant-indexer-35'
 NOW_ANNLITE_INDEXER_VERSION = '0.0.12-feat-add-qdrant-indexer-35'
 NOW_QDRANT_INDEXER_VERSION = '0.0.1-feat-add-qdrant-indexer-35'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.1-feat-elastic-69'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.2-fix-elastic-1'
 
 
 class Modalities(BetterEnum):
