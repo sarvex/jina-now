@@ -14,9 +14,9 @@ from jina import __version__ as jina_version
 from now.apps.base.app import JinaNOWApp
 from now.constants import (
     DEFAULT_EXAMPLE_HOSTED,
-    NOW_ANNLITE_INDEXER_VERSION,
     NOW_ELASTIC_INDEXER_VERSION,
     NOW_PREPROCESSOR_VERSION,
+    NOW_QDRANT_INDEXER_VERSION,
     PREFETCH_NR,
     DatasetTypes,
 )
@@ -217,13 +217,14 @@ def get_indexer_config(
     :param deployment_type: deployment type, e.g. 'remote' or 'local'
     :return: dict with indexer and its resource config
     """
+
     if elastic and deployment_type == 'local':
         config = {
             'indexer_uses': f'ElasticIndexer/{NOW_ELASTIC_INDEXER_VERSION}',
             'hosts': setup_elastic_service(kubectl_path),
         }
     else:
-        config = {'indexer_uses': f'NOWAnnLiteIndexer/{NOW_ANNLITE_INDEXER_VERSION}'}
+        config = {'indexer_uses': f'NOWQdrantIndexer15/{NOW_QDRANT_INDEXER_VERSION}'}
     threshold1 = 250_000
     if num_indexed_samples <= threshold1:
         config['indexer_resources'] = {'INDEXER_CPU': 0.1, 'INDEXER_MEM': '2G'}
