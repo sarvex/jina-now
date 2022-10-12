@@ -84,7 +84,9 @@ class ElasticsearchExtractor:
 
     @staticmethod
     def _format_es_doc(
-        document: Document, search_fields: List[str], filter_fields: Optional[List[str]] = None
+        document: Document,
+        search_fields: List[str],
+        filter_fields: Optional[List[str]] = None,
     ) -> Document:
         if not search_fields:
             raise ValueError('search fields must be specified.')

@@ -160,7 +160,9 @@ def _extract_es_data(user_input: UserInput) -> DocumentArray:
         index=user_input.es_index_name,
         connection_str=user_input.es_host_name,
     )
-    extracted_docs = es_extractor.extract(search_fields=user_input.search_fields, filter_fields=user_input.filter_fields)
+    extracted_docs = es_extractor.extract(
+        search_fields=user_input.search_fields, filter_fields=user_input.filter_fields
+    )
     return extracted_docs
 
 
