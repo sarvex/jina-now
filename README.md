@@ -61,7 +61,7 @@ First, you will be prompted to choose an app. As for now, we support images or t
 In the next step, you get asked to select the dataset type for your search app. You can choose between demo datasets, docarray (name or URL/path to it),
 local path to a folder of the data or a bucket on S3.
 
-![](../../../Desktop/Screen Shot 2022-10-12 at 1.21.37 PM.png)
+<img src="https://user-images.githubusercontent.com/47435119/195334616-9a8d5ad3-229f-49bb-9d49-f38243a0eb9b.png">
 
 If you chose `docarray.pull`, you will be asked to insert your docarray id. 
 Likewise, if you chose docarray URL, you will be prompted to enter the URL.
