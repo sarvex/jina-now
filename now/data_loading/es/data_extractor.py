@@ -50,20 +50,59 @@ class ElasticsearchExtractor:
         )
         self._supported_pil_extensions = self._get_supported_image_extensions()
 
-    def extract(self) -> DocumentArray:
+    def extract(
+        self, search_fields: List[str], filter_fields: List[str]
+    ) -> DocumentArray:
         """
         Returns extracted data as a `DocumentArray` where every `Document`
         contains chunks for each field.
         For Example:
-        Document(chunks=[
-            Document(content='hello', modality='text', tags={'field_name': 'title'}),
-            Document(content='https://bla.com/img.jpeg', modality='image', tags={'field_name': 'uris'}),
+        Document(tags={'filter_fields': {'color': 'red'}, 'additional_fields': {'date': '12-10-2022'}},
+                chunks=[
+                    Document(content='hello', modality='text', tags={'field_name': 'title'}),
+                    Document(content='https://bla.com/img.jpeg', modality='image', tags={'field_name': 'uris'}),
+                ]
+        )
+
+        :param search_fields: List of field names used for searching.
+        :param filter_fields: List of field names used for filtering.
+        :return: extracted documents.
+        """
+        flattened_docs = DocumentArray(
+            [self._flatten_es_doc(doc) for doc in self._extract_documents()]
+        )
+        return DocumentArray(
+            [
+                self._format_es_doc(
+                    document=doc,
+                    search_fields=search_fields,
+                    filter_fields=filter_fields,
+                )
+                for doc in flattened_docs
             ]
         )
-        """
-        return DocumentArray(
-            [self._transform_es_doc(doc) for doc in self._extract_documents()]
-        )
+
+    @staticmethod
+    def _format_es_doc(
+        document: Document, search_fields: List[str], filter_fields: Optional[List[str]] = None
+    ) -> Document:
+        if not search_fields:
+            raise ValueError('search fields must be specified.')
+        if not filter_fields:
+            filter_fields = []
+        document.tags['filter_fields'] = {}
+        document.tags['additional_fields'] = {}
+        search_chunks = []
+        for chunk in document.chunks:
+            field_name = chunk.tags['field_name']
+            if field_name in search_fields:
+                search_chunks.append(chunk)
+            elif field_name in filter_fields:
+                document.tags['filter_fields'][field_name] = chunk.content
+            else:
+                document.tags['additional_fields'][field_name] = chunk.content
+        document.chunks = search_chunks
+        return document
 
     def _extract_documents(self):
         try:
@@ -76,7 +115,7 @@ class ElasticsearchExtractor:
             return
 
     @classmethod
-    def _transform_es_doc(cls, document: Document) -> Document:
+    def _flatten_es_doc(cls, document: Document) -> Document:
         """
         Transform data extracted from Elasticsearch to a more convenient form.
         :param document: `Document` containing ES data.
@@ -155,7 +194,16 @@ class ElasticsearchExtractor:
         :param content: the content of the attribute
         :return: `docarray.DocumentArray` object.
         """
-        if os.path.splitext(content)[-1] in self._supported_pil_extensions:
+        if os.path.splitext(content)[-1] == '.gif':
+            return Document(
+                uri=content,
+                modality='video',
+                tags={
+                    FIELD_TAG: key,
+                    EXTRACTION_TYPE_TAG: 'literal',
+                },
+            )
+        elif os.path.splitext(content)[-1] in self._supported_pil_extensions:
             return Document(
                 uri=content,
                 modality='image',
@@ -204,6 +252,8 @@ class ElasticsearchExtractor:
                         )
                     elif type(es_doc[key][0]) == str:
                         # process a field with a list of string values
+                        if isinstance(es_doc[key], str):
+                            es_doc[key] = [es_doc[key]]
                         deep_chunks = [
                             self._construct_simple_document(key, content)
                             for content in es_doc[key]
