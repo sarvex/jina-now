@@ -58,15 +58,10 @@ First, you will be prompted to choose an app. As for now, we support images or t
 
 <img width="613" alt="Screenshot 2022-05-31 at 01 08 25" src="https://user-images.githubusercontent.com/40893766/192245825-c19274a5-2514-4c93-94ff-4d507dfef429.png">
 
-In the next step, you get asked to select the dataset for your search app. You could either choose one of our existing datasets or select `custom` to index your own data.
+In the next step, you get asked to select the dataset type for your search app. You can choose between demo datasets, docarray (name or URL/path to it),
+local path to a folder of the data or a bucket on S3.
 
-<img width="422" alt="question-ds" src="https://user-images.githubusercontent.com/11627845/170263852-46776391-a906-417c-8528-e1fb7058c33a.png">
-
-When choosing `custom`, you can decide in what format you provide your data. The recommended way, is to push a document array described [here](https://docarray.jina.ai/fundamentals/documentarray/serialization/#from-to-cloud).
-Alternatively, you can specify a URL where a document array can be downloaded from.
-Also, it is possible to provide a local folder where the Images are located. In case of text search it would be a local text file.
-
-<img width="724" alt="question-custom" src="https://user-images.githubusercontent.com/40893766/192245979-66376fc2-2629-4932-a747-b3f526bfd53a.png">
+![](../../../Desktop/Screen Shot 2022-10-12 at 1.21.37 PM.png)
 
 If you chose `docarray.pull`, you will be asked to insert your docarray id. 
 Likewise, if you chose docarray URL, you will be prompted to enter the URL.
