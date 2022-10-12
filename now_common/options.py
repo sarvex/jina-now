@@ -176,8 +176,7 @@ SEARCH_FIELDS = DialogOptions(
     prompt_message='Enter comma-separated search fields:',
     prompt_type='input',
     depends_on=CUSTOM_DATASET_TYPE,
-    conditional_check=lambda user_input: user_input.custom_dataset_type
-    == DatasetTypes.ELASTICSEARCH,
+    conditional_check=lambda user_input: user_input.data == 'custom',
     post_func=lambda user_input, **kwargs: _parse_search_fields(user_input),
 )
 
@@ -193,8 +192,7 @@ FILTER_FIELDS = DialogOptions(
     prompt_message='Enter comma-separated filter fields:',
     prompt_type='input',
     depends_on=CUSTOM_DATASET_TYPE,
-    conditional_check=lambda user_input, **kwargs: user_input.custom_dataset_type
-    == DatasetTypes.ELASTICSEARCH,
+    conditional_check=lambda user_input: user_input.data == 'custom',
     post_func=lambda user_input, **kwargs: _parse_filter_fields(user_input),
 )
 
