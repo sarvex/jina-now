@@ -1,6 +1,5 @@
 from __future__ import annotations, print_function, unicode_literals
 
-from now.demo_data import DemoDatasetNames
 from now.utils import BetterEnum
 
 # TODO: Uncomment the DEMO_DATASET_DOCARRAY_VERSION when the DocArray datasets on GCloud has been changed
@@ -9,7 +8,7 @@ from now.utils import BetterEnum
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.128-add-cname-1'
-NOW_PREPROCESSOR_VERSION = '0.0.92-refactor-dialog'
+NOW_PREPROCESSOR_VERSION = '0.0.92-refactor-dialog-1'
 NOW_ANNLITE_INDEXER_VERSION = '0.0.12-feat-add-qdrant-indexer-35'
 NOW_QDRANT_INDEXER_VERSION = '0.0.1-feat-add-qdrant-indexer-35'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.2-fix-elastic-1'
@@ -68,14 +67,3 @@ EXTERNAL_CLIP_HOST = 'encoderclip-bh-5f4efaff13.wolf.jina.ai'
 PREFETCH_NR = 10
 
 SURVEY_LINK = 'https://10sw1tcpld4.typeform.com/to/VTAyYRpR?utm_source=cli'
-
-DEFAULT_EXAMPLE_HOSTED = {
-    'text_to_image': [
-        DemoDatasetNames.BEST_ARTWORKS,
-        DemoDatasetNames.DEEP_FASHION,
-    ],
-    'image_to_text': [DemoDatasetNames.RAP_LYRICS],
-    'image_to_image': [DemoDatasetNames.TLL],
-    'text_to_text': [DemoDatasetNames.ROCK_LYRICS],
-    'music_to_music': [DemoDatasetNames.MUSIC_GENRES_MIX],
-}

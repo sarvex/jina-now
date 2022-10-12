@@ -7,8 +7,8 @@ from docarray import DocumentArray
 from jina import Client
 from jina.serve.runtimes.gateway.http.models import JinaRequestModel, JinaResponseModel
 
-from now.constants import DEFAULT_EXAMPLE_HOSTED, Modalities
-from now.demo_data import AVAILABLE_DATASET, DemoDataset
+from now.constants import Modalities
+from now.demo_data import AVAILABLE_DATASET, DEFAULT_EXAMPLE_HOSTED, DemoDataset
 from now.now_dataclasses import DialogOptions, UserInput
 
 

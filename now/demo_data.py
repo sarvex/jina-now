@@ -141,3 +141,13 @@ AVAILABLE_DATASET = {
         )
     ],
 }
+DEFAULT_EXAMPLE_HOSTED = {
+    'text_to_image': [
+        DemoDatasetNames.BEST_ARTWORKS,
+        DemoDatasetNames.DEEP_FASHION,
+    ],
+    'image_to_text': [DemoDatasetNames.RAP_LYRICS],
+    'image_to_image': [DemoDatasetNames.TLL],
+    'text_to_text': [DemoDatasetNames.ROCK_LYRICS],
+    'music_to_music': [DemoDatasetNames.MUSIC_GENRES_MIX],
+}

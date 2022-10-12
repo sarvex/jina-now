@@ -13,13 +13,13 @@ from jina import __version__ as jina_version
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import (
-    DEFAULT_EXAMPLE_HOSTED,
     NOW_ELASTIC_INDEXER_VERSION,
     NOW_PREPROCESSOR_VERSION,
     NOW_QDRANT_INDEXER_VERSION,
     PREFETCH_NR,
     DatasetTypes,
 )
+from now.demo_data import DEFAULT_EXAMPLE_HOSTED
 from now.deployment.deployment import cmd
 from now.finetuning.run_finetuning import finetune
 from now.finetuning.settings import FinetuneSettings, parse_finetune_settings
