@@ -445,4 +445,6 @@ cluster = [DEPLOYMENT_TYPE, LOCAL_CLUSTER]
 remote_cluster = [SECURED, ADDITIONAL_USERS, USER_EMAILS]
 
 
-base_options = data + data_da + data_s3 + data_es + data_fields + cluster + remote_cluster
+base_options = (
+    data + data_da + data_s3 + data_es + data_fields + cluster + remote_cluster
+)
