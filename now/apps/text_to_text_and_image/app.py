@@ -63,32 +63,38 @@ class TextToTextAndImage(JinaNOWApp):
         with open(template_path) as f:
             config_dict = json.load(f)
             config = Task(**config_dict)
-        # get text and image field names if they're not specified
-        if not user_input.es_text_fields:
-            user_input.es_text_fields = [
-                chunk.tags['field_name']
+        search_chunks = (
+            [
+                chunk
                 for chunk in data_example.chunks
-                if chunk.modality == 'text'
+                if chunk.tags['field_name'] in user_input.search_fields
             ]
-        if not user_input.es_image_fields:
-            user_input.es_image_fields = [
-                chunk.tags['field_name']
-                for chunk in data_example.chunks
-                if chunk.modality == 'image'
-            ]
+            if user_input.search_fields
+            else data_example.chunks
+        )
+        text_fields = [
+            chunk.tags['field_name']
+            for chunk in search_chunks
+            if chunk.modality == 'text'
+        ]
+        image_fields = [
+            chunk.tags['field_name']
+            for chunk in search_chunks
+            if chunk.modality == 'image'
+        ]
         # put field names into generation function configurations
         for encoder in config.encoders:
             if encoder.name == 'text_encoder':
                 for method in encoder.training_data_generation_methods:
-                    method.query.scope = user_input.es_text_fields
-                    method.target.scope = user_input.es_text_fields
+                    method.query.scope = text_fields
+                    method.target.scope = text_fields
             elif encoder.name == 'vision_encoder':
                 for method in encoder.training_data_generation_methods:
-                    method.query.scope = user_input.es_text_fields
-                    method.target.scope = user_input.es_image_fields
+                    method.query.scope = text_fields
+                    method.target.scope = image_fields
         # specify text and image field for the indexer
-        config.indexer_scope['text'] = user_input.es_text_fields[0]
-        config.indexer_scope['image'] = user_input.es_image_fields[0]
+        config.indexer_scope['text'] = text_fields[0]
+        config.indexer_scope['image'] = image_fields[0]
 
         user_input.task_config = config
         return user_input.task_config

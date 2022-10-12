@@ -153,7 +153,7 @@ def match_types(uri, supported_file_types):
 def _extract_es_data(user_input: UserInput) -> DocumentArray:
     query = {
         'query': {'match_all': {}},
-        'fields': user_input.es_image_fields + user_input.es_text_fields,
+        'fields': user_input.search_fields,
     }
     es_extractor = ElasticsearchExtractor(
         query=query,

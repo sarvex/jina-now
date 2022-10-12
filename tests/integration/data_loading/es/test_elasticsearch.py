@@ -13,8 +13,7 @@ def test_elasticsearch_data_loading(setup_online_shop_db, es_connection_params):
     user_input.data = 'custom'
     user_input.custom_dataset_type = DatasetTypes.ELASTICSEARCH
     user_input.es_index_name = index_name
-    user_input.es_image_fields = ['uris']
-    user_input.es_text_fields = ['title', 'text']
+    user_input.search_fields = ['uris', 'title', 'text']
     user_input.es_host_name = connection_str
 
     transformed_docs = load_data(app=JinaNOWApp(), user_input=user_input)
