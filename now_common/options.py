@@ -171,37 +171,35 @@ AWS_REGION_NAME = DialogOptions(
 
 # --------------------------------------------- #
 
-ES_TEXT_FIELDS = DialogOptions(
-    name='es_text_fields',
-    prompt_message='Please enter comma-separated text fields of your data:',
+SEARCH_FIELDS = DialogOptions(
+    name='search_fields',
+    prompt_message='Enter comma-separated search fields:',
     prompt_type='input',
     depends_on=CUSTOM_DATASET_TYPE,
-    conditional_check=lambda user_input: user_input.custom_dataset_type
-    == DatasetTypes.ELASTICSEARCH,
-    post_func=lambda user_input, **kwargs: _parse_text_fields(user_input),
+    conditional_check=lambda user_input: user_input.data == 'custom',
+    post_func=lambda user_input, **kwargs: _parse_search_fields(user_input),
 )
 
 
-def _parse_text_fields(user_input: UserInput):
-    user_input.es_text_fields = [
-        field.strip() for field in user_input.es_text_fields.split(',')
+def _parse_search_fields(user_input: UserInput):
+    user_input.search_fields = [
+        field.strip() for field in user_input.search_fields.split(',')
     ]
 
 
-ES_IMAGE_FIELDS = DialogOptions(
-    name='es_image_fields',
-    prompt_message='Please enter comma-separated image fields of your data:',
+FILTER_FIELDS = DialogOptions(
+    name='filter_fields',
+    prompt_message='Enter comma-separated filter fields:',
     prompt_type='input',
     depends_on=CUSTOM_DATASET_TYPE,
-    conditional_check=lambda user_input, **kwargs: user_input.custom_dataset_type
-    == DatasetTypes.ELASTICSEARCH,
-    post_func=lambda user_input, **kwargs: _parse_image_fields(user_input),
+    conditional_check=lambda user_input: user_input.data == 'custom',
+    post_func=lambda user_input, **kwargs: _parse_filter_fields(user_input),
 )
 
 
-def _parse_image_fields(user_input: UserInput):
-    user_input.es_image_fields = [
-        field.strip() for field in user_input.es_image_fields.split(',')
+def _parse_filter_fields(user_input: UserInput):
+    user_input.filter_fields = [
+        field.strip() for field in user_input.filter_fields.split(',')
     ]
 
 
@@ -433,17 +431,18 @@ def _parse_custom_data_from_cli(user_input: UserInput, **kwargs) -> None:
 
 
 data = [DATA]
+data_fields = [SEARCH_FIELDS, FILTER_FIELDS]
 data_da = [CUSTOM_DATASET_TYPE, DATASET_NAME, DATASET_PATH, DATASET_URL]
 data_s3 = [DATASET_PATH_S3, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION_NAME]
 data_es = [
     ES_HOST_NAME,
     ES_INDEX_NAME,
-    ES_TEXT_FIELDS,
-    ES_IMAGE_FIELDS,
     ES_ADDITIONAL_ARGS,
 ]
 cluster = [DEPLOYMENT_TYPE, LOCAL_CLUSTER]
 remote_cluster = [SECURED, ADDITIONAL_USERS, USER_EMAILS]
 
 
-base_options = data + data_da + data_s3 + data_es + cluster + remote_cluster
+base_options = (
+    data + data_da + data_s3 + data_es + data_fields + cluster + remote_cluster
+)
