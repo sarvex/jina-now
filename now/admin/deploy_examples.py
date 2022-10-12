@@ -44,7 +44,7 @@ def deploy(app_name, app_data):
     kwargs = {
         'now': 'start',
         'app': app_name,
-        'data': app_data,
+        'dataset_name': app_data,
         'deployment_type': 'remote',
         'proceed': True,
         'secured': False,
