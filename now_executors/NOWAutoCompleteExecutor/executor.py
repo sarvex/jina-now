@@ -39,16 +39,15 @@ class NOWAutoCompleteExecutor(Executor):
             return
 
         for doc in flat_docs:
-            search_words = (
-                doc.text.split(' ') if doc.text and doc.text.split(' ') else [doc.text]
-            )
-            # in case query is composed of two words
-            for word in search_words:
-                if not NOWAutoCompleteExecutor.contains_profanity(word):
-                    if word in self.words:
-                        self.words[word]['count'] += 1
-                    else:
-                        self.words[word] = {'count': 1}
+            if doc.text:
+                search_words = doc.text.split(' ')
+                # in case query is composed of two words
+                for word in search_words:
+                    if not NOWAutoCompleteExecutor.contains_profanity(word):
+                        if word in self.words:
+                            self.words[word]['count'] += 1
+                        else:
+                            self.words[word] = {'count': 1}
 
         self.auto_complete = AutoComplete(words=self.words)
 
