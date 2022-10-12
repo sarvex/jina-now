@@ -110,7 +110,7 @@ def common_get_flow_env_dict(
 
     if 'NOW_EXAMPLES' in os.environ:
         valid_app = DEFAULT_EXAMPLE_HOSTED.get(user_input.app_instance.app_name, {})
-        is_demo_ds = user_input.data in valid_app
+        is_demo_ds = user_input.dataset_name in valid_app
         if is_demo_ds:
             config[
                 'CUSTOM_DNS'

@@ -14,7 +14,7 @@ from now.finetuning.generation_fns import ImageNormalizer, TextProcessor
 #
 #     # load dataset
 #     user_input = UserInput()
-#     user_input.data = DemoDatasets.ES_ONLINE_SHOP_50
+#     user_input.dataset_name = DemoDatasets.ES_ONLINE_SHOP_50
 #     dataset = load_data(TextToTextAndImage(), user_input)
 #
 #     initial_length = len(dataset)

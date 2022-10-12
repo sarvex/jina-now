@@ -216,7 +216,7 @@ class JinaNOWApp:
         hosted_ds = DEFAULT_EXAMPLE_HOSTED.get(self.app_name, {})
         if (
             hosted_ds
-            and user_input.data in hosted_ds
+            and user_input.dataset_name in hosted_ds
             and user_input.deployment_type == 'remote'
             and 'NOW_EXAMPLES' not in os.environ
             and 'NOW_CI_RUN' not in os.environ
