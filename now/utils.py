@@ -1,3 +1,5 @@
+from __future__ import annotations, print_function, unicode_literals
+
 import base64
 import json
 import os
@@ -494,3 +496,11 @@ def flatten_dict(d, parent_key='', sep='_'):
         else:
             items.append((new_key, v))
     return dict(items)
+
+
+def _get_context_names(contexts, active_context=None):
+    names = [c for c in contexts] if contexts is not None else []
+    if active_context is not None:
+        names.remove(active_context)
+        names = [active_context] + names
+    return names

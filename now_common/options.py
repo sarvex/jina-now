@@ -8,17 +8,21 @@ from __future__ import annotations, print_function, unicode_literals
 
 import importlib
 import os
-from typing import Dict, List
 
 from hubble import AuthenticationRequiredError
 from kubernetes import client, config
 
-from now.constants import AVAILABLE_DATASET, Apps, DatasetTypes
+from now.constants import Apps, DatasetTypes
 from now.deployment.deployment import cmd
-from now.log import time_profiler, yaspin_extended
+from now.log import yaspin_extended
 from now.now_dataclasses import DialogOptions, UserInput
-from now.thirdparty.PyInquirer import Separator
-from now.utils import get_info_hubble, jina_auth_login, sigmap, to_camel_case
+from now.utils import (
+    _get_context_names,
+    get_info_hubble,
+    jina_auth_login,
+    sigmap,
+    to_camel_case,
+)
 
 NEW_CLUSTER = {'name': '🐣 create new', 'value': 'new'}
 AVAILABLE_SOON = 'will be available in upcoming versions'
@@ -62,23 +66,11 @@ APP = DialogOptions(
     description='What sort of search engine would you like to build?',
 )
 
-DATA = DialogOptions(
-    name='data',
-    prompt_message='What dataset do you want to use?',
-    choices=lambda user_input, **kwargs: _get_data_choices(user_input, **kwargs),
-    prompt_type='list',
-    is_terminal_command=True,
-    description='Select one of the available datasets or provide local filepath, '
-    'docarray url, or docarray secret to use your own dataset',
-    post_func=lambda user_input, **kwargs: _parse_custom_data_from_cli(
-        user_input, **kwargs
-    ),
-)
-
-CUSTOM_DATASET_TYPE = DialogOptions(
-    name='custom_dataset_type',
+DATASET_TYPE = DialogOptions(
+    name='dataset_type',
     prompt_message='How do you want to provide input? (format: https://docarray.jina.ai/)',
     choices=[
+        {'name': 'Demo dataset', 'value': DatasetTypes.DEMO},
         {
             'name': 'DocArray name (recommended)',
             'value': DatasetTypes.DOCARRAY,
@@ -102,16 +94,33 @@ CUSTOM_DATASET_TYPE = DialogOptions(
         },
     ],
     prompt_type='list',
-    depends_on=DATA,
-    conditional_check=lambda user_input: user_input.data == 'custom',
+    is_terminal_command=True
+    # post_func=lambda user_input, **kwargs: _parse_custom_data_from_cli(
+    #     user_input, **kwargs
+    # ),
 )
 
-DATASET_NAME = DialogOptions(
+DEMO_DATA = DialogOptions(
+    name='dataset_name',
+    prompt_message='What demo dataset do you want to use?',
+    choices=lambda user_input, **kwargs: [
+        {'name': demo_data.display_name, 'value': demo_data.name}
+        for demo_data in user_input.app_instance.demo_datasets
+    ],
+    prompt_type='list',
+    depends_on=DATASET_TYPE,
+    is_terminal_command=True,
+    description='Select one of the available demo datasets',
+    conditional_check=lambda user_input, **kwargs: user_input.dataset_type
+    == DatasetTypes.DEMO,
+)
+
+DOCARRAY_NAME = DialogOptions(
     name='dataset_name',
     prompt_message='Please enter your DocArray name:',
     prompt_type='input',
-    depends_on=CUSTOM_DATASET_TYPE,
-    conditional_check=lambda user_input: user_input.custom_dataset_type
+    depends_on=DATASET_TYPE,
+    conditional_check=lambda user_input: user_input.dataset_type
     == DatasetTypes.DOCARRAY,
 )
 
@@ -119,26 +128,26 @@ DATASET_URL = DialogOptions(
     name='dataset_url',
     prompt_message='Please paste in the URL to download your DocArray from:',
     prompt_type='input',
-    depends_on=CUSTOM_DATASET_TYPE,
-    conditional_check=lambda user_input: user_input.custom_dataset_type
-    == DatasetTypes.URL,
+    depends_on=DATASET_TYPE,
+    is_terminal_command=True,
+    conditional_check=lambda user_input: user_input.dataset_type == DatasetTypes.URL,
 )
 
 DATASET_PATH = DialogOptions(
     name='dataset_path',
     prompt_message='Please enter the path to the local folder:',
     prompt_type='input',
-    depends_on=CUSTOM_DATASET_TYPE,
-    conditional_check=lambda user_input: user_input.custom_dataset_type
-    == DatasetTypes.PATH,
+    depends_on=DATASET_TYPE,
+    is_terminal_command=True,
+    conditional_check=lambda user_input: user_input.dataset_type == DatasetTypes.PATH,
 )
 
 DATASET_PATH_S3 = DialogOptions(
     name='dataset_path',
     prompt_message='Please enter the S3 URI to the folder:',
     prompt_type='input',
-    depends_on=CUSTOM_DATASET_TYPE,
-    conditional_check=lambda user_input: user_input.custom_dataset_type
+    depends_on=DATASET_TYPE,
+    conditional_check=lambda user_input: user_input.dataset_type
     == DatasetTypes.S3_BUCKET,
 )
 
@@ -146,8 +155,8 @@ AWS_ACCESS_KEY_ID = DialogOptions(
     name='aws_access_key_id',
     prompt_message='Please enter the AWS access key ID:',
     prompt_type='input',
-    depends_on=CUSTOM_DATASET_TYPE,
-    conditional_check=lambda user_input: user_input.custom_dataset_type
+    depends_on=DATASET_TYPE,
+    conditional_check=lambda user_input: user_input.dataset_type
     == DatasetTypes.S3_BUCKET,
 )
 
@@ -155,8 +164,8 @@ AWS_SECRET_ACCESS_KEY = DialogOptions(
     name='aws_secret_access_key',
     prompt_message='Please enter the AWS secret access key:',
     prompt_type='input',
-    depends_on=CUSTOM_DATASET_TYPE,
-    conditional_check=lambda user_input: user_input.custom_dataset_type
+    depends_on=DATASET_TYPE,
+    conditional_check=lambda user_input: user_input.dataset_type
     == DatasetTypes.S3_BUCKET,
 )
 
@@ -164,8 +173,8 @@ AWS_REGION_NAME = DialogOptions(
     name='aws_region_name',
     prompt_message='Please enter the AWS region:',
     prompt_type='input',
-    depends_on=CUSTOM_DATASET_TYPE,
-    conditional_check=lambda user_input: user_input.custom_dataset_type
+    depends_on=DATASET_TYPE,
+    conditional_check=lambda user_input: user_input.dataset_type
     == DatasetTypes.S3_BUCKET,
 )
 
@@ -175,8 +184,8 @@ ES_TEXT_FIELDS = DialogOptions(
     name='es_text_fields',
     prompt_message='Please enter comma-separated text fields of your data:',
     prompt_type='input',
-    depends_on=CUSTOM_DATASET_TYPE,
-    conditional_check=lambda user_input: user_input.custom_dataset_type
+    depends_on=DATASET_TYPE,
+    conditional_check=lambda user_input: user_input.dataset_type
     == DatasetTypes.ELASTICSEARCH,
     post_func=lambda user_input, **kwargs: _parse_text_fields(user_input),
 )
@@ -192,8 +201,8 @@ ES_IMAGE_FIELDS = DialogOptions(
     name='es_image_fields',
     prompt_message='Please enter comma-separated image fields of your data:',
     prompt_type='input',
-    depends_on=CUSTOM_DATASET_TYPE,
-    conditional_check=lambda user_input, **kwargs: user_input.custom_dataset_type
+    depends_on=DATASET_TYPE,
+    conditional_check=lambda user_input, **kwargs: user_input.dataset_type
     == DatasetTypes.ELASTICSEARCH,
     post_func=lambda user_input, **kwargs: _parse_image_fields(user_input),
 )
@@ -209,8 +218,8 @@ ES_INDEX_NAME = DialogOptions(
     name='es_index_name',
     prompt_message='Please enter the name of your Elasticsearch index:',
     prompt_type='input',
-    depends_on=CUSTOM_DATASET_TYPE,
-    conditional_check=lambda user_input: user_input.custom_dataset_type
+    depends_on=DATASET_TYPE,
+    conditional_check=lambda user_input: user_input.dataset_type
     == DatasetTypes.ELASTICSEARCH,
 )
 
@@ -218,8 +227,8 @@ ES_HOST_NAME = DialogOptions(
     name='es_host_name',
     prompt_message='Please enter the address of your Elasticsearch node:',
     prompt_type='input',
-    depends_on=CUSTOM_DATASET_TYPE,
-    conditional_check=lambda user_input: user_input.custom_dataset_type
+    depends_on=DATASET_TYPE,
+    conditional_check=lambda user_input: user_input.dataset_type
     == DatasetTypes.ELASTICSEARCH,
 )
 
@@ -227,8 +236,8 @@ ES_ADDITIONAL_ARGS = DialogOptions(
     name='es_additional_args',
     prompt_message='Please enter additional arguments for your Elasticsearch node if there are any:',
     prompt_type='input',
-    depends_on=CUSTOM_DATASET_TYPE,
-    conditional_check=lambda user_input: user_input.custom_dataset_type
+    depends_on=DATASET_TYPE,
+    conditional_check=lambda user_input: user_input.dataset_type
     == DatasetTypes.ELASTICSEARCH,
 )
 
@@ -266,7 +275,9 @@ LOCAL_CLUSTER = DialogOptions(
     description='Reference an existing `local` cluster or select `new` to create a new one. '
     'Use this only when the `--deployment-type=local`',
     conditional_check=lambda user_inp: user_inp.deployment_type == 'local',
-    post_func=lambda user_input, **kwargs: _check_requirements(user_input, **kwargs),
+    post_func=lambda user_input, **kwargs: user_input.app_instance.run_checks(
+        user_input
+    ),
 )
 
 PROCEED = DialogOptions(
@@ -337,11 +348,6 @@ def _construct_app(app_name: str):
     )()
 
 
-@time_profiler
-def _check_requirements(user_input: UserInput, **kwargs) -> None:
-    user_input.app_instance.run_checks(user_input)
-
-
 def _jina_auth_login(user_input, **kwargs):
     if user_input.deployment_type != 'remote':
         return
@@ -357,20 +363,6 @@ def _jina_auth_login(user_input, **kwargs):
 
     get_info_hubble(user_input)
     os.environ['JCLOUD_NO_SURVEY'] = '1'
-
-
-def _get_data_choices(user_input, **kwargs) -> List[Dict[str, str]]:
-    app_instance = user_input.app_instance
-    return [
-        {'name': name, 'value': value}
-        for value, name in AVAILABLE_DATASET[app_instance.output_modality]
-    ] + [
-        Separator(),
-        {
-            'name': '✨ custom',
-            'value': 'custom',
-        },
-    ]
 
 
 def _construct_local_cluster_choices(user_input, **kwargs):
@@ -389,14 +381,6 @@ def _construct_local_cluster_choices(user_input, **kwargs):
     return choices
 
 
-def _get_context_names(contexts, active_context=None):
-    names = [c for c in contexts] if contexts is not None else []
-    if active_context is not None:
-        names.remove(active_context)
-        names = [active_context] + names
-    return names
-
-
 def _cluster_running(cluster):
     config.load_kube_config(context=cluster)
     v1 = client.CoreV1Api()
@@ -407,33 +391,34 @@ def _cluster_running(cluster):
     return True
 
 
-def _parse_custom_data_from_cli(user_input: UserInput, **kwargs) -> None:
-    data = user_input.data
-    if data == 'custom':
-        return
+# def _parse_custom_data_from_cli(user_input: UserInput, **kwargs) -> None:
+#     data = user_input.data
+#     if data == 'custom':
+#         return
+#
+#     app_instance = user_input.app_instance
+#     for k, v in enumerate(AVAILABLE_DATASET[app_instance.output_modality]):
+#         if v[0] == data:
+#             return
+#
+#     try:
+#         data = os.path.expanduser(data)
+#     except Exception:
+#         pass
+#     if os.path.exists(data):
+#         user_input.dataset_type = DatasetTypes.PATH
+#         user_input.dataset_path = data
+#     elif 'http' in data:
+#         user_input.dataset_type = DatasetTypes.URL
+#         user_input.dataset_url = data
+#     else:
+#         user_input.dataset_type = DatasetTypes.DOCARRAY
+#         user_input.dataset_name = data
 
-    app_instance = user_input.app_instance
-    for k, v in enumerate(AVAILABLE_DATASET[app_instance.output_modality]):
-        if v[0] == data:
-            return
 
-    try:
-        data = os.path.expanduser(data)
-    except Exception:
-        pass
-    if os.path.exists(data):
-        user_input.custom_dataset_type = DatasetTypes.PATH
-        user_input.dataset_path = data
-    elif 'http' in data:
-        user_input.custom_dataset_type = DatasetTypes.URL
-        user_input.dataset_url = data
-    else:
-        user_input.custom_dataset_type = DatasetTypes.DOCARRAY
-        user_input.dataset_name = data
-
-
-data = [DATA]
-data_da = [CUSTOM_DATASET_TYPE, DATASET_NAME, DATASET_PATH, DATASET_URL]
+data_type = [DATASET_TYPE]
+data_demo = [DEMO_DATA]
+data_da = [DOCARRAY_NAME, DATASET_PATH, DATASET_URL]
 data_s3 = [DATASET_PATH_S3, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION_NAME]
 data_es = [
     ES_HOST_NAME,
@@ -446,4 +431,6 @@ cluster = [DEPLOYMENT_TYPE, LOCAL_CLUSTER]
 remote_cluster = [SECURED, ADDITIONAL_USERS, USER_EMAILS]
 
 
-base_options = data + data_da + data_s3 + data_es + cluster + remote_cluster
+base_options = (
+    data_type + data_demo + data_da + data_s3 + data_es + cluster + remote_cluster
+)

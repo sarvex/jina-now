@@ -7,7 +7,8 @@ from now_common.preprocess import preprocess_images
 from now_common.utils import common_setup, get_indexer_config
 
 from now.apps.base.app import JinaNOWApp
-from now.constants import CLIP_USES, EXTERNAL_CLIP_HOST, Apps, DemoDatasets, Modalities
+from now.constants import CLIP_USES, EXTERNAL_CLIP_HOST, Apps, Modalities
+from now.demo_data import DemoDatasetNames
 from now.now_dataclasses import UserInput
 
 
@@ -41,7 +42,7 @@ class ImageToImage(JinaNOWApp):
 
     @property
     def finetune_datasets(self) -> [Tuple]:
-        return (DemoDatasets.DEEP_FASHION, DemoDatasets.BIRD_SPECIES)
+        return (DemoDatasetNames.DEEP_FASHION, DemoDatasetNames.BIRD_SPECIES)
 
     def set_flow_yaml(self, **kwargs):
         finetuning = kwargs.get('finetuning', False)

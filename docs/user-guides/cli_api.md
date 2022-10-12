@@ -5,7 +5,7 @@
 Instead of answering the questions manually, you can also provide command-line arguments when starting Jina NOW like shown here.
 
 ```bash
-jina now start --app text_to_image --data /local/img/folder
+jina now start --app text_to_image
 ```
   
 ## Use API

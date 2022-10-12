@@ -7,8 +7,8 @@ from docarray import DocumentArray
 from jina import Client
 from jina.serve.runtimes.gateway.http.models import JinaRequestModel, JinaResponseModel
 
-from now.constants import AVAILABLE_DATASET, DEFAULT_EXAMPLE_HOSTED, Modalities
-from now.datasource.datasource import DemoDatasource
+from now.constants import Modalities
+from now.demo_data import AVAILABLE_DATASET, DEFAULT_EXAMPLE_HOSTED, DemoDataset
 from now.now_dataclasses import DialogOptions, UserInput
 
 
@@ -107,21 +107,9 @@ class JinaNOWApp:
         return ['**']
 
     @property
-    def example_datasource(self) -> List[DemoDatasource]:
-        """
-        # TODO just a prototype - needs to be implemented in the future
-        Get a list of example datasets for the app.
-
-        """
-        if self.output_modality in AVAILABLE_DATASET:
-            return [
-                DemoDatasource(
-                    id_=ds[0], display_name=ds[1], modality_folder=self.output_modality
-                )
-                for ds in AVAILABLE_DATASET[self.output_modality]
-            ]
-        else:
-            return []
+    def demo_datasets(self) -> List[DemoDataset]:
+        """Get a list of example datasets for the app."""
+        return AVAILABLE_DATASET.get(self.output_modality, [])
 
     @property
     def required_docker_memory_in_gb(self) -> int:
@@ -228,7 +216,7 @@ class JinaNOWApp:
         hosted_ds = DEFAULT_EXAMPLE_HOSTED.get(self.app_name, {})
         if (
             hosted_ds
-            and user_input.data in hosted_ds
+            and user_input.dataset_name in hosted_ds
             and user_input.deployment_type == 'remote'
             and 'NOW_EXAMPLES' not in os.environ
             and 'NOW_CI_RUN' not in os.environ

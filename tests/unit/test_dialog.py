@@ -8,7 +8,8 @@ from typing import Dict
 import pytest
 from pytest_mock import MockerFixture
 
-from now.constants import Apps, DemoDatasets
+from now.constants import Apps, DatasetTypes
+from now.demo_data import DemoDatasetNames
 from now.dialog import configure_app, configure_user_input
 from now.now_dataclasses import UserInput
 
@@ -25,7 +26,8 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
             'app': Apps.MUSIC_TO_MUSIC,
-            'data': 'music-genres-mid',
+            'dataset_type': DatasetTypes.DEMO,
+            'dataset_name': 'music-genres-mid',
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -34,7 +36,8 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
             'app': Apps.MUSIC_TO_MUSIC,
-            'data': 'music-genres-mix',
+            'dataset_type': DatasetTypes.DEMO,
+            'dataset_name': 'music-genres-mix',
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -43,7 +46,8 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
             'app': Apps.TEXT_TO_IMAGE,
-            'data': 'tll',
+            'dataset_type': DatasetTypes.DEMO,
+            'dataset_name': 'tll',
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -52,7 +56,8 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
             'app': Apps.TEXT_TO_IMAGE,
-            'data': 'nih-chest-xrays',
+            'dataset_type': DatasetTypes.DEMO,
+            'dataset_name': 'nih-chest-xrays',
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -61,8 +66,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
             'app': Apps.TEXT_TO_IMAGE,
-            'data': 'custom',
-            'custom_dataset_type': 'docarray',
+            'dataset_type': DatasetTypes.DOCARRAY,
             'dataset_name': 'xxx',
             'cluster': 'new',
             'deployment_type': 'local',
@@ -72,8 +76,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
             'app': Apps.MUSIC_TO_MUSIC,
-            'data': 'custom',
-            'custom_dataset_type': 'docarray',
+            'dataset_type': DatasetTypes.DOCARRAY,
             'dataset_name': 'xxx',
             'cluster': 'new',
             'deployment_type': 'local',
@@ -83,8 +86,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
             'app': Apps.MUSIC_TO_MUSIC,
-            'data': 'custom',
-            'custom_dataset_type': 'path',
+            'dataset_type': DatasetTypes.PATH,
             'dataset_path': 'xxx',
             'cluster': 'new',
             'deployment_type': 'local',
@@ -94,8 +96,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
             'app': Apps.MUSIC_TO_MUSIC,
-            'data': 'custom',
-            'custom_dataset_type': 'url',
+            'dataset_type': DatasetTypes.URL,
             'dataset_url': 'xxx',
             'cluster': 'new',
             'deployment_type': 'local',
@@ -105,8 +106,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
             'app': Apps.TEXT_TO_IMAGE,
-            'data': 'custom',
-            'custom_dataset_type': 'docarray',
+            'dataset_type': DatasetTypes.DOCARRAY,
             'dataset_name': 'xxx',
             'cluster': 'new',
             'deployment_type': 'local',
@@ -115,7 +115,8 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'data': 'music-genres-mid',
+            'dataset_type': DatasetTypes.DEMO,
+            'dataset_name': 'music-genres-mid',
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -123,7 +124,8 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'data': DemoDatasets.TLL,
+            'dataset_type': DatasetTypes.DEMO,
+            'dataset_name': DemoDatasetNames.TLL,
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -131,7 +133,8 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'data': DemoDatasets.ROCK_LYRICS,
+            'dataset_type': DatasetTypes.DEMO,
+            'dataset_name': DemoDatasetNames.ROCK_LYRICS,
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -142,7 +145,8 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'app': Apps.IMAGE_TO_TEXT,
         },
         {
-            'data': DemoDatasets.POP_LYRICS,
+            'dataset_type': DatasetTypes.DEMO,
+            'dataset_name': DemoDatasetNames.POP_LYRICS,
             'cluster': 'new',
             'deployment_type': 'local',
         },
