@@ -13,6 +13,8 @@ from now_common.abstract_executors.NOWAuthExecutor.executor import (
 )
 from now_common.abstract_executors.NOWBaseIndexer.ranking import merge_matches_sum
 
+CLOUD_BUCKET_PRE_FIXES = ['s3://']
+
 
 class NOWBaseIndexer(Executor):
     def __init__(
@@ -61,7 +63,7 @@ class NOWBaseIndexer(Executor):
             ])
 
         the resulting response would be a document array with
-        one document containg a dictionary in tags like the following:
+        one document containing a dictionary in tags like the following:
         {'tags':{'color':['red', 'blue'], 'greeting':['hello']}}
         """
 
@@ -120,6 +122,7 @@ class NOWBaseIndexer(Executor):
         flat_docs = docs[traversal_paths]
         if len(flat_docs) == 0:
             return
+        flat_docs = self.maybe_drop_blob_tensor(flat_docs)
         self.index(flat_docs, parameters, **kwargs)
         self.extend_inmemory_docs_and_tags(flat_docs)
         return DocumentArray([])
@@ -181,8 +184,9 @@ class NOWBaseIndexer(Executor):
             merge_matches_sum(docs_copy, limit)
         return docs_copy
 
+    @staticmethod
     def append_matches_if_not_exists(
-        self, docs_with_matches, docs_with_matches_to_add, limit
+        docs_with_matches, docs_with_matches_to_add, limit
     ):
         # get all parent_ids of the matches of the docs_with_matches
         parent_ids = set()
@@ -197,16 +201,41 @@ class NOWBaseIndexer(Executor):
                         break
                     doc.matches.append(match)
 
-    def clean_response(self, docs):
+    @staticmethod
+    def maybe_drop_blob_tensor(docs: DocumentArray):
+        """Drops `blob` or `tensor` from documents which have `uri` attribute set and
+        whose 'uri' is a data-uri or is either in the cloud or can be loaded."""
+        for doc in docs:
+            if doc.uri:
+                if doc.text:
+                    continue
+                else:
+                    try:
+                        if not doc.uri.startswith(f'data:{doc.mime_type}') and not any(
+                            [
+                                doc.uri.startswith(cloud_bucket_prefix)
+                                for cloud_bucket_prefix in CLOUD_BUCKET_PRE_FIXES
+                            ]
+                        ):
+                            doc.load_uri_to_blob()
+                        doc.blob = None
+                        doc.tensor = None
+                    except Exception as e:  # noqa E722
+                        continue
+        return docs
+
+    @staticmethod
+    def clean_response(docs):
         """removes the embedding from the root level and also from the matches."""
         for doc in docs:
             doc.embedding = None
             for match in doc.matches:
                 match.embedding = None
 
-    def parse_columns(self, columns):
+    @staticmethod
+    def parse_columns(columns):
         """Parse the columns to index"""
-        self._valid_input_columns = ['str', 'float', 'int']
+        valid_input_columns = ['str', 'float', 'int']
         if columns:
             corrected_list = []
             for i in range(0, len(columns), 2):
@@ -214,8 +243,8 @@ class NOWBaseIndexer(Executor):
             columns = corrected_list
             for n, t in columns:
                 assert (
-                    t in self._valid_input_columns
-                ), f'column of type={t} is not supported. Supported types are {self._valid_input_columns}'
+                    t in valid_input_columns
+                ), f'column of type={t} is not supported. Supported types are {valid_input_columns}'
         return columns
 
     def load_document_list(self):
@@ -251,7 +280,7 @@ class NOWBaseIndexer(Executor):
         raise NotImplementedError
 
     def batch_iterator(self):
-        """Needs to be implemented in derived classes. Iterates over all documents in betches and yields them"""
+        """Needs to be implemented in derived classes. Iterates over all documents in batches and yields them"""
         raise NotImplementedError
 
     def index(self, docs: DocumentArray, parameters: dict, **kwargs):
