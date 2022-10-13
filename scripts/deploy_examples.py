@@ -6,6 +6,7 @@ import boto3
 from jina import Client
 
 from now.cli import cli
+from now.constants import DatasetTypes
 from now.demo_data import DEFAULT_EXAMPLE_HOSTED
 from now.deployment.deployment import list_all_wolf, terminate_wolf
 
@@ -44,6 +45,7 @@ def deploy(app_name, app_data):
     kwargs = {
         'now': 'start',
         'app': app_name,
+        'dataset_type': DatasetTypes.DEMO,
         'dataset_name': app_data,
         'deployment_type': 'remote',
         'proceed': True,
