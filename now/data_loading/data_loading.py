@@ -9,7 +9,11 @@ from docarray import Document, DocumentArray
 from now.apps.base.app import JinaNOWApp
 from now.constants import DatasetTypes, DemoDatasets
 from now.data_loading.es import ElasticsearchExtractor
-from now.data_loading.utils import _fetch_da_from_url, get_dataset_url
+from now.data_loading.utils import (
+    _fetch_da_from_url,
+    get_dataset_url,
+    transform_docarray,
+)
 from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
 from now.utils import sigmap
@@ -62,6 +66,14 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
         for doc in da:
             if 'genre_tags' in doc.tags and isinstance(doc.tags['genre_tags'], list):
                 doc.tags['genre_tags'] = ' '.join(doc.tags['genre_tags'])
+
+    if user_input.custom_dataset_type != DatasetTypes.ELASTICSEARCH:
+        # elasticsearch transforms data during extraction
+        da = transform_docarray(
+            documents=da,
+            search_fields=user_input.search_fields or [],
+            filter_fields=user_input.filter_fields or [],
+        )
     return da
 
 
