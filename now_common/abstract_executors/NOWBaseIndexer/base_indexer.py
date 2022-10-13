@@ -13,7 +13,7 @@ from now_common.abstract_executors.NOWAuthExecutor.executor import (
 )
 from now_common.abstract_executors.NOWBaseIndexer.ranking import merge_matches_sum
 
-CLOUD_BUCKET_PRE_FIXES = ['s3://']
+CLOUD_BUCKET_PREFIXES = ['s3://']
 
 
 class NOWBaseIndexer(Executor):
@@ -184,9 +184,8 @@ class NOWBaseIndexer(Executor):
             merge_matches_sum(docs_copy, limit)
         return docs_copy
 
-    @staticmethod
     def append_matches_if_not_exists(
-        docs_with_matches, docs_with_matches_to_add, limit
+        self, docs_with_matches, docs_with_matches_to_add, limit
     ):
         # get all parent_ids of the matches of the docs_with_matches
         parent_ids = set()
@@ -214,7 +213,7 @@ class NOWBaseIndexer(Executor):
                         if not doc.uri.startswith(f'data:{doc.mime_type}') and not any(
                             [
                                 doc.uri.startswith(cloud_bucket_prefix)
-                                for cloud_bucket_prefix in CLOUD_BUCKET_PRE_FIXES
+                                for cloud_bucket_prefix in CLOUD_BUCKET_PREFIXES
                             ]
                         ):
                             doc.load_uri_to_blob()
