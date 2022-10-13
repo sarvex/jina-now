@@ -13,7 +13,6 @@ from jina import __version__ as jina_version
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import (
-    DEFAULT_EXAMPLE_HOSTED,
     NOW_AUTOCOMPLETE_VERSION,
     NOW_ELASTIC_INDEXER_VERSION,
     NOW_PREPROCESSOR_VERSION,
