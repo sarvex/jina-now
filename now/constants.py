@@ -9,6 +9,7 @@ DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.128-add-cname-1'
 NOW_PREPROCESSOR_VERSION = '0.0.92-refactor-post-process-3'
+NOW_ANNLITE_INDEXER_VERSION = '0.0.12-feat-add-qdrant-indexer-35'
 NOW_QDRANT_INDEXER_VERSION = '0.0.1-refactor-post-process-3'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.2-fix-elastic-1'
 
