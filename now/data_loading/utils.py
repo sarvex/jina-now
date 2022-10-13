@@ -3,7 +3,7 @@ import os
 import pathlib
 import pickle
 from os.path import join as osp
-from typing import List
+from typing import List, Dict
 
 from docarray import DocumentArray, Document
 
@@ -58,42 +58,32 @@ def get_dataset_url(dataset: str, output_modality: Modalities) -> str:
         return f'{BASE_STORAGE_URL}/{data_folder}/{dataset}-{docarray_version}.bin'
 
 
-def _transform_single_modal_data(
-    documents: DocumentArray, filter_fields: List[str]
-) -> DocumentArray:
-    transformed_docs = DocumentArray()
-    for document in documents:
-        new_doc = Document()
-        new_doc.tags['filtered_fields'] = {}
-        for field, value in document.tags.items():
+def _transform_single_modal_data(filter_fields: List[str]):
+    def _transform_fn(document: Document) -> Document:
+        document.tags['filtered_fields'] = {}
+        doc_tags = document.tags.copy()
+        for field, value in doc_tags.items():
             if field in filter_fields:
-                new_doc.tags['filtered_fields'][field] = value
-            else:
-                new_doc.tags[field] = value
-            new_doc.chunks = [
-                Document(
-                    content=document.content,
-                    modality=document.modality,
-                    tags={'field_name': 'default_field_name'},
-                )
-            ]
-        transformed_docs.append(new_doc)
-    return transformed_docs
+                document.tags.pop(field)
+                document.tags['filtered_fields'][field] = value
+        document.chunks = [
+            Document(
+                content=document.content,
+                modality=document.modality,
+                tags={'field_name': 'default_field_name'},
+            )
+        ]
+        return document
+
+    return _transform_fn
 
 
 def _transform_multi_modal_data(
-    documents: DocumentArray, search_fields: List[str], filter_fields: List[str]
-) -> DocumentArray:
-    transformed_docs = DocumentArray()
-    field_names = {
-        int(field_info['position']): field_name
-        for field_name, field_info in documents[0]
-        ._metadata['multi_modal_schema']
-        .items()
-    }
-    for document in documents:
-        new_doc = Document()
-        new_doc.tags['filtered_fields'] = {}
+    field_names: Dict[int, str], search_fields: List[str], filter_fields: List[str]
+):
+    def _transform_fn(document: Document) -> Document:
+        document.tags['filtered_fields'] = {}
+        new_chunks = []
         for position, chunk in enumerate(document.chunks):
             field_name = field_names[position]
             content = chunk.content
@@ -102,7 +92,7 @@ def _transform_multi_modal_data(
                 content = [sub_chunk.content for sub_chunk in chunk.chunks]
                 modality = chunk.chunks[0].modality
             if field_name in search_fields:
-                new_doc.chunks.append(
+                new_chunks.append(
                     Document(
                         content=content,
                         modality=modality,
@@ -110,18 +100,32 @@ def _transform_multi_modal_data(
                     )
                 )
             elif field_name in filter_fields:
-                new_doc.tags['filtered_fields'][field_name] = content
+                document.tags['filtered_fields'][field_name] = content
             else:
-                new_doc.tags[field_name] = content
-        transformed_docs.append(new_doc)
-    return transformed_docs
+                document.tags[field_name] = content
+        document.chunks = new_chunks
+        return document
+
+    return _transform_fn
 
 
 def transform_docarray(
     documents: DocumentArray, search_fields: List[str], filter_fields: List[str]
 ) -> DocumentArray:
     if documents[0].chunks:
-        data = _transform_multi_modal_data(documents, search_fields, filter_fields)
+        field_names = {
+            int(field_info['position']): field_name
+            for field_name, field_info in documents[0]
+            ._metadata['multi_modal_schema']
+            .items()
+        }
+        documents.apply(
+            _transform_multi_modal_data(
+                field_names=field_names,
+                search_fields=search_fields,
+                filter_fields=filter_fields,
+            )
+        )
     else:
-        data = _transform_single_modal_data(documents, filter_fields)
-    return data
+        documents.apply(_transform_single_modal_data(filter_fields=filter_fields))
+    return documents
