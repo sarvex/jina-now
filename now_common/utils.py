@@ -142,7 +142,7 @@ def common_setup(
         add_embeddings=True,
         loss='TripletMarginLoss',
     )
-    tags = _extract_tags_annlite(deepcopy(dataset[0]), user_input)
+    tags = _extract_tags_for_indexer(deepcopy(dataset[0]), user_input)
     env_dict = common_get_flow_env_dict(
         finetune_settings=finetune_settings,
         encoder_uses=encoder_uses,
@@ -234,7 +234,7 @@ def get_indexer_config(
     return config
 
 
-def _extract_tags_annlite(d: Document, user_input):
+def _extract_tags_for_indexer(d: Document, user_input):
     print(
         'We assume all tags follow the same structure, only first json file will be used to determine structure'
     )
