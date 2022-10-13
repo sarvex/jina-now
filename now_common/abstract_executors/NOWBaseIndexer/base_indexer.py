@@ -204,7 +204,7 @@ class NOWBaseIndexer(Executor):
     @staticmethod
     def maybe_drop_blob_tensor(docs: DocumentArray):
         """Drops `blob` or `tensor` from documents which have `uri` attribute set and
-        whose 'uri' is a data-uri or is either in the cloud or can be loaded."""
+        whose 'uri' is a data-uri or is either in the cloud(S3) or can be loaded."""
         for doc in docs:
             if doc.uri:
                 if doc.text:
