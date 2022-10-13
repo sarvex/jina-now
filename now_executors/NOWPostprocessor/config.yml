@@ -1,4 +1,0 @@
-jtype: NOWPostprocessor
-metas:
-  py_modules:
-    - executor.py
