@@ -219,6 +219,7 @@ class NOWBaseIndexer(Executor):
                             doc.load_uri_to_blob()
                         doc.blob = None
                         doc.tensor = None
+                        doc.mime_type = None
                     except Exception as e:  # noqa E722
                         continue
         return docs

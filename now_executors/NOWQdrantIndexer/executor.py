@@ -34,7 +34,7 @@ class NOWQdrantIndexer15(Executor):
 
     # override
     def batch_iterator(self):
-        """Iterator wich iterates through the documents of self._index and yields batches"""
+        """Iterator which iterates through the documents of self._index and yields batches"""
         batch = []
         for item in self._index:
             batch.append(item)
