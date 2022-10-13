@@ -73,7 +73,7 @@ jobs:
       - name: Test executors separately
         timeout-minutes: 10
         run: |
-          pytest --suppress-no-test-exit-code -v -s tests/now_executors/NOWAnnLiteIndexer
+#          pytest --suppress-no-test-exit-code -v -s tests/now_executors/NOWAnnLiteIndexer
           pytest --suppress-no-test-exit-code -v -s tests/now_executors/NOWAuthExecutor
           pytest --suppress-no-test-exit-code -v -s tests/now_executors/NOWPostprocessor
           pytest --suppress-no-test-exit-code -v -s tests/now_executors/NOWPreprocessor
