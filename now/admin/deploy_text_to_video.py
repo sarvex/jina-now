@@ -12,8 +12,7 @@ def deploy():
     kwargs = {
         'now': 'start',
         'app': Apps.TEXT_TO_VIDEO,
-        'data': 'custom',
-        'custom_dataset_type': DatasetTypes.S3_BUCKET,
+        'dataset_type': DatasetTypes.S3_BUCKET,
         'dataset_path': '',
         'aws_access_key_id': '',
         'aws_secret_access_key': '',

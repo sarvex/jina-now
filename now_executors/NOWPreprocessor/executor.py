@@ -68,7 +68,7 @@ class NOWPreprocessor(Executor):
         with tempfile.TemporaryDirectory() as tmpdir:
             if (
                 self.user_input
-                and self.user_input.custom_dataset_type == DatasetTypes.S3_BUCKET
+                and self.user_input.dataset_type == DatasetTypes.S3_BUCKET
             ):
                 _maybe_download_from_s3(
                     docs=docs,
@@ -91,7 +91,7 @@ class NOWPreprocessor(Executor):
             # results
             if (
                 self.user_input
-                and self.user_input.custom_dataset_type == DatasetTypes.S3_BUCKET
+                and self.user_input.dataset_type == DatasetTypes.S3_BUCKET
             ):
 
                 def move_uri(d: Document) -> Document:
@@ -169,10 +169,7 @@ class NOWPreprocessor(Executor):
             return
         self._set_user_input(parameters=parameters)
 
-        if (
-            self.user_input
-            and self.user_input.custom_dataset_type == DatasetTypes.S3_BUCKET
-        ):
+        if self.user_input and self.user_input.dataset_type == DatasetTypes.S3_BUCKET:
 
             def convert_fn(d: Document) -> Document:
                 if isinstance(d.uri, str) and d.uri.startswith('s3://'):
@@ -209,8 +206,7 @@ if __name__ == '__main__':
     user_inpuT = UserInput()
     user_inpuT.output_modality = Modalities.VIDEO
     user_inpuT.app_instance = _construct_app(app)
-    user_inpuT.data = 'custom'
-    user_inpuT.custom_dataset_type = DatasetTypes.S3_BUCKET
+    user_inpuT.dataset_type = DatasetTypes.S3_BUCKET
     user_inpuT.dataset_path = 's3://bucket/folder'
 
     # docs = DocumentArray.load_binary('/Users/joschkabraun/dev/now/da_tgif.30000.bin')[:300]

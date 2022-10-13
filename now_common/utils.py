@@ -21,6 +21,7 @@ from now.constants import (
     PREFETCH_NR,
     DatasetTypes,
 )
+from now.demo_data import DEFAULT_EXAMPLE_HOSTED
 from now.deployment.deployment import cmd
 from now.finetuning.run_finetuning import finetune
 from now.finetuning.settings import FinetuneSettings, parse_finetune_settings
@@ -112,7 +113,7 @@ def common_get_flow_env_dict(
 
     if 'NOW_EXAMPLES' in os.environ:
         valid_app = DEFAULT_EXAMPLE_HOSTED.get(user_input.app_instance.app_name, {})
-        is_demo_ds = user_input.data in valid_app
+        is_demo_ds = user_input.dataset_name in valid_app
         if is_demo_ds:
             config[
                 'CUSTOM_DNS'
@@ -241,7 +242,7 @@ def _extract_tags_annlite(d: Document, user_input):
         'We assume all tags follow the same structure, only first json file will be used to determine structure'
     )
     with tempfile.TemporaryDirectory() as tmpdir:
-        if user_input and user_input.custom_dataset_type == DatasetTypes.S3_BUCKET:
+        if user_input and user_input.dataset_type == DatasetTypes.S3_BUCKET:
             _maybe_download_from_s3(
                 docs=DocumentArray([d]),
                 tmpdir=tmpdir,
