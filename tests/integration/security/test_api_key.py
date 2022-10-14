@@ -6,6 +6,7 @@ import pytest
 import requests
 from docarray import Document
 from jina import Flow
+from now_executors.indexer.qdrant.executor import NOWQdrantIndexer15
 from tests.integration.test_end_to_end import assert_search
 
 from deployment.bff.app.app import run_server
@@ -42,7 +43,7 @@ def get_flow():
             external=True,
         )
         .add(
-            uses=f'jinahub+docker://NOWQdrantIndexer15/{NOW_QDRANT_INDEXER_VERSION}',
+            uses=f'jinahub+docker://{NOWQdrantIndexer15.__name__}/{NOW_QDRANT_INDEXER_VERSION}',
             uses_with={'dim': 512, 'admin_emails': [admin_email]},
         )
     )

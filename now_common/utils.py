@@ -10,6 +10,7 @@ from typing import Dict, List, Optional
 import hubble
 from docarray import Document, DocumentArray
 from jina import __version__ as jina_version
+from now_executors.indexer.qdrant.executor import NOWQdrantIndexer15
 
 from now.apps.base.app import JinaNOWApp
 from now.constants import (
@@ -224,7 +225,9 @@ def get_indexer_config(
             'hosts': setup_elastic_service(kubectl_path),
         }
     else:
-        config = {'indexer_uses': f'NOWQdrantIndexer15/{NOW_QDRANT_INDEXER_VERSION}'}
+        config = {
+            'indexer_uses': f'{NOWQdrantIndexer15.__name__}/{NOW_QDRANT_INDEXER_VERSION}'
+        }
     threshold1 = 250_000
     if num_indexed_samples <= threshold1:
         config['indexer_resources'] = {'INDEXER_CPU': 0.1, 'INDEXER_MEM': '2G'}
