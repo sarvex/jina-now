@@ -4,7 +4,8 @@ from typing import Dict, List
 from docarray import DocumentArray
 
 from now.app.base.app import JinaNOWApp
-from now.common import common_setup, get_indexer_config, preprocess_text
+from now.common.preprocess import preprocess_text
+from now.common.utils import common_setup, get_indexer_config
 from now.constants import Apps, DatasetTypes, Modalities
 from now.now_dataclasses import UserInput
 

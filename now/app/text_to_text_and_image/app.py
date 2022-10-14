@@ -7,7 +7,8 @@ from docarray import Document, DocumentArray
 from jina import __version__ as jina_version
 
 from now.app.base.app import JinaNOWApp
-from now.common import get_indexer_config, preprocess_nested_docs, preprocess_text
+from now.common.preprocess import preprocess_nested_docs, preprocess_text
+from now.common.utils import get_indexer_config
 from now.constants import NOW_PREPROCESSOR_VERSION, Apps, Modalities, ModelNames
 from now.finetuning.data_builder import DataBuilder
 from now.finetuning.run_finetuning import finetune

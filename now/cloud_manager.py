@@ -6,7 +6,7 @@ import cowsay
 import docker
 from kubernetes import client, config
 
-from now.common import NEW_CLUSTER
+from now.common.options import NEW_CLUSTER
 from now.deployment.deployment import cmd
 from now.log import time_profiler, yaspin_extended
 from now.now_dataclasses import UserInput

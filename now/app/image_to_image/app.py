@@ -5,7 +5,8 @@ from docarray import DocumentArray
 from jina.helper import random_port
 
 from now.app.base.app import JinaNOWApp
-from now.common import common_setup, get_indexer_config, preprocess_images
+from now.common.preprocess import preprocess_images
+from now.common.utils import common_setup, get_indexer_config
 from now.constants import CLIP_USES, EXTERNAL_CLIP_HOST, Apps, Modalities
 from now.demo_data import DemoDatasetNames
 from now.now_dataclasses import UserInput

@@ -5,7 +5,7 @@ import cowsay
 from docarray import Document, DocumentArray
 
 from now.app.base.app import JinaNOWApp
-from now.common import common_setup
+from now.common.utils import common_setup
 from now.constants import NOW_QDRANT_INDEXER_VERSION, Apps, Modalities
 from now.demo_data import DemoDatasetNames
 from now.deployment.deployment import which

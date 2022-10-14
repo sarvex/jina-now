@@ -4,7 +4,7 @@ from copy import deepcopy
 import numpy as np
 import pytest
 from jina import Document, DocumentArray, Flow
-from tests.executors.indexer.base.in_memory_indexer import InMemoryIndexer
+from tests.executor.indexer.base.in_memory_indexer import InMemoryIndexer
 
 from now.executor.indexer.qdrant.executor import NOWQdrantIndexer15
 
