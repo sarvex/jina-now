@@ -1,6 +1,6 @@
 import os
 from argparse import Namespace
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor
 
 import boto3
 from jina import Client
@@ -103,7 +103,7 @@ if __name__ == '__main__':
         print('Total Apps to re-deploy: ', len(to_deploy))
 
     results = []
-    with ThreadPoolExecutor(max_workers=2) as thread_executor:
+    with ProcessPoolExecutor() as thread_executor:
         futures = []
         if deployment_type == 'all':
             # Create all new deployments and update CNAME records
