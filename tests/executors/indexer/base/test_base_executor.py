@@ -1,16 +1,17 @@
 import os
-import time
+from copy import deepcopy
 
 import numpy as np
 import pytest
 from jina import Document, DocumentArray, Flow
 from now_executors.indexer.qdrant.executor import NOWQdrantIndexer15
+from tests.executors.indexer.base.in_memory_indexer import InMemoryIndexer
 
 NUMBER_OF_DOCS = 10
 DIM = 128
 
 
-@pytest.mark.parametrize('indexer', [NOWQdrantIndexer15])
+@pytest.mark.parametrize('indexer', [InMemoryIndexer, NOWQdrantIndexer15])
 class TestBaseIndexer:
     @pytest.fixture(scope='function', autouse=True)
     def setup(self):
@@ -19,7 +20,6 @@ class TestBaseIndexer:
         os.system(
             f"docker-compose -f {compose_yml} --project-directory . up  --build -d --remove-orphans"
         )
-        time.sleep(5)
         yield
         os.system(
             f"docker-compose -f {compose_yml} --project-directory . down --remove-orphans"
@@ -320,6 +320,7 @@ class TestBaseIndexer:
 
     @pytest.fixture()
     def documents(self):
+        uri = 'https://jina.ai/assets/images/text-to-image-output.png'
         return DocumentArray(
             [
                 Document(
@@ -327,18 +328,21 @@ class TestBaseIndexer:
                     blob=b"gif...",
                     embedding=np.array([0.3, 0.1, 0.1]),
                     tags={'title': 'blue'},
+                    uri=uri,
                     chunks=[
                         Document(
                             id="chunk11",
                             blob=b"jpg...",
                             embedding=np.array([0.1, 0.1]),
                             tags={'title': 'that is rEd for sure'},
+                            uri=uri,
                         ),
                         Document(
                             id="chunk12",
                             blob=b"jpg...",
                             embedding=np.array([0.2, 0.1]),
                             tags={'title': 'really bluE'},
+                            uri=uri,
                         ),
                     ],
                 ),
@@ -346,6 +350,7 @@ class TestBaseIndexer:
                     id="doc2",
                     blob=b"jpg...",
                     tags={'title': 'red', 'length': 18},
+                    uri=uri,
                     embedding=np.array([0.4, 0.1, 0.1]),
                     chunks=[
                         Document(
@@ -353,12 +358,14 @@ class TestBaseIndexer:
                             blob=b"jpg...",
                             embedding=np.array([0.3, 0.1]),
                             tags={'title': 'my red shirt'},
+                            uri=uri,
                         ),
                         Document(
                             id="chunk22",
                             blob=b"jpg...",
                             embedding=np.array([0.4, 0.1]),
                             tags={'title': 'red is nice'},
+                            uri=uri,
                         ),
                     ],
                 ),
@@ -367,12 +374,14 @@ class TestBaseIndexer:
                     blob=b"jpg...",
                     embedding=np.array([0.5, 0.1, 0.1]),
                     tags={'title': 'blue', 'length': 18},
+                    uri=uri,
                     chunks=[
                         Document(
                             id="chunk31",
                             blob=b"jpg...",
                             embedding=np.array([0.5, 0.1]),
                             tags={'title': 'it is red'},
+                            uri=uri,
                         ),
                     ],
                 ),
@@ -381,6 +390,7 @@ class TestBaseIndexer:
                     blob=b"jpg...",
                     embedding=np.array([0.6, 0.1, 0.1]),
                     tags={'title': 'blue'},
+                    uri=uri,
                 ),
             ]
         )
@@ -389,14 +399,16 @@ class TestBaseIndexer:
         'level,query,embedding,res_ids',
         [
             ('@c', 'blue', [0.5, 0.1], ['chunk12', 'chunk22', 'chunk31']),
-            # ('@c', 'red', [0.5, 0.1], ['chunk22', 'chunk31', 'chunk11']),
-            # ('@r', 'blue', [0.8, 0.1, 0.1], ['doc4', 'doc3', 'doc1', 'doc2']),
-            # ('@r', 'red', [0.8, 0.1, 0.1], ['doc2', 'doc4', 'doc3', 'doc1']),
+            ('@c', 'red', [0.5, 0.1], ['chunk22', 'chunk31', 'chunk11']),
+            ('@r', 'blue', [0.8, 0.1, 0.1], ['doc4', 'doc3', 'doc1', 'doc2']),
+            ('@r', 'red', [0.8, 0.1, 0.1], ['doc2', 'doc4', 'doc3', 'doc1']),
         ],
     )
     def test_search_chunk_using_sum_ranker(
         self, documents, indexer, level, query, embedding, res_ids
     ):
+        if indexer == InMemoryIndexer:
+            pytest.skip('InMemoryIndexer does not contain the title hack')
         with Flow().add(
             uses=indexer,
             uses_with={
@@ -425,3 +437,48 @@ class TestBaseIndexer:
             print('all match ids', [match.id for match in result[0].matches])
             for d, res_id in zip(result[0].matches, res_ids):
                 assert d.id == res_id
+                if d.uri:
+                    assert d.blob == b'', f'got blob {d.blob} for {d.id}'
+
+    def test_no_blob_with_working_uri(self, tmpdir, indexer):
+        metas = {'workspace': str(tmpdir)}
+        with Flow().add(
+            uses=indexer,
+            uses_with={
+                'dim': 3,
+            },
+            uses_metas=metas,
+        ) as f:
+            doc_blob = Document(
+                uri='https://jina.ai/assets/images/text-to-image-output.png',
+                embedding=np.array([0.1, 0.1, 0.4]),
+            ).load_uri_to_blob()
+
+            doc_tens = Document(
+                uri='https://jina.ai/assets/images/text-to-image-output.png',
+                embedding=np.array([0.1, 0.1, 0.5]),
+            ).load_uri_to_image_tensor()
+
+            inputs = DocumentArray(
+                [
+                    Document(text='hi', embedding=np.array([0.1, 0.1, 0.1])),
+                    Document(blob=b'b12', embedding=np.array([0.1, 0.1, 0.2])),
+                    Document(
+                        blob=b'b12',
+                        uri='file_will.never_exist',
+                        embedding=np.array([0.1, 0.1, 0.3]),
+                    ),
+                    doc_blob,
+                    doc_tens,
+                ]
+            )
+
+            f.index(deepcopy(inputs), parameters={})
+
+            response = f.search(Document(embedding=np.array([0.1, 0.1, 0.1])))
+            matches = response[0].matches
+            assert matches[0].text == inputs[0].text
+            assert matches[1].blob == inputs[1].blob
+            assert matches[2].blob == inputs[2].blob
+            assert matches[3].blob == b''
+            assert matches[4].tensor is None

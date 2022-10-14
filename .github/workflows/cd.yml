@@ -74,7 +74,6 @@ jobs:
         timeout-minutes: 10
         run: |
           pytest --suppress-no-test-exit-code -v -s tests/now_executors/NOWAuthExecutor
-          pytest --suppress-no-test-exit-code -v -s tests/now_executors/NOWPostprocessor
           pytest --suppress-no-test-exit-code -v -s tests/now_executors/NOWPreprocessor
       - name: Setup tmate session for debugging
         if: ${{ failure() || (github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled) }}

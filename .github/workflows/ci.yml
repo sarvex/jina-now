@@ -373,7 +373,6 @@ jobs:
         timeout-minutes: 10
         run: |
           pytest --suppress-no-test-exit-code --cov=now --cov=now_common --cov=now_executors --cov-append -v -s tests/now_executors/NOWAuthExecutor
-          pytest --suppress-no-test-exit-code --cov=now --cov=now_common --cov=now_executors --cov-append -v -s tests/now_executors/NOWPostprocessor
           pytest --suppress-no-test-exit-code --cov=now --cov=now_common --cov=now_executors --cov-append -v -s tests/now_executors/NOWPreprocessor
           pytest --suppress-no-test-exit-code --cov=now --cov=now_common --cov=now_executors --cov-append -v -s tests/now_executors/NOWQdrantIndexer
       - name: Setup tmate session for debugging

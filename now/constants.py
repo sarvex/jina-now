@@ -8,9 +8,9 @@ from now.utils import BetterEnum
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.128-add-cname-1'
-NOW_PREPROCESSOR_VERSION = '0.0.93-fix-ds-name-1'
-NOW_QDRANT_INDEXER_VERSION = '0.0.1-feat-add-qdrant-indexer-35'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.2-fix-elastic-1'
+NOW_PREPROCESSOR_VERSION = '0.0.93-refactor-executors-2'
+NOW_QDRANT_INDEXER_VERSION = '0.0.2-refactor-executors-2'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.3-refactor-executors-2'
 
 
 class Modalities(BetterEnum):
