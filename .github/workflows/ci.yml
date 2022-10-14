@@ -98,7 +98,7 @@ jobs:
           filters: |
             has_preprocessing_changed:
             - 'now/apps/**'
-            - 'now_common/preprocess.py'
+            - 'now/common/preprocess.py'
             - 'now/executor/preprocessor/**'
             - 'now/executor/abstract/auth/**'
       - name: Get preprocessor tag
@@ -316,7 +316,7 @@ jobs:
       - name: Test
         id: test
         run: |
-          pytest --suppress-no-test-exit-code --cov=now --cov=now_common --cov=executor --ignore-glob=tests/executor -v -s -m "not gpu" --splits 7 --group ${{ matrix.group }} --splitting-algorithm least_duration tests/
+          pytest --suppress-no-test-exit-code --cov=now --cov=common --cov=executor --ignore-glob=tests/executor -v -s -m "not gpu" --splits 7 --group ${{ matrix.group }} --splitting-algorithm least_duration tests/
         timeout-minutes: 20
         env:
           WOLF_TOKEN: ${{ secrets.WOLF_TOKEN }}
@@ -351,9 +351,9 @@ jobs:
       - name: Test executors separately
         timeout-minutes: 10
         run: |
-          pytest --suppress-no-test-exit-code --cov=now --cov=now_common --cov=executor --cov-append -v -s tests/now/executor/auth
-          pytest --suppress-no-test-exit-code --cov=now --cov=now_common --cov=executor --cov-append -v -s tests/now/executor/preprocessor
-          pytest --suppress-no-test-exit-code --cov=now --cov=now_common --cov=executor --cov-append -v -s tests/now/executor/indexer
+          pytest --suppress-no-test-exit-code --cov=now --cov=common --cov=executor --cov-append -v -s tests/now/executor/auth
+          pytest --suppress-no-test-exit-code --cov=now --cov=common --cov=executor --cov-append -v -s tests/now/executor/preprocessor
+          pytest --suppress-no-test-exit-code --cov=now --cov=common --cov=executor --cov-append -v -s tests/now/executor/indexer
       - name: Setup tmate session for debugging
         if: ${{ failure() || (github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled) }}
         uses: mxschmitt/action-tmate@v3

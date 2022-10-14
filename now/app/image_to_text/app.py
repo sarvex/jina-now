@@ -50,7 +50,7 @@ class ImageToText(JinaNOWApp):
         now_package_dir = os.path.abspath(
             os.path.join(__file__, '..', '..', '..', '..')
         )
-        flow_dir = os.path.join(now_package_dir, 'now_common', 'flow')
+        flow_dir = os.path.join(now_package_dir, 'now', 'common', 'flow')
 
         if finetuning:
             self.flow_yaml = os.path.join(flow_dir, 'ft-flow-clip.yml')
