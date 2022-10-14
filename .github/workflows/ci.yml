@@ -99,8 +99,8 @@ jobs:
             has_preprocessing_changed:
             - 'now/apps/**'
             - 'now_common/preprocess.py'
-            - 'executor/preprocessor/**'
-            - 'executor/abstract/auth/**'
+            - 'now/executor/preprocessor/**'
+            - 'now/executor/abstract/auth/**'
       - name: Get preprocessor tag
         if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
         run: |
@@ -130,7 +130,7 @@ jobs:
         if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
         env:
           NOW_PREPROCESSOR_VERSION: ${{ env.NOW_PREPROCESSOR_VERSION }}
-        run: JINA_AUTH_TOKEN=${{ secrets.NOW_PREPROCESSOR_JCLOUD_TOKEN }} jina hub push --verbose --force-update NOWPreprocessor executor/preprocessor/. -t latest --protected-tag $NOW_PREPROCESSOR_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
+        run: JINA_AUTH_TOKEN=${{ secrets.NOW_PREPROCESSOR_JCLOUD_TOKEN }} jina hub push --verbose --force-update NOWPreprocessor now/executor/preprocessor/. -t latest --protected-tag $NOW_PREPROCESSOR_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
 
   update-qdrant-executor-if-required:
     runs-on: ubuntu-latest
@@ -143,7 +143,7 @@ jobs:
         with:
           filters: |
             has_changed:
-            - 'executor/abstract/**'
+            - 'now/executor/abstract/**'
       - name: Get executor tag
         if: steps.check_has_executor_changed.outputs.has_changed == 'true'
         run: |
@@ -174,7 +174,7 @@ jobs:
         if: steps.check_has_executor_changed.outputs.has_changed == 'true'
         env:
           NOW_QDRANT_INDEXER_VERSION: ${{ env.NOW_QDRANT_INDEXER_VERSION }}
-        run: jina hub push --verbose --force-update NOWQdrantIndexer15 executor/indexer/qdrant --secret ${{ secrets.NOW_QDRANT_EXECUTOR_SECRET }} -t latest --protected-tag $NOW_QDRANT_INDEXER_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
+        run: jina hub push --verbose --force-update NOWQdrantIndexer15 now/executor/indexer/qdrant --secret ${{ secrets.NOW_QDRANT_EXECUTOR_SECRET }} -t latest --protected-tag $NOW_QDRANT_INDEXER_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
 
   update-bff-playground-if-required:
     runs-on: ubuntu-latest
@@ -252,8 +252,8 @@ jobs:
         with:
           filters: |
             has_changed:
-            - 'executor/abstract/auth**'
-            - 'executor/indexer/elastic/**'
+            - 'now/executor/abstract/auth**'
+            - 'now/executor/indexer/elastic/**'
       - name: Get executor tag
         if: steps.check_has_executor_changed.outputs.has_changed == 'true'
         run: |
@@ -283,7 +283,7 @@ jobs:
         if: steps.check_has_executor_changed.outputs.has_changed == 'true'
         env:
           NOW_ELASTIC_INDEXER_VERSION: ${{ env.NOW_ELASTIC_INDEXER_VERSION }}
-        run: jina hub push --verbose --force-update ElasticIndexer executor/indexer/elastic --secret ${{ secrets.NOW_ELASTIC_EXECUTOR_SECRET }} -t latest --protected-tag $NOW_ELASTIC_INDEXER_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
+        run: jina hub push --verbose --force-update ElasticIndexer now/executor/indexer/elastic --secret ${{ secrets.NOW_ELASTIC_EXECUTOR_SECRET }} -t latest --protected-tag $NOW_ELASTIC_INDEXER_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
 
   core-test:
     runs-on: ubuntu-latest
@@ -351,9 +351,9 @@ jobs:
       - name: Test executors separately
         timeout-minutes: 10
         run: |
-          pytest --suppress-no-test-exit-code --cov=now --cov=now_common --cov=executor --cov-append -v -s tests/executor/auth
-          pytest --suppress-no-test-exit-code --cov=now --cov=now_common --cov=executor --cov-append -v -s tests/executor/preprocessor
-          pytest --suppress-no-test-exit-code --cov=now --cov=now_common --cov=executor --cov-append -v -s tests/executor/indexer
+          pytest --suppress-no-test-exit-code --cov=now --cov=now_common --cov=executor --cov-append -v -s tests/now/executor/auth
+          pytest --suppress-no-test-exit-code --cov=now --cov=now_common --cov=executor --cov-append -v -s tests/now/executor/preprocessor
+          pytest --suppress-no-test-exit-code --cov=now --cov=now_common --cov=executor --cov-append -v -s tests/now/executor/indexer
       - name: Setup tmate session for debugging
         if: ${{ failure() || (github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled) }}
         uses: mxschmitt/action-tmate@v3
