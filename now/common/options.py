@@ -343,7 +343,7 @@ def _check_if_namespace_exist():
 
 def construct_app(app_name: str):
     return getattr(
-        importlib.import_module(f'now.apps.{app_name}.app'),
+        importlib.import_module(f'now.app.{app_name}.app'),
         f'{to_camel_case(app_name)}',
     )()
 
