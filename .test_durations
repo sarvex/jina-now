@@ -195,7 +195,7 @@
     "tests/unit/test_finetuning/test_data_builder.py::test_text_processor[scope6-False-False-hi hey-1]": 0.000701607670634985,
     "tests/unit/test_finetuning/test_dataset.py::test_create_finetuning_dataset_size": 0.0011192886158823967,
     "tests/unit/test_finetuning/test_dataset.py::test_create_finetuning_dataset_split": 0.001150408759713173,
-    "tests/unit/test_finetuning/test_dataset.py::test_create_finetuning_dataset_val_index": 0.0026126462034881115
+    "tests/unit/test_finetuning/test_dataset.py::test_create_finetuning_dataset_val_index": 0.0026126462034881115,
     "tests/executors/indexer/base/test_base_executor.py::TestBaseIndexer::test_delete[InMemoryIndexer]": 7.843747213000029,
     "tests/executors/indexer/base/test_base_executor.py::TestBaseIndexer::test_delete[NOWQdrantIndexer15]": 8.375152369999967,
     "tests/executors/indexer/base/test_base_executor.py::TestBaseIndexer::test_delete_tags[InMemoryIndexer]": 5.511167851000039,
