@@ -1,13 +1,13 @@
 import pytest
 from docarray import Document, DocumentArray
 
-from now.apps.image_to_image.app import ImageToImage
-from now.apps.image_to_text.app import ImageToText
-from now.apps.music_to_music.app import MusicToMusic
-from now.apps.text_to_image.app import TextToImage
-from now.apps.text_to_text.app import TextToText
-from now.apps.text_to_text_and_image.app import TextToTextAndImage
-from now.apps.text_to_video.app import TextToVideo
+from now.app.image_to_image.app import ImageToImage
+from now.app.image_to_text.app import ImageToText
+from now.app.music_to_music.app import MusicToMusic
+from now.app.text_to_image.app import TextToImage
+from now.app.text_to_text.app import TextToText
+from now.app.text_to_text_and_image.app import TextToTextAndImage
+from now.app.text_to_video.app import TextToVideo
 from now.constants import DatasetTypes
 from now.data_loading.data_loading import load_data
 from now.demo_data import DemoDatasetNames

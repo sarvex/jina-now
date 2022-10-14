@@ -4,7 +4,7 @@ from docarray import DocumentArray
 from pydantic import BaseModel
 
 from now.constants import Modalities
-from now.data_loading.utils import _fetch_da_from_url, get_dataset_url
+from now.data_loading.utils import fetch_da_from_url, get_dataset_url
 from now.utils import BetterEnum
 
 
@@ -36,7 +36,7 @@ class DemoDataset(BaseModel):
 
     def get_data(self, *args, **kwargs) -> DocumentArray:
         url = get_dataset_url(dataset=self.name, output_modality=self.display_modality)
-        return _fetch_da_from_url(url)
+        return fetch_da_from_url(url)
 
 
 AVAILABLE_DATASET = {
