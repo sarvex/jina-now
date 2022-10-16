@@ -1,9 +1,9 @@
 from docarray import DocumentArray
 
-from now.executor.abstract.base_indexer import NOWBaseIndexer as Executor
+from now.executor.abstract.base_indexer import NOWBaseIndexer
 
 
-class InMemoryIndexer(Executor):
+class InMemoryIndexer(NOWBaseIndexer):
     """InMemoryIndexer indexes Documents into a DocumentArray with `storage='memory'`"""
 
     def __init__(self, *args, **kwargs):
