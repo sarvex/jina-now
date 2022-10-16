@@ -148,14 +148,19 @@ class NOWBaseIndexer(Executor):
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
         docs = docs[traversal_paths][:1]  # only search on the first document for now
 
-        if self.traversal_paths == '@c':
+        if traversal_paths == '@c':
             retrieval_limit = limit * 3
         else:
             retrieval_limit = limit
 
         # first get with title and then merge matches each
         docs_with_matches = self.create_matches(
-            docs, parameters, limit, retrieval_limit, search_filter=search_filter
+            docs,
+            parameters,
+            traversal_paths,
+            limit,
+            retrieval_limit,
+            search_filter=search_filter,
         )
 
         if len(docs[0].text.split()) == 1:
@@ -164,7 +169,7 @@ class NOWBaseIndexer(Executor):
                     {'title': {'$eq': docs[0].text.lower()}}
                 )
             docs_with_matches_filter = self.create_matches(
-                docs, parameters, limit, retrieval_limit, search_filter
+                docs, parameters, traversal_paths, limit, retrieval_limit, search_filter
             )
             self.append_matches_if_not_exists(
                 docs_with_matches_filter, docs_with_matches, limit
@@ -174,10 +179,12 @@ class NOWBaseIndexer(Executor):
         self.clean_response(docs_with_matches)
         return docs_with_matches
 
-    def create_matches(self, docs, parameters, limit, retrieval_limit, search_filter):
+    def create_matches(
+        self, docs, parameters, traversal_paths, limit, retrieval_limit, search_filter
+    ):
         docs_copy = deepcopy(docs)
         self.search(docs_copy, parameters, retrieval_limit, search_filter)
-        if self.traversal_paths == '@c':
+        if traversal_paths == '@c':
             merge_matches_sum(docs_copy, limit)
         return docs_copy
 

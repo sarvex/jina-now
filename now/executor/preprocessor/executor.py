@@ -240,12 +240,3 @@ if __name__ == '__main__':
         )
 
         result = DocumentArray.from_json(result.to_json())
-    #
-    # # exec = NOWPreprocessor(app = app)
-    # # result = exec.index(docs=docs, parameters=dataclasses.asdict(user_inpuT))
-    #
-    # # result2 = preprocess(da=result, user_input=user_inpuT, is_indexing=True)
-    #
-    # # result = exec.search(docs=text_docs, parameters=dataclasses.asdict(user_inpuT))
-    #
-    # result.summary()
