@@ -352,7 +352,8 @@ jobs:
         timeout-minutes: 10
         run: |
           pytest --suppress-no-test-exit-code --cov=now --cov=common --cov=executor --cov-append -v -s tests/executor/auth
-          pytest --suppress-no-test-exit-code --cov=now --cov=common --cov=executor --cov-append -v -s tests/executor/indexer
+          pytest --suppress-no-test-exit-code --cov=now --cov=common --cov=executor --cov-append -v -s tests/executor/indexer/base
+          pytest --suppress-no-test-exit-code --cov=now --cov=common --cov=executor --cov-append -v -s tests/executor/indexer/elastic
           pytest --suppress-no-test-exit-code --cov=now --cov=common --cov=executor --cov-append -v -s tests/executor/preprocessor
       - name: Setup tmate session for debugging
         if: ${{ failure() || (github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled) }}
