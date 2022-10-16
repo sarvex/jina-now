@@ -7,9 +7,9 @@ from jina import Executor, Flow, requests
 from now.executor.abstract.auth import NOWAuthExecutor
 
 
-def test_executor_persistance(tempdir):
+def test_executor_persistance(tmpdir):
     api_key = 'my_key'
-    e = NOWAuthExecutor(api_keys=[api_key], metas={'workspace': './workspace'})
+    e = NOWAuthExecutor(api_keys=[api_key], metas={'workspace': tmpdir})
     e.update_user_emails(
         parameters={'api_key': api_key, 'user_emails': ['abc@test.ai']}
     )
