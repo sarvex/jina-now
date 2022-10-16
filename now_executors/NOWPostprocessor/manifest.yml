@@ -1,3 +1,0 @@
-manifest_version: 1
-name: NOWPostprocessor
-description: Post-processes any documents after encoding such that they are ready to be indexed, used as query, etc.

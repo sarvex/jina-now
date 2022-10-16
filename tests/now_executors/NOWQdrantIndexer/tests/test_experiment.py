@@ -14,18 +14,21 @@ def documents():
                 blob=b"gif...",
                 embedding=np.array([0.3, 0.1, 0.1]),
                 tags={'title': 'blue'},
+                uri='https://jina.ai/assets/images/text-to-image-output.png',
                 chunks=[
                     Document(
                         id="chunk11",
                         blob=b"jpg...",
                         embedding=np.array([0.1, 0.1]),
                         tags={'title': 'that is rEd for sure'},
+                        uri='https://jina.ai/assets/images/text-to-image-output.png',
                     ),
                     Document(
                         id="chunk12",
                         blob=b"jpg...",
                         embedding=np.array([0.2, 0.1]),
                         tags={'title': 'really bluE'},
+                        uri='https://jina.ai/assets/images/text-to-image-output.png',
                     ),
                 ],
             ),
@@ -34,18 +37,21 @@ def documents():
                 blob=b"jpg...",
                 tags={'title': 'red', 'length': 18},
                 embedding=np.array([0.4, 0.1, 0.1]),
+                uri='https://jina.ai/assets/images/text-to-image-output.png',
                 chunks=[
                     Document(
                         id="chunk21",
                         blob=b"jpg...",
                         embedding=np.array([0.3, 0.1]),
                         tags={'title': 'my red shirt'},
+                        uri='https://jina.ai/assets/images/text-to-image-output.png',
                     ),
                     Document(
                         id="chunk22",
                         blob=b"jpg...",
                         embedding=np.array([0.4, 0.1]),
                         tags={'title': 'red is nice'},
+                        uri='https://jina.ai/assets/images/text-to-image-output.png',
                     ),
                 ],
             ),
@@ -113,3 +119,5 @@ def test_search_chunk_using_sum_ranker(
         print('all match ids', [match.id for match in result[0].matches])
         for d, res_id in zip(result[0].matches, res_ids):
             assert d.id == res_id
+            if d.uri:
+                assert d.blob == b'', f'got blob {d.blob} for {d.id}'

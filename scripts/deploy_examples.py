@@ -1,11 +1,12 @@
 import os
 from argparse import Namespace
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor
 
 import boto3
-from jina import Client
+import requests
 
 from now.cli import cli
+from now.constants import DatasetTypes
 from now.demo_data import DEFAULT_EXAMPLE_HOSTED
 from now.deployment.deployment import list_all_wolf, terminate_wolf
 
@@ -44,6 +45,7 @@ def deploy(app_name, app_data):
     kwargs = {
         'now': 'start',
         'app': app_name,
+        'dataset_type': DatasetTypes.DEMO,
         'dataset_name': app_data,
         'deployment_type': 'remote',
         'proceed': True,
@@ -89,19 +91,23 @@ if __name__ == '__main__':
         print('Deploying all examples!!')
     else:
         # check if deployment is already running else add to deploy_list
-        jina_client = Client()
+        bff = 'https://nowrun.jina.ai/api/v1/admin/getStatus'
         for app, data in DEFAULT_EXAMPLE_HOSTED.items():
             for ds_name in data:
                 host = f'grpcs://now-example-{app}-{ds_name}.dev.jina.ai'.replace(
                     '_', '-'
                 )
-                jina_client = Client(host=host)
-                if not jina_client.is_flow_ready(timeout=2):
+                request_body = {
+                    'host': host,
+                    'jwt': {'token': os.environ['WOLF_TOKEN']},
+                }
+                resp = requests.post(bff, json=request_body)
+                if resp.status_code != 200:
                     to_deploy.add((app, ds_name))
         print('Total Apps to re-deploy: ', len(to_deploy))
 
     results = []
-    with ThreadPoolExecutor(max_workers=2) as thread_executor:
+    with ProcessPoolExecutor() as thread_executor:
         futures = []
         if deployment_type == 'all':
             # Create all new deployments and update CNAME records

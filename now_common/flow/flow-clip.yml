@@ -34,10 +34,6 @@ executors:
       name: ${{ ENV.PRE_TRAINED_MODEL_NAME }}
     env:
       JINA_LOG_LEVEL: DEBUG
-  - name: postprocessor
-    uses: jinahub+docker://NOWPostprocessor/v0.0.5
-    env:
-      JINA_LOG_LEVEL: DEBUG
   - name: indexer
     uses: ${{ ENV.INDEXER_NAME }}
     uses_with:
