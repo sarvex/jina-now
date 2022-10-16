@@ -7,7 +7,7 @@ from jina import Document, DocumentArray, Flow
 from tests.executor.indexer.base.in_memory_indexer import InMemoryIndexer
 
 from now.deployment.deployment import cmd
-from now.executor.indexer.qdrant.executor import NOWQdrantIndexer15
+from now.executor.indexer.qdrant import NOWQdrantIndexer15
 
 NUMBER_OF_DOCS = 10
 DIM = 128

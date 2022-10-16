@@ -5,7 +5,7 @@ from docarray import Document, DocumentArray
 from jina import Flow
 
 from now.constants import Apps
-from now.executor.preprocessor.executor import NOWPreprocessor
+from now.executor.preprocessor import NOWPreprocessor
 from now.now_dataclasses import UserInput
 
 

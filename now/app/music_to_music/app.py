@@ -9,7 +9,7 @@ from now.common.utils import common_setup
 from now.constants import NOW_QDRANT_INDEXER_VERSION, Apps, Modalities
 from now.demo_data import DemoDatasetNames
 from now.deployment.deployment import which
-from now.executor.indexer.qdrant.executor import NOWQdrantIndexer15
+from now.executor.indexer.qdrant import NOWQdrantIndexer15
 from now.now_dataclasses import UserInput
 
 

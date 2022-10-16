@@ -8,7 +8,7 @@ from jina import Document, DocumentArray
 
 from now.app.base.app import JinaNOWApp
 from now.common.options import construct_app
-from now.constants import Apps, DatasetTypes, Modalities
+from now.constants import Apps, DatasetTypes
 from now.executor.abstract.auth import NOWAuthExecutor as Executor
 from now.executor.abstract.auth import SecurityLevel, secure_request
 from now.now_dataclasses import UserInput
@@ -185,7 +185,6 @@ class NOWPreprocessor(Executor):
 
 
 if __name__ == '__main__':
-    import dataclasses
     import time
 
     from jina import Flow
@@ -193,30 +192,20 @@ if __name__ == '__main__':
     app = Apps.TEXT_TO_VIDEO
 
     user_inpuT = UserInput()
-    user_inpuT.output_modality = Modalities.VIDEO
     user_inpuT.app_instance = construct_app(app)
     user_inpuT.dataset_type = DatasetTypes.S3_BUCKET
     user_inpuT.dataset_path = 's3://bucket/folder'
 
-    # docs = DocumentArray.load_binary('/Users/joschkabraun/dev/now/da_tgif.30000.bin')[:300]
-    # docs.summary()
-
     text_docs = DocumentArray(
         [
-            # Document(text='test'),
             Document(chunks=DocumentArray([Document(text='hi')])),
         ]
     )
-    # text_docs.summary()
-
-    # text_docs_prepr = preprocess(da=text_docs, user_input=user_inpuT, is_indexing=False)
-    # text_docs_prepr.summary()
-
     executor = NOWPreprocessor(app=app)
 
     t0 = time.time()
     result = executor.search(
-        docs=text_docs, parameters={'user_input': dataclasses.asdict(user_inpuT)}
+        docs=text_docs, parameters={'app': user_inpuT.app_instance.app_name}
     )
     print(f"latency executor: {time.time() - t0}")
 
@@ -224,18 +213,9 @@ if __name__ == '__main__':
 
     f = Flow().add(uses=NOWPreprocessor, uses_with={'app': app})
     with f:
-        # result = f.post(
-        #     on='/index',
-        #     inputs=docs,
-        #     parameters=dataclasses.asdict(user_inpuT),
-        #     # request_size=50,
-        #     show_progress=True,
-        # )
-
         result = f.post(
             on='/search',
             inputs=text_docs,
-            parameters={'user_input': dataclasses.asdict(user_inpuT)},
             show_progress=True,
         )
 

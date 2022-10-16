@@ -21,7 +21,7 @@ from now.constants import (
 )
 from now.demo_data import DEFAULT_EXAMPLE_HOSTED
 from now.deployment.deployment import cmd
-from now.executor.indexer.qdrant.executor import NOWQdrantIndexer15
+from now.executor.indexer.qdrant import NOWQdrantIndexer15
 from now.finetuning.run_finetuning import finetune
 from now.finetuning.settings import FinetuneSettings, parse_finetune_settings
 from now.now_dataclasses import UserInput
