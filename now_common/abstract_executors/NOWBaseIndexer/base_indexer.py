@@ -68,6 +68,8 @@ class NOWBaseIndexer(Executor):
         count_dict = defaultdict(lambda: defaultdict(int))
         for tags in self.doc_id_tags.values():
             for key, value in tags.items():
+                print(key)
+                print(value)
                 count_dict[key][value] += 1
 
         tag_to_values = dict()
