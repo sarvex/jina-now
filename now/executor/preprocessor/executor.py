@@ -185,7 +185,6 @@ class NOWPreprocessor(Executor):
 
 
 if __name__ == '__main__':
-    import time
 
     from jina import Flow
 
@@ -202,15 +201,9 @@ if __name__ == '__main__':
         ]
     )
     executor = NOWPreprocessor(app=app)
-
-    t0 = time.time()
     result = executor.search(
         docs=text_docs, parameters={'app': user_inpuT.app_instance.app_name}
     )
-    print(f"latency executor: {time.time() - t0}")
-
-    print("working now\n-------------------")
-
     f = Flow().add(uses=NOWPreprocessor, uses_with={'app': app})
     with f:
         result = f.post(
