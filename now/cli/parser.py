@@ -1,10 +1,10 @@
 import argparse
 
 from jina.parsers.helper import _ColoredHelpFormatter
-from now_common import options
-from now_common.options import _construct_app
 
 from now import __version__
+from now.common import options
+from now.common.options import construct_app
 from now.constants import Apps
 
 
@@ -72,7 +72,7 @@ def set_start_parser(sp):
     # Get list of enabled apps
     enabled_apps, enabled_apps_instance = [], []
     for app in Apps():
-        app_instance = _construct_app(app)
+        app_instance = construct_app(app)
         if app_instance.is_enabled:
             enabled_apps.append(app)
             enabled_apps_instance.append(app_instance)

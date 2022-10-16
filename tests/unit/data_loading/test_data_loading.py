@@ -6,10 +6,10 @@ import pytest
 from docarray import Document, DocumentArray
 from pytest_mock import MockerFixture
 
-from now.apps.music_to_music.app import MusicToMusic
-from now.apps.text_to_image.app import TextToImage
-from now.apps.text_to_text.app import TextToText
-from now.apps.text_to_text_and_image.app import TextToTextAndImage
+from now.app.music_to_music.app import MusicToMusic
+from now.app.text_to_image.app import TextToImage
+from now.app.text_to_text.app import TextToText
+from now.app.text_to_text_and_image.app import TextToTextAndImage
 from now.constants import DatasetTypes
 from now.data_loading.data_loading import _load_tags_from_json_if_needed, load_data
 from now.demo_data import DemoDatasetNames

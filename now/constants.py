@@ -7,11 +7,10 @@ from now.utils import BetterEnum
 # DEMO_DATASET_DOCARRAY_VERSION = docarray_version
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.128-add-get-status-1'
-NOW_PREPROCESSOR_VERSION = '0.0.92-refactor-post-process-5'
-NOW_ANNLITE_INDEXER_VERSION = '0.0.12-feat-add-qdrant-indexer-35'
-NOW_QDRANT_INDEXER_VERSION = '0.0.1-refactor-post-process-5'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.2-fix-elastic-1'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.129-refactor-executors-21'
+NOW_PREPROCESSOR_VERSION = '0.0.93-refactor-executors-21'
+NOW_QDRANT_INDEXER_VERSION = '0.0.2-refactor-executors-21'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.3-refactor-executors-21'
 
 
 class Modalities(BetterEnum):

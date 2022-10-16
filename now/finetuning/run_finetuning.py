@@ -13,7 +13,7 @@ import numpy as np
 from docarray import DocumentArray
 from finetuner.callback import EarlyStopping, EvaluationCallback
 
-from now.apps.base.app import JinaNOWApp
+from now.app.base.app import JinaNOWApp
 from now.constants import ModelNames
 from now.deployment.deployment import cmd, terminate_wolf
 from now.deployment.flow import deploy_flow
@@ -78,7 +78,7 @@ def finetune(
     return _finetune_model(finetune_ds, finetune_settings)
 
 
-def _get_model_options(finetune_settings: FinetuneSettings) -> Dict[str, Any]:
+def get_model_options(finetune_settings: FinetuneSettings) -> Dict[str, Any]:
     """
     Returns additional model options for fine-tuning specific for each model.
 
@@ -131,7 +131,7 @@ def _finetune_model(
 
     run = finetuner.fit(
         model=finetune_settings.model_name,
-        model_options=_get_model_options(finetune_settings),
+        model_options=get_model_options(finetune_settings),
         loss=finetune_settings.loss,
         train_data=finetune_ds.train,
         experiment_name=experiment_name,

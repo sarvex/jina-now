@@ -6,10 +6,10 @@ from copy import deepcopy
 
 from docarray import Document, DocumentArray
 
-from now.apps.base.app import JinaNOWApp
+from now.app.base.app import JinaNOWApp
 from now.constants import DatasetTypes
 from now.data_loading.es import ElasticsearchExtractor
-from now.data_loading.utils import _fetch_da_from_url, get_dataset_url
+from now.data_loading.utils import fetch_da_from_url, get_dataset_url
 from now.demo_data import DemoDatasetNames
 from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
@@ -30,7 +30,7 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
         da = _pull_docarray(user_input.dataset_name)
     elif user_input.dataset_type == DatasetTypes.URL:
         print('⬇  Pull DocArray dataset')
-        da = _fetch_da_from_url(user_input.dataset_url)
+        da = fetch_da_from_url(user_input.dataset_url)
     elif user_input.dataset_type == DatasetTypes.PATH:
         print('💿  Loading files from disk')
         da = _load_from_disk(app, user_input)
@@ -43,7 +43,7 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
     elif user_input.dataset_type == DatasetTypes.DEMO:
         print('⬇  Download DocArray dataset')
         url = get_dataset_url(user_input.dataset_name, app.output_modality)
-        da = _fetch_da_from_url(url)
+        da = fetch_da_from_url(url)
     if da is None:
         raise ValueError(
             f'Could not load DocArray dataset. Please check your configuration: {user_input}.'

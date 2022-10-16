@@ -15,7 +15,7 @@ def process_query(
     Currently we support '$and' between different conditions means we return results
     that have all the conditions. Also we only support '$eq' opperand for tag
     which means a tag should be equal to an exact value.
-    Same query is passed to either docarray and annlite indexers, in docarray
+    Same query is passed to indexers, in docarray
     executor we do preprocessing by adding tags__ to the query
 
     :param text: text of the query
