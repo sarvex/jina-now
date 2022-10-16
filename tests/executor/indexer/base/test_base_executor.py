@@ -6,6 +6,7 @@ import pytest
 from jina import Document, DocumentArray, Flow
 from tests.executor.indexer.base.in_memory_indexer import InMemoryIndexer
 
+from now.deployment.deployment import cmd
 from now.executor.indexer.qdrant.executor import NOWQdrantIndexer15
 
 NUMBER_OF_DOCS = 10
@@ -18,11 +19,12 @@ class TestBaseIndexer:
     def setup(self):
         cur_dir = os.path.dirname(os.path.abspath(__file__))
         compose_yml = os.path.abspath(os.path.join(cur_dir, 'docker-compose.yml'))
-        os.system(
+
+        cmd(
             f"docker-compose -f {compose_yml} --project-directory . up  --build -d --remove-orphans"
         )
         yield
-        os.system(
+        cmd(
             f"docker-compose -f {compose_yml} --project-directory . down --remove-orphans"
         )
 
