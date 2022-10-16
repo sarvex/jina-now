@@ -269,7 +269,7 @@ def setup_elastic_service(
         f'{kubectl_path} apply -f https://download.elastic.co/downloads/eck/2.4.0/operator.yaml'
     )
     cmd(f'{kubectl_path} create ns nowapi')
-    cmd(f'{kubectl_path} apply -f {cur_dir}/../now/deployment/elastic_kind.yml')
+    cmd(f'{kubectl_path} apply -f {cur_dir}/../deployment/elastic_kind.yml')
     num_retries = 0
     es_password, error_msg = '', b''
     while num_retries < MAX_RETRIES:
