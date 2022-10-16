@@ -5,7 +5,7 @@ from docarray import DocumentArray
 from elasticsearch import Elasticsearch
 from jina import Flow
 
-from now.executor.indexer.elastic.elastic_indexer import ElasticIndexer
+from now.executor.indexer.elastic import ElasticIndexer
 
 
 @pytest.mark.parametrize(

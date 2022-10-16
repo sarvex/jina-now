@@ -21,7 +21,6 @@ from now.constants import (
 )
 from now.demo_data import DEFAULT_EXAMPLE_HOSTED
 from now.deployment.deployment import cmd
-from now.executor.indexer.qdrant import NOWQdrantIndexer15
 from now.finetuning.run_finetuning import finetune
 from now.finetuning.settings import FinetuneSettings, parse_finetune_settings
 from now.now_dataclasses import UserInput
@@ -225,9 +224,7 @@ def get_indexer_config(
             'hosts': setup_elastic_service(kubectl_path),
         }
     else:
-        config = {
-            'indexer_uses': f'{NOWQdrantIndexer15.__name__}/{NOW_QDRANT_INDEXER_VERSION}'
-        }
+        config = {'indexer_uses': f'NOWQdrantIndexer15/{NOW_QDRANT_INDEXER_VERSION}'}
     threshold1 = 250_000
     if num_indexed_samples <= threshold1:
         config['indexer_resources'] = {'INDEXER_CPU': 0.1, 'INDEXER_MEM': '2G'}
