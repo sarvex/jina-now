@@ -30,21 +30,3 @@ def finetune_ds(finetune_settings: FinetuneSettings) -> FinetuneDataset:
             )
             train_data.append(doc)
     return build_finetuning_dataset(train_data, finetune_settings)
-
-
-# def test_end2end(
-#     finetune_ds: FinetuneDataset,
-#     finetune_settings: FinetuneSettings,
-#     with_hubble_login_patch,
-# ):
-#
-#     with tempfile.TemporaryDirectory() as tempdir:
-#         _finetune_layer(
-#             finetune_ds=finetune_ds,
-#             finetune_settings=finetune_settings,
-#             save_dir=tempdir,
-#         )
-#
-#         assert os.path.isfile(
-#             os.path.join(tempdir, 'now', 'hub', 'head_encoder', 'best_model_ndcg')
-#         )

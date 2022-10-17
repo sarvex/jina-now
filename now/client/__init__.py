@@ -3,10 +3,10 @@ import re
 
 import requests
 from jina.serve.runtimes.gateway.http.models import JinaResponseModel
-from now_common.options import _construct_app
 from pydantic import parse_obj_as
 
 from deployment.bff.app.v1.routers.helper import jina_client_post
+from now.common.options import construct_app
 
 
 class Client:
@@ -54,7 +54,7 @@ class Client:
         Client to run requests against a deployed flow
         """
 
-        app_instance = _construct_app(self.app)
+        app_instance = construct_app(self.app)
         request_model, response_model, request_map, response_map = self.get_maps(
             app_instance, endpoint
         )

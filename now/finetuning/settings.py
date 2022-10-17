@@ -1,10 +1,10 @@
 """ This module contains pre-configurations for finetuning on the demo datasets. """
 from dataclasses import dataclass
-from typing import Optional, Tuple, Dict, Any
+from typing import Optional, Tuple
 
 from docarray import DocumentArray
 
-from now.constants import Apps
+from now.constants import Apps, DatasetTypes
 from now.now_dataclasses import UserInput
 
 DEFAULT_EPOCHS = 50
@@ -50,12 +50,15 @@ def _is_finetuning(
     user_input: UserInput, dataset: DocumentArray, finetuneable_datasets: Tuple
 ) -> bool:
     if (
-        user_input.data in finetuneable_datasets
+        (
+            user_input.dataset_type == DatasetTypes.DEMO
+            and user_input.dataset_name in finetuneable_datasets
+        )
+        or (
+            user_input.dataset_type != DatasetTypes.DEMO
+            and all(['finetuner_label' in d.tags for d in dataset])
+        )
         or user_input.app_instance.app_name == Apps.TEXT_TO_TEXT_AND_IMAGE
-    ):
-        return True
-    elif user_input.data == 'custom' and all(
-        ['finetuner_label' in d.tags for d in dataset]
     ):
         return True
     else:
@@ -65,7 +68,7 @@ def _is_finetuning(
 def _is_bi_modal(user_input: UserInput, dataset: DocumentArray) -> bool:
     if user_input.app_instance.app_name == Apps.TEXT_TO_TEXT_AND_IMAGE:
         return False
-    elif user_input.data == 'custom':
+    elif user_input.dataset_type != DatasetTypes.DEMO:
         has_blob = any([d.blob != b'' for d in dataset])
         has_text = any([d.text != '' for d in dataset])
         return has_text and has_blob

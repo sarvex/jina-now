@@ -38,8 +38,3 @@ docs/api/**/*
 secret.key
 
 *.lock
-
-# executor related
-now_executors/NOWPreprocessor/workspace
-now_executors/NOWPreprocessor/tests/workspace
-now_executors/NOWPreprocessor/*.json
