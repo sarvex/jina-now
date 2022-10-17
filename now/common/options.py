@@ -429,5 +429,12 @@ remote_cluster = [SECURED, ADDITIONAL_USERS, USER_EMAILS]
 
 
 base_options = (
-    data_type + data_demo + data_da + data_s3 + data_es + data_fields + cluster + remote_cluster
+    data_type
+    + data_demo
+    + data_da
+    + data_s3
+    + data_es
+    + data_fields
+    + cluster
+    + remote_cluster
 )

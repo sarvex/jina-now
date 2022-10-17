@@ -75,7 +75,3 @@ def test_preprocessor():
     with Flow().add(uses=NOWPreprocessor, uses_with={'app': Apps.TEXT_TO_IMAGE}) as f:
         indexed_data = f.index(data)
     indexed_data.summary()
-
-
-
-
