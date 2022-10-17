@@ -62,11 +62,10 @@ def get_query_params() -> Parameters:
 def search(attribute_name, attribute_value, jwt, top_k=None, filter_dict=None):
     print(f'Searching by {attribute_name}')
     params = get_query_params()
-    # if params.host == 'gateway':  # need to call now-bff as we communicate between pods
-    #    domain = f"http://now-bff"
-    # else:
-    #    domain = f"https://nowrun.jina.ai"
-    domain = "http://0.0.0.0:8080"
+    if params.host == 'gateway':  # need to call now-bff as we communicate between pods
+        domain = f"http://now-bff"
+    else:
+        domain = f"https://nowrun.jina.ai"
     URL_HOST = (
         f"{domain}/api/v1/{params.input_modality}-to-{params.output_modality}/search"
     )
