@@ -149,9 +149,11 @@ class TextToTextAndImage(JinaNOWApp):
             kubectl_path=kubectl_path,
             deployment_type=user_input.deployment_type,
         )
-        env_dict['HOSTS'] = indexer_config['hosts']
+        env_dict['HOSTS'] = indexer_config.get('hosts')
         env_dict['INDEXER_NAME'] = f"jinahub+docker://{indexer_config['indexer_uses']}"
-        env_dict['INDEXER_MEM'] = indexer_config['indexer_resources']['INDEXER_MEM']
+        env_dict['INDEXER_MEM'] = indexer_config.get('indexer_resources').get(
+            'INDEXER_MEM'
+        )
         env_dict['JINA_VERSION'] = jina_version
         # retention days
         if 'NOW_CI_RUN' in os.environ:
@@ -185,7 +187,7 @@ class TextToTextAndImage(JinaNOWApp):
             add_embeddings=False,
         )
         # temporary adjustments to work with small text+image dataset
-        finetune_settings.epochs = 2
+        finetune_settings.epochs = 0
         finetune_settings.num_val_queries = 5
         finetune_settings.train_val_split_ration = 0.8
         return finetune_settings
