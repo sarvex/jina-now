@@ -202,7 +202,6 @@ class JinaNOWApp:
                         {
                             'name': 'autocomplete_executor',
                             'uses': '${{ ENV.AUTOCOMPLETE_EXECUTOR_NAME }}',
-                            'needs': 'gateway',
                             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
                         }
                     )

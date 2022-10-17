@@ -31,8 +31,6 @@ class NOWAutoCompleteExecutor(Executor):
     ):
         traversal_paths = parameters.get('traversal_paths', self.search_traversal_paths)
         flat_docs = docs[traversal_paths]
-        if len(flat_docs) == 0:
-            return
 
         for doc in flat_docs:
             if doc.text:
@@ -46,6 +44,7 @@ class NOWAutoCompleteExecutor(Executor):
                             self.words[word] = {'count': 1}
 
         self.auto_complete = AutoComplete(words=self.words)
+        return docs
 
     @secure_request(on='/suggestion', level=SecurityLevel.USER)
     def get_suggestion(
