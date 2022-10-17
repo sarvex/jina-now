@@ -1,4 +1,4 @@
-from collections import defaultdict
+from collections import abc, defaultdict
 from copy import deepcopy
 from sys import maxsize
 from typing import List, Optional
@@ -70,8 +70,10 @@ class NOWBaseIndexer(Executor):
         count_dict = defaultdict(lambda: defaultdict(int))
         for tags in self.doc_id_tags.values():
             for key, value in tags.items():
-                print(key)
-                print(value)
+                if not (
+                    isinstance(key, abc.Hashable) and isinstance(value, abc.Hashable)
+                ):
+                    continue
                 count_dict[key][value] += 1
 
         tag_to_values = dict()
