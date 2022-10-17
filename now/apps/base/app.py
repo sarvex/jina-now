@@ -240,7 +240,7 @@ class JinaNOWApp:
             )
             try:
                 client.post('/dry_run', timeout=2)
-            except ConnectionError:
+            except Exception:
                 return False
             return True
         return False
