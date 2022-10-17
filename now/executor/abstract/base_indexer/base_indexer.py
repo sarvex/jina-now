@@ -158,6 +158,10 @@ class NOWBaseIndexer(Executor):
         else:
             retrieval_limit = limit
 
+        print('INITIAL docs')
+        for doc in docs:
+            print(doc.summary())
+
         # first get with title and then merge matches each
         docs_with_matches = self.create_matches(
             docs,
@@ -167,7 +171,9 @@ class NOWBaseIndexer(Executor):
             retrieval_limit,
             search_filter=search_filter,
         )
-        print("before filter: ", docs_with_matches.summary())
+        print('docs with matches')
+        for doc in docs_with_matches:
+            print(doc.summary())
 
         if len(docs[0].text.split()) == 1:
             if not search_filter:
@@ -183,7 +189,9 @@ class NOWBaseIndexer(Executor):
             docs_with_matches = docs_with_matches_filter
 
         self.clean_response(docs_with_matches)
-        print('final docs:', docs_with_matches.summary())
+        print('after filter')
+        for doc in docs_with_matches:
+            print(doc.summary())
         return docs_with_matches
 
     def create_matches(
