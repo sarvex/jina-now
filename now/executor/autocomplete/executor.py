@@ -3,13 +3,9 @@ from typing import Optional
 from better_profanity import profanity
 from docarray import DocumentArray
 from fast_autocomplete import AutoComplete
-from now_common.abstract_executors.NOWAuthExecutor.executor import (
-    NOWAuthExecutor as Executor,
-)
-from now_common.abstract_executors.NOWAuthExecutor.executor import (
-    SecurityLevel,
-    secure_request,
-)
+
+from now.executor.abstract.auth.auth import NOWAuthExecutor as Executor
+from now.executor.abstract.auth.auth import SecurityLevel, secure_request
 
 
 class NOWAutoCompleteExecutor(Executor):

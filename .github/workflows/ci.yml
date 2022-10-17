@@ -296,8 +296,8 @@ jobs:
         with:
           filters: |
             has_changed:
-            - 'now_executors/NOWAuthExecutor/**'
-            - 'now_executors/NOWAutoCompleteExecutor/**'
+            - 'now/executor/abstract/auth**'
+            - 'now/executor/autocomplete/**'
       - name: Get executor tag
         if: steps.check_has_executor_changed.outputs.has_changed == 'true'
         run: |
@@ -331,13 +331,13 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install wheel
           pip install --no-cache-dir ".[full,test]"
-          pytest --suppress-no-test-exit-code -v -s tests/now_executors/NOWAuthExecutor
-          pytest --suppress-no-test-exit-code -v -s tests/now_executors/NOWAutoCompleteExecutor
+          pytest --suppress-no-test-exit-code -v -s tests/executor/auth
+          pytest --suppress-no-test-exit-code -v -s tests/executor/autocomplete
       - name: Build and push executor
         if: steps.check_has_executor_changed.outputs.has_changed == 'true'
         env:
           NOW_AUTOCOMPLETE_VERSION: ${{ env.NOW_AUTOCOMPLETE_VERSION }}
-        run: jina hub push --verbose --force-update NOWAutoCompleteExecutor now_executors/NOWAutoCompleteExecutor --secret ${{ secrets.NOW_AUTOCOMPLETE_SECRET }} -t latest --protected-tag $NOW_AUTOCOMPLETE_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
+        run: jina hub push --verbose --force-update NOWAutoCompleteExecutor now/executor/autocomplete --secret ${{ secrets.NOW_AUTOCOMPLETE_SECRET }} -t latest --protected-tag $NOW_AUTOCOMPLETE_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
 
   core-test:
     runs-on: ubuntu-latest

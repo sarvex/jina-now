@@ -1,5 +1,6 @@
 from docarray import Document, DocumentArray
-from now_executors.NOWAutoCompleteExecutor.executor import NOWAutoCompleteExecutor
+
+from now.executor.autocomplete.executor import NOWAutoCompleteExecutor
 
 
 def word_list():

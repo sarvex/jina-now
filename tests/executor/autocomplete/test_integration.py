@@ -1,6 +1,7 @@
 from docarray import Document, DocumentArray
 from jina import Flow
-from now_executors.NOWAutoCompleteExecutor.executor import NOWAutoCompleteExecutor
+
+from now.executor.autocomplete.executor import NOWAutoCompleteExecutor
 
 
 def test_autocomplete():
