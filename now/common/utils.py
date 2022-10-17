@@ -194,6 +194,10 @@ def get_indexer_config(
             'indexer_uses': f'ElasticIndexer/{NOW_ELASTIC_INDEXER_VERSION}',
             'hosts': setup_elastic_service(kubectl_path),
         }
+    elif elastic and deployment_type == 'remote':
+        raise ValueError(
+            'ElasticIndexer is currently not supported for remote deployment. Please use local deployment.'
+        )
     else:
         config = {'indexer_uses': f'NOWQdrantIndexer15/{NOW_QDRANT_INDEXER_VERSION}'}
     threshold1 = 250_000
