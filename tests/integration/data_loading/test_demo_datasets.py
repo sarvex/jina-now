@@ -6,13 +6,14 @@ import pytest
 import requests
 from starlette import status
 
-from now.constants import AVAILABLE_DATASET, DEMO_DATASET_DOCARRAY_VERSION, Modalities
+from now.constants import DEMO_DATASET_DOCARRAY_VERSION, Modalities
 from now.data_loading.utils import get_dataset_url
+from now.demo_data import AVAILABLE_DATASET
 
 
 @pytest.mark.parametrize(
     'modality, ds_name',
-    [(m, d[0]) for m in Modalities() for d in AVAILABLE_DATASET[m]],
+    [(m, d.name) for m in Modalities() for d in AVAILABLE_DATASET[m]],
 )
 def test_dataset_is_available(
     ds_name: str,

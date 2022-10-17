@@ -11,7 +11,7 @@ from now.constants import BASE_STORAGE_URL, DEMO_DATASET_DOCARRAY_VERSION, Modal
 from now.utils import download
 
 
-def _fetch_da_from_url(
+def fetch_da_from_url(
     url: str, downloaded_path: str = '~/.cache/jina-now'
 ) -> DocumentArray:
     data_dir = os.path.expanduser(downloaded_path)

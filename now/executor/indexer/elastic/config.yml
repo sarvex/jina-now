@@ -1,0 +1,8 @@
+jtype: ElasticIndexer
+py_modules:
+  - elastic_indexer.py
+metas:
+  name: ElasticIndexer
+  description: indexer for elasticsearch
+  url: https://github.com/jina-ai/now/blob/feat-elastic-indexer/executor/elastic_indexer
+  keywords: [indexer, elastic, bm25, vector_search]

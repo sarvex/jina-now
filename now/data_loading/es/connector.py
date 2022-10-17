@@ -1,9 +1,7 @@
+import logging
 from typing import Dict, Generator, List, Optional
 
 from elasticsearch import Elasticsearch
-from elasticsearch.helpers import bulk
-
-import logging
 
 logging.getLogger("urllib3").setLevel(logging.WARNING)
 logging.getLogger("elastic_transport").setLevel(logging.WARNING)
@@ -27,7 +25,7 @@ class ElasticsearchConnector:
         self._connection_args = (
             connection_args if connection_args else {'verify_certs': False}
         )
-        self._es = Elasticsearch(self._connection_str, **self._connection_args)
+        self.es = Elasticsearch(self._connection_str, **self._connection_args)
 
     def __enter__(self) -> 'ElasticsearchConnector':
         return self
@@ -47,14 +45,14 @@ class ElasticsearchConnector:
         :return: Documents in the form of a list of dictionaries
         """
         query = {"match_all": {}}
-        resp = self._es.search(
+        resp = self.es.search(
             index=index_name, query=query, scroll='2m', size=page_size
         )
         documents = resp['hits']['hits']
         scroll_id = resp['_scroll_id']
         scroll_size = len(documents)
         while scroll_size > 0:
-            resp = self._es.scroll(scroll_id=scroll_id, scroll='2m')
+            resp = self.es.scroll(scroll_id=scroll_id, scroll='2m')
             scroll_id = resp['_scroll_id']
             new_documents = resp['hits']['hits']
             scroll_size = len(new_documents)
@@ -72,7 +70,7 @@ class ElasticsearchConnector:
         :param page_size: Number of documents per page
         :return: Generator which yields one page of documents on each call.
         """
-        resp = self._es.search(
+        resp = self.es.search(
             **query, index=index_name, scroll='2m', size=page_size, source=False
         )
         documents = [
@@ -82,7 +80,7 @@ class ElasticsearchConnector:
         scroll_size = len(documents)
         while scroll_size > 0:
             yield documents
-            resp = self._es.scroll(scroll_id=scroll_id, scroll='2m')
+            resp = self.es.scroll(scroll_id=scroll_id, scroll='2m')
             scroll_id = resp['_scroll_id']
             documents = [
                 {**doc['_source'], **{'id': doc['_id']}} for doc in resp['hits']['hits']
@@ -93,4 +91,4 @@ class ElasticsearchConnector:
         """
         Closes Elasticsearch connection.
         """
-        self._es.close()
+        self.es.close()

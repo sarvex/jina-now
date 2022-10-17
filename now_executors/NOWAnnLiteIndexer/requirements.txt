@@ -1,2 +1,0 @@
-git+https://github.com/jina-ai/now@${JINA_NOW_COMMIT_SHA}
-git+https://github.com/jina-ai/annlite.git@b5f8694fb5c33af15cc9b4a140a0165bf3aa01f4

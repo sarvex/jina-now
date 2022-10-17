@@ -1,0 +1,53 @@
+jtype: Flow
+with:
+  name: nowapi
+  monitoring: true
+  port_expose: 8080
+  prefetch: 10
+  cors: True
+  env:
+    JINA_LOG_LEVEL: DEBUG
+jcloud:
+  version: ${{ ENV.JINA_VERSION }}
+  retention_days: ${{ RETENTION_DAYS }}
+  custom_dns:
+    - ${{ ENV.CUSTOM_DNS }}
+executors:
+  - name: preprocessor
+    uses: ${{ ENV.PREPROCESSOR_NAME }}
+    uses_with:
+      app: ${{ ENV.APP }}
+      admin_emails: ${{ ENV.ADMIN_EMAILS }}
+      user_emails: ${{ ENV.USER_EMAILS }}
+    jcloud:
+      resources:
+        memory: 1G
+    env:
+      JINA_LOG_LEVEL: DEBUG
+  - name: encoder_clip
+    uses: ${{ ENV.ENCODER_NAME }}
+    host: ${{ ENV.ENCODER_HOST }}
+    port: ${{ ENV.ENCODER_PORT }}
+    tls: ${{ ENV.ENCODER_USES_TLS }}
+    external: ${{ ENV.ENCODER_IS_EXTERNAL }}
+    uses_with:
+      traversal_paths: '@c'
+      access_paths: '@c'
+      name: ${{ ENV.PRE_TRAINED_MODEL_NAME }}
+    env:
+      JINA_LOG_LEVEL: DEBUG
+  - name: indexer
+    uses: ${{ ENV.INDEXER_NAME }}
+    uses_with:
+      traversal_paths: '@c'
+      dim: ${{ ENV.N_DIM }}
+      columns: ${{ ENV.COLUMNS }}
+      admin_emails: ${{ ENV.ADMIN_EMAILS }}
+      user_emails: ${{ ENV.USER_EMAILS }}
+    jcloud:
+      capacity: on-demand
+      resources:
+        memory: ${{ ENV.INDEXER_MEM }}
+        cpu: 1.0
+    env:
+      JINA_LOG_LEVEL: DEBUG

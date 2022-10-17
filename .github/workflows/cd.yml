@@ -40,7 +40,7 @@ jobs:
           WOLF_TOKEN: ${{ secrets.WOLF_TOKEN }}
       - name: Test
         id: test
-        run: pytest --suppress-no-test-exit-code --ignore-glob=tests/now_executors -v -s -m "not gpu" --splits 7 --group ${{ matrix.group }} --splitting-algorithm least_duration tests/
+        run: pytest --suppress-no-test-exit-code --ignore-glob=tests/executor -v -s -m "not gpu" --splits 7 --group ${{ matrix.group }} --splitting-algorithm least_duration tests/
         timeout-minutes: 35
         env:
           WOLF_TOKEN: ${{ secrets.WOLF_TOKEN }}
@@ -73,10 +73,7 @@ jobs:
       - name: Test executors separately
         timeout-minutes: 10
         run: |
-          pytest --suppress-no-test-exit-code -v -s tests/now_executors/NOWAnnLiteIndexer
-          pytest --suppress-no-test-exit-code -v -s tests/now_executors/NOWAuthExecutor
-          pytest --suppress-no-test-exit-code -v -s tests/now_executors/NOWPostprocessor
-          pytest --suppress-no-test-exit-code -v -s tests/now_executors/NOWPreprocessor
+          pytest --suppress-no-test-exit-code -v -s tests/executor
       - name: Setup tmate session for debugging
         if: ${{ failure() || (github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled) }}
         uses: mxschmitt/action-tmate@v3

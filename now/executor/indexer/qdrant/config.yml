@@ -1,0 +1,4 @@
+jtype: NOWQdrantIndexer15
+metas:
+  py_modules:
+    - executor.py

@@ -9,7 +9,7 @@ from typing import Dict, Optional
 from docarray import DocumentArray
 from jina.clients import Client
 
-from now.apps.base.app import JinaNOWApp
+from now.app.base.app import JinaNOWApp
 from now.data_loading.data_loading import load_data
 from now.deployment.flow import deploy_flow
 from now.log import time_profiler

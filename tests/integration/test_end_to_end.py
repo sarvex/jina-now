@@ -7,12 +7,13 @@ from argparse import Namespace
 
 import pytest
 import requests
-from now_common.options import NEW_CLUSTER
 
 from now.admin.utils import get_default_request_body
 from now.cli import _get_kind_path, _get_kubectl_path, cli
 from now.cloud_manager import create_local_cluster
-from now.constants import Apps, DatasetTypes, DemoDatasets, Modalities
+from now.common.options import NEW_CLUSTER
+from now.constants import Apps, DatasetTypes, Modalities
+from now.demo_data import DemoDatasetNames
 from now.deployment.deployment import cmd, list_all_wolf, terminate_wolf
 
 
@@ -49,7 +50,6 @@ def cleanup(deployment_type, dataset):
         yield tmpdir
         try:
             if deployment_type == 'remote':
-                flow_details = {}
                 with open(f'{tmpdir}/flow_details.json', 'r') as f:
                     flow_details = json.load(f)
                 if 'host' not in flow_details:
@@ -95,42 +95,42 @@ def test_token_exists():
             Apps.TEXT_TO_IMAGE,
             Modalities.TEXT,
             Modalities.IMAGE,
-            DemoDatasets.BIRD_SPECIES,
+            DemoDatasetNames.BIRD_SPECIES,
             'local',
         ),
         (
             Apps.IMAGE_TO_IMAGE,
             Modalities.IMAGE,
             Modalities.IMAGE,
-            DemoDatasets.BEST_ARTWORKS,
+            DemoDatasetNames.BEST_ARTWORKS,
             'local',
         ),
         (
             Apps.IMAGE_TO_TEXT,
             Modalities.IMAGE,
             Modalities.TEXT,
-            DemoDatasets.ROCK_LYRICS,
+            DemoDatasetNames.ROCK_LYRICS,
             'remote',
         ),
         (
             Apps.TEXT_TO_TEXT,
             Modalities.TEXT,
             Modalities.TEXT,
-            DemoDatasets.POP_LYRICS,
+            DemoDatasetNames.POP_LYRICS,
             'local',
         ),
         (
             Apps.TEXT_TO_VIDEO,
             Modalities.TEXT,
             Modalities.VIDEO,
-            DemoDatasets.TUMBLR_GIFS_10K,
+            DemoDatasetNames.TUMBLR_GIFS_10K,
             'local',
         ),
         (
             Apps.MUSIC_TO_MUSIC,
             Modalities.MUSIC,
             Modalities.MUSIC,
-            DemoDatasets.MUSIC_GENRES_ROCK,
+            DemoDatasetNames.MUSIC_GENRES_ROCK,
             'remote',
         ),
         # (
@@ -160,7 +160,8 @@ def test_backend_demo_data(
     kwargs = {
         'now': 'start',
         'app': app,
-        'data': dataset,
+        'dataset_type': DatasetTypes.DEMO,
+        'dataset_name': dataset,
         'cluster': cluster,
         'secured': deployment_type == 'remote',
         'additional_user': False,
@@ -289,9 +290,9 @@ def get_search_request_body(
     elif app == Apps.MUSIC_TO_MUSIC:
         request_body['song'] = test_search_music
     elif app in [Apps.TEXT_TO_IMAGE, Apps.TEXT_TO_TEXT, Apps.TEXT_TO_VIDEO]:
-        if dataset == DemoDatasets.BEST_ARTWORKS:
+        if dataset == DemoDatasetNames.BEST_ARTWORKS:
             search_text = 'impressionism'
-        elif dataset == DemoDatasets.NFT_MONKEY:
+        elif dataset == DemoDatasetNames.NFT_MONKEY:
             search_text = 'laser eyes'
         else:
             search_text = 'test'
@@ -330,8 +331,7 @@ def test_backend_custom_data(
     kwargs = {
         'now': 'start',
         'app': app,
-        'data': 'custom',
-        'custom_dataset_type': DatasetTypes.S3_BUCKET,
+        'dataset_type': DatasetTypes.S3_BUCKET,
         'dataset_path': os.environ.get('S3_IMAGE_TEST_DATA_PATH'),
         'aws_access_key_id': os.environ.get('AWS_ACCESS_KEY_ID'),
         'aws_secret_access_key': os.environ.get('AWS_SECRET_ACCESS_KEY'),

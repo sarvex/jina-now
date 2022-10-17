@@ -9,10 +9,9 @@ from __future__ import annotations, print_function, unicode_literals
 import inspect
 import pathlib
 
-from now_common import options
-
 import now.utils
-from now.apps.base.app import JinaNOWApp
+from now.app.base.app import JinaNOWApp
+from now.common import options
 from now.now_dataclasses import DialogOptions, UserInput
 
 cur_dir = pathlib.Path(__file__).parent.resolve()
@@ -21,7 +20,7 @@ cur_dir = pathlib.Path(__file__).parent.resolve()
 def configure_app(**kwargs) -> JinaNOWApp:
     now.utils.print_headline()
     app_name = configure_option(options.APP, None, **kwargs)
-    return options._construct_app(app_name)
+    return options.construct_app(app_name)
 
 
 def configure_user_input(app_instance: JinaNOWApp, **kwargs) -> UserInput:
@@ -50,7 +49,7 @@ def configure_option(option: DialogOptions, user_input: UserInput, **kwargs):
     if option.choices and inspect.isfunction(option.choices):
         option.choices = option.choices(user_input, **kwargs)
 
-    val = now.utils._prompt_value(
+    val = now.utils.prompt_value(
         **option.__dict__,
         **kwargs,
     )
