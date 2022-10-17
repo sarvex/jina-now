@@ -129,7 +129,9 @@ def build_app():
     # Text2TextAndImage router
     text2text_and_image_mount = '/api/v1/text-to-text-and-image'
     text2text_and_image_app = get_app_instance()
-    text2text_and_image_app.include_router(txt2txt_and_img.router, tags=['Text-To-Text-And-Image'])
+    text2text_and_image_app.include_router(
+        txt2txt_and_img.router, tags=['Text-To-Text-And-Image']
+    )
 
     # Admin router
     admin_mount = '/api/v1/admin'

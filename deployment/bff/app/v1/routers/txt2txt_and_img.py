@@ -9,7 +9,10 @@ from deployment.bff.app.v1.models.image import (
     NowImageResponseModel,
 )
 from deployment.bff.app.v1.models.text import NowTextSearchRequestModel
-from deployment.bff.app.v1.models.text_and_image import NowTextAndImageIndexRequestModel, NowTextAndImageResponseModel
+from deployment.bff.app.v1.models.text_and_image import (
+    NowTextAndImageIndexRequestModel,
+    NowTextAndImageResponseModel,
+)
 from deployment.bff.app.v1.routers.helper import jina_client_post, process_query
 
 router = APIRouter()
@@ -34,7 +37,9 @@ def index(data: NowTextAndImageIndexRequestModel):
         if text and image:
             base64_bytes = image.encode('utf-8')
             image = base64.decodebytes(base64_bytes)
-            index_docs.append(Document(tags=tags, chunks=[Document(text=text), Document(image=image)]))
+            index_docs.append(
+                Document(tags=tags, chunks=[Document(text=text), Document(image=image)])
+            )
         else:
             index_docs.append(Document(uri=uri, tags=tags))
 
