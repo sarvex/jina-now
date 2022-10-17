@@ -5,13 +5,12 @@ from now.utils import BetterEnum
 # TODO: Uncomment the DEMO_DATASET_DOCARRAY_VERSION when the DocArray datasets on GCloud has been changed
 # from docarray import __version__ as docarray_version
 # DEMO_DATASET_DOCARRAY_VERSION = docarray_version
-DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.128-feat-auto-complete-15'
-NOW_PREPROCESSOR_VERSION = '0.0.91-feat-feat-auto-complete-15'
-NOW_ANNLITE_INDEXER_VERSION = '0.0.12-feat-add-qdrant-indexer-35'
-NOW_QDRANT_INDEXER_VERSION = '0.0.1-feat-auto-complete-15'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.2-fix-elastic-1'
-NOW_AUTOCOMPLETE_VERSION = '0.0.1-feat-auto-complete-15'
+
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.129-feat-auto-complete-15'
+NOW_PREPROCESSOR_VERSION = '0.0.93-feat-auto-complete-15'
+NOW_QDRANT_INDEXER_VERSION = '0.0.2-feat-auto-complete-15'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.3-refactor-executors-21'
+NOW_AUTOCOMPLETE_VERSION = '0.0.1-feat-auto-complete-16'
 
 
 class Modalities(BetterEnum):

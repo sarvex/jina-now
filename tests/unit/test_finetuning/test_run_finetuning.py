@@ -1,9 +1,10 @@
-from now.apps.text_to_text_and_image.app import TextToTextAndImage
-from now.constants import ModelNames
-from now.finetuning.run_finetuning import _get_model_options
-from now.finetuning.settings import FinetuneSettings
 import pytest
 from docarray import DocumentArray
+
+from now.app.text_to_text_and_image.app import TextToTextAndImage
+from now.constants import ModelNames
+from now.finetuning.run_finetuning import get_model_options
+from now.finetuning.settings import FinetuneSettings
 from now.now_dataclasses import UserInput
 
 
@@ -23,11 +24,11 @@ def test_get_model_options():
         'l2': True,
         'bias': False if settings.bi_modal else True,
     }
-    options = _get_model_options(settings)
+    options = get_model_options(settings)
     assert expected_options == options
     settings.model_name = 'not_mlp'
     expected_options = {}
-    options = _get_model_options(settings)
+    options = get_model_options(settings)
     assert expected_options == options
 
 

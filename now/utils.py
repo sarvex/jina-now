@@ -415,7 +415,7 @@ def maybe_prompt_user(questions, attribute, **kwargs):
         return answer[attribute]
 
 
-def _prompt_value(
+def prompt_value(
     name: str,
     prompt_message: str,
     prompt_type: str = 'input',
