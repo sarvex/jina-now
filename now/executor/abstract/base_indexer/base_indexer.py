@@ -123,6 +123,7 @@ class NOWBaseIndexer(Executor):
         if len(flat_docs) == 0:
             return
         flat_docs = self.maybe_drop_blob_tensor(flat_docs)
+        print('len of flat docs to be indexed: ', len(flat_docs))
         self.index(flat_docs, parameters, **kwargs)
         self.extend_inmemory_docs_and_tags(flat_docs)
         return DocumentArray([])
@@ -166,6 +167,7 @@ class NOWBaseIndexer(Executor):
             retrieval_limit,
             search_filter=search_filter,
         )
+        print("before filter: ", docs_with_matches.summary())
 
         if len(docs[0].text.split()) == 1:
             if not search_filter:
@@ -181,6 +183,7 @@ class NOWBaseIndexer(Executor):
             docs_with_matches = docs_with_matches_filter
 
         self.clean_response(docs_with_matches)
+        print('final docs:', docs_with_matches.summary())
         return docs_with_matches
 
     def create_matches(

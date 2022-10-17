@@ -136,6 +136,7 @@ def deploy_streamlit():
                     )
                 else:
                     response = client.post(on='/tags')
+                    print(response)
                 st.session_state.filters = OrderedDict(response[0].tags['tags'])
             except Exception as e:
                 print("Filters couldn't be loaded from the endpoint properly.", e)
