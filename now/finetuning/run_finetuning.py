@@ -140,6 +140,7 @@ def _finetune_model(
         learning_rate=finetune_settings.learning_rate,
         run_name=experiment_name,
         epochs=finetune_settings.epochs,
+        cpu=False,
     )
 
     run_failed = False

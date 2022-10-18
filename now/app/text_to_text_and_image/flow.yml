@@ -28,7 +28,7 @@ executors:
   uses_with:
     artifact: ${{ ENV.SBERT_ARTIFACT }}
     token: ${{ ENV.JINA_TOKEN }}
-    is_onnx: True
+    is_onnx: False
   env:
     JINA_LOG_LEVEL: DEBUG
   when:
@@ -42,7 +42,7 @@ executors:
     artifact: ${{ ENV.CLIP_ARTIFACT }}
     token: ${{ ENV.JINA_TOKEN }}
     select_model: clip-text
-    is_onnx: True
+    is_onnx: False
   env:
     JINA_LOG_LEVEL: DEBUG
   when:
@@ -56,7 +56,7 @@ executors:
     artifact: ${{ ENV.CLIP_ARTIFACT }}
     token: ${{ ENV.JINA_TOKEN }}
     select_model: clip-vision
-    is_onnx: True
+    is_onnx: False
   env:
     JINA_LOG_LEVEL: DEBUG
   when:
