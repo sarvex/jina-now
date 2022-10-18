@@ -4,10 +4,7 @@ from typing import List
 from docarray import Document, DocumentArray
 from fastapi import APIRouter
 
-from deployment.bff.app.v1.models.text import (
-    NowTextResponseModel,
-    NowTextSearchRequestModel,
-)
+from deployment.bff.app.v1.models.text import NowTextSearchRequestModel
 from deployment.bff.app.v1.models.video import (
     NowVideoIndexRequestModel,
     NowVideoResponseModel,
@@ -84,7 +81,6 @@ def search(data: NowTextSearchRequestModel):
 
 @router.post(
     "/suggestion",
-    response_model=List[NowTextResponseModel],
     summary='Get auto complete suggestion for query',
 )
 def suggestion(data: NowTextSearchRequestModel):
@@ -98,4 +94,4 @@ def suggestion(data: NowTextSearchRequestModel):
         inputs=query_doc,
         endpoint='/suggestion',
     )
-    return docs[0]
+    return docs.to_dict()

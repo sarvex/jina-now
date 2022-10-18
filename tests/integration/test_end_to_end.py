@@ -7,6 +7,7 @@ from argparse import Namespace
 
 import pytest
 import requests
+from docarray import DocumentArray
 
 from now.admin.utils import get_default_request_body
 from now.cli import _get_kind_path, _get_kubectl_path, cli
@@ -210,6 +211,18 @@ def assert_search(search_url, request_body):
     assert len(response.json()) == 9
 
 
+def assert_suggest(suggest_url, request_body):
+    response = requests.post(
+        suggest_url,
+        json=request_body,
+    )
+    assert (
+        response.status_code == 200
+    ), f"Received code {response.status_code} with text: {response.json()['message']}"
+    docs = DocumentArray.from_json(response.content)
+    assert 'suggestions' in docs[0].tags
+
+
 def assert_deployment_queries(
     app,
     dataset,
@@ -389,3 +402,71 @@ def test_backend_custom_data(
             for resp in response_json
         ]
     ), f"Received blobs: {[resp['blob'] for resp in response_json]}"
+
+
+@pytest.mark.parametrize(
+    'app, input_modality, output_modality, dataset, deployment_type',
+    [
+        (
+            Apps.TEXT_TO_TEXT,
+            Modalities.TEXT,
+            Modalities.TEXT,
+            DemoDatasetNames.POP_LYRICS,
+            'local',
+        ),
+        (
+            Apps.TEXT_TO_VIDEO,
+            Modalities.TEXT,
+            Modalities.VIDEO,
+            DemoDatasetNames.TUMBLR_GIFS_10K,
+            'remote',
+        ),
+    ],
+)
+def test_autocomplete_suggestion(
+    app, input_modality, output_modality, dataset, deployment_type
+):
+    cluster = NEW_CLUSTER['value']
+    os.environ['NOW_CI_RUN'] = 'True'
+    os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
+    kwargs = {
+        'now': 'start',
+        'app': app,
+        'dataset_type': DatasetTypes.DEMO,
+        'dataset_name': dataset,
+        'cluster': cluster,
+        'additional_user': False,
+        'deployment_type': deployment_type,
+        'proceed': True,
+    }
+    if deployment_type == 'remote':
+        kind_path = _get_kind_path()
+        create_local_cluster(kind_path, **kwargs)
+        kubectl_path = _get_kubectl_path()
+        cmd(f'{kubectl_path} create namespace nowapi')
+    kwargs = Namespace(**kwargs)
+    response = cli(args=kwargs)
+    assert_deployment_response(
+        app, deployment_type, input_modality, output_modality, response
+    )
+
+    assert_deployment_queries(
+        app,
+        dataset,
+        deployment_type,
+        input_modality,
+        kwargs,
+        output_modality,
+        test_search_image,
+        test_search_music,
+        response,
+    )
+
+    host = response.get('host')
+    request_body = get_default_request_body(
+        deployment_type, kwargs.secured, remote_host=host
+    )
+    request_body['text'] = 'impressionis'
+    url = f'http://localhost:30090/api/v1'
+    suggest_url = f'{url}/{input_modality}-to-{output_modality}/suggestion'
+    assert_suggest(suggest_url, request_body)
