@@ -198,12 +198,14 @@ class JinaNOWApp:
                     exec_dict['name'] == 'autocomplete_executor'
                     for exec_dict in flow_yaml['executors']
                 ):
-                    flow_yaml['executors'].append(
+                    flow_yaml['executors'].insert(
+                        0,
                         {
                             'name': 'autocomplete_executor',
                             'uses': '${{ ENV.AUTOCOMPLETE_EXECUTOR_NAME }}',
+                            'needs': 'gateway',
                             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
-                        }
+                        },
                     )
                     with open(self.flow_yaml, 'w') as output_f:
                         JAML.dump(flow_yaml, output_f)
