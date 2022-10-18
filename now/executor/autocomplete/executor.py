@@ -13,6 +13,7 @@ class NOWAutoCompleteExecutor(Executor):
         self.words = words if words else {}
         self.search_traversal_paths = search_traversal_paths
         self.autocomplete = None
+        self.char_threshhold = 100
 
         super().__init__(*args, **kwargs)
 
@@ -41,12 +42,14 @@ class NOWAutoCompleteExecutor(Executor):
         for doc in flat_docs:
             if doc.text and not NOWAutoCompleteExecutor.contains_profanity(doc.text):
                 search_words = doc.text.split(' ')
-                # in case query is composed of two words
-                for word in search_words:
-                    self.update_words(word)
-                # add bigram and tri gram suggestions
-                if len(search_words) == 2 or len(search_words) == 3:
-                    self.update_words(doc.text)
+                # prevent users from misusing API
+                if len(doc.text) < self.char_threshhold:
+                    # in case query is composed of two words
+                    for word in search_words:
+                        self.update_words(word)
+                    # add bigram and tri gram suggestions
+                    if len(search_words) == 2 or len(search_words) == 3:
+                        self.update_words(doc.text)
 
         self.auto_complete = AutoComplete(words=self.words)
         return docs
