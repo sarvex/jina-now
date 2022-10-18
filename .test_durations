@@ -103,6 +103,7 @@
     "tests/integration/test_end_to_end.py::test_backend_demo_data[remote-new-image_to_text-image-text-rock-lyrics]": 334.33869482576847,
     "tests/integration/test_end_to_end.py::test_backend_demo_data[remote-new-text_to_image-text-image-bird-species]": 0.0030542900785803795,
     "tests/integration/test_end_to_end.py::test_backend_demo_data[remote-new-text_to_text-text-text-pop-lyrics]": 341.7498988737352,
+    "tests/integration/test_end_to_end.py::test_backend_demo_data[text_to_text_and_image-text-text_and_image-extracted-data-online-shop-50-flat-local]": 751.5691541801207,
     "tests/integration/test_end_to_end.py::test_token_exists": 3.730576812289655,
     "tests/unit/bff/test_app.py::TestParametrized::test_check_liveness[image-image]": 0.04234297061339021,
     "tests/unit/bff/test_app.py::TestParametrized::test_check_liveness[image-text]": 0.04541015112772584,
