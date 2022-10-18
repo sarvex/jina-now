@@ -78,7 +78,6 @@ def search(attribute_name, attribute_value, jwt, top_k=None, filter_dict=None):
         'limit': top_k if top_k else params.top_k,
         'filters': updated_dict if updated_dict else {},
     }
-    print(data)
     # in case the jwt is none, no jwt will be sent. This is the case when no authentication is used for that flow
     if jwt is not None:
         data['jwt'] = jwt
@@ -97,7 +96,6 @@ def call_flow(url_host, data, attribute_name, domain):
     response = requests.post(
         url_host, json=data, headers={"Content-Type": "application/json; charset=utf-8"}
     )
-    print(response.content)
 
     try:
         docs = DocumentArray.from_json(response.content)
@@ -131,7 +129,6 @@ def call_flow(url_host, data, attribute_name, domain):
         docs_temp_links = DocumentArray.from_json(response_temp_links.content)
         for _id, _uri in zip(*docs_temp_links[:, ['id', 'uri']]):
             docs[_id].uri = _uri
-    print(docs.summary())
     return docs
 
 

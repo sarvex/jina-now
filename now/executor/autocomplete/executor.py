@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Dict, Optional
 
 from better_profanity import profanity
 from docarray import DocumentArray
@@ -9,8 +9,10 @@ from now.executor.abstract.auth.auth import SecurityLevel, secure_request
 
 
 class NOWAutoCompleteExecutor(Executor):
-    def __init__(self, search_traversal_paths: str = '@r', words=None, *args, **kwargs):
-        self.words = words if words else {}
+    def __init__(
+        self, search_traversal_paths: str = '@r', words: Dict = {}, *args, **kwargs
+    ):
+        self.words = words
         self.search_traversal_paths = search_traversal_paths
         self.autocomplete = None
 
@@ -25,6 +27,12 @@ class NOWAutoCompleteExecutor(Executor):
         """
         return profanity.contains_profanity(text)
 
+    def update_words(self, word):
+        if word in self.words:
+            self.words[word]['count'] += 1
+        else:
+            self.words[word] = {'count': 1}
+
     @secure_request(on='/search', level=SecurityLevel.USER)
     def search_update(
         self, docs: Optional[DocumentArray] = None, parameters: dict = {}, **kwargs
@@ -33,15 +41,14 @@ class NOWAutoCompleteExecutor(Executor):
         flat_docs = docs[traversal_paths]
 
         for doc in flat_docs:
-            if doc.text:
+            if doc.text and not NOWAutoCompleteExecutor.contains_profanity(doc.text):
                 search_words = doc.text.split(' ')
                 # in case query is composed of two words
                 for word in search_words:
-                    if not NOWAutoCompleteExecutor.contains_profanity(word):
-                        if word in self.words:
-                            self.words[word]['count'] += 1
-                        else:
-                            self.words[word] = {'count': 1}
+                    self.update_words(word)
+                # add bigram and tri gram suggestions
+                if len(search_words) == 2 or len(search_words) == 3:
+                    self.update_words(doc.text)
 
         self.auto_complete = AutoComplete(words=self.words)
         return docs

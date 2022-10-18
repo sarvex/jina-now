@@ -118,3 +118,37 @@ def test_get_suggestion():
     assert da_sugg_1[0].tags['suggestions'] == [['background'], ['bang']]
     assert da_sugg_2[0].tags['suggestions'] == [['loading'], ['laugh']]
     assert da_sugg_3[0].tags['suggestions'] == [['background']]
+
+
+def test_get_suggestion_bitrigrams():
+    executor = NOWAutoCompleteExecutor()
+
+    da = DocumentArray(
+        [
+            Document(text='aziz'),
+            Document(text='test'),
+            Document(text='aziz test'),
+            Document(text='red'),
+            Document(text='red dress'),
+            Document(text='red long dress'),
+        ]
+    )
+
+    executor.search_update(da)
+
+    da_sugg_1 = DocumentArray([Document(text='azi')])
+    executor.get_suggestion(da_sugg_1)
+    da_sugg_2 = DocumentArray([Document(text='r')])
+    executor.get_suggestion(da_sugg_2)
+    da_sugg_3 = DocumentArray([Document(text='d')])
+    executor.get_suggestion(da_sugg_3)
+    da_sugg_4 = DocumentArray([Document(text='l')])
+    executor.get_suggestion(da_sugg_4)
+    assert da_sugg_1[0].tags['suggestions'] == [['aziz'], ['aziz test']]
+    assert da_sugg_2[0].tags['suggestions'] == [
+        ['red'],
+        ['red dress'],
+        ['red long dress'],
+    ]
+    assert da_sugg_3[0].tags['suggestions'] == [['dress']]
+    assert da_sugg_4[0].tags['suggestions'] == [['long']]
