@@ -438,6 +438,7 @@ def test_autocomplete_suggestion(
         'additional_user': False,
         'deployment_type': deployment_type,
         'proceed': True,
+        'secured': False,
     }
     if deployment_type == 'remote':
         kind_path = _get_kind_path()
