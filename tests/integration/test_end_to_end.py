@@ -195,8 +195,14 @@ def test_backend_demo_data(
 
     if input_modality == Modalities.TEXT:
         host = response.get('host')
-        request_body = get_default_request_body(
-            deployment_type, kwargs.secured, remote_host=host
+        request_body = get_search_request_body(
+            app,
+            dataset,
+            deployment_type,
+            kwargs,
+            test_search_image,
+            test_search_music,
+            host,
         )
         url = f'http://localhost:30090/api/v1'
         suggest_url = f'{url}/{input_modality}-to-{output_modality}/suggestion'
