@@ -37,7 +37,7 @@ class ImageNormalizer(GeneratorFunction):
         normalized_imgs = DocumentArray()
         for chunk in document.chunks:
             if chunk.tags['field_name'] in self._scope:
-                normalized_imgs.extend([Document(uri=uri) for uri in chunk.content])
+                normalized_imgs.append(Document(uri=chunk.uri))
         normalized_imgs.apply(self._process)
         return normalized_imgs
 
@@ -74,7 +74,7 @@ class TextProcessor(GeneratorFunction):
         :return: `DocumentArray` of processed (and concatenated) text data.
         """
         document = {
-            chunk.tags['field_name']: chunk.content for chunk in document.chunks
+            chunk.tags['field_name']: chunk.content for chunk in document.chunks if chunk.tags['field_name'] in self._scope
         }
         if self._powerset:
             key_sets = chain.from_iterable(
@@ -84,10 +84,6 @@ class TextProcessor(GeneratorFunction):
             key_sets = [self._scope]
 
         attribute_sets = [[document[key] for key in key_set] for key_set in key_sets]
-        attribute_sets = [
-            [item for sublist in attr_set for item in sublist]
-            for attr_set in attribute_sets
-        ]
 
         if self._permute:
             return DocumentArray(
