@@ -63,13 +63,6 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
             if 'genre_tags' in doc.tags and isinstance(doc.tags['genre_tags'], list):
                 doc.tags['genre_tags'] = ' '.join(doc.tags['genre_tags'])
 
-    if user_input.custom_dataset_type != DatasetTypes.ELASTICSEARCH:
-        # elasticsearch transforms data during extraction
-        da = transform_docarray(
-            documents=da,
-            search_fields=user_input.search_fields or [],
-            filter_fields=user_input.filter_fields or [],
-        )
     return da
 
 

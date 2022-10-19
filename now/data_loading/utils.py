@@ -58,7 +58,7 @@ def get_dataset_url(dataset: str, output_modality: Modalities) -> str:
         return f'{BASE_STORAGE_URL}/{data_folder}/{dataset}-{docarray_version}.bin'
 
 
-def _transform_single_modal_data(filter_fields: List[str]):
+def _transform_uni_modal_data(filter_fields: List[str]):
     def _transform_fn(document: Document) -> Document:
         document.tags['filtered_fields'] = {}
         doc_tags = document.tags.copy()
@@ -132,5 +132,5 @@ def transform_docarray(
             )
         )
     else:
-        documents.apply(_transform_single_modal_data(filter_fields=filter_fields))
+        documents.apply(_transform_uni_modal_data(filter_fields=filter_fields))
     return documents

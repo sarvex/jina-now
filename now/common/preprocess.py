@@ -1,12 +1,14 @@
+from typing import List
+
 from docarray import Document, DocumentArray
 
 from now.data_loading.convert_datasets_to_jpeg import to_thumbnail_jpg
+from now.data_loading.utils import transform_docarray
 from now.now_dataclasses import UserInput
 
 
-def preprocess_images(da: DocumentArray) -> DocumentArray:
+def preprocess_images(da: DocumentArray, search_fields: List[str], filter_fields: List[str]) -> DocumentArray:
     """Loads all documents into memory to thumbnail them."""
-
     def convert_fn(d: Document):
         try:
             if d.tensor is None:
@@ -18,12 +20,20 @@ def preprocess_images(da: DocumentArray) -> DocumentArray:
         except:
             return d
 
+    da = transform_docarray(
+        documents=da,
+        search_fields=search_fields,
+        filter_fields=filter_fields,
+    )
+
     for d in da:
-        convert_fn(d)
-    return DocumentArray(d for d in da if d.blob != b'')
+        for chunk in d.chunks:
+            if chunk.modality == 'image':
+                convert_fn(chunk)
+    return da
 
 
-def preprocess_text(da: DocumentArray, split_by_sentences=False) -> DocumentArray:
+def preprocess_text(da: DocumentArray, search_fields: List[str], filter_fields: List[str], split_by_sentences=False) -> DocumentArray:
     """If necessary, loads text for all documents. If asked for, splits documents by sentences."""
     import nltk
 
@@ -61,8 +71,16 @@ def preprocess_text(da: DocumentArray, split_by_sentences=False) -> DocumentArra
             for d in batch:
                 yield d
 
+    da = transform_docarray(
+        documents=da,
+        search_fields=search_fields,
+        filter_fields=filter_fields,
+    )
+
     for d in da:
-        convert_fn(d)
+        for chunk in d.chunks:
+            if chunk.modality == 'text':
+                convert_fn(chunk)
 
     if split_by_sentences:
         da = DocumentArray(d for d in gen_split_by_sentences())
