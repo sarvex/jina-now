@@ -87,13 +87,13 @@ def preprocess_nested_docs(da: DocumentArray, user_input: UserInput) -> Document
             if chunk.tags['field_name'] == fields['text']:
                 texts.append(chunk.content)
             elif chunk.tags['field_name'] == fields['image']:
-                uris.append(chunk.content)
+                uris.append(chunk.uri)
     return DocumentArray(
         [
             Document(
                 chunks=[
-                    Document(text=text[0]),
-                    Document(uri=uri[0]),
+                    Document(text=text),
+                    Document(uri=uri),
                 ]
             )
             for text, uri in zip(texts, uris)
