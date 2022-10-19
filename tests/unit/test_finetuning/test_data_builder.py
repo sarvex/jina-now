@@ -12,16 +12,10 @@ from now.finetuning.generation_fns import ImageNormalizer, TextProcessor
 
 # this test was failing because of the following error: TypeError: __init__() got an unexpected keyword argument 'data'
 #
-from now.now_dataclasses import Task, UserInput
+from now.now_dataclasses import UserInput
 
 
-def test_data_generation(get_task_config_path):
-    # read task config
-    config_path = get_task_config_path
-    with open(config_path) as f:
-        dct = json.load(f)
-        task = Task(**dct)
-
+def test_data_generation():
     # load dataset
     user_input = UserInput()
     user_input.dataset_type = DatasetTypes.DEMO
@@ -29,7 +23,8 @@ def test_data_generation(get_task_config_path):
     dataset = load_data(TextToTextAndImage(), user_input)
 
     initial_length = len(dataset)
-    data = DataBuilder(dataset=dataset, config=task).build()
+    task_config = TextToTextAndImage._create_task_config(user_input, dataset[0])
+    data = DataBuilder(dataset=dataset, config=task_config).build()
     assert len(data) == 2
     text_dataset, encoder_type = data[0]
     assert encoder_type == 'text-to-text'
