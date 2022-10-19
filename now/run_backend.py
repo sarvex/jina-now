@@ -36,6 +36,7 @@ def run(
     :return:
     """
     dataset = load_data(app_instance, user_input)
+    dataset[0].summary()
 
     env_dict = app_instance.setup(
         dataset=dataset, user_input=user_input, kubectl_path=kubectl_path
@@ -93,7 +94,8 @@ def call_flow(
 
     # Pop app_instance from parameters to be passed to the flow
     parameters['user_input'].pop('app_instance', None)
-
+    parameters['user_input'].pop('task_config', None)
+    print("CHECKING IF FLOW READY")
     # double check that flow is up and running - should be done by wolf/core in the future
     while True:
         try:
@@ -106,6 +108,7 @@ def call_flow(
                 print(e)
                 print(traceback.format_exc())
             sleep(1)
+    print("FLOW IS READY")
 
     response = client.post(
         on=endpoint,

@@ -189,7 +189,7 @@ class TextToTextAndImage(JinaNOWApp):
         # temporary adjustments to work with small text+image dataset
         finetune_settings.epochs = 2
         finetune_settings.num_val_queries = 5
-        finetune_settings.train_val_split_ration = 0.8
+        finetune_settings.train_val_split_ration = 0.75
         return finetune_settings
 
     @staticmethod
