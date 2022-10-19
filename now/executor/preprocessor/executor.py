@@ -9,6 +9,7 @@ from jina import Document, DocumentArray
 from now.app.base.app import JinaNOWApp
 from now.common.options import construct_app
 from now.constants import Apps, DatasetTypes
+from now.data_loading.utils import transform_docarray
 from now.executor.abstract.auth import NOWAuthExecutor as Executor
 from now.executor.abstract.auth import SecurityLevel, secure_request
 from now.now_dataclasses import UserInput
@@ -60,6 +61,11 @@ class NOWPreprocessor(Executor):
         is_indexing,
         encode: bool = False,
     ) -> DocumentArray:
+        docs = transform_docarray(
+            documents=docs,
+            search_fields=self.user_input.search_fields,
+            filter_fields=self.user_input.filter_fields,
+        )
         with tempfile.TemporaryDirectory() as tmpdir:
             if (
                 self.user_input

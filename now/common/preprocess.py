@@ -7,8 +7,11 @@ from now.data_loading.utils import transform_docarray
 from now.now_dataclasses import UserInput
 
 
-def preprocess_images(da: DocumentArray, search_fields: List[str], filter_fields: List[str]) -> DocumentArray:
+def preprocess_images(
+    da: DocumentArray
+) -> DocumentArray:
     """Loads all documents into memory to thumbnail them."""
+
     def convert_fn(d: Document):
         try:
             if d.tensor is None:
@@ -20,12 +23,6 @@ def preprocess_images(da: DocumentArray, search_fields: List[str], filter_fields
         except:
             return d
 
-    da = transform_docarray(
-        documents=da,
-        search_fields=search_fields,
-        filter_fields=filter_fields,
-    )
-
     for d in da:
         for chunk in d.chunks:
             if chunk.modality == 'image':
@@ -33,7 +30,10 @@ def preprocess_images(da: DocumentArray, search_fields: List[str], filter_fields
     return da
 
 
-def preprocess_text(da: DocumentArray, search_fields: List[str], filter_fields: List[str], split_by_sentences=False) -> DocumentArray:
+def preprocess_text(
+    da: DocumentArray,
+    split_by_sentences=False,
+) -> DocumentArray:
     """If necessary, loads text for all documents. If asked for, splits documents by sentences."""
     import nltk
 
@@ -50,42 +50,29 @@ def preprocess_text(da: DocumentArray, search_fields: List[str], filter_fields: 
         except:
             return d
 
-    def gen_split_by_sentences():
-        def _get_sentence_docs(batch):
-            ret = []
-            for d in batch:
-                try:
-                    ret += [
-                        Document(
-                            mime_type='text',
-                            text=sentence,
-                            tags=d.tags,
-                        )
-                        for sentence in set(sent_tokenize(d.text.replace('\n', ' ')))
-                    ]
-                except:
-                    pass
-            return ret
-
-        for batch in da.map_batch(_get_sentence_docs, backend='process', batch_size=64):
-            for d in batch:
-                yield d
-
-    da = transform_docarray(
-        documents=da,
-        search_fields=search_fields,
-        filter_fields=filter_fields,
-    )
+    def gen_split_by_sentences(document):
+        ret = []
+        try:
+            ret += [
+                Document(
+                    mime_type='text',
+                    modality='text',
+                    text=sentence,
+                    tags=d.tags,
+                )
+                for sentence in set(sent_tokenize(document.text.replace('\n', ' '))) if sentence
+            ]
+        except:
+            pass
+        return ret
 
     for d in da:
         for chunk in d.chunks:
             if chunk.modality == 'text':
                 convert_fn(chunk)
-
-    if split_by_sentences:
-        da = DocumentArray(d for d in gen_split_by_sentences())
-
-    return DocumentArray(d for d in da if d.text and d.text != '')
+                if split_by_sentences:
+                    chunk.chunks = gen_split_by_sentences(chunk)
+    return da
 
 
 def preprocess_nested_docs(da: DocumentArray, user_input: UserInput) -> DocumentArray:
@@ -105,13 +92,13 @@ def preprocess_nested_docs(da: DocumentArray, user_input: UserInput) -> Document
             if chunk.tags['field_name'] == fields['text']:
                 texts.append(chunk.content)
             elif chunk.tags['field_name'] == fields['image']:
-                uris.append(chunk.content)
+                uris.append(chunk.uri)
     return DocumentArray(
         [
             Document(
                 chunks=[
-                    Document(text=text[0]),
-                    Document(uri=uri[0]),
+                    Document(text=text),
+                    Document(uri=uri),
                 ]
             )
             for text, uri in zip(texts, uris)
