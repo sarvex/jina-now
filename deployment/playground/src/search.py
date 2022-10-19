@@ -71,7 +71,6 @@ def search(attribute_name, attribute_value, jwt, top_k=None, filter_dict=None):
     )
 
     updated_dict = {k: v for k, v in filter_dict.items() if v != 'All'}
-
     data = {
         'host': params.host,
         attribute_name: attribute_value,
@@ -85,6 +84,25 @@ def search(attribute_name, attribute_value, jwt, top_k=None, filter_dict=None):
         data['port'] = params.port
 
     return call_flow(URL_HOST, data, attribute_name, domain)
+
+
+def get_suggestion(text, jwt):
+    params = get_query_params()
+    if params.host == 'gateway':  # need to call now-bff as we communicate between pods
+        domain = f"http://now-bff"
+    else:
+        domain = f"https://nowrun.jina.ai"
+    URL_HOST = f"{domain}/api/v1/{params.input_modality}-to-{params.output_modality}/suggestion"
+    data = {
+        'host': params.host,
+        'text': text,
+    }
+    # in case the jwt is none, no jwt will be sent. This is the case when no authentication is used for that flow
+    if jwt is not None:
+        data['jwt'] = jwt
+    if params.port:
+        data['port'] = params.port
+    return call_flow(URL_HOST, data, 'text', domain)
 
 
 @deep_freeze_args

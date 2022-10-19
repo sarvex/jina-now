@@ -33,6 +33,11 @@ Then you can provide your `AWS access key ID` and `AWS secret key`, you can prov
 Your data is automatically loaded from the S3 bucket. It will be temporary stored on EC2 machines while processing the data
 but it will not be stored.
 
+## Auto-complete suggestions
+
+For aplications with Text as a modality input, we provide `autocomplete` feature. This feature learns slowly from your users's search requests
+and provides text suggestions.
+
 ## Security
 
 You can choose to secure your Flow:
