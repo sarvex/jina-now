@@ -74,7 +74,9 @@ class TextProcessor(GeneratorFunction):
         :return: `DocumentArray` of processed (and concatenated) text data.
         """
         document = {
-            chunk.tags['field_name']: chunk.content for chunk in document.chunks if chunk.tags['field_name'] in self._scope
+            chunk.tags['field_name']: chunk.content
+            for chunk in document.chunks
+            if chunk.tags['field_name'] in self._scope
         }
         if self._powerset:
             key_sets = chain.from_iterable(
