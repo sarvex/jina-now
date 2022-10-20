@@ -8,7 +8,6 @@ Submodules
    :maxdepth: 4
 
    now.admin.benchmark_flow
-   now.admin.deploy_examples
    now.admin.deploy_text_to_video
    now.admin.flow_results
    now.admin.run_performance_test

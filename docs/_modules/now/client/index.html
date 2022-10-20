@@ -6,7 +6,7 @@
         <link rel="canonical" href="https://now.jina.ai/_modules/now/client.html" />
 
     <link rel="shortcut icon" href="../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.09.29"/>
-        <title>now.client - NOW 0.0.32 documentation</title>
+        <title>now.client - NOW 0.0.33 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../">
-                <div class="brand">NOW 0.0.32 documentation</div>
+                <div class="brand">NOW 0.0.33 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -278,10 +278,10 @@
 
 <span class="kn">import</span> <span class="nn">requests</span>
 <span class="kn">from</span> <span class="nn">jina.serve.runtimes.gateway.http.models</span> <span class="kn">import</span> <span class="n">JinaResponseModel</span>
-<span class="kn">from</span> <span class="nn">now_common.options</span> <span class="kn">import</span> <span class="n">_construct_app</span>
 <span class="kn">from</span> <span class="nn">pydantic</span> <span class="kn">import</span> <span class="n">parse_obj_as</span>
 
 <span class="kn">from</span> <span class="nn">deployment.bff.app.v1.routers.helper</span> <span class="kn">import</span> <span class="n">jina_client_post</span>
+<span class="kn">from</span> <span class="nn">now.common.options</span> <span class="kn">import</span> <span class="n">construct_app</span>
 
 
 <div class="viewcode-block" id="Client"><a class="viewcode-back" href="../../../api/now.client/#now.client.Client">[docs]</a><span class="k">class</span> <span class="nc">Client</span><span class="p">:</span>
@@ -329,7 +329,7 @@
 <span class="sd">        Client to run requests against a deployed flow</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="n">app_instance</span> <span class="o">=</span> <span class="n">_construct_app</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="p">)</span>
+        <span class="n">app_instance</span> <span class="o">=</span> <span class="n">construct_app</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="p">)</span>
         <span class="n">request_model</span><span class="p">,</span> <span class="n">response_model</span><span class="p">,</span> <span class="n">request_map</span><span class="p">,</span> <span class="n">response_map</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_maps</span><span class="p">(</span>
             <span class="n">app_instance</span><span class="p">,</span> <span class="n">endpoint</span>
         <span class="p">)</span>
@@ -369,7 +369,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Oct 05, 2022.
+                            Last updated on Oct 20, 2022.
                         </div>
                     </div>
                     <div class="right-details">
