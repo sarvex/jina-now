@@ -97,7 +97,7 @@ jobs:
         with:
           filters: |
             has_preprocessing_changed:
-            - 'now/apps/**'
+            - 'now/app/**'
             - 'now/common/preprocess.py'
             - 'now/executor/preprocessor/**'
             - 'now/executor/abstract/auth/**'
