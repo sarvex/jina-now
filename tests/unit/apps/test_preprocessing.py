@@ -28,7 +28,7 @@ def test_text_to_video_preprocessing_indexing():
     """Test if the text to video preprocessing works for indexing"""
     app = TextToVideo()
     da = DocumentArray([Document(uri='tests/resources/gif/folder1/file.gif')])
-    da = app.preprocess(da=da, user_input=UserInput(), is_indexing=True)
+    da = app.preprocess(da=da, user_input=UserInput(), process_target=True, process_query=False)
     assert len(da) == 1
     assert len(da[0].chunks) == 3
     assert da[0].chunks[0].blob != b''
@@ -47,7 +47,7 @@ def test_text_preprocessing(app_cls, is_indexing):
     """Test if the text to text preprocessing works for queries and indexing"""
     app = TextToText()
     da = DocumentArray([Document(text='test')])
-    da = app.preprocess(da=da, user_input=UserInput(), is_indexing=is_indexing)
+    da = app.preprocess(da=da, user_input=UserInput(), process_target=is_indexing, process_query=not is_indexing)
     assert len(da) == 1
     assert len(da[0].chunks) == 0
     assert da[0].text == 'test'
@@ -66,7 +66,7 @@ def test_image_preprocessing(app_cls, is_indexing):
     """Test if the image to image preprocessing works for queries and indexing"""
     app = app_cls()
     da = DocumentArray([Document(uri='tests/resources/gif/folder1/file.gif')])
-    da = app.preprocess(da=da, user_input=UserInput(), is_indexing=is_indexing)
+    da = app.preprocess(da=da, user_input=UserInput(), process_target=is_indexing, process_query=not is_indexing)
     assert len(da) == 1
     assert len(da[0].chunks) == 0
     assert da[0].blob != b''
@@ -102,7 +102,7 @@ def test_nested_preprocessing(is_indexing, get_task_config_path):
     else:
         da = DocumentArray(Document(text='query text'))
 
-    processed_da = app.preprocess(da=da, user_input=user_input, is_indexing=is_indexing)
+    processed_da = app.preprocess(da=da, user_input=user_input, process_target=is_indexing, process_query=not is_indexing)
     assert len(processed_da) == 1
     if is_indexing:
         assert len(processed_da[0].chunks) == 2

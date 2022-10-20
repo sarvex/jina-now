@@ -111,7 +111,11 @@ class MusicToMusic(JinaNOWApp):
         return env_dict
 
     def preprocess(
-        self, da: DocumentArray, user_input: UserInput, is_indexing=False
+        self,
+        da: DocumentArray,
+        user_input: UserInput,
+        process_target: bool = False,
+        process_query: bool = True,
     ) -> DocumentArray:
         from pydub import AudioSegment
 
@@ -130,8 +134,10 @@ class MusicToMusic(JinaNOWApp):
                 return d
 
         for d in da:
-            convert_fn(d)
-        return DocumentArray(d for d in da if d.blob != b'')
+            for chunk in d.chunks:
+                if chunk.modality == 'music':
+                    convert_fn(d)
+        return da
 
 
 def ffmpeg_is_installed():

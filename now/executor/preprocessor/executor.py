@@ -64,7 +64,7 @@ class NOWPreprocessor(Executor):
         docs = transform_docarray(
             documents=docs,
             search_fields=self.user_input.search_fields,
-            filter_fields=self.user_input.filter_fields,
+            filter_fields=self.user_input.filter_fields or [],
         )
         with tempfile.TemporaryDirectory() as tmpdir:
             if (
@@ -77,16 +77,23 @@ class NOWPreprocessor(Executor):
                     user_input=self.user_input,
                     max_workers=self.max_workers,
                 )
-
-            pre_docs = self.app.preprocess(
-                docs, self.user_input, is_indexing=is_indexing
+            docs = self.app.preprocess(
+                da=docs,
+                user_input=self.user_input,
+                process_query=True if encode else not is_indexing,
+                process_target=True if encode else is_indexing,
             )
-            if encode:
-                remaining_docs = self.app.preprocess(
-                    docs, self.user_input, is_indexing=not is_indexing
-                )
-                pre_docs.extend(remaining_docs)
-            docs = pre_docs
+            # pre_docs = self.app.preprocess(
+            #     docs, self.user_input, is_indexing=is_indexing
+            # )
+            # print('len of pre docs', len(pre_docs))
+            # if encode:
+            #     remaining_docs = self.app.preprocess(
+            #         docs, self.user_input, is_indexing=not is_indexing
+            #     )
+            #     pre_docs.extend(remaining_docs)
+            #     print('len of remaining docs', len(pre_docs))
+            # docs = pre_docs
 
             # as _maybe_download_from_s3 moves S3 URI to tags['uri'], need to move it back for post-processor & accurate
             # results

@@ -65,7 +65,6 @@ def preprocess_text(
         except:
             pass
         return ret
-
     for d in da:
         for chunk in d.chunks:
             if chunk.modality == 'text':

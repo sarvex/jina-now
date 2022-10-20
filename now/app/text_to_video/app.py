@@ -113,9 +113,14 @@ class TextToVideo(JinaNOWApp):
         )
 
     def preprocess(
-        self, da: DocumentArray, user_input: UserInput, is_indexing=False
+        self,
+        da: DocumentArray,
+        user_input: UserInput,
+        process_target: bool = False,
+        process_query: bool = True,
     ) -> DocumentArray:
-        if is_indexing:
+        # needs to be changed
+        if process_target:
 
             def convert_fn(d: Document):
                 try:
@@ -133,7 +138,7 @@ class TextToVideo(JinaNOWApp):
                 convert_fn(d)
 
             return DocumentArray(d for d in da if d.blob != b'')
-        else:
+        if process_query:
 
             def convert_fn(d: Document):
                 d.chunks = DocumentArray(d for d in d.chunks if d.text)

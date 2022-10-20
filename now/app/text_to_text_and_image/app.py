@@ -103,13 +103,14 @@ class TextToTextAndImage(JinaNOWApp):
         self,
         da: DocumentArray,
         user_input: UserInput,
-        is_indexing: Optional[bool] = False,
+        process_target: bool = False,
+        process_query: bool = True,
     ) -> DocumentArray:
         # Indexing
-        if is_indexing:
+        if process_target:
             return preprocess_nested_docs(da=da, user_input=user_input)
         # Query
-        else:
+        if process_query:
             return preprocess_text(da=da, split_by_sentences=False)
 
     @hubble.login_required

@@ -90,6 +90,10 @@ class ImageToImage(JinaNOWApp):
         )
 
     def preprocess(
-        self, da: DocumentArray, user_input: UserInput, is_indexing=False
+        self,
+        da: DocumentArray,
+        user_input: UserInput,
+        process_target: bool = False,
+        process_query: bool = True,
     ) -> DocumentArray:
         return preprocess_images(da=da)

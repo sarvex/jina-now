@@ -82,7 +82,7 @@ def test_da_local_path_image_folder(image_resource_path: str):
 
     app = TextToImage()
     loaded_da = load_data(app, user_input)
-    loaded_da = app.preprocess(da=loaded_da, user_input=user_input, is_indexing=True)
+    loaded_da = app.preprocess(da=loaded_da, user_input=user_input, process_target=True, process_query=False)
 
     assert len(loaded_da) == 2, (
         f'Expected two images, got {len(loaded_da)}.'
@@ -116,7 +116,7 @@ def test_da_custom_ds(da: DocumentArray):
 
     app = TextToImage()
     loaded_da = load_data(app, user_input)
-    loaded_da = app.preprocess(da=loaded_da, user_input=user_input, is_indexing=True)
+    loaded_da = app.preprocess(da=loaded_da, user_input=user_input, process_target=True, process_query=False)
 
     for doc in loaded_da:
         assert doc.blob != b''
@@ -133,8 +133,8 @@ def test_es_online_shop_ds(da: DocumentArray):
 
     for doc in loaded_da:
         assert doc.chunks
-        assert doc.chunks[0].text
-        assert doc.chunks[1].uri
+        assert doc.chunks[1].text
+        assert doc.chunks[0].uri
 
 
 @pytest.fixture

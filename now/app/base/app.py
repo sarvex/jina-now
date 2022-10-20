@@ -207,7 +207,8 @@ class JinaNOWApp:
         self,
         da: DocumentArray,
         user_input: UserInput,
-        is_indexing: Optional[bool] = False,
+        process_target: bool = False,
+        process_query: bool = True,
     ) -> DocumentArray:
         """Loads and preprocesses every document such that it is ready for finetuning/indexing."""
         return da
