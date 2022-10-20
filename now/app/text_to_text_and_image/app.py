@@ -206,3 +206,9 @@ class TextToTextAndImage(JinaNOWApp):
         if encoder_type == 'text-to-image':
             return 'CLIPLoss'
         return 'TripletMarginLoss'
+
+
+    @property
+    def index_query_access_paths(self) -> str:
+        """Gives access paths for indexing and searching."""
+        return '@c'
