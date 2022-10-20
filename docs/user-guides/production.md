@@ -35,8 +35,11 @@ but it will not be stored.
 
 ## Auto-complete suggestions
 
-For aplications with Text as a modality input, we provide `autocomplete` feature. This feature learns slowly from your users's search requests
-and provides text suggestions.
+For applications with Text as input modality, we provide the `autocomplete` feature. This feature learns slowly from the user's search requests
+and provides text suggestions. This is how the API looks like if you would like to integrate it into your application: 
+
+<img width="506" alt="autocomplete-api" src="https://user-images.githubusercontent.com/40893766/196951488-7bd5e7c2-1a7b-4933-8e3d-8cedb52b14b7.png">
+
 
 ## Security
 
