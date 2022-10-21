@@ -76,26 +76,7 @@ def test_authorization_successful(admin_email, mock_hubble_admin_email):
         )
 
 
-def test_authorization_success_domain_users(user_email, mock_hubble_user_email):
-    with (
-        Flow()
-        .add(
-            uses=NOWAuthExecutor,
-            uses_with={'user_emails': ['abc.def@test.ai', 'jina.ai']},
-        )
-        .add(uses=SecondExecutor)
-    ) as f:
-        f.index(
-            inputs=Document(text='abc'),
-            parameters={
-                'jwt': {
-                    "token": 'another:jina:user:token',
-                }
-            },
-        )
-
-
-def test_authorization_failed_domain_users(user_email, mock_hubble_user_email):
+def test_authorization_success_domain_users(mock_hubble_domain_user_email):
     with (
         Flow()
         .add(
@@ -104,12 +85,50 @@ def test_authorization_failed_domain_users(user_email, mock_hubble_user_email):
         )
         .add(uses=SecondExecutor)
     ) as f:
+        f.index(
+            inputs=Document(text='abc'),
+            parameters={
+                'jwt': {
+                    "token": 'another:test:ai:user:token',
+                }
+            },
+        )
+
+
+def test_authorization_success_jina_users(mock_hubble_user_email):
+    with (
+        Flow()
+        .add(
+            uses=NOWAuthExecutor,
+            uses_with={'admin_emails': ['test.ai']},
+        )
+        .add(uses=SecondExecutor)
+    ) as f:
+        f.index(
+            inputs=Document(text='abc'),
+            parameters={
+                'jwt': {
+                    "token": 'another:jina:ai:user:token',
+                }
+            },
+        )
+
+
+def test_authorization_failed_domain_users(mock_hubble_domain_user_email):
+    with (
+        Flow()
+        .add(
+            uses=NOWAuthExecutor,
+            uses_with={'user_emails': ['hello.ai']},
+        )
+        .add(uses=SecondExecutor)
+    ) as f:
         with pytest.raises(Exception):
             f.index(
                 inputs=Document(text='abc'),
                 parameters={
                     'jwt': {
-                        "token": 'another:different:user:token',
+                        "token": 'another:test:ai:user:token',
                     }
                 },
             )
