@@ -71,7 +71,7 @@ class NOWPreprocessor(Executor):
                     user_input=self.user_input,
                     max_workers=self.max_workers,
                 )
-
+            print()
             pre_docs = self.app.preprocess(
                 docs, self.user_input, is_indexing=is_indexing
             )
