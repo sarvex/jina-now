@@ -80,7 +80,9 @@ def preprocess_nested_docs(da: DocumentArray, user_input: UserInput) -> Document
     :param user_input: The configured user input.
     :return: A `DocumentArray` with `Document`s containing text and image chunks.
     """
-    fields = user_input['indexer_scope']
+    print(type(user_input))
+    print(user_input)
+    fields = user_input.task_config.indexer_scope
     texts, uris = [], []
     for doc in da:
         for chunk in doc.chunks:
