@@ -98,7 +98,8 @@ def test_nested_preprocessing(is_indexing, get_task_config_path):
 
     if is_indexing:
         da = DocumentArray(load_data(app, user_input)[0])
-        app._create_task_config(user_input=user_input, data_example=da[0])
+        task_config = app._create_task_config(user_input=user_input, data_example=da[0])
+        user_input.indexer_scope = task_config.indexer_scope
     else:
         da = DocumentArray(Document(text='query text'))
 
