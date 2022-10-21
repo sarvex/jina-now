@@ -134,13 +134,9 @@ class TextToVideo(JinaNOWApp):
 
             return DocumentArray(d for d in da if d.blob != b'')
         else:
-
-            def convert_fn(d: Document):
-                d.chunks = DocumentArray(d for d in d.chunks if d.text)
-                return d
-
-            for d in da:
-                convert_fn(d)
+            # there is one chunk, add another chunk with the same text
+            # but in the following format: 'label saying "<text>"
+            da[0].chunks.append(Document(text=f'label saying "{da[0].text}"'))
 
             return DocumentArray(d for d in da if d.chunks)
 
