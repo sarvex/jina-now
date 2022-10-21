@@ -1,5 +1,6 @@
 import json
 import os
+import re
 from functools import lru_cache
 from typing import Dict, List
 
@@ -54,13 +55,25 @@ def _check_user(kwargs, level, user_emails, admin_emails, api_keys):
 
     user_info = _get_user_info(jwt['token'])
     for email in user_emails + admin_emails:
-        if user_info.get('email') == email:
+        if _valid_user(user_info.get('email'), email):
             if level == SecurityLevel.ADMIN and email not in admin_emails:
                 raise PermissionError(f'User {email} is not an admin.')
             return
     raise PermissionError(
         f'User {user_info.get("email") or user_info["_id"]} has no permission'
     )
+
+
+def _valid_user(user_email, email):
+    if len(email.split('@')) == 1:
+        domain = '@' + email.replace('.', '\\.')
+        regexp = f"^[A-Za-z0-9._%+-]+{domain}$"
+        if re.match(regexp, user_email):
+            return True
+    else:
+        if user_email == email:
+            return True
+    return False
 
 
 @lru_cache(maxsize=128, typed=False)
