@@ -164,7 +164,7 @@ class TextToTextAndImage(JinaNOWApp):
             user_input.admin_emails or [] if user_input.secured else [],
         )
         env_dict['USER_EMAILS'] = (
-            (user_input.user_emails or []) + ['jina.ai'] if user_input.secured else [],
+            user_input.user_emails or [] if user_input.secured else [],
         )
 
         self.set_flow_yaml()
