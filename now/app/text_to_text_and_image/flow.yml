@@ -60,7 +60,7 @@ executors:
   env:
     JINA_LOG_LEVEL: DEBUG
   when:
-    modalities:
+    modality:
       $eq: image
 - name: indexer
   uses: ${{ ENV.INDEXER_NAME }}
