@@ -4,7 +4,6 @@ from pydantic import Field
 
 from deployment.bff.app.v1.models.helper import (
     BaseIndexRequestModel,
-    BaseSearchRequestModel,
     BaseSearchResponseModel,
 )
 

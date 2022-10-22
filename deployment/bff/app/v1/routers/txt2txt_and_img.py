@@ -4,10 +4,6 @@ from typing import List
 from docarray import Document, DocumentArray
 from fastapi import APIRouter
 
-from deployment.bff.app.v1.models.image import (
-    NowImageIndexRequestModel,
-    NowImageResponseModel,
-)
 from deployment.bff.app.v1.models.text import NowTextSearchRequestModel
 from deployment.bff.app.v1.models.text_and_image import (
     NowTextAndImageIndexRequestModel,
