@@ -1,2 +1,2 @@
 git+https://github.com/jina-ai/now@${JINA_NOW_COMMIT_SHA}
-cowsay==4.0
+docarray[qdrant]==0.17.0
