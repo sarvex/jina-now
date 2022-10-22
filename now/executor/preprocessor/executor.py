@@ -16,7 +16,7 @@ from now.utils import _maybe_download_from_s3
 
 
 class NOWPreprocessor(Executor):
-    """Applies preprocessing to documents for encoding, indexing and searching as defined by app. If necessary,
+    """Applies preprocessing to Documents for encoding, indexing and searching as defined by app. If necessary,
     downloads files for that from cloud bucket.
 
     Also, provides an endpoint to download data from S3 bucket without requiring credentials for that.

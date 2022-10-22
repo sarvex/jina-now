@@ -93,6 +93,8 @@ class NOWQdrantIndexer15(Executor):
         **kwargs
     ):
         """Perform a vector similarity search and retrieve Document matches"""
+        print('searching')
+        docs.summary()
         user_query_emb = docs[0].embedding
         label_of_query_emb = docs[1].embedding
         docs[0].embedding = user_query_emb * 2 - label_of_query_emb
