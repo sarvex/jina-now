@@ -9,7 +9,7 @@ from now.executor.abstract.base_indexer import NOWBaseIndexer as Executor
 
 
 class NOWQdrantIndexer15(Executor):
-    """NOWQdrantIndexer15 indexes Documents into a Qdrant server using DocumentArray  with `storage='qdrant'`"""
+    """indexes Documents into a Qdrant server using DocumentArray  with `storage='qdrant'`"""
 
     # override
     def construct(self, **kwargs):
