@@ -144,6 +144,7 @@ jobs:
           filters: |
             has_changed:
             - 'now/executor/abstract/**'
+            - 'now/executor/qdrant/**'
       - name: Get executor tag
         if: steps.check_has_executor_changed.outputs.has_changed == 'true'
         run: |
