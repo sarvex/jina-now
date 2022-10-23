@@ -97,7 +97,7 @@ class NOWQdrantIndexer15(Executor):
         docs.summary()
         user_query_emb = docs[0].embedding
         label_of_query_emb = docs[1].embedding
-        docs[0].embedding = 3 * user_query_emb - 2 * label_of_query_emb
+        docs[0].embedding = user_query_emb + 4 * (user_query_emb - label_of_query_emb)
         docs = docs[:1]
         docs.match(self._index, filter=search_filter, limit=limit)
 

@@ -20,7 +20,6 @@ class NOWPreprocessor(Executor):
     downloads files for that from cloud bucket.
 
     Also, provides an endpoint to download data from S3 bucket without requiring credentials for that.
-
     To update user_input, set the 'user_input' key in parameters dictionary.
     """
 
