@@ -161,7 +161,7 @@ class TextToTextAndImage(JinaNOWApp):
                 'RETENTION_DAYS'
             ] = 0  # JCloud will delete after 24hrs of being idle if not deleted in CI
         else:
-            env_dict['RETENTION_DAYS'] = 7  # for user deployment set it to 30 days
+            env_dict['RETENTION_DAYS'] = -1  # for user deployment set it to 30 days
         env_dict['ADMIN_EMAILS'] = (
             user_input.admin_emails or [] if user_input.secured else []
         )
