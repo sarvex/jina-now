@@ -43,9 +43,9 @@ def test_authorization_successful_user_email(
 
 
 def test_authorization_failed_user_email(
-    admin_email, user_jwt, mock_hubble_admin_email
+    admin_email, user_jwt, mock_hubble_domain_user_email
 ):
-    sec_exec = NOWAuthExecutor(admin_email=[], user_emails=['attacker@jina.ai'])
+    sec_exec = NOWAuthExecutor(admin_email=[admin_email], user_emails=['test@jina.ai'])
     with pytest.raises(PermissionError):
         sec_exec.check(parameters={'jwt': user_jwt})
 
