@@ -81,7 +81,7 @@ def common_get_flow_env_dict(
             'RETENTION_DAYS'
         ] = 0  # JCloud will delete after 24hrs of being idle if not deleted in CI
     else:
-        config['RETENTION_DAYS'] = 7  # for user deployment set it to 30 days
+        config['RETENTION_DAYS'] = -1  # for user deployment set it to 30 days
 
     if 'NOW_EXAMPLES' in os.environ:
         valid_app = DEFAULT_EXAMPLE_HOSTED.get(user_input.app_instance.app_name, {})
