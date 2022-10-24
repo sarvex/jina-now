@@ -36,7 +36,7 @@ class NOWBaseIndexer(Executor):
         """
 
         super().__init__(*args, **kwargs)
-        self.columns = self.parse_columns(columns)
+        self.columns = columns  # self.parse_columns(columns)
         self.dim = dim
         self.metric = metric
         self.limit = limit

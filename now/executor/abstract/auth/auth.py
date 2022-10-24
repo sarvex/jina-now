@@ -1,6 +1,7 @@
 import json
 import os
-from functools import lru_cache
+from copy import deepcopy
+from functools import lru_cache, wraps
 from typing import Dict, List
 
 import hubble
@@ -19,6 +20,7 @@ def secure_request(level: int, on: str = None):
     def decorator(func):
         @requests(on=on)
         def wrapper(*args, **kwargs):
+            print(id(func))
             _check_user(
                 kwargs,
                 level,
