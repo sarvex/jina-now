@@ -39,8 +39,6 @@ def common_get_flow_env_dict(
     indexer_resources: Dict,
     user_input: UserInput,
     tags: List,
-    elastic: bool,
-    kubectl_path: str,
 ):
     """Returns dictionary for the environments variables for the clip & music flow.yml files."""
     if (
@@ -67,31 +65,6 @@ def common_get_flow_env_dict(
         **indexer_resources,
     }
 
-    if elastic:
-        num_retries = 0
-        es_password, error_msg = '', b''
-        while num_retries < MAX_RETRIES:
-            es_password, error_msg = cmd(
-                [
-                    kubectl_path,
-                    "get",
-                    "secret",
-                    "quickstart-es-elastic-user",
-                    "-o",
-                    "go-template='{{.data.elastic | base64decode}}'",
-                ]
-            )
-            if es_password:
-                es_password = es_password.decode("utf-8")[1:-1]
-                break
-            else:
-                num_retries += 1
-                time.sleep(2)
-        if not es_password:
-            raise Exception(error_msg.decode("utf-8"))
-        config[
-            'HOSTS'
-        ] = f"https://elastic:{es_password}@quickstart-es-http.default:9200"
     if encoder_uses_with.get('pretrained_model_name_or_path'):
         config['PRE_TRAINED_MODEL_NAME'] = encoder_uses_with[
             "pretrained_model_name_or_path"
@@ -106,7 +79,7 @@ def common_get_flow_env_dict(
             'RETENTION_DAYS'
         ] = 0  # JCloud will delete after 24hrs of being idle if not deleted in CI
     else:
-        config['RETENTION_DAYS'] = 7  # for user deployment set it to 30 days
+        config['RETENTION_DAYS'] = -1  # for user deployment set it to 30 days
 
     if 'NOW_EXAMPLES' in os.environ:
         valid_app = DEFAULT_EXAMPLE_HOSTED.get(user_input.app_instance.app_name, {})
@@ -153,8 +126,6 @@ def common_setup(
         indexer_resources=indexer_resources,
         user_input=user_input,
         tags=tags,
-        elastic=elastic,
-        kubectl_path=kubectl_path,
     )
 
     if finetune_settings.perform_finetuning:

@@ -95,12 +95,11 @@ def get_task(kwargs):
 
 def start_now(app_instance, **kwargs):
     user_input = configure_user_input(app_instance, **kwargs)
-
     # Only if the deployment is remote and the demo examples is available for the selected app
     # Should not be triggered for CI tests
     if app_instance.is_demo_available(user_input) and False:
         gateway_host = 'remote'
-        gateway_host_internal = f'grpcs://now-example-{app_instance.app_name}-{user_input.data}.dev.jina.ai'.replace(
+        gateway_host_internal = f'grpcs://now-example-{app_instance.app_name}-{user_input.dataset_name}.dev.jina.ai'.replace(
             '_', '-'
         )
         gateway_port_internal = None
