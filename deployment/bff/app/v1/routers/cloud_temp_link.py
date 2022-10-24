@@ -7,7 +7,7 @@ from deployment.bff.app.v1.models.cloud_temp_link import (
     CloudTempLinkRequestModel,
     CloudTempLinkResponseModel,
 )
-from deployment.bff.app.v1.routers.helper import jina_client_post
+from deployment.bff.app.v1.routers.client import jina_client_post
 
 router = APIRouter()
 

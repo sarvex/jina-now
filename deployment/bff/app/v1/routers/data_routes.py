@@ -3,9 +3,8 @@ import base64
 from docarray import Document
 from fastapi import HTTPException
 
-from deployment.bff.app.v1.models.base import NoResponseModel
 from deployment.bff.app.v1.models.model_factory import get_pydantic_model
-from deployment.bff.app.v1.routers.helper import jina_client_post
+from deployment.bff.app.v1.routers.client import jina_client_post
 
 
 def get_filter(conditions):
@@ -102,19 +101,52 @@ def create_endpoint_function(
     return endpoint
 
 
+# this is a function which can be optimized by restructuring the code to make it shorter
 def create_endpoints(router, input_modality, output_modality):
-    RequestModelIndex = get_pydantic_model(output_modality, is_request=True)
-    RequestModelSearch = get_pydantic_model(input_modality, is_request=True)
-    ResponseModelSearch = get_pydantic_model(output_modality, is_request=False)
+    RequestModelIndex = get_pydantic_model(
+        output_modality, is_request=True, endpoint_name='index'
+    )
+    ResponseModelIndex = get_pydantic_model(
+        output_modality, is_request=False, endpoint_name='index'
+    )
+    RequestModelSearch = get_pydantic_model(
+        input_modality, is_request=True, endpoint_name='search'
+    )
+    ResponseModelSearch = get_pydantic_model(
+        output_modality, is_request=False, endpoint_name='search'
+    )
 
     for RequestModel, ResponseModel, endpoint_name in [
-        (RequestModelIndex, NoResponseModel, 'index'),
+        (RequestModelIndex, ResponseModelIndex, 'index'),
         (RequestModelSearch, ResponseModelSearch, 'search'),
     ]:
-        endpoint = create_endpoint_function(RequestModel, ResponseModel, endpoint_name)
-        router.add_api_route(
+
+        @router.post(
             f'/{endpoint_name}',
-            endpoint,
             response_model=ResponseModel,
-            methods=['POST'],
+            summary=f'Endpoint to send {endpoint_name} requests',
         )
+        def index(data: RequestModel) -> ResponseModel:
+            endpoint = create_endpoint_function(
+                RequestModel,
+                ResponseModel,
+                endpoint_name,
+                input_modality,
+                output_modality,
+            )
+            return endpoint(data)
+
+
+# # this is the optimized version
+# def create_endpoints(router, input_modality, output_modality):
+#     for endpoint_name in ['index', 'search']:
+#         RequestModel = get_pydantic_model(input_modality, is_request=True, endpoint_name=endpoint_name)
+#         ResponseModel = get_pydantic_model(output_modality, is_request=False, endpoint_name=endpoint_name)
+#         @router.post(
+#             f'/{endpoint_name}',
+#             response_model=ResponseModel,
+#             summary=f'Endpoint to send {endpoint_name} requests',
+#         )
+#         def index(data: RequestModel) -> ResponseModel:
+#             endpoint = create_endpoint_function(RequestModel, ResponseModel, endpoint_name, input_modality, output_modality)
+#             return endpoint(data)

@@ -75,5 +75,7 @@ class BaseSearchResponseModel(BaseModel):
         arbitrary_types_allowed = True
 
 
-class NoResponseModel(BaseModel):
-    pass
+class BaseIndexResponseModel(BaseModel):
+    class Config:
+        case_sensitive = False
+        arbitrary_types_allowed = True

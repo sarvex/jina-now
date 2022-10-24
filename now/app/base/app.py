@@ -1,11 +1,10 @@
 import abc
 import os
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import docker
 from docarray import DocumentArray
 from jina import Client
-from jina.serve.runtimes.gateway.http.models import JinaRequestModel, JinaResponseModel
 
 from now.constants import Modalities
 from now.demo_data import AVAILABLE_DATASET, DEFAULT_EXAMPLE_HOSTED, DemoDataset
@@ -232,30 +231,6 @@ class JinaNOWApp:
                 return False
             return True
         return False
-
-    @property
-    def bff_mapping_fns(
-        self,
-    ) -> Dict[
-        str,
-        Tuple[
-            Any,
-            Any,
-            Callable[[Any], JinaRequestModel],
-            Callable[[JinaResponseModel], Any],
-        ],
-    ]:
-        """
-        Apps usually have a custom input format and response which does not match the JinaRequestModel or JinaResponseModel.
-        To create the mapping each Jina NOW app can implement the two bff mapping functions for each path
-        - one for requests and one for responses
-
-        :return: dictionary from path to a tuple of request model, response model,
-        request mapping fn and response mapping fn.
-        By default, the mapping is the identity function and the request model and respond model are the default models.
-        The path is a regex expression.
-        """
-        return {'.*': (JinaRequestModel, JinaResponseModel, lambda x: x, lambda x: x)}
 
     @property
     def index_query_access_paths(self) -> str:
