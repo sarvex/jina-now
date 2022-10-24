@@ -1,4 +1,3 @@
-import json
 import os
 import uuid
 from collections import defaultdict
@@ -63,28 +62,6 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
             if 'genre_tags' in doc.tags and isinstance(doc.tags['genre_tags'], list):
                 doc.tags['genre_tags'] = ' '.join(doc.tags['genre_tags'])
     return da
-
-
-def _open_json(path: str):
-    with open(path, 'r') as f:
-        data = json.load(f)
-    return data
-
-
-def _open_s3_json(path: str, user_input: UserInput):
-    import boto3
-
-    path_splits = path.split('/')
-    bucket = path_splits[2]
-    key = '/'.join(path_splits[3:])
-
-    client = boto3.client(
-        's3',
-        aws_access_key_id=user_input.aws_access_key_id,
-        aws_secret_access_key=user_input.aws_secret_access_key,
-    )
-    response = client.get_object(Bucket=bucket, Key=key)
-    return json.loads(response['Body'].read())
 
 
 def select_ending(files, endings):

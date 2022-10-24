@@ -25,6 +25,7 @@
 
 
 
+
 <a name=release-note-0-0-7></a>
 ## Release Note (`0.0.7`)
 
@@ -843,4 +844,47 @@
 
  - [[```195f7b34```](https://github.com/jina-ai/now/commit/195f7b343d326d8165fd3be208d86e822a273594)] __-__ Fix enable static cname (#566) (*Mohammad Kalim Akram*)
  - [[```f51f59c9```](https://github.com/jina-ai/now/commit/f51f59c9d676a994dec1a3ab1733027d695dac8c)] __-__ bump finetuner version (#549) (*Saba Sturua*)
+
+<a name=release-note-0-0-33></a>
+## Release Note (`0.0.33`)
+
+> Release time: 2022-10-20 15:31:43
+
+
+
+🙇 We'd like to thank all contributors for this new release! In particular,
+ Florian Hönicke,  Aziz Belaweid,  Saba Sturua,  Mohammad Kalim Akram,  Joschka Braun,  Isabelle Mohr,  Jina Dev Bot,  🙇
+
+
+### 🆕 New Features
+
+ - [[```53773d1f```](https://github.com/jina-ai/now/commit/53773d1fe2b500356188a7658ffea46026f1ad20)] __-__ qdrant indexer (#528) (*Florian Hönicke*)
+ - [[```5c0a0b83```](https://github.com/jina-ai/now/commit/5c0a0b8301c05ad3a88d15829ffcbe7d9ac2ccdd)] __-__ github actions for example deployment (#574) (*Mohammad Kalim Akram*)
+ - [[```9c02f3f8```](https://github.com/jina-ai/now/commit/9c02f3f8737ea2d6248510b6910744fa89ac00af)] __-__ add elastic indexer (#474) (*Isabelle Mohr*)
+ - [[```2ffe80cf```](https://github.com/jina-ai/now/commit/2ffe80cf190a1e3f6c884523c633ac00e925beca)] __-__ sum ranker (#577) (*Florian Hönicke*)
+
+### 🐞 Bug fixes
+
+ - [[```3a4564e4```](https://github.com/jina-ai/now/commit/3a4564e4f9564535202bde30ba9e54629f2df7b8)] __-__ data generation test (#603) (*Saba Sturua*)
+ - [[```a8850446```](https://github.com/jina-ai/now/commit/a885044627b40762489a0dfd453073f84026734e)] __-__ replace with single line (#600) (*Mohammad Kalim Akram*)
+ - [[```6f75ed00```](https://github.com/jina-ai/now/commit/6f75ed00141d50b977d5be03b1ad82fcaa2c3dc8)] __-__ move script (#595) (*Mohammad Kalim Akram*)
+ - [[```27588f70```](https://github.com/jina-ai/now/commit/27588f7057702a7b0fbc3c490b9f95fc3b215e31)] __-__ remove annlite test from CD (*Mohammad Kalim Akram*)
+ - [[```7670e92e```](https://github.com/jina-ai/now/commit/7670e92ee13226c31c4bab68424c7fe8e9aab596)] __-__ comment annlite test (*Mohammad Kalim Akram*)
+ - [[```2f4b4d15```](https://github.com/jina-ai/now/commit/2f4b4d15f67af48c1624c25d2f5afe95040fa384)] __-__ minor update (#591) (*Mohammad Kalim Akram*)
+ - [[```60599948```](https://github.com/jina-ai/now/commit/60599948207a3370a127f57c8c1930a6ad0e2048)] __-__ elastic docker (#585) (*Florian Hönicke*)
+
+### 🧼 Code Refactoring
+
+ - [[```3d880739```](https://github.com/jina-ai/now/commit/3d880739ae65fcaa645768530167fe22735f8030)] __-__ remove finetuner comparison (#605) (*Florian Hönicke*)
+ - [[```bd3aa90b```](https://github.com/jina-ai/now/commit/bd3aa90bab124867eddda917d9a3b9f140d1d39a)] __-__ remove unused code (#604) (*Aziz Belaweid*)
+ - [[```18d4528e```](https://github.com/jina-ai/now/commit/18d4528ec7e85d4afb4caf5ec5b07fb3ae38826d)] __-__ remove elastic check (#598) (*Mohammad Kalim Akram*)
+ - [[```59824f04```](https://github.com/jina-ai/now/commit/59824f04d1c16fdfcf5b84940a8485befac81cc8)] __-__ executors (#594) (*Florian Hönicke*)
+ - [[```8022a34b```](https://github.com/jina-ai/now/commit/8022a34b6b8d1b425a22797128457d7bcbbb5686)] __-__ remove now post process (#590) (*Mohammad Kalim Akram*)
+ - [[```fc9aae23```](https://github.com/jina-ai/now/commit/fc9aae23ba17de49ffa082fa419a0dff2c92a07d)] __-__ dialog (#548) (*Joschka Braun*)
+ - [[```6bad3aed```](https://github.com/jina-ai/now/commit/6bad3aed079bfaef22dad853b8d66edd3c627124)] __-__ base indexer (#575) (*Florian Hönicke*)
+
+### 🍹 Other Improvements
+
+ - [[```c068a71b```](https://github.com/jina-ai/now/commit/c068a71bbefaf9911c21fb3cdc07fc2c47ee753b)] __-__ Fix deploy example script (#596) (*Mohammad Kalim Akram*)
+ - [[```4373715c```](https://github.com/jina-ai/now/commit/4373715cdd19e672b75562131381974145f2ed5f)] __-__ __version__: the next version will be 0.0.33 (*Jina Dev Bot*)
 

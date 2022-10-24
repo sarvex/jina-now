@@ -1,6 +1,5 @@
 {
   "name": "online-shop-multi-modal-search",
-  "data": "extracted-data-online-shop-50-flat",
   "encoders": [
     {
       "name": "text_encoder",
