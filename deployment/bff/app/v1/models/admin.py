@@ -2,7 +2,7 @@ from typing import List
 
 from pydantic import Field
 
-from deployment.bff.app.v1.models.helper import BaseRequestModel
+from deployment.bff.app.v1.models.base import BaseRequestModel
 
 
 class UpdateEmailsRequestModel(BaseRequestModel):

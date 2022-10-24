@@ -1,58 +1,7 @@
-import base64
-
-from docarray import Document, DocumentArray
+from docarray import DocumentArray
 from fastapi import HTTPException, status
 from jina import Client
 from jina.excepts import BadServer
-
-
-def process_query(
-    text: str = '', blob: str = b'', uri: str = None, conditions: dict = None
-) -> Document:
-    """
-    Processes query image or text  into a document and prepares the filetring query
-    for the results.
-    Currently we support '$and' between different conditions means we return results
-    that have all the conditions. Also we only support '$eq' opperand for tag
-    which means a tag should be equal to an exact value.
-    Same query is passed to indexers, in docarray
-    executor we do preprocessing by adding tags__ to the query
-
-    :param text: text of the query
-    :param blob: the blob of the image
-    :param uri: uri of the ressource provided
-    :param conditions: dictionary with the conditions to apply as filter
-        tag should be the key and desired value is assigned as value
-        to the key
-    """
-    if bool(text) + bool(blob) + bool(uri) != 1:
-        raise ValueError(
-            f'Can only set one value but have text={text}, blob={blob}, uri={uri}'
-        )
-    try:
-        if uri:
-            query_doc = Document(uri=uri)
-        elif text:
-            query_doc = Document(text=text, mime_type='text')
-        elif blob:
-            base64_bytes = blob.encode('utf-8')
-            message_bytes = base64.decodebytes(base64_bytes)
-            query_doc = Document(blob=message_bytes, mime_type='image')
-        else:
-            raise ValueError('None of the attributes uri, text or blob is set.')
-    except BaseException as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f'Not a correct encoded query. Please see the error stack for more information. \n{e}',
-        )
-    query = {}
-    if conditions:
-        filter_query = []
-        # construct filtering query from dictionary
-        for key, value in conditions.items():
-            filter_query.append({f'{key}': {'$eq': value}})
-        query = {'$and': filter_query}  # different conditions are aggregated using and
-    return query_doc, query
 
 
 def get_jina_client(host: str, port: int) -> Client:

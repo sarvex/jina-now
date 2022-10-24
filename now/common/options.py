@@ -12,6 +12,7 @@ import os
 from hubble import AuthenticationRequiredError
 from kubernetes import client, config
 
+from now.app.base.app import JinaNOWApp
 from now.constants import Apps, DatasetTypes
 from now.deployment.deployment import cmd
 from now.log import yaspin_extended
@@ -342,7 +343,7 @@ def _check_if_namespace_exist():
     return 'nowapi' in [item.metadata.name for item in v1.list_namespace().items]
 
 
-def construct_app(app_name: str):
+def construct_app(app_name: str) -> JinaNOWApp:
     return getattr(
         importlib.import_module(f'now.app.{app_name}.app'),
         f'{to_camel_case(app_name)}',
