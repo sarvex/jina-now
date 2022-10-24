@@ -20,7 +20,6 @@ def secure_request(level: int, on: str = None):
     def decorator(func):
         @requests(on=on)
         def wrapper(*args, **kwargs):
-            print(id(func))
             _check_user(
                 kwargs,
                 level,
