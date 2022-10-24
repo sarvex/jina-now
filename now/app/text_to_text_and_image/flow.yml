@@ -23,8 +23,8 @@ executors:
 - name: sbert_encoder
   uses: jinahub+docker://FinetunerExecutor
   uses_requests:
-    '/query_text': encode
-    '/index_text': encode
+    /search: encode
+    /index: encode
   uses_with:
     artifact: ${{ ENV.SBERT_ARTIFACT }}
     token: ${{ ENV.JINA_TOKEN }}
@@ -37,7 +37,7 @@ executors:
 - name: clip_text_encoder
   uses: jinahub+docker://FinetunerExecutor
   uses_requests:
-    '/query_vision_text': encode
+    /search: encode
   uses_with:
     artifact: ${{ ENV.CLIP_ARTIFACT }}
     token: ${{ ENV.JINA_TOKEN }}
@@ -51,7 +51,7 @@ executors:
 - name: clip_vision_encoder
   uses: jinahub+docker://FinetunerExecutor
   uses_requests:
-    '/index_vision': encode
+    /index: encode
   uses_with:
     artifact: ${{ ENV.CLIP_ARTIFACT }}
     token: ${{ ENV.JINA_TOKEN }}

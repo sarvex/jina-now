@@ -124,7 +124,7 @@ class ElasticIndexer(Executor):
 
     @secure_request(on='/search', level=SecurityLevel.USER)
     def search(
-        self, docs: Union[Document, DocumentArray], parameters: dict = {}, **kwargs
+        self, docs: Union[Document, DocumentArray], docs_matrix: Optional[List[DocumentArray]], parameters: dict = {}, **kwargs
     ):
         """Perform traditional bm25 + vector search. By convention, BM25 will search on
         the 'bm25_text' field of the index. For now, this field contains a concatenation of
@@ -144,8 +144,10 @@ class ElasticIndexer(Executor):
                 - 'traversal_paths' (str): traversal paths for the docs
                 - 'limit' (int): nr of matches to get per Document
         """
-        if not docs:
-            return
+        if docs_matrix is None:
+            docs_matrix = [docs]
+        docs = self.join_docs_matrix_into_chunks(docs_matrix)
+
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
         search_filter = parameters.get('filter', None)
         limit = parameters.get('limit', 20)
@@ -396,3 +398,19 @@ class ElasticIndexer(Executor):
             print('No embeddings extracted')
             raise
         return embeddings
+
+    @staticmethod
+    def join_docs_matrix_into_chunks(docs_matrix) -> DocumentArray:
+        """
+        Transform a matrix of DocumentArray's into one DocumentArray, by adding Documents to the chunk level.
+        For now, we assume that the DocumentArrays in the matrix are all same length, namely 1.
+        If the query is textual, we add this text to the root Document.
+
+        :param docs_matrix: List of DocumentArray's.
+        """
+        parent_doc = Document()
+        for da in docs_matrix:
+            parent_doc.chunks.extend(da[0])
+        if docs_matrix[0].text:
+            parent_doc.text = docs_matrix[0].text
+        return DocumentArray(parent_doc)
