@@ -124,7 +124,11 @@ class ElasticIndexer(Executor):
 
     @secure_request(on='/search', level=SecurityLevel.USER)
     def search(
-        self, docs: Union[Document, DocumentArray], docs_matrix: Optional[List[DocumentArray]], parameters: dict = {}, **kwargs
+        self,
+        docs: Union[Document, DocumentArray],
+        docs_matrix: Optional[List[DocumentArray]],
+        parameters: dict = {},
+        **kwargs,
     ):
         """Perform traditional bm25 + vector search. By convention, BM25 will search on
         the 'bm25_text' field of the index. For now, this field contains a concatenation of
