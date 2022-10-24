@@ -7,9 +7,7 @@ from now.data_loading.utils import transform_docarray
 from now.now_dataclasses import UserInput
 
 
-def preprocess_images(
-    da: DocumentArray
-) -> DocumentArray:
+def preprocess_images(da: DocumentArray) -> DocumentArray:
     """Loads all documents into memory to thumbnail them."""
 
     def convert_fn(d: Document):
@@ -60,11 +58,13 @@ def preprocess_text(
                     text=sentence,
                     tags=d.tags,
                 )
-                for sentence in set(sent_tokenize(document.text.replace('\n', ' '))) if sentence
+                for sentence in set(sent_tokenize(document.text.replace('\n', ' ')))
+                if sentence
             ]
         except:
             pass
         return ret
+
     for d in da:
         for chunk in d.chunks:
             if chunk.modality == 'text':

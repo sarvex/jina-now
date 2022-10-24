@@ -80,10 +80,6 @@ class TextToVideo(JinaNOWApp):
     def supported_file_types(self) -> List[str]:
         return ['gif', 'mp4', 'mov']
 
-    @property
-    def index_query_access_paths(self) -> str:
-        return '@c'
-
     def setup(
         self, dataset: DocumentArray, user_input: UserInput, kubectl_path
     ) -> Dict:

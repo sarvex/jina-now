@@ -83,18 +83,6 @@ class NOWPreprocessor(Executor):
                 process_query=True if encode else not is_indexing,
                 process_target=True if encode else is_indexing,
             )
-            # pre_docs = self.app.preprocess(
-            #     docs, self.user_input, is_indexing=is_indexing
-            # )
-            # print('len of pre docs', len(pre_docs))
-            # if encode:
-            #     remaining_docs = self.app.preprocess(
-            #         docs, self.user_input, is_indexing=not is_indexing
-            #     )
-            #     pre_docs.extend(remaining_docs)
-            #     print('len of remaining docs', len(pre_docs))
-            # docs = pre_docs
-
             # as _maybe_download_from_s3 moves S3 URI to tags['uri'], need to move it back for post-processor & accurate
             # results
             if (

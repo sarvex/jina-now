@@ -5,7 +5,8 @@ import pickle
 from os.path import join as osp
 from typing import List, Dict
 
-from docarray import DocumentArray, Document
+from docarray import DocumentArray, Document, dataclass
+from docarray.typing import Image, Text
 
 from now.constants import BASE_STORAGE_URL, DEMO_DATASET_DOCARRAY_VERSION, Modalities
 from now.utils import download
@@ -58,49 +59,74 @@ def get_dataset_url(dataset: str, output_modality: Modalities) -> str:
         return f'{BASE_STORAGE_URL}/{data_folder}/{dataset}-{docarray_version}.bin'
 
 
-def _transform_uni_modal_data(filter_fields: List[str]):
-    def _transform_fn(document: Document) -> Document:
-        document.tags['filtered_fields'] = {}
-        doc_tags = document.tags.copy()
-        for field, value in doc_tags.items():
-            if field in filter_fields:
-                document.tags.pop(field)
-                document.tags['filtered_fields'][field] = value
-        document.chunks = [
-            Document(
-                content=document.content,
-                modality=document.modality,
-                tags={'field_name': 'default_field_name'},
-            )
-        ]
-        return document
+def _get_modality(document):
+    if document.uri:
+        if os.path.splitext(document.uri)[-1] == '.gif':
+            return Modalities.VIDEO
+        else:
+            return Modalities.IMAGE
+    elif document.text:
+        return Modalities.TEXT
+    else:
+        return None
 
-    return _transform_fn
+
+def transform_uni_modal_data(documents: DocumentArray, filter_fields: List[str]):
+    @dataclass
+    class BaseDocImage:
+        default_field: Image
+
+    @dataclass
+    class BaseDocText:
+        default_field: Text
+
+    transformed_docs = DocumentArray()
+    for document in documents:
+        modality = document.modality or _get_modality(document)
+        if modality == Modalities.TEXT:
+            new_doc = BaseDocText(default_field=document.text)
+        elif modality in [Modalities.IMAGE, Modalities.VIDEO]:
+            new_doc = BaseDocImage(default_field=document.uri or document.content)
+        else:
+            raise ValueError(f'Modality {modality} is not supported.')
+
+        new_doc = Document(new_doc)
+        new_doc.tags['filter_fields'] = {}
+        new_doc.chunks[0].tags['field_name'] = 'default_field'
+        for field, value in document.tags.items():
+            if field in filter_fields:
+                new_doc.tags['filter_fields'][field] = value
+            else:
+                new_doc.tags[field] = value
+        transformed_docs.append(new_doc)
+
+    return transformed_docs
 
 
 def _transform_multi_modal_data(
     field_names: Dict[int, str], search_fields: List[str], filter_fields: List[str]
 ):
     def _transform_fn(document: Document) -> Document:
-        document.tags['filtered_fields'] = {}
+        document.tags['filter_fields'] = {}
         new_chunks = []
         for position, chunk in enumerate(document.chunks):
             field_name = field_names[position]
             content = chunk.content
-            modality = chunk.modality
+            modality = chunk.modality or _get_modality(chunk)
             if chunk.chunks:
                 content = [sub_chunk.content for sub_chunk in chunk.chunks]
-                modality = chunk.chunks[0].modality
+                modality = chunk.chunks[0].modality or _get_modality(chunk.chunks[0])
             if field_name in search_fields:
                 new_chunks.append(
                     Document(
                         content=content,
+                        uri=chunk.uri,
                         modality=modality,
                         tags={'field_name': field_name},
                     )
                 )
             elif field_name in filter_fields:
-                document.tags['filtered_fields'][field_name] = content
+                document.tags['filter_fields'][field_name] = content
             else:
                 document.tags[field_name] = content
         document.chunks = new_chunks
@@ -132,5 +158,7 @@ def transform_docarray(
             )
         )
     else:
-        documents.apply(_transform_uni_modal_data(filter_fields=filter_fields))
+        documents = transform_uni_modal_data(
+            documents=documents, filter_fields=filter_fields
+        )
     return documents

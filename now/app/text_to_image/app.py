@@ -88,7 +88,9 @@ class TextToImage(JinaNOWApp):
         process_query: bool = True,
     ) -> DocumentArray:
         if not process_target and not process_query:
-            raise ValueError('Either `process_target` or `process_query` must be set to `True`.')
+            raise ValueError(
+                'Either `process_target` or `process_query` must be set to `True`.'
+            )
         if process_target:
             da = preprocess_images(da=da)
         if process_query:
