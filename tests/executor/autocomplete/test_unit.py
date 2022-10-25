@@ -151,4 +151,4 @@ def test_get_suggestion_bitrigrams():
         ['red long dress'],
     ]
     assert da_sugg_3[0].tags['suggestions'] == [['dress']]
-    assert da_sugg_4[0].tags['suggestions'] == [['long']]
+    assert da_sugg_4[0].tags['suggestions'] == [['loading'], ['laugh'], ['long']]
