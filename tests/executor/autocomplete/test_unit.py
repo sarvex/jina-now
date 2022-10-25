@@ -87,7 +87,7 @@ def test_search_update_profanity():
     )
 
     executor.search_update(da)
-    assert executor.words['background']['count'] == 2
+    assert executor.words['background']['count'] == 4
     assert executor.words['loading']['count'] == 1
     assert 'fuck' not in executor.words
     assert 'shit' not in executor.words
