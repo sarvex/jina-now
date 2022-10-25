@@ -6,7 +6,7 @@
         <link rel="canonical" href="https://now.jina.ai/_modules/now/common/options.html" />
 
     <link rel="shortcut icon" href="../../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.09.29"/>
-        <title>now.common.options - NOW 0.0.33 documentation</title>
+        <title>now.common.options - NOW 0.0.34 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../../">
-                <div class="brand">NOW 0.0.33 documentation</div>
+                <div class="brand">NOW 0.0.34 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -594,7 +594,8 @@
 <span class="n">USER_EMAILS</span> <span class="o">=</span> <span class="n">DialogOptions</span><span class="p">(</span>
     <span class="n">name</span><span class="o">=</span><span class="s1">&#39;user_emails&#39;</span><span class="p">,</span>
     <span class="n">prompt_message</span><span class="o">=</span><span class="s1">&#39;Please enter the comma separated Email IDs &#39;</span>
-    <span class="s1">&#39;who will have access to this flow:&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;who will have access to this flow.</span><span class="se">\n</span><span class="s1">Additionally, you can also specify comma separated domain name&#39;</span>
+    <span class="s1">&#39; such that all users from that domain can access this flow. E.g. `jina.ai`</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span>
     <span class="n">prompt_type</span><span class="o">=</span><span class="s1">&#39;input&#39;</span><span class="p">,</span>
     <span class="n">depends_on</span><span class="o">=</span><span class="n">ADDITIONAL_USERS</span><span class="p">,</span>
     <span class="n">conditional_check</span><span class="o">=</span><span class="k">lambda</span> <span class="n">user_inp</span><span class="p">:</span> <span class="n">user_inp</span><span class="o">.</span><span class="n">additional_user</span><span class="p">,</span>
@@ -726,7 +727,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Oct 20, 2022.
+                            Last updated on Oct 25, 2022.
                         </div>
                     </div>
                     <div class="right-details">
