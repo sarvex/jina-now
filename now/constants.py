@@ -7,8 +7,8 @@ from now.utils import BetterEnum
 # DEMO_DATASET_DOCARRAY_VERSION = docarray_version
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.129-refactor-executors-21'
-NOW_PREPROCESSOR_VERSION = '0.0.94-data-format-5'
-NOW_QDRANT_INDEXER_VERSION = '0.0.2-refactor-executors-22'
+NOW_PREPROCESSOR_VERSION = '0.0.94-data-format-6'
+NOW_QDRANT_INDEXER_VERSION = '0.0.2-refactor-executors-23'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.3-refactor-executors-21'
 
 
