@@ -50,8 +50,8 @@ def test_initialize():
     assert executor.words['loading']['count'] == '39131'
 
 
-def test_search_update():
-    executor = NOWAutoCompleteExecutor()
+def test_search_update(tmpdir):
+    executor = NOWAutoCompleteExecutor(workspace=tmpdir)
 
     da = DocumentArray(
         [
@@ -70,8 +70,8 @@ def test_search_update():
     assert executor.words['bang']['count'] == 1
 
 
-def test_search_update_profanity():
-    executor = NOWAutoCompleteExecutor()
+def test_search_update_profanity(tmpdir):
+    executor = NOWAutoCompleteExecutor(workspace=tmpdir)
 
     da = DocumentArray(
         [
@@ -87,14 +87,14 @@ def test_search_update_profanity():
     )
 
     executor.search_update(da)
-    assert executor.words['background']['count'] == 4
+    assert executor.words['background']['count'] == 2
     assert executor.words['loading']['count'] == 1
     assert 'fuck' not in executor.words
     assert 'shit' not in executor.words
 
 
-def test_get_suggestion():
-    executor = NOWAutoCompleteExecutor()
+def test_get_suggestion(tmpdir):
+    executor = NOWAutoCompleteExecutor(workspace=tmpdir)
 
     da = DocumentArray(
         [
@@ -120,8 +120,8 @@ def test_get_suggestion():
     assert da_sugg_3[0].tags['suggestions'] == [['background']]
 
 
-def test_get_suggestion_bitrigrams():
-    executor = NOWAutoCompleteExecutor()
+def test_get_suggestion_bitrigrams(tmpdir):
+    executor = NOWAutoCompleteExecutor(workspace=tmpdir)
 
     da = DocumentArray(
         [
@@ -151,4 +151,4 @@ def test_get_suggestion_bitrigrams():
         ['red long dress'],
     ]
     assert da_sugg_3[0].tags['suggestions'] == [['dress']]
-    assert da_sugg_4[0].tags['suggestions'] == [['loading'], ['laugh'], ['long']]
+    assert da_sugg_4[0].tags['suggestions'] == [['long']]
