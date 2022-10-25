@@ -34,6 +34,7 @@ executors:
   when:
     modality:
       $eq: text
+  needs: preprocessor
 - name: clip_text_encoder
   uses: jinahub+docker://FinetunerExecutor
   uses_requests:
@@ -48,6 +49,7 @@ executors:
   when:
     modality:
       $eq: text
+  needs: preprocessor
 - name: clip_vision_encoder
   uses: jinahub+docker://FinetunerExecutor
   uses_requests:
@@ -62,6 +64,7 @@ executors:
   when:
     modality:
       $eq: image
+  needs: sbert_encoder
 - name: indexer
   uses: ${{ ENV.INDEXER_NAME }}
   uses_with:
@@ -78,3 +81,4 @@ executors:
       cpu: 1.0
   env:
     JINA_LOG_LEVEL: DEBUG
+  needs: [sbert_encoder, clip_text_encoder, clip_vision_encoder]
