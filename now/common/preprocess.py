@@ -1,9 +1,6 @@
-from typing import List
-
 from docarray import Document, DocumentArray
 
 from now.data_loading.convert_datasets_to_jpeg import to_thumbnail_jpg
-from now.data_loading.utils import transform_docarray
 from now.now_dataclasses import UserInput
 
 

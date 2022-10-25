@@ -8,7 +8,7 @@ from now.data_loading.data_loading import load_data
 from now.executor.preprocessor import NOWPreprocessor
 
 from now.demo_data import DemoDatasetNames
-from now.constants import Apps
+from now.constants import Apps, DatasetTypes
 from now.now_dataclasses import UserInput
 
 
@@ -65,13 +65,3 @@ def test_text_to_video(resources_folder_path):
     assert len(encode_result) == 2
     assert len([text for text in encode_result.texts if text != '']) == 1
     assert len([blob for blob in encode_result.blobs if blob != b'']) == 1
-
-
-def test_preprocessor():
-    user_input = UserInput()
-    user_input.data = DemoDatasetNames.BEST_ARTWORKS
-    app = TextToImage()
-    data = load_data(app=app, user_input=user_input)
-    with Flow().add(uses=NOWPreprocessor, uses_with={'app': Apps.TEXT_TO_IMAGE}) as f:
-        indexed_data = f.index(data)
-    indexed_data.summary()

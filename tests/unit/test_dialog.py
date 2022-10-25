@@ -186,7 +186,7 @@ def test_configure_user_input(
         user_input.__dict__.update({'jwt': None, 'admin_emails': None})
 
     user_input.__dict__.update({'app_instance': None})
-    if expected_user_input.data == 'custom':
+    if expected_user_input.dataset_type != DatasetTypes.DEMO:
         expected_user_input.search_fields = ['x', 'y']
         expected_user_input.filter_fields = ['z']
 
