@@ -1,3 +1,5 @@
+import json
+import os
 from typing import Optional
 
 from better_profanity import profanity
@@ -17,20 +19,25 @@ class NOWAutoCompleteExecutor(Executor):
 
         super().__init__(*args, **kwargs)
 
-    @staticmethod
-    def contains_profanity(text: str):
-        """Helper function that wraps checking for profanities.
-        :param text: Text to be checked for profanities
-        :returns: Boolean values signifying whether or not profanity
-            was present in the text
-        """
-        return profanity.contains_profanity(text)
+        self.words_path = (
+            os.path.join(self.workspace, 'words.json') if self.workspace else None
+        )
+        if self.words_path and os.path.exists(self.words_path):
+            with open(self.words_path, 'r') as fp:
+                self.words = json.load(fp)
+                self.autocomplete = AutoComplete(words=self.words)
 
-    def update_words(self, word):
+    def update_save_words(self, word):
+        """
+        Method to update word count dictionary and dumps new dictionary
+        """
         if word in self.words:
             self.words[word]['count'] += 1
         else:
             self.words[word] = {'count': 1}
+        if self.words_path:
+            with open(self.words_path, 'w') as fp:
+                json.dump(self.words, fp)
 
     @secure_request(on='/search', level=SecurityLevel.USER)
     def search_update(
@@ -40,16 +47,16 @@ class NOWAutoCompleteExecutor(Executor):
         flat_docs = docs[traversal_paths]
 
         for doc in flat_docs:
-            if doc.text and not NOWAutoCompleteExecutor.contains_profanity(doc.text):
+            if doc.text and not profanity.contains_profanity(doc.text):
                 search_words = doc.text.split(' ')
                 # prevent users from misusing API
                 if len(doc.text) < self.char_threshhold:
                     # in case query is composed of two words
                     for word in search_words:
-                        self.update_words(word)
+                        self.update_save_words(word)
                     # add bigram and tri gram suggestions
                     if len(search_words) == 2 or len(search_words) == 3:
-                        self.update_words(doc.text)
+                        self.update_save_words(doc.text)
 
         self.auto_complete = AutoComplete(words=self.words)
         return docs
