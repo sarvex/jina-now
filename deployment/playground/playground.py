@@ -376,6 +376,13 @@ def render_image(da_img, filter_selection):
 def render_text(da_txt, filter_selection):
     query = st.text_input("", key="text_search_box", on_change=clear_match)
 
+    if st.button("Search", key="text_search", on_click=clear_match):
+        st.session_state.matches = search_by_text(
+            search_text=query,
+            jwt=st.session_state.jwt_val,
+            filter_selection=filter_selection,
+        )
+
     if st.session_state.options:
         df = pd.DataFrame(st.session_state.options, columns=['Suggestions'])
         hide_table_row_index = """
@@ -388,12 +395,6 @@ def render_text(da_txt, filter_selection):
         st.markdown(hide_table_row_index, unsafe_allow_html=True)
         st.table(df)
 
-    if st.button("Search", key="text_search", on_click=clear_match):
-        st.session_state.matches = search_by_text(
-            search_text=query,
-            jwt=st.session_state.jwt_val,
-            filter_selection=filter_selection,
-        )
     if da_txt is not None:
         st.subheader("samples:")
         c1, c2, c3 = st.columns(3)
