@@ -7,7 +7,7 @@ from jina import Executor, Flow, requests
 from now.executor.abstract.auth import NOWAuthExecutor
 
 
-def test_executor_persistance(tmpdir):
+def test_executor_persistence(tmpdir):
     api_key = 'my_key'
     e = NOWAuthExecutor(api_keys=[api_key], metas={'workspace': tmpdir})
     e.update_user_emails(
@@ -74,6 +74,64 @@ def test_authorization_successful(admin_email, mock_hubble_admin_email):
                 }
             },
         )
+
+
+def test_authorization_success_domain_users(mock_hubble_domain_user_email):
+    with (
+        Flow()
+        .add(
+            uses=NOWAuthExecutor,
+            uses_with={'user_emails': ['test.ai']},
+        )
+        .add(uses=SecondExecutor)
+    ) as f:
+        f.index(
+            inputs=Document(text='abc'),
+            parameters={
+                'jwt': {
+                    "token": 'another:test:ai:user:token',
+                }
+            },
+        )
+
+
+def test_authorization_success_jina_users(mock_hubble_user_email):
+    with (
+        Flow()
+        .add(
+            uses=NOWAuthExecutor,
+            uses_with={'admin_emails': ['test.ai']},
+        )
+        .add(uses=SecondExecutor)
+    ) as f:
+        f.index(
+            inputs=Document(text='abc'),
+            parameters={
+                'jwt': {
+                    "token": 'another:jina:ai:user:token',
+                }
+            },
+        )
+
+
+def test_authorization_failed_domain_users(mock_hubble_domain_user_email):
+    with (
+        Flow()
+        .add(
+            uses=NOWAuthExecutor,
+            uses_with={'user_emails': ['hello.ai']},
+        )
+        .add(uses=SecondExecutor)
+    ) as f:
+        with pytest.raises(Exception):
+            f.index(
+                inputs=Document(text='abc'),
+                parameters={
+                    'jwt': {
+                        "token": 'another:test:ai:user:token',
+                    }
+                },
+            )
 
 
 def test_authorization_failed_api_key(admin_email):
