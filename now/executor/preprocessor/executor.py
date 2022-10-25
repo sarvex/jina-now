@@ -39,8 +39,10 @@ class NOWPreprocessor(Executor):
             with open(self.user_input_path, 'r') as fp:
                 user_input = json.load(fp)
             self._set_user_input({'user_input': {**user_input}})
+        elif 'user_input' in kwargs:
+            self.user_input = UserInput(**kwargs['user_input'])
         else:
-            self.user_input = None
+            raise Exception('user input is not provided.')
 
     def _set_user_input(self, parameters: Dict):
         """Sets user_input attribute and deletes used attributes from dictionary"""
