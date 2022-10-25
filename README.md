@@ -19,69 +19,61 @@ Tell us what you think: <a href="https://10sw1tcpld4.typeform.com/to/VTAyYRpR?ut
 
 <!-- start elevator-pitch -->
 
-NOW gives the world access to neural image search in just one command execution.
-Main features
-- ⛅ **Cloud**: We take care of the deployment and maintenance
-- 🐥 **Easy**: Minimal effort required to set up your search case
-- 🐎 **Fast**: Set up your search case within minutes
-- 🌈 **Quality**: If you provide labels to your documents, Jina NOW fine-tunes a model for you
-- ✨ **Nocode**: Deployment can be done by non-technical people
+NOW gives the world access to neural image search with just one command.
+ 
+- ⛅ **Cloud**: We handle deployment and maintenance.
+- 🐎 **Fast and easy**: Set up your search use case in minutes with minimal effort.
+- 🌈 **Quality**: You provide the labels, NOW fine-tunes the model.
+- ✨ **Nocode**: Non-technical people can deploy with ease.
 
-You can read more on how Jina NOW is production ready [here](https://now.jina.ai/user-guides/production/).
+Read how [Jina NOW is production ready](https://now.jina.ai/user-guides/production/).
 
-### Installation
+### Install
 
 ```bash
 pip install jina-now
 ```
 
-In case you need sudo for running Docker, install and use jina-now using sudo as well.
+If you need sudo to run Docker, use sudo to install and use Jina NOW as well.
 
 #### Mac M1
 
-For the Mac M1 it is generally recommended using a conda environment as outlined in the [Jina documentation](https://docs.jina.ai/get-started/install/troubleshooting/#on-mac-m1).
-In a new conda environment first execute `conda install grpcio tokenizers protobuf`. Then run `pip install jina-now`.
+For the M1 we recommend using a [Conda environment](https://docs.jina.ai/get-started/install/troubleshooting/#on-mac-m1).
+In a new Conda environment:
 
-### Usage
-You can use the following command to start Jina NOW.
+1. Run `conda install grpcio tokenizers protobuf`
+2. Run `pip install jina-now`.
+
+### Quick start
 ```bash
 jina now start
 ```
-First, you will get asked what search case you would like to deploy. 
-
-
-### Quick Start
-```bash
-jina now start
-```
-First, you will be prompted to choose an app. As for now, we support images or text searches. But in the future, we will add many more options here.
+**1.** Choose your app. Currently, we support image or text search, but in future, we'll add many more options.
 
 <img width="613" alt="Screenshot 2022-05-31 at 01 08 25" src="https://user-images.githubusercontent.com/40893766/192245825-c19274a5-2514-4c93-94ff-4d507dfef429.png">
 
-In the next step, you get asked to select the dataset type for your search app. You can choose between demo datasets, docarray (name or URL/path to it),
-local path to a folder of the data or a bucket on S3.
+**2.** Choose your data source. Choose between demo datasets, a custom DocumentArray, local folder, or S3 bucket.
 
 <img src="https://user-images.githubusercontent.com/47435119/195334616-9a8d5ad3-229f-49bb-9d49-f38243a0eb9b.png">
 
-If you chose `docarray.pull`, you will be asked to insert your docarray id. 
-Likewise, if you chose docarray URL, you will be prompted to enter the URL.
-In case you selected local path, `jina-now` will ask you to enter the local path of the data folder as shown bellow.
+- If you choose `docarray.pull` or DocArray URL, NOW asks for your DocArray ID or URL.
+- If you choose local path, NOW asks for the folder's path:
 
 <img width="506" alt="question-local-path" src="https://user-images.githubusercontent.com/11627845/170256044-67e82e86-6439-4a3e-98f1-dbdf1940de67.png">
 
-Currently, we provide two deployment options. We recommend using the cloud deployment. This will run your search app on our servers.
-Alternatively, you can select the local deployment option.
+**3.** Choose your deployment type. We recommend cloud deployment to run your app on our servers. Alternatively, you can deploy locally.
 
 <img width="547" alt="question-deployment" src="https://user-images.githubusercontent.com/11627845/170256038-8c44a5b8-985a-4fe7-af5d-16df0244f4bb.png">
 
-In case of local deployment, you will be asked where you want to deploy it. Jina NOW reads your local .kube/config and lists all kubernetes clusters you have access to.
+For local deployment, NOW asks where you want to deploy it and reads your local .kube/config and lists all Kubernetes clusters you have access to.
 If you don't want to use an existing cluster, you can create a new one locally.
 
 <img width="643" alt="question-cluster" src="https://user-images.githubusercontent.com/11627845/170256027-99798fae-3ec4-42dc-8737-843f4a23f941.png">
 
-After the program execution is finished, two links will be shown to you. The first one brings you to the
-swagger UI which is useful for frontend integration.
-The second URL leads you to a playground where you can run example queries and experiment with the search case.
+**4.** Follow the links. After NOW finishes processing, you'll see two links:
+
+- The Swagger UI is useful for frontend integration.
+- The "playground" lets you run example queries and experiment with your search use case.
 
 <img width="709" alt="Screenshot 2022-05-26 at 16 34 56" src="https://user-images.githubusercontent.com/11627845/170511632-c741a418-1246-4c23-aadd-cfd74d783f6b.png">
 
@@ -89,28 +81,26 @@ Example of the playground.
 
 <img width="350" alt="Screenshot 2022-05-26 at 16 36 49" src="https://user-images.githubusercontent.com/11627845/170511607-3fb810f7-a5aa-47cd-9f70-e6034a96b9fd.png">
 
-Example of the swagger ui.
+Example of the Swagger UI.
 
 <img width="350" alt="Screenshot 2022-05-26 at 16 36 06" src="https://user-images.githubusercontent.com/11627845/170511580-230d1e41-5e14-4623-adb6-3d4b2d400dc9.png">
 
-For more information on how to use Jina NOW CLI and API click [here](https://now.jina.ai/user-guides/cli_api/)
+[More information on using Jina NOW CLI and API](https://now.jina.ai/user-guides/cli_api/)
 
-## Supported apps (more will be added)
+## Supported apps (more coming soon)
 
-- [x] Text to Image search 📝 ▶ 🏞 
-- [x] Image to Text search 🏞 ▶ 📝 
-- [x] Image to Image search 🏞 ▶ 🏞
-- [x] Text to Text search 📝 ▶ 📝
-- [x] Music to Music search 🥁 ▶ 🥁 
-- [x] Text to Video search 📝 ▶ 🎥 (only gif at the moment)
-- [ ] Text to 3D Mesh search 📝 ▶ 🧊
-- [ ] ...
+- 📝 ▶ 🏞 Text to Image search 
+- 🏞 ▶ 📝 Image to Text search 
+- 🏞 ▶ 🏞 Image to Image search 
+- 📝 ▶ 📝 Text to Text search 
+- 🥁 ▶ 🥁 Music to Music search 
+- 📝 ▶ 🎥 Text to Video search (for GIFs)
+- 📝 ▶ 🧊 Text to 3D Mesh search (coming soon)
 
-[![IMAGE ALT TEXT HERE](https://user-images.githubusercontent.com/11627845/164571632-0e6a6c39-0137-413b-8287-21fc34785665.png)](https://www.youtube.com/watch?v=fdIaLP0ctpo)
+[![](https://user-images.githubusercontent.com/11627845/164571632-0e6a6c39-0137-413b-8287-21fc34785665.png)](https://www.youtube.com/watch?v=fdIaLP0ctpo)
 </p>
-<br>
   
-## Examples
+## Example datasets
 
 <details><summary>👕 Fashion</summary>
 <img width="400" alt="image" src="https://user-images.githubusercontent.com/11627845/157079335-8f36fc73-d826-4c0a-b1f3-ed5d650a1af1.png">
@@ -140,7 +130,5 @@ For more information on how to use Jina NOW CLI and API click [here](https://now
 <img width="400" alt="image" src="https://user-images.githubusercontent.com/11627845/157069954-615a5cb6-dda0-4a2f-9442-ea807ad4a8d5.png">
 </details>
 
-
-### Now use your custom data :)
 <!-- end elevator-pitch -->
 

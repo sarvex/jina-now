@@ -13,12 +13,12 @@ One line to host them all. Bootstrap your image search case in minutes.
 
 user-guides/cli_api
 user-guides/production
-user-guides/faq
+%%user-guides/faq
 
 ```
 
 ```{toctree}
-:caption: Developer References
+:caption: Developer Reference
 :hidden:
 :maxdepth: 1
 
