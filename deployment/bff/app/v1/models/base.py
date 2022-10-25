@@ -12,8 +12,14 @@ class _NamedScore(BaseModel):
     value: Optional[float] = None
 
 
-# Base Request
-class BaseRequestModel(BaseModel):
+class NowBaseModel(BaseModel):
+    class Config:
+        allow_mutation = False
+        case_sensitive = False
+        arbitrary_types_allowed = True
+
+
+class BaseRequestModel(NowBaseModel):
     host: Optional[str] = Field(
         default='localhost', description='Host address returned by the flow deployment.'
     )
@@ -27,28 +33,23 @@ class BaseRequestModel(BaseModel):
         description='Used to authenticate machines',
     )
 
-    class Config:
-        allow_mutation = False
-        case_sensitive = False
-        arbitrary_types_allowed = True
+
+class BaseResponseModel(NowBaseModel):
+    pass
 
 
 # Index extending Base Request
-class BaseIndexRequestModel(BaseRequestModel):
-    tags: List[Dict[str, Any]] = Field(
-        default={}, description='List of tags of the documents to be indexed.'
-    )
-    uris: Optional[List[str]] = Field(
-        default=..., description='List of URIs of files or data URIs to index'
-    )
+class BaseIndexRequestModel(NowBaseModel):
+    pass
+
+
+class BaseIndexResponseModel(NowBaseModel):
+    pass
 
 
 # Search extending Base Request
-class BaseSearchRequestModel(BaseRequestModel):
+class BaseSearchRequestModel(NowBaseModel):
     limit: int = Field(default=10, description='Number of matching results to return')
-    uri: Optional[str] = Field(
-        default=None, description='URI of the file or data URI of the query'
-    )
     filters: Optional[Dict[str, str]] = Field(
         default=None,
         description='dictionary with filters for search results  {"tag_name" : "tag_value"}',
@@ -56,26 +57,24 @@ class BaseSearchRequestModel(BaseRequestModel):
 
 
 # Base Request for Search
-class BaseSearchResponseModel(BaseModel):
+class BaseSearchResponseModel(NowBaseModel):
     id: str = Field(
         default=..., nullable=False, description='Id of the matching result.'
     )
     scores: Optional[Dict[str, '_NamedScore']] = Field(
         description='Similarity score with respect to the query.'
     )
-    tags: Optional[Dict[str, '_StructValueType']] = Field(
-        description='Additional tags associated with the file.'
+
+
+class TagsMixin(NowBaseModel):
+    tags: Optional[Dict[str, str]] = Field(
+        default={},
+        description='Tags of the document.',
     )
+
+
+class UriMixin(NowBaseModel):
     uri: Optional[str] = Field(
-        description='URI of file or data URI of search results', default=''
+        default=None,
+        description='URI of the document.',
     )
-
-    class Config:
-        case_sensitive = False
-        arbitrary_types_allowed = True
-
-
-class BaseIndexResponseModel(BaseModel):
-    class Config:
-        case_sensitive = False
-        arbitrary_types_allowed = True
