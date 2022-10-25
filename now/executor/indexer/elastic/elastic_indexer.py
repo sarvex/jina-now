@@ -126,7 +126,7 @@ class ElasticIndexer(Executor):
     def search(
         self,
         docs: Union[Document, DocumentArray],
-        docs_matrix: Optional[List[DocumentArray]],
+        docs_matrix: Optional[List[DocumentArray]] = None,
         parameters: dict = {},
         **kwargs,
     ):
@@ -148,8 +148,13 @@ class ElasticIndexer(Executor):
                 - 'traversal_paths' (str): traversal paths for the docs
                 - 'limit' (int): nr of matches to get per Document
         """
-        if docs_matrix is None:
-            docs_matrix = [docs]
+        print(docs)
+        print(docs_matrix)
+        if docs:
+            if docs_matrix is None:
+                docs_matrix = [docs]
+        elif not docs and not docs_matrix:
+            return
         docs = self.join_docs_matrix_into_chunks(docs_matrix)
 
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
