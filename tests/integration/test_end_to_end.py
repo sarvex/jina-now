@@ -15,6 +15,7 @@ from now.common.options import NEW_CLUSTER
 from now.constants import Apps, DatasetTypes, Modalities
 from now.demo_data import DemoDatasetNames
 from now.deployment.deployment import cmd, list_all_wolf, terminate_wolf
+from now.now_dataclasses import UserInput
 
 
 @pytest.fixture
@@ -167,6 +168,7 @@ def test_backend_demo_data(
         'additional_user': False,
         'deployment_type': deployment_type,
         'proceed': True,
+        'user_input': UserInput(),
     }
     # need to create local cluster and namespace to deploy playground and bff for WOLF deployment
     if deployment_type == 'remote':
