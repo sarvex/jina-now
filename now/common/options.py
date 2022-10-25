@@ -319,7 +319,8 @@ ADDITIONAL_USERS = DialogOptions(
 USER_EMAILS = DialogOptions(
     name='user_emails',
     prompt_message='Please enter the comma separated Email IDs '
-    'who will have access to this flow:',
+    'who will have access to this flow.\nAdditionally, you can also specify comma separated domain name'
+    ' such that all users from that domain can access this flow. E.g. `jina.ai`\n',
     prompt_type='input',
     depends_on=ADDITIONAL_USERS,
     conditional_check=lambda user_inp: user_inp.additional_user,

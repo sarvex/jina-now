@@ -53,8 +53,10 @@ def deploy(app_name, app_data):
         'ns': NAMESPACE,
     }
     kwargs = Namespace(**kwargs)
-    response_cli = cli(args=kwargs)
-
+    try:
+        response_cli = cli(args=kwargs)
+    except Exception as e:  # noqa E722
+        response_cli = None
     # parse the response
     if response_cli:
         host_target_ = response_cli.get('host')
