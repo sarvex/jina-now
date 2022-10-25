@@ -168,7 +168,6 @@ def test_backend_demo_data(
         'additional_user': False,
         'deployment_type': deployment_type,
         'proceed': True,
-        'user_input': UserInput(),
     }
     # need to create local cluster and namespace to deploy playground and bff for WOLF deployment
     if deployment_type == 'remote':
