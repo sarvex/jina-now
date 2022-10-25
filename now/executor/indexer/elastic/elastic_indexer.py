@@ -92,7 +92,11 @@ class ElasticIndexer(Executor):
 
     @secure_request(on='/index', level=SecurityLevel.USER)
     def index(
-        self, docs: DocumentArray, docs_matrix: List[DocumentArray] = None, parameters: dict = None, **kwargs
+        self,
+        docs: DocumentArray,
+        docs_matrix: List[DocumentArray] = None,
+        parameters: dict = None,
+        **kwargs,
     ) -> DocumentArray:
         """
         Index new `Document`s by adding them to the Elasticsearch index.
