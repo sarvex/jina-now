@@ -75,12 +75,14 @@ def search(
         domain = f"https://nowrun.jina.ai"
     URL_HOST = f"{domain}/api/v1/{params.input_modality}-to-{params.output_modality}/{endpoint}"
 
-    updated_dict = {k: v for k, v in filter_dict.items() if v != 'All'}
+    updated_dict = {}
+    if filter_dict is not None:
+        updated_dict = {k: v for k, v in filter_dict.items() if v != 'All'}
     data = {
         'host': params.host,
         attribute_name: attribute_value,
         'limit': top_k if top_k else params.top_k,
-        'filters': updated_dict if updated_dict else {},
+        'filters': updated_dict,
     }
     # in case the jwt is none, no jwt will be sent. This is the case when no authentication is used for that flow
     if jwt is not None:
