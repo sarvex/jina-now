@@ -7,11 +7,11 @@ from now.utils import BetterEnum
 # DEMO_DATASET_DOCARRAY_VERSION = docarray_version
 
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.129-feat-auto-complete-47'
-NOW_PREPROCESSOR_VERSION = '0.0.93-feat-auto-complete-47'
-NOW_QDRANT_INDEXER_VERSION = '0.0.2-feat-auto-complete-47'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.129-feat-auto-complete-48'
+NOW_PREPROCESSOR_VERSION = '0.0.93-feat-auto-complete-48'
+NOW_QDRANT_INDEXER_VERSION = '0.0.2-feat-auto-complete-48'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.3-refactor-executors-21'
-NOW_AUTOCOMPLETE_VERSION = '0.0.1-feat-auto-complete-48'
+NOW_AUTOCOMPLETE_VERSION = '0.0.1-feat-auto-complete-49'
 
 
 class Modalities(BetterEnum):
