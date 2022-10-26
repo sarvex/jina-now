@@ -146,7 +146,7 @@ class NOWBaseIndexer(Executor):
         search_filter = parameters.get('filter', {})
         search_filter = self.convert_filter_syntax(search_filter)
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
-        self.check_docs(docs)
+        # self.check_docs(docs)
         docs = docs[traversal_paths][:1]  # only search on the first document for now
         self.check_docs(docs)
         if traversal_paths == '@c':
