@@ -23,15 +23,31 @@ def test_indexing(preprocess_and_encode):
         },
     )
     with f2:
-        f2.index(
-            data,
+        f2.post(on='/index', inputs=data, parameters={
+                'user_input': user_input.__dict__,
+                'access_paths': app_instance.index_query_access_paths(
+                    user_input.search_fields
+                ),
+                'traversal_paths': app_instance.index_query_access_paths(
+                    user_input.search_fields
+                ),
+            },)
+
+        query_res = f2.post(
+            on='/search',
+            inputs=data,
             parameters={
                 'user_input': user_input.__dict__,
                 'access_paths': app_instance.index_query_access_paths(
                     user_input.search_fields
                 ),
+                'traversal_paths': app_instance.index_query_access_paths(
+                    user_input.search_fields
+                ),
             },
+            return_results=True,
         )
+    print(query_res.summary())
 
 
 def test_uni_to_multi_modal(resources_folder_path, single_modal_data):

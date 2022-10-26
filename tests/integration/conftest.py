@@ -9,6 +9,9 @@ from urllib3.exceptions import InsecureRequestWarning
 from warnings import filterwarnings, catch_warnings
 import requests
 
+from now.constants import DatasetTypes
+from now.data_loading.data_loading import load_data
+from now.demo_data import DemoDatasetNames
 from now.deployment.deployment import cmd
 
 logging.basicConfig(level=logging.DEBUG)
@@ -88,14 +91,23 @@ def multi_modal_data(resources_folder_path):
 
 @pytest.fixture
 def preprocess_and_encode(single_modal_data, multi_modal_data):
-    data_type = 'single_modal'
     search_fields = ['default_field']
-    filter_fields = ['color']
-    if data_type == 'single_modal':
-        data = single_modal_data
-    else:
-        data = multi_modal_data
+    filter_fields = []
+    # data_type = 'single_modal'
+    # if data_type == 'single_modal':
+    #     data = single_modal_data
+    # else:
+    #     data = multi_modal_data
     app_instance = TextToImage()
+    user_input = UserInput()
+    user_input.search_fields = search_fields
+    user_input.filter_fields = filter_fields
+    user_input.filter_fields = filter_fields
+    user_input.dataset_type = DatasetTypes.DEMO
+    user_input.dataset_name = DemoDatasetNames.BIRD_SPECIES
+    data = load_data(app_instance, user_input)
+    data = DocumentArray([data[0], data[-1]])
+
     f1 = (
         Flow()
         .add(uses=NOWPreprocessor, uses_with={'app': app_instance.app_name})
@@ -108,9 +120,6 @@ def preprocess_and_encode(single_modal_data, multi_modal_data):
             uses_with={'name': 'ViT-B-32::openai'},
         )
     )
-    user_input = UserInput()
-    user_input.search_fields = search_fields
-    user_input.filter_fields = filter_fields
     with f1:
         encoded_d = f1.post(
             '/encode',
