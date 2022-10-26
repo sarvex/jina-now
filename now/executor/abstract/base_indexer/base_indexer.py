@@ -147,8 +147,11 @@ class NOWBaseIndexer(Executor):
         search_filter = self.convert_filter_syntax(search_filter)
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
         # self.check_docs(docs)
-        docs = docs[traversal_paths][:1]  # only search on the first document for now
-        self.check_docs(docs)
+        new_docs = docs[traversal_paths][
+            :1
+        ]  # only search on the first document for now
+        self.check_docs(new_docs, docs)
+        docs = new_docs
         if traversal_paths == '@c':
             retrieval_limit = limit * 3
         else:
@@ -181,13 +184,15 @@ class NOWBaseIndexer(Executor):
         self.clean_response(docs_with_matches)
         return docs_with_matches
 
-    def check_docs(self, docs):
+    def check_docs(self, docs, new_docs=None):
         if not docs:
             raise Exception(f'{docs} there are no docs!')
         for d in docs:
             if d.embedding is None:
                 for chunk in d.chunks:
-                    raise Exception(f'{chunk} !!!!! {chunk.embedding}')
+                    raise Exception(
+                        f'{chunk} and doc {d} !!!!! {chunk.embedding} and doc emb {d.embedding}, before traversal {new_docs.summary()}'
+                    )
                 # raise Exception(
                 #     f'{d} there is no document! {len(d.chunks)}, {d.chunks.summary()}'
                 # )
