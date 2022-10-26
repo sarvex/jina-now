@@ -187,7 +187,7 @@ class NOWBaseIndexer(Executor):
         for d in docs:
             if d.embedding is None:
                 raise Exception(
-                    f'{d} there is no document! {len(d.chunks)}, {d.chunks[0].summary()}'
+                    f'{d} there is no document! {len(d.chunks)}, {d.chunks.summary()}'
                 )
 
     def create_matches(
