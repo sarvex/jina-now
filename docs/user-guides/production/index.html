@@ -10,9 +10,9 @@
   
 <meta property="og:url" content="https://now.jina.ai/user-guides/production/" />
   
-<meta property="og:site_name" content="NOW 0.0.34 Documentation" />
+<meta property="og:site_name" content="NOW 0.0.35 Documentation" />
   
-<meta property="og:description" content="Jina NOW supports multiple cross modal applications such as: Text-to-text, Text-to-image, Image-to-text, Image-to-image, Text-to-video, Music-to-music. Jina NOW apps are production ready, our goal is to provide you with a search pipeline that is easy to integrate in your production system. We als..." />
+<meta property="og:description" content="Jina NOW apps are production ready: Our goal is to provide you with a search pipeline that is easy to integrate in your production system. NOW also comes with other aspects, such as AWS S3 Bucket data integration, security and finetuning. Models we use: SBERT : sentence-transformers/msmarco-disti..." />
   
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@JinaAI_">
@@ -31,11 +31,11 @@
 </script>
 
 <script async defer src="https://buttons.github.io/buttons.js"></script>
-    <link rel="index" title="Index" href="../../genindex/" /><link rel="search" title="Search" href="../../search/" /><link rel="next" title="FAQ" href="../faq/" /><link rel="prev" title="How to use Jina NOW’s CLI and API" href="../cli_api/" />
+    <link rel="index" title="Index" href="../../genindex/" /><link rel="search" title="Search" href="../../search/" /><link rel="next" title="Changelog" href="../../changelog/" /><link rel="prev" title="How to use Jina NOW’s CLI and API" href="../cli_api/" />
         <link rel="canonical" href="https://now.jina.ai/user-guides/production.html" />
 
     <link rel="shortcut icon" href="../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.09.29"/>
-        <title>Production readiness - NOW 0.0.34 documentation</title>
+        <title>Production readiness - NOW 0.0.35 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
@@ -168,7 +168,7 @@
         </div>
         <div class="header-center">
             <a href="../../">
-                <div class="brand">NOW 0.0.34 documentation</div>
+                <div class="brand">NOW 0.0.35 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -221,9 +221,8 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../cli_api/">How to use Jina NOW’s CLI and API</a></li>
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Production readiness</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../faq/">FAQ</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Developer References</span></p>
+<p class="caption" role="heading"><span class="caption-text">Developer Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../changelog/">Changelog</a></li>
 </ul>
@@ -303,35 +302,26 @@
                 <article role="main">
                     <section class="tex2jax_ignore mathjax_ignore" id="production-readiness">
 <h1>Production readiness<a class="headerlink" href="#production-readiness" title="Permalink to this headline">#</a></h1>
-<p>Jina NOW supports multiple cross modal applications such as:</p>
-<ul class="simple">
-<li><p>Text-to-text</p></li>
-<li><p>Text-to-image</p></li>
-<li><p>Image-to-text</p></li>
-<li><p>Image-to-image</p></li>
-<li><p>Text-to-video</p></li>
-<li><p>Music-to-music</p></li>
-</ul>
-<p>Jina NOW apps are production ready, our goal is to provide you with a search pipeline that is easy to integrate in your production
-system. We also come with other aspects such as AWS S3 Bucket data integration, security and finetuning.</p>
+<p>Jina NOW apps are production ready: Our goal is to provide you with a search pipeline that is easy to integrate in your production
+system. NOW also comes with other aspects, such as AWS S3 Bucket data integration, security and finetuning.</p>
 <p>Models we use:</p>
 <ul class="simple">
-<li><p>SBERT : <code class="docutils literal notranslate"><span class="pre">entence-transformers/msmarco-distilbert-base-v3</span></code></p></li>
+<li><p>SBERT : <code class="docutils literal notranslate"><span class="pre">sentence-transformers/msmarco-distilbert-base-v3</span></code></p></li>
 <li><p>CLIP : <code class="docutils literal notranslate"><span class="pre">openai/clip-vit-base-patch32</span></code></p></li>
 <li><p>Music Encoder: <code class="docutils literal notranslate"><span class="pre">BiModalMusicTextEncoderV2</span></code></p></li>
 </ul>
-<p>For hardware we use AWS EC2 instances, from our experiments you can expect:</p>
+<p>For hardware we use AWS EC2 instances. From our experiments you can expect:</p>
 <ul class="simple">
 <li><p>Queries per second: 13</p></li>
 <li><p>Latency: 300 ms</p></li>
 </ul>
 <section id="aws-s3-bucket-support">
 <h2>AWS S3 bucket support<a class="headerlink" href="#aws-s3-bucket-support" title="Permalink to this headline">#</a></h2>
-<p>We now support S3 Bucket, after selecting custom data you can select S3 Bucket.
-Then you can provide your <code class="docutils literal notranslate"><span class="pre">AWS</span> <span class="pre">access</span> <span class="pre">key</span> <span class="pre">ID</span></code> and <code class="docutils literal notranslate"><span class="pre">AWS</span> <span class="pre">secret</span> <span class="pre">key</span></code>, you can provide a list of emails of anyone you want to share your flow with.</p>
+<p>We now support S3 buckets: after selecting custom data you can select S3 bucket.
+Then you can provide your <code class="docutils literal notranslate"><span class="pre">AWS</span> <span class="pre">access</span> <span class="pre">key</span> <span class="pre">ID</span></code> and <code class="docutils literal notranslate"><span class="pre">AWS</span> <span class="pre">secret</span> <span class="pre">key</span></code>, and a list of emails of anyone you want to share your Flow with.</p>
 <img width="506" alt="question-s3-bucket" src="https://user-images.githubusercontent.com/40893766/191000917-88a903ec-bf0d-4206-9e9b-029401c34843.png">
-<p>Your data is automatically loaded from the S3 bucket. It will be temporary stored on EC2 machines while processing the data
-but it will not be stored.</p>
+<p>Your data is automatically loaded from the S3 bucket. It will be temporarily stored on EC2 machines while processing the data,
+but it will not be stored permanently.</p>
 </section>
 <section id="security">
 <h2>Security<a class="headerlink" href="#security" title="Permalink to this headline">#</a></h2>
@@ -340,26 +330,26 @@ but it will not be stored.</p>
 <p>You can also choose to grant additional users access to the Flow:</p>
 <p><img width="506" alt="question-other-users" src="https://user-images.githubusercontent.com/40893766/191002373-b660df33-0f36-44d4-9f81-3e8ad8e026ab.png
 "></p>
-<p>You can do this by specifying their email addresses and seperate them using commas:</p>
+<p>You can do this by specifying their email addresses and separate them using commas:</p>
 <p><img width="506" alt="question-emails" src="https://user-images.githubusercontent.com/40893766/191002764-049037fb-6eb7-44a6-8b22-c86687b95e0f.png
 "></p>
 </section>
 <section id="finetuning">
 <h2>Finetuning<a class="headerlink" href="#finetuning" title="Permalink to this headline">#</a></h2>
-<p>We also support finetuning, to enable this when you create your <code class="docutils literal notranslate"><span class="pre">DocumentArray</span></code> you also provide labels inside
-the tags more specifically the tag <code class="docutils literal notranslate"><span class="pre">finetuner_label</span></code>. This will automatically trigger the finetuning and your embeddings
-will be improved thus enhancing the quality of your final NOW search application.</p>
-<p>More information on the training data format can be found <a class="reference external" href="https://finetuner.jina.ai/walkthrough/create-training-data/#prepare-training-data">here</a></p>
+<p>To enable finetuning when you create your <code class="docutils literal notranslate"><span class="pre">DocumentArray</span></code>, provide labels inside
+the tags, specifically the <code class="docutils literal notranslate"><span class="pre">finetuner_label</span></code> tag. This triggers finetuning and your embeddings
+will be improved, enhancing the quality of your final NOW search application.</p>
+<p><a class="reference external" href="https://finetuner.jina.ai/walkthrough/create-training-data/#prepare-training-data">Find out more about the training data format</a></p>
 </section>
 <section id="backend-for-frontend">
 <h2>Backend for Frontend<a class="headerlink" href="#backend-for-frontend" title="Permalink to this headline">#</a></h2>
-<p>We provide users with BFF (Backend For Frontend) API that you can call for your search application, which makes integrating to your custom
+<p>We provide a BFF (Backend For Frontend) API that you can call for your search application, which makes integrating with your custom
 frontend easy and seamless.</p>
 <p><img width="506" alt="question-emails" src="https://user-images.githubusercontent.com/40893766/191207810-e1a1df17-acf3-4de2-8211-9a297b52e3a8.png
 "></p>
 </section>
-<section id="how-to-update-your-api-keys">
-<h2>How to update your API keys<a class="headerlink" href="#how-to-update-your-api-keys" title="Permalink to this headline">#</a></h2>
+<section id="update-your-api-keys">
+<h2>Update your API keys<a class="headerlink" href="#update-your-api-keys" title="Permalink to this headline">#</a></h2>
 <p>To update your API keys use this simple script:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python now/admin/update_api_keys.py
 </pre></div>
@@ -372,12 +362,12 @@ frontend easy and seamless.</p>
             <footer>
                 
                 <div class="related-pages">
-                    <a class="next-page" href="../faq/">
+                    <a class="next-page" href="../../changelog/">
                         <div class="page-info">
                             <div class="context">
                                 <span>Next</span>
                             </div>
-                            <div class="title">FAQ</div>
+                            <div class="title">Changelog</div>
                         </div>
                         <svg>
                             <use href="#svg-arrow-right"></use>
@@ -405,7 +395,7 @@ frontend easy and seamless.</p>
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Oct 25, 2022.
+                            Last updated on Oct 26, 2022.
                         </div>
                     </div>
                     <div class="right-details">
@@ -443,7 +433,7 @@ frontend easy and seamless.</p>
 <li><a class="reference internal" href="#security">Security</a></li>
 <li><a class="reference internal" href="#finetuning">Finetuning</a></li>
 <li><a class="reference internal" href="#backend-for-frontend">Backend for Frontend</a></li>
-<li><a class="reference internal" href="#how-to-update-your-api-keys">How to update your API keys</a></li>
+<li><a class="reference internal" href="#update-your-api-keys">Update your API keys</a></li>
 </ul>
 </li>
 </ul>
