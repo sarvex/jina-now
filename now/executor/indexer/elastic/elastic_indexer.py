@@ -428,7 +428,7 @@ class ElasticIndexer(Executor):
         """
         parent_doc = Document()
         for da in docs_matrix:
-            parent_doc.chunks.extend(da[0])
+            parent_doc.chunks.append(da[0])
         if docs_matrix[0][0].text:
             parent_doc.text = docs_matrix[0][0].text
         return DocumentArray(parent_doc)
