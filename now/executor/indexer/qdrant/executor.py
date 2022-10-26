@@ -94,7 +94,7 @@ class NOWQdrantIndexer15(Executor):
         parameters: dict,
         limit: int,
         search_filter: dict,
-        **kwargs
+        **kwargs,
     ):
         """Perform a vector similarity search and retrieve Document matches"""
         # print('query summary', docs[0].summary())
