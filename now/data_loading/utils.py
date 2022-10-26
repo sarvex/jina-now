@@ -139,6 +139,8 @@ def _transform_multi_modal_data(
 def transform_docarray(
     documents: DocumentArray, search_fields: List[str], filter_fields: List[str]
 ) -> DocumentArray:
+    if not documents:
+        return documents
     if documents[0].chunks:
         if 'multi_modal_schema' not in documents[0]._metadata:
             raise KeyError(
