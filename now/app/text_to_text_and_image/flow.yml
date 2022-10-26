@@ -29,11 +29,9 @@ executors:
     artifact: ${{ ENV.SBERT_ARTIFACT }}
     token: ${{ ENV.JINA_TOKEN }}
     is_onnx: False
+    access_paths: '@c'
   env:
     JINA_LOG_LEVEL: DEBUG
-  when:
-    mime_type:
-      $eq: text
   needs: preprocessor
 - name: clip_text_encoder
   uses: jinahub+docker://FinetunerExecutor
@@ -46,9 +44,6 @@ executors:
     is_onnx: False
   env:
     JINA_LOG_LEVEL: DEBUG
-  when:
-    mime_type:
-      $eq: text
   needs: preprocessor
 - name: clip_vision_encoder
   uses: jinahub+docker://FinetunerExecutor
@@ -59,12 +54,10 @@ executors:
     token: ${{ ENV.JINA_TOKEN }}
     select_model: clip-vision
     is_onnx: False
+    access_paths: '@c'
   env:
     JINA_LOG_LEVEL: DEBUG
-  when:
-    mime_type:
-      $eq: image
-  needs: sbert_encoder
+  needs: preprocessor
 - name: indexer
   uses: ${{ ENV.INDEXER_NAME }}
   uses_with:
