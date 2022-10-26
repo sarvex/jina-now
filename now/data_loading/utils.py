@@ -141,6 +141,7 @@ def transform_docarray(
 ) -> DocumentArray:
     if not documents:
         return documents
+    nasdkajsdnasjndas = 1
     if documents[0].chunks:
         if 'multi_modal_schema' not in documents[0]._metadata:
             raise KeyError(
