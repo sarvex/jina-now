@@ -27,6 +27,7 @@
 
 
 
+
 <a name=release-note-0-0-7></a>
 ## Release Note (`0.0.7`)
 
@@ -913,4 +914,27 @@
 ### 🍹 Other Improvements
 
  - [[```b9260f0d```](https://github.com/jina-ai/now/commit/b9260f0ddb5dbbfec1779198dd15f8dde0752a35)] __-__ __version__: the next version will be 0.0.34 (*Jina Dev Bot*)
+
+<a name=release-note-0-0-35></a>
+## Release Note (`0.0.35`)
+
+> Release time: 2022-10-26 10:45:53
+
+
+
+🙇 We'd like to thank all contributors for this new release! In particular,
+ Joschka Braun,  Alex Cureton-Griffiths,  Jina Dev Bot,  🙇
+
+
+### 🐞 Bug fixes
+
+ - [[```8cc87d03```](https://github.com/jina-ai/now/commit/8cc87d032b675e1b01102b70be9504943e6f6790)] __-__ fix url data error (#617) (*Joschka Braun*)
+
+### 📗 Documentation
+
+ - [[```93cf9cc4```](https://github.com/jina-ai/now/commit/93cf9cc4e3fbdd2e3e312924f27a73df1b50bf3b)] __-__ reword, number readme points (#612) (*Alex Cureton-Griffiths*)
+
+### 🍹 Other Improvements
+
+ - [[```e8b3aa1e```](https://github.com/jina-ai/now/commit/e8b3aa1e3081de27893235eee680f0976f7eeab4)] __-__ __version__: the next version will be 0.0.35 (*Jina Dev Bot*)
 
