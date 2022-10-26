@@ -12,7 +12,7 @@ def get_jina_client(host: str, port: int) -> Client:
 
 
 def jina_client_post(
-    data, endpoint: str, inputs, parameters=None, *args, **kwargs
+    endpoint: str, inputs, host, port, api_key, jwt, parameters=None, *args, **kwargs
 ) -> DocumentArray:
     """Posts to the endpoint of the Jina client.
 
@@ -26,12 +26,12 @@ def jina_client_post(
     """
     if parameters is None:
         parameters = {}
-    client = get_jina_client(host=data.host, port=data.port)
+    client = get_jina_client(host=host, port=port)
     auth_dict = {}
-    if data.api_key is not None:
-        auth_dict['api_key'] = data.api_key
-    if data.jwt is not None:
-        auth_dict['jwt'] = data.jwt
+    if api_key is not None:
+        auth_dict['api_key'] = api_key
+    if jwt is not None:
+        auth_dict['jwt'] = jwt
     try:
         result = client.post(
             endpoint,

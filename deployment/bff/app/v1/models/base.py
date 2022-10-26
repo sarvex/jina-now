@@ -38,7 +38,6 @@ class BaseResponseModel(NowBaseModel):
     pass
 
 
-# Index extending Base Request
 class BaseIndexRequestModel(NowBaseModel):
     pass
 
@@ -47,8 +46,7 @@ class BaseIndexResponseModel(NowBaseModel):
     pass
 
 
-# Search extending Base Request
-class BaseSearchRequestModel(NowBaseModel):
+class BaseSearchRequestModel(BaseRequestModel):
     limit: int = Field(default=10, description='Number of matching results to return')
     filters: Optional[Dict[str, str]] = Field(
         default=None,
@@ -56,7 +54,6 @@ class BaseSearchRequestModel(NowBaseModel):
     )
 
 
-# Base Request for Search
 class BaseSearchResponseModel(NowBaseModel):
     id: str = Field(
         default=..., nullable=False, description='Id of the matching result.'

@@ -5,12 +5,13 @@ import sys
 
 import uvicorn
 from fastapi import APIRouter, FastAPI, Request
+from fastapi.openapi.docs import get_swagger_ui_html
+from fastapi.staticfiles import StaticFiles
 from starlette.applications import Starlette
 from starlette.responses import JSONResponse
 from starlette.routing import Mount
 
 import deployment.bff.app.settings as api_settings
-from deployment.bff.app.decorators import api_method, timed
 from deployment.bff.app.v1.routers import admin, cloud_temp_link
 from deployment.bff.app.v1.routers.data_routes import create_endpoints
 from now.common.options import construct_app
@@ -20,46 +21,43 @@ logging.config.dictConfig(api_settings.DEFAULT_LOGGING_CONFIG)
 logger = logging.getLogger('bff.app')
 logger.setLevel(api_settings.DEFAULT_LOGGING_LEVEL)
 
-TITLE = 'Jina NOW'
-DESCRIPTION = 'The Jina NOW service API'
+TITLE = ' '
+DESCRIPTION = ' '
 AUTHOR = 'Jina AI'
-EMAIL = 'hello@jina.ai'
 __version__ = 'latest'
 
 
-def get_app_instance():
+def get_fast_api_app(app_name):
     """Build FastAPI app."""
     app = FastAPI(
         title=TITLE,
         description=DESCRIPTION,
-        contact={
-            'author': AUTHOR,
-            'email': EMAIL,
+        swagger_ui_parameters={
+            "defaultModelsExpandDepth": -1,
         },
+        docs_url=None,
     )
 
-    @app.get('/ping')
-    @api_method
-    @timed
-    def check_liveness() -> str:
-        """
-        Sanity check - this will let the caller know that the service is operational.
-        """
-        return 'pong!'
+    try:
+        app.mount("/static", StaticFiles(directory="static"), name="static")
+    except Exception as e:
+        logger.error(f'Failed to mount static files: {e}')
 
-    @app.get('/')
-    @api_method
-    @timed
-    def read_root() -> str:
-        """
-        Root path welcome message.
-        """
-        return (
-            f'{TITLE} v{__version__} 🚀 {DESCRIPTION} ✨ '
-            f'author: {AUTHOR} email: {EMAIL} 📄  '
-            'Check out /docs or /redoc for the API documentation!'
+    @app.get("/docs", include_in_schema=False)
+    async def custom_swagger_ui_html():
+        return get_swagger_ui_html(
+            openapi_url=f'/api/v1/{app_name}/openapi.json',
+            title=app.title + " - Swagger UI",
+            oauth2_redirect_url=app.swagger_ui_oauth2_redirect_url,
+            # swagger_js_url="/static/swagger-ui-bundle.js",
+            swagger_css_url=f'/api/v1/{app_name}/static/swagger-ui.css',
         )
 
+    extend_default_routes(app)
+    return app
+
+
+def extend_default_routes(app):
     @app.on_event('startup')
     def startup():
         logger.info(
@@ -78,8 +76,6 @@ def get_app_instance():
             },
         )
 
-    return app
-
 
 def get_app_routes():
     routes = []
@@ -91,39 +87,32 @@ def get_app_routes():
         create_endpoints(router, input_modality, output_modality)
 
         # Image2Image router
-        img2img_mount = f'/api/v1/{input_modality}-to-{output_modality}'
-        img2img_app = get_app_instance()
-        img2img_app.include_router(router, tags=[app_instance.app_name])
-        route = Mount(img2img_mount, img2img_app)
+        app_name = f'{input_modality}-to-{output_modality}'
+        mount_path = f'/api/v1/{app_name}'
+        fast_api_app = get_fast_api_app(app_name)
+
+        fast_api_app.include_router(router, tags=[app_instance.app_name])
+
+        route = Mount(mount_path, fast_api_app)
         routes.append(route)
     return routes
 
 
+def get_additional_routes():
+    routes = []
+    for app_name, tag, router in [
+        ('cloud-bucket-utils', 'Temporary-Link-Cloud', cloud_temp_link.router),
+        ('admin', 'admin', admin.router),
+    ]:
+        partial_app = get_fast_api_app(app_name)
+        partial_app.include_router(router, tags=[tag])
+        routes.append(Mount(f'/api/v1/{app_name}', partial_app))
+    return routes
+
+
 def build_app():
-    # cloud temporary link router
-    cloud_temp_link_mount = '/api/v1/cloud-bucket-utils'
-    cloud_temp_link_app = get_app_instance()
-    cloud_temp_link_app.include_router(
-        cloud_temp_link.router, tags=['Temporary-Link-Cloud']
-    )
-
-    # Admin router
-    admin_mount = '/api/v1/admin'
-    admin_app = get_app_instance()
-    admin_app.include_router(admin.router, tags=['admin'])
-
-    # Mount them - for other modalities just add an app instance
-    app = Starlette(
-        routes=[
-            Mount(cloud_temp_link_mount, cloud_temp_link_app),
-            Mount(admin_mount, admin_app),
-        ]
-        + get_app_routes()
-    )
+    app = Starlette(routes=get_app_routes() + get_additional_routes())
     return app
-
-
-application = build_app()
 
 
 def run_server():

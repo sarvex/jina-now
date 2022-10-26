@@ -1,6 +1,6 @@
 import base64
 
-from docarray import Document
+from docarray import Document, DocumentArray
 from fastapi import HTTPException
 
 from deployment.bff.app.v1.models.model_factory import get_pydantic_model
@@ -29,8 +29,25 @@ def get_parameters(data, endpoint_name):
     return parameters
 
 
-def map_inputs(inputs, input_modality):
-    return map_inputs_for_modality(**{input_modality: getattr(inputs, input_modality)})
+def map_inputs(inputs, request_modality):
+    print('inputs', inputs)
+    modality_list = inputs.get(f'{request_modality}_list', None)
+    print('modality_list', modality_list)
+    # print('len(modality_list)', len(modality_list))
+    if not modality_list:
+        modality_list = [inputs]
+        # print('modality_list - AFTERWARDS', modality_list)
+    da = DocumentArray()
+    for modality_dict in modality_list:
+        print('modality_dict', modality_dict)
+        da.append(
+            map_inputs_for_modality(
+                modality_dict.get('text', None),
+                modality_dict.get('blob', None),
+                modality_dict.get('uri', None),
+            )
+        )
+    return da
 
 
 def map_inputs_for_modality(
@@ -52,9 +69,9 @@ def map_inputs_for_modality(
         tag should be the key and desired value is assigned as value
         to the key
     """
-    if bool(text) + bool(blob) + bool(uri) != 1:
+    if not (text or blob or uri):
         raise ValueError(
-            f'Can only set one value but have text={text}, blob={blob[:100]}, uri={uri}'
+            f'Expected exactly one value to match but got: text={text}, blob={blob[:100] if blob else b""}, uri={uri}'
         )
     try:
         if uri:
@@ -84,69 +101,62 @@ def map_outputs(response_docs, output_modality):
         raise ValueError(f'Unknown output modality {output_modality}')
 
 
-def create_endpoint_function(
-    RequestModel, ResponseModel, endpoint_name, input_modality, output_modality
-):
-    def endpoint(data: RequestModel) -> ResponseModel:
-        parameters = get_parameters(data, endpoint_name)
-        inputs = map_inputs(data, input_modality)
-        response_docs = jina_client_post(
-            data=data,
-            inputs=inputs,
-            parameters=parameters,
-            endpoint=f'/{endpoint_name}',
+def get_endpoint_description(endpoint_name, input_modality, output_modality):
+    if endpoint_name == 'search':
+        return (
+            f'Endpoint to send {endpoint_name} requests. '
+            f'You can provide data of modality {input_modality} '
+            f'and retrieve a list of outputs from {output_modality} modality.'
+            f'You can also provide a filter conditions to only retrieve '
+            f'certain documents.'
         )
-        return map_outputs(response_docs, output_modality)
 
-    return endpoint
+    elif endpoint_name == 'index':
+        return (
+            f'Endpoint to {endpoint_name} documents. '
+            f'You can provide a list of documents of type {input_modality} including tags.'
+            f'The tags can be used to filter the documents when you send a search request.'
+        )
+    else:
+        raise ValueError(f'Unknown endpoint name {endpoint_name}')
 
 
-# this is a function which can be optimized by restructuring the code to make it shorter
+def get_data_fileds(data, input_modality, endpoint_name):
+    pass
+
+
 def create_endpoints(router, input_modality, output_modality):
-    RequestModelIndex = get_pydantic_model(
-        output_modality, is_request=True, endpoint_name='index'
-    )
-    ResponseModelIndex = get_pydantic_model(
-        output_modality, is_request=False, endpoint_name='index'
-    )
-    RequestModelSearch = get_pydantic_model(
-        input_modality, is_request=True, endpoint_name='search'
-    )
-    ResponseModelSearch = get_pydantic_model(
-        output_modality, is_request=False, endpoint_name='search'
-    )
-
-    for RequestModel, ResponseModel, endpoint_name in [
-        (RequestModelIndex, ResponseModelIndex, 'index'),
-        (RequestModelSearch, ResponseModelSearch, 'search'),
-    ]:
+    for endpoint_name in ['search', 'index']:
+        request_modality = (
+            output_modality if endpoint_name == 'index' else input_modality
+        )
+        response_modality = output_modality
+        RequestModel = get_pydantic_model(
+            request_modality, is_request=True, endpoint_name=endpoint_name
+        )
+        ResponseModel = get_pydantic_model(
+            response_modality, is_request=False, endpoint_name=endpoint_name
+        )
 
         @router.post(
             f'/{endpoint_name}',
             response_model=ResponseModel,
             summary=f'Endpoint to send {endpoint_name} requests',
+            description=get_endpoint_description(
+                endpoint_name, input_modality, output_modality
+            ),
         )
         def index(data: RequestModel) -> ResponseModel:
-            endpoint = create_endpoint_function(
-                RequestModel,
-                ResponseModel,
-                endpoint_name,
-                input_modality,
-                output_modality,
+            data = data.dict()
+            parameters = get_parameters(data, endpoint_name)
+            inputs = map_inputs(data, request_modality)
+            response_docs = jina_client_post(
+                endpoint=f'/{endpoint_name}',
+                inputs=inputs,
+                host=data['host'],
+                port=data['port'],
+                api_key=data['api_key'],
+                jwt=data['jwt'],
+                parameters=parameters,
             )
-            return endpoint(data)
-
-
-# # this is the optimized version
-# def create_endpoints(router, input_modality, output_modality):
-#     for endpoint_name in ['index', 'search']:
-#         RequestModel = get_pydantic_model(input_modality, is_request=True, endpoint_name=endpoint_name)
-#         ResponseModel = get_pydantic_model(output_modality, is_request=False, endpoint_name=endpoint_name)
-#         @router.post(
-#             f'/{endpoint_name}',
-#             response_model=ResponseModel,
-#             summary=f'Endpoint to send {endpoint_name} requests',
-#         )
-#         def index(data: RequestModel) -> ResponseModel:
-#             endpoint = create_endpoint_function(RequestModel, ResponseModel, endpoint_name, input_modality, output_modality)
-#             return endpoint(data)
+            return map_outputs(response_docs, output_modality)

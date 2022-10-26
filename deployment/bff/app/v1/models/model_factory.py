@@ -34,15 +34,18 @@ def get_tag_mixin(is_request, endpoint_name):
     return BaseModel
 
 
-def get_modality_mixin(input_modality):
+def get_modality_mixin(modality, is_request, endpoint_name):
     modality_specific_fields = {
-        input_modality: (str, ...),
+        (modality if modality == 'text' else 'blob'): (str, ...),
     }
-    TmpModel = create_model(
-        __model_name=random_string(10),
-        __base__=BaseModel,
-        **modality_specific_fields,
-    )
+    if not is_request and endpoint_name == 'index':
+        TmpModel = BaseModel
+    else:
+        TmpModel = create_model(
+            __model_name=random_string(10),
+            __base__=BaseModel,
+            **modality_specific_fields,
+        )
     return TmpModel
 
 
@@ -80,7 +83,7 @@ def combine_mixins(*mixins):
     return TmpModel
 
 
-def create_final_model(parent, is_request, endpoint_name):
+def create_final_model(parent, modality, is_request, endpoint_name):
     """In case of search responses, the final model is has the parent model as root. In all other cases, the final model inherits from the parent model"""
     model_name = f'{str(endpoint_name).capitalize()}{"Request" if is_request else "Response"}Model'
     if endpoint_name == 'search' and not is_request:
@@ -88,21 +91,27 @@ def create_final_model(parent, is_request, endpoint_name):
             __model_name=model_name,
             __root__=(parent, ...),
         )
-    else:
+    elif endpoint_name == 'index' and is_request:
         FinalModel = create_model(
             __model_name=model_name,
             __base__=BaseRequestModel if is_request else BaseResponseModel,
-            image_list=(parent, ...),
+            **{f'{modality}_list': (parent, ...)},
+        )
+    else:
+
+        FinalModel = create_model(
+            __model_name=model_name,
+            __base__=parent,
         )
     return FinalModel
 
 
-def get_pydantic_model(input_modality, is_request, endpoint_name):
+def get_pydantic_model(modality, is_request, endpoint_name):
     parent = get_parent_model(is_request, endpoint_name)
     tag_mixin = get_tag_mixin(is_request, endpoint_name)
-    modality_mixin = get_modality_mixin(input_modality)
+    modality_mixin = get_modality_mixin(modality, is_request, endpoint_name)
     uri_mixin = get_uri_mixin(is_request, endpoint_name)
     model = combine_mixins(parent, tag_mixin, modality_mixin, uri_mixin)
     model = extend_as_list_if_necessary(model, is_request, endpoint_name)
-    model = create_final_model(model, is_request, endpoint_name)
+    model = create_final_model(model, modality, is_request, endpoint_name)
     return model
