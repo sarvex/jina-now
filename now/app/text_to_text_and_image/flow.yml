@@ -32,7 +32,7 @@ executors:
   env:
     JINA_LOG_LEVEL: DEBUG
   when:
-    modality:
+    mime_type:
       $eq: text
   needs: preprocessor
 - name: clip_text_encoder
@@ -47,7 +47,7 @@ executors:
   env:
     JINA_LOG_LEVEL: DEBUG
   when:
-    modality:
+    mime_type:
       $eq: text
   needs: preprocessor
 - name: clip_vision_encoder
@@ -62,7 +62,7 @@ executors:
   env:
     JINA_LOG_LEVEL: DEBUG
   when:
-    modality:
+    mime_type:
       $eq: image
   needs: sbert_encoder
 - name: indexer
