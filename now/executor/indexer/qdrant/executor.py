@@ -72,7 +72,10 @@ class NOWQdrantIndexer15(Executor):
         for d in docs:
             if 'title' in d.tags:
                 d.tags['title'] = d.tags['title'].lower().split()
+            if not d.embedding:
+                raise Exception(f'document {d.summary()} has no embeddings')
         # print('indexing', docs[0].summary())
+
         self._index.extend(docs)
 
     # override
@@ -96,6 +99,9 @@ class NOWQdrantIndexer15(Executor):
         """Perform a vector similarity search and retrieve Document matches"""
         # print('query summary', docs[0].summary())
         # print('indx doc summary', self._index[0].summary())
+        for d in docs:
+            if not d.embedding:
+                raise Exception(f'document {d.summary()} has no embeddings')
         docs.match(self._index, filter=search_filter, limit=limit)
 
 
