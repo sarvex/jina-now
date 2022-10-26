@@ -23,7 +23,10 @@ def test_indexing(preprocess_and_encode):
         },
     )
     with f2:
-        f2.post(on='/index', inputs=data, parameters={
+        f2.post(
+            on='/index',
+            inputs=data,
+            parameters={
                 'user_input': user_input.__dict__,
                 'access_paths': app_instance.index_query_access_paths(
                     user_input.search_fields
@@ -31,7 +34,8 @@ def test_indexing(preprocess_and_encode):
                 'traversal_paths': app_instance.index_query_access_paths(
                     user_input.search_fields
                 ),
-            },)
+            },
+        )
 
         query_res = f2.post(
             on='/search',
