@@ -186,9 +186,11 @@ class NOWBaseIndexer(Executor):
             raise Exception(f'{docs} there are no docs!')
         for d in docs:
             if d.embedding is None:
-                raise Exception(
-                    f'{d} there is no document! {len(d.chunks)}, {d.chunks.summary()}'
-                )
+                for chunk in d.chunks:
+                    raise Exception(f'{chunk} !!!!! {chunk.embedding}')
+                # raise Exception(
+                #     f'{d} there is no document! {len(d.chunks)}, {d.chunks.summary()}'
+                # )
 
     def create_matches(
         self, docs, parameters, traversal_paths, limit, retrieval_limit, search_filter
