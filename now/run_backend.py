@@ -58,8 +58,8 @@ def run(
     print(f"▶ indexing {len(dataset)} documents")
     params = {
         'user_input': user_input.__dict__,
-        'traversal_paths': app_instance.index_query_access_paths,
-        'access_paths': app_instance.index_query_access_paths,
+        'traversal_paths': app_instance.index_query_access_paths(),
+        'access_paths': app_instance.index_query_access_paths(),
     }
     if user_input.secured:
         params['jwt'] = user_input.jwt
