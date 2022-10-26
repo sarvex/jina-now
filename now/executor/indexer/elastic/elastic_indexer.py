@@ -106,7 +106,10 @@ class ElasticIndexer(Executor):
         :return: empty `DocumentArray`.
         """
         if not docs:
-            return
+            if docs_matrix:
+                docs = self.join_docs_matrix_into_chunks(docs_matrix)
+            else:
+                return
         if not parameters:
             parameters = {}
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
@@ -426,6 +429,6 @@ class ElasticIndexer(Executor):
         parent_doc = Document()
         for da in docs_matrix:
             parent_doc.chunks.extend(da[0])
-        if docs_matrix[0].text:
-            parent_doc.text = docs_matrix[0].text
+        if docs_matrix[0][0].text:
+            parent_doc.text = docs_matrix[0][0].text
         return DocumentArray(parent_doc)
