@@ -126,7 +126,12 @@ def preprocess_and_encode(single_modal_data, multi_modal_data):
             data,
             parameters={
                 'user_input': user_input.__dict__,
-                'access_paths': app_instance.index_query_access_paths(search_fields),
+                'access_paths': app_instance.index_query_access_paths(
+                    user_input.search_fields
+                ),
+                'traversal_paths': app_instance.index_query_access_paths(
+                    user_input.search_fields
+                ),
             },
         )
 
