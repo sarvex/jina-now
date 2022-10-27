@@ -663,9 +663,10 @@ def clear_match():
     docs = get_suggestion(st.session_state.text_search_box, st.session_state.jwt_val)
     if docs:
         suggestions = []
-        for list_sugg in docs[0].tags['suggestions']:
-            for value in list_sugg:
-                suggestions.append(value)
+        if 'suggestions' in docs[0].tags:
+            for list_sugg in docs[0].tags['suggestions']:
+                for value in list_sugg:
+                    suggestions.append(value)
         st.session_state.options = suggestions
 
 
