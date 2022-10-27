@@ -90,7 +90,10 @@ def transform_uni_modal_data(documents: DocumentArray, filter_fields: List[str])
         else:
             raise ValueError(f'Modality {modality} is not supported.')
 
-        new_doc = Document(new_doc)
+        try:
+            new_doc = Document(new_doc)
+        except:
+            print(f'new doc {new_doc}, old doc {document}')
         new_doc.tags['filter_fields'] = {}
         new_doc.chunks[0].tags['field_name'] = 'default_field'
         new_doc.chunks[0].embedding = document.embedding

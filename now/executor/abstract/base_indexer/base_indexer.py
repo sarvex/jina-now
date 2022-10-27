@@ -260,10 +260,13 @@ class NOWBaseIndexer(Executor):
         """Parse the columns to index"""
         valid_input_columns = ['str', 'float', 'int']
         if columns:
-            corrected_list = []
-            for i in range(0, len(columns), 2):
-                corrected_list.append((columns[i], columns[i + 1]))
-            columns = corrected_list
+            try:
+                corrected_list = []
+                for i in range(0, len(columns), 2):
+                    corrected_list.append((columns[i], columns[i + 1]))
+                columns = corrected_list
+            except:
+                print(f'here are the columns {columns}')
             for n, t in columns:
                 assert (
                     t in valid_input_columns
