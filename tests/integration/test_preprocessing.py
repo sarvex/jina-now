@@ -9,8 +9,8 @@ from tests.executor.indexer.base.in_memory_indexer import InMemoryIndexer
 
 
 def test_indexing(preprocess_and_encode):
-    # some comment
     data, user_input = preprocess_and_encode
+
     app_instance = TextToImage()
     f2 = Flow().add(
         uses=InMemoryIndexer,
