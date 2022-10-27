@@ -168,7 +168,7 @@ class TextToTextAndImage(JinaNOWApp):
         )
 
         self.set_flow_yaml()
-
+        super().setup(dataset, user_input, kubectl_path)
         return env_dict
 
     def _construct_finetune_settings(
