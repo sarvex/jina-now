@@ -155,8 +155,7 @@ class ElasticIndexer(Executor):
                 - 'traversal_paths' (str): traversal paths for the docs
                 - 'limit' (int): nr of matches to get per Document
         """
-        print(docs)
-        print(docs_matrix)
+        raise Exception(f'{docs.summary()}\n {docs_matrix}\n {docs_matrix[0].summary()}')
         if docs:
             if docs_matrix is None:
                 docs_matrix = [docs]
