@@ -44,6 +44,7 @@ class NOWPreprocessor(Executor):
 
     def _set_access_paths(self, parameters: Dict):
         parameters['access_paths'] = self.app.index_query_access_paths()
+        parameters['traversal_paths'] = self.app.index_query_access_paths()
 
     def _set_user_input(self, parameters: Dict):
         """Sets user_input attribute and deletes used attributes from dictionary"""
