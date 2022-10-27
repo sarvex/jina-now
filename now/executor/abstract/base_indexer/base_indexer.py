@@ -150,7 +150,7 @@ class NOWBaseIndexer(Executor):
         new_docs = docs[traversal_paths][
             :1
         ]  # only search on the first document for now
-        self.check_docs(new_docs, docs)
+        # self.check_docs(new_docs, docs)
         docs = new_docs
         if traversal_paths == '@c':
             retrieval_limit = limit * 3
@@ -166,13 +166,13 @@ class NOWBaseIndexer(Executor):
             retrieval_limit,
             search_filter=search_filter,
         )
-        self.check_docs(docs)
+        # self.check_docs(docs)
         if len(docs[0].text.split()) == 1:
             if not search_filter:
                 search_filter = self.convert_filter_syntax(
                     {'title': {'$eq': docs[0].text.lower()}}
                 )
-            self.check_docs(docs)
+            # self.check_docs(docs)
             docs_with_matches_filter = self.create_matches(
                 docs, parameters, traversal_paths, limit, retrieval_limit, search_filter
             )
@@ -200,7 +200,7 @@ class NOWBaseIndexer(Executor):
     def create_matches(
         self, docs, parameters, traversal_paths, limit, retrieval_limit, search_filter
     ):
-        self.check_docs(docs)
+        # self.check_docs(docs)
         docs_copy = deepcopy(docs)
         self.search(docs_copy, parameters, retrieval_limit, search_filter)
         if traversal_paths == '@c':
