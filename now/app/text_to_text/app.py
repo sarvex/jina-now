@@ -76,7 +76,6 @@ class TextToText(JinaNOWApp):
             elastic=True,
         )
         env_dict['HOSTS'] = indexer_config.get('hosts', None)
-        super().setup(dataset, user_input, kubectl_path)
         return env_dict
 
     def preprocess(
