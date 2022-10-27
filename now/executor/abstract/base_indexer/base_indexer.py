@@ -186,7 +186,7 @@ class NOWBaseIndexer(Executor):
 
     def check_docs(self, docs, new_docs=None):
         if not docs:
-            raise Exception(f'{docs} there are no docs!')
+            raise Exception(f'{docs} there are no docs!!')
         for d in docs:
             if d.embedding is None:
                 for chunk in d.chunks:

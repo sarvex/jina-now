@@ -86,7 +86,9 @@ def transform_uni_modal_data(documents: DocumentArray, filter_fields: List[str])
         if modality == Modalities.TEXT:
             new_doc = BaseDocText(default_field=document.text)
         elif modality in [Modalities.IMAGE, Modalities.VIDEO]:
-            new_doc = BaseDocImage(default_field=document.content or document.blob or document.uri)
+            new_doc = BaseDocImage(
+                default_field=document.content or document.blob or document.uri
+            )
         else:
             raise ValueError(f'Modality {modality} is not supported.')
 
