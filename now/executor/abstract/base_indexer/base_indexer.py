@@ -191,7 +191,7 @@ class NOWBaseIndexer(Executor):
             if d.embedding is None:
                 for chunk in d.chunks:
                     raise Exception(
-                        f'{chunk} and doc {d} !!!!!! {chunk.embedding} and doc emb {d.embedding}, before traversal {new_docs.summary()}'
+                        f'{chunk} and doc {d} !!!!!! {chunk.embedding} and doc emb {d.embedding}, before traversal {new_docs[0].summary()}'
                     )
                 # raise Exception(
                 #     f'{d} there is no document! {len(d.chunks)}, {d.chunks.summary()}'

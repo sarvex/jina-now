@@ -90,7 +90,7 @@ def transform_uni_modal_data(documents: DocumentArray, filter_fields: List[str])
                 default_field=document.content or document.blob or document.uri
             )
         else:
-            raise ValueError(f'Modality {modality} is not supported.')
+            raise ValueError(f'Modality {modality} is not supported!')
 
         try:
             new_doc = Document(new_doc)
