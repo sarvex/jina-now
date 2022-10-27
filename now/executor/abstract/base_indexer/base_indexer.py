@@ -266,7 +266,7 @@ class NOWBaseIndexer(Executor):
                     corrected_list.append((columns[i], columns[i + 1]))
                 columns = corrected_list
             except:
-                print(f'here are the columns {columns}')
+                raise Exception(f'here are the columns {columns}')
             for n, t in columns:
                 assert (
                     t in valid_input_columns

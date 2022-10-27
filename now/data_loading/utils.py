@@ -86,14 +86,14 @@ def transform_uni_modal_data(documents: DocumentArray, filter_fields: List[str])
         if modality == Modalities.TEXT:
             new_doc = BaseDocText(default_field=document.text)
         elif modality in [Modalities.IMAGE, Modalities.VIDEO]:
-            new_doc = BaseDocImage(default_field=document.content or document.uri)
+            new_doc = BaseDocImage(default_field=document.content or document.blob or document.uri)
         else:
             raise ValueError(f'Modality {modality} is not supported.')
 
         try:
             new_doc = Document(new_doc)
         except:
-            print(f'new doc {new_doc}, old doc {document}')
+            raise Exception(f'new doc {new_doc}, old doc {document}')
         new_doc.tags['filter_fields'] = {}
         new_doc.chunks[0].tags['field_name'] = 'default_field'
         new_doc.chunks[0].embedding = document.embedding
