@@ -161,6 +161,8 @@ def start_now(app_instance, **kwargs):
         highlight=True,
     )
     my_table.add_row('Api docs', bff_url)
+    if user_input.secured and user_input.api_key:
+        my_table.add_row('API Key', user_input.api_key)
     my_table.add_row('Playground', playground_url)
     console = Console()
     console.print(

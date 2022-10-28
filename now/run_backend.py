@@ -40,7 +40,6 @@ def run(
     :return:
     """
     dataset = load_data(app_instance, user_input)
-    val_dict = user_input.__dict__
 
     env_dict = app_instance.setup(
         dataset=dataset, user_input=user_input, kubectl_path=kubectl_path
@@ -63,6 +62,7 @@ def run(
     if (
         user_input.deployment_type == 'remote'
         and user_input.dataset_type == DatasetTypes.S3_BUCKET
+        and 'NOW_CI_RUN' not in os.environ
     ):
         print('Triggering scheduler to index data from S3 bucket')
         # check if the api_key exists. If not then create a new one
@@ -78,11 +78,16 @@ def run(
             'user_input': user_input_dict,
         }
         cookies = {'st': user_input.jwt['token']}
-        requests.post(
-            'https://storefrontapi.nowrun.jina.ai/api/v1/schedule_sync',
-            json=scheduler_params,
-            cookies=cookies,
-        )
+        try:
+            response = requests.post(
+                'https://storefrontapi.nowrun.jina.ai/api/v1/schedule_sync',
+                json=scheduler_params,
+                cookies=cookies,
+            )
+            response.raise_for_status()
+        except Exception as e:
+            print(f'Error while scheduling indexing: {e}')
+            print(f'Indexing will not be scheduled. Please contact Jina AI support.')
     else:
         print(f"▶ indexing {len(dataset)} documents")
         params = {
