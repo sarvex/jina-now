@@ -141,7 +141,7 @@ class NOWBaseIndexer(Executor):
     def search_endpoint(
         self, docs: Optional[DocumentArray] = None, parameters: dict = {}, **kwargs
     ):
-        """Perform a vector similarity search and retrieve Document matches."""
+        """Perform a vector similarity search and retrieve `Document` matches."""
         limit = int(parameters.get('limit', self.limit))
         search_filter = parameters.get('filter', {})
         search_filter = self.convert_filter_syntax(search_filter)

@@ -10,6 +10,9 @@ from docarray.typing import Image, Text
 
 from now.constants import BASE_STORAGE_URL, DEMO_DATASET_DOCARRAY_VERSION, Modalities
 from now.utils import download
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def fetch_da_from_url(
@@ -103,7 +106,7 @@ def transform_uni_modal_data(documents: DocumentArray, filter_fields: List[str])
                     new_doc.tags[field] = value
             transformed_docs.append(new_doc)
         except:
-            raise Warning(f'could not transform the document {document}')
+            logger.warning(f'could not transform the document {document}')
 
     return transformed_docs
 
