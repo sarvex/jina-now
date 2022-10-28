@@ -10,6 +10,7 @@ from urllib.request import urlopen
 
 import av
 import extra_streamlit_components as stx
+import pandas as pd
 import requests
 import streamlit as st
 import streamlit.components.v1 as components
@@ -26,6 +27,7 @@ from src.constants import (
 )
 from src.search import (
     get_query_params,
+    get_suggestion,
     search_by_audio,
     search_by_image,
     search_by_text,
@@ -373,18 +375,26 @@ def render_image(da_img, filter_selection):
 
 def render_text(da_txt, filter_selection):
     query = st.text_input("", key="text_search_box", on_change=clear_match)
-    if query:
-        st.session_state.matches = search_by_text(
-            search_text=query,
-            jwt=st.session_state.jwt_val,
-            filter_selection=filter_selection,
-        )
+
     if st.button("Search", key="text_search", on_click=clear_match):
         st.session_state.matches = search_by_text(
             search_text=query,
             jwt=st.session_state.jwt_val,
             filter_selection=filter_selection,
         )
+
+    if st.session_state.options:
+        df = pd.DataFrame(st.session_state.options, columns=['Suggestions'])
+        hide_table_row_index = """
+                <style>
+                thead tr th:first-child {display:none}
+                tbody th {display:none}
+                </style>
+                """
+        # Inject CSS with Markdown
+        st.markdown(hide_table_row_index, unsafe_allow_html=True)
+        st.table(df)
+
     if da_txt is not None:
         st.subheader("samples:")
         c1, c2, c3 = st.columns(3)
@@ -642,12 +652,22 @@ def update_conf():
 
 
 def clear_match():
-    st.session_state.matches = None
+    st.session_state.matches = (
+        None  # TODO move this to when we choose a suggestion or search button
+    )
     st.session_state.slider = 0.0
     st.session_state.min_confidence = 0.0
     st.session_state.snap = None
     st.session_state.error_msg = None
     st.session_state.page_number = 0
+    docs = get_suggestion(st.session_state.text_search_box, st.session_state.jwt_val)
+    if docs:
+        suggestions = []
+        if 'suggestions' in docs[0].tags:
+            for list_sugg in docs[0].tags['suggestions']:
+                for value in list_sugg:
+                    suggestions.append(value)
+        st.session_state.options = suggestions
 
 
 def clear_text():
@@ -778,6 +798,9 @@ def setup_session_state():
 
     if 'filters_set' not in st.session_state:
         st.session_state.filters_set = False
+
+    if 'options' not in st.session_state:
+        st.session_state.options = []
 
 
 if __name__ == '__main__':
