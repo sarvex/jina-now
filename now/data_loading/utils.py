@@ -103,7 +103,7 @@ def transform_uni_modal_data(documents: DocumentArray, filter_fields: List[str])
                     new_doc.tags[field] = value
             transformed_docs.append(new_doc)
         except:
-            raise Warning(f'couldnt transform the document {document}')
+            raise Warning(f'could not transform the document {document}')
 
     return transformed_docs
 

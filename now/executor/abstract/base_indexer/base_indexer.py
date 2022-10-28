@@ -25,7 +25,7 @@ class NOWBaseIndexer(Executor):
         **kwargs,
     ):
         """
-        :param dim: Dimensionality of vectors to index
+        :param dim: Dimensionality of vectors to index.
         :param columns: List of tuples of the form (column_name, str_type). Here str_type must be a string that can be
         parsed as a valid Python type.
         :param metric: Distance metric type. Can be 'euclidean', 'inner_product', or 'cosine'
