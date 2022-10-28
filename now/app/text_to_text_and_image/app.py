@@ -40,8 +40,14 @@ class TextToTextAndImage(JinaNOWApp):
 
     def set_flow_yaml(self, **kwargs):
         """configure the flow yaml in the Jina NOW app."""
+        finetuning = kwargs.get('finetuning', False)
+
         flow_dir = os.path.abspath(os.path.join(__file__, '..'))
-        self.flow_yaml = os.path.join(flow_dir, 'flow.yml')
+
+        if finetuning:
+            self.flow_yaml = os.path.join(flow_dir, 'flow.yml')
+        else:
+            self.flow_yaml = os.path.join(flow_dir, 'pretrained_flow.yml')
 
     @property
     def input_modality(self) -> Modalities:
@@ -119,6 +125,8 @@ class TextToTextAndImage(JinaNOWApp):
                 dataset=dataset,
                 encoder_type=encoder_type,
             )
+            if not finetune_settings.perform_finetuning:
+                break
             artifact_id, token = finetune(
                 finetune_settings=finetune_settings,
                 app_instance=self,
