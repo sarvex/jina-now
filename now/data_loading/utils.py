@@ -13,14 +13,14 @@ from now.utils import download
 
 
 def fetch_da_from_url(
-    url: str, downloaded_path: str = '~/.cache/jina-now'
+        url: str, downloaded_path: str = '~/.cache/jina-now'
 ) -> DocumentArray:
     data_dir = os.path.expanduser(downloaded_path)
     if not os.path.exists(osp(data_dir, 'data/tmp')):
         os.makedirs(osp(data_dir, 'data/tmp'))
     data_path = (
-        data_dir
-        + f"/data/tmp/{base64.b64encode(bytes(url, 'utf-8')).decode('utf-8')}.bin"
+            data_dir
+            + f"/data/tmp/{base64.b64encode(bytes(url, 'utf-8')).decode('utf-8')}.bin"
     )
     if not os.path.exists(data_path):
         download(url, data_path)
@@ -91,26 +91,27 @@ def transform_uni_modal_data(documents: DocumentArray, filter_fields: List[str])
             )
         else:
             raise ValueError(f'Modality {modality} is not supported!')
-
+        new_doc = None
         try:
             new_doc = Document(new_doc)
         except:
-            raise Exception(f'new doc {new_doc}, old doc {document}')
-        new_doc.tags['filter_fields'] = {}
-        new_doc.chunks[0].tags['field_name'] = 'default_field'
-        new_doc.chunks[0].embedding = document.embedding
-        for field, value in document.tags.items():
-            if field in filter_fields:
-                new_doc.tags['filter_fields'][field] = value
-            else:
-                new_doc.tags[field] = value
-        transformed_docs.append(new_doc)
+            raise Warning(f'couldnt transform the document {document}')
+        if new_doc:
+            new_doc.tags['filter_fields'] = {}
+            new_doc.chunks[0].tags['field_name'] = 'default_field'
+            new_doc.chunks[0].embedding = document.embedding
+            for field, value in document.tags.items():
+                if field in filter_fields:
+                    new_doc.tags['filter_fields'][field] = value
+                else:
+                    new_doc.tags[field] = value
+            transformed_docs.append(new_doc)
 
     return transformed_docs
 
 
 def _transform_multi_modal_data(
-    field_names: Dict[int, str], search_fields: List[str], filter_fields: List[str]
+        field_names: Dict[int, str], search_fields: List[str], filter_fields: List[str]
 ):
     def _transform_fn(document: Document) -> Document:
         document.tags['filter_fields'] = {}
@@ -142,7 +143,7 @@ def _transform_multi_modal_data(
 
 
 def transform_docarray(
-    documents: DocumentArray, search_fields: List[str], filter_fields: List[str]
+        documents: DocumentArray, search_fields: List[str], filter_fields: List[str]
 ) -> DocumentArray:
     if not documents:
         return documents
