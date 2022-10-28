@@ -106,7 +106,7 @@ def preprocess_and_encode(single_modal_data, multi_modal_data):
     user_input.dataset_type = DatasetTypes.DEMO
     user_input.dataset_name = DemoDatasetNames.BIRD_SPECIES
     data = load_data(app_instance, user_input)
-    # data = DocumentArray([data[0], data[-1]])
+    data = DocumentArray([data[0], data[-1]])
 
     f1 = (
         Flow()

@@ -16,9 +16,12 @@ def test_indexing(preprocess_and_encode):
         uses=InMemoryIndexer,
         uses_with={
             'columns': [
-                ['split', 'str'],
-                ['finetuner_label', 'str'],
-                ['content_type', 'str'],
+                'split',
+                'str',
+                'finetuner_label',
+                'str',
+                'content_type',
+                'str',
             ],
             'dim': 512,
         },
