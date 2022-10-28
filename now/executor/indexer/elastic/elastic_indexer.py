@@ -155,10 +155,8 @@ class ElasticIndexer(Executor):
                 - 'traversal_paths' (str): traversal paths for the docs
                 - 'limit' (int): nr of matches to get per Document
         """
-        raise Exception(
-            f'{docs.summary()}\n {docs_matrix}\n {docs_matrix[0].summary()}'
-        )
         if docs:
+            docs.summary()
             if docs_matrix is None:
                 docs_matrix = [docs]
         elif not docs and not docs_matrix:
@@ -429,6 +427,7 @@ class ElasticIndexer(Executor):
         """
         parent_doc = Document()
         for da in docs_matrix:
+            da.summary()
             parent_doc.chunks.append(da[0])
         if docs_matrix[0][0].text:
             parent_doc.text = docs_matrix[0][0].text
