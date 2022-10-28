@@ -55,6 +55,7 @@ def test_indexing(preprocess_and_encode):
             },
             return_results=True,
         )
+    query_res.summary()
 
 
 def test_uni_to_multi_modal(resources_folder_path, single_modal_data):

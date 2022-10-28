@@ -91,7 +91,7 @@ def multi_modal_data(resources_folder_path):
 
 @pytest.fixture
 def preprocess_and_encode(single_modal_data, multi_modal_data):
-    search_fields = ['default_field']
+    search_fields = []
     filter_fields = []
     # data_type = 'single_modal'
     # if data_type == 'single_modal':
@@ -126,17 +126,12 @@ def preprocess_and_encode(single_modal_data, multi_modal_data):
             data,
             parameters={
                 'user_input': user_input.__dict__,
-                'access_paths': app_instance.index_query_access_paths(
-                    user_input.search_fields
-                ),
-                'traversal_paths': app_instance.index_query_access_paths(
-                    user_input.search_fields
-                ),
+                'access_paths': app_instance.index_query_access_paths(),
+                'traversal_paths': app_instance.index_query_access_paths(),
             },
         )
 
     assert len(encoded_d) == len(data)
-    assert len(search_fields) == len(encoded_d[0].chunks)
     for chunk, field in zip(encoded_d[0].chunks, search_fields):
         assert chunk.embedding.any()
         assert field == chunk.tags['field_name']

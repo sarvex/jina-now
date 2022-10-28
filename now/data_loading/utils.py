@@ -3,7 +3,7 @@ import os
 import pathlib
 import pickle
 from os.path import join as osp
-from typing import List, Dict
+from typing import List, Dict, Union
 
 from docarray import DocumentArray, Document, dataclass
 from docarray.typing import Image, Text
@@ -141,10 +141,14 @@ def _transform_multi_modal_data(
 
 
 def transform_docarray(
-    documents: DocumentArray, search_fields: List[str], filter_fields: List[str]
+    documents: Union[Document, DocumentArray],
+    search_fields: List[str],
+    filter_fields: List[str],
 ) -> DocumentArray:
     if not documents:
         return documents
+    if isinstance(documents, Document):
+        documents = DocumentArray(documents)
     if documents[0].chunks:
         if 'multi_modal_schema' not in documents[0]._metadata:
             raise KeyError(
