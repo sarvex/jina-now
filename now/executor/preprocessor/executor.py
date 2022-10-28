@@ -47,7 +47,7 @@ class NOWPreprocessor(Executor):
         parameters['traversal_paths'] = self.app.index_query_access_paths()
 
     def _set_user_input(self, parameters: Dict):
-        """Sets user_input attribute and deletes used attributes from dictionary"""
+        """Sets user_input attribute and deletes used attributes from dictionary."""
         if 'user_input' in parameters.keys():
             self.user_input = UserInput()
             for attr_name, prev_value in self.user_input.__dict__.items():
