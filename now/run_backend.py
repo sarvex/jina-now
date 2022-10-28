@@ -6,14 +6,18 @@ from copy import deepcopy
 from time import sleep
 from typing import Dict, Optional
 
+import requests
 from docarray import DocumentArray
 from jina.clients import Client
 
 from now.app.base.app import JinaNOWApp
+from now.common.options import _assign_api_key
+from now.constants import DatasetTypes
 from now.data_loading.data_loading import load_data
 from now.deployment.flow import deploy_flow
 from now.log import time_profiler
 from now.now_dataclasses import UserInput
+from now.utils import get_flow_id
 
 cur_dir = pathlib.Path(__file__).parent.resolve()
 
@@ -36,6 +40,7 @@ def run(
     :return:
     """
     dataset = load_data(app_instance, user_input)
+    val_dict = user_input.__dict__
 
     env_dict = app_instance.setup(
         dataset=dataset, user_input=user_input, kubectl_path=kubectl_path
@@ -55,22 +60,46 @@ def run(
         kubectl_path=kubectl_path,
     )
 
-    print(f"▶ indexing {len(dataset)} documents")
-    params = {
-        'user_input': user_input.__dict__,
-        'traversal_paths': app_instance.index_query_access_paths,
-        'access_paths': app_instance.index_query_access_paths,
-    }
-    if user_input.secured:
-        params['jwt'] = user_input.jwt
-    call_flow(
-        client=client,
-        dataset=dataset,
-        max_request_size=app_instance.max_request_size,
-        parameters=deepcopy(params),
-        return_results=False,
-    )
-    print('⭐ Success - your data is indexed')
+    if (
+        user_input.deployment_type == 'remote'
+        and user_input.dataset_type == DatasetTypes.S3_BUCKET
+    ):
+        print('Triggering scheduler to index data from S3 bucket')
+        # check if the api_key exists. If not then create a new one
+        if user_input.secured and not user_input.api_key:
+            _assign_api_key(user_input)
+
+        user_input_dict = user_input.__dict__
+        user_input_dict.pop('app_instance')  # Not needed
+
+        scheduler_params = {
+            'flow_id': get_flow_id(gateway_host_internal),
+            'api_key': user_input.api_key,
+            'user_input': user_input_dict,
+        }
+        cookies = {'st': user_input.jwt['token']}
+        requests.post(
+            'https://storefrontapi.nowrun.jina.ai/api/v1/schedule_sync',
+            json=scheduler_params,
+            cookies=cookies,
+        )
+    else:
+        print(f"▶ indexing {len(dataset)} documents")
+        params = {
+            'user_input': user_input.__dict__,
+            'traversal_paths': app_instance.index_query_access_paths,
+            'access_paths': app_instance.index_query_access_paths,
+        }
+        if user_input.secured:
+            params['jwt'] = user_input.jwt
+        call_flow(
+            client=client,
+            dataset=dataset,
+            max_request_size=app_instance.max_request_size,
+            parameters=deepcopy(params),
+            return_results=False,
+        )
+        print('⭐ Success - your data is indexed')
 
     return (
         gateway_host,

@@ -8,6 +8,7 @@ from __future__ import annotations, print_function, unicode_literals
 
 import importlib
 import os
+import uuid
 
 from hubble import AuthenticationRequiredError
 from kubernetes import client, config
@@ -304,6 +305,20 @@ SECURED = DialogOptions(
     conditional_check=lambda user_inp: user_inp.deployment_type == 'remote',
 )
 
+
+API_KEY = DialogOptions(
+    name='api_key',
+    prompt_message='Do you want to generate an api_key to access this deployment?',
+    prompt_type='list',
+    choices=[
+        {'name': '✅ yes', 'value': True},
+        {'name': '⛔ no', 'value': False},
+    ],
+    depends_on=SECURED,
+    conditional_check=lambda user_inp: user_inp.secured,
+    post_func=lambda user_input, **kwargs: _assign_api_key(user_input),
+)
+
 ADDITIONAL_USERS = DialogOptions(
     name='additional_user',
     prompt_message='Do you want to provide additional users access to this flow?',
@@ -312,8 +327,8 @@ ADDITIONAL_USERS = DialogOptions(
         {'name': '✅ yes', 'value': True},
         {'name': '⛔ no', 'value': False},
     ],
-    depends_on=SECURED,
-    conditional_check=lambda user_inp: user_inp.secured,
+    depends_on=API_KEY,
+    conditional_check=lambda user_inp: not user_inp.api_key,
 )
 
 USER_EMAILS = DialogOptions(
@@ -326,6 +341,11 @@ USER_EMAILS = DialogOptions(
     conditional_check=lambda user_inp: user_inp.additional_user,
     post_func=lambda user_input, **kwargs: _add_additional_users(user_input, **kwargs),
 )
+
+
+def _assign_api_key(user_input: UserInput):
+    user_input.api_key = (uuid.uuid4().hex,)
+    print(f'Your API key is {user_input.api_key}')
 
 
 def _add_additional_users(user_input: UserInput, **kwargs):
@@ -429,7 +449,7 @@ data_es = [
     ES_ADDITIONAL_ARGS,
 ]
 cluster = [DEPLOYMENT_TYPE, LOCAL_CLUSTER]
-remote_cluster = [SECURED, ADDITIONAL_USERS, USER_EMAILS]
+remote_cluster = [SECURED, API_KEY, ADDITIONAL_USERS, USER_EMAILS]
 
 
 base_options = (

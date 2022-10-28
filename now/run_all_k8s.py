@@ -1,6 +1,7 @@
 import os
 
 import cowsay
+import requests
 from rich import box
 from rich.console import Console
 from rich.panel import Panel
@@ -75,6 +76,13 @@ def stop_now(app_instance, contexts, active_context, **kwargs):
             print(f'❎ Flow not found in JCloud. Likely, it has been deleted already')
         if _result is not None and _result['status'] == 'ALIVE':
             terminate_wolf(flow_id)
+            from hubble import Client
+
+            cookies = {'st': Client().token}
+            requests.delete(
+                f'https://storefrontapi.nowrun.jina.ai/api/v1/schedule_sync/{flow_id}',
+                cookies=cookies,
+            )
         cowsay.cow(f'remote Flow `{cluster}` removed')
     else:
         with yaspin_extended(

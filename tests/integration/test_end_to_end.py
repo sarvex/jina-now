@@ -15,6 +15,7 @@ from now.common.options import NEW_CLUSTER
 from now.constants import Apps, DatasetTypes, Modalities
 from now.demo_data import DemoDatasetNames
 from now.deployment.deployment import cmd, list_all_wolf, terminate_wolf
+from now.utils import get_flow_id
 
 
 @pytest.fixture
@@ -56,9 +57,7 @@ def cleanup(deployment_type, dataset):
                     print('nothing to clean up')
                     return
                 host = flow_details['host']
-                flow_id = host.replace('grpcs://nowapi-', '').replace(
-                    '.wolf.jina.ai', ''
-                )
+                flow_id = get_flow_id(host)
                 terminate_wolf(flow_id)
             else:
                 kwargs = {
