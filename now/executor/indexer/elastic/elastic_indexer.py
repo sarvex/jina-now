@@ -156,6 +156,7 @@ class ElasticIndexer(Executor):
                 - 'limit' (int): nr of matches to get per Document
         """
         if docs:
+            print("DOCS")
             docs.summary()
             if docs_matrix is None:
                 docs_matrix = [docs]
@@ -186,6 +187,8 @@ class ElasticIndexer(Executor):
                 print(traceback.format_exc())
         if not docs:
             return DocumentArray(Document(text='nothing'))
+        print("RESULT")
+        docs.summary()
         return docs
 
     @secure_request(on='/update', level=SecurityLevel.USER)
@@ -427,6 +430,7 @@ class ElasticIndexer(Executor):
         """
         parent_doc = Document()
         for da in docs_matrix:
+            print('MATRIX')
             da.summary()
             parent_doc.chunks.append(da[0])
         if docs_matrix[0][0].text:

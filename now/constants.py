@@ -7,10 +7,10 @@ from now.utils import BetterEnum
 # DEMO_DATASET_DOCARRAY_VERSION = docarray_version
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.129-test-multimodal-demo-46'
-NOW_PREPROCESSOR_VERSION = '0.0.93-test-multimodal-demo-46'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.129-test-multimodal-demo-47'
+NOW_PREPROCESSOR_VERSION = '0.0.93-test-multimodal-demo-47'
 NOW_QDRANT_INDEXER_VERSION = '0.0.2-allow-domain-6'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.3-test-multimodal-demo-46'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.3-test-multimodal-demo-47'
 
 
 class Modalities(BetterEnum):
