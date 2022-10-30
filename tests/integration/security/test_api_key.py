@@ -60,7 +60,6 @@ def start_bff():
     p1 = Process(target=run_server, args=())
     p1.daemon = True
     p1.start()
-    print('### server started')
 
 
 def test_add_key():

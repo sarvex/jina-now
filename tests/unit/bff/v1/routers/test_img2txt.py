@@ -9,7 +9,8 @@ from starlette import status
 def test_text_index_fails_with_no_flow_running(client: requests.Session):
     with pytest.raises(ConnectionError):
         client.post(
-            f'/api/v1/image-to-text/index', json={'texts': ['Hello'], 'uris': ['']}
+            f'/api/v1/image-to-text/index',
+            json={'text_list': [{'text': 'Hello', 'uri': ''}]},
         )
 
 
@@ -19,14 +20,14 @@ def test_text_search_fails_with_no_flow_running(
     with pytest.raises(ConnectionError):
         client.post(
             f'/api/v1/image-to-text/search',
-            json={'image': base64_image_string},
+            json={'blob': base64_image_string},
         )
 
 
 def test_text_search_fails_with_incorrect_query(client):
     response = client.post(
         f'/api/v1/image-to-text/search',
-        json={'image': 'hello'},
+        json={'blob': 'hello'},
     )
     assert response.status_code == 500
     assert 'Not a correct encoded query' in response.text
@@ -45,7 +46,7 @@ def test_text_index(
 ):
     response = client_with_mocked_jina_client(DocumentArray()).post(
         '/api/v1/image-to-text/index',
-        json={'texts': ['Hello'], 'tags': [{'tag': 'val'}], 'uris': ['']},
+        json={'text_list': [{'text': 'Hello', 'tags': {'tag': 'val'}, 'uri': ''}]},
     )
     assert response.status_code == status.HTTP_200_OK
 
@@ -56,14 +57,14 @@ def test_text_search_calls_flow(
     base64_image_string: str,
 ):
     response = client_with_mocked_jina_client(sample_search_response_text).post(
-        '/api/v1/image-to-text/search', json={'image': base64_image_string}
+        '/api/v1/image-to-text/search', json={'blob': base64_image_string}
     )
 
     assert response.status_code == status.HTTP_200_OK
     results = DocumentArray.from_json(response.content)
     # the mock writes the call args into the response tags
     assert results[0].tags['url'] == '/search'
-    assert results[0].tags['parameters']['limit'] == 10
+    assert set(results[0].tags['parameter_keys'].split(',')) == {'filter', 'limit'}
 
 
 def test_text_search_parse_response(
@@ -72,7 +73,7 @@ def test_text_search_parse_response(
     base64_image_string: str,
 ):
     response = client_with_mocked_jina_client(sample_search_response_text).post(
-        '/api/v1/image-to-text/search', json={'image': base64_image_string}
+        '/api/v1/image-to-text/search', json={'blob': base64_image_string}
     )
 
     assert response.status_code == status.HTTP_200_OK

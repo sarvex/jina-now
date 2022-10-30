@@ -37,7 +37,7 @@ def test_music_index_fails_with_no_flow_running(
     with pytest.raises(ConnectionError):
         client.post(
             f'/api/v1/music-to-music/index',
-            json={'songs': [base64_audio_string], 'uris': ['']},
+            json={'music_list': [{'blob': base64_audio_string, 'uri': ''}]},
         )
 
 
@@ -47,7 +47,7 @@ def test_music_search_fails_with_no_flow_running(
     with pytest.raises(ConnectionError):
         client.post(
             f'/api/v1/music-to-music/search',
-            json={'song': base64_audio_string},
+            json={'blob': base64_audio_string},
         )
 
 
@@ -56,7 +56,7 @@ def test_music_search_fails_with_incorrect_query(
 ):
     response = client.post(
         f'/api/v1/music-to-music/search',
-        json={'song': 'hh'},
+        json={'blob': 'hh'},
     )
     assert response.status_code == 500
     assert 'Not a correct encoded query' in response.text
@@ -76,7 +76,11 @@ def test_music_index(
 ):
     response = client_with_mocked_jina_client(DocumentArray()).post(
         '/api/v1/music-to-music/index',
-        json={'songs': [base64_audio_string], 'tags': [{'tag': 'val'}], 'uris': ['']},
+        json={
+            'music_list': [
+                {'blob': base64_audio_string, 'tags': {'tag': 'val'}, 'uri': ''}
+            ]
+        },
     )
     assert response.status_code == status.HTTP_200_OK
 
@@ -87,14 +91,14 @@ def test_music_search_calls_flow(
     sample_search_response_music: DocumentArray,
 ):
     response = client_with_mocked_jina_client(sample_search_response_music).post(
-        '/api/v1/music-to-music/search', json={'song': base64_audio_string}
+        '/api/v1/music-to-music/search', json={'blob': base64_audio_string}
     )
 
     assert response.status_code == status.HTTP_200_OK
     results = DocumentArray.from_json(response.content)
     # the mock writes the call args into the response tags
     assert results[0].tags['url'] == '/search'
-    assert results[0].tags['parameters']['limit'] == 10
+    assert set(results[0].tags['parameter_keys'].split(',')) == {'filter', 'limit'}
 
 
 def test_music_search_parse_response(
@@ -103,7 +107,7 @@ def test_music_search_parse_response(
     sample_search_response_music: DocumentArray,
 ):
     response = client_with_mocked_jina_client(sample_search_response_music).post(
-        '/api/v1/music-to-music/search', json={'song': base64_audio_string}
+        '/api/v1/music-to-music/search', json={'blob': base64_audio_string}
     )
 
     assert response.status_code == status.HTTP_200_OK

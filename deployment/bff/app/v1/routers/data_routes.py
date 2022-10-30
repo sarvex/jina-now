@@ -23,23 +23,18 @@ def get_filter(conditions):
 def get_parameters(data, endpoint_name):
     parameters = {}
     if endpoint_name == 'search':
-        filter_parameters = get_filter(data.filters)
+        filter_parameters = get_filter(data['filters'])
         parameters.update(filter_parameters)
-        parameters.update({'limit': data.limit})
+        parameters.update({'limit': data['limit']})
     return parameters
 
 
 def map_inputs(inputs, request_modality):
-    print('inputs', inputs)
     modality_list = inputs.get(f'{request_modality}_list', None)
-    print('modality_list', modality_list)
-    # print('len(modality_list)', len(modality_list))
     if not modality_list:
         modality_list = [inputs]
-        # print('modality_list - AFTERWARDS', modality_list)
     da = DocumentArray()
     for modality_dict in modality_list:
-        print('modality_dict', modality_dict)
         da.append(
             map_inputs_for_modality(
                 modality_dict.get('text', None),
@@ -69,7 +64,7 @@ def map_inputs_for_modality(
         tag should be the key and desired value is assigned as value
         to the key
     """
-    if not (text or blob or uri):
+    if sum([bool(text), bool(blob), bool(uri)]) != 1:
         raise ValueError(
             f'Expected exactly one value to match but got: text={text}, blob={blob[:100] if blob else b""}, uri={uri}'
         )
@@ -92,13 +87,11 @@ def map_inputs_for_modality(
     return query_doc
 
 
-def map_outputs(response_docs, output_modality):
-    if output_modality == 'text':
-        return response_docs[0].text
-    elif output_modality == 'image':
-        return response_docs[0].blob
+def map_outputs(response_docs, endpoint_name, output_modality):
+    if endpoint_name == 'index':
+        return {}
     else:
-        raise ValueError(f'Unknown output modality {output_modality}')
+        return response_docs[0].matches.to_dict()
 
 
 def get_endpoint_description(endpoint_name, input_modality, output_modality):
@@ -138,25 +131,62 @@ def create_endpoints(router, input_modality, output_modality):
             response_modality, is_request=False, endpoint_name=endpoint_name
         )
 
-        @router.post(
+        def get_endpoint(endpoint_name, input_modality, output_modality):
+            """It is not allowed to use the same function name twice in the same scope.
+            Therefore, we need to wrap the function in another function to get a new one.
+            """
+
+            def endpoint(data: RequestModel) -> ResponseModel:
+                data = data.dict()
+                parameters = get_parameters(data, endpoint_name)
+                inputs = map_inputs(data, request_modality)
+                response_docs = jina_client_post(
+                    endpoint=f'/{endpoint_name}',
+                    inputs=inputs,
+                    host=data['host'],
+                    port=data['port'],
+                    api_key=data['api_key'],
+                    jwt=data['jwt'],
+                    parameters=parameters,
+                )
+                response = map_outputs(response_docs, endpoint_name, output_modality)
+                return response
+
+            return endpoint
+
+        router.add_api_route(
             f'/{endpoint_name}',
+            endpoint=get_endpoint(endpoint_name, input_modality, output_modality),
+            methods=['POST'],
             response_model=ResponseModel,
             summary=f'Endpoint to send {endpoint_name} requests',
             description=get_endpoint_description(
                 endpoint_name, input_modality, output_modality
             ),
+            response_model_exclude_unset=True,
+            response_model_exclude_none=True,
         )
-        def index(data: RequestModel) -> ResponseModel:
-            data = data.dict()
-            parameters = get_parameters(data, endpoint_name)
-            inputs = map_inputs(data, request_modality)
-            response_docs = jina_client_post(
-                endpoint=f'/{endpoint_name}',
-                inputs=inputs,
-                host=data['host'],
-                port=data['port'],
-                api_key=data['api_key'],
-                jwt=data['jwt'],
-                parameters=parameters,
-            )
-            return map_outputs(response_docs, output_modality)
+
+        # @router.post(
+        #     f'/{endpoint_name}',
+        #     response_model=ResponseModel,
+        #     summary=f'Endpoint to send {endpoint_name} requests',
+        #     description=get_endpoint_description(
+        #         endpoint_name, input_modality, output_modality
+        #     ),
+        # )
+        # def endpoint(data: RequestModel) -> ResponseModel:
+        #     print('### new request', endpoint_name)
+        #     data = data.dict()
+        #     parameters = get_parameters(data, endpoint_name)
+        #     inputs = map_inputs(data, request_modality)
+        #     response_docs = jina_client_post(
+        #         endpoint=f'/{endpoint_name}',
+        #         inputs=inputs,
+        #         host=data['host'],
+        #         port=data['port'],
+        #         api_key=data['api_key'],
+        #         jwt=data['jwt'],
+        #         parameters=parameters,
+        #     )
+        #     return map_outputs(response_docs, endpoint_name, output_modality)

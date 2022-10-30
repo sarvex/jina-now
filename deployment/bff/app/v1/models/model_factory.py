@@ -1,7 +1,8 @@
-from typing import List
+import random
+import string
+from typing import List, Optional
 
-from aioice.utils import random_string
-from pydantic import BaseModel, create_model
+from pydantic import BaseModel, Field, create_model
 
 from deployment.bff.app.v1.models.base import (
     BaseIndexRequestModel,
@@ -34,18 +35,39 @@ def get_tag_mixin(is_request, endpoint_name):
     return BaseModel
 
 
+def get_modality_description(modality, is_request, endpoint_name):
+    return (
+        f'{str(modality).capitalize()} {"input" if is_request else "output"} for endpoint {endpoint_name}. '
+        f'{("Base64 encoded string representing the binary of the " + modality) if modality != "text" else ""}.'
+    )
+
+
+def random_string(length):
+    letters = string.ascii_lowercase
+    return ''.join(random.choice(letters) for i in range(length))
+
+
 def get_modality_mixin(modality, is_request, endpoint_name):
-    modality_specific_fields = {
-        (modality if modality == 'text' else 'blob'): (str, ...),
-    }
+
     if not is_request and endpoint_name == 'index':
         TmpModel = BaseModel
     else:
-        TmpModel = create_model(
-            __model_name=random_string(10),
-            __base__=BaseModel,
-            **modality_specific_fields,
+        field_name = modality if modality == 'text' else 'blob'
+        field_value = Field(
+            default='',
+            title=field_name,
+            description=get_modality_description(modality, is_request, endpoint_name),
         )
+        if modality == 'text':
+
+            class TmpModel(BaseModel):
+                text: Optional[str] = field_value
+
+        else:
+
+            class TmpModel(BaseModel):
+                blob: Optional[str] = field_value
+
     return TmpModel
 
 

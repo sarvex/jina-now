@@ -29,7 +29,7 @@ class MockedJinaClient:
         **kwargs
     ) -> DocumentArray:
         for doc in self.response.flatten():
-            doc.tags = {'url': url, 'parameters': parameters}
+            doc.tags = {'url': url, 'parameter_keys': ','.join(parameters.keys())}
         return self.response
 
 
@@ -48,7 +48,7 @@ def client_with_mocked_jina_client(
             return MockedJinaClient(response)
 
         mocker.patch(
-            'deployment.bff.app.v1.routers.helper.get_jina_client', _get_jina_client
+            'deployment.bff.app.v1.routers.client.get_jina_client', _get_jina_client
         )
 
         return TestClient(build_app())

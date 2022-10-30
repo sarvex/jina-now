@@ -40,6 +40,7 @@ def jina_client_post(
             *args,
             **kwargs,
         )
+        return result
     except BadServer as e:
         if 'Not a valid user' in e.args[0].status.description:
             raise HTTPException(
@@ -48,4 +49,3 @@ def jina_client_post(
             )
         else:
             raise e
-    return result

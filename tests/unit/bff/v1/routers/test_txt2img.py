@@ -12,7 +12,7 @@ def test_image_index_fails_with_no_flow_running(
     with pytest.raises(ConnectionError):
         client.post(
             '/api/v1/text-to-image/index',
-            json={'images': [base64_image_string], 'uris': ['']},
+            json={'image_list': [{'blob': base64_image_string, 'uri': ''}]},
         )
 
 
@@ -38,9 +38,9 @@ def test_image_index(
 ):
     response = client_with_mocked_jina_client(DocumentArray()).post(
         '/api/v1/text-to-image/index',
-        json={'images': [base64_image_string], 'uris': ['']},
+        json={'image_list': [{'blob': base64_image_string}]},
     )
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == 200
 
 
 def test_image_search_calls_flow(
@@ -55,7 +55,7 @@ def test_image_search_calls_flow(
     results = DocumentArray.from_json(response.content)
     # the mock writes the call args into the response tags
     assert results[0].tags['url'] == '/search'
-    assert results[0].tags['parameters']['limit'] == 10
+    assert set(results[0].tags['parameter_keys'].split(',')) == {'filter', 'limit'}
 
 
 def test_image_search_parse_response(

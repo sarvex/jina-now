@@ -27,10 +27,7 @@ def base64_image_string(resources_folder_path: str) -> str:
 
 @pytest.fixture
 def sample_search_response_image() -> DocumentArray:
-    result = DocumentArray([Document()])
-    matches = DocumentArray([Document(uri='match')])
-    result[0].matches = matches
-    return result
+    return DocumentArray([Document(matches=[Document(uri='match')])])
 
 
 @pytest.fixture
