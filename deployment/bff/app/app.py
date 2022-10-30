@@ -9,7 +9,7 @@ from starlette.applications import Starlette
 from starlette.responses import JSONResponse
 from starlette.routing import Mount
 
-from deployment.bff.app.constants_bff import (
+from deployment.bff.app.constants import (
     DEFAULT_LOGGING_CONFIG,
     DEFAULT_LOGGING_LEVEL,
     DEFAULT_PORT,
