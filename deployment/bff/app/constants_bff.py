@@ -3,6 +3,11 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+TITLE = ' '
+DESCRIPTION = ' '
+AUTHOR = 'Jina AI'
+__version__ = 'latest'
+
 ENV_PREFIX = 'JINA_NOW_'
 
 # server

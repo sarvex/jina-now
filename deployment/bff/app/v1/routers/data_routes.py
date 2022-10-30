@@ -3,8 +3,8 @@ import base64
 from docarray import Document, DocumentArray
 from fastapi import HTTPException
 
+from deployment.bff.app.v1.client import jina_client_post
 from deployment.bff.app.v1.models.model_factory import get_pydantic_model
-from deployment.bff.app.v1.routers.client import jina_client_post
 
 
 def get_filter(conditions):

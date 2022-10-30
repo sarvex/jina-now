@@ -1,12 +1,12 @@
 from docarray import Document
 from fastapi import APIRouter, HTTPException
 
+from deployment.bff.app.v1.client import jina_client_post
 from deployment.bff.app.v1.models.admin import (
     UpdateApiKeysRequestModel,
     UpdateEmailsRequestModel,
 )
 from deployment.bff.app.v1.models.base import BaseRequestModel
-from deployment.bff.app.v1.routers.client import jina_client_post
 
 router = APIRouter()
 

@@ -3,11 +3,11 @@ from typing import List
 from docarray import Document, DocumentArray
 from fastapi import APIRouter
 
+from deployment.bff.app.v1.client import jina_client_post
 from deployment.bff.app.v1.models.cloud_temp_link import (
     CloudTempLinkRequestModel,
     CloudTempLinkResponseModel,
 )
-from deployment.bff.app.v1.routers.client import jina_client_post
 
 router = APIRouter()
 

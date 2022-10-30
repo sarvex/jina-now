@@ -1,5 +1,3 @@
-# TODO bff_request_mapping_fn and bff_response_mapping_fn should be used to create all routes
-
 import logging.config
 import sys
 
@@ -11,20 +9,21 @@ from starlette.applications import Starlette
 from starlette.responses import JSONResponse
 from starlette.routing import Mount
 
-import deployment.bff.app.settings as api_settings
+from deployment.bff.app.constants_bff import (
+    DEFAULT_LOGGING_CONFIG,
+    DEFAULT_LOGGING_LEVEL,
+    DEFAULT_PORT,
+    DESCRIPTION,
+    TITLE,
+)
 from deployment.bff.app.v1.routers import admin, cloud_temp_link
 from deployment.bff.app.v1.routers.data_routes import create_endpoints
 from now.common.options import construct_app
 from now.constants import Apps
 
-logging.config.dictConfig(api_settings.DEFAULT_LOGGING_CONFIG)
+logging.config.dictConfig(DEFAULT_LOGGING_CONFIG)
 logger = logging.getLogger('bff.app')
-logger.setLevel(api_settings.DEFAULT_LOGGING_LEVEL)
-
-TITLE = ' '
-DESCRIPTION = ' '
-AUTHOR = 'Jina AI'
-__version__ = 'latest'
+logger.setLevel(DEFAULT_LOGGING_LEVEL)
 
 
 def get_fast_api_app(app_name):
@@ -60,9 +59,7 @@ def get_fast_api_app(app_name):
 def extend_default_routes(app):
     @app.on_event('startup')
     def startup():
-        logger.info(
-            f'Jina NOW started! ' f'Listening to [::]:{api_settings.DEFAULT_PORT}'
-        )
+        logger.info(f'Jina NOW started! ' f'Listening to [::]:{DEFAULT_PORT}')
 
     @app.exception_handler(Exception)
     async def unicorn_exception_handler(request: Request, exc: Exception):
@@ -123,7 +120,7 @@ def run_server():
     uvicorn.run(
         app,
         host='0.0.0.0',
-        port=8080,
+        port=DEFAULT_PORT,
         loop='uvloop',
         http='httptools',
     )

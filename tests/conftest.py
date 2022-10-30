@@ -12,6 +12,10 @@ from now.deployment.deployment import cmd
 
 @pytest.fixture()
 def resources_folder_path() -> str:
+    return get_resource_folder_path()
+
+
+def get_resource_folder_path() -> str:
     return os.path.join(os.path.dirname(os.path.realpath(__file__)), 'resources')
 
 

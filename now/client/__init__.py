@@ -5,7 +5,7 @@ import requests
 from jina.serve.runtimes.gateway.http.models import JinaResponseModel
 from pydantic import parse_obj_as
 
-from deployment.bff.app.v1.routers.client import jina_client_post
+from deployment.bff.app.v1.client import jina_client_post
 from now.common.options import construct_app
 
 

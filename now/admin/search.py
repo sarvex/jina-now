@@ -1,7 +1,7 @@
 import requests
 from docarray import Document
 
-from deployment.bff.app.v1.routers.client import jina_client_post
+from deployment.bff.app.v1.client import jina_client_post
 
 API_KEY = 'my_key'
 
