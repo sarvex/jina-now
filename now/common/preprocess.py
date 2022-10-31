@@ -11,9 +11,9 @@ def preprocess_images(da: DocumentArray) -> DocumentArray:
         try:
             if d.tensor is None:
                 if d.blob != b'':
-                    d.convert_blob_to_image_tensor()
+                    d.convert_blob_to_image_tensor(parameters={'timeout': 30})
                 elif d.uri:
-                    d.load_uri_to_image_tensor()
+                    d.load_uri_to_image_tensor(parameters={'timeout': 30})
             return to_thumbnail_jpg(d)
         except:
             return d
