@@ -205,11 +205,7 @@ def _maybe_download_from_s3(
             del d.tags['tag_uri']
         return d
 
-    docs_to_download = []
-    for doc in docs:
-        for d in doc.chunks:
-            if d.uri.startswith('s3://'):
-                docs_to_download.append(d)
+    docs_to_download = [doc for doc in docs if doc.uri.startswith('s3://')]
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = []
