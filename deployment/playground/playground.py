@@ -385,6 +385,7 @@ def render_text(da_txt, filter_selection):
             jwt=st.session_state.jwt_val,
             filter_selection=filter_selection,
         )
+
     if da_txt is not None:
         st.subheader("samples:")
         c1, c2, c3 = st.columns(3)
@@ -642,7 +643,9 @@ def update_conf():
 
 
 def clear_match():
-    st.session_state.matches = None
+    st.session_state.matches = (
+        None  # TODO move this to when we choose a suggestion or search button
+    )
     st.session_state.slider = 0.0
     st.session_state.min_confidence = 0.0
     st.session_state.snap = None
