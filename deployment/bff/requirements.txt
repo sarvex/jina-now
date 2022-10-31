@@ -3,6 +3,6 @@ uvicorn
 uvloop
 pydantic==1.10.2
 jina[perf]==3.9.1
-docarray==0.16.2
+docarray==0.16.3
 protobuf~=3.19
 git+https://github.com/jina-ai/now@${JINA_NOW_COMMIT_SHA}
