@@ -114,7 +114,7 @@ jobs:
             - 'deployment/**'
       - name: update requirements.txt
         if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
-        run: sed -i 's/{JINA_NOW_COMMIT_SHA}/${{ github.event.pull_request.head.sha }}/' deployment/bff/requirements.txt
+        run: sed -i 's/\${JINA_NOW_COMMIT_SHA}/${{ github.event.pull_request.head.sha }}/' deployment/bff/requirements.txt
       - name: Zip deployment
         if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
         run: zip -r deploy.zip deployment docker-compose.yml
