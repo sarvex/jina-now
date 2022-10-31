@@ -7,6 +7,7 @@ from argparse import Namespace
 
 import pytest
 import requests
+from docarray import DocumentArray
 
 from now.admin.utils import get_default_request_body
 from now.cli import _get_kind_path, _get_kubectl_path, cli
@@ -192,6 +193,21 @@ def test_backend_demo_data(
         response,
     )
 
+    if input_modality == Modalities.TEXT:
+        host = response.get('host')
+        request_body = get_search_request_body(
+            app,
+            dataset,
+            deployment_type,
+            kwargs,
+            test_search_image,
+            test_search_music,
+            host,
+        )
+        url = f'http://localhost:30090/api/v1'
+        suggest_url = f'{url}/{input_modality}-to-{output_modality}/suggestion'
+        assert_suggest(suggest_url, request_body)
+
     # Dump the flow details from response host to a tmp file if the deployment is remote
     if deployment_type == 'remote':
         flow_details = {'host': response['host']}
@@ -208,6 +224,21 @@ def assert_search(search_url, request_body):
         response.status_code == 200
     ), f"Received code {response.status_code} with text: {response.json()['message']}"
     assert len(response.json()) == 9
+
+
+def assert_suggest(suggest_url, request_body):
+    old_request_text = request_body['text']
+    request_body['text'] = request_body['text'][0]
+    response = requests.post(
+        suggest_url,
+        json=request_body,
+    )
+    assert (
+        response.status_code == 200
+    ), f"Received code {response.status_code} with text: {response.json()['message']}"
+    docs = DocumentArray.from_json(response.content)
+    assert 'suggestions' in docs[0].tags
+    assert docs[0].tags['suggestions'] == [[old_request_text]]
 
 
 def assert_deployment_queries(
