@@ -311,12 +311,11 @@ API_KEY = DialogOptions(
     prompt_message='Do you want to generate an api_key to access this deployment?',
     prompt_type='list',
     choices=[
-        {'name': '✅ yes', 'value': True},
-        {'name': '⛔ no', 'value': False},
+        {'name': '✅ yes', 'value': uuid.uuid4().hex},
+        {'name': '⛔ no', 'value': None},
     ],
     depends_on=SECURED,
     conditional_check=lambda user_inp: user_inp.secured,
-    post_func=lambda user_input, **kwargs: _assign_api_key(user_input),
 )
 
 ADDITIONAL_USERS = DialogOptions(
@@ -327,7 +326,7 @@ ADDITIONAL_USERS = DialogOptions(
         {'name': '✅ yes', 'value': True},
         {'name': '⛔ no', 'value': False},
     ],
-    depends_on=API_KEY,
+    depends_on=SECURED,
     conditional_check=lambda user_inp: user_inp.secured and not user_inp.api_key,
 )
 
@@ -341,12 +340,6 @@ USER_EMAILS = DialogOptions(
     conditional_check=lambda user_inp: user_inp.additional_user,
     post_func=lambda user_input, **kwargs: _add_additional_users(user_input, **kwargs),
 )
-
-
-def _assign_api_key(user_input: UserInput):
-    if user_input.api_key:
-        user_input.api_key = uuid.uuid4().hex
-        print(f'Your API key is {user_input.api_key}')
 
 
 def _add_additional_users(user_input: UserInput, **kwargs):

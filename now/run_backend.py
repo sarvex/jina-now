@@ -2,6 +2,7 @@ import os
 import pathlib
 import random
 import sys
+import uuid
 from copy import deepcopy
 from time import sleep
 from typing import Dict, Optional
@@ -10,8 +11,8 @@ import requests
 from docarray import DocumentArray
 from jina.clients import Client
 
+from now.admin.update_api_keys import update_api_keys
 from now.app.base.app import JinaNOWApp
-from now.common.options import _assign_api_key
 from now.constants import DatasetTypes
 from now.data_loading.data_loading import load_data
 from now.deployment.flow import deploy_flow
@@ -64,50 +65,11 @@ def run(
         and user_input.dataset_type == DatasetTypes.S3_BUCKET
         and 'NOW_CI_RUN' not in os.environ
     ):
-        print('Triggering scheduler to index data from S3 bucket')
-        # check if the api_key exists. If not then create a new one
-        if user_input.secured and not user_input.api_key:
-            _assign_api_key(user_input)
-
-        user_input_dict = user_input.__dict__
-        user_input_dict.pop('app_instance')  # Not needed
-
-        scheduler_params = {
-            'flow_id': get_flow_id(gateway_host_internal),
-            'api_key': user_input.api_key,
-            'user_input': user_input_dict,
-        }
-        cookies = {'st': user_input.jwt['token']}
-        try:
-            response = requests.post(
-                'https://storefrontapi.nowrun.jina.ai/api/v1/schedule_sync',
-                json=scheduler_params,
-                cookies=cookies,
-            )
-            response.raise_for_status()
-            print(
-                'Scheduler triggered successfully. Scheduler will sync data from S3 bucket once a day.'
-            )
-        except Exception as e:
-            print(f'Error while scheduling indexing: {e}')
-            print(f'Indexing will not be scheduled. Please contact Jina AI support.')
+        # schedule the trigger which will syn the bucket with the indexer once a day
+        trigger_scheduler(user_input, gateway_host_internal)
     else:
-        print(f"▶ indexing {len(dataset)} documents")
-        params = {
-            'user_input': user_input.__dict__,
-            'traversal_paths': app_instance.index_query_access_paths,
-            'access_paths': app_instance.index_query_access_paths,
-        }
-        if user_input.secured:
-            params['jwt'] = user_input.jwt
-        call_flow(
-            client=client,
-            dataset=dataset,
-            max_request_size=app_instance.max_request_size,
-            parameters=deepcopy(params),
-            return_results=False,
-        )
-        print('⭐ Success - your data is indexed')
+        # index the data right away
+        index_docs(user_input, dataset, client)
 
     return (
         gateway_host,
@@ -115,6 +77,63 @@ def run(
         gateway_host_internal,
         gateway_port_internal,
     )
+
+
+def trigger_scheduler(user_input, host):
+    """
+    This function will trigger the scheduler which will sync the bucket with the indexer once a day
+    """
+    print('Triggering scheduler to index data from S3 bucket')
+    # check if the api_key exists. If not then create a new one
+    if user_input.secured and not user_input.api_key:
+        user_input.api_key = uuid.uuid4().hex
+        # Also call the bff to update the api key
+        update_api_keys(user_input.deployment_type, user_input.api_key, host)
+
+    user_input_dict = user_input.__dict__
+    user_input_dict.pop('app_instance')  # Not needed
+
+    scheduler_params = {
+        'flow_id': get_flow_id(host),
+        'api_key': user_input.api_key,
+        'user_input': user_input_dict,
+    }
+    cookies = {'st': user_input.jwt['token']}
+    try:
+        response = requests.post(
+            'https://storefrontapi.nowrun.jina.ai/api/v1/schedule_sync',
+            json=scheduler_params,
+            cookies=cookies,
+        )
+        response.raise_for_status()
+        print(
+            'Scheduler triggered successfully. Scheduler will sync data from S3 bucket once a day.'
+        )
+    except Exception as e:
+        print(f'Error while scheduling indexing: {e}')
+        print(f'Indexing will not be scheduled. Please contact Jina AI support.')
+
+
+def index_docs(user_input, dataset, client):
+    """
+    Index the data right away
+    """
+    print(f"▶ indexing {len(dataset)} documents")
+    params = {
+        'user_input': user_input.__dict__,
+        'traversal_paths': user_input.app_instance.index_query_access_paths,
+        'access_paths': user_input.app_instance.index_query_access_paths,
+    }
+    if user_input.secured:
+        params['jwt'] = user_input.jwt
+    call_flow(
+        client=client,
+        dataset=dataset,
+        max_request_size=user_input.app_instance.max_request_size,
+        parameters=deepcopy(params),
+        return_results=False,
+    )
+    print('⭐ Success - your data is indexed')
 
 
 @time_profiler
