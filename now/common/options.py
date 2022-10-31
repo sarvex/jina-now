@@ -327,7 +327,7 @@ ADDITIONAL_USERS = DialogOptions(
         {'name': '⛔ no', 'value': False},
     ],
     depends_on=SECURED,
-    conditional_check=lambda user_inp: user_inp.secured and not user_inp.api_key,
+    conditional_check=lambda user_inp: user_inp.secured,
 )
 
 USER_EMAILS = DialogOptions(
