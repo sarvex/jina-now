@@ -138,9 +138,7 @@ def start_now(app_instance, **kwargs):
             + f'&input_modality={app_instance.input_modality}'
             + f'&output_modality={app_instance.output_modality}'
             + (
-                f'&data={user_input.dataset_name}'
-                if user_input.dataset_type == DatasetTypes.DEMO
-                else 'custom'
+                f'&data={user_input.dataset_name if user_input.dataset_type == DatasetTypes.DEMO else "custom"}'
             )
             + (f'&secured={user_input.secured}' if user_input.secured else '')
         )

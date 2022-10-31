@@ -5,6 +5,7 @@ from typing import Dict, List, Optional, Tuple
 import docker
 from docarray import DocumentArray
 from jina import Client
+from jina.jaml import JAML
 
 from now.constants import Modalities
 from now.demo_data import AVAILABLE_DATASET, DEFAULT_EXAMPLE_HOSTED, DemoDataset
@@ -188,6 +189,25 @@ class JinaNOWApp:
         :param user_input: user configuration based on the given options
         :return: dict used to replace variables in flow yaml and to clean up resources after the flow is terminated
         """
+
+        if self.input_modality == Modalities.TEXT:
+            with open(self.flow_yaml) as input_f:
+                flow_yaml = JAML.load(input_f.read())
+                if not any(
+                    exec_dict['name'] == 'autocomplete_executor'
+                    for exec_dict in flow_yaml['executors']
+                ):
+                    flow_yaml['executors'].insert(
+                        0,
+                        {
+                            'name': 'autocomplete_executor',
+                            'uses': '${{ ENV.AUTOCOMPLETE_EXECUTOR_NAME }}',
+                            'needs': 'gateway',
+                            'env': {'JINA_LOG_LEVEL': 'DEBUG'},
+                        },
+                    )
+                    with open(self.flow_yaml, 'w') as output_f:
+                        JAML.dump(flow_yaml, output_f)
         return {}
 
     def cleanup(self, app_config: dict) -> None:

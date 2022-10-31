@@ -90,6 +90,8 @@ def map_inputs_for_modality(
 def map_outputs(response_docs, endpoint_name, output_modality):
     if endpoint_name == 'index':
         return {}
+    elif endpoint_name == 'suggestion':
+        return response_docs.to_dict()
     else:
         return response_docs[0].matches.to_dict()
 
@@ -110,6 +112,8 @@ def get_endpoint_description(endpoint_name, input_modality, output_modality):
             f'You can provide a list of documents of type {input_modality} including tags.'
             f'The tags can be used to filter the documents when you send a search request.'
         )
+    elif endpoint_name == 'suggestion':
+        return f'Get auto complete suggestion for query.'
     else:
         raise ValueError(f'Unknown endpoint name {endpoint_name}')
 
@@ -119,7 +123,9 @@ def get_data_fileds(data, input_modality, endpoint_name):
 
 
 def create_endpoints(router, input_modality, output_modality):
-    for endpoint_name in ['search', 'index']:
+    for endpoint_name in ['search', 'index', 'suggestion']:
+        if endpoint_name == 'suggestion' and input_modality != 'text':
+            continue
         request_modality = (
             output_modality if endpoint_name == 'index' else input_modality
         )
@@ -166,27 +172,3 @@ def create_endpoints(router, input_modality, output_modality):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
         )
-
-        # @router.post(
-        #     f'/{endpoint_name}',
-        #     response_model=ResponseModel,
-        #     summary=f'Endpoint to send {endpoint_name} requests',
-        #     description=get_endpoint_description(
-        #         endpoint_name, input_modality, output_modality
-        #     ),
-        # )
-        # def endpoint(data: RequestModel) -> ResponseModel:
-        #     print('### new request', endpoint_name)
-        #     data = data.dict()
-        #     parameters = get_parameters(data, endpoint_name)
-        #     inputs = map_inputs(data, request_modality)
-        #     response_docs = jina_client_post(
-        #         endpoint=f'/{endpoint_name}',
-        #         inputs=inputs,
-        #         host=data['host'],
-        #         port=data['port'],
-        #         api_key=data['api_key'],
-        #         jwt=data['jwt'],
-        #         parameters=parameters,
-        #     )
-        #     return map_outputs(response_docs, endpoint_name, output_modality)

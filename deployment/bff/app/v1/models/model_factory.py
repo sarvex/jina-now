@@ -23,13 +23,17 @@ def get_parent_model(is_request, endpoint_name):
         return BaseIndexRequestModel if is_request else BaseIndexResponseModel
     elif endpoint_name == 'search':
         return BaseSearchRequestModel if is_request else BaseSearchResponseModel
+    elif endpoint_name == 'suggestion':
+        return BaseRequestModel if is_request else BaseResponseModel
     else:
         raise ValueError(f'Endpoint {endpoint_name} not supported')
 
 
 def get_tag_mixin(is_request, endpoint_name):
-    if (endpoint_name == 'index' and is_request) or (
-        endpoint_name == 'search' and not is_request
+    if (
+        (endpoint_name == 'index' and is_request)
+        or (endpoint_name == 'search' and not is_request)
+        or (endpoint_name == 'suggestion' and not is_request)
     ):
         return TagsMixin
     return BaseModel
@@ -49,7 +53,9 @@ def random_string(length):
 
 def get_modality_mixin(modality, is_request, endpoint_name):
 
-    if not is_request and endpoint_name == 'index':
+    if (not is_request and endpoint_name == 'index') or (
+        endpoint_name == 'suggestion' and not is_request
+    ):
         TmpModel = BaseModel
     else:
         field_name = modality if modality == 'text' else 'blob'

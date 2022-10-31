@@ -26,6 +26,8 @@
 
 
 
+
+
 <a name=release-note-0-0-7></a>
 ## Release Note (`0.0.7`)
 
@@ -887,4 +889,52 @@
 
  - [[```c068a71b```](https://github.com/jina-ai/now/commit/c068a71bbefaf9911c21fb3cdc07fc2c47ee753b)] __-__ Fix deploy example script (#596) (*Mohammad Kalim Akram*)
  - [[```4373715c```](https://github.com/jina-ai/now/commit/4373715cdd19e672b75562131381974145f2ed5f)] __-__ __version__: the next version will be 0.0.33 (*Jina Dev Bot*)
+
+<a name=release-note-0-0-34></a>
+## Release Note (`0.0.34`)
+
+> Release time: 2022-10-25 11:21:00
+
+
+
+🙇 We'd like to thank all contributors for this new release! In particular,
+ Mohammad Kalim Akram,  Aziz Belaweid,  Jina Dev Bot,  🙇
+
+
+### 🆕 New Features
+
+ - [[```270a2068```](https://github.com/jina-ai/now/commit/270a2068639f28ead4d007f1406f8e1cf3672f00)] __-__ support domain name (#611) (*Mohammad Kalim Akram*)
+
+### 🐞 Bug fixes
+
+ - [[```598a288c```](https://github.com/jina-ai/now/commit/598a288c5185abb5907720fc3ad00003c67d80db)] __-__ catch error in script (*Mohammad Kalim Akram*)
+ - [[```ab651bd6```](https://github.com/jina-ai/now/commit/ab651bd6c71c51ce9db6459c130ec031d65329e0)] __-__ retention days (#608) (*Aziz Belaweid*)
+ - [[```54287757```](https://github.com/jina-ai/now/commit/54287757e9be33b57f82b835b75a20bb6344d283)] __-__ user input data typo (#610) (*Aziz Belaweid*)
+
+### 🍹 Other Improvements
+
+ - [[```b9260f0d```](https://github.com/jina-ai/now/commit/b9260f0ddb5dbbfec1779198dd15f8dde0752a35)] __-__ __version__: the next version will be 0.0.34 (*Jina Dev Bot*)
+
+<a name=release-note-0-0-35></a>
+## Release Note (`0.0.35`)
+
+> Release time: 2022-10-26 10:45:53
+
+
+
+🙇 We'd like to thank all contributors for this new release! In particular,
+ Joschka Braun,  Alex Cureton-Griffiths,  Jina Dev Bot,  🙇
+
+
+### 🐞 Bug fixes
+
+ - [[```8cc87d03```](https://github.com/jina-ai/now/commit/8cc87d032b675e1b01102b70be9504943e6f6790)] __-__ fix url data error (#617) (*Joschka Braun*)
+
+### 📗 Documentation
+
+ - [[```93cf9cc4```](https://github.com/jina-ai/now/commit/93cf9cc4e3fbdd2e3e312924f27a73df1b50bf3b)] __-__ reword, number readme points (#612) (*Alex Cureton-Griffiths*)
+
+### 🍹 Other Improvements
+
+ - [[```e8b3aa1e```](https://github.com/jina-ai/now/commit/e8b3aa1e3081de27893235eee680f0976f7eeab4)] __-__ __version__: the next version will be 0.0.35 (*Jina Dev Bot*)
 
