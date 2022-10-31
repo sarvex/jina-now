@@ -85,6 +85,9 @@ def run(
                 cookies=cookies,
             )
             response.raise_for_status()
+            print(
+                'Scheduler triggered successfully. Scheduler will sync data from S3 bucket once a day.'
+            )
         except Exception as e:
             print(f'Error while scheduling indexing: {e}')
             print(f'Indexing will not be scheduled. Please contact Jina AI support.')

@@ -344,8 +344,9 @@ USER_EMAILS = DialogOptions(
 
 
 def _assign_api_key(user_input: UserInput):
-    user_input.api_key = (uuid.uuid4().hex,)
-    print(f'Your API key is {user_input.api_key}')
+    if user_input.api_key:
+        user_input.api_key = uuid.uuid4().hex
+        print(f'Your API key is {user_input.api_key}')
 
 
 def _add_additional_users(user_input: UserInput, **kwargs):
