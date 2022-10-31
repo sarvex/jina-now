@@ -66,11 +66,6 @@ class NOWPreprocessor(Executor):
         is_indexing,
         encode: bool = False,
     ) -> DocumentArray:
-        docs = transform_docarray(
-            documents=docs,
-            search_fields=self.user_input.search_fields,
-            filter_fields=self.user_input.filter_fields or [],
-        )
         with tempfile.TemporaryDirectory() as tmpdir:
             if (
                 self.user_input
@@ -82,6 +77,12 @@ class NOWPreprocessor(Executor):
                     user_input=self.user_input,
                     max_workers=self.max_workers,
                 )
+            docs = transform_docarray(
+                documents=docs,
+                search_fields=self.user_input.search_fields,
+                filter_fields=self.user_input.filter_fields or [],
+            )
+
             docs = self.app.preprocess(
                 da=docs,
                 user_input=self.user_input,
