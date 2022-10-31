@@ -52,7 +52,6 @@ def random_string(length):
 
 
 def get_modality_mixin(modality, is_request, endpoint_name):
-
     if (not is_request and endpoint_name == 'index') or (
         endpoint_name == 'suggestion' and not is_request
     ):
