@@ -66,6 +66,8 @@ class NOWPreprocessor(Executor):
         is_indexing,
         encode: bool = False,
     ) -> DocumentArray:
+        for doc in docs:
+            print('beginning of maybe cloud', doc.uri)
         with tempfile.TemporaryDirectory() as tmpdir:
             if (
                 self.user_input
@@ -77,6 +79,9 @@ class NOWPreprocessor(Executor):
                     user_input=self.user_input,
                     max_workers=self.max_workers,
                 )
+                for doc in docs:
+                    print('after download s3', doc.uri)
+
             docs = transform_docarray(
                 documents=docs,
                 search_fields=self.user_input.search_fields,
