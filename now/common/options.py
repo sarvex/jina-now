@@ -315,6 +315,8 @@ API_KEY = DialogOptions(
         {'name': '⛔ no', 'value': None},
     ],
     depends_on=SECURED,
+    is_terminal_command=True,
+    description='Pass an api_key to access the flow once the deployment is complete. ',
     conditional_check=lambda user_inp: user_inp.secured,
 )
 
