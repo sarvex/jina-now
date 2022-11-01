@@ -66,8 +66,6 @@ class NOWPreprocessor(Executor):
         is_indexing,
         encode: bool = False,
     ) -> DocumentArray:
-        for doc in docs:
-            print('beginning of maybe cloud', doc.uri)
         with tempfile.TemporaryDirectory() as tmpdir:
             if (
                 self.user_input
@@ -81,7 +79,7 @@ class NOWPreprocessor(Executor):
                 )
 
             print('len of docs before', len(docs))
-
+            old_len = len(docs)
             docs = transform_docarray(
                 documents=docs,
                 search_fields=self.user_input.search_fields,
@@ -94,7 +92,8 @@ class NOWPreprocessor(Executor):
                 process_query=True if encode else not is_indexing,
                 process_target=True if encode else is_indexing,
             )
-            print('len of docs after', len(docs))
+            if old_len != len(docs):
+                raise Exception(f'{old_len} and {len(docs)}, docs {docs}')
 
             # as _maybe_download_from_s3 moves S3 URI to tags['uri'], need to move it back for post-processor & accurate
             # results
