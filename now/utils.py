@@ -140,7 +140,7 @@ def maybe_prompt_user(questions, attribute, **kwargs):
 
     :return: A single value of either from `kwargs` or the user cli input.
     """
-    if kwargs and kwargs.get(attribute) is not None:
+    if kwargs and attribute in kwargs:
         return kwargs[attribute]
     else:
         answer = prompt(questions)
