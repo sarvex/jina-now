@@ -6,10 +6,11 @@ from now.utils import BetterEnum
 # from docarray import __version__ as docarray_version
 
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.129-test-multimodal-demo-49'
-NOW_PREPROCESSOR_VERSION = '0.0.93-test-multimodal-demo-49'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.129-test-multimodal-demo-50'
+NOW_PREPROCESSOR_VERSION = '0.0.93-test-multimodal-demo-50'
 NOW_QDRANT_INDEXER_VERSION = '0.0.2-allow-domain-6'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.3-test-multimodal-demo-49'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.3-test-multimodal-demo-50'
+NOW_AUTOCOMPLETE_VERSION = '0.0.1-feat-auto-complete-52'
 
 
 class Modalities(BetterEnum):

@@ -64,13 +64,13 @@ def test_text_to_video(resources_folder_path):
     assert len([blob for blob in encode_result.blobs if blob != b'']) == 1
 
 
-# def test_user_input_preprocessing():
-#     user_input = {'indexer_scope': {'text': 'title', 'image': 'uris'}}
-#     with Flow().add(uses=NOWPreprocessor, uses_with={'app': Apps.TEXT_TO_TEXT_AND_IMAGE}) as f:
-#         result = f.post(
-#             on='/index',
-#             inputs=DocumentArray([Document(text='test')]),
-#             parameters={'user_input': user_input},
-#             show_progress=True,
-#         )
-#         result = DocumentArray.from_json(result.to_json())
+def test_user_input_preprocessing():
+    user_input = {'indexer_scope': {'text': 'title', 'image': 'uris'}}
+    with Flow().add(uses=NOWPreprocessor, uses_with={'app': Apps.TEXT_TO_TEXT_AND_IMAGE}) as f:
+        result = f.post(
+            on='/index',
+            inputs=DocumentArray([Document(text='test')]),
+            parameters={'user_input': user_input},
+            show_progress=True,
+        )
+        result = DocumentArray.from_json(result.to_json())

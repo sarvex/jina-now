@@ -9,7 +9,13 @@ from jina import __version__ as jina_version
 from now.app.base.app import JinaNOWApp
 from now.common.preprocess import preprocess_nested_docs, preprocess_text
 from now.common.utils import get_indexer_config
-from now.constants import NOW_PREPROCESSOR_VERSION, Apps, Modalities, ModelNames
+from now.constants import (
+    NOW_PREPROCESSOR_VERSION,
+    Apps,
+    Modalities,
+    ModelNames,
+    NOW_AUTOCOMPLETE_VERSION,
+)
 from now.finetuning.data_builder import DataBuilder
 from now.finetuning.run_finetuning import finetune
 from now.finetuning.settings import FinetuneSettings, parse_finetune_settings
@@ -176,6 +182,9 @@ class TextToTextAndImage(JinaNOWApp):
         env_dict['USER_EMAILS'] = (
             user_input.user_emails or [] if user_input.secured else []
         )
+        env_dict[
+            'AUTOCOMPLETE_EXECUTOR_NAME'
+        ] = f'jinahub+docker://NOWAutoCompleteExecutor/{NOW_AUTOCOMPLETE_VERSION}'
 
         self.set_flow_yaml()
         super().setup(dataset, user_input, kubectl_path)
