@@ -88,7 +88,10 @@ def trigger_scheduler(user_input, host):
     if user_input.secured and not user_input.api_key:
         user_input.api_key = uuid.uuid4().hex
         # Also call the bff to update the api key
-        update_api_keys(user_input.deployment_type, user_input.api_key, host)
+        for i in range(
+            100
+        ):  # increase the probability that all replicas get the new key
+            update_api_keys(user_input.deployment_type, user_input.api_key, host)
 
     user_input_dict = user_input.__dict__
     user_input_dict.pop('app_instance')  # Not needed

@@ -164,7 +164,7 @@ def test_backend_demo_data(
         'dataset_name': dataset,
         'cluster': cluster,
         'secured': deployment_type == 'remote',
-        'api_key': False,
+        'api_key': None,
         'additional_user': False,
         'deployment_type': deployment_type,
         'proceed': True,
