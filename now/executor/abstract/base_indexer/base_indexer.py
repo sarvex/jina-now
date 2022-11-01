@@ -1,7 +1,7 @@
 from collections import defaultdict
 from copy import deepcopy
 from sys import maxsize
-from typing import List, Optional
+from typing import Dict, Optional
 
 from docarray import Document, DocumentArray
 
@@ -16,7 +16,7 @@ class NOWBaseIndexer(Executor):
     def __init__(
         self,
         dim: int,
-        columns: Optional[List] = None,
+        columns: Optional[Dict] = None,
         metric: str = 'cosine',
         limit: int = 10,
         traversal_paths: str = '@r',
@@ -26,8 +26,7 @@ class NOWBaseIndexer(Executor):
     ):
         """
         :param dim: Dimensionality of vectors to index
-        :param columns: List of tuples of the form (column_name, str_type). Here str_type must be a string that can be
-        parsed as a valid Python type.
+        :param columns: Dictionary with tag names as keys and their types as values.
         :param metric: Distance metric type. Can be 'euclidean', 'inner_product', or 'cosine'
         :param limit: Number of results to get for each query document in search
         :param traversal_paths: Default traversal paths on docs
@@ -36,7 +35,7 @@ class NOWBaseIndexer(Executor):
         """
 
         super().__init__(*args, **kwargs)
-        self.columns = self.parse_columns(columns)
+        self.columns = columns
         self.dim = dim
         self.metric = metric
         self.limit = limit
@@ -220,7 +219,7 @@ class NOWBaseIndexer(Executor):
                                 for cloud_bucket_prefix in CLOUD_BUCKET_PREFIXES
                             ]
                         ):
-                            doc.load_uri_to_blob()
+                            doc.load_uri_to_blob(parameters={'timeout': 30})
                         doc.blob = None
                         doc.tensor = None
                         doc.mime_type = None
@@ -235,21 +234,6 @@ class NOWBaseIndexer(Executor):
             doc.embedding = None
             for match in doc.matches:
                 match.embedding = None
-
-    @staticmethod
-    def parse_columns(columns):
-        """Parse the columns to index"""
-        valid_input_columns = ['str', 'float', 'int']
-        if columns:
-            corrected_list = []
-            for i in range(0, len(columns), 2):
-                corrected_list.append((columns[i], columns[i + 1]))
-            columns = corrected_list
-            for n, t in columns:
-                assert (
-                    t in valid_input_columns
-                ), f'column of type={t} is not supported. Supported types are {valid_input_columns}'
-        return columns
 
     def load_document_list(self):
         """is needed for the list endpoint"""

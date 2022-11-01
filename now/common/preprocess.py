@@ -11,7 +11,7 @@ def preprocess_images(da: DocumentArray) -> DocumentArray:
         try:
             if d.tensor is None:
                 if d.blob != b'':
-                    d.convert_blob_to_image_tensor(parameters={'timeout': 30})
+                    d.convert_blob_to_image_tensor()
                 elif d.uri:
                     d.load_uri_to_image_tensor(parameters={'timeout': 30})
             return to_thumbnail_jpg(d)
@@ -34,7 +34,7 @@ def preprocess_text(da: DocumentArray, split_by_sentences=False) -> DocumentArra
         try:
             if not d.text:
                 if d.uri:
-                    d.load_uri_to_text()
+                    d.load_uri_to_text(parameters={'timeout': 30})
                     d.tags['additional_info'] = d.uri
             return d
         except:

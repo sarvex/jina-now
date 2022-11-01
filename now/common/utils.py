@@ -219,11 +219,11 @@ def _extract_tags_for_indexer(d: Document, user_input):
                 user_input=user_input,
                 max_workers=1,
             )
-    tags = set()
+    tags = {}
     for tag, _ in d.tags.items():
-        tags.add((tag, str(tag.__class__.__name__)))
-    final_tags = [list(tag) for tag in tags]
-    return final_tags
+        if tag not in tags:
+            tags[tag] = str(tag.__class__.__name__)
+    return tags
 
 
 def setup_elastic_service(
