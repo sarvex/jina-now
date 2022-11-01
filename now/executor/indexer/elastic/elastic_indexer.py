@@ -432,9 +432,9 @@ class ElasticIndexer(Executor):
         text = False
         image = False
         for chunk in docs[0].chunks:
-            if chunk.text and chunk.embedding:
+            if chunk.text is not None and chunk.embedding is not None:
                 text = True
-            elif chunk.uri and chunk.embedding:
+            elif chunk.uri is not None and chunk.embedding is not None:
                 image = True
         if text and image:
             return True
