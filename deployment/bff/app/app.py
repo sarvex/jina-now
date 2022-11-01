@@ -133,3 +133,5 @@ if __name__ == '__main__':
         logger.critical(str(exc))
         logger.exception(exc)
         sys.exit(1)
+else:
+    application = build_app()
