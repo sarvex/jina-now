@@ -105,6 +105,7 @@ class ElasticIndexer(Executor):
         :param parameters: dictionary with options for indexing.
         :return: empty `DocumentArray`.
         """
+        docs.summary()
         if not docs:
             if docs_matrix:
                 print(docs_matrix)

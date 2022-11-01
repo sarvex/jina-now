@@ -112,6 +112,7 @@ class TextToTextAndImage(JinaNOWApp):
         is_indexing: Optional[bool] = False,
     ) -> DocumentArray:
         # Indexing
+        da.summary()
         if is_indexing:
             return preprocess_nested_docs(da=da, user_input=user_input)
         # Query
