@@ -66,7 +66,9 @@ def test_text_to_video(resources_folder_path):
 
 def test_user_input_preprocessing():
     user_input = {'indexer_scope': {'text': 'title', 'image': 'uris'}}
-    with Flow().add(uses=NOWPreprocessor, uses_with={'app': Apps.TEXT_TO_TEXT_AND_IMAGE}) as f:
+    with Flow().add(
+        uses=NOWPreprocessor, uses_with={'app': Apps.TEXT_TO_TEXT_AND_IMAGE}
+    ) as f:
         result = f.post(
             on='/index',
             inputs=DocumentArray([Document(text='test')]),
