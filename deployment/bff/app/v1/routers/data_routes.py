@@ -118,10 +118,6 @@ def get_endpoint_description(endpoint_name, input_modality, output_modality):
         raise ValueError(f'Unknown endpoint name {endpoint_name}')
 
 
-def get_data_fileds(data, input_modality, endpoint_name):
-    pass
-
-
 def create_endpoints(router, input_modality, output_modality):
     for endpoint_name in ['search', 'index', 'suggestion']:
         if endpoint_name == 'suggestion' and input_modality != 'text':
@@ -145,7 +141,9 @@ def create_endpoints(router, input_modality, output_modality):
             def endpoint(data: RequestModel) -> ResponseModel:
                 data = data.dict()
                 parameters = get_parameters(data, endpoint_name)
+                print('### inputs before mapping', data)
                 inputs = map_inputs(data, request_modality)
+                print('### inputs after mapping', inputs)
                 response_docs = jina_client_post(
                     endpoint=f'/{endpoint_name}',
                     inputs=inputs,
