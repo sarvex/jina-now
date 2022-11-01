@@ -7,9 +7,9 @@ from now.utils import BetterEnum
 # DEMO_DATASET_DOCARRAY_VERSION = docarray_version
 
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.130-fix-add-timeout-2'
-NOW_PREPROCESSOR_VERSION = '0.0.94-fix-add-timeout-2'
-NOW_QDRANT_INDEXER_VERSION = '0.0.2-fix-add-timeout-2'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.130-fix-add-timeout-3'
+NOW_PREPROCESSOR_VERSION = '0.0.94-fix-add-timeout-3'
+NOW_QDRANT_INDEXER_VERSION = '0.0.2-fix-add-timeout-3'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.3-refactor-executors-21'
 NOW_AUTOCOMPLETE_VERSION = '0.0.1-feat-auto-complete-52'
 

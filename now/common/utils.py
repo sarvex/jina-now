@@ -5,7 +5,7 @@ import tempfile
 import time
 from copy import deepcopy
 from os.path import expanduser as user
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 
 import hubble
 from docarray import Document, DocumentArray
@@ -39,7 +39,7 @@ def common_get_flow_env_dict(
     indexer_uses: str,
     indexer_resources: Dict,
     user_input: UserInput,
-    tags: List,
+    tags: Dict,
 ):
     """Returns dictionary for the environments variables for the clip & music flow.yml files."""
     if (
