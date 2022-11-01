@@ -203,8 +203,8 @@ class NOWBaseIndexer(Executor):
         # self.check_docs(docs)
         docs_copy = deepcopy(docs)
         self.search(docs_copy, parameters, retrieval_limit, search_filter)
-        if traversal_paths == '@c':
-            merge_matches_sum(docs_copy, limit)
+        # if traversal_paths == '@c':
+        #     merge_matches_sum(docs_copy, limit)
         return docs_copy
 
     def append_matches_if_not_exists(
