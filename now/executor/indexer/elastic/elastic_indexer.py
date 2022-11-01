@@ -109,9 +109,12 @@ class ElasticIndexer(Executor):
         if docs_matrix:
             print(docs_matrix)
             docs_matrix[0].summary()
-            docs = self._join_docs_matrix_into_chunks(
-                docs_matrix=docs_matrix, on='index'
-            )
+            if len(docs_matrix) > 1:
+                docs = self._join_docs_matrix_into_chunks(
+                    docs_matrix=docs_matrix, on='index'
+                )
+            else:
+                docs = docs_matrix[0]
         if not parameters:
             parameters = {}
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
@@ -159,9 +162,12 @@ class ElasticIndexer(Executor):
         """
         print(docs_matrix)
         if docs_matrix:
-            docs = self._join_docs_matrix_into_chunks(
-                docs_matrix=docs_matrix, on='search'
-            )
+            if len(docs_matrix) > 1:
+                docs = self._join_docs_matrix_into_chunks(
+                    docs_matrix=docs_matrix, on='search'
+                )
+            else:
+                docs = docs_matrix[0]
 
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
         search_filter = parameters.get('filter', None)
