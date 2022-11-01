@@ -200,7 +200,6 @@ class NOWBaseIndexer(Executor):
     def create_matches(
         self, docs, parameters, traversal_paths, limit, retrieval_limit, search_filter
     ):
-        # self.check_docs(docs)
         docs_copy = deepcopy(docs)
         self.search(docs_copy, parameters, retrieval_limit, search_filter)
         # if traversal_paths == '@c':
