@@ -74,7 +74,6 @@ class NOWQdrantIndexer15(Executor):
                 d.tags['title'] = d.tags['title'].lower().split()
             if d.embedding is None:
                 raise Exception(f'document {d.summary()} has no embeddings')
-        # print('indexing', docs[0].summary())
 
         self._index.extend(docs)
 
