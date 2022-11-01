@@ -106,15 +106,12 @@ class ElasticIndexer(Executor):
         :return: empty `DocumentArray`.
         """
         docs.summary()
-        if not docs:
-            if docs_matrix:
-                print(docs_matrix)
-                docs_matrix[0].summary()
-                docs = self._join_docs_matrix_into_chunks(
-                    docs_matrix=docs_matrix, on='index'
-                )
-            else:
-                return
+        if docs_matrix:
+            print(docs_matrix)
+            docs_matrix[0].summary()
+            docs = self._join_docs_matrix_into_chunks(
+                docs_matrix=docs_matrix, on='index'
+            )
         if not parameters:
             parameters = {}
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
@@ -160,14 +157,11 @@ class ElasticIndexer(Executor):
                 - 'traversal_paths' (str): traversal paths for the docs
                 - 'limit' (int): nr of matches to get per Document
         """
-        if docs:
-            print("DOCS")
-            docs.summary()
-            if docs_matrix is None:
-                docs_matrix = [docs]
-        elif not docs and not docs_matrix:
-            return
-        docs = self._join_docs_matrix_into_chunks(docs_matrix=docs_matrix, on='search')
+        print(docs_matrix)
+        if docs_matrix:
+            docs = self._join_docs_matrix_into_chunks(
+                docs_matrix=docs_matrix, on='search'
+            )
 
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
         search_filter = parameters.get('filter', None)
@@ -472,11 +466,11 @@ class ElasticIndexer(Executor):
         else:
             da1 = docs_matrix[0]
             da2 = docs_matrix[1]
-            if self.check_if_chunks_clip_encoded(da1):
-                assert self.check_if_chunks_clip_encoded(da2) == False
+            if self._check_if_chunks_clip_encoded(da1):
+                assert self._check_if_chunks_clip_encoded(da2) == False
                 image_chunks = [c for c in da1['@c'] if c.uri]
                 text_chunks = [c for c in da2['@c'] if c.text]
-            elif self.check_if_chunks_clip_encoded(da2):
+            elif self._check_if_chunks_clip_encoded(da2):
                 image_chunks = [c for c in da2['@c'] if c.uri]
                 text_chunks = [c for c in da1['@c'] if c.text]
             else:

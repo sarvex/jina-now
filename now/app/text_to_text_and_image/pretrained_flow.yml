@@ -68,3 +68,4 @@ executors:
   needs:
   - sbert_encoder
   - clip_encoder
+  disable_reduce: True
