@@ -5,7 +5,7 @@ import tempfile
 import time
 from copy import deepcopy
 from os.path import expanduser as user
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 import hubble
 from docarray import Document, DocumentArray
@@ -39,7 +39,7 @@ def common_get_flow_env_dict(
     indexer_uses: str,
     indexer_resources: Dict,
     user_input: UserInput,
-    tags: Dict,
+    tags: List,
 ):
     """Returns dictionary for the environments variables for the clip & music flow.yml files."""
     if (
@@ -219,11 +219,11 @@ def _extract_tags_for_indexer(d: Document, user_input):
                 user_input=user_input,
                 max_workers=1,
             )
-    tags = {}
+    tags = set()
     for tag, _ in d.tags.items():
-        if tag not in tags:
-            tags[tag] = str(tag.__class__.__name__)
-    return tags
+        tags.add((tag, str(tag.__class__.__name__)))
+    final_tags = [list(tag) for tag in tags]
+    return final_tags
 
 
 def setup_elastic_service(
