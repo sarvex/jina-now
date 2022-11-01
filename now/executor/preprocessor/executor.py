@@ -94,6 +94,9 @@ class NOWPreprocessor(Executor):
                 process_query=True if encode else not is_indexing,
                 process_target=True if encode else is_indexing,
             )
+            print('len of docs', len(docs))
+            print('processed doc', docs[0])
+
             # as _maybe_download_from_s3 moves S3 URI to tags['uri'], need to move it back for post-processor & accurate
             # results
             if (

@@ -58,6 +58,7 @@ def search(data: NowTextSearchRequestModel):
     query_doc, filter_query = process_query(
         text=data.text, uri=data.uri, conditions=data.filters
     )
+    print('query doc', query_doc)
 
     docs = jina_client_post(
         data=data,
