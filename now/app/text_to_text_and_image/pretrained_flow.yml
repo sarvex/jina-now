@@ -35,22 +35,10 @@ executors:
     jcloud:
       resources:
         memory: 4G
-  - name: clip_text_encoder
+  - name: clip_encoder
     uses: jinahub+docker://CLIPOnnxEncoder/latest
     uses_requests:
       /search: encode
-    uses_with:
-      name: ViT-B-32::openai
-      access_paths: '@c'
-    env:
-      JINA_LOG_LEVEL: DEBUG
-    needs: preprocessor
-    jcloud:
-      resources:
-        memory: 4G
-  - name: clip_vision_encoder
-    uses: jinahub+docker://CLIPOnnxEncoder/latest
-    uses_requests:
       /index: encode
     uses_with:
       name: ViT-B-32::openai
@@ -60,7 +48,7 @@ executors:
     needs: preprocessor
     jcloud:
       resources:
-        memory: 1G
+        memory: 4G
   - name: indexer
     uses: ${{ ENV.INDEXER_NAME }}
     uses_with:
@@ -77,4 +65,4 @@ executors:
         cpu: 1.0
     env:
       JINA_LOG_LEVEL: DEBUG
-    needs: [sbert_encoder, clip_text_encoder, clip_vision_encoder]
+    needs: [sbert_encoder, clip_encoder]

@@ -220,6 +220,9 @@ def assert_search(search_url, request_body):
         search_url,
         json=request_body,
     )
+    print("PRINTING FROM ASSERT SEARCH")
+    print(response)
+    print(response.json())
     assert (
         response.status_code == 200
     ), f"Received code {response.status_code} with text: {response.json()['message']}"

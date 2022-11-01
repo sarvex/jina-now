@@ -194,3 +194,20 @@ def test_delete(
         f.post(on='/delete', parameters={'filter': {'cost': {'gte': 15.0}}})
         res = es.search(index=index_name, size=100, query={'match_all': {}})
         assert len(res['hits']['hits']) == 0
+
+def test_merge_docs_matrix(
+        docs_matrix,
+        merged_docs_matrix,
+        setup_service_running,
+        es_connection_params,
+):
+    merged_result = ElasticIndexer.join_docs_matrix_into_chunks(on='index', docs_matrix=docs_matrix)
+    merged_result.summary()
+    assert len(merged_result[0].chunks) == 2
+    for c in merged_result[0].chunks:
+        if c.text:
+            assert len(c.embedding) == 768
+        elif c.uri:
+            assert len(c.embedding) == 512
+        else:
+            raise Exception('unexpected chunk')
