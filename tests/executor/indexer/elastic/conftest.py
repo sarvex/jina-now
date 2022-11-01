@@ -86,34 +86,46 @@ def text_da():
 def text_query():
     return DocumentArray([Document(text='text', embedding=np.ones(7))])
 
+
 @pytest.fixture
 def docs_matrix():
     return [
         DocumentArray(
             Document(
                 chunks=[
-                    Document(text='this', embedding=np.ones(512)), # embedding from CLIP text model
-                    Document(uri='https://jina.ai', embedding=np.ones(512)), # embedding from CLIP image model
+                    Document(
+                        text='this', embedding=np.ones(512)
+                    ),  # embedding from CLIP text model
+                    Document(
+                        uri='https://jina.ai', embedding=np.ones(512)
+                    ),  # embedding from CLIP image model
                 ]
             )
         ),
         DocumentArray(
             Document(
                 chunks=[
-                    Document(text='this', embedding=np.ones(768)), # embedding from SBERT
-                    Document(uri='https://jina.ai'), # not encoded by SBERT
+                    Document(
+                        text='this', embedding=np.ones(768)
+                    ),  # embedding from SBERT
+                    Document(uri='https://jina.ai'),  # not encoded by SBERT
                 ]
             )
-        )
+        ),
     ]
+
 
 @pytest.fixture
 def merged_docs_matrix():
     return DocumentArray(
         Document(
             chunks=[
-                Document(text='this', embedding=np.array([1, 2, 3, 4, 5])), # embedding from SBERT
-                Document(uri='https://jina.ai', embedding=np.array([4, 5, 6])), # embedding from CLIP image model
+                Document(
+                    text='this', embedding=np.array([1, 2, 3, 4, 5])
+                ),  # embedding from SBERT
+                Document(
+                    uri='https://jina.ai', embedding=np.array([4, 5, 6])
+                ),  # embedding from CLIP image model
             ]
         )
     )
