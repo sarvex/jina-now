@@ -6,6 +6,8 @@ import pytest
 import requests
 from docarray import Document
 from jina import Flow
+
+from now.executor.preprocessor import NOWPreprocessor
 from tests.integration.test_end_to_end import assert_search
 
 from deployment.bff.app.app import run_server
@@ -35,6 +37,7 @@ def get_flow():
     admin_email = client.get_user_info()['data'].get('email')
     f = (
         Flow(port_expose=9089)
+        .add(uses=NOWPreprocessor, uses_with={'app': 'text_to_image'})
         .add(
             host=EXTERNAL_CLIP_HOST,
             port=443,
