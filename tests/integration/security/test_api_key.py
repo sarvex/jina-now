@@ -8,6 +8,7 @@ from docarray import Document
 from jina import Flow
 
 from now.executor.preprocessor import NOWPreprocessor
+from now.now_dataclasses import UserInput
 from tests.integration.test_end_to_end import assert_search
 
 from deployment.bff.app.app import run_server
@@ -55,7 +56,12 @@ def get_flow():
 def index(f):
     f.index(
         [Document(text='test') for i in range(10)],
-        parameters={'jwt': get_request_body()['jwt']},
+        parameters={
+            'jwt': get_request_body()['jwt'],
+            'user_input': UserInput().__dict__,
+            'access_paths': '@c',
+            'traversal_paths': '@c',
+        },
     )
 
 
