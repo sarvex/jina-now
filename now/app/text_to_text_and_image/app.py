@@ -121,6 +121,7 @@ class TextToTextAndImage(JinaNOWApp):
             for d in da:
                 if not d.chunks:
                     d.chunks = [Document(text=d.text, modality='text')]
+            return da
 
     @hubble.login_required
     def setup(
