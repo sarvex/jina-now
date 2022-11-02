@@ -67,7 +67,7 @@ class NOWQdrantIndexer15(Executor):
 
     # override
     def index(self, docs: DocumentArray, parameters: dict, **kwargs):
-        """Index new documents"""
+        """Index new documents."""
         # qdrant needs a list of values when filtering on sentences
         for d in docs:
             if 'title' in d.tags:
