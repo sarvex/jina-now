@@ -123,7 +123,7 @@ class TextToVideo(JinaNOWApp):
                 try:
                     if d.blob == b'':
                         if d.uri:
-                            d.load_uri_to_blob(parameters={'timeout': 30})
+                            d.load_uri_to_blob(timeout=10)
                         elif d.tensor is not None:
                             d.convert_tensor_to_blob()
                     sample_video(d)

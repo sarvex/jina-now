@@ -56,5 +56,5 @@ if __name__ == '__main__':
     print("embedding", type(inpt.embedding), inpt.embedding.shape)
     print("uri", type(inpt.uri), inpt.uri)
     print("tensor", type(inpt.tensor), inpt.tensor.shape)
-    inpt.load_uri_to_text(parameters={'timeout': 30})
+    inpt.load_uri_to_text(timeout=10)
     inpt.summary()
