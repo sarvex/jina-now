@@ -218,7 +218,6 @@ def test_backend_demo_data(
 def assert_search(search_url, request_body):
     print(search_url)
     print(request_body)
-    exit(0)
     response = requests.post(
         search_url,
         json=request_body,
