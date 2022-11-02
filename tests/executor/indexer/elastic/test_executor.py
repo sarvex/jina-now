@@ -206,10 +206,14 @@ def test_delete(
 def test_merge_docs_matrix(
     docs_matrix: List[DocumentArray],
     on: str,
+    setup_service_running,
+    es_connection_params,
     request,
 ):
     docs_matrix = request.getfixturevalue(docs_matrix)
-    merged_result = ElasticIndexer._join_docs_matrix_into_chunks(
+    hosts, _ = es_connection_params
+    es_indexer = ElasticIndexer(dims=[768, 512], hosts=hosts, index_name='testxx', traversal_paths='@c')
+    merged_result = es_indexer._join_docs_matrix_into_chunks(
         on=on, docs_matrix=docs_matrix
     )
     print("MERGED_RESULT SUMMARY")

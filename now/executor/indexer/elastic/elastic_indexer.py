@@ -425,7 +425,7 @@ class ElasticIndexer(Executor):
         return embeddings
 
     def _join_docs_matrix_into_chunks(
-        docs_matrix: List[DocumentArray], on: str = 'index'
+        self, docs_matrix: List[DocumentArray], on: str = 'index'
     ) -> DocumentArray:
         """
         Transform a matrix of DocumentArray's into one DocumentArray, by adding Documents to the chunk level.
