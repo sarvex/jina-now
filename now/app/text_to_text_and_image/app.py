@@ -117,7 +117,12 @@ class TextToTextAndImage(JinaNOWApp):
             return preprocess_nested_docs(da=da, user_input=user_input)
         # Query
         else:
-            return preprocess_text(da=da, split_by_sentences=False)
+            da = preprocess_text(da=da, split_by_sentences=False)
+            for d in da:
+                if not d.chunks:
+                    d.chunks = [Document(text=d.text, modality='text')]
+
+
 
     @hubble.login_required
     def setup(
