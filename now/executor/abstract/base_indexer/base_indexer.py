@@ -19,7 +19,7 @@ class NOWBaseIndexer(Executor):
         columns: Optional[List] = None,
         metric: str = 'cosine',
         limit: int = 10,
-        traversal_paths: str = '@r',
+        traversal_paths: str = '@c',
         max_values_per_tag: int = 10,
         *args,
         **kwargs,
@@ -90,7 +90,7 @@ class NOWBaseIndexer(Executor):
         offset = int(parameters.get('offset', 0))
         # add removal of duplicates
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
-        if traversal_paths == '@c':
+        if traversal_paths == '@c,c':
             docs = DocumentArray()
             chunks_size = int(parameters.get('chunks_size', 3))
             parent_ids = set()
@@ -151,10 +151,10 @@ class NOWBaseIndexer(Executor):
         ]  # only search on the first document for now
         # self.check_docs(new_docs, docs)
         docs = new_docs
-        # if traversal_paths == '@c':
-        #     retrieval_limit = limit * 3
-        # else:
-        retrieval_limit = limit
+        if traversal_paths == '@c,c':
+            retrieval_limit = limit * 3
+        else:
+            retrieval_limit = limit
 
         # first get with title and then merge matches each
         docs_with_matches = self.create_matches(
@@ -201,8 +201,8 @@ class NOWBaseIndexer(Executor):
     ):
         docs_copy = deepcopy(docs)
         self.search(docs_copy, parameters, retrieval_limit, search_filter)
-        # if traversal_paths == '@c':
-        #     merge_matches_sum(docs_copy, limit)
+        if traversal_paths == '@c,c':
+            merge_matches_sum(docs_copy, limit)
         return docs_copy
 
     def append_matches_if_not_exists(

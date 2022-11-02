@@ -1,7 +1,7 @@
 import base64
 import io
 import os
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import numpy as np
 import PIL
@@ -51,6 +51,11 @@ class TextToVideo(JinaNOWApp):
     @property
     def required_docker_memory_in_gb(self) -> int:
         return 12
+
+    def index_query_access_paths(
+        self, search_fields: Optional[List[str]] = None
+    ) -> str:
+        return '@c,c'
 
     def set_flow_yaml(self, **kwargs):
         finetuning = kwargs.get('finetuning', False)
