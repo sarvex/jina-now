@@ -163,6 +163,8 @@ class ElasticIndexer(Executor):
         print(docs_matrix)
         if docs_matrix:
             if len(docs_matrix) > 1:
+                docs_matrix[0].summary()
+                docs_matrix[1].summary()
                 docs = self._join_docs_matrix_into_chunks(
                     docs_matrix=docs_matrix, on='search'
                 )
@@ -403,8 +405,9 @@ class ElasticIndexer(Executor):
             matches.append(d)
         return matches
 
+    @staticmethod
     def _extract_embeddings(
-        self, doc: Document, traversal_paths: str
+        doc: Document, traversal_paths: str
     ) -> Dict[str, np.ndarray]:
         """
         Get embeddings from a documents.
@@ -424,8 +427,9 @@ class ElasticIndexer(Executor):
             raise
         return embeddings
 
+    @staticmethod
     def _join_docs_matrix_into_chunks(
-        self, docs_matrix: List[DocumentArray], on: str = 'index'
+        docs_matrix: List[DocumentArray], on: str = 'index'
     ) -> DocumentArray:
         """
         Transform a matrix of DocumentArray's into one DocumentArray, by adding Documents to the chunk level.
