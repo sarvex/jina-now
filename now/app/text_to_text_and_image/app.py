@@ -122,8 +122,6 @@ class TextToTextAndImage(JinaNOWApp):
                 if not d.chunks:
                     d.chunks = [Document(text=d.text, modality='text')]
 
-
-
     @hubble.login_required
     def setup(
         self, dataset: DocumentArray, user_input: UserInput, kubectl_path
