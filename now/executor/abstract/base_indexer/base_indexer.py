@@ -142,8 +142,6 @@ class NOWBaseIndexer(Executor):
         self, docs: Optional[DocumentArray] = None, parameters: dict = {}, **kwargs
     ):
         """Perform a vector similarity search and retrieve `Document` matches."""
-        print('this is docs', docs)
-        print('params', parameters)
         limit = int(parameters.get('limit', self.limit))
         search_filter = parameters.get('filter', {})
         search_filter = self.convert_filter_syntax(search_filter)
@@ -153,10 +151,10 @@ class NOWBaseIndexer(Executor):
         ]  # only search on the first document for now
         # self.check_docs(new_docs, docs)
         docs = new_docs
-        if traversal_paths == '@c':
-            retrieval_limit = limit * 3
-        else:
-            retrieval_limit = limit
+        # if traversal_paths == '@c':
+        #     retrieval_limit = limit * 3
+        # else:
+        retrieval_limit = limit
 
         # first get with title and then merge matches each
         docs_with_matches = self.create_matches(
