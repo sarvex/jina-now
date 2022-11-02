@@ -20,6 +20,7 @@ executors:
       app: ${{ ENV.APP }}
       admin_emails: ${{ ENV.ADMIN_EMAILS }}
       user_emails: ${{ ENV.USER_EMAILS }}
+      api_keys: ${{ ENV.API_KEY }}
     jcloud:
       capacity: on-demand
       resources:
@@ -48,6 +49,7 @@ executors:
       columns: ${{ ENV.COLUMNS }}
       admin_emails: ${{ ENV.ADMIN_EMAILS }}
       user_emails: ${{ ENV.USER_EMAILS }}
+      api_keys: ${{ ENV.API_KEY }}
     jcloud:
       capacity: on-demand
       resources:

@@ -104,7 +104,7 @@ def trigger_scheduler(user_input, host):
     cookies = {'st': user_input.jwt['token']}
     try:
         response = requests.post(
-            'https://storefrontapi.nowrun.jina.ai/api/v1/schedule_sync',
+            'http://localhost:8080/api/v1/schedule_sync',
             json=scheduler_params,
             cookies=cookies,
         )
