@@ -164,7 +164,9 @@ class ElasticIndexer(Executor):
         if docs_matrix:
             if len(docs_matrix) > 1:
                 docs_matrix[0].summary()
+                docs_matrix[0][0].chunks.summary()
                 docs_matrix[1].summary()
+                docs_matrix[1][0].chunks.summary()
                 docs = self._join_docs_matrix_into_chunks(
                     docs_matrix=docs_matrix, on='search'
                 )

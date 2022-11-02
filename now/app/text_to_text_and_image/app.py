@@ -120,7 +120,7 @@ class TextToTextAndImage(JinaNOWApp):
             da = preprocess_text(da=da, split_by_sentences=False)
             for d in da:
                 if not d.chunks:
-                    d.chunks = [Document(text=d.text, modality='text')]
+                    d.chunks.extend([Document(text=d.text, modality='text')])
             return da
 
     @hubble.login_required
