@@ -132,8 +132,8 @@ def test_es_online_shop_ds(da: DocumentArray):
 
     for doc in loaded_da:
         assert doc.chunks
-        assert doc.chunks[1].text
-        assert doc.chunks[0].uri
+        assert any([chunk.uri for chunk in doc.chunks])
+        assert any([chunk.text for chunk in doc.chunks])
 
 
 @pytest.fixture
