@@ -88,8 +88,18 @@ def text_query():
 
 
 @pytest.fixture
-def docs_matrix():
+def docs_matrix_index():
     return [
+        DocumentArray(
+            Document(
+                chunks=[
+                    Document(
+                        text='this', embedding=np.ones(768)
+                    ),  # embedding from SBERT
+                    Document(uri='https://jina.ai'),  # not encoded by SBERT
+                ]
+            )
+        ),
         DocumentArray(
             Document(
                 chunks=[
@@ -102,30 +112,31 @@ def docs_matrix():
                 ]
             )
         ),
-        DocumentArray(
-            Document(
-                chunks=[
-                    Document(
-                        text='this', embedding=np.ones(768)
-                    ),  # embedding from SBERT
-                    Document(uri='https://jina.ai'),  # not encoded by SBERT
-                ]
-            )
-        ),
     ]
 
-
 @pytest.fixture
-def merged_docs_matrix():
-    return DocumentArray(
-        Document(
-            chunks=[
+def docs_matrix_search():
+    return [
+        DocumentArray(
+            [
                 Document(
-                    text='this', embedding=np.array([1, 2, 3, 4, 5])
-                ),  # embedding from SBERT
-                Document(
-                    uri='https://jina.ai', embedding=np.array([4, 5, 6])
-                ),  # embedding from CLIP image model
+                    chunks=[
+                        Document(
+                            text='this', embedding=np.ones(768)
+                        ),  # embedding from SBERT
+                    ]
+                )
             ]
-        )
-    )
+        ),
+        DocumentArray(
+            [
+                Document(
+                    chunks=[
+                        Document(
+                            text='this', embedding=np.ones(512)
+                        ),  # embedding from CLIP text model
+                    ]
+                )
+            ]
+        ),
+    ]

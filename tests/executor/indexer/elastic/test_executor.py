@@ -196,21 +196,24 @@ def test_delete(
         assert len(res['hits']['hits']) == 0
 
 
-# def test_merge_docs_matrix(
-#     docs_matrix,
-#     merged_docs_matrix,
-#     setup_service_running,
-#     es_connection_params,
-# ):
-#     merged_result = ElasticIndexer.join_docs_matrix_into_chunks(
-#         on='index', docs_matrix=docs_matrix
-#     )
-#     merged_result.summary()
-#     assert len(merged_result[0].chunks) == 2
-#     for c in merged_result[0].chunks:
-#         if c.text:
-#             assert len(c.embedding) == 768
-#         elif c.uri:
-#             assert len(c.embedding) == 512
-#         else:
-#             raise Exception('unexpected chunk')
+@pytest.mark.parametrize(
+    'docs_matrix, on',
+    [
+        ('docs_matrix_index', 'index'),
+        ('docs_matrix_search', 'search'),
+    ],
+)
+def test_merge_docs_matrix(
+    docs_matrix: List[DocumentArray],
+    on: str,
+    request,
+):
+    docs_matrix = request.getfixturevalue(docs_matrix)
+    merged_result = ElasticIndexer._join_docs_matrix_into_chunks(
+        on=on, docs_matrix=docs_matrix
+    )
+    print("MERGED_RESULT SUMMARY")
+    merged_result.summary()
+    assert len(merged_result[0].chunks) == 2
+    assert merged_result[0].chunks[0].embedding.shape == (768,)
+    assert merged_result[0].chunks[1].embedding.shape == (512,)
