@@ -424,31 +424,9 @@ class ElasticIndexer(Executor):
             raise
         return embeddings
 
-    def _check_if_chunks_clip_encoded(self, docs: DocumentArray) -> bool:
-        """
-        Check if documents have been encoded with CLIP. This is done by checking if
-        chunks containing image fields as well as chunks containing text fields have
-        embeddings. We assume that the Documents have both text and image chunks. We also
-        assume that all Documents in the DocumentArray have the same structure, and only
-        check the first Document.
-
-        :param docs: Documents to check.
-        :return: True if both image and text chunks have been encoded with CLIP, False otherwise.
-        """
-        text = False
-        image = False
-        for chunk in docs[0].chunks:
-            if chunk.text is not None and chunk.embedding is not None:
-                text = True
-            elif chunk.uri is not None and chunk.embedding is not None:
-                image = True
-        if text and image:
-            return True
-        else:
-            return False
 
     def _join_docs_matrix_into_chunks(
-        self, docs_matrix: List[DocumentArray], on: str = 'index'
+        docs_matrix: List[DocumentArray], on: str = 'index'
     ) -> DocumentArray:
         """
         Transform a matrix of DocumentArray's into one DocumentArray, by adding Documents to the chunk level.
@@ -463,30 +441,21 @@ class ElasticIndexer(Executor):
         """
         new_da = DocumentArray()
         if on == 'search':
-            for doc1, doc2 in zip(*[_da['@c'] for _da in docs_matrix]):
-                new_da.append(doc1)
-                new_doc = Document(text=doc1.text)
-                new_doc.chunks.extend(doc1)
-                new_doc.chunks.extend(doc2)
+            for doc1, doc2 in zip(*docs_matrix):
+                new_doc = Document(text=doc1.chunks[0].text)
+                new_doc.chunks.extend(doc1.chunks)
+                new_doc.chunks.extend(doc2.chunks)
+                new_doc.chunks.summary()
                 new_da.append(new_doc)
         else:
-            da1 = docs_matrix[0]
-            da1.summary()
-            da1[0].summary()
-            da2 = docs_matrix[1]
-            da2.summary()
-            da2[0].summary()
-            if self._check_if_chunks_clip_encoded(da1):
-                assert self._check_if_chunks_clip_encoded(da2) == False
-                image_chunks = [c for c in da1['@c'] if c.uri]
-                text_chunks = [c for c in da2['@c'] if c.text]
-            elif self._check_if_chunks_clip_encoded(da2):
-                image_chunks = [c for c in da2['@c'] if c.uri]
-                text_chunks = [c for c in da1['@c'] if c.text]
-            else:
-                raise Exception('No CLIP embeddings found in docs_matrix')
-            assert len(image_chunks) == len(text_chunks)
-            for image_chunk, text_chunk in zip(image_chunks, text_chunks):
-                new_da.append(Document(chunks=[image_chunk, text_chunk]))
+            for doc1, doc2 in zip(*docs_matrix):
+                new_doc = Document()
+                text_chunks = [c for c in doc1.chunks if c.text is not None and c.text != ''] # doc1 from SBert with text embedding
+                print(len(text_chunks))
+                image_chunks = [c for c in doc2.chunks if c.uri is not None and c.uri != ''] # doc2 from CLIP with image embedding
+                print(len(image_chunks))
+                new_doc.chunks.extend(text_chunks)
+                new_doc.chunks.extend(image_chunks)
+                new_da.append(new_doc)
 
         return new_da
