@@ -133,9 +133,9 @@ def test_es_online_shop_ds(da: DocumentArray):
 
     for doc in loaded_da:
         assert doc.chunks
-        assert (doc.chunks[0].text and doc.chunks[1].uri) or (
-            doc.chunks[0].uri and doc.chunks[1].text
-        )
+        doc.chunks.summary()
+        for c in doc.chunks:
+            assert c.text is not None or c.uri is not None
 
 
 @pytest.fixture

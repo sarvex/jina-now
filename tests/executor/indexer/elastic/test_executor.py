@@ -212,7 +212,9 @@ def test_merge_docs_matrix(
 ):
     docs_matrix = request.getfixturevalue(docs_matrix)
     hosts, _ = es_connection_params
-    es_indexer = ElasticIndexer(dims=[768, 512], hosts=hosts, index_name='testxx', traversal_paths='@c')
+    es_indexer = ElasticIndexer(
+        dims=[768, 512], hosts=hosts, index_name='testxx', traversal_paths='@c'
+    )
     merged_result = es_indexer._join_docs_matrix_into_chunks(
         on=on, docs_matrix=docs_matrix
     )
