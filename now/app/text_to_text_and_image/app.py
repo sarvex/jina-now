@@ -119,8 +119,11 @@ class TextToTextAndImage(JinaNOWApp):
         else:
             da = preprocess_text(da=da, split_by_sentences=False)
             for d in da:
-                if not d.chunks:
+                if len(d.chunks) == 0:
                     d.chunks.extend([Document(text=d.text, modality='text')])
+            if len(da[0].chunks) == 0:
+                da[0].summary()
+                raise Exception("CHUNKS NOT PRESENT AFTER APP PREPROCESSING")
             return da
 
     @hubble.login_required

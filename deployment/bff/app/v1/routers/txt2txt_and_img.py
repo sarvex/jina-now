@@ -60,7 +60,9 @@ def search(data: NowTextSearchRequestModel):
     query_doc, filter_query = process_query(
         text=data.text, uri=data.uri, conditions=data.filters
     )
-
+    print("PRINTING FROM ROUTER")
+    query_doc.summary()
+    query_doc.chunks.summary()
     docs = jina_client_post(
         data=data,
         inputs=query_doc,
