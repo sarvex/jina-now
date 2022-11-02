@@ -424,7 +424,6 @@ class ElasticIndexer(Executor):
             raise
         return embeddings
 
-
     def _join_docs_matrix_into_chunks(
         docs_matrix: List[DocumentArray], on: str = 'index'
     ) -> DocumentArray:
@@ -450,9 +449,13 @@ class ElasticIndexer(Executor):
         else:
             for doc1, doc2 in zip(*docs_matrix):
                 new_doc = Document()
-                text_chunks = [c for c in doc1.chunks if c.text is not None and c.text != ''] # doc1 from SBert with text embedding
+                text_chunks = [
+                    c for c in doc1.chunks if c.text is not None and c.text != ''
+                ]  # doc1 from SBert with text embedding
                 print(len(text_chunks))
-                image_chunks = [c for c in doc2.chunks if c.uri is not None and c.uri != ''] # doc2 from CLIP with image embedding
+                image_chunks = [
+                    c for c in doc2.chunks if c.uri is not None and c.uri != ''
+                ]  # doc2 from CLIP with image embedding
                 print(len(image_chunks))
                 new_doc.chunks.extend(text_chunks)
                 new_doc.chunks.extend(image_chunks)

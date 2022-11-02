@@ -114,6 +114,7 @@ def docs_matrix_index():
         ),
     ]
 
+
 @pytest.fixture
 def docs_matrix_search():
     return [
