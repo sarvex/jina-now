@@ -471,7 +471,11 @@ class ElasticIndexer(Executor):
                 new_da.append(new_doc)
         else:
             da1 = docs_matrix[0]
+            da1.summary()
+            da1[0].summary()
             da2 = docs_matrix[1]
+            da2.summary()
+            da2[0].summary()
             if self._check_if_chunks_clip_encoded(da1):
                 assert self._check_if_chunks_clip_encoded(da2) == False
                 image_chunks = [c for c in da1['@c'] if c.uri]
