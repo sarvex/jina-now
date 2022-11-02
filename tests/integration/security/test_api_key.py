@@ -7,13 +7,16 @@ import requests
 from docarray import Document
 from jina import Flow
 
-from now.executor.preprocessor import NOWPreprocessor
 from now.now_dataclasses import UserInput
 from tests.integration.test_end_to_end import assert_search
 
 from deployment.bff.app.app import run_server
 from now.admin.utils import get_default_request_body
-from now.constants import EXTERNAL_CLIP_HOST, NOW_QDRANT_INDEXER_VERSION
+from now.constants import (
+    EXTERNAL_CLIP_HOST,
+    NOW_QDRANT_INDEXER_VERSION,
+    NOW_PREPROCESSOR_VERSION,
+)
 
 API_KEY = 'my_key'
 base_url = 'http://localhost:8080/api/v1'
@@ -38,7 +41,10 @@ def get_flow():
     admin_email = client.get_user_info()['data'].get('email')
     f = (
         Flow(port_expose=9089)
-        .add(uses=NOWPreprocessor, uses_with={'app': 'text_to_image'})
+        .add(
+            uses=f'jinahub+docker://NOWPreprocessor/{NOW_PREPROCESSOR_VERSION}',
+            uses_with={'app': 'text_to_image', 'admin_emails': [admin_email]},
+        )
         .add(
             host=EXTERNAL_CLIP_HOST,
             port=443,
