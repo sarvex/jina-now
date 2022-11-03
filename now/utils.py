@@ -240,3 +240,8 @@ def _get_context_names(contexts, active_context=None):
 
 def get_flow_id(host):
     return host.replace('grpcs://nowapi-', '').replace('.wolf.jina.ai', '')
+
+
+class Dumper(yaml.Dumper):
+    def increase_indent(self, flow=False, *args, **kwargs):
+        return super().increase_indent(flow=flow, indentless=False)
