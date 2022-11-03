@@ -238,6 +238,7 @@ def assert_suggest(suggest_url, request_body):
         suggest_url,
         json=request_body,
     )
+    print(response)
     assert (
         response.status_code == 200
     ), f"Received code {response.status_code} with text: {response.json()['message']}"
