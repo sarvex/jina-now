@@ -15,7 +15,6 @@ from now.common.options import NEW_CLUSTER
 from now.constants import Apps, DatasetTypes, Modalities
 from now.demo_data import DemoDatasetNames
 from now.deployment.deployment import cmd, list_all_wolf, terminate_wolf
-from now.now_dataclasses import UserInput
 
 
 @pytest.fixture

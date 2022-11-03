@@ -70,6 +70,8 @@ def _get_modality(document):
             return Modalities.IMAGE
     elif document.text:
         return Modalities.TEXT
+    elif document.blob:
+        return Modalities.IMAGE
     else:
         raise Exception(f'{document} modality can not be detected. {document.uri}')
 
