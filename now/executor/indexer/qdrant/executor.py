@@ -102,7 +102,7 @@ class NOWQdrantIndexer15(Executor):
 
         for d in docs:
             if d.embedding is None:
-                raise Exception(f'query document {d.summary()} has no embeddings')
+                raise Exception(f'query document {d.summary()} has no embeddings.')
 
         docs.match(self._index, filter=search_filter, limit=limit)
 

@@ -150,7 +150,7 @@ class NOWBaseIndexer(Executor):
         docs = docs[traversal_paths][:1]  # only search on the first document for now
         for d in docs:
             if d.embedding is None:
-                raise Exception(f'{d} search endpoint gets no embeddings')
+                raise Exception(f'{d} search endpoint gets no embeddings.')
         # self.check_docs(new_docs, docs)
         if traversal_paths == '@c,c':
             retrieval_limit = limit * 3
