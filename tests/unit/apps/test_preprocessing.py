@@ -121,13 +121,13 @@ def test_image_preprocessing(app_cls, is_indexing, resources_folder_path):
 #     user_input.dataset_type = DatasetTypes.DEMO
 #     user_input.dataset_name = DemoDatasetNames.ES_ONLINE_SHOP_50
 #     app = TextToTextAndImage()
-# 
+#
 #     if is_indexing:
 #         da = DocumentArray(load_data(app, user_input)[0])
 #         app._create_task_config(user_input=user_input, data_example=da[0])
 #     else:
 #         da = DocumentArray(Document(text='query text'))
-# 
+#
 #     processed_da = app.preprocess(
 #         da=da,
 #         user_input=user_input,
