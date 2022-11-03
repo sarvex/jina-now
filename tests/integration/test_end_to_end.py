@@ -193,7 +193,7 @@ def test_backend_demo_data(
         response,
     )
 
-    if input_modality == Modalities.TEXT and app != Apps.TEXT_TO_TEXT_AND_IMAGE:
+    if input_modality == Modalities.TEXT:
         host = response.get('host')
         request_body = get_search_request_body(
             app,
