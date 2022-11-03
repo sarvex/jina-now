@@ -141,7 +141,7 @@ class NOWBaseIndexer(Executor):
     def search_endpoint(
         self, docs: Optional[DocumentArray] = None, parameters: dict = {}, **kwargs
     ):
-        """Perform a vector similarity search and retrieve `Document` matches"""
+        """Perform a vector similarity search and retrieve `Document` matches."""
         limit = int(parameters.get('limit', self.limit))
         search_filter = parameters.get('filter', {})
         search_filter = self.convert_filter_syntax(search_filter)
@@ -150,7 +150,7 @@ class NOWBaseIndexer(Executor):
         docs = docs[traversal_paths][:1]  # only search on the first document for now
         for d in docs:
             if d.embedding is None:
-                raise Exception(f'{d} search endpoint gets no embeddings.')
+                raise Exception(f'{d} search endpoint gets no embeddings')
         # self.check_docs(new_docs, docs)
         if traversal_paths == '@c,c':
             retrieval_limit = limit * 3
