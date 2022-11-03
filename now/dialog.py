@@ -19,7 +19,7 @@ cur_dir = pathlib.Path(__file__).parent.resolve()
 
 def configure_app(**kwargs) -> JinaNOWApp:
     now.utils.print_headline()
-    app_name = configure_option(options.APP, UserInput(), **kwargs)
+    app_name = configure_option(options.APP, None, **kwargs)
     return options.construct_app(app_name)
 
 
