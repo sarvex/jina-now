@@ -95,7 +95,7 @@ class NOWQdrantIndexer15(Executor):
         search_filter: dict,
         **kwargs,
     ):
-        """Perform a vector similarity search and retrieve `Document` matches."""
+        """Perform a vector similarity search and retrieve `Document` matches"""
         for d in self._index:
             if d.embedding is None:
                 raise Exception(f'indexed document. {d.summary()} has no embeddings')

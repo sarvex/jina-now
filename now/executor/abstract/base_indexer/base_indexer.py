@@ -146,11 +146,11 @@ class NOWBaseIndexer(Executor):
         search_filter = parameters.get('filter', {})
         search_filter = self.convert_filter_syntax(search_filter)
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
-
-        docs = docs[traversal_paths][:1]  # only search on the first document for now
-        for d in docs:
+        new_docs = docs[traversal_paths][:1]  # only search on the first document for now
+        for d in new_docs:
             if d.embedding is None:
-                raise Exception(f'{d} search endpoint gets no embeddings')
+                raise Exception(f'{docs[0]} search endpoint gets no embeddings, {docs[0].chunks[0]}')
+        docs = new_docs
         # self.check_docs(new_docs, docs)
         if traversal_paths == '@c,c':
             retrieval_limit = limit * 3
