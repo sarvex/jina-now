@@ -20,7 +20,7 @@ router = APIRouter()
 )
 def index(data: NowTextIndexRequestModel):
     """
-    Append the list of text to the indexer.
+    Append the list of text to the indexer
     """
     index_docs = DocumentArray()
     for text, uri, tags in zip(data.texts, data.uris, data.tags):
