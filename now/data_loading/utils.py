@@ -71,7 +71,7 @@ def _get_modality(document):
     elif document.text:
         return Modalities.TEXT
     else:
-        return None
+        raise Exception(f'{document} modality can not be detected. {document.uri}')
 
 
 def transform_uni_modal_data(documents: DocumentArray, filter_fields: List[str]):
