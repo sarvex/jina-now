@@ -212,8 +212,6 @@ def test_merge_docs_matrix(
     merged_result = ElasticIndexer._join_docs_matrix_into_chunks(
         on=on, docs_matrix=docs_matrix
     )
-    print("MERGED_RESULT SUMMARY")
-    merged_result.summary()
     assert len(merged_result[0].chunks) == 2
     assert merged_result[0].chunks[0].embedding.shape == (768,)
     assert merged_result[0].chunks[1].embedding.shape == (512,)

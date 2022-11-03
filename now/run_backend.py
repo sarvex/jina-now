@@ -36,7 +36,6 @@ def run(
     :return:
     """
     dataset = load_data(app_instance, user_input)
-    dataset[0].summary()
 
     env_dict = app_instance.setup(
         dataset=dataset, user_input=user_input, kubectl_path=kubectl_path

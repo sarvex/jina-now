@@ -112,18 +112,15 @@ class TextToTextAndImage(JinaNOWApp):
         is_indexing: Optional[bool] = False,
     ) -> DocumentArray:
         # Indexing
-        da.summary()
         if is_indexing:
             return preprocess_nested_docs(da=da, user_input=user_input)
         # Query
         else:
-            print("PROCESSING QUERY")
             da = preprocess_text(da=da, split_by_sentences=False)
             for d in da:
                 if len(d.chunks) == 0:
                     d.chunks.extend([Document(text=d.text, modality='text')])
             if len(da[0].chunks) == 0:
-                da[0].summary()
                 raise Exception("CHUNKS NOT PRESENT AFTER APP PREPROCESSING")
             return da
 

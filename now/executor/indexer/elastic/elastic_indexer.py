@@ -163,10 +163,6 @@ class ElasticIndexer(Executor):
         print(docs_matrix)
         if docs_matrix:
             if len(docs_matrix) > 1:
-                docs_matrix[0].summary()
-                docs_matrix[0][0].chunks.summary()
-                docs_matrix[1].summary()
-                docs_matrix[1][0].chunks.summary()
                 docs = self._join_docs_matrix_into_chunks(
                     docs_matrix=docs_matrix, on='search'
                 )
@@ -184,6 +180,8 @@ class ElasticIndexer(Executor):
                 traversal_paths=traversal_paths,
                 search_filter=search_filter,
             )
+            print("ES QUERY")
+            print(query)
             try:
                 result = self.es.search(
                     index=self.index_name,
@@ -458,11 +456,9 @@ class ElasticIndexer(Executor):
                 text_chunks = [
                     c for c in doc1.chunks if c.text is not None and c.text != ''
                 ]  # doc1 from SBert with text embedding
-                print(len(text_chunks))
                 image_chunks = [
                     c for c in doc2.chunks if c.uri is not None and c.uri != ''
                 ]  # doc2 from CLIP with image embedding
-                print(len(image_chunks))
                 new_doc.chunks.extend(text_chunks)
                 new_doc.chunks.extend(image_chunks)
                 new_da.append(new_doc)
