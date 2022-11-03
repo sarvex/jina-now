@@ -113,6 +113,8 @@ class NOWPreprocessor(Executor):
         :return: preprocessed documents which are ready to be encoded and indexed
         """
         self._set_user_input(parameters=parameters)
+        for doc in docs:
+            print(doc.summary())
         return self._preprocess_maybe_cloud_download(docs=docs, is_indexing=True)
 
     @secure_request(on='/encode', level=SecurityLevel.USER)
