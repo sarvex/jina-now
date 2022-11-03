@@ -63,7 +63,7 @@ def search(data: NowTextSearchRequestModel):
     docs = jina_client_post(
         data=data,
         inputs=query_doc,
-        parameters={'limit': data.limit, 'filter': filter_query},
+        parameters={'limit': data.limit, 'filter': filter_query, 'apply_bm25': True},
         endpoint='/search',
     )
     print(docs)
