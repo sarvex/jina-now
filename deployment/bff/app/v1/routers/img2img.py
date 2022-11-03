@@ -40,7 +40,10 @@ def index(data: NowImageIndexRequestModel):
     jina_client_post(
         data=data,
         inputs=index_docs,
-        parameters={},
+        parameters={
+            'access_paths': '@c',
+            'traversal_paths': '@c',
+        },
         endpoint='/index',
     )
 
