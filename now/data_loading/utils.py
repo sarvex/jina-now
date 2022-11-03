@@ -71,6 +71,7 @@ def _get_modality(document):
     elif document.text:
         return Modalities.TEXT
     elif document.blob:
+        print('taipi', document.mime_type)
         return Modalities.IMAGE
     else:
         raise Exception(f'{document} modality can not be detected. {document.uri}')
