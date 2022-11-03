@@ -117,6 +117,7 @@ class TextToTextAndImage(JinaNOWApp):
             return preprocess_nested_docs(da=da, user_input=user_input)
         # Query
         else:
+            print("PROCESSING QUERY")
             da = preprocess_text(da=da, split_by_sentences=False)
             for d in da:
                 if len(d.chunks) == 0:

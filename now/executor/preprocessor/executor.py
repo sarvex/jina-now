@@ -71,11 +71,14 @@ class NOWPreprocessor(Executor):
                     user_input=self.user_input,
                     max_workers=self.max_workers,
                 )
-            print()
+            print("Preprocessing docs")
+            docs.summary()
             pre_docs = self.app.preprocess(
                 docs, self.user_input, is_indexing=is_indexing
             )
+            pre_docs.summary()
             if encode:
+                print("ENCODE SET TO TRUE")
                 remaining_docs = self.app.preprocess(
                     docs, self.user_input, is_indexing=not is_indexing
                 )
