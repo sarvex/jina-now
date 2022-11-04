@@ -6,7 +6,7 @@ from os.path import join as osp
 from typing import List, Dict, Union
 
 from docarray import DocumentArray, Document, dataclass
-from docarray.typing import Image, Text
+from docarray.typing import Image, Text, Blob
 
 from now.constants import BASE_STORAGE_URL, DEMO_DATASET_DOCARRAY_VERSION, Modalities
 from now.utils import download
@@ -71,7 +71,7 @@ def _get_modality(document):
     elif document.text:
         return Modalities.TEXT
     elif document.blob:
-        return Modalities.IMAGE
+        return 'blob'
     else:
         raise Exception(f'{document} modality can not be detected. {document.uri}')
 
@@ -85,6 +85,10 @@ def transform_uni_modal_data(documents: DocumentArray, filter_fields: List[str])
     class BaseDocText:
         default_field: Text
 
+    @dataclass
+    class BaseDocBlob:
+        default_field: Blob
+
     transformed_docs = DocumentArray()
     for document in documents:
         modality = document.modality or _get_modality(document)
@@ -92,14 +96,18 @@ def transform_uni_modal_data(documents: DocumentArray, filter_fields: List[str])
             new_doc = BaseDocText(default_field=document.text)
         elif modality in [Modalities.IMAGE, Modalities.VIDEO]:
             new_doc = BaseDocImage(
-                default_field=document.content or document.blob or document.uri
+                default_field=document.uri
             )
+        elif modality == 'blob':
+            new_doc = BaseDocBlob(default_field=document.blob)
         else:
             raise ValueError(f'Modality {modality} is not supported!')
         new_doc = Document(new_doc)
         new_doc.tags['filter_fields'] = {}
         new_doc.chunks[0].tags['field_name'] = 'default_field'
         new_doc.chunks[0].embedding = document.embedding
+        if modality == 'blob':
+            new_doc.chunks[0].modality = document.mime_type
         for field, value in document.tags.items():
             if field in filter_fields:
                 new_doc.tags['filter_fields'][field] = value
