@@ -112,13 +112,13 @@ def test_token_exists():
             DemoDatasetNames.ROCK_LYRICS,
             'remote',
         ),
-        # (
-        #     Apps.TEXT_TO_TEXT,
-        #     Modalities.TEXT,
-        #     Modalities.TEXT,
-        #     DemoDatasetNames.POP_LYRICS,
-        #     'local',
-        # ),
+        (
+            Apps.TEXT_TO_TEXT,
+            Modalities.TEXT,
+            Modalities.TEXT,
+            DemoDatasetNames.POP_LYRICS,
+            'local',
+        ),
         # (
         #     Apps.TEXT_TO_VIDEO,
         #     Modalities.TEXT,
