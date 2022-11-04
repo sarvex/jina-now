@@ -66,8 +66,6 @@ def search(data: NowTextSearchRequestModel):
         parameters={'limit': data.limit, 'filter': filter_query, 'apply_bm25': True},
         endpoint='/search',
     )
-    print(docs)
-
     return docs[0].matches.to_dict()
 
 

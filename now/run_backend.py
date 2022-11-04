@@ -96,7 +96,6 @@ def call_flow(
     task_config = parameters['user_input'].pop('task_config', None)
     if task_config:
         parameters['user_input']['indexer_scope'] = task_config.indexer_scope
-    print("CHECKING IF FLOW READY")
     # double check that flow is up and running - should be done by wolf/core in the future
     while True:
         try:
@@ -109,7 +108,6 @@ def call_flow(
                 print(e)
                 print(traceback.format_exc())
             sleep(1)
-    print("FLOW IS READY")
 
     response = client.post(
         on=endpoint,

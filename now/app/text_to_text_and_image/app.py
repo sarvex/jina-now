@@ -10,11 +10,11 @@ from now.app.base.app import JinaNOWApp
 from now.common.preprocess import preprocess_nested_docs, preprocess_text
 from now.common.utils import get_indexer_config
 from now.constants import (
+    NOW_AUTOCOMPLETE_VERSION,
     NOW_PREPROCESSOR_VERSION,
     Apps,
     Modalities,
     ModelNames,
-    NOW_AUTOCOMPLETE_VERSION,
 )
 from now.finetuning.data_builder import DataBuilder
 from now.finetuning.run_finetuning import finetune
@@ -120,8 +120,6 @@ class TextToTextAndImage(JinaNOWApp):
             for d in da:
                 if len(d.chunks) == 0:
                     d.chunks.extend([Document(text=d.text, modality='text')])
-            if len(da[0].chunks) == 0:
-                raise Exception("CHUNKS NOT PRESENT AFTER APP PREPROCESSING")
             return da
 
     @hubble.login_required

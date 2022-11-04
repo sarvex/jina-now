@@ -92,48 +92,48 @@ def test_token_exists():
 @pytest.mark.parametrize(
     'app, input_modality, output_modality, dataset, deployment_type',
     [
-        # (
-        #     Apps.TEXT_TO_IMAGE,
-        #     Modalities.TEXT,
-        #     Modalities.IMAGE,
-        #     DemoDatasetNames.BIRD_SPECIES,
-        #     'local',
-        # ),
-        # (
-        #     Apps.IMAGE_TO_IMAGE,
-        #     Modalities.IMAGE,
-        #     Modalities.IMAGE,
-        #     DemoDatasetNames.BEST_ARTWORKS,
-        #     'local',
-        # ),
-        # (
-        #     Apps.IMAGE_TO_TEXT,
-        #     Modalities.IMAGE,
-        #     Modalities.TEXT,
-        #     DemoDatasetNames.ROCK_LYRICS,
-        #     'remote',
-        # ),
-        # (
-        #     Apps.TEXT_TO_TEXT,
-        #     Modalities.TEXT,
-        #     Modalities.TEXT,
-        #     DemoDatasetNames.POP_LYRICS,
-        #     'local',
-        # ),
-        # (
-        #     Apps.TEXT_TO_VIDEO,
-        #     Modalities.TEXT,
-        #     Modalities.VIDEO,
-        #     DemoDatasetNames.TUMBLR_GIFS_10K,
-        #     'local',
-        # ),
-        # (
-        #     Apps.MUSIC_TO_MUSIC,
-        #     Modalities.MUSIC,
-        #     Modalities.MUSIC,
-        #     DemoDatasetNames.MUSIC_GENRES_ROCK,
-        #     'remote',
-        # ),
+        (
+            Apps.TEXT_TO_IMAGE,
+            Modalities.TEXT,
+            Modalities.IMAGE,
+            DemoDatasetNames.BIRD_SPECIES,
+            'local',
+        ),
+        (
+            Apps.IMAGE_TO_IMAGE,
+            Modalities.IMAGE,
+            Modalities.IMAGE,
+            DemoDatasetNames.BEST_ARTWORKS,
+            'local',
+        ),
+        (
+            Apps.IMAGE_TO_TEXT,
+            Modalities.IMAGE,
+            Modalities.TEXT,
+            DemoDatasetNames.ROCK_LYRICS,
+            'remote',
+        ),
+        (
+            Apps.TEXT_TO_TEXT,
+            Modalities.TEXT,
+            Modalities.TEXT,
+            DemoDatasetNames.POP_LYRICS,
+            'local',
+        ),
+        (
+            Apps.TEXT_TO_VIDEO,
+            Modalities.TEXT,
+            Modalities.VIDEO,
+            DemoDatasetNames.TUMBLR_GIFS_10K,
+            'local',
+        ),
+        (
+            Apps.MUSIC_TO_MUSIC,
+            Modalities.MUSIC,
+            Modalities.MUSIC,
+            DemoDatasetNames.MUSIC_GENRES_ROCK,
+            'remote',
+        ),
         (
             Apps.TEXT_TO_TEXT_AND_IMAGE,
             Modalities.TEXT,
@@ -143,7 +143,7 @@ def test_token_exists():
         ),
     ],
 )
-@pytest.mark.timeout(60 * 60)
+@pytest.mark.timeout(60 * 30)
 def test_backend_demo_data(
     app: str,
     dataset: str,
@@ -216,15 +216,10 @@ def test_backend_demo_data(
 
 
 def assert_search(search_url, request_body):
-    print(search_url)
-    print(request_body)
     response = requests.post(
         search_url,
         json=request_body,
     )
-    print("PRINTING FROM ASSERT SEARCH")
-    print(response)
-    print(response.json())
     assert (
         response.status_code == 200
     ), f"Received code {response.status_code} with text: {response.json()['message']}"
@@ -238,7 +233,6 @@ def assert_suggest(suggest_url, request_body):
         suggest_url,
         json=request_body,
     )
-    print(response)
     assert (
         response.status_code == 200
     ), f"Received code {response.status_code} with text: {response.json()['message']}"

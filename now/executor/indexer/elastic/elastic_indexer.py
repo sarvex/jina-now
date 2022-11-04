@@ -105,10 +105,7 @@ class ElasticIndexer(Executor):
         :param parameters: dictionary with options for indexing.
         :return: empty `DocumentArray`.
         """
-        docs.summary()
         if docs_matrix:
-            print(docs_matrix)
-            docs_matrix[0].summary()
             if len(docs_matrix) > 1:
                 docs = self._join_docs_matrix_into_chunks(
                     docs_matrix=docs_matrix, on='index'
@@ -160,7 +157,6 @@ class ElasticIndexer(Executor):
                 - 'traversal_paths' (str): traversal paths for the docs
                 - 'limit' (int): nr of matches to get per Document
         """
-        print(docs_matrix)
         if docs_matrix:
             if len(docs_matrix) > 1:
                 docs = self._join_docs_matrix_into_chunks(
@@ -180,8 +176,6 @@ class ElasticIndexer(Executor):
                 traversal_paths=traversal_paths,
                 search_filter=search_filter,
             )
-            print("ES QUERY")
-            print(query)
             try:
                 result = self.es.search(
                     index=self.index_name,
@@ -192,10 +186,6 @@ class ElasticIndexer(Executor):
                 doc.matches = self._transform_es_results_to_matches(result)
             except Exception:
                 print(traceback.format_exc())
-        if not docs:
-            return DocumentArray(Document(text='nothing'))
-        print("RESULT")
-        docs.summary()
         return docs
 
     @secure_request(on='/update', level=SecurityLevel.USER)
@@ -448,7 +438,6 @@ class ElasticIndexer(Executor):
                 new_doc = Document(text=doc1.chunks[0].text)
                 new_doc.chunks.extend(doc1.chunks)
                 new_doc.chunks.extend(doc2.chunks)
-                new_doc.chunks.summary()
                 new_da.append(new_doc)
         else:
             for doc1, doc2 in zip(*docs_matrix):
