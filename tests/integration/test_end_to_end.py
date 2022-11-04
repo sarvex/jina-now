@@ -44,7 +44,7 @@ def test_search_music(resources_folder_path: str):
 
 
 @pytest.fixture()
-def cleanup(deployment_type, dataset):
+def cleanup(deployment_type, dataset, app):
     print('start cleanup')
     start = time.time()
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -62,7 +62,9 @@ def cleanup(deployment_type, dataset):
                 )
                 terminate_wolf(flow_id)
             else:
+                print('Deleting local cluster')
                 kwargs = {
+                    'app': app,
                     'deployment_type': deployment_type,
                     'now': 'stop',
                     'cluster': 'kind-jina-now',
