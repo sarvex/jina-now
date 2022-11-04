@@ -56,7 +56,7 @@ def search(data: NowTextSearchRequestModel):
     docs = jina_client_post(
         data=data,
         inputs=query_doc,
-        parameters={'limit': data.limit, 'filter': filter_query},
+        parameters={'limit': data.limit, 'filter': filter_query, 'apply_bm25': True},
         endpoint='/search',
     )
 
@@ -71,11 +71,14 @@ def suggestion(data: NowTextSearchRequestModel):
     """
     Return text suggestions for the rest of the query text
     """
-    query_doc, _ = process_query(text=data.text, uri=data.uri, conditions=data.filters)
+    query_doc, filter_query = process_query(
+        text=data.text, uri=data.uri, conditions=data.filters
+    )
 
     docs = jina_client_post(
         data=data,
         inputs=query_doc,
+        parameters={'limit': data.limit, 'filter': filter_query, 'apply_bm25': True},
         endpoint='/suggestion',
     )
     return docs.to_dict()

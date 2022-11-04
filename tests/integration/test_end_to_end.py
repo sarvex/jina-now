@@ -99,14 +99,14 @@ def test_token_exists():
             Modalities.TEXT,
             Modalities.IMAGE,
             DemoDatasetNames.BIRD_SPECIES,
-            'remote',
+            'local',
         ),
         (
             Apps.IMAGE_TO_IMAGE,
             Modalities.IMAGE,
             Modalities.IMAGE,
             DemoDatasetNames.BEST_ARTWORKS,
-            'remote',
+            'local',
         ),
         (
             Apps.IMAGE_TO_TEXT,
@@ -120,14 +120,14 @@ def test_token_exists():
             Modalities.TEXT,
             Modalities.TEXT,
             DemoDatasetNames.POP_LYRICS,
-            'remote',
+            'local',
         ),
         (
             Apps.TEXT_TO_VIDEO,
             Modalities.TEXT,
             Modalities.VIDEO,
             DemoDatasetNames.TUMBLR_GIFS_10K,
-            'remote',
+            'local',
         ),
         (
             Apps.MUSIC_TO_MUSIC,

@@ -105,6 +105,8 @@ class ElasticIndexer(Executor):
         :param parameters: dictionary with options for indexing.
         :return: empty `DocumentArray`.
         """
+        if not docs:
+            return docs
         if docs_matrix:
             if len(docs_matrix) > 1:
                 docs = self._join_docs_matrix_into_chunks(
@@ -159,6 +161,8 @@ class ElasticIndexer(Executor):
                 - 'traversal_paths' (str): traversal paths for the docs
                 - 'limit' (int): nr of matches to get per Document
         """
+        if not docs:
+            return docs
         if docs_matrix:
             if len(docs_matrix) > 1:
                 docs = self._join_docs_matrix_into_chunks(

@@ -50,3 +50,4 @@ executors:
         cpu: 1.0
     env:
       JINA_LOG_LEVEL: DEBUG
+    disable_reduce: true
