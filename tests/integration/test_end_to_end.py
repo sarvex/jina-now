@@ -357,7 +357,9 @@ def assert_deployment_response(
 
 @pytest.mark.parametrize('deployment_type', ['remote'])
 @pytest.mark.parametrize('dataset', ['custom_s3_bucket'])
+@pytest.mark.parametrize('app', [Apps.TEXT_TO_IMAGE])
 def test_backend_custom_data(
+    app,
     deployment_type: str,
     dataset: str,
     cleanup,
@@ -365,7 +367,6 @@ def test_backend_custom_data(
 ):
     os.environ['NOW_CI_RUN'] = 'True'
     os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
-    app = Apps.TEXT_TO_IMAGE
     kwargs = {
         'now': 'start',
         'app': app,
