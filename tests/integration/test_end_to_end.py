@@ -117,7 +117,7 @@ def test_token_exists():
             Modalities.TEXT,
             Modalities.TEXT,
             DemoDatasetNames.POP_LYRICS,
-            'local',
+            'remote',
         ),
         # (
         #     Apps.TEXT_TO_VIDEO,
