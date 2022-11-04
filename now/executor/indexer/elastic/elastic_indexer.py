@@ -444,8 +444,14 @@ class ElasticIndexer(Executor):
         if on == 'search':
             for doc1, doc2 in zip(*docs_matrix):
                 new_doc = Document(text=doc1.chunks[0].text)
-                new_doc.chunks.extend(doc1.chunks)
-                new_doc.chunks.extend(doc2.chunks)
+                if len(doc1.embedding) == 768 and len(doc2.embedding) == 512:
+                    new_doc.chunks.extend(doc1.chunks)
+                    new_doc.chunks.extend(doc2.chunks)
+                elif len(doc1.embedding) == 512 and len(doc2.embedding) == 768:
+                    new_doc.chunks.extend(doc2.chunks)
+                    new_doc.chunks.extend(doc1.chunks)
+                else:
+                    raise Exception('Embedding size not supported')
                 new_da.append(new_doc)
         else:
             for doc1, doc2 in zip(*docs_matrix):
