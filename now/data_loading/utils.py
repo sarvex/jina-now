@@ -63,15 +63,15 @@ def get_dataset_url(dataset: str, output_modality: Modalities) -> str:
 
 
 def _get_modality(document):
-    if document.uri:
+    if document.blob:
+        return 'blob'
+    elif document.uri:
         if os.path.splitext(document.uri)[-1] == '.gif':
             return Modalities.VIDEO
         else:
             return Modalities.IMAGE
     elif document.text:
         return Modalities.TEXT
-    elif document.blob:
-        return 'blob'
     else:
         raise Exception(f'{document} modality can not be detected. {document.uri}')
 
@@ -90,7 +90,7 @@ def transform_uni_modal_data(documents: DocumentArray, filter_fields: List[str])
         default_field: Blob
 
     transformed_docs = DocumentArray()
-    for document in documents:
+    for i, document in enumerate(documents):
         modality = document.modality or _get_modality(document)
         if modality == Modalities.TEXT:
             new_doc = BaseDocText(default_field=document.text)
