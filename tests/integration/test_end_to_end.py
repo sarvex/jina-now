@@ -98,19 +98,19 @@ def test_token_exists():
             DemoDatasetNames.BIRD_SPECIES,
             'local',
         ),
-        # (
-        #     Apps.IMAGE_TO_IMAGE,
-        #     Modalities.IMAGE,
-        #     Modalities.IMAGE,
-        #     DemoDatasetNames.BEST_ARTWORKS,
-        #     'local',
-        # ),
+        (
+            Apps.IMAGE_TO_IMAGE,
+            Modalities.IMAGE,
+            Modalities.IMAGE,
+            DemoDatasetNames.BEST_ARTWORKS,
+            'local',
+        ),
         (
             Apps.IMAGE_TO_TEXT,
             Modalities.IMAGE,
             Modalities.TEXT,
             DemoDatasetNames.ROCK_LYRICS,
-            'local',
+            'remote',
         ),
         # (
         #     Apps.TEXT_TO_TEXT,
