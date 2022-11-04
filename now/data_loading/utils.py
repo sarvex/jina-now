@@ -95,9 +95,7 @@ def transform_uni_modal_data(documents: DocumentArray, filter_fields: List[str])
         if modality == Modalities.TEXT:
             new_doc = BaseDocText(default_field=document.text)
         elif modality in [Modalities.IMAGE, Modalities.VIDEO]:
-            new_doc = BaseDocImage(
-                default_field=document.uri
-            )
+            new_doc = BaseDocImage(default_field=document.uri)
         elif modality == 'blob':
             new_doc = BaseDocBlob(default_field=document.blob)
         else:
