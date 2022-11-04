@@ -64,6 +64,7 @@ def search(data: NowTextSearchRequestModel):
             'filter': filter_query,
             'access_paths': '@c',
             'traversal_paths': '@c',
+            'apply_bm25': True,
         },
         endpoint='/search',
     )
