@@ -440,7 +440,7 @@ def render_matches(OUTPUT_MODALITY):
 
                 if OUTPUT_MODALITY == 'text':
                     if match.text == '' and match.uri != '':
-                        match.load_uri_to_text()
+                        match.load_uri_to_text(timeout=10)
                     display_text = profanity.censor(match.text).replace('\n', ' ')
                     body = f"<!DOCTYPE html><html><body><blockquote>{display_text}</blockquote>"
                     if match.tags.get('additional_info'):
@@ -469,7 +469,7 @@ def render_matches(OUTPUT_MODALITY):
 
                 elif OUTPUT_MODALITY == 'music':
                     if match.uri:
-                        match.load_uri_to_blob()
+                        match.load_uri_to_blob(timeout=10)
                     display_song(c, match)
 
                 elif OUTPUT_MODALITY in ('image', 'video'):

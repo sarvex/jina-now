@@ -13,7 +13,7 @@ def preprocess_images(da: DocumentArray) -> DocumentArray:
                 if d.blob != b'':
                     d.convert_blob_to_image_tensor()
                 elif d.uri:
-                    d.load_uri_to_image_tensor()
+                    d.load_uri_to_image_tensor(timeout=10)
             return to_thumbnail_jpg(d)
         except:
             return d
@@ -34,7 +34,7 @@ def preprocess_text(da: DocumentArray, split_by_sentences=False) -> DocumentArra
         try:
             if not d.text:
                 if d.uri:
-                    d.load_uri_to_text()
+                    d.load_uri_to_text(timeout=10)
                     d.tags['additional_info'] = d.uri
             return d
         except:

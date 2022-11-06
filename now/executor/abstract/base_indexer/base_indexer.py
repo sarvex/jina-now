@@ -220,7 +220,7 @@ class NOWBaseIndexer(Executor):
                                 for cloud_bucket_prefix in CLOUD_BUCKET_PREFIXES
                             ]
                         ):
-                            doc.load_uri_to_blob()
+                            doc.load_uri_to_blob(timeout=10)
                         doc.blob = None
                         doc.tensor = None
                         doc.mime_type = None

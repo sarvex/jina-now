@@ -31,7 +31,7 @@ def _build_doc(datapoint: _DataPoint) -> Document:
     doc = Document()
     if datapoint.content_type == 'image':
         doc.uri = datapoint.image_path
-        doc.load_uri_to_image_tensor()
+        doc.load_uri_to_image_tensor(timeout=10)
         doc.set_image_tensor_shape(IMAGE_SHAPE)
     else:
         doc.text = datapoint.text
@@ -465,7 +465,7 @@ def _build_tll(root: str, num_workers: int = 8) -> DocumentArray:
     """
 
     def transform(d: Document):
-        d.load_uri_to_blob()
+        d.load_uri_to_blob(timeout=10)
         d.tags['content_type'] = 'image'
         return d
 
