@@ -3,30 +3,11 @@ import base64
 from docarray import Document, DocumentArray
 from fastapi import HTTPException
 
-from deployment.bff.app.v1.client import jina_client_post
-from deployment.bff.app.v1.models.model_factory import get_pydantic_model
-
-
-def get_filter(conditions):
-    filter_query = {}
-    if conditions:
-        filter_query = []
-        # construct filtering query from dictionary
-        for key, value in conditions.items():
-            filter_query.append({f'{key}': {'$eq': value}})
-        filter_query = {
-            '$and': filter_query
-        }  # different conditions are aggregated using and
-    return {'filter': filter_query}
-
-
-def get_parameters(data, endpoint_name):
-    parameters = {}
-    if endpoint_name == 'search':
-        filter_parameters = get_filter(data['filters'])
-        parameters.update(filter_parameters)
-        parameters.update({'limit': data['limit']})
-    return parameters
+from deployment.bff.app.client import jina_client_post
+from deployment.bff.app.endpoint.index import IndexEndpoint
+from deployment.bff.app.endpoint.search import SearchEndpoint
+from deployment.bff.app.endpoint.suggestion import SuggestionEndpoint
+from deployment.bff.app.model_factory import get_pydantic_model
 
 
 def map_inputs(inputs, request_modality):
@@ -119,48 +100,44 @@ def get_endpoint_description(endpoint_name, input_modality, output_modality):
 
 
 def create_endpoints(router, input_modality, output_modality):
-    for endpoint_name in ['search', 'index', 'suggestion']:
-        if endpoint_name == 'suggestion' and input_modality != 'text':
+    for endpoint in [SearchEndpoint(), IndexEndpoint(), SuggestionEndpoint()]:
+        if not endpoint.is_active(input_modality, output_modality):
             continue
-        request_modality = (
-            output_modality if endpoint_name == 'index' else input_modality
-        )
-        response_modality = output_modality
-        RequestModel = get_pydantic_model(
-            request_modality, is_request=True, endpoint_name=endpoint_name
-        )
+        endpoint_name = endpoint.name
+        request_modality = endpoint.request_modality(input_modality, output_modality)
+        response_modality = endpoint.response_modality(input_modality, output_modality)
+        RequestModel = get_pydantic_model(endpoint, request_modality, is_request=True)
         ResponseModel = get_pydantic_model(
-            response_modality, is_request=False, endpoint_name=endpoint_name
+            endpoint, response_modality, is_request=False
         )
 
-        def get_endpoint(endpoint_name, input_modality, output_modality):
+        def get_endpoint(endpoint_name, request_modality, response_modality):
             """It is not allowed to use the same function name twice in the same scope.
             Therefore, we need to wrap the function in another function to get a new one.
             """
 
-            def endpoint(data: RequestModel) -> ResponseModel:
+            def endpoint_fn(data: RequestModel) -> ResponseModel:
                 data = data.dict()
-                parameters = get_parameters(data, endpoint_name)
+                parameters = endpoint.get_parameters(data)
                 print('### inputs before mapping', data)
                 inputs = map_inputs(data, request_modality)
                 print('### inputs after mapping', inputs)
                 response_docs = jina_client_post(
                     endpoint=f'/{endpoint_name}',
                     inputs=inputs,
-                    host=data['host'],
-                    port=data['port'],
-                    api_key=data['api_key'],
-                    jwt=data['jwt'],
+                    data=data,
                     parameters=parameters,
                 )
-                response = map_outputs(response_docs, endpoint_name, output_modality)
+                response = endpoint.map_outputs(response_docs)
+
+                map_outputs(response_docs, endpoint_name, response_modality)
                 return response
 
-            return endpoint
+            return endpoint_fn
 
         router.add_api_route(
             f'/{endpoint_name}',
-            endpoint=get_endpoint(endpoint_name, input_modality, output_modality),
+            endpoint=get_endpoint(endpoint_name, request_modality, response_modality),
             methods=['POST'],
             response_model=ResponseModel,
             summary=f'Endpoint to send {endpoint_name} requests',

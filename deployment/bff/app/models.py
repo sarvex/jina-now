@@ -38,31 +38,6 @@ class BaseResponseModel(NowBaseModel):
     pass
 
 
-class BaseIndexRequestModel(NowBaseModel):
-    pass
-
-
-class BaseIndexResponseModel(NowBaseModel):
-    pass
-
-
-class BaseSearchRequestModel(BaseRequestModel):
-    limit: int = Field(default=10, description='Number of matching results to return')
-    filters: Optional[Dict[str, str]] = Field(
-        default=None,
-        description='dictionary with filters for search results  {"tag_name" : "tag_value"}',
-    )
-
-
-class BaseSearchResponseModel(NowBaseModel):
-    id: str = Field(
-        default=..., nullable=False, description='Id of the matching result.'
-    )
-    scores: Optional[Dict[str, '_NamedScore']] = Field(
-        description='Similarity score with respect to the query.'
-    )
-
-
 class TagsMixin(NowBaseModel):
     tags: Optional[Dict[str, str]] = Field(
         default={},

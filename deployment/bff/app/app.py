@@ -10,14 +10,15 @@ from starlette.responses import JSONResponse
 from starlette.routing import Mount
 
 from deployment.bff.app.constants import (
+    DEFAULT_HOST,
     DEFAULT_LOGGING_CONFIG,
     DEFAULT_LOGGING_LEVEL,
     DEFAULT_PORT,
     DESCRIPTION,
     TITLE,
 )
-from deployment.bff.app.v1.routers import admin, cloud_temp_link
-from deployment.bff.app.v1.routers.data_routes import create_endpoints
+from deployment.bff.app.endpoint.legacy import admin, cloud_temp_link
+from deployment.bff.app.route_generation import create_endpoints
 from now.common.options import construct_app
 from now.constants import Apps
 
@@ -119,7 +120,7 @@ def run_server():
     # start the server!
     uvicorn.run(
         app,
-        host='0.0.0.0',
+        host=DEFAULT_HOST,
         port=DEFAULT_PORT,
         loop='uvloop',
         http='httptools',
