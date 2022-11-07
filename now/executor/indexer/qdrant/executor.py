@@ -66,7 +66,7 @@ class NOWQdrantIndexer15(Executor):
 
     # override
     def index(self, docs: DocumentArray, parameters: dict, **kwargs):
-        """Index new documents"""
+        """Index new documents."""
         # qdrant needs a list of values when filtering on sentences
         for d in docs:
             if 'title' in d.tags:
@@ -80,7 +80,7 @@ class NOWQdrantIndexer15(Executor):
     def delete(self, documents_to_delete, parameters: dict = {}, **kwargs):
         """
         Delete endpoint to delete document/documents from the index.
-        Filter conditions can be passed to select documents for deletion.
+        Filter conditions can be passed to select documents for deletion
         """
         for d in documents_to_delete:
             del self._index[d.id]

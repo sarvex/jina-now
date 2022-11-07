@@ -151,15 +151,15 @@ class NOWBaseIndexer(Executor):
         new_docs = docs[traversal_paths][
             :1
         ]  # only search on the first document for now
-        print(
-            f'number of docs left {len(docs)}, value of doc {docs[0].text}, and embedding {docs[0].embedding}'
-        )
         for d in new_docs:
             if d.embedding is None:
                 raise Exception(
                     f'{docs[0]} search endpoint gets no embeddings, {docs[0].chunks[0]}'
                 )
         docs = new_docs
+        if not docs:
+            raise Exception('there are no docs')
+
         if traversal_paths == '@c,cc':
             retrieval_limit = limit * 3
         else:
@@ -174,7 +174,11 @@ class NOWBaseIndexer(Executor):
             retrieval_limit,
             search_filter=search_filter,
         )
-        print(f'matches returned {len(docs_with_matches)}.')
+        if not docs:
+            raise Exception('there are no docs')
+
+        if not docs[0].matches:
+            raise Exception(f'zero matches {docs[0].matches}')
         # self.check_docs(docs)
         if len(docs[0].text.split()) == 1:
             if not search_filter:
@@ -211,6 +215,8 @@ class NOWBaseIndexer(Executor):
     ):
         docs_copy = deepcopy(docs)
         self.search(docs_copy, parameters, retrieval_limit, search_filter)
+        if not docs_copy[0].matches:
+            raise Exception(f'zero matches {docs[0].matches}')
         if traversal_paths == '@c,cc':
             merge_matches_sum(docs_copy, limit)
         return docs_copy
