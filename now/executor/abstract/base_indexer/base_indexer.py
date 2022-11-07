@@ -60,8 +60,9 @@ class NOWBaseIndexer(Executor):
 
         the resulting response would be a document array with
         one document containing a dictionary in tags like the following:
-        {'tags':{'color':['red', 'blue'], 'greeting':['hello']}}
+        {'tags':{'color':['red', 'blue'], 'greeting':['hello']}}.
         """
+
         count_dict = defaultdict(lambda: defaultdict(int))
         for tags in self.doc_id_tags.values():
             for key, value in tags.items():

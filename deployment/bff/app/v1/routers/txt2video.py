@@ -22,7 +22,7 @@ router = APIRouter()
 def index(data: NowVideoIndexRequestModel):
     """
     Append the list of video data to the indexer. Each video data should be
-    `base64` encoded using human-readable characters - `utf-8`.
+    `base64` encoded using human-readable characters - `utf-8`
     """
     index_docs = DocumentArray()
     for video, uri, tags in zip(data.videos, data.uris, data.tags):
