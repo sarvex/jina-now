@@ -112,6 +112,8 @@ class NOWPreprocessor(Executor):
         :param parameters: user input, used to construct UserInput object
         :return: preprocessed documents which are ready to be encoded and indexed
         """
+        for doc in docs:
+            print(doc.summary())
         self._set_user_input(parameters=parameters)
         return self._preprocess_maybe_cloud_download(docs=docs, is_indexing=True)
 
