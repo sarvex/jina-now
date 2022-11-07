@@ -155,7 +155,7 @@ def search_by_image(document: Document, jwt, filter_selection) -> DocumentArray:
         if query_doc.tensor is not None:
             query_doc.convert_image_tensor_to_blob()
         elif (query_doc.uri is not None) and query_doc.uri != '':
-            query_doc.load_uri_to_blob()
+            query_doc.load_uri_to_blob(timeout=10)
 
     return search(
         'image',

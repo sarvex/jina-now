@@ -191,6 +191,10 @@ class TextToTextAndImage(JinaNOWApp):
             'AUTOCOMPLETE_EXECUTOR_NAME'
         ] = f'jinahub+docker://NOWAutoCompleteExecutor/{NOW_AUTOCOMPLETE_VERSION}'
 
+        env_dict['API_KEY'] = (
+            [user_input.api_key] if user_input.secured and user_input.api_key else []
+        )
+
         self.set_flow_yaml()
         super().setup(dataset, user_input, kubectl_path)
         return env_dict

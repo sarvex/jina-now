@@ -11,6 +11,7 @@ from jina.serve.runtimes.gateway.http.models import JinaRequestModel, JinaRespon
 from now.constants import Modalities
 from now.demo_data import AVAILABLE_DATASET, DEFAULT_EXAMPLE_HOSTED, DemoDataset
 from now.now_dataclasses import DialogOptions, UserInput
+from now.utils import Dumper
 
 
 class JinaNOWApp:
@@ -190,10 +191,14 @@ class JinaNOWApp:
         :param user_input: user configuration based on the given options
         :return: dict used to replace variables in flow yaml and to clean up resources after the flow is terminated
         """
+        with open(self.flow_yaml) as input_f:
+            flow_yaml = JAML.load(input_f.read())
+            # append api_keys to the executor with name 'preprocessor' and 'indexer'
+            for executor in flow_yaml['executors']:
+                if executor['name'] == 'preprocessor' or executor['name'] == 'indexer':
+                    executor['uses_with']['api_keys'] = '${{ ENV.API_KEY }}'
 
-        if self.input_modality == Modalities.TEXT:
-            with open(self.flow_yaml) as input_f:
-                flow_yaml = JAML.load(input_f.read())
+            if self.input_modality == Modalities.TEXT:
                 if not any(
                     exec_dict['name'] == 'autocomplete_executor'
                     for exec_dict in flow_yaml['executors']
@@ -207,8 +212,10 @@ class JinaNOWApp:
                             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
                         },
                     )
-                    with open(self.flow_yaml, 'w') as output_f:
-                        JAML.dump(flow_yaml, output_f)
+            with open(self.flow_yaml, 'w') as output_f:
+                JAML.dump(
+                    flow_yaml, output_f, indent=2, allow_unicode=True, Dumper=Dumper
+                )
         return {}
 
     def cleanup(self, app_config: dict) -> None:
@@ -275,7 +282,14 @@ class JinaNOWApp:
         By default, the mapping is the identity function and the request model and respond model are the default models.
         The path is a regex expression.
         """
-        return {'.*': (JinaRequestModel, JinaResponseModel, lambda x: x, lambda x: x)}
+        return {
+            '.*': (
+                JinaRequestModel,
+                JinaResponseModel,
+                lambda x: x,
+                lambda x: x,
+            )
+        }
 
     @property
     def index_query_access_paths(self) -> str:

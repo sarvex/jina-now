@@ -16,6 +16,7 @@ from now.common.options import NEW_CLUSTER
 from now.constants import Apps, DatasetTypes, Modalities
 from now.demo_data import DemoDatasetNames
 from now.deployment.deployment import cmd, list_all_wolf, terminate_wolf
+from now.utils import get_flow_id
 
 
 @pytest.fixture
@@ -57,12 +58,10 @@ def cleanup(deployment_type, dataset, app):
                     print('nothing to clean up')
                     return
                 host = flow_details['host']
-                flow_id = host.replace('grpcs://nowapi-', '').replace(
-                    '.wolf.jina.ai', ''
-                )
+                flow_id = get_flow_id(host)
                 terminate_wolf(flow_id)
             else:
-                print('Deleting local cluster')
+                print('\nDeleting local cluster')
                 kwargs = {
                     'app': app,
                     'deployment_type': deployment_type,
@@ -167,6 +166,7 @@ def test_backend_demo_data(
         'dataset_name': dataset,
         'cluster': cluster,
         'secured': deployment_type == 'remote',
+        'api_key': None,
         'additional_user': False,
         'deployment_type': deployment_type,
         'proceed': True,
