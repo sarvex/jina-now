@@ -63,6 +63,9 @@ def common_get_flow_env_dict(
         'COLUMNS': tags,
         'ADMIN_EMAILS': user_input.admin_emails or [] if user_input.secured else [],
         'USER_EMAILS': user_input.user_emails or [] if user_input.secured else [],
+        'API_KEY': [user_input.api_key]
+        if user_input.secured and user_input.api_key
+        else [],
         **encoder_with,
         **indexer_resources,
     }

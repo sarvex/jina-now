@@ -8,6 +8,9 @@ from now.admin.utils import get_default_request_body
 
 
 def update_api_keys(deployment_type, api_keys, remote_host=None):
+    if not isinstance(api_keys, list):
+        api_keys = [api_keys]
+
     if deployment_type == 'remote':
         url = f"https://nowrun.jina.ai/api/v1"  # remote
     else:
