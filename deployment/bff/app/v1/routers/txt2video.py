@@ -65,7 +65,7 @@ def search(data: NowTextSearchRequestModel):
 
     # for video the search requests have to be on chunk-level
     docs = jina_client_post(
-        data=data,
+        data=query_doc,
         inputs=Document(chunks=query_doc),
         parameters={
             'limit': data.limit,
