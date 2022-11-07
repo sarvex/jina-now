@@ -70,7 +70,7 @@ class NOWQdrantIndexer15(Executor):
         """Index new documents"""
         # qdrant needs a list of values when filtering on sentences
         for d in docs:
-            print(d.summary())
+            print(d.uri)
             if 'title' in d.tags:
                 d.tags['title'] = d.tags['title'].lower().split()
         self._index.extend(docs)
