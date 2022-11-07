@@ -104,6 +104,10 @@ class NOWQdrantIndexer15(Executor):
                 raise Exception(f'query document {d.summary()} has no embeddings.')
 
         docs.match(self._index, filter=search_filter, limit=limit)
+        if not docs[0].matches:
+            raise Exception(
+                f'{len(self._index)} number of indexed docs, aqve {docs[0].embedding}'
+            )
 
 
 def setup_qdrant_server(workspace, logger):
