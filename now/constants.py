@@ -10,7 +10,7 @@ DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.130-timeout-fix-1'
 NOW_PREPROCESSOR_VERSION = '0.0.95-add-sync-5'
 NOW_QDRANT_INDEXER_VERSION = '0.0.2-timeout-fix-1'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.3-fix-elastic-scriptscore-2'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.3-fix-elastic-scriptscore-3'
 NOW_AUTOCOMPLETE_VERSION = '0.0.1-feat-auto-complete-52'
 
 
