@@ -3,6 +3,6 @@ py_modules:
   - elastic_indexer.py
 metas:
   name: ElasticIndexer
-  description: indexer for elasticsearch
-  url: https://github.com/jina-ai/now/blob/feat-elastic-indexer/executor/elastic_indexer
-  keywords: [indexer, elastic, bm25, vector_search]
+  description: Indexer that uses an Elasticsearch server as backend. Allows filtering and bm25 scoring of documents.
+  url: https://github.com/jina-ai/now/tree/main/now/executor/indexer/elastic
+  keywords: [indexer, elastic, bm25, vector_search, filter]
