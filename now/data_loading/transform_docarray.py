@@ -38,11 +38,11 @@ def _get_multi_modal_format(document):
         new_doc = BaseDocBlob(default_field=document.blob)
     elif document.uri:
         file_type = os.path.splitext(document.uri)[-1]
-        # if file_type in TextToVideo.supported_file_types:
+        # if file_type in TextToVideo().supported_file_types:
         #     return Modalities.VIDEO
-        if file_type in ImageToImage.supported_file_types:
+        if file_type in ImageToImage().supported_file_types:
             new_doc = BaseDocImage(default_field=document.uri)
-        elif file_type in MusicToMusic.supported_file_types:
+        elif file_type in MusicToMusic().supported_file_types:
             new_doc = BaseDocMusic(default_field=document.uri)
     elif document.text:
         new_doc = BaseDocText(default_field=document.text)
