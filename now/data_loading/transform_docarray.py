@@ -4,7 +4,6 @@ from typing import List, Dict, Union
 from docarray import dataclass, Document, DocumentArray
 from docarray.typing import Image, Text, Audio, Blob
 
-from now.app.image_to_image.app import ImageToImage
 from now.app.music_to_music.app import MusicToMusic
 from now.constants import Modalities
 
@@ -40,12 +39,10 @@ def _get_multi_modal_format(document):
         file_type = os.path.splitext(document.uri)[-1].replace('.', '')
         # if file_type in TextToVideo().supported_file_types:
         #     return Modalities.VIDEO
-        if file_type in ImageToImage().supported_file_types:
-            new_doc = BaseDocImage(default_field=document.uri)
-        elif file_type in MusicToMusic().supported_file_types:
+        if file_type in MusicToMusic().supported_file_types:
             new_doc = BaseDocMusic(default_field=document.uri)
         else:
-            raise Exception(f'{document.uri} , {document}')
+            new_doc = BaseDocImage(default_field=document.uri)
     elif document.text:
         new_doc = BaseDocText(default_field=document.text)
     else:
