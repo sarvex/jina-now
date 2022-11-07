@@ -39,8 +39,8 @@ def _get_multi_modal_format(document):
         file_type = os.path.splitext(document.uri)[-1].replace('.', '')
         # if file_type in TextToVideo().supported_file_types:
         #     return Modalities.VIDEO
-        if file_type in MusicToMusic().supported_file_types:
-            new_doc = BaseDocMusic(default_field=document.uri)
+        if modality == 'music' or file_type in MusicToMusic().supported_file_types:
+            new_doc = BaseDocText(default_field=document.uri)
         else:
             new_doc = BaseDocImage(default_field=document.uri)
     elif document.text:
