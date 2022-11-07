@@ -138,7 +138,6 @@ class NOWBaseIndexer(Executor):
     @secure_request(on='/search', level=SecurityLevel.USER)
     def search_endpoint(
         self,
-        logger,
         docs: Optional[DocumentArray] = None,
         parameters: dict = {},
         **kwargs,
@@ -148,11 +147,11 @@ class NOWBaseIndexer(Executor):
         search_filter = parameters.get('filter', {})
         search_filter = self.convert_filter_syntax(search_filter)
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
-        logger.info(f'number of docs {len(docs)}')
+        print(f'number of docs {len(docs)}')
         new_docs = docs[traversal_paths][
             :1
         ]  # only search on the first document for now
-        logger.info(
+        print(
             f'number of docs left {len(docs)}, value of doc {docs[0].text}, and embedding {docs[0].embedding}'
         )
         for d in new_docs:
@@ -175,7 +174,7 @@ class NOWBaseIndexer(Executor):
             retrieval_limit,
             search_filter=search_filter,
         )
-        logger.info(f'matches returned {len(docs_with_matches)}.')
+        print(f'matches returned {len(docs_with_matches)}.')
         # self.check_docs(docs)
         if len(docs[0].text.split()) == 1:
             if not search_filter:
