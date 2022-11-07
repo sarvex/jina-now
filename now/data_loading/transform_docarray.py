@@ -45,7 +45,7 @@ def _get_multi_modal_format(document):
         elif file_type in MusicToMusic().supported_file_types:
             new_doc = BaseDocMusic(default_field=document.uri)
         else:
-            raise Exception(f'{file_type} , {document}')
+            raise Exception(f'{document.uri} , {document}')
     elif document.text:
         new_doc = BaseDocText(default_field=document.text)
     else:
