@@ -44,6 +44,7 @@ def _get_multi_modal_format(document):
             new_doc = BaseDocText(default_field=document.uri)
         elif modality == 'video' or file_type in TextToVideo().supported_file_types:
             new_doc = BaseDocText(default_field=document.uri)
+            modality = 'video'
         else:
             new_doc = BaseDocImage(default_field=document.uri)
     elif document.text:

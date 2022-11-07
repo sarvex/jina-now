@@ -90,7 +90,7 @@ class NOWBaseIndexer(Executor):
         offset = int(parameters.get('offset', 0))
         # add removal of duplicates
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
-        if traversal_paths == '@c,c':
+        if traversal_paths == '@c,cc':
             docs = DocumentArray()
             chunks_size = int(parameters.get('chunks_size', 3))
             parent_ids = set()
@@ -156,7 +156,7 @@ class NOWBaseIndexer(Executor):
                 )
         docs = new_docs
         # self.check_docs(new_docs, docs)
-        if traversal_paths == '@c,c':
+        if traversal_paths == '@c,cc':
             retrieval_limit = limit * 3
         else:
             retrieval_limit = limit
@@ -206,7 +206,7 @@ class NOWBaseIndexer(Executor):
     ):
         docs_copy = deepcopy(docs)
         self.search(docs_copy, parameters, retrieval_limit, search_filter)
-        if traversal_paths == '@c,c':
+        if traversal_paths == '@c,cc':
             merge_matches_sum(docs_copy, limit)
         return docs_copy
 

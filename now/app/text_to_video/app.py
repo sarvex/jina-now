@@ -55,7 +55,7 @@ class TextToVideo(JinaNOWApp):
     def index_query_access_paths(
         self, search_fields: Optional[List[str]] = None
     ) -> str:
-        return '@c,c'
+        return '@c,cc'
 
     def set_flow_yaml(self, **kwargs):
         finetuning = kwargs.get('finetuning', False)
@@ -126,6 +126,7 @@ class TextToVideo(JinaNOWApp):
             def convert_fn(d: Document):
                 try:
                     if d.blob == b'':
+                        d.uri = d.text if not d.uri else d.uri
                         if d.uri:
                             d.load_uri_to_blob()
                         elif d.tensor is not None:
@@ -136,9 +137,10 @@ class TextToVideo(JinaNOWApp):
                 return d
 
             for d in da:
-                convert_fn(d)
-
-            return DocumentArray(d for d in da if d.blob != b'')
+                for chunk in d.chunks:
+                    if chunk.modality == 'video':
+                        convert_fn(chunk)
+            return da
         if process_query:
 
             def convert_fn(d: Document):

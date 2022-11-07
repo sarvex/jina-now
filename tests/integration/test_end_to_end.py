@@ -119,13 +119,13 @@ def test_token_exists():
             DemoDatasetNames.POP_LYRICS,
             'remote',
         ),
-        # (
-        #     Apps.TEXT_TO_VIDEO,
-        #     Modalities.TEXT,
-        #     Modalities.VIDEO,
-        #     DemoDatasetNames.TUMBLR_GIFS_10K,
-        #     'local',
-        # ),
+        (
+            Apps.TEXT_TO_VIDEO,
+            Modalities.TEXT,
+            Modalities.VIDEO,
+            DemoDatasetNames.TUMBLR_GIFS_10K,
+            'local',
+        ),
         # (
         #     Apps.MUSIC_TO_MUSIC,
         #     Modalities.MUSIC,
