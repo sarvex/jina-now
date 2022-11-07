@@ -46,7 +46,7 @@ def _get_multi_modal_format(document):
     elif document.text:
         new_doc = BaseDocText(default_field=document.text)
     else:
-        raise Exception(f'{document} modality can not be detected. {document.uri}')
+        raise Exception(f'{document} modality can not be detected.')
     new_doc = Document(new_doc)
     if modality:
         new_doc.chunks[0].modality = modality
