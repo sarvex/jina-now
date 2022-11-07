@@ -6,7 +6,7 @@
         <link rel="canonical" href="https://now.jina.ai/_modules/now/app/base/app.html" />
 
     <link rel="shortcut icon" href="../../../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.09.29"/>
-        <title>now.app.base.app - NOW 0.0.35 documentation</title>
+        <title>now.app.base.app - NOW 0.0.36 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../../../">
-                <div class="brand">NOW 0.0.35 documentation</div>
+                <div class="brand">NOW 0.0.36 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -279,11 +279,13 @@
 <span class="kn">import</span> <span class="nn">docker</span>
 <span class="kn">from</span> <span class="nn">docarray</span> <span class="kn">import</span> <span class="n">DocumentArray</span>
 <span class="kn">from</span> <span class="nn">jina</span> <span class="kn">import</span> <span class="n">Client</span>
+<span class="kn">from</span> <span class="nn">jina.jaml</span> <span class="kn">import</span> <span class="n">JAML</span>
 <span class="kn">from</span> <span class="nn">jina.serve.runtimes.gateway.http.models</span> <span class="kn">import</span> <span class="n">JinaRequestModel</span><span class="p">,</span> <span class="n">JinaResponseModel</span>
 
 <span class="kn">from</span> <span class="nn">now.constants</span> <span class="kn">import</span> <span class="n">Modalities</span>
 <span class="kn">from</span> <span class="nn">now.demo_data</span> <span class="kn">import</span> <span class="n">AVAILABLE_DATASET</span><span class="p">,</span> <span class="n">DEFAULT_EXAMPLE_HOSTED</span><span class="p">,</span> <span class="n">DemoDataset</span>
 <span class="kn">from</span> <span class="nn">now.now_dataclasses</span> <span class="kn">import</span> <span class="n">DialogOptions</span><span class="p">,</span> <span class="n">UserInput</span>
+<span class="kn">from</span> <span class="nn">now.utils</span> <span class="kn">import</span> <span class="n">Dumper</span>
 
 
 <div class="viewcode-block" id="JinaNOWApp"><a class="viewcode-back" href="../../../../../api/now.app.base.app/#now.app.base.app.JinaNOWApp">[docs]</a><span class="k">class</span> <span class="nc">JinaNOWApp</span><span class="p">:</span>
@@ -463,6 +465,31 @@
 <span class="sd">        :param user_input: user configuration based on the given options</span>
 <span class="sd">        :return: dict used to replace variables in flow yaml and to clean up resources after the flow is terminated</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flow_yaml</span><span class="p">)</span> <span class="k">as</span> <span class="n">input_f</span><span class="p">:</span>
+            <span class="n">flow_yaml</span> <span class="o">=</span> <span class="n">JAML</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">input_f</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+            <span class="c1"># append api_keys to the executor with name &#39;preprocessor&#39; and &#39;indexer&#39;</span>
+            <span class="k">for</span> <span class="n">executor</span> <span class="ow">in</span> <span class="n">flow_yaml</span><span class="p">[</span><span class="s1">&#39;executors&#39;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">executor</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;preprocessor&#39;</span> <span class="ow">or</span> <span class="n">executor</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;indexer&#39;</span><span class="p">:</span>
+                    <span class="n">executor</span><span class="p">[</span><span class="s1">&#39;uses_with&#39;</span><span class="p">][</span><span class="s1">&#39;api_keys&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;${{ ENV.API_KEY }}&#39;</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_modality</span> <span class="o">==</span> <span class="n">Modalities</span><span class="o">.</span><span class="n">TEXT</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span>
+                    <span class="n">exec_dict</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;autocomplete_executor&#39;</span>
+                    <span class="k">for</span> <span class="n">exec_dict</span> <span class="ow">in</span> <span class="n">flow_yaml</span><span class="p">[</span><span class="s1">&#39;executors&#39;</span><span class="p">]</span>
+                <span class="p">):</span>
+                    <span class="n">flow_yaml</span><span class="p">[</span><span class="s1">&#39;executors&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span>
+                        <span class="mi">0</span><span class="p">,</span>
+                        <span class="p">{</span>
+                            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;autocomplete_executor&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;uses&#39;</span><span class="p">:</span> <span class="s1">&#39;${{ ENV.AUTOCOMPLETE_EXECUTOR_NAME }}&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;needs&#39;</span><span class="p">:</span> <span class="s1">&#39;gateway&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;env&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;JINA_LOG_LEVEL&#39;</span><span class="p">:</span> <span class="s1">&#39;DEBUG&#39;</span><span class="p">},</span>
+                        <span class="p">},</span>
+                    <span class="p">)</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flow_yaml</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">output_f</span><span class="p">:</span>
+                <span class="n">JAML</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span>
+                    <span class="n">flow_yaml</span><span class="p">,</span> <span class="n">output_f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">allow_unicode</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">Dumper</span><span class="o">=</span><span class="n">Dumper</span>
+                <span class="p">)</span>
         <span class="k">return</span> <span class="p">{}</span></div>
 
 <div class="viewcode-block" id="JinaNOWApp.cleanup"><a class="viewcode-back" href="../../../../../api/now.app.base.app/#now.app.base.app.JinaNOWApp.cleanup">[docs]</a>    <span class="k">def</span> <span class="nf">cleanup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app_config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -529,7 +556,14 @@
 <span class="sd">        By default, the mapping is the identity function and the request model and respond model are the default models.</span>
 <span class="sd">        The path is a regex expression.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;.*&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">JinaRequestModel</span><span class="p">,</span> <span class="n">JinaResponseModel</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">)}</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;.*&#39;</span><span class="p">:</span> <span class="p">(</span>
+                <span class="n">JinaRequestModel</span><span class="p">,</span>
+                <span class="n">JinaResponseModel</span><span class="p">,</span>
+                <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span>
+                <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">}</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">index_query_access_paths</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -557,7 +591,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Oct 26, 2022.
+                            Last updated on Nov 07, 2022.
                         </div>
                     </div>
                     <div class="right-details">

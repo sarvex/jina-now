@@ -6,7 +6,7 @@
         <link rel="canonical" href="https://now.jina.ai/_modules/now/app/text_to_text_and_image/app.html" />
 
     <link rel="shortcut icon" href="../../../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.09.29"/>
-        <title>now.app.text_to_text_and_image.app - NOW 0.0.35 documentation</title>
+        <title>now.app.text_to_text_and_image.app - NOW 0.0.36 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../../../">
-                <div class="brand">NOW 0.0.35 documentation</div>
+                <div class="brand">NOW 0.0.36 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -441,8 +441,12 @@
             <span class="n">user_input</span><span class="o">.</span><span class="n">user_emails</span> <span class="ow">or</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">user_input</span><span class="o">.</span><span class="n">secured</span> <span class="k">else</span> <span class="p">[],</span>
         <span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_flow_yaml</span><span class="p">()</span>
+        <span class="n">env_dict</span><span class="p">[</span><span class="s1">&#39;API_KEY&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="p">[</span><span class="n">user_input</span><span class="o">.</span><span class="n">api_key</span><span class="p">]</span> <span class="k">if</span> <span class="n">user_input</span><span class="o">.</span><span class="n">secured</span> <span class="ow">and</span> <span class="n">user_input</span><span class="o">.</span><span class="n">api_key</span> <span class="k">else</span> <span class="p">[]</span>
+        <span class="p">)</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_flow_yaml</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">user_input</span><span class="p">,</span> <span class="n">kubectl_path</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">env_dict</span></div>
 
     <span class="k">def</span> <span class="nf">_construct_finetune_settings</span><span class="p">(</span>
@@ -495,7 +499,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Oct 26, 2022.
+                            Last updated on Nov 07, 2022.
                         </div>
                     </div>
                     <div class="right-details">

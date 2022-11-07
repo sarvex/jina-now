@@ -3,15 +3,10 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
 <meta property="og:title" content="now.run_backend module" />
-  
 <meta property="og:type" content="website" />
-  
 <meta property="og:url" content="https://now.jina.ai/api/now.run_backend/" />
-  
-<meta property="og:site_name" content="NOW 0.0.35 Documentation" />
-  
+<meta property="og:site_name" content="NOW 0.0.36 Documentation" />
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@JinaAI_">
 <meta name="twitter:creator" content="@JinaAI_">
@@ -29,11 +24,12 @@
 </script>
 
 <script async defer src="https://buttons.github.io/buttons.js"></script>
-    <link rel="index" title="Index" href="../../genindex/" /><link rel="search" title="Search" href="../../search/" />
+    
+<link rel="index" title="Index" href="../../genindex/" /><link rel="search" title="Search" href="../../search/" />
         <link rel="canonical" href="https://now.jina.ai/api/now.run_backend.html" />
 
     <link rel="shortcut icon" href="../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.09.29"/>
-        <title>now.run_backend module - NOW 0.0.35 documentation</title>
+        <title>now.run_backend module - NOW 0.0.36 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
@@ -166,7 +162,7 @@
         </div>
         <div class="header-center">
             <a href="../../">
-                <div class="brand">NOW 0.0.35 documentation</div>
+                <div class="brand">NOW 0.0.36 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -320,6 +316,18 @@
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="now.run_backend.trigger_scheduler">
+<span class="sig-prename descclassname"><span class="pre">now.run_backend.</span></span><span class="sig-name descname"><span class="pre">trigger_scheduler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">user_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/now/run_backend/#trigger_scheduler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#now.run_backend.trigger_scheduler" title="Permalink to this definition">#</a></dt>
+<dd><p>This function will trigger the scheduler which will sync the bucket with the indexer once a day</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="now.run_backend.index_docs">
+<span class="sig-prename descclassname"><span class="pre">now.run_backend.</span></span><span class="sig-name descname"><span class="pre">index_docs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">user_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">client</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/now/run_backend/#index_docs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#now.run_backend.index_docs" title="Permalink to this definition">#</a></dt>
+<dd><p>Index the data right away</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="now.run_backend.call_flow">
 <span class="sig-prename descclassname"><span class="pre">now.run_backend.</span></span><span class="sig-name descname"><span class="pre">call_flow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">client</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_request_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endpoint</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/index'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_results</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/now/run_backend/#call_flow"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#now.run_backend.call_flow" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
@@ -347,7 +355,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Oct 26, 2022.
+                            Last updated on Nov 07, 2022.
                         </div>
                     </div>
                     <div class="right-details">

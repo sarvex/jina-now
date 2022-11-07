@@ -6,7 +6,7 @@
         <link rel="canonical" href="https://now.jina.ai/_modules/now/common/options.html" />
 
     <link rel="shortcut icon" href="../../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.09.29"/>
-        <title>now.common.options - NOW 0.0.35 documentation</title>
+        <title>now.common.options - NOW 0.0.36 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../../">
-                <div class="brand">NOW 0.0.35 documentation</div>
+                <div class="brand">NOW 0.0.36 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -282,6 +282,7 @@
 
 <span class="kn">import</span> <span class="nn">importlib</span>
 <span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
 
 <span class="kn">from</span> <span class="nn">hubble</span> <span class="kn">import</span> <span class="n">AuthenticationRequiredError</span>
 <span class="kn">from</span> <span class="nn">kubernetes</span> <span class="kn">import</span> <span class="n">client</span><span class="p">,</span> <span class="n">config</span>
@@ -578,6 +579,21 @@
     <span class="n">conditional_check</span><span class="o">=</span><span class="k">lambda</span> <span class="n">user_inp</span><span class="p">:</span> <span class="n">user_inp</span><span class="o">.</span><span class="n">deployment_type</span> <span class="o">==</span> <span class="s1">&#39;remote&#39;</span><span class="p">,</span>
 <span class="p">)</span>
 
+
+<span class="n">API_KEY</span> <span class="o">=</span> <span class="n">DialogOptions</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;api_key&#39;</span><span class="p">,</span>
+    <span class="n">prompt_message</span><span class="o">=</span><span class="s1">&#39;Do you want to generate an api_key to access this deployment?&#39;</span><span class="p">,</span>
+    <span class="n">prompt_type</span><span class="o">=</span><span class="s1">&#39;list&#39;</span><span class="p">,</span>
+    <span class="n">choices</span><span class="o">=</span><span class="p">[</span>
+        <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;✅ yes&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span><span class="p">},</span>
+        <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;⛔ no&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">},</span>
+    <span class="p">],</span>
+    <span class="n">depends_on</span><span class="o">=</span><span class="n">SECURED</span><span class="p">,</span>
+    <span class="n">is_terminal_command</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Pass an api_key to access the flow once the deployment is complete. &#39;</span><span class="p">,</span>
+    <span class="n">conditional_check</span><span class="o">=</span><span class="k">lambda</span> <span class="n">user_inp</span><span class="p">:</span> <span class="n">user_inp</span><span class="o">.</span><span class="n">secured</span><span class="p">,</span>
+<span class="p">)</span>
+
 <span class="n">ADDITIONAL_USERS</span> <span class="o">=</span> <span class="n">DialogOptions</span><span class="p">(</span>
     <span class="n">name</span><span class="o">=</span><span class="s1">&#39;additional_user&#39;</span><span class="p">,</span>
     <span class="n">prompt_message</span><span class="o">=</span><span class="s1">&#39;Do you want to provide additional users access to this flow?&#39;</span><span class="p">,</span>
@@ -703,7 +719,7 @@
     <span class="n">ES_ADDITIONAL_ARGS</span><span class="p">,</span>
 <span class="p">]</span>
 <span class="n">cluster</span> <span class="o">=</span> <span class="p">[</span><span class="n">DEPLOYMENT_TYPE</span><span class="p">,</span> <span class="n">LOCAL_CLUSTER</span><span class="p">]</span>
-<span class="n">remote_cluster</span> <span class="o">=</span> <span class="p">[</span><span class="n">SECURED</span><span class="p">,</span> <span class="n">ADDITIONAL_USERS</span><span class="p">,</span> <span class="n">USER_EMAILS</span><span class="p">]</span>
+<span class="n">remote_cluster</span> <span class="o">=</span> <span class="p">[</span><span class="n">SECURED</span><span class="p">,</span> <span class="n">API_KEY</span><span class="p">,</span> <span class="n">ADDITIONAL_USERS</span><span class="p">,</span> <span class="n">USER_EMAILS</span><span class="p">]</span>
 
 
 <span class="n">base_options</span> <span class="o">=</span> <span class="p">(</span>
@@ -726,7 +742,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Oct 26, 2022.
+                            Last updated on Nov 07, 2022.
                         </div>
                     </div>
                     <div class="right-details">
