@@ -175,7 +175,7 @@ class NOWBaseIndexer(Executor):
             retrieval_limit,
             search_filter=search_filter,
         )
-        logger.info(f'matches returned {len(docs_with_matches)}')
+        logger.info(f'matches returned {len(docs_with_matches)}.')
         # self.check_docs(docs)
         if len(docs[0].text.split()) == 1:
             if not search_filter:

@@ -34,7 +34,7 @@ class NOWQdrantIndexer15(Executor):
 
     # override
     def batch_iterator(self):
-        """Iterator which iterates through the documents of self._index and yields batches"""
+        """Iterator which iterates through the documents of self._index and yields batches."""
         batch = []
         for item in self._index:
             batch.append(item)
@@ -61,7 +61,6 @@ class NOWQdrantIndexer15(Executor):
                 conditions.append(
                     {"key": attribute, operator_type: {operator_string: value}}
                 )
-
         search_filter = {"must": conditions} if conditions else {}
         return search_filter
 
