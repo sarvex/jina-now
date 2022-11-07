@@ -37,7 +37,7 @@ def _get_multi_modal_format(document):
     if document.blob:
         new_doc = BaseDocBlob(default_field=document.blob)
     elif document.uri:
-        file_type = os.path.splitext(document.uri)[-1]
+        file_type = os.path.splitext(document.uri)[-1].replace('.', '')
         # if file_type in TextToVideo().supported_file_types:
         #     return Modalities.VIDEO
         if file_type in ImageToImage().supported_file_types:
@@ -49,7 +49,8 @@ def _get_multi_modal_format(document):
     else:
         raise Exception(f'{document} modality can not be detected. {document.uri}')
     new_doc = Document(new_doc)
-    new_doc.chunks[0].modality = modality
+    if modality:
+        new_doc.chunks[0].modality = modality
     return new_doc
 
 
