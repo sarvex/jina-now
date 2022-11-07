@@ -31,8 +31,8 @@ executors:
     tls: ${{ ENV.ENCODER_USES_TLS }}
     external: ${{ ENV.ENCODER_IS_EXTERNAL }}
     uses_with:
-      traversal_paths: '@c'
-      access_paths: '@c'
+      traversal_paths: '@c,c'
+      access_paths: '@c,c'
       name: ${{ ENV.PRE_TRAINED_MODEL_NAME }}
     env:
       JINA_LOG_LEVEL: DEBUG
@@ -59,7 +59,7 @@ executors:
   - name: indexer
     uses: ${{ ENV.INDEXER_NAME }}
     uses_with:
-      traversal_paths: '@c'
+      traversal_paths: '@c,c'
       dim: ${{ ENV.N_DIM }}
       columns: ${{ ENV.COLUMNS }}
       admin_emails: ${{ ENV.ADMIN_EMAILS }}

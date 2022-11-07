@@ -9,6 +9,7 @@ from urllib3.exceptions import InsecureRequestWarning
 from warnings import filterwarnings, catch_warnings
 import requests
 
+from now.app.text_to_video.app import TextToVideo
 from now.constants import DatasetTypes
 from now.data_loading.data_loading import load_data
 from now.demo_data import DemoDatasetNames
@@ -89,8 +90,8 @@ def multi_modal_data(resources_folder_path):
     return DocumentArray([Document(page) for page in pages])
 
 
-@pytest.fixture
-def preprocess_and_encode(single_modal_data, multi_modal_data):
+# @pytest.fixture
+def test_preprocess_and_encode(single_modal_data, multi_modal_data):
     search_fields = []
     filter_fields = []
     # data_type = 'single_modal'
@@ -98,27 +99,27 @@ def preprocess_and_encode(single_modal_data, multi_modal_data):
     #     data = single_modal_data
     # else:
     #     data = multi_modal_data
-    app_instance = TextToImage()
+    app_instance = TextToVideo()
     user_input = UserInput()
     user_input.search_fields = search_fields
     user_input.filter_fields = filter_fields
     user_input.filter_fields = filter_fields
     user_input.dataset_type = DatasetTypes.DEMO
-    user_input.dataset_name = DemoDatasetNames.BIRD_SPECIES
+    user_input.dataset_name = DemoDatasetNames.TUMBLR_GIFS_10K
     data = load_data(app_instance, user_input)
     data = DocumentArray([data[0], data[-1]])
 
     f1 = (
         Flow()
         .add(uses=NOWPreprocessor, uses_with={'app': app_instance.app_name})
-        .add(
-            uses='jinahub+docker://CLIPOnnxEncoder/latest-gpu',
-            host='encoderclip-bh-5f4efaff13.wolf.jina.ai',
-            port=443,
-            tls=True,
-            external=True,
-            uses_with={'name': 'ViT-B-32::openai'},
-        )
+        # .add(
+        #     uses='jinahub+docker://CLIPOnnxEncoder/latest-gpu',
+        #     host='encoderclip-bh-5f4efaff13.wolf.jina.ai',
+        #     port=443,
+        #     tls=True,
+        #     external=True,
+        #     uses_with={'name': 'ViT-B-32::openai'},
+        # )
     )
     with f1:
         encoded_d = f1.post(
@@ -131,10 +132,11 @@ def preprocess_and_encode(single_modal_data, multi_modal_data):
             },
         )
 
-    assert len(encoded_d) == len(data)
-    for chunk, field in zip(encoded_d[0].chunks, search_fields):
-        assert chunk.embedding.any()
-        assert field == chunk.tags['field_name']
-    for filter_field in filter_fields:
-        assert filter_field in encoded_d[0].tags['filter_fields']
-    return encoded_d, user_input
+    encoded_d.summary()
+    # assert len(encoded_d) == len(data)
+    # for chunk, field in zip(encoded_d[0].chunks, search_fields):
+    #     assert chunk.embedding.any()
+    #     assert field == chunk.tags['field_name']
+    # for filter_field in filter_fields:
+    #     assert filter_field in encoded_d[0].tags['filter_fields']
+    # return encoded_d, user_input

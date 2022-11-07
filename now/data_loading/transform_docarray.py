@@ -5,6 +5,7 @@ from docarray import dataclass, Document, DocumentArray
 from docarray.typing import Image, Text, Audio, Blob
 
 from now.app.music_to_music.app import MusicToMusic
+from now.app.text_to_video.app import TextToVideo
 from now.constants import Modalities
 
 
@@ -40,6 +41,8 @@ def _get_multi_modal_format(document):
         # if file_type in TextToVideo().supported_file_types:
         #     return Modalities.VIDEO
         if modality == 'music' or file_type in MusicToMusic().supported_file_types:
+            new_doc = BaseDocText(default_field=document.uri)
+        elif modality == 'video' or file_type in TextToVideo().supported_file_types:
             new_doc = BaseDocText(default_field=document.uri)
         else:
             new_doc = BaseDocImage(default_field=document.uri)
