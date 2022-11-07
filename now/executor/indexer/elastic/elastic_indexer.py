@@ -116,8 +116,6 @@ class ElasticIndexer(Executor):
                 docs = docs_matrix[0]
         if not parameters:
             parameters = {}
-        docs.summary()
-        docs[0].summary()
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
         es_docs = self._transform_docs_to_es(docs, traversal_paths)
         try:
@@ -170,9 +168,6 @@ class ElasticIndexer(Executor):
                 )
             else:
                 docs = docs_matrix[0]
-        docs.summary()
-        docs[0].summary()
-        print(parameters)
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
         search_filter = parameters.get('filter', None)
         limit = parameters.get('limit', 20)
