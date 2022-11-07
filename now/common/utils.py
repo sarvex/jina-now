@@ -156,9 +156,6 @@ def common_setup(
     app_instance.set_flow_yaml(
         finetuning=finetune_settings.perform_finetuning, dataset_len=len(dataset)
     )
-    print(env_dict)
-    exit(0)
-
     return env_dict
 
 

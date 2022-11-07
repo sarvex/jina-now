@@ -94,7 +94,6 @@ class NOWPreprocessor(Executor):
                 self.user_input
                 and self.user_input.dataset_type == DatasetTypes.S3_BUCKET
             ):
-
                 def move_uri(d: Document) -> Document:
                     cloud_uri = d.tags.get('uri')
                     if isinstance(cloud_uri, str) and cloud_uri.startswith('s3://'):

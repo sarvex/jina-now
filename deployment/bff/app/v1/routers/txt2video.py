@@ -57,7 +57,7 @@ def index(data: NowVideoIndexRequestModel):
 )
 def search(data: NowTextSearchRequestModel):
     """
-    Retrieve matching videos for a given text as query.
+    Retrieve matching videos for a given text as query
     """
     query_doc, filter_query = process_query(
         text=data.text, uri=data.uri, conditions=data.filters
