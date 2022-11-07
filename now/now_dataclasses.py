@@ -116,6 +116,7 @@ class UserInput(BaseModel):
     admin_emails: Optional[List[str]] = None
     user_emails: Optional[List[str]] = None
     additional_user: Optional[StrictBool] = None
+    api_key: Optional[str] = None
 
     class Config:
         arbitrary_types_allowed = True

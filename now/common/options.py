@@ -8,6 +8,7 @@ from __future__ import annotations, print_function, unicode_literals
 
 import importlib
 import os
+import uuid
 
 from hubble import AuthenticationRequiredError
 from kubernetes import client, config
@@ -304,6 +305,21 @@ SECURED = DialogOptions(
     conditional_check=lambda user_inp: user_inp.deployment_type == 'remote',
 )
 
+
+API_KEY = DialogOptions(
+    name='api_key',
+    prompt_message='Do you want to generate an api_key to access this deployment?',
+    prompt_type='list',
+    choices=[
+        {'name': '✅ yes', 'value': uuid.uuid4().hex},
+        {'name': '⛔ no', 'value': None},
+    ],
+    depends_on=SECURED,
+    is_terminal_command=True,
+    description='Pass an api_key to access the flow once the deployment is complete. ',
+    conditional_check=lambda user_inp: user_inp.secured,
+)
+
 ADDITIONAL_USERS = DialogOptions(
     name='additional_user',
     prompt_message='Do you want to provide additional users access to this flow?',
@@ -429,7 +445,7 @@ data_es = [
     ES_ADDITIONAL_ARGS,
 ]
 cluster = [DEPLOYMENT_TYPE, LOCAL_CLUSTER]
-remote_cluster = [SECURED, ADDITIONAL_USERS, USER_EMAILS]
+remote_cluster = [SECURED, API_KEY, ADDITIONAL_USERS, USER_EMAILS]
 
 
 base_options = (

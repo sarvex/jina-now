@@ -16,6 +16,7 @@ from now.common.options import NEW_CLUSTER
 from now.constants import Apps, DatasetTypes, Modalities
 from now.demo_data import DemoDatasetNames
 from now.deployment.deployment import cmd, list_all_wolf, terminate_wolf
+from now.utils import get_flow_id
 
 
 @pytest.fixture
@@ -44,7 +45,7 @@ def test_search_music(resources_folder_path: str):
 
 
 @pytest.fixture()
-def cleanup(deployment_type, dataset):
+def cleanup(deployment_type, dataset, app):
     print('start cleanup')
     start = time.time()
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -57,12 +58,12 @@ def cleanup(deployment_type, dataset):
                     print('nothing to clean up')
                     return
                 host = flow_details['host']
-                flow_id = host.replace('grpcs://nowapi-', '').replace(
-                    '.wolf.jina.ai', ''
-                )
+                flow_id = get_flow_id(host)
                 terminate_wolf(flow_id)
             else:
+                print('\nDeleting local cluster')
                 kwargs = {
+                    'app': app,
                     'deployment_type': deployment_type,
                     'now': 'stop',
                     'cluster': 'kind-jina-now',
@@ -165,6 +166,7 @@ def test_backend_demo_data(
         'dataset_name': dataset,
         'cluster': cluster,
         'secured': deployment_type == 'remote',
+        'api_key': None,
         'additional_user': False,
         'deployment_type': deployment_type,
         'proceed': True,
@@ -350,7 +352,9 @@ def assert_deployment_response(
 
 @pytest.mark.parametrize('deployment_type', ['remote'])
 @pytest.mark.parametrize('dataset', ['custom_s3_bucket'])
+@pytest.mark.parametrize('app', [Apps.TEXT_TO_IMAGE])
 def test_backend_custom_data(
+    app,
     deployment_type: str,
     dataset: str,
     cleanup,
@@ -358,7 +362,6 @@ def test_backend_custom_data(
 ):
     os.environ['NOW_CI_RUN'] = 'True'
     os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
-    app = Apps.TEXT_TO_IMAGE
     kwargs = {
         'now': 'start',
         'app': app,
