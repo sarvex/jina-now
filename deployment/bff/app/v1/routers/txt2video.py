@@ -42,8 +42,8 @@ def index(data: NowVideoIndexRequestModel):
         data=data,
         inputs=index_docs,
         parameters={
-            'traversal_paths': '@c',
-            'access_paths': '@c',
+            'traversal_paths': '@c,cc',
+            'access_paths': '@c,cc',
         },
         endpoint='/index',
     )
@@ -70,8 +70,8 @@ def search(data: NowTextSearchRequestModel):
         parameters={
             'limit': data.limit,
             'filter': filter_query,
-            'traversal_paths': '@c',
-            'access_paths': '@c',
+            'traversal_paths': '@c,cc',
+            'access_paths': '@c,cc',
         },
         endpoint='/search',
     )

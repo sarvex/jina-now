@@ -90,8 +90,8 @@ def multi_modal_data(resources_folder_path):
     return DocumentArray([Document(page) for page in pages])
 
 
-# @pytest.fixture
-def test_preprocess_and_encode(single_modal_data, multi_modal_data):
+@pytest.fixture
+def preprocess_and_encode(single_modal_data, multi_modal_data):
     search_fields = []
     filter_fields = []
     # data_type = 'single_modal'
@@ -107,19 +107,19 @@ def test_preprocess_and_encode(single_modal_data, multi_modal_data):
     user_input.dataset_type = DatasetTypes.DEMO
     user_input.dataset_name = DemoDatasetNames.TUMBLR_GIFS_10K
     data = load_data(app_instance, user_input)
-    data = DocumentArray([data[0], data[-1]])
+    data = DocumentArray([data[100], data[-1]])
 
     f1 = (
         Flow()
         .add(uses=NOWPreprocessor, uses_with={'app': app_instance.app_name})
-        # .add(
-        #     uses='jinahub+docker://CLIPOnnxEncoder/latest-gpu',
-        #     host='encoderclip-bh-5f4efaff13.wolf.jina.ai',
-        #     port=443,
-        #     tls=True,
-        #     external=True,
-        #     uses_with={'name': 'ViT-B-32::openai'},
-        # )
+        .add(
+            uses='jinahub+docker://CLIPOnnxEncoder/latest-gpu',
+            host='encoderclip-bh-5f4efaff13.wolf.jina.ai',
+            port=443,
+            tls=True,
+            external=True,
+            uses_with={'name': 'ViT-B-32::openai'},
+        )
     )
     with f1:
         encoded_d = f1.post(
@@ -139,4 +139,4 @@ def test_preprocess_and_encode(single_modal_data, multi_modal_data):
     #     assert field == chunk.tags['field_name']
     # for filter_field in filter_fields:
     #     assert filter_field in encoded_d[0].tags['filter_fields']
-    # return encoded_d, user_input
+    return encoded_d, user_input

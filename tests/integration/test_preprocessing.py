@@ -43,7 +43,7 @@ def test_indexing(preprocess_and_encode):
 
         query_res = f2.post(
             on='/search',
-            inputs=data,
+            inputs=data[1],
             parameters={
                 'user_input': user_input.__dict__,
                 'access_paths': app_instance.index_query_access_paths(

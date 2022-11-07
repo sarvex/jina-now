@@ -67,7 +67,6 @@ class NOWBaseIndexer(Executor):
         for tags in self.doc_id_tags.values():
             for key, value in tags.items():
                 count_dict[key][value] += 1
-
         tag_to_values = dict()
         for key, value_to_count in count_dict.items():
             sorted_values = sorted(
@@ -81,7 +80,7 @@ class NOWBaseIndexer(Executor):
 
     @secure_request(on='/list', level=SecurityLevel.USER)
     def list(self, parameters: dict = {}, **kwargs):
-        """List all indexed documents.
+        """List all indexed documents
         :param parameters: dictionary with limit and offset
         - offset (int): number of documents to skip
         - limit (int): number of retrieved documents
