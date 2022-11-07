@@ -40,15 +40,25 @@ def test_indexing(
 
 
 @pytest.mark.parametrize(
-    'da, query_da, traversal_paths, dims, index_name',
+    'da, query_da, traversal_paths, dims, index_name, apply_bm25',
     [
-        ('text_da', 'text_query', '@r', 7, 'test-search-bm25-text'),
+        ('text_da', 'text_query', '@r', 7, 'test-search', False),
+        (
+            'multimodal_da',
+            'multimodal_query',
+            '@c',
+            [7, 5],
+            'test-search-multimodal',
+            False,
+        ),
+        ('text_da', 'text_query', '@r', 7, 'test-search-bm25-text', True),
         (
             'multimodal_da',
             'multimodal_query',
             '@c',
             [7, 5],
             'test-search-bm25-multimodal',
+            True,
         ),
     ],
 )
@@ -58,6 +68,7 @@ def test_search_with_bm25(
     traversal_paths: str,
     dims: Union[int, List[int]],
     index_name: str,
+    apply_bm25: bool,
     setup_service_running,
     es_connection_params,
     request,
@@ -77,7 +88,7 @@ def test_search_with_bm25(
         f.index(da)
         x = f.search(
             query_da,
-            parameters={'apply_bm25': True},
+            parameters={'apply_bm25': apply_bm25},
         )
         assert len(x) != 0
         assert len(x[0].matches) != 0
