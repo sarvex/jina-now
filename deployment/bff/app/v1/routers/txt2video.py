@@ -33,9 +33,9 @@ def index(data: NowVideoIndexRequestModel):
         if video:
             base64_bytes = video.encode('utf-8')
             message = base64.decodebytes(base64_bytes)
-            index_docs.append(Document(blob=message, tags=tags))
+            index_docs.append(Document(blob=message, tags=tags, modality='video'))
         else:
-            index_docs.append(Document(uri=uri, tags=tags))
+            index_docs.append(Document(uri=uri, tags=tags, modality='video'))
 
     # TODO: should use app.index_query_access_paths
     jina_client_post(
