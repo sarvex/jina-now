@@ -4,7 +4,7 @@ from docarray import Document
 from jina import Flow
 
 from now.app.text_to_image.app import TextToImage
-from now.data_loading.utils import transform_uni_modal_data
+from now.data_loading.transform_docarray import transform_uni_modal_data
 from tests.executor.indexer.base.in_memory_indexer import InMemoryIndexer
 
 

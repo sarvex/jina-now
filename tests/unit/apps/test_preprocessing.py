@@ -12,7 +12,7 @@ from now.app.text_to_text_and_image.app import TextToTextAndImage
 from now.app.text_to_video.app import TextToVideo
 from now.constants import DatasetTypes
 from now.data_loading.data_loading import load_data
-from now.data_loading.utils import transform_docarray
+from now.data_loading.transform_docarray import transform_docarray
 from now.demo_data import DemoDatasetNames
 from now.executor.preprocessor import NOWPreprocessor
 from now.now_dataclasses import UserInput

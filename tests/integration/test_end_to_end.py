@@ -126,13 +126,13 @@ def test_token_exists():
         #     DemoDatasetNames.TUMBLR_GIFS_10K,
         #     'local',
         # ),
-        # (
-        #     Apps.MUSIC_TO_MUSIC,
-        #     Modalities.MUSIC,
-        #     Modalities.MUSIC,
-        #     DemoDatasetNames.MUSIC_GENRES_ROCK,
-        #     'remote',
-        # ),
+        (
+            Apps.MUSIC_TO_MUSIC,
+            Modalities.MUSIC,
+            Modalities.MUSIC,
+            DemoDatasetNames.MUSIC_GENRES_ROCK,
+            'remote',
+        ),
         # (
         #     Apps.TEXT_TO_TEXT_AND_IMAGE,
         #     Modalities.TEXT,
