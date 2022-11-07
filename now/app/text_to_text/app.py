@@ -6,7 +6,7 @@ from docarray import DocumentArray
 from now.app.base.app import JinaNOWApp
 from now.common.preprocess import preprocess_text
 from now.common.utils import common_setup, get_indexer_config
-from now.constants import Apps, DatasetTypes, Modalities
+from now.constants import Apps, DatasetTypes, Modalities, ModelDimensions
 from now.now_dataclasses import UserInput
 
 
@@ -69,7 +69,7 @@ class TextToText(JinaNOWApp):
             encoder_uses_with={
                 'pretrained_model_name_or_path': 'sentence-transformers/msmarco-distilbert-base-v4'
             },
-            pre_trained_embedding_size=768,
+            pre_trained_embedding_size=ModelDimensions.SBERT,
             indexer_uses=indexer_config['indexer_uses'],
             kubectl_path=kubectl_path,
             indexer_resources=indexer_config['indexer_resources'],

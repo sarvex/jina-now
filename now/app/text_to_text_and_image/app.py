@@ -14,6 +14,7 @@ from now.constants import (
     NOW_PREPROCESSOR_VERSION,
     Apps,
     Modalities,
+    ModelDimensions,
     ModelNames,
 )
 from now.finetuning.data_builder import DataBuilder
@@ -149,10 +150,10 @@ class TextToTextAndImage(JinaNOWApp):
             env_dict['JINA_TOKEN'] = token
             if finetune_settings.model_name == ModelNames.CLIP:
                 env_dict['CLIP_ARTIFACT'] = artifact_id
-                env_dict['N_DIM'].append(512)
+                env_dict['N_DIM'].append(ModelDimensions.CLIP)
             elif finetune_settings.model_name == ModelNames.SBERT:
                 env_dict['SBERT_ARTIFACT'] = artifact_id
-                env_dict['N_DIM'].append(768)
+                env_dict['N_DIM'].append(ModelDimensions.SBERT)
             else:
                 print(f'{self.app_name} only expects CLIP or SBERT models.')
                 raise
@@ -169,7 +170,7 @@ class TextToTextAndImage(JinaNOWApp):
         )
         env_dict['HOSTS'] = indexer_config.get('hosts')
         env_dict['INDEXER_NAME'] = f"jinahub+docker://{indexer_config['indexer_uses']}"
-        env_dict['INDEXER_MEM'] = indexer_config.get('indexer_resources').get(
+        env_dict['INDEXER_MEM'] = indexer_config.get('indexer_resources', {}).get(
             'INDEXER_MEM'
         )
         env_dict['JINA_VERSION'] = jina_version
@@ -180,7 +181,7 @@ class TextToTextAndImage(JinaNOWApp):
             ] = 0  # JCloud will delete after 24hrs of being idle if not deleted in CI
         else:
             env_dict['RETENTION_DAYS'] = -1  # for user deployment set it to 30 days
-        env_dict['N_DIM'] = [768, 512]
+        env_dict['N_DIM'] = [ModelDimensions.SBERT, ModelDimensions.CLIP]
         env_dict['ADMIN_EMAILS'] = (
             user_input.admin_emails or [] if user_input.secured else []
         )

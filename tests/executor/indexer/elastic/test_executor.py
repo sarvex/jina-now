@@ -5,6 +5,7 @@ from docarray import DocumentArray
 from elasticsearch import Elasticsearch
 from jina import Flow
 
+from now.constants import ModelDimensions
 from now.executor.indexer.elastic import ElasticIndexer
 
 
@@ -224,5 +225,5 @@ def test_merge_docs_matrix(
         on=on, docs_matrix=docs_matrix
     )
     assert len(merged_result[0].chunks) == 2
-    assert merged_result[0].chunks[0].embedding.shape == (768,)
-    assert merged_result[0].chunks[1].embedding.shape == (512,)
+    assert merged_result[0].chunks[0].embedding.shape == (ModelDimensions.SBERT,)
+    assert merged_result[0].chunks[1].embedding.shape == (ModelDimensions.CLIP,)

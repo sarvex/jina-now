@@ -2,6 +2,8 @@ import numpy as np
 import pytest
 from docarray import Document, DocumentArray
 
+from now.constants import ModelDimensions
+
 
 @pytest.fixture
 def multimodal_da():
@@ -94,9 +96,11 @@ def docs_matrix_index():
             Document(
                 chunks=[
                     Document(
-                        text='this', embedding=np.ones(768)
+                        text='this', embedding=np.ones(ModelDimensions.SBERT)
                     ),  # embedding from SBERT
-                    Document(uri='https://jina.ai'),  # not encoded by SBERT
+                    Document(
+                        uri='https://cdn.pixabay.com/photo/2015/04/23/21/59/tree-736877_1280.jpg'
+                    ),  # not encoded by SBERT
                 ]
             )
         ),
@@ -104,10 +108,11 @@ def docs_matrix_index():
             Document(
                 chunks=[
                     Document(
-                        text='this', embedding=np.ones(512)
+                        text='this', embedding=np.ones(ModelDimensions.CLIP)
                     ),  # embedding from CLIP text model
                     Document(
-                        uri='https://jina.ai', embedding=np.ones(512)
+                        uri='https://cdn.pixabay.com/photo/2015/04/23/21/59/tree-736877_1280.jpg',
+                        embedding=np.ones(ModelDimensions.CLIP),
                     ),  # embedding from CLIP image model
                 ]
             )
@@ -123,7 +128,7 @@ def docs_matrix_search():
                 Document(
                     chunks=[
                         Document(
-                            text='this', embedding=np.ones(768)
+                            text='this', embedding=np.ones(ModelDimensions.SBERT)
                         ),  # embedding from SBERT
                     ]
                 )
@@ -134,7 +139,7 @@ def docs_matrix_search():
                 Document(
                     chunks=[
                         Document(
-                            text='this', embedding=np.ones(512)
+                            text='this', embedding=np.ones(ModelDimensions.CLIP)
                         ),  # embedding from CLIP text model
                     ]
                 )

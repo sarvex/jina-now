@@ -7,6 +7,7 @@ from docarray.score import NamedScore
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 
+from now.constants import ModelDimensions
 from now.executor.abstract.auth import NOWAuthExecutor as Executor
 from now.executor.abstract.auth import SecurityLevel, secure_request
 
@@ -438,14 +439,14 @@ class ElasticIndexer(Executor):
             for doc1, doc2 in zip(*docs_matrix):
                 new_doc = Document(text=doc1.chunks[0].text)
                 if (
-                    len(doc1.chunks[0].embedding) == 768
-                    and len(doc2.chunks[0].embedding) == 512
+                    len(doc1.chunks[0].embedding) == ModelDimensions.SBERT
+                    and len(doc2.chunks[0].embedding) == ModelDimensions.CLIP
                 ):
                     new_doc.chunks.extend(doc1.chunks)
                     new_doc.chunks.extend(doc2.chunks)
                 elif (
-                    len(doc1.chunks[0].embedding) == 512
-                    and len(doc2.chunks[0].embedding) == 768
+                    len(doc1.chunks[0].embedding) == ModelDimensions.CLIP
+                    and len(doc2.chunks[0].embedding) == ModelDimensions.SBERT
                 ):
                     new_doc.chunks.extend(doc2.chunks)
                     new_doc.chunks.extend(doc1.chunks)
@@ -456,10 +457,10 @@ class ElasticIndexer(Executor):
             for doc1, doc2 in zip(*docs_matrix):
                 new_doc = Document()
                 text_chunks = [
-                    c for c in doc1.chunks if c.text is not None and c.text != ''
+                    c for c in doc1.chunks if c.text
                 ]  # doc1 from SBert with text embedding
                 image_chunks = [
-                    c for c in doc2.chunks if c.uri is not None and c.uri != ''
+                    c for c in doc2.chunks if c.uri
                 ]  # doc2 from CLIP with image embedding
                 new_doc.chunks.extend(text_chunks)
                 new_doc.chunks.extend(image_chunks)
