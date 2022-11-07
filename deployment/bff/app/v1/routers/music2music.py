@@ -60,7 +60,6 @@ def search(data: NowMusicSearchRequestModel):
     query_doc, filter_query = process_query(
         blob=data.song, uri=data.uri, conditions=data.filters
     )
-
     docs = jina_client_post(
         data=data,
         inputs=query_doc,
