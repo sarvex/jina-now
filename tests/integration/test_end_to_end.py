@@ -180,6 +180,7 @@ def test_backend_demo_data(
     assert_deployment_response(
         app, deployment_type, input_modality, output_modality, response
     )
+
     assert_deployment_queries(
         app,
         dataset,

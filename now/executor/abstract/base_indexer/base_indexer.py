@@ -174,11 +174,9 @@ class NOWBaseIndexer(Executor):
             retrieval_limit,
             search_filter=search_filter,
         )
-        if not docs_with_matches[0].matches:
-            raise Exception(f'no matches, {len(self._index)}')
 
         # self.check_docs(docs)
-        if len(docs[0].text.split()) == 1:
+        if len(docs[0].text.split()) == 1 and traversal_paths == '@c,cc':
             if not search_filter:
                 search_filter = self.convert_filter_syntax(
                     {'title': {'$eq': docs[0].text.lower()}}
@@ -215,8 +213,7 @@ class NOWBaseIndexer(Executor):
         self.search(docs_copy, parameters, retrieval_limit, search_filter)
         if not docs_copy[0].matches:
             raise Exception(
-                f'zero matches {docs_copy[0].embedding}, '
-                f'{len(self._index)} - {parameters} - {search_filter}'
+                f'zero matches , ' f'{self._index[0].tags},  {search_filter}'
             )
         if traversal_paths == '@c,cc':
             merge_matches_sum(docs_copy, limit)
