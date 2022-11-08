@@ -108,7 +108,6 @@ def common_setup(
     kubectl_path: str,
     encoder_with: Optional[Dict] = {},
     indexer_resources: Optional[Dict] = {},
-    elastic: bool = False,
 ) -> Dict:
     # should receive pre embedding size
     finetune_settings = parse_finetune_settings(
