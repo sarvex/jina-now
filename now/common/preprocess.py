@@ -69,11 +69,11 @@ def preprocess_text(da: DocumentArray, split_by_sentences=False) -> DocumentArra
 
     result_da = DocumentArray()
     for d in da:
-        if d.text and d.text != '':
+        if d.text:
             result_da.append(d)
         else:
             for c in d.chunks:
-                if c.text and c.text != '':
+                if c.text:
                     result_da.append(d)
 
     return result_da
