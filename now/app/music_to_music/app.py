@@ -5,6 +5,7 @@ import cowsay
 from docarray import Document, DocumentArray
 
 from now.app.base.app import JinaNOWApp
+from now.common.flow import get_executor_prefix
 from now.common.utils import common_setup
 from now.constants import NOW_QDRANT_INDEXER_VERSION, Apps, Modalities
 from now.demo_data import DemoDatasetNames
@@ -104,7 +105,7 @@ class MusicToMusic(JinaNOWApp):
 
             env_dict[
                 'LINEAR_HEAD_NAME'
-            ] = f"jinahub+docker://{pre_trained_head_map[user_input.dataset_name]}"
+            ] = f"{get_executor_prefix()}{pre_trained_head_map[user_input.dataset_name]}"
 
             self.set_flow_yaml(demo_data=True)
         super().setup(dataset=dataset, user_input=user_input, kubectl_path=kubectl_path)

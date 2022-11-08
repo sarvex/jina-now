@@ -12,6 +12,7 @@ from docarray import Document, DocumentArray
 from jina import __version__ as jina_version
 
 from now.app.base.app import JinaNOWApp
+from now.common.flow import get_executor_prefix
 from now.constants import (
     NOW_AUTOCOMPLETE_VERSION,
     NOW_ELASTIC_INDEXER_VERSION,
@@ -47,18 +48,20 @@ def common_get_flow_env_dict(
     ) or user_input.app_instance.app_name == 'music_to_music':
         pre_trained_embedding_size = pre_trained_embedding_size * 2
 
+    executor_prefix = get_executor_prefix()
     config = {
         'JINA_VERSION': jina_version,
-        'ENCODER_NAME': f'jinahub+docker://{encoder_uses}',
+        'ENCODER_NAME': f'{executor_prefix}{encoder_uses}',
+        'CAST_CONVERT_NAME': f'{executor_prefix}CastNMoveNowExecutor/v0.0.3',
         'N_DIM': finetune_settings.finetune_layer_size
         if finetune_settings.perform_finetuning
         or user_input.app_instance.app_name == 'music_to_music'
         else pre_trained_embedding_size,
         'PRE_TRAINED_EMBEDDINGS_SIZE': pre_trained_embedding_size,
-        'INDEXER_NAME': f'jinahub+docker://{indexer_uses}',
+        'INDEXER_NAME': f'{executor_prefix}{indexer_uses}',
         'PREFETCH': PREFETCH_NR,
-        'PREPROCESSOR_NAME': f'jinahub+docker://NOWPreprocessor/{NOW_PREPROCESSOR_VERSION}',
-        'AUTOCOMPLETE_EXECUTOR_NAME': f'jinahub+docker://NOWAutoCompleteExecutor/{NOW_AUTOCOMPLETE_VERSION}',
+        'PREPROCESSOR_NAME': f'{executor_prefix}NOWPreprocessor/{NOW_PREPROCESSOR_VERSION}',
+        'AUTOCOMPLETE_EXECUTOR_NAME': f'{executor_prefix}NOWAutoCompleteExecutor/{NOW_AUTOCOMPLETE_VERSION}',
         'APP': user_input.app_instance.app_name,
         'COLUMNS': tags,
         'ADMIN_EMAILS': user_input.admin_emails or [] if user_input.secured else [],

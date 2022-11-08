@@ -21,7 +21,7 @@ executors:
   env:
     JINA_LOG_LEVEL: DEBUG
 - name: sbert_encoder
-  uses: jinahub+docker://FinetunerExecutor
+  uses: ${{ ENV.ENCODER_NAME }}
   uses_requests:
     '/query_text': encode
     '/index_text': encode
@@ -34,7 +34,7 @@ executors:
     modality:
       $eq: text
 - name: clip_text_encoder
-  uses: jinahub+docker://FinetunerExecutor
+  uses: ${{ ENV.ENCODER_NAME }}
   uses_requests:
     '/query_vision_text': encode
   uses_with:
@@ -47,7 +47,7 @@ executors:
     modality:
       $eq: text
 - name: clip_vision_encoder
-  uses: jinahub+docker://FinetunerExecutor
+  uses: ${{ ENV.ENCODER_NAME }}
   uses_requests:
     '/index_vision': encode
   uses_with:

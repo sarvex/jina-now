@@ -7,6 +7,7 @@ from docarray import Document, DocumentArray
 from jina import __version__ as jina_version
 
 from now.app.base.app import JinaNOWApp
+from now.common.flow import get_executor_prefix
 from now.common.preprocess import preprocess_nested_docs, preprocess_text
 from now.common.utils import get_indexer_config
 from now.constants import NOW_PREPROCESSOR_VERSION, Apps, Modalities, ModelNames
@@ -139,9 +140,10 @@ class TextToTextAndImage(JinaNOWApp):
                 print(f'{self.app_name} only expects CLIP or SBERT models.')
                 raise
 
+        executor_prefix = get_executor_prefix()
         env_dict[
             'PREPROCESSOR_NAME'
-        ] = f'jinahub+docker://NOWPreprocessor/{NOW_PREPROCESSOR_VERSION}'
+        ] = f'{executor_prefix}NOWPreprocessor/{NOW_PREPROCESSOR_VERSION}'
         env_dict['APP'] = self.app_name
         indexer_config = get_indexer_config(
             len(dataset),
@@ -150,9 +152,10 @@ class TextToTextAndImage(JinaNOWApp):
             deployment_type=user_input.deployment_type,
         )
         env_dict['HOSTS'] = indexer_config['hosts']
-        env_dict['INDEXER_NAME'] = f"jinahub+docker://{indexer_config['indexer_uses']}"
+        env_dict['INDEXER_NAME'] = f"{executor_prefix}{indexer_config['indexer_uses']}"
         env_dict['INDEXER_MEM'] = indexer_config['indexer_resources']['INDEXER_MEM']
         env_dict['JINA_VERSION'] = jina_version
+        env_dict['ENCODER_NAME'] = f"{executor_prefix}FinetunerExecutor/v0.9.2"
         # retention days
         if 'NOW_CI_RUN' in os.environ:
             env_dict[
