@@ -62,6 +62,7 @@ def transform_uni_modal_data(documents: DocumentArray, filter_fields: List[str])
     for document in documents:
         new_doc = _get_multi_modal_format(document)
         new_doc.tags['filter_fields'] = {}
+        new_doc.chunks[0].tags['filter_fields'] = {}
         new_doc.chunks[0].tags['field_name'] = 'default_field'
         new_doc.chunks[0].embedding = document.embedding
         # if modality == 'blob':
@@ -69,8 +70,10 @@ def transform_uni_modal_data(documents: DocumentArray, filter_fields: List[str])
         for field, value in document.tags.items():
             if field in filter_fields:
                 new_doc.tags['filter_fields'][field] = value
+                new_doc.chunks[0].tags['filter_fields'][field] = value
             else:
                 new_doc.tags[field] = value
+                new_doc.chunks[0].tags[field] = value
         if 'uri' in new_doc.tags:
             new_doc.chunks[0].uri = new_doc.tags['uri']
         transformed_docs.append(new_doc)
