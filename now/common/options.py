@@ -298,8 +298,8 @@ SECURED = DialogOptions(
     prompt_message='Do you want to secure the flow?',
     prompt_type='list',
     choices=[
-        {'name': '✅ yes', 'value': True},
         {'name': '⛔ no', 'value': False},
+        {'name': '✅ yes', 'value': True},
     ],
     depends_on=DEPLOYMENT_TYPE,
     conditional_check=lambda user_inp: user_inp.deployment_type == 'remote',
