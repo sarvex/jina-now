@@ -120,37 +120,36 @@ class TextToVideo(JinaNOWApp):
         process_target: bool = False,
         process_query: bool = True,
     ) -> DocumentArray:
-        # needs to be changed
+        if not process_query and not process_target:
+            raise Exception('Either `process_query` or `process_target` must be set to True.')
+
+        def convert_fn(d: Document):
+            try:
+                if d.blob == b'':
+                    d.uri = d.text if not d.uri else d.uri
+                    if d.uri:
+                        d.load_uri_to_blob()
+                    elif d.tensor is not None:
+                        d.convert_tensor_to_blob()
+                sample_video(d)
+            except Exception as e:
+                print(f'Failed to process {d.id}, error: {e}')
+            return d
         if process_target:
-
-            def convert_fn(d: Document):
-                try:
-                    if d.blob == b'':
-                        d.uri = d.text if not d.uri else d.uri
-                        if d.uri:
-                            d.load_uri_to_blob()
-                        elif d.tensor is not None:
-                            d.convert_tensor_to_blob()
-                    sample_video(d)
-                except Exception as e:
-                    print(f'Failed to process {d.id}, error: {e}')
-                return d
-
             for d in da:
                 for chunk in d.chunks:
                     if chunk.modality == 'video':
                         convert_fn(chunk)
-            return da
-        if process_query:
 
-            def convert_fn(d: Document):
-                d.chunks = DocumentArray(d for d in d.chunks if d.text)
-                return d
-
+        if not process_query:
             for d in da:
-                convert_fn(d)
+                d.chunks = [chunk for chunk in d.chunks if chunk.modality == 'video']
 
-            return DocumentArray(d for d in da if d.chunks)
+        if not process_target:
+            for d in da:
+                d.chunks = [chunk for chunk in d.chunks if chunk.modality == 'text']
+
+        return DocumentArray(d for d in da if d.chunks)
 
     @property
     def bff_mapping_fns(self):
