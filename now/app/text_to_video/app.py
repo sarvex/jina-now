@@ -121,7 +121,9 @@ class TextToVideo(JinaNOWApp):
         process_query: bool = True,
     ) -> DocumentArray:
         if not process_query and not process_target:
-            raise Exception('Either `process_query` or `process_target` must be set to True.')
+            raise Exception(
+                'Either `process_query` or `process_target` must be set to True.'
+            )
 
         def convert_fn(d: Document):
             try:
@@ -135,6 +137,7 @@ class TextToVideo(JinaNOWApp):
             except Exception as e:
                 print(f'Failed to process {d.id}, error: {e}')
             return d
+
         if process_target:
             for d in da:
                 for chunk in d.chunks:
