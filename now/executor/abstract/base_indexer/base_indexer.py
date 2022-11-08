@@ -214,7 +214,10 @@ class NOWBaseIndexer(Executor):
         docs_copy = deepcopy(docs)
         self.search(docs_copy, parameters, retrieval_limit, search_filter)
         if not docs_copy[0].matches:
-            raise Exception(f'zero matches {docs[0].matches}, {len(self._index)}')
+            raise Exception(
+                f'zero matches {docs_copy[0].embedding}, '
+                f'{len(self._index)} - {parameters} - {search_filter}'
+            )
         if traversal_paths == '@c,cc':
             merge_matches_sum(docs_copy, limit)
         return docs_copy
