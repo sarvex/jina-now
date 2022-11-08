@@ -116,7 +116,6 @@ class NOWBaseIndexer(Executor):
         flat_docs = docs[traversal_paths]
         if len(flat_docs) == 0:
             return
-        raise Exception(f'{len(docs)} were passed, {docs[0]}, {flat_docs[0]}')
         flat_docs = self.maybe_drop_blob_tensor(flat_docs)
         self.index(flat_docs, parameters, **kwargs)
         self.extend_inmemory_docs_and_tags(flat_docs)
@@ -175,11 +174,9 @@ class NOWBaseIndexer(Executor):
             retrieval_limit,
             search_filter=search_filter,
         )
-        if not docs:
-            raise Exception('there are no docs')
+        if not docs_with_matches[0].matches:
+            raise Exception(f'no matches, {len(self._index)}')
 
-        if not docs[0].matches:
-            raise Exception(f'zero matches {docs[0].matches}')
         # self.check_docs(docs)
         if len(docs[0].text.split()) == 1:
             if not search_filter:
@@ -217,7 +214,7 @@ class NOWBaseIndexer(Executor):
         docs_copy = deepcopy(docs)
         self.search(docs_copy, parameters, retrieval_limit, search_filter)
         if not docs_copy[0].matches:
-            raise Exception(f'zero matches {docs[0].matches}')
+            raise Exception(f'zero matches {docs[0].matches}, {len(self._index)}')
         if traversal_paths == '@c,cc':
             merge_matches_sum(docs_copy, limit)
         return docs_copy

@@ -3,7 +3,7 @@ import os
 from docarray import Document
 from jina import Flow
 
-from now.app.text_to_image.app import TextToImage
+from now.app.text_to_video.app import TextToVideo
 from now.data_loading.transform_docarray import transform_uni_modal_data
 from tests.executor.indexer.base.in_memory_indexer import InMemoryIndexer
 
@@ -11,7 +11,7 @@ from tests.executor.indexer.base.in_memory_indexer import InMemoryIndexer
 def test_indexing(preprocess_and_encode):
     data, user_input = preprocess_and_encode
 
-    app_instance = TextToImage()
+    app_instance = TextToVideo()
     f2 = Flow().add(
         uses=InMemoryIndexer,
         uses_with={

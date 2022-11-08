@@ -106,8 +106,7 @@ def preprocess_and_encode(single_modal_data, multi_modal_data):
     user_input.filter_fields = filter_fields
     user_input.dataset_type = DatasetTypes.DEMO
     user_input.dataset_name = DemoDatasetNames.TUMBLR_GIFS_10K
-    data = load_data(app_instance, user_input)
-    data = DocumentArray([data[100], data[-1]])
+    data = load_data(app_instance, user_input)[:10]
 
     f1 = (
         Flow()
