@@ -96,10 +96,10 @@ class NOWQdrantIndexer15(Executor):
         """Perform a vector similarity search and retrieve `Document` matches"""
         if not self._index or not docs:
             raise Exception(f'{len(self._index)} ,, {len(docs)}')
+
         for d in self._index:
             if d.embedding is None:
                 raise Exception(f'indexed document. {d.summary()} has no embeddings.')
-
         for d in docs:
             if d.embedding is None:
                 raise Exception(f'query document {d.summary()} has no embeddings.')
