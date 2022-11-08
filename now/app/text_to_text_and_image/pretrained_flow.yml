@@ -27,9 +27,6 @@ executors:
     JINA_LOG_LEVEL: DEBUG
 - name: sbert_encoder
   uses: jinahub+docker://TransformerSentenceEncoder/latest
-  uses_requests:
-    /search: encode
-    /index: encode
   uses_with:
     model_name: sentence-transformers/msmarco-distilbert-base-v4
     pretrained_model_name_or_path: sentence-transformers/msmarco-distilbert-base-v4
@@ -39,12 +36,9 @@ executors:
   needs: preprocessor
   jcloud:
     resources:
-      memory: 4G
+      memory: 1G
 - name: clip_encoder
   uses: jinahub+docker://CLIPOnnxEncoder/latest
-  uses_requests:
-    /search: encode
-    /index: encode
   uses_with:
     name: ViT-B-32::openai
     access_paths: '@c'
@@ -53,7 +47,7 @@ executors:
   needs: preprocessor
   jcloud:
     resources:
-      memory: 4G
+      memory: 1G
 - name: indexer
   uses: ${{ ENV.INDEXER_NAME }}
   uses_with:
