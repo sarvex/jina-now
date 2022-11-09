@@ -1,6 +1,6 @@
 FROM qdrant/qdrant:v0.7.0
 
-RUN apt-get update && apt-get install python3 python3-pip git -y
+RUN apt-get update && apt-get install -y python3 python3-pip git
 
 RUN pip install "docarray[qdrant]"
 

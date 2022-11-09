@@ -89,7 +89,7 @@
     "tests/integration/data_loading/test_demo_datasets.py::test_sample_data_is_available[https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/video/tumblr-gifs.img10-{}.bin]": 0.19166777888312936,
     "tests/integration/data_loading/test_demo_datasets.py::test_sample_data_is_available[https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/video/tumblr-gifs.txt10-{}.bin]": 0.21453939750790596,
     "tests/integration/security/test_api_key.py::test_add_key": 1.844394820742309,
-    "tests/integration/test_end_to_end.py::test_backend_custom_data[custom_s3_bucket-remote]": 15.236014327500015,
+    "tests/integration/test_end_to_end.py::test_backend_custom_data[custom_s3_bucket-remote]": 341.236014327500015,
     "tests/integration/test_end_to_end.py::test_backend_demo_data[local-new-image_to_image-image-image-best-artworks]": 253.56840585614555,
     "tests/integration/test_end_to_end.py::test_backend_demo_data[local-new-image_to_text-image-text-rock-lyrics]": 0.2118221449200064,
     "tests/integration/test_end_to_end.py::test_backend_demo_data[local-new-text_to_image-text-image-bird-species]": 241.05119997775182,

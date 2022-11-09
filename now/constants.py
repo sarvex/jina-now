@@ -7,10 +7,11 @@ from now.utils import BetterEnum
 
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.130-test-multimodal-20'
-NOW_PREPROCESSOR_VERSION = '0.0.93-test-multimodal-20'
-NOW_QDRANT_INDEXER_VERSION = '0.0.2-debug-issue-1'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.3-test-multimodal-20'
-NOW_AUTOCOMPLETE_VERSION = '0.0.1-feat-auto-complete-52'
+NOW_PREPROCESSOR_VERSION = '0.0.95-feat-matching-text-82'
+NOW_QDRANT_INDEXER_VERSION = '0.0.3-feat-matching-text-82'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.3-matching-text-82'
+NOW_AUTOCOMPLETE_VERSION = '0.0.1-feat-matching-text-82'
+NOW_OCR_DETECTOR_VERSION = '0.0.1-feat-matching-text-82'
 
 
 class Modalities(BetterEnum):
@@ -67,7 +68,11 @@ CLIP_USES = {
 }
 
 EXTERNAL_CLIP_HOST = 'encoderclip-bh-5f4efaff13.wolf.jina.ai'
+EXTERNAL_OCR_HOST = 'ocr-fb-55679da030.wolf.jina.ai'
 
 PREFETCH_NR = 10
 
 SURVEY_LINK = 'https://10sw1tcpld4.typeform.com/to/VTAyYRpR?utm_source=cli'
+
+TAG_OCR_DETECTOR_TEXT_IN_DOC = '_ocr_detector_text_in_doc'
+TAG_INDEXER_DOC_HAS_TEXT = '_indexer_doc_has_text'

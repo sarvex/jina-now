@@ -6,7 +6,6 @@ from typing import Dict, List
 import numpy as np
 import PIL
 from docarray import Document, DocumentArray
-from jina.helper import random_port
 from jina.serve.runtimes.gateway.http.models import JinaRequestModel, JinaResponseModel
 from pydantic import BaseModel
 
@@ -17,8 +16,13 @@ from deployment.bff.app.v1.models.video import (
     NowVideoResponseModel,
 )
 from now.app.base.app import JinaNOWApp
-from now.common.utils import common_setup, get_email, get_indexer_config
-from now.constants import CLIP_USES, EXTERNAL_CLIP_HOST, Apps, Modalities
+from now.common.utils import (
+    _get_clip_apps_with_dict,
+    common_setup,
+    get_email,
+    get_indexer_config,
+)
+from now.constants import CLIP_USES, Apps, Modalities
 from now.now_dataclasses import UserInput
 
 NUM_FRAMES_SAMPLED = 3
@@ -88,13 +92,7 @@ class TextToVideo(JinaNOWApp):
         self, dataset: DocumentArray, user_input: UserInput, kubectl_path
     ) -> Dict:
         indexer_config = get_indexer_config(len(dataset) * NUM_FRAMES_SAMPLED)
-        is_remote = user_input.deployment_type == 'remote'
-        encoder_with = {
-            'ENCODER_HOST': EXTERNAL_CLIP_HOST if is_remote else '0.0.0.0',
-            'ENCODER_PORT': 443 if is_remote else random_port(),
-            'ENCODER_USES_TLS': True if is_remote else False,
-            'ENCODER_IS_EXTERNAL': True if is_remote else False,
-        }
+        encoder_with, ocr_with = _get_clip_apps_with_dict(user_input)
         env_dict = common_setup(
             app_instance=self,
             user_input=user_input,
@@ -111,7 +109,8 @@ class TextToVideo(JinaNOWApp):
             kubectl_path=kubectl_path,
             indexer_resources=indexer_config['indexer_resources'],
         )
-        super().setup(dataset=dataset, user_input=user_input, kubectl_path=kubectl_path)
+        env_dict.update(ocr_with)
+        super().setup(dataset, user_input, kubectl_path)
         return env_dict
 
     def preprocess(
@@ -139,6 +138,9 @@ class TextToVideo(JinaNOWApp):
 
             def convert_fn(d: Document):
                 d.chunks = DocumentArray(d for d in d.chunks if d.text)
+                for chunk in d.chunks:
+                    if chunk.text == 'loader':
+                        chunk.text = 'loading'
                 return d
 
             for d in da:

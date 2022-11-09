@@ -2,12 +2,11 @@ import os
 from typing import Dict, List
 
 from docarray import DocumentArray
-from jina.helper import random_port
 
 from now.app.base.app import JinaNOWApp
 from now.common.preprocess import preprocess_images, preprocess_text
-from now.common.utils import common_setup, get_indexer_config
-from now.constants import CLIP_USES, EXTERNAL_CLIP_HOST, Apps, Modalities
+from now.common.utils import _get_clip_apps_with_dict, common_setup, get_indexer_config
+from now.constants import CLIP_USES, Apps, Modalities
 from now.now_dataclasses import UserInput
 
 
@@ -56,13 +55,7 @@ class TextToImage(JinaNOWApp):
         self, dataset: DocumentArray, user_input: UserInput, kubectl_path
     ) -> Dict:
         indexer_config = get_indexer_config(len(dataset))
-        is_remote = user_input.deployment_type == 'remote'
-        encoder_with = {
-            'ENCODER_HOST': EXTERNAL_CLIP_HOST if is_remote else '0.0.0.0',
-            'ENCODER_PORT': 443 if is_remote else random_port(),
-            'ENCODER_USES_TLS': True if is_remote else False,
-            'ENCODER_IS_EXTERNAL': True if is_remote else False,
-        }
+        encoder_with, ocr_with = _get_clip_apps_with_dict(user_input)
         env_dict = common_setup(
             app_instance=self,
             user_input=user_input,
@@ -79,6 +72,7 @@ class TextToImage(JinaNOWApp):
             kubectl_path=kubectl_path,
             indexer_resources=indexer_config['indexer_resources'],
         )
+        env_dict.update(ocr_with)
         super().setup(dataset, user_input, kubectl_path)
         return env_dict
 
