@@ -61,7 +61,7 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
         for doc in da:
             if 'genre_tags' in doc.tags and isinstance(doc.tags['genre_tags'], list):
                 doc.tags['genre_tags'] = ' '.join(doc.tags['genre_tags'])
-    return da
+    return da[:500]
 
 
 def select_ending(files, endings):

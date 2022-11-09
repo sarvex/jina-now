@@ -31,6 +31,10 @@ class NOWQdrantIndexer15(Executor):
             },
         )
         self.range_operators = ['$gt', '$lt', '$get', '$let']
+        print(
+            f'--->tracer_provider: {self.tracer_provider if hasattr(self, "tracer_provider") else None}'
+        )
+        print(f'--->tracer: {self.tracer if hasattr(self, "tracer") else None}')
 
     # override
     def batch_iterator(self):
@@ -69,6 +73,7 @@ class NOWQdrantIndexer15(Executor):
     def index(self, docs: DocumentArray, parameters: dict, **kwargs):
         """Index new documents"""
         # qdrant needs a list of values when filtering on sentences
+        print(f'--->/index received docs: {docs.to_json()}')
         for d in docs:
             print(d.uri)
             if 'title' in d.tags:
@@ -91,9 +96,10 @@ class NOWQdrantIndexer15(Executor):
         parameters: dict,
         limit: int,
         search_filter: dict,
-        **kwargs
+        **kwargs,
     ):
         """Perform a vector similarity search and retrieve Document matches"""
+        print(f'--->/search received docs: {docs.to_json()}')
         docs.match(self._index, filter=search_filter, limit=limit)
 
 

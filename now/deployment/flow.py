@@ -63,10 +63,12 @@ def wait_for_all_pods_in_ns(f, ns, max_wait=1800):
 
 def deploy_k8s(f, ns, tmpdir, kubectl_path):
     k8_path = os.path.join(tmpdir, f'k8s/{ns}')
+    custom_k8s_path = '/home/girishc13/Documents/Code/jina-ai/now/flow_k8s'
     with yaspin_extended(
         sigmap=sigmap, text="Convert Flow to Kubernetes YAML", color="green"
     ) as spinner:
         f.to_k8s_yaml(k8_path)
+        f.to_k8s_yaml(custom_k8s_path)
         spinner.ok('🔄')
 
     # create namespace
@@ -139,6 +141,7 @@ def deploy_flow(
                 tmpdir,
                 kubectl_path=kubectl_path,
             )
+            print(f'--->gateway host: {gateway_host}, port: {gateway_port}')
             client = Client(host=gateway_host, port=gateway_port)
 
         if os.path.exists(env_file):

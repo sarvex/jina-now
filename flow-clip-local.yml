@@ -1,0 +1,55 @@
+jtype: Flow
+with:
+  name: nowapi
+  monitoring: true
+  port_expose: 8080
+  prefetch: 10
+  cors: true
+  tracing: true
+  traces_exporter_host: '0.0.0.0'
+  traces_exporter_port: 4317
+  env:
+    JINA_LOG_LEVEL: DEBUG
+  extra_search_paths:
+    - ./now/executor
+    - ./now/executor/indexer
+  graph_description: '{"autocomplete_executor": ["preprocessor"], "start-gateway": ["autocomplete_executor"], "preprocessor": ["encoder_clip"], "encoder_clip": ["indexer"], "indexer": ["end-gateway"]}'
+executors:
+  - name: autocomplete_executor
+    uses: autocomplete/config.yml
+    needs: gateway
+    env:
+      JINA_LOG_LEVEL: DEBUG
+  - name: preprocessor
+    uses: preprocessor/config.yml
+    uses_with:
+      app: text_to_image
+      admin_emails: []
+      user_emails: []
+      api_keys: []
+    env:
+      JINA_LOG_LEVEL: DEBUG
+  - name: encoder_clip
+    # uses: docker://clip:local
+    host: localhost
+    port: 51000
+    uses_with:
+      name: 'ViT-B-32::openai'
+    external: true
+    tls: false
+    env:
+      JINA_LOG_LEVEL: DEBUG
+  - name: indexer
+    # uses: jinahub+docker://NOWQdrantIndexer15
+    uses: docker://qdrantindexer15:local
+    tracing: true
+    traces_exporter_host: '0.0.0.0'
+    traces_exporter_port: 4317
+    uses_with:
+      dim: 512
+      columns: ["content_type", "str", "finetuner_label", "str", "split", "str", "color", "str"]
+      admin_emails: []
+      user_emails: []
+      api_keys: []
+    env:
+      JINA_LOG_LEVEL: DEBUG

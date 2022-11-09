@@ -1,1 +1,1 @@
-git+https://github.com/jina-ai/now@${JINA_NOW_COMMIT_SHA}
+git+https://github.com/jina-ai/now@4be321c0838f5c3ef194c2e7e796f870465d2014
