@@ -88,7 +88,6 @@ def suggestion(data: NowTextSearchRequestModel):
     Return text suggestions for the rest of the query text
     """
     query_doc, _ = process_query(text=data.text, uri=data.uri, conditions=data.filters)
-
     docs = jina_client_post(
         data=data,
         inputs=query_doc,

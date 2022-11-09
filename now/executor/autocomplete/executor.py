@@ -72,4 +72,6 @@ class NOWAutoCompleteExecutor(Executor):
                 doc.tags['suggestions'] = self.auto_complete.search(
                     doc.text, max_cost=3, size=5
                 )
+        if 'suggestions' not in docs[0].tags:
+            raise Exception(f'{docs[0]}, {traversal_paths}, {self.words}')
         return docs

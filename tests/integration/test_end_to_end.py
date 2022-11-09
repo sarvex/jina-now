@@ -240,10 +240,7 @@ def assert_suggest(suggest_url, request_body):
         response.status_code == 200
     ), f"Received code {response.status_code} with text: {response.json()['message']}"
     docs = DocumentArray.from_json(response.content)
-    try:
-        assert 'suggestions' in docs[0].tags
-    except:
-        raise Exception(f'no suggestions {docs}')
+    assert 'suggestions' in docs[0].tags
     assert docs[0].tags['suggestions'] == [[old_request_text]]
 
 
