@@ -57,7 +57,9 @@ def _check_user(kwargs, level, user_emails, admin_emails, api_keys):
     for email in user_emails + admin_emails + ['jina.ai']:
         if _valid_user(user_info.get('email'), email):
             if level == SecurityLevel.ADMIN and email not in admin_emails:
-                raise PermissionError(f'User {email} is not an admin.')
+                raise PermissionError(
+                    f'User {email} is not an admin. {admin_emails}, {user_emails}'
+                )
             return
     raise PermissionError(
         f'User {user_info.get("email") or user_info["_id"]} has no permission'
