@@ -87,7 +87,6 @@ def suggestion(data: NowTextSearchRequestModel):
     docs = jina_client_post(
         data=data,
         inputs=query_doc,
-        parameters={'traversal_paths': '@c', 'access_paths': '@c'},
         endpoint='/suggestion',
     )
     return docs.to_dict()

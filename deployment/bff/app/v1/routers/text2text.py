@@ -91,8 +91,6 @@ def suggestion(data: NowTextSearchRequestModel):
             'limit': data.limit,
             'filter': filter_query,
             'apply_bm25': True,
-            'traversal_paths': '@c',
-            'access_paths': '@c',
         },
         endpoint='/suggestion',
     )

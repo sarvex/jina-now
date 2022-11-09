@@ -11,7 +11,7 @@ from now.executor.abstract.auth.auth import SecurityLevel, secure_request
 
 
 class NOWAutoCompleteExecutor(Executor):
-    def __init__(self, search_traversal_paths: str = '@c', words=None, *args, **kwargs):
+    def __init__(self, search_traversal_paths: str = '@r', words=None, *args, **kwargs):
         self.words = words if words else {}
         self.search_traversal_paths = search_traversal_paths
         self.autocomplete = None
@@ -69,11 +69,7 @@ class NOWAutoCompleteExecutor(Executor):
         flat_docs = None if not docs else docs[traversal_paths]
         if flat_docs:
             for doc in flat_docs:
-                doc[0].tags['suggestions'] = self.auto_complete.search(
-                    doc[0].text, max_cost=3, size=5
+                doc.tags['suggestions'] = self.auto_complete.search(
+                    doc.text, max_cost=3, size=5
                 )
-        if 'suggestions' not in docs[0].chunks[0].tags:
-            raise Exception(
-                f'no suggestions {len(docs)},  {docs[0]}, {traversal_paths}'
-            )
         return docs
