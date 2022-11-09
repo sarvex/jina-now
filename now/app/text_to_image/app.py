@@ -81,9 +81,18 @@ class TextToImage(JinaNOWApp):
         )
 
     def preprocess(
-        self, da: DocumentArray, user_input: UserInput, is_indexing=False
+        self,
+        da: DocumentArray,
+        user_input: UserInput,
+        process_target: bool = False,
+        process_query: bool = True,
     ) -> DocumentArray:
-        if is_indexing:
-            return preprocess_images(da=da)
-        else:
-            return preprocess_text(da=da, split_by_sentences=False)
+        if not process_target and not process_query:
+            raise ValueError(
+                'Either `process_target` or `process_query` must be set to `True`.'
+            )
+        if process_target:
+            da = preprocess_images(da=da)
+        if process_query:
+            da = preprocess_text(da=da, split_by_sentences=False)
+        return da

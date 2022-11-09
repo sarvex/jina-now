@@ -19,13 +19,13 @@ class NOWBaseIndexer(Executor):
         columns: Optional[List] = None,
         metric: str = 'cosine',
         limit: int = 10,
-        traversal_paths: str = '@r',
+        traversal_paths: str = '@c',
         max_values_per_tag: int = 10,
         *args,
         **kwargs,
     ):
         """
-        :param dim: Dimensionality of vectors to index
+        :param dim: Dimensionality of vectors to index.
         :param columns: List of tuples of the form (column_name, str_type). Here str_type must be a string that can be
         parsed as a valid Python type.
         :param metric: Distance metric type. Can be 'euclidean', 'inner_product', or 'cosine'
@@ -49,7 +49,7 @@ class NOWBaseIndexer(Executor):
 
     @secure_request(on='/tags', level=SecurityLevel.USER)
     def get_tags_and_values(self, **kwargs):
-        """Returns tags and their possible values
+        """Returns tags and their possible values.
 
         for example if indexed docs are the following:
             docs = DocumentArray([
@@ -60,14 +60,12 @@ class NOWBaseIndexer(Executor):
 
         the resulting response would be a document array with
         one document containing a dictionary in tags like the following:
-        {'tags':{'color':['red', 'blue'], 'greeting':['hello']}}
+        {'tags':{'color':['red', 'blue'], 'greeting':['hello']}}.
         """
-
         count_dict = defaultdict(lambda: defaultdict(int))
         for tags in self.doc_id_tags.values():
             for key, value in tags.items():
                 count_dict[key][value] += 1
-
         tag_to_values = dict()
         for key, value_to_count in count_dict.items():
             sorted_values = sorted(
@@ -81,7 +79,7 @@ class NOWBaseIndexer(Executor):
 
     @secure_request(on='/list', level=SecurityLevel.USER)
     def list(self, parameters: dict = {}, **kwargs):
-        """List all indexed documents.
+        """List all indexed documents
         :param parameters: dictionary with limit and offset
         - offset (int): number of documents to skip
         - limit (int): number of retrieved documents
@@ -90,7 +88,7 @@ class NOWBaseIndexer(Executor):
         offset = int(parameters.get('offset', 0))
         # add removal of duplicates
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
-        if traversal_paths == '@c':
+        if traversal_paths == '@c,cc':
             docs = DocumentArray()
             chunks_size = int(parameters.get('chunks_size', 3))
             parent_ids = set()
@@ -139,16 +137,28 @@ class NOWBaseIndexer(Executor):
 
     @secure_request(on='/search', level=SecurityLevel.USER)
     def search_endpoint(
-        self, docs: Optional[DocumentArray] = None, parameters: dict = {}, **kwargs
+        self,
+        docs: Optional[DocumentArray] = None,
+        parameters: dict = {},
+        **kwargs,
     ):
-        """Perform a vector similarity search and retrieve Document matches"""
+        """Perform a vector similarity search and retrieve `Document` matches."""
         limit = int(parameters.get('limit', self.limit))
         search_filter = parameters.get('filter', {})
         search_filter = self.convert_filter_syntax(search_filter)
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
-        docs = docs[traversal_paths][:1]  # only search on the first document for now
+        print(f'number of docs {len(docs)}')
+        new_docs = docs[traversal_paths][
+            :1
+        ]  # only search on the first document for now
+        for d in new_docs:
+            if d.embedding is None:
+                raise Exception(
+                    f'{docs[0]} search endpoint gets no embeddings, {docs[0].chunks[0]}'
+                )
+        docs = new_docs
 
-        if traversal_paths == '@c':
+        if traversal_paths == '@c,cc':
             retrieval_limit = limit * 3
         else:
             retrieval_limit = limit
@@ -163,11 +173,13 @@ class NOWBaseIndexer(Executor):
             search_filter=search_filter,
         )
 
+        # self.check_docs(docs)
         if len(docs[0].text.split()) == 1:
             if not search_filter:
                 search_filter = self.convert_filter_syntax(
                     {'title': {'$eq': docs[0].text.lower()}}
                 )
+            # self.check_docs(docs)
             docs_with_matches_filter = self.create_matches(
                 docs, parameters, traversal_paths, limit, retrieval_limit, search_filter
             )
@@ -179,12 +191,29 @@ class NOWBaseIndexer(Executor):
         self.clean_response(docs_with_matches)
         return docs_with_matches
 
+    def check_docs(self, docs, new_docs=None):
+        if not docs:
+            raise Exception(f'{docs} there are no docs!!')
+        for d in docs:
+            if d.embedding is None:
+                for chunk in d.chunks:
+                    raise Exception(
+                        f'{chunk} and doc {d} !!!!!! {chunk.embedding} and doc emb {d.embedding}, before traversal {new_docs[0].summary()}'
+                    )
+                # raise Exception(
+                #     f'{d} there is no document! {len(d.chunks)}, {d.chunks.summary()}'
+                # )
+
     def create_matches(
         self, docs, parameters, traversal_paths, limit, retrieval_limit, search_filter
     ):
         docs_copy = deepcopy(docs)
         self.search(docs_copy, parameters, retrieval_limit, search_filter)
-        if traversal_paths == '@c':
+        # if not docs_copy[0].matches:
+        #     raise Exception(
+        #         f'zero matches , ' f'{self._index[0].tags},  {search_filter}'
+        #     )
+        if traversal_paths == '@c,cc':
             merge_matches_sum(docs_copy, limit)
         return docs_copy
 
@@ -241,10 +270,13 @@ class NOWBaseIndexer(Executor):
         """Parse the columns to index"""
         valid_input_columns = ['str', 'float', 'int']
         if columns:
-            corrected_list = []
-            for i in range(0, len(columns), 2):
-                corrected_list.append((columns[i], columns[i + 1]))
-            columns = corrected_list
+            try:
+                corrected_list = []
+                for i in range(0, len(columns), 2):
+                    corrected_list.append((columns[i], columns[i + 1]))
+                columns = corrected_list
+            except:
+                raise Exception(f'here are the columns {columns}')
             for n, t in columns:
                 assert (
                     t in valid_input_columns

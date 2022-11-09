@@ -37,6 +37,7 @@ def run(
     """
     dataset = load_data(app_instance, user_input)
 
+    # dataset = dataset[:10] + dataset[-10:]
     env_dict = app_instance.setup(
         dataset=dataset, user_input=user_input, kubectl_path=kubectl_path
     )
@@ -58,8 +59,8 @@ def run(
     print(f"▶ indexing {len(dataset)} documents")
     params = {
         'user_input': user_input.__dict__,
-        'traversal_paths': app_instance.index_query_access_paths,
-        'access_paths': app_instance.index_query_access_paths,
+        'traversal_paths': app_instance.index_query_access_paths(),
+        'access_paths': app_instance.index_query_access_paths(),
     }
     if user_input.secured:
         params['jwt'] = user_input.jwt

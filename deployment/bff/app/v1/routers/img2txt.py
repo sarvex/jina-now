@@ -20,7 +20,7 @@ router = APIRouter()
 )
 def index(data: NowTextIndexRequestModel):
     """
-    Append the list of text to the indexer.
+    Append the list of text to the indexer
     """
     index_docs = DocumentArray()
     for text, uri, tags in zip(data.texts, data.uris, data.tags):
@@ -34,7 +34,10 @@ def index(data: NowTextIndexRequestModel):
     jina_client_post(
         data=data,
         inputs=index_docs,
-        parameters={},
+        parameters={
+            'access_paths': '@c',
+            'traversal_paths': '@c',
+        },
         endpoint='/index',
     )
 
@@ -57,7 +60,12 @@ def search(data: NowImageSearchRequestModel):
     docs = jina_client_post(
         data=data,
         inputs=query_doc,
-        parameters={'limit': data.limit, 'filter': filter_query},
+        parameters={
+            'limit': data.limit,
+            'filter': filter_query,
+            'access_paths': '@c',
+            'traversal_paths': '@c',
+        },
         endpoint='/search',
     )
 

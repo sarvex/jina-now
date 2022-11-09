@@ -117,7 +117,7 @@ def test_token_exists():
             Modalities.TEXT,
             Modalities.TEXT,
             DemoDatasetNames.POP_LYRICS,
-            'local',
+            'remote',
         ),
         (
             Apps.TEXT_TO_VIDEO,
@@ -126,13 +126,13 @@ def test_token_exists():
             DemoDatasetNames.TUMBLR_GIFS_10K,
             'local',
         ),
-        (
-            Apps.MUSIC_TO_MUSIC,
-            Modalities.MUSIC,
-            Modalities.MUSIC,
-            DemoDatasetNames.MUSIC_GENRES_ROCK,
-            'remote',
-        ),
+        # (
+        #     Apps.MUSIC_TO_MUSIC,
+        #     Modalities.MUSIC,
+        #     Modalities.MUSIC,
+        #     DemoDatasetNames.MUSIC_GENRES_ROCK,
+        #     'remote',
+        # ),
         # (
         #     Apps.TEXT_TO_TEXT_AND_IMAGE,
         #     Modalities.TEXT,
@@ -180,6 +180,7 @@ def test_backend_demo_data(
     assert_deployment_response(
         app, deployment_type, input_modality, output_modality, response
     )
+
     assert_deployment_queries(
         app,
         dataset,

@@ -90,9 +90,17 @@ class ImageToText(JinaNOWApp):
         )
 
     def preprocess(
-        self, da: DocumentArray, user_input: UserInput, is_indexing=False
+        self,
+        da: DocumentArray,
+        user_input: UserInput,
+        process_target: bool = False,
+        process_query: bool = True,
     ) -> DocumentArray:
-        if is_indexing:
+        if not process_target and not process_query:
+            raise ValueError(
+                'Either `process_target` or `process_query` must be set to `True`.'
+            )
+        if process_target:
             split_by_sentences = False
             if (
                 user_input
@@ -102,6 +110,8 @@ class ImageToText(JinaNOWApp):
             ):
                 # for text loaded from folder can't assume it is split by sentences
                 split_by_sentences = True
-            return preprocess_text(da=da, split_by_sentences=split_by_sentences)
-        else:
-            return preprocess_images(da=da)
+            da = preprocess_text(da=da, split_by_sentences=split_by_sentences)
+        if process_query:
+            da = preprocess_images(da=da)
+
+        return da

@@ -185,7 +185,7 @@ SEARCH_FIELDS = DialogOptions(
     prompt_message='Enter comma-separated search fields:',
     prompt_type='input',
     depends_on=DATASET_TYPE,
-    conditional_check=lambda user_input: user_input.data == 'custom',
+    conditional_check=lambda user_input: user_input.dataset_type != DatasetTypes.DEMO,
     post_func=lambda user_input, **kwargs: _parse_search_fields(user_input),
 )
 
@@ -201,7 +201,7 @@ FILTER_FIELDS = DialogOptions(
     prompt_message='Enter comma-separated filter fields:',
     prompt_type='input',
     depends_on=DATASET_TYPE,
-    conditional_check=lambda user_input: user_input.data == 'custom',
+    conditional_check=lambda user_input: user_input.dataset_type != DatasetTypes.DEMO,
     post_func=lambda user_input, **kwargs: _parse_filter_fields(user_input),
 )
 
@@ -429,5 +429,12 @@ remote_cluster = [SECURED, ADDITIONAL_USERS, USER_EMAILS]
 
 
 base_options = (
-    data_type + data_demo + data_da + data_s3 + data_es + data_fields + cluster + remote_cluster
+    data_type
+    + data_demo
+    + data_da
+    + data_s3
+    + data_es
+    + data_fields
+    + cluster
+    + remote_cluster
 )

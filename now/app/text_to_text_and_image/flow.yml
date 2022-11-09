@@ -20,7 +20,7 @@ executors:
       memory: 1G
   env:
     JINA_LOG_LEVEL: DEBUG
-- name: sbert_encoder
+- name: sbert_encoder # access path main_text
   uses: jinahub+docker://FinetunerExecutor
   uses_requests:
     '/query_text': encode
@@ -33,7 +33,7 @@ executors:
   when:
     modality:
       $eq: text
-- name: clip_text_encoder
+- name: clip_text_encoder # access path will be clip_text_field
   uses: jinahub+docker://FinetunerExecutor
   uses_requests:
     '/query_vision_text': encode

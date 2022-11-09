@@ -25,4 +25,4 @@ def test_elasticsearch_data_loading(setup_online_shop_db, es_connection_params):
         [doc.tags['field_name'] for doc in transformed_docs[0].chunks]
     ) == sorted(['title', 'text', 'uris'])
     assert 'product_id' in transformed_docs[0].tags['filter_fields']
-    assert 'url' in transformed_docs[0].tags['additional_fields']
+    assert 'url' in transformed_docs[0].tags

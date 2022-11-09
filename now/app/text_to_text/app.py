@@ -79,11 +79,15 @@ class TextToText(JinaNOWApp):
         return env_dict
 
     def preprocess(
-        self, da: DocumentArray, user_input: UserInput, is_indexing=False
+        self,
+        da: DocumentArray,
+        user_input: UserInput,
+        process_target: bool = False,
+        process_query: bool = True,
     ) -> DocumentArray:
         split_by_sentences = False
         if (
-            is_indexing
+            process_target
             and user_input.dataset_type == DatasetTypes.PATH
             and user_input.dataset_path
             and os.path.isdir(user_input.dataset_path)

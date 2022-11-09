@@ -207,7 +207,8 @@ class JinaNOWApp:
         self,
         da: DocumentArray,
         user_input: UserInput,
-        is_indexing: Optional[bool] = False,
+        process_target: bool = False,
+        process_query: bool = True,
     ) -> DocumentArray:
         """Loads and preprocesses every document such that it is ready for finetuning/indexing."""
         return da
@@ -228,7 +229,7 @@ class JinaNOWApp:
             )
             try:
                 client.post('/dry_run', timeout=2)
-            except ConnectionError:
+            except Exception:
                 return False
             return True
         return False
@@ -257,10 +258,17 @@ class JinaNOWApp:
         """
         return {'.*': (JinaRequestModel, JinaResponseModel, lambda x: x, lambda x: x)}
 
-    @property
-    def index_query_access_paths(self) -> str:
-        """Gives access paths for indexing and searching."""
-        return '@r'
+    def index_query_access_paths(
+        self, search_fields: Optional[List[str]] = None
+    ) -> str:
+        """Gives access paths for indexing and searching. Returns a path to search fields
+        if provided, otherwise a path to chunk level.
+
+        :param search_fields: Optional list of search fields.
+        """
+        if search_fields:
+            return '@.[' + ', '.join(search_fields) + ']'
+        return '@c'
 
     @property
     def max_request_size(self) -> int:

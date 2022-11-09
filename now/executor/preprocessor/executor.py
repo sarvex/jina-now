@@ -9,15 +9,17 @@ from jina import Document, DocumentArray
 from now.app.base.app import JinaNOWApp
 from now.common.options import construct_app
 from now.constants import Apps, DatasetTypes
+from now.data_loading.transform_docarray import transform_docarray
 from now.executor.abstract.auth import NOWAuthExecutor as Executor
-from now.executor.abstract.auth import SecurityLevel, secure_request
+from now.executor.abstract.auth import SecurityLevel
+from now.executor.abstract.auth import secure_request as secure_request_preprocessor
 from now.now_dataclasses import UserInput
 from now.utils import _maybe_download_from_s3
 
 
 class NOWPreprocessor(Executor):
-    """Applies preprocessing to documents for encoding, indexing and searching as defined by app. If necessary,
-    downloads files for that from cloud bucket.
+    """Applies preprocessing to documents for encoding, indexing and searching as defined by app.
+    If necessary, downloads files for that from cloud bucket.
 
     Also, provides an endpoint to download data from S3 bucket without requiring credentials for that.
 
@@ -40,8 +42,12 @@ class NOWPreprocessor(Executor):
         else:
             self.user_input = None
 
+    def _set_access_paths(self, parameters: Dict):
+        parameters['access_paths'] = self.app.index_query_access_paths()
+        parameters['traversal_paths'] = self.app.index_query_access_paths()
+
     def _set_user_input(self, parameters: Dict):
-        """Sets user_input attribute and deletes used attributes from dictionary."""
+        """Sets user_input attribute and deletes used attributes from dictionary"""
         if 'user_input' in parameters.keys():
             self.user_input = UserInput()
             for attr_name, prev_value in self.user_input.__dict__.items():
@@ -71,19 +77,21 @@ class NOWPreprocessor(Executor):
                     user_input=self.user_input,
                     max_workers=self.max_workers,
                 )
-
-            pre_docs = self.app.preprocess(
-                docs, self.user_input, is_indexing=is_indexing
+            docs = transform_docarray(
+                documents=docs,
+                search_fields=self.user_input.search_fields,
+                filter_fields=self.user_input.filter_fields or [],
             )
-            if encode:
-                remaining_docs = self.app.preprocess(
-                    docs, self.user_input, is_indexing=not is_indexing
-                )
-                pre_docs.extend(remaining_docs)
-            docs = pre_docs
+
+            docs = self.app.preprocess(
+                da=docs,
+                user_input=self.user_input,
+                process_query=True if encode else not is_indexing,
+                process_target=True if encode else is_indexing,
+            )
 
             # as _maybe_download_from_s3 moves S3 URI to tags['uri'], need to move it back for post-processor & accurate
-            # results
+            # results.
             if (
                 self.user_input
                 and self.user_input.dataset_type == DatasetTypes.S3_BUCKET
@@ -102,7 +110,7 @@ class NOWPreprocessor(Executor):
 
         return docs
 
-    @secure_request(on='/index', level=SecurityLevel.USER)
+    @secure_request_preprocessor(on='/index', level=SecurityLevel.USER)
     def index(
         self, docs: DocumentArray, parameters: Optional[Dict] = None, *args, **kwargs
     ) -> DocumentArray:
@@ -113,9 +121,10 @@ class NOWPreprocessor(Executor):
         :return: preprocessed documents which are ready to be encoded and indexed
         """
         self._set_user_input(parameters=parameters)
+        self._set_access_paths(parameters=parameters)
         return self._preprocess_maybe_cloud_download(docs=docs, is_indexing=True)
 
-    @secure_request(on='/encode', level=SecurityLevel.USER)
+    @secure_request_preprocessor(on='/encode', level=SecurityLevel.USER)
     def encode(
         self, docs: DocumentArray, parameters: Optional[Dict] = None, *args, **kwargs
     ):
@@ -127,11 +136,12 @@ class NOWPreprocessor(Executor):
         :return: preprocessed documents which are ready to be encoded and indexed
         """
         self._set_user_input(parameters=parameters)
+        self._set_access_paths(parameters=parameters)
         return self._preprocess_maybe_cloud_download(
             docs=docs, is_indexing=True, encode=True
         )
 
-    @secure_request(on='/search', level=SecurityLevel.USER)
+    @secure_request_preprocessor(on='/search', level=SecurityLevel.USER)
     def search(
         self, docs: DocumentArray, parameters: Optional[Dict] = None, *args, **kwargs
     ) -> DocumentArray:
@@ -142,9 +152,10 @@ class NOWPreprocessor(Executor):
         :return: preprocessed documents which are ready to be used for search
         """
         self._set_user_input(parameters=parameters)
+        self._set_access_paths(parameters=parameters)
         return self._preprocess_maybe_cloud_download(docs=docs, is_indexing=False)
 
-    @secure_request(on='/temp_link_cloud_bucket', level=SecurityLevel.USER)
+    @secure_request_preprocessor(on='/temp_link_cloud_bucket', level=SecurityLevel.USER)
     def temporary_link_from_cloud_bucket(
         self, docs: DocumentArray, parameters: Optional[Dict] = None, *args, **kwargs
     ) -> DocumentArray:

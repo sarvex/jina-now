@@ -57,7 +57,7 @@ class ElasticsearchExtractor:
         Returns extracted data as a `DocumentArray` where every `Document`
         contains chunks for each field.
         For Example:
-        Document(tags={'filter_fields': {'color': 'red'}, 'additional_fields': {'date': '12-10-2022'}},
+        Document(tags={'filter_fields': {'color': 'red'}, 'date': '12-10-2022'},
                 chunks=[
                     Document(content='hello', modality='text', tags={'field_name': 'title'}),
                     Document(content='https://bla.com/img.jpeg', modality='image', tags={'field_name': 'uris'}),
@@ -93,7 +93,6 @@ class ElasticsearchExtractor:
         if not filter_fields:
             filter_fields = []
         document.tags['filter_fields'] = {}
-        document.tags['additional_fields'] = {}
         search_chunks = []
         for chunk in document.chunks:
             field_name = chunk.tags['field_name']
@@ -102,7 +101,7 @@ class ElasticsearchExtractor:
             elif field_name in filter_fields:
                 document.tags['filter_fields'][field_name] = chunk.content
             else:
-                document.tags['additional_fields'][field_name] = chunk.content
+                document.tags[field_name] = chunk.content
         document.chunks = search_chunks
         return document
 

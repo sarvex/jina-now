@@ -3,11 +3,12 @@ import os
 import pathlib
 import pickle
 from os.path import join as osp
-
 from docarray import DocumentArray
-
 from now.constants import BASE_STORAGE_URL, DEMO_DATASET_DOCARRAY_VERSION, Modalities
 from now.utils import download
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def fetch_da_from_url(

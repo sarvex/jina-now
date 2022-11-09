@@ -9,7 +9,7 @@ from now.executor.abstract.base_indexer import NOWBaseIndexer as Executor
 
 
 class NOWQdrantIndexer15(Executor):
-    """NOWQdrantIndexer15 indexes Documents into a Qdrant server using DocumentArray  with `storage='qdrant'`"""
+    """`NOWQdrantIndexer15` indexes Documents into a Qdrant server using DocumentArray  with `storage='qdrant'`"""
 
     # override
     def construct(self, **kwargs):
@@ -34,7 +34,7 @@ class NOWQdrantIndexer15(Executor):
 
     # override
     def batch_iterator(self):
-        """Iterator which iterates through the documents of self._index and yields batches"""
+        """Iterator which iterates through the documents of self._index and yields batches."""
         batch = []
         for item in self._index:
             batch.append(item)
@@ -61,24 +61,25 @@ class NOWQdrantIndexer15(Executor):
                 conditions.append(
                     {"key": attribute, operator_type: {operator_string: value}}
                 )
-
         search_filter = {"must": conditions} if conditions else {}
         return search_filter
 
     # override
     def index(self, docs: DocumentArray, parameters: dict, **kwargs):
-        """Index new documents"""
+        """Index new documents."""
         # qdrant needs a list of values when filtering on sentences
         for d in docs:
             if 'title' in d.tags:
                 d.tags['title'] = d.tags['title'].lower().split()
+            if d.embedding is None:
+                raise Exception(f'document {d.summary()} has no embeddings')
         self._index.extend(docs)
 
     # override
     def delete(self, documents_to_delete, parameters: dict = {}, **kwargs):
         """
         Delete endpoint to delete document/documents from the index.
-        Filter conditions can be passed to select documents for deletion.
+        Filter conditions can be passed to select documents for deletion
         """
         for d in documents_to_delete:
             del self._index[d.id]
@@ -90,9 +91,17 @@ class NOWQdrantIndexer15(Executor):
         parameters: dict,
         limit: int,
         search_filter: dict,
-        **kwargs
+        **kwargs,
     ):
-        """Perform a vector similarity search and retrieve Document matches"""
+        """Perform a vector similarity search and retrieve `Document` matches."""
+
+        for d in self._index:
+            if d.embedding is None:
+                raise Exception(f'indexed document. {d.summary()} has no embeddings.')
+        for d in docs:
+            if d.embedding is None:
+                raise Exception(f'query document {d.summary()} has no embeddings.')
+
         docs.match(self._index, filter=search_filter, limit=limit)
 
 

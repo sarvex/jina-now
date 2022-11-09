@@ -4,6 +4,7 @@ from typing import Tuple
 
 import pytest
 from docarray import Document, DocumentArray
+from jina import Flow
 from pytest_mock import MockerFixture
 
 from now.app.music_to_music.app import MusicToMusic
@@ -13,6 +14,7 @@ from now.app.text_to_text_and_image.app import TextToTextAndImage
 from now.constants import DatasetTypes
 from now.data_loading.data_loading import _load_tags_from_json_if_needed, load_data
 from now.demo_data import DemoDatasetNames
+from now.executor.preprocessor import NOWPreprocessor
 from now.now_dataclasses import UserInput
 
 
@@ -82,14 +84,13 @@ def test_da_local_path_image_folder(image_resource_path: str):
 
     app = TextToImage()
     loaded_da = load_data(app, user_input)
-    loaded_da = app.preprocess(da=loaded_da, user_input=user_input, is_indexing=True)
 
     assert len(loaded_da) == 2, (
         f'Expected two images, got {len(loaded_da)}.'
         f' Check the tests/resources/image folder'
     )
     for doc in loaded_da:
-        assert doc.blob != b''
+        assert doc.uri
 
 
 def test_da_local_path_music_folder(music_resource_path: str):
@@ -99,14 +100,13 @@ def test_da_local_path_music_folder(music_resource_path: str):
 
     app = MusicToMusic()
     loaded_da = load_data(app, user_input)
-    loaded_da = app.preprocess(da=loaded_da, user_input=user_input)
 
     assert len(loaded_da) == 2, (
         f'Expected two music docs, got {len(loaded_da)}.'
         f' Check the tests/resources/music folder'
     )
     for doc in loaded_da:
-        assert doc.blob != b''
+        assert doc.uri
 
 
 def test_da_custom_ds(da: DocumentArray):
@@ -116,10 +116,9 @@ def test_da_custom_ds(da: DocumentArray):
 
     app = TextToImage()
     loaded_da = load_data(app, user_input)
-    loaded_da = app.preprocess(da=loaded_da, user_input=user_input, is_indexing=True)
 
     for doc in loaded_da:
-        assert doc.blob != b''
+        assert doc.content
 
 
 def test_es_online_shop_ds(da: DocumentArray):
@@ -133,8 +132,8 @@ def test_es_online_shop_ds(da: DocumentArray):
 
     for doc in loaded_da:
         assert doc.chunks
-        assert doc.chunks[0].text
-        assert doc.chunks[1].uri
+        assert any([chunk.uri for chunk in doc.chunks])
+        assert any([chunk.text for chunk in doc.chunks])
 
 
 @pytest.fixture

@@ -1,7 +1,7 @@
 import base64
 import io
 import os
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import numpy as np
 import PIL
@@ -52,6 +52,11 @@ class TextToVideo(JinaNOWApp):
     def required_docker_memory_in_gb(self) -> int:
         return 12
 
+    def index_query_access_paths(
+        self, search_fields: Optional[List[str]] = None
+    ) -> str:
+        return '@c,cc'
+
     def set_flow_yaml(self, **kwargs):
         finetuning = kwargs.get('finetuning', False)
         dataset_len = kwargs.get('dataset_len', 0) * NUM_FRAMES_SAMPLED
@@ -79,10 +84,6 @@ class TextToVideo(JinaNOWApp):
     @property
     def supported_file_types(self) -> List[str]:
         return ['gif', 'mp4', 'mov']
-
-    @property
-    def index_query_access_paths(self) -> str:
-        return '@c'
 
     def setup(
         self, dataset: DocumentArray, user_input: UserInput, kubectl_path
@@ -113,36 +114,45 @@ class TextToVideo(JinaNOWApp):
         )
 
     def preprocess(
-        self, da: DocumentArray, user_input: UserInput, is_indexing=False
+        self,
+        da: DocumentArray,
+        user_input: UserInput,
+        process_target: bool = False,
+        process_query: bool = True,
     ) -> DocumentArray:
-        if is_indexing:
+        if not process_query and not process_target:
+            raise Exception(
+                'Either `process_query` or `process_target` must be set to True.'
+            )
 
-            def convert_fn(d: Document):
-                try:
-                    if d.blob == b'':
-                        if d.uri:
-                            d.load_uri_to_blob()
-                        elif d.tensor is not None:
-                            d.convert_tensor_to_blob()
-                    sample_video(d)
-                except Exception as e:
-                    print(f'Failed to process {d.id}, error: {e}')
-                return d
+        def convert_fn(d: Document):
+            try:
+                if d.blob == b'':
+                    d.uri = d.text if not d.uri else d.uri
+                    if d.uri:
+                        d.load_uri_to_blob()
+                    elif d.tensor is not None:
+                        d.convert_tensor_to_blob()
+                sample_video(d)
+            except Exception as e:
+                print(f'Failed to process {d.id}, error: {e}')
+            return d
 
+        if process_target:
             for d in da:
-                convert_fn(d)
+                for chunk in d.chunks:
+                    if chunk.modality == 'video':
+                        convert_fn(chunk)
 
-            return DocumentArray(d for d in da if d.blob != b'')
-        else:
-
-            def convert_fn(d: Document):
-                d.chunks = DocumentArray(d for d in d.chunks if d.text)
-                return d
-
+        if not process_query:
             for d in da:
-                convert_fn(d)
+                d.chunks = [chunk for chunk in d.chunks if chunk.modality == 'video']
 
-            return DocumentArray(d for d in da if d.chunks)
+        if not process_target:
+            for d in da:
+                d.chunks = [chunk for chunk in d.chunks if chunk.modality == 'text']
+
+        return DocumentArray(d for d in da if d.chunks)
 
     @property
     def bff_mapping_fns(self):
