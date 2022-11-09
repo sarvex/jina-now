@@ -11,7 +11,7 @@ from now.executor.abstract.auth.auth import SecurityLevel, secure_request
 
 
 class NOWAutoCompleteExecutor(Executor):
-    def __init__(self, search_traversal_paths: str = '@r', words=None, *args, **kwargs):
+    def __init__(self, search_traversal_paths: str = '@c', words=None, *args, **kwargs):
         self.words = words if words else {}
         self.search_traversal_paths = search_traversal_paths
         self.autocomplete = None
