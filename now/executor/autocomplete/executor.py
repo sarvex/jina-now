@@ -65,9 +65,11 @@ class NOWAutoCompleteExecutor(Executor):
     def get_suggestion(
         self, docs: Optional[DocumentArray] = None, parameters: dict = {}, **kwargs
     ):
-        if len(docs) and docs[0].text:
-            docs[0].tags['suggestions'] = self.auto_complete.search(
-                docs[0].text, max_cost=3, size=5
-            )
-            return docs
-        return
+        traversal_paths = parameters.get('traversal_paths', self.search_traversal_paths)
+        flat_docs = None if not docs else docs[traversal_paths]
+        if flat_docs:
+            for doc in flat_docs:
+                doc[0].tags['suggestions'] = self.auto_complete.search(
+                    doc[0].text, max_cost=3, size=5
+                )
+        return docs
