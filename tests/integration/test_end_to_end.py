@@ -243,9 +243,7 @@ def assert_suggest(suggest_url, request_body):
     try:
         assert 'suggestions' in docs[0].chunks[0].tags
     except:
-        raise Exception(
-            f'no suggestions {docs}'
-        )
+        raise Exception(f'no suggestions {docs}')
     assert docs[0].chunks[0].tags['suggestions'] == [[old_request_text]]
 
 
