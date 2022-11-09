@@ -81,8 +81,6 @@ def test_text_to_video(resources_folder_path):
         )
         == 1
     )
-    assert len([text for text in encode_result.texts if text != '']) == 1
-    assert len([blob for blob in encode_result.blobs if blob != b'']) == 1
 
 
 def test_user_input_preprocessing():

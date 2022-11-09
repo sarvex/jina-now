@@ -42,10 +42,6 @@ class NOWPreprocessor(Executor):
         else:
             self.user_input = None
 
-    def _set_access_paths(self, parameters: Dict):
-        parameters['access_paths'] = self.app.index_query_access_paths()
-        parameters['traversal_paths'] = self.app.index_query_access_paths()
-
     def _set_user_input(self, parameters: Dict):
         """Sets user_input attribute and deletes used attributes from dictionary"""
         if 'user_input' in parameters.keys():
@@ -123,7 +119,6 @@ class NOWPreprocessor(Executor):
         for doc in docs:
             print(doc.uri)
         self._set_user_input(parameters=parameters)
-        self._set_access_paths(parameters=parameters)
         return self._preprocess_maybe_cloud_download(docs=docs, is_indexing=True)
 
     @secure_request_preprocessor(on='/encode', level=SecurityLevel.USER)
@@ -138,7 +133,6 @@ class NOWPreprocessor(Executor):
         :return: preprocessed documents which are ready to be encoded and indexed
         """
         self._set_user_input(parameters=parameters)
-        self._set_access_paths(parameters=parameters)
         return self._preprocess_maybe_cloud_download(
             docs=docs, is_indexing=True, encode=True
         )
@@ -154,7 +148,6 @@ class NOWPreprocessor(Executor):
         :return: preprocessed documents which are ready to be used for search
         """
         self._set_user_input(parameters=parameters)
-        self._set_access_paths(parameters=parameters)
         return self._preprocess_maybe_cloud_download(docs=docs, is_indexing=False)
 
     @secure_request_preprocessor(on='/temp_link_cloud_bucket', level=SecurityLevel.USER)
