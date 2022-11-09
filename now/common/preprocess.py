@@ -67,7 +67,16 @@ def preprocess_text(da: DocumentArray, split_by_sentences=False) -> DocumentArra
     if split_by_sentences:
         da = DocumentArray(d for d in gen_split_by_sentences())
 
-    return DocumentArray(d for d in da if d.text and d.text != '')
+    result_da = DocumentArray()
+    for d in da:
+        if d.text:
+            result_da.append(d)
+        else:
+            for c in d.chunks:
+                if c.text:
+                    result_da.append(d)
+
+    return result_da
 
 
 def preprocess_nested_docs(da: DocumentArray, user_input: UserInput) -> DocumentArray:
@@ -80,7 +89,7 @@ def preprocess_nested_docs(da: DocumentArray, user_input: UserInput) -> Document
     :param user_input: The configured user input.
     :return: A `DocumentArray` with `Document`s containing text and image chunks.
     """
-    fields = user_input.task_config.indexer_scope
+    fields = user_input.indexer_scope
     texts, uris = [], []
     for doc in da:
         for chunk in doc.chunks:

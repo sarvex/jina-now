@@ -2,6 +2,8 @@ import numpy as np
 import pytest
 from docarray import Document, DocumentArray
 
+from now.constants import ModelDimensions
+
 
 @pytest.fixture
 def multimodal_da():
@@ -85,3 +87,62 @@ def text_da():
 @pytest.fixture
 def text_query():
     return DocumentArray([Document(text='text', embedding=np.ones(7))])
+
+
+@pytest.fixture
+def docs_matrix_index():
+    return [
+        DocumentArray(
+            Document(
+                chunks=[
+                    Document(
+                        text='this', embedding=np.ones(ModelDimensions.SBERT)
+                    ),  # embedding from SBERT
+                    Document(
+                        uri='https://cdn.pixabay.com/photo/2015/04/23/21/59/tree-736877_1280.jpg'
+                    ),  # not encoded by SBERT
+                ]
+            )
+        ),
+        DocumentArray(
+            Document(
+                chunks=[
+                    Document(
+                        text='this', embedding=np.ones(ModelDimensions.CLIP)
+                    ),  # embedding from CLIP text model
+                    Document(
+                        uri='https://cdn.pixabay.com/photo/2015/04/23/21/59/tree-736877_1280.jpg',
+                        embedding=np.ones(ModelDimensions.CLIP),
+                    ),  # embedding from CLIP image model
+                ]
+            )
+        ),
+    ]
+
+
+@pytest.fixture
+def docs_matrix_search():
+    return [
+        DocumentArray(
+            [
+                Document(
+                    chunks=[
+                        Document(
+                            text='this', embedding=np.ones(ModelDimensions.SBERT)
+                        ),  # embedding from SBERT
+                    ]
+                )
+            ]
+        ),
+        DocumentArray(
+            [
+                Document(
+                    chunks=[
+                        Document(
+                            text='this', embedding=np.ones(ModelDimensions.CLIP)
+                        ),  # embedding from CLIP text model
+                    ]
+                )
+            ]
+        ),
+    ]

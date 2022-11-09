@@ -152,7 +152,9 @@ def call_flow(
 
     # Pop app_instance from parameters to be passed to the flow
     parameters['user_input'].pop('app_instance', None)
-
+    task_config = parameters['user_input'].pop('task_config', None)
+    if task_config:
+        parameters['user_input']['indexer_scope'] = task_config.indexer_scope
     # double check that flow is up and running - should be done by wolf/core in the future
     while True:
         try:
