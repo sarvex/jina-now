@@ -6,11 +6,11 @@ from now.utils import BetterEnum
 # from docarray import __version__ as docarray_version
 # DEMO_DATASET_DOCARRAY_VERSION = docarray_version
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.130-refactor-executors-47'
-NOW_PREPROCESSOR_VERSION = '0.0.95-data-format-47'
-NOW_QDRANT_INDEXER_VERSION = '0.0.3-data-format-47'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.130-refactor-executors-48'
+NOW_PREPROCESSOR_VERSION = '0.0.95-data-format-48'
+NOW_QDRANT_INDEXER_VERSION = '0.0.3-data-format-48'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.3-refactor-executors-21'
-NOW_AUTOCOMPLETE_VERSION = '0.0.1-data-format-6'
+NOW_AUTOCOMPLETE_VERSION = '0.0.1-data-format-7'
 
 
 class Modalities(BetterEnum):
@@ -18,7 +18,7 @@ class Modalities(BetterEnum):
     IMAGE = 'image'
     MUSIC = 'music'
     VIDEO = 'video'
-    TEXT_AND_IMAGE = 'text_and_image'
+    TEXT_AND_IMAGE = 'text-and-image'
 
 
 class Apps(BetterEnum):
@@ -52,13 +52,18 @@ class ModelNames(BetterEnum):
     CLIP = 'openai/clip-vit-base-patch32'
 
 
+class ModelDimensions(BetterEnum):
+    SBERT = 768
+    CLIP = 512
+
+
 BASE_STORAGE_URL = (
     'https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets'
 )
 
 CLIP_USES = {
-    'local': ('CLIPOnnxEncoder/latest', 'ViT-B-32::openai', 512),
-    'remote': ('CLIPOnnxEncoder/latest-gpu', 'ViT-B-32::openai', 512),
+    'local': ('CLIPOnnxEncoder/latest', 'ViT-B-32::openai', ModelDimensions.CLIP),
+    'remote': ('CLIPOnnxEncoder/latest-gpu', 'ViT-B-32::openai', ModelDimensions.CLIP),
 }
 
 EXTERNAL_CLIP_HOST = 'encoderclip-bh-5f4efaff13.wolf.jina.ai'

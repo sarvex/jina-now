@@ -109,6 +109,7 @@ class UserInput(BaseModel):
     es_index_name: Optional[str] = None
     es_host_name: Optional[str] = None
     es_additional_args: Optional[Dict] = None
+    indexer_scope: Optional[Dict] = None
 
     # cluster related
     cluster: Optional[str] = None

@@ -327,7 +327,12 @@ def get_search_request_body(
         request_body['image'] = test_search_image
     elif app == Apps.MUSIC_TO_MUSIC:
         request_body['song'] = test_search_music
-    elif app in [Apps.TEXT_TO_IMAGE, Apps.TEXT_TO_TEXT, Apps.TEXT_TO_VIDEO]:
+    elif app in [
+        Apps.TEXT_TO_IMAGE,
+        Apps.TEXT_TO_TEXT,
+        Apps.TEXT_TO_VIDEO,
+        Apps.TEXT_TO_TEXT_AND_IMAGE,
+    ]:
         if dataset == DemoDatasetNames.BEST_ARTWORKS:
             search_text = 'impressionism'
         elif dataset == DemoDatasetNames.NFT_MONKEY:
