@@ -6,6 +6,8 @@ with:
 jcloud:
   expose_gateway: false
   retention_days: -1
+  labels:
+    team: now
 executors:
   - name: encoderclip
     uses: jinahub+docker://CLIPOnnxEncoder/latest-gpu
