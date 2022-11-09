@@ -4,4 +4,3 @@ uvloop
 pydantic
 jina[perf]==3.8.2
 docarray==0.16.2
-protobuf~=3.19

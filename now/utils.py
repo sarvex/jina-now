@@ -140,7 +140,7 @@ def maybe_prompt_user(questions, attribute, **kwargs):
 
     :return: A single value of either from `kwargs` or the user cli input.
     """
-    if kwargs and kwargs.get(attribute) is not None:
+    if kwargs and attribute in kwargs:
         return kwargs[attribute]
     else:
         answer = prompt(questions)
@@ -233,3 +233,12 @@ def _get_context_names(contexts, active_context=None):
         names.remove(active_context)
         names = [active_context] + names
     return names
+
+
+def get_flow_id(host):
+    return host.replace('grpcs://nowapi-', '').replace('.wolf.jina.ai', '')
+
+
+class Dumper(yaml.Dumper):
+    def increase_indent(self, flow=False, *args, **kwargs):
+        return super().increase_indent(flow=flow, indentless=False)

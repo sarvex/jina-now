@@ -7,6 +7,7 @@ from argparse import Namespace
 
 import pytest
 import requests
+from docarray import DocumentArray
 
 from now.admin.utils import get_default_request_body
 from now.cli import _get_kind_path, _get_kubectl_path, cli
@@ -15,6 +16,7 @@ from now.common.options import NEW_CLUSTER
 from now.constants import Apps, DatasetTypes, Modalities
 from now.demo_data import DemoDatasetNames
 from now.deployment.deployment import cmd, list_all_wolf, terminate_wolf
+from now.utils import get_flow_id
 
 
 @pytest.fixture
@@ -43,7 +45,7 @@ def test_search_music(resources_folder_path: str):
 
 
 @pytest.fixture()
-def cleanup(deployment_type, dataset):
+def cleanup(deployment_type, dataset, app):
     print('start cleanup')
     start = time.time()
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -56,12 +58,12 @@ def cleanup(deployment_type, dataset):
                     print('nothing to clean up')
                     return
                 host = flow_details['host']
-                flow_id = host.replace('grpcs://nowapi-', '').replace(
-                    '.wolf.jina.ai', ''
-                )
+                flow_id = get_flow_id(host)
                 terminate_wolf(flow_id)
             else:
+                print('\nDeleting local cluster')
                 kwargs = {
+                    'app': app,
                     'deployment_type': deployment_type,
                     'now': 'stop',
                     'cluster': 'kind-jina-now',
@@ -164,6 +166,7 @@ def test_backend_demo_data(
         'dataset_name': dataset,
         'cluster': cluster,
         'secured': deployment_type == 'remote',
+        'api_key': None,
         'additional_user': False,
         'deployment_type': deployment_type,
         'proceed': True,
@@ -193,6 +196,21 @@ def test_backend_demo_data(
         response,
     )
 
+    if input_modality == Modalities.TEXT:
+        host = response.get('host')
+        request_body = get_search_request_body(
+            app,
+            dataset,
+            deployment_type,
+            kwargs,
+            test_search_image,
+            test_search_music,
+            host,
+        )
+        url = f'http://localhost:30090/api/v1'
+        suggest_url = f'{url}/{input_modality}-to-{output_modality}/suggestion'
+        assert_suggest(suggest_url, request_body)
+
     # Dump the flow details from response host to a tmp file if the deployment is remote
     if deployment_type == 'remote':
         flow_details = {'host': response['host']}
@@ -209,6 +227,21 @@ def assert_search(search_url, request_body):
         response.status_code == 200
     ), f"Received code {response.status_code} with text: {response.json()['message']}"
     assert len(response.json()) == 9
+
+
+def assert_suggest(suggest_url, request_body):
+    old_request_text = request_body['text']
+    request_body['text'] = request_body['text'][0]
+    response = requests.post(
+        suggest_url,
+        json=request_body,
+    )
+    assert (
+        response.status_code == 200
+    ), f"Received code {response.status_code} with text: {response.json()['message']}"
+    docs = DocumentArray.from_json(response.content)
+    assert 'suggestions' in docs[0].tags
+    assert docs[0].tags['suggestions'] == [[old_request_text]]
 
 
 def assert_deployment_queries(
@@ -320,7 +353,9 @@ def assert_deployment_response(
 
 @pytest.mark.parametrize('deployment_type', ['remote'])
 @pytest.mark.parametrize('dataset', ['custom_s3_bucket'])
+@pytest.mark.parametrize('app', [Apps.TEXT_TO_IMAGE])
 def test_backend_custom_data(
+    app,
     deployment_type: str,
     dataset: str,
     cleanup,
@@ -328,7 +363,6 @@ def test_backend_custom_data(
 ):
     os.environ['NOW_CI_RUN'] = 'True'
     os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
-    app = Apps.TEXT_TO_IMAGE
     kwargs = {
         'now': 'start',
         'app': app,

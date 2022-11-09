@@ -3,6 +3,7 @@ import pathlib
 import platform
 import sys
 import warnings
+from argparse import Namespace
 from os.path import expanduser as user
 
 import cpuinfo
@@ -26,6 +27,11 @@ def _get_run_args():
         parser.print_help()
         exit()
     args, unknown = parser.parse_known_args()
+
+    # clean up the args with None values
+    args = {k: v for k, v in vars(args).items() if v is not None}
+    # Convert args back to Namespace
+    args = Namespace(**args)
 
     if unknown:
         raise Exception('unknown args: ', unknown)

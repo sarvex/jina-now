@@ -174,8 +174,12 @@ class TextToTextAndImage(JinaNOWApp):
             user_input.user_emails or [] if user_input.secured else [],
         )
 
-        self.set_flow_yaml()
+        env_dict['API_KEY'] = (
+            [user_input.api_key] if user_input.secured and user_input.api_key else []
+        )
 
+        self.set_flow_yaml()
+        super().setup(dataset, user_input, kubectl_path)
         return env_dict
 
     def _construct_finetune_settings(

@@ -96,7 +96,7 @@ class TextToVideo(JinaNOWApp):
             'ENCODER_USES_TLS': True if is_remote else False,
             'ENCODER_IS_EXTERNAL': True if is_remote else False,
         }
-        return common_setup(
+        env_dict = common_setup(
             app_instance=self,
             user_input=user_input,
             dataset=dataset,
@@ -112,6 +112,8 @@ class TextToVideo(JinaNOWApp):
             kubectl_path=kubectl_path,
             indexer_resources=indexer_config['indexer_resources'],
         )
+        super().setup(dataset=dataset, user_input=user_input, kubectl_path=kubectl_path)
+        return env_dict
 
     def preprocess(
         self,
@@ -130,7 +132,7 @@ class TextToVideo(JinaNOWApp):
                 if d.blob == b'':
                     d.uri = d.text if not d.uri else d.uri
                     if d.uri:
-                        d.load_uri_to_blob()
+                        d.load_uri_to_blob(timeout=10)
                     elif d.tensor is not None:
                         d.convert_tensor_to_blob()
                 sample_video(d)

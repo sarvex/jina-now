@@ -59,24 +59,30 @@ def get_query_params() -> Parameters:
     return parameters
 
 
-def search(attribute_name, attribute_value, jwt, top_k=None, filter_dict=None):
+def search(
+    attribute_name,
+    attribute_value,
+    jwt,
+    top_k=None,
+    filter_dict=None,
+    endpoint='search',
+):
     print(f'Searching by {attribute_name}')
     params = get_query_params()
     if params.host == 'gateway':  # need to call now-bff as we communicate between pods
         domain = f"http://now-bff"
     else:
         domain = f"https://nowrun.jina.ai"
-    URL_HOST = (
-        f"{domain}/api/v1/{params.input_modality}-to-{params.output_modality}/search"
-    )
+    URL_HOST = f"{domain}/api/v1/{params.input_modality}-to-{params.output_modality}/{endpoint}"
 
-    updated_dict = {k: v for k, v in filter_dict.items() if v != 'All'}
-
+    updated_dict = {}
+    if filter_dict is not None:
+        updated_dict = {k: v for k, v in filter_dict.items() if v != 'All'}
     data = {
         'host': params.host,
         attribute_name: attribute_value,
         'limit': top_k if top_k else params.top_k,
-        'filters': updated_dict if updated_dict else {},
+        'filters': updated_dict,
     }
     # in case the jwt is none, no jwt will be sent. This is the case when no authentication is used for that flow
     if jwt is not None:
@@ -85,6 +91,10 @@ def search(attribute_name, attribute_value, jwt, top_k=None, filter_dict=None):
         data['port'] = params.port
 
     return call_flow(URL_HOST, data, attribute_name, domain)
+
+
+def get_suggestion(text, jwt):
+    return search('text', text, jwt, endpoint='suggestion')
 
 
 @deep_freeze_args
@@ -129,7 +139,6 @@ def call_flow(url_host, data, attribute_name, domain):
         docs_temp_links = DocumentArray.from_json(response_temp_links.content)
         for _id, _uri in zip(*docs_temp_links[:, ['id', 'uri']]):
             docs[_id].uri = _uri
-
     return docs
 
 
@@ -146,7 +155,7 @@ def search_by_image(document: Document, jwt, filter_selection) -> DocumentArray:
         if query_doc.tensor is not None:
             query_doc.convert_image_tensor_to_blob()
         elif (query_doc.uri is not None) and query_doc.uri != '':
-            query_doc.load_uri_to_blob()
+            query_doc.load_uri_to_blob(timeout=10)
 
     return search(
         'image',

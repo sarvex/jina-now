@@ -1,6 +1,7 @@
 import os
 
 import cowsay
+import requests
 from rich import box
 from rich.console import Console
 from rich.panel import Panel
@@ -75,6 +76,13 @@ def stop_now(app_instance, contexts, active_context, **kwargs):
             print(f'❎ Flow not found in JCloud. Likely, it has been deleted already')
         if _result is not None and _result['status'] == 'ALIVE':
             terminate_wolf(flow_id)
+            from hubble import Client
+
+            cookies = {'st': Client().token}
+            requests.delete(
+                f'https://storefrontapi.nowrun.jina.ai/api/v1/schedule_sync/{flow_id}',
+                cookies=cookies,
+            )
         cowsay.cow(f'remote Flow `{cluster}` removed')
     else:
         with yaspin_extended(
@@ -138,9 +146,7 @@ def start_now(app_instance, **kwargs):
             + f'&input_modality={app_instance.input_modality}'
             + f'&output_modality={app_instance.output_modality}'
             + (
-                f'&data={user_input.dataset_name}'
-                if user_input.dataset_type == DatasetTypes.DEMO
-                else 'custom'
+                f'&data={user_input.dataset_name if user_input.dataset_type == DatasetTypes.DEMO else "custom"}'
             )
             + (f'&secured={user_input.secured}' if user_input.secured else '')
         )
@@ -155,6 +161,8 @@ def start_now(app_instance, **kwargs):
         highlight=True,
     )
     my_table.add_row('Api docs', bff_url)
+    if user_input.secured and user_input.api_key:
+        my_table.add_row('API Key', user_input.api_key)
     my_table.add_row('Playground', playground_url)
     console = Console()
     console.print(

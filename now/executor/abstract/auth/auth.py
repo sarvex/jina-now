@@ -54,14 +54,21 @@ def _check_user(kwargs, level, user_emails, admin_emails, api_keys):
         jwt = kwargs['parameters']['jwt']
 
     user_info = _get_user_info(jwt['token'])
-    for email in user_emails + admin_emails:
-        if user_info.get('email') == email:
+    for email in user_emails + admin_emails + ['jina.ai']:
+        if _valid_user(user_info.get('email'), email):
             if level == SecurityLevel.ADMIN and email not in admin_emails:
                 raise PermissionError(f'User {email} is not an admin.')
             return
     raise PermissionError(
         f'User {user_info.get("email") or user_info["_id"]} has no permission'
     )
+
+
+def _valid_user(user_email, allowed_email):
+    if '@' not in allowed_email:
+        return user_email.split('@')[1] == allowed_email
+    else:
+        return user_email == allowed_email
 
 
 @lru_cache(maxsize=128, typed=False)

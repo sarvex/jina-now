@@ -268,7 +268,7 @@ class ElasticIndexer(Executor):
 
         # build bm25 part
         if apply_bm25:
-            source += '_score / (_score + 10.0)'
+            source += '_score / (_score + 10.0) + '
             text = doc.text
             multi_match = {'multi_match': {'query': text, 'fields': ['bm25_text']}}
             query['bool']['should'].append(multi_match)
@@ -294,13 +294,11 @@ class ElasticIndexer(Executor):
         params = {}
         for key, embedding in query_embeddings.items():
             if key == 'embedding':
-                source += (
-                    f"+ 0.5*{metrics_mapping[self.metric]}(params.query_{key}, '{key}')"
-                )
+                source += f"0.5*{metrics_mapping[self.metric]}(params.query_{key}, '{key}') + "
             else:
-                source += f"+ 0.5*{metrics_mapping[self.metric]}(params.query_{key}, '{key}.embedding')"
+                source += f"0.5*{metrics_mapping[self.metric]}(params.query_{key}, '{key}.embedding') + "
             params[f'query_{key}'] = embedding
-        source += '+ 1.0'
+        source += '1.0'
         query_json = {
             'script_score': {
                 'query': query,

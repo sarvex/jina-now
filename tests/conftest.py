@@ -5,8 +5,8 @@ import time
 
 import hubble
 import pytest
-
 from elasticsearch import Elasticsearch
+
 from now.deployment.deployment import cmd
 
 
@@ -53,6 +53,11 @@ def user_email():
 
 
 @pytest.fixture
+def domain_user_email():
+    return 'abc.def@test.ai'
+
+
+@pytest.fixture
 def mock_hubble_user_email(monkeypatch, user_email):
     class MockedClient:
         def __init__(self, *args, **kwargs):
@@ -62,6 +67,21 @@ def mock_hubble_user_email(monkeypatch, user_email):
             return {
                 'code': 200,
                 'data': {'email': user_email},
+            }
+
+    monkeypatch.setattr(hubble, 'Client', MockedClient)
+
+
+@pytest.fixture
+def mock_hubble_domain_user_email(monkeypatch, domain_user_email):
+    class MockedClient:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def get_user_info(self, *args, **kwargs):
+            return {
+                'code': 200,
+                'data': {'email': domain_user_email},
             }
 
     monkeypatch.setattr(hubble, 'Client', MockedClient)
