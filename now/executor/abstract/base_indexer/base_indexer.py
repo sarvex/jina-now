@@ -157,8 +157,6 @@ class NOWBaseIndexer(Executor):
                     f'{docs[0]} search endpoint gets no embeddings, {docs[0].chunks[0]}'
                 )
         docs = new_docs
-        if not docs:
-            raise Exception('there are no docs')
 
         if traversal_paths == '@c,cc':
             retrieval_limit = limit * 3
@@ -176,7 +174,7 @@ class NOWBaseIndexer(Executor):
         )
 
         # self.check_docs(docs)
-        if len(docs[0].text.split()) == 1 and traversal_paths == '@c,cc':
+        if len(docs[0].text.split()) == 1:
             if not search_filter:
                 search_filter = self.convert_filter_syntax(
                     {'title': {'$eq': docs[0].text.lower()}}
