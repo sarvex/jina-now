@@ -82,12 +82,14 @@ class NOWPreprocessor(Executor):
                 search_fields=self.user_input.search_fields,
                 filter_fields=self.user_input.filter_fields or [],
             )
+
             docs = self.app.preprocess(
                 da=docs,
                 user_input=self.user_input,
                 process_query=True if encode else not is_indexing,
                 process_target=True if encode else is_indexing,
             )
+
             # as _maybe_download_from_s3 moves S3 URI to tags['uri'], need to move it back for post-processor & accurate
             # results.
             if (
