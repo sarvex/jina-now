@@ -9,6 +9,11 @@ jcloud:
   version: ${{ ENV.JINA_VERSION }}
   retention_days: ${{ RETENTION_DAYS }}
 executors:
+- name: autocomplete_executor
+  uses: ${{ ENV.AUTOCOMPLETE_EXECUTOR_NAME }}
+  needs: gateway
+  env:
+    JINA_LOG_LEVEL: DEBUG
 - name: preprocessor
   uses: ${{ ENV.PREPROCESSOR_NAME }}
   uses_with:
@@ -21,28 +26,28 @@ executors:
   env:
     JINA_LOG_LEVEL: DEBUG
 - name: sbert_encoder
-  uses: jinahub+docker://FinetunerExecutor
-  uses_requests:
-    /search: encode
-    /index: encode
+  uses: jinahub+docker://TransformerSentenceEncoder/latest
   uses_with:
-    artifact: ${{ ENV.SBERT_ARTIFACT }}
-    token: ${{ ENV.JINA_TOKEN }}
-    is_onnx: False
+    model_name: sentence-transformers/msmarco-distilbert-base-v4
+    pretrained_model_name_or_path: sentence-transformers/msmarco-distilbert-base-v4
     access_paths: '@c'
   env:
     JINA_LOG_LEVEL: DEBUG
   needs: preprocessor
+  jcloud:
+    resources:
+      memory: 1G
 - name: clip_encoder
-  uses: jinahub+docker://FinetunerExecutor
+  uses: jinahub+docker://CLIPOnnxEncoder/latest
   uses_with:
-    artifact: ${{ ENV.CLIP_ARTIFACT }}
-    token: ${{ ENV.JINA_TOKEN }}
-    is_onnx: False
+    name: ViT-B-32::openai
     access_paths: '@c'
   env:
     JINA_LOG_LEVEL: DEBUG
   needs: preprocessor
+  jcloud:
+    resources:
+      memory: 1G
 - name: indexer
   uses: ${{ ENV.INDEXER_NAME }}
   uses_with:
@@ -59,4 +64,7 @@ executors:
       cpu: 1.0
   env:
     JINA_LOG_LEVEL: DEBUG
-  needs: [sbert_encoder, clip_encoder]
+  needs:
+  - sbert_encoder
+  - clip_encoder
+  disable_reduce: true
