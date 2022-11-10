@@ -58,6 +58,13 @@ class ModelDimensions(BetterEnum):
     CLIP = 512
 
 
+SUPPORTED_FILE_TYPES = {
+    Modalities.TEXT: ['txt', 'md'],
+    Modalities.IMAGE: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'tif'],
+    Modalities.MUSIC: ['mp3', 'wav', 'ogg', 'flac'],
+    Modalities.VIDEO: ['gif'],
+}
+
 BASE_STORAGE_URL = (
     'https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets'
 )
