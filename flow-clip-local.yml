@@ -42,9 +42,6 @@ executors:
   - name: indexer
     # uses: jinahub+docker://NOWQdrantIndexer15
     uses: docker://qdrantindexer15:local
-    tracing: true
-    traces_exporter_host: '0.0.0.0'
-    traces_exporter_port: 4317
     uses_with:
       dim: 512
       columns: ["content_type", "str", "finetuner_label", "str", "split", "str", "color", "str"]

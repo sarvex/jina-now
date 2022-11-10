@@ -1,1 +1,2 @@
-git+https://github.com/jina-ai/now@4be321c0838f5c3ef194c2e7e796f870465d2014
+git+https://github.com/jina-ai/now@27fbeda17f783293ef57b0cb9bf8aa09f4236b7e
+jina==3.11.0

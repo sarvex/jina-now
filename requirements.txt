@@ -1,6 +1,6 @@
 finetuner==0.6.1
 pyfiglet==0.8.post1
-jina[perf]==3.9.1
+jina[perf]==3.11.0
 cowsay==4.0
 yaspin==2.1.0
 py-cpuinfo==8.0.0
