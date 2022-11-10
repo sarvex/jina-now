@@ -294,6 +294,7 @@
     <span class="n">text2text</span><span class="p">,</span>
     <span class="n">txt2img</span><span class="p">,</span>
     <span class="n">txt2video</span><span class="p">,</span>
+    <span class="n">txt2txt_and_img</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="n">logging</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">dictConfig</span><span class="p">(</span><span class="n">api_settings</span><span class="o">.</span><span class="n">DEFAULT_LOGGING_CONFIG</span><span class="p">)</span>
@@ -399,6 +400,13 @@
     <span class="n">text2video_app</span> <span class="o">=</span> <span class="n">get_app_instance</span><span class="p">()</span>
     <span class="n">text2video_app</span><span class="o">.</span><span class="n">include_router</span><span class="p">(</span><span class="n">txt2video</span><span class="o">.</span><span class="n">router</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Text-To-Video&#39;</span><span class="p">])</span>
 
+    <span class="c1"># Text2TextAndImage router</span>
+    <span class="n">text2text_and_image_mount</span> <span class="o">=</span> <span class="s1">&#39;/api/v1/text-to-text-and-image&#39;</span>
+    <span class="n">text2text_and_image_app</span> <span class="o">=</span> <span class="n">get_app_instance</span><span class="p">()</span>
+    <span class="n">text2text_and_image_app</span><span class="o">.</span><span class="n">include_router</span><span class="p">(</span>
+        <span class="n">txt2txt_and_img</span><span class="o">.</span><span class="n">router</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Text-To-Text-And-Image&#39;</span><span class="p">]</span>
+    <span class="p">)</span>
+
     <span class="c1"># Admin router</span>
     <span class="n">admin_mount</span> <span class="o">=</span> <span class="s1">&#39;/api/v1/admin&#39;</span>
     <span class="n">admin_app</span> <span class="o">=</span> <span class="n">get_app_instance</span><span class="p">()</span>
@@ -414,6 +422,7 @@
             <span class="n">Mount</span><span class="p">(</span><span class="n">text2text_mount</span><span class="p">,</span> <span class="n">text2text_app</span><span class="p">),</span>
             <span class="n">Mount</span><span class="p">(</span><span class="n">music2music_mount</span><span class="p">,</span> <span class="n">music2music_app</span><span class="p">),</span>
             <span class="n">Mount</span><span class="p">(</span><span class="n">text2video_mount</span><span class="p">,</span> <span class="n">text2video_app</span><span class="p">),</span>
+            <span class="n">Mount</span><span class="p">(</span><span class="n">text2text_and_image_mount</span><span class="p">,</span> <span class="n">text2text_and_image_app</span><span class="p">),</span>
             <span class="n">Mount</span><span class="p">(</span><span class="n">admin_mount</span><span class="p">,</span> <span class="n">admin_app</span><span class="p">),</span>
         <span class="p">]</span>
     <span class="p">)</span>
@@ -461,7 +470,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Nov 07, 2022.
+                            Last updated on Nov 10, 2022.
                         </div>
                     </div>
                     <div class="right-details">
