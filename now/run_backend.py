@@ -166,6 +166,7 @@ def call_flow(
                 print(traceback.format_exc())
             sleep(1)
 
+    print(f'--->index req parameters: {parameters}')
     response = client.post(
         on=endpoint,
         request_size=request_size,

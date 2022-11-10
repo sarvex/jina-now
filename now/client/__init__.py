@@ -64,6 +64,7 @@ class Client:
             **kwargs,
         )
         jina_request = request_map(app_request)
+        print(f'--->jina_request parameters: {jina_request.parameters}')
         jina_response = jina_client_post(
             app_request,
             endpoint,
