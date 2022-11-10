@@ -116,6 +116,7 @@ class NOWBaseIndexer(Executor):
         """
         print(f'--->base indexer /index received docs: {len(docs)}')
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
+        print(f'--->traversal paths: {traversal_paths}')
         flat_docs = docs[traversal_paths]
         if len(flat_docs) == 0:
             print(f'--->base indexer returning since len(flat_docs) == 0')

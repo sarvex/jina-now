@@ -23,4 +23,5 @@ from now.executor.indexer.qdrant.executor import NOWQdrantIndexer15
 client = Client(host='grpc://0.0.0.0:8080')
 
 for docs in da[:200].batch(batch_size=50):
-    client.post(on='/index', inputs=docs, parameters=params)
+    encoded_da = client.post(on='/encode', inputs=docs, parameters=params)
+    client.post(on='/index', inputs=encoded_da, parameters=params)

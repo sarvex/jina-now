@@ -13,19 +13,20 @@ with:
     # - ./now/executor/indexer/qdrant
   # graph_description: '{"autocomplete_executor": ["preprocessor"], "start-gateway": ["autocomplete_executor"], "preprocessor": ["encoder_clip"], "encoder_clip": ["indexer"], "indexer": ["end-gateway"]}'
 executors:
-  #   uses: autocomplete/config.yml
-  #   needs: gateway
-  #   env:
-  #     JINA_LOG_LEVEL: DEBUG
-  # - name: preprocessor
-  #   uses: preprocessor/config.yml
-  #   uses_with:
-  #     app: text_to_image
-  #     admin_emails: []
-  #     user_emails: []
-  #     api_keys: []
-  #   env:
-  #     JINA_LOG_LEVEL: DEBUG
+  - name: autocomplete_executor
+    uses: autocomplete/config.yml
+    needs: gateway
+    env:
+      JINA_LOG_LEVEL: DEBUG
+  - name: preprocessor
+    uses: preprocessor/config.yml
+    uses_with:
+      app: text_to_image
+      admin_emails: []
+      user_emails: []
+      api_keys: []
+    env:
+      JINA_LOG_LEVEL: DEBUG
   - name: encoder_clip
     # uses: docker://clip:local
     host: localhost

@@ -1,0 +1,31 @@
+jtype: Flow
+version: '1'
+with:
+  env:
+    JINA_LOG_LEVEL: DEBUG
+  port: 55887
+  # tracing: true
+  # traces_exporter_host: '0.0.0.0'
+  # traces_exporter_port: 4317
+extra_search_paths:
+  - ./now/executor/indexer/qdrant
+executors:
+- name: QdrantIndexer
+  polling: "ANY"
+  uses: docker://qdrantindexer15:local
+  # uses: ./now/executor/indexer/qdrant/config.yml
+  # uses:
+  #     jtype: NOWQdrantIndexer15
+  #     metas:
+  #       py_modules:
+  #         - now.executor.indexer.qdrant.executor
+  uses_with:
+    dim: 512
+    columns: ["content_type", "str", "finetuner_label", "str", "split", "str", "color", "str"]
+    admin_emails: []
+    user_emails: []
+    api_keys: []
+  upload_files: []
+  replicas: 1
+  env:
+    JINA_LOG_LEVEL: DEBUG

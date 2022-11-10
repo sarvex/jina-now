@@ -99,7 +99,7 @@ class NOWPreprocessor(Executor):
 
                 for d in docs:
                     move_uri(d)
-
+        print(f'--->preprocessor /index returning len {len(docs)} docs.')
         return docs
 
     @secure_request(on='/index', level=SecurityLevel.USER)
