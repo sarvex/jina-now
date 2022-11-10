@@ -6,6 +6,8 @@ with:
 jcloud:
   expose_gateway: false
   retention_days: -1
+  labels:
+    team: now
 executors:
   - name: ocr
     uses: jinahub+docker://NOWOCRDetector9/${{ ENV.NOW_OCR_DETECTOR_VERSION }}-gpu

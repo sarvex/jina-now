@@ -193,6 +193,7 @@ class JinaNOWApp:
         """
         with open(self.flow_yaml) as input_f:
             flow_yaml = JAML.load(input_f.read())
+            flow_yaml['jcloud']['labels'] = {'team': 'now'}
             # append api_keys to the executor with name 'preprocessor' and 'indexer'
             for executor in flow_yaml['executors']:
                 if executor['name'] == 'preprocessor' or executor['name'] == 'indexer':
