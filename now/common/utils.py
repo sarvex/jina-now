@@ -5,20 +5,26 @@ import tempfile
 import time
 from copy import deepcopy
 from os.path import expanduser as user
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 import hubble
 from docarray import Document, DocumentArray
 from jina import __version__ as jina_version
+from jina.helper import random_port
 
 from now.app.base.app import JinaNOWApp
 from now.constants import (
+    EXTERNAL_CLIP_HOST,
+    EXTERNAL_OCR_HOST,
     NOW_AUTOCOMPLETE_VERSION,
     NOW_ELASTIC_INDEXER_VERSION,
+    NOW_OCR_DETECTOR_VERSION,
     NOW_PREPROCESSOR_VERSION,
     NOW_QDRANT_INDEXER_VERSION,
     PREFETCH_NR,
+    TAG_INDEXER_DOC_HAS_TEXT,
     DatasetTypes,
+    Modalities,
 )
 from now.demo_data import DEFAULT_EXAMPLE_HOSTED
 from now.deployment.deployment import cmd
@@ -228,6 +234,8 @@ def _extract_tags_for_indexer(d: Document, user_input):
     for tag, _ in d.tags.items():
         tags.add((tag, str(tag.__class__.__name__)))
     final_tags = [list(tag) for tag in tags]
+    if user_input.app_instance.output_modality in [Modalities.IMAGE, Modalities.VIDEO]:
+        final_tags.append([TAG_INDEXER_DOC_HAS_TEXT, str(bool.__name__)])
     return final_tags
 
 
@@ -271,3 +279,20 @@ def setup_elastic_service(
         raise Exception(error_msg.decode("utf-8"))
     host = f"https://elastic:{es_password}@quickstart-es-http.default:9200"
     return host
+
+
+def _get_clip_apps_with_dict(user_input: UserInput) -> Tuple[Dict, Dict]:
+    """Depending on whether this app will be remotely deployed, this function returns the with
+    dictionary for the CLIP and OCR detector executor."""
+    is_remote = user_input.deployment_type == 'remote'
+    encoder_with = {
+        'ENCODER_HOST': EXTERNAL_CLIP_HOST if is_remote else '0.0.0.0',
+        'ENCODER_PORT': 443 if is_remote else random_port(),
+        'IS_REMOTE_DEPLOYMENT': is_remote,
+    }
+    ocr_with = {
+        'OCR_DETECTOR_NAME': f"jinahub+docker://NOWOCRDetector9/{NOW_OCR_DETECTOR_VERSION}",
+        'OCR_DETECTOR_HOST': EXTERNAL_OCR_HOST if is_remote else '0.0.0.0',
+        'OCR_DETECTOR_PORT': 443 if is_remote else random_port(),
+    }
+    return encoder_with, ocr_with

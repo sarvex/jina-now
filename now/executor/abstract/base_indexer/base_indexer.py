@@ -5,6 +5,7 @@ from typing import List, Optional
 
 from docarray import Document, DocumentArray
 
+from now.constants import TAG_INDEXER_DOC_HAS_TEXT, TAG_OCR_DETECTOR_TEXT_IN_DOC
 from now.executor.abstract.auth import NOWAuthExecutor as Executor
 from now.executor.abstract.auth import SecurityLevel, secure_request
 from now.executor.abstract.base_indexer.ranking import merge_matches_sum
@@ -103,9 +104,22 @@ class NOWBaseIndexer(Executor):
             docs = self.document_list[offset : offset + limit]
         return docs
 
+    @staticmethod
+    def set_tags_if_text_in_doc_matching_title(docs: DocumentArray):
+        # update the tags of the documents to include the detected text
+        for doc in docs:
+            text_in_doc = doc.tags.pop(TAG_OCR_DETECTOR_TEXT_IN_DOC, '')
+            text_in_doc = text_in_doc.split(' ')
+            text_in_doc = filter(lambda s: len(s) > 1 and s.isalnum(), text_in_doc)
+            doc.tags[TAG_INDEXER_DOC_HAS_TEXT] = len(list(text_in_doc)) > 0
+
     @secure_request(on='/index', level=SecurityLevel.USER)
     def index_endpoint(
-        self, docs: Optional[DocumentArray] = None, parameters: dict = {}, **kwargs
+        self,
+        docs: Optional[DocumentArray] = None,
+        parameters: dict = {},
+        docs_matrix: Optional[List[DocumentArray]] = None,
+        **kwargs,
     ):
         """Base function for indexing documents. Handles the data management for the index and list endpoints.
 
@@ -113,9 +127,31 @@ class NOWBaseIndexer(Executor):
         :param parameters: dictionary with options for indexing
         """
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
-        flat_docs = docs[traversal_paths]
+        # merge the docs_matrix into the flat_docs
+        if (
+            docs_matrix
+            and len(docs_matrix) > 1
+            and all(len(da) > 0 for da in docs_matrix)
+        ):
+            flat_docs = DocumentArray()
+            for doc0, doc1 in zip(*[_da[traversal_paths] for _da in docs_matrix]):
+                if doc0.embedding is not None:
+                    doc_encoded = doc0
+                    doc_text = doc1
+                else:
+                    doc_encoded = doc1
+                    doc_text = doc0
+                doc_encoded.tags[TAG_OCR_DETECTOR_TEXT_IN_DOC] = doc_text.pop(
+                    TAG_OCR_DETECTOR_TEXT_IN_DOC, ''
+                )
+                flat_docs.append(doc_encoded)
+        else:
+            flat_docs = docs[traversal_paths]
         if len(flat_docs) == 0:
             return
+
+        self.set_tags_if_text_in_doc_matching_title(flat_docs)
+
         flat_docs = self.maybe_drop_blob_tensor(flat_docs)
         self.index(flat_docs, parameters, **kwargs)
         self.extend_inmemory_docs_and_tags(flat_docs)
@@ -144,8 +180,8 @@ class NOWBaseIndexer(Executor):
     ):
         """Perform a vector similarity search and retrieve `Document` matches."""
         limit = int(parameters.get('limit', self.limit))
-        search_filter = parameters.get('filter', {})
-        search_filter = self.convert_filter_syntax(search_filter)
+        search_filter_raw = parameters.get('filter', {})
+        search_filter_orig = deepcopy(search_filter_raw)
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
         print(f'number of docs {len(docs)}')
         new_docs = docs[traversal_paths][
@@ -163,30 +199,85 @@ class NOWBaseIndexer(Executor):
         else:
             retrieval_limit = limit
 
-        # first get with title and then merge matches each
-        docs_with_matches = self.create_matches(
-            docs,
-            parameters,
-            traversal_paths,
-            limit,
-            retrieval_limit,
-            search_filter=search_filter,
-        )
-
-        # self.check_docs(docs)
-        if len(docs[0].text.split()) == 1:
-            if not search_filter:
-                search_filter = self.convert_filter_syntax(
-                    {'title': {'$eq': docs[0].text.lower()}}
+        # <<<<<<< HEAD
+        #         # first get with title and then merge matches each
+        #         docs_with_matches = self.create_matches(
+        #             docs,
+        #             parameters,
+        #             traversal_paths,
+        #             limit,
+        #             retrieval_limit,
+        #             search_filter=search_filter,
+        #         )
+        #
+        #         # self.check_docs(docs)
+        #         if len(docs[0].text.split()) == 1:
+        #             if not search_filter:
+        #                 search_filter = self.convert_filter_syntax(
+        #                     {'title': {'$eq': docs[0].text.lower()}}
+        #                 )
+        #             # self.check_docs(docs)
+        #             docs_with_matches_filter = self.create_matches(
+        # =======
+        # if OCR detector was used to check if documents contain text in indexed image modality adjust retrieval step
+        if self.columns and TAG_INDEXER_DOC_HAS_TEXT in [
+            col[0] for col in self.columns
+        ]:
+            # enhance filter for one word queries to include the title
+            if (
+                len(docs[0].text.split()) == 1
+                and not search_filter_raw
+                and 'title' in [col[0] for col in self.columns]
+            ):
+                search_filter_raw = {'title': {'$regex': docs[0].text.lower()}}
+            # search for documents which don't contain text
+            search_filter_raw[TAG_INDEXER_DOC_HAS_TEXT] = {'$eq': False}
+            search_filter = self.convert_filter_syntax(search_filter_raw)
+            docs_with_matches_no_text = self.create_matches(
+                docs,
+                parameters,
+                traversal_paths,
+                limit,
+                retrieval_limit,
+                search_filter,
+            )
+            # search for documents which contain text
+            search_filter_raw[TAG_INDEXER_DOC_HAS_TEXT] = {'$eq': True}
+            search_filter = self.convert_filter_syntax(search_filter_raw)
+            docs_with_matches_filter_title = self.create_matches(
+                docs,
+                parameters,
+                traversal_paths,
+                limit,
+                retrieval_limit,
+                search_filter,
+            )
+            # merge the results such that documents with text are retrieved at a later stage
+            self.merge_matches_by_score_after_half(
+                docs_with_matches_no_text,
+                docs_with_matches_filter_title,
+                limit,
+            )
+            docs_with_matches = docs_with_matches_no_text
+            # if we didn't retrieve enough results, try to fetch more
+            if len(docs_with_matches) < limit:
+                search_filter = self.convert_filter_syntax(search_filter_orig)
+                docs_with_additonal_matches = self.create_matches(
+                    docs,
+                    parameters,
+                    traversal_paths,
+                    limit,
+                    retrieval_limit,
+                    search_filter,
                 )
-            # self.check_docs(docs)
-            docs_with_matches_filter = self.create_matches(
+                self.append_matches_if_not_exists(
+                    docs_with_matches, docs_with_additonal_matches, limit
+                )
+        else:
+            search_filter = self.convert_filter_syntax(search_filter_orig)
+            docs_with_matches = self.create_matches(
                 docs, parameters, traversal_paths, limit, retrieval_limit, search_filter
             )
-            self.append_matches_if_not_exists(
-                docs_with_matches_filter, docs_with_matches, limit
-            )
-            docs_with_matches = docs_with_matches_filter
 
         self.clean_response(docs_with_matches)
         return docs_with_matches
@@ -233,6 +324,36 @@ class NOWBaseIndexer(Executor):
                         break
                     doc.matches.append(match)
 
+    def merge_matches_by_score_after_half(
+        self,
+        docs_with_matches: DocumentArray,
+        docs_with_matches_to_add: DocumentArray,
+        limit: int,
+    ):
+        # get all parent_ids of the matches of the docs_with_matches
+        parent_ids = set()
+        for doc, doc_to_add in zip(docs_with_matches, docs_with_matches_to_add):
+            score_name = (
+                list(doc.matches[0].scores.keys())[0]
+                if len(doc.matches) > 0
+                else self.metric
+            )
+            for match in doc.matches[: limit // 2]:
+                parent_ids.add(match.parent_id)
+
+            possible_matches = deepcopy(doc.matches[limit // 2 :]) + doc_to_add.matches
+            doc.matches = doc.matches[: limit // 2]
+            ids_scores = [
+                (match.id, match.scores[score_name].value) for match in possible_matches
+            ]
+            ids_scores.sort(key=lambda x: x[1], reverse='similarity' in score_name)
+            for id, _ in ids_scores:
+                _match = possible_matches[id]
+                if _match.id not in parent_ids:
+                    if len(doc.matches) >= limit:
+                        break
+                    doc.matches.append(_match)
+
     @staticmethod
     def maybe_drop_blob_tensor(docs: DocumentArray):
         """Drops `blob` or `tensor` from documents which have `uri` attribute set and
@@ -259,16 +380,23 @@ class NOWBaseIndexer(Executor):
 
     @staticmethod
     def clean_response(docs):
-        """removes the embedding from the root level and also from the matches."""
-        for doc in docs:
+        """Removes embedding & OCR tags from the root level and also from the matches."""
+
+        def _clean_response(doc: Document):
+            """Inplace removes embedding & tags associated with OCR detection."""
             doc.embedding = None
+            for _tag in [TAG_INDEXER_DOC_HAS_TEXT, TAG_OCR_DETECTOR_TEXT_IN_DOC]:
+                doc.tags.pop(_tag, None)
+
+        for doc in docs:
+            _clean_response(doc)
             for match in doc.matches:
-                match.embedding = None
+                _clean_response(match)
 
     @staticmethod
     def parse_columns(columns):
         """Parse the columns to index"""
-        valid_input_columns = ['str', 'float', 'int']
+        valid_input_columns = ['str', 'float', 'int', 'bool']
         if columns:
             try:
                 corrected_list = []
@@ -295,10 +423,13 @@ class NOWBaseIndexer(Executor):
     def extend_inmemory_docs_and_tags(self, batch):
         """Extend the in-memory DocumentArray with new documents"""
         for d in batch:
+            tags = deepcopy(d.tags)
+            for _tag in [TAG_INDEXER_DOC_HAS_TEXT, TAG_OCR_DETECTOR_TEXT_IN_DOC]:
+                tags.pop(_tag, None)
             self.document_list.append(
-                Document(id=d.id, uri=d.uri, tags=d.tags, parent_id=d.parent_id)
+                Document(id=d.id, uri=d.uri, tags=tags, parent_id=d.parent_id)
             )
-            self.doc_id_tags[d.id] = d.tags
+            self.doc_id_tags[d.id] = tags
 
     def delete_inmemory_docs_and_tags(self, docs):
         """Delete documents from the in-memory DocumentArray"""
@@ -319,7 +450,7 @@ class NOWBaseIndexer(Executor):
         """Needs to be implemented in derived classes. Iterates over all documents in batches and yields them"""
         raise NotImplementedError
 
-    def convert_filter_syntax(self, search_filter):
+    def convert_filter_syntax(self, search_filter={}, search_filter_not={}):
         """Needs to be implemented in derived classes. Converts the filter syntax to the syntax of the specific indexer"""
         raise NotImplementedError
 
