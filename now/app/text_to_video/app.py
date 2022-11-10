@@ -81,10 +81,6 @@ class TextToVideo(JinaNOWApp):
                 self.flow_yaml = os.path.join(flow_dir, 'flow-video-clip.yml')
 
     @property
-    def supported_file_types(self) -> List[str]:
-        return ['gif', 'mp4', 'mov']
-
-    @property
     def index_query_access_paths(self) -> str:
         return '@c'
 
