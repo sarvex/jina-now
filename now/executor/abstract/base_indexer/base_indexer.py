@@ -210,7 +210,6 @@ class NOWBaseIndexer(Executor):
         #             search_filter=search_filter,
         #         )
         #
-        #         # self.check_docs(docs)
         #         if len(docs[0].text.split()) == 1:
         #             if not search_filter:
         #                 search_filter = self.convert_filter_syntax(

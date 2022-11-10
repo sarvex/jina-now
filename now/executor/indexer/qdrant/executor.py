@@ -46,7 +46,7 @@ class NOWQdrantIndexer15(Executor):
 
     # override
     def convert_filter_syntax(self, search_filter={}, search_filter_not={}):
-        """supports exact matches and range filter"""
+        """Supports exact matches and range filter."""
 
         def _convert_filter(filter_dict):
             conditions = []

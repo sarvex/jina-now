@@ -204,7 +204,7 @@ class ElasticIndexer(Executor):
         """List all indexed documents.
 
         Note: this implementation is naive and does not
-        consider the default maximum documents in a page returned by Elasticsearch.
+        consider the default maximum documents in a page returned by `Elasticsearch`.
         Should be addressed in future with `scroll`.
 
         :param parameters: dictionary with limit and offset

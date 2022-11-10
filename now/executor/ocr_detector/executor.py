@@ -15,7 +15,7 @@ keras_ocr.config.configure()
 
 
 class NOWOCRDetector9(Executor):
-    """Uses keras-ocr to detect text in images"""
+    """Uses keras-ocr to detect text in images."""
 
     def __init__(self, traversal_paths: Optional[str] = '@r', *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -31,7 +31,6 @@ class NOWOCRDetector9(Executor):
 
         if len(flat_docs) == 0:
             return
-
         id_to_text = defaultdict(str)
         # select documents whose mime_type starts with 'image'
         flat_docs = [doc for doc in flat_docs if doc.mime_type.startswith('image')]
