@@ -62,13 +62,7 @@ def test_text_to_video(resources_folder_path):
     assert len(result) == 1
     assert len(encode_result) == 2
     assert (
-        len(
-            [
-                res.chunks[0].text
-                for res in encode_result
-                if res.chunks[0].text != ''
-            ]
-        )
+        len([res.chunks[0].text for res in encode_result if res.chunks[0].text != ''])
         == 1
     )
     assert (
