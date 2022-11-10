@@ -1,0 +1,17 @@
+ARG TF_PACKAGE_VERSION=2.10.0
+FROM tensorflow/tensorflow:${TF_PACKAGE_VERSION}
+
+
+RUN apt-get update && apt-get install --no-install-recommends -y python3 python3-pip gcc libc6-dev git libsm6 libxext6 python3-opencv tesseract-ocr
+
+ARG JINA_VERSION=3.9.1
+
+RUN python3 -m pip install --no-cache-dir jina${JINA_VERSION:+==${JINA_VERSION}}
+
+COPY requirements.txt requirements.txt
+RUN pip install --no-cache-dir --default-timeout=1000 --compile -r requirements.txt
+
+COPY . /workdir/
+WORKDIR /workdir
+
+ENTRYPOINT ["jina", "executor", "--uses", "config.yml"]

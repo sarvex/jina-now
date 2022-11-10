@@ -1,0 +1,7 @@
+jtype: NOWOCRDetector9
+py_modules:
+  - executor.py
+metas:
+  name: NOWOCRDetector9
+  description: Uses keras-ocr and pytessearct to detect text in images
+  keywords: ['']

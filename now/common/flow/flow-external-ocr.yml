@@ -1,0 +1,19 @@
+jtype: Flow
+with:
+  monitoring: true
+  env:
+    JINA_LOG_LEVEL: DEBUG
+jcloud:
+  expose_gateway: false
+  retention_days: -1
+  labels:
+    team: now
+executors:
+  - name: ocr
+    uses: jinahub+docker://NOWOCRDetector9/${{ ENV.NOW_OCR_DETECTOR_VERSION }}-gpu
+    env:
+      JINA_LOG_LEVEL: DEBUG
+    jcloud:
+      capacity: on-demand
+      resources:
+        gpu: shared

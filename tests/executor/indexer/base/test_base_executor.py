@@ -6,6 +6,7 @@ import pytest
 from jina import Document, DocumentArray, Flow
 from tests.executor.indexer.base.in_memory_indexer import InMemoryIndexer
 
+from now.constants import TAG_INDEXER_DOC_HAS_TEXT, TAG_OCR_DETECTOR_TEXT_IN_DOC
 from now.deployment.deployment import cmd
 from now.executor.indexer.qdrant import NOWQdrantIndexer15
 
@@ -255,9 +256,7 @@ class TestBaseIndexer:
         )
         f = Flow().add(
             uses=indexer,
-            uses_with={
-                'dim': DIM,
-            },
+            uses_with={'dim': DIM},
             uses_metas=metas,
         )
         with f:
@@ -337,14 +336,20 @@ class TestBaseIndexer:
                             id="chunk11",
                             blob=b"jpg...",
                             embedding=np.array([0.1, 0.1]),
-                            tags={'title': 'that is rEd for sure'},
+                            tags={
+                                'title': 'that is rEd for sure',
+                                TAG_OCR_DETECTOR_TEXT_IN_DOC: "r t",
+                            },
                             uri=uri,
                         ),
                         Document(
                             id="chunk12",
                             blob=b"jpg...",
                             embedding=np.array([0.2, 0.1]),
-                            tags={'title': 'really bluE'},
+                            tags={
+                                'title': 'really bluE',
+                                TAG_OCR_DETECTOR_TEXT_IN_DOC: "r t",
+                            },
                             uri=uri,
                         ),
                     ],
@@ -360,14 +365,20 @@ class TestBaseIndexer:
                             id="chunk21",
                             blob=b"jpg...",
                             embedding=np.array([0.3, 0.1]),
-                            tags={'title': 'my red shirt'},
+                            tags={
+                                'title': 'my red shirt',
+                                TAG_OCR_DETECTOR_TEXT_IN_DOC: "red shirt",
+                            },
                             uri=uri,
                         ),
                         Document(
                             id="chunk22",
                             blob=b"jpg...",
                             embedding=np.array([0.4, 0.1]),
-                            tags={'title': 'red is nice'},
+                            tags={
+                                'title': 'red is nice',
+                                TAG_OCR_DETECTOR_TEXT_IN_DOC: "red shirt",
+                            },
                             uri=uri,
                         ),
                     ],
@@ -383,7 +394,10 @@ class TestBaseIndexer:
                             id="chunk31",
                             blob=b"jpg...",
                             embedding=np.array([0.5, 0.1]),
-                            tags={'title': 'it is red'},
+                            tags={
+                                'title': 'it is red',
+                                TAG_OCR_DETECTOR_TEXT_IN_DOC: "i iz ret",
+                            },
                             uri=uri,
                         ),
                     ],
@@ -402,7 +416,7 @@ class TestBaseIndexer:
         'level,query,embedding,res_ids',
         [
             ('@c', 'blue', [0.5, 0.1], ['chunk12', 'chunk22', 'chunk31']),
-            ('@c', 'red', [0.5, 0.1], ['chunk22', 'chunk31', 'chunk11']),
+            ('@c', 'red', [0.5, 0.1], ['chunk11', 'chunk31', 'chunk22']),
             ('@r', 'blue', [0.8, 0.1, 0.1], ['doc4', 'doc3', 'doc1', 'doc2']),
             ('@r', 'red', [0.8, 0.1, 0.1], ['doc2', 'doc4', 'doc3', 'doc1']),
         ],
@@ -410,14 +424,12 @@ class TestBaseIndexer:
     def test_search_chunk_using_sum_ranker(
         self, documents, indexer, level, query, embedding, res_ids
     ):
-        if indexer == InMemoryIndexer:
-            pytest.skip('InMemoryIndexer does not contain the title hack')
         with Flow().add(
             uses=indexer,
             uses_with={
                 "traversal_paths": level,
                 "dim": len(embedding),
-                'columns': ['title', 'str'],
+                'columns': ['title', 'str', TAG_INDEXER_DOC_HAS_TEXT, 'bool'],
             },
         ) as f:
             f.index(
