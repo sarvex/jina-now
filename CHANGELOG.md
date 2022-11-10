@@ -28,6 +28,7 @@
 
 
 
+
 <a name=release-note-0-0-7></a>
 ## Release Note (`0.0.7`)
 
@@ -937,4 +938,43 @@
 ### 🍹 Other Improvements
 
  - [[```e8b3aa1e```](https://github.com/jina-ai/now/commit/e8b3aa1e3081de27893235eee680f0976f7eeab4)] __-__ __version__: the next version will be 0.0.35 (*Jina Dev Bot*)
+
+<a name=release-note-0-0-36></a>
+## Release Note (`0.0.36`)
+
+> Release time: 2022-11-10 08:33:34
+
+
+
+🙇 We'd like to thank all contributors for this new release! In particular,
+ Joschka Braun,  Isabelle Mohr,  Mohammad Kalim Akram,  Aziz Belaweid,  Florian Hönicke,  Jina Dev Bot,  🙇
+
+
+### 🆕 New Features
+
+ - [[```07d2e37f```](https://github.com/jina-ai/now/commit/07d2e37f50a218efe96c7ed9a94bb69df79761f7)] __-__ use ocr to detect matching text (#601) (*Joschka Braun*)
+ - [[```021676f6```](https://github.com/jina-ai/now/commit/021676f63f34bfb11ef601581783b412b6b635cf)] __-__ add autocomplete (#579) (*Aziz Belaweid*)
+
+### 🐞 Bug fixes
+
+ - [[```4be321c0```](https://github.com/jina-ai/now/commit/4be321c0838f5c3ef194c2e7e796f870465d2014)] __-__ update demo links (#640) (*Mohammad Kalim Akram*)
+ - [[```a669fe1c```](https://github.com/jina-ai/now/commit/a669fe1cfc19dcf54686d9c228bbc0dd7ea96847)] __-__ debug (#639) (*Aziz Belaweid*)
+ - [[```60ab8551```](https://github.com/jina-ai/now/commit/60ab8551add2c14d253be87016c59bfa1ef64724)] __-__ format the script-score query source correctly (#637) (*Isabelle Mohr*)
+ - [[```e63bff20```](https://github.com/jina-ai/now/commit/e63bff20843c8780d7271a7479ab4fd9bdea3c23)] __-__ ci qdrant executor update (#636) (*Aziz Belaweid*)
+ - [[```6653bfe6```](https://github.com/jina-ai/now/commit/6653bfe69b34194ff351c533bcdc94d12d7d46bc)] __-__ add timeout (#630) (*Aziz Belaweid*)
+ - [[```8e5c7255```](https://github.com/jina-ai/now/commit/8e5c72554f9e62736aff79a42edea9c1839b339c)] __-__ autocomplete (#619) (*Aziz Belaweid*)
+
+### 🧼 Code Refactoring
+
+ - [[```a5775865```](https://github.com/jina-ai/now/commit/a5775865083a1079934651d78adf713f210c879f)] __-__ remove proto req (#628) (*Florian Hönicke*)
+ - [[```479cf198```](https://github.com/jina-ai/now/commit/479cf198b8f98ce1d8d05f408260445ecfb20951)] __-__ autocomplete (#624) (*Aziz Belaweid*)
+
+### 🏁 Unit Test and CICD
+
+ - [[```af112a86```](https://github.com/jina-ai/now/commit/af112a8698f8be13cc8876e66fd230561772b8cb)] __-__ run multimodal demo in end-to-end-tests (#597) (*Isabelle Mohr*)
+
+### 🍹 Other Improvements
+
+ - [[```f1eeda97```](https://github.com/jina-ai/now/commit/f1eeda97ee613ffc9651813c40e4c112d4378ca1)] __-__ Fix add sync (#627) (*Mohammad Kalim Akram*)
+ - [[```29bb7c5f```](https://github.com/jina-ai/now/commit/29bb7c5fdd50f8e5c448576d081167ca287efcd5)] __-__ __version__: the next version will be 0.0.36 (*Jina Dev Bot*)
 
