@@ -68,7 +68,7 @@ The `json` file should contain the `tags` of the `Document` in the following for
 
 
 
-# supported file formats
+# Supported File Formats
 Here is an overview of the supported file formats for each modality:
 
 - Text: `.txt` (can also have a different extension, but has to be plain text)
