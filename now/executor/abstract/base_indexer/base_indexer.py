@@ -114,11 +114,12 @@ class NOWBaseIndexer(Executor):
         :param docs: the Documents to index
         :param parameters: dictionary with options for indexing
         """
+        print(f'--->base indexer /index received docs: {len(docs)}')
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
         flat_docs = docs[traversal_paths]
         if len(flat_docs) == 0:
+            print(f'--->base indexer returning since len(flat_docs) == 0')
             return
-        print(f'--->base indexer /index received docs: {docs.to_json()}')
         flat_docs = self.maybe_drop_blob_tensor(flat_docs)
         self.index(flat_docs, parameters, **kwargs)
         self.extend_inmemory_docs_and_tags(flat_docs)

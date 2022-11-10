@@ -14,6 +14,7 @@ class NOWQdrantIndexer15(Executor):
     # override
     def construct(self, **kwargs):
         setup_qdrant_server(self.workspace, self.logger)
+        print(f'--->', self.dim, self.metric, self.columns)
         self._index = DocumentArray(
             storage='qdrant',
             config={
@@ -73,7 +74,7 @@ class NOWQdrantIndexer15(Executor):
     def index(self, docs: DocumentArray, parameters: dict, **kwargs):
         """Index new documents"""
         # qdrant needs a list of values when filtering on sentences
-        print(f'--->/index received docs: {docs.to_json()}')
+        print(f'--->/index received docs: {len(docs)}')
         for d in docs:
             print(d.uri)
             if 'title' in d.tags:
@@ -99,7 +100,7 @@ class NOWQdrantIndexer15(Executor):
         **kwargs,
     ):
         """Perform a vector similarity search and retrieve Document matches"""
-        print(f'--->/search received docs: {docs.to_json()}')
+        print(f'--->/search received docs: {len(docs)}')
         docs.match(self._index, filter=search_filter, limit=limit)
 
 

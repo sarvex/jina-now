@@ -5,6 +5,7 @@ ENV JINA_NOW_COMMIT_SHA=JINA_NOW_COMMIT_SHA
 RUN apt-get update && apt-get install python3 python3-pip git -y
 
 RUN pip install "docarray[qdrant]"
+RUN apt-get install procps -y
 
 COPY . /workdir/
 WORKDIR /workdir

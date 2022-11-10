@@ -18,7 +18,9 @@ params = {
     'access_paths': '@r',
 }
 
+from now.executor.indexer.qdrant.executor import NOWQdrantIndexer15
+
 client = Client(host='grpc://0.0.0.0:8080')
 
-for docs in da[:1000].batch(batch_size=50):
-    client.post('/index', docs, parameters=params)
+for docs in da[:200].batch(batch_size=50):
+    client.post(on='/index', inputs=docs, parameters=params)
