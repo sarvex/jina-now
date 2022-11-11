@@ -48,7 +48,7 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
             f'Could not load DocumentArray dataset. Please check your configuration: {user_input}.'
         )
     if 'NOW_CI_RUN' in os.environ:
-        da = da[:300]
+        da = da.shuffle()[:50]
     if (
         user_input.dataset_name == DemoDatasetNames.MUSIC_GENRES_MIX
         or user_input.dataset_name == DemoDatasetNames.MUSIC_GENRES_ROCK

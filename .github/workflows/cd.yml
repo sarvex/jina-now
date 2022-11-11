@@ -16,7 +16,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: [3.7]
-        group: [1, 2, 3, 4, 5, 6, 7]     # set to the number of end-to-end tests
+        group: [1, 2, 3, 4, 5, 6, 7, 8, 9]     # set to the number of end-to-end tests
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
@@ -40,7 +40,7 @@ jobs:
           WOLF_TOKEN: ${{ secrets.WOLF_TOKEN }}
       - name: Test
         id: test
-        run: pytest --suppress-no-test-exit-code --ignore-glob=tests/executor -v -s -m "not gpu" --splits 7 --group ${{ matrix.group }} --splitting-algorithm least_duration tests/
+        run: pytest --suppress-no-test-exit-code --ignore-glob=tests/executor -v -s -m "not gpu" --splits 9 --group ${{ matrix.group }} --splitting-algorithm least_duration tests/
         timeout-minutes: 35
         env:
           WOLF_TOKEN: ${{ secrets.WOLF_TOKEN }}
