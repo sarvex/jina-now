@@ -3,7 +3,10 @@ from typing import Dict
 
 import pytest
 
-from now.executor.abstract.auth import NOWAuthExecutor, SecurityLevel, secure_request
+from now.common.auth import SecurityLevel, secure_request
+from now.executor.abstract.auth import get_auth_executor_class
+
+NOWAuthExecutor = get_auth_executor_class()
 
 
 @pytest.fixture

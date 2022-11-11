@@ -1,1 +1,1 @@
-from .base_indexer import NOWBaseIndexer
+from .base_indexer import get_base_indexer_class

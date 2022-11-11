@@ -5,7 +5,9 @@ from time import sleep
 import yaml
 from jina import DocumentArray
 
-from now.executor.abstract.base_indexer import NOWBaseIndexer as Executor
+from now.executor.abstract.base_indexer import get_base_indexer_class
+
+Executor = get_base_indexer_class()
 
 
 class NOWQdrantIndexer15(Executor):
