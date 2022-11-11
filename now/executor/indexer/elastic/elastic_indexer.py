@@ -8,13 +8,18 @@ from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 
 from now.constants import ModelDimensions
-from now.executor.abstract.auth import NOWAuthExecutor as Executor
-from now.executor.abstract.auth import SecurityLevel, secure_request
+from now.executor.abstract.auth import (
+    SecurityLevel,
+    get_auth_executor_class,
+    secure_request,
+)
 
 metrics_mapping = {
     'cosine': 'cosineSimilarity',
     'l2_norm': 'l2norm',
 }
+
+Executor = get_auth_executor_class()
 
 
 class ElasticIndexer(Executor):
