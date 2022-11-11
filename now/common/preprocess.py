@@ -1,5 +1,6 @@
 from docarray import Document, DocumentArray
 
+from now.constants import Modalities
 from now.data_loading.convert_datasets_to_jpeg import to_thumbnail_jpg
 from now.now_dataclasses import UserInput
 
@@ -20,7 +21,7 @@ def preprocess_images(da: DocumentArray) -> DocumentArray:
 
     for d in da:
         for chunk in d.chunks:
-            if chunk.modality == 'image':
+            if chunk.modality == Modalities.IMAGE:
                 convert_fn(chunk)
     return da
 
@@ -50,8 +51,8 @@ def preprocess_text(
         try:
             ret += [
                 Document(
-                    mime_type='text',
-                    modality='text',
+                    mime_type=Modalities.TEXT,
+                    modality=Modalities.TEXT,
                     text=sentence,
                     tags=d.tags,
                 )
@@ -64,7 +65,7 @@ def preprocess_text(
 
     for d in da:
         for chunk in d.chunks:
-            if chunk.modality == 'text':
+            if chunk.modality == Modalities.TEXT:
                 convert_fn(chunk)
                 if split_by_sentences:
                     chunk.chunks = gen_split_by_sentences(chunk)

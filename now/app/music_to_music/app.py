@@ -136,7 +136,7 @@ class MusicToMusic(JinaNOWApp):
 
         for d in da:
             for chunk in d.chunks:
-                if chunk.modality == 'music':
+                if chunk.modality == Modalities.MUSIC:
                     convert_fn(d)
         return da
 

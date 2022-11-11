@@ -142,7 +142,7 @@ class TextToVideo(JinaNOWApp):
         if process_target:
             for d in da:
                 for chunk in d.chunks:
-                    if chunk.modality == 'video':
+                    if chunk.modality == Modalities.VIDEO:
                         convert_fn(chunk)
 
         if process_query:
@@ -152,11 +152,15 @@ class TextToVideo(JinaNOWApp):
 
         if not process_query:
             for d in da:
-                d.chunks = [chunk for chunk in d.chunks if chunk.modality == 'video']
+                d.chunks = [
+                    chunk for chunk in d.chunks if chunk.modality == Modalities.VIDEO
+                ]
 
         if not process_target:
             for d in da:
-                d.chunks = [chunk for chunk in d.chunks if chunk.modality == 'text']
+                d.chunks = [
+                    chunk for chunk in d.chunks if chunk.modality == Modalities.TEXT
+                ]
 
         return DocumentArray(d for d in da if d.chunks)
 
