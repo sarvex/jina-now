@@ -2,14 +2,16 @@ import os
 from typing import List, Dict, Union
 
 from docarray import dataclass, Document, DocumentArray
-from docarray.typing import Image, Text, Audio, Blob
+from docarray.typing import Image, Text, Blob
 
-from now.app.music_to_music.app import MusicToMusic
 from now.app.text_to_video.app import TextToVideo
 from now.constants import Modalities
 
 
 def _get_modality(document):
+    """
+    Detect document's modality based on its `modality` or `mime_type` attributes.
+    """
     for modality in Modalities():
         if modality in document.modality or modality in document.mime_type:
             return modality
@@ -17,6 +19,11 @@ def _get_modality(document):
 
 
 def _get_multi_modal_format(document):
+    """
+    Create a multimodal docarray dataclass from a unimodal `Document`,
+    and trasnform it back to a `Document` which will have a `multi_modal_schema`.
+    """
+
     @dataclass
     class BaseDocImage:
         default_field: Image
@@ -24,10 +31,6 @@ def _get_multi_modal_format(document):
     @dataclass
     class BaseDocText:
         default_field: Text
-
-    @dataclass
-    class BaseDocMusic:
-        default_field: Audio
 
     @dataclass
     class BaseDocBlob:
@@ -38,17 +41,18 @@ def _get_multi_modal_format(document):
         new_doc = BaseDocBlob(default_field=document.blob)
     elif document.uri:
         file_type = os.path.splitext(document.uri)[-1].replace('.', '')
-        if modality == 'music' or file_type in MusicToMusic().supported_file_types:
+        if (
+            modality == Modalities.VIDEO
+            or file_type in TextToVideo().supported_file_types
+        ):
             new_doc = BaseDocText(default_field=document.uri)
-        elif modality == 'video' or file_type in TextToVideo().supported_file_types:
-            new_doc = BaseDocText(default_field=document.uri)
-            modality = 'video'
+            modality = Modalities.VIDEO
         else:
             new_doc = BaseDocImage(default_field=document.uri)
     elif document.text:
         new_doc = BaseDocText(default_field=document.text)
     else:
-        raise Exception(f'{document} modality can not be detected.')
+        raise Exception(f'Document {document} cannot be transformed.')
     new_doc = Document(new_doc)
     if modality:
         new_doc.chunks[0].modality = modality
@@ -56,6 +60,17 @@ def _get_multi_modal_format(document):
 
 
 def transform_uni_modal_data(documents: DocumentArray, filter_fields: List[str]):
+    """
+    Transform unimodal `Documents` into standardized format, which looks like this:
+    Document(
+        tags={'filter_fields': {'color': 'red'}, 'author': 'me'},
+        chunks=[
+            Document(
+                text='jina ai', tags={'filter_fields': {'color': 'red'}, 'author': 'me'}
+            )
+        ],
+    )
+    """
     transformed_docs = DocumentArray()
     for document in documents:
         new_doc = _get_multi_modal_format(document)
@@ -63,8 +78,6 @@ def transform_uni_modal_data(documents: DocumentArray, filter_fields: List[str])
         new_doc.chunks[0].tags['filter_fields'] = {}
         new_doc.chunks[0].tags['field_name'] = 'default_field'
         new_doc.chunks[0].embedding = document.embedding
-        # if modality == 'blob':
-        #     new_doc.chunks[0].modality = document.mime_type
         for field, value in document.tags.items():
             if field in filter_fields:
                 new_doc.tags['filter_fields'][field] = value
@@ -82,6 +95,21 @@ def transform_uni_modal_data(documents: DocumentArray, filter_fields: List[str])
 def _transform_multi_modal_data(
     field_names: Dict[int, str], search_fields: List[str], filter_fields: List[str]
 ):
+    """
+    Transforms multimodal data into standardized format, which looks like this:
+    Document(
+        tags={'filter_fields': {'color': 'red'}, 'author': 'me'},
+        chunks=[
+            Document(
+                text='jina ai', tags={'filter_fields': {'color': 'red'}, 'author': 'me'}
+            ),
+            Document(
+                uri='pic.jpg', tags={'filter_fields': {'color': 'red'}, 'author': 'me'}
+            ),
+        ],
+    )
+    """
+
     def _transform_fn(document: Document) -> Document:
         document.tags['filter_fields'] = {}
         new_chunks = []
@@ -116,6 +144,13 @@ def transform_docarray(
     search_fields: List[str],
     filter_fields: List[str],
 ) -> DocumentArray:
+    """
+    Gets either multimodal or unimodal data and turns it into standardized format.
+
+    :param documents: Data to be transformed.
+    :param search_fields: Field names for neural search. Only required if multimodal data is given.
+    :param filter_fields: Field names for filtering.
+    """
     if not documents:
         return documents
     if isinstance(documents, Document):

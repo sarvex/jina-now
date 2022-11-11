@@ -187,11 +187,6 @@ class NOWBaseIndexer(Executor):
         new_docs = docs[traversal_paths][
             :1
         ]  # only search on the first document for now
-        for d in new_docs:
-            if d.embedding is None:
-                raise Exception(
-                    f'{docs[0]} search endpoint gets no embeddings, {docs[0].chunks[0]}'
-                )
         docs = new_docs
 
         if traversal_paths == '@c,cc':
@@ -281,28 +276,11 @@ class NOWBaseIndexer(Executor):
         self.clean_response(docs_with_matches)
         return docs_with_matches
 
-    def check_docs(self, docs, new_docs=None):
-        if not docs:
-            raise Exception(f'{docs} there are no docs!!')
-        for d in docs:
-            if d.embedding is None:
-                for chunk in d.chunks:
-                    raise Exception(
-                        f'{chunk} and doc {d} !!!!!! {chunk.embedding} and doc emb {d.embedding}, before traversal {new_docs[0].summary()}'
-                    )
-                # raise Exception(
-                #     f'{d} there is no document! {len(d.chunks)}, {d.chunks.summary()}'
-                # )
-
     def create_matches(
         self, docs, parameters, traversal_paths, limit, retrieval_limit, search_filter
     ):
         docs_copy = deepcopy(docs)
         self.search(docs_copy, parameters, retrieval_limit, search_filter)
-        # if not docs_copy[0].matches:
-        #     raise Exception(
-        #         f'zero matches , ' f'{self._index[0].tags},  {search_filter}'
-        #     )
         if traversal_paths == '@c,cc':
             merge_matches_sum(docs_copy, limit)
         return docs_copy
@@ -397,13 +375,10 @@ class NOWBaseIndexer(Executor):
         """Parse the columns to index"""
         valid_input_columns = ['str', 'float', 'int', 'bool']
         if columns:
-            try:
-                corrected_list = []
-                for i in range(0, len(columns), 2):
-                    corrected_list.append((columns[i], columns[i + 1]))
-                columns = corrected_list
-            except:
-                raise Exception(f'here are the columns {columns}')
+            corrected_list = []
+            for i in range(0, len(columns), 2):
+                corrected_list.append((columns[i], columns[i + 1]))
+            columns = corrected_list
             for n, t in columns:
                 assert (
                     t in valid_input_columns
