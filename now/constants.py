@@ -8,8 +8,8 @@ from now.utils import BetterEnum
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.130-test-multimodal-20'
 NOW_PREPROCESSOR_VERSION = '0.0.97-refactor-wrap-auth-executor-2'
-NOW_QDRANT_INDEXER_VERSION = '0.0.5-refactor-wrap-auth-executor-2'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.4-refactor-wrap-auth-executor-2'
+NOW_QDRANT_INDEXER_VERSION = '0.0.6-refactor-wrap-base-indexer-1'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.5-refactor-wrap-base-indexer-1'
 NOW_AUTOCOMPLETE_VERSION = '0.0.2-refactor-wrap-auth-executor-2'
 NOW_OCR_DETECTOR_VERSION = '0.0.1-feat-matching-text-82'
 
