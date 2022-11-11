@@ -28,7 +28,6 @@ def run(
     app_instance: JinaNOWApp,
     user_input: UserInput,
     kubectl_path: str,
-    ns: str = 'nowapi',
     **kwargs,
 ):
     """
@@ -56,7 +55,7 @@ def run(
         deployment_type=user_input.deployment_type,
         flow_yaml=app_instance.flow_yaml,
         env_dict=env_dict,
-        ns=ns,
+        ns=user_input.app_name,
         kubectl_path=kubectl_path,
     )
 
