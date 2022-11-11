@@ -20,7 +20,7 @@ executors:
       memory: 1G
   env:
     JINA_LOG_LEVEL: DEBUG
-- name: sbert_encoder # access path main_text
+- name: sbert_encoder
   uses: jinahub+docker://FinetunerExecutor
   uses_requests:
     /search: encode

@@ -183,11 +183,9 @@ class NOWBaseIndexer(Executor):
         search_filter_raw = parameters.get('filter', {})
         search_filter_orig = deepcopy(search_filter_raw)
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
-        print(f'number of docs {len(docs)}')
-        new_docs = docs[traversal_paths][
+        docs = docs[traversal_paths][
             :1
         ]  # only search on the first document for now
-        docs = new_docs
 
         if traversal_paths == '@c,cc':
             retrieval_limit = limit * 3

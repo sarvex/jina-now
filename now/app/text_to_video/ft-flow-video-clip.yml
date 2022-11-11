@@ -67,7 +67,7 @@ executors:
     external: ${{ ENV.IS_REMOTE_DEPLOYMENT }}
     needs: preprocessor
     uses_with:
-      traversal_paths: '@c,CC'
+      traversal_paths: '@c,cc'
     when:
       mime_type:
         $regex: image*

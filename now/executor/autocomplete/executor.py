@@ -43,7 +43,6 @@ class NOWAutoCompleteExecutor(Executor):
     def search_update(
         self, docs: Optional[DocumentArray] = None, parameters: dict = {}, **kwargs
     ):
-        # traversal_paths = parameters.get('traversal_paths', self.search_traversal_paths)
         flat_docs = docs[self.search_traversal_paths]
 
         for doc in flat_docs:

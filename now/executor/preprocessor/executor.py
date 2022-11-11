@@ -12,7 +12,7 @@ from now.constants import Apps, DatasetTypes
 from now.data_loading.transform_docarray import transform_docarray
 from now.executor.abstract.auth import NOWAuthExecutor as Executor
 from now.executor.abstract.auth import SecurityLevel
-from now.executor.abstract.auth import secure_request as secure_request_preprocessor
+from now.executor.abstract.auth import secure_request
 from now.now_dataclasses import UserInput
 from now.utils import _maybe_download_from_s3
 
@@ -105,7 +105,7 @@ class NOWPreprocessor(Executor):
 
         return docs
 
-    @secure_request_preprocessor(on='/index', level=SecurityLevel.USER)
+    @secure_request(on='/index', level=SecurityLevel.USER)
     def index(
         self, docs: DocumentArray, parameters: Optional[Dict] = None, *args, **kwargs
     ) -> DocumentArray:
@@ -118,7 +118,7 @@ class NOWPreprocessor(Executor):
         self._set_user_input(parameters=parameters)
         return self._preprocess_maybe_cloud_download(docs=docs, is_indexing=True)
 
-    @secure_request_preprocessor(on='/encode', level=SecurityLevel.USER)
+    @secure_request(on='/encode', level=SecurityLevel.USER)
     def encode(
         self, docs: DocumentArray, parameters: Optional[Dict] = None, *args, **kwargs
     ):
@@ -134,7 +134,7 @@ class NOWPreprocessor(Executor):
             docs=docs, is_indexing=True, encode=True
         )
 
-    @secure_request_preprocessor(on='/search', level=SecurityLevel.USER)
+    @secure_request(on='/search', level=SecurityLevel.USER)
     def search(
         self, docs: DocumentArray, parameters: Optional[Dict] = None, *args, **kwargs
     ) -> DocumentArray:
@@ -147,7 +147,7 @@ class NOWPreprocessor(Executor):
         self._set_user_input(parameters=parameters)
         return self._preprocess_maybe_cloud_download(docs=docs, is_indexing=False)
 
-    @secure_request_preprocessor(on='/temp_link_cloud_bucket', level=SecurityLevel.USER)
+    @secure_request(on='/temp_link_cloud_bucket', level=SecurityLevel.USER)
     def temporary_link_from_cloud_bucket(
         self, docs: DocumentArray, parameters: Optional[Dict] = None, *args, **kwargs
     ) -> DocumentArray:
