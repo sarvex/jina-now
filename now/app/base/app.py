@@ -8,7 +8,7 @@ from jina import Client
 from jina.jaml import JAML
 from jina.serve.runtimes.gateway.http.models import JinaRequestModel, JinaResponseModel
 
-from now.constants import Modalities
+from now.constants import SUPPORTED_FILE_TYPES, Modalities
 from now.demo_data import AVAILABLE_DATASET, DEFAULT_EXAMPLE_HOSTED, DemoDataset
 from now.now_dataclasses import DialogOptions, UserInput
 from now.utils import Dumper
@@ -106,7 +106,7 @@ class JinaNOWApp:
     @property
     def supported_file_types(self) -> List[str]:
         """Used to filter files in local structure or an S3 bucket."""
-        return ['**']
+        return SUPPORTED_FILE_TYPES[self.output_modality]
 
     @property
     def demo_datasets(self) -> List[DemoDataset]:

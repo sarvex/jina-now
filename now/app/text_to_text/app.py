@@ -1,5 +1,5 @@
 import os
-from typing import Dict, List
+from typing import Dict
 
 from docarray import DocumentArray
 
@@ -47,10 +47,6 @@ class TextToText(JinaNOWApp):
             self.flow_yaml = os.path.join(flow_dir, 'ft-flow-sbert.yml')
         else:
             self.flow_yaml = os.path.join(flow_dir, 'flow-sbert.yml')
-
-    @property
-    def supported_file_types(self) -> List[str]:
-        return ['txt']
 
     def setup(
         self, dataset: DocumentArray, user_input: UserInput, kubectl_path: str

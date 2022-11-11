@@ -2,16 +2,16 @@ from __future__ import annotations, print_function, unicode_literals
 
 from now.utils import BetterEnum
 
-# TODO: Uncomment the DEMO_DATASET_DOCARRAY_VERSION when the DocArray datasets on GCloud has been changed
+# TODO: Uncomment the DEMO_DATASET_DOCARRAY_VERSION when the DocumentArray datasets on GCloud has been changed
 # from docarray import __version__ as docarray_version
 # DEMO_DATASET_DOCARRAY_VERSION = docarray_version
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.130-refactor-executors-68'
-NOW_PREPROCESSOR_VERSION = '0.0.95-data-format-68'
-NOW_QDRANT_INDEXER_VERSION = '0.0.3-data-format-68'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.3-data-format-8'
-NOW_AUTOCOMPLETE_VERSION = '0.0.1-data-format-25'
-NOW_OCR_DETECTOR_VERSION = '0.0.1-data-format-9'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.130-refactor-executors-69'
+NOW_PREPROCESSOR_VERSION = '0.0.95-data-format-69'
+NOW_QDRANT_INDEXER_VERSION = '0.0.3-data-format-69'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.3-data-format-9'
+NOW_AUTOCOMPLETE_VERSION = '0.0.1-data-format-26'
+NOW_OCR_DETECTOR_VERSION = '0.0.1-data-format-10'
 
 
 class Modalities(BetterEnum):
@@ -57,6 +57,13 @@ class ModelDimensions(BetterEnum):
     SBERT = 768
     CLIP = 512
 
+
+SUPPORTED_FILE_TYPES = {
+    Modalities.TEXT: ['txt', 'md'],
+    Modalities.IMAGE: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'tif'],
+    Modalities.MUSIC: ['mp3', 'wav', 'ogg', 'flac'],
+    Modalities.VIDEO: ['gif'],
+}
 
 BASE_STORAGE_URL = (
     'https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets'
