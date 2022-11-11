@@ -50,7 +50,7 @@ def deploy(app_name, app_data):
         'deployment_type': 'remote',
         'proceed': True,
         'secured': False,
-        'ns': NAMESPACE,
+        'flow_name': NAMESPACE,
     }
     kwargs = Namespace(**kwargs)
     try:
