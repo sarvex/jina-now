@@ -102,7 +102,7 @@ def test_authorization_success_domain_users(
         )
 
 
-def test_authorization_success_jina_users(mock_hubble_user_email):
+def test_authorization_success_jina_users(auth_executor, mock_hubble_user_email):
     with (
         Flow()
         .add(
