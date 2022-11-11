@@ -127,7 +127,7 @@ class ElasticsearchExtractor:
         transformed_doc = Document(
             chunks=[
                 Document(
-                    content=attr_values[name],
+                    content=attr_values[name][0],
                     modality=attr_modalities[name],
                     tags={'field_name': name},
                 )
