@@ -6,7 +6,7 @@ from docarray import DocumentArray
 from now.app.base.app import JinaNOWApp
 from now.common.preprocess import preprocess_text, filter_data
 from now.common.utils import common_setup, get_indexer_config
-from now.constants import Apps, DatasetTypes, Modalities, ModelDimensions
+from now.constants import Apps, Modalities, ModelDimensions
 from now.now_dataclasses import UserInput
 
 
@@ -92,14 +92,6 @@ class TextToText(JinaNOWApp):
                 'Either `process_query` or `process_index` must be set to True.'
             )
 
-        split_by_sentences = False
-        if (
-            process_index
-            and user_input.dataset_type == DatasetTypes.PATH
-            and user_input.dataset_path
-            and os.path.isdir(user_input.dataset_path)
-        ):
-            # for text loaded from folder can't assume it is split by sentences
-            split_by_sentences = True
+        split_by_sentences = True if process_index else False
         da = preprocess_text(da=da, split_by_sentences=split_by_sentences)
         return filter_data(da, modalities=[Modalities.TEXT])
