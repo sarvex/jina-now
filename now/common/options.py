@@ -67,7 +67,7 @@ APP = DialogOptions(
 )
 
 APP_NAME = DialogOptions(
-    name='app_name',
+    name='flow_name',
     prompt_message='Choose a name for your application:',
     prompt_type='input',
 )
