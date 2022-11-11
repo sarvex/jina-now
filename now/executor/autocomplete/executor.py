@@ -44,7 +44,6 @@ class NOWAutoCompleteExecutor(Executor):
         self, docs: Optional[DocumentArray] = None, parameters: dict = {}, **kwargs
     ):
         flat_docs = docs[self.search_traversal_paths]
-
         for doc in flat_docs:
             if doc.text and not profanity.contains_profanity(doc.text):
                 search_words = doc.text.split(' ')

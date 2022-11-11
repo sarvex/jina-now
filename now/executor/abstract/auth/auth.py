@@ -56,9 +56,7 @@ def _check_user(kwargs, level, user_emails, admin_emails, api_keys):
     for email in admin_emails + user_emails + ['jina.ai']:
         if _valid_user(user_info.get('email'), email):
             if level == SecurityLevel.ADMIN and email not in admin_emails:
-                raise PermissionError(
-                    f'User {email} is not an admin.'
-                )
+                raise PermissionError(f'User {email} is not an admin.')
             return
     raise PermissionError(
         f'User {user_info.get("email") or user_info["_id"]} has no permission'
@@ -117,7 +115,6 @@ class NOWAuthExecutor(Executor):
         self.user_emails = user_emails
         self.api_keys = api_keys
         self._user = None
-
         self.api_keys_path = (
             os.path.join(self.workspace, 'api_keys.json') if self.workspace else None
         )
