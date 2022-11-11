@@ -26,6 +26,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
             'app': Apps.MUSIC_TO_MUSIC,
+            'flow_name': 'nowapi',
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': 'music-genres-mid',
             'cluster': 'new',
@@ -36,6 +37,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
             'app': Apps.MUSIC_TO_MUSIC,
+            'flow_name': 'nowapi',
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': 'music-genres-mix',
             'cluster': 'new',
@@ -46,6 +48,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
             'app': Apps.TEXT_TO_IMAGE,
+            'flow_name': 'nowapi',
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': 'tll',
             'cluster': 'new',
@@ -56,6 +59,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
             'app': Apps.TEXT_TO_IMAGE,
+            'flow_name': 'nowapi',
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': 'nih-chest-xrays',
             'cluster': 'new',
@@ -66,6 +70,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
             'app': Apps.TEXT_TO_IMAGE,
+            'flow_name': 'nowapi',
             'dataset_type': DatasetTypes.DOCARRAY,
             'dataset_name': 'xxx',
             'cluster': 'new',
@@ -76,6 +81,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
             'app': Apps.MUSIC_TO_MUSIC,
+            'flow_name': 'nowapi',
             'dataset_type': DatasetTypes.DOCARRAY,
             'dataset_name': 'xxx',
             'cluster': 'new',
@@ -86,6 +92,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
             'app': Apps.MUSIC_TO_MUSIC,
+            'flow_name': 'nowapi',
             'dataset_type': DatasetTypes.PATH,
             'dataset_path': 'xxx',
             'cluster': 'new',
@@ -96,6 +103,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
             'app': Apps.MUSIC_TO_MUSIC,
+            'flow_name': 'nowapi',
             'dataset_type': DatasetTypes.URL,
             'dataset_url': 'xxx',
             'cluster': 'new',
@@ -106,6 +114,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
             'app': Apps.TEXT_TO_IMAGE,
+            'flow_name': 'nowapi',
             'dataset_type': DatasetTypes.DOCARRAY,
             'dataset_name': 'xxx',
             'cluster': 'new',
@@ -116,6 +125,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
             'dataset_type': DatasetTypes.DEMO,
+            'flow_name': 'nowapi',
             'dataset_name': 'music-genres-mid',
             'cluster': 'new',
             'deployment_type': 'local',
@@ -124,6 +134,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
+            'flow_name': 'nowapi',
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': DemoDatasetNames.TLL,
             'cluster': 'new',
@@ -133,6 +144,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
+            'flow_name': 'nowapi',
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': DemoDatasetNames.ROCK_LYRICS,
             'cluster': 'new',
@@ -145,6 +157,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'app': Apps.IMAGE_TO_TEXT,
         },
         {
+            'flow_name': 'nowapi',
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': DemoDatasetNames.POP_LYRICS,
             'cluster': 'new',
