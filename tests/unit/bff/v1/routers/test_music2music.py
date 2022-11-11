@@ -40,8 +40,6 @@ def test_music_index_fails_with_no_flow_running(
             json={
                 'songs': [base64_audio_string],
                 'uris': [''],
-                'host': 'localhost',
-                'port': 12345,
             },
         )
 
@@ -52,7 +50,7 @@ def test_music_search_fails_with_no_flow_running(
     with pytest.raises(ConnectionError):
         client.post(
             f'/api/v1/music-to-music/search',
-            json={'song': base64_audio_string, 'host': 'localhost', 'port': 12345},
+            json={'song': base64_audio_string},
         )
 
 

@@ -15,8 +15,6 @@ def test_image_index_fails_with_no_flow_running(
             json={
                 'images': [base64_image_string],
                 'uris': [''],
-                'host': 'localhost',
-                'port': 12345,
             },
         )
 
@@ -27,7 +25,7 @@ def test_image_search_fails_with_no_flow_running(
     with pytest.raises(ConnectionError):
         client.post(
             f'/api/v1/image-to-image/search',
-            json={'image': base64_image_string, 'host': 'localhost', 'port': 12345},
+            json={'image': base64_image_string},
         )
 
 
