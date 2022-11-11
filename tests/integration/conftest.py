@@ -92,18 +92,10 @@ def multi_modal_data(resources_folder_path):
 
 @pytest.fixture
 def preprocess_and_encode(single_modal_data, multi_modal_data):
-    search_fields = []
-    filter_fields = []
-    # data_type = 'single_modal'
-    # if data_type == 'single_modal':
-    #     data = single_modal_data
-    # else:
-    #     data = multi_modal_data
     app_instance = TextToVideo()
     user_input = UserInput()
-    user_input.search_fields = search_fields
-    user_input.filter_fields = filter_fields
-    user_input.filter_fields = filter_fields
+    user_input.search_fields = []
+    user_input.filter_fields = []
     user_input.dataset_type = DatasetTypes.DEMO
     user_input.dataset_name = DemoDatasetNames.TUMBLR_GIFS_10K
     data = load_data(app_instance, user_input)[:10]
@@ -132,10 +124,7 @@ def preprocess_and_encode(single_modal_data, multi_modal_data):
         )
 
     encoded_d.summary()
-    # assert len(encoded_d) == len(data)
-    # for chunk, field in zip(encoded_d[0].chunks, search_fields):
-    #     assert chunk.embedding.any()
-    #     assert field == chunk.tags['field_name']
-    # for filter_field in filter_fields:
-    #     assert filter_field in encoded_d[0].tags['filter_fields']
+    assert len(encoded_d) == len(data)
+    for chunk in encoded_d[0].chunks:
+        assert chunk.embedding.any()
     return encoded_d, user_input

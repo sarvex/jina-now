@@ -357,7 +357,7 @@ def assert_deployment_response(
     assert response['port'] == 8080 or response['port'] is None
 
 
-@pytest.mark.parametrize('deployment_type', ['local'])
+@pytest.mark.parametrize('deployment_type', ['remote'])
 @pytest.mark.parametrize('dataset', ['custom_s3_bucket'])
 @pytest.mark.parametrize('app', [Apps.TEXT_TO_IMAGE])
 def test_backend_custom_data(
