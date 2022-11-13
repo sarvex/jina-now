@@ -19,6 +19,7 @@ from deployment.bff.app.v1.routers import (
     music2music,
     text2text,
     txt2img,
+    txt2txt_and_img,
     txt2video,
 )
 
@@ -125,6 +126,13 @@ def build_app():
     text2video_app = get_app_instance()
     text2video_app.include_router(txt2video.router, tags=['Text-To-Video'])
 
+    # Text2TextAndImage router
+    text2text_and_image_mount = '/api/v1/text-to-text-and-image'
+    text2text_and_image_app = get_app_instance()
+    text2text_and_image_app.include_router(
+        txt2txt_and_img.router, tags=['Text-To-Text-And-Image']
+    )
+
     # Admin router
     admin_mount = '/api/v1/admin'
     admin_app = get_app_instance()
@@ -140,6 +148,7 @@ def build_app():
             Mount(text2text_mount, text2text_app),
             Mount(music2music_mount, music2music_app),
             Mount(text2video_mount, text2video_app),
+            Mount(text2text_and_image_mount, text2text_and_image_app),
             Mount(admin_mount, admin_app),
         ]
     )

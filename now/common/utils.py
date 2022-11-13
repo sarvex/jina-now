@@ -5,21 +5,27 @@ import tempfile
 import time
 from copy import deepcopy
 from os.path import expanduser as user
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 import hubble
 from docarray import Document, DocumentArray
 from jina import __version__ as jina_version
+from jina.helper import random_port
 
 from now.app.base.app import JinaNOWApp
-from now.common.flow import get_executor_prefix
 from now.constants import (
+    EXECUTOR_PREFIX,
+    EXTERNAL_CLIP_HOST,
+    EXTERNAL_OCR_HOST,
     NOW_AUTOCOMPLETE_VERSION,
     NOW_ELASTIC_INDEXER_VERSION,
+    NOW_OCR_DETECTOR_VERSION,
     NOW_PREPROCESSOR_VERSION,
     NOW_QDRANT_INDEXER_VERSION,
     PREFETCH_NR,
+    TAG_INDEXER_DOC_HAS_TEXT,
     DatasetTypes,
+    Modalities,
 )
 from now.demo_data import DEFAULT_EXAMPLE_HOSTED
 from now.deployment.deployment import cmd
@@ -29,6 +35,30 @@ from now.now_dataclasses import UserInput
 from now.utils import _maybe_download_from_s3
 
 MAX_RETRIES = 20
+
+
+def handle_test_mode(config):
+
+    if os.environ.get('NOW_TESTING', False):
+        # TODO: condition on Qdrant needs to be removed. At the moment, Qdrant does not start outside of docker
+        # TODO: same for elastic
+        from now.executor.autocomplete import NOWAutoCompleteExecutor
+        from now.executor.preprocessor import NOWPreprocessor
+
+        if NOWPreprocessor and NOWAutoCompleteExecutor:
+            # this is a hack to make sure the import is not removed
+            pass
+        for k, v in config.items():
+            if (
+                type(v) == str
+                and 'jinahub' in v
+                and (
+                    not 'NOWQdrantIndexer' in v
+                    and not 'ElasticIndexer' in v
+                    and not 'CLIPOnnxEncoder' in v
+                )
+            ):
+                config[k] = config[k].replace(EXECUTOR_PREFIX, '').split('/')[0]
 
 
 def common_get_flow_env_dict(
@@ -48,20 +78,19 @@ def common_get_flow_env_dict(
     ) or user_input.app_instance.app_name == 'music_to_music':
         pre_trained_embedding_size = pre_trained_embedding_size * 2
 
-    executor_prefix = get_executor_prefix()
     config = {
         'JINA_VERSION': jina_version,
-        'ENCODER_NAME': f'{executor_prefix}{encoder_uses}',
-        'CAST_CONVERT_NAME': f'{executor_prefix}CastNMoveNowExecutor/v0.0.3',
+        'ENCODER_NAME': f'{EXECUTOR_PREFIX}{encoder_uses}',
+        'CAST_CONVERT_NAME': f'{EXECUTOR_PREFIX}CastNMoveNowExecutor/v0.0.3',
         'N_DIM': finetune_settings.finetune_layer_size
         if finetune_settings.perform_finetuning
         or user_input.app_instance.app_name == 'music_to_music'
         else pre_trained_embedding_size,
         'PRE_TRAINED_EMBEDDINGS_SIZE': pre_trained_embedding_size,
-        'INDEXER_NAME': f'{executor_prefix}{indexer_uses}',
+        'INDEXER_NAME': f'{EXECUTOR_PREFIX}{indexer_uses}',
         'PREFETCH': PREFETCH_NR,
-        'PREPROCESSOR_NAME': f'{executor_prefix}NOWPreprocessor/{NOW_PREPROCESSOR_VERSION}',
-        'AUTOCOMPLETE_EXECUTOR_NAME': f'{executor_prefix}NOWAutoCompleteExecutor/{NOW_AUTOCOMPLETE_VERSION}',
+        'PREPROCESSOR_NAME': f'{EXECUTOR_PREFIX}NOWPreprocessor/{NOW_PREPROCESSOR_VERSION}',
+        'AUTOCOMPLETE_EXECUTOR_NAME': f'{EXECUTOR_PREFIX}NOWAutoCompleteExecutor/{NOW_AUTOCOMPLETE_VERSION}',
         'APP': user_input.app_instance.app_name,
         'COLUMNS': tags,
         'ADMIN_EMAILS': user_input.admin_emails or [] if user_input.secured else [],
@@ -97,6 +126,8 @@ def common_get_flow_env_dict(
                 'CUSTOM_DNS'
             ] = f'now-example-{user_input.app_instance.app_name}-{user_input.dataset_name}.dev.jina.ai'
             config['CUSTOM_DNS'] = config['CUSTOM_DNS'].replace('_', '-')
+
+    handle_test_mode(config)
     return config
 
 
@@ -111,7 +142,6 @@ def common_setup(
     kubectl_path: str,
     encoder_with: Optional[Dict] = {},
     indexer_resources: Optional[Dict] = {},
-    elastic: bool = False,
 ) -> Dict:
     # should receive pre embedding size
     finetune_settings = parse_finetune_settings(
@@ -202,6 +232,10 @@ def get_indexer_config(
             'indexer_uses': f'ElasticIndexer/{NOW_ELASTIC_INDEXER_VERSION}',
             'hosts': setup_elastic_service(kubectl_path),
         }
+    elif elastic and deployment_type == 'remote':
+        raise ValueError(
+            'ElasticIndexer is currently not supported for remote deployment. Please use local deployment.'
+        )
     else:
         config = {'indexer_uses': f'NOWQdrantIndexer15/{NOW_QDRANT_INDEXER_VERSION}'}
     threshold1 = 250_000
@@ -214,9 +248,6 @@ def get_indexer_config(
 
 
 def _extract_tags_for_indexer(d: Document, user_input):
-    print(
-        'We assume all tags follow the same structure, only first json file will be used to determine structure'
-    )
     with tempfile.TemporaryDirectory() as tmpdir:
         if user_input and user_input.dataset_type == DatasetTypes.S3_BUCKET:
             _maybe_download_from_s3(
@@ -229,6 +260,8 @@ def _extract_tags_for_indexer(d: Document, user_input):
     for tag, _ in d.tags.items():
         tags.add((tag, str(tag.__class__.__name__)))
     final_tags = [list(tag) for tag in tags]
+    if user_input.app_instance.output_modality in [Modalities.IMAGE, Modalities.VIDEO]:
+        final_tags.append([TAG_INDEXER_DOC_HAS_TEXT, str(bool.__name__)])
     return final_tags
 
 
@@ -272,3 +305,20 @@ def setup_elastic_service(
         raise Exception(error_msg.decode("utf-8"))
     host = f"https://elastic:{es_password}@quickstart-es-http.default:9200"
     return host
+
+
+def _get_clip_apps_with_dict(user_input: UserInput) -> Tuple[Dict, Dict]:
+    """Depending on whether this app will be remotely deployed, this function returns the with
+    dictionary for the CLIP and OCR detector executor."""
+    is_remote = user_input.deployment_type == 'remote'
+    encoder_with = {
+        'ENCODER_HOST': EXTERNAL_CLIP_HOST if is_remote else '0.0.0.0',
+        'ENCODER_PORT': 443 if is_remote else random_port(),
+        'IS_REMOTE_DEPLOYMENT': is_remote,
+    }
+    ocr_with = {
+        'OCR_DETECTOR_NAME': f"jinahub+docker://NOWOCRDetector9/{NOW_OCR_DETECTOR_VERSION}",
+        'OCR_DETECTOR_HOST': EXTERNAL_OCR_HOST if is_remote else '0.0.0.0',
+        'OCR_DETECTOR_PORT': 443 if is_remote else random_port(),
+    }
+    return encoder_with, ocr_with

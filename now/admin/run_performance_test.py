@@ -19,7 +19,7 @@ def call(client, use_bff):
     except Exception as e:
         import traceback
 
-        traceback.print_stack()
+        traceback.print_exc()
     dif = time() - start
     return dif
 

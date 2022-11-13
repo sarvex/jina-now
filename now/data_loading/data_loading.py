@@ -16,7 +16,7 @@ from now.utils import sigmap
 
 
 def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
-    """Based on the user input, this function will pull the configured DocArray dataset ready for the preprocessing
+    """Based on the user input, this function will pull the configured DocumentArray dataset ready for the preprocessing
     executor.
 
     :param app: chosen JinaNOWApp
@@ -25,10 +25,10 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
     """
     da = None
     if user_input.dataset_type == DatasetTypes.DOCARRAY:
-        print('⬇  Pull DocArray dataset')
+        print('⬇  Pull DocumentArray dataset')
         da = _pull_docarray(user_input.dataset_name)
     elif user_input.dataset_type == DatasetTypes.URL:
-        print('⬇  Pull DocArray dataset')
+        print('⬇  Pull DocumentArray dataset')
         da = fetch_da_from_url(user_input.dataset_url)
     elif user_input.dataset_type == DatasetTypes.PATH:
         print('💿  Loading files from disk')
@@ -40,20 +40,15 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
     elif user_input.dataset_type == DatasetTypes.ELASTICSEARCH:
         da = _extract_es_data(user_input)
     elif user_input.dataset_type == DatasetTypes.DEMO:
-        print('⬇  Download DocArray dataset')
+        print('⬇  Download DocumentArray dataset')
         url = get_dataset_url(user_input.dataset_name, app.output_modality)
         da = fetch_da_from_url(url)
     if da is None:
         raise ValueError(
-            f'Could not load DocArray dataset. Please check your configuration: {user_input}.'
+            f'Could not load DocumentArray dataset. Please check your configuration: {user_input}.'
         )
     if 'NOW_CI_RUN' in os.environ:
-        if user_input.dataset_name == DemoDatasetNames.BEST_ARTWORKS:
-            da = da[:300]
-        elif user_input.dataset_name == DemoDatasetNames.TUMBLR_GIFS_10K:
-            da = da[:300]
-        else:
-            da = da[:300]
+        da = da.shuffle()[:50]
     if (
         user_input.dataset_name == DemoDatasetNames.MUSIC_GENRES_MIX
         or user_input.dataset_name == DemoDatasetNames.MUSIC_GENRES_ROCK

@@ -17,10 +17,20 @@ class InMemoryIndexer(NOWBaseIndexer):
         for doc in self._index:
             yield doc
 
-    def convert_filter_syntax(self, filter):
-        return filter
+    def convert_filter_syntax(self, search_filter={}, search_filter_not={}):
+        converted_filter = {}
+        for key, val in search_filter.items():
+            converted_filter[f"tags__{key}"] = val
+        if search_filter_not:
+            converted_filter['$not'] = {}
+            for key_not, val_not in search_filter_not.items():
+                converted_filter['$not'][f"tags__{key_not}"] = val_not
+        return converted_filter
 
     def index(self, docs, parameters, **kwargs):
+        for d in docs:
+            if 'title' in d.tags:
+                d.tags['title'] = d.tags['title'].lower()
         self._index.extend(docs)
 
     def delete(self, filtered_docs, *args, **kwargs):
@@ -28,28 +38,4 @@ class InMemoryIndexer(NOWBaseIndexer):
             del self._index[doc.id]
 
     def search(self, docs, parameters, retrieval_limit, search_filter, **kwargs):
-        docs.match(self._index, limit=retrieval_limit)
-        docs[0].matches = [
-            d for d in docs[0].matches if self.match_filter(d, search_filter)
-        ]
-
-    def match_filter(self, doc, search_filter):
-        """
-        determines if a document matches the search filter
-        example for search_filter: {'filter': {'price': {'$lt': 50.0}}}
-        filter tags can be $lt, $gt, $let, $get, $eq
-        """
-        operator_to_function = {
-            '$lt': lambda x, y: x < y,
-            '$gt': lambda x, y: x > y,
-            '$let': lambda x, y: x <= y,
-            '$get': lambda x, y: x >= y,
-            '$eq': lambda x, y: x == y,
-        }
-        for key, filter_condition in search_filter.items():
-            for operator_string, value in filter_condition.items():
-                if key not in doc.tags or not operator_to_function[operator_string](
-                    doc.tags[key], value
-                ):
-                    return False
-        return True
+        docs.match(self._index.find(search_filter), limit=retrieval_limit)

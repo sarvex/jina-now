@@ -45,32 +45,38 @@ class NOWQdrantIndexer15(Executor):
             yield batch
 
     # override
-    def convert_filter_syntax(self, search_filter):
+    def convert_filter_syntax(self, search_filter={}, search_filter_not={}):
         """supports exact matches and range filter"""
-        conditions = []
-        for attribute, condition in search_filter.items():
-            for operator, value in condition.items():
-                if operator in self.range_operators:
-                    operator_type = 'range'
-                    operator_string = operator.replace('$', '')
-                elif operator == '$eq':
-                    operator_type = 'match'
-                    operator_string = 'value'
-                else:
-                    continue
-                conditions.append(
-                    {"key": attribute, operator_type: {operator_string: value}}
-                )
 
-        search_filter = {"must": conditions} if conditions else {}
-        return search_filter
+        def _convert_filter(filter_dict):
+            conditions = []
+            for attribute, condition in filter_dict.items():
+                for operator, value in condition.items():
+                    if operator in self.range_operators:
+                        operator_type = 'range'
+                        operator_string = operator.replace('$', '')
+                    elif operator in ['$eq', '$regex', '$in']:
+                        operator_type = 'match'
+                        operator_string = 'value'
+                    else:
+                        continue
+                    conditions.append(
+                        {"key": attribute, operator_type: {operator_string: value}}
+                    )
+            return conditions
+
+        search_filter_ret = {}
+        if search_filter:
+            search_filter_ret['must'] = _convert_filter(search_filter)
+        if search_filter_not:
+            search_filter_ret['must_not'] = _convert_filter(search_filter_not)
+        return search_filter_ret
 
     # override
     def index(self, docs: DocumentArray, parameters: dict, **kwargs):
         """Index new documents"""
         # qdrant needs a list of values when filtering on sentences
         for d in docs:
-            print(d.uri)
             if 'title' in d.tags:
                 d.tags['title'] = d.tags['title'].lower().split()
         self._index.extend(docs)

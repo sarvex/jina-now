@@ -9,7 +9,8 @@ from starlette import status
 def test_text_index_fails_with_no_flow_running(client: requests.Session):
     with pytest.raises(ConnectionError):
         client.post(
-            f'/api/v1/image-to-text/index', json={'texts': ['Hello'], 'uris': ['']}
+            f'/api/v1/image-to-text/index',
+            json={'texts': ['Hello'], 'uris': ['']},
         )
 
 

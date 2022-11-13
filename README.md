@@ -56,7 +56,7 @@ jina now start
 
 <img src="https://user-images.githubusercontent.com/47435119/195334616-9a8d5ad3-229f-49bb-9d49-f38243a0eb9b.png">
 
-- If you choose `docarray.pull` or DocArray URL, NOW asks for your DocArray ID or URL.
+- If you choose `docarray.pull` or DocumentArray URL, NOW asks for your DocumentArray ID or URL.
 - If you choose local path, NOW asks for the folder's path:
 
 <img width="506" alt="question-local-path" src="https://user-images.githubusercontent.com/11627845/170256044-67e82e86-6439-4a3e-98f1-dbdf1940de67.png">

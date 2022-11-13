@@ -9,10 +9,15 @@ from jina import Document, DocumentArray
 from now.app.base.app import JinaNOWApp
 from now.common.options import construct_app
 from now.constants import Apps, DatasetTypes
-from now.executor.abstract.auth import NOWAuthExecutor as Executor
-from now.executor.abstract.auth import SecurityLevel, secure_request
+from now.executor.abstract.auth import (
+    SecurityLevel,
+    get_auth_executor_class,
+    secure_request,
+)
 from now.now_dataclasses import UserInput
 from now.utils import _maybe_download_from_s3
+
+Executor = get_auth_executor_class()
 
 
 class NOWPreprocessor(Executor):
@@ -71,7 +76,6 @@ class NOWPreprocessor(Executor):
                     user_input=self.user_input,
                     max_workers=self.max_workers,
                 )
-
             pre_docs = self.app.preprocess(
                 docs, self.user_input, is_indexing=is_indexing
             )
@@ -112,8 +116,6 @@ class NOWPreprocessor(Executor):
         :param parameters: user input, used to construct UserInput object
         :return: preprocessed documents which are ready to be encoded and indexed
         """
-        for doc in docs:
-            print(doc.uri)
         self._set_user_input(parameters=parameters)
         return self._preprocess_maybe_cloud_download(docs=docs, is_indexing=True)
 

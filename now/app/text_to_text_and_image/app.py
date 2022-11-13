@@ -7,10 +7,17 @@ from docarray import Document, DocumentArray
 from jina import __version__ as jina_version
 
 from now.app.base.app import JinaNOWApp
-from now.common.flow import get_executor_prefix
 from now.common.preprocess import preprocess_nested_docs, preprocess_text
 from now.common.utils import get_indexer_config
-from now.constants import NOW_PREPROCESSOR_VERSION, Apps, Modalities, ModelNames
+from now.constants import (
+    EXECUTOR_PREFIX,
+    NOW_AUTOCOMPLETE_VERSION,
+    NOW_PREPROCESSOR_VERSION,
+    Apps,
+    Modalities,
+    ModelDimensions,
+    ModelNames,
+)
 from now.finetuning.data_builder import DataBuilder
 from now.finetuning.run_finetuning import finetune
 from now.finetuning.settings import FinetuneSettings, parse_finetune_settings
@@ -41,8 +48,14 @@ class TextToTextAndImage(JinaNOWApp):
 
     def set_flow_yaml(self, **kwargs):
         """configure the flow yaml in the Jina NOW app."""
+        finetuning = kwargs.get('finetuning', False)
+
         flow_dir = os.path.abspath(os.path.join(__file__, '..'))
-        self.flow_yaml = os.path.join(flow_dir, 'flow.yml')
+
+        if finetuning:
+            self.flow_yaml = os.path.join(flow_dir, 'flow.yml')
+        else:
+            self.flow_yaml = os.path.join(flow_dir, 'pretrained_flow.yml')
 
     @property
     def input_modality(self) -> Modalities:
@@ -105,7 +118,11 @@ class TextToTextAndImage(JinaNOWApp):
             return preprocess_nested_docs(da=da, user_input=user_input)
         # Query
         else:
-            return preprocess_text(da=da, split_by_sentences=False)
+            da = preprocess_text(da=da, split_by_sentences=False)
+            for d in da:
+                if len(d.chunks) == 0:
+                    d.chunks.extend([Document(text=d.text, modality='text')])
+            return da
 
     @hubble.login_required
     def setup(
@@ -120,6 +137,8 @@ class TextToTextAndImage(JinaNOWApp):
                 dataset=dataset,
                 encoder_type=encoder_type,
             )
+            if not finetune_settings.perform_finetuning:
+                break
             artifact_id, token = finetune(
                 finetune_settings=finetune_settings,
                 app_instance=self,
@@ -132,18 +151,17 @@ class TextToTextAndImage(JinaNOWApp):
             env_dict['JINA_TOKEN'] = token
             if finetune_settings.model_name == ModelNames.CLIP:
                 env_dict['CLIP_ARTIFACT'] = artifact_id
-                env_dict['N_DIM'].append(512)
+                env_dict['N_DIM'].append(ModelDimensions.CLIP)
             elif finetune_settings.model_name == ModelNames.SBERT:
                 env_dict['SBERT_ARTIFACT'] = artifact_id
-                env_dict['N_DIM'].append(768)
+                env_dict['N_DIM'].append(ModelDimensions.SBERT)
             else:
                 print(f'{self.app_name} only expects CLIP or SBERT models.')
                 raise
 
-        executor_prefix = get_executor_prefix()
         env_dict[
             'PREPROCESSOR_NAME'
-        ] = f'{executor_prefix}NOWPreprocessor/{NOW_PREPROCESSOR_VERSION}'
+        ] = f'{EXECUTOR_PREFIX}NOWPreprocessor/{NOW_PREPROCESSOR_VERSION}'
         env_dict['APP'] = self.app_name
         indexer_config = get_indexer_config(
             len(dataset),
@@ -151,11 +169,13 @@ class TextToTextAndImage(JinaNOWApp):
             kubectl_path=kubectl_path,
             deployment_type=user_input.deployment_type,
         )
-        env_dict['HOSTS'] = indexer_config['hosts']
-        env_dict['INDEXER_NAME'] = f"{executor_prefix}{indexer_config['indexer_uses']}"
-        env_dict['INDEXER_MEM'] = indexer_config['indexer_resources']['INDEXER_MEM']
+        env_dict['HOSTS'] = indexer_config.get('hosts')
+        env_dict['INDEXER_NAME'] = f"{EXECUTOR_PREFIX}{indexer_config['indexer_uses']}"
+        env_dict['INDEXER_MEM'] = indexer_config.get('indexer_resources', {}).get(
+            'INDEXER_MEM'
+        )
         env_dict['JINA_VERSION'] = jina_version
-        env_dict['ENCODER_NAME'] = f"{executor_prefix}FinetunerExecutor/v0.9.2"
+        env_dict['ENCODER_NAME'] = f"{EXECUTOR_PREFIX}FinetunerExecutor/v0.9.2"
         # retention days
         if 'NOW_CI_RUN' in os.environ:
             env_dict[
@@ -163,12 +183,16 @@ class TextToTextAndImage(JinaNOWApp):
             ] = 0  # JCloud will delete after 24hrs of being idle if not deleted in CI
         else:
             env_dict['RETENTION_DAYS'] = -1  # for user deployment set it to 30 days
+        env_dict['N_DIM'] = [ModelDimensions.SBERT, ModelDimensions.CLIP]
         env_dict['ADMIN_EMAILS'] = (
-            user_input.admin_emails or [] if user_input.secured else [],
+            user_input.admin_emails or [] if user_input.secured else []
         )
         env_dict['USER_EMAILS'] = (
-            user_input.user_emails or [] if user_input.secured else [],
+            user_input.user_emails or [] if user_input.secured else []
         )
+        env_dict[
+            'AUTOCOMPLETE_EXECUTOR_NAME'
+        ] = f'jinahub+docker://NOWAutoCompleteExecutor/{NOW_AUTOCOMPLETE_VERSION}'
 
         env_dict['API_KEY'] = (
             [user_input.api_key] if user_input.secured and user_input.api_key else []
@@ -194,7 +218,7 @@ class TextToTextAndImage(JinaNOWApp):
         # temporary adjustments to work with small text+image dataset
         finetune_settings.epochs = 2
         finetune_settings.num_val_queries = 5
-        finetune_settings.train_val_split_ration = 0.8
+        finetune_settings.train_val_split_ration = 0.75
         return finetune_settings
 
     @staticmethod
@@ -211,3 +235,8 @@ class TextToTextAndImage(JinaNOWApp):
         if encoder_type == 'text-to-image':
             return 'CLIPLoss'
         return 'TripletMarginLoss'
+
+    @property
+    def index_query_access_paths(self) -> str:
+        """Gives access paths for indexing and searching."""
+        return '@c'

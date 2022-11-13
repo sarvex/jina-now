@@ -113,7 +113,24 @@ def deploy_flow(
         env_file = os.path.join(tmpdir, 'dot.env')
         write_env_file(env_file, env_dict)
 
-        if deployment_type == 'remote':
+        if os.environ.get('NOW_TESTING', False):
+            from dotenv import load_dotenv
+
+            load_dotenv(env_file, override=True)
+
+            f = Flow.load_config(flow_yaml)
+
+            f.start()
+            host = 'localhost'
+            client = Client(host=host, port=8080)
+
+            # host & port
+            gateway_host = 'remote'
+            gateway_port = 8080
+            gateway_host_internal = host
+            gateway_port_internal = None  # Since host contains protocol
+
+        elif deployment_type == 'remote':
             flow = deploy_wolf(path=flow_yaml, env_file=env_file, name=ns)
             host = flow.gateway
             client = Client(host=host)

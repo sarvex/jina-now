@@ -5,6 +5,7 @@ from docarray import DocumentArray
 from elasticsearch import Elasticsearch
 from jina import Flow
 
+from now.constants import ModelDimensions
 from now.executor.indexer.elastic import ElasticIndexer
 
 
@@ -205,3 +206,24 @@ def test_delete(
         f.post(on='/delete', parameters={'filter': {'cost': {'gte': 15.0}}})
         res = es.search(index=index_name, size=100, query={'match_all': {}})
         assert len(res['hits']['hits']) == 0
+
+
+@pytest.mark.parametrize(
+    'docs_matrix, on',
+    [
+        ('docs_matrix_index', 'index'),
+        ('docs_matrix_search', 'search'),
+    ],
+)
+def test_merge_docs_matrix(
+    docs_matrix: List[DocumentArray],
+    on: str,
+    request,
+):
+    docs_matrix = request.getfixturevalue(docs_matrix)
+    merged_result = ElasticIndexer._join_docs_matrix_into_chunks(
+        on=on, docs_matrix=docs_matrix
+    )
+    assert len(merged_result[0].chunks) == 2
+    assert merged_result[0].chunks[0].embedding.shape == (ModelDimensions.SBERT,)
+    assert merged_result[0].chunks[1].embedding.shape == (ModelDimensions.CLIP,)

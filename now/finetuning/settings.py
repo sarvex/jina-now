@@ -58,7 +58,8 @@ def _is_finetuning(
             user_input.dataset_type != DatasetTypes.DEMO
             and all(['finetuner_label' in d.tags for d in dataset])
         )
-        or user_input.app_instance.app_name == Apps.TEXT_TO_TEXT_AND_IMAGE
+        # TODO: enable finetuning again when FinetunerExecutor has been updated
+        # or user_input.app_instance.app_name == Apps.TEXT_TO_TEXT_AND_IMAGE
     ):
         return True
     else:

@@ -1,13 +1,18 @@
 import os
-from typing import Dict, List
+from typing import Dict
 
 import cowsay
 from docarray import Document, DocumentArray
 
 from now.app.base.app import JinaNOWApp
-from now.common.flow import get_executor_prefix
 from now.common.utils import common_setup
-from now.constants import NOW_QDRANT_INDEXER_VERSION, Apps, Modalities
+from now.constants import (
+    EXECUTOR_PREFIX,
+    NOW_QDRANT_INDEXER_VERSION,
+    Apps,
+    Modalities,
+    ModelDimensions,
+)
 from now.demo_data import DemoDatasetNames
 from now.deployment.deployment import which
 from now.now_dataclasses import UserInput
@@ -66,10 +71,6 @@ class MusicToMusic(JinaNOWApp):
         else:
             self.flow_yaml = os.path.join(flow_dir, 'ft-flow-music.yml')
 
-    @property
-    def supported_file_types(self) -> List[str]:
-        return ['mp3']
-
     def _check_requirements(self) -> bool:
         if not ffmpeg_is_installed():
             _handle_ffmpeg_install_required()
@@ -96,7 +97,7 @@ class MusicToMusic(JinaNOWApp):
             indexer_uses=f'NOWQdrantIndexer15/{NOW_QDRANT_INDEXER_VERSION}',
             kubectl_path=kubectl_path,
             indexer_resources={},
-            pre_trained_embedding_size=512,
+            pre_trained_embedding_size=ModelDimensions.CLIP,
         )
 
         # can reuse large part of other code but need to make some adjustments
@@ -105,7 +106,7 @@ class MusicToMusic(JinaNOWApp):
 
             env_dict[
                 'LINEAR_HEAD_NAME'
-            ] = f"{get_executor_prefix()}{pre_trained_head_map[user_input.dataset_name]}"
+            ] = f"{EXECUTOR_PREFIX}{pre_trained_head_map[user_input.dataset_name]}"
 
             self.set_flow_yaml(demo_data=True)
         super().setup(dataset=dataset, user_input=user_input, kubectl_path=kubectl_path)

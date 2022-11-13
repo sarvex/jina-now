@@ -58,7 +58,6 @@ APP = DialogOptions(
         {
             'name': '📝 ▶ 📝+🏞 text to text+image search',
             'value': Apps.TEXT_TO_TEXT_AND_IMAGE,
-            'disabled': AVAILABLE_SOON,
         },
     ],
     prompt_message='What sort of search engine would you like to build?',
@@ -73,15 +72,15 @@ DATASET_TYPE = DialogOptions(
     choices=[
         {'name': 'Demo dataset', 'value': DatasetTypes.DEMO},
         {
-            'name': 'DocArray name (recommended)',
+            'name': 'DocumentArray name (recommended)',
             'value': DatasetTypes.DOCARRAY,
         },
         {
-            'name': 'DocArray URL',
+            'name': 'DocumentArray URL',
             'value': DatasetTypes.URL,
         },
         {
-            'name': 'Local path',
+            'name': 'Local folder',
             'value': DatasetTypes.PATH,
         },
         {
@@ -118,7 +117,7 @@ DEMO_DATA = DialogOptions(
 
 DOCARRAY_NAME = DialogOptions(
     name='dataset_name',
-    prompt_message='Please enter your DocArray name:',
+    prompt_message='Please enter your DocumentArray name:',
     prompt_type='input',
     depends_on=DATASET_TYPE,
     conditional_check=lambda user_input: user_input.dataset_type
@@ -127,7 +126,7 @@ DOCARRAY_NAME = DialogOptions(
 
 DATASET_URL = DialogOptions(
     name='dataset_url',
-    prompt_message='Please paste in the URL to download your DocArray from:',
+    prompt_message='Please paste in the URL to download your DocumentArray from:',
     prompt_type='input',
     depends_on=DATASET_TYPE,
     is_terminal_command=True,
@@ -298,8 +297,8 @@ SECURED = DialogOptions(
     prompt_message='Do you want to secure the flow?',
     prompt_type='list',
     choices=[
-        {'name': '✅ yes', 'value': True},
         {'name': '⛔ no', 'value': False},
+        {'name': '✅ yes', 'value': True},
     ],
     depends_on=DEPLOYMENT_TYPE,
     conditional_check=lambda user_inp: user_inp.deployment_type == 'remote',

@@ -37,7 +37,10 @@ def test_music_index_fails_with_no_flow_running(
     with pytest.raises(ConnectionError):
         client.post(
             f'/api/v1/music-to-music/index',
-            json={'songs': [base64_audio_string], 'uris': ['']},
+            json={
+                'songs': [base64_audio_string],
+                'uris': [''],
+            },
         )
 
 
