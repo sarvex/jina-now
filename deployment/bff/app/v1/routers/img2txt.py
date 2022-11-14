@@ -9,7 +9,6 @@ from deployment.bff.app.v1.models.text import (
     NowTextResponseModel,
 )
 from deployment.bff.app.v1.routers.helper import jina_client_post, process_query
-from now.app.image_to_text.app import ImageToText
 
 router = APIRouter()
 
@@ -36,8 +35,8 @@ def index(data: NowTextIndexRequestModel):
         data=data,
         inputs=index_docs,
         parameters={
-            'access_paths': ImageToText().index_query_access_paths(),
-            'traversal_paths': ImageToText().index_query_access_paths(),
+            'access_paths': '@c',
+            'traversal_paths': '@c',
         },
         endpoint='/index',
     )
@@ -64,8 +63,8 @@ def search(data: NowImageSearchRequestModel):
         parameters={
             'limit': data.limit,
             'filter': filter_query,
-            'access_paths': ImageToText().index_query_access_paths(),
-            'traversal_paths': ImageToText().index_query_access_paths(),
+            'access_paths': '@c',
+            'traversal_paths': '@c',
         },
         endpoint='/search',
     )

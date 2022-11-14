@@ -10,8 +10,6 @@ from deployment.bff.app.v1.models.video import (
     NowVideoResponseModel,
 )
 from deployment.bff.app.v1.routers.helper import jina_client_post, process_query
-from now.app.text_to_video.app import TextToVideo
-from now.constants import Modalities
 
 router = APIRouter()
 
@@ -35,19 +33,17 @@ def index(data: NowVideoIndexRequestModel):
         if video:
             base64_bytes = video.encode('utf-8')
             message = base64.decodebytes(base64_bytes)
-            index_docs.append(
-                Document(blob=message, tags=tags, modality=Modalities.VIDEO)
-            )
+            index_docs.append(Document(blob=message, tags=tags, modality='video'))
         else:
-            index_docs.append(Document(uri=uri, tags=tags, modality=Modalities.VIDEO))
+            index_docs.append(Document(uri=uri, tags=tags, modality='video'))
 
     # TODO: should use app.index_query_access_paths
     jina_client_post(
         data=data,
         inputs=index_docs,
         parameters={
-            'traversal_paths': TextToVideo().index_query_access_paths(),
-            'access_paths': TextToVideo().index_query_access_paths(),
+            'traversal_paths': '@c,cc',
+            'access_paths': '@c,cc',
         },
         endpoint='/index',
     )
@@ -74,8 +70,8 @@ def search(data: NowTextSearchRequestModel):
         parameters={
             'limit': data.limit,
             'filter': filter_query,
-            'traversal_paths': TextToVideo().index_query_access_paths(),
-            'access_paths': TextToVideo().index_query_access_paths(),
+            'traversal_paths': '@c,cc',
+            'access_paths': '@c,cc',
         },
         endpoint='/search',
     )

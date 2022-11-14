@@ -10,7 +10,6 @@ from deployment.bff.app.v1.models.music import (
     NowMusicSearchRequestModel,
 )
 from deployment.bff.app.v1.routers.helper import jina_client_post, process_query
-from now.app.music_to_music.app import MusicToMusic
 
 router = APIRouter()
 
@@ -41,8 +40,8 @@ def index(data: NowMusicIndexRequestModel):
         data=data,
         inputs=index_docs,
         parameters={
-            'access_paths': MusicToMusic().index_query_access_paths(),
-            'traversal_paths': MusicToMusic().index_query_access_paths(),
+            'access_paths': '@c',
+            'traversal_paths': '@c',
         },
         endpoint='/index',
     )
@@ -67,8 +66,8 @@ def search(data: NowMusicSearchRequestModel):
         parameters={
             'limit': data.limit,
             'filter': filter_query,
-            'access_paths': MusicToMusic().index_query_access_paths(),
-            'traversal_paths': MusicToMusic().index_query_access_paths(),
+            'access_paths': '@c',
+            'traversal_paths': '@c',
         },
         endpoint='/search',
     )
