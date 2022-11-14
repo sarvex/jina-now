@@ -162,7 +162,6 @@ def call_flow(
         parameters['user_input']['indexer_scope'] = task_config.indexer_scope
     # double check that flow is up and running - should be done by wolf/core in the future
     while True:
-        print('checking the flow')
         try:
             client.post(on=endpoint, inputs=DocumentArray(), parameters=parameters)
             break
