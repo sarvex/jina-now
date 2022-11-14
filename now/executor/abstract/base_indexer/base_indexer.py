@@ -132,6 +132,9 @@ class NOWBaseIndexer(Executor):
         :param parameters: dictionary with options for indexing
         """
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
+
+        if parameters.get('sabas_test'):
+            raise Exception(f'{len(docs)}, {docs}, {traversal_paths}')
         # merge the docs_matrix into the flat_docs
         if (
             docs_matrix
@@ -154,8 +157,6 @@ class NOWBaseIndexer(Executor):
             flat_docs = docs[traversal_paths]
         if len(flat_docs) == 0:
             return
-
-        raise Exception(f'{len(flat_docs)} -- {len(self._index)} -- {flat_docs[0]}')
 
         self.set_tags_if_text_in_doc_matching_title(flat_docs)
 

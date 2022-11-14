@@ -41,6 +41,7 @@ class NOWQdrantIndexer15(Executor):
             if len(batch) == 1000:
                 yield batch
                 batch = []
+
         if batch:
             yield batch
 

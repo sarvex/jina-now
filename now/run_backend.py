@@ -173,6 +173,7 @@ def call_flow(
                 print(traceback.format_exc())
             sleep(1)
     print('real request starts now')
+    parameters['sabas_test'] = True
     response = client.post(
         on=endpoint,
         request_size=request_size,
