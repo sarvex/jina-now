@@ -55,7 +55,9 @@ def run(
         deployment_type=user_input.deployment_type,
         flow_yaml=app_instance.flow_yaml,
         env_dict=env_dict,
-        ns=user_input.flow_name + '-nowapi',
+        ns=user_input.flow_name + '-nowapi'
+        if user_input.flow_name != 'nowapi'
+        else user_input.flow_name,
         kubectl_path=kubectl_path,
     )
 
