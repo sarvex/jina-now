@@ -155,11 +155,16 @@ class NOWBaseIndexer(Executor):
         if len(flat_docs) == 0:
             return
 
+        len_docs = len(flat_docs)
+        index_docs_1 = len(self._index)
         self.set_tags_if_text_in_doc_matching_title(flat_docs)
 
         flat_docs = self.maybe_drop_blob_tensor(flat_docs)
         self.index(flat_docs, parameters, **kwargs)
         self.extend_inmemory_docs_and_tags(flat_docs)
+        index_docs_2 = len(self._index)
+        if index_docs_2 != index_docs_1 + len_docs:
+            raise Exception(f'{index_docs_2}, {index_docs_1}, {len_docs}')
         return DocumentArray([])
 
     @secure_request(on='/delete', level=SecurityLevel.USER)

@@ -77,6 +77,7 @@ class NOWPreprocessor(Executor):
                     user_input=self.user_input,
                     max_workers=self.max_workers,
                 )
+            initial_length = len(docs)
             docs = transform_docarray(
                 documents=docs,
                 search_fields=self.user_input.search_fields or [],
@@ -88,6 +89,9 @@ class NOWPreprocessor(Executor):
                 process_query=True if encode else not is_indexing,
                 process_target=True if encode else is_indexing,
             )
+            final_length = len(docs)
+            if initial_length != final_length:
+                raise Exception(f'preprocessing is the problem. {docs[0]}')
             # as _maybe_download_from_s3 moves S3 URI to tags['uri'], need to move it back for post-processor & accurate
             # results.
             if (
