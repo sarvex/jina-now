@@ -30,6 +30,7 @@ class NOWQdrantIndexer15(Executor):
                 'columns': self.columns,
             },
         )
+
         self.range_operators = ['$gt', '$lt', '$get', '$let']
 
     # override

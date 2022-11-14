@@ -131,8 +131,8 @@ class NOWBaseIndexer(Executor):
         :param docs: the Documents to index
         :param parameters: dictionary with options for indexing
         """
-        if len(docs) != 0:
-            raise Exception(f'docs indexed {docs[0]}, {len(docs)}')
+        if len(docs) == 0:
+            raise Exception(f'docs are empty at this point')
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
         # merge the docs_matrix into the flat_docs
         if (
