@@ -239,7 +239,7 @@ def _get_context_names(contexts, active_context=None):
 
 
 def get_flow_id(host):
-    return host.replace('grpcs://nowapi-', '').replace('.wolf.jina.ai', '')
+    return host.split('.')[0].split('-')[-1]
 
 
 class Dumper(yaml.Dumper):
