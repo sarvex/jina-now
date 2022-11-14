@@ -11,10 +11,15 @@ from now.common.options import construct_app
 from now.constants import Apps, DatasetTypes
 from now.data_loading.transform_docarray import transform_docarray
 from now.executor.abstract.auth import NOWAuthExecutor as Executor
-from now.executor.abstract.auth import SecurityLevel
-from now.executor.abstract.auth import secure_request
+from now.executor.abstract.auth import (
+    SecurityLevel,
+    get_auth_executor_class,
+    secure_request,
+)
 from now.now_dataclasses import UserInput
 from now.utils import _maybe_download_from_s3
+
+Executor = get_auth_executor_class()
 
 
 class NOWPreprocessor(Executor):

@@ -6,8 +6,13 @@ from better_profanity import profanity
 from docarray import DocumentArray
 from fast_autocomplete import AutoComplete
 
-from now.executor.abstract.auth.auth import NOWAuthExecutor as Executor
-from now.executor.abstract.auth.auth import SecurityLevel, secure_request
+from now.executor.abstract.auth.auth import (
+    SecurityLevel,
+    get_auth_executor_class,
+    secure_request,
+)
+
+Executor = get_auth_executor_class()
 
 
 class NOWAutoCompleteExecutor(Executor):
