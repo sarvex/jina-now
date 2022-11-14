@@ -79,13 +79,14 @@ class NOWQdrantIndexer15(Executor):
         for d in docs:
             if 'title' in d.tags:
                 d.tags['title'] = d.tags['title'].lower().split()
+
         self._index.extend(docs)
 
     # override
     def delete(self, documents_to_delete, parameters: dict = {}, **kwargs):
         """
         Delete endpoint to delete document/documents from the index.
-        Filter conditions can be passed to select documents for deletion
+        Filter conditions can be passed to select documents for deletion.
         """
         for d in documents_to_delete:
             del self._index[d.id]
