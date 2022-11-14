@@ -8,6 +8,8 @@ from .connector import ElasticsearchConnector
 
 import logging
 
+from ..transform_docarray import _transform_multi_modal_data
+
 logging.getLogger("PIL.Image").setLevel(logging.CRITICAL + 1)
 
 
@@ -68,42 +70,21 @@ class ElasticsearchExtractor:
         :param filter_fields: List of field names used for filtering.
         :return: extracted documents.
         """
-        flattened_docs = DocumentArray(
+        docs = DocumentArray(
             [self._flatten_es_doc(doc) for doc in self._extract_documents()]
         )
-        return DocumentArray(
-            [
-                self._format_es_doc(
-                    document=doc,
-                    search_fields=search_fields,
-                    filter_fields=filter_fields,
-                )
-                for doc in flattened_docs
-            ]
+        field_names = {
+            int(position): chunk.tags['field_name']
+            for position, chunk in enumerate(docs[0].chunks)
+        }
+        docs.apply(
+            _transform_multi_modal_data(
+                field_names=field_names,
+                search_fields=search_fields,
+                filter_fields=filter_fields,
+            )
         )
-
-    @staticmethod
-    def _format_es_doc(
-        document: Document,
-        search_fields: List[str],
-        filter_fields: Optional[List[str]] = None,
-    ) -> Document:
-        if not search_fields:
-            raise ValueError('search fields must be specified.')
-        if not filter_fields:
-            filter_fields = []
-        document.tags['filter_fields'] = {}
-        search_chunks = []
-        for chunk in document.chunks:
-            field_name = chunk.tags['field_name']
-            if field_name in search_fields:
-                search_chunks.append(chunk)
-            elif field_name in filter_fields:
-                document.tags['filter_fields'][field_name] = chunk.content
-            else:
-                document.tags[field_name] = chunk.content
-        document.chunks = search_chunks
-        return document
+        return docs
 
     def _extract_documents(self):
         try:

@@ -4,7 +4,6 @@ from typing import List, Dict, Union
 from docarray import dataclass, Document, DocumentArray
 from docarray.typing import Image, Text, Blob
 
-from now.app.text_to_video.app import TextToVideo
 from now.constants import Modalities
 
 
@@ -23,6 +22,7 @@ def _get_multi_modal_format(document):
     Create a multimodal docarray dataclass from a unimodal `Document`,
     and trasnform it back to a `Document` which will have a `multi_modal_schema`.
     """
+    from now.app.text_to_video.app import TextToVideo
 
     @dataclass
     class BaseDocImage:
@@ -134,6 +134,8 @@ def _transform_multi_modal_data(
             else:
                 document.tags[field_name] = content
         document.chunks = new_chunks
+        for chunk in document.chunks:
+            chunk.tags.update(document.tags)
         return document
 
     return _transform_fn
