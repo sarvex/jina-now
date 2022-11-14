@@ -6,11 +6,16 @@ from typing import List, Optional
 from docarray import Document, DocumentArray
 
 from now.constants import TAG_INDEXER_DOC_HAS_TEXT, TAG_OCR_DETECTOR_TEXT_IN_DOC
-from now.executor.abstract.auth import NOWAuthExecutor as Executor
-from now.executor.abstract.auth import SecurityLevel, secure_request
+from now.executor.abstract.auth import (
+    SecurityLevel,
+    get_auth_executor_class,
+    secure_request,
+)
 from now.executor.abstract.base_indexer.ranking import merge_matches_sum
 
 CLOUD_BUCKET_PREFIXES = ['s3://']
+
+Executor = get_auth_executor_class()
 
 
 class NOWBaseIndexer(Executor):
