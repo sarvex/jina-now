@@ -129,6 +129,11 @@ def index_docs(user_input, dataset, client):
     }
     if user_input.secured:
         params['jwt'] = user_input.jwt
+    print(
+        f'user input {user_input.__dict__} ---  params {params} '
+        f' ---- dataset len {len(dataset)}   ----   second example {dataset[1]}'
+        f' -- {dataset[1].tags} --- {dataset[1].uri} '
+    )
     call_flow(
         client=client,
         dataset=dataset,
@@ -157,6 +162,7 @@ def call_flow(
         parameters['user_input']['indexer_scope'] = task_config.indexer_scope
     # double check that flow is up and running - should be done by wolf/core in the future
     while True:
+        print('checking the flow')
         try:
             client.post(on=endpoint, inputs=DocumentArray(), parameters=parameters)
             break
@@ -167,7 +173,7 @@ def call_flow(
                 print(e)
                 print(traceback.format_exc())
             sleep(1)
-
+    print('real request starts now')
     response = client.post(
         on=endpoint,
         request_size=request_size,
