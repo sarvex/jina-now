@@ -70,7 +70,7 @@ def stop_now(app_instance, contexts, active_context, **kwargs):
             cowsay.cow(f'nowapi namespace removed from {cluster}')
     elif 'wolf.jina.ai' in cluster:
         flow = [x for x in alive_flows if x['gateway'] == cluster][0]
-        flow_id = flow['name'].replace('nowapi-', '')
+        flow_id = flow['name'].split('.')[0].split('-')[-1]
         _result = status_wolf(flow_id)
         if _result is None:
             print(f'❎ Flow not found in JCloud. Likely, it has been deleted already')
