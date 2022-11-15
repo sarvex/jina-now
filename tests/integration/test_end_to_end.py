@@ -93,41 +93,41 @@ def test_token_exists():
 @pytest.mark.parametrize(
     'app, input_modality, output_modality, dataset, deployment_type',
     [
-        # (
-        #     Apps.TEXT_TO_IMAGE,
-        #     Modalities.TEXT,
-        #     Modalities.IMAGE,
-        #     DemoDatasetNames.BIRD_SPECIES,
-        #     'local',
-        # ),
-        # (
-        #     Apps.IMAGE_TO_IMAGE,
-        #     Modalities.IMAGE,
-        #     Modalities.IMAGE,
-        #     DemoDatasetNames.BEST_ARTWORKS,
-        #     'local',
-        # ),
-        # (
-        #     Apps.IMAGE_TO_TEXT,
-        #     Modalities.IMAGE,
-        #     Modalities.TEXT,
-        #     DemoDatasetNames.ROCK_LYRICS,
-        #     'remote',
-        # ),
-        # (
-        #     Apps.TEXT_TO_TEXT,
-        #     Modalities.TEXT,
-        #     Modalities.TEXT,
-        #     DemoDatasetNames.POP_LYRICS,
-        #     'local',
-        # ),
-        # (
-        #     Apps.TEXT_TO_VIDEO,
-        #     Modalities.TEXT,
-        #     Modalities.VIDEO,
-        #     DemoDatasetNames.TUMBLR_GIFS_10K,
-        #     'local',
-        # ),
+        (
+            Apps.TEXT_TO_IMAGE,
+            Modalities.TEXT,
+            Modalities.IMAGE,
+            DemoDatasetNames.BIRD_SPECIES,
+            'local',
+        ),
+        (
+            Apps.IMAGE_TO_IMAGE,
+            Modalities.IMAGE,
+            Modalities.IMAGE,
+            DemoDatasetNames.BEST_ARTWORKS,
+            'local',
+        ),
+        (
+            Apps.IMAGE_TO_TEXT,
+            Modalities.IMAGE,
+            Modalities.TEXT,
+            DemoDatasetNames.ROCK_LYRICS,
+            'remote',
+        ),
+        (
+            Apps.TEXT_TO_TEXT,
+            Modalities.TEXT,
+            Modalities.TEXT,
+            DemoDatasetNames.POP_LYRICS,
+            'local',
+        ),
+        (
+            Apps.TEXT_TO_VIDEO,
+            Modalities.TEXT,
+            Modalities.VIDEO,
+            DemoDatasetNames.TUMBLR_GIFS_10K,
+            'local',
+        ),
         # (
         #     Apps.MUSIC_TO_MUSIC,
         #     Modalities.MUSIC,
@@ -365,7 +365,7 @@ def test_backend_custom_data(
     app,
     deployment_type: str,
     dataset: str,
-    # cleanup,
+    cleanup,
     with_hubble_login_patch,
 ):
     os.environ['NOW_CI_RUN'] = 'True'
@@ -410,10 +410,10 @@ def test_backend_custom_data(
     print(f"Getting gateway from response")
     request_body['host'] = response['host']
     # Dump the flow details from response host to a tmp file for post cleanup
-    # if deployment_type == 'remote':
-    #     flow_details = {'host': response['host']}
-    # with open(f'{cleanup}/flow_details.json', 'w') as f:
-    #     json.dump(flow_details, f)
+    if deployment_type == 'remote':
+        flow_details = {'host': response['host']}
+    with open(f'{cleanup}/flow_details.json', 'w') as f:
+        json.dump(flow_details, f)
 
     response = requests.post(
         f'http://localhost:30090/api/v1/text-to-image/search',

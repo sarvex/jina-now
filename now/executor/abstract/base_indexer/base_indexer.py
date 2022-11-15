@@ -133,17 +133,6 @@ class NOWBaseIndexer(Executor):
         :param parameters: dictionary with options for indexing
         """
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
-        # if len(docs) > 0:
-        #     raise Exception(
-        #         f'docs non empty {docs}, {parameters}, '
-        #         f'{len(docs)} , {traversal_paths} , {docs[0]}'
-        #     )
-        print(self._index)
-        print('documents', docs)
-        print(traversal_paths)
-        # if parameters.get('sabas_test'):
-        #     raise Exception(f' -- {len(docs)} -- {docs} -- {traversal_paths},')
-        # merge the docs_matrix into the flat_docs
         if (
             docs_matrix
             and len(docs_matrix) > 1
@@ -171,8 +160,6 @@ class NOWBaseIndexer(Executor):
         flat_docs = self.maybe_drop_blob_tensor(flat_docs)
         self.index(flat_docs, parameters, **kwargs)
         self.extend_inmemory_docs_and_tags(flat_docs)
-        print('after', self._index)
-        self._index[0].summary()
         return DocumentArray([])
 
     @secure_request(on='/delete', level=SecurityLevel.USER)
