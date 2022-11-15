@@ -42,7 +42,6 @@ class NOWQdrantIndexer15(Executor):
             if len(batch) == 1000:
                 yield batch
                 batch = []
-
         if batch:
             yield batch
 
@@ -113,6 +112,7 @@ def setup_qdrant_server(workspace, logger):
         qdrant_config['storage'] = {
             'storage_path': os.path.join(workspace, 'user_input.json')
         }
+
         yaml.safe_dump(qdrant_config, open(qdrant_config_path, 'w'))
         logger.info('if qdrant exists, then start it')
     try:

@@ -456,7 +456,7 @@ remote_cluster = [SECURED, API_KEY, ADDITIONAL_USERS, USER_EMAILS]
 
 base_options = (
     data_type
-    app_name
+    + app_name
     + data_type
     + data_demo
     + data_da

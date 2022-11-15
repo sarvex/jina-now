@@ -365,7 +365,7 @@ def test_backend_custom_data(
     app,
     deployment_type: str,
     dataset: str,
-    cleanup,
+    # cleanup,
     with_hubble_login_patch,
 ):
     os.environ['NOW_CI_RUN'] = 'True'
