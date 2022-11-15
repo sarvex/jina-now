@@ -1,6 +1,6 @@
 from docarray import Document, DocumentArray
 
-import now
+from now.app.text_to_text.app import TextToText
 from now.common.options import construct_app
 from now.constants import Apps, DatasetTypes
 from now.now_dataclasses import UserInput
@@ -17,29 +17,29 @@ def test_app_attributes():
             assert app_instance.output_modality
 
 
-def test_split_text_preprocessing(mocker):
+def test_split_text_preprocessing():
     """Test if splitting of sentences is carried out when preprocessing text documents at indexing time"""
-    mocker.patch('now.common.preprocess.preprocess_text')
-    from now.app.text_to_text.app import TextToText
-
     app = TextToText()
     da = DocumentArray([Document(text='test. test')])
-    app.preprocess(da=da, user_input=UserInput(), is_indexing=True)
-    now.common.preprocess.preprocess_text.assert_called_with(
-        da=da, split_by_sentences=True
-    )
+    new_da = app.preprocess(da=da, user_input=UserInput(), is_indexing=True)
+    assert len(new_da) == 2
 
 
-def test_split_text_preprocessing_demo(mocker):
+def test_split_text_preprocessing_not_index_demo():
     """Test if splitting of sentences is carried out when preprocessing text documents at indexing time"""
-    mocker.patch('now.common.preprocess.preprocess_text')
-    from now.app.text_to_text.app import TextToText
-
     app = TextToText()
     da = DocumentArray([Document(text='test. test')])
     user_input = UserInput()
     user_input.dataset_type = DatasetTypes.DEMO
-    app.preprocess(da=da, user_input=user_input, is_indexing=True)
-    now.common.preprocess.preprocess_text.assert_called_once_with(
-        da=da, split_by_sentences=False
-    )
+    new_da = app.preprocess(da=da, user_input=user_input, is_indexing=False)
+    assert len(new_da) == 1
+
+
+def test_split_text_preprocessing_demo():
+    """Test if splitting of sentences is carried out when preprocessing text documents at indexing time"""
+    app = TextToText()
+    da = DocumentArray([Document(text='test. test')])
+    user_input = UserInput()
+    user_input.dataset_type = DatasetTypes.DEMO
+    new_da = app.preprocess(da=da, user_input=user_input, is_indexing=True)
+    assert len(new_da) == 1
