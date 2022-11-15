@@ -14,7 +14,7 @@ from now.deployment.deployment import cmd, list_all_wolf, status_wolf, terminate
 from now.dialog import configure_app, configure_user_input
 from now.log import yaspin_extended
 from now.system_information import get_system_state
-from now.utils import _get_context_names, maybe_prompt_user, sigmap
+from now.utils import _get_context_names, get_flow_id, maybe_prompt_user, sigmap
 
 
 def stop_now(app_instance, contexts, active_context, **kwargs):
@@ -70,7 +70,7 @@ def stop_now(app_instance, contexts, active_context, **kwargs):
             cowsay.cow(f'nowapi namespace removed from {cluster}')
     elif 'wolf.jina.ai' in cluster:
         flow = [x for x in alive_flows if x['gateway'] == cluster][0]
-        flow_id = flow['name'].split('.')[0].split('-')[-1]
+        flow_id = get_flow_id(flow['name'])
         _result = status_wolf(flow_id)
         if _result is None:
             print(f'❎ Flow not found in JCloud. Likely, it has been deleted already')
