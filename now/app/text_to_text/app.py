@@ -6,7 +6,7 @@ from docarray import DocumentArray
 from now.app.base.app import JinaNOWApp
 from now.common.preprocess import preprocess_text, filter_data
 from now.common.utils import common_setup, get_indexer_config
-from now.constants import Apps, Modalities, ModelDimensions
+from now.constants import Apps, DatasetTypes, Modalities, ModelDimensions
 from now.now_dataclasses import UserInput
 
 
