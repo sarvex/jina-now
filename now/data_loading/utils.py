@@ -37,7 +37,7 @@ def get_dataset_url(dataset: str, output_modality: Modalities) -> str:
     data_folder = None
     docarray_version = DEMO_DATASET_DOCARRAY_VERSION
     if output_modality == Modalities.IMAGE_TEXT:
-        data_folder = 'jpeg-text'
+        data_folder = 'jpeg'
     elif output_modality == Modalities.TEXT:
         data_folder = 'text'
     elif output_modality == Modalities.MUSIC:

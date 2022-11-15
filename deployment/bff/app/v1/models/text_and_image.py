@@ -4,6 +4,7 @@ from pydantic import Field
 
 from deployment.bff.app.v1.models.helper import (
     BaseIndexRequestModel,
+    BaseSearchRequestModel,
     BaseSearchResponseModel,
 )
 
@@ -17,6 +18,14 @@ class NowTextAndImageIndexRequestModel(BaseIndexRequestModel):
         default=None,
         description='Image query. Image should be base64encoded in `utf-8` format',
     )
+
+
+class NowTextAndImageSearchRequestModel(BaseSearchRequestModel):
+    image: Optional[str] = Field(
+        default=None,
+        description='Image query. Image should be base64encoded in `utf-8` format',
+    )
+    text: Optional[str] = Field(default=None, description='Text query')
 
 
 # Response Model

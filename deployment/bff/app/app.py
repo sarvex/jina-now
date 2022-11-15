@@ -15,10 +15,8 @@ from deployment.bff.app.v1.routers import (
     admin,
     cloud_temp_link,
     im_txt2im_txt,
-    img2txt,
     music2music,
     text2text,
-    txt2img,
     txt2txt_and_img,
     txt2video,
 )
@@ -103,16 +101,6 @@ def build_app():
         im_txt2im_txt.router, tags=['Image-Text Retrieval']
     )
 
-    # Image2Text router
-    img2txt_mount = '/api/v1/image-to-text'
-    img2txt_app = get_app_instance()
-    img2txt_app.include_router(img2txt.router, tags=['Image-To-Text'])
-
-    # Text2Image router
-    txt2img_mount = '/api/v1/text-to-image'
-    txt2img_app = get_app_instance()
-    txt2img_app.include_router(txt2img.router, tags=['Text-To-Image'])
-
     # Text2Text router
     text2text_mount = '/api/v1/text-to-text'
     text2text_app = get_app_instance()
@@ -145,8 +133,6 @@ def build_app():
         routes=[
             Mount(cloud_temp_link_mount, cloud_temp_link_app),
             Mount(im_txt2im_txt_mount, im_txt2im_txt_app),
-            Mount(img2txt_mount, img2txt_app),
-            Mount(txt2img_mount, txt2img_app),
             Mount(text2text_mount, text2text_app),
             Mount(music2music_mount, music2music_app),
             Mount(text2video_mount, text2video_app),

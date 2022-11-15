@@ -29,11 +29,11 @@ class ImageTextRetrieval(JinaNOWApp):
 
     @property
     def input_modality(self) -> Modalities:
-        return Modalities.TEXT_AND_IMAGE
+        return Modalities.IMAGE_TEXT
 
     @property
     def output_modality(self) -> Modalities:
-        return Modalities.TEXT_AND_IMAGE
+        return Modalities.IMAGE_TEXT
 
     @property
     def required_docker_memory_in_gb(self) -> int:

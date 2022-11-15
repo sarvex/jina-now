@@ -4,10 +4,10 @@ from typing import List
 from docarray import Document, DocumentArray
 from fastapi import APIRouter
 
-from deployment.bff.app.v1.models.image import (
-    NowImageIndexRequestModel,
-    NowImageResponseModel,
-    NowImageSearchRequestModel,
+from deployment.bff.app.v1.models.text_and_image import (
+    NowTextAndImageIndexRequestModel,
+    NowTextAndImageResponseModel,
+    NowTextAndImageSearchRequestModel,
 )
 from deployment.bff.app.v1.routers.helper import jina_client_post, process_query
 
@@ -19,7 +19,7 @@ router = APIRouter()
     "/index",
     summary='Add more image data to the indexer',
 )
-def index(data: NowImageIndexRequestModel):
+def index(data: NowTextAndImageIndexRequestModel):
     """
     Append the list of image data to the indexer. Each image data should be
     `base64` encoded using human-readable characters - `utf-8`.
@@ -48,10 +48,10 @@ def index(data: NowImageIndexRequestModel):
 # Search
 @router.post(
     "/search",
-    response_model=List[NowImageResponseModel],
+    response_model=List[NowTextAndImageResponseModel],
     summary='Search image data via image as query',
 )
-def search(data: NowImageSearchRequestModel):
+def search(data: NowTextAndImageSearchRequestModel):
     """
     Retrieve matching images for a given image query. Image query should be
     `base64` encoded using human-readable characters - `utf-8`.
