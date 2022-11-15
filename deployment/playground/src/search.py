@@ -67,6 +67,7 @@ def search(
     filter_dict=None,
     endpoint='search',
 ):
+    """run a search query against the flow or bff"""
     print(f'Searching by {attribute_name}')
     params = get_query_params()
     if params.host == 'gateway':  # need to call now-bff as we communicate between pods

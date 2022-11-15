@@ -16,6 +16,8 @@ class SecurityLevel:
 
 
 def secure_request(level: int, on: str = None):
+    """wrapper for the jina requests decorator checking if requests are secure"""
+
     def decorator(func):
         @requests(on=on)
         def wrapper(*args, **kwargs):
