@@ -135,7 +135,7 @@ def deploy_flow(
                 gateway_port_internal,
             ) = deploy_k8s(
                 f,
-                ns,
+                'nowapi',
                 tmpdir,
                 kubectl_path=kubectl_path,
             )

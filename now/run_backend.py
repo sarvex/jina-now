@@ -13,7 +13,7 @@ from jina.clients import Client
 
 from now.admin.update_api_keys import update_api_keys
 from now.app.base.app import JinaNOWApp
-from now.constants import DatasetTypes
+from now.constants import DEFAULT_FLOW_NAME, DatasetTypes
 from now.data_loading.data_loading import load_data
 from now.deployment.flow import deploy_flow
 from now.log import time_profiler
@@ -28,7 +28,6 @@ def run(
     app_instance: JinaNOWApp,
     user_input: UserInput,
     kubectl_path: str,
-    ns: str = 'nowapi',
     **kwargs,
 ):
     """
@@ -45,7 +44,6 @@ def run(
     env_dict = app_instance.setup(
         dataset=dataset, user_input=user_input, kubectl_path=kubectl_path
     )
-
     (
         client,
         gateway_host,
@@ -56,7 +54,9 @@ def run(
         deployment_type=user_input.deployment_type,
         flow_yaml=app_instance.flow_yaml,
         env_dict=env_dict,
-        ns=ns,
+        ns=user_input.flow_name + '-' + DEFAULT_FLOW_NAME
+        if user_input.flow_name != '' and user_input.flow_name != DEFAULT_FLOW_NAME
+        else DEFAULT_FLOW_NAME,
         kubectl_path=kubectl_path,
     )
 
