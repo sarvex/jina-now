@@ -1,6 +1,7 @@
 import os.path
 import pathlib
 import tempfile
+from multiprocessing import Process
 from time import sleep
 from typing import Dict
 
@@ -13,7 +14,7 @@ from yaspin.spinners import Spinners
 from now.cloud_manager import is_local_cluster
 from now.deployment.deployment import apply_replace, cmd, deploy_wolf
 from now.log import time_profiler, yaspin_extended
-from now.utils import sigmap, write_env_file
+from now.utils import sigmap, write_env_file, write_flow_file
 
 cur_dir = pathlib.Path(__file__).parent.resolve()
 
@@ -101,6 +102,17 @@ def deploy_k8s(f, ns, tmpdir, kubectl_path):
     return gateway_host, gateway_port, gateway_host_internal, gateway_port_internal
 
 
+def start_flow_in_process(f):
+    def start_flow():
+        with f:
+            print('flow started in process')
+            f.block()
+
+    p1 = Process(target=start_flow, args=())
+    p1.daemon = False
+    p1.start()
+
+
 @time_profiler
 def deploy_flow(
     deployment_type: str,
@@ -109,9 +121,17 @@ def deploy_flow(
     env_dict: Dict,
     kubectl_path: str,
 ):
+    """Deploy a Flow on JCloud, Kubernetes, or using Jina Orchestration"""
+    # TODO create tmpdir top level and pass it down
     with tempfile.TemporaryDirectory() as tmpdir:
         env_file = os.path.join(tmpdir, 'dot.env')
         write_env_file(env_file, env_dict)
+
+        # hack we don't know if the flow yaml is a path or a string
+        if type(flow_yaml) == dict:
+            flow_file = os.path.join(tmpdir, 'flow.yml')
+            write_flow_file(flow_yaml, flow_file)
+            flow_yaml = flow_file
 
         if os.environ.get('NOW_TESTING', False):
             from dotenv import load_dotenv
@@ -119,8 +139,8 @@ def deploy_flow(
             load_dotenv(env_file, override=True)
 
             f = Flow.load_config(flow_yaml)
+            start_flow_in_process(f)
 
-            f.start()
             host = 'localhost'
             client = Client(host=host, port=8080)
 

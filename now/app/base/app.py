@@ -1,6 +1,5 @@
 import abc
 import os
-import tempfile
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import docker
@@ -12,7 +11,6 @@ from jina.serve.runtimes.gateway.http.models import JinaRequestModel, JinaRespon
 from now.constants import SUPPORTED_FILE_TYPES, Modalities
 from now.demo_data import AVAILABLE_DATASET, DEFAULT_EXAMPLE_HOSTED, DemoDataset
 from now.now_dataclasses import DialogOptions, UserInput
-from now.utils import Dumper
 
 
 class JinaNOWApp:
@@ -192,41 +190,29 @@ class JinaNOWApp:
         :param user_input: user configuration based on the given options
         :return: dict used to replace variables in flow yaml and to clean up resources after the flow is terminated
         """
-        with tempfile.NamedTemporaryFile(mode='w') as new_yaml_file_path:
-            with open(self.flow_yaml) as input_f:
-                flow_yaml_content = JAML.load(input_f.read())
-                flow_yaml_content['jcloud']['labels'] = {'team': 'now'}
-                for executor in flow_yaml_content['executors']:
-                    # append api_keys to the executor with name 'preprocessor' and 'indexer'
-                    if (
-                        executor['name'] == 'preprocessor'
-                        or executor['name'] == 'indexer'
-                    ):
-                        executor['uses_with']['api_keys'] = '${{ ENV.API_KEY }}'
+        with open(self.flow_yaml) as input_f:
+            flow_yaml_content = JAML.load(input_f.read())
+            flow_yaml_content['jcloud']['labels'] = {'team': 'now'}
+            for executor in flow_yaml_content['executors']:
+                # append api_keys to the executor with name 'preprocessor' and 'indexer'
+                if executor['name'] == 'preprocessor' or executor['name'] == 'indexer':
+                    executor['uses_with']['api_keys'] = '${{ ENV.API_KEY }}'
 
-                if self.input_modality == Modalities.TEXT:
-                    if not any(
-                        exec_dict['name'] == 'autocomplete_executor'
-                        for exec_dict in flow_yaml_content['executors']
-                    ):
-                        flow_yaml_content['executors'].insert(
-                            0,
-                            {
-                                'name': 'autocomplete_executor',
-                                'uses': '${{ ENV.AUTOCOMPLETE_EXECUTOR_NAME }}',
-                                'needs': 'gateway',
-                                'env': {'JINA_LOG_LEVEL': 'DEBUG'},
-                            },
-                        )
-
-                JAML.dump(
-                    flow_yaml_content,
-                    new_yaml_file_path,
-                    indent=2,
-                    allow_unicode=True,
-                    Dumper=Dumper,
-                )
-                self.flow_yaml = new_yaml_file_path
+            if self.input_modality == Modalities.TEXT:
+                if not any(
+                    exec_dict['name'] == 'autocomplete_executor'
+                    for exec_dict in flow_yaml_content['executors']
+                ):
+                    flow_yaml_content['executors'].insert(
+                        0,
+                        {
+                            'name': 'autocomplete_executor',
+                            'uses': '${{ ENV.AUTOCOMPLETE_EXECUTOR_NAME }}',
+                            'needs': 'gateway',
+                            'env': {'JINA_LOG_LEVEL': 'DEBUG'},
+                        },
+                    )
+            self.flow_yaml = flow_yaml_content
         return {}
 
     def cleanup(self, app_config: dict) -> None:

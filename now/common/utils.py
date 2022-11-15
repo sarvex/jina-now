@@ -37,30 +37,6 @@ from now.utils import _maybe_download_from_s3
 MAX_RETRIES = 20
 
 
-def handle_test_mode(config):
-
-    if os.environ.get('NOW_TESTING', False):
-        # TODO: condition on Qdrant needs to be removed. At the moment, Qdrant does not start outside of docker
-        # TODO: same for elastic
-        from now.executor.autocomplete import NOWAutoCompleteExecutor
-        from now.executor.preprocessor import NOWPreprocessor
-
-        if NOWPreprocessor and NOWAutoCompleteExecutor:
-            # this is a hack to make sure the import is not removed
-            pass
-        for k, v in config.items():
-            if (
-                type(v) == str
-                and 'jinahub' in v
-                and (
-                    not 'NOWQdrantIndexer' in v
-                    and not 'ElasticIndexer' in v
-                    and not 'CLIPOnnxEncoder' in v
-                )
-            ):
-                config[k] = config[k].replace(EXECUTOR_PREFIX, '').split('/')[0]
-
-
 def common_get_flow_env_dict(
     finetune_settings: FinetuneSettings,
     encoder_uses: str,
@@ -126,8 +102,6 @@ def common_get_flow_env_dict(
                 'CUSTOM_DNS'
             ] = f'now-example-{user_input.app_instance.app_name}-{user_input.dataset_name}.dev.jina.ai'
             config['CUSTOM_DNS'] = config['CUSTOM_DNS'].replace('_', '-')
-
-    handle_test_mode(config)
     return config
 
 
@@ -316,8 +290,11 @@ def _get_clip_apps_with_dict(user_input: UserInput) -> Tuple[Dict, Dict]:
         'ENCODER_PORT': 443 if is_remote else random_port(),
         'IS_REMOTE_DEPLOYMENT': is_remote,
     }
+    # OCR detector is used for local testing
+    is_remote = is_remote  # and not os.environ.get('NOW_TESTING', False)
+    uses = f"jinahub+docker://NOWOCRDetector9/{NOW_OCR_DETECTOR_VERSION}"
     ocr_with = {
-        'OCR_DETECTOR_NAME': f"jinahub+docker://NOWOCRDetector9/{NOW_OCR_DETECTOR_VERSION}",
+        'OCR_DETECTOR_NAME': uses,
         'OCR_DETECTOR_HOST': EXTERNAL_OCR_HOST if is_remote else '0.0.0.0',
         'OCR_DETECTOR_PORT': 443 if is_remote else random_port(),
     }

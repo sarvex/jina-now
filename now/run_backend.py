@@ -13,6 +13,7 @@ from jina.clients import Client
 
 from now.admin.update_api_keys import update_api_keys
 from now.app.base.app import JinaNOWApp
+from now.common.testing import handle_test_mode
 from now.constants import DatasetTypes
 from now.data_loading.data_loading import load_data
 from now.deployment.flow import deploy_flow
@@ -45,7 +46,7 @@ def run(
     env_dict = app_instance.setup(
         dataset=dataset, user_input=user_input, kubectl_path=kubectl_path
     )
-
+    handle_test_mode(env_dict)
     (
         client,
         gateway_host,
