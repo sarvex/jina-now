@@ -61,6 +61,12 @@ APP = DialogOptions(
     description='What sort of search engine would you like to build?',
 )
 
+APP_NAME = DialogOptions(
+    name='flow_name',
+    prompt_message='Choose a name for your application:',
+    prompt_type='input',
+)
+
 
 OUTPUT_MODALITY = DialogOptions(
     name='output_modality',
@@ -73,6 +79,7 @@ OUTPUT_MODALITY = DialogOptions(
     description='What is the output modality of your image-text- retrieval system?',
     conditional_check=lambda user_input: user_input.app == Apps.IMAGE_TEXT_RETRIEVAL,
 )
+
 
 DATASET_TYPE = DialogOptions(
     name='dataset_type',
@@ -440,6 +447,7 @@ def _cluster_running(cluster):
 #         user_input.dataset_name = data
 
 
+app_config = [OUTPUT_MODALITY, APP_NAME]
 data_type = [DATASET_TYPE]
 data_demo = [DEMO_DATA]
 data_da = [DOCARRAY_NAME, DATASET_PATH, DATASET_URL]
@@ -456,5 +464,12 @@ remote_cluster = [SECURED, API_KEY, ADDITIONAL_USERS, USER_EMAILS]
 
 
 base_options = (
-    data_type + data_demo + data_da + data_s3 + data_es + cluster + remote_cluster
+    app_config
+    + data_type
+    + data_demo
+    + data_da
+    + data_s3
+    + data_es
+    + cluster
+    + remote_cluster
 )
