@@ -46,10 +46,10 @@ def test_search_music(resources_folder_path: str):
 
 @pytest.fixture()
 def cleanup(deployment_type, dataset, app):
-    print('start cleanup')
-    start = time.time()
     with tempfile.TemporaryDirectory() as tmpdir:
         yield tmpdir
+        start = time.time()
+        print('start cleanup')
         try:
             if deployment_type == 'remote':
                 with open(f'{tmpdir}/flow_details.json', 'r') as f:

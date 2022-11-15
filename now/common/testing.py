@@ -27,6 +27,7 @@ def handle_test_mode(config):
                     not 'NOWQdrantIndexer' in v
                     and not 'ElasticIndexer' in v
                     and not 'CLIPOnnxEncoder' in v
+                    and not 'NOWOCRDetector9' in v
                 )
             ):
                 config[k] = config[k].replace(EXECUTOR_PREFIX, '').split('/')[0]

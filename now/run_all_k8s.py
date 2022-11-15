@@ -112,7 +112,8 @@ def start_now(app_instance, **kwargs):
         )
         gateway_port_internal = None
     else:
-        setup_cluster(user_input, **kwargs)
+        if not os.environ.get('NOW_TESTING', False):
+            setup_cluster(user_input, **kwargs)
         (
             gateway_host,
             gateway_port,
