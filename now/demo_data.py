@@ -40,7 +40,7 @@ class DemoDataset(BaseModel):
 
 
 AVAILABLE_DATASET = {
-    Modalities.TEXT_IMAGE: [
+    Modalities.IMAGE_TEXT: [
         DemoDataset(
             name=DemoDatasetNames.BEST_ARTWORKS,
             display_modality=Modalities.IMAGE_TEXT,

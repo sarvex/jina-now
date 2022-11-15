@@ -97,7 +97,7 @@ def build_app():
     )
 
     # Image2Image router
-    im_txt2im_txt_mount = '/api/v1/text-and-image-to-text-and-image'
+    im_txt2im_txt_mount = '/api/v1/image-and-text-to-image-and-text'
     im_txt2im_txt_app = get_app_instance()
     im_txt2im_txt_app.include_router(
         im_txt2im_txt.router, tags=['Image-Text Retrieval']
