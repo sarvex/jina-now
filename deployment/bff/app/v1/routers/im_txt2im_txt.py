@@ -56,8 +56,9 @@ def search(data: NowTextAndImageSearchRequestModel):
     Retrieve matching images for a given image query. Image query should be
     `base64` encoded using human-readable characters - `utf-8`.
     """
+    # enable text search as well
     query_doc, filter_query = process_query(
-        blob=data.image, uri=data.uri, conditions=data.filters
+        blob=data.image, text=data.text, uri=data.uri, conditions=data.filters
     )
 
     docs = jina_client_post(

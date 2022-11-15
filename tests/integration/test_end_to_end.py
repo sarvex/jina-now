@@ -95,8 +95,8 @@ def test_token_exists():
     [
         (
             Apps.IMAGE_TEXT_RETRIEVAL,
-            Modalities.TEXT,
             Modalities.IMAGE_TEXT,
+            Modalities.TEXT,
             DemoDatasetNames.BIRD_SPECIES,
             'local',
         ),
@@ -157,6 +157,7 @@ def test_backend_demo_data(
         'app': app,
         'flow_name': 'nowapi',
         'dataset_type': DatasetTypes.DEMO,
+        'output_modality': output_modality,
         'dataset_name': dataset,
         'cluster': cluster,
         'secured': deployment_type == 'remote',
@@ -365,6 +366,7 @@ def test_backend_custom_data(
         'now': 'start',
         'app': app,
         'flow_name': 'nowapi',
+        'output_modality': 'image',
         'dataset_type': DatasetTypes.S3_BUCKET,
         'dataset_path': os.environ.get('S3_IMAGE_TEST_DATA_PATH'),
         'aws_access_key_id': os.environ.get('AWS_ACCESS_KEY_ID'),
