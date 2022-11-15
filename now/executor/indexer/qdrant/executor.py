@@ -31,7 +31,6 @@ class NOWQdrantIndexer15(Executor):
                 'columns': self.columns,
             },
         )
-
         self.range_operators = ['$gt', '$lt', '$get', '$let']
 
     # override
@@ -43,6 +42,7 @@ class NOWQdrantIndexer15(Executor):
             if len(batch) == 1000:
                 yield batch
                 batch = []
+
         if batch:
             yield batch
 

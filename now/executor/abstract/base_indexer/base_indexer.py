@@ -133,8 +133,10 @@ class NOWBaseIndexer(Executor):
         """
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
         if len(docs) > 0:
-            raise Exception(f'docs non empty {docs}, {parameters}, '
-                            f'{len(docs)} , {traversal_paths} , {docs[0]}')
+            raise Exception(
+                f'docs non empty {docs}, {parameters}, '
+                f'{len(docs)} , {traversal_paths} , {docs[0]}'
+            )
         if parameters.get('sabas_test'):
             raise Exception(f' -- {len(docs)} -- {docs} -- {traversal_paths},')
         # merge the docs_matrix into the flat_docs
