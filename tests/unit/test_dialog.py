@@ -8,7 +8,7 @@ from typing import Dict
 import pytest
 from pytest_mock import MockerFixture
 
-from now.constants import Apps, DatasetTypes
+from now.constants import DEFAULT_FLOW_NAME, Apps, DatasetTypes
 from now.demo_data import DemoDatasetNames
 from now.dialog import configure_app, configure_user_input
 from now.now_dataclasses import UserInput
@@ -26,6 +26,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
             'app': Apps.MUSIC_TO_MUSIC,
+            'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': 'music-genres-mid',
             'cluster': 'new',
@@ -36,6 +37,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
             'app': Apps.MUSIC_TO_MUSIC,
+            'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': 'music-genres-mix',
             'cluster': 'new',
@@ -46,6 +48,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
             'app': Apps.TEXT_TO_IMAGE,
+            'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': 'tll',
             'cluster': 'new',
@@ -56,6 +59,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
             'app': Apps.TEXT_TO_IMAGE,
+            'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': 'nih-chest-xrays',
             'cluster': 'new',
@@ -66,6 +70,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
             'app': Apps.TEXT_TO_IMAGE,
+            'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DOCARRAY,
             'dataset_name': 'xxx',
             'search_fields': 'x, y',
@@ -78,6 +83,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
             'app': Apps.MUSIC_TO_MUSIC,
+            'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DOCARRAY,
             'dataset_name': 'xxx',
             'search_fields': 'x, y',
@@ -90,6 +96,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
             'app': Apps.MUSIC_TO_MUSIC,
+            'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.PATH,
             'dataset_path': 'xxx',
             'search_fields': 'x, y',
@@ -102,6 +109,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
             'app': Apps.MUSIC_TO_MUSIC,
+            'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.URL,
             'dataset_url': 'xxx',
             'search_fields': 'x, y',
@@ -114,6 +122,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
             'app': Apps.TEXT_TO_IMAGE,
+            'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DOCARRAY,
             'dataset_name': 'xxx',
             'search_fields': 'x, y',
@@ -126,6 +135,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
             'dataset_type': DatasetTypes.DEMO,
+            'flow_name': DEFAULT_FLOW_NAME,
             'dataset_name': 'music-genres-mid',
             'cluster': 'new',
             'deployment_type': 'local',
@@ -134,6 +144,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
+            'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': DemoDatasetNames.TLL,
             'cluster': 'new',
@@ -143,6 +154,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
+            'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': DemoDatasetNames.ROCK_LYRICS,
             'cluster': 'new',
@@ -155,6 +167,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'app': Apps.IMAGE_TO_TEXT,
         },
         {
+            'flow_name': 'testapp',
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': DemoDatasetNames.POP_LYRICS,
             'cluster': 'new',

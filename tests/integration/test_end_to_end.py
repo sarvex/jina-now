@@ -162,6 +162,7 @@ def test_backend_demo_data(
     kwargs = {
         'now': 'start',
         'app': app,
+        'flow_name': 'nowapi',
         'dataset_type': DatasetTypes.DEMO,
         'dataset_name': dataset,
         'cluster': cluster,
@@ -372,6 +373,7 @@ def test_backend_custom_data(
     kwargs = {
         'now': 'start',
         'app': app,
+        'flow_name': 'nowapi',
         'dataset_type': DatasetTypes.S3_BUCKET,
         'dataset_path': os.environ.get('S3_IMAGE_TEST_DATA_PATH'),
         'aws_access_key_id': os.environ.get('AWS_ACCESS_KEY_ID'),
