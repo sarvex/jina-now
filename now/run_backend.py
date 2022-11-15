@@ -129,11 +129,6 @@ def index_docs(user_input, dataset, client):
     }
     if user_input.secured:
         params['jwt'] = user_input.jwt
-    print(
-        f'user input {user_input.__dict__} ---  params {params} '
-        f' ---- dataset len {len(dataset)}   ----   second example {dataset[1]}'
-        f' -- {dataset[1].tags} --- {dataset[1].uri} '
-    )
     call_flow(
         client=client,
         dataset=dataset,
@@ -174,6 +169,11 @@ def call_flow(
             sleep(1)
     print('real request starts now')
     parameters['sabas_test'] = True
+    print(
+        f' params {parameters} '
+        f' ---- dataset len {len(dataset)}   ----   second example {dataset[1]}'
+        f' -- {dataset[1].tags} --- {dataset[1].uri} , {endpoint}'
+    )
     response = client.post(
         on=endpoint,
         request_size=request_size,
@@ -184,7 +184,7 @@ def call_flow(
         max_attempts=5,
         continue_on_error=True,
     )
-
+    print('request done')
     if return_results and response:
         return DocumentArray.from_json(response.to_json())
 
