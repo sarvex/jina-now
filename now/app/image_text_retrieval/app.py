@@ -11,13 +11,13 @@ from now.demo_data import DemoDatasetNames
 from now.now_dataclasses import UserInput
 
 
-class ImageToText(JinaNOWApp):
+class ImageTextRetrieval(JinaNOWApp):
     def __init__(self):
         super().__init__()
 
     @property
     def app_name(self) -> str:
-        return Apps.IMAGE_TO_TEXT
+        return Apps.IMAGE_TEXT_RETRIEVAL
 
     @property
     def is_enabled(self) -> bool:
@@ -25,15 +25,15 @@ class ImageToText(JinaNOWApp):
 
     @property
     def description(self) -> str:
-        return 'Image to text search app'
+        return 'Image-text search app'
 
     @property
     def input_modality(self) -> Modalities:
-        return Modalities.IMAGE
+        return Modalities.TEXT_AND_IMAGE
 
     @property
     def output_modality(self) -> Modalities:
-        return Modalities.TEXT
+        return Modalities.TEXT_AND_IMAGE
 
     @property
     def required_docker_memory_in_gb(self) -> int:
@@ -41,7 +41,7 @@ class ImageToText(JinaNOWApp):
 
     @property
     def finetune_datasets(self) -> [Tuple]:
-        return (DemoDatasetNames.DEEP_FASHION, DemoDatasetNames.BIRD_SPECIES)
+        return DemoDatasetNames.DEEP_FASHION, DemoDatasetNames.BIRD_SPECIES
 
     def set_flow_yaml(self, **kwargs):
         finetuning = kwargs.get('finetuning', False)
@@ -85,15 +85,17 @@ class ImageToText(JinaNOWApp):
         self, da: DocumentArray, user_input: UserInput, is_indexing=False
     ) -> DocumentArray:
         if is_indexing:
-            split_by_sentences = False
-            if (
-                user_input
-                and user_input.dataset_type == DatasetTypes.PATH
-                and user_input.dataset_path
-                and os.path.isdir(user_input.dataset_path)
-            ):
-                # for text loaded from folder can't assume it is split by sentences
-                split_by_sentences = True
-            return preprocess_text(da=da, split_by_sentences=split_by_sentences)
-        else:
-            return preprocess_images(da=da)
+            if user_input.output_modality == Modalities.TEXT:
+                split_by_sentences = False
+                if (
+                    user_input
+                    and user_input.dataset_type == DatasetTypes.PATH
+                    and user_input.dataset_path
+                    and os.path.isdir(user_input.dataset_path)
+                ):
+                    # for text loaded from folder can't assume it is split by sentences
+                    split_by_sentences = True
+                return preprocess_text(da=da, split_by_sentences=split_by_sentences)
+            else:
+                return preprocess_images(da=da)
+        return preprocess_images(da=da) + preprocess_text(da=da)

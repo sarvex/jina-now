@@ -14,13 +14,13 @@ from deployment.bff.app.decorators import api_method, timed
 from deployment.bff.app.v1.routers import (
     admin,
     cloud_temp_link,
-    img2img,
+    im_txt2im_txt,
     img2txt,
     music2music,
     text2text,
     txt2img,
-    txt2video,
     txt2txt_and_img,
+    txt2video,
 )
 
 logging.config.dictConfig(api_settings.DEFAULT_LOGGING_CONFIG)
@@ -97,9 +97,11 @@ def build_app():
     )
 
     # Image2Image router
-    img2img_mount = '/api/v1/image-to-image'
-    img2img_app = get_app_instance()
-    img2img_app.include_router(img2img.router, tags=['Image-To-Image'])
+    im_txt2im_txt_mount = '/api/v1/text-and-image-to-text-and-image'
+    im_txt2im_txt_app = get_app_instance()
+    im_txt2im_txt_app.include_router(
+        im_txt2im_txt.router, tags=['Image-Text Retrieval']
+    )
 
     # Image2Text router
     img2txt_mount = '/api/v1/image-to-text'
@@ -142,7 +144,7 @@ def build_app():
     app = Starlette(
         routes=[
             Mount(cloud_temp_link_mount, cloud_temp_link_app),
-            Mount(img2img_mount, img2img_app),
+            Mount(im_txt2im_txt_mount, im_txt2im_txt_app),
             Mount(img2txt_mount, img2txt_app),
             Mount(txt2img_mount, txt2img_app),
             Mount(text2text_mount, text2text_app),

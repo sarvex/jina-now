@@ -6,8 +6,8 @@ from now.utils import BetterEnum
 # from docarray import __version__ as docarray_version
 
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.130-test-multimodal-20'
-NOW_PREPROCESSOR_VERSION = '0.0.97-refactor-wrap-auth-executor-2'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.131-refactor-apps-1'
+NOW_PREPROCESSOR_VERSION = '0.0.98-refactor-apps-1'
 NOW_QDRANT_INDEXER_VERSION = '0.0.5-refactor-wrap-auth-executor-2'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.4-refactor-wrap-auth-executor-2'
 NOW_AUTOCOMPLETE_VERSION = '0.0.2-refactor-wrap-auth-executor-2'
@@ -23,10 +23,8 @@ class Modalities(BetterEnum):
 
 
 class Apps(BetterEnum):
-    TEXT_TO_TEXT = 'text_to_text'
-    TEXT_TO_IMAGE = 'text_to_image'
-    IMAGE_TO_TEXT = 'image_to_text'
-    IMAGE_TO_IMAGE = 'image_to_image'
+    IMAGE_TEXT_RETRIEVAL = 'image_text_retrieval'
+    SENTENCE_TO_SENTENCE = 'sentence_to_sentence'
     MUSIC_TO_MUSIC = 'music_to_music'
     TEXT_TO_VIDEO = 'text_to_video'
     TEXT_TO_TEXT_AND_IMAGE = 'text_to_text_and_image'

@@ -162,11 +162,15 @@ def deploy_streamlit():
         if params.input_modality == 'image':
             media_type = st.radio(
                 '',
-                ["Image", 'Webcam'],
+                ["Text", "Image", 'Webcam'],
                 on_change=clear_match,
             )
         elif params.input_modality == 'text':
-            media_type = 'Text'
+            media_type = st.radio(
+                '',
+                ["Text", "Image", 'Webcam'],
+                on_change=clear_match,
+            )
         elif params.input_modality == 'music':
             media_type = 'Music'
 

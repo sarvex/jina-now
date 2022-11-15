@@ -10,13 +10,13 @@ from now.constants import Apps, DatasetTypes, Modalities, ModelDimensions
 from now.now_dataclasses import UserInput
 
 
-class TextToText(JinaNOWApp):
+class SentenceToSentence(JinaNOWApp):
     def __init__(self):
         super().__init__()
 
     @property
     def app_name(self) -> str:
-        return Apps.TEXT_TO_TEXT
+        return Apps.SENTENCE_TO_SENTENCE
 
     @property
     def is_enabled(self) -> bool:

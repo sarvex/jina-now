@@ -29,24 +29,19 @@ NEW_CLUSTER = {'name': '🐣 create new', 'value': 'new'}
 AVAILABLE_SOON = 'will be available in upcoming versions'
 
 # Make sure you add this dialog option to your app in order of dependency, i.e., if some dialog option depends on other
-# then the parent should be called first before the dependant can called.
+# than the parent should be called first before the dependant can called.
 
 APP = DialogOptions(
     name='app',
     choices=[
         {
-            'name': '📝 ▶ 🏞 text to image search',
-            'value': Apps.TEXT_TO_IMAGE,
+            'name': '📝+🏞 ▶ 📝+🏞 image-text retrieval',
+            'value': Apps.IMAGE_TEXT_RETRIEVAL,
         },
         {
-            'name': '🏞 ▶ 📝 image to text search',
-            'value': Apps.IMAGE_TO_TEXT,
+            'name': '📝 ▶ 📝 sentence to sentence search',
+            'value': Apps.SENTENCE_TO_SENTENCE,
         },
-        {
-            'name': '🏞 ▶ 🏞 image to image search',
-            'value': Apps.IMAGE_TO_IMAGE,
-        },
-        {'name': '📝 ▶ 📝 text to text search', 'value': Apps.TEXT_TO_TEXT},
         {
             'name': '📝 ▶ 🎦 text to video search (gif only at the moment)',
             'value': Apps.TEXT_TO_VIDEO,
@@ -64,6 +59,19 @@ APP = DialogOptions(
     prompt_type='list',
     is_terminal_command=True,
     description='What sort of search engine would you like to build?',
+)
+
+
+OUTPUT_MODALITY = DialogOptions(
+    name='output_modality',
+    choices=[
+        {'name': '📝 text', 'value': 'text'},
+        {'name': '🏞 image', 'value': 'image'},
+    ],
+    prompt_type='list',
+    prompt_message='What is the output modality of your image-text- retrieval system?',
+    description='What is the output modality of your image-text- retrieval system?',
+    conditional_check=lambda user_input: user_input.app == Apps.IMAGE_TEXT_RETRIEVAL,
 )
 
 DATASET_TYPE = DialogOptions(

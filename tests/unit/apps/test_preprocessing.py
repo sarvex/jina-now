@@ -1,11 +1,11 @@
 import pytest
 from docarray import Document, DocumentArray
 
-from now.app.image_to_image.app import ImageToImage
+from now.app.image_text_retrieval.app import ImageToImage
 from now.app.image_to_text.app import ImageToText
 from now.app.music_to_music.app import MusicToMusic
+from now.app.sentence_to_sentence.app import TextToText
 from now.app.text_to_image.app import TextToImage
-from now.app.text_to_text.app import TextToText
 from now.app.text_to_text_and_image.app import TextToTextAndImage
 from now.app.text_to_video.app import TextToVideo
 from now.constants import DatasetTypes
