@@ -6,8 +6,8 @@ from now.utils import BetterEnum
 # from docarray import __version__ as docarray_version
 
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.131-refactor-apps-2'
-NOW_PREPROCESSOR_VERSION = '0.0.98-refactor-apps-2'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.131-refactor-apps-3'
+NOW_PREPROCESSOR_VERSION = '0.0.98-refactor-apps-3'
 NOW_QDRANT_INDEXER_VERSION = '0.0.5-refactor-wrap-auth-executor-2'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.4-refactor-wrap-auth-executor-2'
 NOW_AUTOCOMPLETE_VERSION = '0.0.2-refactor-wrap-auth-executor-2'
