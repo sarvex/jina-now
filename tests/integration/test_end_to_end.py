@@ -94,28 +94,21 @@ def test_token_exists():
     'app, input_modality, output_modality, dataset, deployment_type',
     [
         (
-            Apps.TEXT_TO_IMAGE,
+            Apps.IMAGE_TEXT_RETRIEVAL,
             Modalities.TEXT,
-            Modalities.IMAGE,
+            Modalities.IMAGE_TEXT,
             DemoDatasetNames.BIRD_SPECIES,
             'local',
         ),
         (
-            Apps.IMAGE_TO_IMAGE,
-            Modalities.IMAGE,
-            Modalities.IMAGE,
-            DemoDatasetNames.BEST_ARTWORKS,
-            'local',
-        ),
-        (
-            Apps.IMAGE_TO_TEXT,
-            Modalities.IMAGE,
+            Apps.IMAGE_TEXT_RETRIEVAL,
+            Modalities.IMAGE_TEXT,
             Modalities.TEXT,
             DemoDatasetNames.ROCK_LYRICS,
             'remote',
         ),
         (
-            Apps.TEXT_TO_TEXT,
+            Apps.SENTENCE_TO_SENTENCE,
             Modalities.TEXT,
             Modalities.TEXT,
             DemoDatasetNames.POP_LYRICS,
@@ -318,13 +311,13 @@ def get_search_request_body(
     )
     request_body['limit'] = 9
     # Perform end-to-end check via bff
-    if app in [Apps.IMAGE_TO_IMAGE, Apps.IMAGE_TO_TEXT]:
+    if app == Apps.IMAGE_TEXT_RETRIEVAL:
         request_body['image'] = test_search_image
     elif app == Apps.MUSIC_TO_MUSIC:
         request_body['song'] = test_search_music
     elif app in [
-        Apps.TEXT_TO_IMAGE,
-        Apps.TEXT_TO_TEXT,
+        Apps.IMAGE_TEXT_RETRIEVAL,
+        Apps.SENTENCE_TO_SENTENCE,
         Apps.TEXT_TO_VIDEO,
         Apps.TEXT_TO_TEXT_AND_IMAGE,
     ]:
@@ -357,7 +350,7 @@ def assert_deployment_response(
 
 @pytest.mark.parametrize('deployment_type', ['remote'])
 @pytest.mark.parametrize('dataset', ['custom_s3_bucket'])
-@pytest.mark.parametrize('app', [Apps.TEXT_TO_IMAGE])
+@pytest.mark.parametrize('app', [Apps.IMAGE_TEXT_RETRIEVAL])
 def test_backend_custom_data(
     app,
     deployment_type: str,

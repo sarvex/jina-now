@@ -5,7 +5,7 @@ from now.cli import cli
 from now.constants import Apps, DatasetTypes
 
 os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
-app = Apps.TEXT_TO_IMAGE
+app = Apps.IMAGE_TEXT_RETRIEVAL
 
 
 def deploy():

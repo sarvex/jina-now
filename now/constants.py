@@ -16,10 +16,10 @@ NOW_OCR_DETECTOR_VERSION = '0.0.1-feat-matching-text-82'
 
 class Modalities(BetterEnum):
     TEXT = 'text'
-    IMAGE = 'image'
+    IMAGE_TEXT = 'image_and_text'
     MUSIC = 'music'
     VIDEO = 'video'
-    TEXT_AND_IMAGE = 'text-and-image'
+    TEXT_AND_IMAGE = 'text-and-image'  # will be merged with the other app later
 
 
 class Apps(BetterEnum):
@@ -58,7 +58,7 @@ class ModelDimensions(BetterEnum):
 
 SUPPORTED_FILE_TYPES = {
     Modalities.TEXT: ['txt', 'md'],
-    Modalities.IMAGE: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'tif'],
+    Modalities.IMAGE_TEXT: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'tif'],
     Modalities.MUSIC: ['mp3', 'wav', 'ogg', 'flac'],
     Modalities.VIDEO: ['gif'],
 }

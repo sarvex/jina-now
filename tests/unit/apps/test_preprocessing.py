@@ -1,11 +1,9 @@
 import pytest
 from docarray import Document, DocumentArray
 
-from now.app.image_text_retrieval.app import ImageToImage
-from now.app.image_to_text.app import ImageToText
+from now.app.image_text_retrieval.app import ImageTextRetrieval
 from now.app.music_to_music.app import MusicToMusic
-from now.app.sentence_to_sentence.app import TextToText
-from now.app.text_to_image.app import TextToImage
+from now.app.sentence_to_sentence.app import SentenceToSentence
 from now.app.text_to_text_and_image.app import TextToTextAndImage
 from now.app.text_to_video.app import TextToVideo
 from now.constants import DatasetTypes
@@ -37,15 +35,15 @@ def test_text_to_video_preprocessing_indexing():
 @pytest.mark.parametrize(
     'app_cls,is_indexing',
     [
-        (TextToText, False),
-        (TextToText, True),
-        (TextToImage, False),
-        (ImageToText, True),
+        (SentenceToSentence, False),
+        (SentenceToSentence, True),
+        (ImageTextRetrieval, False),
+        (ImageTextRetrieval, True),
     ],
 )
 def test_text_preprocessing(app_cls, is_indexing):
     """Test if the text to text preprocessing works for queries and indexing"""
-    app = TextToText()
+    app = SentenceToSentence()
     da = DocumentArray([Document(text='test')])
     da = app.preprocess(da=da, user_input=UserInput(), is_indexing=is_indexing)
     assert len(da) == 1
@@ -56,10 +54,8 @@ def test_text_preprocessing(app_cls, is_indexing):
 @pytest.mark.parametrize(
     'app_cls,is_indexing',
     [
-        (ImageToImage, False),
-        (ImageToImage, True),
-        (ImageToText, False),
-        (TextToImage, True),
+        (ImageTextRetrieval, False),
+        (ImageTextRetrieval, True),
     ],
 )
 def test_image_preprocessing(app_cls, is_indexing):

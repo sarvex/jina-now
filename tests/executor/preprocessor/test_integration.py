@@ -30,7 +30,7 @@ def test_executor_persistence(tmpdir):
 
 
 def test_text_to_video(resources_folder_path):
-    app = Apps.TEXT_TO_IMAGE
+    app = Apps.IMAGE_TEXT_RETRIEVAL
     user_input = UserInput()
     text_docs = DocumentArray(
         [

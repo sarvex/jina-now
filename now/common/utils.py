@@ -235,7 +235,10 @@ def _extract_tags_for_indexer(d: Document, user_input):
     for tag, _ in d.tags.items():
         tags.add((tag, str(tag.__class__.__name__)))
     final_tags = [list(tag) for tag in tags]
-    if user_input.app_instance.output_modality in [Modalities.IMAGE, Modalities.VIDEO]:
+    if user_input.app_instance.output_modality in [
+        Modalities.IMAGE_TEXT,
+        Modalities.VIDEO,
+    ]:
         final_tags.append([TAG_INDEXER_DOC_HAS_TEXT, str(bool.__name__)])
     return final_tags
 

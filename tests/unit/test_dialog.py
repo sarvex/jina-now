@@ -45,7 +45,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'app': Apps.TEXT_TO_IMAGE,
+            'app': Apps.IMAGE_TEXT_RETRIEVAL,
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': 'tll',
             'cluster': 'new',
@@ -55,7 +55,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'app': Apps.TEXT_TO_IMAGE,
+            'app': Apps.IMAGE_TEXT_RETRIEVAL,
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': 'nih-chest-xrays',
             'cluster': 'new',
@@ -65,7 +65,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'app': Apps.TEXT_TO_IMAGE,
+            'app': Apps.IMAGE_TEXT_RETRIEVAL,
             'dataset_type': DatasetTypes.DOCARRAY,
             'dataset_name': 'xxx',
             'cluster': 'new',
@@ -105,7 +105,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'app': Apps.TEXT_TO_IMAGE,
+            'app': Apps.IMAGE_TEXT_RETRIEVAL,
             'dataset_type': DatasetTypes.DOCARRAY,
             'dataset_name': 'xxx',
             'cluster': 'new',
@@ -129,7 +129,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'cluster': 'new',
             'deployment_type': 'local',
         },
-        {'app': Apps.TEXT_TO_IMAGE},
+        {'app': Apps.IMAGE_TEXT_RETRIEVAL},
     ),
     (
         {
@@ -138,11 +138,11 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'cluster': 'new',
             'deployment_type': 'local',
         },
-        {'app': Apps.IMAGE_TO_TEXT},
+        {'app': Apps.IMAGE_TEXT_RETRIEVAL},
     ),
     (
         {
-            'app': Apps.IMAGE_TO_TEXT,
+            'app': Apps.IMAGE_TEXT_RETRIEVAL,
         },
         {
             'dataset_type': DatasetTypes.DEMO,
