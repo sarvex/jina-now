@@ -107,8 +107,10 @@ class NOWQdrantIndexer15(Executor):
 def setup_qdrant_server(workspace, logger):
     qdrant_config_path = '/qdrant/config/production.yaml'
     if workspace and os.path.exists(qdrant_config_path):
+
         logger.info('set new storage to network file system location in WOLF')
         qdrant_config = yaml.safe_load(open(qdrant_config_path))
+
         qdrant_config['storage'] = {
             'storage_path': os.path.join(workspace, 'user_input.json')
         }

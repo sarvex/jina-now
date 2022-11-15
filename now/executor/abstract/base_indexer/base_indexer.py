@@ -114,9 +114,10 @@ class NOWBaseIndexer(Executor):
         # update the tags of the documents to include the detected text
         for doc in docs:
             text_in_doc = doc.tags.pop(TAG_OCR_DETECTOR_TEXT_IN_DOC, '')
-            text_in_doc = text_in_doc.split(' ')
-            text_in_doc = filter(lambda s: len(s) > 1 and s.isalnum(), text_in_doc)
-            doc.tags[TAG_INDEXER_DOC_HAS_TEXT] = len(list(text_in_doc)) > 0
+            if text_in_doc:
+                text_in_doc = text_in_doc.split(' ')
+                text_in_doc = filter(lambda s: len(s) > 1 and s.isalnum(), text_in_doc)
+                doc.tags[TAG_INDEXER_DOC_HAS_TEXT] = len(list(text_in_doc)) > 0
 
     @secure_request(on='/index', level=SecurityLevel.USER)
     def index_endpoint(

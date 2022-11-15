@@ -410,10 +410,10 @@ def test_backend_custom_data(
     print(f"Getting gateway from response")
     request_body['host'] = response['host']
     # Dump the flow details from response host to a tmp file for post cleanup
-    if deployment_type == 'remote':
-        flow_details = {'host': response['host']}
-        with open(f'{cleanup}/flow_details.json', 'w') as f:
-            json.dump(flow_details, f)
+    # if deployment_type == 'remote':
+    #     flow_details = {'host': response['host']}
+    # with open(f'{cleanup}/flow_details.json', 'w') as f:
+    #     json.dump(flow_details, f)
 
     response = requests.post(
         f'http://localhost:30090/api/v1/text-to-image/search',
