@@ -109,10 +109,10 @@ def setup_qdrant_server(workspace, logger):
     if workspace and os.path.exists(qdrant_config_path):
         logger.info('set new storage to network file system location in WOLF')
         qdrant_config = yaml.safe_load(open(qdrant_config_path))
+
         qdrant_config['storage'] = {
             'storage_path': os.path.join(workspace, 'user_input.json')
         }
-
         yaml.safe_dump(qdrant_config, open(qdrant_config_path, 'w'))
         logger.info('if qdrant exists, then start it')
     try:
