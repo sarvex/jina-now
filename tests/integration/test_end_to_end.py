@@ -47,8 +47,8 @@ def test_search_music(resources_folder_path: str):
 @pytest.fixture()
 def cleanup(deployment_type, dataset, app):
     with tempfile.TemporaryDirectory() as tmpdir:
-        yield tmpdir
         start = time.time()
+        yield tmpdir
         print('start cleanup')
         try:
             if deployment_type == 'remote':
