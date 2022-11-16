@@ -160,7 +160,7 @@ def test_backend_demo_data(
         'output_modality': 'text',
         'dataset_name': dataset,
         'cluster': cluster,
-        'secured': deployment_type == 'remote',
+        'secured': False,
         'api_key': None,
         'additional_user': False,
         'deployment_type': deployment_type,
@@ -354,10 +354,14 @@ def assert_deployment_response(
 @pytest.mark.parametrize('deployment_type', ['remote'])
 @pytest.mark.parametrize('dataset', ['custom_s3_bucket'])
 @pytest.mark.parametrize('app', [Apps.IMAGE_TEXT_RETRIEVAL])
+@pytest.mark.parametrize('input_modality', [Modalities.IMAGE_TEXT])
+@pytest.mark.parametrize('output_modality', [Modalities.IMAGE_TEXT])
 def test_backend_custom_data(
     app,
     deployment_type: str,
     dataset: str,
+    input_modality: str,
+    output_modality: str,
     cleanup,
     with_hubble_login_patch,
 ):
@@ -389,7 +393,7 @@ def test_backend_custom_data(
 
     assert (
         response['bff']
-        == f'http://localhost:30090/api/v1/{app.app_instance.input_modality}-to-{app.app_instance.output_modality}/docs'
+        == f'http://localhost:30090/api/v1/{input_modality}-to-{output_modality}/docs'
     )
     assert response['playground'].startswith('http://localhost:30080/?')
     assert response['input_modality'] == 'text'
