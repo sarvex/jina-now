@@ -1,3 +1,4 @@
+from itertools import zip_longest
 from typing import List
 
 from docarray import Document, DocumentArray
@@ -23,7 +24,7 @@ def index(data: NowTextIndexRequestModel):
     Append the list of text data to the indexer.
     """
     index_docs = DocumentArray()
-    for text, uri, tags in zip(data.texts, data.uris, data.tags):
+    for text, uri, tags in zip_longest(data.texts, data.uris, data.tags):
         if bool(text) + bool(uri) != 1:
             raise ValueError(f'Can only set one value but have text={text}, uri={uri}')
         if text:

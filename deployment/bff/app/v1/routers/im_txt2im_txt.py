@@ -1,4 +1,5 @@
 import base64
+from itertools import zip_longest
 from typing import List
 
 from docarray import Document, DocumentArray
@@ -25,13 +26,19 @@ def index(data: NowTextAndImageIndexRequestModel):
     `base64` encoded using human-readable characters - `utf-8`.
     """
     index_docs = DocumentArray()
-    for text, image, uri, tags in zip(data.texts, data.images, data.uris, data.tags):
+    for text, image, uri, tags in zip_longest(
+        data.texts, data.images, data.uris, data.tags
+    ):
         if bool(image) + bool(uri) > 1:
             raise ValueError(
                 f'Can only set one value but have image={image}, uri={uri}'
             )
         if bool(text) + bool(uri) > 1:
             raise ValueError(f'Can only set one value but have text={text}, uri={uri}')
+        if text and image:
+            raise ValueError(
+                f'Can only set one value but have text={text}, image={image}'
+            )
         if image:
             base64_bytes = image.encode('utf-8')
             image = base64.decodebytes(base64_bytes)

@@ -12,10 +12,10 @@ from deployment.bff.app.v1.models.helper import (
 # Request Model
 class NowTextAndImageIndexRequestModel(BaseIndexRequestModel):
     texts: Optional[List[str]] = Field(
-        default=..., description='List of Texts to index.'
+        default=[], description='List of Texts to index.'
     )
     images: Optional[List[str]] = Field(
-        default=None,
+        default=[],
         description='Image query. Image should be base64encoded in `utf-8` format',
     )
 

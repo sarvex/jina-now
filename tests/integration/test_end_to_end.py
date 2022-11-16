@@ -104,7 +104,7 @@ def test_token_exists():
             Apps.IMAGE_TEXT_RETRIEVAL,
             Modalities.IMAGE_TEXT,
             Modalities.TEXT,
-            DemoDatasetNames.ROCK_LYRICS,
+            DemoDatasetNames.BEST_ARTWORKS,
             'remote',
         ),
         (
