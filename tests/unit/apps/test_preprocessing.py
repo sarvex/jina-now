@@ -18,27 +18,31 @@ from now.executor.preprocessor import NOWPreprocessor
 from now.now_dataclasses import UserInput
 
 
-# def test_text_to_video_preprocessing_query():
-#     """Test if the text to video preprocessing works for queries"""
-#     app = TextToVideo()
-#     da = DocumentArray([Document(chunks=[Document(text='test')])])
-#     da = app.preprocess(da=da, user_input=UserInput())
-#
-#     assert len(da) == 1
-#     assert len(da[0].chunks) == 1
-#     assert da[0].chunks[0].text == 'test'
-#
-#
-# def test_text_to_video_preprocessing_indexing():
-#     """Test if the text to video preprocessing works for indexing"""
-#     app = TextToVideo()
-#     da = DocumentArray([Document(uri='tests/resources/gif/folder1/file.gif')])
-#     da = app.preprocess(
-#         da=da, user_input=UserInput(), process_target=True, process_query=False
-#     )
-#     assert len(da) == 1
-#     assert len(da[0].chunks) == 3
-#     assert da[0].chunks[0].blob != b''
+def test_text_to_video_preprocessing_query():
+    """Test if the text to video preprocessing works for queries"""
+    app = TextToVideo()
+    da = DocumentArray([Document(text='test')])
+    da = transform_docarray(da, search_fields=[], filter_fields=[])
+    da = app.preprocess(da=da, user_input=UserInput())
+
+    assert len(da) == 1
+    assert len(da[0].chunks) == 1
+    assert da[0].chunks[0].text == 'test'
+
+
+def test_text_to_video_preprocessing_indexing(resources_folder_path):
+    """Test if the text to video preprocessing works for indexing"""
+    app = TextToVideo()
+    da = DocumentArray(
+        [Document(uri=os.path.join(resources_folder_path, 'gif/folder1/file.gif'))]
+    )
+    da = transform_docarray(da, search_fields=[], filter_fields=[])
+    da = app.preprocess(
+        da=da, user_input=UserInput(), process_target=True, process_query=False
+    )
+    assert len(da) == 1
+    assert len(da[0].chunks[0].chunks) == 3
+    assert da[0].chunks[0].chunks[0].blob != b''
 
 
 @pytest.mark.parametrize(
