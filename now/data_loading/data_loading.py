@@ -49,9 +49,21 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
         )
     if 'NOW_CI_RUN' in os.environ:
         if user_input.output_modality == 'image':
-            da = DocumentArray([d for d in da if d.blob != b''])
+            da = DocumentArray(
+                [
+                    d
+                    for d in da
+                    if d.blob != b'' or match_types(d.uri, app.supported_file_types)
+                ]
+            )
         elif user_input.output_modality == 'text':
-            da = DocumentArray([d for d in da if d.text != ''])
+            da = DocumentArray(
+                [
+                    d
+                    for d in da
+                    if d.text != '' or match_types(d.uri, app.supported_file_types)
+                ]
+            )
         da = da.shuffle()[:50]
     if (
         user_input.dataset_name == DemoDatasetNames.MUSIC_GENRES_MIX
