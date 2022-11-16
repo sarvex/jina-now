@@ -16,6 +16,7 @@ import boto3
 import hubble
 import yaml
 from docarray import Document, DocumentArray
+from jina.jaml import JAML
 from pyfiglet import Figlet
 
 from now.thirdparty.PyInquirer.prompt import prompt
@@ -81,6 +82,30 @@ def to_camel_case(text):
 
 
 sigmap = {signal.SIGINT: my_handler, signal.SIGTERM: my_handler}
+
+
+class EnvironmentVariables:
+    def __init__(self, envs: Dict):
+        self._env_keys_added: Dict = envs
+
+    def __enter__(self):
+        for key, val in self._env_keys_added.items():
+            os.environ[key] = str(val)
+
+    def __exit__(self, *args, **kwargs):
+        for key in self._env_keys_added.keys():
+            os.unsetenv(key)
+
+
+def add_env_variables_to_flow(app_instance, env_dict: Dict):
+
+    with open(app_instance.flow_yaml) as fp:
+        flow_dict = yaml.safe_load(fp.read())
+
+    with EnvironmentVariables(env_dict):
+        expanded_dict = JAML.expand_dict(flow_dict, env_dict)
+    with open(app_instance.flow_yaml, 'w+') as fp:
+        yaml.dump(expanded_dict, fp)
 
 
 def write_env_file(env_file, config):

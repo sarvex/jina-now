@@ -5,8 +5,8 @@ import tempfile
 from jcloud.flow import CloudFlow
 
 
-def deploy_wolf(path: str, name: str, env_file: str = None):
-    return CloudFlow(path=path, name=name, env_file=env_file).__enter__()
+def deploy_wolf(path: str):
+    return CloudFlow(path=path).__enter__()
 
 
 def terminate_wolf(flow_id: str):

@@ -8,11 +8,9 @@ from os.path import expanduser as user
 from typing import Dict, List, Optional, Tuple
 
 import hubble
-import yaml
 from docarray import Document, DocumentArray
 from jina import __version__ as jina_version
 from jina.helper import random_port
-from jina.jaml import JAML
 
 from now.app.base.app import JinaNOWApp
 from now.constants import (
@@ -38,31 +36,7 @@ from now.utils import _maybe_download_from_s3
 cur_dir = pathlib.Path(__file__).parent.resolve()
 
 
-class EnvironmentVariables:
-    def __init__(self, envs: Dict):
-        self._env_keys_added: Dict = envs
-
-    def __enter__(self):
-        for key, val in self._env_keys_added.items():
-            os.environ[key] = str(val)
-
-    def __exit__(self, *args, **kwargs):
-        for key in self._env_keys_added.keys():
-            os.unsetenv(key)
-
-
 MAX_RETRIES = 20
-
-
-def add_env_variables_to_flow(app_instance: JinaNOWApp, env_dict: Dict):
-
-    with open(app_instance.flow_yaml) as fp:
-        flow_dict = yaml.safe_load(fp.read())
-
-    with EnvironmentVariables(env_dict):
-        expanded_dict = JAML.expand_dict(flow_dict, env_dict)
-    with open(app_instance.flow_yaml, 'w+') as fp:
-        yaml.dump(expanded_dict, fp)
 
 
 def common_get_flow_env_dict(
