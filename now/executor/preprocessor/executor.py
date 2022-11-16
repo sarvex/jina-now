@@ -65,6 +65,8 @@ class NOWPreprocessor(Executor):
         is_indexing,
         encode: bool = False,
     ) -> DocumentArray:
+        print('docs')
+        docs.summary()
         with tempfile.TemporaryDirectory() as tmpdir:
             if (
                 self.user_input

@@ -3,6 +3,7 @@ with:
   name: nowapi
   monitoring: true
   port_expose: 8080
+  timeout_send: ${{ ENV.TIMEOUT_SEND }}
   prefetch: 10
   cors: true
   env:

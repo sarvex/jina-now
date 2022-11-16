@@ -1,6 +1,7 @@
 jtype: Flow
 with:
   monitoring: true
+  timeout_send: ${{ ENV.TIMEOUT_SEND }}
   env:
     JINA_LOG_LEVEL: DEBUG
 jcloud:
