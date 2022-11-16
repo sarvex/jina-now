@@ -111,8 +111,7 @@ class MusicToMusic(JinaNOWApp):
         self,
         da: DocumentArray,
         user_input: UserInput,
-        process_target: bool = False,
-        process_query: bool = True,
+        **kwargs,
     ) -> DocumentArray:
         from pydub import AudioSegment
 

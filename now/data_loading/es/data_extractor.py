@@ -4,11 +4,11 @@ from typing import Dict, List, Optional, Union, Set
 from docarray import Document, DocumentArray
 from PIL import Image
 
-from .connector import ElasticsearchConnector
+from now.data_loading.es.connector import ElasticsearchConnector
 
 import logging
 
-from ..transform_docarray import _transform_multi_modal_data
+from now.data_loading.transform_docarray import _transform_multi_modal_data
 
 logging.getLogger("PIL.Image").setLevel(logging.CRITICAL + 1)
 

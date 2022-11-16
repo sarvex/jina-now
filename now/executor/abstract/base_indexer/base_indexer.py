@@ -156,6 +156,10 @@ class NOWBaseIndexer(Executor):
         if len(flat_docs) == 0:
             return
 
+        flat_docs = DocumentArray(
+            [document for document in flat_docs if document.embedding is not None]
+        )
+
         self.set_tags_if_text_in_doc_matching_title(flat_docs)
 
         flat_docs = self.maybe_drop_blob_tensor(flat_docs)

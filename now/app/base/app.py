@@ -293,7 +293,7 @@ class JinaNOWApp:
             )
         }
 
-    def index_query_access_paths(
+    def get_index_query_access_paths(
         self, search_fields: Optional[List[str]] = None
     ) -> str:
         """Gives access paths for indexing and searching. Returns a path to search fields

@@ -119,6 +119,11 @@ class TextToTextAndImage(JinaNOWApp):
         process_target: bool = False,
         process_query: bool = True,
     ) -> DocumentArray:
+        # will be refactored soon
+        if not process_query and not process_target:
+            raise Exception(
+                'Either `process_query` or `process_target` must be set to True.'
+            )
         # Indexing
         if process_target:
             return preprocess_nested_docs(da=da, user_input=user_input)
@@ -242,6 +247,6 @@ class TextToTextAndImage(JinaNOWApp):
         return 'TripletMarginLoss'
 
     @property
-    def index_query_access_paths(self) -> str:
+    def get_index_query_access_paths(self) -> str:
         """Gives access paths for indexing and searching."""
         return '@c'

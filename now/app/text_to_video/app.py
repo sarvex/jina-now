@@ -56,7 +56,7 @@ class TextToVideo(JinaNOWApp):
     def required_docker_memory_in_gb(self) -> int:
         return 12
 
-    def index_query_access_paths(
+    def get_index_query_access_paths(
         self, search_fields: Optional[List[str]] = None
     ) -> str:
         return '@c,cc'
@@ -129,7 +129,6 @@ class TextToVideo(JinaNOWApp):
         def convert_fn(d: Document):
             try:
                 if d.blob == b'':
-                    d.uri = d.text if not d.uri else d.uri
                     if d.uri:
                         d.load_uri_to_blob(timeout=10)
                     elif d.tensor is not None:
@@ -246,3 +245,6 @@ def sample_video(d):
         frame_bytes = io.BytesIO()
         frame_pil_resized.save(frame_bytes, format="JPEG", quality=70)
         d.chunks.append(Document(uri=d.uri, blob=frame_bytes.getvalue(), tags=d.tags))
+    d.blob = None
+    d.uri = None
+    d.tensor = None

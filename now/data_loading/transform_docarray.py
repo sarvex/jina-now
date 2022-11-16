@@ -7,7 +7,7 @@ from docarray.typing import Image, Text, Blob
 from now.constants import Modalities
 
 
-def _get_modality(document):
+def _get_modality(document: Document):
     """
     Detect document's modality based on its `modality` or `mime_type` attributes.
     """
@@ -17,7 +17,7 @@ def _get_modality(document):
     return None
 
 
-def _get_multi_modal_format(document):
+def _get_multi_modal_format(document: Document):
     """
     Create a multimodal docarray dataclass from a unimodal `Document`,
     and trasnform it back to a `Document` which will have a `multi_modal_schema`.
@@ -45,7 +45,7 @@ def _get_multi_modal_format(document):
             modality == Modalities.VIDEO
             or file_type in TextToVideo().supported_file_types
         ):
-            new_doc = BaseDocText(default_field=document.uri)
+            new_doc = BaseDocBlob(default_field=document.uri)
             modality = Modalities.VIDEO
         else:
             new_doc = BaseDocImage(default_field=document.uri)
@@ -117,9 +117,6 @@ def _transform_multi_modal_data(
             field_name = field_names[position]
             content = chunk.content
             modality = chunk.modality or _get_modality(chunk)
-            if chunk.chunks:
-                content = [sub_chunk.content for sub_chunk in chunk.chunks]
-                modality = chunk.chunks[0].modality or _get_modality(chunk.chunks[0])
             if field_name in search_fields:
                 new_chunks.append(
                     Document(

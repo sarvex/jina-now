@@ -80,6 +80,11 @@ class TextToText(JinaNOWApp):
         process_target: bool = False,
         process_query: bool = True,
     ) -> DocumentArray:
+        if not process_query and not process_target:
+            raise Exception(
+                'Either `process_query` or `process_target` must be set to True.'
+            )
+
         split_by_sentences = False
         if (
             process_target

@@ -85,7 +85,6 @@ class ImageToImage(JinaNOWApp):
         self,
         da: DocumentArray,
         user_input: UserInput,
-        process_target: bool = False,
-        process_query: bool = True,
+        **kwargs,
     ) -> DocumentArray:
         return preprocess_images(da=da)
