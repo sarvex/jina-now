@@ -1,19 +1,24 @@
 import logging
-import os
-from time import sleep
 
-import pytest
 import hubble
 from pytest_mock import MockerFixture
-from urllib3.exceptions import InsecureRequestWarning
-from warnings import filterwarnings, catch_warnings
-import requests
 
 from now.app.text_to_video.app import TextToVideo
 from now.constants import DatasetTypes
 from now.data_loading.data_loading import load_data
 from now.demo_data import DemoDatasetNames
-from now.deployment.deployment import cmd
+
+import os
+
+import pytest
+from docarray import dataclass, Document, DocumentArray
+from jina import Flow
+
+from now.executor.preprocessor import NOWPreprocessor
+from docarray.typing import Text, Image
+
+from now.now_dataclasses import UserInput
+
 
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__name__)
@@ -45,19 +50,6 @@ def with_hubble_login_patch(mocker: MockerFixture) -> None:
         hubble.login()
         os.environ['WOLF_TOKEN'] = hubble.Auth.get_auth_token()
     mocker.patch(target='finetuner.client.base.hubble.Auth', new=HubbleAuthPatch)
-
-
-import os
-
-import pytest
-from docarray import dataclass, Document, DocumentArray
-from jina import Flow
-
-from now.app.text_to_image.app import TextToImage
-from now.executor.preprocessor import NOWPreprocessor
-from docarray.typing import Text, Image
-
-from now.now_dataclasses import UserInput
 
 
 @pytest.fixture

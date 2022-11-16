@@ -167,13 +167,6 @@ def call_flow(
                 print(e)
                 print(traceback.format_exc())
             sleep(1)
-    print('real request starts now')
-    parameters['sabas_test'] = True
-    print(
-        f' params {parameters} '
-        f' ---- dataset len {len(dataset)}   ----   second example {dataset[1]}'
-        f' -- {dataset[1].tags} --- {dataset[1].uri} , {endpoint}'
-    )
     response = client.post(
         on=endpoint,
         request_size=request_size,
@@ -184,7 +177,6 @@ def call_flow(
         max_attempts=5,
         continue_on_error=True,
     )
-    print('request done')
     if return_results and response:
         return DocumentArray.from_json(response.to_json())
 

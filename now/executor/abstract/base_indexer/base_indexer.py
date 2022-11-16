@@ -133,6 +133,7 @@ class NOWBaseIndexer(Executor):
         :param parameters: dictionary with options for indexing
         """
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
+        # merge the docs_matrix into the flat_docs
         if (
             docs_matrix
             and len(docs_matrix) > 1
@@ -195,25 +196,6 @@ class NOWBaseIndexer(Executor):
         else:
             retrieval_limit = limit
 
-        # <<<<<<< HEAD
-        #         # first get with title and then merge matches each
-        #         docs_with_matches = self.create_matches(
-        #             docs,
-        #             parameters,
-        #             traversal_paths,
-        #             limit,
-        #             retrieval_limit,
-        #             search_filter=search_filter,
-        #         )
-        #
-        #         if len(docs[0].text.split()) == 1:
-        #             if not search_filter:
-        #                 search_filter = self.convert_filter_syntax(
-        #                     {'title': {'$eq': docs[0].text.lower()}}
-        #                 )
-        #             # self.check_docs(docs)
-        #             docs_with_matches_filter = self.create_matches(
-        # =======
         # if OCR detector was used to check if documents contain text in indexed image modality adjust retrieval step
         if self.columns and TAG_INDEXER_DOC_HAS_TEXT in [
             col[0] for col in self.columns

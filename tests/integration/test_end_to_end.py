@@ -242,8 +242,7 @@ def assert_suggest(suggest_url, request_body):
     ), f"Received code {response.status_code} with text: {response.json()['message']}"
     docs = DocumentArray.from_json(response.content)
     assert 'suggestions' in docs[0].tags
-    if docs[0].tags['suggestions'] != [[old_request_text]]:
-        raise Exception(f'{docs[0]}, {docs[0].tags}, {len(docs)}')
+    assert docs[0].tags['suggestions'] == [[old_request_text]]
 
 
 def assert_deployment_queries(
