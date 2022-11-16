@@ -8,7 +8,7 @@ from jina import Client
 from jina.jaml import JAML
 from jina.serve.runtimes.gateway.http.models import JinaRequestModel, JinaResponseModel
 
-from now.constants import SUPPORTED_FILE_TYPES, Modalities
+from now.constants import DEFAULT_FLOW_NAME, SUPPORTED_FILE_TYPES, Modalities
 from now.demo_data import AVAILABLE_DATASET, DEFAULT_EXAMPLE_HOSTED, DemoDataset
 from now.now_dataclasses import DialogOptions, UserInput
 from now.utils import Dumper
@@ -194,6 +194,12 @@ class JinaNOWApp:
         with open(self.flow_yaml) as input_f:
             flow_yaml = JAML.load(input_f.read())
             flow_yaml['jcloud']['labels'] = {'team': 'now'}
+            flow_yaml['jcloud']['name'] = (
+                user_input.flow_name + '-' + DEFAULT_FLOW_NAME
+                if user_input.flow_name != ''
+                and user_input.flow_name != DEFAULT_FLOW_NAME
+                else DEFAULT_FLOW_NAME
+            )
             # append api_keys to the executor with name 'preprocessor' and 'indexer'
             for executor in flow_yaml['executors']:
                 if executor['name'] == 'preprocessor' or executor['name'] == 'indexer':

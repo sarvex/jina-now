@@ -4,8 +4,8 @@ with:
   env:
     JINA_LOG_LEVEL: DEBUG
 jcloud:
-  expose_gateway: false
-  retention_days: -1
+  gateway:
+    expose: false
   labels:
     team: now
 executors:
@@ -14,6 +14,7 @@ executors:
     env:
       JINA_LOG_LEVEL: DEBUG
     jcloud:
-      capacity: on-demand
+      expose: true
       resources:
+        capacity: on-demand
         gpu: shared

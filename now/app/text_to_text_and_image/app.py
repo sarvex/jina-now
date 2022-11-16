@@ -174,13 +174,6 @@ class TextToTextAndImage(JinaNOWApp):
             'INDEXER_MEM'
         )
         env_dict['JINA_VERSION'] = jina_version
-        # retention days
-        if 'NOW_CI_RUN' in os.environ:
-            env_dict[
-                'RETENTION_DAYS'
-            ] = 0  # JCloud will delete after 24hrs of being idle if not deleted in CI
-        else:
-            env_dict['RETENTION_DAYS'] = -1  # for user deployment set it to 30 days
         env_dict['N_DIM'] = [ModelDimensions.SBERT, ModelDimensions.CLIP]
         env_dict['ADMIN_EMAILS'] = (
             user_input.admin_emails or [] if user_input.secured else []

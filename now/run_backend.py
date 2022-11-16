@@ -1,5 +1,4 @@
 import os
-import pathlib
 import random
 import sys
 import uuid
@@ -13,14 +12,13 @@ from jina.clients import Client
 
 from now.admin.update_api_keys import update_api_keys
 from now.app.base.app import JinaNOWApp
+from now.common.utils import add_env_variables_to_flow
 from now.constants import DEFAULT_FLOW_NAME, DatasetTypes
 from now.data_loading.data_loading import load_data
 from now.deployment.flow import deploy_flow
 from now.log import time_profiler
 from now.now_dataclasses import UserInput
 from now.utils import get_flow_id
-
-cur_dir = pathlib.Path(__file__).parent.resolve()
 
 
 @time_profiler
@@ -44,6 +42,9 @@ def run(
     env_dict = app_instance.setup(
         dataset=dataset, user_input=user_input, kubectl_path=kubectl_path
     )
+
+    add_env_variables_to_flow(app_instance, env_dict)
+
     (
         client,
         gateway_host,
