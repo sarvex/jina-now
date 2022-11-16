@@ -110,7 +110,7 @@ class NOWPreprocessor(Executor):
     def index(
         self, docs: DocumentArray, parameters: Optional[Dict] = None, *args, **kwargs
     ) -> DocumentArray:
-        """If necessary downloads data from cloud bucket. Applies preprocessing to documents as defined by apps.
+        """If necessary downloads data from cloud bucket. Applies preprocessing to document as defined by apps.
 
         :param docs: loaded data but not preprocessed
         :param parameters: user input, used to construct UserInput object
