@@ -290,11 +290,8 @@ def _get_clip_apps_with_dict(user_input: UserInput) -> Tuple[Dict, Dict]:
         'ENCODER_PORT': 443 if is_remote else random_port(),
         'IS_REMOTE_DEPLOYMENT': is_remote,
     }
-    # OCR detector is used for local testing
-    is_remote = is_remote  # and not os.environ.get('NOW_TESTING', False)
-    uses = f"jinahub+docker://NOWOCRDetector9/{NOW_OCR_DETECTOR_VERSION}"
     ocr_with = {
-        'OCR_DETECTOR_NAME': uses,
+        'OCR_DETECTOR_NAME': f"jinahub+docker://NOWOCRDetector9/{NOW_OCR_DETECTOR_VERSION}",
         'OCR_DETECTOR_HOST': EXTERNAL_OCR_HOST if is_remote else '0.0.0.0',
         'OCR_DETECTOR_PORT': 443 if is_remote else random_port(),
     }

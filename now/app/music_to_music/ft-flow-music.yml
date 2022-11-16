@@ -25,7 +25,7 @@ executors:
     env:
       JINA_LOG_LEVEL: DEBUG
   - name: encoder_music
-    uses: ${{ ENV.ENCODER_NAME }}
+    uses: jinahub+docker://FinetunerExecutor/v0.9.2
     jcloud:
       resources:
         memory: 4G

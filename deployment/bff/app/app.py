@@ -161,8 +161,6 @@ application = build_app()
 def run_server(port=8080):
     """Run server."""
     app = build_app()
-
-    print('start server on port', port)
     uvicorn.run(
         app,
         host='0.0.0.0',
@@ -170,7 +168,6 @@ def run_server(port=8080):
         loop='uvloop',
         http='httptools',
     )
-    print('server started')
 
 
 if __name__ == '__main__':
