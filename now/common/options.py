@@ -77,7 +77,9 @@ OUTPUT_MODALITY = DialogOptions(
     prompt_type='list',
     prompt_message='What is the output modality of your image-text- retrieval system?',
     description='What is the output modality of your image-text- retrieval system?',
-    conditional_check=lambda user_input: user_input.app == Apps.IMAGE_TEXT_RETRIEVAL,
+    depends_on=APP,
+    conditional_check=lambda user_input: user_input.app_instance.app_name
+    == Apps.IMAGE_TEXT_RETRIEVAL,
 )
 
 

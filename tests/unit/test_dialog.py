@@ -48,6 +48,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
             'app': Apps.IMAGE_TEXT_RETRIEVAL,
+            'output_modality': 'text',
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': 'tll',
@@ -59,6 +60,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
             'app': Apps.IMAGE_TEXT_RETRIEVAL,
+            'output_modality': 'image',
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': 'nih-chest-xrays',
@@ -70,6 +72,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
             'app': Apps.IMAGE_TEXT_RETRIEVAL,
+            'output_modality': 'image',
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DOCARRAY,
             'dataset_name': 'xxx',
@@ -114,6 +117,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
             'app': Apps.IMAGE_TEXT_RETRIEVAL,
+            'output_modality': 'image',
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DOCARRAY,
             'dataset_name': 'xxx',
@@ -140,26 +144,27 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'cluster': 'new',
             'deployment_type': 'local',
         },
-        {'app': Apps.IMAGE_TEXT_RETRIEVAL},
+        {'app': Apps.IMAGE_TEXT_RETRIEVAL, 'output_modality': 'text'},
     ),
     (
         {
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DEMO,
-            'dataset_name': DemoDatasetNames.ROCK_LYRICS,
+            'dataset_name': DemoDatasetNames.TLL,
             'cluster': 'new',
             'deployment_type': 'local',
         },
-        {'app': Apps.IMAGE_TEXT_RETRIEVAL},
+        {'app': Apps.IMAGE_TEXT_RETRIEVAL, 'output_modality': 'text'},
     ),
     (
         {
             'app': Apps.IMAGE_TEXT_RETRIEVAL,
+            'output_modality': 'text',
         },
         {
             'flow_name': 'testapp',
             'dataset_type': DatasetTypes.DEMO,
-            'dataset_name': DemoDatasetNames.POP_LYRICS,
+            'dataset_name': DemoDatasetNames.BEST_ARTWORKS,
             'cluster': 'new',
             'deployment_type': 'local',
         },
