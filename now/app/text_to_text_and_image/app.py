@@ -197,7 +197,6 @@ class TextToTextAndImage(JinaNOWApp):
         env_dict['API_KEY'] = (
             [user_input.api_key] if user_input.secured and user_input.api_key else []
         )
-        env_dict['TIMEOUT_SEND'] = ('60000',)  # timeout i milliseconds
         self.set_flow_yaml()
         super().setup(dataset, user_input, kubectl_path)
         return env_dict

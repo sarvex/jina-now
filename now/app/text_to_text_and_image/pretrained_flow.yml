@@ -3,7 +3,6 @@ with:
   name: nowapi
   monitoring: true
   port_expose: 8080
-  timeout_send: ${{ ENV.TIMEOUT_SEND }}
   env:
     JINA_LOG_LEVEL: DEBUG
 jcloud:

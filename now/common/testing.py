@@ -31,4 +31,3 @@ def handle_test_mode(config):
                 )
             ):
                 config[k] = config[k].replace(EXECUTOR_PREFIX, '').split('/')[0]
-        config['TIMEOUT_SEND'] = '-1'

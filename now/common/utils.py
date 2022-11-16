@@ -74,7 +74,6 @@ def common_get_flow_env_dict(
         'API_KEY': [user_input.api_key]
         if user_input.secured and user_input.api_key
         else [],
-        'TIMEOUT_SEND': '60000',  # timeout i milliseconds
         **encoder_with,
         **indexer_resources,
     }
