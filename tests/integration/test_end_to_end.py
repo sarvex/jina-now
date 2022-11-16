@@ -93,27 +93,27 @@ def test_token_exists():
 @pytest.mark.parametrize(
     'app, input_modality, output_modality, dataset, deployment_type',
     [
-        (
-            Apps.TEXT_TO_IMAGE,
-            Modalities.TEXT,
-            Modalities.IMAGE,
-            DemoDatasetNames.BIRD_SPECIES,
-            'local',
-        ),
-        (
-            Apps.IMAGE_TO_IMAGE,
-            Modalities.IMAGE,
-            Modalities.IMAGE,
-            DemoDatasetNames.BEST_ARTWORKS,
-            'local',
-        ),
-        (
-            Apps.IMAGE_TO_TEXT,
-            Modalities.IMAGE,
-            Modalities.TEXT,
-            DemoDatasetNames.ROCK_LYRICS,
-            'remote',
-        ),
+        # (
+        #     Apps.TEXT_TO_IMAGE,
+        #     Modalities.TEXT,
+        #     Modalities.IMAGE,
+        #     DemoDatasetNames.BIRD_SPECIES,
+        #     'local',
+        # ),
+        # (
+        #     Apps.IMAGE_TO_IMAGE,
+        #     Modalities.IMAGE,
+        #     Modalities.IMAGE,
+        #     DemoDatasetNames.BEST_ARTWORKS,
+        #     'local',
+        # ),
+        # (
+        #     Apps.IMAGE_TO_TEXT,
+        #     Modalities.IMAGE,
+        #     Modalities.TEXT,
+        #     DemoDatasetNames.ROCK_LYRICS,
+        #     'remote',
+        # ),
         (
             Apps.TEXT_TO_TEXT,
             Modalities.TEXT,
@@ -121,27 +121,27 @@ def test_token_exists():
             DemoDatasetNames.POP_LYRICS,
             'local',
         ),
-        (
-            Apps.TEXT_TO_VIDEO,
-            Modalities.TEXT,
-            Modalities.VIDEO,
-            DemoDatasetNames.TUMBLR_GIFS_10K,
-            'local',
-        ),
-        (
-            Apps.MUSIC_TO_MUSIC,
-            Modalities.MUSIC,
-            Modalities.MUSIC,
-            DemoDatasetNames.MUSIC_GENRES_ROCK,
-            'remote',
-        ),
-        (
-            Apps.TEXT_TO_TEXT_AND_IMAGE,
-            Modalities.TEXT,
-            Modalities.TEXT_AND_IMAGE,
-            DemoDatasetNames.ES_ONLINE_SHOP_50,
-            'local',
-        ),
+        # (
+        #     Apps.TEXT_TO_VIDEO,
+        #     Modalities.TEXT,
+        #     Modalities.VIDEO,
+        #     DemoDatasetNames.TUMBLR_GIFS_10K,
+        #     'local',
+        # ),
+        # (
+        #     Apps.MUSIC_TO_MUSIC,
+        #     Modalities.MUSIC,
+        #     Modalities.MUSIC,
+        #     DemoDatasetNames.MUSIC_GENRES_ROCK,
+        #     'remote',
+        # ),
+        # (
+        #     Apps.TEXT_TO_TEXT_AND_IMAGE,
+        #     Modalities.TEXT,
+        #     Modalities.TEXT_AND_IMAGE,
+        #     DemoDatasetNames.ES_ONLINE_SHOP_50,
+        #     'local',
+        # ),
     ],
 )
 @pytest.mark.timeout(60 * 30)
