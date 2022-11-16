@@ -6,7 +6,9 @@ import hubble
 def get_default_request_body(deployment_type, secured, remote_host=None):
     request_body = {}
     if deployment_type == 'local':
-        request_body['host'] = 'gateway'
+        request_body['host'] = (
+            'localhost' if os.environ.get('NOW_TESTING', False) else 'gateway'
+        )
         request_body['port'] = 8080
     elif deployment_type == 'remote':
         if remote_host:

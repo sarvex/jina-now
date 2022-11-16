@@ -36,7 +36,7 @@ class ElasticIndexer(Executor):
         **kwargs,
     ):
         """
-        Initializer function for the ElasticIndexer
+        Initializer function for the ElasticIndexer.
 
         :param hosts: host configuration of the Elasticsearch node or cluster
         :param es_config: Elasticsearch cluster configuration object

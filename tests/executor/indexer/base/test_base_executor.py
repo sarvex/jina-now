@@ -4,10 +4,10 @@ from copy import deepcopy
 import numpy as np
 import pytest
 from jina import Document, DocumentArray, Flow
-from tests.executor.indexer.base.in_memory_indexer import InMemoryIndexer
 
 from now.constants import TAG_INDEXER_DOC_HAS_TEXT, TAG_OCR_DETECTOR_TEXT_IN_DOC
 from now.deployment.deployment import cmd
+from now.executor.indexer.in_memory.in_memory_indexer import InMemoryIndexer
 from now.executor.indexer.qdrant import NOWQdrantIndexer15
 
 NUMBER_OF_DOCS = 10

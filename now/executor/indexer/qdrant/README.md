@@ -2,6 +2,7 @@
 
 `NOWQdrantIndexer15` indexes Documents into a `DocumentArray`  using `storage='qdrant'`. Underneath, the `DocumentArray`  uses 
  [qdrant](https://github.com/qdrant/qdrant) to store and search Documents efficiently. 
+
 The indexer relies on `DocumentArray` as a client for Qdrant, you can read more about the integration here: 
 https://docarray.jina.ai/advanced/document-store/qdrant/
 
