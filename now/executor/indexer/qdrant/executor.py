@@ -9,7 +9,7 @@ from now.executor.abstract.base_indexer import NOWBaseIndexer as Executor
 
 
 class NOWQdrantIndexer15(Executor):
-    """NOWQdrantIndexer15 indexes Documents into a Qdrant server using DocumentArray  with `storage='qdrant'`"""
+    """NOWQdrantIndexer15 indexes Documents into a Qdrant server using DocumentArray  with `storage='qdrant'`."""
 
     # override
     def construct(self, **kwargs):
@@ -77,7 +77,6 @@ class NOWQdrantIndexer15(Executor):
         """Index new documents"""
         # qdrant needs a list of values when filtering on sentences
         for d in docs:
-            print(d.uri)
             if 'title' in d.tags:
                 d.tags['title'] = d.tags['title'].lower().split()
         self._index.extend(docs)
