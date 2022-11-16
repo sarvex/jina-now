@@ -16,6 +16,7 @@ import boto3
 import hubble
 import yaml
 from docarray import Document, DocumentArray
+from jina.jaml import JAML
 from pyfiglet import Figlet
 
 from now.thirdparty.PyInquirer.prompt import prompt
@@ -87,6 +88,17 @@ def write_env_file(env_file, config):
     config_string = '\n'.join([f'{key}={value}' for key, value in config.items()])
     with open(env_file, 'w+') as fp:
         fp.write(config_string)
+
+
+def write_flow_file(flow_yaml_content, new_yaml_file_path):
+    with open(new_yaml_file_path, 'w') as f:
+        JAML.dump(
+            flow_yaml_content,
+            f,
+            indent=2,
+            allow_unicode=True,
+            Dumper=Dumper,
+        )
 
 
 @hubble.login_required

@@ -71,11 +71,10 @@ def index(f):
     )
 
 
-def start_bff():
-    p1 = Process(target=run_server, args=())
-    p1.daemon = True
+def start_bff(port=8080, daemon=True):
+    p1 = Process(target=run_server, args=(port,))
+    p1.daemon = daemon
     p1.start()
-    print('### server started')
 
 
 def test_add_key():

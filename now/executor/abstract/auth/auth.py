@@ -16,6 +16,8 @@ class SecurityLevel:
 
 
 def secure_request(level: int, on: str = None):
+    """decorator to check the authorization of the incoming request"""
+
     def decorator(func):
         @requests(on=on)
         def wrapper(*args, **kwargs):
