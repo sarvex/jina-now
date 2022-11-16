@@ -34,7 +34,7 @@ executors:
     JINA_LOG_LEVEL: DEBUG
   needs: preprocessor
 - name: clip_encoder
-  uses: ${{ ENV.ENCODER_NAME }}
+  uses: jinahub+docker://FinetunerExecutor
   uses_with:
     artifact: ${{ ENV.CLIP_ARTIFACT }}
     token: ${{ ENV.JINA_TOKEN }}

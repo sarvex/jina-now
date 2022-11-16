@@ -6,11 +6,11 @@ from now.utils import BetterEnum
 # from docarray import __version__ as docarray_version
 
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.131-refactor-breakpoints-in-executors-8'
-NOW_PREPROCESSOR_VERSION = '0.0.98-refactor-breakpoints-in-executors-8'
-NOW_QDRANT_INDEXER_VERSION = '0.0.6-refactor-breakpoints-in-executors-8'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.4-refactor-wrap-auth-executor-8'
-NOW_AUTOCOMPLETE_VERSION = '0.0.3-refactor-breakpoints-in-executors-8'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.131-refactor-breakpoints-in-executors-9'
+NOW_PREPROCESSOR_VERSION = '0.0.98-refactor-breakpoints-in-executors-9'
+NOW_QDRANT_INDEXER_VERSION = '0.0.6-refactor-breakpoints-in-executors-9'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.4-refactor-wrap-auth-executor-9'
+NOW_AUTOCOMPLETE_VERSION = '0.0.3-refactor-breakpoints-in-executors-9'
 NOW_OCR_DETECTOR_VERSION = '0.0.1-feat-matching-text-82'
 
 
