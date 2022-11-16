@@ -14,7 +14,7 @@ class NowTextAndImageIndexRequestModel(BaseIndexRequestModel):
     texts: Optional[List[str]] = Field(
         default=..., description='List of Texts to index.'
     )
-    images: Optional[str] = Field(
+    images: Optional[List[str]] = Field(
         default=None,
         description='Image query. Image should be base64encoded in `utf-8` format',
     )

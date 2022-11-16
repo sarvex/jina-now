@@ -25,15 +25,19 @@ def index(data: NowTextAndImageIndexRequestModel):
     `base64` encoded using human-readable characters - `utf-8`.
     """
     index_docs = DocumentArray()
-    for image, uri, tags in zip(data.images, data.uris, data.tags):
-        if bool(image) + bool(uri) != 1:
+    for text, image, uri, tags in zip(data.texts, data.images, data.uris, data.tags):
+        if bool(image) + bool(uri) > 1:
             raise ValueError(
                 f'Can only set one value but have image={image}, uri={uri}'
             )
+        if bool(text) + bool(uri) > 1:
+            raise ValueError(f'Can only set one value but have text={text}, uri={uri}')
         if image:
             base64_bytes = image.encode('utf-8')
             image = base64.decodebytes(base64_bytes)
             index_docs.append(Document(blob=image, tags=tags))
+        elif text:
+            index_docs.append(Document(text=text, tags=tags))
         else:
             index_docs.append(Document(uri=uri, tags=tags))
 
