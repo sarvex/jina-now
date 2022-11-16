@@ -62,7 +62,6 @@ def search(data: NowTextSearchRequestModel):
     query_doc, filter_query = process_query(
         text=data.text, uri=data.uri, conditions=data.filters
     )
-    print('### query_doc')
     query_doc.summary()
     # for video the search requests have to be on chunk-level
     docs = jina_client_post(
@@ -76,10 +75,6 @@ def search(data: NowTextSearchRequestModel):
         },
         endpoint='/search',
     )
-    print('### docs')
-    docs.summary()
-    print('### docs[0].matches', docs[0].matches[: data.limit].to_dict())
-
     return docs[0].matches[: data.limit].to_dict()
 
 

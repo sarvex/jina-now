@@ -84,15 +84,6 @@ def jina_client_post(
     if data.jwt is not None:
         auth_dict['jwt'] = data.jwt
     try:
-        print(
-            '### calling client.post',
-            endpoint,
-            inputs,
-            parameters,
-            auth_dict,
-            data.host,
-            data.port,
-        )
         result = client.post(
             endpoint,
             inputs=inputs,
@@ -100,7 +91,6 @@ def jina_client_post(
             *args,
             **kwargs,
         )
-        print('### result', result)
     except BadServer as e:
         if 'Not a valid user' in e.args[0].status.description:
             raise HTTPException(

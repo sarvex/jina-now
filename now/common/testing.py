@@ -19,7 +19,7 @@ def handle_test_mode(config):
             if 'Indexer' in str(v):
                 config[k] = 'InMemoryIndexer'
             if (
-                type(v) == str
+                isinstance(v, str)
                 and 'jinahub' in v
                 and (
                     # TODO: local testing on Qdrant needs to be disabled. At the moment, Qdrant does not start outside of docker
