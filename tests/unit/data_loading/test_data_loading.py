@@ -52,7 +52,6 @@ def local_da(da: DocumentArray, tmpdir: str) -> Tuple[str, DocumentArray]:
 def is_da_text_equal(da_a: DocumentArray, da_b: DocumentArray):
     for a, b in zip(da_a, da_b):
         if a.text != b.text:
-            print(a.text, b.text)
             return False
     return True
 
