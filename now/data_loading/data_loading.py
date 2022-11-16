@@ -42,7 +42,7 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
     elif user_input.dataset_type == DatasetTypes.DEMO:
         print('⬇  Download DocumentArray dataset')
         url = get_dataset_url(user_input.dataset_name, app.output_modality)
-        da = fetch_da_from_url(url)
+        da = fetch_da_from_url(url).shuffle()
     if da is None:
         raise ValueError(
             f'Could not load DocumentArray dataset. Please check your configuration: {user_input}.'
