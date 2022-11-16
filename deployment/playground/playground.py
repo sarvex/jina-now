@@ -35,6 +35,8 @@ from streamlit.server.server import Server
 from streamlit_webrtc import WebRtcMode, webrtc_streamer
 from tornado.httputil import parse_cookie
 
+dir_path = os.path.dirname(os.path.realpath(__file__))
+
 # TODO: Uncomment the docarray_version when the file name on GCloud has been changed
 # from docarray import __version__ as docarray_version
 docarray_version = '0.13.17'
@@ -103,7 +105,7 @@ def deploy_streamlit():
     redirect_to = render_auth_components(params)
 
     _, mid, _ = st.columns([0.8, 1, 1])
-    with open('./logo.svg', 'r') as f:
+    with open(os.path.join(dir_path, 'logo.svg'), 'r') as f:
         svg = f.read()
     with mid:
         b64 = base64.b64encode(svg.encode('utf-8')).decode("utf-8")

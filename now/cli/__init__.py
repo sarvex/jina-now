@@ -1,6 +1,7 @@
 import os
 import pathlib
 import platform
+import signal
 import sys
 import warnings
 from argparse import Namespace
