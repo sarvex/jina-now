@@ -103,7 +103,7 @@ class JinaNOWApp:
         return []
 
     @property
-    def supported_file_types(self) -> List[str]:
+    def supported_file_types(self) -> Dict[str, List[str]]:
         """Used to filter files in local structure or an S3 bucket."""
         return SUPPORTED_FILE_TYPES[self.output_modality]
 

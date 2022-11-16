@@ -53,7 +53,8 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
                 [
                     d
                     for d in da
-                    if d.blob != b'' or match_types(d.uri, app.supported_file_types)
+                    if d.blob != b''
+                    or match_types(d.uri, app.supported_file_types['image'])
                 ]
             )
         elif user_input.output_modality == 'text':
@@ -61,7 +62,8 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
                 [
                     d
                     for d in da
-                    if d.text != '' or match_types(d.uri, app.supported_file_types)
+                    if d.text != ''
+                    or match_types(d.uri, app.supported_file_types['text'])
                 ]
             )
         da = da.shuffle()[:50]

@@ -398,8 +398,8 @@ def test_backend_custom_data(
         == f'http://localhost:30090/api/v1/{input_modality}-to-{output_modality}/docs'
     )
     assert response['playground'].startswith('http://localhost:30080/?')
-    assert response['input_modality'] == 'text'
-    assert response['output_modality'] == 'image'
+    assert response['input_modality'] == input_modality
+    assert response['output_modality'] == output_modality
     assert response['host'].startswith('grpcs://')
     assert response['host'].endswith('.wolf.jina.ai')
     assert response['port'] == 8080 or response['port'] is None
@@ -415,7 +415,7 @@ def test_backend_custom_data(
             json.dump(flow_details, f)
 
     response = requests.post(
-        f'http://localhost:30090/api/v1/text-to-image/search',
+        f'http://localhost:30090/api/v1/{input_modality}-to-{output_modality}/search',
         json=request_body,
     )
 
