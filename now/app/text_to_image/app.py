@@ -89,6 +89,6 @@ class TextToImage(JinaNOWApp):
             modalities.append(Modalities.IMAGE)
         if process_query:
             da = preprocess_text(da=da, split_by_sentences=False)
-            modalities.append(Modalities.IMAGE)
+            modalities.append(Modalities.TEXT)
 
         return filter_data(da, modalities)
