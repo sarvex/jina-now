@@ -1,5 +1,5 @@
 import os
-from typing import Dict, Tuple
+from typing import Dict
 
 from docarray import DocumentArray
 
@@ -7,7 +7,6 @@ from now.app.base.app import JinaNOWApp
 from now.common.preprocess import preprocess_images, preprocess_text
 from now.common.utils import _get_clip_apps_with_dict, common_setup, get_indexer_config
 from now.constants import CLIP_USES, Apps, DatasetTypes, Modalities
-from now.demo_data import DemoDatasetNames
 from now.now_dataclasses import UserInput
 
 
@@ -38,10 +37,6 @@ class ImageTextRetrieval(JinaNOWApp):
     @property
     def required_docker_memory_in_gb(self) -> int:
         return 8
-
-    @property
-    def finetune_datasets(self) -> [Tuple]:
-        return DemoDatasetNames.DEEP_FASHION, DemoDatasetNames.BIRD_SPECIES
 
     def set_flow_yaml(self, **kwargs):
         finetuning = kwargs.get('finetuning', False)
