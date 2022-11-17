@@ -34,7 +34,15 @@ def preprocess_text(
     da: DocumentArray,
     split_by_sentences=False,
 ) -> DocumentArray:
-    """If necessary, loads text for all documents. If asked for, splits documents by sentences."""
+    """If necessary, loads text for all documents. If asked for, splits documents by sentences.
+
+    In case `split_by_sentences` is set to True, generates sentence chunks:
+    Before
+    Document(chunks=[Document(text='s1. s2. s3')])
+
+    After
+    Document(chunks=[Document(text=None, chunks=[Document('s1'), Document('s2')..])])
+    """
     import nltk
 
     nltk.download('punkt', quiet=True)
@@ -73,6 +81,7 @@ def preprocess_text(
                 convert_fn(chunk)
                 if split_by_sentences:
                     chunk.chunks = gen_split_by_sentences(chunk)
+                    chunk.text = None
     return da
 
 
