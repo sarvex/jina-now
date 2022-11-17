@@ -87,14 +87,7 @@ def common_get_flow_env_dict(
         config['FINETUNE_ARTIFACT'] = finetune_settings.finetuned_model_artifact
         config['JINA_TOKEN'] = finetune_settings.token
 
-    # retention days
-    if 'NOW_CI_RUN' in os.environ:
-        config[
-            'RETENTION_DAYS'
-        ] = 0  # JCloud will delete after 24hrs of being idle if not deleted in CI
-    else:
-        config['RETENTION_DAYS'] = -1  # for user deployment set it to 30 days
-
+    config['CUSTOM_DNS'] = ''
     if 'NOW_EXAMPLES' in os.environ:
         valid_app = DEFAULT_EXAMPLE_HOSTED.get(user_input.app_instance.app_name, {})
         is_demo_ds = user_input.dataset_name in valid_app
@@ -103,6 +96,7 @@ def common_get_flow_env_dict(
                 'CUSTOM_DNS'
             ] = f'now-example-{user_input.app_instance.app_name}-{user_input.dataset_name}.dev.jina.ai'
             config['CUSTOM_DNS'] = config['CUSTOM_DNS'].replace('_', '-')
+
     return config
 
 

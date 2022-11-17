@@ -115,7 +115,7 @@ def deploy_flow(
 
         if deployment_type == 'remote':
             flow = deploy_wolf(path=flow_yaml)
-            host = flow.gateway
+            host = flow.endpoints['gateway']
             client = Client(host=host)
 
             # host & port
