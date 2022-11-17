@@ -112,7 +112,8 @@ def start_now(app_instance, **kwargs):
         )
         gateway_port_internal = None
     else:
-        setup_cluster(user_input, **kwargs)
+        if not os.environ.get('NOW_TESTING', False):
+            setup_cluster(user_input, **kwargs)
         (
             gateway_host,
             gateway_port,
@@ -120,7 +121,13 @@ def start_now(app_instance, **kwargs):
             gateway_port_internal,
         ) = run_backend.run(app_instance, user_input, **kwargs)
 
-    if gateway_host == 'localhost' or 'NOW_CI_RUN' in os.environ:
+    if os.environ.get('NOW_TESTING', False):
+        # start_bff(9090, daemon=True)
+        # sleep(10)
+        bff_playground_host = 'http://localhost'
+        bff_port = '9090'
+        playground_port = '80'
+    elif gateway_host == 'localhost' or 'NOW_CI_RUN' in os.environ:
         # only deploy playground when running locally or when testing
         bff_playground_host, bff_port, playground_port = run_bff_playground.run(
             gateway_host=gateway_host,
@@ -175,6 +182,9 @@ def start_now(app_instance, **kwargs):
     return {
         'bff': bff_url,
         'playground': playground_url,
+        'bff_playground_host': bff_playground_host,
+        'bff_port': bff_port,
+        'playground_port': playground_port,
         'input_modality': app_instance.input_modality,
         'output_modality': app_instance.output_modality,
         'host': gateway_host_internal,

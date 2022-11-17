@@ -46,10 +46,10 @@ def test_search_music(resources_folder_path: str):
 
 @pytest.fixture()
 def cleanup(deployment_type, dataset, app):
-    print('start cleanup')
-    start = time.time()
     with tempfile.TemporaryDirectory() as tmpdir:
+        start = time.time()
         yield tmpdir
+        print('start cleanup')
         try:
             if deployment_type == 'remote':
                 with open(f'{tmpdir}/flow_details.json', 'r') as f:
@@ -256,7 +256,8 @@ def assert_deployment_queries(
     test_search_music,
     response,
 ):
-    url = f'http://localhost:30090/api/v1'
+    port = response.get('bff_port') if os.environ.get('NOW_TESTING', False) else '30090'
+    url = f'http://localhost:{port}/api/v1'
     host = response.get('host')
     # normal case
     request_body = get_search_request_body(

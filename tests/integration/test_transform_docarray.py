@@ -1,7 +1,8 @@
 import os
 
+import pytest
 from docarray import Document, DocumentArray, dataclass
-from docarray.typing import Text, Image
+from docarray.typing import Image, Text
 from jina import Flow
 
 from now.app.text_to_image.app import TextToImage
@@ -11,10 +12,9 @@ from now.constants import DatasetTypes
 from now.data_loading.data_loading import load_data
 from now.data_loading.transform_docarray import transform_uni_modal_data
 from now.demo_data import DemoDatasetNames
+from now.executor.indexer.in_memory import InMemoryIndexer
 from now.executor.preprocessor import NOWPreprocessor
 from now.now_dataclasses import UserInput
-from tests.executor.indexer.base.in_memory_indexer import InMemoryIndexer
-import pytest
 
 
 @pytest.fixture
