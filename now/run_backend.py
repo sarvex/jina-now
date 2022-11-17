@@ -173,7 +173,6 @@ def call_flow(
         show_progress=True,
         parameters=parameters,
         return_results=return_results,
-        max_attempts=5,
         continue_on_error=True,
     )
 

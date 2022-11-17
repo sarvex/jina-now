@@ -99,12 +99,8 @@ class EnvironmentVariables:
 
 def add_env_variables_to_flow(app_instance, env_dict: Dict):
 
-    with open(app_instance.flow_yaml) as fp:
-        flow_dict = yaml.safe_load(fp.read())
     with EnvironmentVariables(env_dict):
-        expanded_dict = JAML.expand_dict(flow_dict, env_dict)
-    with open(app_instance.flow_yaml, 'w') as output_f:
-        JAML.dump(expanded_dict, output_f, indent=2, allow_unicode=True, Dumper=Dumper)
+        app_instance.flow_yaml = JAML.expand_dict(app_instance.flow_yaml, env_dict)
 
 
 def write_env_file(env_file, config):
