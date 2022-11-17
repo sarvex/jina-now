@@ -17,9 +17,6 @@ on:
 jobs:
   python-script:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./scripts
     strategy:
       fail-fast: false
       matrix:
@@ -46,6 +43,7 @@ jobs:
         env:
           WOLF_TOKEN: ${{ secrets.WOLF_EXAMPLES_TOKEN }}
       - name: Deploy examples
+         working-directory: ./scripts
         run: pytest -v -s -m "not gpu" --splits 9 --group ${{ matrix.group }} --splitting-algorithm least_duration tests/
         env:
           WOLF_TOKEN: ${{ secrets.WOLF_EXAMPLES_TOKEN }}
