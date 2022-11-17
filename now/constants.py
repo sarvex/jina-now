@@ -7,8 +7,8 @@ from now.utils import BetterEnum
 
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.133-refactor-apps-2'
-NOW_PREPROCESSOR_VERSION = '0.0.101-refactor-apps-2'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.133-refactor-apps-3'
+NOW_PREPROCESSOR_VERSION = '0.0.101-refactor-apps-3'
 NOW_QDRANT_INDEXER_VERSION = '0.0.6-refactor-force-push-1'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.5-refactor-force-push-1'
 NOW_AUTOCOMPLETE_VERSION = '0.0.4-refactor-force-push-1'
@@ -59,10 +59,17 @@ class ModelDimensions(BetterEnum):
 
 SUPPORTED_FILE_TYPES = {
     Modalities.TEXT: ['txt', 'md'],
-    Modalities.IMAGE_TEXT: {
-        'image': ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'tif'],
-        'text': ['txt', 'md'],
-    },
+    Modalities.IMAGE_TEXT: [
+        'jpg',
+        'jpeg',
+        'png',
+        'gif',
+        'bmp',
+        'tiff',
+        'tif',
+        'txt',
+        'md',
+    ],
     Modalities.MUSIC: ['mp3', 'wav', 'ogg', 'flac'],
     Modalities.VIDEO: ['gif'],
 }

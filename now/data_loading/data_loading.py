@@ -50,21 +50,11 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
     if 'NOW_CI_RUN' in os.environ:
         if user_input.output_modality == 'image':
             da = DocumentArray(
-                [
-                    d
-                    for d in da
-                    if d.blob != b''
-                    or match_types(d.uri, app.supported_file_types['image'])
-                ]
+                [d for d in da if d.blob != b'' or d.mime_type.startswith('image')]
             )
         elif user_input.output_modality == 'text':
             da = DocumentArray(
-                [
-                    d
-                    for d in da
-                    if d.text != ''
-                    or match_types(d.uri, app.supported_file_types['text'])
-                ]
+                [d for d in da if d.text != '' or d.mime_type.startswith('text')]
             )
         da = da.shuffle()[:50]
     if (
