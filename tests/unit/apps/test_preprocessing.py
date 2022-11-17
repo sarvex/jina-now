@@ -32,7 +32,7 @@ def test_text_to_video_preprocessing_indexing(resources_folder_path):
     )
     da = transform_docarray(da, search_fields=[])
     da = app.preprocess(
-        da=da, user_input=UserInput(), process_target=True, process_query=False
+        da=da, user_input=UserInput(), process_index=True, process_query=False
     )
     assert len(da) == 1
     assert len(da[0].chunks[0].chunks) == 3
@@ -56,7 +56,7 @@ def test_text_preprocessing(app_cls, is_indexing):
     da = app.preprocess(
         da=da,
         user_input=UserInput(),
-        process_target=is_indexing,
+        process_index=is_indexing,
         process_query=not is_indexing,
     )
     assert len(da) == 1
@@ -83,7 +83,7 @@ def test_image_preprocessing(app_cls, is_indexing, resources_folder_path):
     da = app.preprocess(
         da=da,
         user_input=UserInput(),
-        process_target=is_indexing,
+        process_index=is_indexing,
         process_query=not is_indexing,
     )
     assert len(da) == 1
@@ -129,7 +129,7 @@ def test_image_preprocessing(app_cls, is_indexing, resources_folder_path):
 #     processed_da = app.preprocess(
 #         da=da,
 #         user_input=user_input,
-#         process_target=is_indexing,
+#         process_index=is_indexing,
 #         process_query=not is_indexing,
 #     )
 #     assert len(processed_da) == 1

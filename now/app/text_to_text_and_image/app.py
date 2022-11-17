@@ -117,16 +117,16 @@ class TextToTextAndImage(JinaNOWApp):
         self,
         da: DocumentArray,
         user_input: UserInput,
-        process_target: bool = False,
+        process_index: bool = False,
         process_query: bool = True,
     ) -> DocumentArray:
         # will be refactored soon
-        if not process_query and not process_target:
+        if not process_query and not process_index:
             raise Exception(
-                'Either `process_query` or `process_target` must be set to True.'
+                'Either `process_query` or `process_index` must be set to True.'
             )
         # Indexing
-        if process_target:
+        if process_index:
             return preprocess_nested_docs(da=da, user_input=user_input)
         # Query
         if process_query:

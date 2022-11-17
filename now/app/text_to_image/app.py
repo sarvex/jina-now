@@ -76,15 +76,15 @@ class TextToImage(JinaNOWApp):
         self,
         da: DocumentArray,
         user_input: UserInput,
-        process_target: bool = False,
+        process_index: bool = False,
         process_query: bool = True,
     ) -> DocumentArray:
-        if not process_query and not process_target:
+        if not process_query and not process_index:
             raise Exception(
-                'Either `process_query` or `process_target` must be set to True.'
+                'Either `process_query` or `process_index` must be set to True.'
             )
         modalities = []
-        if process_target:
+        if process_index:
             da = preprocess_images(da=da)
             modalities.append(Modalities.IMAGE)
         if process_query:

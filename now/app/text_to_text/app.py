@@ -84,17 +84,17 @@ class TextToText(JinaNOWApp):
         self,
         da: DocumentArray,
         user_input: UserInput,
-        process_target: bool = False,
+        process_index: bool = False,
         process_query: bool = True,
     ) -> DocumentArray:
-        if not process_query and not process_target:
+        if not process_query and not process_index:
             raise Exception(
-                'Either `process_query` or `process_target` must be set to True.'
+                'Either `process_query` or `process_index` must be set to True.'
             )
 
         split_by_sentences = False
         if (
-            process_target
+            process_index
             and user_input.dataset_type == DatasetTypes.PATH
             and user_input.dataset_path
             and os.path.isdir(user_input.dataset_path)
