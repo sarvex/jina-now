@@ -123,4 +123,4 @@ def filter_data(documents: DocumentArray, modalities: List[str]) -> DocumentArra
         document.chunks = [
             chunk for chunk in document.chunks if chunk.modality in modalities
         ]
-    return documents
+    return DocumentArray(d for d in documents if d.chunks)

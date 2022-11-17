@@ -153,9 +153,7 @@ class TextToVideo(JinaNOWApp):
                 for chunk in d.chunks:
                     chunk.text = 'loading' if chunk.text == 'loader' else chunk.text
 
-        da = filter_data(da, modalities)
-
-        return DocumentArray(d for d in da if d.chunks)
+        return filter_data(da, modalities)
 
     @property
     def bff_mapping_fns(self):
