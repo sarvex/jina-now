@@ -43,7 +43,7 @@ def get_flow():
         Flow(port_expose=9089)
         .add(
             uses=f'jinahub+docker://NOWPreprocessor/{NOW_PREPROCESSOR_VERSION}',
-            uses_with={'app': 'text_to_image', 'admin_emails': [admin_email]},
+            uses_with={'app': 'text_to_text', 'admin_emails': [admin_email]},
         )
         .add(
             host=EXTERNAL_CLIP_HOST,
