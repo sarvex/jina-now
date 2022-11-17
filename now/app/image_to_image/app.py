@@ -60,7 +60,7 @@ class ImageToImage(JinaNOWApp):
         self, dataset: DocumentArray, user_input: UserInput, kubectl_path
     ) -> Dict:
         indexer_config = get_indexer_config(len(dataset))
-        encoder_with, ocr_with = _get_clip_apps_with_dict(user_input)
+        encoder_with = _get_clip_apps_with_dict(user_input)
         env_dict = common_setup(
             app_instance=self,
             user_input=user_input,
@@ -77,7 +77,6 @@ class ImageToImage(JinaNOWApp):
             kubectl_path=kubectl_path,
             indexer_resources=indexer_config['indexer_resources'],
         )
-        env_dict.update(ocr_with)
         super().setup(dataset=dataset, user_input=user_input, kubectl_path=kubectl_path)
         return env_dict
 
