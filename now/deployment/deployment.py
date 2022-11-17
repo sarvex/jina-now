@@ -28,9 +28,9 @@ def get_or_create_eventloop():
             return asyncio.get_event_loop()
 
 
-def list_all_wolf(status='ALIVE', namespace='nowapi'):
+def list_all_wolf(status='Serving', namespace='nowapi'):
     loop = get_or_create_eventloop()
-    flows = loop.run_until_complete(CloudFlow().list_all(status=status))
+    flows = loop.run_until_complete(CloudFlow().list_all(phase=status))
     if flows is None:
         return []
     # filter by namespace - if the namespace is contained in the flow name
