@@ -115,7 +115,7 @@ def test_transform_inside_flow(input_type, single_modal_data, multi_modal_data):
             return_results=True,
         )
     assert query_res[0].matches
-    # assert len(query_res[0].matches) == num_expected_matches
+    assert len(query_res[0].matches) == num_expected_matches
 
 
 def test_uni_to_multi_modal(resources_folder_path, single_modal_data):
