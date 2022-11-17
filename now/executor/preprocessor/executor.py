@@ -105,7 +105,7 @@ class NOWPreprocessor(Executor):
             ''.join([random.choice(string.ascii_lowercase) for i in range(10)])
             + '.png',
         )
-        with urllib.request.urlopen(req) as fp:
+        with urllib.request.urlopen(req, timeout=10) as fp:
             buffer = fp.read()
             binary_fn = io.BytesIO(buffer)
             with open(tmp_fn, 'wb') as f:
