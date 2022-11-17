@@ -28,7 +28,6 @@ executors:
     env:
       JINA_LOG_LEVEL: DEBUG
   - name: encoder_clip
-    needs: preprocessor
     replicas: 3
     uses: ${{ ENV.ENCODER_NAME }}
     host: ${{ ENV.ENCODER_HOST }}
@@ -55,10 +54,6 @@ executors:
         $regex: image*
   - name: indexer
     uses: ${{ ENV.INDEXER_NAME }}
-    needs:
-      - encoder_clip
-      - ocr_detector
-    disable_reduce: true
     uses_with:
       traversal_paths: '@c,cc'
       dim: ${{ ENV.N_DIM }}

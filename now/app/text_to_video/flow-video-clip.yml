@@ -30,7 +30,6 @@ executors:
     port: ${{ ENV.ENCODER_PORT }}
     tls: ${{ ENV.IS_REMOTE_DEPLOYMENT }}
     external: ${{ ENV.IS_REMOTE_DEPLOYMENT }}
-    needs: preprocessor
     uses_with:
       traversal_paths: '@c,cc'
       access_paths: '@c,cc'
@@ -51,10 +50,6 @@ executors:
         $regex: image*
   - name: indexer
     uses: ${{ ENV.INDEXER_NAME }}
-    needs:
-      - encoder_clip
-      - ocr_detector
-    disable_reduce: true
     uses_with:
       traversal_paths: '@c,cc'
       dim: ${{ ENV.N_DIM }}

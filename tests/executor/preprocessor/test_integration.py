@@ -3,12 +3,11 @@ import os
 
 from docarray import Document, DocumentArray
 from jina import Flow
-from now.app.text_to_image.app import TextToImage
-from now.data_loading.data_loading import load_data
+
+from now.constants import TAG_OCR_DETECTOR_TEXT_IN_DOC
 from now.executor.preprocessor import NOWPreprocessor
 
-from now.demo_data import DemoDatasetNames
-from now.constants import Apps, DatasetTypes
+from now.constants import Apps
 from now.now_dataclasses import UserInput
 
 
@@ -71,6 +70,16 @@ def test_text_to_video(resources_folder_path):
                 res.chunks[0].chunks[0].blob
                 for res in encode_result
                 if res.chunks[0].chunks
+            ]
+        )
+        == 1
+    )
+    assert (
+        len(
+            [
+                tags[TAG_OCR_DETECTOR_TEXT_IN_DOC]
+                for tags in encode_result[:, 'tags']
+                if TAG_OCR_DETECTOR_TEXT_IN_DOC in tags
             ]
         )
         == 1

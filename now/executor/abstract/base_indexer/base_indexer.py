@@ -110,7 +110,7 @@ class NOWBaseIndexer(Executor):
         return docs
 
     @staticmethod
-    def set_tags_if_text_in_doc_matching_title(docs: DocumentArray):
+    def set_doc_has_text_tag(docs: DocumentArray):
         # update the tags of the documents to include the detected text
         for doc in docs:
             text_in_doc = doc.tags.pop(TAG_OCR_DETECTOR_TEXT_IN_DOC, '')
@@ -132,35 +132,13 @@ class NOWBaseIndexer(Executor):
         :param parameters: dictionary with options for indexing
         """
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
-        # merge the docs_matrix into the flat_docs
-        if (
-            docs_matrix
-            and len(docs_matrix) > 1
-            and all(len(da) > 0 for da in docs_matrix)
-        ):
-            flat_docs = DocumentArray()
-            for doc0, doc1 in zip(*[_da[traversal_paths] for _da in docs_matrix]):
-                if doc0.embedding is not None:
-                    doc_encoded = doc0
-                    doc_text = doc1
-                else:
-                    doc_encoded = doc1
-                    doc_text = doc0
-                doc_encoded.tags[TAG_OCR_DETECTOR_TEXT_IN_DOC] = doc_text.tags.pop(
-                    TAG_OCR_DETECTOR_TEXT_IN_DOC, ''
-                )
-                flat_docs.append(doc_encoded)
-        else:
-            flat_docs = docs[traversal_paths]
+        flat_docs = docs[traversal_paths]
         if len(flat_docs) == 0:
             return
-
         flat_docs = DocumentArray(
             [document for document in flat_docs if document.embedding is not None]
         )
-
-        self.set_tags_if_text_in_doc_matching_title(flat_docs)
-
+        self.set_doc_has_text_tag(flat_docs)
         flat_docs = self.maybe_drop_blob_tensor(flat_docs)
         self.index(flat_docs, parameters, **kwargs)
         self.extend_inmemory_docs_and_tags(flat_docs)
