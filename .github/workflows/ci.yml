@@ -133,7 +133,7 @@ jobs:
         if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
         env:
           NOW_PREPROCESSOR_VERSION: ${{ env.NOW_PREPROCESSOR_VERSION }}
-        run: JINA_AUTH_TOKEN=${{ secrets.NOW_PREPROCESSOR_JCLOUD_TOKEN }} jina hub --no-cache push --verbose --force-update NOWPreprocessor now/executor/preprocessor/. -t latest --protected-tag $NOW_PREPROCESSOR_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
+        run: JINA_AUTH_TOKEN=${{ secrets.NOW_PREPROCESSOR_JCLOUD_TOKEN }} jina hub push --no-cache --verbose --force-update NOWPreprocessor now/executor/preprocessor/. -t latest --protected-tag $NOW_PREPROCESSOR_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
 
   update-qdrant-executor-if-required:
     runs-on: ubuntu-latest
@@ -180,7 +180,7 @@ jobs:
         if: steps.check_has_executor_changed.outputs.has_changed == 'true'
         env:
           NOW_QDRANT_INDEXER_VERSION: ${{ env.NOW_QDRANT_INDEXER_VERSION }}
-        run: jina hub --no-cache push --verbose --force-update NOWQdrantIndexer15 now/executor/indexer/qdrant --secret ${{ secrets.NOW_QDRANT_EXECUTOR_SECRET }} -t latest --protected-tag $NOW_QDRANT_INDEXER_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
+        run: jina hub push --no-cache --verbose --force-update NOWQdrantIndexer15 now/executor/indexer/qdrant --secret ${{ secrets.NOW_QDRANT_EXECUTOR_SECRET }} -t latest --protected-tag $NOW_QDRANT_INDEXER_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
 
   update-ocr-executor-if-required:
     runs-on: ubuntu-latest
@@ -227,8 +227,8 @@ jobs:
         env:
           NOW_OCR_DETECTOR_VERSION: ${{ env.NOW_OCR_DETECTOR_VERSION }}
         run: |
-          jina hub --no-cache push --verbose --force-update NOWOCRDetector9 now/executor/ocr_detector --secret ${{ secrets.NOW_OCR_EXECUTOR_SECRET }} -t latest --protected-tag $NOW_OCR_DETECTOR_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
-          jina hub --no-cache push --verbose --force-update NOWOCRDetector9 now/executor/ocr_detector --secret ${{ secrets.NOW_OCR_EXECUTOR_SECRET }} -t latest-gpu --protected-tag $NOW_OCR_DETECTOR_VERSION-gpu -f now/executor/ocr_detector/Dockerfile.gpu --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
+          jina hub push --no-cache  --verbose --force-update NOWOCRDetector9 now/executor/ocr_detector --secret ${{ secrets.NOW_OCR_EXECUTOR_SECRET }} -t latest --protected-tag $NOW_OCR_DETECTOR_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
+          jina hub push --no-cache --verbose --force-update NOWOCRDetector9 now/executor/ocr_detector --secret ${{ secrets.NOW_OCR_EXECUTOR_SECRET }} -t latest-gpu --protected-tag $NOW_OCR_DETECTOR_VERSION-gpu -f now/executor/ocr_detector/Dockerfile.gpu --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
 
   update-bff-playground-if-required:
     runs-on: ubuntu-latest
@@ -340,7 +340,7 @@ jobs:
         if: steps.check_has_executor_changed.outputs.has_changed == 'true'
         env:
           NOW_ELASTIC_INDEXER_VERSION: ${{ env.NOW_ELASTIC_INDEXER_VERSION }}
-        run: jina hub --no-cache push --verbose --force-update ElasticIndexer now/executor/indexer/elastic --secret ${{ secrets.NOW_ELASTIC_EXECUTOR_SECRET }} -t latest --protected-tag $NOW_ELASTIC_INDEXER_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
+        run: jina hub push --no-cache  --verbose --force-update ElasticIndexer now/executor/indexer/elastic --secret ${{ secrets.NOW_ELASTIC_EXECUTOR_SECRET }} -t latest --protected-tag $NOW_ELASTIC_INDEXER_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
 
   update-autocomplete-executor-if-required:
     runs-on: ubuntu-latest
@@ -387,7 +387,7 @@ jobs:
         if: steps.check_has_executor_changed.outputs.has_changed == 'true'
         env:
           NOW_AUTOCOMPLETE_VERSION: ${{ env.NOW_AUTOCOMPLETE_VERSION }}
-        run: jina hub --no-cache push --verbose --force-update NOWAutoCompleteExecutor now/executor/autocomplete --secret ${{ secrets.NOW_AUTOCOMPLETE_SECRET }} -t latest --protected-tag $NOW_AUTOCOMPLETE_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
+        run: jina hub push --no-cache --verbose --force-update NOWAutoCompleteExecutor now/executor/autocomplete --secret ${{ secrets.NOW_AUTOCOMPLETE_SECRET }} -t latest --protected-tag $NOW_AUTOCOMPLETE_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
 
   core-test:
     runs-on: ubuntu-latest
