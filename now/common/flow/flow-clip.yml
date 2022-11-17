@@ -21,7 +21,6 @@ executors:
       app: ${{ ENV.APP }}
       admin_emails: ${{ ENV.ADMIN_EMAILS }}
       user_emails: ${{ ENV.USER_EMAILS }}
-      api_keys: ${{ ENV.API_KEY }}
     jcloud:
       resources:
         memory: 1G
@@ -39,16 +38,12 @@ executors:
       JINA_LOG_LEVEL: DEBUG
   - name: indexer
     uses: ${{ ENV.INDEXER_NAME }}
-    needs:
-      - encoder_clip
-      - ocr_detector
     disable_reduce: true
     uses_with:
       dim: ${{ ENV.N_DIM }}
       columns: ${{ ENV.COLUMNS }}
       admin_emails: ${{ ENV.ADMIN_EMAILS }}
       user_emails: ${{ ENV.USER_EMAILS }}
-      api_keys: ${{ ENV.API_KEY }}
     jcloud:
       capacity: on-demand
       resources:
