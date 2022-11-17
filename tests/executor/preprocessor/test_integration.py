@@ -10,7 +10,7 @@ from now.now_dataclasses import UserInput
 
 
 def test_executor_persistence(tmpdir):
-    e = NOWPreprocessor(Apps.TEXT_TO_TEXT, metas={'workspace': tmpdir})
+    e = NOWPreprocessor(Apps.SENTENCE_TO_SENTENCE, metas={'workspace': tmpdir})
     user_input = UserInput()
     text_docs = DocumentArray(
         [
@@ -30,13 +30,13 @@ def test_executor_persistence(tmpdir):
 
 
 def test_text_to_video(resources_folder_path):
-    app = Apps.IMAGE_TEXT_RETRIEVAL
+    app = Apps.TEXT_TO_VIDEO
     user_input = UserInput()
     text_docs = DocumentArray(
         [
-            Document(text='test'),
+            Document(chunks=[Document(text='test')]),
             Document(
-                uri=os.path.join(resources_folder_path, 'image', '5109112832.jpg')
+                uri=os.path.join(resources_folder_path, 'gif', 'folder1/file.gif')
             ),
         ]
     )
@@ -60,7 +60,17 @@ def test_text_to_video(resources_folder_path):
 
     assert len(result) == 1
     assert len(encode_result) == 2
-    assert len([text for text in encode_result.texts if text != '']) == 1
+    assert (
+        len(
+            [
+                chunk.text
+                for doc in encode_result
+                for chunk in doc.chunks
+                if chunk.text != ''
+            ]
+        )
+        == 1
+    )
     assert len([blob for blob in encode_result.blobs if blob != b'']) == 1
 
 
