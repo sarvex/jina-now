@@ -25,6 +25,8 @@ def preprocess_images(da: DocumentArray) -> DocumentArray:
         for chunk in d.chunks:
             if chunk.modality == Modalities.IMAGE:
                 convert_fn(chunk)
+                if 'uri' in d.tags:
+                    chunk.uri = d.tags['uri']
     return da
 
 

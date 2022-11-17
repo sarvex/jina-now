@@ -64,8 +64,6 @@ def transform_uni_modal_data(documents: DocumentArray) -> DocumentArray:
         new_doc.chunks[0].embedding = document.embedding
         new_doc.tags = document.tags
         new_doc.chunks[0].tags.update(document.tags)
-        if 'uri' in new_doc.tags:
-            new_doc.chunks[0].uri = new_doc.tags['uri']
         transformed_docs.append(new_doc)
 
     return transformed_docs
