@@ -4,7 +4,7 @@ import os
 from docarray import Document, DocumentArray
 from jina import Flow
 
-from now.constants import Apps
+from now.constants import TAG_OCR_DETECTOR_TEXT_IN_DOC, Apps
 from now.executor.preprocessor import NOWPreprocessor
 from now.now_dataclasses import UserInput
 
@@ -36,7 +36,8 @@ def test_text_to_video(resources_folder_path):
         [
             Document(text='test'),
             Document(
-                uri=os.path.join(resources_folder_path, 'image', '5109112832.jpg')
+                uri=os.path.join(resources_folder_path, 'image', '5109112832.jpg'),
+                modality='image',
             ),
         ]
     )
@@ -62,6 +63,16 @@ def test_text_to_video(resources_folder_path):
     assert len(encode_result) == 2
     assert len([text for text in encode_result.texts if text != '']) == 1
     assert len([blob for blob in encode_result.blobs if blob != b'']) == 1
+    assert (
+        len(
+            [
+                tags[TAG_OCR_DETECTOR_TEXT_IN_DOC]
+                for tags in encode_result[:, 'tags']
+                if TAG_OCR_DETECTOR_TEXT_IN_DOC in tags
+            ]
+        )
+        == 1
+    )
 
 
 def test_user_input_preprocessing():
