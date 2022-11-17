@@ -56,7 +56,7 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
             da = DocumentArray(
                 [d for d in da if d.text != '' or d.mime_type.startswith('text')]
             )
-        da = da.shuffle()[:50]
+        da = da[:50]
     if (
         user_input.dataset_name == DemoDatasetNames.MUSIC_GENRES_MIX
         or user_input.dataset_name == DemoDatasetNames.MUSIC_GENRES_ROCK
