@@ -4,7 +4,7 @@ from typing import Dict
 from docarray import DocumentArray
 
 from now.app.base.app import JinaNOWApp
-from now.common.preprocess import preprocess_text
+from now.common.preprocess import preprocess_text, filter_data
 from now.common.utils import common_setup, get_indexer_config
 from now.constants import Apps, DatasetTypes, Modalities, ModelDimensions
 from now.now_dataclasses import UserInput
@@ -37,6 +37,13 @@ class TextToText(JinaNOWApp):
     @property
     def required_docker_memory_in_gb(self) -> int:
         return 8
+
+    def get_index_query_access_paths(self, **kwargs) -> str:
+        """If `split_by_sentences` is set to True, the structure of the data
+        will have 2 level chunks. (That's the puspose of @cc)
+        Otherwise, we access documents on chunk level. (@c)
+        """
+        return '@c,cc'
 
     def set_flow_yaml(self, **kwargs):
         finetuning = kwargs.get('finetuning', False)
@@ -94,4 +101,5 @@ class TextToText(JinaNOWApp):
         ):
             # for text loaded from folder can't assume it is split by sentences
             split_by_sentences = True
-        return preprocess_text(da=da, split_by_sentences=split_by_sentences)
+        da = preprocess_text(da=da, split_by_sentences=split_by_sentences)
+        return filter_data(da, modalities=[Modalities.TEXT])

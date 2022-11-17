@@ -4,7 +4,7 @@ from typing import Dict, Tuple
 from docarray import DocumentArray
 
 from now.app.base.app import JinaNOWApp
-from now.common.preprocess import preprocess_images, preprocess_text
+from now.common.preprocess import preprocess_images, preprocess_text, filter_data
 from now.common.utils import _get_clip_apps_with_dict, common_setup, get_indexer_config
 from now.constants import CLIP_USES, Apps, DatasetTypes, Modalities
 from now.demo_data import DemoDatasetNames
@@ -38,6 +38,13 @@ class ImageToText(JinaNOWApp):
     @property
     def required_docker_memory_in_gb(self) -> int:
         return 8
+
+    def get_index_query_access_paths(self, **kwargs) -> str:
+        """If `split_by_sentences` is set to True, the structure of the data
+        will have 2 level chunks. (That's the puspose of @cc)
+        Otherwise, we access documents on chunk level. (@c)
+        """
+        return '@c,cc'
 
     @property
     def finetune_datasets(self) -> [Tuple]:
@@ -92,6 +99,7 @@ class ImageToText(JinaNOWApp):
             raise Exception(
                 'Either `process_query` or `process_target` must be set to True.'
             )
+        modalities = []
         if process_target:
             split_by_sentences = False
             if (
@@ -103,7 +111,9 @@ class ImageToText(JinaNOWApp):
                 # for text loaded from folder can't assume it is split by sentences
                 split_by_sentences = True
             da = preprocess_text(da=da, split_by_sentences=split_by_sentences)
+            modalities.append(Modalities.TEXT)
         if process_query:
             da = preprocess_images(da=da)
+            modalities.append(Modalities.IMAGE)
 
-        return da
+        return filter_data(da, modalities)

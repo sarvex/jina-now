@@ -8,7 +8,7 @@ from now.data_loading.es.connector import ElasticsearchConnector
 
 import logging
 
-from now.data_loading.transform_docarray import _transform_multi_modal_data
+from now.data_loading.transform_docarray import transform_multi_modal_data
 
 logging.getLogger("PIL.Image").setLevel(logging.CRITICAL + 1)
 
@@ -52,14 +52,12 @@ class ElasticsearchExtractor:
         )
         self._supported_pil_extensions = self._get_supported_image_extensions()
 
-    def extract(
-        self, search_fields: List[str], filter_fields: List[str]
-    ) -> DocumentArray:
+    def extract(self, search_fields: List[str]) -> DocumentArray:
         """
         Returns extracted data as a `DocumentArray` where every `Document`
         contains chunks for each field.
         For Example:
-        Document(tags={'filter_fields': {'color': 'red'}, 'date': '12-10-2022'},
+        Document(tags={'color': 'red', 'date': '12-10-2022'},
                 chunks=[
                     Document(content='hello', modality='text', tags={'field_name': 'title'}),
                     Document(content='https://bla.com/img.jpeg', modality='image', tags={'field_name': 'uris'}),
@@ -67,7 +65,6 @@ class ElasticsearchExtractor:
         )
 
         :param search_fields: List of field names used for searching.
-        :param filter_fields: List of field names used for filtering.
         :return: extracted documents.
         """
         docs = DocumentArray(
@@ -77,12 +74,10 @@ class ElasticsearchExtractor:
             int(position): chunk.tags['field_name']
             for position, chunk in enumerate(docs[0].chunks)
         }
-        docs.apply(
-            _transform_multi_modal_data(
-                field_names=field_names,
-                search_fields=search_fields,
-                filter_fields=filter_fields,
-            )
+        docs = transform_multi_modal_data(
+            documents=docs,
+            field_names=field_names,
+            search_fields=search_fields,
         )
         return docs
 

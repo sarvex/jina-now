@@ -5,16 +5,10 @@ from docarray import Document, DocumentArray
 
 from now.app.image_to_image.app import ImageToImage
 from now.app.image_to_text.app import ImageToText
-from now.app.music_to_music.app import MusicToMusic
 from now.app.text_to_image.app import TextToImage
 from now.app.text_to_text.app import TextToText
-from now.app.text_to_text_and_image.app import TextToTextAndImage
 from now.app.text_to_video.app import TextToVideo
-from now.constants import DatasetTypes
-from now.data_loading.data_loading import load_data
 from now.data_loading.transform_docarray import transform_docarray
-from now.demo_data import DemoDatasetNames
-from now.executor.preprocessor import NOWPreprocessor
 from now.now_dataclasses import UserInput
 
 
@@ -22,7 +16,7 @@ def test_text_to_video_preprocessing_query():
     """Test if the text to video preprocessing works for queries"""
     app = TextToVideo()
     da = DocumentArray([Document(text='test')])
-    da = transform_docarray(da, search_fields=[], filter_fields=[])
+    da = transform_docarray(da, search_fields=[])
     da = app.preprocess(da=da, user_input=UserInput())
 
     assert len(da) == 1
@@ -36,7 +30,7 @@ def test_text_to_video_preprocessing_indexing(resources_folder_path):
     da = DocumentArray(
         [Document(uri=os.path.join(resources_folder_path, 'gif/folder1/file.gif'))]
     )
-    da = transform_docarray(da, search_fields=[], filter_fields=[])
+    da = transform_docarray(da, search_fields=[])
     da = app.preprocess(
         da=da, user_input=UserInput(), process_target=True, process_query=False
     )
@@ -58,7 +52,7 @@ def test_text_preprocessing(app_cls, is_indexing):
     """Test if the text to text preprocessing works for queries and indexing"""
     app = TextToText()
     da = DocumentArray([Document(text='test')])
-    da = transform_docarray(da, search_fields=[], filter_fields=[])
+    da = transform_docarray(da, search_fields=[])
     da = app.preprocess(
         da=da,
         user_input=UserInput(),
@@ -85,7 +79,7 @@ def test_image_preprocessing(app_cls, is_indexing, resources_folder_path):
     app = app_cls()
     uri = os.path.join(resources_folder_path, 'image/5109112832.jpg')
     da = DocumentArray([Document(uri=uri)])
-    da = transform_docarray(da, search_fields=[], filter_fields=[])
+    da = transform_docarray(da, search_fields=[])
     da = app.preprocess(
         da=da,
         user_input=UserInput(),
@@ -112,7 +106,7 @@ def test_image_preprocessing(app_cls, is_indexing, resources_folder_path):
 #             )
 #         ]
 #     )
-#     da = transform_docarray(da, search_fields=[], filter_fields=[])
+#     da = transform_docarray(da, search_fields=[])
 #     da = app.preprocess(da=da, user_input=UserInput())
 #     assert len(da) == 1
 #     assert len(da[0].chunks) == 0

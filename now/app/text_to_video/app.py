@@ -16,6 +16,7 @@ from deployment.bff.app.v1.models.video import (
     NowVideoResponseModel,
 )
 from now.app.base.app import JinaNOWApp
+from now.common.preprocess import filter_data
 from now.common.utils import (
     _get_clip_apps_with_dict,
     common_setup,
@@ -138,28 +139,21 @@ class TextToVideo(JinaNOWApp):
                 print(f'Failed to process {d.id}, error: {e}')
             return d
 
+        modalities = []
         if process_target:
+            modalities.append(Modalities.VIDEO)
             for d in da:
                 for chunk in d.chunks:
                     if chunk.modality == Modalities.VIDEO:
                         convert_fn(chunk)
 
         if process_query:
+            modalities.append(Modalities.TEXT)
             for d in da:
                 for chunk in d.chunks:
                     chunk.text = 'loading' if chunk.text == 'loader' else chunk.text
 
-        if not process_query:
-            for d in da:
-                d.chunks = [
-                    chunk for chunk in d.chunks if chunk.modality == Modalities.VIDEO
-                ]
-
-        if not process_target:
-            for d in da:
-                d.chunks = [
-                    chunk for chunk in d.chunks if chunk.modality == Modalities.TEXT
-                ]
+        da = filter_data(da, modalities)
 
         return DocumentArray(d for d in da if d.chunks)
 

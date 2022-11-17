@@ -103,7 +103,6 @@ class UserInput(BaseModel):
 
     # Fields
     search_fields: Optional[List] = None
-    filter_fields: Optional[List] = None
 
     # ES related
     task_config: Optional[Task] = None

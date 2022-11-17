@@ -74,7 +74,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'dataset_type': DatasetTypes.DOCARRAY,
             'dataset_name': 'xxx',
             'search_fields': 'x, y',
-            'filter_fields': 'z',
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -87,7 +86,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'dataset_type': DatasetTypes.DOCARRAY,
             'dataset_name': 'xxx',
             'search_fields': 'x, y',
-            'filter_fields': 'z',
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -100,7 +98,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'dataset_type': DatasetTypes.PATH,
             'dataset_path': 'xxx',
             'search_fields': 'x, y',
-            'filter_fields': 'z',
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -113,7 +110,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'dataset_type': DatasetTypes.URL,
             'dataset_url': 'xxx',
             'search_fields': 'x, y',
-            'filter_fields': 'z',
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -126,7 +122,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'dataset_type': DatasetTypes.DOCARRAY,
             'dataset_name': 'xxx',
             'search_fields': 'x, y',
-            'filter_fields': 'z',
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -201,6 +196,5 @@ def test_configure_user_input(
     user_input.__dict__.update({'app_instance': None})
     if expected_user_input.dataset_type != DatasetTypes.DEMO:
         expected_user_input.search_fields = ['x', 'y']
-        expected_user_input.filter_fields = ['z']
 
     assert user_input == expected_user_input

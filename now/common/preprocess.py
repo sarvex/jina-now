@@ -1,3 +1,5 @@
+from typing import List
+
 from docarray import Document, DocumentArray
 
 from now.constants import Modalities
@@ -72,17 +74,11 @@ def preprocess_text(
         return ret
 
     for d in da:
-        new_chunks = []
         for chunk in d.chunks:
             if chunk.modality == Modalities.TEXT:
                 convert_fn(chunk)
                 if split_by_sentences:
-                    new_chunks.extend(gen_split_by_sentences(chunk))
-                else:
-                    new_chunks.append(chunk)
-            else:
-                new_chunks.append(chunk)
-        d.chunks = new_chunks
+                    chunk.chunks = gen_split_by_sentences(chunk)
     return da
 
 
@@ -115,3 +111,16 @@ def preprocess_nested_docs(da: DocumentArray, user_input: UserInput) -> Document
             for text, uri in zip(texts, uris)
         ]
     )
+
+
+def filter_data(documents: DocumentArray, modalities: List[str]) -> DocumentArray:
+    """Filters data based on modalities.
+
+    :param documents: Documents to be filtered.
+    :param modalities: List of modalities that should be kept.
+    """
+    for document in documents:
+        document.chunks = [
+            chunk for chunk in document.chunks if chunk.modality in modalities
+        ]
+    return documents

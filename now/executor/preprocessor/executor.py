@@ -80,7 +80,6 @@ class NOWPreprocessor(Executor):
             docs = transform_docarray(
                 documents=docs,
                 search_fields=self.user_input.search_fields or [],
-                filter_fields=self.user_input.filter_fields or [],
             )
             docs = self.app.preprocess(
                 da=docs,

@@ -205,22 +205,6 @@ def _parse_search_fields(user_input: UserInput):
     ]
 
 
-FILTER_FIELDS = DialogOptions(
-    name='filter_fields',
-    prompt_message='Enter comma-separated filter fields:',
-    prompt_type='input',
-    depends_on=DATASET_TYPE,
-    conditional_check=lambda user_input: user_input.dataset_type != DatasetTypes.DEMO,
-    post_func=lambda user_input, **kwargs: _parse_filter_fields(user_input),
-)
-
-
-def _parse_filter_fields(user_input: UserInput):
-    user_input.filter_fields = [
-        field.strip() for field in user_input.filter_fields.split(',')
-    ]
-
-
 ES_INDEX_NAME = DialogOptions(
     name='es_index_name',
     prompt_message='Please enter the name of your Elasticsearch index:',
@@ -414,34 +398,9 @@ def _cluster_running(cluster):
     return True
 
 
-# def _parse_custom_data_from_cli(user_input: UserInput, **kwargs) -> None:
-#     data = user_input.data
-#     if data == 'custom':
-#         return
-#
-#     app_instance = user_input.app_instance
-#     for k, v in enumerate(AVAILABLE_DATASET[app_instance.output_modality]):
-#         if v[0] == data:
-#             return
-#
-#     try:
-#         data = os.path.expanduser(data)
-#     except Exception:
-#         pass
-#     if os.path.exists(data):
-#         user_input.dataset_type = DatasetTypes.PATH
-#         user_input.dataset_path = data
-#     elif 'http' in data:
-#         user_input.dataset_type = DatasetTypes.URL
-#         user_input.dataset_url = data
-#     else:
-#         user_input.dataset_type = DatasetTypes.DOCARRAY
-#         user_input.dataset_name = data
-
-
 app_name = [APP_NAME]
 data_type = [DATASET_TYPE]
-data_fields = [SEARCH_FIELDS, FILTER_FIELDS]
+data_fields = [SEARCH_FIELDS]
 data_demo = [DEMO_DATA]
 data_da = [DOCARRAY_NAME, DATASET_PATH, DATASET_URL]
 data_s3 = [DATASET_PATH_S3, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION_NAME]

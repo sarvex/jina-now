@@ -126,8 +126,8 @@ def test_uni_to_multi_modal(resources_folder_path, single_modal_data):
             tags={'color': 'red'},
         )
     )
-    transformed_data = transform_uni_modal_data(documents=data, filter_fields=['color'])
+    transformed_data = transform_uni_modal_data(documents=data)
 
     assert len(transformed_data) == len(data)
-    assert 'color' in transformed_data[0].tags['filter_fields']
+    assert 'color' in transformed_data[0].tags
     assert len(transformed_data[1].chunks) == 1
