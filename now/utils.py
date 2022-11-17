@@ -113,6 +113,17 @@ def write_env_file(env_file, config):
         fp.write(config_string)
 
 
+def write_flow_file(flow_yaml_content, new_yaml_file_path):
+    with open(new_yaml_file_path, 'w') as f:
+        JAML.dump(
+            flow_yaml_content,
+            f,
+            indent=2,
+            allow_unicode=True,
+            Dumper=Dumper,
+        )
+
+
 @hubble.login_required
 def jina_auth_login():
     pass

@@ -148,7 +148,7 @@ class NOWBaseIndexer(Executor):
                 else:
                     doc_encoded = doc1
                     doc_text = doc0
-                doc_encoded.tags[TAG_OCR_DETECTOR_TEXT_IN_DOC] = doc_text.pop(
+                doc_encoded.tags[TAG_OCR_DETECTOR_TEXT_IN_DOC] = doc_text.tags.pop(
                     TAG_OCR_DETECTOR_TEXT_IN_DOC, ''
                 )
                 flat_docs.append(doc_encoded)

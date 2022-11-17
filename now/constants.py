@@ -6,11 +6,11 @@ from now.utils import BetterEnum
 # from docarray import __version__ as docarray_version
 
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.130-feat-migrate-jcloud-2'
-NOW_PREPROCESSOR_VERSION = '0.0.97-feat-migrate-jcloud-2'
-NOW_QDRANT_INDEXER_VERSION = '0.0.5-refactor-wrap-auth-executor-2'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.4-refactor-wrap-auth-executor-2'
-NOW_AUTOCOMPLETE_VERSION = '0.0.2-refactor-wrap-auth-executor-2'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.131-refactor-breakpoints-in-executors-11'
+NOW_PREPROCESSOR_VERSION = '0.0.99-refactor-force-push-1'
+NOW_QDRANT_INDEXER_VERSION = '0.0.6-refactor-force-push-1'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.5-refactor-force-push-1'
+NOW_AUTOCOMPLETE_VERSION = '0.0.4-refactor-force-push-1'
 NOW_OCR_DETECTOR_VERSION = '0.0.1-feat-matching-text-82'
 
 
@@ -83,3 +83,4 @@ SURVEY_LINK = 'https://10sw1tcpld4.typeform.com/to/VTAyYRpR?utm_source=cli'
 
 TAG_OCR_DETECTOR_TEXT_IN_DOC = '_ocr_detector_text_in_doc'
 TAG_INDEXER_DOC_HAS_TEXT = '_indexer_doc_has_text'
+EXECUTOR_PREFIX = 'jinahub+docker://'

@@ -14,6 +14,7 @@ from jina.helper import random_port
 
 from now.app.base.app import JinaNOWApp
 from now.constants import (
+    EXECUTOR_PREFIX,
     EXTERNAL_CLIP_HOST,
     EXTERNAL_OCR_HOST,
     NOW_AUTOCOMPLETE_VERSION,
@@ -58,16 +59,17 @@ def common_get_flow_env_dict(
 
     config = {
         'JINA_VERSION': jina_version,
-        'ENCODER_NAME': f'jinahub+docker://{encoder_uses}',
+        'ENCODER_NAME': f'{EXECUTOR_PREFIX}{encoder_uses}',
+        'CAST_CONVERT_NAME': f'{EXECUTOR_PREFIX}CastNMoveNowExecutor/v0.0.3',
         'N_DIM': finetune_settings.finetune_layer_size
         if finetune_settings.perform_finetuning
         or user_input.app_instance.app_name == 'music_to_music'
         else pre_trained_embedding_size,
         'PRE_TRAINED_EMBEDDINGS_SIZE': pre_trained_embedding_size,
-        'INDEXER_NAME': f'jinahub+docker://{indexer_uses}',
+        'INDEXER_NAME': f'{EXECUTOR_PREFIX}{indexer_uses}',
         'PREFETCH': PREFETCH_NR,
-        'PREPROCESSOR_NAME': f'jinahub+docker://NOWPreprocessor/{NOW_PREPROCESSOR_VERSION}',
-        'AUTOCOMPLETE_EXECUTOR_NAME': f'jinahub+docker://NOWAutoCompleteExecutor/{NOW_AUTOCOMPLETE_VERSION}',
+        'PREPROCESSOR_NAME': f'{EXECUTOR_PREFIX}NOWPreprocessor/{NOW_PREPROCESSOR_VERSION}',
+        'AUTOCOMPLETE_EXECUTOR_NAME': f'{EXECUTOR_PREFIX}NOWAutoCompleteExecutor/{NOW_AUTOCOMPLETE_VERSION}',
         'APP': user_input.app_instance.app_name,
         'COLUMNS': tags,
         'ADMIN_EMAILS': user_input.admin_emails or [] if user_input.secured else [],
@@ -217,9 +219,6 @@ def get_indexer_config(
 
 
 def _extract_tags_for_indexer(d: Document, user_input):
-    print(
-        'We assume all tags follow the same structure, only first json file will be used to determine structure'
-    )
     with tempfile.TemporaryDirectory() as tmpdir:
         if user_input and user_input.dataset_type == DatasetTypes.S3_BUCKET:
             _maybe_download_from_s3(

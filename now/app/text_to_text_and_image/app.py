@@ -10,6 +10,7 @@ from now.app.base.app import JinaNOWApp
 from now.common.preprocess import preprocess_nested_docs, preprocess_text
 from now.common.utils import get_indexer_config
 from now.constants import (
+    EXECUTOR_PREFIX,
     NOW_AUTOCOMPLETE_VERSION,
     NOW_PREPROCESSOR_VERSION,
     Apps,
@@ -160,7 +161,7 @@ class TextToTextAndImage(JinaNOWApp):
 
         env_dict[
             'PREPROCESSOR_NAME'
-        ] = f'jinahub+docker://NOWPreprocessor/{NOW_PREPROCESSOR_VERSION}'
+        ] = f'{EXECUTOR_PREFIX}NOWPreprocessor/{NOW_PREPROCESSOR_VERSION}'
         env_dict['APP'] = self.app_name
         indexer_config = get_indexer_config(
             len(dataset),
@@ -169,11 +170,12 @@ class TextToTextAndImage(JinaNOWApp):
             deployment_type=user_input.deployment_type,
         )
         env_dict['HOSTS'] = indexer_config.get('hosts')
-        env_dict['INDEXER_NAME'] = f"jinahub+docker://{indexer_config['indexer_uses']}"
+        env_dict['INDEXER_NAME'] = f"{EXECUTOR_PREFIX}{indexer_config['indexer_uses']}"
         env_dict['INDEXER_MEM'] = indexer_config.get('indexer_resources', {}).get(
             'INDEXER_MEM'
         )
         env_dict['JINA_VERSION'] = jina_version
+        env_dict['ENCODER_NAME'] = f"{EXECUTOR_PREFIX}FinetunerExecutor/v0.9.2"
         env_dict['N_DIM'] = [ModelDimensions.SBERT, ModelDimensions.CLIP]
         env_dict['ADMIN_EMAILS'] = (
             user_input.admin_emails or [] if user_input.secured else []
@@ -188,7 +190,6 @@ class TextToTextAndImage(JinaNOWApp):
         env_dict['API_KEY'] = (
             [user_input.api_key] if user_input.secured and user_input.api_key else []
         )
-
         self.set_flow_yaml()
         super().setup(dataset, user_input, kubectl_path)
         return env_dict
