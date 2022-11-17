@@ -65,8 +65,8 @@ def index(f):
         parameters={
             'jwt': get_request_body()['jwt'],
             'user_input': UserInput().__dict__,
-            'access_paths': '@c',
-            'traversal_paths': '@c',
+            'access_paths': '@c,cc',  # text2text app
+            'traversal_paths': '@c,cc',
         },
     )
 
