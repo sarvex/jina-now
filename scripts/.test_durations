@@ -1,0 +1,8 @@
+{
+    "scripts/tests/test_deploy_examples.py::test_deploy_examples[to_deploy0]": 10.0027607180000002174,
+    "scripts/tests/test_deploy_examples.py::test_deploy_examples[to_deploy1]": 10.0007145190000001911,
+    "scripts/tests/test_deploy_examples.py::test_deploy_examples[to_deploy2]": 10.0007638919999997107,
+    "scripts/tests/test_deploy_examples.py::test_deploy_examples[to_deploy3]": 10.0006537339999996838,
+    "scripts/tests/test_deploy_examples.py::test_deploy_examples[to_deploy4]": 10.0007337739999999648,
+    "scripts/tests/test_deploy_examples.py::test_deploy_examples[to_deploy5]": 10.0008170900000004089
+}
