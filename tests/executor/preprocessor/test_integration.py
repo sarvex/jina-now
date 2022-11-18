@@ -77,9 +77,9 @@ def test_text_to_video(resources_folder_path):
     assert (
         len(
             [
-                tags[TAG_OCR_DETECTOR_TEXT_IN_DOC]
-                for tags in encode_result[:, 'tags']
-                if TAG_OCR_DETECTOR_TEXT_IN_DOC in tags
+                document.chunks[0].tags.get(TAG_OCR_DETECTOR_TEXT_IN_DOC)
+                for document in encode_result
+                if TAG_OCR_DETECTOR_TEXT_IN_DOC in document.chunks[0].tags
             ]
         )
         == 1
