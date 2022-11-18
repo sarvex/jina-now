@@ -493,3 +493,40 @@ class TestBaseIndexer:
             assert matches[2].blob == inputs[2].chunks[0].blob
             assert matches[3].blob == b''
             assert matches[4].tensor is None
+
+    def test_curate_endpoint(self, tmpdir, indexer):
+        """Test indexing does not return anything"""
+        metas = {'workspace': str(tmpdir)}
+        docs = self.gen_docs(NUMBER_OF_DOCS)
+        f = Flow().add(
+            uses=indexer,
+            uses_with={
+                'dim': DIM,
+            },
+            uses_metas=metas,
+        )
+        with f:
+            f.post(
+                on='/curate',
+                parameters={
+                    'query_to_filter': {
+                        'query1': [
+                            {
+                                'id': {'$eq': '3'}
+                            },  # third element is selected and should be the first match in the response
+                            {'tags__internal_id': {'$eq': 'id1'}},
+                        ],
+                        'query2': [
+                            {'uri': {'$eq': 'uri2'}},
+                            {'tags__color': {'$eq': 'red'}},
+                        ],
+                    }
+                },
+            )
+            f.index(docs, return_results=True)
+            result = f.search(
+                inputs=[Document(text='query1', embedding=np.array([0.1] * 128))],
+                return_results=True,
+            )
+            assert len(result) == 1
+            assert result[0].matches[0].id == '3'
