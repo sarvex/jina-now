@@ -98,6 +98,8 @@ class NOWPreprocessor(Executor):
                 else doc.id
             ]
             doc.tags[TAG_OCR_DETECTOR_TEXT_IN_DOC] = text_in_doc.strip()
+            if 'uri' in doc.tags:
+                doc.uri = doc.tags['uri']
 
     @staticmethod
     def _save_uri_to_tmp_file(uri, tmpdir) -> str:
