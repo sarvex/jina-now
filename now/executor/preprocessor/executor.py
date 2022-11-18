@@ -146,6 +146,7 @@ class NOWPreprocessor(Executor):
             )
             if is_indexing:
                 self._ocr_detect_text(docs)
+
             # as _maybe_download_from_s3 moves S3 URI to tags['uri'], need to move it back for post-processor & accurate
             # results.
             if (
