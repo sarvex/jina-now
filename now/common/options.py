@@ -70,6 +70,7 @@ APP_NAME = DialogOptions(
     name='flow_name',
     prompt_message='Choose a name for your application:',
     prompt_type='input',
+    is_terminal_command=True,
 )
 
 
@@ -308,6 +309,7 @@ SECURED = DialogOptions(
         {'name': '✅ yes', 'value': True},
     ],
     depends_on=DEPLOYMENT_TYPE,
+    is_terminal_command=True,
     conditional_check=lambda user_inp: user_inp.deployment_type == 'remote',
 )
 
@@ -323,7 +325,7 @@ API_KEY = DialogOptions(
     depends_on=SECURED,
     is_terminal_command=True,
     description='Pass an api_key to access the flow once the deployment is complete. ',
-    conditional_check=lambda user_inp: user_inp.secured,
+    conditional_check=lambda user_inp: user_inp.secured.lower() == 'true',
 )
 
 ADDITIONAL_USERS = DialogOptions(
@@ -335,7 +337,7 @@ ADDITIONAL_USERS = DialogOptions(
         {'name': '⛔ no', 'value': False},
     ],
     depends_on=SECURED,
-    conditional_check=lambda user_inp: user_inp.secured,
+    conditional_check=lambda user_inp: user_inp.secured.lower() == 'true',
 )
 
 USER_EMAILS = DialogOptions(
