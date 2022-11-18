@@ -27,13 +27,13 @@ class NOWBaseIndexer(Executor):
         columns: Optional[List] = None,
         metric: str = 'cosine',
         limit: int = 10,
-        traversal_paths: str = '@r',
+        traversal_paths: str = '@c',
         max_values_per_tag: int = 10,
         *args,
         **kwargs,
     ):
         """
-        :param dim: Dimensionality of vectors to index
+        :param dim: Dimensionality of vectors to index.
         :param columns: List of tuples of the form (column_name, str_type). Here str_type must be a string that can be
         parsed as a valid Python type.
         :param metric: Distance metric type. Can be 'euclidean', 'inner_product', or 'cosine'
@@ -69,7 +69,7 @@ class NOWBaseIndexer(Executor):
 
     @secure_request(on='/tags', level=SecurityLevel.USER)
     def get_tags_and_values(self, **kwargs):
-        """Returns tags and their possible values
+        """Returns tags and their possible values.
 
         for example if indexed docs are the following:
             docs = DocumentArray([
@@ -80,14 +80,12 @@ class NOWBaseIndexer(Executor):
 
         the resulting response would be a document array with
         one document containing a dictionary in tags like the following:
-        {'tags':{'color':['red', 'blue'], 'greeting':['hello']}}
+        {'tags':{'color':['red', 'blue'], 'greeting':['hello']}}.
         """
-
         count_dict = defaultdict(lambda: defaultdict(int))
         for tags in self.doc_id_tags.values():
             for key, value in tags.items():
                 count_dict[key][value] += 1
-
         tag_to_values = dict()
         for key, value_to_count in count_dict.items():
             sorted_values = sorted(
@@ -101,7 +99,7 @@ class NOWBaseIndexer(Executor):
 
     @secure_request(on='/list', level=SecurityLevel.USER)
     def list(self, parameters: dict = {}, **kwargs):
-        """List all indexed documents.
+        """List all indexed documents
         :param parameters: dictionary with limit and offset
         - offset (int): number of documents to skip
         - limit (int): number of retrieved documents
@@ -110,7 +108,7 @@ class NOWBaseIndexer(Executor):
         offset = int(parameters.get('offset', 0))
         # add removal of duplicates
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
-        if traversal_paths == '@c':
+        if traversal_paths == '@c,cc':
             docs = DocumentArray()
             chunks_size = int(parameters.get('chunks_size', 3))
             parent_ids = set()
@@ -151,9 +149,10 @@ class NOWBaseIndexer(Executor):
         flat_docs = docs[traversal_paths]
         if len(flat_docs) == 0:
             return
-
+        flat_docs = DocumentArray(
+            [document for document in flat_docs if document.embedding is not None]
+        )
         self.set_doc_has_text_tag(flat_docs)
-
         flat_docs = self.maybe_drop_blob_tensor(flat_docs)
         self.index(flat_docs, parameters, **kwargs)
         self.extend_inmemory_docs_and_tags(flat_docs)
@@ -175,16 +174,19 @@ class NOWBaseIndexer(Executor):
 
     @secure_request(on='/search', level=SecurityLevel.USER)
     def search_endpoint(
-        self, docs: Optional[DocumentArray] = None, parameters: dict = {}, **kwargs
+        self,
+        docs: Optional[DocumentArray] = None,
+        parameters: dict = {},
+        **kwargs,
     ):
-        """Perform a vector similarity search and retrieve Document matches"""
+        """Perform a vector similarity search and retrieve `Document` matches."""
         limit = int(parameters.get('limit', self.limit))
         search_filter_raw = parameters.get('filter', {})
         search_filter_orig = deepcopy(search_filter_raw)
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
         docs = docs[traversal_paths][:1]  # only search on the first document for now
 
-        if traversal_paths == '@c':
+        if traversal_paths == '@c,cc':
             retrieval_limit = limit * 3
         else:
             retrieval_limit = limit
@@ -293,7 +295,7 @@ class NOWBaseIndexer(Executor):
     ):
         docs_copy = deepcopy(docs)
         self.search(docs_copy, parameters, retrieval_limit, search_filter)
-        if traversal_paths == '@c':
+        if traversal_paths == '@c,cc':
             merge_matches_sum(docs_copy, limit)
         return docs_copy
 

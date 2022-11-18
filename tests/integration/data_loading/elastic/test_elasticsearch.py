@@ -12,8 +12,7 @@ def test_elasticsearch_data_loading(setup_online_shop_db, es_connection_params):
     user_input = UserInput()
     user_input.dataset_type = DatasetTypes.ELASTICSEARCH
     user_input.es_index_name = index_name
-    user_input.es_image_fields = ['uris']
-    user_input.es_text_fields = ['title', 'text']
+    user_input.search_fields = ['uris', 'title', 'text']
     user_input.es_host_name = connection_str
 
     transformed_docs = load_data(app=JinaNOWApp(), user_input=user_input)
@@ -24,3 +23,5 @@ def test_elasticsearch_data_loading(setup_online_shop_db, es_connection_params):
     assert sorted(
         [doc.tags['field_name'] for doc in transformed_docs[0].chunks]
     ) == sorted(['title', 'text', 'uris'])
+    assert 'product_id' in transformed_docs[0].tags
+    assert 'url' in transformed_docs[0].tags

@@ -40,7 +40,6 @@ def configure_option(option: DialogOptions, user_input: UserInput, **kwargs):
     # If there is any pre function then invoke that - commonly used to fill choices if needed
     # if inspect.isfunction(option.pre_func):
     #     option.post_func(user_input, option, **kwargs)
-
     # Check if it is dependent on some other dialog options
     if option.depends_on and not option.conditional_check(user_input):
         return
@@ -53,7 +52,6 @@ def configure_option(option: DialogOptions, user_input: UserInput, **kwargs):
         **option.__dict__,
         **kwargs,
     )
-
     if hasattr(user_input, option.name):
         setattr(user_input, option.name, val)
 

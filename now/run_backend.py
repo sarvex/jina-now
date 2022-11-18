@@ -126,8 +126,8 @@ def index_docs(user_input, dataset, client):
     print(f"▶ indexing {len(dataset)} documents")
     params = {
         'user_input': user_input.__dict__,
-        'traversal_paths': user_input.app_instance.index_query_access_paths,
-        'access_paths': user_input.app_instance.index_query_access_paths,
+        'traversal_paths': user_input.app_instance.get_index_query_access_paths(),
+        'access_paths': user_input.app_instance.get_index_query_access_paths(),
     }
     if user_input.secured:
         params['jwt'] = user_input.jwt
@@ -169,7 +169,6 @@ def call_flow(
                 print(e)
                 print(traceback.format_exc())
             sleep(1)
-
     response = client.post(
         on=endpoint,
         request_size=request_size,
@@ -180,7 +179,6 @@ def call_flow(
         max_attempts=5,
         continue_on_error=True,
     )
-
     if return_results and response:
         return DocumentArray.from_json(response.to_json())
 
