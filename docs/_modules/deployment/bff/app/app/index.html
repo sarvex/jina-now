@@ -296,8 +296,8 @@
     <span class="n">music2music</span><span class="p">,</span>
     <span class="n">text2text</span><span class="p">,</span>
     <span class="n">txt2img</span><span class="p">,</span>
-    <span class="n">txt2video</span><span class="p">,</span>
     <span class="n">txt2txt_and_img</span><span class="p">,</span>
+    <span class="n">txt2video</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="n">logging</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">dictConfig</span><span class="p">(</span><span class="n">api_settings</span><span class="o">.</span><span class="n">DEFAULT_LOGGING_CONFIG</span><span class="p">)</span>
@@ -435,15 +435,13 @@
 <span class="n">application</span> <span class="o">=</span> <span class="n">build_app</span><span class="p">()</span>
 
 
-<div class="viewcode-block" id="run_server"><a class="viewcode-back" href="../../../../../api/deployment.bff.app.app/#deployment.bff.app.app.run_server">[docs]</a><span class="k">def</span> <span class="nf">run_server</span><span class="p">():</span>
+<div class="viewcode-block" id="run_server"><a class="viewcode-back" href="../../../../../api/deployment.bff.app.app/#deployment.bff.app.app.run_server">[docs]</a><span class="k">def</span> <span class="nf">run_server</span><span class="p">(</span><span class="n">port</span><span class="o">=</span><span class="mi">8080</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Run server.&quot;&quot;&quot;</span>
     <span class="n">app</span> <span class="o">=</span> <span class="n">build_app</span><span class="p">()</span>
-
-    <span class="c1"># start the server!</span>
     <span class="n">uvicorn</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
         <span class="n">app</span><span class="p">,</span>
         <span class="n">host</span><span class="o">=</span><span class="s1">&#39;0.0.0.0&#39;</span><span class="p">,</span>
-        <span class="n">port</span><span class="o">=</span><span class="mi">8080</span><span class="p">,</span>
+        <span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">,</span>
         <span class="n">loop</span><span class="o">=</span><span class="s1">&#39;uvloop&#39;</span><span class="p">,</span>
         <span class="n">http</span><span class="o">=</span><span class="s1">&#39;httptools&#39;</span><span class="p">,</span>
     <span class="p">)</span></div>
@@ -451,7 +449,7 @@
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">run_server</span><span class="p">()</span>
+        <span class="n">run_server</span><span class="p">(</span><span class="mi">9090</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">))</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span>
@@ -473,7 +471,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Nov 10, 2022.
+                            Last updated on Nov 18, 2022.
                         </div>
                     </div>
                     <div class="right-details">
