@@ -64,6 +64,7 @@ def transform_uni_modal_data(documents: DocumentArray) -> DocumentArray:
         new_doc.chunks[0].embedding = document.embedding
         new_doc.tags = document.tags
         new_doc.chunks[0].tags.update(document.tags)
+        new_doc.chunks[0].mime_type = new_doc.chunks[0].modality
         transformed_docs.append(new_doc)
 
     return transformed_docs
@@ -97,6 +98,7 @@ def transform_multi_modal_data(
                         content=chunk.content,
                         uri=chunk.uri,
                         modality=modality,
+                        mime_type=modality,
                         tags={'field_name': field_name},
                     )
                 )
