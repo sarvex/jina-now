@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 
 import hubble
 from docarray import Document, DocumentArray
@@ -247,7 +247,8 @@ class TextToTextAndImage(JinaNOWApp):
             return 'CLIPLoss'
         return 'TripletMarginLoss'
 
-    @property
-    def get_index_query_access_paths(self) -> str:
+    def get_index_query_access_paths(
+        self, search_fields: Optional[List[str]] = None
+    ) -> str:
         """Gives access paths for indexing and searching."""
         return '@c'
