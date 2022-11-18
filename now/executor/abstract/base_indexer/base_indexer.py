@@ -65,7 +65,7 @@ class NOWBaseIndexer(Executor):
         if path and os.path.exists(path):
             with open(path, 'r') as f:
                 return json.load(f)
-        return {}
+        return defaultdict(list)
 
     @secure_request(on='/tags', level=SecurityLevel.USER)
     def get_tags_and_values(self, **kwargs):
