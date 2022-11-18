@@ -120,5 +120,5 @@ def test_deploy_examples(to_deploy):
     os.environ['NOW_EXAMPLES'] = 'True'
     os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
 
-    # deploy(*to_deploy)
-    print('Deployed', to_deploy)
+    print(f'Deploying {to_deploy}...')
+    deploy(*to_deploy)
