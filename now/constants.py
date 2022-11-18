@@ -8,7 +8,7 @@ from now.utils import BetterEnum
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.131-refactor-breakpoints-in-executors-11'
 NOW_PREPROCESSOR_VERSION = '0.0.99-ocr-in-preprocessor-5'
-NOW_QDRANT_INDEXER_VERSION = '0.0.6-ocr-in-preprocessor-5'
+NOW_QDRANT_INDEXER_VERSION = '0.0.7-feat-curation-1'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.5-refactor-force-push-1'
 NOW_AUTOCOMPLETE_VERSION = '0.0.4-refactor-force-push-1'
 

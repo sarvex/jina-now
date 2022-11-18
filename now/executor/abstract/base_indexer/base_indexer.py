@@ -1,3 +1,5 @@
+import json
+import os
 from collections import defaultdict
 from copy import deepcopy
 from sys import maxsize
@@ -52,6 +54,18 @@ class NOWBaseIndexer(Executor):
         self.doc_id_tags = {}
         self.document_list = DocumentArray()
         self.load_document_list()
+        self.query_to_filter_path = (
+            os.path.join(self.workspace, 'query_to_filter.json')
+            if self.workspace
+            else None
+        )
+        self.query_to_filter = self.open_query_to_filter(self.query_to_filter_path)
+
+    def open_query_to_filter(self, path):
+        if path and os.path.exists(path):
+            with open(path, 'r') as f:
+                return json.load(f)
+        return {}
 
     @secure_request(on='/tags', level=SecurityLevel.USER)
     def get_tags_and_values(self, **kwargs):
@@ -235,8 +249,44 @@ class NOWBaseIndexer(Executor):
                 docs, parameters, traversal_paths, limit, retrieval_limit, search_filter
             )
 
+        docs_with_matches[0].matches = (
+            self.get_curated_matches(docs[0].text) + docs_with_matches[0].matches
+        )[:limit]
         self.clean_response(docs_with_matches)
         return docs_with_matches
+
+    @secure_request(on='/curate', level=SecurityLevel.USER)
+    def curate(self, parameters: dict = {}, **kwargs):
+        """
+        This endpoint is only relevant for text queries.
+        It defines the top results for each query.
+        `parameters` should have the following format:
+        {
+            'query_to_filter': {
+                'query1': [
+                    {'uri': {'$eq': 'uri1'}},
+                    {'tags__internal_id': {'$eq': 'id1'}},
+                ],
+                'query2': [
+                    {'uri': {'$eq': 'uri2'}},
+                    {'tags__color': {'$eq': 'red'}},
+                ],
+            }
+        }
+        """
+        self.query_to_filter = parameters['query_to_filter']
+        with open(self.query_to_filter_path, 'w') as f:
+            json.dump(self.query_to_filter, f)
+
+    def get_curated_matches(self, text_query: str = None) -> DocumentArray:
+        """
+        Get curated matches for a given text query.
+        """
+        curated_matches = DocumentArray([])
+        if text_query:
+            for doc_filter in self.query_to_filter[text_query]:
+                curated_matches.extend(self.document_list.find(doc_filter))
+        return curated_matches
 
     def create_matches(
         self, docs, parameters, traversal_paths, limit, retrieval_limit, search_filter
