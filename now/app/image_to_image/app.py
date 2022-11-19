@@ -4,7 +4,7 @@ from typing import Dict, Tuple
 from docarray import DocumentArray
 
 from now.app.base.app import JinaNOWApp
-from now.common.preprocess import preprocess_images
+from now.common.preprocess import preprocess_images, filter_data
 from now.common.utils import _get_clip_apps_with_dict, common_setup, get_indexer_config
 from now.constants import CLIP_USES, Apps, Modalities
 from now.demo_data import DemoDatasetNames
@@ -81,6 +81,10 @@ class ImageToImage(JinaNOWApp):
         return env_dict
 
     def preprocess(
-        self, da: DocumentArray, user_input: UserInput, is_indexing=False
+        self,
+        da: DocumentArray,
+        user_input: UserInput,
+        **kwargs,
     ) -> DocumentArray:
-        return preprocess_images(da=da)
+        da = preprocess_images(da=da)
+        return filter_data(da, modalities=[Modalities.IMAGE])

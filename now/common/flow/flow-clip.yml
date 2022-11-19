@@ -12,6 +12,8 @@ jcloud:
   retention_days: ${{ RETENTION_DAYS }}
   custom_dns:
     - ${{ ENV.CUSTOM_DNS }}
+  labels:
+    team: now
 executors:
   - name: preprocessor
     uses: ${{ ENV.PREPROCESSOR_NAME }}
@@ -36,6 +38,7 @@ executors:
       JINA_LOG_LEVEL: DEBUG
   - name: indexer
     uses: ${{ ENV.INDEXER_NAME }}
+    disable_reduce: true
     uses_with:
       dim: ${{ ENV.N_DIM }}
       columns: ${{ ENV.COLUMNS }}

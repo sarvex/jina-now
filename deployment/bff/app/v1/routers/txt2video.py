@@ -33,17 +33,17 @@ def index(data: NowVideoIndexRequestModel):
         if video:
             base64_bytes = video.encode('utf-8')
             message = base64.decodebytes(base64_bytes)
-            index_docs.append(Document(blob=message, tags=tags))
+            index_docs.append(Document(blob=message, tags=tags, modality='video'))
         else:
-            index_docs.append(Document(uri=uri, tags=tags))
+            index_docs.append(Document(uri=uri, tags=tags, modality='video'))
 
     # TODO: should use app.index_query_access_paths
     jina_client_post(
         data=data,
         inputs=index_docs,
         parameters={
-            'traversal_paths': '@c',
-            'access_paths': '@c',
+            'traversal_paths': '@c,cc',
+            'access_paths': '@c,cc',
         },
         endpoint='/index',
     )
@@ -65,12 +65,12 @@ def search(data: NowTextSearchRequestModel):
     # for video the search requests have to be on chunk-level
     docs = jina_client_post(
         data=data,
-        inputs=Document(chunks=query_doc),
+        inputs=query_doc,
         parameters={
             'limit': data.limit,
             'filter': filter_query,
-            'traversal_paths': '@c',
-            'access_paths': '@c',
+            'traversal_paths': '@c,cc',
+            'access_paths': '@c,cc',
         },
         endpoint='/search',
     )
@@ -86,7 +86,6 @@ def suggestion(data: NowTextSearchRequestModel):
     Return text suggestions for the rest of the query text
     """
     query_doc, _ = process_query(text=data.text, uri=data.uri, conditions=data.filters)
-
     docs = jina_client_post(
         data=data,
         inputs=query_doc,

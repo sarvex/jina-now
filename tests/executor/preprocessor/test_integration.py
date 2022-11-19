@@ -4,19 +4,21 @@ import os
 from docarray import Document, DocumentArray
 from jina import Flow
 
-from now.constants import TAG_OCR_DETECTOR_TEXT_IN_DOC, Apps
+from now.constants import TAG_OCR_DETECTOR_TEXT_IN_DOC
 from now.executor.preprocessor import NOWPreprocessor
+
+from now.constants import Apps
 from now.now_dataclasses import UserInput
 
 
-def test_executor_persistence(tmpdir):
+def test_executor_persistence(tmpdir, resources_folder_path):
     e = NOWPreprocessor(Apps.TEXT_TO_TEXT, metas={'workspace': tmpdir})
     user_input = UserInput()
     text_docs = DocumentArray(
         [
             Document(text='test'),
             Document(
-                chunks=DocumentArray([Document(uri='test.jpg'), Document(text='hi')])
+                uri=os.path.join(resources_folder_path, 'image', '6785325056.jpg')
             ),
         ]
     )
@@ -30,15 +32,12 @@ def test_executor_persistence(tmpdir):
 
 
 def test_text_to_video(resources_folder_path):
-    app = Apps.TEXT_TO_IMAGE
+    app = Apps.TEXT_TO_VIDEO
     user_input = UserInput()
     text_docs = DocumentArray(
         [
             Document(text='test'),
-            Document(
-                uri=os.path.join(resources_folder_path, 'image', '5109112832.jpg'),
-                modality='image',
-            ),
+            Document(uri=os.path.join(resources_folder_path, 'gif/folder1/file.gif')),
         ]
     )
 
@@ -61,14 +60,26 @@ def test_text_to_video(resources_folder_path):
 
     assert len(result) == 1
     assert len(encode_result) == 2
-    assert len([text for text in encode_result.texts if text != '']) == 1
-    assert len([blob for blob in encode_result.blobs if blob != b'']) == 1
+    assert (
+        len([res.chunks[0].text for res in encode_result if res.chunks[0].text != ''])
+        == 1
+    )
     assert (
         len(
             [
-                tags[TAG_OCR_DETECTOR_TEXT_IN_DOC]
-                for tags in encode_result[:, 'tags']
-                if TAG_OCR_DETECTOR_TEXT_IN_DOC in tags
+                res.chunks[0].chunks[0].blob
+                for res in encode_result
+                if res.chunks[0].chunks
+            ]
+        )
+        == 1
+    )
+    assert (
+        len(
+            [
+                document.chunks[0].tags.get(TAG_OCR_DETECTOR_TEXT_IN_DOC)
+                for document in encode_result
+                if TAG_OCR_DETECTOR_TEXT_IN_DOC in document.chunks[0].tags
             ]
         )
         == 1

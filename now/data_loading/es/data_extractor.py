@@ -4,9 +4,11 @@ from typing import Dict, List, Optional, Union, Set
 from docarray import Document, DocumentArray
 from PIL import Image
 
-from .connector import ElasticsearchConnector
+from now.data_loading.es.connector import ElasticsearchConnector
 
 import logging
+
+from now.data_loading.transform_docarray import transform_multi_modal_data
 
 logging.getLogger("PIL.Image").setLevel(logging.CRITICAL + 1)
 
@@ -50,20 +52,34 @@ class ElasticsearchExtractor:
         )
         self._supported_pil_extensions = self._get_supported_image_extensions()
 
-    def extract(self) -> DocumentArray:
+    def extract(self, search_fields: List[str]) -> DocumentArray:
         """
         Returns extracted data as a `DocumentArray` where every `Document`
         contains chunks for each field.
         For Example:
-        Document(chunks=[
-            Document(content='hello', modality='text', tags={'field_name': 'title'}),
-            Document(content='https://bla.com/img.jpeg', modality='image', tags={'field_name': 'uris'}),
-            ]
+        Document(tags={'color': 'red', 'date': '12-10-2022'},
+                chunks=[
+                    Document(content='hello', modality='text', tags={'field_name': 'title'}),
+                    Document(content='https://bla.com/img.jpeg', modality='image', tags={'field_name': 'uris'}),
+                ]
         )
+
+        :param search_fields: List of field names used for searching.
+        :return: extracted documents.
         """
-        return DocumentArray(
-            [self._transform_es_doc(doc) for doc in self._extract_documents()]
+        docs = DocumentArray(
+            [self._flatten_es_doc(doc) for doc in self._extract_documents()]
         )
+        field_names = {
+            int(position): chunk.tags['field_name']
+            for position, chunk in enumerate(docs[0].chunks)
+        }
+        docs = transform_multi_modal_data(
+            documents=docs,
+            field_names=field_names,
+            search_fields=search_fields,
+        )
+        return docs
 
     def _extract_documents(self):
         try:
@@ -76,7 +92,7 @@ class ElasticsearchExtractor:
             return
 
     @classmethod
-    def _transform_es_doc(cls, document: Document) -> Document:
+    def _flatten_es_doc(cls, document: Document) -> Document:
         """
         Transform data extracted from Elasticsearch to a more convenient form.
         :param document: `Document` containing ES data.
@@ -87,7 +103,7 @@ class ElasticsearchExtractor:
         transformed_doc = Document(
             chunks=[
                 Document(
-                    content=attr_values[name],
+                    content=attr_values[name][0],
                     modality=attr_modalities[name],
                     tags={'field_name': name},
                 )
@@ -155,7 +171,16 @@ class ElasticsearchExtractor:
         :param content: the content of the attribute
         :return: `docarray.DocumentArray` object.
         """
-        if os.path.splitext(content)[-1] in self._supported_pil_extensions:
+        if os.path.splitext(content)[-1] == '.gif':
+            return Document(
+                uri=content,
+                modality='video',
+                tags={
+                    FIELD_TAG: key,
+                    EXTRACTION_TYPE_TAG: 'literal',
+                },
+            )
+        elif os.path.splitext(content)[-1] in self._supported_pil_extensions:
             return Document(
                 uri=content,
                 modality='image',
@@ -204,6 +229,8 @@ class ElasticsearchExtractor:
                         )
                     elif type(es_doc[key][0]) == str:
                         # process a field with a list of string values
+                        if isinstance(es_doc[key], str):
+                            es_doc[key] = [es_doc[key]]
                         deep_chunks = [
                             self._construct_simple_document(key, content)
                             for content in es_doc[key]
