@@ -310,7 +310,7 @@ API_KEY = DialogOptions(
     depends_on=SECURED,
     is_terminal_command=True,
     description='Pass an api_key to access the flow once the deployment is complete. ',
-    conditional_check=lambda user_inp: user_inp.secured.lower() == 'true',
+    conditional_check=lambda user_inp: str(user_inp.secured).lower() == 'true',
 )
 
 ADDITIONAL_USERS = DialogOptions(
@@ -322,7 +322,7 @@ ADDITIONAL_USERS = DialogOptions(
         {'name': '⛔ no', 'value': False},
     ],
     depends_on=SECURED,
-    conditional_check=lambda user_inp: user_inp.secured.lower() == 'true',
+    conditional_check=lambda user_inp: str(user_inp.secured).lower() == 'true',
 )
 
 USER_EMAILS = DialogOptions(
