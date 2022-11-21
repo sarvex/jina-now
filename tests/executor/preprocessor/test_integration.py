@@ -10,7 +10,7 @@ from now.now_dataclasses import UserInput
 
 
 def test_executor_persistence(tmpdir):
-    e = NOWPreprocessor(Apps.SENTENCE_TO_SENTENCE, metas={'workspace': tmpdir})
+    e = NOWPreprocessor(Apps.TEXT_TO_TEXT, metas={'workspace': tmpdir})
     user_input = UserInput()
     text_docs = DocumentArray(
         [

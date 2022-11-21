@@ -16,7 +16,7 @@ class SentenceToSentence(JinaNOWApp):
 
     @property
     def app_name(self) -> str:
-        return Apps.SENTENCE_TO_SENTENCE
+        return Apps.TEXT_TO_TEXT
 
     @property
     def is_enabled(self) -> bool:

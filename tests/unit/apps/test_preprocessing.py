@@ -4,7 +4,7 @@ import pytest
 from docarray import Document, DocumentArray
 
 from now.app.image_text_retrieval.app import ImageTextRetrieval
-from now.app.sentence_to_sentence.app import SentenceToSentence
+from now.app.text_to_text.app import SentenceToSentence
 from now.app.text_to_text_and_image.app import TextToTextAndImage
 from now.app.text_to_video.app import TextToVideo
 from now.data_loading.transform_docarray import transform_docarray
