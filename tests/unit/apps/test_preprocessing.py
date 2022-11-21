@@ -4,7 +4,7 @@ import pytest
 from docarray import Document, DocumentArray
 
 from now.app.image_text_retrieval.app import ImageTextRetrieval
-from now.app.text_to_text.app import SentenceToSentence
+from now.app.text_to_text.app import TextToText
 from now.app.text_to_text_and_image.app import TextToTextAndImage
 from now.app.text_to_video.app import TextToVideo
 from now.data_loading.transform_docarray import transform_docarray
@@ -41,15 +41,15 @@ def test_text_to_video_preprocessing_indexing(resources_folder_path):
 @pytest.mark.parametrize(
     'app_cls,is_indexing',
     [
-        (SentenceToSentence, False),
-        (SentenceToSentence, True),
+        (TextToText, False),
+        (TextToText, True),
         (ImageTextRetrieval, False),
         (ImageTextRetrieval, True),
     ],
 )
 def test_text_preprocessing(app_cls, is_indexing):
     """Test if the text to text preprocessing works for queries and indexing"""
-    app = SentenceToSentence()
+    app = TextToText()
     da = DocumentArray([Document(text='test')])
     da = transform_docarray(da, search_fields=[])
     da = app.preprocess(
