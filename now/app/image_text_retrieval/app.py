@@ -1,4 +1,5 @@
 import os
+from copy import deepcopy
 from typing import Dict, List, Union
 
 from docarray import DocumentArray
@@ -122,7 +123,8 @@ class ImageTextRetrieval(JinaNOWApp):
                 da = preprocess_images(da=da)
                 modalities.append(Modalities.IMAGE)
         if process_query:
-            da = preprocess_images(da=da) + preprocess_text(da=da)
-            modalities = [Modalities.IMAGE, Modalities.TEXT]
+            da_img = filter_data(preprocess_images(deepcopy(da)), [Modalities.IMAGE])
+            da_txt = filter_data(preprocess_text(deepcopy(da)), [Modalities.TEXT])
+            da = DocumentArray(da_img + da_txt)
 
-        return filter_data(da, modalities)
+        return da
