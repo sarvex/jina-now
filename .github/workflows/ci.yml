@@ -133,7 +133,7 @@ jobs:
         if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
         env:
           NOW_PREPROCESSOR_VERSION: ${{ env.NOW_PREPROCESSOR_VERSION }}
-        run: JINA_AUTH_TOKEN=${{ secrets.NOW_PREPROCESSOR_JCLOUD_TOKEN }} jina hub push --no-cache --verbose --force-update NOWPreprocessor now/executor/preprocessor/. -t latest --protected-tag $NOW_PREPROCESSOR_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
+        run: JINA_AUTH_TOKEN=${{ secrets.NOW_PREPROCESSOR_JCLOUD_TOKEN }} jina hub push --verbose --force-update NOWPreprocessor now/executor/preprocessor/. -t latest --protected-tag $NOW_PREPROCESSOR_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
 
   update-qdrant-executor-if-required:
     runs-on: ubuntu-latest
