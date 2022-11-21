@@ -62,7 +62,7 @@ def test_text_preprocessing(app_cls, is_indexing):
     assert len(da) == 1
     assert len(da[0].chunks) == 1
     assert da[0].chunks[0].modality == 'text'
-    if is_indexing:
+    if is_indexing and app_cls == TextToText:
         assert da[0].chunks[0].chunks[0].text == 'test'
     else:
         assert da[0].chunks[0].text == 'test'
