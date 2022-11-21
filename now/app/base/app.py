@@ -8,6 +8,12 @@ from jina import Client
 from jina.jaml import JAML
 from jina.serve.runtimes.gateway.http.models import JinaRequestModel, JinaResponseModel
 
+from now.app.base.preprocess import (
+    preprocess_image,
+    preprocess_music,
+    preprocess_text,
+    preprocess_video,
+)
 from now.constants import SUPPORTED_FILE_TYPES, Modalities
 from now.demo_data import AVAILABLE_DATASET, DEFAULT_EXAMPLE_HOSTED, DemoDataset
 from now.now_dataclasses import DialogOptions, UserInput
@@ -229,11 +235,23 @@ class JinaNOWApp:
 
     def preprocess(
         self,
-        da: DocumentArray,
-        user_input: UserInput,
+        docs: DocumentArray,
     ) -> DocumentArray:
         """Loads and preprocesses every document such that it is ready for finetuning/indexing."""
-        return da
+        for doc in docs:
+            for chunk in doc.chunks:
+                try:
+                    if chunk.modality == 'text':
+                        preprocess_text(chunk)
+                    if chunk.modality == 'image':
+                        preprocess_image(chunk)
+                    if chunk.modality == 'video':
+                        preprocess_video(chunk)
+                    if chunk.modality == 'music':
+                        preprocess_music(chunk)
+                except Exception as e:
+                    print(e)
+        return docs
 
     def is_demo_available(self, user_input) -> bool:
         hosted_ds = DEFAULT_EXAMPLE_HOSTED.get(self.app_name, {})

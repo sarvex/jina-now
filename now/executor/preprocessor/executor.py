@@ -21,12 +21,6 @@ from now.executor.abstract.auth import (
     get_auth_executor_class,
     secure_request,
 )
-from now.executor.preprocessor.preprocess_modalities import (
-    preprocess_image,
-    preprocess_music,
-    preprocess_text,
-    preprocess_video,
-)
 from now.now_dataclasses import UserInput
 from now.utils import _maybe_download_from_s3
 
@@ -123,21 +117,6 @@ class NOWPreprocessor(Executor):
                 f.write(binary_fn.read())
         return tmp_fn
 
-    def _preprocess_basic(self, docs: DocumentArray):
-        for doc in docs:
-            for chunk in doc.chunks:
-                try:
-                    if chunk.modality == 'text':
-                        preprocess_text(chunk)
-                    if chunk.modality == 'image':
-                        preprocess_image(chunk)
-                    if chunk.modality == 'video':
-                        preprocess_video(chunk)
-                    if chunk.modality == 'music':
-                        preprocess_music(chunk)
-                except Exception as e:
-                    print(e)
-
     def _preprocess_maybe_cloud_download(
         self,
         docs: DocumentArray,
@@ -159,11 +138,8 @@ class NOWPreprocessor(Executor):
                 documents=docs,
                 search_fields=self.user_input.search_fields or [],
             )
-            docs = self._preprocess_basic(docs)
-            docs = self.app.preprocess(
-                da=docs,
-                user_input=self.user_input,
-            )
+
+            docs = self.app.preprocess(docs)
             if is_indexing:
                 self._ocr_detect_text(docs)
 

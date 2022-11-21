@@ -9,7 +9,6 @@ from now.app.text_to_image.app import TextToImage
 from now.app.text_to_text.app import TextToText
 from now.app.text_to_video.app import TextToVideo
 from now.data_loading.transform_docarray import transform_docarray
-from now.now_dataclasses import UserInput
 
 
 def test_text_to_video_preprocessing_query():
@@ -17,11 +16,11 @@ def test_text_to_video_preprocessing_query():
     app = TextToVideo()
     da = DocumentArray([Document(text='test')])
     da = transform_docarray(da, search_fields=[])
-    da = app.preprocess(da=da, user_input=UserInput())
+    da = app.preprocess(da)
 
     assert len(da) == 1
     assert len(da[0].chunks) == 1
-    assert da[0].chunks[0].text == 'test'
+    assert da[0].chunks[0].chunks[0].text == 'test'
 
 
 def test_text_to_video_preprocessing_indexing(resources_folder_path):
@@ -31,9 +30,7 @@ def test_text_to_video_preprocessing_indexing(resources_folder_path):
         [Document(uri=os.path.join(resources_folder_path, 'gif/folder1/file.gif'))]
     )
     da = transform_docarray(da, search_fields=[])
-    da = app.preprocess(
-        da=da, user_input=UserInput(), process_index=True, process_query=False
-    )
+    da = app.preprocess(da)
     assert len(da) == 1
     assert len(da[0].chunks[0].chunks) == 3
     assert da[0].chunks[0].chunks[0].blob != b''
@@ -53,16 +50,12 @@ def test_text_preprocessing(app_cls, is_indexing):
     app = TextToText()
     da = DocumentArray([Document(text='test')])
     da = transform_docarray(da, search_fields=[])
-    da = app.preprocess(
-        da=da,
-        user_input=UserInput(),
-        process_index=is_indexing,
-        process_query=not is_indexing,
-    )
+    da = app.preprocess(da)
     assert len(da) == 1
     assert len(da[0].chunks) == 1
     assert da[0].chunks[0].modality == 'text'
-    assert da[0].chunks[0].text == 'test'
+    assert da[0].chunks[0].text == ''
+    assert da[0].chunks[0].chunks[0].text == 'test'
 
 
 @pytest.mark.parametrize(
@@ -80,12 +73,7 @@ def test_image_preprocessing(app_cls, is_indexing, resources_folder_path):
     uri = os.path.join(resources_folder_path, 'image/5109112832.jpg')
     da = DocumentArray([Document(uri=uri)])
     da = transform_docarray(da, search_fields=[])
-    da = app.preprocess(
-        da=da,
-        user_input=UserInput(),
-        process_index=is_indexing,
-        process_query=not is_indexing,
-    )
+    da = app.preprocess(da)
     assert len(da) == 1
     assert len(da[0].chunks) == 1
     assert da[0].chunks[0].modality == 'image'

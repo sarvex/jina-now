@@ -27,7 +27,7 @@ def preprocess_text(
     nltk.download('punkt', quiet=True)
     from nltk.tokenize import sent_tokenize
 
-    # HACK (needs to be provided as general feature
+    # TODO HACK (needs to be provided as general feature
     d.text = 'loading' if d.text == 'loader' else d.text
 
     if not d.text and d.uri:
