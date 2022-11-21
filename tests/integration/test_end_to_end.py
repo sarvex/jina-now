@@ -397,16 +397,9 @@ def test_backend_custom_data(
     kwargs = Namespace(**kwargs)
     response = cli(args=kwargs)
 
-    assert (
-        response['bff']
-        == f'http://localhost:30090/api/v1/{input_modality}-to-{output_modality}/docs'
+    assert_deployment_response(
+        app, deployment_type, input_modality, output_modality, response
     )
-    assert response['playground'].startswith('http://localhost:30080/?')
-    assert response['input_modality'] == input_modality
-    assert response['output_modality'] == output_modality
-    assert response['host'].startswith('grpcs://')
-    assert response['host'].endswith('.wolf.jina.ai')
-    assert response['port'] == 8080 or response['port'] is None
 
     request_body = {'text': 'test', 'limit': 9}
 
