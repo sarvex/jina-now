@@ -4,7 +4,7 @@ from typing import Dict
 from docarray import DocumentArray
 
 from now.app.base.app import JinaNOWApp
-from now.common.preprocess import preprocess_images, preprocess_text
+from now.common.preprocess import preprocess_images, preprocess_text, filter_data
 from now.common.utils import _get_clip_apps_with_dict, common_setup, get_indexer_config
 from now.constants import CLIP_USES, Apps, Modalities
 from now.now_dataclasses import UserInput
@@ -51,7 +51,7 @@ class TextToImage(JinaNOWApp):
         self, dataset: DocumentArray, user_input: UserInput, kubectl_path
     ) -> Dict:
         indexer_config = get_indexer_config(len(dataset))
-        encoder_with, ocr_with = _get_clip_apps_with_dict(user_input)
+        encoder_with = _get_clip_apps_with_dict(user_input)
         env_dict = common_setup(
             app_instance=self,
             user_input=user_input,
@@ -68,14 +68,26 @@ class TextToImage(JinaNOWApp):
             kubectl_path=kubectl_path,
             indexer_resources=indexer_config['indexer_resources'],
         )
-        env_dict.update(ocr_with)
         super().setup(dataset, user_input, kubectl_path)
         return env_dict
 
     def preprocess(
-        self, da: DocumentArray, user_input: UserInput, is_indexing=False
+        self,
+        da: DocumentArray,
+        user_input: UserInput,
+        process_index: bool = False,
+        process_query: bool = True,
     ) -> DocumentArray:
-        if is_indexing:
-            return preprocess_images(da=da)
-        else:
-            return preprocess_text(da=da, split_by_sentences=False)
+        if not process_query and not process_index:
+            raise Exception(
+                'Either `process_query` or `process_index` must be set to True.'
+            )
+        modalities = []
+        if process_index:
+            da = preprocess_images(da=da)
+            modalities.append(Modalities.IMAGE)
+        if process_query:
+            da = preprocess_text(da=da, split_by_sentences=False)
+            modalities.append(Modalities.TEXT)
+
+        return filter_data(da, modalities)

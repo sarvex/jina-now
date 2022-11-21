@@ -14,7 +14,7 @@ NUMBER_OF_DOCS = 10
 DIM = 128
 
 
-@pytest.mark.parametrize('indexer', [InMemoryIndexer, NOWQdrantIndexer15])
+@pytest.mark.parametrize('indexer', [InMemoryIndexer])
 class TestBaseIndexer:
     @pytest.fixture(scope='function', autouse=True)
     def setup(self):
@@ -29,28 +29,24 @@ class TestBaseIndexer:
             f"docker-compose -f {compose_yml} --project-directory . down --remove-orphans"
         )
 
-    def gen_docs(self, num, has_chunk=False):
+    def gen_docs(self, num):
         res = DocumentArray()
         k = np.random.random((num, DIM)).astype(np.float32)
         for i in range(num):
             doc = Document(
                 id=f'{i}',
                 text='parent',
-                embedding=k[i],
                 uri='my-parent-uri',
                 tags={'parent_tag': 'value'},
-            )
-            if has_chunk:
-                for j in range(2):
-                    doc.chunks.append(
-                        Document(
-                            id=f'{i}_{j}',
-                            embedding=doc.embedding,
-                            uri='my-parent-uri',
-                            tags={'parent_tag': 'value'},
-                        )
+                chunks=[
+                    Document(
+                        id=f'{i}_child',
+                        embedding=k[i],
+                        uri='my-parent-uri',
+                        tags={'parent_tag': 'value'},
                     )
-                doc.embedding = None
+                ],
+            )
             res.append(doc)
         return res
 
@@ -61,11 +57,16 @@ class TestBaseIndexer:
         docs = [
             Document(
                 id=f'{i}',
-                embedding=X[i],
-                tags={
-                    'price': np.random.choice(prices),
-                    'category': np.random.choice(categories),
-                },
+                chunks=[
+                    Document(
+                        id=f'{i}_child',
+                        embedding=X[i],
+                        tags={
+                            'price': np.random.choice(prices),
+                            'category': np.random.choice(categories),
+                        },
+                    )
+                ],
             )
             for i in range(NUMBER_OF_DOCS)
         ]
@@ -89,13 +90,12 @@ class TestBaseIndexer:
             assert len(result) == 0
 
     @pytest.mark.parametrize(
-        'offset, limit', [(0, 0), (10, 0), (0, 10), (10, 10), (None, None)]
+        'offset, limit', [(0, 10), (10, 0), (0, 0), (10, 10), (None, None)]
     )
-    @pytest.mark.parametrize('has_chunk', [True, False])
-    def test_list(self, tmpdir, offset, limit, has_chunk, indexer):
+    def test_list(self, tmpdir, offset, limit, indexer):
         """Test list returns all indexed docs"""
         metas = {'workspace': str(tmpdir)}
-        docs = self.gen_docs(NUMBER_OF_DOCS, has_chunk=has_chunk)
+        docs = self.gen_docs(NUMBER_OF_DOCS)
         f = Flow().add(
             uses=indexer,
             uses_with={
@@ -104,11 +104,9 @@ class TestBaseIndexer:
             uses_metas=metas,
         )
         with f:
-            parameters = {}
+            parameters = {'chunks_size': 1}
             if offset is not None:
                 parameters.update({'offset': offset, 'limit': limit})
-            if has_chunk:
-                parameters.update({'traversal_paths': '@c', 'chunks_size': 2})
 
             f.post(on='/index', inputs=docs, parameters=parameters)
             list_res = f.post(on='/list', parameters=parameters, return_results=True)
@@ -118,19 +116,11 @@ class TestBaseIndexer:
                 l = max(limit - offset, 0)
             assert len(list_res) == l
             if l > 0:
-                if has_chunk:
-                    assert len(list_res[0].chunks) == 0
-                    assert len(set([d.id for d in list_res])) == l
-                    assert [d.id for d in list_res] == [f'{i}_0' for i in range(l)]
-                    assert [d.uri for d in list_res] == ['my-parent-uri'] * l
-                    assert [d.tags['parent_tag'] for d in list_res] == ['value'] * l
-                else:
-                    assert list_res[0].id == str(offset) if offset is not None else '0'
-                    assert list_res[0].uri == 'my-parent-uri'
-                    assert len(list_res[0].chunks) == 0
-                    assert list_res[0].embedding is None
-                    assert list_res[0].text == ''
-                    assert list_res[0].tags == {'parent_tag': 'value'}
+                assert len(list_res[0].chunks) == 0
+                assert len(set([d.id for d in list_res])) == l
+                assert [d.id for d in list_res] == [f'{i}_child' for i in range(l)]
+                assert [d.uri for d in list_res] == ['my-parent-uri'] * l
+                assert [d.tags['parent_tag'] for d in list_res] == ['value'] * l
 
     def test_search(self, tmpdir, indexer):
         metas = {'workspace': str(tmpdir)}
@@ -157,13 +147,12 @@ class TestBaseIndexer:
 
     def test_search_match(self, tmpdir, indexer):
         metas = {'workspace': str(tmpdir)}
-        docs = self.gen_docs(NUMBER_OF_DOCS, has_chunk=True)
-        docs_query = self.gen_docs(NUMBER_OF_DOCS, has_chunk=True)
+        docs = self.gen_docs(NUMBER_OF_DOCS)
+        docs_query = self.gen_docs(NUMBER_OF_DOCS)
         f = Flow().add(
             uses=indexer,
             uses_with={
                 'dim': DIM,
-                'traversal_paths': '@c',
             },
             uses_metas=metas,
         )
@@ -220,7 +209,7 @@ class TestBaseIndexer:
             uses_metas=metas,
         )
         with f:
-            docs[0].tags['parent_tag'] = 'different_value'
+            docs[0].chunks[0].tags['parent_tag'] = 'different_value'
             f.post(on='/index', inputs=docs)
             listed_docs = f.post(on='/list', return_results=True)
             assert len(listed_docs) == NUMBER_OF_DOCS
@@ -254,6 +243,7 @@ class TestBaseIndexer:
                 ),
             ]
         )
+        docs = DocumentArray([Document(chunks=[doc]) for doc in docs])
         f = Flow().add(
             uses=indexer,
             uses_with={'dim': DIM},
@@ -295,6 +285,7 @@ class TestBaseIndexer:
                 ),
             ]
         )
+        docs = DocumentArray([Document(chunks=[doc]) for doc in docs])
         f = Flow().add(
             uses=indexer,
             uses_with={
@@ -415,15 +406,16 @@ class TestBaseIndexer:
     @pytest.mark.parametrize(
         'level,query,embedding,res_ids',
         [
-            ('@c', 'blue', [0.5, 0.1], ['chunk12', 'chunk22', 'chunk31']),
-            ('@c', 'red', [0.5, 0.1], ['chunk11', 'chunk31', 'chunk22']),
-            ('@r', 'blue', [0.8, 0.1, 0.1], ['doc4', 'doc3', 'doc1', 'doc2']),
-            ('@r', 'red', [0.8, 0.1, 0.1], ['doc2', 'doc4', 'doc3', 'doc1']),
+            ('@cc', 'blue', [0.5, 0.1], ['chunk12', 'chunk31', 'chunk22']),
+            ('@cc', 'red', [0.5, 0.1], ['chunk11', 'chunk31', 'chunk22']),
+            ('@c', 'blue', [0.8, 0.1, 0.1], ['doc4', 'doc3', 'doc1', 'doc2']),
+            ('@c', 'red', [0.8, 0.1, 0.1], ['doc2', 'doc4', 'doc3', 'doc1']),
         ],
     )
     def test_search_chunk_using_sum_ranker(
         self, documents, indexer, level, query, embedding, res_ids
     ):
+        documents = DocumentArray([Document(chunks=[doc]) for doc in documents])
         with Flow().add(
             uses=indexer,
             uses_with={
@@ -437,17 +429,18 @@ class TestBaseIndexer:
             )
             result = f.search(
                 Document(
-                    id="doc_search",
-                    embedding=np.array(embedding) if level == '@r' else None,
-                    text=query,
                     chunks=Document(
                         id="chunk_search",
                         text=query,
-                        embedding=np.array(embedding) if level == '@c' else None,
+                        embedding=np.array(embedding),
                     ),
                 ),
                 return_results=True,
-                parameters={'ranking_method': 'sum'},
+                parameters={
+                    'ranking_method': 'sum',
+                    'traversal_paths': '@c',
+                    'access_paths': '@c',
+                },
             )
             print('all match ids', [match.id for match in result[0].matches])
             for d, res_id in zip(result[0].matches, res_ids):
@@ -487,13 +480,63 @@ class TestBaseIndexer:
                     doc_tens,
                 ]
             )
+            inputs = DocumentArray([Document(chunks=[doc]) for doc in inputs])
 
             f.index(deepcopy(inputs), parameters={})
 
-            response = f.search(Document(embedding=np.array([0.1, 0.1, 0.1])))
+            response = f.search(
+                Document(chunks=[Document(embedding=np.array([0.1, 0.1, 0.1]))])
+            )
             matches = response[0].matches
-            assert matches[0].text == inputs[0].text
-            assert matches[1].blob == inputs[1].blob
-            assert matches[2].blob == inputs[2].blob
+            assert matches[0].text == inputs[0].chunks[0].text
+            assert matches[1].blob == inputs[1].chunks[0].blob
+            assert matches[2].blob == inputs[2].chunks[0].blob
             assert matches[3].blob == b''
             assert matches[4].tensor is None
+
+    def test_curate_endpoint(self, tmpdir, indexer):
+        """Test indexing does not return anything"""
+        metas = {'workspace': str(tmpdir)}
+        docs = self.gen_docs(NUMBER_OF_DOCS)
+        docs.append(
+            Document(
+                chunks=[
+                    Document(
+                        embedding=np.random.random(DIM).astype(np.float32),
+                        tags={'color': 'red'},
+                        uri='uri2',
+                    )
+                ]
+            )
+        )
+        f = Flow().add(
+            uses=indexer,
+            uses_with={
+                'dim': DIM,
+            },
+            uses_metas=metas,
+        )
+        with f:
+            f.post(
+                on='/curate',
+                parameters={
+                    'query_to_filter': {
+                        'query1': [
+                            {'uri': {'$eq': 'uri2'}},
+                            {'tags__color': {'$eq': 'red'}},
+                        ],
+                    }
+                },
+            )
+            f.index(docs, return_results=True)
+            result = f.search(
+                inputs=Document(
+                    chunks=[Document(text='query1', embedding=np.array([0.1] * 128))]
+                ),
+                return_results=True,
+            )
+            assert len(result) == 1
+            assert (
+                result[0].matches[0].uri == 'uri2'
+                and result[0].matches[0].tags['color'] == 'red'
+            )

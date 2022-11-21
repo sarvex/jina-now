@@ -101,10 +101,11 @@ class UserInput(BaseModel):
     aws_secret_access_key: Optional[str] = None
     aws_region_name: Optional[str] = None
 
+    # Fields
+    search_fields: Optional[List] = None
+
     # ES related
     task_config: Optional[Task] = None
-    es_text_fields: Optional[List] = None
-    es_image_fields: Optional[List] = None
     es_index_name: Optional[str] = None
     es_host_name: Optional[str] = None
     es_additional_args: Optional[Dict] = None
