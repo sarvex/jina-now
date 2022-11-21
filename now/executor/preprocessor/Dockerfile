@@ -14,4 +14,9 @@ RUN pip install --default-timeout=1000 --compile -r requirements.txt
 COPY . /workdir/
 WORKDIR /workdir
 
+# install requirements before copying the workspace
+COPY requirements-now.txt requirements-now.txt
+RUN pip install --default-timeout=1000 --compile -r requirements-now.txt
+
+
 ENTRYPOINT ["jina", "executor", "--uses", "config.yml"]
