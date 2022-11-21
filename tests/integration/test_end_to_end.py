@@ -157,7 +157,7 @@ def test_backend_demo_data(
         'app': app,
         'flow_name': 'nowapi',
         'dataset_type': DatasetTypes.DEMO,
-        'output_modality': 'text',
+        'output_modality': 'image',
         'dataset_name': dataset,
         'cluster': cluster,
         'secured': False,
@@ -338,6 +338,9 @@ def get_search_request_body(
 def assert_deployment_response(
     app, deployment_type, input_modality, output_modality, response
 ):
+    if app == Apps.IMAGE_TEXT_RETRIEVAL:
+        input_modality = 'image-or-text'
+        output_modality = 'image-or-text'
     assert (
         response['bff']
         == f'http://localhost:30090/api/v1/{input_modality}-to-{output_modality}/docs'
