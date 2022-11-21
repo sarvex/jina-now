@@ -4,7 +4,7 @@ from typing import Dict
 from docarray import DocumentArray
 
 from now.app.base.app import JinaNOWApp
-from now.common.preprocess import preprocess_text, filter_data
+from now.common.preprocess import filter_data, preprocess_text
 from now.common.utils import common_setup, get_indexer_config
 from now.constants import Apps, DatasetTypes, Modalities, ModelDimensions
 from now.now_dataclasses import UserInput
@@ -93,5 +93,7 @@ class TextToText(JinaNOWApp):
             )
 
         split_by_sentences = True if process_index else False
+        if not process_index and user_input.dataset_type == DatasetTypes.DEMO:
+            split_by_sentences = False
         da = preprocess_text(da=da, split_by_sentences=split_by_sentences)
         return filter_data(da, modalities=[Modalities.TEXT])
