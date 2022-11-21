@@ -23,7 +23,6 @@ from now.common.utils import (
     get_indexer_config,
 )
 from now.constants import CLIP_USES, Apps, Modalities
-from now.executor.preprocessor.preprocess_modalities import filter_data
 from now.now_dataclasses import UserInput
 
 NUM_FRAMES_SAMPLED = 3
@@ -113,46 +112,6 @@ class TextToVideo(JinaNOWApp):
         )
         super().setup(dataset, user_input, kubectl_path)
         return env_dict
-
-    def preprocess(
-        self,
-        da: DocumentArray,
-        user_input: UserInput,
-        process_index: bool = False,
-        process_query: bool = True,
-    ) -> DocumentArray:
-        if not process_query and not process_index:
-            raise Exception(
-                'Either `process_query` or `process_index` must be set to True.'
-            )
-
-        def convert_fn(d: Document):
-            try:
-                if d.blob == b'':
-                    if d.uri:
-                        d.load_uri_to_blob(timeout=10)
-                    elif d.tensor is not None:
-                        d.convert_tensor_to_blob()
-                sample_video(d)
-            except Exception as e:
-                print(f'Failed to process {d.id}, error: {e}')
-            return d
-
-        modalities = []
-        if process_index:
-            modalities.append(Modalities.VIDEO)
-            for d in da:
-                for chunk in d.chunks:
-                    if chunk.modality == Modalities.VIDEO:
-                        convert_fn(chunk)
-
-        if process_query:
-            modalities.append(Modalities.TEXT)
-            for d in da:
-                for chunk in d.chunks:
-                    chunk.text = 'loading' if chunk.text == 'loader' else chunk.text
-
-        return filter_data(da, modalities)
 
     @property
     def bff_mapping_fns(self):
