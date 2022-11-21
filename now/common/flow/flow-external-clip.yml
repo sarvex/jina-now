@@ -4,6 +4,7 @@ with:
   env:
     JINA_LOG_LEVEL: DEBUG
 jcloud:
+  version: '3.9.3'
   gateway:
     expose: false
   labels:
@@ -19,4 +20,4 @@ executors:
       expose: true
       resources:
         memory: 5G
-        gpu: 1
+        gpu: '1'

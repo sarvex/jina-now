@@ -74,7 +74,7 @@ CLIP_USES = {
     'remote': ('CLIPOnnxEncoder/latest-gpu', 'ViT-B-32::openai', ModelDimensions.CLIP),
 }
 
-EXTERNAL_CLIP_HOST = 'encoderclip-bh-5f4efaff13.wolf.jina.ai'
+EXTERNAL_CLIP_HOST = 'encoderclip-first-yak-8a7edb8adc.wolf.jina.ai'
 EXTERNAL_OCR_HOST = 'ocr-fb-55679da030.wolf.jina.ai'
 DEFAULT_FLOW_NAME = 'nowapi'
 PREFETCH_NR = 10
