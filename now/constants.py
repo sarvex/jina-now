@@ -7,9 +7,9 @@ from now.utils import BetterEnum
 
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.134-refactor-apps-7'
-NOW_PREPROCESSOR_VERSION = '0.0.102-refactor-apps-7'
-NOW_QDRANT_INDEXER_VERSION = '0.0.7-refactor-apps-7'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.134-refactor-apps-8'
+NOW_PREPROCESSOR_VERSION = '0.0.102-refactor-apps-8'
+NOW_QDRANT_INDEXER_VERSION = '0.0.7-refactor-apps-8'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.6-feat-new-data-format-127'
 NOW_AUTOCOMPLETE_VERSION = '0.0.4-feat-new-data-format-127'
 
