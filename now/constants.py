@@ -7,8 +7,8 @@ from now.utils import BetterEnum
 
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.134-refactor-apps-9'
-NOW_PREPROCESSOR_VERSION = '0.0.102-refactor-apps-9'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.134-refactor-apps-10'
+NOW_PREPROCESSOR_VERSION = '0.0.102-refactor-apps-10'
 NOW_QDRANT_INDEXER_VERSION = '0.0.7-feat-new-data-format-127'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.6-feat-new-data-format-127'
 NOW_AUTOCOMPLETE_VERSION = '0.0.4-feat-new-data-format-127'
@@ -23,10 +23,8 @@ class Modalities(BetterEnum):
 
 
 class Apps(BetterEnum):
+    IMAGE_TEXT_RETRIEVAL = 'image_text_retrieval'
     TEXT_TO_TEXT = 'text_to_text'
-    TEXT_TO_IMAGE = 'text_to_image'
-    IMAGE_TO_TEXT = 'image_to_text'
-    IMAGE_TO_IMAGE = 'image_to_image'
     MUSIC_TO_MUSIC = 'music_to_music'
     TEXT_TO_VIDEO = 'text_to_video'
     TEXT_TO_TEXT_AND_IMAGE = 'text_to_text_and_image'
