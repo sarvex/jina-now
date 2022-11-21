@@ -16,7 +16,6 @@ from deployment.bff.app.v1.models.video import (
     NowVideoResponseModel,
 )
 from now.app.base.app import JinaNOWApp
-from now.common.preprocess import filter_data
 from now.common.utils import (
     _get_clip_apps_with_dict,
     common_setup,
@@ -24,6 +23,7 @@ from now.common.utils import (
     get_indexer_config,
 )
 from now.constants import CLIP_USES, Apps, Modalities
+from now.executor.preprocessor.preprocess_modalities import filter_data
 from now.now_dataclasses import UserInput
 
 NUM_FRAMES_SAMPLED = 3

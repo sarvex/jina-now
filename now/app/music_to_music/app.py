@@ -2,7 +2,7 @@ import os
 from typing import Dict
 
 import cowsay
-from docarray import Document, DocumentArray
+from docarray import DocumentArray
 
 from now.app.base.app import JinaNOWApp
 from now.common.utils import common_setup
@@ -112,34 +112,6 @@ class MusicToMusic(JinaNOWApp):
         super().setup(dataset=dataset, user_input=user_input, kubectl_path=kubectl_path)
 
         return env_dict
-
-    def preprocess(
-        self,
-        da: DocumentArray,
-        user_input: UserInput,
-        **kwargs,
-    ) -> DocumentArray:
-        from pydub import AudioSegment
-
-        def convert_fn(d: Document):
-            try:
-                if d.blob == b'':
-                    if d.uri:
-                        if d.uri.startswith(f'data:{d.mime_type}'):
-                            d.load_uri_to_blob(timeout=10)
-                        else:
-                            AudioSegment.from_file(d.uri)  # checks if file is valid
-                            with open(d.uri, 'rb') as fh:
-                                d.blob = fh.read()
-                return d
-            except Exception as e:
-                return d
-
-        for d in da:
-            for chunk in d.chunks:
-                if chunk.modality == Modalities.MUSIC:
-                    convert_fn(d)
-        return da
 
 
 def ffmpeg_is_installed():

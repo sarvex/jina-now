@@ -4,7 +4,6 @@ from typing import Dict, Tuple
 from docarray import DocumentArray
 
 from now.app.base.app import JinaNOWApp
-from now.common.preprocess import preprocess_images, filter_data
 from now.common.utils import _get_clip_apps_with_dict, common_setup, get_indexer_config
 from now.constants import CLIP_USES, Apps, Modalities
 from now.demo_data import DemoDatasetNames
@@ -79,12 +78,3 @@ class ImageToImage(JinaNOWApp):
         )
         super().setup(dataset=dataset, user_input=user_input, kubectl_path=kubectl_path)
         return env_dict
-
-    def preprocess(
-        self,
-        da: DocumentArray,
-        user_input: UserInput,
-        **kwargs,
-    ) -> DocumentArray:
-        da = preprocess_images(da=da)
-        return filter_data(da, modalities=[Modalities.IMAGE])

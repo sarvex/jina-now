@@ -1,13 +1,12 @@
 import json
 import os
-from typing import Dict, Optional, List
+from typing import Dict, List, Optional
 
 import hubble
 from docarray import Document, DocumentArray
 from jina import __version__ as jina_version
 
 from now.app.base.app import JinaNOWApp
-from now.common.preprocess import preprocess_nested_docs, preprocess_text
 from now.common.utils import get_indexer_config
 from now.constants import (
     EXECUTOR_PREFIX,
@@ -112,29 +111,6 @@ class TextToTextAndImage(JinaNOWApp):
 
         user_input.task_config = config
         return user_input.task_config
-
-    def preprocess(
-        self,
-        da: DocumentArray,
-        user_input: UserInput,
-        process_index: bool = False,
-        process_query: bool = True,
-    ) -> DocumentArray:
-        # will be refactored soon
-        if not process_query and not process_index:
-            raise Exception(
-                'Either `process_query` or `process_index` must be set to True.'
-            )
-        # Indexing
-        if process_index:
-            return preprocess_nested_docs(da=da, user_input=user_input)
-        # Query
-        if process_query:
-            da = preprocess_text(da=da, split_by_sentences=False)
-            for d in da:
-                if len(d.chunks) == 0:
-                    d.chunks.extend([Document(text=d.text, modality='text')])
-            return da
 
     @hubble.login_required
     def setup(
