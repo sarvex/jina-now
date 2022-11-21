@@ -58,7 +58,7 @@ class MusicToMusic(JinaNOWApp):
 
     @property
     def supported_file_types(self) -> List[str]:
-        return [SUPPORTED_FILE_TYPES[modality] for modality in self.output_modality]
+        return SUPPORTED_FILE_TYPES[self.output_modality]
 
     def set_flow_yaml(self, **kwargs):
         finetuning = kwargs.get('finetuning', False)

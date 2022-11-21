@@ -9,7 +9,7 @@ def test_start_with_parameters():
     dataset_path = os.path.join(
         os.path.dirname(__file__), '..', '..', 'resources', 'image'
     )
-    bash_command = f"python main.py start --app text_to_image --dataset_path {dataset_path} --dataset_type path --deployment_type remote --flow_name test --secured false --search_fields a,b,c"
+    bash_command = f"python main.py start --app image_text_retrieval output_modality image --dataset_path {dataset_path} --dataset_type path --deployment_type remote --flow_name test --secured false --search_fields a,b,c"
     print(bash_command)
     with pytest.raises(subprocess.TimeoutExpired):
         # timeout means that the parsing was successful and the process is running

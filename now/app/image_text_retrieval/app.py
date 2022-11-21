@@ -53,7 +53,8 @@ class ImageTextRetrieval(JinaNOWApp):
 
     @property
     def supported_file_types(self) -> List[str]:
-        return [SUPPORTED_FILE_TYPES[modality] for modality in self.output_modality]
+        sup_file = [SUPPORTED_FILE_TYPES[modality] for modality in self.output_modality]
+        return [item for sublist in sup_file for item in sublist]
 
     def set_flow_yaml(self, **kwargs):
         finetuning = kwargs.get('finetuning', False)

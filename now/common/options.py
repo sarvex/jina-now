@@ -74,8 +74,9 @@ OUTPUT_MODALITY = DialogOptions(
         {'name': '🏞 image', 'value': 'image'},
     ],
     prompt_type='list',
-    prompt_message='What is the output modality of your image-text- retrieval system?',
-    description='What is the output modality of your image-text- retrieval system?',
+    prompt_message='What is the output modality of your image-text retrieval system?',
+    description='What is the output modality of your image-text retrieval system?',
+    is_terminal_command=True,
     depends_on=APP,
     conditional_check=lambda user_input: user_input.app_instance.app_name
     == Apps.IMAGE_TEXT_RETRIEVAL,

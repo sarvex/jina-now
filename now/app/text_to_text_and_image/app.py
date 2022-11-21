@@ -119,6 +119,7 @@ class TextToTextAndImage(JinaNOWApp):
         user_input: UserInput,
         process_index: bool = False,
         process_query: bool = True,
+        is_indexing: bool = False,
     ) -> DocumentArray:
         # will be refactored soon
         if not process_query and not process_index:
