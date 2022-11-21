@@ -119,10 +119,7 @@ DATASET_TYPE = DialogOptions(
 DEMO_DATA = DialogOptions(
     name='dataset_name',
     prompt_message='What demo dataset do you want to use?',
-    choices=lambda user_input, **kwargs: [
-        {'name': demo_data.display_name, 'value': demo_data.name}
-        for demo_data in user_input.app_instance.demo_datasets
-    ],
+    choices=lambda user_input, **kwargs: _get_demo_data_choices(user_input),
     prompt_type='list',
     depends_on=DATASET_TYPE,
     is_terminal_command=True,
@@ -130,6 +127,17 @@ DEMO_DATA = DialogOptions(
     conditional_check=lambda user_input, **kwargs: user_input.dataset_type
     == DatasetTypes.DEMO,
 )
+
+
+def _get_demo_data_choices(user_input: UserInput):
+    if user_input.output_modality:
+        ds = user_input.app_instance.demo_datasets[user_input.output_modality]
+    else:
+        ds = list(user_input.app_instance.demo_datasets.values())[0]
+    return [
+        {'name': demo_data.display_name, 'value': demo_data.name} for demo_data in ds
+    ]
+
 
 DOCARRAY_NAME = DialogOptions(
     name='dataset_name',

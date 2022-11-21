@@ -7,16 +7,16 @@ from now.utils import BetterEnum
 
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.134-refactor-apps-3'
-NOW_PREPROCESSOR_VERSION = '0.0.102-refactor-apps-3'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.134-refactor-apps-4'
+NOW_PREPROCESSOR_VERSION = '0.0.102-refactor-apps-4'
 NOW_QDRANT_INDEXER_VERSION = '0.0.7-feat-new-data-format-127'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.6-feat-new-data-format-127'
 NOW_AUTOCOMPLETE_VERSION = '0.0.4-feat-new-data-format-127'
 
 
 class Modalities(BetterEnum):
-    IMAGE_TEXT = 'image-or-text'  # collapses all clip based apps into one
-    TEXT = 'text'  # SBERT model
+    IMAGE = 'image'
+    TEXT = 'text'
     MUSIC = 'music'
     VIDEO = 'video'
     TEXT_AND_IMAGE = 'text-and-image'  # will be merged with the other app later
@@ -58,7 +58,7 @@ class ModelDimensions(BetterEnum):
 
 SUPPORTED_FILE_TYPES = {
     Modalities.TEXT: ['txt', 'md'],
-    Modalities.IMAGE_TEXT: [
+    Modalities.IMAGE: [
         'jpg',
         'jpeg',
         'png',
@@ -66,8 +66,6 @@ SUPPORTED_FILE_TYPES = {
         'bmp',
         'tiff',
         'tif',
-        'txt',
-        'md',
     ],
     Modalities.MUSIC: ['mp3', 'wav', 'ogg', 'flac'],
     Modalities.VIDEO: ['gif'],

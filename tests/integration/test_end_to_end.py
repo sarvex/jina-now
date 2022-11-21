@@ -95,15 +95,15 @@ def test_token_exists():
     [
         (
             Apps.IMAGE_TEXT_RETRIEVAL,
-            Modalities.IMAGE_TEXT,
-            Modalities.IMAGE_TEXT,
+            Modalities.IMAGE,
+            Modalities.TEXT,
             DemoDatasetNames.BIRD_SPECIES,
             'local',
         ),
         (
             Apps.IMAGE_TEXT_RETRIEVAL,
-            Modalities.IMAGE_TEXT,
-            Modalities.IMAGE_TEXT,
+            Modalities.TEXT,
+            Modalities.IMAGE,
             DemoDatasetNames.BEST_ARTWORKS,
             'remote',
         ),
@@ -356,8 +356,8 @@ def assert_deployment_response(
 @pytest.mark.parametrize('deployment_type', ['remote'])
 @pytest.mark.parametrize('dataset', ['custom_s3_bucket'])
 @pytest.mark.parametrize('app', [Apps.IMAGE_TEXT_RETRIEVAL])
-@pytest.mark.parametrize('input_modality', [Modalities.IMAGE_TEXT])
-@pytest.mark.parametrize('output_modality', [Modalities.IMAGE_TEXT])
+@pytest.mark.parametrize('input_modality', [Modalities.IMAGE])
+@pytest.mark.parametrize('output_modality', [Modalities.IMAGE])
 def test_backend_custom_data(
     app,
     deployment_type: str,

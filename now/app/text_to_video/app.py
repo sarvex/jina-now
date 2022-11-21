@@ -46,12 +46,12 @@ class TextToVideo(JinaNOWApp):
         return 'Text to video search app'
 
     @property
-    def input_modality(self) -> Modalities:
-        return Modalities.TEXT
+    def input_modality(self) -> List[Modalities]:
+        return [Modalities.TEXT]
 
     @property
-    def output_modality(self) -> Modalities:
-        return Modalities.VIDEO
+    def output_modality(self) -> List[Modalities]:
+        return [Modalities.VIDEO]
 
     @property
     def required_docker_memory_in_gb(self) -> int:

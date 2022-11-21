@@ -48,7 +48,7 @@ class JinaNOWApp:
 
     @property
     @abc.abstractmethod
-    def input_modality(self) -> Modalities:
+    def input_modality(self) -> List[Modalities]:
         """
         Modality used for running search queries
         """
@@ -56,7 +56,7 @@ class JinaNOWApp:
 
     @property
     @abc.abstractmethod
-    def output_modality(self) -> Modalities:
+    def output_modality(self) -> List[Modalities]:
         """
         Modality used for indexing data
         """
@@ -108,9 +108,13 @@ class JinaNOWApp:
         return SUPPORTED_FILE_TYPES[self.output_modality]
 
     @property
-    def demo_datasets(self) -> List[DemoDataset]:
+    def demo_datasets(self) -> Dict[str, DemoDataset]:
         """Get a list of example datasets for the app."""
-        return AVAILABLE_DATASET.get(self.output_modality, [])
+        available_datasets = {
+            modality: AVAILABLE_DATASET.get(modality, [])
+            for modality in self.output_modality
+        }
+        return available_datasets
 
     @property
     def required_docker_memory_in_gb(self) -> int:

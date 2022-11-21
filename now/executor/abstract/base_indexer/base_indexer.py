@@ -143,6 +143,7 @@ class NOWBaseIndexer(Executor):
         """Base function for indexing documents. Handles the data management for the index and list endpoints.
 
         :param docs: the Documents to index
+        :param docs_matrix: the Document matrix to index
         :param parameters: dictionary with options for indexing
         """
         traversal_paths = parameters.get('traversal_paths', self.traversal_paths)

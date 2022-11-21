@@ -41,7 +41,8 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
         da = _extract_es_data(user_input)
     elif user_input.dataset_type == DatasetTypes.DEMO:
         print('⬇  Download DocumentArray dataset')
-        url = get_dataset_url(user_input.dataset_name, app.output_modality)
+        output_modality = user_input.output_modality or app.output_modality[0]
+        url = get_dataset_url(user_input.dataset_name, output_modality)
         da = fetch_da_from_url(url)
     if da is None:
         raise ValueError(

@@ -1,5 +1,5 @@
 import os
-from typing import Dict
+from typing import Dict, List
 
 from docarray import DocumentArray
 
@@ -27,12 +27,12 @@ class TextToText(JinaNOWApp):
         return 'Text to text search app'
 
     @property
-    def input_modality(self) -> Modalities:
-        return Modalities.TEXT
+    def input_modality(self) -> List[Modalities]:
+        return [Modalities.TEXT]
 
     @property
-    def output_modality(self) -> Modalities:
-        return Modalities.TEXT
+    def output_modality(self) -> List[Modalities]:
+        return [Modalities.TEXT]
 
     @property
     def required_docker_memory_in_gb(self) -> int:
