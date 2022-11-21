@@ -21,8 +21,11 @@ def test_split_text_preprocessing():
     """Test if splitting of sentences is carried out when preprocessing text documents at indexing time"""
     app = TextToText()
     da = DocumentArray([Document(text='test. test')])
-    new_da = app.preprocess(da=da, user_input=UserInput(), is_indexing=True)
-    assert len(new_da) == 2
+    new_da = app.preprocess(
+        da=da, user_input=UserInput(), process_index=True, process_query=False
+    )
+    assert len(new_da) == 1
+    assert len(new_da[0].chunks) == 2
 
 
 def test_split_text_preprocessing_not_index_demo():
@@ -31,8 +34,11 @@ def test_split_text_preprocessing_not_index_demo():
     da = DocumentArray([Document(text='test. test')])
     user_input = UserInput()
     user_input.dataset_type = DatasetTypes.DEMO
-    new_da = app.preprocess(da=da, user_input=user_input, is_indexing=False)
+    new_da = app.preprocess(
+        da=da, user_input=user_input, process_index=False, process_query=True
+    )
     assert len(new_da) == 1
+    assert len(new_da[0].chunks) == 0
 
 
 def test_split_text_preprocessing_demo():
@@ -41,5 +47,8 @@ def test_split_text_preprocessing_demo():
     da = DocumentArray([Document(text='test. test')])
     user_input = UserInput()
     user_input.dataset_type = DatasetTypes.DEMO
-    new_da = app.preprocess(da=da, user_input=user_input, is_indexing=True)
+    new_da = app.preprocess(
+        da=da, user_input=user_input, process_index=True, process_query=False
+    )
     assert len(new_da) == 1
+    assert len(new_da[0].chunks) == 0
