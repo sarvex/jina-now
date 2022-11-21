@@ -411,7 +411,7 @@ def _cluster_running(cluster):
     return True
 
 
-app_name = [OUTPUT_MODALITY, APP_NAME]
+app_config = [OUTPUT_MODALITY, APP_NAME]
 data_type = [DATASET_TYPE]
 data_fields = [SEARCH_FIELDS]
 data_demo = [DEMO_DATA]
