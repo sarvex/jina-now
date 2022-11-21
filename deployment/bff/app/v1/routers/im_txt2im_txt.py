@@ -18,11 +18,11 @@ router = APIRouter()
 # Index
 @router.post(
     "/index",
-    summary='Add more image data to the indexer',
+    summary='Add more image or text data to the indexer',
 )
 def index(data: NowTextAndImageIndexRequestModel):
     """
-    Append the list of image data to the indexer. Each image data should be
+    Append the list of image or text data to the indexer. Each image data should be
     `base64` encoded using human-readable characters - `utf-8`.
     """
     index_docs = DocumentArray()
@@ -60,11 +60,11 @@ def index(data: NowTextAndImageIndexRequestModel):
 @router.post(
     "/search",
     response_model=List[NowTextAndImageResponseModel],
-    summary='Search image data via image as query',
+    summary='Search image or text data via image or text as query',
 )
 def search(data: NowTextAndImageSearchRequestModel):
     """
-    Retrieve matching images for a given image query. Image query should be
+    Retrieve matching images or texts for a given image or text query. Image query should be
     `base64` encoded using human-readable characters - `utf-8`.
     """
     # enable text search as well

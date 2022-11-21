@@ -16,7 +16,7 @@ NOW_OCR_DETECTOR_VERSION = '0.0.1-feat-matching-text-82'
 
 
 class Modalities(BetterEnum):
-    IMAGE_TEXT = 'image-and-text'  # collapses all clip based apps into one
+    IMAGE_TEXT = 'image-or-text'  # collapses all clip based apps into one
     TEXT = 'text'  # SBERT model
     MUSIC = 'music'
     VIDEO = 'video'

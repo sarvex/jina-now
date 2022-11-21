@@ -6,7 +6,7 @@ import pytest
     [
         ('text', 'text'),
         ('music', 'music'),
-        ('image-and-text', 'image-and-text'),
+        ('image-or-text', 'image-or-text'),
         ('text', 'video'),
     ],
 )

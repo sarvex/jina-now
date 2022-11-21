@@ -14,7 +14,7 @@ from now.constants import EXTERNAL_CLIP_HOST, NOW_QDRANT_INDEXER_VERSION
 
 API_KEY = 'my_key'
 base_url = 'http://localhost:8080/api/v1'
-search_url = f'{base_url}/image-and-text-to-image-and-text/search'
+search_url = f'{base_url}/image-or-text-to-image-or-text/search'
 update_api_keys_url = f'{base_url}/admin/updateApiKeys'
 update_emails_url = f'{base_url}/admin/updateUserEmails'
 host = 'grpc://0.0.0.0'

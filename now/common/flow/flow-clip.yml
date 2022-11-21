@@ -12,21 +12,13 @@ jcloud:
   retention_days: ${{ RETENTION_DAYS }}
   custom_dns:
     - ${{ ENV.CUSTOM_DNS }}
-  labels:
-    team: now
 executors:
-  - name: autocomplete_executor
-    uses: ${{ ENV.AUTOCOMPLETE_EXECUTOR_NAME }}
-    needs: gateway
-    env:
-      JINA_LOG_LEVEL: DEBUG
   - name: preprocessor
     uses: ${{ ENV.PREPROCESSOR_NAME }}
     uses_with:
       app: ${{ ENV.APP }}
       admin_emails: ${{ ENV.ADMIN_EMAILS }}
       user_emails: ${{ ENV.USER_EMAILS }}
-      api_keys: ${{ ENV.API_KEY }}
     jcloud:
       resources:
         memory: 1G
@@ -64,7 +56,6 @@ executors:
       columns: ${{ ENV.COLUMNS }}
       admin_emails: ${{ ENV.ADMIN_EMAILS }}
       user_emails: ${{ ENV.USER_EMAILS }}
-      api_keys: ${{ ENV.API_KEY }}
     jcloud:
       capacity: on-demand
       resources:
