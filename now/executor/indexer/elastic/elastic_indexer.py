@@ -1,4 +1,5 @@
 import traceback
+from collections import namedtuple
 from typing import Any, Dict, List, Mapping, Optional, Union
 
 import numpy as np
@@ -13,6 +14,7 @@ from now.executor.abstract.auth import (
     get_auth_executor_class,
     secure_request,
 )
+from now.executor.indexer.elastic.converter import Converter
 
 metrics_mapping = {
     'cosine': 'cosineSimilarity',
@@ -21,11 +23,28 @@ metrics_mapping = {
 
 Executor = get_auth_executor_class()
 
+SemanticScore = namedtuple(
+    'SemanticScores',
+    [
+        'query_field',
+        'query_encoder',
+        'document_field',
+        'document_encoder',
+        'linear_weight',
+    ],
+)
+
+FieldEmbedding = namedtuple(
+    'FieldEmbedding',
+    ['encoder', 'embedding_size', 'fields'],
+)
+
 
 class ElasticIndexer(Executor):
     def __init__(
         self,
-        dims: Union[List[int], int],
+        default_semantic_scores: List[SemanticScore],
+        document_mappings: List[FieldEmbedding],
         hosts: Union[
             str, List[Union[str, Mapping[str, Union[str, int]]]], None
         ] = 'https://elastic:elastic@localhost:9200',
@@ -56,51 +75,53 @@ class ElasticIndexer(Executor):
         self.metric = metric
         self.index_name = index_name
         self.traversal_paths = traversal_paths
+        self.default_semantic_scores = default_semantic_scores
+        self.encoder_to_fields = {
+            document_mapping.encoder: document_mapping.fields
+            for document_mapping in document_mappings
+        }
         self.es_config = {'verify_certs': False} if not es_config else es_config
-        self.dims = dims if isinstance(dims, list) else [dims]
-        self.es_mapping = self._generate_es_mapping(dims)
+        self.es_mapping = ElasticIndexer.generate_es_mapping(
+            document_mappings, self.metric
+        )
+        print(self.es_mapping)
         self.es = Elasticsearch(hosts=self.hosts, **self.es_config, ssl_show_warn=False)
         if not self.es.indices.exists(index=self.index_name):
             self.es.indices.create(index=self.index_name, mappings=self.es_mapping)
 
-    def _generate_es_mapping(self, dims: List[int]) -> Dict:
+    @staticmethod
+    def generate_es_mapping(
+        document_mappings: List[FieldEmbedding], metric: str
+    ) -> Dict:
+        """Creates Elasticsearch mapping for the defined document fields.
+
+        :param document_mappings: field descriptions of the to-be-queryable vector representations
+        :param metric: The distance metric used for the vector index and vector search
+        """
         es_mapping = {
             'properties': {
                 'id': {'type': 'keyword'},
                 'bm25_text': {'type': 'text', 'analyzer': 'standard'},
             }
         }
-        if isinstance(dims, list) and 'c' in self.traversal_paths:
-            for i, dim in enumerate(self.dims):
-                es_mapping['properties'][f'chunk_{i}'] = {
+        for encoder, embedding_size, fields in document_mappings:
+            for field in fields:
+                es_mapping['properties'][f'{field}-{encoder}'] = {
                     'properties': {
                         f'embedding': {
                             'type': 'dense_vector',
-                            'dims': dim,
-                            'similarity': self.metric,
+                            'dims': str(embedding_size),
+                            'similarity': metric,
                             'index': 'true',
                         }
                     }
                 }
-        elif isinstance(dims, int) and 'r' in self.traversal_paths:
-            es_mapping['properties']['embedding'] = {
-                'type': 'dense_vector',
-                'dims': dims,
-                'similarity': self.metric,
-                'index': 'true',
-            }
-        else:
-            raise ValueError(
-                f'Invalid combination of traversal_paths {self.traversal_paths} '
-                f'and dims {self.dims}'
-            )
         return es_mapping
 
     @secure_request(on='/index', level=SecurityLevel.USER)
     def index(
         self,
-        docs: DocumentArray,
-        docs_matrix: List[DocumentArray] = None,
+        docs_map: Dict[str, DocumentArray] = None,  # encoder to docarray
         parameters: dict = None,
         **kwargs,
     ) -> DocumentArray:
@@ -111,20 +132,15 @@ class ElasticIndexer(Executor):
         :param parameters: dictionary with options for indexing.
         :return: empty `DocumentArray`.
         """
-        if not docs:
-            return docs
-        if docs_matrix:
-            if len(docs_matrix) > 1:
-                docs = self._join_docs_matrix_into_chunks(
-                    docs_matrix=docs_matrix, on='index'
-                )
-            else:
-                docs = docs_matrix[0]
+        if not docs_map:
+            return DocumentArray()
         if not parameters:
             parameters = {}
-        traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
-        es_docs = self._transform_docs_to_es(docs, traversal_paths)
+
+        es_docs = self._doc_map_to_es(docs_map)
+        print(es_docs)
         try:
+            # self.es.index(document=es_docs[0], index=es_docs[0]['_index'])
             success, _ = bulk(self.es, es_docs)
             self.es.indices.refresh(index=self.index_name)
         except Exception as e:
@@ -219,6 +235,7 @@ class ElasticIndexer(Executor):
         limit = int(parameters.get('limit', 20))
         offset = int(parameters.get('offset', 0))
         try:
+            # TODO: move the limit and offset to the ES query. That will speed up things a lot.
             result = self.es.search(index=self.index_name, query={'match_all': {}})[
                 'hits'
             ]['hits']
@@ -327,7 +344,7 @@ class ElasticIndexer(Executor):
                 source += f"0.5*{metrics_mapping[self.metric]}(params.query_{key}, '{key}.embedding') + "
             params[f'query_{key}'] = embedding
         source += '1.0'
-        query_json = {
+        qson = {
             'script_score': {
                 'query': query,
                 'script': {'source': source, 'params': params},
@@ -360,6 +377,41 @@ class ElasticIndexer(Executor):
                     doc.k = v
             da.append(doc)
         return da
+
+    def _doc_map_to_es(self, docs_map):
+        es_docs = {}
+
+        for encoder, documents in docs_map.items():
+            for doc in documents:
+                if doc.id not in es_docs:
+                    es_doc = self._get_base_es_doc(doc)
+                    es_docs[doc.id] = es_doc
+                else:
+                    es_doc = es_docs[doc.id]
+                fields = self.encoder_to_fields[encoder]
+                for field in fields:
+                    field_doc = getattr(doc, field)
+                    embedding = field_doc.embedding
+                    es_doc[f'{field}-{encoder}'] = embedding
+                    if hasattr(field_doc, 'text') and field_doc.text:
+                        es_doc['bm25_text'] += " " + field_doc.text
+        return list(es_docs.values())
+
+    def _get_base_es_doc(self, doc: Document):
+        es_doc = {k: v for k, v in doc.to_dict().items() if v}
+        es_doc.pop('chunks')
+        es_doc['_id'] = doc.id
+        es_doc['bm25_text'] = self._get_bm25_fields(doc)
+        es_doc['_op_type'] = 'index'
+        es_doc['_index'] = self.index_name
+
+        return es_doc
+
+    def _get_bm25_fields(self, doc: Document):
+        try:
+            return doc.bm25_text.text
+        except:
+            return ''
 
     def _transform_docs_to_es(
         self, docs: DocumentArray, traversal_paths: str
