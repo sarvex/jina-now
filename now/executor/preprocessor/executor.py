@@ -14,8 +14,8 @@ from paddleocr import PaddleOCR
 
 from now.app.base.app import JinaNOWApp
 from now.common.options import construct_app
-from now.data_loading.transform_docarray import transform_docarray
 from now.constants import TAG_OCR_DETECTOR_TEXT_IN_DOC, Apps, DatasetTypes
+from now.data_loading.transform_docarray import transform_docarray
 from now.executor.abstract.auth import (
     SecurityLevel,
     get_auth_executor_class,
@@ -38,6 +38,11 @@ class NOWPreprocessor(Executor):
 
     def __init__(self, app: str, max_workers: int = 15, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        import os
+
+        if "GITHUB_ACTIONS" not in os.environ:
+            raise ValueError
 
         self.app: JinaNOWApp = construct_app(app)
         self.max_workers = max_workers
