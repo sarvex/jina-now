@@ -63,7 +63,9 @@ def search(data: NowTextSearchRequestModel):
     query_doc, filter_query = process_query(
         text=data.text, uri=data.uri, conditions=data.filters
     )
-    # for video the search requests have to be on chunk-level
+    # hack for video the search requests have to be on chunk-level for older versions
+    if '33b37fa1f6' in data.host:
+        query_doc = (Document(chunks=query_doc),)
     docs = jina_client_post(
         data=data,
         inputs=query_doc,
