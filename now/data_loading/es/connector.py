@@ -74,7 +74,7 @@ class ElasticsearchConnector:
             **query, index=index_name, scroll='2m', size=page_size, source=False
         )
         documents = [
-            {**doc['fields'], **{'id': doc['_id']}} for doc in resp['hits']['hits']
+            {**doc['_source'], **{'id': doc['_id']}} for doc in resp['hits']['hits']
         ]
         scroll_id = resp['_scroll_id']
         scroll_size = len(documents)
@@ -83,7 +83,7 @@ class ElasticsearchConnector:
             resp = self.es.scroll(scroll_id=scroll_id, scroll='2m')
             scroll_id = resp['_scroll_id']
             documents = [
-                {**doc['fields'], **{'id': doc['_id']}} for doc in resp['hits']['hits']
+                {**doc['_source'], **{'id': doc['_id']}} for doc in resp['hits']['hits']
             ]
             scroll_size = len(documents)
 

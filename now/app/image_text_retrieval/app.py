@@ -38,6 +38,13 @@ class ImageTextRetrieval(JinaNOWApp):
     def required_docker_memory_in_gb(self) -> int:
         return 8
 
+    def get_index_query_access_paths(self, **kwargs) -> str:
+        """If `split_by_sentences` is set to True, the structure of the data
+        will have 2 level chunks. (That's the puspose of @cc)
+        Otherwise, we access documents on chunk level. (@c)
+        """
+        return '@c,cc'
+
     def set_flow_yaml(self, **kwargs):
         finetuning = kwargs.get('finetuning', False)
 
@@ -55,7 +62,7 @@ class ImageTextRetrieval(JinaNOWApp):
         self, dataset: DocumentArray, user_input: UserInput, kubectl_path
     ) -> Dict:
         indexer_config = get_indexer_config(len(dataset))
-        encoder_with, ocr_with = _get_clip_apps_with_dict(user_input)
+        encoder_with = _get_clip_apps_with_dict(user_input)
         env_dict = common_setup(
             app_instance=self,
             user_input=user_input,
@@ -72,14 +79,22 @@ class ImageTextRetrieval(JinaNOWApp):
             kubectl_path=kubectl_path,
             indexer_resources=indexer_config['indexer_resources'],
         )
-        env_dict.update(ocr_with)
         super().setup(dataset=dataset, user_input=user_input, kubectl_path=kubectl_path)
         return env_dict
 
     def preprocess(
-        self, da: DocumentArray, user_input: UserInput, is_indexing=False
+        self,
+        da: DocumentArray,
+        user_input: UserInput,
+        process_index: bool = False,
+        process_query: bool = True,
     ) -> DocumentArray:
-        if is_indexing:
+        if not process_query and not process_index:
+            raise Exception(
+                'Either `process_query` or `process_index` must be set to True.'
+            )
+        modalities = []
+        if process_index:
             if user_input.output_modality == Modalities.TEXT:
                 split_by_sentences = False
                 if (
@@ -90,7 +105,13 @@ class ImageTextRetrieval(JinaNOWApp):
                 ):
                     # for text loaded from folder can't assume it is split by sentences
                     split_by_sentences = True
-                return preprocess_text(da=da, split_by_sentences=split_by_sentences)
+                da = preprocess_text(da=da, split_by_sentences=split_by_sentences)
+                modalities.append(Modalities.TEXT)
             else:
-                return preprocess_images(da=da)
-        return preprocess_images(da=da) + preprocess_text(da=da)
+                da = preprocess_images(da=da)
+                modalities.append(Modalities.IMAGE)
+        if process_query:
+            da = preprocess_images(da=da) + preprocess_text(da=da)
+            modalities.append(Modalities.IMAGE_TEXT)
+
+        return filter_data(da, modalities)

@@ -12,6 +12,8 @@ jcloud:
   retention_days: ${{ RETENTION_DAYS }}
   custom_dns:
     - ${{ ENV.CUSTOM_DNS }}
+  labels:
+    team: now
 executors:
   - name: preprocessor
     uses: ${{ ENV.PREPROCESSOR_NAME }}
@@ -30,26 +32,12 @@ executors:
     port: ${{ ENV.ENCODER_PORT }}
     tls: ${{ ENV.IS_REMOTE_DEPLOYMENT }}
     external: ${{ ENV.IS_REMOTE_DEPLOYMENT }}
-    needs: preprocessor
     uses_with:
       name: ${{ ENV.PRE_TRAINED_MODEL_NAME }}
     env:
       JINA_LOG_LEVEL: DEBUG
-  - name: ocr_detector
-    uses: ${{ ENV.OCR_DETECTOR_NAME }}
-    host: ${{ ENV.OCR_DETECTOR_HOST }}
-    port: ${{ ENV.OCR_DETECTOR_PORT }}
-    tls: ${{ ENV.IS_REMOTE_DEPLOYMENT }}
-    external: ${{ ENV.IS_REMOTE_DEPLOYMENT }}
-    needs: preprocessor
-    when:
-      mime_type:
-        $regex: image*
   - name: indexer
     uses: ${{ ENV.INDEXER_NAME }}
-    needs:
-      - encoder_clip
-      - ocr_detector
     disable_reduce: true
     uses_with:
       dim: ${{ ENV.N_DIM }}

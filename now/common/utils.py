@@ -16,10 +16,8 @@ from now.app.base.app import JinaNOWApp
 from now.constants import (
     EXECUTOR_PREFIX,
     EXTERNAL_CLIP_HOST,
-    EXTERNAL_OCR_HOST,
     NOW_AUTOCOMPLETE_VERSION,
     NOW_ELASTIC_INDEXER_VERSION,
-    NOW_OCR_DETECTOR_VERSION,
     NOW_PREPROCESSOR_VERSION,
     NOW_QDRANT_INDEXER_VERSION,
     PREFETCH_NR,
@@ -168,7 +166,6 @@ def common_setup(
     app_instance.set_flow_yaml(
         finetuning=finetune_settings.perform_finetuning, dataset_len=len(dataset)
     )
-
     return env_dict
 
 
@@ -286,16 +283,11 @@ def setup_elastic_service(
 
 def _get_clip_apps_with_dict(user_input: UserInput) -> Tuple[Dict, Dict]:
     """Depending on whether this app will be remotely deployed, this function returns the with
-    dictionary for the CLIP and OCR detector executor."""
+    dictionary for the CLIP executor."""
     is_remote = user_input.deployment_type == 'remote'
     encoder_with = {
         'ENCODER_HOST': EXTERNAL_CLIP_HOST if is_remote else '0.0.0.0',
         'ENCODER_PORT': 443 if is_remote else random_port(),
         'IS_REMOTE_DEPLOYMENT': is_remote,
     }
-    ocr_with = {
-        'OCR_DETECTOR_NAME': f"jinahub+docker://NOWOCRDetector9/{NOW_OCR_DETECTOR_VERSION}",
-        'OCR_DETECTOR_HOST': EXTERNAL_OCR_HOST if is_remote else '0.0.0.0',
-        'OCR_DETECTOR_PORT': 443 if is_remote else random_port(),
-    }
-    return encoder_with, ocr_with
+    return encoder_with

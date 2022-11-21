@@ -40,7 +40,10 @@ def index(data: NowMusicIndexRequestModel):
     jina_client_post(
         data=data,
         inputs=index_docs,
-        parameters={},
+        parameters={
+            'access_paths': '@c',
+            'traversal_paths': '@c',
+        },
         endpoint='/index',
     )
 
@@ -58,11 +61,15 @@ def search(data: NowMusicSearchRequestModel):
     query_doc, filter_query = process_query(
         blob=data.song, uri=data.uri, conditions=data.filters
     )
-
     docs = jina_client_post(
         data=data,
         inputs=query_doc,
-        parameters={'limit': data.limit, 'filter': filter_query},
+        parameters={
+            'limit': data.limit,
+            'filter': filter_query,
+            'access_paths': '@c',
+            'traversal_paths': '@c',
+        },
         endpoint='/search',
     )
 

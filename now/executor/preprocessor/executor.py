@@ -1,14 +1,21 @@
+import io
 import json
 import os
+import random
+import string
 import tempfile
+import urllib
+from collections import defaultdict
 from typing import Dict, Optional
 
 import boto3
 from jina import Document, DocumentArray
+from paddleocr import PaddleOCR
 
 from now.app.base.app import JinaNOWApp
 from now.common.options import construct_app
-from now.constants import Apps, DatasetTypes
+from now.constants import TAG_OCR_DETECTOR_TEXT_IN_DOC, Apps, DatasetTypes
+from now.data_loading.transform_docarray import transform_docarray
 from now.executor.abstract.auth import (
     SecurityLevel,
     get_auth_executor_class,
@@ -21,8 +28,8 @@ Executor = get_auth_executor_class()
 
 
 class NOWPreprocessor(Executor):
-    """Applies preprocessing to documents for encoding, indexing and searching as defined by app. If necessary,
-    downloads files for that from cloud bucket.
+    """Applies preprocessing to documents for encoding, indexing and searching as defined by app.
+    If necessary, downloads files for that from cloud bucket.
 
     Also, provides an endpoint to download data from S3 bucket without requiring credentials for that.
 
@@ -34,6 +41,7 @@ class NOWPreprocessor(Executor):
 
         self.app: JinaNOWApp = construct_app(app)
         self.max_workers = max_workers
+        self.paddle_ocr = PaddleOCR(use_angle_cls=True, lang='en')
 
         self.user_input_path = (
             os.path.join(self.workspace, 'user_input.json') if self.workspace else None
@@ -46,7 +54,7 @@ class NOWPreprocessor(Executor):
             self.user_input = None
 
     def _set_user_input(self, parameters: Dict):
-        """Sets user_input attribute and deletes used attributes from dictionary."""
+        """Sets user_input attribute and deletes used attributes from dictionary"""
         if 'user_input' in parameters.keys():
             self.user_input = UserInput()
             for attr_name, prev_value in self.user_input.__dict__.items():
@@ -58,6 +66,56 @@ class NOWPreprocessor(Executor):
             if self.user_input_path:
                 with open(self.user_input_path, 'w') as fp:
                     json.dump(self.user_input.__dict__, fp)
+
+    def _ocr_detect_text(self, docs: DocumentArray):
+        """Iterates over all documents, detects text in images and saves it into the tags of the document."""
+        flat_docs = docs[self.app.get_index_query_access_paths()]
+        # select documents whose mime_type starts with 'image'
+        flat_docs = [
+            doc
+            for doc in flat_docs
+            if doc.mime_type.startswith('image') or doc.modality == 'image'
+        ]
+        id_to_text = defaultdict(str)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            for doc in flat_docs:
+                if doc.blob:
+                    doc.convert_blob_to_datauri()
+                elif doc.tensor:
+                    doc.convert_image_tensor_to_uri()
+                result = self.paddle_ocr.ocr(
+                    self._save_uri_to_tmp_file(doc.uri, tmpdir), cls=True
+                )
+                for _, (text_in_doc, _) in result[0]:
+                    if '@cc' in self.app.get_index_query_access_paths():
+                        id_to_text[doc.parent_id] += text_in_doc + ' '
+                    else:
+                        id_to_text[doc.id] = text_in_doc
+        for doc in flat_docs:
+            text_in_doc = id_to_text[
+                doc.parent_id
+                if '@cc' in self.app.get_index_query_access_paths()
+                else doc.id
+            ]
+            doc.tags[TAG_OCR_DETECTOR_TEXT_IN_DOC] = text_in_doc.strip()
+            if 'uri' in doc.tags:
+                doc.uri = doc.tags['uri']
+
+    @staticmethod
+    def _save_uri_to_tmp_file(uri, tmpdir) -> str:
+        """Saves URI to a temporary file and returns the path to that file."""
+        req = urllib.request.Request(uri, headers={'User-Agent': 'Mozilla/5.0'})
+        tmp_fn = os.path.join(
+            tmpdir,
+            ''.join([random.choice(string.ascii_lowercase) for i in range(10)])
+            + '.png',
+        )
+        with urllib.request.urlopen(req, timeout=10) as fp:
+            buffer = fp.read()
+            binary_fn = io.BytesIO(buffer)
+            with open(tmp_fn, 'wb') as f:
+                f.write(binary_fn.read())
+        return tmp_fn
 
     def _preprocess_maybe_cloud_download(
         self,
@@ -76,18 +134,21 @@ class NOWPreprocessor(Executor):
                     user_input=self.user_input,
                     max_workers=self.max_workers,
                 )
-            pre_docs = self.app.preprocess(
-                docs, self.user_input, is_indexing=is_indexing
+            docs = transform_docarray(
+                documents=docs,
+                search_fields=self.user_input.search_fields or [],
             )
-            if encode:
-                remaining_docs = self.app.preprocess(
-                    docs, self.user_input, is_indexing=not is_indexing
-                )
-                pre_docs.extend(remaining_docs)
-            docs = pre_docs
+            docs = self.app.preprocess(
+                da=docs,
+                user_input=self.user_input,
+                process_query=True if encode else not is_indexing,
+                process_index=True if encode else is_indexing,
+            )
+            if is_indexing:
+                self._ocr_detect_text(docs)
 
             # as _maybe_download_from_s3 moves S3 URI to tags['uri'], need to move it back for post-processor & accurate
-            # results
+            # results.
             if (
                 self.user_input
                 and self.user_input.dataset_type == DatasetTypes.S3_BUCKET

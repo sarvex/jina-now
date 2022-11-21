@@ -81,14 +81,13 @@ def test_da_local_path_image_folder(image_resource_path: str):
 
     app = ImageTextRetrieval()
     loaded_da = load_data(app, user_input)
-    loaded_da = app.preprocess(da=loaded_da, user_input=user_input, is_indexing=True)
 
     assert len(loaded_da) == 2, (
         f'Expected two images, got {len(loaded_da)}.'
         f' Check the tests/resources/image folder'
     )
     for doc in loaded_da:
-        assert doc.blob != b''
+        assert doc.uri
 
 
 def test_da_local_path_music_folder(music_resource_path: str):
@@ -98,14 +97,13 @@ def test_da_local_path_music_folder(music_resource_path: str):
 
     app = MusicToMusic()
     loaded_da = load_data(app, user_input)
-    loaded_da = app.preprocess(da=loaded_da, user_input=user_input)
 
     assert len(loaded_da) == 2, (
         f'Expected two music docs, got {len(loaded_da)}.'
         f' Check the tests/resources/music folder'
     )
     for doc in loaded_da:
-        assert doc.blob != b''
+        assert doc.uri
 
 
 def test_da_custom_ds(da: DocumentArray):
@@ -115,10 +113,9 @@ def test_da_custom_ds(da: DocumentArray):
 
     app = ImageTextRetrieval()
     loaded_da = load_data(app, user_input)
-    loaded_da = app.preprocess(da=loaded_da, user_input=user_input, is_indexing=True)
 
     for doc in loaded_da:
-        assert doc.blob != b''
+        assert doc.content
 
 
 def test_es_online_shop_ds(da: DocumentArray):

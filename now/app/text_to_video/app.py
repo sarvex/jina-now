@@ -1,7 +1,7 @@
 import base64
 import io
 import os
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import numpy as np
 import PIL
@@ -16,6 +16,7 @@ from deployment.bff.app.v1.models.video import (
     NowVideoResponseModel,
 )
 from now.app.base.app import JinaNOWApp
+from now.common.preprocess import filter_data
 from now.common.utils import (
     _get_clip_apps_with_dict,
     common_setup,
@@ -56,6 +57,11 @@ class TextToVideo(JinaNOWApp):
     def required_docker_memory_in_gb(self) -> int:
         return 12
 
+    def get_index_query_access_paths(
+        self, search_fields: Optional[List[str]] = None
+    ) -> str:
+        return '@c,cc'
+
     def set_flow_yaml(self, **kwargs):
         finetuning = kwargs.get('finetuning', False)
         dataset_len = kwargs.get('dataset_len', 0) * NUM_FRAMES_SAMPLED
@@ -81,14 +87,14 @@ class TextToVideo(JinaNOWApp):
                 self.flow_yaml = os.path.join(flow_dir, 'flow-video-clip.yml')
 
     @property
-    def index_query_access_paths(self) -> str:
-        return '@c'
+    def supported_file_types(self) -> List[str]:
+        return ['gif', 'mp4', 'mov']
 
     def setup(
         self, dataset: DocumentArray, user_input: UserInput, kubectl_path
     ) -> Dict:
         indexer_config = get_indexer_config(len(dataset) * NUM_FRAMES_SAMPLED)
-        encoder_with, ocr_with = _get_clip_apps_with_dict(user_input)
+        encoder_with = _get_clip_apps_with_dict(user_input)
         env_dict = common_setup(
             app_instance=self,
             user_input=user_input,
@@ -105,44 +111,48 @@ class TextToVideo(JinaNOWApp):
             kubectl_path=kubectl_path,
             indexer_resources=indexer_config['indexer_resources'],
         )
-        env_dict.update(ocr_with)
         super().setup(dataset, user_input, kubectl_path)
         return env_dict
 
     def preprocess(
-        self, da: DocumentArray, user_input: UserInput, is_indexing=False
+        self,
+        da: DocumentArray,
+        user_input: UserInput,
+        process_index: bool = False,
+        process_query: bool = True,
     ) -> DocumentArray:
-        if is_indexing:
+        if not process_query and not process_index:
+            raise Exception(
+                'Either `process_query` or `process_index` must be set to True.'
+            )
 
-            def convert_fn(d: Document):
-                try:
-                    if d.blob == b'':
-                        if d.uri:
-                            d.load_uri_to_blob(timeout=10)
-                        elif d.tensor is not None:
-                            d.convert_tensor_to_blob()
-                    sample_video(d)
-                except Exception as e:
-                    print(f'Failed to process {d.id}, error: {e}')
-                return d
+        def convert_fn(d: Document):
+            try:
+                if d.blob == b'':
+                    if d.uri:
+                        d.load_uri_to_blob(timeout=10)
+                    elif d.tensor is not None:
+                        d.convert_tensor_to_blob()
+                sample_video(d)
+            except Exception as e:
+                print(f'Failed to process {d.id}, error: {e}')
+            return d
 
+        modalities = []
+        if process_index:
+            modalities.append(Modalities.VIDEO)
             for d in da:
-                convert_fn(d)
-
-            return DocumentArray(d for d in da if d.blob != b'')
-        else:
-
-            def convert_fn(d: Document):
-                d.chunks = DocumentArray(d for d in d.chunks if d.text)
                 for chunk in d.chunks:
-                    if chunk.text == 'loader':
-                        chunk.text = 'loading'
-                return d
+                    if chunk.modality == Modalities.VIDEO:
+                        convert_fn(chunk)
 
+        if process_query:
+            modalities.append(Modalities.TEXT)
             for d in da:
-                convert_fn(d)
+                for chunk in d.chunks:
+                    chunk.text = 'loading' if chunk.text == 'loader' else chunk.text
 
-            return DocumentArray(d for d in da if d.chunks)
+        return filter_data(da, modalities)
 
     @property
     def bff_mapping_fns(self):
@@ -226,3 +236,6 @@ def sample_video(d):
         frame_bytes = io.BytesIO()
         frame_pil_resized.save(frame_bytes, format="JPEG", quality=70)
         d.chunks.append(Document(uri=d.uri, blob=frame_bytes.getvalue(), tags=d.tags))
+    d.blob = None
+    d.uri = None
+    d.tensor = None

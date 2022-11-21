@@ -35,7 +35,10 @@ def index(data: NowTextIndexRequestModel):
     jina_client_post(
         data=data,
         inputs=index_docs,
-        parameters={},
+        parameters={
+            'access_paths': '@c,cc',
+            'traversal_paths': '@c,cc',
+        },
         endpoint='/index',
     )
 
@@ -48,7 +51,7 @@ def index(data: NowTextIndexRequestModel):
 )
 def search(data: NowTextSearchRequestModel):
     """
-    Retrieve matching text for a given text as query.
+    Retrieve matching text for a given text as query
     """
     query_doc, filter_query = process_query(
         text=data.text, uri=data.uri, conditions=data.filters
@@ -57,7 +60,13 @@ def search(data: NowTextSearchRequestModel):
     docs = jina_client_post(
         data=data,
         inputs=query_doc,
-        parameters={'limit': data.limit, 'filter': filter_query, 'apply_bm25': True},
+        parameters={
+            'limit': data.limit,
+            'filter': filter_query,
+            'access_paths': '@c,cc',
+            'traversal_paths': '@c,cc',
+            'apply_bm25': True,
+        },
         endpoint='/search',
     )
 
@@ -79,7 +88,6 @@ def suggestion(data: NowTextSearchRequestModel):
     docs = jina_client_post(
         data=data,
         inputs=query_doc,
-        parameters={'limit': data.limit, 'filter': filter_query, 'apply_bm25': True},
         endpoint='/suggestion',
     )
     return docs.to_dict()

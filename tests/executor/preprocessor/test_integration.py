@@ -4,7 +4,7 @@ import os
 from docarray import Document, DocumentArray
 from jina import Flow
 
-from now.constants import Apps
+from now.constants import TAG_OCR_DETECTOR_TEXT_IN_DOC, Apps
 from now.executor.preprocessor import NOWPreprocessor
 from now.now_dataclasses import UserInput
 
@@ -16,7 +16,7 @@ def test_executor_persistence(tmpdir):
         [
             Document(text='test'),
             Document(
-                chunks=DocumentArray([Document(uri='test.jpg'), Document(text='hi')])
+                uri=os.path.join(resources_folder_path, 'image', '6785325056.jpg')
             ),
         ]
     )
@@ -34,10 +34,8 @@ def test_text_to_video(resources_folder_path):
     user_input = UserInput()
     text_docs = DocumentArray(
         [
-            Document(chunks=[Document(text='test')]),
-            Document(
-                uri=os.path.join(resources_folder_path, 'gif', 'folder1/file.gif')
-            ),
+            Document(text='test'),
+            Document(uri=os.path.join(resources_folder_path, 'gif/folder1/file.gif')),
         ]
     )
 
@@ -61,17 +59,29 @@ def test_text_to_video(resources_folder_path):
     assert len(result) == 1
     assert len(encode_result) == 2
     assert (
+        len([res.chunks[0].text for res in encode_result if res.chunks[0].text != ''])
+        == 1
+    )
+    assert (
         len(
             [
-                chunk.text
-                for doc in encode_result
-                for chunk in doc.chunks
-                if chunk.text != ''
+                res.chunks[0].chunks[0].blob
+                for res in encode_result
+                if res.chunks[0].chunks
             ]
         )
         == 1
     )
-    assert len([blob for blob in encode_result.blobs if blob != b'']) == 1
+    assert (
+        len(
+            [
+                document.chunks[0].tags.get(TAG_OCR_DETECTOR_TEXT_IN_DOC)
+                for document in encode_result
+                if TAG_OCR_DETECTOR_TEXT_IN_DOC in document.chunks[0].tags
+            ]
+        )
+        == 1
+    )
 
 
 def test_user_input_preprocessing():

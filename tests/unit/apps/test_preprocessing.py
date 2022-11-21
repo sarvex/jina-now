@@ -1,35 +1,41 @@
+import os
+
 import pytest
 from docarray import Document, DocumentArray
 
 from now.app.image_text_retrieval.app import ImageTextRetrieval
-from now.app.music_to_music.app import MusicToMusic
 from now.app.sentence_to_sentence.app import SentenceToSentence
 from now.app.text_to_text_and_image.app import TextToTextAndImage
 from now.app.text_to_video.app import TextToVideo
-from now.constants import DatasetTypes
-from now.data_loading.data_loading import load_data
-from now.demo_data import DemoDatasetNames
+from now.data_loading.transform_docarray import transform_docarray
 from now.now_dataclasses import UserInput
 
 
 def test_text_to_video_preprocessing_query():
     """Test if the text to video preprocessing works for queries"""
     app = TextToVideo()
-    da = DocumentArray([Document(chunks=[Document(text='test')])])
+    da = DocumentArray([Document(text='test')])
+    da = transform_docarray(da, search_fields=[])
     da = app.preprocess(da=da, user_input=UserInput())
+
     assert len(da) == 1
     assert len(da[0].chunks) == 1
     assert da[0].chunks[0].text == 'test'
 
 
-def test_text_to_video_preprocessing_indexing():
+def test_text_to_video_preprocessing_indexing(resources_folder_path):
     """Test if the text to video preprocessing works for indexing"""
     app = TextToVideo()
-    da = DocumentArray([Document(uri='tests/resources/gif/folder1/file.gif')])
-    da = app.preprocess(da=da, user_input=UserInput(), is_indexing=True)
+    da = DocumentArray(
+        [Document(uri=os.path.join(resources_folder_path, 'gif/folder1/file.gif'))]
+    )
+    da = transform_docarray(da, search_fields=[])
+    da = app.preprocess(
+        da=da, user_input=UserInput(), process_index=True, process_query=False
+    )
     assert len(da) == 1
-    assert len(da[0].chunks) == 3
-    assert da[0].chunks[0].blob != b''
+    assert len(da[0].chunks[0].chunks) == 3
+    assert da[0].chunks[0].chunks[0].blob != b''
 
 
 @pytest.mark.parametrize(
@@ -45,10 +51,17 @@ def test_text_preprocessing(app_cls, is_indexing):
     """Test if the text to text preprocessing works for queries and indexing"""
     app = SentenceToSentence()
     da = DocumentArray([Document(text='test')])
-    da = app.preprocess(da=da, user_input=UserInput(), is_indexing=is_indexing)
+    da = transform_docarray(da, search_fields=[])
+    da = app.preprocess(
+        da=da,
+        user_input=UserInput(),
+        process_index=is_indexing,
+        process_query=not is_indexing,
+    )
     assert len(da) == 1
-    assert len(da[0].chunks) == 0
-    assert da[0].text == 'test'
+    assert len(da[0].chunks) == 1
+    assert da[0].chunks[0].modality == 'text'
+    assert da[0].chunks[0].text == 'test'
 
 
 @pytest.mark.parametrize(
@@ -58,31 +71,24 @@ def test_text_preprocessing(app_cls, is_indexing):
         (ImageTextRetrieval, True),
     ],
 )
-def test_image_preprocessing(app_cls, is_indexing):
+def test_image_preprocessing(app_cls, is_indexing, resources_folder_path):
     """Test if the image to image preprocessing works for queries and indexing"""
     app = app_cls()
-    da = DocumentArray([Document(uri='tests/resources/gif/folder1/file.gif')])
-    da = app.preprocess(da=da, user_input=UserInput(), is_indexing=is_indexing)
-    assert len(da) == 1
-    assert len(da[0].chunks) == 0
-    assert da[0].blob != b''
-
-
-@pytest.mark.parametrize('is_indexing', [False, True])
-def test_music_preprocessing(is_indexing):
-    """Test if the music preprocessing works"""
-    app = MusicToMusic()
-    da = DocumentArray(
-        [
-            Document(
-                uri='tests/resources/music/0ac463f952880e622bc15962f4f75ea51a1861a1.mp3'
-            )
-        ]
+    uri = os.path.join(resources_folder_path, 'image/5109112832.jpg')
+    da = DocumentArray([Document(uri=uri)])
+    da = transform_docarray(da, search_fields=[])
+    da = app.preprocess(
+        da=da,
+        user_input=UserInput(),
+        process_index=is_indexing,
+        process_query=not is_indexing,
     )
     da = app.preprocess(da=da, user_input=UserInput())
     assert len(da) == 1
-    assert len(da[0].chunks) == 0
-    assert da[0].blob != b''
+    assert len(da[0].chunks) == 1
+    assert da[0].chunks[0].modality == 'image'
+    assert da[0].chunks[0].uri == uri
+    assert da[0].chunks[0].content
 
 
 @pytest.mark.parametrize('is_indexing', [False, True])
