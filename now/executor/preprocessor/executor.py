@@ -79,6 +79,7 @@ class NOWPreprocessor(Executor):
         id_to_text = defaultdict(str)
         with tempfile.TemporaryDirectory() as tmpdir:
             for doc in flat_docs:
+                # TODO warning this never gets converted back leading to unnecessary date in the uri
                 if doc.blob:
                     doc.convert_blob_to_datauri()
                 elif doc.tensor:
@@ -87,19 +88,17 @@ class NOWPreprocessor(Executor):
                     self._save_uri_to_tmp_file(doc.uri, tmpdir), cls=True
                 )
                 for _, (text_in_doc, _) in result[0]:
-                    if '@cc' in self.app.get_index_query_access_paths():
+                    if 'cc' in self.app.get_index_query_access_paths():
                         id_to_text[doc.parent_id] += text_in_doc + ' '
                     else:
                         id_to_text[doc.id] = text_in_doc
         for doc in flat_docs:
             text_in_doc = id_to_text[
                 doc.parent_id
-                if '@cc' in self.app.get_index_query_access_paths()
+                if 'cc' in self.app.get_index_query_access_paths()
                 else doc.id
             ]
             doc.tags[TAG_OCR_DETECTOR_TEXT_IN_DOC] = text_in_doc.strip()
-            if 'uri' in doc.tags:
-                doc.uri = doc.tags['uri']
 
     @staticmethod
     def _save_uri_to_tmp_file(uri, tmpdir) -> str:
@@ -118,10 +117,7 @@ class NOWPreprocessor(Executor):
         return tmp_fn
 
     def _preprocess_maybe_cloud_download(
-        self,
-        docs: DocumentArray,
-        is_indexing,
-        encode: bool = False,
+        self, docs: DocumentArray, request_type: str
     ) -> DocumentArray:
         with tempfile.TemporaryDirectory() as tmpdir:
             if (
@@ -140,7 +136,10 @@ class NOWPreprocessor(Executor):
             )
 
             docs = self.app.preprocess(docs)
-            if is_indexing:
+
+            # TODO - add OCR to the preprocess function
+            if request_type == 'index':
+                # at the moment, we don't need ocr in case of indexing
                 self._ocr_detect_text(docs)
 
             # as _maybe_download_from_s3 moves S3 URI to tags['uri'], need to move it back for post-processor & accurate
@@ -164,7 +163,7 @@ class NOWPreprocessor(Executor):
         return docs
 
     @secure_request(on='/index', level=SecurityLevel.USER)
-    def index(
+    def preprocess_index(
         self, docs: DocumentArray, parameters: Optional[Dict] = None, *args, **kwargs
     ) -> DocumentArray:
         """If necessary downloads data from cloud bucket. Applies preprocessing to documents as defined by apps.
@@ -173,37 +172,21 @@ class NOWPreprocessor(Executor):
         :param parameters: user input, used to construct UserInput object
         :return: preprocessed documents which are ready to be encoded and indexed
         """
-        self._set_user_input(parameters=parameters)
-        return self._preprocess_maybe_cloud_download(docs=docs, is_indexing=True)
+        self._set_user_input(parameters)
+        return self._preprocess_maybe_cloud_download(docs, 'index')
 
-    @secure_request(on='/encode', level=SecurityLevel.USER)
-    def encode(
+    @secure_request(on='/search', level=SecurityLevel.USER)
+    def preprocess_search(
         self, docs: DocumentArray, parameters: Optional[Dict] = None, *args, **kwargs
-    ):
-        """Encodes the documents and returns the embeddings. It merges index and search endpoint results as the
-        documents for encoding can be multimodal.
+    ) -> DocumentArray:
+        """If necessary downloads data from cloud bucket. Applies preprocessing to documents as defined by apps.
 
         :param docs: loaded data but not preprocessed
         :param parameters: user input, used to construct UserInput object
         :return: preprocessed documents which are ready to be encoded and indexed
         """
-        self._set_user_input(parameters=parameters)
-        return self._preprocess_maybe_cloud_download(
-            docs=docs, is_indexing=True, encode=True
-        )
-
-    @secure_request(on='/search', level=SecurityLevel.USER)
-    def search(
-        self, docs: DocumentArray, parameters: Optional[Dict] = None, *args, **kwargs
-    ) -> DocumentArray:
-        """If necessary downloads data from cloud bucket. Applies preprocessing to document as defined by apps.
-
-        :param docs: loaded data but not preprocessed
-        :param parameters: user input, used to construct UserInput object
-        :return: preprocessed documents which are ready to be used for search
-        """
-        self._set_user_input(parameters=parameters)
-        return self._preprocess_maybe_cloud_download(docs=docs, is_indexing=False)
+        self._set_user_input(parameters)
+        return self._preprocess_maybe_cloud_download(docs, 'search')
 
     @secure_request(on='/temp_link_cloud_bucket', level=SecurityLevel.USER)
     def temporary_link_from_cloud_bucket(
