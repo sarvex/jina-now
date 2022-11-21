@@ -110,6 +110,7 @@ def test_da_custom_ds(da: DocumentArray):
     user_input = UserInput()
     user_input.dataset_type = DatasetTypes.DEMO
     user_input.dataset_name = DemoDatasetNames.DEEP_FASHION
+    user_input.output_modality = 'image'
 
     app = ImageTextRetrieval()
     loaded_da = load_data(app, user_input)

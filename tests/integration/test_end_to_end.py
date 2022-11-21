@@ -175,6 +175,10 @@ def test_backend_demo_data(
     kwargs = Namespace(**kwargs)
     response = cli(args=kwargs)
 
+    if app == Apps.IMAGE_TEXT_RETRIEVAL:
+        input_modality = 'image-or-text'
+        output_modality = 'image-or-text'
+
     assert_deployment_response(
         app, deployment_type, input_modality, output_modality, response
     )
@@ -338,9 +342,6 @@ def get_search_request_body(
 def assert_deployment_response(
     app, deployment_type, input_modality, output_modality, response
 ):
-    if app == Apps.IMAGE_TEXT_RETRIEVAL:
-        input_modality = 'image-or-text'
-        output_modality = 'image-or-text'
     assert (
         response['bff']
         == f'http://localhost:30090/api/v1/{input_modality}-to-{output_modality}/docs'
@@ -396,6 +397,10 @@ def test_backend_custom_data(
 
     kwargs = Namespace(**kwargs)
     response = cli(args=kwargs)
+
+    if app == Apps.IMAGE_TEXT_RETRIEVAL:
+        input_modality = 'image-or-text'
+        output_modality = 'image-or-text'
 
     assert_deployment_response(
         app, deployment_type, input_modality, output_modality, response
