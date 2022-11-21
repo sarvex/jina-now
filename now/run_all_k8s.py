@@ -139,10 +139,18 @@ def start_now(app_instance, **kwargs):
         bff_port = '80'
         playground_port = '80'
     # TODO: add separate BFF endpoints in print output
+    if isinstance(app_instance.input_modality, list):
+        input_modality = '-or-'.join(app_instance.input_modality)
+    else:
+        input_modality = app_instance.input_modality
+    if isinstance(app_instance.output_modality, list):
+        output_modality = '-or-'.join(app_instance.output_modality)
+    else:
+        output_modality = app_instance.output_modality
     bff_url = (
         bff_playground_host
         + ('' if str(bff_port) == '80' else f':{bff_port}')
-        + f'/api/v1/{app_instance.input_modality}-to-{app_instance.output_modality}/docs'
+        + f'/api/v1/{input_modality}-to-{output_modality}/docs'
     )
     playground_url = (
         bff_playground_host
@@ -150,8 +158,8 @@ def start_now(app_instance, **kwargs):
         + (
             f'/?host='
             + (gateway_host_internal if gateway_host != 'localhost' else 'gateway')
-            + f'&input_modality={app_instance.input_modality}'
-            + f'&output_modality={app_instance.output_modality}'
+            + f'&input_modality={input_modality}'
+            + f'&output_modality={output_modality}'
             + (
                 f'&data={user_input.dataset_name if user_input.dataset_type == DatasetTypes.DEMO else "custom"}'
             )
