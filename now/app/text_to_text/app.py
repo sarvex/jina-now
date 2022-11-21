@@ -10,7 +10,7 @@ from now.constants import Apps, DatasetTypes, Modalities, ModelDimensions
 from now.now_dataclasses import UserInput
 
 
-class SentenceToSentence(JinaNOWApp):
+class TextToText(JinaNOWApp):
     def __init__(self):
         super().__init__()
 
