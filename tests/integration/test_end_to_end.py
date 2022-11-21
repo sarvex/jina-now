@@ -128,20 +128,20 @@ def test_token_exists():
             DemoDatasetNames.TUMBLR_GIFS_10K,
             'local',
         ),
-        (
-            Apps.MUSIC_TO_MUSIC,
-            Modalities.MUSIC,
-            Modalities.MUSIC,
-            DemoDatasetNames.MUSIC_GENRES_ROCK,
-            'remote',
-        ),
-        (
-            Apps.TEXT_TO_TEXT_AND_IMAGE,
-            Modalities.TEXT,
-            Modalities.TEXT_AND_IMAGE,
-            DemoDatasetNames.ES_ONLINE_SHOP_50,
-            'local',
-        ),
+        # (
+        #     Apps.MUSIC_TO_MUSIC,
+        #     Modalities.MUSIC,
+        #     Modalities.MUSIC,
+        #     DemoDatasetNames.MUSIC_GENRES_ROCK,
+        #     'remote',
+        # ),
+        # (
+        #     Apps.TEXT_TO_TEXT_AND_IMAGE,
+        #     Modalities.TEXT,
+        #     Modalities.TEXT_AND_IMAGE,
+        #     DemoDatasetNames.ES_ONLINE_SHOP_50,
+        #     'local',
+        # ),
     ],
 )
 @pytest.mark.timeout(60 * 30)
