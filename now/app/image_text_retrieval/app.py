@@ -1,12 +1,18 @@
 import os
-from typing import Dict, List
+from typing import Dict, List, Union
 
 from docarray import DocumentArray
 
 from now.app.base.app import JinaNOWApp
 from now.common.preprocess import filter_data, preprocess_images, preprocess_text
 from now.common.utils import _get_clip_apps_with_dict, common_setup, get_indexer_config
-from now.constants import CLIP_USES, Apps, DatasetTypes, Modalities
+from now.constants import (
+    CLIP_USES,
+    SUPPORTED_FILE_TYPES,
+    Apps,
+    DatasetTypes,
+    Modalities,
+)
 from now.now_dataclasses import UserInput
 
 
@@ -27,11 +33,11 @@ class ImageTextRetrieval(JinaNOWApp):
         return 'Image-text search app'
 
     @property
-    def input_modality(self) -> List[Modalities]:
+    def input_modality(self) -> Union[Modalities, List[Modalities]]:
         return [Modalities.IMAGE, Modalities.TEXT]
 
     @property
-    def output_modality(self) -> List[Modalities]:
+    def output_modality(self) -> Union[Modalities, List[Modalities]]:
         return [Modalities.IMAGE, Modalities.TEXT]
 
     @property
@@ -44,6 +50,10 @@ class ImageTextRetrieval(JinaNOWApp):
         Otherwise, we access documents on chunk level. (@c)
         """
         return '@c,cc'
+
+    @property
+    def supported_file_types(self) -> List[str]:
+        return [SUPPORTED_FILE_TYPES[modality] for modality in self.output_modality]
 
     def set_flow_yaml(self, **kwargs):
         finetuning = kwargs.get('finetuning', False)
@@ -112,6 +122,6 @@ class ImageTextRetrieval(JinaNOWApp):
                 modalities.append(Modalities.IMAGE)
         if process_query:
             da = preprocess_images(da=da) + preprocess_text(da=da)
-            modalities.append([Modalities.IMAGE, Modalities.TEXT])
+            modalities = [Modalities.IMAGE, Modalities.TEXT]
 
         return filter_data(da, modalities)

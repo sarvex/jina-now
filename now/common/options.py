@@ -133,7 +133,7 @@ def _get_demo_data_choices(user_input: UserInput):
     if user_input.output_modality:
         ds = user_input.app_instance.demo_datasets[user_input.output_modality]
     else:
-        ds = list(user_input.app_instance.demo_datasets.values())[0]
+        ds = user_input.app_instance.demo_datasets
     return [
         {'name': demo_data.display_name, 'value': demo_data.name} for demo_data in ds
     ]

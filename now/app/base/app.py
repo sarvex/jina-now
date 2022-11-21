@@ -1,6 +1,6 @@
 import abc
 import os
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import docker
 from docarray import DocumentArray
@@ -8,7 +8,7 @@ from jina import Client
 from jina.jaml import JAML
 from jina.serve.runtimes.gateway.http.models import JinaRequestModel, JinaResponseModel
 
-from now.constants import SUPPORTED_FILE_TYPES, Modalities
+from now.constants import Modalities
 from now.demo_data import AVAILABLE_DATASET, DEFAULT_EXAMPLE_HOSTED, DemoDataset
 from now.now_dataclasses import DialogOptions, UserInput
 
@@ -48,7 +48,7 @@ class JinaNOWApp:
 
     @property
     @abc.abstractmethod
-    def input_modality(self) -> List[Modalities]:
+    def input_modality(self) -> Union[Modalities, List[Modalities]]:
         """
         Modality used for running search queries
         """
@@ -56,7 +56,7 @@ class JinaNOWApp:
 
     @property
     @abc.abstractmethod
-    def output_modality(self) -> List[Modalities]:
+    def output_modality(self) -> Union[Modalities, List[Modalities]]:
         """
         Modality used for indexing data
         """
@@ -103,17 +103,20 @@ class JinaNOWApp:
         return []
 
     @property
-    def supported_file_types(self) -> Dict[str, List[str]]:
+    def supported_file_types(self) -> List[str]:
         """Used to filter files in local structure or an S3 bucket."""
-        return SUPPORTED_FILE_TYPES[self.output_modality]
+        raise NotImplementedError()
 
     @property
-    def demo_datasets(self) -> Dict[str, DemoDataset]:
+    def demo_datasets(self) -> Union[List, Dict[str, DemoDataset]]:
         """Get a list of example datasets for the app."""
-        available_datasets = {
-            modality: AVAILABLE_DATASET.get(modality, [])
-            for modality in self.output_modality
-        }
+        if isinstance(self.output_modality, List):
+            available_datasets = {
+                modality: AVAILABLE_DATASET.get(modality, [])
+                for modality in self.output_modality
+            }
+        else:
+            available_datasets = AVAILABLE_DATASET.get(self.output_modality, [])
         return available_datasets
 
     @property

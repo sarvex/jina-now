@@ -7,7 +7,10 @@ from now.app.image_text_retrieval.app import ImageTextRetrieval
 from now.app.text_to_text.app import TextToText
 from now.app.text_to_text_and_image.app import TextToTextAndImage
 from now.app.text_to_video.app import TextToVideo
+from now.constants import DatasetTypes
+from now.data_loading.data_loading import load_data
 from now.data_loading.transform_docarray import transform_docarray
+from now.demo_data import DemoDatasetNames
 from now.now_dataclasses import UserInput
 
 
@@ -77,14 +80,18 @@ def test_image_preprocessing(app_cls, is_indexing, resources_folder_path):
     uri = os.path.join(resources_folder_path, 'image/5109112832.jpg')
     da = DocumentArray([Document(uri=uri)])
     da = transform_docarray(da, search_fields=[])
+    user_input = UserInput(output_modality='image')
     da = app.preprocess(
         da=da,
-        user_input=UserInput(),
+        user_input=user_input,
         process_index=is_indexing,
         process_query=not is_indexing,
     )
-    da = app.preprocess(da=da, user_input=UserInput())
-    assert len(da) == 1
+
+    if is_indexing:
+        assert len(da) == 1
+    else:
+        assert len(da) == 2
     assert len(da[0].chunks) == 1
     assert da[0].chunks[0].modality == 'image'
     assert da[0].chunks[0].uri == uri

@@ -1,5 +1,5 @@
 import os
-from typing import Dict, List
+from typing import Dict, List, Union
 
 import cowsay
 from docarray import Document, DocumentArray
@@ -9,6 +9,7 @@ from now.common.utils import common_setup
 from now.constants import (
     EXECUTOR_PREFIX,
     NOW_QDRANT_INDEXER_VERSION,
+    SUPPORTED_FILE_TYPES,
     Apps,
     Modalities,
     ModelDimensions,
@@ -44,16 +45,20 @@ class MusicToMusic(JinaNOWApp):
         return 'Music to music search app'
 
     @property
-    def input_modality(self) -> List[Modalities]:
-        return [Modalities.MUSIC]
+    def input_modality(self) -> Union[Modalities, List[Modalities]]:
+        return Modalities.MUSIC
 
     @property
-    def output_modality(self) -> List[Modalities]:
-        return [Modalities.MUSIC]
+    def output_modality(self) -> Union[Modalities, List[Modalities]]:
+        return Modalities.MUSIC
 
     @property
     def required_docker_memory_in_gb(self) -> int:
         return 10
+
+    @property
+    def supported_file_types(self) -> List[str]:
+        return [SUPPORTED_FILE_TYPES[modality] for modality in self.output_modality]
 
     def set_flow_yaml(self, **kwargs):
         finetuning = kwargs.get('finetuning', False)

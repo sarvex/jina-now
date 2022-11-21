@@ -1,12 +1,18 @@
 import os
-from typing import Dict, List
+from typing import Dict, List, Union
 
 from docarray import DocumentArray
 
 from now.app.base.app import JinaNOWApp
 from now.common.preprocess import filter_data, preprocess_text
 from now.common.utils import common_setup, get_indexer_config
-from now.constants import Apps, DatasetTypes, Modalities, ModelDimensions
+from now.constants import (
+    SUPPORTED_FILE_TYPES,
+    Apps,
+    DatasetTypes,
+    Modalities,
+    ModelDimensions,
+)
 from now.now_dataclasses import UserInput
 
 
@@ -27,12 +33,12 @@ class TextToText(JinaNOWApp):
         return 'Text to text search app'
 
     @property
-    def input_modality(self) -> List[Modalities]:
-        return [Modalities.TEXT]
+    def input_modality(self) -> Union[Modalities, List[Modalities]]:
+        return Modalities.TEXT
 
     @property
-    def output_modality(self) -> List[Modalities]:
-        return [Modalities.TEXT]
+    def output_modality(self) -> Union[Modalities, List[Modalities]]:
+        return Modalities.TEXT
 
     @property
     def required_docker_memory_in_gb(self) -> int:
@@ -44,6 +50,11 @@ class TextToText(JinaNOWApp):
         Otherwise, we access documents on chunk level. (@c)
         """
         return '@c,cc'
+
+    @property
+    def supported_file_types(self) -> List[str]:
+        """Used to filter files in local structure or an S3 bucket."""
+        return SUPPORTED_FILE_TYPES[self.output_modality]
 
     def set_flow_yaml(self, **kwargs):
         finetuning = kwargs.get('finetuning', False)
