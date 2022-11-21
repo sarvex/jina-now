@@ -34,6 +34,9 @@ def list_all_wolf(status='Serving', namespace='nowapi'):
     if flows is None:
         return []
     # filter by namespace - if the namespace is contained in the flow name
+    for flow in flows:
+        print(flow)
+        print(flow['name'])
     if namespace:
         return [f for f in flows if namespace in f['name']]
     return flows
