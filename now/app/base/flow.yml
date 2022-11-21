@@ -5,6 +5,7 @@ with:
   monitoring: true
   env:
     JINA_LOG_LEVEL: DEBUG
+    JINA_OPTOUT_TELEMETRY: true
 jcloud:
   version: ${{ ENV.JINA_VERSION }}
   retention_days: ${{ RETENTION_DAYS }}
