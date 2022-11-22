@@ -1,9 +1,9 @@
 import os
+import sys
 from argparse import Namespace
 from concurrent.futures import ProcessPoolExecutor
 
 import boto3
-import pytest
 import requests
 
 from now.cli import cli
@@ -78,8 +78,15 @@ def deploy(app_name, app_data):
     return response_cli
 
 
-def get_da():
+if __name__ == '__main__':
+    os.environ['JINA_AUTH_TOKEN'] = os.environ.get('WOLF_TOKEN')
+    os.environ['NOW_EXAMPLES'] = 'True'
+    os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
     deployment_type = os.environ.get('DEPLOYMENT_TYPE', 'partial').lower()
+    index = sys.argv[-1]
+    demo_examples = [
+        (app, ds) for app, data in DEFAULT_EXAMPLE_HOSTED.items() for ds in data
+    ]
     to_deploy = set()
 
     if deployment_type == 'all':
@@ -89,11 +96,7 @@ def get_da():
         with ProcessPoolExecutor() as thread_executor:
             # call delete function with each flow
             thread_executor.map(lambda x: terminate_wolf(x), flow_ids)
-
-        for app, data in DEFAULT_EXAMPLE_HOSTED.items():
-            for ds_name in data:
-                to_deploy.add((app, ds_name))
-        print('Deploying all examples!!', len(to_deploy))
+        print('All examples successfully deleted!!')
     else:
         # check if deployment is already running else add to deploy_list
         bff = 'https://nowrun.jina.ai/api/v1/admin/getStatus'
@@ -110,15 +113,21 @@ def get_da():
                 if resp.status_code != 200:
                     to_deploy.add((app, ds_name))
         print('Total Apps to re-deploy: ', len(to_deploy))
-    # return the list of apps to deploy
-    return list(to_deploy)
 
-
-@pytest.mark.parametrize('to_deploy', get_da())
-def test_deploy_examples(to_deploy):
-    os.environ['JINA_AUTH_TOKEN'] = os.environ.get('WOLF_TOKEN')
-    os.environ['NOW_EXAMPLES'] = 'True'
-    os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
-
-    print(f'Deploying {to_deploy}...')
-    deploy(*to_deploy)
+    results = []
+    with ProcessPoolExecutor() as thread_executor:
+        futures = []
+        if deployment_type == 'all':
+            # Create all new deployments and update CNAME records
+            for app, data in DEFAULT_EXAMPLE_HOSTED.items():
+                for ds_name in data:
+                    f = thread_executor.submit(deploy, app, ds_name)
+                    futures.append(f)
+        else:
+            for app, ds_name in to_deploy:
+                # Create the failed deployments and update CNAME records
+                f = thread_executor.submit(deploy, app, ds_name)
+                futures.append(f)
+        for f in futures:
+            results.append(f.result())
+    print(results)
