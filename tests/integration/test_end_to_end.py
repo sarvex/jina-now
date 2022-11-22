@@ -128,20 +128,20 @@ def test_token_exists():
             DemoDatasetNames.TUMBLR_GIFS_10K,
             'local',
         ),
-        (
-            Apps.MUSIC_TO_MUSIC,
-            Modalities.MUSIC,
-            Modalities.MUSIC,
-            DemoDatasetNames.MUSIC_GENRES_ROCK,
-            'remote',
-        ),
-        (
-            Apps.TEXT_TO_TEXT_AND_IMAGE,
-            Modalities.TEXT,
-            Modalities.TEXT_AND_IMAGE,
-            DemoDatasetNames.ES_ONLINE_SHOP_50,
-            'local',
-        ),
+        # (
+        #     Apps.MUSIC_TO_MUSIC,
+        #     Modalities.MUSIC,
+        #     Modalities.MUSIC,
+        #     DemoDatasetNames.MUSIC_GENRES_ROCK,
+        #     'remote',
+        # ),
+        # (
+        #     Apps.TEXT_TO_TEXT_AND_IMAGE,
+        #     Modalities.TEXT,
+        #     Modalities.TEXT_AND_IMAGE,
+        #     DemoDatasetNames.ES_ONLINE_SHOP_50,
+        #     'local',
+        # ),
     ],
 )
 @pytest.mark.timeout(60 * 30)
@@ -181,10 +181,10 @@ def test_backend_demo_data(
     kwargs = Namespace(**kwargs)
     response = cli(args=kwargs)
 
-    if not os.environ.get('NOW_TESTING', False):
-        assert_deployment_response(
-            app, deployment_type, input_modality, output_modality, response
-        )
+    assert_deployment_response(
+        app, deployment_type, input_modality, output_modality, response
+    )
+
     assert_deployment_queries(
         app,
         dataset,
@@ -379,6 +379,7 @@ def test_backend_custom_data(
         'aws_access_key_id': os.environ.get('AWS_ACCESS_KEY_ID'),
         'aws_secret_access_key': os.environ.get('AWS_SECRET_ACCESS_KEY'),
         'aws_region_name': 'eu-west-1',
+        'search_fields': 'x, y',
         'cluster': NEW_CLUSTER['value'],
         'deployment_type': deployment_type,
         'proceed': True,

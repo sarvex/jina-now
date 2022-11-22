@@ -8,7 +8,7 @@ from jina import Client
 from jina.jaml import JAML
 from jina.serve.runtimes.gateway.http.models import JinaRequestModel, JinaResponseModel
 
-from now.constants import SUPPORTED_FILE_TYPES, Modalities
+from now.constants import DEFAULT_FLOW_NAME, SUPPORTED_FILE_TYPES, Modalities
 from now.demo_data import AVAILABLE_DATASET, DEFAULT_EXAMPLE_HOSTED, DemoDataset
 from now.now_dataclasses import DialogOptions, UserInput
 
@@ -193,8 +193,14 @@ class JinaNOWApp:
         with open(self.flow_yaml) as input_f:
             flow_yaml_content = JAML.load(input_f.read())
             flow_yaml_content['jcloud']['labels'] = {'team': 'now'}
+            flow_yaml_content['jcloud']['name'] = (
+                user_input.flow_name + '-' + DEFAULT_FLOW_NAME
+                if user_input.flow_name != ''
+                and user_input.flow_name != DEFAULT_FLOW_NAME
+                else DEFAULT_FLOW_NAME
+            )
+            # append api_keys to the executor with name 'preprocessor' and 'indexer'
             for executor in flow_yaml_content['executors']:
-                # append api_keys to the executor with name 'preprocessor' and 'indexer'
                 if executor['name'] == 'preprocessor' or executor['name'] == 'indexer':
                     executor['uses_with']['api_keys'] = '${{ ENV.API_KEY }}'
 
@@ -231,7 +237,8 @@ class JinaNOWApp:
         self,
         da: DocumentArray,
         user_input: UserInput,
-        is_indexing: Optional[bool] = False,
+        process_index: bool = False,
+        process_query: bool = True,
     ) -> DocumentArray:
         """Loads and preprocesses every document such that it is ready for finetuning/indexing."""
         return da
@@ -252,7 +259,7 @@ class JinaNOWApp:
             )
             try:
                 client.post('/dry_run', timeout=2)
-            except ConnectionError:
+            except Exception:
                 return False
             return True
         return False
@@ -288,10 +295,17 @@ class JinaNOWApp:
             )
         }
 
-    @property
-    def index_query_access_paths(self) -> str:
-        """Gives access paths for indexing and searching."""
-        return '@r'
+    def get_index_query_access_paths(
+        self, search_fields: Optional[List[str]] = None
+    ) -> str:
+        """Gives access paths for indexing and searching. Returns a path to search fields
+        if provided, otherwise a path to chunk level.
+
+        :param search_fields: Optional list of search fields.
+        """
+        if search_fields:
+            return '@.[' + ', '.join(search_fields) + ']'
+        return '@c'
 
     @property
     def max_request_size(self) -> int:

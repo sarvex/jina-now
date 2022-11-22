@@ -46,7 +46,7 @@ class NOWQdrantIndexer15(Executor):
 
     # override
     def convert_filter_syntax(self, search_filter={}, search_filter_not={}):
-        """supports exact matches and range filter"""
+        """Supports exact matches and range filter."""
 
         def _convert_filter(filter_dict):
             conditions = []
@@ -97,9 +97,9 @@ class NOWQdrantIndexer15(Executor):
         parameters: dict,
         limit: int,
         search_filter: dict,
-        **kwargs
+        **kwargs,
     ):
-        """Perform a vector similarity search and retrieve Document matches"""
+        """Perform a vector similarity search and retrieve `Document` matches."""
         docs.match(self._index, filter=search_filter, limit=limit)
 
 
@@ -108,6 +108,7 @@ def setup_qdrant_server(workspace, logger):
     if workspace and os.path.exists(qdrant_config_path):
         logger.info('set new storage to network file system location in WOLF')
         qdrant_config = yaml.safe_load(open(qdrant_config_path))
+
         qdrant_config['storage'] = {
             'storage_path': os.path.join(workspace, 'user_input.json')
         }

@@ -6,11 +6,17 @@ import pytest
 import requests
 from docarray import Document
 from jina import Flow
+
+from now.now_dataclasses import UserInput
 from tests.integration.test_end_to_end import assert_search
 
 from deployment.bff.app.app import run_server
 from now.admin.utils import get_default_request_body
-from now.constants import EXTERNAL_CLIP_HOST, NOW_QDRANT_INDEXER_VERSION
+from now.constants import (
+    EXTERNAL_CLIP_HOST,
+    NOW_QDRANT_INDEXER_VERSION,
+    NOW_PREPROCESSOR_VERSION,
+)
 
 API_KEY = 'my_key'
 base_url = 'http://localhost:8080/api/v1'
@@ -36,6 +42,10 @@ def get_flow():
     f = (
         Flow(port_expose=9089)
         .add(
+            uses=f'jinahub+docker://NOWPreprocessor/{NOW_PREPROCESSOR_VERSION}',
+            uses_with={'app': 'text_to_text', 'admin_emails': [admin_email]},
+        )
+        .add(
             host=EXTERNAL_CLIP_HOST,
             port=443,
             tls=True,
@@ -52,7 +62,12 @@ def get_flow():
 def index(f):
     f.index(
         [Document(text='test') for i in range(10)],
-        parameters={'jwt': get_request_body()['jwt']},
+        parameters={
+            'jwt': get_request_body()['jwt'],
+            'user_input': UserInput().__dict__,
+            'access_paths': '@c,cc',  # text2text app
+            'traversal_paths': '@c,cc',
+        },
     )
 
 

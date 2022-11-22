@@ -16,10 +16,8 @@ from now.app.base.app import JinaNOWApp
 from now.constants import (
     EXECUTOR_PREFIX,
     EXTERNAL_CLIP_HOST,
-    EXTERNAL_OCR_HOST,
     NOW_AUTOCOMPLETE_VERSION,
     NOW_ELASTIC_INDEXER_VERSION,
-    NOW_OCR_DETECTOR_VERSION,
     NOW_PREPROCESSOR_VERSION,
     NOW_QDRANT_INDEXER_VERSION,
     PREFETCH_NR,
@@ -33,6 +31,9 @@ from now.finetuning.run_finetuning import finetune
 from now.finetuning.settings import FinetuneSettings, parse_finetune_settings
 from now.now_dataclasses import UserInput
 from now.utils import _maybe_download_from_s3
+
+cur_dir = pathlib.Path(__file__).parent.resolve()
+
 
 MAX_RETRIES = 20
 
@@ -86,14 +87,7 @@ def common_get_flow_env_dict(
         config['FINETUNE_ARTIFACT'] = finetune_settings.finetuned_model_artifact
         config['JINA_TOKEN'] = finetune_settings.token
 
-    # retention days
-    if 'NOW_CI_RUN' in os.environ:
-        config[
-            'RETENTION_DAYS'
-        ] = 0  # JCloud will delete after 24hrs of being idle if not deleted in CI
-    else:
-        config['RETENTION_DAYS'] = -1  # for user deployment set it to 30 days
-
+    config['CUSTOM_DNS'] = ''
     if 'NOW_EXAMPLES' in os.environ:
         valid_app = DEFAULT_EXAMPLE_HOSTED.get(user_input.app_instance.app_name, {})
         is_demo_ds = user_input.dataset_name in valid_app
@@ -102,6 +96,7 @@ def common_get_flow_env_dict(
                 'CUSTOM_DNS'
             ] = f'now-example-{user_input.app_instance.app_name}-{user_input.dataset_name}.dev.jina.ai'
             config['CUSTOM_DNS'] = config['CUSTOM_DNS'].replace('_', '-')
+
     return config
 
 
@@ -168,7 +163,6 @@ def common_setup(
     app_instance.set_flow_yaml(
         finetuning=finetune_settings.perform_finetuning, dataset_len=len(dataset)
     )
-
     return env_dict
 
 
@@ -283,16 +277,11 @@ def setup_elastic_service(
 
 def _get_clip_apps_with_dict(user_input: UserInput) -> Tuple[Dict, Dict]:
     """Depending on whether this app will be remotely deployed, this function returns the with
-    dictionary for the CLIP and OCR detector executor."""
+    dictionary for the CLIP executor."""
     is_remote = user_input.deployment_type == 'remote'
     encoder_with = {
         'ENCODER_HOST': EXTERNAL_CLIP_HOST if is_remote else '0.0.0.0',
         'ENCODER_PORT': 443 if is_remote else random_port(),
         'IS_REMOTE_DEPLOYMENT': is_remote,
     }
-    ocr_with = {
-        'OCR_DETECTOR_NAME': f"jinahub+docker://NOWOCRDetector9/{NOW_OCR_DETECTOR_VERSION}",
-        'OCR_DETECTOR_HOST': EXTERNAL_OCR_HOST if is_remote else '0.0.0.0',
-        'OCR_DETECTOR_PORT': 443 if is_remote else random_port(),
-    }
-    return encoder_with, ocr_with
+    return encoder_with

@@ -84,6 +84,25 @@ def to_camel_case(text):
 sigmap = {signal.SIGINT: my_handler, signal.SIGTERM: my_handler}
 
 
+class EnvironmentVariables:
+    def __init__(self, envs: Dict):
+        self._env_keys_added: Dict = envs
+
+    def __enter__(self):
+        for key, val in self._env_keys_added.items():
+            os.environ[key] = str(val)
+
+    def __exit__(self, *args, **kwargs):
+        for key in self._env_keys_added.keys():
+            os.unsetenv(key)
+
+
+def add_env_variables_to_flow(app_instance, env_dict: Dict):
+
+    with EnvironmentVariables(env_dict):
+        app_instance.flow_yaml = JAML.expand_dict(app_instance.flow_yaml, env_dict)
+
+
 def write_env_file(env_file, config):
     config_string = '\n'.join([f'{key}={value}' for key, value in config.items()])
     with open(env_file, 'w+') as fp:
@@ -217,10 +236,7 @@ def _maybe_download_from_s3(
             del d.tags['tag_uri']
         return d
 
-    docs_to_download = []
-    for d in docs:
-        if d.uri.startswith('s3://'):
-            docs_to_download.append(d)
+    docs_to_download = [doc for doc in docs if doc.uri.startswith('s3://')]
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = []
@@ -251,7 +267,7 @@ def _get_context_names(contexts, active_context=None):
 
 
 def get_flow_id(host):
-    return host.split('.wolf.jina.ai')[0].split('-')[-1]
+    return host.split('.wolf.jina.ai')[0].split('grpcs://')[-1]
 
 
 class Dumper(yaml.Dumper):

@@ -9,7 +9,6 @@ with:
     JINA_LOG_LEVEL: DEBUG
 jcloud:
   version: ${{ ENV.JINA_VERSION }}
-  retention_days: ${{ RETENTION_DAYS }}
   custom_dns:
     - ${{ ENV.CUSTOM_DNS }}
 executors:
@@ -21,14 +20,13 @@ executors:
       admin_emails: ${{ ENV.ADMIN_EMAILS }}
       user_emails: ${{ ENV.USER_EMAILS }}
     jcloud:
-      capacity: on-demand
       resources:
         cpu: 0.5
         memory: 1G
+        capacity: on-demand
     env:
       JINA_LOG_LEVEL: DEBUG
   - name: encoder_clip
-    needs: preprocessor
     replicas: 3
     uses: ${{ ENV.ENCODER_NAME }}
     host: ${{ ENV.ENCODER_HOST }}
@@ -36,39 +34,23 @@ executors:
     tls: ${{ ENV.IS_REMOTE_DEPLOYMENT }}
     external: ${{ ENV.IS_REMOTE_DEPLOYMENT }}
     uses_with:
-      traversal_paths: '@c'
-      access_paths: '@c'
+      traversal_paths: '@c,cc'
+      access_paths: '@c,cc'
       name: ${{ ENV.PRE_TRAINED_MODEL_NAME }}
     env:
       JINA_LOG_LEVEL: DEBUG
-  - name: ocr_detector
-    uses: ${{ ENV.OCR_DETECTOR_NAME }}
-    host: ${{ ENV.OCR_DETECTOR_HOST }}
-    port: ${{ ENV.OCR_DETECTOR_PORT }}
-    tls: ${{ ENV.IS_REMOTE_DEPLOYMENT }}
-    external: ${{ ENV.IS_REMOTE_DEPLOYMENT }}
-    needs: preprocessor
-    uses_with:
-      traversal_paths: '@c'
-    when:
-      mime_type:
-        $regex: image*
   - name: indexer
     uses: ${{ ENV.INDEXER_NAME }}
-    needs:
-      - encoder_clip
-      - ocr_detector
-    disable_reduce: true
     uses_with:
-      traversal_paths: '@c'
+      traversal_paths: '@c,cc'
       dim: ${{ ENV.N_DIM }}
       columns: ${{ ENV.COLUMNS }}
       admin_emails: ${{ ENV.ADMIN_EMAILS }}
       user_emails: ${{ ENV.USER_EMAILS }}
     jcloud:
-      capacity: on-demand
       resources:
         memory: 4G
         cpu: 1.0
+        capacity: on-demand
     env:
       JINA_LOG_LEVEL: DEBUG

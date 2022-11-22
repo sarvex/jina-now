@@ -54,10 +54,12 @@ APP = DialogOptions(
         {
             'name': '🥁 ▶ 🥁 music to music search',
             'value': Apps.MUSIC_TO_MUSIC,
+            'disabled': AVAILABLE_SOON,
         },
         {
             'name': '📝 ▶ 📝+🏞 text to text+image search',
             'value': Apps.TEXT_TO_TEXT_AND_IMAGE,
+            'disabled': AVAILABLE_SOON,
         },
     ],
     prompt_message='What sort of search engine would you like to build?',
@@ -70,6 +72,7 @@ APP_NAME = DialogOptions(
     name='flow_name',
     prompt_message='Choose a name for your application:',
     prompt_type='input',
+    is_terminal_command=True,
 )
 
 
@@ -187,37 +190,20 @@ AWS_REGION_NAME = DialogOptions(
 
 # --------------------------------------------- #
 
-ES_TEXT_FIELDS = DialogOptions(
-    name='es_text_fields',
-    prompt_message='Please enter comma-separated text fields of your data:',
+SEARCH_FIELDS = DialogOptions(
+    name='search_fields',
+    prompt_message='Enter comma-separated search fields:',
     prompt_type='input',
     depends_on=DATASET_TYPE,
-    conditional_check=lambda user_input: user_input.dataset_type
-    == DatasetTypes.ELASTICSEARCH,
-    post_func=lambda user_input, **kwargs: _parse_text_fields(user_input),
+    is_terminal_command=True,
+    conditional_check=lambda user_input: user_input.dataset_type != DatasetTypes.DEMO,
+    post_func=lambda user_input, **kwargs: _parse_search_fields(user_input),
 )
 
 
-def _parse_text_fields(user_input: UserInput):
-    user_input.es_text_fields = [
-        field.strip() for field in user_input.es_text_fields.split(',')
-    ]
-
-
-ES_IMAGE_FIELDS = DialogOptions(
-    name='es_image_fields',
-    prompt_message='Please enter comma-separated image fields of your data:',
-    prompt_type='input',
-    depends_on=DATASET_TYPE,
-    conditional_check=lambda user_input, **kwargs: user_input.dataset_type
-    == DatasetTypes.ELASTICSEARCH,
-    post_func=lambda user_input, **kwargs: _parse_image_fields(user_input),
-)
-
-
-def _parse_image_fields(user_input: UserInput):
-    user_input.es_image_fields = [
-        field.strip() for field in user_input.es_image_fields.split(',')
+def _parse_search_fields(user_input: UserInput):
+    user_input.search_fields = [
+        field.strip() for field in user_input.search_fields.split(',')
     ]
 
 
@@ -308,6 +294,7 @@ SECURED = DialogOptions(
         {'name': '✅ yes', 'value': True},
     ],
     depends_on=DEPLOYMENT_TYPE,
+    is_terminal_command=True,
     conditional_check=lambda user_inp: user_inp.deployment_type == 'remote',
 )
 
@@ -323,7 +310,7 @@ API_KEY = DialogOptions(
     depends_on=SECURED,
     is_terminal_command=True,
     description='Pass an api_key to access the flow once the deployment is complete. ',
-    conditional_check=lambda user_inp: user_inp.secured,
+    conditional_check=lambda user_inp: str(user_inp.secured).lower() == 'true',
 )
 
 ADDITIONAL_USERS = DialogOptions(
@@ -335,7 +322,7 @@ ADDITIONAL_USERS = DialogOptions(
         {'name': '⛔ no', 'value': False},
     ],
     depends_on=SECURED,
-    conditional_check=lambda user_inp: user_inp.secured,
+    conditional_check=lambda user_inp: str(user_inp.secured).lower() == 'true',
 )
 
 USER_EMAILS = DialogOptions(
@@ -414,46 +401,19 @@ def _cluster_running(cluster):
     return True
 
 
-# def _parse_custom_data_from_cli(user_input: UserInput, **kwargs) -> None:
-#     data = user_input.data
-#     if data == 'custom':
-#         return
-#
-#     app_instance = user_input.app_instance
-#     for k, v in enumerate(AVAILABLE_DATASET[app_instance.output_modality]):
-#         if v[0] == data:
-#             return
-#
-#     try:
-#         data = os.path.expanduser(data)
-#     except Exception:
-#         pass
-#     if os.path.exists(data):
-#         user_input.dataset_type = DatasetTypes.PATH
-#         user_input.dataset_path = data
-#     elif 'http' in data:
-#         user_input.dataset_type = DatasetTypes.URL
-#         user_input.dataset_url = data
-#     else:
-#         user_input.dataset_type = DatasetTypes.DOCARRAY
-#         user_input.dataset_name = data
-
-
 app_name = [APP_NAME]
 data_type = [DATASET_TYPE]
+data_fields = [SEARCH_FIELDS]
 data_demo = [DEMO_DATA]
 data_da = [DOCARRAY_NAME, DATASET_PATH, DATASET_URL]
 data_s3 = [DATASET_PATH_S3, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION_NAME]
 data_es = [
     ES_HOST_NAME,
     ES_INDEX_NAME,
-    ES_TEXT_FIELDS,
-    ES_IMAGE_FIELDS,
     ES_ADDITIONAL_ARGS,
 ]
 cluster = [DEPLOYMENT_TYPE, LOCAL_CLUSTER]
 remote_cluster = [SECURED, API_KEY, ADDITIONAL_USERS, USER_EMAILS]
-
 
 base_options = (
     app_name
@@ -462,6 +422,7 @@ base_options = (
     + data_da
     + data_s3
     + data_es
+    + data_fields
     + cluster
     + remote_cluster
 )

@@ -29,6 +29,7 @@
 
 
 
+
 <a name=release-note-0-0-7></a>
 ## Release Note (`0.0.7`)
 
@@ -977,4 +978,48 @@
 
  - [[```f1eeda97```](https://github.com/jina-ai/now/commit/f1eeda97ee613ffc9651813c40e4c112d4378ca1)] __-__ Fix add sync (#627) (*Mohammad Kalim Akram*)
  - [[```29bb7c5f```](https://github.com/jina-ai/now/commit/29bb7c5fdd50f8e5c448576d081167ca287efcd5)] __-__ __version__: the next version will be 0.0.36 (*Jina Dev Bot*)
+
+<a name=release-note-0-0-37></a>
+## Release Note (`0.0.37`)
+
+> Release time: 2022-11-18 07:45:43
+
+
+
+🙇 We'd like to thank all contributors for this new release! In particular,
+ Joschka Braun,  Yanlong Wang,  Florian Hönicke,  Aziz Belaweid,  Mohammad Kalim Akram,  Jina Dev Bot,  🙇
+
+
+### 🆕 New Features
+
+ - [[```753f160c```](https://github.com/jina-ai/now/commit/753f160c00c4d044fa57d0154855ecb99d7eabe5)] __-__ move ocr detection into preprocessor (#677) (*Joschka Braun*)
+ - [[```27cedd0e```](https://github.com/jina-ai/now/commit/27cedd0e0c92a5f3dfdcceece901266593945de5)] __-__ add app name (#658) (*Aziz Belaweid*)
+ - [[```b228fe5a```](https://github.com/jina-ai/now/commit/b228fe5a3015e2f39bfd314f42743b0f8a8b1959)] __-__ add tags (#648) (*Aziz Belaweid*)
+
+### 🐞 Bug fixes
+
+ - [[```6c653840```](https://github.com/jina-ai/now/commit/6c65384046471fec596af45569e94c836734eadb)] __-__ __ci__: hub push no-cache flag (#676) (*Yanlong Wang*)
+ - [[```5d567fbe```](https://github.com/jina-ai/now/commit/5d567fbe1a76cbfa7ea3c7053900aafcccbd9058)] __-__ typo in labels (#666) (*Aziz Belaweid*)
+ - [[```e2702669```](https://github.com/jina-ai/now/commit/e2702669a7d48f4522629edd98e709712712563a)] __-__ event loop (#662) (*Mohammad Kalim Akram*)
+ - [[```de721914```](https://github.com/jina-ai/now/commit/de72191437f58297cd20aac3d5dd13bd119c3a5f)] __-__ duration (#659) (*Florian Hönicke*)
+
+### 🧼 Code Refactoring
+
+ - [[```01712254```](https://github.com/jina-ai/now/commit/01712254dbbc38f367d56902c4f6764a42420f0a)] __-__ force push (#675) (*Florian Hönicke*)
+ - [[```a86125c5```](https://github.com/jina-ai/now/commit/a86125c5a16949b9006bc28b2ad63455d868929e)] __-__ breakpoints in executors (#644) (*Florian Hönicke*)
+ - [[```3993639d```](https://github.com/jina-ai/now/commit/3993639dad5945d0b5dcf95e63865b4e7f61b7f8)] __-__ wrap auth executor (#663) (*Florian Hönicke*)
+ - [[```a6874e75```](https://github.com/jina-ai/now/commit/a6874e75e13529036ad94f67c4d2e314c452749f)] __-__ default value secured (#642) (*Florian Hönicke*)
+
+### 📗 Documentation
+
+ - [[```a2e219a9```](https://github.com/jina-ai/now/commit/a2e219a9cfddf54693812427cfc53309161befb9)] __-__ explain input format (#652) (*Florian Hönicke*)
+
+### 🏁 Unit Test and CICD
+
+ - [[```56735bb0```](https://github.com/jina-ai/now/commit/56735bb0aba17b21bede9e05ef62483235586260)] __-__ faster on ci (#661) (*Florian Hönicke*)
+
+### 🍹 Other Improvements
+
+ - [[```6d3d41ca```](https://github.com/jina-ai/now/commit/6d3d41ca737b48cf3273eec7138392a23bb4d35d)] __-__ Fix durations cd (#660) (*Florian Hönicke*)
+ - [[```3c1bce7c```](https://github.com/jina-ai/now/commit/3c1bce7caac4840d8055bf04558e567d816d9420)] __-__ __version__: the next version will be 0.0.37 (*Jina Dev Bot*)
 

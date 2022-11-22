@@ -1,5 +1,8 @@
+from typing import List
+
 from docarray import Document, DocumentArray
 
+from now.constants import Modalities
 from now.data_loading.convert_datasets_to_jpeg import to_thumbnail_jpg
 from now.now_dataclasses import UserInput
 
@@ -19,12 +22,27 @@ def preprocess_images(da: DocumentArray) -> DocumentArray:
             return d
 
     for d in da:
-        convert_fn(d)
-    return DocumentArray(d for d in da if d.blob != b'')
+        for chunk in d.chunks:
+            if chunk.modality == Modalities.IMAGE:
+                convert_fn(chunk)
+                if 'uri' in d.tags:
+                    chunk.uri = d.tags['uri']
+    return da
 
 
-def preprocess_text(da: DocumentArray, split_by_sentences=False) -> DocumentArray:
-    """If necessary, loads text for all documents. If asked for, splits documents by sentences."""
+def preprocess_text(
+    da: DocumentArray,
+    split_by_sentences=False,
+) -> DocumentArray:
+    """If necessary, loads text for all documents. If asked for, splits documents by sentences.
+
+    In case `split_by_sentences` is set to True, generates sentence chunks:
+    Before
+    Document(chunks=[Document(text='s1. s2. s3')])
+
+    After
+    Document(chunks=[Document(text=None, chunks=[Document('s1'), Document('s2')..])])
+    """
     import nltk
 
     nltk.download('punkt', quiet=True)
@@ -40,43 +58,31 @@ def preprocess_text(da: DocumentArray, split_by_sentences=False) -> DocumentArra
         except:
             return d
 
-    def gen_split_by_sentences():
-        def _get_sentence_docs(batch):
-            ret = []
-            for d in batch:
-                try:
-                    ret += [
-                        Document(
-                            mime_type='text',
-                            text=sentence,
-                            tags=d.tags,
-                        )
-                        for sentence in set(sent_tokenize(d.text.replace('\n', ' ')))
-                    ]
-                except:
-                    pass
-            return ret
-
-        for batch in da.map_batch(_get_sentence_docs, backend='process', batch_size=64):
-            for d in batch:
-                yield d
+    def gen_split_by_sentences(document):
+        ret = []
+        try:
+            ret += [
+                Document(
+                    mime_type=Modalities.TEXT,
+                    modality=Modalities.TEXT,
+                    text=sentence,
+                    tags=d.tags,
+                )
+                for sentence in set(sent_tokenize(document.text.replace('\n', ' ')))
+                if sentence
+            ]
+        except:
+            pass
+        return ret
 
     for d in da:
-        convert_fn(d)
-
-    if split_by_sentences:
-        da = DocumentArray(d for d in gen_split_by_sentences())
-
-    result_da = DocumentArray()
-    for d in da:
-        if d.text:
-            result_da.append(d)
-        else:
-            for c in d.chunks:
-                if c.text:
-                    result_da.append(d)
-
-    return result_da
+        for chunk in d.chunks:
+            if chunk.modality == Modalities.TEXT:
+                convert_fn(chunk)
+                if split_by_sentences:
+                    chunk.chunks = gen_split_by_sentences(chunk)
+                    chunk.text = None
+    return da
 
 
 def preprocess_nested_docs(da: DocumentArray, user_input: UserInput) -> DocumentArray:
@@ -108,3 +114,16 @@ def preprocess_nested_docs(da: DocumentArray, user_input: UserInput) -> Document
             for text, uri in zip(texts, uris)
         ]
     )
+
+
+def filter_data(documents: DocumentArray, modalities: List[str]) -> DocumentArray:
+    """Filters data based on modalities.
+
+    :param documents: Documents to be filtered.
+    :param modalities: List of modalities that should be kept.
+    """
+    for document in documents:
+        document.chunks = [
+            chunk for chunk in document.chunks if chunk.modality in modalities
+        ]
+    return DocumentArray(d for d in documents if d.chunks)

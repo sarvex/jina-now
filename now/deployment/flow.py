@@ -12,6 +12,7 @@ from kubernetes import config
 from yaspin.spinners import Spinners
 
 from now.cloud_manager import is_local_cluster
+from now.constants import DEFAULT_FLOW_NAME
 from now.deployment.deployment import apply_replace, cmd, deploy_wolf
 from now.log import time_profiler, yaspin_extended
 from now.utils import sigmap, write_env_file, write_flow_file
@@ -117,7 +118,6 @@ def start_flow_in_process(f):
 def deploy_flow(
     deployment_type: str,
     flow_yaml: str,
-    ns: str,
     env_dict: Dict,
     kubectl_path: str,
 ):
@@ -152,8 +152,8 @@ def deploy_flow(
             gateway_port_internal = None  # Since host contains protocol
 
         elif deployment_type == 'remote':
-            flow = deploy_wolf(path=flow_yaml, env_file=env_file, name=ns)
-            host = flow.gateway
+            flow = deploy_wolf(path=flow_yaml)
+            host = flow.endpoints['gateway']
             client = Client(host=host)
 
             # host & port
@@ -173,7 +173,7 @@ def deploy_flow(
                 gateway_port_internal,
             ) = deploy_k8s(
                 f,
-                'nowapi',
+                DEFAULT_FLOW_NAME,
                 tmpdir,
                 kubectl_path=kubectl_path,
             )
