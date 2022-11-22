@@ -38,13 +38,6 @@ class ImageToText(JinaNOWApp):
     def required_docker_memory_in_gb(self) -> int:
         return 8
 
-    def get_index_query_access_paths(self, **kwargs) -> str:
-        """If `split_by_sentences` is set to True, the structure of the data
-        will have 2 level chunks. (That's the puspose of @cc)
-        Otherwise, we access documents on chunk level. (@c)
-        """
-        return '@c,cc'
-
     @property
     def finetune_datasets(self) -> [Tuple]:
         return (DemoDatasetNames.DEEP_FASHION, DemoDatasetNames.BIRD_SPECIES)

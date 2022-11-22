@@ -10,12 +10,11 @@ from now.executor.indexer.elastic import ElasticIndexer
 
 
 @pytest.mark.parametrize(
-    'da, traversal_paths, dims',
-    [('text_da', '@r', 7), ('multimodal_da', '@c', [7, 5])],
+    'da, dims',
+    [('text_da', '@r', 7), ('multimodal_da', [7, 5])],
 )
 def test_indexing(
     da: DocumentArray,
-    traversal_paths: str,
     dims: Union[str, List[int]],
     setup_service_running,
     es_connection_params,
@@ -30,7 +29,6 @@ def test_indexing(
             'hosts': hosts,
             'index_name': index_name,
             'dims': dims,
-            'traversal_paths': traversal_paths,
         },
     ) as f:
         f.index(da)
@@ -41,7 +39,7 @@ def test_indexing(
 
 
 @pytest.mark.parametrize(
-    'da, query_da, traversal_paths, dims, index_name, apply_bm25',
+    'da, query_da, dims, index_name, apply_bm25',
     [
         ('text_da', 'text_query', '@r', 7, 'test-search', False),
         (
@@ -66,7 +64,6 @@ def test_indexing(
 def test_search_with_bm25(
     da: DocumentArray,
     query_da: DocumentArray,
-    traversal_paths: str,
     dims: Union[int, List[int]],
     index_name: str,
     apply_bm25: bool,
@@ -83,7 +80,6 @@ def test_search_with_bm25(
             'hosts': hosts,
             'index_name': index_name,
             'dims': dims,
-            'traversal_paths': traversal_paths,
         },
     ) as f:
         f.index(da)
@@ -96,7 +92,7 @@ def test_search_with_bm25(
 
 
 @pytest.mark.parametrize(
-    'da, query_da, traversal_paths, dims, index_name',
+    'da, query_da, dims, index_name',
     [
         ('text_da', 'text_query', '@r', 7, 'test-search-filter-text'),
         (
@@ -111,7 +107,6 @@ def test_search_with_bm25(
 def test_search_with_filter(
     da: DocumentArray,
     query_da: DocumentArray,
-    traversal_paths: str,
     index_name: str,
     dims: Union[int, List[int]],
     setup_service_running,
@@ -126,7 +121,6 @@ def test_search_with_filter(
         uses_with={
             'hosts': hosts,
             'index_name': index_name,
-            'traversal_paths': traversal_paths,
             'dims': dims,
         },
     ) as f:
@@ -140,7 +134,7 @@ def test_search_with_filter(
 
 
 @pytest.mark.parametrize(
-    'da, traversal_paths, dims, index_name',
+    'da, dims, index_name',
     [
         ('text_da', '@r', 7, 'test-list-text'),
         ('multimodal_da', '@c', [7, 5], 'test-list-multimodal'),
@@ -148,7 +142,6 @@ def test_search_with_filter(
 )
 def test_list(
     da: DocumentArray,
-    traversal_paths: str,
     dims: Union[int, List[int]],
     index_name: str,
     setup_service_running,
@@ -162,7 +155,6 @@ def test_list(
         uses_with={
             'hosts': hosts,
             'index_name': index_name,
-            'traversal_paths': traversal_paths,
             'dims': dims,
         },
     ) as f:
@@ -172,7 +164,7 @@ def test_list(
 
 
 @pytest.mark.parametrize(
-    'da, traversal_paths, dims, index_name',
+    'da, dims, index_name',
     [
         ('text_da', '@r', 7, 'test-delete-text'),
         ('multimodal_da', '@c', [7, 5], 'test-delete-multimodal'),
@@ -180,7 +172,6 @@ def test_list(
 )
 def test_delete(
     da: DocumentArray,
-    traversal_paths: str,
     dims: Union[int, List[int]],
     index_name: str,
     setup_service_running,
@@ -194,7 +185,6 @@ def test_delete(
         uses_with={
             'hosts': hosts,
             'index_name': index_name,
-            'traversal_paths': traversal_paths,
             'dims': dims,
         },
     ) as f:

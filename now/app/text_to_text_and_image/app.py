@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 
 import hubble
 from docarray import Document, DocumentArray
@@ -222,9 +222,3 @@ class TextToTextAndImage(JinaNOWApp):
         if encoder_type == 'text-to-image':
             return 'CLIPLoss'
         return 'TripletMarginLoss'
-
-    def get_index_query_access_paths(
-        self, search_fields: Optional[List[str]] = None
-    ) -> str:
-        """Gives access paths for indexing and searching."""
-        return '@c'

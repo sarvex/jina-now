@@ -88,10 +88,8 @@ class NOWPreprocessor(Executor):
                     self._save_uri_to_tmp_file(doc.uri, tmpdir), cls=True
                 )
                 for _, (text_in_doc, _) in result[0]:
-                    if 'cc' in self.app.get_index_query_access_paths():
-                        id_to_text[doc.parent_id] += text_in_doc + ' '
-                    else:
-                        id_to_text[doc.id] = text_in_doc
+                    id_to_text[doc.parent_id] += text_in_doc + ' '
+                    id_to_text[doc.id] = text_in_doc
         for doc in flat_docs:
             text_in_doc = id_to_text[
                 doc.parent_id

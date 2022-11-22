@@ -34,10 +34,6 @@ def index(data: NowTextIndexRequestModel):
     jina_client_post(
         data=data,
         inputs=index_docs,
-        parameters={
-            'access_paths': '@c,cc',
-            'traversal_paths': '@c,cc',
-        },
         endpoint='/index',
     )
 
@@ -62,8 +58,6 @@ def search(data: NowTextSearchRequestModel):
         parameters={
             'limit': data.limit,
             'filter': filter_query,
-            'access_paths': '@c,cc',
-            'traversal_paths': '@c,cc',
             'apply_bm25': True,
         },
         endpoint='/search',

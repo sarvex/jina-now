@@ -305,18 +305,6 @@ class JinaNOWApp:
             )
         }
 
-    def get_index_query_access_paths(
-        self, search_fields: Optional[List[str]] = None
-    ) -> str:
-        """Gives access paths for indexing and searching. Returns a path to search fields
-        if provided, otherwise a path to chunk level.
-
-        :param search_fields: Optional list of search fields.
-        """
-        if search_fields:
-            return '@.[' + ', '.join(search_fields) + ']'
-        return '@c'
-
     @property
     def max_request_size(self) -> int:
         """Max number of documents in one request"""

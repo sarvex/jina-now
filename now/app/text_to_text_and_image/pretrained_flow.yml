@@ -30,7 +30,6 @@ executors:
   uses_with:
     model_name: sentence-transformers/msmarco-distilbert-base-v4
     pretrained_model_name_or_path: sentence-transformers/msmarco-distilbert-base-v4
-    access_paths: '@c'
   env:
     JINA_LOG_LEVEL: DEBUG
   needs: preprocessor
@@ -41,7 +40,6 @@ executors:
   uses: jinahub+docker://CLIPOnnxEncoder/latest
   uses_with:
     name: ViT-B-32::openai
-    access_paths: '@c'
   env:
     JINA_LOG_LEVEL: DEBUG
   needs: preprocessor
@@ -56,7 +54,6 @@ executors:
     columns: ${{ ENV.COLUMNS }}
     admin_emails: ${{ ENV.ADMIN_EMAILS }}
     user_emails: ${{ ENV.USER_EMAILS }}
-    traversal_paths: '@c'
   jcloud:
     capacity: on-demand
     resources:

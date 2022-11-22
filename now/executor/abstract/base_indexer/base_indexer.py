@@ -27,7 +27,6 @@ class NOWBaseIndexer(Executor):
         columns: Optional[List] = None,
         metric: str = 'cosine',
         limit: int = 10,
-        traversal_paths: str = '@c',
         max_values_per_tag: int = 10,
         *args,
         **kwargs,
@@ -38,7 +37,6 @@ class NOWBaseIndexer(Executor):
         parsed as a valid Python type.
         :param metric: Distance metric type. Can be 'euclidean', 'inner_product', or 'cosine'
         :param limit: Number of results to get for each query document in search
-        :param traversal_paths: Default traversal paths on docs
         :param max_values_per_tag: Maximum number of values per tag
         (used for search), e.g. '@r', '@c', '@r,c'
         """
@@ -48,7 +46,6 @@ class NOWBaseIndexer(Executor):
         self.dim = dim
         self.metric = metric
         self.limit = limit
-        self.traversal_paths = traversal_paths
         self.max_values_per_tag = max_values_per_tag
         self.construct()
         self.doc_id_tags = {}
