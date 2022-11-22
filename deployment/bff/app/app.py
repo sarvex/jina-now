@@ -33,13 +33,6 @@ DESCRIPTION = 'The Jina NOW service API'
 AUTHOR = 'Jina AI'
 EMAIL = 'hello@jina.ai'
 __version__ = 'latest'
-origins = [
-    "http://localhost",
-    "http://localhost:8080",
-    "http://localhost:3000",
-    "https://cloud.jina.ai",
-    "https://*.jina.ai/",
-]
 
 
 def get_app_instance():
@@ -55,10 +48,10 @@ def get_app_instance():
 
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=origins,
+        allow_origins=['*'],
         allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
+        allow_methods=['*'],
+        allow_headers=['*'],
     )
 
     @app.get('/ping')
