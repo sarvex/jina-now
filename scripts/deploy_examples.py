@@ -1,7 +1,6 @@
 import os
 import sys
 from argparse import Namespace
-from concurrent.futures import ProcessPoolExecutor
 
 import boto3
 import requests
@@ -83,51 +82,32 @@ if __name__ == '__main__':
     os.environ['NOW_EXAMPLES'] = 'True'
     os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
     deployment_type = os.environ.get('DEPLOYMENT_TYPE', 'partial').lower()
-    index = sys.argv[-1]
-    demo_examples = [
+    index = int(sys.argv[-1])
+    to_deploy = [
         (app, ds) for app, data in DEFAULT_EXAMPLE_HOSTED.items() for ds in data
-    ]
-    to_deploy = set()
+    ][index]
 
     if deployment_type == 'all':
         # List all deployments and delete them
         flows = list_all_wolf(namespace=None)
-        flow_ids = [f['id'].replace('jflow-', '') for f in flows]
-        with ProcessPoolExecutor() as thread_executor:
-            # call delete function with each flow
-            thread_executor.map(lambda x: terminate_wolf(x), flow_ids)
-        print('All examples successfully deleted!!')
+        flow_name = {f['id']: f['id'].split('-')[-1] for f in flows['flows']}
+        for key, val in flow_name.items():
+            if f'{to_deploy[0]}-{to_deploy[1]}' in key:
+                terminate_wolf(val)
+                print(f'{to_deploy} successfully deleted!!')
     else:
-        # check if deployment is already running else add to deploy_list
+        # check if deployment is already running else add to the queue
         bff = 'https://nowrun.jina.ai/api/v1/admin/getStatus'
-        for app, data in DEFAULT_EXAMPLE_HOSTED.items():
-            for ds_name in data:
-                host = f'grpcs://now-example-{app}-{ds_name}.dev.jina.ai'.replace(
-                    '_', '-'
-                )
-                request_body = {
-                    'host': host,
-                    'jwt': {'token': os.environ['WOLF_TOKEN']},
-                }
-                resp = requests.post(bff, json=request_body)
-                if resp.status_code != 200:
-                    to_deploy.add((app, ds_name))
-        print('Total Apps to re-deploy: ', len(to_deploy))
-
-    results = []
-    with ProcessPoolExecutor() as thread_executor:
-        futures = []
-        if deployment_type == 'all':
-            # Create all new deployments and update CNAME records
-            for app, data in DEFAULT_EXAMPLE_HOSTED.items():
-                for ds_name in data:
-                    f = thread_executor.submit(deploy, app, ds_name)
-                    futures.append(f)
-        else:
-            for app, ds_name in to_deploy:
-                # Create the failed deployments and update CNAME records
-                f = thread_executor.submit(deploy, app, ds_name)
-                futures.append(f)
-        for f in futures:
-            results.append(f.result())
-    print(results)
+        host = f'grpcs://now-example-{to_deploy[0]}-{to_deploy[1]}.dev.jina.ai'.replace(
+            '_', '-'
+        )
+        request_body = {
+            'host': host,
+            'jwt': {'token': os.environ['WOLF_TOKEN']},
+        }
+        resp = requests.post(bff, json=request_body)
+        if resp.status_code == 200:
+            print(f'{to_deploy} already deployed!!')
+            exit(0)
+        print('Deploying', to_deploy)
+        # deploy(*to_deploy)
