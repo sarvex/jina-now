@@ -97,15 +97,7 @@ class ImageTextRetrieval(JinaNOWApp):
         modalities = []
         if process_index:
             if user_input.output_modality == Modalities.TEXT:
-                split_by_sentences = False
-                if (
-                    user_input
-                    and user_input.dataset_type == DatasetTypes.PATH
-                    and user_input.dataset_path
-                    and os.path.isdir(user_input.dataset_path)
-                ):
-                    # for text loaded from folder can't assume it is split by sentences
-                    split_by_sentences = True
+                split_by_sentences = user_input.dataset_type != DatasetTypes.DEMO
                 da = preprocess_text(da=da, split_by_sentences=split_by_sentences)
                 modalities.append(Modalities.TEXT)
             else:
@@ -113,7 +105,10 @@ class ImageTextRetrieval(JinaNOWApp):
                 modalities.append(Modalities.IMAGE)
         if process_query:
             da_img = filter_data(preprocess_images(deepcopy(da)), [Modalities.IMAGE])
-            da_txt = filter_data(preprocess_text(deepcopy(da)), [Modalities.TEXT])
+            da_txt = filter_data(
+                preprocess_text(deepcopy(da), split_by_sentences=False),
+                [Modalities.TEXT],
+            )
             da = DocumentArray(da_img + da_txt)
 
         return da

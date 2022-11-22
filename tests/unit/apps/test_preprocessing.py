@@ -50,14 +50,17 @@ def test_text_preprocessing(app_cls, is_indexing):
     da = transform_docarray(da, search_fields=[])
     da = app.preprocess(
         da=da,
-        user_input=UserInput(),
+        user_input=UserInput(output_modality='text'),
         process_index=is_indexing,
         process_query=not is_indexing,
     )
     assert len(da) == 1
     assert len(da[0].chunks) == 1
     assert da[0].chunks[0].modality == 'text'
-    assert da[0].chunks[0].chunks[0].text == 'test'
+    if is_indexing:
+        assert da[0].chunks[0].chunks[0].text == 'test'
+    else:
+        assert da[0].chunks[0].text == 'test'
 
 
 @pytest.mark.parametrize(

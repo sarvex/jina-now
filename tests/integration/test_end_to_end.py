@@ -245,8 +245,11 @@ def assert_suggest(suggest_url, request_body):
         response.status_code == 200
     ), f"Received code {response.status_code} with text: {response.json()['message']}"
     docs = DocumentArray.from_json(response.content)
-    assert 'suggestions' in docs[0].tags
-    assert docs[0].tags['suggestions'] == [[old_request_text]]
+    assert 'suggestions' in docs[0].tags, f'No suggestions found in {docs[0].tags}'
+    assert docs[0].tags['suggestions'] == [[old_request_text]], (
+        f'Expected suggestions to be {old_request_text} but got '
+        f'{docs[0].tags["suggestions"]}'
+    )
 
 
 def assert_deployment_queries(
