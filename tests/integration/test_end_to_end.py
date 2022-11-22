@@ -132,7 +132,7 @@ def test_token_exists():
         #     Apps.TEXT_TO_TEXT_AND_IMAGE,
         #     Modalities.TEXT,
         #     Modalities.TEXT_AND_IMAGE,
-        #     DemoDatasets.ES_ONLINE_SHOP_50,
+        #     DemoDatasetNames.ES_ONLINE_SHOP_50,
         #     'local',
         # ),
     ],

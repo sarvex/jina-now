@@ -103,14 +103,8 @@ class TextToText(JinaNOWApp):
                 'Either `process_query` or `process_index` must be set to True.'
             )
 
-        split_by_sentences = False
-        if (
-            process_index
-            and user_input.dataset_type == DatasetTypes.PATH
-            and user_input.dataset_path
-            and os.path.isdir(user_input.dataset_path)
-        ):
-            # for text loaded from folder can't assume it is split by sentences
-            split_by_sentences = True
+        split_by_sentences = True if process_index else False
+        if process_query or user_input.dataset_type == DatasetTypes.DEMO:
+            split_by_sentences = False
         da = preprocess_text(da=da, split_by_sentences=split_by_sentences)
         return filter_data(da, modalities=[Modalities.TEXT])
