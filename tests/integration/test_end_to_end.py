@@ -161,10 +161,9 @@ def test_backend_demo_data(
     os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
     kwargs = {
         'now': 'start',
-        'app': app,
         'flow_name': 'nowapi',
         'dataset_type': DatasetTypes.DEMO,
-        'output_modality': 'image',
+        'output_modality': output_modality,
         'dataset_name': dataset,
         'cluster': cluster,
         'secured': deployment_type == 'remote',
