@@ -2,19 +2,15 @@ import traceback
 from collections import namedtuple
 from typing import Any, Dict, List, Mapping, Optional, Union
 
-import numpy as np
 from docarray import Document, DocumentArray
-from docarray.score import NamedScore
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 
-from now.constants import ModelDimensions
 from now.executor.abstract.auth import (
     SecurityLevel,
     get_auth_executor_class,
     secure_request,
 )
-from now.executor.indexer.elastic.converter import Converter
 
 metrics_mapping = {
     'cosine': 'cosineSimilarity',
@@ -84,7 +80,6 @@ class ElasticIndexer(Executor):
         self.es_mapping = ElasticIndexer.generate_es_mapping(
             document_mappings, self.metric
         )
-        print(self.es_mapping)
         self.es = Elasticsearch(hosts=self.hosts, **self.es_config, ssl_show_warn=False)
         if not self.es.indices.exists(index=self.index_name):
             self.es.indices.create(index=self.index_name, mappings=self.es_mapping)
@@ -138,7 +133,6 @@ class ElasticIndexer(Executor):
             parameters = {}
 
         es_docs = self._doc_map_to_es(docs_map)
-        print(es_docs)
         try:
             # self.es.index(document=es_docs[0], index=es_docs[0]['_index'])
             success, _ = bulk(self.es, es_docs)
@@ -344,7 +338,7 @@ class ElasticIndexer(Executor):
                 source += f"0.5*{metrics_mapping[self.metric]}(params.query_{key}, '{key}.embedding') + "
             params[f'query_{key}'] = embedding
         source += '1.0'
-        qson = {
+        query_json = {
             'script_score': {
                 'query': query,
                 'script': {'source': source, 'params': params},
@@ -378,7 +372,7 @@ class ElasticIndexer(Executor):
             da.append(doc)
         return da
 
-    def _doc_map_to_es(self, docs_map):
+    def _doc_map_to_es(self, docs_map: Dict[str, DocumentArray]) -> List[Dict]:
         es_docs = {}
 
         for encoder, documents in docs_map.items():
@@ -392,19 +386,18 @@ class ElasticIndexer(Executor):
                 for field in fields:
                     field_doc = getattr(doc, field)
                     embedding = field_doc.embedding
-                    es_doc[f'{field}-{encoder}'] = embedding
+                    es_doc[f'{field}-{encoder}.embedding'] = embedding
                     if hasattr(field_doc, 'text') and field_doc.text:
-                        es_doc['bm25_text'] += " " + field_doc.text
+                        es_doc['bm25_text'] += field_doc.text + ' '
         return list(es_docs.values())
 
     def _get_base_es_doc(self, doc: Document):
         es_doc = {k: v for k, v in doc.to_dict().items() if v}
-        es_doc.pop('chunks')
-        es_doc['_id'] = doc.id
+        es_doc.pop('chunks', None)
+        es_doc.pop('_metadata', None)
         es_doc['bm25_text'] = self._get_bm25_fields(doc)
         es_doc['_op_type'] = 'index'
         es_doc['_index'] = self.index_name
-
         return es_doc
 
     def _get_bm25_fields(self, doc: Document):
@@ -412,115 +405,3 @@ class ElasticIndexer(Executor):
             return doc.bm25_text.text
         except:
             return ''
-
-    def _transform_docs_to_es(
-        self, docs: DocumentArray, traversal_paths: str
-    ) -> List[Dict]:
-        """
-        This function takes Documents as input and transforms them into a list of
-        dictionaries that can be indexed in Elasticsearch.
-
-        :param docs: documents containing text and image chunks.
-        :param traversal_paths: traversal paths to extract chunks from documents.
-        :return: list of dictionaries containing text, text embedding and image embedding
-        """
-        es_docs = list()
-        for doc in docs:
-            es_doc = {k: v for k, v in doc.to_dict().items() if v}
-            es_doc['_id'] = doc.id
-            es_doc['bm25_text'] = doc.text
-            chunks = es_doc.pop('chunks', None)
-            if chunks and 'c' in traversal_paths:
-                for i, chunk in enumerate(chunks):
-                    es_doc[f'chunk_{i}'] = {k: v for k, v in chunk.items() if v}
-                    if chunk['text']:
-                        es_doc['bm25_text'] += " " + chunk['text']
-            es_doc['_op_type'] = 'index'
-            es_doc['_index'] = self.index_name
-            es_docs.append(es_doc)
-        return es_docs
-
-    def _transform_es_results_to_matches(self, es_results: List[Dict]) -> DocumentArray:
-        """
-        Transform a list of results from Elasticsearch into a matches in the form of a `DocumentArray`.
-
-        :param es_results: List of dictionaries containing results from Elasticsearch querying.
-        :return: `DocumentArray` that holds all matches in the form of `Document`s.
-        """
-        matches = DocumentArray()
-        for result in es_results:
-            d = self._transform_es_to_da(result)[0]
-            d.scores[self.metric] = NamedScore(value=result['_score'])
-            matches.append(d)
-        return matches
-
-    @staticmethod
-    def _extract_embeddings(
-        doc: Document, traversal_paths: str
-    ) -> Dict[str, np.ndarray]:
-        """
-        Get embeddings from a documents.
-
-        :param doc: `Document` with chunks of text document and/or image document.
-        :param traversal_paths: traversal paths to extract embeddings from documents.
-        :return: Embeddings as values in a dictionary, modality specified in key.
-        """
-        embeddings = {}
-        if 'r' in traversal_paths:
-            embeddings['embedding'] = doc.embedding
-        if 'c' in traversal_paths:
-            for i, chunk in enumerate(doc.chunks):
-                embeddings[f"chunk_{i}"] = chunk.embedding
-        if not embeddings:
-            print('No embeddings extracted')
-            raise
-        return embeddings
-
-    @staticmethod
-    def _join_docs_matrix_into_chunks(
-        docs_matrix: List[DocumentArray], on: str = 'index'
-    ) -> DocumentArray:
-        """
-        Transform a matrix of DocumentArray's into one DocumentArray, by adding Documents to the chunk level.
-        If we are joining a docs_matrix during searching, we will keep both the clip text embedding
-        and sbert embedding generated for the text document chunk. Otherwise, if we are joining a docs_matrix
-        during indexing, we will only keep the sbert embedding and the image embedding generated by clip as
-        chunk documents.
-
-        :param on: str = 'index',
-        :param on: the endpoint which is called, if 'index', then we keep sbert embedding
-            and clip image embedding; if 'search', we keep sbert embedding and clip text embedding.
-        """
-        new_da = DocumentArray()
-        if on == 'search':
-            for doc1, doc2 in zip(*docs_matrix):
-                new_doc = Document(text=doc1.chunks[0].text)
-                if (
-                    len(doc1.chunks[0].embedding) == ModelDimensions.SBERT
-                    and len(doc2.chunks[0].embedding) == ModelDimensions.CLIP
-                ):
-                    new_doc.chunks.extend(doc1.chunks)
-                    new_doc.chunks.extend(doc2.chunks)
-                elif (
-                    len(doc1.chunks[0].embedding) == ModelDimensions.CLIP
-                    and len(doc2.chunks[0].embedding) == ModelDimensions.SBERT
-                ):
-                    new_doc.chunks.extend(doc2.chunks)
-                    new_doc.chunks.extend(doc1.chunks)
-                else:
-                    raise Exception('Embedding size not supported')
-                new_da.append(new_doc)
-        else:
-            for doc1, doc2 in zip(*docs_matrix):
-                new_doc = Document()
-                text_chunks = [
-                    c for c in doc1.chunks if c.text
-                ]  # doc1 from SBert with text embedding
-                image_chunks = [
-                    c for c in doc2.chunks if c.uri
-                ]  # doc2 from CLIP with image embedding
-                new_doc.chunks.extend(text_chunks)
-                new_doc.chunks.extend(image_chunks)
-                new_da.append(new_doc)
-
-        return new_da
