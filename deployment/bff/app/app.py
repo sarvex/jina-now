@@ -136,7 +136,6 @@ def build_app():
         routes=[
             Mount(cloud_temp_link_mount, cloud_temp_link_app),
             Mount(im_txt2im_txt_mount, im_txt2im_txt_app),
-            Mount(text2text_mount, text2text_app),
             Mount(music2music_mount, music2music_app),
             Mount(text2video_mount, text2video_app),
             Mount(text2text_and_image_mount, text2text_and_image_app),
