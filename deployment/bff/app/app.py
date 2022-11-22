@@ -5,6 +5,7 @@ import sys
 
 import uvicorn
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from starlette.applications import Starlette
 from starlette.responses import JSONResponse
 from starlette.routing import Mount
@@ -32,6 +33,13 @@ DESCRIPTION = 'The Jina NOW service API'
 AUTHOR = 'Jina AI'
 EMAIL = 'hello@jina.ai'
 __version__ = 'latest'
+origins = [
+    "http://localhost",
+    "http://localhost:8080",
+    "http://localhost:3000",
+    "https://cloud.jina.ai",
+    "https://*.jina.ai/",
+]
 
 
 def get_app_instance():
@@ -43,6 +51,14 @@ def get_app_instance():
             'author': AUTHOR,
             'email': EMAIL,
         },
+    )
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
     )
 
     @app.get('/ping')
