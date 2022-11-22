@@ -5,6 +5,7 @@ import sys
 
 import uvicorn
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from starlette.applications import Starlette
 from starlette.responses import JSONResponse
 from starlette.routing import Mount
@@ -41,6 +42,14 @@ def get_app_instance():
             'author': AUTHOR,
             'email': EMAIL,
         },
+    )
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=['*'],
+        allow_credentials=True,
+        allow_methods=['*'],
+        allow_headers=['*'],
     )
 
     @app.get('/ping')
