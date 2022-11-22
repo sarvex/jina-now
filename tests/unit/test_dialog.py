@@ -25,7 +25,8 @@ class CmdPromptMock:
 MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
-            'app': Apps.MUSIC_TO_MUSIC,
+            'app': Apps.IMAGE_TEXT_RETRIEVAL,
+            'output_modality': 'image',
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': 'music-genres-mid',
@@ -36,7 +37,8 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'app': Apps.MUSIC_TO_MUSIC,
+            'app': Apps.IMAGE_TEXT_RETRIEVAL,
+            'output_modality': 'image',
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': 'music-genres-mix',
@@ -84,7 +86,8 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'app': Apps.MUSIC_TO_MUSIC,
+            'app': Apps.IMAGE_TEXT_RETRIEVAL,
+            'output_modality': 'image',
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DOCARRAY,
             'dataset_name': 'xxx',
@@ -96,7 +99,8 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'app': Apps.MUSIC_TO_MUSIC,
+            'app': Apps.IMAGE_TEXT_RETRIEVAL,
+            'output_modality': 'image',
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.PATH,
             'dataset_path': 'xxx',
@@ -108,7 +112,8 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'app': Apps.MUSIC_TO_MUSIC,
+            'app': Apps.IMAGE_TEXT_RETRIEVAL,
+            'output_modality': 'image',
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.URL,
             'dataset_url': 'xxx',
@@ -133,16 +138,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'dataset_type': DatasetTypes.DEMO,
-            'flow_name': DEFAULT_FLOW_NAME,
-            'dataset_name': 'music-genres-mid',
-            'cluster': 'new',
-            'deployment_type': 'local',
-        },
-        {'app': Apps.MUSIC_TO_MUSIC},
-    ),
-    (
-        {
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': DemoDatasetNames.TLL,
@@ -163,10 +158,10 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'app': Apps.IMAGE_TEXT_RETRIEVAL,
             'output_modality': 'text',
         },
         {
+            'app': Apps.IMAGE_TEXT_RETRIEVAL,
             'flow_name': 'testapp',
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': DemoDatasetNames.BEST_ARTWORKS,
