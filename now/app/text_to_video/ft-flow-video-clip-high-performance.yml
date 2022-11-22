@@ -9,7 +9,6 @@ with:
     JINA_LOG_LEVEL: DEBUG
 jcloud:
   version: ${{ ENV.JINA_VERSION }}
-  retention_days: ${{ RETENTION_DAYS }}
   custom_dns:
     - ${{ ENV.CUSTOM_DNS }}
 executors:
@@ -68,9 +67,9 @@ executors:
       admin_emails: ${{ ENV.ADMIN_EMAILS }}
       user_emails: ${{ ENV.USER_EMAILS }}
     jcloud:
-      capacity: on-demand
       resources:
         memory: 8G
         cpu: 2.0
+        capacity: on-demand
     env:
       JINA_LOG_LEVEL: DEBUG
