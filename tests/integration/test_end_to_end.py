@@ -115,7 +115,7 @@ def test_token_exists():
             'local',
         ),
         (
-            Apps.TEXT_TO_TEXT,
+            Apps.IMAGE_TEXT_RETRIEVAL,
             Modalities.TEXT,
             Modalities.TEXT,
             DemoDatasetNames.POP_LYRICS,
@@ -332,7 +332,6 @@ def get_search_request_body(
         request_body['song'] = test_search_music
     elif app in [
         Apps.IMAGE_TEXT_RETRIEVAL,
-        Apps.TEXT_TO_TEXT,
         Apps.TEXT_TO_VIDEO,
         Apps.TEXT_TO_TEXT_AND_IMAGE,
     ]:

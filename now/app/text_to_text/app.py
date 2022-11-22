@@ -8,7 +8,6 @@ from now.common.preprocess import filter_data, preprocess_text
 from now.common.utils import common_setup, get_indexer_config
 from now.constants import (
     SUPPORTED_FILE_TYPES,
-    Apps,
     DatasetTypes,
     Modalities,
     ModelDimensions,
@@ -16,13 +15,14 @@ from now.constants import (
 from now.now_dataclasses import UserInput
 
 
-class TextToText(JinaNOWApp):
+class TextToText_Deprecated(JinaNOWApp):
+    # class TextToText(JinaNOWApp):
     def __init__(self):
         super().__init__()
 
-    @property
-    def app_name(self) -> str:
-        return Apps.TEXT_TO_TEXT
+    # @property
+    # def app_name(self) -> str:
+    #     return Apps.TEXT_TO_TEXT
 
     @property
     def is_enabled(self) -> bool:

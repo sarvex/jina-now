@@ -1,5 +1,5 @@
 import os
-from typing import List, Dict, Union
+from typing import Dict, List, Union
 
 from docarray import Document, DocumentArray
 
@@ -21,7 +21,6 @@ def _get_multi_modal_format(document: Document) -> Document:
     Create a multimodal docarray structure from a unimodal `Document`.
     """
     from now.app.text_to_video.app import TextToVideo
-    from now.app.text_to_text.app import TextToText
 
     modality = _get_modality(document)
     if document.blob:

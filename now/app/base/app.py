@@ -228,18 +228,6 @@ class JinaNOWApp:
             self.flow_yaml = flow_yaml_content
         return {}
 
-    def cleanup(self, app_config: dict) -> None:
-        """
-        Runs after the flow is terminated.
-        Cleans up the resources created during setup.
-        Common examples are:
-            - delete a database
-            - remove artifact
-            - notify other services
-        :param app_config: contains all information needed to clean up the allocated resources
-        """
-        pass
-
     def preprocess(
         self,
         da: DocumentArray,

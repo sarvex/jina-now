@@ -4,7 +4,6 @@ import pytest
 from docarray import Document, DocumentArray
 
 from now.app.image_text_retrieval.app import ImageTextRetrieval
-from now.app.text_to_text.app import TextToText
 from now.app.text_to_video.app import TextToVideo
 from now.data_loading.transform_docarray import transform_docarray
 from now.now_dataclasses import UserInput
@@ -40,8 +39,6 @@ def test_text_to_video_preprocessing_indexing(resources_folder_path):
 @pytest.mark.parametrize(
     'app_cls,is_indexing',
     [
-        (TextToText, False),
-        (TextToText, True),
         (ImageTextRetrieval, False),
         (ImageTextRetrieval, True),
     ],
@@ -60,10 +57,7 @@ def test_text_preprocessing(app_cls, is_indexing):
     assert len(da) == 1
     assert len(da[0].chunks) == 1
     assert da[0].chunks[0].modality == 'text'
-    if is_indexing and app_cls == TextToText:
-        assert da[0].chunks[0].chunks[0].text == 'test'
-    else:
-        assert da[0].chunks[0].text == 'test'
+    assert da[0].chunks[0].chunks[0].text == 'test'
 
 
 @pytest.mark.parametrize(
