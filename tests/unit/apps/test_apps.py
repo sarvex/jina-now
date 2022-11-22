@@ -24,7 +24,10 @@ def test_split_text_preprocessing():
         [Document(chunks=[Document(text='test. test', modality='text')])]
     )
     new_da = app.preprocess(
-        da=da, user_input=UserInput(), process_index=True, process_query=False
+        da=da,
+        user_input=UserInput(output_modality='text'),
+        process_index=True,
+        process_query=False,
     )
     assert len(new_da) == 1
     assert len(new_da[0].chunks[0].chunks) == 2
