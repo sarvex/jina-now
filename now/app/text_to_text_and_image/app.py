@@ -119,7 +119,6 @@ class TextToTextAndImage(JinaNOWApp):
         user_input: UserInput,
         process_index: bool = False,
         process_query: bool = True,
-        is_indexing: bool = False,
     ) -> DocumentArray:
         # will be refactored soon
         if not process_query and not process_index:
@@ -189,13 +188,6 @@ class TextToTextAndImage(JinaNOWApp):
         )
         env_dict['JINA_VERSION'] = jina_version
         env_dict['ENCODER_NAME'] = f"{EXECUTOR_PREFIX}FinetunerExecutor/v0.9.2"
-        # retention days
-        if 'NOW_CI_RUN' in os.environ:
-            env_dict[
-                'RETENTION_DAYS'
-            ] = 0  # JCloud will delete after 24hrs of being idle if not deleted in CI
-        else:
-            env_dict['RETENTION_DAYS'] = -1  # for user deployment set it to 30 days
         env_dict['N_DIM'] = [ModelDimensions.SBERT, ModelDimensions.CLIP]
         env_dict['ADMIN_EMAILS'] = (
             user_input.admin_emails or [] if user_input.secured else []

@@ -1,6 +1,6 @@
 import abc
 import os
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import docker
 from docarray import DocumentArray
@@ -8,7 +8,7 @@ from jina import Client
 from jina.jaml import JAML
 from jina.serve.runtimes.gateway.http.models import JinaRequestModel, JinaResponseModel
 
-from now.constants import Modalities
+from now.constants import DEFAULT_FLOW_NAME, Modalities
 from now.demo_data import AVAILABLE_DATASET, DEFAULT_EXAMPLE_HOSTED, DemoDataset
 from now.now_dataclasses import DialogOptions, UserInput
 
@@ -200,8 +200,14 @@ class JinaNOWApp:
         with open(self.flow_yaml) as input_f:
             flow_yaml_content = JAML.load(input_f.read())
             flow_yaml_content['jcloud']['labels'] = {'team': 'now'}
+            flow_yaml_content['jcloud']['name'] = (
+                user_input.flow_name + '-' + DEFAULT_FLOW_NAME
+                if user_input.flow_name != ''
+                and user_input.flow_name != DEFAULT_FLOW_NAME
+                else DEFAULT_FLOW_NAME
+            )
+            # append api_keys to the executor with name 'preprocessor' and 'indexer'
             for executor in flow_yaml_content['executors']:
-                # append api_keys to the executor with name 'preprocessor' and 'indexer'
                 if executor['name'] == 'preprocessor' or executor['name'] == 'indexer':
                     executor['uses_with']['api_keys'] = '${{ ENV.API_KEY }}'
 
