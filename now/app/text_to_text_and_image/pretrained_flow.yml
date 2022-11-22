@@ -5,7 +5,6 @@ with:
   port_expose: 8080
   env:
     JINA_LOG_LEVEL: DEBUG
-    JINA_OPTOUT_TELEMETRY: ${{ ENV.NOW_CI_RUN }}
 jcloud:
   version: ${{ ENV.JINA_VERSION }}
 executors:

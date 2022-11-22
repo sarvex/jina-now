@@ -7,7 +7,6 @@ with:
   cors: true
   env:
     JINA_LOG_LEVEL: DEBUG
-    JINA_OPTOUT_TELEMETRY: ${{ ENV.NOW_CI_RUN }}
 jcloud:
   version: ${{ ENV.JINA_VERSION }}
   custom_dns:
