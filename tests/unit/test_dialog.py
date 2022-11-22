@@ -10,7 +10,7 @@ from pytest_mock import MockerFixture
 
 from now.constants import DEFAULT_FLOW_NAME, Apps, DatasetTypes
 from now.demo_data import DemoDatasetNames
-from now.dialog import configure_app, configure_user_input
+from now.dialog import configure_user_input
 from now.now_dataclasses import UserInput
 
 
@@ -192,8 +192,7 @@ def test_configure_user_input(
     expected_user_input.__dict__.pop('app')
     mocker.patch('now.utils.prompt', CmdPromptMock(mocked_user_answers))
 
-    app_instance = configure_app(**configure_kwargs)
-    user_input = configure_user_input(app_instance=app_instance, **configure_kwargs)
+    user_input = configure_user_input(**configure_kwargs)
 
     if user_input.deployment_type == 'remote':
         user_input.__dict__.update({'jwt': None, 'admin_emails': None})

@@ -6,8 +6,8 @@ from now.utils import BetterEnum
 # from docarray import __version__ as docarray_version
 
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.134-refactor-remove-app-1'
-NOW_PREPROCESSOR_VERSION = '0.0.102-refactor-remove-app-1'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.134-refactor-remove-app-2'
+NOW_PREPROCESSOR_VERSION = '0.0.102-refactor-remove-app-2'
 NOW_QDRANT_INDEXER_VERSION = '0.0.7-feat-new-data-format-127'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.6-feat-new-data-format-127'
 NOW_AUTOCOMPLETE_VERSION = '0.0.4-feat-new-data-format-127'
@@ -35,12 +35,6 @@ class DatasetTypes(BetterEnum):
     DOCARRAY = 'docarray'
     S3_BUCKET = 's3_bucket'
     ELASTICSEARCH = 'elasticsearch'
-
-
-class Qualities(BetterEnum):
-    MEDIUM = 'medium'
-    GOOD = 'good'
-    EXCELLENT = 'excellent'
 
 
 class ModelNames(BetterEnum):
