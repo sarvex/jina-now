@@ -30,8 +30,6 @@ def _get_multi_modal_format(document: Document) -> Document:
         new_doc = Document(chunks=[Document(uri=document.uri)])
         if file_type in TextToVideo().supported_file_types:
             modality = Modalities.VIDEO
-        elif file_type in TextToText().supported_file_types:
-            modality = Modalities.TEXT
         else:
             modality = Modalities.IMAGE
     elif document.text:
