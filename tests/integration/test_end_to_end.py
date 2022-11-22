@@ -108,6 +108,13 @@ def test_token_exists():
             'remote',
         ),
         (
+            Apps.IMAGE_TEXT_RETRIEVAL,
+            Modalities.IMAGE,
+            Modalities.IMAGE,
+            DemoDatasetNames.TLL,
+            'local',
+        ),
+        (
             Apps.TEXT_TO_TEXT,
             Modalities.TEXT,
             Modalities.TEXT,
