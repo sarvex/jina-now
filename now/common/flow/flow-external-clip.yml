@@ -5,8 +5,9 @@ with:
     JINA_LOG_LEVEL: DEBUG
     JINA_OPTOUT_TELEMETRY: ${{ ENV.NOW_CI_RUN }}
 jcloud:
-  expose_gateway: false
-  retention_days: -1
+  version: '3.9.3'
+  gateway:
+    expose: false
   labels:
     team: now
 executors:
@@ -17,6 +18,7 @@ executors:
     env:
       JINA_LOG_LEVEL: DEBUG
     jcloud:
+      expose: true
       resources:
         memory: 5G
-        gpu: 1
+        gpu: '1'

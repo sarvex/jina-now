@@ -240,7 +240,6 @@ def _maybe_add_embeddings(
     client, _, _, gateway_host_internal, _, = deploy_flow(
         deployment_type=user_input.deployment_type,
         flow_yaml=app_instance.flow_yaml,
-        ns=_KS_NAMESPACE,
         env_dict=env_dict,
         kubectl_path=kubectl_path,
     )

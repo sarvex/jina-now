@@ -10,7 +10,6 @@ with:
     JINA_OPTOUT_TELEMETRY: ${{ ENV.NOW_CI_RUN }}
 jcloud:
   version: ${{ ENV.JINA_VERSION }}
-  retention_days: ${{ RETENTION_DAYS }}
   custom_dns:
     - ${{ ENV.CUSTOM_DNS }}
 executors:
@@ -47,9 +46,9 @@ executors:
       admin_emails: ${{ ENV.ADMIN_EMAILS }}
       user_emails: ${{ ENV.USER_EMAILS }}
     jcloud:
-      capacity: on-demand
       resources:
         memory: ${{ ENV.INDEXER_MEM }}
         cpu: 1.0
+        capacity: on-demand
     env:
       JINA_LOG_LEVEL: DEBUG

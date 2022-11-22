@@ -8,7 +8,6 @@ with:
     JINA_OPTOUT_TELEMETRY: ${{ ENV.NOW_CI_RUN }}
 jcloud:
   version: ${{ ENV.JINA_VERSION }}
-  retention_days: ${{ RETENTION_DAYS }}
 executors:
 - name: preprocessor
   uses: ${{ ENV.PREPROCESSOR_NAME }}
@@ -54,10 +53,10 @@ executors:
     user_emails: ${{ ENV.USER_EMAILS }}
     traversal_paths: '@c'
   jcloud:
-    capacity: on-demand
     resources:
       memory: ${{ ENV.INDEXER_MEM }}
       cpu: 1.0
+      capacity: on-demand
   env:
     JINA_LOG_LEVEL: DEBUG
   needs: [sbert_encoder, clip_encoder]
