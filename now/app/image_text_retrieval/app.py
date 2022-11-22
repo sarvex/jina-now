@@ -7,13 +7,7 @@ from docarray import DocumentArray
 from now.app.base.app import JinaNOWApp
 from now.common.preprocess import filter_data, preprocess_images, preprocess_text
 from now.common.utils import _get_clip_apps_with_dict, common_setup, get_indexer_config
-from now.constants import (
-    CLIP_USES,
-    SUPPORTED_FILE_TYPES,
-    Apps,
-    DatasetTypes,
-    Modalities,
-)
+from now.constants import CLIP_USES, Apps, DatasetTypes, Modalities
 from now.now_dataclasses import UserInput
 
 
@@ -51,11 +45,6 @@ class ImageTextRetrieval(JinaNOWApp):
         Otherwise, we access documents on chunk level. (@c)
         """
         return '@c,cc'
-
-    @property
-    def supported_file_types(self) -> List[str]:
-        sup_file = [SUPPORTED_FILE_TYPES[modality] for modality in self.output_modality]
-        return [item for sublist in sup_file for item in sublist]
 
     def set_flow_yaml(self, **kwargs):
         finetuning = kwargs.get('finetuning', False)

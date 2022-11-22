@@ -9,7 +9,6 @@ from now.common.utils import common_setup
 from now.constants import (
     EXECUTOR_PREFIX,
     NOW_QDRANT_INDEXER_VERSION,
-    SUPPORTED_FILE_TYPES,
     Apps,
     Modalities,
     ModelDimensions,
@@ -55,10 +54,6 @@ class MusicToMusic(JinaNOWApp):
     @property
     def required_docker_memory_in_gb(self) -> int:
         return 10
-
-    @property
-    def supported_file_types(self) -> List[str]:
-        return SUPPORTED_FILE_TYPES[self.output_modality]
 
     def set_flow_yaml(self, **kwargs):
         finetuning = kwargs.get('finetuning', False)

@@ -6,8 +6,8 @@ from now.utils import BetterEnum
 # from docarray import __version__ as docarray_version
 
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.134-refactor-remove-app-6'
-NOW_PREPROCESSOR_VERSION = '0.0.102-refactor-remove-app-6'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.134-refactor-remove-app-7'
+NOW_PREPROCESSOR_VERSION = '0.0.102-refactor-remove-app-7'
 NOW_QDRANT_INDEXER_VERSION = '0.0.7-feat-new-data-format-127'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.6-feat-new-data-format-127'
 NOW_AUTOCOMPLETE_VERSION = '0.0.4-feat-new-data-format-127'
@@ -52,7 +52,7 @@ SUPPORTED_FILE_TYPES = {
     Modalities.TEXT: ['txt', 'md'],
     Modalities.IMAGE: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'tif'],
     Modalities.MUSIC: ['mp3', 'wav', 'ogg', 'flac'],
-    Modalities.VIDEO: ['gif'],
+    Modalities.VIDEO: ['gif', 'mp4', 'mov'],
 }
 
 BASE_STORAGE_URL = (
