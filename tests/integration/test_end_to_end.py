@@ -96,7 +96,7 @@ def test_token_exists():
         (
             Apps.IMAGE_TEXT_RETRIEVAL,
             Modalities.IMAGE,
-            Modalities.TEXT,
+            Modalities.IMAGE,
             DemoDatasetNames.BIRD_SPECIES,
             'local',
         ),
@@ -106,13 +106,6 @@ def test_token_exists():
             Modalities.IMAGE,
             DemoDatasetNames.BEST_ARTWORKS,
             'remote',
-        ),
-        (
-            Apps.IMAGE_TEXT_RETRIEVAL,
-            Modalities.IMAGE,
-            Modalities.IMAGE,
-            DemoDatasetNames.TLL,
-            'local',
         ),
         (
             Apps.IMAGE_TEXT_RETRIEVAL,
