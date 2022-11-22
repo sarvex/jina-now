@@ -199,6 +199,9 @@ class JinaNOWApp:
                 and user_input.flow_name != DEFAULT_FLOW_NAME
                 else DEFAULT_FLOW_NAME
             )
+
+            self.add_environment_variables(flow_yaml_content)
+
             # append api_keys to the executor with name 'preprocessor' and 'indexer'
             for executor in flow_yaml_content['executors']:
                 if executor['name'] == 'preprocessor' or executor['name'] == 'indexer':
@@ -311,3 +314,9 @@ class JinaNOWApp:
     def max_request_size(self) -> int:
         """Max number of documents in one request"""
         return 32
+
+    def add_environment_variables(self, flow_yaml_content):
+        if os.environ['JINA_OPTOUT_TELEMETRY']:
+            flow_yaml_content['with']['env']['JINA_OPTOUT_TELEMETRY'] = os.environ[
+                'JINA_OPTOUT_TELEMETRY'
+            ]

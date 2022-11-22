@@ -25,7 +25,8 @@ def service_account_file_path() -> str:
 @pytest.fixture(autouse=True, scope='session')
 def setup_env():
     os.environ['NOW_CI_RUN'] = 'True'
-    os.environ['JINA_OPTOUT_TELEMETRY'] = 'jina_optout_telemetry'
+    # 1 and true are not working in the current core version therefore, we give it another value
+    os.environ['JINA_OPTOUT_TELEMETRY'] = 'someValueToDeactivateTelemetry'
     os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
 
 
