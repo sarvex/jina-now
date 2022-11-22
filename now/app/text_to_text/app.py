@@ -93,7 +93,7 @@ class TextToText(JinaNOWApp):
             )
 
         split_by_sentences = True if process_index else False
-        if not process_index and user_input.dataset_type == DatasetTypes.DEMO:
+        if process_query or user_input.dataset_type == DatasetTypes.DEMO:
             split_by_sentences = False
         da = preprocess_text(da=da, split_by_sentences=split_by_sentences)
         return filter_data(da, modalities=[Modalities.TEXT])
