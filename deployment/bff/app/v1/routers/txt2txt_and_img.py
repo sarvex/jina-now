@@ -8,7 +8,7 @@ from fastapi import APIRouter
 from deployment.bff.app.v1.models.text import NowTextSearchRequestModel
 from deployment.bff.app.v1.models.text_and_image import (
     NowTextAndImageIndexRequestModel,
-    NowTextAndImageResponseModel,
+    NowTextImageResponseModel,
 )
 from deployment.bff.app.v1.routers.helper import jina_client_post, process_query
 
@@ -53,7 +53,7 @@ def index(data: NowTextAndImageIndexRequestModel):
 # Search
 @router.post(
     "/search",
-    response_model=List[NowTextAndImageResponseModel],
+    response_model=List[NowTextImageResponseModel],
     summary='Search text and image data via text as query',
 )
 def search(data: NowTextSearchRequestModel):

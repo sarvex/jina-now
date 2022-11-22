@@ -20,7 +20,7 @@ class NowTextAndImageIndexRequestModel(BaseIndexRequestModel):
     )
 
 
-class NowTextAndImageSearchRequestModel(BaseSearchRequestModel):
+class NowTextImageSearchRequestModel(BaseSearchRequestModel):
     image: Optional[str] = Field(
         default=None,
         description='Image query. Image should be base64encoded in `utf-8` format',
@@ -29,11 +29,11 @@ class NowTextAndImageSearchRequestModel(BaseSearchRequestModel):
 
 
 # Response Model
-class NowTextAndImageResponseModel(BaseSearchResponseModel):
+class NowTextImageResponseModel(BaseSearchResponseModel):
     text: Optional[str] = Field(description='Matching text result.', default='')
     blob: Optional[str] = Field(
         description='Base64 encoded image in `utf-8` str format'
     )
 
 
-NowTextAndImageResponseModel.update_forward_refs()
+NowTextImageResponseModel.update_forward_refs()

@@ -7,8 +7,8 @@ from fastapi import APIRouter
 
 from deployment.bff.app.v1.models.text_and_image import (
     NowTextAndImageIndexRequestModel,
-    NowTextAndImageResponseModel,
-    NowTextAndImageSearchRequestModel,
+    NowTextImageResponseModel,
+    NowTextImageSearchRequestModel,
 )
 from deployment.bff.app.v1.routers.helper import jina_client_post, process_query
 
@@ -29,15 +29,9 @@ def index(data: NowTextAndImageIndexRequestModel):
     for text, image, uri, tags in zip_longest(
         data.texts, data.images, data.uris, data.tags
     ):
-        if bool(image) + bool(uri) > 1:
+        if bool(image) + bool(uri) + bool(text) > 1:
             raise ValueError(
-                f'Can only set one value but have image={image}, uri={uri}'
-            )
-        if bool(text) + bool(uri) > 1:
-            raise ValueError(f'Can only set one value but have text={text}, uri={uri}')
-        if text and image:
-            raise ValueError(
-                f'Can only set one value but have text={text}, image={image}'
+                f'Can only set one value but have image={image}, uri={uri}, text={text}'
             )
         if image:
             base64_bytes = image.encode('utf-8')
@@ -62,10 +56,10 @@ def index(data: NowTextAndImageIndexRequestModel):
 # Search
 @router.post(
     "/search",
-    response_model=List[NowTextAndImageResponseModel],
+    response_model=List[NowTextImageResponseModel],
     summary='Search image or text data via image or text as query',
 )
-def search(data: NowTextAndImageSearchRequestModel):
+def search(data: NowTextImageSearchRequestModel):
     """
     Retrieve matching images or texts for a given image or text query. Image query should be
     `base64` encoded using human-readable characters - `utf-8`.

@@ -38,7 +38,7 @@ APP = DialogOptions(
             'name': '📝+🏞 ▶ 📝+🏞 image-text retrieval',
             'value': Apps.IMAGE_TEXT_RETRIEVAL,
         },
-        {'name': '📝 ▶ 📝 text to text search (SBERT)', 'value': Apps.TEXT_TO_TEXT},
+        {'name': '📝 ▶ 📝 text to text search', 'value': Apps.TEXT_TO_TEXT},
         {
             'name': '📝 ▶ 🎦 text to video search (gif only at the moment)',
             'value': Apps.TEXT_TO_VIDEO,

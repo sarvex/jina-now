@@ -160,7 +160,7 @@ def test_backend_demo_data(
         'output_modality': 'image',
         'dataset_name': dataset,
         'cluster': cluster,
-        'secured': False,
+        'secured': deployment_type == 'remote',
         'api_key': None,
         'additional_user': False,
         'deployment_type': deployment_type,
