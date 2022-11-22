@@ -87,6 +87,8 @@ if __name__ == '__main__':
         (app, ds) for app, data in DEFAULT_EXAMPLE_HOSTED.items() for ds in data
     ][index]
 
+    print(f'Deploying {to_deploy} with deployment type {deployment_type}')
+
     if deployment_type == 'all':
         # List all deployments and delete them
         flows = list_all_wolf(namespace=None)
@@ -110,4 +112,4 @@ if __name__ == '__main__':
             print(f'{to_deploy} already deployed!!')
             exit(0)
         print('Deploying', to_deploy)
-        # deploy(*to_deploy)
+        deploy(*to_deploy)
