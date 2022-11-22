@@ -1,6 +1,6 @@
 import abc
 import os
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import docker
 from docarray import DocumentArray
@@ -48,7 +48,7 @@ class JinaNOWApp:
 
     @property
     @abc.abstractmethod
-    def input_modality(self) -> Union[Modalities, List[Modalities]]:
+    def input_modality(self) -> List[Modalities]:
         """
         Modality used for running search queries
         """
@@ -56,7 +56,7 @@ class JinaNOWApp:
 
     @property
     @abc.abstractmethod
-    def output_modality(self) -> Union[Modalities, List[Modalities]]:
+    def output_modality(self) -> List[Modalities]:
         """
         Modality used for indexing data
         """
@@ -108,15 +108,11 @@ class JinaNOWApp:
         raise NotImplementedError()
 
     @property
-    def demo_datasets(self) -> Union[List, Dict[str, DemoDataset]]:
+    def demo_datasets(self) -> Dict[str, List[DemoDataset]]:
         """Get a list of example datasets for the app."""
-        if isinstance(self.output_modality, List):
-            available_datasets = {
-                modality: AVAILABLE_DATASET.get(modality, [])
-                for modality in self.output_modality
-            }
-        else:
-            available_datasets = AVAILABLE_DATASET.get(self.output_modality, [])
+        available_datasets = {}
+        for output_modality in self.output_modality:
+            available_datasets[output_modality] = AVAILABLE_DATASET[output_modality]
         return available_datasets
 
     @property

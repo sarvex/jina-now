@@ -1,5 +1,5 @@
 import os
-from typing import Dict, List, Union
+from typing import Dict, List
 
 import cowsay
 from docarray import Document, DocumentArray
@@ -45,12 +45,12 @@ class MusicToMusic(JinaNOWApp):
         return 'Music to music search app'
 
     @property
-    def input_modality(self) -> Union[Modalities, List[Modalities]]:
-        return Modalities.MUSIC
+    def input_modality(self) -> List[Modalities]:
+        return [Modalities.MUSIC]
 
     @property
-    def output_modality(self) -> Union[Modalities, List[Modalities]]:
-        return Modalities.MUSIC
+    def output_modality(self) -> List[Modalities]:
+        return [Modalities.MUSIC]
 
     @property
     def required_docker_memory_in_gb(self) -> int:

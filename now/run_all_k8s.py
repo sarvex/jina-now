@@ -139,14 +139,8 @@ def start_now(**kwargs):
         bff_port = '80'
         playground_port = '80'
     # TODO: add separate BFF endpoints in print output
-    if isinstance(app_instance.input_modality, list):
-        input_modality = '-or-'.join(app_instance.input_modality)
-    else:
-        input_modality = app_instance.input_modality
-    if isinstance(app_instance.output_modality, list):
-        output_modality = '-or-'.join(app_instance.output_modality)
-    else:
-        output_modality = app_instance.output_modality
+    input_modality = '-or-'.join(app_instance.input_modality)
+    output_modality = '-or-'.join(app_instance.output_modality)
     bff_url = (
         bff_playground_host
         + ('' if str(bff_port) == '80' else f':{bff_port}')

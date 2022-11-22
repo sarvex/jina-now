@@ -1,7 +1,7 @@
 import base64
 import io
 import os
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional
 
 import numpy as np
 import PIL
@@ -46,12 +46,12 @@ class TextToVideo(JinaNOWApp):
         return 'Text to video search app'
 
     @property
-    def input_modality(self) -> Union[Modalities, List[Modalities]]:
-        return Modalities.TEXT
+    def input_modality(self) -> List[Modalities]:
+        return [Modalities.TEXT]
 
     @property
-    def output_modality(self) -> Union[Modalities, List[Modalities]]:
-        return Modalities.VIDEO
+    def output_modality(self) -> List[Modalities]:
+        return [Modalities.VIDEO]
 
     @property
     def required_docker_memory_in_gb(self) -> int:
