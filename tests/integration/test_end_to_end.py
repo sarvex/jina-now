@@ -93,13 +93,13 @@ def test_token_exists():
 @pytest.mark.parametrize(
     'app, input_modality, output_modality, dataset, deployment_type',
     [
-        (
-            Apps.TEXT_TO_IMAGE,
-            Modalities.TEXT,
-            Modalities.IMAGE,
-            DemoDatasetNames.BIRD_SPECIES,
-            'local',
-        ),
+        # (
+        #     Apps.TEXT_TO_IMAGE,
+        #     Modalities.TEXT,
+        #     Modalities.IMAGE,
+        #     DemoDatasetNames.BIRD_SPECIES,
+        #     'local',
+        # ),
         (
             Apps.IMAGE_TO_IMAGE,
             Modalities.IMAGE,
@@ -107,27 +107,27 @@ def test_token_exists():
             DemoDatasetNames.BEST_ARTWORKS,
             'local',
         ),
-        (
-            Apps.IMAGE_TO_TEXT,
-            Modalities.IMAGE,
-            Modalities.TEXT,
-            DemoDatasetNames.ROCK_LYRICS,
-            'remote',
-        ),
-        (
-            Apps.TEXT_TO_TEXT,
-            Modalities.TEXT,
-            Modalities.TEXT,
-            DemoDatasetNames.POP_LYRICS,
-            'local',
-        ),
-        (
-            Apps.TEXT_TO_VIDEO,
-            Modalities.TEXT,
-            Modalities.VIDEO,
-            DemoDatasetNames.TUMBLR_GIFS_10K,
-            'local',
-        ),
+        # (
+        #     Apps.IMAGE_TO_TEXT,
+        #     Modalities.IMAGE,
+        #     Modalities.TEXT,
+        #     DemoDatasetNames.ROCK_LYRICS,
+        #     'remote',
+        # ),
+        # (
+        #     Apps.TEXT_TO_TEXT,
+        #     Modalities.TEXT,
+        #     Modalities.TEXT,
+        #     DemoDatasetNames.POP_LYRICS,
+        #     'local',
+        # ),
+        # (
+        #     Apps.TEXT_TO_VIDEO,
+        #     Modalities.TEXT,
+        #     Modalities.VIDEO,
+        #     DemoDatasetNames.TUMBLR_GIFS_10K,
+        #     'local',
+        # ),
         # (
         #     Apps.MUSIC_TO_MUSIC,
         #     Modalities.MUSIC,
@@ -157,8 +157,6 @@ def test_backend_demo_data(
     with_hubble_login_patch,
 ):
     cluster = NEW_CLUSTER['value']
-    os.environ['NOW_CI_RUN'] = 'True'
-    os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
     kwargs = {
         'now': 'start',
         'app': app,
@@ -368,8 +366,6 @@ def test_backend_custom_data(
     cleanup,
     with_hubble_login_patch,
 ):
-    os.environ['NOW_CI_RUN'] = 'True'
-    os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
     kwargs = {
         'now': 'start',
         'app': app,
