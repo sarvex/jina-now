@@ -183,7 +183,7 @@ def start_now(app_instance, **kwargs):
     console.print(
         Panel(
             my_table,
-            title=f':tada: {input_modality}-{output_modality} app is NOW ready!',
+            title=f':tada: {input_modality}-to-{output_modality} app is NOW ready!',
             expand=False,
         )
     )
