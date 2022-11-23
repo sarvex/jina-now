@@ -1,8 +1,9 @@
 import traceback
-from collections import namedtuple
+from collections import defaultdict, namedtuple
 from typing import Any, Dict, List, Mapping, Optional, Union
 
 from docarray import Document, DocumentArray
+from docarray.score import NamedScore
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 
@@ -11,6 +12,7 @@ from now.executor.abstract.auth import (
     get_auth_executor_class,
     secure_request,
 )
+from now.executor.indexer.elastic.semantic_score import Scores
 
 metrics_mapping = {
     'cosine': 'cosineSimilarity',
@@ -99,6 +101,7 @@ class ElasticIndexer(Executor):
                 'bm25_text': {'type': 'text', 'analyzer': 'standard'},
             }
         }
+
         for encoder, embedding_size, fields in document_mappings:
             for field in fields:
                 es_mapping['properties'][f'{field}-{encoder}'] = {
@@ -138,7 +141,6 @@ class ElasticIndexer(Executor):
             success, _ = bulk(self.es, es_docs)
             self.es.indices.refresh(index=self.index_name)
         except Exception as e:
-            print(e)
             print(traceback.format_exc())
             raise
         if success:
@@ -152,8 +154,7 @@ class ElasticIndexer(Executor):
     @secure_request(on='/search', level=SecurityLevel.USER)
     def search(
         self,
-        docs: Union[Document, DocumentArray],
-        docs_matrix: Optional[List[DocumentArray]] = None,
+        docs_map: Dict[str, DocumentArray] = None,  # encoder to docarray
         parameters: dict = {},
         **kwargs,
     ):
@@ -175,26 +176,17 @@ class ElasticIndexer(Executor):
                 - 'traversal_paths' (str): traversal paths for the docs
                 - 'limit' (int): nr of matches to get per Document
         """
-        if not docs:
-            return docs
-        if docs_matrix:
-            if len(docs_matrix) > 1:
-                docs = self._join_docs_matrix_into_chunks(
-                    docs_matrix=docs_matrix, on='search'
-                )
-            else:
-                docs = docs_matrix[0]
-        traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
-        search_filter = parameters.get('filter', None)
+        if not docs_map:
+            return DocumentArray()
+        if not parameters:
+            parameters = {}
+
+        # search_filter = parameters.get('filter', None)
         limit = parameters.get('limit', 20)
         apply_bm25 = parameters.get('apply_bm25', False)
-        for doc in docs:
-            query = self._build_es_query(
-                doc=doc,
-                apply_bm25=apply_bm25,
-                traversal_paths=traversal_paths,
-                search_filter=search_filter,
-            )
+
+        es_queries = self._build_es_queries(docs_map, apply_bm25)
+        for doc, query in es_queries:
             try:
                 result = self.es.search(
                     index=self.index_name,
@@ -202,10 +194,12 @@ class ElasticIndexer(Executor):
                     source=True,
                     size=limit,
                 )['hits']['hits']
+                print(result)
                 doc.matches = self._transform_es_results_to_matches(result)
             except Exception:
                 print(traceback.format_exc())
-        return docs
+
+        return DocumentArray(list(zip(*es_queries))[0])
 
     @secure_request(on='/update', level=SecurityLevel.USER)
     def update(self, docs: DocumentArray, **kwargs) -> DocumentArray:
@@ -275,12 +269,10 @@ class ElasticIndexer(Executor):
             )
         return DocumentArray()
 
-    def _build_es_query(
+    def _build_es_queries(
         self,
-        doc: Document,
+        docs_map,
         apply_bm25: bool,
-        traversal_paths: str,
-        search_filter: Optional[Dict] = None,
     ) -> Dict:
         """
         Build script-score query used in Elasticsearch. To do this, we extract
@@ -296,7 +288,60 @@ class ElasticIndexer(Executor):
         :param search_filter: dictionary of filters to apply to the search.
         :return: a dictionary containing query and filter.
         """
-        source = ''
+        queries = {}
+        docs = {}
+        sources = {}
+        script_params = defaultdict(dict)
+        semantic_scores = self.default_semantic_scores
+        scores = Scores(semantic_scores)
+        for encoder, docs in docs_map.items():
+            for doc in docs:
+                if doc.id not in queries:
+                    queries[doc.id] = ElasticIndexer._get_default_query(doc, apply_bm25)
+                    docs[doc.id] = doc
+                    if apply_bm25:
+                        sources[doc.id] = '1.0 + _score / (_score + 10.0)'
+                    else:
+                        sources[doc.id] = '1.0'
+
+                for (
+                    query_field,
+                    document_field,
+                    document_encoder,
+                    linear_weight,
+                ) in scores.get_scores(encoder):
+                    field_doc = getattr(doc, query_field)
+
+                    query_string = f'params.query_{query_field}_{encoder}'
+                    document_string = f'{document_field}-{document_encoder}'
+
+                    sources[
+                        doc.id
+                    ] += f" + {float(linear_weight)}*{metrics_mapping[self.metric]}({query_string}, '{document_string}.embedding')"
+
+                    script_params[doc.id][
+                        f'query_{query_field}_{encoder}'
+                    ] = field_doc.embedding
+
+        es_queries = []
+
+        for doc_id, query in queries.items():
+
+            query_json = {
+                'script_score': {
+                    'query': query,
+                    'script': {
+                        'source': sources[doc_id],
+                        'params': script_params[doc_id],
+                    },
+                }
+            }
+            es_queries.append((docs[doc_id], query_json))
+        return es_queries
+
+    @staticmethod
+    def _get_default_query(doc, apply_bm25):
+
         query = {
             'bool': {
                 'should': [
@@ -307,14 +352,17 @@ class ElasticIndexer(Executor):
 
         # build bm25 part
         if apply_bm25:
-            source += '_score / (_score + 10.0) + '
             text = doc.text
             multi_match = {'multi_match': {'query': text, 'fields': ['bm25_text']}}
             query['bool']['should'].append(multi_match)
 
         # add filter
-        if search_filter:
+        if 'es_search_filter' in doc.tags:
+            query['bool']['filter'] = doc.tags['search_filter']
+        elif 'search_filter' in doc.tags:
+            search_filter = doc.tags['search_filter']
             es_search_filter = {}
+
             for field, filters in search_filter.items():
                 for operator, filter in filters.items():
                     if isinstance(filter, str):
@@ -326,25 +374,7 @@ class ElasticIndexer(Executor):
                         }
             query['bool']['filter'] = es_search_filter
 
-        # build vector search part
-        query_embeddings = self._extract_embeddings(
-            doc=doc, traversal_paths=traversal_paths
-        )
-        params = {}
-        for key, embedding in query_embeddings.items():
-            if key == 'embedding':
-                source += f"0.5*{metrics_mapping[self.metric]}(params.query_{key}, '{key}') + "
-            else:
-                source += f"0.5*{metrics_mapping[self.metric]}(params.query_{key}, '{key}.embedding') + "
-            params[f'query_{key}'] = embedding
-        source += '1.0'
-        query_json = {
-            'script_score': {
-                'query': query,
-                'script': {'source': source, 'params': params},
-            }
-        }
-        return query_json
+        return query
 
     def _transform_es_to_da(self, result: Union[Dict, List[Dict]]) -> DocumentArray:
         """
@@ -382,11 +412,11 @@ class ElasticIndexer(Executor):
                     es_docs[doc.id] = es_doc
                 else:
                     es_doc = es_docs[doc.id]
-                fields = self.encoder_to_fields[encoder]
-                for field in fields:
-                    field_doc = getattr(doc, field)
+                for encoded_field in self.encoder_to_fields[encoder]:
+                    field_doc = getattr(doc, encoded_field)
                     embedding = field_doc.embedding
-                    es_doc[f'{field}-{encoder}.embedding'] = embedding
+                    es_doc[f'{encoded_field}-{encoder}.embedding'] = embedding
+
                     if hasattr(field_doc, 'text') and field_doc.text:
                         es_doc['bm25_text'] += field_doc.text + ' '
         return list(es_docs.values())
@@ -398,6 +428,7 @@ class ElasticIndexer(Executor):
         es_doc['bm25_text'] = self._get_bm25_fields(doc)
         es_doc['_op_type'] = 'index'
         es_doc['_index'] = self.index_name
+        es_doc['_id'] = doc.id
         return es_doc
 
     def _get_bm25_fields(self, doc: Document):
@@ -405,3 +436,16 @@ class ElasticIndexer(Executor):
             return doc.bm25_text.text
         except:
             return ''
+
+    def _transform_es_results_to_matches(self, es_results: List[Dict]) -> DocumentArray:
+        """
+        Transform a list of results from Elasticsearch into a matches in the form of a `DocumentArray`.
+        :param es_results: List of dictionaries containing results from Elasticsearch querying.
+        :return: `DocumentArray` that holds all matches in the form of `Document`s.
+        """
+        matches = DocumentArray()
+        for result in es_results:
+            d = self._transform_es_to_da(result)[0]
+            d.scores[self.metric] = NamedScore(value=result['_score'])
+            matches.append(d)
+        return matches
