@@ -157,8 +157,6 @@ def test_backend_demo_data(
     with_hubble_login_patch,
 ):
     cluster = NEW_CLUSTER['value']
-    os.environ['NOW_CI_RUN'] = 'True'
-    os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
     kwargs = {
         'now': 'start',
         'app': app,
@@ -368,8 +366,6 @@ def test_backend_custom_data(
     cleanup,
     with_hubble_login_patch,
 ):
-    os.environ['NOW_CI_RUN'] = 'True'
-    os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
     kwargs = {
         'now': 'start',
         'app': app,
