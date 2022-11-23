@@ -47,7 +47,7 @@ def test_text_to_video_preprocessing_indexing(resources_folder_path):
 )
 def test_text_preprocessing(app_cls, is_indexing):
     """Test if the text to text preprocessing works for queries and indexing"""
-    app = TextToText()
+    app = app_cls()
     da = DocumentArray([Document(text='test')])
     da = transform_docarray(da, search_fields=[])
     da = app.preprocess(da)

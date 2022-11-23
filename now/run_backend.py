@@ -1,5 +1,4 @@
 import os
-import pathlib
 import random
 import sys
 import uuid
@@ -14,14 +13,12 @@ from jina.clients import Client
 from now.admin.update_api_keys import update_api_keys
 from now.app.base.app import JinaNOWApp
 from now.common.testing import handle_test_mode
-from now.constants import DEFAULT_FLOW_NAME, DatasetTypes
+from now.constants import DatasetTypes
 from now.data_loading.data_loading import load_data
 from now.deployment.flow import deploy_flow
 from now.log import time_profiler
 from now.now_dataclasses import UserInput
-from now.utils import get_flow_id
-
-cur_dir = pathlib.Path(__file__).parent.resolve()
+from now.utils import add_env_variables_to_flow, get_flow_id
 
 
 @time_profiler
@@ -45,7 +42,9 @@ def run(
     env_dict = app_instance.setup(
         dataset=dataset, user_input=user_input, kubectl_path=kubectl_path
     )
+
     handle_test_mode(env_dict)
+    add_env_variables_to_flow(app_instance, env_dict)
     (
         client,
         gateway_host,
@@ -56,9 +55,6 @@ def run(
         deployment_type=user_input.deployment_type,
         flow_yaml=app_instance.flow_yaml,
         env_dict=env_dict,
-        ns=user_input.flow_name + '-' + DEFAULT_FLOW_NAME
-        if user_input.flow_name != '' and user_input.flow_name != DEFAULT_FLOW_NAME
-        else DEFAULT_FLOW_NAME,
         kubectl_path=kubectl_path,
     )
 
@@ -176,7 +172,6 @@ def call_flow(
         show_progress=True,
         parameters=parameters,
         return_results=return_results,
-        max_attempts=5,
         continue_on_error=True,
     )
     if return_results and response:

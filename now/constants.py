@@ -6,9 +6,8 @@ from now.utils import BetterEnum
 # from docarray import __version__ as docarray_version
 
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
-
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.133-feat-new-data-format-128'
-NOW_PREPROCESSOR_VERSION = '0.0.101-refactor-simplify-preprocessing-5'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.132-bff-cors-2'
+NOW_PREPROCESSOR_VERSION = '0.0.102-refactor-simplify-preprocessing-6'
 NOW_QDRANT_INDEXER_VERSION = '0.0.7-feat-new-data-format-127'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.6-feat-new-data-format-127'
 NOW_AUTOCOMPLETE_VERSION = '0.0.4-feat-new-data-format-127'
@@ -74,7 +73,8 @@ CLIP_USES = {
     'remote': ('CLIPOnnxEncoder/latest-gpu', 'ViT-B-32::openai', ModelDimensions.CLIP),
 }
 
-EXTERNAL_CLIP_HOST = 'encoderclip-bh-5f4efaff13.wolf.jina.ai'
+EXTERNAL_CLIP_HOST = 'encoderclip-first-yak-8a7edb8adc.wolf.jina.ai'
+
 DEFAULT_FLOW_NAME = 'nowapi'
 PREFETCH_NR = 10
 
