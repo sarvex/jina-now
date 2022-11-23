@@ -14,8 +14,8 @@ from paddleocr import PaddleOCR
 
 from now.app.base.app import JinaNOWApp
 from now.common.options import construct_app
-from now.data_loading.transform_docarray import transform_docarray
 from now.constants import TAG_OCR_DETECTOR_TEXT_IN_DOC, Apps, DatasetTypes
+from now.data_loading.transform_docarray import transform_docarray
 from now.executor.abstract.auth import (
     SecurityLevel,
     get_auth_executor_class,
@@ -253,7 +253,7 @@ if __name__ == '__main__':
 
     from jina import Flow
 
-    app = Apps.TEXT_TO_VIDEO
+    app = Apps.IMAGE_TEXT_RETRIEVAL
 
     user_inpuT = UserInput()
     user_inpuT.app_instance = construct_app(app)

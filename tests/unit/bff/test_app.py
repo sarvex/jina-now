@@ -2,7 +2,12 @@ import pytest
 
 
 @pytest.mark.parametrize(
-    'inp_mod, output_mod', [('text', 'image'), ('image', 'text'), ('image', 'image')]
+    'inp_mod, output_mod',
+    [
+        ('music', 'music'),
+        ('image-or-text', 'image-or-text'),
+        ('text', 'video'),
+    ],
 )
 class TestParametrized:
     def test_check_liveness(self, client, inp_mod, output_mod):

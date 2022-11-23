@@ -1,22 +1,23 @@
 import os
-from typing import Dict
+from copy import deepcopy
+from typing import Dict, List, Union
 
 from docarray import DocumentArray
 
 from now.app.base.app import JinaNOWApp
-from now.common.preprocess import preprocess_images, preprocess_text, filter_data
+from now.common.preprocess import filter_data, preprocess_images, preprocess_text
 from now.common.utils import _get_clip_apps_with_dict, common_setup, get_indexer_config
-from now.constants import CLIP_USES, Apps, Modalities
+from now.constants import CLIP_USES, Apps, DatasetTypes, Modalities
 from now.now_dataclasses import UserInput
 
 
-class TextToImage(JinaNOWApp):
+class ImageTextRetrieval(JinaNOWApp):
     def __init__(self):
         super().__init__()
 
     @property
     def app_name(self) -> str:
-        return Apps.TEXT_TO_IMAGE
+        return Apps.IMAGE_TEXT_RETRIEVAL
 
     @property
     def is_enabled(self) -> bool:
@@ -24,15 +25,26 @@ class TextToImage(JinaNOWApp):
 
     @property
     def description(self) -> str:
-        return 'Text to image search app'
+        return 'Image-text search app'
 
     @property
-    def input_modality(self) -> Modalities:
-        return Modalities.TEXT
+    def input_modality(self) -> Union[Modalities, List[Modalities]]:
+        return [Modalities.IMAGE, Modalities.TEXT]
 
     @property
-    def output_modality(self) -> Modalities:
-        return Modalities.IMAGE
+    def output_modality(self) -> Union[Modalities, List[Modalities]]:
+        return [Modalities.IMAGE, Modalities.TEXT]
+
+    @property
+    def required_docker_memory_in_gb(self) -> int:
+        return 8
+
+    def get_index_query_access_paths(self, **kwargs) -> str:
+        """If `split_by_sentences` is set to True, the structure of the data
+        will have 2 level chunks. (That's the puspose of @cc)
+        Otherwise, we access documents on chunk level. (@c)
+        """
+        return '@c,cc'
 
     def set_flow_yaml(self, **kwargs):
         finetuning = kwargs.get('finetuning', False)
@@ -68,7 +80,7 @@ class TextToImage(JinaNOWApp):
             kubectl_path=kubectl_path,
             indexer_resources=indexer_config['indexer_resources'],
         )
-        super().setup(dataset, user_input, kubectl_path)
+        super().setup(dataset=dataset, user_input=user_input, kubectl_path=kubectl_path)
         return env_dict
 
     def preprocess(
@@ -84,10 +96,19 @@ class TextToImage(JinaNOWApp):
             )
         modalities = []
         if process_index:
-            da = preprocess_images(da=da)
-            modalities.append(Modalities.IMAGE)
+            if user_input.output_modality == Modalities.TEXT:
+                split_by_sentences = user_input.dataset_type != DatasetTypes.DEMO
+                da = preprocess_text(da=da, split_by_sentences=split_by_sentences)
+                modalities.append(Modalities.TEXT)
+            else:
+                da = preprocess_images(da=da)
+                modalities.append(Modalities.IMAGE)
         if process_query:
-            da = preprocess_text(da=da, split_by_sentences=False)
-            modalities.append(Modalities.TEXT)
+            da_img = filter_data(preprocess_images(deepcopy(da)), [Modalities.IMAGE])
+            da_txt = filter_data(
+                preprocess_text(deepcopy(da), split_by_sentences=False),
+                [Modalities.TEXT],
+            )
+            da = DocumentArray(da_img + da_txt)
 
-        return filter_data(da, modalities)
+        return da

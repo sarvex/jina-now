@@ -3,10 +3,7 @@ import os
 import pytest
 from docarray import Document, DocumentArray
 
-from now.app.image_to_image.app import ImageToImage
-from now.app.image_to_text.app import ImageToText
-from now.app.text_to_image.app import TextToImage
-from now.app.text_to_text.app import TextToText
+from now.app.image_text_retrieval.app import ImageTextRetrieval
 from now.app.text_to_video.app import TextToVideo
 from now.data_loading.transform_docarray import transform_docarray
 from now.now_dataclasses import UserInput
@@ -42,10 +39,8 @@ def test_text_to_video_preprocessing_indexing(resources_folder_path):
 @pytest.mark.parametrize(
     'app_cls,is_indexing',
     [
-        (TextToText, False),
-        (TextToText, True),
-        (TextToImage, False),
-        (ImageToText, True),
+        (ImageTextRetrieval, False),
+        (ImageTextRetrieval, True),
     ],
 )
 def test_text_preprocessing(app_cls, is_indexing):
@@ -55,14 +50,14 @@ def test_text_preprocessing(app_cls, is_indexing):
     da = transform_docarray(da, search_fields=[])
     da = app.preprocess(
         da=da,
-        user_input=UserInput(),
+        user_input=UserInput(output_modality='text'),
         process_index=is_indexing,
         process_query=not is_indexing,
     )
     assert len(da) == 1
     assert len(da[0].chunks) == 1
     assert da[0].chunks[0].modality == 'text'
-    if is_indexing and app_cls == TextToText:
+    if is_indexing:
         assert da[0].chunks[0].chunks[0].text == 'test'
     else:
         assert da[0].chunks[0].text == 'test'
@@ -71,10 +66,8 @@ def test_text_preprocessing(app_cls, is_indexing):
 @pytest.mark.parametrize(
     'app_cls,is_indexing',
     [
-        (ImageToImage, False),
-        (ImageToImage, True),
-        (ImageToText, False),
-        (TextToImage, True),
+        (ImageTextRetrieval, False),
+        (ImageTextRetrieval, True),
     ],
 )
 def test_image_preprocessing(app_cls, is_indexing, resources_folder_path):
@@ -85,7 +78,7 @@ def test_image_preprocessing(app_cls, is_indexing, resources_folder_path):
     da = transform_docarray(da, search_fields=[])
     da = app.preprocess(
         da=da,
-        user_input=UserInput(),
+        user_input=UserInput(output_modality='image'),
         process_index=is_indexing,
         process_query=not is_indexing,
     )
@@ -96,49 +89,49 @@ def test_image_preprocessing(app_cls, is_indexing, resources_folder_path):
     assert da[0].chunks[0].content
 
 
-# @pytest.mark.parametrize('is_indexing', [False, True])
-# def test_music_preprocessing(is_indexing, resources_folder_path):
-#     """Test if the music preprocessing works"""
-#     app = MusicToMusic()
-#     uri = os.path.join(resources_folder_path, 'music/0ac463f952880e622bc15962f4f75ea51a1861a1.mp3')
-#
-#     da = DocumentArray(
-#         [
-#             Document(
-#                 uri=uri
-#             )
-#         ]
-#     )
-#     da = transform_docarray(da, search_fields=[])
-#     da = app.preprocess(da=da, user_input=UserInput())
-#     assert len(da) == 1
-#     assert len(da[0].chunks) == 0
-#     assert da[0].blob != b''
+@pytest.mark.skip(
+    reason="Temporarily deactivated until music2music app is reactivated."
+)
+@pytest.mark.parametrize('is_indexing', [False, True])
+def test_music_preprocessing(is_indexing, resources_folder_path):
+    """Test if the music preprocessing works"""
+    app = MusicToMusic()
+    uri = os.path.join(
+        resources_folder_path, 'music/0ac463f952880e622bc15962f4f75ea51a1861a1.mp3'
+    )
+
+    da = DocumentArray([Document(uri=uri)])
+    da = transform_docarray(da, search_fields=[])
+    da = app.preprocess(da=da, user_input=UserInput())
+    assert len(da) == 1
+    assert len(da[0].chunks) == 0
+    assert da[0].blob != b''
 
 
-# @pytest.mark.parametrize('is_indexing', [False, True])
-# def test_nested_preprocessing(is_indexing, get_task_config_path):
-#     user_input = UserInput()
-#     user_input.dataset_type = DatasetTypes.DEMO
-#     user_input.dataset_name = DemoDatasetNames.ES_ONLINE_SHOP_50
-#     app = TextToTextAndImage()
-#
-#     if is_indexing:
-#         da = DocumentArray(load_data(app, user_input)[0])
-#         app._create_task_config(user_input=user_input, data_example=da[0])
-#     else:
-#         da = DocumentArray(Document(text='query text'))
-#
-#     processed_da = app.preprocess(
-#         da=da,
-#         user_input=user_input,
-#         process_index=is_indexing,
-#         process_query=not is_indexing,
-#     )
-#     assert len(processed_da) == 1
-#     if is_indexing:
-#         assert len(processed_da[0].chunks) == 2
-#         assert processed_da[0].chunks[0].text
-#         assert processed_da[0].chunks[1].uri
-#     else:
-#         assert processed_da[0].text == 'query text'
+@pytest.mark.skip(reason="Temporarily deactivated.")
+@pytest.mark.parametrize('is_indexing', [False, True])
+def test_nested_preprocessing(is_indexing, get_task_config_path):
+    user_input = UserInput()
+    user_input.dataset_type = DatasetTypes.DEMO
+    user_input.dataset_name = DemoDatasetNames.ES_ONLINE_SHOP_50
+    app = TextToTextAndImage()
+
+    if is_indexing:
+        da = DocumentArray(load_data(app, user_input)[0])
+        app._create_task_config(user_input=user_input, data_example=da[0])
+    else:
+        da = DocumentArray(Document(text='query text'))
+
+    processed_da = app.preprocess(
+        da=da,
+        user_input=user_input,
+        process_index=is_indexing,
+        process_query=not is_indexing,
+    )
+    assert len(processed_da) == 1
+    if is_indexing:
+        assert len(processed_da[0].chunks) == 2
+        assert processed_da[0].chunks[0].text
+        assert processed_da[0].chunks[1].uri
+    else:
+        assert processed_da[0].text == 'query text'

@@ -1,4 +1,5 @@
 import base64
+from itertools import zip_longest
 from typing import List
 
 from docarray import Document, DocumentArray
@@ -6,8 +7,8 @@ from fastapi import APIRouter
 
 from deployment.bff.app.v1.models.text import NowTextSearchRequestModel
 from deployment.bff.app.v1.models.text_and_image import (
-    NowTextAndImageIndexRequestModel,
-    NowTextAndImageResponseModel,
+    NowTextImageIndexRequestModel,
+    NowTextImageResponseModel,
 )
 from deployment.bff.app.v1.routers.helper import jina_client_post, process_query
 
@@ -19,13 +20,15 @@ router = APIRouter()
     "/index",
     summary='Add more text and image data to the indexer',
 )
-def index(data: NowTextAndImageIndexRequestModel):
+def index(data: NowTextImageIndexRequestModel):
     """
     Append the list of image data to the indexer. Each image data should be
     `base64` encoded using human-readable characters - `utf-8`.
     """
     index_docs = DocumentArray()
-    for text, image, uri, tags in zip(data.texts, data.images, data.uris, data.tags):
+    for text, image, uri, tags in zip_longest(
+        data.texts, data.images, data.uris, data.tags
+    ):
         if bool(image) + bool(uri) != 1:
             raise ValueError(
                 f'Can only set one value but have image={image}, uri={uri}'
@@ -50,7 +53,7 @@ def index(data: NowTextAndImageIndexRequestModel):
 # Search
 @router.post(
     "/search",
-    response_model=List[NowTextAndImageResponseModel],
+    response_model=List[NowTextImageResponseModel],
     summary='Search text and image data via text as query',
 )
 def search(data: NowTextSearchRequestModel):

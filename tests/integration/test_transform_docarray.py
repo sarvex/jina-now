@@ -5,8 +5,7 @@ from docarray import Document, DocumentArray, dataclass
 from docarray.typing import Image, Text
 from jina import Flow
 
-from now.app.text_to_image.app import TextToImage
-from now.app.text_to_text.app import TextToText
+from now.app.image_text_retrieval.app import ImageTextRetrieval
 from now.app.text_to_video.app import TextToVideo
 from now.constants import DatasetTypes
 from now.data_loading.data_loading import load_data
@@ -55,12 +54,13 @@ def test_transform_inside_flow(input_type, single_modal_data, multi_modal_data):
         user_input.search_fields = []
         user_input.dataset_type = DatasetTypes.DEMO
         user_input.dataset_name = DemoDatasetNames.TUMBLR_GIFS_10K
+        user_input.output_modality = 'video'
         data = load_data(app_instance, user_input)[:10]  # includes 2 videos
     elif input_type == 'single_modal':
-        app_instance = TextToText()
+        app_instance = ImageTextRetrieval()
         data = single_modal_data
     else:
-        app_instance = TextToImage()
+        app_instance = ImageTextRetrieval()
         data = multi_modal_data
         user_input.search_fields = ['main_text', 'image']
 

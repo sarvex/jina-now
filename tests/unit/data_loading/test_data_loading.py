@@ -4,17 +4,14 @@ from typing import Tuple
 
 import pytest
 from docarray import Document, DocumentArray
-from jina import Flow
 from pytest_mock import MockerFixture
 
+from now.app.image_text_retrieval.app import ImageTextRetrieval
 from now.app.music_to_music.app import MusicToMusic
-from now.app.text_to_image.app import TextToImage
-from now.app.text_to_text.app import TextToText
 from now.app.text_to_text_and_image.app import TextToTextAndImage
 from now.constants import DatasetTypes
 from now.data_loading.data_loading import _load_tags_from_json_if_needed, load_data
 from now.demo_data import DemoDatasetNames
-from now.executor.preprocessor import NOWPreprocessor
 from now.now_dataclasses import UserInput
 
 
@@ -61,7 +58,7 @@ def test_da_pull(da: DocumentArray):
     user_input.dataset_type = DatasetTypes.DOCARRAY
     user_input.dataset_name = 'secret-token'
 
-    loaded_da = load_data(TextToImage(), user_input)
+    loaded_da = load_data(ImageTextRetrieval(), user_input)
 
     assert is_da_text_equal(da, loaded_da)
 
@@ -72,7 +69,7 @@ def test_da_local_path(local_da: DocumentArray):
     user_input.dataset_type = DatasetTypes.PATH
     user_input.dataset_path = path
 
-    loaded_da = load_data(TextToText(), user_input)
+    loaded_da = load_data(ImageTextRetrieval(), user_input)
 
     assert is_da_text_equal(da, loaded_da)
 
@@ -82,7 +79,7 @@ def test_da_local_path_image_folder(image_resource_path: str):
     user_input.dataset_type = DatasetTypes.PATH
     user_input.dataset_path = image_resource_path
 
-    app = TextToImage()
+    app = ImageTextRetrieval()
     loaded_da = load_data(app, user_input)
 
     assert len(loaded_da) == 2, (
@@ -97,6 +94,7 @@ def test_da_local_path_music_folder(music_resource_path: str):
     user_input = UserInput()
     user_input.dataset_type = DatasetTypes.PATH
     user_input.dataset_path = music_resource_path
+    user_input.output_modality = 'music'
 
     app = MusicToMusic()
     loaded_da = load_data(app, user_input)
@@ -113,8 +111,9 @@ def test_da_custom_ds(da: DocumentArray):
     user_input = UserInput()
     user_input.dataset_type = DatasetTypes.DEMO
     user_input.dataset_name = DemoDatasetNames.DEEP_FASHION
+    user_input.output_modality = 'image'
 
-    app = TextToImage()
+    app = ImageTextRetrieval()
     loaded_da = load_data(app, user_input)
 
     for doc in loaded_da:
@@ -125,6 +124,7 @@ def test_es_online_shop_ds(da: DocumentArray):
     user_input = UserInput()
     user_input.dataset_type = DatasetTypes.DEMO
     user_input.dataset_name = DemoDatasetNames.ES_ONLINE_SHOP_50
+    user_input.output_modality = 'text-and-image'
 
     app = TextToTextAndImage()
     loaded_da = load_data(app, user_input)
@@ -140,7 +140,7 @@ def test_es_online_shop_ds(da: DocumentArray):
 def user_input():
     user_input = UserInput()
     user_input.dataset_path = ''
-    user_input.app_instance = TextToImage()
+    user_input.app_instance = ImageTextRetrieval()
     return user_input
 
 
