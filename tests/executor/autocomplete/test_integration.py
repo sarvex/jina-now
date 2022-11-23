@@ -22,13 +22,13 @@ def test_autocomplete():
             ),
         )
         response = f.post(on='/suggestion', inputs=DocumentArray([Document(text='b')]))
-        assert response[0].tags['suggestions'] == [['background'], ['bang']]
+        assert response[0].tags['suggestions'] == ['background', 'bang']
         response = f.post(on='/suggestion', inputs=DocumentArray([Document(text='l')]))
-        assert response[0].tags['suggestions'] == [['loading'], ['long'], ['laugh']]
+        assert response[0].tags['suggestions'] == ['loading', 'long', 'laugh']
         response = f.post(
             on='/suggestion', inputs=DocumentArray([Document(text='bac')])
         )
-        assert response[0].tags['suggestions'] == [['background']]
+        assert response[0].tags['suggestions'] == ['background']
         response = f.post(
             on='/suggestion', inputs=DocumentArray([Document(text='fuc')])
         )
@@ -36,6 +36,6 @@ def test_autocomplete():
         response = f.post(
             on='/suggestion', inputs=DocumentArray([Document(text='red')])
         )
-        assert response[0].tags['suggestions'] == [['red'], ['red long dress']]
+        assert response[0].tags['suggestions'] == ['red', 'red long dress']
         response = f.post(on='/suggestion', inputs=DocumentArray([Document(text='d')]))
-        assert response[0].tags['suggestions'] == [['dress']]
+        assert response[0].tags['suggestions'] == ['dress']
