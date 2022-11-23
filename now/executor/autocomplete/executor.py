@@ -1,3 +1,4 @@
+import itertools
 import json
 import os
 from typing import Optional
@@ -75,3 +76,7 @@ class NOWAutoCompleteExecutor(Executor):
                     doc.text, max_cost=3, size=5
                 )
         return docs
+
+    def flatten_list(regular_list):
+        flat_list = list(itertools.chain(*regular_list))
+        return flat_list
