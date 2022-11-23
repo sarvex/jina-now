@@ -220,6 +220,11 @@ class JinaNOWApp:
                             'uses': '${{ ENV.AUTOCOMPLETE_EXECUTOR_NAME }}',
                             'needs': 'gateway',
                             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
+                            'uses_with': {
+                                'api_keys': '${{ ENV.API_KEY }}',
+                                'user_emails': '${{ ENV.USER_EMAILS }}',
+                                'admin_emails': '${{ ENV.ADMIN_EMAILS }}',
+                            },
                         },
                     )
             self.flow_yaml = flow_yaml_content

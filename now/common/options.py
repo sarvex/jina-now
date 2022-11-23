@@ -300,12 +300,13 @@ API_KEY = DialogOptions(
     prompt_type='list',
     choices=[
         {'name': '✅ yes', 'value': uuid.uuid4().hex},
-        {'name': '⛔ no', 'value': None},
+        {'name': '⛔ no', 'value': False},
     ],
     depends_on=SECURED,
     is_terminal_command=True,
     description='Pass an api_key to access the flow once the deployment is complete. ',
     conditional_check=lambda user_inp: str(user_inp.secured).lower() == 'true',
+    post_func=lambda user_input, **kwargs: _set_value_to_none(user_input),
 )
 
 ADDITIONAL_USERS = DialogOptions(
@@ -330,6 +331,11 @@ USER_EMAILS = DialogOptions(
     conditional_check=lambda user_inp: user_inp.additional_user,
     post_func=lambda user_input, **kwargs: _add_additional_users(user_input, **kwargs),
 )
+
+
+def _set_value_to_none(user_input):
+    if not user_input.api_key:
+        user_input.api_key = None
 
 
 def _add_additional_users(user_input: UserInput, **kwargs):

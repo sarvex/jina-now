@@ -5,6 +5,7 @@ from typing import List
 from docarray import Document, DocumentArray
 from fastapi import APIRouter
 
+from deployment.bff.app.v1.models.text import NowTextSearchRequestModel
 from deployment.bff.app.v1.models.text_and_image import (
     NowTextImageIndexRequestModel,
     NowTextImageResponseModel,
@@ -82,3 +83,24 @@ def search(data: NowTextImageSearchRequestModel):
     )
 
     return docs[0].matches.to_dict()
+
+
+@router.post(
+    "/suggestion",
+    summary='Get auto complete suggestion for query',
+)
+def suggestion(data: NowTextSearchRequestModel):
+    """
+    Return text suggestions for the rest of the query text
+    """
+    query_doc, filter_query = process_query(
+        text=data.text, uri=data.uri, conditions=data.filters
+    )
+
+    docs = jina_client_post(
+        data=data,
+        inputs=query_doc,
+        endpoint='/suggestion',
+        parameters={'limit': data.limit, 'filter': filter_query, 'apply_bm25': True},
+    )
+    return docs.to_dict()
