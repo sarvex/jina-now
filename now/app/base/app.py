@@ -1,6 +1,6 @@
 import abc
 import os
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import docker
 from docarray import DocumentArray
@@ -8,7 +8,7 @@ from jina import Client
 from jina.jaml import JAML
 from jina.serve.runtimes.gateway.http.models import JinaRequestModel, JinaResponseModel
 
-from now.constants import DEFAULT_FLOW_NAME, Modalities
+from now.constants import DEFAULT_FLOW_NAME, SUPPORTED_FILE_TYPES, Modalities
 from now.demo_data import AVAILABLE_DATASET, DEFAULT_EXAMPLE_HOSTED, DemoDataset
 from now.now_dataclasses import DialogOptions, UserInput
 
@@ -48,7 +48,7 @@ class JinaNOWApp:
 
     @property
     @abc.abstractmethod
-    def input_modality(self) -> Union[Modalities, List[Modalities]]:
+    def input_modality(self) -> List[Modalities]:
         """
         Modality used for running search queries
         """
@@ -56,7 +56,7 @@ class JinaNOWApp:
 
     @property
     @abc.abstractmethod
-    def output_modality(self) -> Union[Modalities, List[Modalities]]:
+    def output_modality(self) -> List[Modalities]:
         """
         Modality used for indexing data
         """
@@ -105,18 +105,15 @@ class JinaNOWApp:
     @property
     def supported_file_types(self) -> List[str]:
         """Used to filter files in local structure or an S3 bucket."""
-        raise NotImplementedError()
+        sup_file = [SUPPORTED_FILE_TYPES[modality] for modality in self.output_modality]
+        return [item for sublist in sup_file for item in sublist]
 
     @property
-    def demo_datasets(self) -> Union[List, Dict[str, DemoDataset]]:
+    def demo_datasets(self) -> Dict[str, List[DemoDataset]]:
         """Get a list of example datasets for the app."""
-        if isinstance(self.output_modality, List):
-            available_datasets = {
-                modality: AVAILABLE_DATASET.get(modality, [])
-                for modality in self.output_modality
-            }
-        else:
-            available_datasets = AVAILABLE_DATASET.get(self.output_modality, [])
+        available_datasets = {}
+        for output_modality in self.output_modality:
+            available_datasets[output_modality] = AVAILABLE_DATASET[output_modality]
         return available_datasets
 
     @property
@@ -227,18 +224,6 @@ class JinaNOWApp:
                     )
             self.flow_yaml = flow_yaml_content
         return {}
-
-    def cleanup(self, app_config: dict) -> None:
-        """
-        Runs after the flow is terminated.
-        Cleans up the resources created during setup.
-        Common examples are:
-            - delete a database
-            - remove artifact
-            - notify other services
-        :param app_config: contains all information needed to clean up the allocated resources
-        """
-        pass
 
     def preprocess(
         self,

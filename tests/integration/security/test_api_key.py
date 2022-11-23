@@ -19,7 +19,7 @@ from now.now_dataclasses import UserInput
 
 API_KEY = 'my_key'
 base_url = 'http://localhost:8080/api/v1'
-search_url = f'{base_url}/text-to-text/search'
+search_url = f'{base_url}/image-or-text-to-image-or-text/search'
 update_api_keys_url = f'{base_url}/admin/updateApiKeys'
 update_emails_url = f'{base_url}/admin/updateUserEmails'
 host = 'grpc://0.0.0.0'
@@ -42,7 +42,7 @@ def get_flow():
         Flow(port_expose=9089)
         .add(
             uses=f'jinahub+docker://NOWPreprocessor/{NOW_PREPROCESSOR_VERSION}',
-            uses_with={'app': 'text_to_text', 'admin_emails': [admin_email]},
+            uses_with={'app': 'image_text_retrieval', 'admin_emails': [admin_email]},
         )
         .add(
             host=EXTERNAL_CLIP_HOST,

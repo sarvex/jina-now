@@ -96,7 +96,7 @@ def test_token_exists():
         (
             Apps.IMAGE_TEXT_RETRIEVAL,
             Modalities.IMAGE,
-            Modalities.TEXT,
+            Modalities.IMAGE,
             DemoDatasetNames.BIRD_SPECIES,
             'local',
         ),
@@ -109,13 +109,6 @@ def test_token_exists():
         ),
         (
             Apps.IMAGE_TEXT_RETRIEVAL,
-            Modalities.IMAGE,
-            Modalities.IMAGE,
-            DemoDatasetNames.TLL,
-            'local',
-        ),
-        (
-            Apps.TEXT_TO_TEXT,
             Modalities.TEXT,
             Modalities.TEXT,
             DemoDatasetNames.POP_LYRICS,
@@ -161,10 +154,9 @@ def test_backend_demo_data(
     os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
     kwargs = {
         'now': 'start',
-        'app': app,
         'flow_name': 'nowapi',
         'dataset_type': DatasetTypes.DEMO,
-        'output_modality': 'image',
+        'output_modality': output_modality,
         'dataset_name': dataset,
         'cluster': cluster,
         'secured': deployment_type == 'remote',
@@ -246,8 +238,11 @@ def assert_suggest(suggest_url, request_body):
         response.status_code == 200
     ), f"Received code {response.status_code} with text: {response.json()['message']}"
     docs = DocumentArray.from_json(response.content)
-    assert 'suggestions' in docs[0].tags
-    assert docs[0].tags['suggestions'] == [[old_request_text]]
+    assert 'suggestions' in docs[0].tags, f'No suggestions found in {docs[0].tags}'
+    assert docs[0].tags['suggestions'] == [[old_request_text]], (
+        f'Expected suggestions to be {old_request_text} but got '
+        f'{docs[0].tags["suggestions"]}'
+    )
 
 
 def assert_deployment_queries(
@@ -332,7 +327,6 @@ def get_search_request_body(
         request_body['song'] = test_search_music
     elif app in [
         Apps.IMAGE_TEXT_RETRIEVAL,
-        Apps.TEXT_TO_TEXT,
         Apps.TEXT_TO_VIDEO,
         Apps.TEXT_TO_TEXT_AND_IMAGE,
     ]:

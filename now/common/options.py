@@ -31,41 +31,15 @@ AVAILABLE_SOON = 'will be available in upcoming versions'
 # Make sure you add this dialog option to your app in order of dependency, i.e., if some dialog option depends on other
 # than the parent should be called first before the dependant can called.
 
-APP = DialogOptions(
-    name='app',
-    choices=[
-        {
-            'name': '📝+🏞 ▶ 📝+🏞 image-text retrieval',
-            'value': Apps.IMAGE_TEXT_RETRIEVAL,
-        },
-        {'name': '📝 ▶ 📝 text to text search', 'value': Apps.TEXT_TO_TEXT},
-        {
-            'name': '📝 ▶ 🎦 text to video search (gif only at the moment)',
-            'value': Apps.TEXT_TO_VIDEO,
-        },
-        {
-            'name': '🥁 ▶ 🥁 music to music search',
-            'value': Apps.MUSIC_TO_MUSIC,
-            'disabled': AVAILABLE_SOON,
-        },
-        {
-            'name': '📝 ▶ 📝+🏞 text to text+image search',
-            'value': Apps.TEXT_TO_TEXT_AND_IMAGE,
-            'disabled': AVAILABLE_SOON,
-        },
-    ],
-    prompt_message='What sort of search engine would you like to build?',
-    prompt_type='list',
-    is_terminal_command=True,
-    description='What sort of search engine would you like to build?',
-)
 
-APP_NAME = DialogOptions(
-    name='flow_name',
-    prompt_message='Choose a name for your application:',
-    prompt_type='input',
-    is_terminal_command=True,
-)
+def _create_app_from_output_modality(user_input: UserInput, **kwargs):
+    if user_input.output_modality in ['image', 'text']:
+        app_name = Apps.IMAGE_TEXT_RETRIEVAL
+    elif user_input.output_modality == 'video':
+        app_name = Apps.TEXT_TO_VIDEO
+    else:
+        raise ValueError(f'Invalid output modality: {user_input.output_modality}')
+    user_input.app_instance = construct_app(app_name)
 
 
 OUTPUT_MODALITY = DialogOptions(
@@ -73,14 +47,21 @@ OUTPUT_MODALITY = DialogOptions(
     choices=[
         {'name': '📝 text', 'value': 'text'},
         {'name': '🏞 image', 'value': 'image'},
+        {'name': '🎦 video', 'value': 'video'},
     ],
     prompt_type='list',
-    prompt_message='What is the output modality of your image-text retrieval system?',
-    description='What is the output modality of your image-text retrieval system?',
+    prompt_message='What modality do you want to index?',
+    description='What is the index modality of your search system?',
     is_terminal_command=True,
-    depends_on=APP,
-    conditional_check=lambda user_input: user_input.app_instance.app_name
-    == Apps.IMAGE_TEXT_RETRIEVAL,
+    post_func=_create_app_from_output_modality,
+)
+
+
+APP_NAME = DialogOptions(
+    name='flow_name',
+    prompt_message='Choose a name for your application:',
+    prompt_type='input',
+    is_terminal_command=True,
 )
 
 
@@ -112,11 +93,9 @@ DATASET_TYPE = DialogOptions(
         },
     ],
     prompt_type='list',
-    is_terminal_command=True
-    # post_func=lambda user_input, **kwargs: _parse_custom_data_from_cli(
-    #     user_input, **kwargs
-    # ),
+    is_terminal_command=True,
 )
+
 
 DEMO_DATA = DialogOptions(
     name='dataset_name',

@@ -10,7 +10,7 @@ from pytest_mock import MockerFixture
 
 from now.constants import DEFAULT_FLOW_NAME, Apps, DatasetTypes
 from now.demo_data import DemoDatasetNames
-from now.dialog import configure_app, configure_user_input
+from now.dialog import configure_user_input
 from now.now_dataclasses import UserInput
 
 
@@ -25,7 +25,8 @@ class CmdPromptMock:
 MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
-            'app': Apps.MUSIC_TO_MUSIC,
+            'app': Apps.IMAGE_TEXT_RETRIEVAL,
+            'output_modality': 'image',
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': 'music-genres-mid',
@@ -36,7 +37,8 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'app': Apps.MUSIC_TO_MUSIC,
+            'app': Apps.IMAGE_TEXT_RETRIEVAL,
+            'output_modality': 'image',
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': 'music-genres-mix',
@@ -84,7 +86,8 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'app': Apps.MUSIC_TO_MUSIC,
+            'app': Apps.IMAGE_TEXT_RETRIEVAL,
+            'output_modality': 'image',
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DOCARRAY,
             'dataset_name': 'xxx',
@@ -96,7 +99,8 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'app': Apps.MUSIC_TO_MUSIC,
+            'app': Apps.IMAGE_TEXT_RETRIEVAL,
+            'output_modality': 'image',
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.PATH,
             'dataset_path': 'xxx',
@@ -108,7 +112,8 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'app': Apps.MUSIC_TO_MUSIC,
+            'app': Apps.IMAGE_TEXT_RETRIEVAL,
+            'output_modality': 'image',
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.URL,
             'dataset_url': 'xxx',
@@ -133,16 +138,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'dataset_type': DatasetTypes.DEMO,
-            'flow_name': DEFAULT_FLOW_NAME,
-            'dataset_name': 'music-genres-mid',
-            'cluster': 'new',
-            'deployment_type': 'local',
-        },
-        {'app': Apps.MUSIC_TO_MUSIC},
-    ),
-    (
-        {
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': DemoDatasetNames.TLL,
@@ -163,10 +158,10 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'app': Apps.IMAGE_TEXT_RETRIEVAL,
             'output_modality': 'text',
         },
         {
+            'app': Apps.IMAGE_TEXT_RETRIEVAL,
             'flow_name': 'testapp',
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': DemoDatasetNames.BEST_ARTWORKS,
@@ -192,8 +187,7 @@ def test_configure_user_input(
     expected_user_input.__dict__.pop('app')
     mocker.patch('now.utils.prompt', CmdPromptMock(mocked_user_answers))
 
-    app_instance = configure_app(**configure_kwargs)
-    user_input = configure_user_input(app_instance=app_instance, **configure_kwargs)
+    user_input = configure_user_input(**configure_kwargs)
 
     if user_input.deployment_type == 'remote':
         user_input.__dict__.update({'jwt': None, 'admin_emails': None})

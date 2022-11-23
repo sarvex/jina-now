@@ -1,6 +1,6 @@
 from docarray import Document, DocumentArray
 
-from now.app.text_to_text.app import TextToText
+from now.app.image_text_retrieval.app import ImageTextRetrieval
 from now.common.options import construct_app
 from now.constants import Apps, DatasetTypes
 from now.now_dataclasses import UserInput
@@ -19,12 +19,15 @@ def test_app_attributes():
 
 def test_split_text_preprocessing():
     """Test if splitting of sentences is carried out when preprocessing text documents at indexing time"""
-    app = TextToText()
+    app = ImageTextRetrieval()
     da = DocumentArray(
         [Document(chunks=[Document(text='test. test', modality='text')])]
     )
     new_da = app.preprocess(
-        da=da, user_input=UserInput(), process_index=True, process_query=False
+        da=da,
+        user_input=UserInput(output_modality='text'),
+        process_index=True,
+        process_query=False,
     )
     assert len(new_da) == 1
     assert len(new_da[0].chunks[0].chunks) == 2
@@ -32,7 +35,7 @@ def test_split_text_preprocessing():
 
 def test_split_text_preprocessing_not_index_demo():
     """Test if splitting of sentences is carried out when preprocessing text documents at indexing time"""
-    app = TextToText()
+    app = ImageTextRetrieval()
     da = DocumentArray(
         [Document(chunks=[Document(text='test. test', modality='text')])]
     )
@@ -47,7 +50,7 @@ def test_split_text_preprocessing_not_index_demo():
 
 def test_split_text_preprocessing_demo():
     """Test if splitting of sentences is carried out when preprocessing text documents at indexing time"""
-    app = TextToText()
+    app = ImageTextRetrieval()
     da = DocumentArray(
         [Document(chunks=[Document(text='test. test', modality='text')])]
     )

@@ -94,6 +94,7 @@ def test_da_local_path_music_folder(music_resource_path: str):
     user_input = UserInput()
     user_input.dataset_type = DatasetTypes.PATH
     user_input.dataset_path = music_resource_path
+    user_input.output_modality = 'music'
 
     app = MusicToMusic()
     loaded_da = load_data(app, user_input)
@@ -123,6 +124,7 @@ def test_es_online_shop_ds(da: DocumentArray):
     user_input = UserInput()
     user_input.dataset_type = DatasetTypes.DEMO
     user_input.dataset_name = DemoDatasetNames.ES_ONLINE_SHOP_50
+    user_input.output_modality = 'text-and-image'
 
     app = TextToTextAndImage()
     loaded_da = load_data(app, user_input)

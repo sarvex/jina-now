@@ -7,13 +7,7 @@ from docarray import DocumentArray
 from now.app.base.app import JinaNOWApp
 from now.common.preprocess import filter_data, preprocess_images, preprocess_text
 from now.common.utils import _get_clip_apps_with_dict, common_setup, get_indexer_config
-from now.constants import (
-    CLIP_USES,
-    SUPPORTED_FILE_TYPES,
-    Apps,
-    DatasetTypes,
-    Modalities,
-)
+from now.constants import CLIP_USES, Apps, DatasetTypes, Modalities
 from now.now_dataclasses import UserInput
 
 
@@ -51,11 +45,6 @@ class ImageTextRetrieval(JinaNOWApp):
         Otherwise, we access documents on chunk level. (@c)
         """
         return '@c,cc'
-
-    @property
-    def supported_file_types(self) -> List[str]:
-        sup_file = [SUPPORTED_FILE_TYPES[modality] for modality in self.output_modality]
-        return [item for sublist in sup_file for item in sublist]
 
     def set_flow_yaml(self, **kwargs):
         finetuning = kwargs.get('finetuning', False)
@@ -108,15 +97,7 @@ class ImageTextRetrieval(JinaNOWApp):
         modalities = []
         if process_index:
             if user_input.output_modality == Modalities.TEXT:
-                split_by_sentences = False
-                if (
-                    user_input
-                    and user_input.dataset_type == DatasetTypes.PATH
-                    and user_input.dataset_path
-                    and os.path.isdir(user_input.dataset_path)
-                ):
-                    # for text loaded from folder can't assume it is split by sentences
-                    split_by_sentences = True
+                split_by_sentences = user_input.dataset_type != DatasetTypes.DEMO
                 da = preprocess_text(da=da, split_by_sentences=split_by_sentences)
                 modalities.append(Modalities.TEXT)
             else:
@@ -124,7 +105,10 @@ class ImageTextRetrieval(JinaNOWApp):
                 modalities.append(Modalities.IMAGE)
         if process_query:
             da_img = filter_data(preprocess_images(deepcopy(da)), [Modalities.IMAGE])
-            da_txt = filter_data(preprocess_text(deepcopy(da)), [Modalities.TEXT])
+            da_txt = filter_data(
+                preprocess_text(deepcopy(da), split_by_sentences=False),
+                [Modalities.TEXT],
+            )
             da = DocumentArray(da_img + da_txt)
 
         return da

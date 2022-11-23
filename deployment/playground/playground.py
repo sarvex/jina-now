@@ -161,20 +161,20 @@ def deploy_streamlit():
                 values.insert(0, 'All')
                 filter_selection[tag] = st.sidebar.selectbox(tag, values)
 
-        if params.input_modality == 'image-or-text':
-            media_type = st.radio(
-                '',
-                ["Text", "Image", 'Webcam'],
-                on_change=clear_match,
-            )
-        elif params.input_modality == 'text':
-            media_type = st.radio(
-                '',
-                ["Text"],
-                on_change=clear_match,
-            )
-        elif params.input_modality == 'music':
-            media_type = 'Music'
+        st_ratio_options = []
+        for input_modality in params.input_modality.split('-or-'):
+            if input_modality == 'image':
+                st_ratio_options.extend(["Image", "Webcam"])
+            elif input_modality == 'music':
+                st_ratio_options.extend(["Music"])
+            elif input_modality == 'text':
+                st_ratio_options.extend(["Text"])
+        st_ratio_options = list(set(st_ratio_options))
+        media_type = st.radio(
+            '',
+            st_ratio_options,
+            on_change=clear_match,
+        )
 
         if media_type == "Image":
             render_image(da_img, deepcopy(filter_selection))
