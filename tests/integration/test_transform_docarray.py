@@ -99,8 +99,6 @@ def test_transform_inside_flow(input_type, single_modal_data, multi_modal_data):
             data,
             parameters={
                 'user_input': user_input.__dict__,
-                'access_paths': app_instance.get_index_query_access_paths(),
-                'traversal_paths': app_instance.get_index_query_access_paths(),
             },
         )
 
@@ -109,8 +107,6 @@ def test_transform_inside_flow(input_type, single_modal_data, multi_modal_data):
             query,
             parameters={
                 'user_input': user_input.__dict__,
-                'access_paths': app_instance.get_index_query_access_paths(),
-                'traversal_paths': app_instance.get_index_query_access_paths(),
             },
             return_results=True,
         )

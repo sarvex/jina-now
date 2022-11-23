@@ -14,7 +14,7 @@ from paddleocr import PaddleOCR
 
 from now.app.base.app import JinaNOWApp
 from now.common.options import construct_app
-from now.constants import TAG_OCR_DETECTOR_TEXT_IN_DOC, Apps, DatasetTypes
+from now.constants import ACCESS_PATH, TAG_OCR_DETECTOR_TEXT_IN_DOC, Apps, DatasetTypes
 from now.data_loading.transform_docarray import transform_docarray
 from now.executor.abstract.auth import (
     SecurityLevel,
@@ -69,7 +69,7 @@ class NOWPreprocessor(Executor):
 
     def _ocr_detect_text(self, docs: DocumentArray):
         """Iterates over all documents, detects text in images and saves it into the tags of the document."""
-        flat_docs = docs[self.app.get_index_query_access_paths()]
+        flat_docs = docs[ACCESS_PATH]
         # select documents whose mime_type starts with 'image'
         flat_docs = [
             doc
@@ -91,11 +91,7 @@ class NOWPreprocessor(Executor):
                     id_to_text[doc.parent_id] += text_in_doc + ' '
                     id_to_text[doc.id] = text_in_doc
         for doc in flat_docs:
-            text_in_doc = id_to_text[
-                doc.parent_id
-                if 'cc' in self.app.get_index_query_access_paths()
-                else doc.id
-            ]
+            text_in_doc = id_to_text[doc.parent_id]
             doc.tags[TAG_OCR_DETECTOR_TEXT_IN_DOC] = text_in_doc.strip()
 
     @staticmethod
