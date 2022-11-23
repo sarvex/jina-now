@@ -1,3 +1,4 @@
+import itertools
 import json
 import os
 from typing import Optional
@@ -71,7 +72,11 @@ class NOWAutoCompleteExecutor(Executor):
         flat_docs = None if not docs else docs[self.search_traversal_paths]
         if flat_docs:
             for doc in flat_docs:
-                doc.tags['suggestions'] = self.auto_complete.search(
-                    doc.text, max_cost=3, size=5
+                doc.tags['suggestions'] = self.flatten_list(
+                    self.auto_complete.search(doc.text, max_cost=3, size=5)
                 )
         return docs
+
+    def flatten_list(self, regular_list):
+        flat_list = list(itertools.chain(*regular_list))
+        return flat_list

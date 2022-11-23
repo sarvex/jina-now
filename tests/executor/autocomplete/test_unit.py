@@ -115,9 +115,9 @@ def test_get_suggestion(tmpdir):
     executor.get_suggestion(da_sugg_2)
     da_sugg_3 = DocumentArray([Document(text='bac')])
     executor.get_suggestion(da_sugg_3)
-    assert da_sugg_1[0].tags['suggestions'] == [['background'], ['bang']]
-    assert da_sugg_2[0].tags['suggestions'] == [['loading'], ['laugh']]
-    assert da_sugg_3[0].tags['suggestions'] == [['background']]
+    assert da_sugg_1[0].tags['suggestions'] == ['background', 'bang']
+    assert da_sugg_2[0].tags['suggestions'] == ['loading', 'laugh']
+    assert da_sugg_3[0].tags['suggestions'] == ['background']
 
 
 def test_get_suggestion_bitrigrams(tmpdir):
@@ -144,11 +144,11 @@ def test_get_suggestion_bitrigrams(tmpdir):
     executor.get_suggestion(da_sugg_3)
     da_sugg_4 = DocumentArray([Document(text='l')])
     executor.get_suggestion(da_sugg_4)
-    assert da_sugg_1[0].tags['suggestions'] == [['aziz'], ['aziz test']]
+    assert da_sugg_1[0].tags['suggestions'] == ['aziz', 'aziz test']
     assert da_sugg_2[0].tags['suggestions'] == [
-        ['red'],
-        ['red dress'],
-        ['red long dress'],
+        'red',
+        'red dress',
+        'red long dress',
     ]
-    assert da_sugg_3[0].tags['suggestions'] == [['dress']]
-    assert da_sugg_4[0].tags['suggestions'] == [['long']]
+    assert da_sugg_3[0].tags['suggestions'] == ['dress']
+    assert da_sugg_4[0].tags['suggestions'] == ['long']
