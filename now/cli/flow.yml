@@ -1,0 +1,68 @@
+jtype: Flow
+with:
+  name: nowapi
+  monitoring: true
+  port_expose: 8080
+  prefetch: 10
+  cors: true
+  env:
+    JINA_LOG_LEVEL: DEBUG
+jcloud:
+  version: 3.9.3
+  custom_dns:
+    - null
+  labels:
+    team: now
+  name: nowapi
+executors:
+  - name: autocomplete_executor
+    uses: jinahub+docker://NOWAutoCompleteExecutor/0.0.4-feat-new-data-format-127
+    needs: gateway
+    env:
+      JINA_LOG_LEVEL: DEBUG
+  - name: preprocessor
+    uses: jinahub+docker://NOWPreprocessor/0.0.96-fix-split-by-sent-24
+    uses_with:
+      app: text_to_image
+      admin_emails: []
+      user_emails: []
+      api_keys: []
+    jcloud:
+      resources:
+        memory: 1G
+    env:
+      JINA_LOG_LEVEL: DEBUG
+  - name: encoder_clip
+    uses: jinahub+docker://CLIPOnnxEncoder/latest-gpu
+    host: encoderclip-first-yak-8a7edb8adc.wolf.jina.ai
+    port: 443
+    tls: true
+    external: true
+    uses_with:
+      name: ViT-B-32::openai
+    env:
+      JINA_LOG_LEVEL: DEBUG
+  - name: indexer
+    uses: jinahub+docker://NOWQdrantIndexer15/0.0.7-feat-new-data-format-127
+    disable_reduce: true
+    uses_with:
+      dim: 512
+      columns:
+        - content_type
+        - str
+        - split
+        - str
+        - finetuner_label
+        - str
+        - _indexer_doc_has_text
+        - bool
+      admin_emails: []
+      user_emails: []
+      api_keys: []
+    jcloud:
+      resources:
+        memory: 2G
+        cpu: 0.1
+        capacity: on-demand
+    env:
+      JINA_LOG_LEVEL: DEBUG

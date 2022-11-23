@@ -208,7 +208,7 @@ class JinaNOWApp:
                 if executor['name'] == 'preprocessor' or executor['name'] == 'indexer':
                     executor['uses_with']['api_keys'] = '${{ ENV.API_KEY }}'
 
-            if self.input_modality == Modalities.TEXT:
+            if Modalities.TEXT in self.input_modality:
                 if not any(
                     exec_dict['name'] == 'autocomplete_executor'
                     for exec_dict in flow_yaml_content['executors']

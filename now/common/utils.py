@@ -153,7 +153,8 @@ def common_setup(
             env_dict['JINA_TOKEN'] = finetune_settings.token
         except Exception as e:
             print(
-                'Finetuning is currently offline. The programm execution still continues without finetuning. Please report the following exception to us:'
+                'Finetuning is currently offline. The program execution still continues without'
+                ' finetuning. Please report the following exception to us:'
             )
             import traceback
 
