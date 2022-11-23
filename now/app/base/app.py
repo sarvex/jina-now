@@ -317,7 +317,7 @@ class JinaNOWApp:
         return 32
 
     def add_environment_variables(self, flow_yaml_content):
-        if os.environ['JINA_OPTOUT_TELEMETRY']:
+        if 'JINA_OPTOUT_TELEMETRY' in os.environ:
             flow_yaml_content['with']['env']['JINA_OPTOUT_TELEMETRY'] = os.environ[
                 'JINA_OPTOUT_TELEMETRY'
             ]
