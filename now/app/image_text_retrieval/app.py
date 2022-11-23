@@ -1,5 +1,5 @@
 import os
-from typing import Dict, List, Union
+from typing import Dict, List, Tuple, Union
 
 from docarray import DocumentArray
 
