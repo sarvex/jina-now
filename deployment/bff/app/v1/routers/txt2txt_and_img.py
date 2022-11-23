@@ -7,7 +7,7 @@ from fastapi import APIRouter
 
 from deployment.bff.app.v1.models.text import NowTextSearchRequestModel
 from deployment.bff.app.v1.models.text_and_image import (
-    NowTextAndImageIndexRequestModel,
+    NowTextImageIndexRequestModel,
     NowTextImageResponseModel,
 )
 from deployment.bff.app.v1.routers.helper import jina_client_post, process_query
@@ -20,7 +20,7 @@ router = APIRouter()
     "/index",
     summary='Add more text and image data to the indexer',
 )
-def index(data: NowTextAndImageIndexRequestModel):
+def index(data: NowTextImageIndexRequestModel):
     """
     Append the list of image data to the indexer. Each image data should be
     `base64` encoded using human-readable characters - `utf-8`.

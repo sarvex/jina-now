@@ -6,7 +6,7 @@ from docarray import Document, DocumentArray
 from fastapi import APIRouter
 
 from deployment.bff.app.v1.models.text_and_image import (
-    NowTextAndImageIndexRequestModel,
+    NowTextImageIndexRequestModel,
     NowTextImageResponseModel,
     NowTextImageSearchRequestModel,
 )
@@ -20,7 +20,7 @@ router = APIRouter()
     "/index",
     summary='Add more image or text data to the indexer',
 )
-def index(data: NowTextAndImageIndexRequestModel):
+def index(data: NowTextImageIndexRequestModel):
     """
     Append the list of image or text data to the indexer. Each image data should be
     `base64` encoded using human-readable characters - `utf-8`.

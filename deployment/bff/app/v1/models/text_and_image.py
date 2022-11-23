@@ -10,7 +10,7 @@ from deployment.bff.app.v1.models.helper import (
 
 
 # Request Model
-class NowTextAndImageIndexRequestModel(BaseIndexRequestModel):
+class NowTextImageIndexRequestModel(BaseIndexRequestModel):
     texts: Optional[List[str]] = Field(
         default=[], description='List of Texts to index.'
     )
