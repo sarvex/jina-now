@@ -89,6 +89,7 @@ class Task:
 
 class UserInput(BaseModel):
     app_instance: Optional['JinaNOWApp'] = None  # noqa: F821
+    output_modality: Optional[str] = None
     # data related
     flow_name: Optional[str] = None
     dataset_type: Optional[DatasetTypes] = None

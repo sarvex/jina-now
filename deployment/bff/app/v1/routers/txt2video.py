@@ -1,4 +1,5 @@
 import base64
+from itertools import zip_longest
 from typing import List
 
 from docarray import Document, DocumentArray
@@ -25,7 +26,7 @@ def index(data: NowVideoIndexRequestModel):
     `base64` encoded using human-readable characters - `utf-8`.
     """
     index_docs = DocumentArray()
-    for video, uri, tags in zip(data.videos, data.uris, data.tags):
+    for video, uri, tags in zip_longest(data.videos, data.uris, data.tags):
         if bool(video) + bool(uri) != 1:
             raise ValueError(
                 f'Can only set one value but have video={video}, uri={uri}'

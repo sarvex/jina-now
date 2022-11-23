@@ -54,7 +54,7 @@ class JinaNOWApp:
 
     @property
     @abc.abstractmethod
-    def input_modality(self) -> Modalities:
+    def input_modality(self) -> List[Modalities]:
         """
         Modality used for running search queries
         """
@@ -62,7 +62,7 @@ class JinaNOWApp:
 
     @property
     @abc.abstractmethod
-    def output_modality(self) -> Modalities:
+    def output_modality(self) -> List[Modalities]:
         """
         Modality used for indexing data
         """
@@ -111,12 +111,16 @@ class JinaNOWApp:
     @property
     def supported_file_types(self) -> List[str]:
         """Used to filter files in local structure or an S3 bucket."""
-        return SUPPORTED_FILE_TYPES[self.output_modality]
+        sup_file = [SUPPORTED_FILE_TYPES[modality] for modality in self.output_modality]
+        return [item for sublist in sup_file for item in sublist]
 
     @property
-    def demo_datasets(self) -> List[DemoDataset]:
+    def demo_datasets(self) -> Dict[str, List[DemoDataset]]:
         """Get a list of example datasets for the app."""
-        return AVAILABLE_DATASET.get(self.output_modality, [])
+        available_datasets = {}
+        for output_modality in self.output_modality:
+            available_datasets[output_modality] = AVAILABLE_DATASET[output_modality]
+        return available_datasets
 
     @property
     def required_docker_memory_in_gb(self) -> int:
@@ -205,12 +209,15 @@ class JinaNOWApp:
                 and user_input.flow_name != DEFAULT_FLOW_NAME
                 else DEFAULT_FLOW_NAME
             )
+
+            self.add_environment_variables(flow_yaml_content)
+
             # append api_keys to the executor with name 'preprocessor' and 'indexer'
             for executor in flow_yaml_content['executors']:
                 if executor['name'] == 'preprocessor' or executor['name'] == 'indexer':
                     executor['uses_with']['api_keys'] = '${{ ENV.API_KEY }}'
 
-            if self.input_modality == Modalities.TEXT:
+            if Modalities.TEXT in self.input_modality:
                 if not any(
                     exec_dict['name'] == 'autocomplete_executor'
                     for exec_dict in flow_yaml_content['executors']
@@ -222,22 +229,15 @@ class JinaNOWApp:
                             'uses': '${{ ENV.AUTOCOMPLETE_EXECUTOR_NAME }}',
                             'needs': 'gateway',
                             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
+                            'uses_with': {
+                                'api_keys': '${{ ENV.API_KEY }}',
+                                'user_emails': '${{ ENV.USER_EMAILS }}',
+                                'admin_emails': '${{ ENV.ADMIN_EMAILS }}',
+                            },
                         },
                     )
             self.flow_yaml = flow_yaml_content
         return {}
-
-    def cleanup(self, app_config: dict) -> None:
-        """
-        Runs after the flow is terminated.
-        Cleans up the resources created during setup.
-        Common examples are:
-            - delete a database
-            - remove artifact
-            - notify other services
-        :param app_config: contains all information needed to clean up the allocated resources
-        """
-        pass
 
     def preprocess(
         self,
@@ -315,3 +315,9 @@ class JinaNOWApp:
     def max_request_size(self) -> int:
         """Max number of documents in one request"""
         return 32
+
+    def add_environment_variables(self, flow_yaml_content):
+        if os.environ['JINA_OPTOUT_TELEMETRY']:
+            flow_yaml_content['with']['env']['JINA_OPTOUT_TELEMETRY'] = os.environ[
+                'JINA_OPTOUT_TELEMETRY'
+            ]

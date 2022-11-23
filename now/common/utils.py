@@ -153,7 +153,8 @@ def common_setup(
             env_dict['JINA_TOKEN'] = finetune_settings.token
         except Exception as e:
             print(
-                'Finetuning is currently offline. The programm execution still continues without finetuning. Please report the following exception to us:'
+                'Finetuning is currently offline. The program execution still continues without'
+                ' finetuning. Please report the following exception to us:'
             )
             import traceback
 
@@ -228,7 +229,10 @@ def _extract_tags_for_indexer(d: Document, user_input):
     for tag, _ in d.tags.items():
         tags.add((tag, str(tag.__class__.__name__)))
     final_tags = [list(tag) for tag in tags]
-    if user_input.app_instance.output_modality in [Modalities.IMAGE, Modalities.VIDEO]:
+    if user_input.app_instance.output_modality in [
+        Modalities.IMAGE,
+        Modalities.VIDEO,
+    ]:
         final_tags.append([TAG_INDEXER_DOC_HAS_TEXT, str(bool.__name__)])
     return final_tags
 

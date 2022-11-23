@@ -1,4 +1,5 @@
 import base64
+from itertools import zip_longest
 from typing import List
 
 from docarray import Document, DocumentArray
@@ -24,7 +25,7 @@ def index(data: NowMusicIndexRequestModel):
     `base64` encoded using human-readable characters - `utf-8`.
     """
     index_docs = DocumentArray()
-    for audio, uri, tags in zip(data.songs, data.uris, data.tags):
+    for audio, uri, tags in zip_longest(data.songs, data.uris, data.tags):
         if bool(audio) + bool(uri) != 1:
             raise ValueError(
                 f'Can only set one value but have image={audio}, uri={uri}'

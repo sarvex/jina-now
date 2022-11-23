@@ -1,5 +1,5 @@
 import os
-from typing import Dict, Tuple
+from typing import Dict, List, Union
 
 from docarray import DocumentArray
 
@@ -10,13 +10,13 @@ from now.demo_data import DemoDatasetNames
 from now.now_dataclasses import UserInput
 
 
-class ImageToText(JinaNOWApp):
+class ImageTextRetrieval(JinaNOWApp):
     def __init__(self):
         super().__init__()
 
     @property
     def app_name(self) -> str:
-        return Apps.IMAGE_TO_TEXT
+        return Apps.IMAGE_TEXT_RETRIEVAL
 
     @property
     def is_enabled(self) -> bool:
@@ -24,15 +24,15 @@ class ImageToText(JinaNOWApp):
 
     @property
     def description(self) -> str:
-        return 'Image to text search app'
+        return 'Image-text search app'
 
     @property
-    def input_modality(self) -> Modalities:
-        return Modalities.IMAGE
+    def input_modality(self) -> Union[Modalities, List[Modalities]]:
+        return [Modalities.IMAGE, Modalities.TEXT]
 
     @property
-    def output_modality(self) -> Modalities:
-        return Modalities.TEXT
+    def output_modality(self) -> Union[Modalities, List[Modalities]]:
+        return [Modalities.IMAGE, Modalities.TEXT]
 
     @property
     def required_docker_memory_in_gb(self) -> int:

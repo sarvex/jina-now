@@ -94,28 +94,21 @@ def test_token_exists():
     'app, input_modality, output_modality, dataset, deployment_type',
     [
         (
-            Apps.TEXT_TO_IMAGE,
-            Modalities.TEXT,
+            Apps.IMAGE_TEXT_RETRIEVAL,
+            Modalities.IMAGE,
             Modalities.IMAGE,
             DemoDatasetNames.BIRD_SPECIES,
             'local',
         ),
         (
-            Apps.IMAGE_TO_IMAGE,
-            Modalities.IMAGE,
+            Apps.IMAGE_TEXT_RETRIEVAL,
+            Modalities.TEXT,
             Modalities.IMAGE,
             DemoDatasetNames.BEST_ARTWORKS,
-            'local',
-        ),
-        (
-            Apps.IMAGE_TO_TEXT,
-            Modalities.IMAGE,
-            Modalities.TEXT,
-            DemoDatasetNames.ROCK_LYRICS,
             'remote',
         ),
         (
-            Apps.TEXT_TO_TEXT,
+            Apps.IMAGE_TEXT_RETRIEVAL,
             Modalities.TEXT,
             Modalities.TEXT,
             DemoDatasetNames.POP_LYRICS,
@@ -157,13 +150,11 @@ def test_backend_demo_data(
     with_hubble_login_patch,
 ):
     cluster = NEW_CLUSTER['value']
-    os.environ['NOW_CI_RUN'] = 'True'
-    os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
     kwargs = {
         'now': 'start',
-        'app': app,
         'flow_name': 'nowapi',
         'dataset_type': DatasetTypes.DEMO,
+        'output_modality': output_modality,
         'dataset_name': dataset,
         'cluster': cluster,
         'secured': deployment_type == 'remote',
@@ -180,6 +171,10 @@ def test_backend_demo_data(
         cmd(f'{kubectl_path} create namespace nowapi')
     kwargs = Namespace(**kwargs)
     response = cli(args=kwargs)
+
+    if app == Apps.IMAGE_TEXT_RETRIEVAL:
+        input_modality = 'image-or-text'
+        output_modality = 'image-or-text'
 
     assert_deployment_response(
         app, deployment_type, input_modality, output_modality, response
@@ -241,8 +236,11 @@ def assert_suggest(suggest_url, request_body):
         response.status_code == 200
     ), f"Received code {response.status_code} with text: {response.json()['message']}"
     docs = DocumentArray.from_json(response.content)
-    assert 'suggestions' in docs[0].tags
-    assert docs[0].tags['suggestions'] == [[old_request_text]]
+    assert 'suggestions' in docs[0].tags, f'No suggestions found in {docs[0].tags}'
+    assert docs[0].tags['suggestions'] == [old_request_text], (
+        f'Expected suggestions to be {old_request_text} but got '
+        f'{docs[0].tags["suggestions"]}'
+    )
 
 
 def assert_deployment_queries(
@@ -321,13 +319,12 @@ def get_search_request_body(
     )
     request_body['limit'] = 9
     # Perform end-to-end check via bff
-    if app in [Apps.IMAGE_TO_IMAGE, Apps.IMAGE_TO_TEXT]:
+    if app == Apps.IMAGE_TEXT_RETRIEVAL:
         request_body['image'] = test_search_image
     elif app == Apps.MUSIC_TO_MUSIC:
         request_body['song'] = test_search_music
     elif app in [
-        Apps.TEXT_TO_IMAGE,
-        Apps.TEXT_TO_TEXT,
+        Apps.IMAGE_TEXT_RETRIEVAL,
         Apps.TEXT_TO_VIDEO,
         Apps.TEXT_TO_TEXT_AND_IMAGE,
     ]:
@@ -345,7 +342,8 @@ def assert_deployment_response(
     app, deployment_type, input_modality, output_modality, response
 ):
     assert (
-        response['bff'] == f'http://localhost:30090/api/v1/{app.replace("_", "-")}/docs'
+        response['bff']
+        == f'http://localhost:30090/api/v1/{input_modality}-to-{output_modality}/docs'
     )
     assert response['playground'].startswith('http://localhost:30080/?')
     assert response['input_modality'] == input_modality
@@ -360,20 +358,23 @@ def assert_deployment_response(
 
 @pytest.mark.parametrize('deployment_type', ['remote'])
 @pytest.mark.parametrize('dataset', ['custom_s3_bucket'])
-@pytest.mark.parametrize('app', [Apps.TEXT_TO_IMAGE])
+@pytest.mark.parametrize('app', [Apps.IMAGE_TEXT_RETRIEVAL])
+@pytest.mark.parametrize('input_modality', [Modalities.IMAGE])
+@pytest.mark.parametrize('output_modality', [Modalities.IMAGE])
 def test_backend_custom_data(
     app,
     deployment_type: str,
     dataset: str,
+    input_modality: str,
+    output_modality: str,
     cleanup,
     with_hubble_login_patch,
 ):
-    os.environ['NOW_CI_RUN'] = 'True'
-    os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
     kwargs = {
         'now': 'start',
         'app': app,
         'flow_name': 'nowapi',
+        'output_modality': 'image',
         'dataset_type': DatasetTypes.S3_BUCKET,
         'dataset_path': os.environ.get('S3_IMAGE_TEST_DATA_PATH'),
         'aws_access_key_id': os.environ.get('AWS_ACCESS_KEY_ID'),
@@ -394,15 +395,13 @@ def test_backend_custom_data(
     kwargs = Namespace(**kwargs)
     response = cli(args=kwargs)
 
-    assert (
-        response['bff'] == f'http://localhost:30090/api/v1/{app.replace("_", "-")}/docs'
+    if app == Apps.IMAGE_TEXT_RETRIEVAL:
+        input_modality = 'image-or-text'
+        output_modality = 'image-or-text'
+
+    assert_deployment_response(
+        app, deployment_type, input_modality, output_modality, response
     )
-    assert response['playground'].startswith('http://localhost:30080/?')
-    assert response['input_modality'] == 'text'
-    assert response['output_modality'] == 'image'
-    assert response['host'].startswith('grpcs://')
-    assert response['host'].endswith('.wolf.jina.ai')
-    assert response['port'] == 8080 or response['port'] is None
 
     request_body = {'text': 'test', 'limit': 9}
 
@@ -415,7 +414,7 @@ def test_backend_custom_data(
             json.dump(flow_details, f)
 
     response = requests.post(
-        f'http://localhost:30090/api/v1/text-to-image/search',
+        f'http://localhost:30090/api/v1/{input_modality}-to-{output_modality}/search',
         json=request_body,
     )
 

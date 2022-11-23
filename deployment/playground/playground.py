@@ -161,16 +161,20 @@ def deploy_streamlit():
                 values.insert(0, 'All')
                 filter_selection[tag] = st.sidebar.selectbox(tag, values)
 
-        if params.input_modality == 'image':
-            media_type = st.radio(
-                '',
-                ["Image", 'Webcam'],
-                on_change=clear_match,
-            )
-        elif params.input_modality == 'text':
-            media_type = 'Text'
-        elif params.input_modality == 'music':
-            media_type = 'Music'
+        st_ratio_options = []
+        for input_modality in params.input_modality.split('-or-'):
+            if input_modality == 'image':
+                st_ratio_options.extend(["Image", "Webcam"])
+            elif input_modality == 'music':
+                st_ratio_options.extend(["Music"])
+            elif input_modality == 'text':
+                st_ratio_options.extend(["Text"])
+        st_ratio_options = list(set(st_ratio_options))
+        media_type = st.radio(
+            '',
+            st_ratio_options,
+            on_change=clear_match,
+        )
 
         if media_type == "Image":
             render_image(da_img, deepcopy(filter_selection))
@@ -287,7 +291,7 @@ def load_example_queries(data, output_modality):
     da_txt = None
     if data in ds_set:
         try:
-            if output_modality == 'image' or output_modality == 'video':
+            if output_modality == 'image-or-text' or output_modality == 'video':
                 output_modality_dir = 'jpeg'
                 data_dir = root_data_dir + output_modality_dir + '/'
                 da_img, da_txt = load_data(
@@ -441,47 +445,21 @@ def render_matches(OUTPUT_MODALITY):
                 match.mime_type = OUTPUT_MODALITY
 
                 if OUTPUT_MODALITY == 'text':
-                    if match.text == '' and match.uri != '':
-                        match.load_uri_to_text(timeout=10)
-                    display_text = profanity.censor(match.text).replace('\n', ' ')
-                    body = f"<!DOCTYPE html><html><body><blockquote>{display_text}</blockquote>"
-                    if match.tags.get('additional_info'):
-                        additional_info = match.tags.get('additional_info')
-                        if type(additional_info) == str:
-                            additional_info_text = additional_info
-                        elif type(additional_info) == list:
-                            if len(additional_info) == 1:
-                                # assumes just one line containing information on text name and creator, etc.
-                                additional_info_text = additional_info
-                            elif len(additional_info) == 2:
-                                # assumes first element is text name and second element is creator name
-                                additional_info_text = (
-                                    f"<em>{additional_info[0]}</em> "
-                                    f"<small>by {additional_info[1]}</small>"
-                                )
-
-                            else:
-                                additional_info_text = " ".join(additional_info)
-                        body += f"<figcaption>{additional_info_text}</figcaption>"
-                    body += "</body></html>"
-                    c.markdown(
-                        body=body,
-                        unsafe_allow_html=True,
-                    )
+                    render_text_result(match, c)
 
                 elif OUTPUT_MODALITY == 'music':
                     if match.uri:
                         match.load_uri_to_blob(timeout=10)
                     display_song(c, match)
 
-                elif OUTPUT_MODALITY in ('image', 'video'):
-                    if match.blob != b'':
-                        match.convert_blob_to_datauri()
-                    elif match.tensor is not None:
-                        match.convert_image_tensor_to_uri()
+                elif OUTPUT_MODALITY == 'video':
+                    render_graphic_result(match, c)
 
-                    if match.uri != '':
-                        c.image(match.uri)
+                elif OUTPUT_MODALITY == 'image-or-text':
+                    try:
+                        render_text_result(match, c)
+                    except:
+                        render_graphic_result(match, c)
                 else:
                     raise ValueError(f'{OUTPUT_MODALITY} not handled')
 
@@ -523,6 +501,46 @@ def render_matches(OUTPUT_MODALITY):
             "Received error response from the server. Expand this to see the full error message"
         ):
             st.text(st.session_state.error_msg)
+
+
+def render_graphic_result(match, c):
+    if match.blob != b'':
+        match.convert_blob_to_datauri()
+    elif match.tensor is not None:
+        match.convert_image_tensor_to_uri()
+
+    if match.uri != '':
+        c.image(match.uri)
+
+
+def render_text_result(match, c):
+    if match.text == '' and match.uri != '':
+        match.load_uri_to_text(timeout=10)
+    display_text = profanity.censor(match.text).replace('\n', ' ')
+    body = f"<!DOCTYPE html><html><body><blockquote>{display_text}</blockquote>"
+    if match.tags.get('additional_info'):
+        additional_info = match.tags.get('additional_info')
+        if type(additional_info) == str:
+            additional_info_text = additional_info
+        elif type(additional_info) == list:
+            if len(additional_info) == 1:
+                # assumes just one line containing information on text name and creator, etc.
+                additional_info_text = additional_info
+            elif len(additional_info) == 2:
+                # assumes first element is text name and second element is creator name
+                additional_info_text = (
+                    f"<em>{additional_info[0]}</em> "
+                    f"<small>by {additional_info[1]}</small>"
+                )
+
+            else:
+                additional_info_text = " ".join(additional_info)
+        body += f"<figcaption>{additional_info_text}</figcaption>"
+    body += "</body></html>"
+    c.markdown(
+        body=body,
+        unsafe_allow_html=True,
+    )
 
 
 def render_music_app(DATA, filter_selection):

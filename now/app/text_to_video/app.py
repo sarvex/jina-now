@@ -45,12 +45,12 @@ class TextToVideo(JinaNOWApp):
         return 'Text to video search app'
 
     @property
-    def input_modality(self) -> Modalities:
-        return Modalities.TEXT
+    def input_modality(self) -> List[Modalities]:
+        return [Modalities.TEXT]
 
     @property
-    def output_modality(self) -> Modalities:
-        return Modalities.VIDEO
+    def output_modality(self) -> List[Modalities]:
+        return [Modalities.VIDEO]
 
     @property
     def required_docker_memory_in_gb(self) -> int:
@@ -84,10 +84,6 @@ class TextToVideo(JinaNOWApp):
                 )
             else:
                 self.flow_yaml = os.path.join(flow_dir, 'flow-video-clip.yml')
-
-    @property
-    def supported_file_types(self) -> List[str]:
-        return ['gif', 'mp4', 'mov']
 
     def setup(
         self, dataset: DocumentArray, user_input: UserInput, kubectl_path

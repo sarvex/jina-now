@@ -29,44 +29,33 @@ NEW_CLUSTER = {'name': '🐣 create new', 'value': 'new'}
 AVAILABLE_SOON = 'will be available in upcoming versions'
 
 # Make sure you add this dialog option to your app in order of dependency, i.e., if some dialog option depends on other
-# then the parent should be called first before the dependant can called.
+# than the parent should be called first before the dependant can called.
 
-APP = DialogOptions(
-    name='app',
+
+def _create_app_from_output_modality(user_input: UserInput, **kwargs):
+    if user_input.output_modality in ['image', 'text']:
+        app_name = Apps.IMAGE_TEXT_RETRIEVAL
+    elif user_input.output_modality == 'video':
+        app_name = Apps.TEXT_TO_VIDEO
+    else:
+        raise ValueError(f'Invalid output modality: {user_input.output_modality}')
+    user_input.app_instance = construct_app(app_name)
+
+
+OUTPUT_MODALITY = DialogOptions(
+    name='output_modality',
     choices=[
-        {
-            'name': '📝 ▶ 🏞 text to image search',
-            'value': Apps.TEXT_TO_IMAGE,
-        },
-        {
-            'name': '🏞 ▶ 📝 image to text search',
-            'value': Apps.IMAGE_TO_TEXT,
-        },
-        {
-            'name': '🏞 ▶ 🏞 image to image search',
-            'value': Apps.IMAGE_TO_IMAGE,
-        },
-        {'name': '📝 ▶ 📝 text to text search', 'value': Apps.TEXT_TO_TEXT},
-        {
-            'name': '📝 ▶ 🎦 text to video search (gif only at the moment)',
-            'value': Apps.TEXT_TO_VIDEO,
-        },
-        {
-            'name': '🥁 ▶ 🥁 music to music search',
-            'value': Apps.MUSIC_TO_MUSIC,
-            'disabled': AVAILABLE_SOON,
-        },
-        {
-            'name': '📝 ▶ 📝+🏞 text to text+image search',
-            'value': Apps.TEXT_TO_TEXT_AND_IMAGE,
-            'disabled': AVAILABLE_SOON,
-        },
+        {'name': '📝 text', 'value': 'text'},
+        {'name': '🏞 image', 'value': 'image'},
+        {'name': '🎦 video', 'value': 'video'},
     ],
-    prompt_message='What sort of search engine would you like to build?',
     prompt_type='list',
+    prompt_message='What modality do you want to index?',
+    description='What is the index modality of your search system?',
     is_terminal_command=True,
-    description='What sort of search engine would you like to build?',
+    post_func=_create_app_from_output_modality,
 )
+
 
 APP_NAME = DialogOptions(
     name='flow_name',
@@ -104,19 +93,14 @@ DATASET_TYPE = DialogOptions(
         },
     ],
     prompt_type='list',
-    is_terminal_command=True
-    # post_func=lambda user_input, **kwargs: _parse_custom_data_from_cli(
-    #     user_input, **kwargs
-    # ),
+    is_terminal_command=True,
 )
+
 
 DEMO_DATA = DialogOptions(
     name='dataset_name',
     prompt_message='What demo dataset do you want to use?',
-    choices=lambda user_input, **kwargs: [
-        {'name': demo_data.display_name, 'value': demo_data.name}
-        for demo_data in user_input.app_instance.demo_datasets
-    ],
+    choices=lambda user_input, **kwargs: _get_demo_data_choices(user_input),
     prompt_type='list',
     depends_on=DATASET_TYPE,
     is_terminal_command=True,
@@ -124,6 +108,17 @@ DEMO_DATA = DialogOptions(
     conditional_check=lambda user_input, **kwargs: user_input.dataset_type
     == DatasetTypes.DEMO,
 )
+
+
+def _get_demo_data_choices(user_input: UserInput):
+    if user_input.output_modality:
+        ds = user_input.app_instance.demo_datasets[user_input.output_modality]
+    else:
+        ds = user_input.app_instance.demo_datasets
+    return [
+        {'name': demo_data.display_name, 'value': demo_data.name} for demo_data in ds
+    ]
+
 
 DOCARRAY_NAME = DialogOptions(
     name='dataset_name',
@@ -305,12 +300,13 @@ API_KEY = DialogOptions(
     prompt_type='list',
     choices=[
         {'name': '✅ yes', 'value': uuid.uuid4().hex},
-        {'name': '⛔ no', 'value': None},
+        {'name': '⛔ no', 'value': False},
     ],
     depends_on=SECURED,
     is_terminal_command=True,
     description='Pass an api_key to access the flow once the deployment is complete. ',
     conditional_check=lambda user_inp: str(user_inp.secured).lower() == 'true',
+    post_func=lambda user_input, **kwargs: _set_value_to_none(user_input),
 )
 
 ADDITIONAL_USERS = DialogOptions(
@@ -335,6 +331,11 @@ USER_EMAILS = DialogOptions(
     conditional_check=lambda user_inp: user_inp.additional_user,
     post_func=lambda user_input, **kwargs: _add_additional_users(user_input, **kwargs),
 )
+
+
+def _set_value_to_none(user_input):
+    if not user_input.api_key:
+        user_input.api_key = None
 
 
 def _add_additional_users(user_input: UserInput, **kwargs):
@@ -401,7 +402,7 @@ def _cluster_running(cluster):
     return True
 
 
-app_name = [APP_NAME]
+app_config = [OUTPUT_MODALITY, APP_NAME]
 data_type = [DATASET_TYPE]
 data_fields = [SEARCH_FIELDS]
 data_demo = [DEMO_DATA]
@@ -416,7 +417,7 @@ cluster = [DEPLOYMENT_TYPE, LOCAL_CLUSTER]
 remote_cluster = [SECURED, API_KEY, ADDITIONAL_USERS, USER_EMAILS]
 
 base_options = (
-    app_name
+    app_config
     + data_type
     + data_demo
     + data_da

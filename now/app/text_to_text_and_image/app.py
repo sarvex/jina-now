@@ -57,12 +57,12 @@ class TextToTextAndImage(JinaNOWApp):
             self.flow_yaml = os.path.join(flow_dir, 'pretrained_flow.yml')
 
     @property
-    def input_modality(self) -> Modalities:
-        return Modalities.TEXT
+    def input_modality(self) -> List[Modalities]:
+        return [Modalities.TEXT]
 
     @property
-    def output_modality(self) -> Modalities:
-        return Modalities.TEXT_AND_IMAGE
+    def output_modality(self) -> List[Modalities]:
+        return [Modalities.TEXT_AND_IMAGE]
 
     @staticmethod
     def _create_task_config(user_input: UserInput, data_example: Document) -> Task:

@@ -230,7 +230,7 @@ if __name__ == '__main__':
 
     from jina import Flow
 
-    app = Apps.TEXT_TO_VIDEO
+    app = Apps.IMAGE_TEXT_RETRIEVAL
 
     user_inpuT = UserInput()
     user_inpuT.app_instance = construct_app(app)

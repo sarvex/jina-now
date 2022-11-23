@@ -11,13 +11,13 @@ from now import run_backend, run_bff_playground
 from now.cloud_manager import setup_cluster
 from now.constants import DOCKER_BFF_PLAYGROUND_TAG, SURVEY_LINK, DatasetTypes
 from now.deployment.deployment import cmd, list_all_wolf, status_wolf, terminate_wolf
-from now.dialog import configure_app, configure_user_input
+from now.dialog import configure_user_input
 from now.log import yaspin_extended
 from now.system_information import get_system_state
 from now.utils import _get_context_names, get_flow_id, maybe_prompt_user, sigmap
 
 
-def stop_now(app_instance, contexts, active_context, **kwargs):
+def stop_now(contexts, active_context, **kwargs):
     choices = _get_context_names(contexts, active_context)
     # Add all remote Flows that exists with the namespace `nowapi`
     alive_flows = list_all_wolf()
@@ -91,7 +91,6 @@ def stop_now(app_instance, contexts, active_context, **kwargs):
             cmd(f'{kwargs["kubectl_path"]} delete ns nowapi')
             spinner.ok('💀')
         cowsay.cow(f'nowapi namespace removed from {cluster}')
-    app_instance.cleanup(app_config=dict())
 
 
 def get_task(kwargs):
@@ -101,8 +100,9 @@ def get_task(kwargs):
     raise Exception('kwargs do not contain a task')
 
 
-def start_now(app_instance, **kwargs):
-    user_input = configure_user_input(app_instance, **kwargs)
+def start_now(**kwargs):
+    user_input = configure_user_input(**kwargs)
+    app_instance = user_input.app_instance
     # Only if the deployment is remote and the demo examples is available for the selected app
     # Should not be triggered for CI tests
     if app_instance.is_demo_available(user_input):
@@ -139,10 +139,12 @@ def start_now(app_instance, **kwargs):
         bff_port = '80'
         playground_port = '80'
     # TODO: add separate BFF endpoints in print output
+    input_modality = '-or-'.join(app_instance.input_modality)
+    output_modality = '-or-'.join(app_instance.output_modality)
     bff_url = (
         bff_playground_host
         + ('' if str(bff_port) == '80' else f':{bff_port}')
-        + f'/api/v1/{app_instance.input_modality}-to-{app_instance.output_modality}/docs'
+        + f'/api/v1/{input_modality}-to-{output_modality}/docs'
     )
     playground_url = (
         bff_playground_host
@@ -150,8 +152,8 @@ def start_now(app_instance, **kwargs):
         + (
             f'/?host='
             + (gateway_host_internal if gateway_host != 'localhost' else 'gateway')
-            + f'&input_modality={app_instance.input_modality}'
-            + f'&output_modality={app_instance.output_modality}'
+            + f'&input_modality={input_modality}'
+            + f'&output_modality={output_modality}'
             + (
                 f'&data={user_input.dataset_name if user_input.dataset_type == DatasetTypes.DEMO else "custom"}'
             )
@@ -175,7 +177,7 @@ def start_now(app_instance, **kwargs):
     console.print(
         Panel(
             my_table,
-            title=f':tada: {app_instance.input_modality}-{app_instance.output_modality} app is NOW ready!',
+            title=f':tada: {input_modality}-to-{output_modality} app is NOW ready!',
             expand=False,
         )
     )
@@ -185,8 +187,8 @@ def start_now(app_instance, **kwargs):
         'bff_playground_host': bff_playground_host,
         'bff_port': bff_port,
         'playground_port': playground_port,
-        'input_modality': app_instance.input_modality,
-        'output_modality': app_instance.output_modality,
+        'input_modality': input_modality,
+        'output_modality': output_modality,
         'host': gateway_host_internal,
         'port': gateway_port_internal,
         'secured': user_input.secured,
@@ -196,10 +198,8 @@ def start_now(app_instance, **kwargs):
 def run_k8s(os_type: str = 'linux', arch: str = 'x86_64', **kwargs):
     contexts, active_context = get_system_state(**kwargs)
     task = get_task(kwargs)
-    app = configure_app(**kwargs)
     if task == 'start':
         return start_now(
-            app,
             contexts=contexts,
             active_context=active_context,
             os_type=os_type,
@@ -207,7 +207,7 @@ def run_k8s(os_type: str = 'linux', arch: str = 'x86_64', **kwargs):
             **kwargs,
         )
     elif task == 'stop':
-        return stop_now(app, contexts, active_context, **kwargs)
+        return stop_now(contexts, active_context, **kwargs)
     elif task == 'survey':
         import webbrowser
 

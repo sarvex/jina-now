@@ -1,3 +1,4 @@
+import itertools
 import json
 import os
 from typing import Optional
@@ -20,7 +21,7 @@ class NOWAutoCompleteExecutor(Executor):
         self.words = words if words else {}
         self.search_traversal_paths = search_traversal_paths
         self.autocomplete = None
-        self.char_threshhold = 100
+        self.char_threshold = 100
 
         super().__init__(*args, **kwargs)
 
@@ -53,11 +54,11 @@ class NOWAutoCompleteExecutor(Executor):
             if doc.text and not profanity.contains_profanity(doc.text):
                 search_words = doc.text.split(' ')
                 # prevent users from misusing API
-                if len(doc.text) < self.char_threshhold:
+                if len(doc.text) < self.char_threshold:
                     # in case query is composed of two words
                     for word in search_words:
                         self.update_save_words(word)
-                    # add bigram and tri gram suggestions
+                    # add bi-gram and tri-gram suggestions
                     if len(search_words) == 2 or len(search_words) == 3:
                         self.update_save_words(doc.text)
 
@@ -71,7 +72,11 @@ class NOWAutoCompleteExecutor(Executor):
         flat_docs = None if not docs else docs[self.search_traversal_paths]
         if flat_docs:
             for doc in flat_docs:
-                doc.tags['suggestions'] = self.auto_complete.search(
-                    doc.text, max_cost=3, size=5
+                doc.tags['suggestions'] = self.flatten_list(
+                    self.auto_complete.search(doc.text, max_cost=3, size=5)
                 )
         return docs
+
+    def flatten_list(self, regular_list):
+        flat_list = list(itertools.chain(*regular_list))
+        return flat_list
