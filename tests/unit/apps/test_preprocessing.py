@@ -92,7 +92,7 @@ def test_music_preprocessing(is_indexing, resources_folder_path):
 
     da = DocumentArray([Document(uri=uri)])
     da = transform_docarray(da, search_fields=[])
-    da = app.preprocess(da=da, user_input=UserInput())
+    da = app.preprocess(da=da)
     assert len(da) == 1
     assert len(da[0].chunks) == 0
     assert da[0].blob != b''
