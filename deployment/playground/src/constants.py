@@ -70,5 +70,6 @@ BUTTONS = {
 }
 
 JWT_COOKIE = 'JinaNOW_Jwt'
+SSO_COOKIE = 'st'
 AVATAR_COOKIE = 'AvatarUrl'
 TOKEN_COOKIE = 'JinaNOW_Token'

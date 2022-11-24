@@ -1,6 +1,5 @@
 import base64
 import io
-import json
 import os
 from collections import OrderedDict
 from copy import deepcopy
@@ -20,6 +19,7 @@ from src.constants import (
     BUTTONS,
     JWT_COOKIE,
     RTC_CONFIGURATION,
+    SSO_COOKIE,
     SURVEY_LINK,
     ds_set,
     root_data_dir,
@@ -195,16 +195,25 @@ def deploy_streamlit():
 
 def render_auth_components(params):
     if params.secured.lower() == 'true':
-        jwt_val = get_cookie_value(cookie_name=JWT_COOKIE)
-        if jwt_val and not st.session_state.login:
-            jwt_val = json.loads(unquote(jwt_val))
-            if not st.session_state.jwt_val:
-                st.session_state.jwt_val = jwt_val
-            if not st.session_state.avatar_val:
-                st.session_state.avatar_val = jwt_val['user']['avatarUrl']
-            if not st.session_state.token_val:
-                st.session_state.token_val = jwt_val['token']
+        st_cookie = get_cookie_value(cookie_name=SSO_COOKIE)
+        resp_jwt = requests.get(
+            url=f'https://api.hubble.jina.ai/v2/rpc/user.identity.whoami',
+            cookies={SSO_COOKIE: st_cookie},
+        ).json()
         redirect_to = None
+        if resp_jwt['code'] != 200:
+            redirect_to = _do_login(params)
+
+        else:
+            st.session_state.login = False
+            if not st.session_state.jwt_val:
+                new_resp = {'token': st_cookie, 'user': resp_jwt['data']}
+                st.session_state.jwt_val = new_resp
+            if not st.session_state.avatar_val:
+                st.session_state.avatar_val = resp_jwt['data']['avatarUrl']
+            if not st.session_state.token_val:
+                st.session_state.token_val = st_cookie
+
         if not st.session_state.jwt_val:
             redirect_to = _do_login(params)
         _, logout, avatar = st.columns([0.7, 0.12, 0.12])
@@ -220,39 +229,17 @@ def render_auth_components(params):
 
 
 def _do_login(params):
-    code = params.code
-    state = params.state
-    if code and state:
-        # Whether it is fail or success, clear the query param
-        query_params_var = {
-            'host': unquote(params.host),
-            'input_modality': params.input_modality,
-            'output_modality': params.output_modality,
-            'data': params.data,
-        }
-        if params.secured:
-            query_params_var['secured'] = params.secured
-        st.experimental_set_query_params(**query_params_var)
+    # Whether it is fail or success, clear the query param
+    query_params_var = {
+        'host': unquote(params.host),
+        'input_modality': params.input_modality,
+        'output_modality': params.output_modality,
+        'data': params.data,
+    }
+    if params.secured:
+        query_params_var['secured'] = params.secured
+    st.experimental_set_query_params(**query_params_var)
 
-        resp_jwt = requests.get(
-            url=f'https://api.hubble.jina.ai/v2/rpc/user.identity.grant.auto'
-            f'?code={code}&state={state}'
-        ).json()
-        if resp_jwt and resp_jwt['code'] == 200:
-            st.session_state.jwt_val = resp_jwt['data']
-            st.session_state.token_val = resp_jwt['data']['token']
-            st.session_state.avatar_val = resp_jwt['data']['user']['avatarUrl']
-            st.session_state.login = False
-            cookie_manager.set(
-                cookie=JWT_COOKIE, val=st.session_state.jwt_val, key=JWT_COOKIE
-            )
-            return
-        else:
-            st.session_state.login = True
-            params.code = None
-            params.state = None
-
-    st.session_state.login = True
     redirect_uri = (
         f'https://nowrun.jina.ai/?host={params.host}&input_modality={params.input_modality}'
         f'&output_modality={params.output_modality}&data={params.data}'
@@ -261,12 +248,12 @@ def _do_login(params):
         else ''
     )
     redirect_uri = quote(redirect_uri)
-    rsp = requests.get(
-        url=f'https://api.hubble.jina.ai/v2/rpc/user.identity.authorize'
-        f'?provider=jina-login&response_mode=query&redirect_uri={redirect_uri}&scope=email%20profile%20openid&prompt=login'
-    ).json()
-    redirect_to = rsp['data']['redirectTo']
-    return redirect_to
+    redirect_uri = (
+        'https://api.hubble.jina.ai/v2/oidc/authorize?prompt=login&target_link_uri='
+        + redirect_uri
+    )
+    st.session_state.login = True
+    return redirect_uri
 
 
 def _do_logout():
