@@ -11,7 +11,7 @@ from now.executor.indexer.elastic import ElasticIndexer
 
 @pytest.mark.parametrize(
     'da, dims',
-    [('text_da', '@r', 7), ('multimodal_da', [7, 5])],
+    [('text_da', 7), ('multimodal_da', [7, 5])],
 )
 def test_indexing(
     da: DocumentArray,

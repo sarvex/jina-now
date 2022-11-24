@@ -7,6 +7,7 @@ from better_profanity import profanity
 from docarray import DocumentArray
 from fast_autocomplete import AutoComplete
 
+from now.constants import ACCESS_PATH
 from now.executor.abstract.auth.auth import (
     SecurityLevel,
     get_auth_executor_class,
@@ -17,9 +18,8 @@ Executor = get_auth_executor_class()
 
 
 class NOWAutoCompleteExecutor(Executor):
-    def __init__(self, search_traversal_paths: str = '@r', words=None, *args, **kwargs):
+    def __init__(self, words=None, *args, **kwargs):
         self.words = words if words else {}
-        self.search_traversal_paths = search_traversal_paths
         self.autocomplete = None
         self.char_threshold = 100
 
@@ -49,7 +49,7 @@ class NOWAutoCompleteExecutor(Executor):
     def search_update(
         self, docs: Optional[DocumentArray] = None, parameters: dict = {}, **kwargs
     ):
-        flat_docs = docs[self.search_traversal_paths]
+        flat_docs = docs[ACCESS_PATH]
         for doc in flat_docs:
             if doc.text and not profanity.contains_profanity(doc.text):
                 search_words = doc.text.split(' ')
@@ -69,7 +69,7 @@ class NOWAutoCompleteExecutor(Executor):
     def get_suggestion(
         self, docs: Optional[DocumentArray] = None, parameters: dict = {}, **kwargs
     ):
-        flat_docs = None if not docs else docs[self.search_traversal_paths]
+        flat_docs = None if not docs else docs[ACCESS_PATH]
         if flat_docs:
             for doc in flat_docs:
                 doc.tags['suggestions'] = self.flatten_list(

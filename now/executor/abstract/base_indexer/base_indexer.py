@@ -7,7 +7,11 @@ from typing import List, Optional
 
 from docarray import Document, DocumentArray
 
-from now.constants import TAG_INDEXER_DOC_HAS_TEXT, TAG_OCR_DETECTOR_TEXT_IN_DOC
+from now.constants import (
+    ACCESS_PATH,
+    TAG_INDEXER_DOC_HAS_TEXT,
+    TAG_OCR_DETECTOR_TEXT_IN_DOC,
+)
 from now.executor.abstract.auth import (
     SecurityLevel,
     get_auth_executor_class,
@@ -104,20 +108,17 @@ class NOWBaseIndexer(Executor):
         limit = int(parameters.get('limit', maxsize))
         offset = int(parameters.get('offset', 0))
         # add removal of duplicates
-        traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
-        if traversal_paths == '@c,cc':
-            docs = DocumentArray()
-            chunks_size = int(parameters.get('chunks_size', 3))
-            parent_ids = set()
-            for d in self.document_list[offset * chunks_size :]:
-                if len(parent_ids) == limit:
-                    break
-                if d.parent_id in parent_ids:
-                    continue
-                parent_ids.add(d.parent_id)
-                docs.append(d)
-        else:
-            docs = self.document_list[offset : offset + limit]
+
+        docs = DocumentArray()
+        chunks_size = int(parameters.get('chunks_size', 3))
+        parent_ids = set()
+        for d in self.document_list[offset * chunks_size :]:
+            if len(parent_ids) == limit:
+                break
+            if d.parent_id in parent_ids:
+                continue
+            parent_ids.add(d.parent_id)
+            docs.append(d)
         return docs
 
     @staticmethod
@@ -142,8 +143,8 @@ class NOWBaseIndexer(Executor):
         :param docs: the Documents to index
         :param parameters: dictionary with options for indexing
         """
-        traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
-        flat_docs = docs[traversal_paths]
+        flat_docs = docs[ACCESS_PATH]
+        # TODO please remove theses checkf for empty docs
         if len(flat_docs) == 0:
             return
         flat_docs = DocumentArray(
@@ -180,13 +181,9 @@ class NOWBaseIndexer(Executor):
         limit = int(parameters.get('limit', self.limit))
         search_filter_raw = parameters.get('filter', {})
         search_filter_orig = deepcopy(search_filter_raw)
-        traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
-        docs = docs[traversal_paths][:1]  # only search on the first document for now
+        docs = docs[ACCESS_PATH][:1]  # only search on the first document for now
 
-        if traversal_paths == '@c,cc':
-            retrieval_limit = limit * 3
-        else:
-            retrieval_limit = limit
+        retrieval_limit = limit * 3
 
         # if OCR detector was used to check if documents contain text in indexed image modality adjust retrieval step
         if self.columns and TAG_INDEXER_DOC_HAS_TEXT in [
@@ -205,7 +202,6 @@ class NOWBaseIndexer(Executor):
             docs_with_matches_no_text = self.create_matches(
                 docs,
                 parameters,
-                traversal_paths,
                 limit,
                 retrieval_limit,
                 search_filter,
@@ -216,7 +212,6 @@ class NOWBaseIndexer(Executor):
             docs_with_matches_filter_title = self.create_matches(
                 docs,
                 parameters,
-                traversal_paths,
                 limit,
                 retrieval_limit,
                 search_filter,
@@ -234,7 +229,6 @@ class NOWBaseIndexer(Executor):
                 docs_with_additonal_matches = self.create_matches(
                     docs,
                     parameters,
-                    traversal_paths,
                     limit,
                     retrieval_limit,
                     search_filter,
@@ -245,7 +239,7 @@ class NOWBaseIndexer(Executor):
         else:
             search_filter = self.convert_filter_syntax(search_filter_orig)
             docs_with_matches = self.create_matches(
-                docs, parameters, traversal_paths, limit, retrieval_limit, search_filter
+                docs, parameters, limit, retrieval_limit, search_filter
             )
 
         docs_with_matches[0].matches = (
@@ -287,13 +281,12 @@ class NOWBaseIndexer(Executor):
                 curated_matches.extend(self.document_list.find(doc_filter))
         return curated_matches
 
-    def create_matches(
-        self, docs, parameters, traversal_paths, limit, retrieval_limit, search_filter
-    ):
+    def create_matches(self, docs, parameters, limit, retrieval_limit, search_filter):
         docs_copy = deepcopy(docs)
         self.search(docs_copy, parameters, retrieval_limit, search_filter)
-        if traversal_paths == '@c,cc':
-            merge_matches_sum(docs_copy, limit)
+        # TODO here seems to be the issue - before, the documents are in the right order,
+        # but after merging, they are in incorrect order
+        merge_matches_sum(docs_copy, limit)
         return docs_copy
 
     def append_matches_if_not_exists(

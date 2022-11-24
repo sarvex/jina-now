@@ -33,8 +33,6 @@ executors:
     external: ${{ ENV.IS_REMOTE_DEPLOYMENT }}
     uses_with:
       name: ${{ ENV.PRE_TRAINED_MODEL_NAME }}
-      access_paths: '@c'
-      traversal_paths: '@c'
     env:
       JINA_LOG_LEVEL: DEBUG
   - name: indexer

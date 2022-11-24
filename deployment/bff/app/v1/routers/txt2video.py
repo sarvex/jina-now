@@ -38,7 +38,6 @@ def index(data: NowVideoIndexRequestModel):
         else:
             index_docs.append(Document(uri=uri, tags=tags, modality='video'))
 
-    # TODO: should use app.index_query_access_paths
     jina_client_post(
         data=data,
         inputs=index_docs,

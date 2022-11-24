@@ -3,6 +3,7 @@ import os
 import pytest
 from docarray import Document, DocumentArray
 
+from now.app.base.preprocess import preprocess_text
 from now.app.image_text_retrieval.app import ImageTextRetrieval
 from now.app.text_to_text_and_image.app import TextToTextAndImage
 from now.app.text_to_video.app import TextToVideo
@@ -92,10 +93,15 @@ def test_music_preprocessing(is_indexing, resources_folder_path):
 
     da = DocumentArray([Document(uri=uri)])
     da = transform_docarray(da, search_fields=[])
-    da = app.preprocess(da=da)
+    da = app.preprocess(da)
     assert len(da) == 1
     assert len(da[0].chunks) == 0
     assert da[0].blob != b''
+
+
+def test_preprocess_text():
+    result = preprocess_text(Document(text='test. test', modality='text'))
+    assert len(result.chunks) == 2
 
 
 @pytest.mark.skip(reason="Temporarily deactivated.")
