@@ -6,7 +6,7 @@
         <link rel="canonical" href="https://now.jina.ai/_modules/now/run_backend.html" />
 
     <link rel="shortcut icon" href="../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.09.29"/>
-        <title>now.run_backend - NOW 0.0.37 documentation</title>
+        <title>now.run_backend - NOW 0.0.38 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../">
-                <div class="brand">NOW 0.0.37 documentation</div>
+                <div class="brand">NOW 0.0.38 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -276,7 +276,6 @@
                 <article role="main">
                     <h1>Source code for now.run_backend</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">pathlib</span>
 <span class="kn">import</span> <span class="nn">random</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">uuid</span>
@@ -291,14 +290,12 @@
 <span class="kn">from</span> <span class="nn">now.admin.update_api_keys</span> <span class="kn">import</span> <span class="n">update_api_keys</span>
 <span class="kn">from</span> <span class="nn">now.app.base.app</span> <span class="kn">import</span> <span class="n">JinaNOWApp</span>
 <span class="kn">from</span> <span class="nn">now.common.testing</span> <span class="kn">import</span> <span class="n">handle_test_mode</span>
-<span class="kn">from</span> <span class="nn">now.constants</span> <span class="kn">import</span> <span class="n">DEFAULT_FLOW_NAME</span><span class="p">,</span> <span class="n">DatasetTypes</span>
+<span class="kn">from</span> <span class="nn">now.constants</span> <span class="kn">import</span> <span class="n">DatasetTypes</span>
 <span class="kn">from</span> <span class="nn">now.data_loading.data_loading</span> <span class="kn">import</span> <span class="n">load_data</span>
 <span class="kn">from</span> <span class="nn">now.deployment.flow</span> <span class="kn">import</span> <span class="n">deploy_flow</span>
 <span class="kn">from</span> <span class="nn">now.log</span> <span class="kn">import</span> <span class="n">time_profiler</span>
 <span class="kn">from</span> <span class="nn">now.now_dataclasses</span> <span class="kn">import</span> <span class="n">UserInput</span>
-<span class="kn">from</span> <span class="nn">now.utils</span> <span class="kn">import</span> <span class="n">get_flow_id</span>
-
-<span class="n">cur_dir</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+<span class="kn">from</span> <span class="nn">now.utils</span> <span class="kn">import</span> <span class="n">add_env_variables_to_flow</span><span class="p">,</span> <span class="n">get_flow_id</span>
 
 
 <div class="viewcode-block" id="run"><a class="viewcode-back" href="../../../api/now.run_backend/#now.run_backend.run">[docs]</a><span class="nd">@time_profiler</span>
@@ -322,7 +319,9 @@
     <span class="n">env_dict</span> <span class="o">=</span> <span class="n">app_instance</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span>
         <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span> <span class="n">user_input</span><span class="o">=</span><span class="n">user_input</span><span class="p">,</span> <span class="n">kubectl_path</span><span class="o">=</span><span class="n">kubectl_path</span>
     <span class="p">)</span>
+
     <span class="n">handle_test_mode</span><span class="p">(</span><span class="n">env_dict</span><span class="p">)</span>
+    <span class="n">add_env_variables_to_flow</span><span class="p">(</span><span class="n">app_instance</span><span class="p">,</span> <span class="n">env_dict</span><span class="p">)</span>
     <span class="p">(</span>
         <span class="n">client</span><span class="p">,</span>
         <span class="n">gateway_host</span><span class="p">,</span>
@@ -333,9 +332,6 @@
         <span class="n">deployment_type</span><span class="o">=</span><span class="n">user_input</span><span class="o">.</span><span class="n">deployment_type</span><span class="p">,</span>
         <span class="n">flow_yaml</span><span class="o">=</span><span class="n">app_instance</span><span class="o">.</span><span class="n">flow_yaml</span><span class="p">,</span>
         <span class="n">env_dict</span><span class="o">=</span><span class="n">env_dict</span><span class="p">,</span>
-        <span class="n">ns</span><span class="o">=</span><span class="n">user_input</span><span class="o">.</span><span class="n">flow_name</span> <span class="o">+</span> <span class="s1">&#39;-&#39;</span> <span class="o">+</span> <span class="n">DEFAULT_FLOW_NAME</span>
-        <span class="k">if</span> <span class="n">user_input</span><span class="o">.</span><span class="n">flow_name</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span> <span class="ow">and</span> <span class="n">user_input</span><span class="o">.</span><span class="n">flow_name</span> <span class="o">!=</span> <span class="n">DEFAULT_FLOW_NAME</span>
-        <span class="k">else</span> <span class="n">DEFAULT_FLOW_NAME</span><span class="p">,</span>
         <span class="n">kubectl_path</span><span class="o">=</span><span class="n">kubectl_path</span><span class="p">,</span>
     <span class="p">)</span>
 
@@ -403,8 +399,8 @@
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;▶ indexing </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span><span class="si">}</span><span class="s2"> documents&quot;</span><span class="p">)</span>
     <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s1">&#39;user_input&#39;</span><span class="p">:</span> <span class="n">user_input</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">,</span>
-        <span class="s1">&#39;traversal_paths&#39;</span><span class="p">:</span> <span class="n">user_input</span><span class="o">.</span><span class="n">app_instance</span><span class="o">.</span><span class="n">index_query_access_paths</span><span class="p">,</span>
-        <span class="s1">&#39;access_paths&#39;</span><span class="p">:</span> <span class="n">user_input</span><span class="o">.</span><span class="n">app_instance</span><span class="o">.</span><span class="n">index_query_access_paths</span><span class="p">,</span>
+        <span class="s1">&#39;traversal_paths&#39;</span><span class="p">:</span> <span class="n">user_input</span><span class="o">.</span><span class="n">app_instance</span><span class="o">.</span><span class="n">get_index_query_access_paths</span><span class="p">(),</span>
+        <span class="s1">&#39;access_paths&#39;</span><span class="p">:</span> <span class="n">user_input</span><span class="o">.</span><span class="n">app_instance</span><span class="o">.</span><span class="n">get_index_query_access_paths</span><span class="p">(),</span>
     <span class="p">}</span>
     <span class="k">if</span> <span class="n">user_input</span><span class="o">.</span><span class="n">secured</span><span class="p">:</span>
         <span class="n">params</span><span class="p">[</span><span class="s1">&#39;jwt&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">user_input</span><span class="o">.</span><span class="n">jwt</span>
@@ -446,7 +442,6 @@
                 <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
                 <span class="nb">print</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span>
             <span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-
     <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
         <span class="n">on</span><span class="o">=</span><span class="n">endpoint</span><span class="p">,</span>
         <span class="n">request_size</span><span class="o">=</span><span class="n">request_size</span><span class="p">,</span>
@@ -454,10 +449,8 @@
         <span class="n">show_progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">parameters</span><span class="o">=</span><span class="n">parameters</span><span class="p">,</span>
         <span class="n">return_results</span><span class="o">=</span><span class="n">return_results</span><span class="p">,</span>
-        <span class="n">max_attempts</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
         <span class="n">continue_on_error</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span>
-
     <span class="k">if</span> <span class="n">return_results</span> <span class="ow">and</span> <span class="n">response</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">DocumentArray</span><span class="o">.</span><span class="n">from_json</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">to_json</span><span class="p">())</span></div>
 
@@ -488,7 +481,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Nov 18, 2022.
+                            Last updated on Nov 24, 2022.
                         </div>
                     </div>
                     <div class="right-details">

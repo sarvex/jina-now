@@ -6,7 +6,7 @@
         <link rel="canonical" href="https://now.jina.ai/_modules/now/executor/indexer/qdrant/executor.html" />
 
     <link rel="shortcut icon" href="../../../../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.09.29"/>
-        <title>now.executor.indexer.qdrant.executor - NOW 0.0.37 documentation</title>
+        <title>now.executor.indexer.qdrant.executor - NOW 0.0.38 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../../../_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
     <link rel="stylesheet" type="text/css" href="../../../../../../_static/copybutton.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../../../../">
-                <div class="brand">NOW 0.0.37 documentation</div>
+                <div class="brand">NOW 0.0.38 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -323,7 +323,7 @@
 
     <span class="c1"># override</span>
 <div class="viewcode-block" id="NOWQdrantIndexer15.convert_filter_syntax"><a class="viewcode-back" href="../../../../../../api/now.executor.indexer.qdrant.executor/#now.executor.indexer.qdrant.executor.NOWQdrantIndexer15.convert_filter_syntax">[docs]</a>    <span class="k">def</span> <span class="nf">convert_filter_syntax</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">search_filter</span><span class="o">=</span><span class="p">{},</span> <span class="n">search_filter_not</span><span class="o">=</span><span class="p">{}):</span>
-        <span class="sd">&quot;&quot;&quot;supports exact matches and range filter&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Supports exact matches and range filter.&quot;&quot;&quot;</span>
 
         <span class="k">def</span> <span class="nf">_convert_filter</span><span class="p">(</span><span class="n">filter_dict</span><span class="p">):</span>
             <span class="n">conditions</span> <span class="o">=</span> <span class="p">[]</span>
@@ -374,9 +374,9 @@
         <span class="n">parameters</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
         <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">search_filter</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
-        <span class="o">**</span><span class="n">kwargs</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Perform a vector similarity search and retrieve Document matches&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Perform a vector similarity search and retrieve `Document` matches.&quot;&quot;&quot;</span>
         <span class="n">docs</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">,</span> <span class="nb">filter</span><span class="o">=</span><span class="n">search_filter</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">)</span></div></div>
 
 
@@ -385,6 +385,7 @@
     <span class="k">if</span> <span class="n">workspace</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">qdrant_config_path</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;set new storage to network file system location in WOLF&#39;</span><span class="p">)</span>
         <span class="n">qdrant_config</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">qdrant_config_path</span><span class="p">))</span>
+
         <span class="n">qdrant_config</span><span class="p">[</span><span class="s1">&#39;storage&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s1">&#39;storage_path&#39;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">workspace</span><span class="p">,</span> <span class="s1">&#39;user_input.json&#39;</span><span class="p">)</span>
         <span class="p">}</span>
@@ -413,7 +414,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Nov 18, 2022.
+                            Last updated on Nov 24, 2022.
                         </div>
                     </div>
                     <div class="right-details">

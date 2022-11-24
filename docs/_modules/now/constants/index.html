@@ -6,7 +6,7 @@
         <link rel="canonical" href="https://now.jina.ai/_modules/now/constants.html" />
 
     <link rel="shortcut icon" href="../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.09.29"/>
-        <title>now.constants - NOW 0.0.37 documentation</title>
+        <title>now.constants - NOW 0.0.38 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../">
-                <div class="brand">NOW 0.0.37 documentation</div>
+                <div class="brand">NOW 0.0.38 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -283,11 +283,11 @@
 <span class="c1"># from docarray import __version__ as docarray_version</span>
 
 <span class="n">DEMO_DATASET_DOCARRAY_VERSION</span> <span class="o">=</span> <span class="s1">&#39;0.13.17&#39;</span>
-<span class="n">DOCKER_BFF_PLAYGROUND_TAG</span> <span class="o">=</span> <span class="s1">&#39;0.0.131-refactor-breakpoints-in-executors-11&#39;</span>
-<span class="n">NOW_PREPROCESSOR_VERSION</span> <span class="o">=</span> <span class="s1">&#39;0.0.99-ocr-in-preprocessor-5&#39;</span>
-<span class="n">NOW_QDRANT_INDEXER_VERSION</span> <span class="o">=</span> <span class="s1">&#39;0.0.6-ocr-in-preprocessor-5&#39;</span>
-<span class="n">NOW_ELASTIC_INDEXER_VERSION</span> <span class="o">=</span> <span class="s1">&#39;0.0.5-refactor-force-push-1&#39;</span>
-<span class="n">NOW_AUTOCOMPLETE_VERSION</span> <span class="o">=</span> <span class="s1">&#39;0.0.4-refactor-force-push-1&#39;</span>
+<span class="n">DOCKER_BFF_PLAYGROUND_TAG</span> <span class="o">=</span> <span class="s1">&#39;0.0.133-refactor-remove-apps-4&#39;</span>
+<span class="n">NOW_PREPROCESSOR_VERSION</span> <span class="o">=</span> <span class="s1">&#39;0.0.102-fix-local-deployment-1&#39;</span>
+<span class="n">NOW_QDRANT_INDEXER_VERSION</span> <span class="o">=</span> <span class="s1">&#39;0.0.7-feat-new-data-format-127&#39;</span>
+<span class="n">NOW_ELASTIC_INDEXER_VERSION</span> <span class="o">=</span> <span class="s1">&#39;0.0.6-feat-new-data-format-127&#39;</span>
+<span class="n">NOW_AUTOCOMPLETE_VERSION</span> <span class="o">=</span> <span class="s1">&#39;0.0.4-refactor-remove-app-4&#39;</span>
 
 
 <div class="viewcode-block" id="Modalities"><a class="viewcode-back" href="../../../api/now.constants/#now.constants.Modalities">[docs]</a><span class="k">class</span> <span class="nc">Modalities</span><span class="p">(</span><span class="n">BetterEnum</span><span class="p">):</span>
@@ -299,10 +299,7 @@
 
 
 <div class="viewcode-block" id="Apps"><a class="viewcode-back" href="../../../api/now.constants/#now.constants.Apps">[docs]</a><span class="k">class</span> <span class="nc">Apps</span><span class="p">(</span><span class="n">BetterEnum</span><span class="p">):</span>
-    <span class="n">TEXT_TO_TEXT</span> <span class="o">=</span> <span class="s1">&#39;text_to_text&#39;</span>
-    <span class="n">TEXT_TO_IMAGE</span> <span class="o">=</span> <span class="s1">&#39;text_to_image&#39;</span>
-    <span class="n">IMAGE_TO_TEXT</span> <span class="o">=</span> <span class="s1">&#39;image_to_text&#39;</span>
-    <span class="n">IMAGE_TO_IMAGE</span> <span class="o">=</span> <span class="s1">&#39;image_to_image&#39;</span>
+    <span class="n">IMAGE_TEXT_RETRIEVAL</span> <span class="o">=</span> <span class="s1">&#39;image_text_retrieval&#39;</span>
     <span class="n">MUSIC_TO_MUSIC</span> <span class="o">=</span> <span class="s1">&#39;music_to_music&#39;</span>
     <span class="n">TEXT_TO_VIDEO</span> <span class="o">=</span> <span class="s1">&#39;text_to_video&#39;</span>
     <span class="n">TEXT_TO_TEXT_AND_IMAGE</span> <span class="o">=</span> <span class="s1">&#39;text_to_text_and_image&#39;</span></div>
@@ -315,12 +312,6 @@
     <span class="n">DOCARRAY</span> <span class="o">=</span> <span class="s1">&#39;docarray&#39;</span>
     <span class="n">S3_BUCKET</span> <span class="o">=</span> <span class="s1">&#39;s3_bucket&#39;</span>
     <span class="n">ELASTICSEARCH</span> <span class="o">=</span> <span class="s1">&#39;elasticsearch&#39;</span></div>
-
-
-<div class="viewcode-block" id="Qualities"><a class="viewcode-back" href="../../../api/now.constants/#now.constants.Qualities">[docs]</a><span class="k">class</span> <span class="nc">Qualities</span><span class="p">(</span><span class="n">BetterEnum</span><span class="p">):</span>
-    <span class="n">MEDIUM</span> <span class="o">=</span> <span class="s1">&#39;medium&#39;</span>
-    <span class="n">GOOD</span> <span class="o">=</span> <span class="s1">&#39;good&#39;</span>
-    <span class="n">EXCELLENT</span> <span class="o">=</span> <span class="s1">&#39;excellent&#39;</span></div>
 
 
 <div class="viewcode-block" id="ModelNames"><a class="viewcode-back" href="../../../api/now.constants/#now.constants.ModelNames">[docs]</a><span class="k">class</span> <span class="nc">ModelNames</span><span class="p">(</span><span class="n">BetterEnum</span><span class="p">):</span>
@@ -350,7 +341,8 @@
     <span class="s1">&#39;remote&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;CLIPOnnxEncoder/latest-gpu&#39;</span><span class="p">,</span> <span class="s1">&#39;ViT-B-32::openai&#39;</span><span class="p">,</span> <span class="n">ModelDimensions</span><span class="o">.</span><span class="n">CLIP</span><span class="p">),</span>
 <span class="p">}</span>
 
-<span class="n">EXTERNAL_CLIP_HOST</span> <span class="o">=</span> <span class="s1">&#39;encoderclip-bh-5f4efaff13.wolf.jina.ai&#39;</span>
+<span class="n">EXTERNAL_CLIP_HOST</span> <span class="o">=</span> <span class="s1">&#39;encoderclip-first-yak-8a7edb8adc.wolf.jina.ai&#39;</span>
+
 <span class="n">DEFAULT_FLOW_NAME</span> <span class="o">=</span> <span class="s1">&#39;nowapi&#39;</span>
 <span class="n">PREFETCH_NR</span> <span class="o">=</span> <span class="mi">10</span>
 
@@ -376,7 +368,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Nov 18, 2022.
+                            Last updated on Nov 24, 2022.
                         </div>
                     </div>
                     <div class="right-details">

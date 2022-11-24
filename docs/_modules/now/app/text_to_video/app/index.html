@@ -6,7 +6,7 @@
         <link rel="canonical" href="https://now.jina.ai/_modules/now/app/text_to_video/app.html" />
 
     <link rel="shortcut icon" href="../../../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.09.29"/>
-        <title>now.app.text_to_video.app - NOW 0.0.37 documentation</title>
+        <title>now.app.text_to_video.app - NOW 0.0.38 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../../../">
-                <div class="brand">NOW 0.0.37 documentation</div>
+                <div class="brand">NOW 0.0.38 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -278,7 +278,7 @@
 <span></span><span class="kn">import</span> <span class="nn">base64</span>
 <span class="kn">import</span> <span class="nn">io</span>
 <span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">PIL</span>
@@ -293,6 +293,7 @@
     <span class="n">NowVideoResponseModel</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">now.app.base.app</span> <span class="kn">import</span> <span class="n">JinaNOWApp</span>
+<span class="kn">from</span> <span class="nn">now.common.preprocess</span> <span class="kn">import</span> <span class="n">filter_data</span>
 <span class="kn">from</span> <span class="nn">now.common.utils</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">_get_clip_apps_with_dict</span><span class="p">,</span>
     <span class="n">common_setup</span><span class="p">,</span>
@@ -322,16 +323,21 @@
         <span class="k">return</span> <span class="s1">&#39;Text to video search app&#39;</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">input_modality</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Modalities</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">Modalities</span><span class="o">.</span><span class="n">TEXT</span>
+    <span class="k">def</span> <span class="nf">input_modality</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Modalities</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">Modalities</span><span class="o">.</span><span class="n">TEXT</span><span class="p">]</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">output_modality</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Modalities</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">Modalities</span><span class="o">.</span><span class="n">VIDEO</span>
+    <span class="k">def</span> <span class="nf">output_modality</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Modalities</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">Modalities</span><span class="o">.</span><span class="n">VIDEO</span><span class="p">]</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">required_docker_memory_in_gb</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="k">return</span> <span class="mi">12</span>
+
+<div class="viewcode-block" id="TextToVideo.get_index_query_access_paths"><a class="viewcode-back" href="../../../../../api/now.app.text_to_video.app/#now.app.text_to_video.app.TextToVideo.get_index_query_access_paths">[docs]</a>    <span class="k">def</span> <span class="nf">get_index_query_access_paths</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">search_fields</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s1">&#39;@c,cc&#39;</span></div>
 
 <div class="viewcode-block" id="TextToVideo.set_flow_yaml"><a class="viewcode-back" href="../../../../../api/now.app.text_to_video.app/#now.app.text_to_video.app.TextToVideo.set_flow_yaml">[docs]</a>    <span class="k">def</span> <span class="nf">set_flow_yaml</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">finetuning</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;finetuning&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
@@ -356,10 +362,6 @@
                 <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">flow_yaml</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">flow_dir</span><span class="p">,</span> <span class="s1">&#39;flow-video-clip.yml&#39;</span><span class="p">)</span></div>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">index_query_access_paths</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s1">&#39;@c&#39;</span>
 
 <div class="viewcode-block" id="TextToVideo.setup"><a class="viewcode-back" href="../../../../../api/now.app.text_to_video.app/#now.app.text_to_video.app.TextToVideo.setup">[docs]</a>    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">DocumentArray</span><span class="p">,</span> <span class="n">user_input</span><span class="p">:</span> <span class="n">UserInput</span><span class="p">,</span> <span class="n">kubectl_path</span>
@@ -386,39 +388,44 @@
         <span class="k">return</span> <span class="n">env_dict</span></div>
 
 <div class="viewcode-block" id="TextToVideo.preprocess"><a class="viewcode-back" href="../../../../../api/now.app.text_to_video.app/#now.app.text_to_video.app.TextToVideo.preprocess">[docs]</a>    <span class="k">def</span> <span class="nf">preprocess</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">da</span><span class="p">:</span> <span class="n">DocumentArray</span><span class="p">,</span> <span class="n">user_input</span><span class="p">:</span> <span class="n">UserInput</span><span class="p">,</span> <span class="n">is_indexing</span><span class="o">=</span><span class="kc">False</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">da</span><span class="p">:</span> <span class="n">DocumentArray</span><span class="p">,</span>
+        <span class="n">user_input</span><span class="p">:</span> <span class="n">UserInput</span><span class="p">,</span>
+        <span class="n">process_index</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">process_query</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DocumentArray</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">is_indexing</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">process_query</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">process_index</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                <span class="s1">&#39;Either `process_query` or `process_index` must be set to True.&#39;</span>
+            <span class="p">)</span>
 
-            <span class="k">def</span> <span class="nf">convert_fn</span><span class="p">(</span><span class="n">d</span><span class="p">:</span> <span class="n">Document</span><span class="p">):</span>
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">blob</span> <span class="o">==</span> <span class="sa">b</span><span class="s1">&#39;&#39;</span><span class="p">:</span>
-                        <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">uri</span><span class="p">:</span>
-                            <span class="n">d</span><span class="o">.</span><span class="n">load_uri_to_blob</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
-                        <span class="k">elif</span> <span class="n">d</span><span class="o">.</span><span class="n">tensor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                            <span class="n">d</span><span class="o">.</span><span class="n">convert_tensor_to_blob</span><span class="p">()</span>
-                    <span class="n">sample_video</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
-                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Failed to process </span><span class="si">{</span><span class="n">d</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s1">, error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-                <span class="k">return</span> <span class="n">d</span>
+        <span class="k">def</span> <span class="nf">convert_fn</span><span class="p">(</span><span class="n">d</span><span class="p">:</span> <span class="n">Document</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">blob</span> <span class="o">==</span> <span class="sa">b</span><span class="s1">&#39;&#39;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">uri</span><span class="p">:</span>
+                        <span class="n">d</span><span class="o">.</span><span class="n">load_uri_to_blob</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">d</span><span class="o">.</span><span class="n">tensor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">d</span><span class="o">.</span><span class="n">convert_tensor_to_blob</span><span class="p">()</span>
+                <span class="n">sample_video</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Failed to process </span><span class="si">{</span><span class="n">d</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s1">, error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">d</span>
 
+        <span class="n">modalities</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">process_index</span><span class="p">:</span>
+            <span class="n">modalities</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Modalities</span><span class="o">.</span><span class="n">VIDEO</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">da</span><span class="p">:</span>
-                <span class="n">convert_fn</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
-
-            <span class="k">return</span> <span class="n">DocumentArray</span><span class="p">(</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">da</span> <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">blob</span> <span class="o">!=</span> <span class="sa">b</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-
-            <span class="k">def</span> <span class="nf">convert_fn</span><span class="p">(</span><span class="n">d</span><span class="p">:</span> <span class="n">Document</span><span class="p">):</span>
-                <span class="n">d</span><span class="o">.</span><span class="n">chunks</span> <span class="o">=</span> <span class="n">DocumentArray</span><span class="p">(</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">chunks</span> <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">chunks</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">chunk</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="s1">&#39;loader&#39;</span><span class="p">:</span>
-                        <span class="n">chunk</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="s1">&#39;loading&#39;</span>
-                <span class="k">return</span> <span class="n">d</span>
+                    <span class="k">if</span> <span class="n">chunk</span><span class="o">.</span><span class="n">modality</span> <span class="o">==</span> <span class="n">Modalities</span><span class="o">.</span><span class="n">VIDEO</span><span class="p">:</span>
+                        <span class="n">convert_fn</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
 
+        <span class="k">if</span> <span class="n">process_query</span><span class="p">:</span>
+            <span class="n">modalities</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Modalities</span><span class="o">.</span><span class="n">TEXT</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">da</span><span class="p">:</span>
-                <span class="n">convert_fn</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">chunks</span><span class="p">:</span>
+                    <span class="n">chunk</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="s1">&#39;loading&#39;</span> <span class="k">if</span> <span class="n">chunk</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="s1">&#39;loader&#39;</span> <span class="k">else</span> <span class="n">chunk</span><span class="o">.</span><span class="n">text</span>
 
-            <span class="k">return</span> <span class="n">DocumentArray</span><span class="p">(</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">da</span> <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">chunks</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">filter_data</span><span class="p">(</span><span class="n">da</span><span class="p">,</span> <span class="n">modalities</span><span class="p">)</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">bff_mapping_fns</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -501,7 +508,10 @@
         <span class="n">frames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">frame_pil_resized</span><span class="p">)</span>
         <span class="n">frame_bytes</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
         <span class="n">frame_pil_resized</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">frame_bytes</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;JPEG&quot;</span><span class="p">,</span> <span class="n">quality</span><span class="o">=</span><span class="mi">70</span><span class="p">)</span>
-        <span class="n">d</span><span class="o">.</span><span class="n">chunks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Document</span><span class="p">(</span><span class="n">uri</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">uri</span><span class="p">,</span> <span class="n">blob</span><span class="o">=</span><span class="n">frame_bytes</span><span class="o">.</span><span class="n">getvalue</span><span class="p">(),</span> <span class="n">tags</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">tags</span><span class="p">))</span></div>
+        <span class="n">d</span><span class="o">.</span><span class="n">chunks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Document</span><span class="p">(</span><span class="n">uri</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">uri</span><span class="p">,</span> <span class="n">blob</span><span class="o">=</span><span class="n">frame_bytes</span><span class="o">.</span><span class="n">getvalue</span><span class="p">(),</span> <span class="n">tags</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">tags</span><span class="p">))</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">blob</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">uri</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">tensor</span> <span class="o">=</span> <span class="kc">None</span></div>
 </pre></div>
                 </article>
             </div>
@@ -519,7 +529,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Nov 18, 2022.
+                            Last updated on Nov 24, 2022.
                         </div>
                     </div>
                     <div class="right-details">

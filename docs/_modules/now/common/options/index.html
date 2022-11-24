@@ -6,7 +6,7 @@
         <link rel="canonical" href="https://now.jina.ai/_modules/now/common/options.html" />
 
     <link rel="shortcut icon" href="../../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.09.29"/>
-        <title>now.common.options - NOW 0.0.37 documentation</title>
+        <title>now.common.options - NOW 0.0.38 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../../">
-                <div class="brand">NOW 0.0.37 documentation</div>
+                <div class="brand">NOW 0.0.38 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -306,47 +306,39 @@
 <span class="n">AVAILABLE_SOON</span> <span class="o">=</span> <span class="s1">&#39;will be available in upcoming versions&#39;</span>
 
 <span class="c1"># Make sure you add this dialog option to your app in order of dependency, i.e., if some dialog option depends on other</span>
-<span class="c1"># then the parent should be called first before the dependant can called.</span>
+<span class="c1"># than the parent should be called first before the dependant can called.</span>
 
-<span class="n">APP</span> <span class="o">=</span> <span class="n">DialogOptions</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;app&#39;</span><span class="p">,</span>
+
+<span class="k">def</span> <span class="nf">_create_app_from_output_modality</span><span class="p">(</span><span class="n">user_input</span><span class="p">:</span> <span class="n">UserInput</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">user_input</span><span class="o">.</span><span class="n">output_modality</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;image&#39;</span><span class="p">,</span> <span class="s1">&#39;text&#39;</span><span class="p">]:</span>
+        <span class="n">app_name</span> <span class="o">=</span> <span class="n">Apps</span><span class="o">.</span><span class="n">IMAGE_TEXT_RETRIEVAL</span>
+    <span class="k">elif</span> <span class="n">user_input</span><span class="o">.</span><span class="n">output_modality</span> <span class="o">==</span> <span class="s1">&#39;video&#39;</span><span class="p">:</span>
+        <span class="n">app_name</span> <span class="o">=</span> <span class="n">Apps</span><span class="o">.</span><span class="n">TEXT_TO_VIDEO</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid output modality: </span><span class="si">{</span><span class="n">user_input</span><span class="o">.</span><span class="n">output_modality</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">user_input</span><span class="o">.</span><span class="n">app_instance</span> <span class="o">=</span> <span class="n">construct_app</span><span class="p">(</span><span class="n">app_name</span><span class="p">)</span>
+
+
+<span class="n">OUTPUT_MODALITY</span> <span class="o">=</span> <span class="n">DialogOptions</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;output_modality&#39;</span><span class="p">,</span>
     <span class="n">choices</span><span class="o">=</span><span class="p">[</span>
-        <span class="p">{</span>
-            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;📝 ▶ 🏞 text to image search&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">Apps</span><span class="o">.</span><span class="n">TEXT_TO_IMAGE</span><span class="p">,</span>
-        <span class="p">},</span>
-        <span class="p">{</span>
-            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;🏞 ▶ 📝 image to text search&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">Apps</span><span class="o">.</span><span class="n">IMAGE_TO_TEXT</span><span class="p">,</span>
-        <span class="p">},</span>
-        <span class="p">{</span>
-            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;🏞 ▶ 🏞 image to image search&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">Apps</span><span class="o">.</span><span class="n">IMAGE_TO_IMAGE</span><span class="p">,</span>
-        <span class="p">},</span>
-        <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;📝 ▶ 📝 text to text search&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">Apps</span><span class="o">.</span><span class="n">TEXT_TO_TEXT</span><span class="p">},</span>
-        <span class="p">{</span>
-            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;📝 ▶ 🎦 text to video search (gif only at the moment)&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">Apps</span><span class="o">.</span><span class="n">TEXT_TO_VIDEO</span><span class="p">,</span>
-        <span class="p">},</span>
-        <span class="p">{</span>
-            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;🥁 ▶ 🥁 music to music search&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">Apps</span><span class="o">.</span><span class="n">MUSIC_TO_MUSIC</span><span class="p">,</span>
-        <span class="p">},</span>
-        <span class="p">{</span>
-            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;📝 ▶ 📝+🏞 text to text+image search&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">Apps</span><span class="o">.</span><span class="n">TEXT_TO_TEXT_AND_IMAGE</span><span class="p">,</span>
-        <span class="p">},</span>
+        <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;📝 text&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="s1">&#39;text&#39;</span><span class="p">},</span>
+        <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;🏞 image&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="s1">&#39;image&#39;</span><span class="p">},</span>
+        <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;🎦 video&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="s1">&#39;video&#39;</span><span class="p">},</span>
     <span class="p">],</span>
-    <span class="n">prompt_message</span><span class="o">=</span><span class="s1">&#39;What sort of search engine would you like to build?&#39;</span><span class="p">,</span>
     <span class="n">prompt_type</span><span class="o">=</span><span class="s1">&#39;list&#39;</span><span class="p">,</span>
+    <span class="n">prompt_message</span><span class="o">=</span><span class="s1">&#39;What modality do you want to index?&#39;</span><span class="p">,</span>
+    <span class="n">description</span><span class="o">=</span><span class="s1">&#39;What is the index modality of your search system?&#39;</span><span class="p">,</span>
     <span class="n">is_terminal_command</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">description</span><span class="o">=</span><span class="s1">&#39;What sort of search engine would you like to build?&#39;</span><span class="p">,</span>
+    <span class="n">post_func</span><span class="o">=</span><span class="n">_create_app_from_output_modality</span><span class="p">,</span>
 <span class="p">)</span>
+
 
 <span class="n">APP_NAME</span> <span class="o">=</span> <span class="n">DialogOptions</span><span class="p">(</span>
     <span class="n">name</span><span class="o">=</span><span class="s1">&#39;flow_name&#39;</span><span class="p">,</span>
     <span class="n">prompt_message</span><span class="o">=</span><span class="s1">&#39;Choose a name for your application:&#39;</span><span class="p">,</span>
     <span class="n">prompt_type</span><span class="o">=</span><span class="s1">&#39;input&#39;</span><span class="p">,</span>
+    <span class="n">is_terminal_command</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span>
 
 
@@ -378,19 +370,14 @@
         <span class="p">},</span>
     <span class="p">],</span>
     <span class="n">prompt_type</span><span class="o">=</span><span class="s1">&#39;list&#39;</span><span class="p">,</span>
-    <span class="n">is_terminal_command</span><span class="o">=</span><span class="kc">True</span>
-    <span class="c1"># post_func=lambda user_input, **kwargs: _parse_custom_data_from_cli(</span>
-    <span class="c1">#     user_input, **kwargs</span>
-    <span class="c1"># ),</span>
+    <span class="n">is_terminal_command</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span>
+
 
 <span class="n">DEMO_DATA</span> <span class="o">=</span> <span class="n">DialogOptions</span><span class="p">(</span>
     <span class="n">name</span><span class="o">=</span><span class="s1">&#39;dataset_name&#39;</span><span class="p">,</span>
     <span class="n">prompt_message</span><span class="o">=</span><span class="s1">&#39;What demo dataset do you want to use?&#39;</span><span class="p">,</span>
-    <span class="n">choices</span><span class="o">=</span><span class="k">lambda</span> <span class="n">user_input</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="p">[</span>
-        <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">demo_data</span><span class="o">.</span><span class="n">display_name</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">demo_data</span><span class="o">.</span><span class="n">name</span><span class="p">}</span>
-        <span class="k">for</span> <span class="n">demo_data</span> <span class="ow">in</span> <span class="n">user_input</span><span class="o">.</span><span class="n">app_instance</span><span class="o">.</span><span class="n">demo_datasets</span>
-    <span class="p">],</span>
+    <span class="n">choices</span><span class="o">=</span><span class="k">lambda</span> <span class="n">user_input</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">_get_demo_data_choices</span><span class="p">(</span><span class="n">user_input</span><span class="p">),</span>
     <span class="n">prompt_type</span><span class="o">=</span><span class="s1">&#39;list&#39;</span><span class="p">,</span>
     <span class="n">depends_on</span><span class="o">=</span><span class="n">DATASET_TYPE</span><span class="p">,</span>
     <span class="n">is_terminal_command</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -398,6 +385,17 @@
     <span class="n">conditional_check</span><span class="o">=</span><span class="k">lambda</span> <span class="n">user_input</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">user_input</span><span class="o">.</span><span class="n">dataset_type</span>
     <span class="o">==</span> <span class="n">DatasetTypes</span><span class="o">.</span><span class="n">DEMO</span><span class="p">,</span>
 <span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_get_demo_data_choices</span><span class="p">(</span><span class="n">user_input</span><span class="p">:</span> <span class="n">UserInput</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">user_input</span><span class="o">.</span><span class="n">output_modality</span><span class="p">:</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">user_input</span><span class="o">.</span><span class="n">app_instance</span><span class="o">.</span><span class="n">demo_datasets</span><span class="p">[</span><span class="n">user_input</span><span class="o">.</span><span class="n">output_modality</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">user_input</span><span class="o">.</span><span class="n">app_instance</span><span class="o">.</span><span class="n">demo_datasets</span>
+    <span class="k">return</span> <span class="p">[</span>
+        <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">demo_data</span><span class="o">.</span><span class="n">display_name</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">demo_data</span><span class="o">.</span><span class="n">name</span><span class="p">}</span> <span class="k">for</span> <span class="n">demo_data</span> <span class="ow">in</span> <span class="n">ds</span>
+    <span class="p">]</span>
+
 
 <span class="n">DOCARRAY_NAME</span> <span class="o">=</span> <span class="n">DialogOptions</span><span class="p">(</span>
     <span class="n">name</span><span class="o">=</span><span class="s1">&#39;dataset_name&#39;</span><span class="p">,</span>
@@ -464,37 +462,20 @@
 
 <span class="c1"># --------------------------------------------- #</span>
 
-<span class="n">ES_TEXT_FIELDS</span> <span class="o">=</span> <span class="n">DialogOptions</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;es_text_fields&#39;</span><span class="p">,</span>
-    <span class="n">prompt_message</span><span class="o">=</span><span class="s1">&#39;Please enter comma-separated text fields of your data:&#39;</span><span class="p">,</span>
+<span class="n">SEARCH_FIELDS</span> <span class="o">=</span> <span class="n">DialogOptions</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;search_fields&#39;</span><span class="p">,</span>
+    <span class="n">prompt_message</span><span class="o">=</span><span class="s1">&#39;Enter comma-separated search fields:&#39;</span><span class="p">,</span>
     <span class="n">prompt_type</span><span class="o">=</span><span class="s1">&#39;input&#39;</span><span class="p">,</span>
     <span class="n">depends_on</span><span class="o">=</span><span class="n">DATASET_TYPE</span><span class="p">,</span>
-    <span class="n">conditional_check</span><span class="o">=</span><span class="k">lambda</span> <span class="n">user_input</span><span class="p">:</span> <span class="n">user_input</span><span class="o">.</span><span class="n">dataset_type</span>
-    <span class="o">==</span> <span class="n">DatasetTypes</span><span class="o">.</span><span class="n">ELASTICSEARCH</span><span class="p">,</span>
-    <span class="n">post_func</span><span class="o">=</span><span class="k">lambda</span> <span class="n">user_input</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">_parse_text_fields</span><span class="p">(</span><span class="n">user_input</span><span class="p">),</span>
+    <span class="n">is_terminal_command</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">conditional_check</span><span class="o">=</span><span class="k">lambda</span> <span class="n">user_input</span><span class="p">:</span> <span class="n">user_input</span><span class="o">.</span><span class="n">dataset_type</span> <span class="o">!=</span> <span class="n">DatasetTypes</span><span class="o">.</span><span class="n">DEMO</span><span class="p">,</span>
+    <span class="n">post_func</span><span class="o">=</span><span class="k">lambda</span> <span class="n">user_input</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">_parse_search_fields</span><span class="p">(</span><span class="n">user_input</span><span class="p">),</span>
 <span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">_parse_text_fields</span><span class="p">(</span><span class="n">user_input</span><span class="p">:</span> <span class="n">UserInput</span><span class="p">):</span>
-    <span class="n">user_input</span><span class="o">.</span><span class="n">es_text_fields</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="n">field</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">user_input</span><span class="o">.</span><span class="n">es_text_fields</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
-    <span class="p">]</span>
-
-
-<span class="n">ES_IMAGE_FIELDS</span> <span class="o">=</span> <span class="n">DialogOptions</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;es_image_fields&#39;</span><span class="p">,</span>
-    <span class="n">prompt_message</span><span class="o">=</span><span class="s1">&#39;Please enter comma-separated image fields of your data:&#39;</span><span class="p">,</span>
-    <span class="n">prompt_type</span><span class="o">=</span><span class="s1">&#39;input&#39;</span><span class="p">,</span>
-    <span class="n">depends_on</span><span class="o">=</span><span class="n">DATASET_TYPE</span><span class="p">,</span>
-    <span class="n">conditional_check</span><span class="o">=</span><span class="k">lambda</span> <span class="n">user_input</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">user_input</span><span class="o">.</span><span class="n">dataset_type</span>
-    <span class="o">==</span> <span class="n">DatasetTypes</span><span class="o">.</span><span class="n">ELASTICSEARCH</span><span class="p">,</span>
-    <span class="n">post_func</span><span class="o">=</span><span class="k">lambda</span> <span class="n">user_input</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">_parse_image_fields</span><span class="p">(</span><span class="n">user_input</span><span class="p">),</span>
-<span class="p">)</span>
-
-
-<span class="k">def</span> <span class="nf">_parse_image_fields</span><span class="p">(</span><span class="n">user_input</span><span class="p">:</span> <span class="n">UserInput</span><span class="p">):</span>
-    <span class="n">user_input</span><span class="o">.</span><span class="n">es_image_fields</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="n">field</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">user_input</span><span class="o">.</span><span class="n">es_image_fields</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_parse_search_fields</span><span class="p">(</span><span class="n">user_input</span><span class="p">:</span> <span class="n">UserInput</span><span class="p">):</span>
+    <span class="n">user_input</span><span class="o">.</span><span class="n">search_fields</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">field</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">user_input</span><span class="o">.</span><span class="n">search_fields</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
     <span class="p">]</span>
 
 
@@ -585,6 +566,7 @@
         <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;✅ yes&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
     <span class="p">],</span>
     <span class="n">depends_on</span><span class="o">=</span><span class="n">DEPLOYMENT_TYPE</span><span class="p">,</span>
+    <span class="n">is_terminal_command</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">conditional_check</span><span class="o">=</span><span class="k">lambda</span> <span class="n">user_inp</span><span class="p">:</span> <span class="n">user_inp</span><span class="o">.</span><span class="n">deployment_type</span> <span class="o">==</span> <span class="s1">&#39;remote&#39;</span><span class="p">,</span>
 <span class="p">)</span>
 
@@ -595,12 +577,13 @@
     <span class="n">prompt_type</span><span class="o">=</span><span class="s1">&#39;list&#39;</span><span class="p">,</span>
     <span class="n">choices</span><span class="o">=</span><span class="p">[</span>
         <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;✅ yes&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span><span class="p">},</span>
-        <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;⛔ no&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">},</span>
+        <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;⛔ no&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
     <span class="p">],</span>
     <span class="n">depends_on</span><span class="o">=</span><span class="n">SECURED</span><span class="p">,</span>
     <span class="n">is_terminal_command</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Pass an api_key to access the flow once the deployment is complete. &#39;</span><span class="p">,</span>
-    <span class="n">conditional_check</span><span class="o">=</span><span class="k">lambda</span> <span class="n">user_inp</span><span class="p">:</span> <span class="n">user_inp</span><span class="o">.</span><span class="n">secured</span><span class="p">,</span>
+    <span class="n">conditional_check</span><span class="o">=</span><span class="k">lambda</span> <span class="n">user_inp</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">user_inp</span><span class="o">.</span><span class="n">secured</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;true&#39;</span><span class="p">,</span>
+    <span class="n">post_func</span><span class="o">=</span><span class="k">lambda</span> <span class="n">user_input</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">_set_value_to_none</span><span class="p">(</span><span class="n">user_input</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="n">ADDITIONAL_USERS</span> <span class="o">=</span> <span class="n">DialogOptions</span><span class="p">(</span>
@@ -612,7 +595,7 @@
         <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;⛔ no&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
     <span class="p">],</span>
     <span class="n">depends_on</span><span class="o">=</span><span class="n">SECURED</span><span class="p">,</span>
-    <span class="n">conditional_check</span><span class="o">=</span><span class="k">lambda</span> <span class="n">user_inp</span><span class="p">:</span> <span class="n">user_inp</span><span class="o">.</span><span class="n">secured</span><span class="p">,</span>
+    <span class="n">conditional_check</span><span class="o">=</span><span class="k">lambda</span> <span class="n">user_inp</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">user_inp</span><span class="o">.</span><span class="n">secured</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;true&#39;</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="n">USER_EMAILS</span> <span class="o">=</span> <span class="n">DialogOptions</span><span class="p">(</span>
@@ -625,6 +608,11 @@
     <span class="n">conditional_check</span><span class="o">=</span><span class="k">lambda</span> <span class="n">user_inp</span><span class="p">:</span> <span class="n">user_inp</span><span class="o">.</span><span class="n">additional_user</span><span class="p">,</span>
     <span class="n">post_func</span><span class="o">=</span><span class="k">lambda</span> <span class="n">user_input</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">_add_additional_users</span><span class="p">(</span><span class="n">user_input</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span>
 <span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_set_value_to_none</span><span class="p">(</span><span class="n">user_input</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">user_input</span><span class="o">.</span><span class="n">api_key</span><span class="p">:</span>
+        <span class="n">user_input</span><span class="o">.</span><span class="n">api_key</span> <span class="o">=</span> <span class="kc">None</span>
 
 
 <span class="k">def</span> <span class="nf">_add_additional_users</span><span class="p">(</span><span class="n">user_input</span><span class="p">:</span> <span class="n">UserInput</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -691,54 +679,28 @@
     <span class="k">return</span> <span class="kc">True</span>
 
 
-<span class="c1"># def _parse_custom_data_from_cli(user_input: UserInput, **kwargs) -&gt; None:</span>
-<span class="c1">#     data = user_input.data</span>
-<span class="c1">#     if data == &#39;custom&#39;:</span>
-<span class="c1">#         return</span>
-<span class="c1">#</span>
-<span class="c1">#     app_instance = user_input.app_instance</span>
-<span class="c1">#     for k, v in enumerate(AVAILABLE_DATASET[app_instance.output_modality]):</span>
-<span class="c1">#         if v[0] == data:</span>
-<span class="c1">#             return</span>
-<span class="c1">#</span>
-<span class="c1">#     try:</span>
-<span class="c1">#         data = os.path.expanduser(data)</span>
-<span class="c1">#     except Exception:</span>
-<span class="c1">#         pass</span>
-<span class="c1">#     if os.path.exists(data):</span>
-<span class="c1">#         user_input.dataset_type = DatasetTypes.PATH</span>
-<span class="c1">#         user_input.dataset_path = data</span>
-<span class="c1">#     elif &#39;http&#39; in data:</span>
-<span class="c1">#         user_input.dataset_type = DatasetTypes.URL</span>
-<span class="c1">#         user_input.dataset_url = data</span>
-<span class="c1">#     else:</span>
-<span class="c1">#         user_input.dataset_type = DatasetTypes.DOCARRAY</span>
-<span class="c1">#         user_input.dataset_name = data</span>
-
-
-<span class="n">app_name</span> <span class="o">=</span> <span class="p">[</span><span class="n">APP_NAME</span><span class="p">]</span>
+<span class="n">app_config</span> <span class="o">=</span> <span class="p">[</span><span class="n">OUTPUT_MODALITY</span><span class="p">,</span> <span class="n">APP_NAME</span><span class="p">]</span>
 <span class="n">data_type</span> <span class="o">=</span> <span class="p">[</span><span class="n">DATASET_TYPE</span><span class="p">]</span>
+<span class="n">data_fields</span> <span class="o">=</span> <span class="p">[</span><span class="n">SEARCH_FIELDS</span><span class="p">]</span>
 <span class="n">data_demo</span> <span class="o">=</span> <span class="p">[</span><span class="n">DEMO_DATA</span><span class="p">]</span>
 <span class="n">data_da</span> <span class="o">=</span> <span class="p">[</span><span class="n">DOCARRAY_NAME</span><span class="p">,</span> <span class="n">DATASET_PATH</span><span class="p">,</span> <span class="n">DATASET_URL</span><span class="p">]</span>
 <span class="n">data_s3</span> <span class="o">=</span> <span class="p">[</span><span class="n">DATASET_PATH_S3</span><span class="p">,</span> <span class="n">AWS_ACCESS_KEY_ID</span><span class="p">,</span> <span class="n">AWS_SECRET_ACCESS_KEY</span><span class="p">,</span> <span class="n">AWS_REGION_NAME</span><span class="p">]</span>
 <span class="n">data_es</span> <span class="o">=</span> <span class="p">[</span>
     <span class="n">ES_HOST_NAME</span><span class="p">,</span>
     <span class="n">ES_INDEX_NAME</span><span class="p">,</span>
-    <span class="n">ES_TEXT_FIELDS</span><span class="p">,</span>
-    <span class="n">ES_IMAGE_FIELDS</span><span class="p">,</span>
     <span class="n">ES_ADDITIONAL_ARGS</span><span class="p">,</span>
 <span class="p">]</span>
 <span class="n">cluster</span> <span class="o">=</span> <span class="p">[</span><span class="n">DEPLOYMENT_TYPE</span><span class="p">,</span> <span class="n">LOCAL_CLUSTER</span><span class="p">]</span>
 <span class="n">remote_cluster</span> <span class="o">=</span> <span class="p">[</span><span class="n">SECURED</span><span class="p">,</span> <span class="n">API_KEY</span><span class="p">,</span> <span class="n">ADDITIONAL_USERS</span><span class="p">,</span> <span class="n">USER_EMAILS</span><span class="p">]</span>
 
-
 <span class="n">base_options</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="n">app_name</span>
+    <span class="n">app_config</span>
     <span class="o">+</span> <span class="n">data_type</span>
     <span class="o">+</span> <span class="n">data_demo</span>
     <span class="o">+</span> <span class="n">data_da</span>
     <span class="o">+</span> <span class="n">data_s3</span>
     <span class="o">+</span> <span class="n">data_es</span>
+    <span class="o">+</span> <span class="n">data_fields</span>
     <span class="o">+</span> <span class="n">cluster</span>
     <span class="o">+</span> <span class="n">remote_cluster</span>
 <span class="p">)</span>
@@ -759,7 +721,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Nov 18, 2022.
+                            Last updated on Nov 24, 2022.
                         </div>
                     </div>
                     <div class="right-details">

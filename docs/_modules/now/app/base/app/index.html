@@ -6,7 +6,7 @@
         <link rel="canonical" href="https://now.jina.ai/_modules/now/app/base/app.html" />
 
     <link rel="shortcut icon" href="../../../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.09.29"/>
-        <title>now.app.base.app - NOW 0.0.37 documentation</title>
+        <title>now.app.base.app - NOW 0.0.38 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../../../">
-                <div class="brand">NOW 0.0.37 documentation</div>
+                <div class="brand">NOW 0.0.38 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -285,7 +285,7 @@
 <span class="kn">from</span> <span class="nn">jina.jaml</span> <span class="kn">import</span> <span class="n">JAML</span>
 <span class="kn">from</span> <span class="nn">jina.serve.runtimes.gateway.http.models</span> <span class="kn">import</span> <span class="n">JinaRequestModel</span><span class="p">,</span> <span class="n">JinaResponseModel</span>
 
-<span class="kn">from</span> <span class="nn">now.constants</span> <span class="kn">import</span> <span class="n">SUPPORTED_FILE_TYPES</span><span class="p">,</span> <span class="n">Modalities</span>
+<span class="kn">from</span> <span class="nn">now.constants</span> <span class="kn">import</span> <span class="n">DEFAULT_FLOW_NAME</span><span class="p">,</span> <span class="n">SUPPORTED_FILE_TYPES</span><span class="p">,</span> <span class="n">Modalities</span>
 <span class="kn">from</span> <span class="nn">now.demo_data</span> <span class="kn">import</span> <span class="n">AVAILABLE_DATASET</span><span class="p">,</span> <span class="n">DEFAULT_EXAMPLE_HOSTED</span><span class="p">,</span> <span class="n">DemoDataset</span>
 <span class="kn">from</span> <span class="nn">now.now_dataclasses</span> <span class="kn">import</span> <span class="n">DialogOptions</span><span class="p">,</span> <span class="n">UserInput</span>
 
@@ -325,7 +325,7 @@
 
     <span class="nd">@property</span>
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span> <span class="nf">input_modality</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Modalities</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">input_modality</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Modalities</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Modality used for running search queries</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -333,7 +333,7 @@
 
     <span class="nd">@property</span>
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span> <span class="nf">output_modality</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Modalities</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">output_modality</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Modalities</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Modality used for indexing data</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -382,12 +382,16 @@
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">supported_file_types</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;Used to filter files in local structure or an S3 bucket.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">SUPPORTED_FILE_TYPES</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">output_modality</span><span class="p">]</span>
+        <span class="n">sup_file</span> <span class="o">=</span> <span class="p">[</span><span class="n">SUPPORTED_FILE_TYPES</span><span class="p">[</span><span class="n">modality</span><span class="p">]</span> <span class="k">for</span> <span class="n">modality</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_modality</span><span class="p">]</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">item</span> <span class="k">for</span> <span class="n">sublist</span> <span class="ow">in</span> <span class="n">sup_file</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">sublist</span><span class="p">]</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">demo_datasets</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">DemoDataset</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">demo_datasets</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">DemoDataset</span><span class="p">]]:</span>
         <span class="sd">&quot;&quot;&quot;Get a list of example datasets for the app.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">AVAILABLE_DATASET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_modality</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="n">available_datasets</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">output_modality</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_modality</span><span class="p">:</span>
+            <span class="n">available_datasets</span><span class="p">[</span><span class="n">output_modality</span><span class="p">]</span> <span class="o">=</span> <span class="n">AVAILABLE_DATASET</span><span class="p">[</span><span class="n">output_modality</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">available_datasets</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">required_docker_memory_in_gb</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
@@ -470,12 +474,21 @@
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flow_yaml</span><span class="p">)</span> <span class="k">as</span> <span class="n">input_f</span><span class="p">:</span>
             <span class="n">flow_yaml_content</span> <span class="o">=</span> <span class="n">JAML</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">input_f</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
             <span class="n">flow_yaml_content</span><span class="p">[</span><span class="s1">&#39;jcloud&#39;</span><span class="p">][</span><span class="s1">&#39;labels&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;team&#39;</span><span class="p">:</span> <span class="s1">&#39;now&#39;</span><span class="p">}</span>
+            <span class="n">flow_yaml_content</span><span class="p">[</span><span class="s1">&#39;jcloud&#39;</span><span class="p">][</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">user_input</span><span class="o">.</span><span class="n">flow_name</span> <span class="o">+</span> <span class="s1">&#39;-&#39;</span> <span class="o">+</span> <span class="n">DEFAULT_FLOW_NAME</span>
+                <span class="k">if</span> <span class="n">user_input</span><span class="o">.</span><span class="n">flow_name</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span>
+                <span class="ow">and</span> <span class="n">user_input</span><span class="o">.</span><span class="n">flow_name</span> <span class="o">!=</span> <span class="n">DEFAULT_FLOW_NAME</span>
+                <span class="k">else</span> <span class="n">DEFAULT_FLOW_NAME</span>
+            <span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_environment_variables</span><span class="p">(</span><span class="n">flow_yaml_content</span><span class="p">)</span>
+
+            <span class="c1"># append api_keys to the executor with name &#39;preprocessor&#39; and &#39;indexer&#39;</span>
             <span class="k">for</span> <span class="n">executor</span> <span class="ow">in</span> <span class="n">flow_yaml_content</span><span class="p">[</span><span class="s1">&#39;executors&#39;</span><span class="p">]:</span>
-                <span class="c1"># append api_keys to the executor with name &#39;preprocessor&#39; and &#39;indexer&#39;</span>
                 <span class="k">if</span> <span class="n">executor</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;preprocessor&#39;</span> <span class="ow">or</span> <span class="n">executor</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;indexer&#39;</span><span class="p">:</span>
                     <span class="n">executor</span><span class="p">[</span><span class="s1">&#39;uses_with&#39;</span><span class="p">][</span><span class="s1">&#39;api_keys&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;${{ ENV.API_KEY }}&#39;</span>
 
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_modality</span> <span class="o">==</span> <span class="n">Modalities</span><span class="o">.</span><span class="n">TEXT</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">Modalities</span><span class="o">.</span><span class="n">TEXT</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_modality</span><span class="p">:</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span>
                     <span class="n">exec_dict</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;autocomplete_executor&#39;</span>
                     <span class="k">for</span> <span class="n">exec_dict</span> <span class="ow">in</span> <span class="n">flow_yaml_content</span><span class="p">[</span><span class="s1">&#39;executors&#39;</span><span class="p">]</span>
@@ -487,28 +500,22 @@
                             <span class="s1">&#39;uses&#39;</span><span class="p">:</span> <span class="s1">&#39;${{ ENV.AUTOCOMPLETE_EXECUTOR_NAME }}&#39;</span><span class="p">,</span>
                             <span class="s1">&#39;needs&#39;</span><span class="p">:</span> <span class="s1">&#39;gateway&#39;</span><span class="p">,</span>
                             <span class="s1">&#39;env&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;JINA_LOG_LEVEL&#39;</span><span class="p">:</span> <span class="s1">&#39;DEBUG&#39;</span><span class="p">},</span>
+                            <span class="s1">&#39;uses_with&#39;</span><span class="p">:</span> <span class="p">{</span>
+                                <span class="s1">&#39;api_keys&#39;</span><span class="p">:</span> <span class="s1">&#39;${{ ENV.API_KEY }}&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;user_emails&#39;</span><span class="p">:</span> <span class="s1">&#39;${{ ENV.USER_EMAILS }}&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;admin_emails&#39;</span><span class="p">:</span> <span class="s1">&#39;${{ ENV.ADMIN_EMAILS }}&#39;</span><span class="p">,</span>
+                            <span class="p">},</span>
                         <span class="p">},</span>
                     <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">flow_yaml</span> <span class="o">=</span> <span class="n">flow_yaml_content</span>
         <span class="k">return</span> <span class="p">{}</span></div>
 
-<div class="viewcode-block" id="JinaNOWApp.cleanup"><a class="viewcode-back" href="../../../../../api/now.app.base.app/#now.app.base.app.JinaNOWApp.cleanup">[docs]</a>    <span class="k">def</span> <span class="nf">cleanup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app_config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs after the flow is terminated.</span>
-<span class="sd">        Cleans up the resources created during setup.</span>
-<span class="sd">        Common examples are:</span>
-<span class="sd">            - delete a database</span>
-<span class="sd">            - remove artifact</span>
-<span class="sd">            - notify other services</span>
-<span class="sd">        :param app_config: contains all information needed to clean up the allocated resources</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-
 <div class="viewcode-block" id="JinaNOWApp.preprocess"><a class="viewcode-back" href="../../../../../api/now.app.base.app/#now.app.base.app.JinaNOWApp.preprocess">[docs]</a>    <span class="k">def</span> <span class="nf">preprocess</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">da</span><span class="p">:</span> <span class="n">DocumentArray</span><span class="p">,</span>
         <span class="n">user_input</span><span class="p">:</span> <span class="n">UserInput</span><span class="p">,</span>
-        <span class="n">is_indexing</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">process_index</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">process_query</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DocumentArray</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Loads and preprocesses every document such that it is ready for finetuning/indexing.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">da</span></div>
@@ -529,7 +536,7 @@
             <span class="p">)</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s1">&#39;/dry_run&#39;</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">ConnectionError</span><span class="p">:</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
                 <span class="k">return</span> <span class="kc">False</span>
             <span class="k">return</span> <span class="kc">True</span>
         <span class="k">return</span> <span class="kc">False</span></div>
@@ -565,15 +572,28 @@
             <span class="p">)</span>
         <span class="p">}</span>
 
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">index_query_access_paths</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Gives access paths for indexing and searching.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="s1">&#39;@r&#39;</span>
+<div class="viewcode-block" id="JinaNOWApp.get_index_query_access_paths"><a class="viewcode-back" href="../../../../../api/now.app.base.app/#now.app.base.app.JinaNOWApp.get_index_query_access_paths">[docs]</a>    <span class="k">def</span> <span class="nf">get_index_query_access_paths</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">search_fields</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Gives access paths for indexing and searching. Returns a path to search fields</span>
+<span class="sd">        if provided, otherwise a path to chunk level.</span>
+
+<span class="sd">        :param search_fields: Optional list of search fields.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">search_fields</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;@.[&#39;</span> <span class="o">+</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">search_fields</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;]&#39;</span>
+        <span class="k">return</span> <span class="s1">&#39;@c&#39;</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">max_request_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Max number of documents in one request&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="mi">32</span></div>
+        <span class="k">return</span> <span class="mi">32</span>
+
+<div class="viewcode-block" id="JinaNOWApp.add_environment_variables"><a class="viewcode-back" href="../../../../../api/now.app.base.app/#now.app.base.app.JinaNOWApp.add_environment_variables">[docs]</a>    <span class="k">def</span> <span class="nf">add_environment_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flow_yaml_content</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s1">&#39;JINA_OPTOUT_TELEMETRY&#39;</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+            <span class="n">flow_yaml_content</span><span class="p">[</span><span class="s1">&#39;with&#39;</span><span class="p">][</span><span class="s1">&#39;env&#39;</span><span class="p">][</span><span class="s1">&#39;JINA_OPTOUT_TELEMETRY&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span>
+                <span class="s1">&#39;JINA_OPTOUT_TELEMETRY&#39;</span>
+            <span class="p">]</span></div></div>
 </pre></div>
                 </article>
             </div>
@@ -591,7 +611,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Nov 18, 2022.
+                            Last updated on Nov 24, 2022.
                         </div>
                     </div>
                     <div class="right-details">

@@ -6,7 +6,7 @@
         <link rel="canonical" href="https://now.jina.ai/_modules/now/utils.html" />
 
     <link rel="shortcut icon" href="../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.09.29"/>
-        <title>now.utils - NOW 0.0.37 documentation</title>
+        <title>now.utils - NOW 0.0.38 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../">
-                <div class="brand">NOW 0.0.37 documentation</div>
+                <div class="brand">NOW 0.0.38 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -361,6 +361,25 @@
 <span class="n">sigmap</span> <span class="o">=</span> <span class="p">{</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGINT</span><span class="p">:</span> <span class="n">my_handler</span><span class="p">,</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIGTERM</span><span class="p">:</span> <span class="n">my_handler</span><span class="p">}</span>
 
 
+<div class="viewcode-block" id="EnvironmentVariables"><a class="viewcode-back" href="../../../api/now.utils/#now.utils.EnvironmentVariables">[docs]</a><span class="k">class</span> <span class="nc">EnvironmentVariables</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">envs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_env_keys_added</span><span class="p">:</span> <span class="n">Dict</span> <span class="o">=</span> <span class="n">envs</span>
+
+    <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env_keys_added</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env_keys_added</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">unsetenv</span><span class="p">(</span><span class="n">key</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="add_env_variables_to_flow"><a class="viewcode-back" href="../../../api/now.utils/#now.utils.add_env_variables_to_flow">[docs]</a><span class="k">def</span> <span class="nf">add_env_variables_to_flow</span><span class="p">(</span><span class="n">app_instance</span><span class="p">,</span> <span class="n">env_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">):</span>
+
+    <span class="k">with</span> <span class="n">EnvironmentVariables</span><span class="p">(</span><span class="n">env_dict</span><span class="p">):</span>
+        <span class="n">app_instance</span><span class="o">.</span><span class="n">flow_yaml</span> <span class="o">=</span> <span class="n">JAML</span><span class="o">.</span><span class="n">expand_dict</span><span class="p">(</span><span class="n">app_instance</span><span class="o">.</span><span class="n">flow_yaml</span><span class="p">,</span> <span class="n">env_dict</span><span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="write_env_file"><a class="viewcode-back" href="../../../api/now.utils/#now.utils.write_env_file">[docs]</a><span class="k">def</span> <span class="nf">write_env_file</span><span class="p">(</span><span class="n">env_file</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
     <span class="n">config_string</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1">=</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">items</span><span class="p">()])</span>
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">env_file</span><span class="p">,</span> <span class="s1">&#39;w+&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
@@ -494,10 +513,7 @@
             <span class="k">del</span> <span class="n">d</span><span class="o">.</span><span class="n">tags</span><span class="p">[</span><span class="s1">&#39;tag_uri&#39;</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">d</span>
 
-    <span class="n">docs_to_download</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">docs</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">uri</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;s3://&#39;</span><span class="p">):</span>
-            <span class="n">docs_to_download</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+    <span class="n">docs_to_download</span> <span class="o">=</span> <span class="p">[</span><span class="n">doc</span> <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">docs</span> <span class="k">if</span> <span class="n">doc</span><span class="o">.</span><span class="n">uri</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;s3://&#39;</span><span class="p">)]</span>
 
     <span class="k">with</span> <span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="n">max_workers</span><span class="p">)</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
         <span class="n">futures</span> <span class="o">=</span> <span class="p">[]</span>
@@ -528,7 +544,7 @@
 
 
 <div class="viewcode-block" id="get_flow_id"><a class="viewcode-back" href="../../../api/now.utils/#now.utils.get_flow_id">[docs]</a><span class="k">def</span> <span class="nf">get_flow_id</span><span class="p">(</span><span class="n">host</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">host</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.wolf.jina.ai&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span></div>
+    <span class="k">return</span> <span class="n">host</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.wolf.jina.ai&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;grpcs://&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="Dumper"><a class="viewcode-back" href="../../../api/now.utils/#now.utils.Dumper">[docs]</a><span class="k">class</span> <span class="nc">Dumper</span><span class="p">(</span><span class="n">yaml</span><span class="o">.</span><span class="n">Dumper</span><span class="p">):</span>
@@ -551,7 +567,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Nov 18, 2022.
+                            Last updated on Nov 24, 2022.
                         </div>
                     </div>
                     <div class="right-details">
