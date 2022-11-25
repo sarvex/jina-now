@@ -50,6 +50,7 @@ class ElasticIndexer(Executor):
         metric: str = 'cosine',
         index_name: str = 'now-index',
         traversal_paths: str = '@r',
+        limit: int = 100,
         **kwargs,
     ):
         """
@@ -66,6 +67,7 @@ class ElasticIndexer(Executor):
             of embedding fields (length of `dims`) to be created in the index.
         :param traversal_paths: Default traversal paths on docs
                 (used for indexing, delete and update), e.g. '@r', '@c', '@r,c'.
+        :param limit: Default limit on the number of docs to be retrieved
         """
         super().__init__(**kwargs)
 
@@ -73,6 +75,7 @@ class ElasticIndexer(Executor):
         self.metric = metric
         self.index_name = index_name
         self.traversal_paths = traversal_paths
+        self.limit = limit
         self.default_semantic_scores = default_semantic_scores
         self.encoder_to_fields = {
             document_mapping.encoder: document_mapping.fields
@@ -182,7 +185,7 @@ class ElasticIndexer(Executor):
             parameters = {}
 
         # search_filter = parameters.get('filter', None)
-        limit = parameters.get('limit', 20)
+        limit = parameters.get('limit', self.limit)
         apply_bm25 = parameters.get('apply_bm25', False)
 
         es_queries = self._build_es_queries(docs_map, apply_bm25)
@@ -220,18 +223,17 @@ class ElasticIndexer(Executor):
         - offset (int): number of documents to skip
         - limit (int): number of retrieved documents
         """
-        limit = int(parameters.get('limit', 20))
+        limit = int(parameters.get('limit', self.limit))
         offset = int(parameters.get('offset', 0))
         try:
             # TODO: move the limit and offset to the ES query. That will speed up things a lot.
-            result = self.es.search(index=self.index_name, query={'match_all': {}})[
-                'hits'
-            ]['hits']
+            result = self.es.search(
+                index=self.index_name, size=limit, from_=offset, query={'match_all': {}}
+            )['hits']['hits']
         except Exception:
             print(traceback.format_exc())
         if result:
-            result_da = self._transform_es_to_da(result)
-            return result_da[offset : offset + limit]
+            return self._transform_es_to_da(result)
         else:
             return result
 
