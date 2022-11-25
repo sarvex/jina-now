@@ -17,7 +17,6 @@ from docarray import Document, DocumentArray
 from jina import Client
 from src.constants import (
     BUTTONS,
-    JWT_COOKIE,
     RTC_CONFIGURATION,
     SSO_COOKIE,
     SURVEY_LINK,
@@ -270,7 +269,6 @@ def _do_logout():
         'https://api.hubble.jina.ai/v2/rpc/user.session.dismiss',
         headers=headers,
     )
-    cookie_manager.delete(cookie=JWT_COOKIE, key=JWT_COOKIE)
 
 
 def load_example_queries(data, output_modality):
