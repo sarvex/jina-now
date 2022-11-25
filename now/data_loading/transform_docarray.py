@@ -118,11 +118,7 @@ def transform_docarray(
     :param documents: Data to be transformed.
     :param search_fields: Field names for neural search. Only required if multimodal data is given.
     """
-    if not documents:
-        return documents
-    if isinstance(documents, Document):
-        documents = DocumentArray(documents)
-    if documents[0].chunks:
+    if documents and documents[0].chunks:
         if 'multi_modal_schema' not in documents[0]._metadata:
             raise RuntimeError(
                 'Multi-modal schema is not provided. Please prepare your data following this guide - '

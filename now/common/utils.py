@@ -30,7 +30,7 @@ from now.deployment.deployment import cmd
 from now.finetuning.run_finetuning import finetune
 from now.finetuning.settings import FinetuneSettings, parse_finetune_settings
 from now.now_dataclasses import UserInput
-from now.utils import _maybe_download_from_s3
+from now.utils import maybe_download_from_s3
 
 cur_dir = pathlib.Path(__file__).parent.resolve()
 
@@ -219,7 +219,7 @@ def get_indexer_config(
 def _extract_tags_for_indexer(d: Document, user_input):
     with tempfile.TemporaryDirectory() as tmpdir:
         if user_input and user_input.dataset_type == DatasetTypes.S3_BUCKET:
-            _maybe_download_from_s3(
+            maybe_download_from_s3(
                 docs=DocumentArray([d]),
                 tmpdir=tmpdir,
                 user_input=user_input,
