@@ -88,12 +88,7 @@ class NOWPreprocessor(Executor):
                     self._save_uri_to_tmp_file(doc.uri, tmpdir), cls=True
                 )
                 for _, (text_in_doc, _) in result[0]:
-                    id_to_text[doc.parent_id] += text_in_doc + ' '
-                    id_to_text[doc.id] = text_in_doc
-        for doc in flat_docs:
-            text_in_doc = id_to_text[doc.parent_id]
-            doc.tags[TAG_OCR_DETECTOR_TEXT_IN_DOC] = text_in_doc.strip()
-            # TODO first download documents and then do all the other things - don't store uri in tags
+                    doc.tags[TAG_OCR_DETECTOR_TEXT_IN_DOC] = text_in_doc.strip()
 
     @staticmethod
     def _save_uri_to_tmp_file(uri, tmpdir) -> str:

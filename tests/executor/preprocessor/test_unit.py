@@ -34,7 +34,7 @@ def test_s3_video():
     bucket_mock.download_file = download_mock
     now.utils.get_bucket = MagicMock(return_value=bucket_mock)
 
-    res_index = preprocessor.index(
+    res_index = preprocessor.preprocess(
         da_index,
         parameters={
             'user_input': {
@@ -60,10 +60,10 @@ def test_s3_video():
         assert cc.tags[TAG_OCR_DETECTOR_TEXT_IN_DOC] == 'e'
 
 
-def test_s3_text():
+def test_text():
     da_search = DocumentArray([Document(text='test')])
     preprocessor = NOWPreprocessor(Apps.TEXT_TO_VIDEO)
-    res_search = preprocessor.search(da_search, parameters={})
+    res_search = preprocessor.preprocess(da_search, parameters={})
     assert len(res_search) == 1
     assert len(res_search[0].chunks) == 1
-    assert res_search[0].chunks[0].text == 'test'
+    assert res_search[0].chunks[0].chunks[0].text == 'test'

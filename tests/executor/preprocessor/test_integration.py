@@ -22,7 +22,7 @@ def test_executor_persistence(tmpdir, resources_folder_path):
         ]
     )
 
-    e.index(
+    e.preprocess(
         docs=text_docs,
         parameters={'user_input': user_input.__dict__, 'is_indexing': False},
     )
