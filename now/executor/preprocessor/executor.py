@@ -98,6 +98,7 @@ class NOWPreprocessor(Executor):
                 else doc.id
             ]
             doc.tags[TAG_OCR_DETECTOR_TEXT_IN_DOC] = text_in_doc.strip()
+            # TODO first download documents and then do all the other things - don't store uri in tags
             if 'uri' in doc.tags:
                 doc.uri = doc.tags['uri']
 

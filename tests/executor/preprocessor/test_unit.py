@@ -1,32 +1,32 @@
 import os
+import shutil
 from unittest.mock import MagicMock, Mock
 
 from docarray import Document, DocumentArray
 
 import now.utils
-from now.constants import Apps, DatasetTypes
+from now.constants import TAG_OCR_DETECTOR_TEXT_IN_DOC, Apps, DatasetTypes
 from now.executor.preprocessor import NOWPreprocessor
 
 curdir = os.path.dirname(os.path.abspath(__file__))
 
 
-def test_s3():
+def download_mock(url, destfile):
+    print('url:', url)
+    print('destfile:', destfile)
+    path = f'{curdir}/../../{url.replace("s3://", "")}'
+    shutil.copyfile(path, destfile)
+
+
+def test_s3_index():
     # define dataset
     da_index = DocumentArray(
         [
             Document(
-                uri='s3://bucket/folder1/file.gif',
-                tags={'tag_uri': 'tag_file/path.json'},
-            ),
-            Document(
-                uri='s3://bucket/folder2/file.gif',
-                tags={'tag_uri': 'tag_file/path.json'},
-            ),
-        ]
-    )
-    da_search = DocumentArray(
-        [
-            Document(text='hi'),
+                uri='s3://bucket_name/resources/gif/folder1/file.gif',
+                tags={'tag_uri': 's3://bucket_name/resources/gif/folder1/meta.json'},
+            )
+            for _ in range(2)
         ]
     )
     # construct the preprocessor
@@ -34,19 +34,8 @@ def test_s3():
 
     # patch method get_bucket()
     bucket_mock = Mock()
-    bucket_mock.download_file = MagicMock(return_value=None)
+    bucket_mock.download_file = download_mock
     now.utils.get_bucket = MagicMock(return_value=bucket_mock)
-    gif_path = f'{curdir}/../../resources/gif/folder1/file.gif'
-    json_path = f'{curdir}/../../resources/gif/folder1/meta.json'
-    now.utils.get_local_path = MagicMock(
-        side_effect=[
-            gif_path,
-            json_path,
-            gif_path,
-            json_path,
-        ]
-        # return_value=f'{curdir}/../../resources/gif/folder1/file.gif'
-    )
 
     res_index = preprocessor.index(
         da_index,
@@ -60,9 +49,13 @@ def test_s3():
         return_results=True,
     )
     assert len(res_index) == 2
-    assert len(res_index[0].chunks[0].chunks[0].blob) > 0
-    assert len(res_index[0].chunks[0].chunks[0].uri) > 0
-    assert len(res_index[0].chunks[0].chunks) == 3
-    tags = res_index[0].chunks[0].chunks[0].tags
-    assert tags['a1'] == 'v1'
-    assert tags['a2'] == 'v2'
+    for d in res_index:
+        c = d.chunks[0]
+        cc = c.chunks[0]
+        assert len(cc.blob) > 0
+        assert cc.uri == 's3://bucket_name/resources/gif/folder1/file.gif'
+        assert len(c.chunks) == 3
+        tags = cc.tags
+        assert tags['a1'] == 'v1'
+        assert tags['a2'] == 'v2'
+        assert cc.tags[TAG_OCR_DETECTOR_TEXT_IN_DOC] == 'e'
