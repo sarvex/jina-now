@@ -7,8 +7,8 @@ from now.utils import BetterEnum
 
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.134-fix-bff-text-to-video'
-NOW_PREPROCESSOR_VERSION = '0.0.103-fix-text-to-video-5'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.135-fix-access-path-video'
+NOW_PREPROCESSOR_VERSION = '0.0.104-fix-access-path-video'
 NOW_QDRANT_INDEXER_VERSION = '0.0.7-feat-new-data-format-127'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.6-feat-new-data-format-127'
 NOW_AUTOCOMPLETE_VERSION = '0.0.4-refactor-remove-app-4'

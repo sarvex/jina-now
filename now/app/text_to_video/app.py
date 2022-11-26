@@ -60,7 +60,7 @@ class TextToVideo(JinaNOWApp):
     def get_index_query_access_paths(
         self, search_fields: Optional[List[str]] = None
     ) -> str:
-        return '@c,cc'
+        return '@cc'
 
     def set_flow_yaml(self, **kwargs):
         finetuning = kwargs.get('finetuning', False)

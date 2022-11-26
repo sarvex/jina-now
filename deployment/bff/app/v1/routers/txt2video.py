@@ -38,13 +38,13 @@ def index(data: NowVideoIndexRequestModel):
         else:
             index_docs.append(Document(uri=uri, tags=tags, modality='video'))
 
-    # TODO: should use app.index_query_access_paths
+    # TODO: remove traversal paths
     jina_client_post(
         data=data,
         inputs=index_docs,
         parameters={
-            'traversal_paths': '@c,cc',
-            'access_paths': '@c,cc',
+            'traversal_paths': '@cc',
+            'access_paths': '@cc',
         },
         endpoint='/index',
     )
