@@ -223,8 +223,8 @@ def convert_fn(
 
     d.uri = download_from_bucket(tmpdir, d.uri, bucket)
     if 'tag_uri' in d.tags:
-        d.tags['tag_uri'] = download_from_bucket(tmpdir, bucket, d.tags['tag_uri'])
-        with open(d.tags['tag_uri'], 'r') as fp:
+        local_tag_uri = download_from_bucket(tmpdir, d.tags['tag_uri'], bucket)
+        with open(local_tag_uri, 'r') as fp:
             tags = json.load(fp)
             tags = flatten_dict(tags)
             d.tags.update(tags)
@@ -256,6 +256,14 @@ def maybe_download_from_s3(
 
     flat_docs = docs['@c']
     filtered_docs = [c for c in flat_docs if c.uri.startswith('s3://')]
+
+    # the following code can be used for testing
+    # for c in filtered_docs:
+    #     convert_fn(c,
+    #             tmpdir,
+    #             user_input.aws_access_key_id,
+    #             user_input.aws_secret_access_key,
+    #             user_input.aws_region_name,)
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = []

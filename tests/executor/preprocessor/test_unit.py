@@ -14,8 +14,14 @@ def test_s3():
     # define dataset
     da_index = DocumentArray(
         [
-            Document(uri='s3://bucket/folder1/file.gif'),
-            Document(uri='s3://bucket/folder2/file.gif'),
+            Document(
+                uri='s3://bucket/folder1/file.gif',
+                tags={'tag_uri': 'tag_file/path.json'},
+            ),
+            Document(
+                uri='s3://bucket/folder2/file.gif',
+                tags={'tag_uri': 'tag_file/path.json'},
+            ),
         ]
     )
     da_search = DocumentArray(
@@ -30,8 +36,16 @@ def test_s3():
     bucket_mock = Mock()
     bucket_mock.download_file = MagicMock(return_value=None)
     now.utils.get_bucket = MagicMock(return_value=bucket_mock)
+    gif_path = f'{curdir}/../../resources/gif/folder1/file.gif'
+    json_path = f'{curdir}/../../resources/gif/folder1/meta.json'
     now.utils.get_local_path = MagicMock(
-        return_value=f'{curdir}/../../resources/gif/folder1/file.gif'
+        side_effect=[
+            gif_path,
+            json_path,
+            gif_path,
+            json_path,
+        ]
+        # return_value=f'{curdir}/../../resources/gif/folder1/file.gif'
     )
 
     res_index = preprocessor.index(
@@ -49,3 +63,6 @@ def test_s3():
     assert len(res_index[0].chunks[0].chunks[0].blob) > 0
     assert len(res_index[0].chunks[0].chunks[0].uri) > 0
     assert len(res_index[0].chunks[0].chunks) == 3
+    tags = res_index[0].chunks[0].chunks[0].tags
+    assert tags['a1'] == 'v1'
+    assert tags['a2'] == 'v2'
