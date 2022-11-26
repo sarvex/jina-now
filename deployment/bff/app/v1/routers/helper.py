@@ -5,6 +5,8 @@ from fastapi import HTTPException, status
 from jina import Client
 from jina.excepts import BadServer
 
+from now.constants import ACCESS_PATH
+
 
 def process_query(
     text: str = '', blob: str = b'', uri: str = None, conditions: dict = None
