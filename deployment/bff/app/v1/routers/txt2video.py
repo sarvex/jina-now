@@ -75,8 +75,8 @@ def search(data: NowTextSearchRequestModel):
         parameters={
             'limit': data.limit,
             'filter': filter_query,
-            'traversal_paths': '@c,cc',
-            'access_paths': '@c,cc',
+            'traversal_paths': traversal_paths,
+            'access_paths': traversal_paths,
         },
         endpoint='/search',
     )
