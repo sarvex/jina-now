@@ -22,7 +22,7 @@ from now.executor.abstract.auth import (
     secure_request,
 )
 from now.now_dataclasses import UserInput
-from now.utils import _maybe_download_from_s3
+from now.utils import maybe_download_from_s3
 
 Executor = get_auth_executor_class()
 
@@ -69,7 +69,7 @@ class NOWPreprocessor(Executor):
 
     def _ocr_detect_text(self, docs: DocumentArray):
         """Iterates over all documents, detects text in images and saves it into the tags of the document."""
-        flat_docs = docs[self.app.get_index_query_access_paths()]
+        flat_docs = docs['@cc']
         # select documents whose mime_type starts with 'image'
         flat_docs = [
             doc
@@ -98,8 +98,7 @@ class NOWPreprocessor(Executor):
                 else doc.id
             ]
             doc.tags[TAG_OCR_DETECTOR_TEXT_IN_DOC] = text_in_doc.strip()
-            if 'uri' in doc.tags:
-                doc.uri = doc.tags['uri']
+            # TODO first download documents and then do all the other things - don't store uri in tags
 
     @staticmethod
     def _save_uri_to_tmp_file(uri, tmpdir) -> str:
@@ -124,20 +123,21 @@ class NOWPreprocessor(Executor):
         encode: bool = False,
     ) -> DocumentArray:
         with tempfile.TemporaryDirectory() as tmpdir:
+            docs = transform_docarray(
+                documents=docs,
+                search_fields=self.user_input.search_fields or [],
+            )
             if (
                 self.user_input
                 and self.user_input.dataset_type == DatasetTypes.S3_BUCKET
             ):
-                _maybe_download_from_s3(
+                maybe_download_from_s3(
                     docs=docs,
                     tmpdir=tmpdir,
                     user_input=self.user_input,
                     max_workers=self.max_workers,
                 )
-            docs = transform_docarray(
-                documents=docs,
-                search_fields=self.user_input.search_fields or [],
-            )
+
             docs = self.app.preprocess(
                 da=docs,
                 user_input=self.user_input,
@@ -163,7 +163,9 @@ class NOWPreprocessor(Executor):
                     return d
 
                 for d in docs:
-                    move_uri(d)
+                    for c in d.chunks:
+                        # TODO please fix this hack - uri should not be in tags
+                        move_uri(c)
 
         return docs
 
@@ -177,6 +179,7 @@ class NOWPreprocessor(Executor):
         :param parameters: user input, used to construct UserInput object
         :return: preprocessed documents which are ready to be encoded and indexed
         """
+        # TODO remove set user input. Should be only set once in constructor use api key instead of user token
         self._set_user_input(parameters=parameters)
         return self._preprocess_maybe_cloud_download(docs=docs, is_indexing=True)
 
@@ -191,6 +194,7 @@ class NOWPreprocessor(Executor):
         :param parameters: user input, used to construct UserInput object
         :return: preprocessed documents which are ready to be encoded and indexed
         """
+        # TODO remove set user input. Should be only set once in constructor use api key instead of user token
         self._set_user_input(parameters=parameters)
         return self._preprocess_maybe_cloud_download(
             docs=docs, is_indexing=True, encode=True
@@ -206,6 +210,7 @@ class NOWPreprocessor(Executor):
         :param parameters: user input, used to construct UserInput object
         :return: preprocessed documents which are ready to be used for search
         """
+        # TODO remove set user input. Should be only set once in constructor use api key instead of user token
         self._set_user_input(parameters=parameters)
         return self._preprocess_maybe_cloud_download(docs=docs, is_indexing=False)
 
