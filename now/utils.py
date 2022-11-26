@@ -8,7 +8,6 @@ import signal
 import sys
 import tempfile
 from collections.abc import MutableMapping
-from concurrent.futures import ThreadPoolExecutor
 from os.path import expanduser as user
 from typing import Dict, List, Optional, Union
 
@@ -98,7 +97,6 @@ class EnvironmentVariables:
 
 
 def add_env_variables_to_flow(app_instance, env_dict: Dict):
-
     with EnvironmentVariables(env_dict):
         app_instance.flow_yaml = JAML.expand_dict(app_instance.flow_yaml, env_dict)
 
@@ -193,7 +191,58 @@ def prompt_value(
     return maybe_prompt_user(qs, name, **kwargs)
 
 
-def _maybe_download_from_s3(
+def get_local_path(tmpdir, path_s3):
+    return os.path.join(
+        str(tmpdir),
+        base64.b64encode(bytes(path_s3, "utf-8")).decode("utf-8"),
+    )
+
+
+def download_from_bucket(tmpdir, uri, bucket):
+    path_s3 = '/'.join(uri.split('/')[3:])
+    path_local = get_local_path(tmpdir, path_s3)
+    bucket.download_file(
+        path_s3,
+        path_local,
+    )
+    return path_local
+
+
+def convert_fn(
+    d: Document, tmpdir, aws_access_key_id, aws_secret_access_key, aws_region_name
+) -> Document:
+    """Downloads files and tags from S3 bucket and updates the content uri and the tags uri to the local path"""
+    bucket = get_bucket(
+        uri=d.uri,
+        aws_access_key_id=aws_access_key_id,
+        aws_secret_access_key=aws_secret_access_key,
+        region_name=aws_region_name,
+    )
+    d.tags['uri'] = d.uri
+
+    d.uri = download_from_bucket(tmpdir, d.uri, bucket)
+    if 'tag_uri' in d.tags:
+        local_tag_uri = download_from_bucket(tmpdir, d.tags['tag_uri'], bucket)
+        with open(local_tag_uri, 'r') as fp:
+            tags = json.load(fp)
+            tags = flatten_dict(tags)
+            d.tags.update(tags)
+        del d.tags['tag_uri']
+    return d
+
+
+def get_bucket(uri, aws_access_key_id, aws_secret_access_key, region_name):
+    session = boto3.session.Session(
+        aws_access_key_id=aws_access_key_id,
+        aws_secret_access_key=aws_secret_access_key,
+        region_name=region_name,
+    )
+    bucket = session.resource('s3').Bucket(uri.split('/')[2])
+    return bucket
+
+
+# ''1PgD31v4ROZdIHzeVpSQ32t0AwTOvoBtak6ciJkX''
+def maybe_download_from_s3(
     docs: DocumentArray, tmpdir: tempfile.TemporaryDirectory, user_input, max_workers
 ):
     """Downloads file to local temporary dictionary, saves S3 URI to `tags['uri']` and modifies `uri` attribute of
@@ -205,46 +254,33 @@ def _maybe_download_from_s3(
     :param max_workers: number of threads to create in the threadpool executor to make execution faster
     """
 
-    def download(bucket, uri):
-        path_s3 = '/'.join(uri.split('/')[3:])
-        path_local = os.path.join(
-            str(tmpdir),
-            base64.b64encode(bytes(path_s3, "utf-8")).decode("utf-8"),
-        )
-        bucket.download_file(
-            path_s3,
-            path_local,
-        )
-        return path_local
+    flat_docs = docs['@c']
+    filtered_docs = [c for c in flat_docs if c.uri.startswith('s3://')]
 
-    def convert_fn(d: Document) -> Document:
-        """Downloads files and tags from S3 bucket and updates the content uri and the tags uri to the local path"""
-        d.tags['uri'] = d.uri
-        session = boto3.session.Session(
-            aws_access_key_id=user_input.aws_access_key_id,
-            aws_secret_access_key=user_input.aws_secret_access_key,
-            region_name=user_input.aws_region_name,
+    # the following code can be used for testing
+    for c in filtered_docs:
+        convert_fn(
+            c,
+            tmpdir,
+            user_input.aws_access_key_id,
+            user_input.aws_secret_access_key,
+            user_input.aws_region_name,
         )
-        bucket = session.resource('s3').Bucket(d.uri.split('/')[2])
-        d.uri = download(bucket=bucket, uri=d.uri)
-        if 'tag_uri' in d.tags:
-            d.tags['tag_uri'] = download(bucket, d.tags['tag_uri'])
-            with open(d.tags['tag_uri'], 'r') as fp:
-                tags = json.load(fp)
-                tags = flatten_dict(tags)
-                d.tags.update(tags)
-            del d.tags['tag_uri']
-        return d
 
-    docs_to_download = [doc for doc in docs if doc.uri.startswith('s3://')]
-
-    with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        futures = []
-        for d in docs_to_download:
-            f = executor.submit(convert_fn, d)
-            futures.append(f)
-        for f in futures:
-            f.result()
+    # with ThreadPoolExecutor(max_workers=max_workers) as executor:
+    #     futures = []
+    #     for c in filtered_docs:
+    #         f = executor.submit(
+    #             convert_fn,
+    #             c,
+    #             tmpdir,
+    #             user_input.aws_access_key_id,
+    #             user_input.aws_secret_access_key,
+    #             user_input.aws_region_name,
+    #         )
+    #         futures.append(f)
+    #     for f in futures:
+    #         f.result()
 
 
 def flatten_dict(d, parent_key='', sep='_'):

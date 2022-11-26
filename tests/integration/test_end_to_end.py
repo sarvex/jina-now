@@ -423,12 +423,6 @@ def test_backend_custom_data(
     ), f"Received code {response.status_code} with text: {response.json()['message']}"
     response_json = response.json()
     assert len(response_json) == 2
-    assert all(
-        [resp['uri'].startswith('s3://') for resp in response_json]
-    ), f"Received non s3 uris: {[resp['uri'] for resp in response_json]}"
-    assert all(
-        [
-            resp['blob'] is None or resp['blob'] == '' or resp['blob'] == b''
-            for resp in response_json
-        ]
-    ), f"Received blobs: {[resp['blob'] for resp in response_json]}"
+    for doc in response_json:
+        assert doc['uri'].startswith('s3://')
+        assert doc['blob'] is None or doc['blob'] == '' or doc['blob'] == b''

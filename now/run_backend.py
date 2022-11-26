@@ -13,7 +13,7 @@ from jina.clients import Client
 from now.admin.update_api_keys import update_api_keys
 from now.app.base.app import JinaNOWApp
 from now.common.testing import handle_test_mode
-from now.constants import ACCESS_PATH, DatasetTypes
+from now.constants import ACCESS_PATH
 from now.data_loading.data_loading import load_data
 from now.deployment.flow import deploy_flow
 from now.log import time_profiler
@@ -58,16 +58,17 @@ def run(
         kubectl_path=kubectl_path,
     )
 
-    if (
-        user_input.deployment_type == 'remote'
-        and user_input.dataset_type == DatasetTypes.S3_BUCKET
-        and 'NOW_CI_RUN' not in os.environ
-    ):
-        # schedule the trigger which will syn the bucket with the indexer once a day
-        trigger_scheduler(user_input, gateway_host_internal)
-    else:
-        # index the data right away
-        index_docs(user_input, dataset, client)
+    # TODO at the moment the scheduler is not working. So we index the data right away
+    # if (
+    #     user_input.deployment_type == 'remote'
+    #     and user_input.dataset_type == DatasetTypes.S3_BUCKET
+    #     and 'NOW_CI_RUN' not in os.environ
+    # ):
+    #     # schedule the trigger which will syn the bucket with the indexer once a day
+    #     trigger_scheduler(user_input, gateway_host_internal)
+    # else:
+    # index the data right away
+    index_docs(user_input, dataset, client)
 
     return (
         gateway_host,

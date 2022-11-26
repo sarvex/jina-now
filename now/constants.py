@@ -7,7 +7,7 @@ from now.utils import BetterEnum
 
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.134-refactor-simplify-preprocessing-15'
-NOW_PREPROCESSOR_VERSION = '0.0.103-refactor-simplify-preprocessing-15'
+NOW_PREPROCESSOR_VERSION = '0.0.104-refactor-simplify-preprocessing-15'
 NOW_QDRANT_INDEXER_VERSION = '0.0.8-refactor-simplify-preprocessing-15'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.7-refactor-simplify-preprocessing-15'
 NOW_AUTOCOMPLETE_VERSION = '0.0.4-refactor-remove-app-4'
@@ -64,7 +64,7 @@ CLIP_USES = {
     'remote': ('CLIPOnnxEncoder/latest-gpu', 'ViT-B-32::openai', ModelDimensions.CLIP),
 }
 
-EXTERNAL_CLIP_HOST = 'encoderclip-first-yak-8a7edb8adc.wolf.jina.ai'
+EXTERNAL_CLIP_HOST = 'encoderclip-famous-reptile-98ea48cb2c.wolf.jina.ai'
 
 DEFAULT_FLOW_NAME = 'nowapi'
 PREFETCH_NR = 10
