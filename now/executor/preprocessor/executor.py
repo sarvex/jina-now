@@ -99,8 +99,6 @@ class NOWPreprocessor(Executor):
             ]
             doc.tags[TAG_OCR_DETECTOR_TEXT_IN_DOC] = text_in_doc.strip()
             # TODO first download documents and then do all the other things - don't store uri in tags
-            if 'uri' in doc.tags:
-                doc.uri = doc.tags['uri']
 
     @staticmethod
     def _save_uri_to_tmp_file(uri, tmpdir) -> str:
@@ -165,7 +163,9 @@ class NOWPreprocessor(Executor):
                     return d
 
                 for d in docs:
-                    move_uri(d)
+                    for c in d.chunks:
+                        # TODO please fix this hack - uri should not be in tags
+                        move_uri(c)
 
         return docs
 

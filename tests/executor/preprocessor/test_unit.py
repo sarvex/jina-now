@@ -53,7 +53,9 @@ def test_s3_index():
         c = d.chunks[0]
         cc = c.chunks[0]
         assert len(cc.blob) > 0
-        assert cc.uri == 's3://bucket_name/resources/gif/folder1/file.gif'
+        uri = 's3://bucket_name/resources/gif/folder1/file.gif'
+        assert cc.uri == uri
+        assert c.uri == uri
         assert len(c.chunks) == 3
         tags = cc.tags
         assert tags['a1'] == 'v1'

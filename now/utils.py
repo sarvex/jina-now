@@ -8,7 +8,6 @@ import signal
 import sys
 import tempfile
 from collections.abc import MutableMapping
-from concurrent.futures import ThreadPoolExecutor
 from os.path import expanduser as user
 from typing import Dict, List, Optional, Union
 
@@ -242,6 +241,7 @@ def get_bucket(uri, aws_access_key_id, aws_secret_access_key, region_name):
     return bucket
 
 
+# ''1PgD31v4ROZdIHzeVpSQ32t0AwTOvoBtak6ciJkX''
 def maybe_download_from_s3(
     docs: DocumentArray, tmpdir: tempfile.TemporaryDirectory, user_input, max_workers
 ):
@@ -258,27 +258,29 @@ def maybe_download_from_s3(
     filtered_docs = [c for c in flat_docs if c.uri.startswith('s3://')]
 
     # the following code can be used for testing
-    # for c in filtered_docs:
-    #     convert_fn(c,
+    for c in filtered_docs:
+        convert_fn(
+            c,
+            tmpdir,
+            user_input.aws_access_key_id,
+            user_input.aws_secret_access_key,
+            user_input.aws_region_name,
+        )
+
+    # with ThreadPoolExecutor(max_workers=max_workers) as executor:
+    #     futures = []
+    #     for c in filtered_docs:
+    #         f = executor.submit(
+    #             convert_fn,
+    #             c,
     #             tmpdir,
     #             user_input.aws_access_key_id,
     #             user_input.aws_secret_access_key,
-    #             user_input.aws_region_name,)
-
-    with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        futures = []
-        for c in filtered_docs:
-            f = executor.submit(
-                convert_fn,
-                c,
-                tmpdir,
-                user_input.aws_access_key_id,
-                user_input.aws_secret_access_key,
-                user_input.aws_region_name,
-            )
-            futures.append(f)
-        for f in futures:
-            f.result()
+    #             user_input.aws_region_name,
+    #         )
+    #         futures.append(f)
+    #     for f in futures:
+    #         f.result()
 
 
 def flatten_dict(d, parent_key='', sep='_'):
