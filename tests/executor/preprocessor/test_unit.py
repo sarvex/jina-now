@@ -18,8 +18,7 @@ def download_mock(url, destfile):
     shutil.copyfile(path, destfile)
 
 
-def test_s3_index():
-    # define dataset
+def test_s3_video():
     da_index = DocumentArray(
         [
             Document(
@@ -29,10 +28,8 @@ def test_s3_index():
             for _ in range(2)
         ]
     )
-    # construct the preprocessor
     preprocessor = NOWPreprocessor(Apps.TEXT_TO_VIDEO)
 
-    # patch method get_bucket()
     bucket_mock = Mock()
     bucket_mock.download_file = download_mock
     now.utils.get_bucket = MagicMock(return_value=bucket_mock)
@@ -61,3 +58,12 @@ def test_s3_index():
         assert tags['a1'] == 'v1'
         assert tags['a2'] == 'v2'
         assert cc.tags[TAG_OCR_DETECTOR_TEXT_IN_DOC] == 'e'
+
+
+def test_s3_text():
+    da_search = DocumentArray([Document(text='test')])
+    preprocessor = NOWPreprocessor(Apps.TEXT_TO_VIDEO)
+    res_search = preprocessor.search(da_search, parameters={})
+    assert len(res_search) == 1
+    assert len(res_search[0].chunks) == 1
+    assert res_search[0].chunks[0].text == 'test'
