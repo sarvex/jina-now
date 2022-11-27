@@ -12,6 +12,7 @@ from deployment.bff.app.v1.models.text_and_image import (
     NowTextImageSearchRequestModel,
 )
 from deployment.bff.app.v1.routers.helper import jina_client_post, process_query
+from now.constants import ACCESS_PATHS
 
 router = APIRouter()
 
@@ -72,6 +73,7 @@ def search(data: NowTextImageSearchRequestModel):
         parameters={
             'limit': data.limit,
             'filter': filter_query,
+            'access_paths': ACCESS_PATHS,
         },
         endpoint='/search',
     )

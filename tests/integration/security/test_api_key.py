@@ -2,7 +2,6 @@ from multiprocessing import Process
 from time import sleep
 
 import hubble
-import pytest
 import requests
 from docarray import Document
 from jina import Flow
@@ -11,6 +10,7 @@ from tests.integration.test_end_to_end import assert_search
 from deployment.bff.app.app import run_server
 from now.admin.utils import get_default_request_body
 from now.constants import (
+    ACCESS_PATHS,
     EXTERNAL_CLIP_HOST,
     NOW_PREPROCESSOR_VERSION,
     NOW_QDRANT_INDEXER_VERSION,
@@ -64,6 +64,7 @@ def index(f):
         parameters={
             'jwt': get_request_body()['jwt'],
             'user_input': UserInput().__dict__,
+            'access_paths': ACCESS_PATHS,
         },
     )
 
@@ -79,7 +80,7 @@ def test_add_key():
     with f:
         index(f)
         start_bff()
-        sleep(10)
+        sleep(5)
 
         request_body = get_request_body()
         print('# Test adding user email')
@@ -95,13 +96,12 @@ def test_add_key():
         request_body = get_request_body()
         request_body['text'] = 'girl on motorbike'
         del request_body['jwt']
-        request_body['api_key'] = 'my_key'
+        request_body['api_key'] = API_KEY
         request_body['limit'] = 9
-        with pytest.raises(Exception):
-            assert_search(search_url, request_body)
+        assert_search(search_url, request_body, expected_status_code=500)
         print('# add api key')
         request_body_update_keys = get_request_body()
-        request_body_update_keys['api_keys'] = ['my_key']
+        request_body_update_keys['api_keys'] = [API_KEY]
         response = requests.post(
             update_api_keys_url,
             json=request_body_update_keys,
