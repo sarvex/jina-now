@@ -18,3 +18,4 @@ boto3
 dask[distributed]==2022.2.0
 jina-hubble-sdk>=0.15.5
 elasticsearch==8.0.1
+pydantic==1.9.2
