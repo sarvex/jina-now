@@ -51,7 +51,7 @@ def get_flow():
             external=True,
         )
         .add(
-            uses=f'jinahub+docker://NOWQdrantIndexer15/{NOW_QDRANT_INDEXER_VERSION}',
+            uses=f'jinahub+docker://NOWQdrantIndexer16/{NOW_QDRANT_INDEXER_VERSION}',
             uses_with={'dim': 512, 'admin_emails': [admin_email]},
         )
     )

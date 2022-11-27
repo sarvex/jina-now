@@ -6,7 +6,7 @@ from elasticsearch import Elasticsearch
 from jina import Flow
 
 from now.constants import ModelDimensions
-from now.executor.indexer.elastic import ElasticIndexer
+from now.executor.indexer.elastic import NOWElasticIndexer
 
 
 @pytest.mark.parametrize(
@@ -24,7 +24,7 @@ def test_indexing(
     index_name = 'test-indexing'
     hosts, _ = es_connection_params
     with Flow().add(
-        uses=ElasticIndexer,
+        uses=NOWElasticIndexer,
         uses_with={
             'hosts': hosts,
             'index_name': index_name,
@@ -75,7 +75,7 @@ def test_search_with_bm25(
     query_da = request.getfixturevalue(query_da)
     hosts, _ = es_connection_params
     with Flow().add(
-        uses=ElasticIndexer,
+        uses=NOWElasticIndexer,
         uses_with={
             'hosts': hosts,
             'index_name': index_name,
@@ -117,7 +117,7 @@ def test_search_with_filter(
     query_da = request.getfixturevalue(query_da)
     hosts, _ = es_connection_params
     with Flow().add(
-        uses=ElasticIndexer,
+        uses=NOWElasticIndexer,
         uses_with={
             'hosts': hosts,
             'index_name': index_name,
@@ -151,7 +151,7 @@ def test_list(
     da = request.getfixturevalue(da)
     hosts, _ = es_connection_params
     with Flow().add(
-        uses=ElasticIndexer,
+        uses=NOWElasticIndexer,
         uses_with={
             'hosts': hosts,
             'index_name': index_name,
@@ -181,7 +181,7 @@ def test_delete(
     da = request.getfixturevalue(da)
     hosts, _ = es_connection_params
     with Flow().add(
-        uses=ElasticIndexer,
+        uses=NOWElasticIndexer,
         uses_with={
             'hosts': hosts,
             'index_name': index_name,
@@ -211,7 +211,7 @@ def test_merge_docs_matrix(
     request,
 ):
     docs_matrix = request.getfixturevalue(docs_matrix)
-    merged_result = ElasticIndexer._join_docs_matrix_into_chunks(
+    merged_result = NOWElasticIndexer._join_docs_matrix_into_chunks(
         on=on, docs_matrix=docs_matrix
     )
     assert len(merged_result[0].chunks) == 2

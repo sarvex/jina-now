@@ -180,7 +180,7 @@ jobs:
         if: steps.check_has_executor_changed.outputs.has_changed == 'true'
         env:
           NOW_QDRANT_INDEXER_VERSION: ${{ env.NOW_QDRANT_INDEXER_VERSION }}
-        run: JINA_AUTH_TOKEN=${{ secrets.NOW_QDRANT_EXECUTOR_SECRET }} jina hub push --verbose --force-update NOWQdrantIndexer15 now/executor/indexer/qdrant/.  -t latest --protected-tag $NOW_QDRANT_INDEXER_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
+        run: JINA_AUTH_TOKEN=${{ secrets.NOW_STAGING_FLORIAN }} jina hub push --verbose --force-update NOWQdrantIndexer16 now/executor/indexer/qdrant/.  -t latest --protected-tag $NOW_QDRANT_INDEXER_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
 
   update-bff-playground-if-required:
     runs-on: ubuntu-latest
@@ -292,7 +292,7 @@ jobs:
         if: steps.check_has_executor_changed.outputs.has_changed == 'true'
         env:
           NOW_ELASTIC_INDEXER_VERSION: ${{ env.NOW_ELASTIC_INDEXER_VERSION }}
-        run: JINA_AUTH_TOKEN=${{ secrets.NOW_ELASTIC_EXECUTOR_SECRET }} jina hub push --verbose --force-update ElasticIndexer now/executor/indexer/elastic/. -t latest --protected-tag $NOW_ELASTIC_INDEXER_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
+        run: JINA_AUTH_TOKEN=${{ secrets.NOW_STAGING_FLORIAN }} jina hub push --verbose --force-update NOWElasticIndexer now/executor/indexer/elastic/. -t latest --protected-tag $NOW_ELASTIC_INDEXER_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
 
   update-autocomplete-executor-if-required:
     runs-on: ubuntu-latest
@@ -339,7 +339,7 @@ jobs:
         if: steps.check_has_executor_changed.outputs.has_changed == 'true'
         env:
           NOW_AUTOCOMPLETE_VERSION: ${{ env.NOW_AUTOCOMPLETE_VERSION }}
-        run: JINA_AUTH_TOKEN=${{ secrets.NOW_AUTOCOMPLETE_SECRET }} jina hub push --verbose --force-update NOWAutoCompleteExecutor now/executor/autocomplete/. -t latest --protected-tag $NOW_AUTOCOMPLETE_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
+        run: JINA_AUTH_TOKEN=${{ secrets.NOW_STAGING_FLORIAN }} jina hub push --verbose --force-update NOWAutoCompleteExecutor2 now/executor/autocomplete/. -t latest --protected-tag $NOW_AUTOCOMPLETE_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
 
   core-test:
     runs-on: ubuntu-latest

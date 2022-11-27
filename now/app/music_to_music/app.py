@@ -94,7 +94,7 @@ class MusicToMusic(JinaNOWApp):
             dataset=dataset,
             encoder_uses='BiModalMusicTextEncoderV2',
             encoder_uses_with={},
-            indexer_uses=f'NOWQdrantIndexer15/{NOW_QDRANT_INDEXER_VERSION}',
+            indexer_uses=f'NOWQdrantIndexer16/{NOW_QDRANT_INDEXER_VERSION}',
             kubectl_path=kubectl_path,
             indexer_resources={},
             pre_trained_embedding_size=ModelDimensions.CLIP,

@@ -22,7 +22,7 @@ metrics_mapping = {
 Executor = get_auth_executor_class()
 
 
-class ElasticIndexer(Executor):
+class NOWElasticIndexer(Executor):
     def __init__(
         self,
         dims: Union[List[int], int],
@@ -35,7 +35,7 @@ class ElasticIndexer(Executor):
         **kwargs,
     ):
         """
-        Initializer function for the ElasticIndexer.
+        Initializer function for the NOWElasticIndexer.
 
         :param hosts: host configuration of the Elasticsearch node or cluster
         :param es_config: Elasticsearch cluster configuration object

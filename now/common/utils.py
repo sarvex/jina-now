@@ -67,7 +67,7 @@ def common_get_flow_env_dict(
         'INDEXER_NAME': f'{EXECUTOR_PREFIX}{indexer_uses}',
         'PREFETCH': PREFETCH_NR,
         'PREPROCESSOR_NAME': f'{EXECUTOR_PREFIX}NOWPreprocessor/{NOW_PREPROCESSOR_VERSION}',
-        'AUTOCOMPLETE_EXECUTOR_NAME': f'{EXECUTOR_PREFIX}NOWAutoCompleteExecutor/{NOW_AUTOCOMPLETE_VERSION}',
+        'AUTOCOMPLETE_EXECUTOR_NAME': f'{EXECUTOR_PREFIX}NOWAutoCompleteExecutor2/{NOW_AUTOCOMPLETE_VERSION}',
         'APP': user_input.app_instance.app_name,
         'COLUMNS': tags,
         'ADMIN_EMAILS': user_input.admin_emails or [] if user_input.secured else [],
@@ -190,7 +190,7 @@ def get_indexer_config(
     """Depending on the number of samples, which will be indexed, indexer and its resources are determined.
 
     :param num_indexed_samples: number of samples which will be indexed; should incl. chunks for e.g. text-to-video app
-    :param elastic: hack to use ElasticIndexer, should be changed in future.
+    :param elastic: hack to use NOWElasticIndexer, should be changed in future.
     :param kubectl_path: path to kubectl binary
     :param deployment_type: deployment type, e.g. 'remote' or 'local'
     :return: dict with indexer and its resource config
@@ -198,15 +198,15 @@ def get_indexer_config(
 
     if elastic and deployment_type == 'local':
         config = {
-            'indexer_uses': f'ElasticIndexer/{NOW_ELASTIC_INDEXER_VERSION}',
+            'indexer_uses': f'NOWElasticIndexer/{NOW_ELASTIC_INDEXER_VERSION}',
             'hosts': setup_elastic_service(kubectl_path),
         }
     elif elastic and deployment_type == 'remote':
         raise ValueError(
-            'ElasticIndexer is currently not supported for remote deployment. Please use local deployment.'
+            'NOWElasticIndexer is currently not supported for remote deployment. Please use local deployment.'
         )
     else:
-        config = {'indexer_uses': f'NOWQdrantIndexer15/{NOW_QDRANT_INDEXER_VERSION}'}
+        config = {'indexer_uses': f'NOWQdrantIndexer16/{NOW_QDRANT_INDEXER_VERSION}'}
     threshold1 = 250_000
     if num_indexed_samples <= threshold1:
         config['indexer_resources'] = {'INDEXER_CPU': 0.1, 'INDEXER_MEM': '2G'}

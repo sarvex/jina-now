@@ -17,7 +17,7 @@ from now.executor.abstract.auth.auth import (
 Executor = get_auth_executor_class()
 
 
-class NOWAutoCompleteExecutor(Executor):
+class NOWAutoCompleteExecutor2(Executor):
     def __init__(self, words=None, *args, **kwargs):
         self.words = words if words else {}
         self.autocomplete = None

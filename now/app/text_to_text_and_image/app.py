@@ -173,7 +173,7 @@ class TextToTextAndImage(JinaNOWApp):
         )
         env_dict[
             'AUTOCOMPLETE_EXECUTOR_NAME'
-        ] = f'jinahub+docker://NOWAutoCompleteExecutor/{NOW_AUTOCOMPLETE_VERSION}'
+        ] = f'jinahub+docker://NOWAutoCompleteExecutor2/{NOW_AUTOCOMPLETE_VERSION}'
 
         env_dict['API_KEY'] = (
             [user_input.api_key] if user_input.secured and user_input.api_key else []
