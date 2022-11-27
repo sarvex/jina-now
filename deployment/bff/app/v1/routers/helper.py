@@ -5,8 +5,6 @@ from fastapi import HTTPException, status
 from jina import Client
 from jina.excepts import BadServer
 
-from now.constants import ACCESS_PATHS
-
 
 def process_query(
     text: str = '', blob: str = b'', uri: str = None, conditions: dict = None
@@ -92,7 +90,7 @@ def jina_client_post(
             parameters={
                 **auth_dict,
                 **parameters,
-                'access_path': ACCESS_PATHS,
+                'access_path': '@cc',
             },
             *args,
             **kwargs,
