@@ -110,7 +110,9 @@ class NOWPreprocessor(Executor):
         with tempfile.TemporaryDirectory() as tmpdir:
             docs = transform_docarray(
                 documents=docs,
-                search_fields=self.user_input.search_fields or [],
+                search_fields=self.user_input.search_fields
+                if self.user_input and self.user_input.search_fields
+                else [],
             )
             if (
                 self.user_input

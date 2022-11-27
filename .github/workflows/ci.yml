@@ -167,7 +167,7 @@ jobs:
         env:
           NOW_QDRANT_INDEXER_VERSION: ${{ env.NOW_QDRANT_INDEXER_VERSION }}
         run: |
-          if jina hub pull jinahub+docker://2b1opoje/$NOW_QDRANT_INDEXER_VERSION; then
+          if jina hub pull jinahub+docker://11yxatzh/$NOW_QDRANT_INDEXER_VERSION; then
             echo "NOW Qdrant Indexer version is used already. Please update the tag"
             exit 1
           else
@@ -279,7 +279,7 @@ jobs:
         env:
           NOW_ELASTIC_INDEXER_VERSION: ${{ env.NOW_ELASTIC_INDEXER_VERSION }}
         run: |
-          if jina hub pull jinahub+docker://i7asjny7/$NOW_ELASTIC_INDEXER_VERSION; then
+          if jina hub pull jinahub+docker://mdtuyaaj/$NOW_ELASTIC_INDEXER_VERSION; then
             echo "NOW Elastic Indexer version is used already. Please update the tag"
             exit 1
           else
@@ -326,7 +326,7 @@ jobs:
         env:
           NOW_AUTOCOMPLETE_VERSION: ${{ env.NOW_AUTOCOMPLETE_VERSION }}
         run: |
-          if jina hub pull jinahub+docker://s5peqqvb/$NOW_AUTOCOMPLETE_VERSION; then
+          if jina hub pull jinahub+docker://w5w084h7/$NOW_AUTOCOMPLETE_VERSION; then
             echo "NOW Autocomplete version is used already. Please update the tag"
             exit 1
           else
