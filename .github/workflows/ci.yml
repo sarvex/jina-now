@@ -174,7 +174,7 @@ jobs:
             echo "NOW Qdrant Indexer version isn't used already, continue to build..."
           fi
       - name: hack force push
-        if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
+        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
         run: echo ${{ github.event.pull_request.head.sha }} > now/executor/indexer/qdrant/force_push.txt
       - name: Build and push executor
         if: steps.check_has_executor_changed.outputs.has_changed == 'true'
@@ -286,7 +286,7 @@ jobs:
             echo "NOW Elastic Indexer version isn't used already, continue to build..."
           fi
       - name: hack force push
-        if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
+        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
         run: echo ${{ github.event.pull_request.head.sha }} > now/executor/indexer/elastic/force_push.txt
       - name: Build and push executor
         if: steps.check_has_executor_changed.outputs.has_changed == 'true'
@@ -333,7 +333,7 @@ jobs:
             echo "NOW Autocomplete version isn't used already, continue to build..."
           fi
       - name: hack force push
-        if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
+        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
         run: echo ${{ github.event.pull_request.head.sha }} > now/executor/autocomplete/force_push.txt
       - name: Build and push executor
         if: steps.check_has_executor_changed.outputs.has_changed == 'true'
