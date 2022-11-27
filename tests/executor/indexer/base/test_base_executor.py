@@ -8,12 +8,13 @@ from jina import Document, DocumentArray, Flow
 from now.constants import TAG_INDEXER_DOC_HAS_TEXT, TAG_OCR_DETECTOR_TEXT_IN_DOC
 from now.deployment.deployment import cmd
 from now.executor.indexer.in_memory.in_memory_indexer import InMemoryIndexer
+from now.executor.indexer.qdrant import NOWQdrantIndexer16
 
 NUMBER_OF_DOCS = 10
 DIM = 128
 
 
-@pytest.mark.parametrize('indexer', [InMemoryIndexer])
+@pytest.mark.parametrize('indexer', [InMemoryIndexer, NOWQdrantIndexer16])
 class TestBaseIndexer:
     @pytest.fixture(scope='function', autouse=True)
     def setup(self):
@@ -360,7 +361,7 @@ class TestBaseIndexer:
                             embedding=np.array([0.1, 0.1]),
                             tags={
                                 'title': 'that is rEd for sure',
-                                TAG_OCR_DETECTOR_TEXT_IN_DOC: "r t",
+                                TAG_OCR_DETECTOR_TEXT_IN_DOC: "",
                             },
                             uri=uri,
                         ),
@@ -370,7 +371,7 @@ class TestBaseIndexer:
                             embedding=np.array([0.2, 0.1]),
                             tags={
                                 'title': 'really bluE',
-                                TAG_OCR_DETECTOR_TEXT_IN_DOC: "r t",
+                                TAG_OCR_DETECTOR_TEXT_IN_DOC: "",
                             },
                             uri=uri,
                         ),
@@ -437,8 +438,8 @@ class TestBaseIndexer:
     @pytest.mark.parametrize(
         'query,embedding,res_ids',
         [
-            ('blue', [0.5, 0.1], ['chunk12', 'chunk31', 'chunk22']),
-            ('red', [0.5, 0.1], ['chunk11', 'chunk31', 'chunk22']),
+            ('blue', [0.5, 0.1], ['chunk12', 'chunk22', 'chunk31']),
+            ('red', [0.5, 0.1], ['chunk11', 'chunk22', 'chunk31']),
         ],
     )
     def test_search_chunk_using_sum_ranker(
@@ -505,17 +506,23 @@ class TestBaseIndexer:
                     doc_tens,
                 ]
             )
-            inputs = DocumentArray([Document(chunks=[doc]) for doc in inputs])
+            inputs = DocumentArray(
+                [Document(chunks=[Document(chunks=[doc])]) for doc in inputs]
+            )
 
             f.index(deepcopy(inputs), parameters={})
 
             response = f.search(
-                Document(chunks=[Document(embedding=np.array([0.1, 0.1, 0.1]))])
+                Document(
+                    chunks=[
+                        Document(chunks=Document(embedding=np.array([0.1, 0.1, 0.1])))
+                    ]
+                )
             )
             matches = response[0].matches
-            assert matches[0].text == inputs[0].chunks[0].text
-            assert matches[1].blob == inputs[1].chunks[0].blob
-            assert matches[2].blob == inputs[2].chunks[0].blob
+            assert matches[0].text == inputs[0].chunks[0].chunks[0].text
+            assert matches[1].blob == inputs[1].chunks[0].chunks[0].blob
+            assert matches[2].blob == inputs[2].chunks[0].chunks[0].blob
             assert matches[3].blob == b''
             assert matches[4].tensor is None
 
@@ -527,9 +534,13 @@ class TestBaseIndexer:
             Document(
                 chunks=[
                     Document(
-                        embedding=np.random.random(DIM).astype(np.float32),
-                        tags={'color': 'red'},
-                        uri='uri2',
+                        chunks=[
+                            Document(
+                                embedding=np.random.random(DIM).astype(np.float32),
+                                tags={'color': 'red'},
+                                uri='uri2',
+                            )
+                        ]
                     )
                 ]
             )
@@ -556,7 +567,13 @@ class TestBaseIndexer:
             f.index(docs, return_results=True)
             result = f.search(
                 inputs=Document(
-                    chunks=[Document(text='query1', embedding=np.array([0.1] * 128))]
+                    chunks=[
+                        Document(
+                            chunks=[
+                                Document(text='query1', embedding=np.array([0.1] * 128))
+                            ]
+                        ),
+                    ]
                 ),
                 return_results=True,
             )
