@@ -6,11 +6,11 @@ from now.utils import BetterEnum
 # from docarray import __version__ as docarray_version
 
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.134-refactor-simplify-preprocessing-24'
-NOW_PREPROCESSOR_VERSION = '0.0.104-refactor-simplify-preprocessing-24'
-NOW_QDRANT_INDEXER_VERSION = '0.0.8-refactor-simplify-preprocessing-24'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.7-refactor-simplify-preprocessing-24'
-NOW_AUTOCOMPLETE_VERSION = '0.0.4-refactor-simplify-preprocessing-24'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.134-refactor-simplify-preprocessing-25'
+NOW_PREPROCESSOR_VERSION = '0.0.104-refactor-simplify-preprocessing-25'
+NOW_QDRANT_INDEXER_VERSION = '0.0.8-refactor-simplify-preprocessing-25'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.7-refactor-simplify-preprocessing-25'
+NOW_AUTOCOMPLETE_VERSION = '0.0.4-refactor-simplify-preprocessing-25'
 
 
 class Modalities(BetterEnum):
@@ -74,4 +74,4 @@ SURVEY_LINK = 'https://10sw1tcpld4.typeform.com/to/VTAyYRpR?utm_source=cli'
 TAG_OCR_DETECTOR_TEXT_IN_DOC = '_ocr_detector_text_in_doc'
 TAG_INDEXER_DOC_HAS_TEXT = '_indexer_doc_has_text'
 EXECUTOR_PREFIX = 'jinahub+docker://'
-ACCESS_PATH = '@cc'
+ACCESS_PATHS = '@cc'

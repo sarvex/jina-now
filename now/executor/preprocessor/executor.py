@@ -5,7 +5,6 @@ import random
 import string
 import tempfile
 import urllib
-from collections import defaultdict
 from typing import Dict, Optional
 
 import boto3
@@ -14,7 +13,7 @@ from paddleocr import PaddleOCR
 
 from now.app.base.app import JinaNOWApp
 from now.common.options import construct_app
-from now.constants import ACCESS_PATH, TAG_OCR_DETECTOR_TEXT_IN_DOC, Apps, DatasetTypes
+from now.constants import ACCESS_PATHS, TAG_OCR_DETECTOR_TEXT_IN_DOC, Apps, DatasetTypes
 from now.data_loading.transform_docarray import transform_docarray
 from now.executor.abstract.auth import (
     SecurityLevel,
@@ -69,26 +68,17 @@ class NOWPreprocessor(Executor):
 
     def _ocr_detect_text(self, docs: DocumentArray):
         """Iterates over all documents, detects text in images and saves it into the tags of the document."""
-        flat_docs = docs[ACCESS_PATH]
-        # select documents whose mime_type starts with 'image'
+        flat_docs = docs[ACCESS_PATHS]
         flat_docs = [
             doc
             for doc in flat_docs
             if doc.mime_type.startswith('image') or doc.modality == 'image'
         ]
-        id_to_text = defaultdict(str)
-        with tempfile.TemporaryDirectory() as tmpdir:
-            for doc in flat_docs:
-                # TODO warning this never gets converted back leading to unnecessary date in the uri
-                if doc.blob:
-                    doc.convert_blob_to_datauri()
-                elif doc.tensor:
-                    doc.convert_image_tensor_to_uri()
-                result = self.paddle_ocr.ocr(
-                    self._save_uri_to_tmp_file(doc.uri, tmpdir), cls=True
-                )
-                for _, (text_in_doc, _) in result[0]:
-                    doc.tags[TAG_OCR_DETECTOR_TEXT_IN_DOC] = text_in_doc.strip()
+        for doc in flat_docs:
+            result = self.paddle_ocr.ocr(doc.blob)
+            doc.tags[TAG_OCR_DETECTOR_TEXT_IN_DOC] = ''
+            for _, (text, _) in result[0]:
+                doc.tags[TAG_OCR_DETECTOR_TEXT_IN_DOC] += text + ' '
 
     @staticmethod
     def _save_uri_to_tmp_file(uri, tmpdir) -> str:

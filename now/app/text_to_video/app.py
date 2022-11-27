@@ -1,10 +1,7 @@
 import base64
-import io
 import os
 from typing import Dict, List
 
-import numpy as np
-import PIL
 from docarray import Document, DocumentArray
 from jina.serve.runtimes.gateway.http.models import JinaRequestModel, JinaResponseModel
 from pydantic import BaseModel
@@ -164,36 +161,3 @@ class TextToVideo(JinaNOWApp):
     def max_request_size(self) -> int:
         """Max number of documents in one request"""
         return 2
-
-
-def select_frames(num_selected_frames, num_total_frames):
-    partition_size = num_total_frames / (num_selected_frames + 1)
-    return [round(partition_size * (i + 1)) for i in range(num_selected_frames)]
-
-
-def sample_video(d):
-    video = d.blob
-    video_io = io.BytesIO(video)
-    gif = PIL.Image.open(video_io)
-    frame_indices = select_frames(NUM_FRAMES_SAMPLED, gif.n_frames)
-    frames = []
-    for i in frame_indices:
-        gif.seek(i)
-        frame = np.array(gif.convert("RGB"))
-        frame_pil = PIL.Image.fromarray(frame)
-        frame_pil_resized = frame_pil.resize((224, 224))
-        frames.append(frame_pil_resized)
-        frame_bytes = io.BytesIO()
-        frame_pil_resized.save(frame_bytes, format="JPEG", quality=95)
-        d.chunks.append(
-            Document(
-                uri=d.uri,
-                blob=frame_bytes.getvalue(),
-                tags=d.tags,
-                modality=Modalities.IMAGE,
-                mime_type='image/jpeg',
-            )
-        )
-    d.blob = None
-    d.uri = None
-    d.tensor = None

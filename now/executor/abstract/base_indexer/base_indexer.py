@@ -8,7 +8,7 @@ from typing import List, Optional
 from docarray import Document, DocumentArray
 
 from now.constants import (
-    ACCESS_PATH,
+    ACCESS_PATHS,
     TAG_INDEXER_DOC_HAS_TEXT,
     TAG_OCR_DETECTOR_TEXT_IN_DOC,
 )
@@ -143,7 +143,7 @@ class NOWBaseIndexer(Executor):
         :param docs: the Documents to index
         :param parameters: dictionary with options for indexing
         """
-        flat_docs = docs[ACCESS_PATH]
+        flat_docs = docs[ACCESS_PATHS]
         # TODO please remove theses checkf for empty docs
         if len(flat_docs) == 0:
             return
@@ -181,7 +181,7 @@ class NOWBaseIndexer(Executor):
         limit = int(parameters.get('limit', self.limit))
         search_filter_raw = parameters.get('filter', {})
         search_filter_orig = deepcopy(search_filter_raw)
-        docs = docs[ACCESS_PATH][:1]  # only search on the first document for now
+        docs = docs[ACCESS_PATHS][:1]  # only search on the first document for now
 
         retrieval_limit = limit * 3
 
