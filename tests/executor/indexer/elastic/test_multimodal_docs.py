@@ -89,11 +89,11 @@ def es_inputs() -> namedtuple:
         SemanticScore('query_text', 'clip', 'title', 'clip', 1),
         SemanticScore('query_text', 'sbert', 'title', 'sbert', 1),
         SemanticScore('query_text', 'sbert', 'excerpt', 'sbert', 3),
-        # SemanticScore('query_text', 'bm25', 'my_bm25_query', 'bm25', 1),
+        SemanticScore('query_text', 'bm25', 'my_bm25_query', 'bm25', 1),
     ]
     docs = [
-        MMDoc(title='test title', excerpt='test excerpt'),
-        MMDoc(title='test title 2', excerpt='test excerpt 2'),
+        MMDoc(title='cat test title cat', excerpt='cat test excerpt cat'),
+        MMDoc(title='test title dog', excerpt='test excerpt 2'),
     ]
     clip_docs = DocumentArray()
     sbert_docs = DocumentArray()
@@ -115,7 +115,7 @@ def es_inputs() -> namedtuple:
         'sbert': sbert_docs,
     }
 
-    query = MMQuery(query_text='bla')
+    query = MMQuery(query_text='cat')
 
     clip_doc = Document(query)
     sbert_doc = Document(clip_doc, copy=True)
@@ -227,18 +227,28 @@ def test_index_and_search_with_multimodal_docs(es_inputs):
     assert len(res['hits']['hits']) == len(index_docs_map['clip'])
     results = indexer.search(query_docs_map, parameters={'get_score_breakdown': True})
 
-    # add asserts about results
-    for semantic_score in default_semantic_scores:
-        score_string = '-'.join(
-            [
-                semantic_score.query_field,
-                semantic_score.document_field,
-                semantic_score.document_encoder,
-                semantic_score.linear_weight,
-            ]
-        )
-        assert score_string in results[0].matches[0].scores
-        assert isinstance(results[0].matches[0].scores[score_string].value, float)
+    # asserts about matches
+    for (
+        query_field,
+        query_encoder,
+        document_field,
+        document_encoder,
+        linear_weight,
+    ) in default_semantic_scores:
+        if document_encoder == 'bm25':
+            assert 'bm25' in results[0].matches[0].scores
+            assert isinstance(results[0].matches[0].scores['bm25'].value, float)
+        else:
+            score_string = '-'.join(
+                [
+                    query_field,
+                    document_field,
+                    document_encoder,
+                    str(linear_weight),
+                ]
+            )
+            assert score_string in results[0].matches[0].scores
+            assert isinstance(results[0].matches[0].scores[score_string].value, float)
 
 
 def test_list_endpoint(setup_service_running, es_inputs):
