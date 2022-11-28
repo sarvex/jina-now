@@ -47,10 +47,13 @@ def multi_modal_data(resources_folder_path):
 
 
 @pytest.mark.parametrize(
-    'input_type',
-    ['demo_dataset', 'single_modal', 'multi_modal'],
+    'input_type, num_expected_matches',
+    [['demo_dataset', 2], ['single_modal', 2], ['multi_modal', 4]],
 )
-def test_transform_inside_flow(input_type, single_modal_data, multi_modal_data):
+def test_transform_inside_flow(
+    input_type, num_expected_matches, single_modal_data, multi_modal_data, tmpdir
+):
+    metas = {'workspace': str(tmpdir)}
     user_input = UserInput()
     if input_type == 'demo_dataset':
         app_instance = TextToVideo()
@@ -68,11 +71,14 @@ def test_transform_inside_flow(input_type, single_modal_data, multi_modal_data):
         user_input.search_fields = ['main_text', 'image']
 
     query = Document(text='query_text')
-    num_expected_matches = 2
 
     f = (
         Flow()
-        .add(uses=NOWPreprocessor, uses_with={'app': app_instance.app_name})
+        .add(
+            uses=NOWPreprocessor,
+            uses_with={'app': app_instance.app_name},
+            uses_metas=metas,
+        )
         .add(
             uses='jinahub+docker://CLIPOnnxEncoder/latest-gpu',
             host='encoderclip-bh-5f4efaff13.wolf.jina.ai',
@@ -94,6 +100,7 @@ def test_transform_inside_flow(input_type, single_modal_data, multi_modal_data):
                 ],
                 'dim': 512,
             },
+            uses_metas=metas,
         )
     )
     with f:

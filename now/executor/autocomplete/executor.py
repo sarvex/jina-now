@@ -49,7 +49,8 @@ class NOWAutoCompleteExecutor2(Executor):
     def search_update(
         self, docs: Optional[DocumentArray] = None, parameters: dict = {}, **kwargs
     ):
-        flat_docs = docs[ACCESS_PATHS]
+        # TODO needs to be also on @cc path after preprocessing for simplification
+        flat_docs = docs['@r']
         for doc in flat_docs:
             if doc.text and not profanity.contains_profanity(doc.text):
                 search_words = doc.text.split(' ')
