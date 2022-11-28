@@ -176,6 +176,9 @@ class NOWBaseIndexer(Executor):
         **kwargs,
     ):
         """Perform a vector similarity search and retrieve `Document` matches."""
+        # TODO remove this check for empty docs and make sure everything else works
+        if len(docs) == 0:
+            return
         limit = int(parameters.get('limit', self.limit))
         search_filter_raw = parameters.get('filter', {})
         search_filter_orig = deepcopy(search_filter_raw)
