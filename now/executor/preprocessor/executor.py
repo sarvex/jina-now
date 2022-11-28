@@ -40,7 +40,7 @@ class NOWPreprocessor(Executor):
 
         self.app: JinaNOWApp = construct_app(app)
         self.max_workers = max_workers
-        self.paddle_ocr = PaddleOCR(use_angle_cls=True, lang='en')
+        self.paddle_ocr = PaddleOCR(use_angle_cls=True, lang='en', show_log=False)
 
         self.user_input_path = (
             os.path.join(self.workspace, 'user_input.json') if self.workspace else None
@@ -75,10 +75,9 @@ class NOWPreprocessor(Executor):
             if doc.mime_type.startswith('image') or doc.modality == 'image'
         ]
         for doc in flat_docs:
-            result = self.paddle_ocr.ocr(doc.blob)
-            doc.tags[TAG_OCR_DETECTOR_TEXT_IN_DOC] = ''
-            for _, (text, _) in result[0]:
-                doc.tags[TAG_OCR_DETECTOR_TEXT_IN_DOC] += text + ' '
+            ocr_result = self.paddle_ocr.ocr(doc.blob)
+            text_list = [text for _, (text, _) in ocr_result[0]]
+            doc.tags[TAG_OCR_DETECTOR_TEXT_IN_DOC] = ' '.join(text_list)
 
     @staticmethod
     def _save_uri_to_tmp_file(uri, tmpdir) -> str:

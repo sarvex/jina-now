@@ -12,8 +12,6 @@ curdir = os.path.dirname(os.path.abspath(__file__))
 
 
 def download_mock(url, destfile):
-    print('url:', url)
-    print('destfile:', destfile)
     path = f'{curdir}/../../{url.replace("s3://", "")}'
     shutil.copyfile(path, destfile)
 
@@ -57,7 +55,7 @@ def test_s3_video():
         tags = cc.tags
         assert tags['a1'] == 'v1'
         assert tags['a2'] == 'v2'
-        assert cc.tags[TAG_OCR_DETECTOR_TEXT_IN_DOC] == 'e '
+        assert cc.tags[TAG_OCR_DETECTOR_TEXT_IN_DOC] == 'e'
 
 
 def test_text():
