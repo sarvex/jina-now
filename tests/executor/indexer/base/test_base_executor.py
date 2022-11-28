@@ -413,7 +413,7 @@ class TestBaseIndexer:
                     id="doc3",
                     blob=b"jpg...",
                     embedding=np.array([0.5, 0.1, 0.1]),
-                    tags={'title': 'blue', 'length': 18},
+                    tags={'length': 18},
                     uri=uri,
                     chunks=[
                         Document(
@@ -421,7 +421,7 @@ class TestBaseIndexer:
                             blob=b"jpg...",
                             embedding=np.array([0.5, 0.1]),
                             tags={
-                                'title': 'it is red',
+                                'title': 'blue red',
                                 TAG_OCR_DETECTOR_TEXT_IN_DOC: "i iz ret",
                             },
                             uri=uri,

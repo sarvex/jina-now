@@ -316,8 +316,6 @@ class NOWBaseIndexer(Executor):
     def create_matches(self, docs, parameters, limit, retrieval_limit, search_filter):
         docs_copy = deepcopy(docs)
         self.search(docs_copy, parameters, retrieval_limit, search_filter)
-        # TODO here seems to be the issue - before, the documents are in the right order,
-        # but after merging, they are in incorrect order
         merge_matches_sum(docs_copy, limit)
         return docs_copy
 
