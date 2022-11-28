@@ -49,6 +49,7 @@ def preprocess_text(
 
 def preprocess_image(d: Document):
     """loads document into memory and creates thumbnail."""
+    # TODO move logic of downloading data away from preprocessing them
     if d.tensor is None:
         if d.blob != b'':
             d.convert_blob_to_image_tensor()
@@ -57,6 +58,18 @@ def preprocess_image(d: Document):
     if 'uri' in d.tags:
         d.uri = d.tags['uri']
     to_thumbnail_jpg(d)
+
+    d.chunks.append(
+        Document(
+            uri=d.uri,
+            blob=d.blob,
+            tags=d.tags,
+            modality=Modalities.IMAGE,
+            mime_type='image/jpeg',
+        )
+    )
+    d.blob = None
+    d.uri = None
 
 
 def preprocess_video(d: Document):

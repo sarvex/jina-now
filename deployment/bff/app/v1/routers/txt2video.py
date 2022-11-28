@@ -58,7 +58,7 @@ def search(data: NowTextSearchRequestModel):
     query_doc, filter_query = process_query(
         text=data.text, uri=data.uri, conditions=data.filters
     )
-    traversal_paths = '@c'
+    traversal_paths = '@cc'
     # hack for video the search requests have to be on chunk-level for older versions
     if '33b37fa1f6' in data.host:
         query_doc = (Document(chunks=query_doc),)
@@ -70,6 +70,8 @@ def search(data: NowTextSearchRequestModel):
         parameters={
             'limit': data.limit,
             'filter': filter_query,
+            'access_paths': traversal_paths,
+            'traversal_paths': traversal_paths,
         },
         endpoint='/search',
     )
