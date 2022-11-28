@@ -237,15 +237,19 @@ def _do_login(params):
     }
     if params.secured:
         query_params_var['secured'] = params.secured
+    if params.top_k:
+        query_params_var['top_k'] = params.top_k
     st.experimental_set_query_params(**query_params_var)
 
     redirect_uri = (
         f'https://nowrun.jina.ai/?host={params.host}&input_modality={params.input_modality}'
         f'&output_modality={params.output_modality}&data={params.data}'
-        + f'&secured={params.secured}'
-        if params.secured
-        else ''
     )
+    if params.secured:
+        redirect_uri += f'&secured={params.secured}'
+    if params.top_k:
+        redirect_uri += f'&top_k={params.top_k}'
+
     redirect_uri = quote(redirect_uri)
     redirect_uri = (
         'https://api.hubble.jina.ai/v2/oidc/authorize?prompt=login&target_link_uri='
@@ -265,7 +269,7 @@ def _do_logout():
     st.session_state.avatar_val = None
     st.session_state.token_val = None
     st.session_state.login = True
-    response = requests.post(
+    requests.post(
         'https://api.hubble.jina.ai/v2/rpc/user.session.dismiss',
         headers=headers,
     )
