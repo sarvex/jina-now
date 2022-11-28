@@ -364,7 +364,7 @@ class TestBaseIndexer:
                             embedding=np.array([0.1, 0.1]),
                             tags={
                                 'title': 'that is rEd for sure',
-                                TAG_OCR_DETECTOR_TEXT_IN_DOC: "",
+                                TAG_OCR_DETECTOR_TEXT_IN_DOC: "r t",
                             },
                             uri=uri,
                         ),
@@ -374,7 +374,7 @@ class TestBaseIndexer:
                             embedding=np.array([0.2, 0.1]),
                             tags={
                                 'title': 'really bluE',
-                                TAG_OCR_DETECTOR_TEXT_IN_DOC: "",
+                                TAG_OCR_DETECTOR_TEXT_IN_DOC: "r t",
                             },
                             uri=uri,
                         ),
@@ -441,8 +441,8 @@ class TestBaseIndexer:
     @pytest.mark.parametrize(
         'query,embedding,res_ids',
         [
-            ('blue', [0.5, 0.1], ['chunk12', 'chunk22', 'chunk31']),
-            ('red', [0.5, 0.1], ['chunk11', 'chunk22', 'chunk31']),
+            ('blue', [0.5, 0.1], ['chunk12', 'chunk31', 'chunk22']),
+            ('red', [0.5, 0.1], ['chunk11', 'chunk31', 'chunk22']),
         ],
     )
     def test_search_chunk_using_sum_ranker(
