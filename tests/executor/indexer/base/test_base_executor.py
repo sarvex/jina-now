@@ -14,7 +14,10 @@ NUMBER_OF_DOCS = 10
 DIM = 128
 
 
-@pytest.mark.parametrize('indexer', [InMemoryIndexer, NOWQdrantIndexer16])
+@pytest.mark.parametrize(
+    'indexer',
+    [InMemoryIndexer, NOWQdrantIndexer16],
+)
 class TestBaseIndexer:
     @pytest.fixture(scope='function', autouse=True)
     def setup(self):
@@ -443,8 +446,9 @@ class TestBaseIndexer:
         ],
     )
     def test_search_chunk_using_sum_ranker(
-        self, documents, indexer, query, embedding, res_ids
+        self, documents, indexer, query, embedding, res_ids, tmpdir
     ):
+        metas = {'workspace': str(tmpdir)}
         documents = DocumentArray([Document(chunks=[doc]) for doc in documents])
         with Flow().add(
             uses=indexer,
@@ -452,6 +456,7 @@ class TestBaseIndexer:
                 "dim": len(embedding),
                 'columns': ['title', 'str', TAG_INDEXER_DOC_HAS_TEXT, 'bool'],
             },
+            uses_metas=metas,
         ) as f:
             f.index(
                 documents,

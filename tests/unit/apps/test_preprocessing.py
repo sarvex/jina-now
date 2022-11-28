@@ -75,9 +75,9 @@ def test_image_preprocessing(app_cls, is_indexing, resources_folder_path):
     da = app.preprocess(da)
     assert len(da) == 1
     assert len(da[0].chunks) == 1
-    assert da[0].chunks[0].modality == 'image'
-    assert da[0].chunks[0].uri == uri
-    assert da[0].chunks[0].content
+    assert da[0].chunks[0].chunks[0].modality == 'image'
+    assert da[0].chunks[0].chunks[0].uri == uri
+    assert da[0].chunks[0].chunks[0].content
 
 
 @pytest.mark.skip(

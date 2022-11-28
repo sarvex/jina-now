@@ -7,7 +7,6 @@ from better_profanity import profanity
 from docarray import DocumentArray
 from fast_autocomplete import AutoComplete
 
-from now.constants import ACCESS_PATHS
 from now.executor.abstract.auth.auth import (
     SecurityLevel,
     get_auth_executor_class,
@@ -70,12 +69,11 @@ class NOWAutoCompleteExecutor2(Executor):
     def get_suggestion(
         self, docs: Optional[DocumentArray] = None, parameters: dict = {}, **kwargs
     ):
-        flat_docs = None if not docs else docs[ACCESS_PATHS]
-        if flat_docs:
-            for doc in flat_docs:
-                doc.tags['suggestions'] = self.flatten_list(
-                    self.auto_complete.search(doc.text, max_cost=3, size=5)
-                )
+        # TODO needs to be also on @cc path after preprocessing for simplification
+        for doc in docs['@r']:
+            doc.tags['suggestions'] = self.flatten_list(
+                self.auto_complete.search(doc.text, max_cost=3, size=5)
+            )
         return docs
 
     def flatten_list(self, regular_list):
