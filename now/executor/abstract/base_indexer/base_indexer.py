@@ -125,8 +125,11 @@ class NOWBaseIndexer(Executor):
     def set_doc_has_text_tag(docs: DocumentArray):
         # update the tags of the documents to include the detected text
         for doc in docs:
+            # TODO: pop is an unwanted side effect cleaning up the docs should be done somewhere else
             text_in_doc = doc.tags.pop(TAG_OCR_DETECTOR_TEXT_IN_DOC, '')
-            doc.tags[TAG_INDEXER_DOC_HAS_TEXT] = text_in_doc.strip() != ''
+            text_in_doc = text_in_doc.split(' ')
+            text_in_doc = filter(lambda s: len(s) > 1 and s.isalnum(), text_in_doc)
+            doc.tags[TAG_INDEXER_DOC_HAS_TEXT] = len(list(text_in_doc)) > 0
 
     @secure_request(on='/index', level=SecurityLevel.USER)
     def index_endpoint(
@@ -199,14 +202,30 @@ class NOWBaseIndexer(Executor):
             # search for documents which don't contain text
             search_filter_raw[TAG_INDEXER_DOC_HAS_TEXT] = {'$eq': False}
             search_filter = self.convert_filter_syntax(search_filter_raw)
-            docs_with_matches = self.create_matches(
+            docs_with_matches_no_text = self.create_matches(
                 docs,
                 parameters,
                 limit,
                 retrieval_limit,
                 search_filter,
             )
-
+            # search for documents which contain text
+            search_filter_raw[TAG_INDEXER_DOC_HAS_TEXT] = {'$eq': True}
+            search_filter = self.convert_filter_syntax(search_filter_raw)
+            docs_with_matches_filter_title = self.create_matches(
+                docs,
+                parameters,
+                limit,
+                retrieval_limit,
+                search_filter,
+            )
+            # merge the results such that documents with text are retrieved at a later stage
+            self.merge_matches_by_score_after_half(
+                docs_with_matches_no_text,
+                docs_with_matches_filter_title,
+                limit,
+            )
+            docs_with_matches = docs_with_matches_no_text
             # if we didn't retrieve enough results, try to fetch more
             if len(docs_with_matches) < limit:
                 search_filter = self.convert_filter_syntax(search_filter_orig)
@@ -230,6 +249,36 @@ class NOWBaseIndexer(Executor):
         )[:limit]
         self.clean_response(docs_with_matches)
         return docs_with_matches
+
+    def merge_matches_by_score_after_half(
+        self,
+        docs_with_matches: DocumentArray,
+        docs_with_matches_to_add: DocumentArray,
+        limit: int,
+    ):
+        # get all parent_ids of the matches of the docs_with_matches
+        parent_ids = set()
+        for doc, doc_to_add in zip(docs_with_matches, docs_with_matches_to_add):
+            score_name = (
+                list(doc.matches[0].scores.keys())[0]
+                if len(doc.matches) > 0
+                else self.metric
+            )
+            for match in doc.matches[: limit // 2]:
+                parent_ids.add(match.parent_id)
+
+            possible_matches = deepcopy(doc.matches[limit // 2 :]) + doc_to_add.matches
+            doc.matches = doc.matches[: limit // 2]
+            ids_scores = [
+                (match.id, match.scores[score_name].value) for match in possible_matches
+            ]
+            ids_scores.sort(key=lambda x: x[1], reverse='similarity' in score_name)
+            for id, _ in ids_scores:
+                _match = possible_matches[id]
+                if _match.id not in parent_ids:
+                    if len(doc.matches) >= limit:
+                        break
+                    doc.matches.append(_match)
 
     @secure_request(on='/curate', level=SecurityLevel.USER)
     def curate(self, parameters: dict = {}, **kwargs):
@@ -266,7 +315,6 @@ class NOWBaseIndexer(Executor):
 
     def create_matches(self, docs, parameters, limit, retrieval_limit, search_filter):
         docs_copy = deepcopy(docs)
-        docs_copy[0].matches = DocumentArray([])
         self.search(docs_copy, parameters, retrieval_limit, search_filter)
         # TODO here seems to be the issue - before, the documents are in the right order,
         # but after merging, they are in incorrect order
