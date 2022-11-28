@@ -246,12 +246,14 @@ class ElasticIndexer(Executor):
     @secure_request(on='/delete', level=SecurityLevel.USER)
     def delete(self, parameters: dict = {}, **kwargs):
         """
-        Delete endpoint to delete document/documents from the index.
+        Endpoint to delete documents from an index. Either delete documents by filter condition
+        or by specifying a list of document IDs.
 
-        :param parameters: dictionary with filter conditions to select
+        :param parameters: dictionary with filter conditions or list of IDs to select
             documents for deletion.
         """
         search_filter = parameters.get('filter', None)
+        ids = parameters.get('ids', None)
         if search_filter:
             es_search_filter = {'query': {'bool': {}}}
             for field, filters in search_filter.items():
@@ -265,12 +267,24 @@ class ElasticIndexer(Executor):
                         es_search_filter['query']['bool']['filter'] = {
                             'range': {'tags.' + field: {operator: filter}}
                         }
-        try:
-            resp = self.es.delete_by_query(index=self.index_name, body=es_search_filter)
-            self.es.indices.refresh(index=self.index_name)
-        except Exception:
-            print(traceback.format_exc())
-            raise
+            try:
+                resp = self.es.delete_by_query(
+                    index=self.index_name, body=es_search_filter
+                )
+                self.es.indices.refresh(index=self.index_name)
+            except Exception:
+                print(traceback.format_exc())
+                raise
+        elif ids:
+            resp = {'deleted': 0}
+            try:
+                for id in ids:
+                    r = self.es.delete(index=self.index_name, id=id)
+                    resp['deleted'] += r['deleted']
+            except Exception as e:
+                print(traceback.format_exc(), e)
+        else:
+            raise ValueError('No filter or IDs provided for deletion.')
         if resp:
             print(
                 f"Deleted {resp['deleted']} documents in Elasticsearch index {self.index_name}"
@@ -529,8 +543,11 @@ class ElasticIndexer(Executor):
             [v.value for k, v in retrieved_doc.scores.items() if k != self.metric]
         )
         overall_score = retrieved_doc.scores[self.metric].value
-        bm25_score = overall_score - vector_total
-        retrieved_doc.scores['bm25'] = NamedScore(value=bm25_score)
+        bm25_normalized = overall_score - vector_total
+        bm25_raw = (bm25_normalized - 1) * 10
+
+        retrieved_doc.scores['bm25_normalized'] = NamedScore(value=bm25_normalized)
+        retrieved_doc.scores['bm25_raw'] = NamedScore(value=bm25_raw)
 
         # remove embeddings from document
         retrieved_doc.tags.pop('embeddings', None)
