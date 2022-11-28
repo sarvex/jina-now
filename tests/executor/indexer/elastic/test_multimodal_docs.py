@@ -89,7 +89,7 @@ def es_inputs() -> namedtuple:
         SemanticScore('query_text', 'clip', 'title', 'clip', 1),
         SemanticScore('query_text', 'sbert', 'title', 'sbert', 1),
         SemanticScore('query_text', 'sbert', 'excerpt', 'sbert', 3),
-        SemanticScore('query_text', 'bm25', 'my_bm25_query', 'bm25', 1),
+        # SemanticScore('query_text', 'bm25', 'my_bm25_query', 'bm25', 1),
     ]
     docs = [
         MMDoc(title='test title', excerpt='test excerpt'),
@@ -133,7 +133,6 @@ def es_inputs() -> namedtuple:
         [
             'index_docs_map',
             'query_docs_map',
-            'query',
             'document_mappings',
             'default_semantic_scores',
         ],
@@ -141,7 +140,6 @@ def es_inputs() -> namedtuple:
     return EsInputs(
         index_docs_map,
         query_docs_map,
-        query,
         document_mappings,
         default_semantic_scores,
     )
@@ -155,7 +153,6 @@ def test_doc_map_to_es(setup_service_running, es_inputs):
     (
         index_docs_map,
         query_docs_map,
-        query,
         document_mappings,
         default_semantic_scores,
     ) = es_inputs
@@ -205,7 +202,6 @@ def test_index_and_search_with_multimodal_docs(es_inputs):
     (
         index_docs_map,
         query_docs_map,
-        query,
         document_mappings,
         default_semantic_scores,
     ) = es_inputs
@@ -229,9 +225,20 @@ def test_index_and_search_with_multimodal_docs(es_inputs):
     es = indexer.es
     res = es.search(index=index_name, size=100, query={'match_all': {}})
     assert len(res['hits']['hits']) == len(index_docs_map['clip'])
-    results = indexer.search(query_docs_map)
+    results = indexer.search(query_docs_map, parameters={'get_score_breakdown': True})
 
     # add asserts about results
+    for semantic_score in default_semantic_scores:
+        score_string = '-'.join(
+            [
+                semantic_score.query_field,
+                semantic_score.document_field,
+                semantic_score.document_encoder,
+                semantic_score.linear_weight,
+            ]
+        )
+        assert score_string in results[0].matches[0].scores
+        assert isinstance(results[0].matches[0].scores[score_string].value, float)
 
 
 def test_list_endpoint(setup_service_running, es_inputs):
@@ -241,7 +248,6 @@ def test_list_endpoint(setup_service_running, es_inputs):
     (
         index_docs_map,
         query_docs_map,
-        query,
         document_mappings,
         default_semantic_scores,
     ) = es_inputs
