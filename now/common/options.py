@@ -6,6 +6,7 @@ the dialog won't ask for the value.
 """
 from __future__ import annotations, print_function, unicode_literals
 
+import glob
 import importlib
 import os
 import uuid
@@ -14,6 +15,7 @@ from hubble import AuthenticationRequiredError
 from kubernetes import client, config
 
 from now.constants import Apps, DatasetTypes
+from now.data_loading.utils import _get_s3_bucket_and_folder_prefix
 from now.deployment.deployment import cmd
 from now.log import yaspin_extended
 from now.now_dataclasses import DialogOptions, UserInput
@@ -40,6 +42,94 @@ def _create_app_from_output_modality(user_input: UserInput, **kwargs):
     else:
         raise ValueError(f'Invalid output modality: {user_input.output_modality}')
     user_input.app_instance = construct_app(app_name)
+
+
+def _get_schema_docarray(user_input: UserInput, **kwargs):
+    from hubble import Client
+
+    if user_input.jwt is None:
+        client = Client()
+    else:
+        client = Client(token=user_input.jwt['token'])
+
+    resp = client.get_artifact_info(name='test_subset_laion')
+    if resp.json()['code'] == 200:
+        field_names = resp.json()['data']['metaData']['summary'][3]['value']
+        for el in ['embedding', 'id', 'mime_type']:
+            if el in field_names:
+                field_names.remove(el)
+        return field_names
+    else:
+        raise ValueError('DocumentArray doesnt exist or you dont have access to it')
+
+
+def _get_schema_s3_bucket(user_input: UserInput, **kwargs):
+    bucket, folder_prefix = _get_s3_bucket_and_folder_prefix(
+        user_input
+    )  # user has to provide the folder where folder structure begins
+
+    field_names = []
+
+    all_files = True
+    for obj in list(bucket.objects.filter(Prefix=folder_prefix))[
+        1:
+    ]:  # first is the bucket path
+        if obj.key.endswith('/'):
+            all_files = False
+    if all_files:
+        return []
+    else:
+        for obj in list(bucket.objects.filter(Prefix=folder_prefix))[
+            1:
+        ]:  # first is the bucket path
+            if obj.key.endswith('/'):
+                continue
+            if len(obj.key.split('/')) - len(folder_prefix.split('/')) != 1:
+                raise ValueError(
+                    'File format different than expected, please check documentation.'
+                )
+
+        first_folder = list(bucket.objects.filter(Prefix=folder_prefix))[1].key.split(
+            '/'
+        )[1]
+        for field in list(bucket.objects.filter(Prefix=folder_prefix + first_folder))[
+            1:
+        ]:
+            field_names.append(field.key.split('/')[-1])
+
+        return field_names
+
+
+def check_path(path, root):
+    path = os.path.abspath(path)
+    root = os.path.abspath(root)
+    return os.path.relpath(path, root).count(os.path.sep) == 1
+
+
+def _get_schema_local_folder(user_input: UserInput, **kwargs):
+
+    dataset_path = user_input.dataset_path.strip()
+    if os.path.isfile(dataset_path):
+        return []
+    elif os.path.isdir(dataset_path):
+        all_files = True
+        for file_or_directory in os.listdir(dataset_path):
+            if not os.path.isfile(os.path.join(dataset_path, file_or_directory)):
+                all_files = False
+        if all_files:
+            return []
+        else:
+            first_path = ''
+            for path in glob.glob(os.path.join(dataset_path, '**/**')):
+                if not first_path:
+                    first_path = path
+
+                if not check_path(path, dataset_path):
+                    raise ValueError(
+                        'Folder format is not as expected, please check documentation'
+                    )
+            field_names = os.listdir('/'.join(first_path.split('/')[:-1]))
+            return field_names
 
 
 OUTPUT_MODALITY = DialogOptions(
@@ -94,6 +184,7 @@ DATASET_TYPE = DialogOptions(
     ],
     prompt_type='list',
     is_terminal_command=True,
+    post_func=lambda user_input, **kwargs: _jina_auth_login(user_input, **kwargs),
 )
 
 
@@ -127,15 +218,7 @@ DOCARRAY_NAME = DialogOptions(
     depends_on=DATASET_TYPE,
     conditional_check=lambda user_input: user_input.dataset_type
     == DatasetTypes.DOCARRAY,
-)
-
-DATASET_URL = DialogOptions(
-    name='dataset_url',
-    prompt_message='Please paste in the URL to download your DocumentArray from:',
-    prompt_type='input',
-    depends_on=DATASET_TYPE,
-    is_terminal_command=True,
-    conditional_check=lambda user_input: user_input.dataset_type == DatasetTypes.URL,
+    post_func=lambda user_input, **kwargs: _get_schema_docarray(user_input),
 )
 
 DATASET_PATH = DialogOptions(
@@ -145,6 +228,7 @@ DATASET_PATH = DialogOptions(
     depends_on=DATASET_TYPE,
     is_terminal_command=True,
     conditional_check=lambda user_input: user_input.dataset_type == DatasetTypes.PATH,
+    post_func=lambda user_input, **kwargs: _get_schema_local_folder(user_input),
 )
 
 DATASET_PATH_S3 = DialogOptions(
@@ -154,6 +238,7 @@ DATASET_PATH_S3 = DialogOptions(
     depends_on=DATASET_TYPE,
     conditional_check=lambda user_input: user_input.dataset_type
     == DatasetTypes.S3_BUCKET,
+    post_func=lambda user_input, **kwargs: _get_schema_s3_bucket(user_input),
 )
 
 AWS_ACCESS_KEY_ID = DialogOptions(
@@ -193,6 +278,13 @@ SEARCH_FIELDS = DialogOptions(
     is_terminal_command=True,
     conditional_check=lambda user_input: user_input.dataset_type != DatasetTypes.DEMO,
     post_func=lambda user_input, **kwargs: _parse_search_fields(user_input),
+)
+
+FIELDS_NAMES = DialogOptions(
+    name='field_names',
+    prompt_message='Please select the search fields',
+    prompt_type='checkbox',
+    conditional_check=lambda user_input: len(user_input.field_names) > 0,
 )
 
 
@@ -360,7 +452,10 @@ def construct_app(app_name: str):
 
 
 def _jina_auth_login(user_input, **kwargs):
-    if user_input.deployment_type != 'remote':
+    if user_input.deployment_type != 'remote' or user_input.jwt is not None:
+        return
+
+    if user_input.dataset_type != DatasetTypes.DOCARRAY or user_input.jwt is not None:
         return
 
     try:
@@ -406,7 +501,7 @@ app_config = [OUTPUT_MODALITY, APP_NAME]
 data_type = [DATASET_TYPE]
 data_fields = [SEARCH_FIELDS]
 data_demo = [DEMO_DATA]
-data_da = [DOCARRAY_NAME, DATASET_PATH, DATASET_URL]
+data_da = [DOCARRAY_NAME, DATASET_PATH]
 data_s3 = [DATASET_PATH_S3, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION_NAME]
 data_es = [
     ES_HOST_NAME,
@@ -417,8 +512,7 @@ cluster = [DEPLOYMENT_TYPE, LOCAL_CLUSTER]
 remote_cluster = [SECURED, API_KEY, ADDITIONAL_USERS, USER_EMAILS]
 
 base_options = (
-    app_config
-    + data_type
+    data_type
     + data_demo
     + data_da
     + data_s3
@@ -426,4 +520,5 @@ base_options = (
     + data_fields
     + cluster
     + remote_cluster
+    + app_config
 )

@@ -8,7 +8,11 @@ from docarray import Document, DocumentArray
 from now.app.base.app import JinaNOWApp
 from now.constants import DatasetTypes
 from now.data_loading.es import ElasticsearchExtractor
-from now.data_loading.utils import fetch_da_from_url, get_dataset_url
+from now.data_loading.utils import (
+    _get_s3_bucket_and_folder_prefix,
+    fetch_da_from_url,
+    get_dataset_url,
+)
 from now.demo_data import DemoDatasetNames
 from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
@@ -166,22 +170,8 @@ def _load_from_disk(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
 
 
 def _list_files_from_s3_bucket(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
-    import boto3.session
 
-    s3_uri = user_input.dataset_path
-    if not s3_uri.startswith('s3://'):
-        raise ValueError(
-            f"Can't process S3 URI {s3_uri} as it assumes it starts with: 's3://'"
-        )
-
-    bucket = s3_uri.split('/')[2]
-    folder_prefix = '/'.join(s3_uri.split('/')[3:])
-
-    session = boto3.session.Session(
-        aws_access_key_id=user_input.aws_access_key_id,
-        aws_secret_access_key=user_input.aws_secret_access_key,
-    )
-    bucket = session.resource('s3').Bucket(bucket)
+    bucket, folder_prefix = _get_s3_bucket_and_folder_prefix(user_input)
 
     docs = []
     with yaspin_extended(
