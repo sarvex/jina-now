@@ -237,7 +237,7 @@ def _do_login(params):
     }
     if params.secured:
         query_params_var['secured'] = params.secured
-    if params.top_k:
+    if 'top_k' in st.experimental_get_query_params():
         query_params_var['top_k'] = params.top_k
     st.experimental_set_query_params(**query_params_var)
 
@@ -247,7 +247,7 @@ def _do_login(params):
     )
     if params.secured:
         redirect_uri += f'&secured={params.secured}'
-    if params.top_k:
+    if 'top_k' in st.experimental_get_query_params():
         redirect_uri += f'&top_k={params.top_k}'
 
     redirect_uri = quote(redirect_uri)
