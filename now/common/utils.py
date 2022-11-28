@@ -27,6 +27,7 @@ from now.constants import (
 )
 from now.demo_data import DEFAULT_EXAMPLE_HOSTED
 from now.deployment.deployment import cmd
+from now.executor.name_to_id_map import name_to_id_map
 from now.finetuning.run_finetuning import finetune
 from now.finetuning.settings import FinetuneSettings, parse_finetune_settings
 from now.now_dataclasses import UserInput
@@ -66,8 +67,8 @@ def common_get_flow_env_dict(
         'PRE_TRAINED_EMBEDDINGS_SIZE': pre_trained_embedding_size,
         'INDEXER_NAME': f'{EXECUTOR_PREFIX}{indexer_uses}',
         'PREFETCH': PREFETCH_NR,
-        'PREPROCESSOR_NAME': f'{EXECUTOR_PREFIX}NOWPreprocessor/{NOW_PREPROCESSOR_VERSION}',
-        'AUTOCOMPLETE_EXECUTOR_NAME': f'{EXECUTOR_PREFIX}NOWAutoCompleteExecutor2/{NOW_AUTOCOMPLETE_VERSION}',
+        'PREPROCESSOR_NAME': f'{EXECUTOR_PREFIX}{name_to_id_map.get("NOWPreprocessor")}/{NOW_PREPROCESSOR_VERSION}',
+        'AUTOCOMPLETE_EXECUTOR_NAME': f'{EXECUTOR_PREFIX}{name_to_id_map.get("NOWAutoCompleteExecutor2")}/{NOW_AUTOCOMPLETE_VERSION}',
         'APP': user_input.app_instance.app_name,
         'COLUMNS': tags,
         'ADMIN_EMAILS': user_input.admin_emails or [] if user_input.secured else [],
@@ -198,7 +199,7 @@ def get_indexer_config(
 
     if elastic and deployment_type == 'local':
         config = {
-            'indexer_uses': f'NOWElasticIndexer/{NOW_ELASTIC_INDEXER_VERSION}',
+            'indexer_uses': f'{name_to_id_map.get("NOWElasticIndexer")}/{NOW_ELASTIC_INDEXER_VERSION}',
             'hosts': setup_elastic_service(kubectl_path),
         }
     elif elastic and deployment_type == 'remote':
@@ -206,7 +207,9 @@ def get_indexer_config(
             'NOWElasticIndexer is currently not supported for remote deployment. Please use local deployment.'
         )
     else:
-        config = {'indexer_uses': f'NOWQdrantIndexer16/{NOW_QDRANT_INDEXER_VERSION}'}
+        config = {
+            'indexer_uses': f'{name_to_id_map.get("NOWQdrantIndexer16")}/{NOW_QDRANT_INDEXER_VERSION}'
+        }
     threshold1 = 250_000
     if num_indexed_samples <= threshold1:
         config['indexer_resources'] = {'INDEXER_CPU': 0.1, 'INDEXER_MEM': '2G'}
