@@ -236,8 +236,12 @@ def test_index_and_search_with_multimodal_docs(es_inputs):
         linear_weight,
     ) in default_semantic_scores:
         if document_encoder == 'bm25':
-            assert 'bm25' in results[0].matches[0].scores
-            assert isinstance(results[0].matches[0].scores['bm25'].value, float)
+            assert 'bm25_normalized' in results[0].matches[0].scores
+            assert 'bm25_raw' in results[0].matches[0].scores
+            assert isinstance(
+                results[0].matches[0].scores['bm25_normalized'].value, float
+            )
+            assert isinstance(results[0].matches[0].scores['bm25_raw'].value, float)
         else:
             score_string = '-'.join(
                 [
