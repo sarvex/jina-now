@@ -176,14 +176,13 @@ class NOWBaseIndexer(Executor):
         **kwargs,
     ):
         """Perform a vector similarity search and retrieve `Document` matches."""
-        # TODO remove this check for empty docs and make sure everything else works
-        if len(docs) == 0:
-            return
         limit = int(parameters.get('limit', self.limit))
         search_filter_raw = parameters.get('filter', {})
         search_filter_orig = deepcopy(search_filter_raw)
         docs = docs[ACCESS_PATHS][:1]  # only search on the first document for now
-
+        # TODO remove this check for empty docs and make sure everything else works
+        if len(docs) == 0:
+            return
         retrieval_limit = limit * 3
 
         # if OCR detector was used to check if documents contain text in indexed image modality adjust retrieval step
@@ -226,7 +225,6 @@ class NOWBaseIndexer(Executor):
             docs_with_matches = self.create_matches(
                 docs, parameters, limit, retrieval_limit, search_filter
             )
-        print()
         docs_with_matches[0].matches = (
             self.get_curated_matches(docs[0].text) + docs_with_matches[0].matches
         )[:limit]
