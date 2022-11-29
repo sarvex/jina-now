@@ -90,7 +90,7 @@ def jina_client_post(
             parameters={
                 **auth_dict,
                 **parameters,
-                'access_path': '@cc',
+                'access_paths': '@cc',
             },
             *args,
             **kwargs,

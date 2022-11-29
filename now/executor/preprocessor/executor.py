@@ -13,7 +13,13 @@ from paddleocr import PaddleOCR
 
 from now.app.base.app import JinaNOWApp
 from now.common.options import construct_app
-from now.constants import ACCESS_PATHS, TAG_OCR_DETECTOR_TEXT_IN_DOC, Apps, DatasetTypes
+from now.constants import (
+    ACCESS_PATHS,
+    TAG_OCR_DETECTOR_TEXT_IN_DOC,
+    Apps,
+    DatasetTypes,
+    Modalities,
+)
 from now.data_loading.transform_docarray import transform_docarray
 from now.executor.abstract.auth import (
     SecurityLevel,
@@ -68,16 +74,11 @@ class NOWPreprocessor(Executor):
 
     def _ocr_detect_text(self, docs: DocumentArray):
         """Iterates over all documents, detects text in images and saves it into the tags of the document."""
-        flat_docs = docs[ACCESS_PATHS]
-        flat_docs = [
-            doc
-            for doc in flat_docs
-            if doc.mime_type.startswith('image') or doc.modality == 'image'
-        ]
-        for doc in flat_docs:
-            ocr_result = self.paddle_ocr.ocr(doc.blob)
-            text_list = [text for _, (text, _) in ocr_result[0]]
-            doc.tags[TAG_OCR_DETECTOR_TEXT_IN_DOC] = ' '.join(text_list)
+        for doc in docs[ACCESS_PATHS]:
+            if doc.modality == Modalities.IMAGE:
+                ocr_result = self.paddle_ocr.ocr(doc.blob)
+                text_list = [text for _, (text, _) in ocr_result[0]]
+                doc.tags[TAG_OCR_DETECTOR_TEXT_IN_DOC] = ' '.join(text_list)
 
     @staticmethod
     def _save_uri_to_tmp_file(uri, tmpdir) -> str:

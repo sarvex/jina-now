@@ -69,11 +69,7 @@ def search(data: NowTextImageSearchRequestModel):
     docs = jina_client_post(
         data=data,
         inputs=query_doc,
-        parameters={
-            'limit': data.limit,
-            'filter': filter_query,
-            'access_paths': '@cc',
-        },
+        parameters={'limit': data.limit, 'filter': filter_query},
         endpoint='/search',
     )
 

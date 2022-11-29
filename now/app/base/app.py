@@ -249,12 +249,14 @@ class JinaNOWApp:
                 try:
                     if chunk.modality == 'text':
                         preprocess_text(chunk)
-                    if chunk.modality == 'image':
+                    elif chunk.modality == 'image':
                         preprocess_image(chunk)
-                    if chunk.modality == 'video':
+                    elif chunk.modality == 'video':
                         preprocess_video(chunk)
-                    if chunk.modality == 'music':
+                    elif chunk.modality == 'music':
                         preprocess_music(chunk)
+                    else:
+                        raise ValueError(f'Unsupported modality {chunk.modality}')
                 except Exception as e:
                     print(e)
         return docs

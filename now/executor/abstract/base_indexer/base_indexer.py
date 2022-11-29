@@ -122,14 +122,22 @@ class NOWBaseIndexer(Executor):
         return docs
 
     @staticmethod
+    def has_text(doc):
+        # TODO: pop is an unwanted side effect cleaning up the docs should be done somewhere else
+        text_in_doc = doc.tags.pop(TAG_OCR_DETECTOR_TEXT_IN_DOC, '')
+        text_in_doc = text_in_doc.split(' ')
+        text_in_doc = filter(lambda s: len(s) > 1 and s.isalnum(), text_in_doc)
+        return len(list(text_in_doc)) > 0
+
+    @staticmethod
     def set_doc_has_text_tag(docs: DocumentArray):
-        # update the tags of the documents to include the detected text
+        """
+        Mark documents with the tag TAG_INDEXER_DOC_HAS_TEXT.
+        If two documents have the same parent, then they are all marked as having text.
+        """
+        parent_ids = {d.parent_id for d in docs if NOWBaseIndexer.has_text(d)}
         for doc in docs:
-            # TODO: pop is an unwanted side effect cleaning up the docs should be done somewhere else
-            text_in_doc = doc.tags.pop(TAG_OCR_DETECTOR_TEXT_IN_DOC, '')
-            text_in_doc = text_in_doc.split(' ')
-            text_in_doc = filter(lambda s: len(s) > 1 and s.isalnum(), text_in_doc)
-            doc.tags[TAG_INDEXER_DOC_HAS_TEXT] = len(list(text_in_doc)) > 0
+            doc.tags[TAG_INDEXER_DOC_HAS_TEXT] = doc.parent_id in parent_ids
 
     @secure_request(on='/index', level=SecurityLevel.USER)
     def index_endpoint(
