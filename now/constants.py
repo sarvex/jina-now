@@ -29,6 +29,12 @@ class Apps(BetterEnum):
     TEXT_TO_TEXT_AND_IMAGE = 'text_to_text_and_image'
 
 
+class FieldTypes(BetterEnum):
+    SEARCH = 'search'
+    FILTER = 'filter'
+    CARRYON = 'carryon'
+
+
 class DatasetTypes(BetterEnum):
     DEMO = 'demo'
     PATH = 'path'
@@ -65,7 +71,7 @@ CLIP_USES = {
     'remote': ('CLIPOnnxEncoder/latest-gpu', 'ViT-B-32::openai', ModelDimensions.CLIP),
 }
 
-EXTERNAL_CLIP_HOST = 'encoderclip-famous-reptile-98ea48cb2c.wolf.jina.ai'
+EXTERNAL_CLIP_HOST = 'encoderclip-game-gar-c70a0d0c79.wolf.jina.ai'
 
 DEFAULT_FLOW_NAME = 'nowapi'
 PREFETCH_NR = 10
