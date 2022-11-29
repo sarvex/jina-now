@@ -2,7 +2,7 @@ import os
 from typing import Dict, List
 
 import cowsay
-from docarray import Document, DocumentArray
+from docarray import DocumentArray
 
 from now.app.base.app import JinaNOWApp
 from now.common.utils import common_setup
@@ -94,7 +94,7 @@ class MusicToMusic(JinaNOWApp):
             dataset=dataset,
             encoder_uses='BiModalMusicTextEncoderV2',
             encoder_uses_with={},
-            indexer_uses=f'NOWQdrantIndexer15/{NOW_QDRANT_INDEXER_VERSION}',
+            indexer_uses=f'NOWQdrantIndexer16/{NOW_QDRANT_INDEXER_VERSION}',
             kubectl_path=kubectl_path,
             indexer_resources={},
             pre_trained_embedding_size=ModelDimensions.CLIP,
@@ -112,34 +112,6 @@ class MusicToMusic(JinaNOWApp):
         super().setup(dataset=dataset, user_input=user_input, kubectl_path=kubectl_path)
 
         return env_dict
-
-    def preprocess(
-        self,
-        da: DocumentArray,
-        user_input: UserInput,
-        **kwargs,
-    ) -> DocumentArray:
-        from pydub import AudioSegment
-
-        def convert_fn(d: Document):
-            try:
-                if d.blob == b'':
-                    if d.uri:
-                        if d.uri.startswith(f'data:{d.mime_type}'):
-                            d.load_uri_to_blob(timeout=10)
-                        else:
-                            AudioSegment.from_file(d.uri)  # checks if file is valid
-                            with open(d.uri, 'rb') as fh:
-                                d.blob = fh.read()
-                return d
-            except Exception as e:
-                return d
-
-        for d in da:
-            for chunk in d.chunks:
-                if chunk.modality == Modalities.MUSIC:
-                    convert_fn(d)
-        return da
 
 
 def ffmpeg_is_installed():

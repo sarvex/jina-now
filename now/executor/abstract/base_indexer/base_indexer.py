@@ -7,7 +7,11 @@ from typing import List, Optional
 
 from docarray import Document, DocumentArray
 
-from now.constants import TAG_INDEXER_DOC_HAS_TEXT, TAG_OCR_DETECTOR_TEXT_IN_DOC
+from now.constants import (
+    ACCESS_PATHS,
+    TAG_INDEXER_DOC_HAS_TEXT,
+    TAG_OCR_DETECTOR_TEXT_IN_DOC,
+)
 from now.executor.abstract.auth import (
     SecurityLevel,
     get_auth_executor_class,
@@ -27,7 +31,6 @@ class NOWBaseIndexer(Executor):
         columns: Optional[List] = None,
         metric: str = 'cosine',
         limit: int = 10,
-        traversal_paths: str = '@c',
         max_values_per_tag: int = 10,
         *args,
         **kwargs,
@@ -38,7 +41,6 @@ class NOWBaseIndexer(Executor):
         parsed as a valid Python type.
         :param metric: Distance metric type. Can be 'euclidean', 'inner_product', or 'cosine'
         :param limit: Number of results to get for each query document in search
-        :param traversal_paths: Default traversal paths on docs
         :param max_values_per_tag: Maximum number of values per tag
         (used for search), e.g. '@r', '@c', '@r,c'
         """
@@ -48,7 +50,6 @@ class NOWBaseIndexer(Executor):
         self.dim = dim
         self.metric = metric
         self.limit = limit
-        self.traversal_paths = traversal_paths
         self.max_values_per_tag = max_values_per_tag
         self.construct()
         self.doc_id_tags = {}
@@ -107,30 +108,32 @@ class NOWBaseIndexer(Executor):
         limit = int(parameters.get('limit', maxsize))
         offset = int(parameters.get('offset', 0))
         # add removal of duplicates
-        traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
-        if traversal_paths == '@c,cc':
-            docs = DocumentArray()
-            chunks_size = int(parameters.get('chunks_size', 3))
-            parent_ids = set()
-            for d in self.document_list[offset * chunks_size :]:
-                if len(parent_ids) == limit:
-                    break
-                if d.parent_id in parent_ids:
-                    continue
-                parent_ids.add(d.parent_id)
-                docs.append(d)
-        else:
-            docs = self.document_list[offset : offset + limit]
+        parent_ids = sorted({doc.parent_id for doc in self.document_list})
+        # filter by offset and limit
+        filtered_parent_ids = parent_ids[offset : offset + limit]
+        # get the documents of filtered parent ids
+        docs = DocumentArray(
+            [doc for doc in self.document_list if doc.parent_id in filtered_parent_ids]
+        )
         return docs
 
     @staticmethod
+    def has_text(doc):
+        # TODO: pop is an unwanted side effect cleaning up the docs should be done somewhere else
+        text_in_doc = doc.tags.pop(TAG_OCR_DETECTOR_TEXT_IN_DOC, '')
+        text_in_doc = text_in_doc.split(' ')
+        text_in_doc = filter(lambda s: len(s) > 1 and s.isalnum(), text_in_doc)
+        return len(list(text_in_doc)) > 0
+
+    @staticmethod
     def set_doc_has_text_tag(docs: DocumentArray):
-        # update the tags of the documents to include the detected text
+        """
+        Mark documents with the tag TAG_INDEXER_DOC_HAS_TEXT.
+        If two documents have the same parent, then they are all marked as having text.
+        """
+        parent_ids = {d.parent_id for d in docs if NOWBaseIndexer.has_text(d)}
         for doc in docs:
-            text_in_doc = doc.tags.pop(TAG_OCR_DETECTOR_TEXT_IN_DOC, '')
-            text_in_doc = text_in_doc.split(' ')
-            text_in_doc = filter(lambda s: len(s) > 1 and s.isalnum(), text_in_doc)
-            doc.tags[TAG_INDEXER_DOC_HAS_TEXT] = len(list(text_in_doc)) > 0
+            doc.tags[TAG_INDEXER_DOC_HAS_TEXT] = doc.parent_id in parent_ids
 
     @secure_request(on='/index', level=SecurityLevel.USER)
     def index_endpoint(
@@ -145,8 +148,8 @@ class NOWBaseIndexer(Executor):
         :param docs: the Documents to index
         :param parameters: dictionary with options for indexing
         """
-        traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
-        flat_docs = docs[traversal_paths]
+        flat_docs = docs[ACCESS_PATHS]
+        # TODO please remove this check for empty docs
         if len(flat_docs) == 0:
             return
         flat_docs = DocumentArray(
@@ -183,13 +186,11 @@ class NOWBaseIndexer(Executor):
         limit = int(parameters.get('limit', self.limit))
         search_filter_raw = parameters.get('filter', {})
         search_filter_orig = deepcopy(search_filter_raw)
-        traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
-        docs = docs[traversal_paths][:1]  # only search on the first document for now
-
-        if traversal_paths == '@c,cc':
-            retrieval_limit = limit * 3
-        else:
-            retrieval_limit = limit
+        docs = docs[ACCESS_PATHS][:1]  # only search on the first document for now
+        # TODO remove this check for empty docs and make sure everything else works
+        if len(docs) == 0:
+            return
+        retrieval_limit = limit * 3
 
         # if OCR detector was used to check if documents contain text in indexed image modality adjust retrieval step
         if self.columns and TAG_INDEXER_DOC_HAS_TEXT in [
@@ -208,7 +209,6 @@ class NOWBaseIndexer(Executor):
             docs_with_matches_no_text = self.create_matches(
                 docs,
                 parameters,
-                traversal_paths,
                 limit,
                 retrieval_limit,
                 search_filter,
@@ -219,7 +219,6 @@ class NOWBaseIndexer(Executor):
             docs_with_matches_filter_title = self.create_matches(
                 docs,
                 parameters,
-                traversal_paths,
                 limit,
                 retrieval_limit,
                 search_filter,
@@ -237,7 +236,6 @@ class NOWBaseIndexer(Executor):
                 docs_with_additonal_matches = self.create_matches(
                     docs,
                     parameters,
-                    traversal_paths,
                     limit,
                     retrieval_limit,
                     search_filter,
@@ -248,14 +246,43 @@ class NOWBaseIndexer(Executor):
         else:
             search_filter = self.convert_filter_syntax(search_filter_orig)
             docs_with_matches = self.create_matches(
-                docs, parameters, traversal_paths, limit, retrieval_limit, search_filter
+                docs, parameters, limit, retrieval_limit, search_filter
             )
-
         docs_with_matches[0].matches = (
             self.get_curated_matches(docs[0].text) + docs_with_matches[0].matches
         )[:limit]
         self.clean_response(docs_with_matches)
         return docs_with_matches
+
+    def merge_matches_by_score_after_half(
+        self,
+        docs_with_matches: DocumentArray,
+        docs_with_matches_to_add: DocumentArray,
+        limit: int,
+    ):
+        # get all parent_ids of the matches of the docs_with_matches
+        parent_ids = set()
+        for doc, doc_to_add in zip(docs_with_matches, docs_with_matches_to_add):
+            score_name = (
+                list(doc.matches[0].scores.keys())[0]
+                if len(doc.matches) > 0
+                else self.metric
+            )
+            for match in doc.matches[: limit // 2]:
+                parent_ids.add(match.parent_id)
+
+            possible_matches = deepcopy(doc.matches[limit // 2 :]) + doc_to_add.matches
+            doc.matches = doc.matches[: limit // 2]
+            ids_scores = [
+                (match.id, match.scores[score_name].value) for match in possible_matches
+            ]
+            ids_scores.sort(key=lambda x: x[1], reverse='similarity' in score_name)
+            for id, _ in ids_scores:
+                _match = possible_matches[id]
+                if _match.id not in parent_ids:
+                    if len(doc.matches) >= limit:
+                        break
+                    doc.matches.append(_match)
 
     @secure_request(on='/curate', level=SecurityLevel.USER)
     def curate(self, parameters: dict = {}, **kwargs):
@@ -290,13 +317,10 @@ class NOWBaseIndexer(Executor):
                 curated_matches.extend(self.document_list.find(doc_filter))
         return curated_matches
 
-    def create_matches(
-        self, docs, parameters, traversal_paths, limit, retrieval_limit, search_filter
-    ):
+    def create_matches(self, docs, parameters, limit, retrieval_limit, search_filter):
         docs_copy = deepcopy(docs)
         self.search(docs_copy, parameters, retrieval_limit, search_filter)
-        if traversal_paths == '@c,cc':
-            merge_matches_sum(docs_copy, limit)
+        merge_matches_sum(docs_copy, limit)
         return docs_copy
 
     def append_matches_if_not_exists(
@@ -314,36 +338,6 @@ class NOWBaseIndexer(Executor):
                     if len(doc.matches) >= limit:
                         break
                     doc.matches.append(match)
-
-    def merge_matches_by_score_after_half(
-        self,
-        docs_with_matches: DocumentArray,
-        docs_with_matches_to_add: DocumentArray,
-        limit: int,
-    ):
-        # get all parent_ids of the matches of the docs_with_matches
-        parent_ids = set()
-        for doc, doc_to_add in zip(docs_with_matches, docs_with_matches_to_add):
-            score_name = (
-                list(doc.matches[0].scores.keys())[0]
-                if len(doc.matches) > 0
-                else self.metric
-            )
-            for match in doc.matches[: limit // 2]:
-                parent_ids.add(match.parent_id)
-
-            possible_matches = deepcopy(doc.matches[limit // 2 :]) + doc_to_add.matches
-            doc.matches = doc.matches[: limit // 2]
-            ids_scores = [
-                (match.id, match.scores[score_name].value) for match in possible_matches
-            ]
-            ids_scores.sort(key=lambda x: x[1], reverse='similarity' in score_name)
-            for id, _ in ids_scores:
-                _match = possible_matches[id]
-                if _match.id not in parent_ids:
-                    if len(doc.matches) >= limit:
-                        break
-                    doc.matches.append(_match)
 
     @staticmethod
     def maybe_drop_blob_tensor(docs: DocumentArray):

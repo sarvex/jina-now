@@ -1,6 +1,6 @@
 from docarray import Document, DocumentArray
 
-from now.executor.autocomplete.executor import NOWAutoCompleteExecutor
+from now.executor.autocomplete.executor import NOWAutoCompleteExecutor2
 
 
 def word_list():
@@ -33,7 +33,7 @@ def word_list():
 
 
 def test_empty():
-    executor = NOWAutoCompleteExecutor()
+    executor = NOWAutoCompleteExecutor2()
 
     assert executor.words == {}
 
@@ -45,13 +45,13 @@ def test_initialize():
     for word, count in zip(words, counts):
         new_words[word] = {'count': count}
 
-    executor = NOWAutoCompleteExecutor(words=new_words)
+    executor = NOWAutoCompleteExecutor2(words=new_words)
     assert len(executor.words) == 10
     assert executor.words['loading']['count'] == '39131'
 
 
 def test_search_update(tmpdir):
-    executor = NOWAutoCompleteExecutor(workspace=tmpdir)
+    executor = NOWAutoCompleteExecutor2(workspace=tmpdir)
 
     da = DocumentArray(
         [
@@ -71,7 +71,7 @@ def test_search_update(tmpdir):
 
 
 def test_search_update_profanity(tmpdir):
-    executor = NOWAutoCompleteExecutor(workspace=tmpdir)
+    executor = NOWAutoCompleteExecutor2(workspace=tmpdir)
 
     da = DocumentArray(
         [
@@ -94,7 +94,7 @@ def test_search_update_profanity(tmpdir):
 
 
 def test_get_suggestion(tmpdir):
-    executor = NOWAutoCompleteExecutor(workspace=tmpdir)
+    executor = NOWAutoCompleteExecutor2(workspace=tmpdir)
 
     da = DocumentArray(
         [
@@ -121,7 +121,7 @@ def test_get_suggestion(tmpdir):
 
 
 def test_get_suggestion_bitrigrams(tmpdir):
-    executor = NOWAutoCompleteExecutor(workspace=tmpdir)
+    executor = NOWAutoCompleteExecutor2(workspace=tmpdir)
 
     da = DocumentArray(
         [

@@ -8,7 +8,6 @@ from pytest_mock import MockerFixture
 
 from now.app.image_text_retrieval.app import ImageTextRetrieval
 from now.app.music_to_music.app import MusicToMusic
-from now.app.text_to_text_and_image.app import TextToTextAndImage
 from now.constants import DatasetTypes
 from now.data_loading.data_loading import _load_tags_from_json_if_needed, load_data
 from now.demo_data import DemoDatasetNames
@@ -118,22 +117,6 @@ def test_da_custom_ds(da: DocumentArray):
 
     for doc in loaded_da:
         assert doc.content
-
-
-def test_es_online_shop_ds(da: DocumentArray):
-    user_input = UserInput()
-    user_input.dataset_type = DatasetTypes.DEMO
-    user_input.dataset_name = DemoDatasetNames.ES_ONLINE_SHOP_50
-    user_input.output_modality = 'text-and-image'
-
-    app = TextToTextAndImage()
-    loaded_da = load_data(app, user_input)
-    loaded_da = app.preprocess(da=loaded_da, user_input=user_input)
-
-    for doc in loaded_da:
-        assert doc.chunks
-        for c in doc.chunks:
-            assert c.text or c.uri
 
 
 @pytest.fixture

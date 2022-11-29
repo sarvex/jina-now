@@ -7,7 +7,6 @@ from docarray import Document, DocumentArray
 from jina import __version__ as jina_version
 
 from now.app.base.app import JinaNOWApp
-from now.common.preprocess import preprocess_nested_docs, preprocess_text
 from now.common.utils import get_indexer_config
 from now.constants import (
     EXECUTOR_PREFIX,
@@ -18,6 +17,7 @@ from now.constants import (
     ModelDimensions,
     ModelNames,
 )
+from now.executor.name_to_id_map import name_to_id_map
 from now.finetuning.data_builder import DataBuilder
 from now.finetuning.run_finetuning import finetune
 from now.finetuning.settings import FinetuneSettings, parse_finetune_settings
@@ -113,29 +113,6 @@ class TextToTextAndImage(JinaNOWApp):
         user_input.task_config = config
         return user_input.task_config
 
-    def preprocess(
-        self,
-        da: DocumentArray,
-        user_input: UserInput,
-        process_index: bool = False,
-        process_query: bool = True,
-    ) -> DocumentArray:
-        # will be refactored soon
-        if not process_query and not process_index:
-            raise Exception(
-                'Either `process_query` or `process_index` must be set to True.'
-            )
-        # Indexing
-        if process_index:
-            return preprocess_nested_docs(da=da, user_input=user_input)
-        # Query
-        if process_query:
-            da = preprocess_text(da=da, split_by_sentences=False)
-            for d in da:
-                if len(d.chunks) == 0:
-                    d.chunks.extend([Document(text=d.text, modality='text')])
-            return da
-
     @hubble.login_required
     def setup(
         self, dataset: DocumentArray, user_input: UserInput, kubectl_path
@@ -173,7 +150,7 @@ class TextToTextAndImage(JinaNOWApp):
 
         env_dict[
             'PREPROCESSOR_NAME'
-        ] = f'{EXECUTOR_PREFIX}NOWPreprocessor/{NOW_PREPROCESSOR_VERSION}'
+        ] = f'{EXECUTOR_PREFIX}{name_to_id_map.get("NOWPreprocessor")}/{NOW_PREPROCESSOR_VERSION}'
         env_dict['APP'] = self.app_name
         indexer_config = get_indexer_config(
             len(dataset),
@@ -197,7 +174,7 @@ class TextToTextAndImage(JinaNOWApp):
         )
         env_dict[
             'AUTOCOMPLETE_EXECUTOR_NAME'
-        ] = f'jinahub+docker://NOWAutoCompleteExecutor/{NOW_AUTOCOMPLETE_VERSION}'
+        ] = f'jinahub+docker://NOWAutoCompleteExecutor2/{NOW_AUTOCOMPLETE_VERSION}'
 
         env_dict['API_KEY'] = (
             [user_input.api_key] if user_input.secured and user_input.api_key else []
@@ -239,9 +216,3 @@ class TextToTextAndImage(JinaNOWApp):
         if encoder_type == 'text-to-image':
             return 'CLIPLoss'
         return 'TripletMarginLoss'
-
-    def get_index_query_access_paths(
-        self, search_fields: Optional[List[str]] = None
-    ) -> str:
-        """Gives access paths for indexing and searching."""
-        return '@c'

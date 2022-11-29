@@ -87,7 +87,11 @@ def jina_client_post(
         result = client.post(
             endpoint,
             inputs=inputs,
-            parameters={**auth_dict, **parameters},
+            parameters={
+                **auth_dict,
+                **parameters,
+                'access_paths': '@cc',
+            },
             *args,
             **kwargs,
         )
