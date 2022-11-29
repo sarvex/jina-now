@@ -4,6 +4,7 @@ from collections import namedtuple
 import numpy as np
 import pytest
 from docarray import dataclass
+from docarray.score import NamedScore
 from docarray.typing import Text
 from jina import Document, DocumentArray
 
@@ -92,8 +93,8 @@ def es_inputs() -> namedtuple:
         SemanticScore('query_text', 'bm25', 'my_bm25_query', 'bm25', 1),
     ]
     docs = [
-        MMDoc(title='test title', excerpt='test excerpt'),
-        MMDoc(title='test title 2', excerpt='test excerpt 2'),
+        MMDoc(title='cat test title cat', excerpt='cat test excerpt cat'),
+        MMDoc(title='test title dog', excerpt='test excerpt 2'),
     ]
     clip_docs = DocumentArray()
     sbert_docs = DocumentArray()
@@ -115,7 +116,7 @@ def es_inputs() -> namedtuple:
         'sbert': sbert_docs,
     }
 
-    query = MMQuery(query_text='bla')
+    query = MMQuery(query_text='cat')
 
     clip_doc = Document(query)
     sbert_doc = Document(clip_doc, copy=True)
@@ -133,7 +134,6 @@ def es_inputs() -> namedtuple:
         [
             'index_docs_map',
             'query_docs_map',
-            'query',
             'document_mappings',
             'default_semantic_scores',
         ],
@@ -141,7 +141,6 @@ def es_inputs() -> namedtuple:
     return EsInputs(
         index_docs_map,
         query_docs_map,
-        query,
         document_mappings,
         default_semantic_scores,
     )
@@ -155,7 +154,6 @@ def test_doc_map_to_es(setup_service_running, es_inputs):
     (
         index_docs_map,
         query_docs_map,
-        query,
         document_mappings,
         default_semantic_scores,
     ) = es_inputs
@@ -205,7 +203,6 @@ def test_index_and_search_with_multimodal_docs(es_inputs):
     (
         index_docs_map,
         query_docs_map,
-        query,
         document_mappings,
         default_semantic_scores,
     ) = es_inputs
@@ -229,9 +226,34 @@ def test_index_and_search_with_multimodal_docs(es_inputs):
     es = indexer.es
     res = es.search(index=index_name, size=100, query={'match_all': {}})
     assert len(res['hits']['hits']) == len(index_docs_map['clip'])
-    results = indexer.search(query_docs_map)
+    results = indexer.search(query_docs_map, parameters={'get_score_breakdown': True})
 
-    # add asserts about results
+    # asserts about matches
+    for (
+        query_field,
+        query_encoder,
+        document_field,
+        document_encoder,
+        linear_weight,
+    ) in default_semantic_scores:
+        if document_encoder == 'bm25':
+            assert 'bm25_normalized' in results[0].matches[0].scores
+            assert 'bm25_raw' in results[0].matches[0].scores
+            assert isinstance(
+                results[0].matches[0].scores['bm25_normalized'].value, float
+            )
+            assert isinstance(results[0].matches[0].scores['bm25_raw'].value, float)
+        else:
+            score_string = '-'.join(
+                [
+                    query_field,
+                    document_field,
+                    document_encoder,
+                    str(linear_weight),
+                ]
+            )
+            assert score_string in results[0].matches[0].scores
+            assert isinstance(results[0].matches[0].scores[score_string].value, float)
 
 
 def test_list_endpoint(setup_service_running, es_inputs):
@@ -241,7 +263,6 @@ def test_list_endpoint(setup_service_running, es_inputs):
     (
         index_docs_map,
         query_docs_map,
-        query,
         document_mappings,
         default_semantic_scores,
     ) = es_inputs
@@ -262,3 +283,80 @@ def test_list_endpoint(setup_service_running, es_inputs):
     offset = 1
     result_with_offset = es_indexer.list(parameters={'offset': offset})
     assert len(result_with_offset) == len(index_docs_map['clip']) - offset
+
+
+def test_delete_by_id(setup_service_running, es_inputs):
+    """
+    This test tests the delete endpoint of the ElasticIndexer, by deleting a list of IDs.
+    """
+    (
+        index_docs_map,
+        query_docs_map,
+        document_mappings,
+        default_semantic_scores,
+    ) = es_inputs
+    index_name = random_index_name()
+    es_indexer = ElasticIndexer(
+        traversal_paths='c',
+        document_mappings=document_mappings,
+        default_semantic_scores=default_semantic_scores,
+        hosts='http://localhost:9200',
+        index_name=index_name,
+    )
+    es_indexer.index(index_docs_map)
+    # delete by id
+    ids = [doc.id for doc in index_docs_map['clip']]
+    es_indexer.delete(parameters={'ids': ids})
+
+    es = es_indexer.es
+    res = es.search(index=index_name, size=100, query={'match_all': {}})
+    assert len(res['hits']['hits']) == 0
+
+
+def test_calculate_score_breakdown(setup_service_running, es_inputs):
+    """
+    This test tests the calculate_score_breakdown function of the ElasticIndexer.
+    """
+    default_semantic_scores = es_inputs.default_semantic_scores
+    document_mappings = es_inputs.document_mappings
+    index_name = random_index_name()
+    metric = 'cosine'
+    es_indexer = ElasticIndexer(
+        traversal_paths='c',
+        document_mappings=document_mappings,
+        default_semantic_scores=default_semantic_scores,
+        hosts='http://localhost:9200',
+        metric=metric,
+        index_name=index_name,
+    )
+    query_doc = Document(
+        tags={
+            'embeddings': {
+                'query_text-clip': np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]),
+                'query_text-sbert': np.array([1.0, 0.2, 0.3, 0.4, 0.5]),
+            }
+        },
+    )
+    retrieved_doc = Document(
+        tags={
+            'embeddings': {
+                'title-clip.embedding': np.array(
+                    [0.1, 0.3, 0.2, 0.6, 0.5, 0.1, 0.7, 0.8]
+                ),
+                'title-sbert.embedding': np.array([0.1, 0.6, 0.3, 0.4, 0.9]),
+                'excerpt-sbert.embedding': np.array([0.4, 0.2, 0.3, 0.7, 0.5]),
+            }
+        },
+        scores={metric: NamedScore(value=5.0)},
+    )
+    doc_score_breakdown = es_indexer.calculate_score_breakdown(query_doc, retrieved_doc)
+    scores = {
+        'cosine': {'value': 5.0},
+        'query_text-title-clip-1': {'value': 0.9217912664561458},
+        'query_text-title-sbert-1': {'value': 0.6199539739347392},
+        'query_text-excerpt-sbert-3': {'value': 2.5249230511188587},
+        'bm25_normalized': {'value': 0.9333317084902557},
+        'bm25_raw': {'value': -0.6666829150974429},
+    }
+    for score, val in scores.items():
+        assert doc_score_breakdown.scores[score].value == val['value']
