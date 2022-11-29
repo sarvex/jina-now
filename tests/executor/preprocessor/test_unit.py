@@ -59,9 +59,13 @@ def test_s3_video():
 
 
 def test_text():
-    da_search = DocumentArray([Document(text='test')])
+    da_search = DocumentArray(
+        [Document(text='This is the first Sentence. This is the second Sentence.')]
+    )
     preprocessor = NOWPreprocessor(Apps.TEXT_TO_VIDEO)
     res_search = preprocessor.preprocess(da_search, parameters={})
     assert len(res_search) == 1
     assert len(res_search[0].chunks) == 1
-    assert res_search[0].chunks[0].chunks[0].text == 'test'
+    result_strings = res_search[0].chunks[0].chunks.texts
+    expected_strings = ['This is the first Sentence.', 'This is the second Sentence.']
+    assert sorted(result_strings) == sorted(expected_strings)

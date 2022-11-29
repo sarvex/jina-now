@@ -48,9 +48,7 @@ class NOWAutoCompleteExecutor2(Executor):
     def search_update(
         self, docs: Optional[DocumentArray] = None, parameters: dict = {}, **kwargs
     ):
-        # TODO needs to be also on @cc path after preprocessing for simplification
-        flat_docs = docs['@r']
-        for doc in flat_docs:
+        for doc in docs:
             if doc.text and not profanity.contains_profanity(doc.text):
                 search_words = doc.text.split(' ')
                 # prevent users from misusing API
@@ -69,8 +67,7 @@ class NOWAutoCompleteExecutor2(Executor):
     def get_suggestion(
         self, docs: Optional[DocumentArray] = None, parameters: dict = {}, **kwargs
     ):
-        # TODO needs to be also on @cc path after preprocessing for simplification
-        for doc in docs['@r']:
+        for doc in docs:
             doc.tags['suggestions'] = self.flatten_list(
                 self.auto_complete.search(doc.text, max_cost=3, size=5)
             )

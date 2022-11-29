@@ -149,7 +149,7 @@ class NOWBaseIndexer(Executor):
         :param parameters: dictionary with options for indexing
         """
         flat_docs = docs[ACCESS_PATHS]
-        # TODO please remove theses checkf for empty docs
+        # TODO please remove this check for empty docs
         if len(flat_docs) == 0:
             return
         flat_docs = DocumentArray(
