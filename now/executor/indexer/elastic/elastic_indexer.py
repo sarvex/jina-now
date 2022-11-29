@@ -280,7 +280,8 @@ class ElasticIndexer(Executor):
             try:
                 for id in ids:
                     r = self.es.delete(index=self.index_name, id=id)
-                    resp['deleted'] += r['deleted']
+                    self.es.indices.refresh(index=self.index_name)
+                    resp['deleted'] += r['result'] == 'deleted'
             except Exception as e:
                 print(traceback.format_exc(), e)
         else:
