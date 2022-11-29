@@ -29,12 +29,6 @@ class Apps(BetterEnum):
     TEXT_TO_TEXT_AND_IMAGE = 'text_to_text_and_image'
 
 
-class FieldTypes(BetterEnum):
-    SEARCH = 'search'
-    FILTER = 'filter'
-    CARRYON = 'carryon'
-
-
 class DatasetTypes(BetterEnum):
     DEMO = 'demo'
     PATH = 'path'
