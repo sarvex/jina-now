@@ -58,7 +58,7 @@ def _get_schema_docarray(user_input: UserInput, **kwargs):
         for el in ['embedding', 'id', 'mime_type']:
             if el in field_names:
                 field_names.remove(el)
-        return field_names
+        user_input.field_names = field_names
     else:
         raise ValueError('DocumentArray doesnt exist or you dont have access to it')
 
@@ -77,7 +77,7 @@ def _get_schema_s3_bucket(user_input: UserInput, **kwargs):
         if obj.key.endswith('/'):
             all_files = False
     if all_files:
-        return []
+        user_input.field_names = []
     else:
         for obj in list(bucket.objects.filter(Prefix=folder_prefix))[
             1:
@@ -91,13 +91,12 @@ def _get_schema_s3_bucket(user_input: UserInput, **kwargs):
 
         first_folder = list(bucket.objects.filter(Prefix=folder_prefix))[1].key.split(
             '/'
-        )[1]
+        )[-2]
         for field in list(bucket.objects.filter(Prefix=folder_prefix + first_folder))[
             1:
         ]:
             field_names.append(field.key.split('/')[-1])
-
-        return field_names
+        user_input.field_names = field_names
 
 
 def check_path(path, root):
@@ -117,10 +116,10 @@ def _get_schema_local_folder(user_input: UserInput, **kwargs):
             if not os.path.isfile(os.path.join(dataset_path, file_or_directory)):
                 all_files = False
         if all_files:
-            return []
+            user_input.field_names = []
         else:
             first_path = ''
-            for path in glob.glob(os.path.join(dataset_path, '**/**')):
+            for path in sorted(glob.glob(os.path.join(dataset_path, '**/**'))):
                 if not first_path:
                     first_path = path
 
@@ -129,7 +128,7 @@ def _get_schema_local_folder(user_input: UserInput, **kwargs):
                         'Folder format is not as expected, please check documentation'
                     )
             field_names = os.listdir('/'.join(first_path.split('/')[:-1]))
-            return field_names
+            user_input.field_names = field_names
 
 
 OUTPUT_MODALITY = DialogOptions(
@@ -238,7 +237,6 @@ DATASET_PATH_S3 = DialogOptions(
     depends_on=DATASET_TYPE,
     conditional_check=lambda user_input: user_input.dataset_type
     == DatasetTypes.S3_BUCKET,
-    post_func=lambda user_input, **kwargs: _get_schema_s3_bucket(user_input),
 )
 
 AWS_ACCESS_KEY_ID = DialogOptions(
@@ -266,11 +264,12 @@ AWS_REGION_NAME = DialogOptions(
     depends_on=DATASET_TYPE,
     conditional_check=lambda user_input: user_input.dataset_type
     == DatasetTypes.S3_BUCKET,
+    post_func=lambda user_input, **kwargs: _get_schema_s3_bucket(user_input),
 )
 
 # --------------------------------------------- #
 
-SEARCH_FIELDS = DialogOptions(
+'''SEARCH_FIELDS = DialogOptions(
     name='search_fields',
     prompt_message='Enter comma-separated search fields:',
     prompt_type='input',
@@ -284,22 +283,24 @@ SEARCH_FIELDS = DialogOptions(
 def _parse_search_fields(user_input: UserInput):
     user_input.search_fields = [
         field.strip() for field in user_input.search_fields.split(',')
-    ]
+    ]'''
 
 
 SEARCH_FIELDS = DialogOptions(
     name='search_fields',
     choices=lambda user_input, **kwargs: _get_fields(user_input),
-    prompt_message='Please select the search fields',
+    prompt_message='Please select the search fields:',
     prompt_type='checkbox',
-    conditional_check=lambda user_input: len(user_input.field_names) > 0,
+    depends_on=DATASET_TYPE,
+    conditional_check=lambda user_input: len(user_input.field_names) > 0
+    and user_input.dataset_type != DatasetTypes.DEMO,
     post_func=lambda user_input, **kwargs: _exclude_search_fields(user_input),
 )
 
 
 def _exclude_search_fields(user_input: UserInput):
     s = set(user_input.search_fields)
-    user_input.filter_names = [x for x in user_input.field_names if x not in s]
+    user_input.field_names = [x for x in user_input.field_names if x not in s]
 
 
 FILTER_FIELDS = DialogOptions(
@@ -307,7 +308,9 @@ FILTER_FIELDS = DialogOptions(
     choices=lambda user_input, **kwargs: _get_fields(user_input),
     prompt_message='Please select the filter fields',
     prompt_type='checkbox',
-    conditional_check=lambda user_input: len(user_input.field_names) > 0,
+    depends_on=DATASET_TYPE,
+    conditional_check=lambda user_input: len(user_input.field_names) > 0
+    and user_input.dataset_type != DatasetTypes.DEMO,
 )
 
 
@@ -520,7 +523,7 @@ def _cluster_running(cluster):
 
 app_config = [OUTPUT_MODALITY, APP_NAME]
 data_type = [DATASET_TYPE]
-data_fields = [SEARCH_FIELDS]
+data_fields = [SEARCH_FIELDS, FILTER_FIELDS]
 data_demo = [DEMO_DATA]
 data_da = [DOCARRAY_NAME, DATASET_PATH]
 data_s3 = [DATASET_PATH_S3, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION_NAME]

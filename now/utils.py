@@ -187,7 +187,7 @@ def prompt_value(
 
     if choices is not None:
         qs['choices'] = choices
-        qs['type'] = 'list'
+        # qs['type'] = 'list'
     return maybe_prompt_user(qs, name, **kwargs)
 
 
