@@ -111,7 +111,7 @@ class TestBaseIndexer:
             uses_metas=metas,
         )
         with f:
-            parameters = {'chunks_size': 1}
+            parameters = {}
             if offset is not None:
                 parameters.update({'offset': offset, 'limit': limit})
 

@@ -6,11 +6,11 @@ from now.utils import BetterEnum
 # from docarray import __version__ as docarray_version
 
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.134-refactor-simplify-preprocessing-43'
-NOW_PREPROCESSOR_VERSION = '0.0.104-refactor-simplify-preprocessing-43'
-NOW_QDRANT_INDEXER_VERSION = '0.0.8-refactor-simplify-preprocessing-43'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.7-refactor-simplify-preprocessing-43'
-NOW_AUTOCOMPLETE_VERSION = '0.0.4-refactor-simplify-preprocessing-43'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.134-refactor-simplify-preprocessing-44'
+NOW_PREPROCESSOR_VERSION = '0.0.104-refactor-simplify-preprocessing-44'
+NOW_QDRANT_INDEXER_VERSION = '0.0.8-refactor-simplify-preprocessing-44'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.7-refactor-simplify-preprocessing-44'
+NOW_AUTOCOMPLETE_VERSION = '0.0.4-refactor-simplify-preprocessing-44'
 
 
 class Modalities(BetterEnum):
@@ -63,8 +63,7 @@ CLIP_USES = {
     'local': ('CLIPOnnxEncoder/latest', 'ViT-B-32::openai', ModelDimensions.CLIP),
     'remote': ('CLIPOnnxEncoder/latest-gpu', 'ViT-B-32::openai', ModelDimensions.CLIP),
 }
-
-EXTERNAL_CLIP_HOST = 'encoderclip-game-gar-c70a0d0c79.wolf.jina.ai'
+EXTERNAL_CLIP_HOST = 'encoderclip-pretty-cicada-7214c80081.wolf.jina.ai'
 
 DEFAULT_FLOW_NAME = 'nowapi'
 PREFETCH_NR = 10

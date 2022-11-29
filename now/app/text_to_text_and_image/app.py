@@ -17,6 +17,7 @@ from now.constants import (
     ModelDimensions,
     ModelNames,
 )
+from now.executor.name_to_id_map import name_to_id_map
 from now.finetuning.data_builder import DataBuilder
 from now.finetuning.run_finetuning import finetune
 from now.finetuning.settings import FinetuneSettings, parse_finetune_settings
@@ -149,7 +150,7 @@ class TextToTextAndImage(JinaNOWApp):
 
         env_dict[
             'PREPROCESSOR_NAME'
-        ] = f'{EXECUTOR_PREFIX}NOWPreprocessor/{NOW_PREPROCESSOR_VERSION}'
+        ] = f'{EXECUTOR_PREFIX}{name_to_id_map.get("NOWPreprocessor")}/{NOW_PREPROCESSOR_VERSION}'
         env_dict['APP'] = self.app_name
         indexer_config = get_indexer_config(
             len(dataset),

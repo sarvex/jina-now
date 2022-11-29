@@ -13,7 +13,7 @@ NUM_FRAMES_SAMPLED = 3
 def preprocess_text(
     d: Document,
 ) -> Document:
-    """If necessary, loads text for all documents. If asked for, splits documents by sentences.
+    """Splits the text by sentences and puts each sentence into the chunk chunk level.
 
     Generates sentence chunks:
     Before

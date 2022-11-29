@@ -15,6 +15,7 @@ from now.constants import (
     NOW_PREPROCESSOR_VERSION,
     NOW_QDRANT_INDEXER_VERSION,
 )
+from now.executor.name_to_id_map import name_to_id_map
 from now.now_dataclasses import UserInput
 
 API_KEY = 'my_key'
@@ -41,7 +42,7 @@ def get_flow():
     f = (
         Flow(port_expose=9089)
         .add(
-            uses=f'jinahub+docker://NOWPreprocessor/{NOW_PREPROCESSOR_VERSION}',
+            uses=f'jinahub+docker://{name_to_id_map.get("NOWPreprocessor")}/{NOW_PREPROCESSOR_VERSION}',
             uses_with={'app': 'image_text_retrieval', 'admin_emails': [admin_email]},
         )
         .add(
@@ -51,7 +52,7 @@ def get_flow():
             external=True,
         )
         .add(
-            uses=f'jinahub+docker://NOWQdrantIndexer16/{NOW_QDRANT_INDEXER_VERSION}',
+            uses=f'jinahub+docker://{name_to_id_map.get("NOWQdrantIndexer16")}/{NOW_QDRANT_INDEXER_VERSION}',
             uses_with={'dim': 512, 'admin_emails': [admin_email]},
         )
     )

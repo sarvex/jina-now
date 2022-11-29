@@ -108,17 +108,13 @@ class NOWBaseIndexer(Executor):
         limit = int(parameters.get('limit', maxsize))
         offset = int(parameters.get('offset', 0))
         # add removal of duplicates
-
-        docs = DocumentArray()
-        chunks_size = int(parameters.get('chunks_size', 3))
-        parent_ids = set()
-        for d in self.document_list[offset * chunks_size :]:
-            if len(parent_ids) == limit:
-                break
-            if d.parent_id in parent_ids:
-                continue
-            parent_ids.add(d.parent_id)
-            docs.append(d)
+        parent_ids = sorted({doc.parent_id for doc in self.document_list})
+        # filter by offset and limit
+        filtered_parent_ids = parent_ids[offset : offset + limit]
+        # get the documents of filtered parent ids
+        docs = DocumentArray(
+            [doc for doc in self.document_list if doc.parent_id in filtered_parent_ids]
+        )
         return docs
 
     @staticmethod
