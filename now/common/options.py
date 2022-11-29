@@ -280,18 +280,39 @@ SEARCH_FIELDS = DialogOptions(
     post_func=lambda user_input, **kwargs: _parse_search_fields(user_input),
 )
 
-FIELDS_NAMES = DialogOptions(
-    name='field_names',
-    prompt_message='Please select the search fields',
-    prompt_type='checkbox',
-    conditional_check=lambda user_input: len(user_input.field_names) > 0,
-)
-
 
 def _parse_search_fields(user_input: UserInput):
     user_input.search_fields = [
         field.strip() for field in user_input.search_fields.split(',')
     ]
+
+
+SEARCH_FIELDS = DialogOptions(
+    name='search_fields',
+    choices=lambda user_input, **kwargs: _get_fields(user_input),
+    prompt_message='Please select the search fields',
+    prompt_type='checkbox',
+    conditional_check=lambda user_input: len(user_input.field_names) > 0,
+    post_func=lambda user_input, **kwargs: _exclude_search_fields(user_input),
+)
+
+
+def _exclude_search_fields(user_input: UserInput):
+    s = set(user_input.search_fields)
+    user_input.filter_names = [x for x in user_input.field_names if x not in s]
+
+
+FILTER_FIELDS = DialogOptions(
+    name='filter_fields',
+    choices=lambda user_input, **kwargs: _get_fields(user_input),
+    prompt_message='Please select the filter fields',
+    prompt_type='checkbox',
+    conditional_check=lambda user_input: len(user_input.field_names) > 0,
+)
+
+
+def _get_fields(user_input: UserInput):
+    return [{'name': field, 'value': field} for field in user_input.field_names]
 
 
 ES_INDEX_NAME = DialogOptions(
