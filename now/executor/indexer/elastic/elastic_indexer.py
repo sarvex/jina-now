@@ -6,6 +6,8 @@ from docarray import Document, DocumentArray
 from docarray.score import NamedScore
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
+from numpy import dot
+from numpy.linalg import norm
 
 from now.executor.abstract.auth import (
     SecurityLevel,
@@ -187,8 +189,9 @@ class ElasticIndexer(Executor):
         # search_filter = parameters.get('filter', None)
         limit = parameters.get('limit', self.limit)
         apply_bm25 = parameters.get('apply_bm25', False)
+        get_score_breakdown = parameters.get('get_score_breakdown', False)
 
-        es_queries = self._build_es_queries(docs_map, apply_bm25)
+        es_queries = self._build_es_queries(docs_map, apply_bm25, get_score_breakdown)
         for doc, query in es_queries:
             try:
                 result = self.es.search(
@@ -197,11 +200,14 @@ class ElasticIndexer(Executor):
                     source=True,
                     size=limit,
                 )['hits']['hits']
-                print(result)
-                doc.matches = self._transform_es_results_to_matches(result)
+                doc.matches = self._transform_es_results_to_matches(
+                    query_doc=doc,
+                    es_results=result,
+                    get_score_breakdown=get_score_breakdown,
+                )
+                doc.tags.pop('embeddings', None)
             except Exception:
                 print(traceback.format_exc())
-
         return DocumentArray(list(zip(*es_queries))[0])
 
     @secure_request(on='/update', level=SecurityLevel.USER)
@@ -233,19 +239,21 @@ class ElasticIndexer(Executor):
         except Exception:
             print(traceback.format_exc())
         if result:
-            return self._transform_es_to_da(result)
+            return self._transform_es_to_da(result, get_score_breakdown=False)
         else:
             return result
 
     @secure_request(on='/delete', level=SecurityLevel.USER)
     def delete(self, parameters: dict = {}, **kwargs):
         """
-        Delete endpoint to delete document/documents from the index.
+        Endpoint to delete documents from an index. Either delete documents by filter condition
+        or by specifying a list of document IDs.
 
-        :param parameters: dictionary with filter conditions to select
+        :param parameters: dictionary with filter conditions or list of IDs to select
             documents for deletion.
         """
         search_filter = parameters.get('filter', None)
+        ids = parameters.get('ids', None)
         if search_filter:
             es_search_filter = {'query': {'bool': {}}}
             for field, filters in search_filter.items():
@@ -259,12 +267,25 @@ class ElasticIndexer(Executor):
                         es_search_filter['query']['bool']['filter'] = {
                             'range': {'tags.' + field: {operator: filter}}
                         }
-        try:
-            resp = self.es.delete_by_query(index=self.index_name, body=es_search_filter)
-            self.es.indices.refresh(index=self.index_name)
-        except Exception:
-            print(traceback.format_exc())
-            raise
+            try:
+                resp = self.es.delete_by_query(
+                    index=self.index_name, body=es_search_filter
+                )
+                self.es.indices.refresh(index=self.index_name)
+            except Exception:
+                print(traceback.format_exc())
+                raise
+        elif ids:
+            resp = {'deleted': 0}
+            try:
+                for id in ids:
+                    r = self.es.delete(index=self.index_name, id=id)
+                    self.es.indices.refresh(index=self.index_name)
+                    resp['deleted'] += r['result'] == 'deleted'
+            except Exception as e:
+                print(traceback.format_exc(), e)
+        else:
+            raise ValueError('No filter or IDs provided for deletion.')
         if resp:
             print(
                 f"Deleted {resp['deleted']} documents in Elasticsearch index {self.index_name}"
@@ -275,19 +296,22 @@ class ElasticIndexer(Executor):
         self,
         docs_map,
         apply_bm25: bool,
+        get_score_breakdown: bool,
     ) -> Dict:
         """
         Build script-score query used in Elasticsearch. To do this, we extract
-        embeddings from the query document and pass them in the s   cript-score
+        embeddings from the query document and pass them in the script-score
         query together with the fields to search on in the Elasticsearch index.
+        The query document will be returned with all of its embeddings as tags with
+        their corresponding field+encoder as key.
 
-        :param query: a `Document` with chunks containing a text embedding and
-            image embedding.
+        :param docs_map: dictionary mapping encoder to DocumentArray.
         :param apply_bm25: whether to combine bm25 with vector search. If False,
-            will only perform vector search queries. If True, must supply a text
+            will only perform vector search. If True, must supply a text
             field for bm25 searching.
-        :param traversal_paths: traversal paths for the query document.
-        :param search_filter: dictionary of filters to apply to the search.
+        :param get_score_breakdown: whether to return the score breakdown for matches.
+            For this function, this parameter determines whether to return the embeddings
+            of a query document.
         :return: a dictionary containing query and filter.
         """
         queries = {}
@@ -296,11 +320,15 @@ class ElasticIndexer(Executor):
         script_params = defaultdict(dict)
         semantic_scores = self.default_semantic_scores
         scores = Scores(semantic_scores)
-        for encoder, docs in docs_map.items():
-            for doc in docs:
+        for encoder, da in docs_map.items():
+            for doc in da:
+                if doc.id not in docs:
+                    docs[doc.id] = doc
+                    docs[doc.id].tags['embeddings'] = {}
+
                 if doc.id not in queries:
                     queries[doc.id] = ElasticIndexer._get_default_query(doc, apply_bm25)
-                    docs[doc.id] = doc
+
                     if apply_bm25:
                         sources[doc.id] = '1.0 + _score / (_score + 10.0)'
                     else:
@@ -313,6 +341,10 @@ class ElasticIndexer(Executor):
                     linear_weight,
                 ) in scores.get_scores(encoder):
                     field_doc = getattr(doc, query_field)
+                    if get_score_breakdown:
+                        docs[doc.id].tags['embeddings'][
+                            f'{query_field}-{document_encoder}'
+                        ] = field_doc.embedding
 
                     query_string = f'params.query_{query_field}_{encoder}'
                     document_string = f'{document_field}-{document_encoder}'
@@ -378,12 +410,15 @@ class ElasticIndexer(Executor):
 
         return query
 
-    def _transform_es_to_da(self, result: Union[Dict, List[Dict]]) -> DocumentArray:
+    def _transform_es_to_da(
+        self, result: Union[Dict, List[Dict]], get_score_breakdown: bool
+    ) -> DocumentArray:
         """
         Transform Elasticsearch documents into DocumentArray. Assumes that all Elasticsearch
-        documents have a 'text' field. It does not return embeddings as part of the Document.
+        documents have a 'text' field. It returns embeddings as part of the tags for each field that is encoded.
 
         :param result: results from an Elasticsearch query.
+        :param get_score_breakdown: whether to return the embeddings as tags for each document.
         :return: a DocumentArray containing all results.
         """
         if isinstance(result, Dict):
@@ -395,8 +430,12 @@ class ElasticIndexer(Executor):
                 if k.startswith('chunk'):
                     chunk = Document.from_dict(v)
                     doc.chunks.append(chunk)
-                elif k.startswith('embedding'):
-                    continue
+                elif (
+                    k.startswith('embedding') or k.endswith('embedding')
+                ) and get_score_breakdown:
+                    if 'embeddings' not in doc.tags:
+                        doc.tags['embeddings'] = {}
+                    doc.tags['embeddings'][k] = v
                 elif k in ['bm25_text', '_score']:
                     continue
                 else:
@@ -439,7 +478,9 @@ class ElasticIndexer(Executor):
         except:
             return ''
 
-    def _transform_es_results_to_matches(self, es_results: List[Dict]) -> DocumentArray:
+    def _transform_es_results_to_matches(
+        self, query_doc: Document, es_results: List[Dict], get_score_breakdown: bool
+    ) -> DocumentArray:
         """
         Transform a list of results from Elasticsearch into a matches in the form of a `DocumentArray`.
         :param es_results: List of dictionaries containing results from Elasticsearch querying.
@@ -447,7 +488,68 @@ class ElasticIndexer(Executor):
         """
         matches = DocumentArray()
         for result in es_results:
-            d = self._transform_es_to_da(result)[0]
+            d = self._transform_es_to_da(result, get_score_breakdown)[0]
             d.scores[self.metric] = NamedScore(value=result['_score'])
+            if get_score_breakdown:
+                d = self.calculate_score_breakdown(query_doc, d)
             matches.append(d)
         return matches
+
+    def calculate_score_breakdown(
+        self, query_doc: Document, retrieved_doc: Document
+    ) -> Document:
+        """
+        Calculate the score breakdown for a given retrieved document. Each SemanticScore in the indexers
+        `default_semantic_scores` should have a corresponding value, returned inside a list of scores in the documents
+        tags under `score_breakdown`.
+
+        :param query_doc: The query document. Contains embeddings for the semantic score calculation at tag level.
+        :param retrieved_results: The Elasticsearch results, containing embeddings inside the `_source` field.
+        :return: List of integers representing the score breakdown.
+        """
+        for (
+            query_field,
+            query_encoder,
+            document_field,
+            document_encoder,
+            linear_weight,
+        ) in self.default_semantic_scores:
+            if document_encoder == 'bm25':
+                continue
+            q_emb = query_doc.tags['embeddings'][f'{query_field}-{query_encoder}']
+            d_emb = retrieved_doc.tags['embeddings'][
+                f'{document_field}-{document_encoder}.embedding'
+            ]
+            if self.metric == 'cosine':
+                score = (
+                    dot(q_emb, d_emb) / (norm(q_emb) * norm(d_emb))
+                ) * linear_weight
+            elif self.metric == 'l2_norm':
+                score = norm(q_emb - d_emb) * linear_weight
+            else:
+                raise ValueError(f'Invalid metric {self.metric}')
+            retrieved_doc.scores[
+                '-'.join(
+                    [
+                        query_field,
+                        document_field,
+                        document_encoder,
+                        str(linear_weight),
+                    ]
+                )
+            ] = NamedScore(value=score)
+
+        # calculate bm25 score
+        vector_total = sum(
+            [v.value for k, v in retrieved_doc.scores.items() if k != self.metric]
+        )
+        overall_score = retrieved_doc.scores[self.metric].value
+        bm25_normalized = overall_score - vector_total
+        bm25_raw = (bm25_normalized - 1) * 10
+
+        retrieved_doc.scores['bm25_normalized'] = NamedScore(value=bm25_normalized)
+        retrieved_doc.scores['bm25_raw'] = NamedScore(value=bm25_raw)
+
+        # remove embeddings from document
+        retrieved_doc.tags.pop('embeddings', None)
+        return retrieved_doc
