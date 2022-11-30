@@ -1,1 +1,1 @@
-from .executor import NOWQdrantIndexer15
+from .executor import NOWQdrantIndexer16

@@ -28,7 +28,6 @@ executors:
     artifact: ${{ ENV.SBERT_ARTIFACT }}
     token: ${{ ENV.JINA_TOKEN }}
     is_onnx: False
-    access_paths: '@c'
   env:
     JINA_LOG_LEVEL: DEBUG
   needs: preprocessor
@@ -38,7 +37,6 @@ executors:
     artifact: ${{ ENV.CLIP_ARTIFACT }}
     token: ${{ ENV.JINA_TOKEN }}
     is_onnx: False
-    access_paths: '@c'
   env:
     JINA_LOG_LEVEL: DEBUG
   needs: preprocessor
@@ -50,7 +48,6 @@ executors:
     columns: ${{ ENV.COLUMNS }}
     admin_emails: ${{ ENV.ADMIN_EMAILS }}
     user_emails: ${{ ENV.USER_EMAILS }}
-    traversal_paths: '@c'
   jcloud:
     resources:
       memory: ${{ ENV.INDEXER_MEM }}
