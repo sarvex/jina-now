@@ -446,9 +446,9 @@ def render_matches(OUTPUT_MODALITY):
 
                 elif OUTPUT_MODALITY == 'image-or-text':
                     try:
-                        render_text_result(match, c)
-                    except:
                         render_graphic_result(match, c)
+                    except:
+                        render_text_result(match, c)
                 else:
                     raise ValueError(f'{OUTPUT_MODALITY} not handled')
 
