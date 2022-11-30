@@ -99,8 +99,9 @@ def es_inputs() -> namedtuple:
     clip_docs = DocumentArray()
     sbert_docs = DocumentArray()
     # encode our documents
-    for doc in docs:
+    for i, doc in enumerate(docs):
         clip_doc = Document(doc)
+        clip_doc.id = str(i)
         sbert_doc = Document(clip_doc, copy=True)
         sbert_doc.id = clip_doc.id
 
@@ -226,7 +227,10 @@ def test_index_and_search_with_multimodal_docs(es_inputs):
     es = indexer.es
     res = es.search(index=index_name, size=100, query={'match_all': {}})
     assert len(res['hits']['hits']) == len(index_docs_map['clip'])
-    results = indexer.search(query_docs_map, parameters={'get_score_breakdown': True})
+    results = indexer.search(
+        query_docs_map,
+        parameters={'get_score_breakdown': True, 'apply_default_bm25': True},
+    )
 
     # asserts about matches
     for (
@@ -352,11 +356,88 @@ def test_calculate_score_breakdown(setup_service_running, es_inputs):
     doc_score_breakdown = es_indexer.calculate_score_breakdown(query_doc, retrieved_doc)
     scores = {
         'cosine': {'value': 5.0},
-        'query_text-title-clip-1': {'value': 0.9217912664561458},
-        'query_text-title-sbert-1': {'value': 0.6199539739347392},
-        'query_text-excerpt-sbert-3': {'value': 2.5249230511188587},
-        'bm25_normalized': {'value': 0.9333317084902557},
-        'bm25_raw': {'value': -0.6666829150974429},
+        'query_text-title-clip-1': {'value': 0.921791},
+        'query_text-title-sbert-1': {'value': 0.619954},
+        'query_text-excerpt-sbert-3': {'value': 2.524923},
+        'bm25_normalized': {'value': 0.933332},
+        'bm25_raw': {'value': -0.66668},
     }
     for score, val in scores.items():
         assert doc_score_breakdown.scores[score].value == val['value']
+
+
+def test_custom_mapping_and_custom_bm25_search(setup_service_running, es_inputs):
+    """
+    This test tests the custom mapping and bm25 functionality of the ElasticIndexer.
+    """
+    (
+        index_docs_map,
+        query_docs_map,
+        document_mappings,
+        default_semantic_scores,
+    ) = es_inputs
+    index_name = random_index_name()
+    es_mapping = {
+        'properties': {
+            'id': {'type': 'keyword'},
+            'bm25_text': {'type': 'text', 'analyzer': 'standard'},
+            'title-clip': {
+                'properties': {
+                    'embedding': {
+                        'type': 'dense_vector',
+                        'dims': '8',
+                        'similarity': 'cosine',
+                        'index': 'true',
+                    }
+                }
+            },
+            'title-sbert': {
+                'properties': {
+                    'embedding': {
+                        'type': 'dense_vector',
+                        'dims': '5',
+                        'similarity': 'cosine',
+                        'index': 'true',
+                    }
+                }
+            },
+            'excerpt-sbert': {
+                'properties': {
+                    'embedding': {
+                        'type': 'dense_vector',
+                        'dims': '5',
+                        'similarity': 'cosine',
+                        'index': 'true',
+                    }
+                }
+            },
+        }
+    }
+    es_indexer = ElasticIndexer(
+        traversal_paths='c',
+        document_mappings=document_mappings,
+        default_semantic_scores=default_semantic_scores,
+        es_mapping=es_mapping,
+        hosts='http://localhost:9200',
+        index_name=index_name,
+    )
+    # do indexing
+    es_indexer.index(index_docs_map)
+    # search with custom bm25 query with field boosting
+    custom_bm25_query = {
+        'multi_match': {
+            'query': 'this cat is cute',
+            'fields': ['bm25_text^3'],
+            'tie_breaker': 0.3,
+        }
+    }
+    results = es_indexer.search(
+        query_docs_map,
+        parameters={
+            'get_score_breakdown': True,
+            'custom_bm25_query': custom_bm25_query,
+        },
+    )
+    assert len(results[0].matches) == 2
+    assert results[0].matches[0].id == '0'
+    assert results[0].matches[1].id == '1'
