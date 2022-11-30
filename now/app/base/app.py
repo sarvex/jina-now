@@ -8,6 +8,12 @@ from jina import Client
 from jina.jaml import JAML
 from jina.serve.runtimes.gateway.http.models import JinaRequestModel, JinaResponseModel
 
+from now.app.base.preprocess import (
+    preprocess_image,
+    preprocess_music,
+    preprocess_text,
+    preprocess_video,
+)
 from now.constants import DEFAULT_FLOW_NAME, SUPPORTED_FILE_TYPES, Modalities
 from now.demo_data import AVAILABLE_DATASET, DEFAULT_EXAMPLE_HOSTED, DemoDataset
 from now.now_dataclasses import DialogOptions, UserInput
@@ -235,13 +241,25 @@ class JinaNOWApp:
 
     def preprocess(
         self,
-        da: DocumentArray,
-        user_input: UserInput,
-        process_index: bool = False,
-        process_query: bool = True,
+        docs: DocumentArray,
     ) -> DocumentArray:
         """Loads and preprocesses every document such that it is ready for finetuning/indexing."""
-        return da
+        for doc in docs:
+            for chunk in doc.chunks:
+                try:
+                    if chunk.modality == 'text':
+                        preprocess_text(chunk)
+                    elif chunk.modality == 'image':
+                        preprocess_image(chunk)
+                    elif chunk.modality == 'video':
+                        preprocess_video(chunk)
+                    elif chunk.modality == 'music':
+                        preprocess_music(chunk)
+                    else:
+                        raise ValueError(f'Unsupported modality {chunk.modality}')
+                except Exception as e:
+                    print(e)
+        return docs
 
     def is_demo_available(self, user_input) -> bool:
         hosted_ds = DEFAULT_EXAMPLE_HOSTED.get(self.app_name, {})
@@ -294,18 +312,6 @@ class JinaNOWApp:
                 lambda x: x,
             )
         }
-
-    def get_index_query_access_paths(
-        self, search_fields: Optional[List[str]] = None
-    ) -> str:
-        """Gives access paths for indexing and searching. Returns a path to search fields
-        if provided, otherwise a path to chunk level.
-
-        :param search_fields: Optional list of search fields.
-        """
-        if search_fields:
-            return '@.[' + ', '.join(search_fields) + ']'
-        return '@c'
 
     @property
     def max_request_size(self) -> int:

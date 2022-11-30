@@ -214,15 +214,17 @@ def test_backend_demo_data(
             json.dump(flow_details, f)
 
 
-def assert_search(search_url, request_body):
+def assert_search(search_url, request_body, expected_status_code=200):
     response = requests.post(
         search_url,
         json=request_body,
     )
-    assert (
-        response.status_code == 200
-    ), f"Received code {response.status_code} with text: {response.json()['message']}"
-    assert len(response.json()) == 9
+    assert response.status_code == expected_status_code, (
+        f"Received code {response.status_code} but {expected_status_code} was expected. \n"
+        f"text: {json.dumps(response.json(), indent=2)}"
+    )
+    if response.status_code == 200:
+        assert len(response.json()) == 9
 
 
 def assert_suggest(suggest_url, request_body):

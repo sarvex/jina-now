@@ -1,1 +1,1 @@
-from .elastic_indexer import ElasticIndexer
+from .elastic_indexer import NOWElasticIndexer

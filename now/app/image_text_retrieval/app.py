@@ -1,13 +1,12 @@
 import os
-from copy import deepcopy
-from typing import Dict, List, Union
+from typing import Dict, List, Tuple, Union
 
 from docarray import DocumentArray
 
 from now.app.base.app import JinaNOWApp
-from now.common.preprocess import filter_data, preprocess_images, preprocess_text
 from now.common.utils import _get_clip_apps_with_dict, common_setup, get_indexer_config
-from now.constants import CLIP_USES, Apps, DatasetTypes, Modalities
+from now.constants import CLIP_USES, Apps, Modalities
+from now.demo_data import DemoDatasetNames
 from now.now_dataclasses import UserInput
 
 
@@ -39,12 +38,9 @@ class ImageTextRetrieval(JinaNOWApp):
     def required_docker_memory_in_gb(self) -> int:
         return 8
 
-    def get_index_query_access_paths(self, **kwargs) -> str:
-        """If `split_by_sentences` is set to True, the structure of the data
-        will have 2 level chunks. (That's the puspose of @cc)
-        Otherwise, we access documents on chunk level. (@c)
-        """
-        return '@c,cc'
+    @property
+    def finetune_datasets(self) -> [Tuple]:
+        return (DemoDatasetNames.DEEP_FASHION, DemoDatasetNames.BIRD_SPECIES)
 
     def set_flow_yaml(self, **kwargs):
         finetuning = kwargs.get('finetuning', False)
@@ -82,33 +78,3 @@ class ImageTextRetrieval(JinaNOWApp):
         )
         super().setup(dataset=dataset, user_input=user_input, kubectl_path=kubectl_path)
         return env_dict
-
-    def preprocess(
-        self,
-        da: DocumentArray,
-        user_input: UserInput,
-        process_index: bool = False,
-        process_query: bool = True,
-    ) -> DocumentArray:
-        if not process_query and not process_index:
-            raise Exception(
-                'Either `process_query` or `process_index` must be set to True.'
-            )
-        modalities = []
-        if process_index:
-            if user_input.output_modality == Modalities.TEXT:
-                split_by_sentences = user_input.dataset_type != DatasetTypes.DEMO
-                da = preprocess_text(da=da, split_by_sentences=split_by_sentences)
-                modalities.append(Modalities.TEXT)
-            else:
-                da = preprocess_images(da=da)
-                modalities.append(Modalities.IMAGE)
-        if process_query:
-            da_img = filter_data(preprocess_images(deepcopy(da)), [Modalities.IMAGE])
-            da_txt = filter_data(
-                preprocess_text(deepcopy(da), split_by_sentences=False),
-                [Modalities.TEXT],
-            )
-            da = DocumentArray(da_img + da_txt)
-
-        return da

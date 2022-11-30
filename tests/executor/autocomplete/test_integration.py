@@ -1,11 +1,11 @@
 from docarray import Document, DocumentArray
 from jina import Flow
 
-from now.executor.autocomplete.executor import NOWAutoCompleteExecutor
+from now.executor.autocomplete.executor import NOWAutoCompleteExecutor2
 
 
 def test_autocomplete():
-    with Flow().add(uses=NOWAutoCompleteExecutor) as f:
+    with Flow().add(uses=NOWAutoCompleteExecutor2) as f:
         f.post(
             on='/search',
             inputs=DocumentArray(

@@ -38,14 +38,9 @@ def index(data: NowVideoIndexRequestModel):
         else:
             index_docs.append(Document(uri=uri, tags=tags, modality='video'))
 
-    # TODO: should use app.index_query_access_paths
     jina_client_post(
         data=data,
         inputs=index_docs,
-        parameters={
-            'traversal_paths': '@c,cc',
-            'access_paths': '@c,cc',
-        },
         endpoint='/index',
     )
 
@@ -63,11 +58,6 @@ def search(data: NowTextSearchRequestModel):
     query_doc, filter_query = process_query(
         text=data.text, uri=data.uri, conditions=data.filters
     )
-    traversal_paths = '@c'
-    # hack for video the search requests have to be on chunk-level for older versions
-    if '33b37fa1f6' in data.host:
-        query_doc = (Document(chunks=query_doc),)
-        traversal_paths = '@c,cc'
 
     docs = jina_client_post(
         data=data,
@@ -75,8 +65,6 @@ def search(data: NowTextSearchRequestModel):
         parameters={
             'limit': data.limit,
             'filter': filter_query,
-            'traversal_paths': '@c,cc',
-            'access_paths': '@c,cc',
         },
         endpoint='/search',
     )

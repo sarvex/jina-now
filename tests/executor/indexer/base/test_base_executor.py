@@ -8,13 +8,16 @@ from jina import Document, DocumentArray, Flow
 from now.constants import TAG_INDEXER_DOC_HAS_TEXT, TAG_OCR_DETECTOR_TEXT_IN_DOC
 from now.deployment.deployment import cmd
 from now.executor.indexer.in_memory.in_memory_indexer import InMemoryIndexer
-from now.executor.indexer.qdrant import NOWQdrantIndexer15
+from now.executor.indexer.qdrant import NOWQdrantIndexer16
 
 NUMBER_OF_DOCS = 10
 DIM = 128
 
 
-@pytest.mark.parametrize('indexer', [InMemoryIndexer])
+@pytest.mark.parametrize(
+    'indexer',
+    [InMemoryIndexer, NOWQdrantIndexer16],
+)
 class TestBaseIndexer:
     @pytest.fixture(scope='function', autouse=True)
     def setup(self):
@@ -40,10 +43,14 @@ class TestBaseIndexer:
                 tags={'parent_tag': 'value'},
                 chunks=[
                     Document(
-                        id=f'{i}_child',
-                        embedding=k[i],
-                        uri='my-parent-uri',
-                        tags={'parent_tag': 'value'},
+                        chunks=[
+                            Document(
+                                id=f'{i}_child',
+                                embedding=k[i],
+                                uri='my-parent-uri',
+                                tags={'parent_tag': 'value'},
+                            )
+                        ]
                     )
                 ],
             )
@@ -104,7 +111,7 @@ class TestBaseIndexer:
             uses_metas=metas,
         )
         with f:
-            parameters = {'chunks_size': 1}
+            parameters = {}
             if offset is not None:
                 parameters.update({'offset': offset, 'limit': limit})
 
@@ -209,7 +216,7 @@ class TestBaseIndexer:
             uses_metas=metas,
         )
         with f:
-            docs[0].chunks[0].tags['parent_tag'] = 'different_value'
+            docs[0].chunks[0].chunks[0].tags['parent_tag'] = 'different_value'
             f.post(on='/index', inputs=docs)
             listed_docs = f.post(on='/list', return_results=True)
             assert len(listed_docs) == NUMBER_OF_DOCS
@@ -227,19 +234,31 @@ class TestBaseIndexer:
         docs = DocumentArray(
             [
                 Document(
-                    text='hi',
-                    embedding=np.random.rand(DIM).astype(np.float32),
-                    tags={'color': 'red'},
+                    chunks=[
+                        Document(
+                            text='hi',
+                            embedding=np.random.rand(DIM).astype(np.float32),
+                            tags={'color': 'red'},
+                        )
+                    ]
                 ),
                 Document(
-                    blob=b'b12',
-                    embedding=np.random.rand(DIM).astype(np.float32),
-                    tags={'color': 'blue'},
+                    chunks=[
+                        Document(
+                            blob=b'b12',
+                            embedding=np.random.rand(DIM).astype(np.float32),
+                            tags={'color': 'blue'},
+                        ),
+                    ]
                 ),
                 Document(
-                    blob=b'b12',
-                    embedding=np.random.rand(DIM).astype(np.float32),
-                    uri='file_will.never_exist',
+                    chunks=[
+                        Document(
+                            blob=b'b12',
+                            embedding=np.random.rand(DIM).astype(np.float32),
+                            uri='file_will.never_exist',
+                        ),
+                    ]
                 ),
             ]
         )
@@ -264,24 +283,40 @@ class TestBaseIndexer:
         docs = DocumentArray(
             [
                 Document(
-                    text='hi',
-                    embedding=np.random.rand(DIM).astype(np.float32),
-                    tags={'color': 'red'},
+                    chunks=[
+                        Document(
+                            text='hi',
+                            embedding=np.random.rand(DIM).astype(np.float32),
+                            tags={'color': 'red'},
+                        ),
+                    ]
                 ),
                 Document(
-                    blob=b'b12',
-                    embedding=np.random.rand(DIM).astype(np.float32),
-                    tags={'color': 'blue'},
+                    chunks=[
+                        Document(
+                            blob=b'b12',
+                            embedding=np.random.rand(DIM).astype(np.float32),
+                            tags={'color': 'blue'},
+                        ),
+                    ]
                 ),
                 Document(
-                    blob=b'b12',
-                    embedding=np.random.rand(DIM).astype(np.float32),
-                    uri='file_will.never_exist',
+                    chunks=[
+                        Document(
+                            blob=b'b12',
+                            embedding=np.random.rand(DIM).astype(np.float32),
+                            uri='file_will.never_exist',
+                        ),
+                    ]
                 ),
                 Document(
-                    blob=b'b12',
-                    embedding=np.random.rand(DIM).astype(np.float32),
-                    tags={'greeting': 'hello'},
+                    chunks=[
+                        Document(
+                            blob=b'b12',
+                            embedding=np.random.rand(DIM).astype(np.float32),
+                            tags={'greeting': 'hello'},
+                        ),
+                    ]
                 ),
             ]
         )
@@ -378,7 +413,7 @@ class TestBaseIndexer:
                     id="doc3",
                     blob=b"jpg...",
                     embedding=np.array([0.5, 0.1, 0.1]),
-                    tags={'title': 'blue', 'length': 18},
+                    tags={'length': 18},
                     uri=uri,
                     chunks=[
                         Document(
@@ -386,7 +421,7 @@ class TestBaseIndexer:
                             blob=b"jpg...",
                             embedding=np.array([0.5, 0.1]),
                             tags={
-                                'title': 'it is red',
+                                'title': 'blue red',
                                 TAG_OCR_DETECTOR_TEXT_IN_DOC: "i iz ret",
                             },
                             uri=uri,
@@ -404,25 +439,24 @@ class TestBaseIndexer:
         )
 
     @pytest.mark.parametrize(
-        'level,query,embedding,res_ids',
+        'query,embedding,res_ids',
         [
-            ('@cc', 'blue', [0.5, 0.1], ['chunk12', 'chunk31', 'chunk22']),
-            ('@cc', 'red', [0.5, 0.1], ['chunk11', 'chunk31', 'chunk22']),
-            ('@c', 'blue', [0.8, 0.1, 0.1], ['doc4', 'doc3', 'doc1', 'doc2']),
-            ('@c', 'red', [0.8, 0.1, 0.1], ['doc2', 'doc4', 'doc3', 'doc1']),
+            ('blue', [0.5, 0.1], ['chunk12', 'chunk31', 'chunk22']),
+            ('red', [0.5, 0.1], ['chunk11', 'chunk31', 'chunk22']),
         ],
     )
     def test_search_chunk_using_sum_ranker(
-        self, documents, indexer, level, query, embedding, res_ids
+        self, documents, indexer, query, embedding, res_ids, tmpdir
     ):
+        metas = {'workspace': str(tmpdir)}
         documents = DocumentArray([Document(chunks=[doc]) for doc in documents])
         with Flow().add(
             uses=indexer,
             uses_with={
-                "traversal_paths": level,
                 "dim": len(embedding),
                 'columns': ['title', 'str', TAG_INDEXER_DOC_HAS_TEXT, 'bool'],
             },
+            uses_metas=metas,
         ) as f:
             f.index(
                 documents,
@@ -430,17 +464,14 @@ class TestBaseIndexer:
             result = f.search(
                 Document(
                     chunks=Document(
-                        id="chunk_search",
-                        text=query,
-                        embedding=np.array(embedding),
+                        chunks=Document(
+                            id="chunk_search",
+                            text=query,
+                            embedding=np.array(embedding),
+                        ),
                     ),
                 ),
                 return_results=True,
-                parameters={
-                    'ranking_method': 'sum',
-                    'traversal_paths': '@c',
-                    'access_paths': '@c',
-                },
             )
             print('all match ids', [match.id for match in result[0].matches])
             for d, res_id in zip(result[0].matches, res_ids):
@@ -480,17 +511,23 @@ class TestBaseIndexer:
                     doc_tens,
                 ]
             )
-            inputs = DocumentArray([Document(chunks=[doc]) for doc in inputs])
+            inputs = DocumentArray(
+                [Document(chunks=[Document(chunks=[doc])]) for doc in inputs]
+            )
 
             f.index(deepcopy(inputs), parameters={})
 
             response = f.search(
-                Document(chunks=[Document(embedding=np.array([0.1, 0.1, 0.1]))])
+                Document(
+                    chunks=[
+                        Document(chunks=Document(embedding=np.array([0.1, 0.1, 0.1])))
+                    ]
+                )
             )
             matches = response[0].matches
-            assert matches[0].text == inputs[0].chunks[0].text
-            assert matches[1].blob == inputs[1].chunks[0].blob
-            assert matches[2].blob == inputs[2].chunks[0].blob
+            assert matches[0].text == inputs[0].chunks[0].chunks[0].text
+            assert matches[1].blob == inputs[1].chunks[0].chunks[0].blob
+            assert matches[2].blob == inputs[2].chunks[0].chunks[0].blob
             assert matches[3].blob == b''
             assert matches[4].tensor is None
 
@@ -502,9 +539,13 @@ class TestBaseIndexer:
             Document(
                 chunks=[
                     Document(
-                        embedding=np.random.random(DIM).astype(np.float32),
-                        tags={'color': 'red'},
-                        uri='uri2',
+                        chunks=[
+                            Document(
+                                embedding=np.random.random(DIM).astype(np.float32),
+                                tags={'color': 'red'},
+                                uri='uri2',
+                            )
+                        ]
                     )
                 ]
             )
@@ -531,7 +572,13 @@ class TestBaseIndexer:
             f.index(docs, return_results=True)
             result = f.search(
                 inputs=Document(
-                    chunks=[Document(text='query1', embedding=np.array([0.1] * 128))]
+                    chunks=[
+                        Document(
+                            chunks=[
+                                Document(text='query1', embedding=np.array([0.1] * 128))
+                            ]
+                        ),
+                    ]
                 ),
                 return_results=True,
             )

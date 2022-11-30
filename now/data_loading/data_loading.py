@@ -143,6 +143,7 @@ def _extract_es_data(user_input: UserInput) -> DocumentArray:
 
 def _load_from_disk(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
     dataset_path = user_input.dataset_path.strip()
+    dataset_path = os.path.expanduser(dataset_path)
     if os.path.isfile(dataset_path):
         try:
             return DocumentArray.load_binary(dataset_path)

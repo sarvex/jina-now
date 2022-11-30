@@ -13,6 +13,7 @@ from jina.clients import Client
 from now.admin.update_api_keys import update_api_keys
 from now.app.base.app import JinaNOWApp
 from now.common.testing import handle_test_mode
+from now.constants import ACCESS_PATHS
 from now.data_loading.data_loading import load_data
 from now.deployment.flow import deploy_flow
 from now.log import time_profiler
@@ -122,8 +123,7 @@ def index_docs(user_input, dataset, client):
     print(f"▶ indexing {len(dataset)} documents")
     params = {
         'user_input': user_input.__dict__,
-        'traversal_paths': user_input.app_instance.get_index_query_access_paths(),
-        'access_paths': user_input.app_instance.get_index_query_access_paths(),
+        'access_paths': ACCESS_PATHS,
     }
     if user_input.secured:
         params['jwt'] = user_input.jwt
