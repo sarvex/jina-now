@@ -145,9 +145,7 @@ def test_backend_demo_data_remote(
         input_modality = 'image-or-text'
         output_modality = 'image-or-text'
 
-    assert_deployment_response(
-        app, 'remote', input_modality, output_modality, response
-    )
+    assert_deployment_response(app, 'remote', input_modality, output_modality, response)
 
     assert_deployment_queries(
         app,
@@ -244,9 +242,7 @@ def test_backend_demo_data_remote(
         input_modality = 'image-or-text'
         output_modality = 'image-or-text'
 
-    assert_deployment_response(
-        app, 'local', input_modality, output_modality, response
-    )
+    assert_deployment_response(app, 'local', input_modality, output_modality, response)
 
     assert_deployment_queries(
         app,
