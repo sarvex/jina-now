@@ -3,9 +3,14 @@ import os
 import pytest
 from docarray import Document, DocumentArray
 
+from now.app.base.preprocess import preprocess_text
 from now.app.image_text_retrieval.app import ImageTextRetrieval
+from now.app.text_to_text_and_image.app import TextToTextAndImage
 from now.app.text_to_video.app import TextToVideo
+from now.constants import DatasetTypes
+from now.data_loading.data_loading import load_data
 from now.data_loading.transform_docarray import transform_docarray
+from now.demo_data import DemoDatasetNames
 from now.now_dataclasses import UserInput
 
 
@@ -14,11 +19,11 @@ def test_text_to_video_preprocessing_query():
     app = TextToVideo()
     da = DocumentArray([Document(text='test')])
     da = transform_docarray(da, search_fields=[])
-    da = app.preprocess(da=da, user_input=UserInput())
+    da = app.preprocess(da)
 
     assert len(da) == 1
     assert len(da[0].chunks) == 1
-    assert da[0].chunks[0].text == 'test'
+    assert da[0].chunks[0].chunks[0].text == 'test'
 
 
 def test_text_to_video_preprocessing_indexing(resources_folder_path):
@@ -28,9 +33,7 @@ def test_text_to_video_preprocessing_indexing(resources_folder_path):
         [Document(uri=os.path.join(resources_folder_path, 'gif/folder1/file.gif'))]
     )
     da = transform_docarray(da, search_fields=[])
-    da = app.preprocess(
-        da=da, user_input=UserInput(), process_index=True, process_query=False
-    )
+    da = app.preprocess(da)
     assert len(da) == 1
     assert len(da[0].chunks[0].chunks) == 3
     assert da[0].chunks[0].chunks[0].blob != b''
@@ -48,19 +51,12 @@ def test_text_preprocessing(app_cls, is_indexing):
     app = app_cls()
     da = DocumentArray([Document(text='test')])
     da = transform_docarray(da, search_fields=[])
-    da = app.preprocess(
-        da=da,
-        user_input=UserInput(output_modality='text'),
-        process_index=is_indexing,
-        process_query=not is_indexing,
-    )
+    da = app.preprocess(da)
     assert len(da) == 1
     assert len(da[0].chunks) == 1
     assert da[0].chunks[0].modality == 'text'
-    if is_indexing:
-        assert da[0].chunks[0].chunks[0].text == 'test'
-    else:
-        assert da[0].chunks[0].text == 'test'
+    assert da[0].chunks[0].text == ''
+    assert da[0].chunks[0].chunks[0].text == 'test'
 
 
 @pytest.mark.parametrize(
@@ -76,17 +72,12 @@ def test_image_preprocessing(app_cls, is_indexing, resources_folder_path):
     uri = os.path.join(resources_folder_path, 'image/5109112832.jpg')
     da = DocumentArray([Document(uri=uri)])
     da = transform_docarray(da, search_fields=[])
-    da = app.preprocess(
-        da=da,
-        user_input=UserInput(output_modality='image'),
-        process_index=is_indexing,
-        process_query=not is_indexing,
-    )
+    da = app.preprocess(da)
     assert len(da) == 1
     assert len(da[0].chunks) == 1
-    assert da[0].chunks[0].modality == 'image'
-    assert da[0].chunks[0].uri == uri
-    assert da[0].chunks[0].content
+    assert da[0].chunks[0].chunks[0].modality == 'image'
+    assert da[0].chunks[0].chunks[0].uri == uri
+    assert da[0].chunks[0].chunks[0].content
 
 
 @pytest.mark.skip(
@@ -102,10 +93,15 @@ def test_music_preprocessing(is_indexing, resources_folder_path):
 
     da = DocumentArray([Document(uri=uri)])
     da = transform_docarray(da, search_fields=[])
-    da = app.preprocess(da=da, user_input=UserInput())
+    da = app.preprocess(da)
     assert len(da) == 1
     assert len(da[0].chunks) == 0
     assert da[0].blob != b''
+
+
+def test_preprocess_text():
+    result = preprocess_text(Document(text='test. test', modality='text'))
+    assert len(result.chunks) == 2
 
 
 @pytest.mark.skip(reason="Temporarily deactivated.")
@@ -122,12 +118,7 @@ def test_nested_preprocessing(is_indexing, get_task_config_path):
     else:
         da = DocumentArray(Document(text='query text'))
 
-    processed_da = app.preprocess(
-        da=da,
-        user_input=user_input,
-        process_index=is_indexing,
-        process_query=not is_indexing,
-    )
+    processed_da = app.preprocess(da)
     assert len(processed_da) == 1
     if is_indexing:
         assert len(processed_da[0].chunks) == 2

@@ -46,10 +46,6 @@ def index(data: NowTextImageIndexRequestModel):
     jina_client_post(
         data=data,
         inputs=index_docs,
-        parameters={
-            'access_paths': '@c',
-            'traversal_paths': '@c',
-        },
         endpoint='/index',
     )
 
@@ -73,12 +69,7 @@ def search(data: NowTextImageSearchRequestModel):
     docs = jina_client_post(
         data=data,
         inputs=query_doc,
-        parameters={
-            'limit': data.limit,
-            'filter': filter_query,
-            'access_paths': '@c',
-            'traversal_paths': '@c',
-        },
+        parameters={'limit': data.limit, 'filter': filter_query},
         endpoint='/search',
     )
 

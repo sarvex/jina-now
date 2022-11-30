@@ -1,0 +1,3 @@
+boto3
+paddlepaddle==2.3.2
+paddleocr>=2.0.1

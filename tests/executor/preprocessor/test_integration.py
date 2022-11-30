@@ -1,6 +1,7 @@
 import json
 import os
 
+import pytest
 from docarray import Document, DocumentArray
 from jina import Flow
 
@@ -21,7 +22,7 @@ def test_executor_persistence(tmpdir, resources_folder_path):
         ]
     )
 
-    e.index(
+    e.preprocess(
         docs=text_docs,
         parameters={'user_input': user_input.__dict__, 'is_indexing': False},
     )
@@ -29,7 +30,9 @@ def test_executor_persistence(tmpdir, resources_folder_path):
         json.load(fp)
 
 
-def test_text_to_video(resources_folder_path):
+@pytest.mark.parametrize('endpoint', ['index', 'search'])
+def test_text_to_video(resources_folder_path, endpoint, tmpdir):
+    metas = {'workspace': str(tmpdir)}
     app = Apps.TEXT_TO_VIDEO
     user_input = UserInput()
     text_docs = DocumentArray(
@@ -39,49 +42,23 @@ def test_text_to_video(resources_folder_path):
         ]
     )
 
-    with Flow().add(uses=NOWPreprocessor, uses_with={'app': app}) as f:
+    with Flow().add(
+        uses=NOWPreprocessor, uses_with={'app': app}, uses_metas=metas
+    ) as f:
         result = f.post(
-            on='/search',
+            on=f'/{endpoint}',
             inputs=text_docs,
             parameters={'user_input': user_input.__dict__},
             show_progress=True,
         )
         result = DocumentArray.from_json(result.to_json())
 
-        encode_result = f.post(
-            on='/encode',
-            inputs=text_docs,
-            parameters={'user_input': user_input.__dict__},
-            show_progress=True,
-        )
-        encode_result = DocumentArray.from_json(encode_result.to_json())
-
-    assert len(result) == 1
-    assert len(encode_result) == 2
-    assert (
-        len([res.chunks[0].text for res in encode_result if res.chunks[0].text != ''])
-        == 1
-    )
-    assert (
-        len(
-            [
-                res.chunks[0].chunks[0].blob
-                for res in encode_result
-                if res.chunks[0].chunks
-            ]
-        )
-        == 1
-    )
-    assert (
-        len(
-            [
-                document.chunks[0].tags.get(TAG_OCR_DETECTOR_TEXT_IN_DOC)
-                for document in encode_result
-                if TAG_OCR_DETECTOR_TEXT_IN_DOC in document.chunks[0].tags
-            ]
-        )
-        == 1
-    )
+    assert len(result) == 2
+    assert result[0].text == ''
+    assert result[0].chunks[0].chunks[0].text == 'test'
+    assert result[1].chunks[0].chunks[0].blob
+    assert TAG_OCR_DETECTOR_TEXT_IN_DOC not in result[0].chunks[0].chunks[0].tags
+    assert TAG_OCR_DETECTOR_TEXT_IN_DOC in result[1].chunks[0].chunks[0].tags
 
 
 def test_user_input_preprocessing():

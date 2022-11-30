@@ -6,12 +6,11 @@ from now.utils import BetterEnum
 # from docarray import __version__ as docarray_version
 
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
-
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.134-fix-bff-text-to-video'
-NOW_PREPROCESSOR_VERSION = '0.0.103-fix-text-to-video-5'
-NOW_QDRANT_INDEXER_VERSION = '0.0.7-feat-new-data-format-127'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.6-feat-new-data-format-127'
-NOW_AUTOCOMPLETE_VERSION = '0.0.4-refactor-remove-app-4'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.134-refactor-simplify-preprocessing-45'
+NOW_PREPROCESSOR_VERSION = '0.0.104-refactor-simplify-preprocessing-45'
+NOW_QDRANT_INDEXER_VERSION = '0.0.8-refactor-simplify-preprocessing-45'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.7-refactor-simplify-preprocessing-45'
+NOW_AUTOCOMPLETE_VERSION = '0.0.4-refactor-simplify-preprocessing-45'
 
 
 class Modalities(BetterEnum):
@@ -64,8 +63,7 @@ CLIP_USES = {
     'local': ('CLIPOnnxEncoder/latest', 'ViT-B-32::openai', ModelDimensions.CLIP),
     'remote': ('CLIPOnnxEncoder/latest-gpu', 'ViT-B-32::openai', ModelDimensions.CLIP),
 }
-
-EXTERNAL_CLIP_HOST = 'encoderclip-famous-reptile-98ea48cb2c.wolf.jina.ai'
+EXTERNAL_CLIP_HOST = 'encoderclip-game-gar-c70a0d0c79.wolf.jina.ai'
 
 DEFAULT_FLOW_NAME = 'nowapi'
 PREFETCH_NR = 10
@@ -75,3 +73,4 @@ SURVEY_LINK = 'https://10sw1tcpld4.typeform.com/to/VTAyYRpR?utm_source=cli'
 TAG_OCR_DETECTOR_TEXT_IN_DOC = '_ocr_detector_text_in_doc'
 TAG_INDEXER_DOC_HAS_TEXT = '_indexer_doc_has_text'
 EXECUTOR_PREFIX = 'jinahub+docker://'
+ACCESS_PATHS = '@cc'

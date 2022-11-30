@@ -119,6 +119,9 @@ def get_auth_executor_class():
             self.api_keys = api_keys
             self._user = None
 
+            # TODO admin email must be persisted as well
+            # TODO also, please remove duplicate code
+
             self.api_keys_path = (
                 os.path.join(self.workspace, 'api_keys.json')
                 if self.workspace
