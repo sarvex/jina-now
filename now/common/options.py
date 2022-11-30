@@ -6,7 +6,6 @@ the dialog won't ask for the value.
 """
 from __future__ import annotations, print_function, unicode_literals
 
-import glob
 import importlib
 import os
 import uuid
@@ -14,8 +13,12 @@ import uuid
 from hubble import AuthenticationRequiredError
 from kubernetes import client, config
 
-from now.constants import Apps, DatasetTypes
-from now.data_loading.utils import _get_s3_bucket_and_folder_prefix
+from now.common.detect_schema import (
+    _get_schema_docarray,
+    _get_schema_local_folder,
+    _get_schema_s3_bucket,
+)
+from now.constants import SUPPORTED_FILE_TYPES, Apps, DatasetTypes, Modalities
 from now.deployment.deployment import cmd
 from now.log import yaspin_extended
 from now.now_dataclasses import DialogOptions, UserInput
@@ -42,93 +45,6 @@ def _create_app_from_output_modality(user_input: UserInput, **kwargs):
     else:
         raise ValueError(f'Invalid output modality: {user_input.output_modality}')
     user_input.app_instance = construct_app(app_name)
-
-
-def _get_schema_docarray(user_input: UserInput, **kwargs):
-    from hubble import Client
-
-    if user_input.jwt is None:
-        client = Client()
-    else:
-        client = Client(token=user_input.jwt['token'])
-
-    resp = client.get_artifact_info(name='test_subset_laion')
-    if resp.json()['code'] == 200:
-        field_names = resp.json()['data']['metaData']['summary'][3]['value']
-        for el in ['embedding', 'id', 'mime_type']:
-            if el in field_names:
-                field_names.remove(el)
-        user_input.field_names = field_names
-    else:
-        raise ValueError('DocumentArray doesnt exist or you dont have access to it')
-
-
-def _get_schema_s3_bucket(user_input: UserInput, **kwargs):
-    bucket, folder_prefix = _get_s3_bucket_and_folder_prefix(
-        user_input
-    )  # user has to provide the folder where folder structure begins
-
-    field_names = []
-
-    all_files = True
-    for obj in list(bucket.objects.filter(Prefix=folder_prefix))[
-        1:
-    ]:  # first is the bucket path
-        if obj.key.endswith('/'):
-            all_files = False
-    if all_files:
-        user_input.field_names = []
-    else:
-        for obj in list(bucket.objects.filter(Prefix=folder_prefix))[
-            1:
-        ]:  # first is the bucket path
-            if obj.key.endswith('/'):
-                continue
-            if len(obj.key.split('/')) - len(folder_prefix.split('/')) != 1:
-                raise ValueError(
-                    'File format different than expected, please check documentation.'
-                )
-
-        first_folder = list(bucket.objects.filter(Prefix=folder_prefix))[1].key.split(
-            '/'
-        )[-2]
-        for field in list(bucket.objects.filter(Prefix=folder_prefix + first_folder))[
-            1:
-        ]:
-            field_names.append(field.key.split('/')[-1])
-        user_input.field_names = field_names
-
-
-def check_path(path, root):
-    path = os.path.abspath(path)
-    root = os.path.abspath(root)
-    return os.path.relpath(path, root).count(os.path.sep) == 1
-
-
-def _get_schema_local_folder(user_input: UserInput, **kwargs):
-
-    dataset_path = user_input.dataset_path.strip()
-    if os.path.isfile(dataset_path):
-        return []
-    elif os.path.isdir(dataset_path):
-        all_files = True
-        for file_or_directory in os.listdir(dataset_path):
-            if not os.path.isfile(os.path.join(dataset_path, file_or_directory)):
-                all_files = False
-        if all_files:
-            user_input.field_names = []
-        else:
-            first_path = ''
-            for path in sorted(glob.glob(os.path.join(dataset_path, '**/**'))):
-                if not first_path:
-                    first_path = path
-
-                if not check_path(path, dataset_path):
-                    raise ValueError(
-                        'Folder format is not as expected, please check documentation'
-                    )
-            field_names = os.listdir('/'.join(first_path.split('/')[:-1]))
-            user_input.field_names = field_names
 
 
 OUTPUT_MODALITY = DialogOptions(
@@ -300,7 +216,14 @@ SEARCH_FIELDS = DialogOptions(
 
 def _exclude_search_fields(user_input: UserInput):
     s = set(user_input.search_fields)
-    user_input.field_names = [x for x in user_input.field_names if x not in s]
+    user_input.field_names = [
+        x
+        for x in user_input.field_names
+        if x not in s
+        and x.split('.')[-1] not in SUPPORTED_FILE_TYPES[Modalities.IMAGE]
+        and x.split('.')[-1] not in SUPPORTED_FILE_TYPES[Modalities.MUSIC]
+        and x.split('.')[-1] not in SUPPORTED_FILE_TYPES[Modalities.VIDEO]
+    ]
 
 
 FILTER_FIELDS = DialogOptions(
