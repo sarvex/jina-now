@@ -90,58 +90,28 @@ def test_token_exists():
     list_all_wolf()
 
 
+@pytest.mark.remote
 @pytest.mark.parametrize(
-    'app, input_modality, output_modality, dataset, deployment_type',
+    'app, input_modality, output_modality, dataset',
     [
-        (
-            Apps.IMAGE_TEXT_RETRIEVAL,
-            Modalities.IMAGE,
-            Modalities.IMAGE,
-            DemoDatasetNames.BIRD_SPECIES,
-            'local',
-        ),
         (
             Apps.IMAGE_TEXT_RETRIEVAL,
             Modalities.TEXT,
             Modalities.IMAGE,
             DemoDatasetNames.BEST_ARTWORKS,
-            'remote',
-        ),
-        (
-            Apps.IMAGE_TEXT_RETRIEVAL,
-            Modalities.TEXT,
-            Modalities.TEXT,
-            DemoDatasetNames.POP_LYRICS,
-            'local',
-        ),
-        (
-            Apps.TEXT_TO_VIDEO,
-            Modalities.TEXT,
-            Modalities.VIDEO,
-            DemoDatasetNames.TUMBLR_GIFS_10K,
-            'local',
         ),
         # (
         #     Apps.MUSIC_TO_MUSIC,
         #     Modalities.MUSIC,
         #     Modalities.MUSIC,
         #     DemoDatasetNames.MUSIC_GENRES_ROCK,
-        #     'remote',
-        # ),
-        # (
-        #     Apps.TEXT_TO_TEXT_AND_IMAGE,
-        #     Modalities.TEXT,
-        #     Modalities.TEXT_AND_IMAGE,
-        #     DemoDatasetNames.ES_ONLINE_SHOP_50,
-        #     'local',
         # ),
     ],
 )
 @pytest.mark.timeout(60 * 30)
-def test_backend_demo_data(
+def test_backend_demo_data_remote(
     app: str,
     dataset: str,
-    deployment_type: str,
     test_search_image,
     test_search_music,
     cleanup,
@@ -157,18 +127,17 @@ def test_backend_demo_data(
         'output_modality': output_modality,
         'dataset_name': dataset,
         'cluster': cluster,
-        'secured': deployment_type == 'remote',
+        'secured': True,
         'api_key': None,
         'additional_user': False,
-        'deployment_type': deployment_type,
+        'deployment_type': 'remote',
         'proceed': True,
     }
     # need to create local cluster and namespace to deploy playground and bff for WOLF deployment
-    if deployment_type == 'remote':
-        kind_path = _get_kind_path()
-        create_local_cluster(kind_path, **kwargs)
-        kubectl_path = _get_kubectl_path()
-        cmd(f'{kubectl_path} create namespace nowapi')
+    # kind_path = _get_kind_path()
+    # create_local_cluster(kind_path, **kwargs)
+    # kubectl_path = _get_kubectl_path()
+    # cmd(f'{kubectl_path} create namespace nowapi')
     kwargs = Namespace(**kwargs)
     response = cli(args=kwargs)
 
@@ -177,13 +146,13 @@ def test_backend_demo_data(
         output_modality = 'image-or-text'
 
     assert_deployment_response(
-        app, deployment_type, input_modality, output_modality, response
+        app, 'remote', input_modality, output_modality, response
     )
 
     assert_deployment_queries(
         app,
         dataset,
-        deployment_type,
+        'remote',
         input_modality,
         kwargs,
         output_modality,
@@ -197,7 +166,7 @@ def test_backend_demo_data(
         request_body = get_search_request_body(
             app,
             dataset,
-            deployment_type,
+            'remote',
             kwargs,
             test_search_image,
             test_search_music,
@@ -208,10 +177,103 @@ def test_backend_demo_data(
         assert_suggest(suggest_url, request_body)
 
     # Dump the flow details from response host to a tmp file if the deployment is remote
-    if deployment_type == 'remote':
-        flow_details = {'host': response['host']}
-        with open(f'{cleanup}/flow_details.json', 'w') as f:
-            json.dump(flow_details, f)
+    flow_details = {'host': response['host']}
+    with open(f'{cleanup}/flow_details.json', 'w') as f:
+        json.dump(flow_details, f)
+
+
+@pytest.mark.parametrize(
+    'app, input_modality, output_modality, dataset',
+    [
+        (
+            Apps.IMAGE_TEXT_RETRIEVAL,
+            Modalities.IMAGE,
+            Modalities.IMAGE,
+            DemoDatasetNames.BIRD_SPECIES,
+        ),
+        (
+            Apps.IMAGE_TEXT_RETRIEVAL,
+            Modalities.TEXT,
+            Modalities.TEXT,
+            DemoDatasetNames.POP_LYRICS,
+        ),
+        (
+            Apps.TEXT_TO_VIDEO,
+            Modalities.TEXT,
+            Modalities.VIDEO,
+            DemoDatasetNames.TUMBLR_GIFS_10K,
+        ),
+        # (
+        #     Apps.TEXT_TO_TEXT_AND_IMAGE,
+        #     Modalities.TEXT,
+        #     Modalities.TEXT_AND_IMAGE,
+        #     DemoDatasetNames.ES_ONLINE_SHOP_50,
+        #     'local',
+        # ),
+    ],
+)
+@pytest.mark.timeout(60 * 30)
+def test_backend_demo_data_remote(
+    app: str,
+    dataset: str,
+    test_search_image,
+    test_search_music,
+    cleanup,
+    input_modality,
+    output_modality,
+    with_hubble_login_patch,
+):
+    cluster = NEW_CLUSTER['value']
+    kwargs = {
+        'now': 'start',
+        'flow_name': 'nowapi',
+        'dataset_type': DatasetTypes.DEMO,
+        'output_modality': output_modality,
+        'dataset_name': dataset,
+        'cluster': cluster,
+        'secured': False,
+        'api_key': None,
+        'additional_user': False,
+        'deployment_type': 'local',
+        'proceed': True,
+    }
+    kwargs = Namespace(**kwargs)
+    response = cli(args=kwargs)
+
+    if app == Apps.IMAGE_TEXT_RETRIEVAL:
+        input_modality = 'image-or-text'
+        output_modality = 'image-or-text'
+
+    assert_deployment_response(
+        app, 'local', input_modality, output_modality, response
+    )
+
+    assert_deployment_queries(
+        app,
+        dataset,
+        'local',
+        input_modality,
+        kwargs,
+        output_modality,
+        test_search_image,
+        test_search_music,
+        response,
+    )
+
+    if input_modality == Modalities.TEXT:
+        host = response.get('host')
+        request_body = get_search_request_body(
+            app,
+            dataset,
+            'local',
+            kwargs,
+            test_search_image,
+            test_search_music,
+            host,
+        )
+        url = f'http://localhost:30090/api/v1'
+        suggest_url = f'{url}/{input_modality}-to-{output_modality}/suggestion'
+        assert_suggest(suggest_url, request_body)
 
 
 def assert_search(search_url, request_body, expected_status_code=200):
@@ -358,14 +420,13 @@ def assert_deployment_response(
     assert response['port'] == 8080 or response['port'] is None
 
 
-@pytest.mark.parametrize('deployment_type', ['remote'])
+@pytest.mark.remote
 @pytest.mark.parametrize('dataset', ['custom_s3_bucket'])
 @pytest.mark.parametrize('app', [Apps.IMAGE_TEXT_RETRIEVAL])
 @pytest.mark.parametrize('input_modality', [Modalities.IMAGE])
 @pytest.mark.parametrize('output_modality', [Modalities.IMAGE])
 def test_backend_custom_data(
     app,
-    deployment_type: str,
     dataset: str,
     input_modality: str,
     output_modality: str,
@@ -384,7 +445,7 @@ def test_backend_custom_data(
         'aws_region_name': 'eu-west-1',
         'search_fields': 'x, y',
         'cluster': NEW_CLUSTER['value'],
-        'deployment_type': deployment_type,
+        'deployment_type': 'remote',
         'proceed': True,
         'secured': False,
     }
