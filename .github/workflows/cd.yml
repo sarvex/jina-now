@@ -46,6 +46,7 @@ jobs:
           WOLF_TOKEN: ${{ secrets.WOLF_TOKEN }}
           S3_IMAGE_TEST_DATA_PATH: ${{ secrets.S3_IMAGE_TEST_DATA_PATH }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          S3_SCHEMA_FOLDER_PATH: ${{ secrets.S3_SCHEMA_FOLDER_PATH }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       - name: Setup tmate session for debugging
         if: ${{ failure() }}
