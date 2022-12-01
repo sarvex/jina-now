@@ -45,32 +45,20 @@ def test_search_music(resources_folder_path: str):
 
 
 @pytest.fixture()
-def cleanup(deployment_type, dataset, app):
+def cleanup_remote(dataset):
     with tempfile.TemporaryDirectory() as tmpdir:
         start = time.time()
         yield tmpdir
         print('start cleanup')
         try:
-            if deployment_type == 'remote':
-                with open(f'{tmpdir}/flow_details.json', 'r') as f:
-                    flow_details = json.load(f)
-                if 'host' not in flow_details:
-                    print('nothing to clean up')
-                    return
-                host = flow_details['host']
-                flow_id = get_flow_id(host)
-                terminate_wolf(flow_id)
-            else:
-                print('\nDeleting local cluster')
-                kwargs = {
-                    'app': app,
-                    'deployment_type': deployment_type,
-                    'now': 'stop',
-                    'cluster': 'kind-jina-now',
-                    'delete-cluster': True,
-                }
-                kwargs = Namespace(**kwargs)
-                cli(args=kwargs)
+            with open(f'{tmpdir}/flow_details.json', 'r') as f:
+                flow_details = json.load(f)
+            if 'host' not in flow_details:
+                print('nothing to clean up')
+                return
+            host = flow_details['host']
+            flow_id = get_flow_id(host)
+            terminate_wolf(flow_id)
         except Exception as e:
             print('no clean up')
             print(e)
@@ -81,7 +69,39 @@ def cleanup(deployment_type, dataset, app):
         secs = int(now % 60)
         print(50 * '#')
         print(
-            f'Time taken to execute `{deployment_type}` deployment with dataset `{dataset}`: {mins}m {secs}s'
+            f'Time taken to execute `remote` deployment with dataset `{dataset}`: {mins}m {secs}s'
+        )
+        print(50 * '#')
+
+
+@pytest.fixture()
+def cleanup_local(dataset, app):
+    with tempfile.TemporaryDirectory() as tmpdir:
+        start = time.time()
+        yield tmpdir
+        print('start cleanup')
+        try:
+            print('\nDeleting local cluster')
+            kwargs = {
+                'app': app,
+                'deployment_type': 'local',
+                'now': 'stop',
+                'cluster': 'kind-jina-now',
+                'delete-cluster': True,
+            }
+            kwargs = Namespace(**kwargs)
+            cli(args=kwargs)
+        except Exception as e:
+            print('no clean up')
+            print(e)
+            return
+        print('cleaned up')
+        now = time.time() - start
+        mins = int(now / 60)
+        secs = int(now % 60)
+        print(50 * '#')
+        print(
+            f'Time taken to execute `local` deployment with dataset `{dataset}`: {mins}m {secs}s'
         )
         print(50 * '#')
 
@@ -114,7 +134,7 @@ def test_backend_demo_data_remote(
     dataset: str,
     test_search_image,
     test_search_music,
-    cleanup,
+    cleanup_remote,
     input_modality,
     output_modality,
     with_hubble_login_patch,
@@ -172,7 +192,7 @@ def test_backend_demo_data_remote(
 
     # Dump the flow details from response host to a tmp file if the deployment is remote
     flow_details = {'host': response['host']}
-    with open(f'{cleanup}/flow_details.json', 'w') as f:
+    with open(f'{cleanup_remote}/flow_details.json', 'w') as f:
         json.dump(flow_details, f)
 
 
@@ -212,7 +232,7 @@ def test_backend_demo_data_remote(
     dataset: str,
     test_search_image,
     test_search_music,
-    cleanup,
+    cleanup_local,
     input_modality,
     output_modality,
     with_hubble_login_patch,
@@ -422,7 +442,7 @@ def test_backend_custom_data(
     dataset: str,
     input_modality: str,
     output_modality: str,
-    cleanup,
+    cleanup_remote,
     with_hubble_login_patch,
 ):
     kwargs = {
@@ -463,7 +483,7 @@ def test_backend_custom_data(
     # Dump the flow details from response host to a tmp file for post cleanup
 
     flow_details = {'host': response['host']}
-    with open(f'{cleanup}/flow_details.json', 'w') as f:
+    with open(f'{cleanup_remote}/flow_details.json', 'w') as f:
         json.dump(flow_details, f)
 
     response = requests.post(
