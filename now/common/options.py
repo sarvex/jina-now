@@ -19,6 +19,7 @@ from now.common.detect_schema import (
     _get_schema_s3_bucket,
 )
 from now.constants import SUPPORTED_FILE_TYPES, Apps, DatasetTypes, Modalities
+from now.demo_data import AVAILABLE_DATASET
 from now.deployment.deployment import cmd
 from now.log import yaspin_extended
 from now.now_dataclasses import DialogOptions, UserInput
@@ -58,6 +59,7 @@ OUTPUT_MODALITY = DialogOptions(
     prompt_message='What modality do you want to index?',
     description='What is the index modality of your search system?',
     is_terminal_command=True,
+    conditional_check=lambda user_input, **kwargs: user_input.app_instance is None,
     post_func=_create_app_from_output_modality,
 )
 
@@ -113,17 +115,27 @@ DEMO_DATA = DialogOptions(
     description='Select one of the available demo datasets',
     conditional_check=lambda user_input, **kwargs: user_input.dataset_type
     == DatasetTypes.DEMO,
+    post_func=lambda user_input, **kwargs: _infer_app_type_from_demo_data(user_input),
 )
 
 
 def _get_demo_data_choices(user_input: UserInput):
-    if user_input.output_modality:
-        ds = user_input.app_instance.demo_datasets[user_input.output_modality]
-    else:
-        ds = user_input.app_instance.demo_datasets
+
+    all_demo_datasets = []
+    for demo_datasets in AVAILABLE_DATASET.values():
+        all_demo_datasets.extend(demo_datasets)
     return [
-        {'name': demo_data.display_name, 'value': demo_data.name} for demo_data in ds
+        {'name': demo_data.display_name, 'value': demo_data.name}
+        for demo_data in all_demo_datasets
     ]
+
+
+def _infer_app_type_from_demo_data(user_input):
+    for modality, demos in AVAILABLE_DATASET.items():
+        for demo in demos:
+            if user_input.dataset_name == demo.name:
+                user_input.output_modality = modality
+    _create_app_from_output_modality(user_input)
 
 
 DOCARRAY_NAME = DialogOptions(
@@ -208,7 +220,8 @@ SEARCH_FIELDS = DialogOptions(
     prompt_message='Please select the search fields:',
     prompt_type='checkbox',
     depends_on=DATASET_TYPE,
-    conditional_check=lambda user_input: len(user_input.field_names) > 0
+    conditional_check=lambda user_input: user_input.field_names is not None
+    and len(user_input.field_names) > 0
     and user_input.dataset_type != DatasetTypes.DEMO,
     post_func=lambda user_input, **kwargs: _exclude_search_fields(user_input),
 )
@@ -232,7 +245,8 @@ FILTER_FIELDS = DialogOptions(
     prompt_message='Please select the filter fields',
     prompt_type='checkbox',
     depends_on=DATASET_TYPE,
-    conditional_check=lambda user_input: len(user_input.field_names) > 0
+    conditional_check=lambda user_input: user_input.field_names is not None
+    and len(user_input.field_names) > 0
     and user_input.dataset_type != DatasetTypes.DEMO,
 )
 
