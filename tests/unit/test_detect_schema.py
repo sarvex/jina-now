@@ -26,7 +26,6 @@ def test_get_schema_local_folder_all_files(image_resource_path):
 def test_get_schema_s3_bucket():
     user_input = UserInput()
     user_input.dataset_path = os.environ.get('S3_SCHEMA_FOLDER_PATH')
-    print(user_input.dataset_path)
     user_input.aws_access_key_id = os.environ.get('AWS_ACCESS_KEY_ID')
     user_input.aws_secret_access_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
     user_input.aws_region_name = 'eu-west-1'
@@ -44,12 +43,11 @@ def test_get_schema_s3_bucket():
     }
 
 
-def test_get_schema_s3_bucket_all_files(image_resource_path):
+def test_get_schema_s3_bucket_all_files():
     user_input = UserInput()
     user_input.dataset_path = os.environ.get('S3_SCHEMA_FOLDER_PATH') + 'folder1/'
-    print(user_input.dataset_path)
     user_input.aws_access_key_id = os.environ.get('AWS_ACCESS_KEY_ID')
     user_input.aws_secret_access_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
-    _get_schema_local_folder(user_input)
+    _get_schema_s3_bucket(user_input)
 
     assert len(user_input.field_names) == 0
