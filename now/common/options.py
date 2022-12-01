@@ -59,6 +59,7 @@ OUTPUT_MODALITY = DialogOptions(
     prompt_message='What modality do you want to index?',
     description='What is the index modality of your search system?',
     is_terminal_command=True,
+    depends_on=True,
     conditional_check=lambda user_input, **kwargs: user_input.app_instance is None,
     post_func=_create_app_from_output_modality,
 )
