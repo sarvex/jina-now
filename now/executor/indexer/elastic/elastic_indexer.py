@@ -425,25 +425,24 @@ class ElasticIndexer(Executor):
             result = [result]
         da = DocumentArray()
         for es_doc in result:
-            doc = Document(id=es_doc['_id'])
+            doc = DocumentArray.from_base64(es_doc['_source']['serialized_doc'])[0]
             for k, v in es_doc['_source'].items():
-                if k.startswith('chunk'):
-                    chunk = Document.from_dict(v)
-                    doc.chunks.append(chunk)
-                elif (
+                if (
                     k.startswith('embedding') or k.endswith('embedding')
                 ) and get_score_breakdown:
                     if 'embeddings' not in doc.tags:
                         doc.tags['embeddings'] = {}
                     doc.tags['embeddings'][k] = v
-                elif k in ['bm25_text', '_score']:
-                    continue
-                else:
-                    doc.k = v
             da.append(doc)
         return da
 
     def _doc_map_to_es(self, docs_map: Dict[str, DocumentArray]) -> List[Dict]:
+        """
+        Transform a dictionary (mapping encoder to DocumentArray) into a list of Elasticsearch documents.
+
+        :param docs_map: dictionary mapping encoder to DocumentArray.
+        :return: a list of Elasticsearch documents as dictionaries ready to be indexed.
+        """
         es_docs = {}
 
         for encoder, documents in docs_map.items():
@@ -460,6 +459,7 @@ class ElasticIndexer(Executor):
 
                     if hasattr(field_doc, 'text') and field_doc.text:
                         es_doc['bm25_text'] += field_doc.text + ' '
+
         return list(es_docs.values())
 
     def _get_base_es_doc(self, doc: Document):
@@ -470,6 +470,9 @@ class ElasticIndexer(Executor):
         es_doc['_op_type'] = 'index'
         es_doc['_index'] = self.index_name
         es_doc['_id'] = doc.id
+        _doc = DocumentArray(Document(doc, copy=True))
+        _doc[..., 'embedding'] = [None for x in _doc[...]]
+        es_doc['serialized_doc'] = _doc.to_base64()
         return es_doc
 
     def _get_bm25_fields(self, doc: Document):

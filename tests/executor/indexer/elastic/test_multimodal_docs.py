@@ -19,7 +19,7 @@ def random_index_name():
     return f"test-index-{random.randint(0, 10000)}"
 
 
-def test_generate_es_mappings():
+def test_generate_es_mappings(setup_service_running):
     """
     This test should check, whether the static
     generate_es_mappings method works as expected.
@@ -190,7 +190,7 @@ def test_doc_map_to_es(setup_service_running, es_inputs):
     assert first_result['_op_type'] == 'index'
 
 
-def test_index_and_search_with_multimodal_docs(es_inputs):
+def test_index_and_search_with_multimodal_docs(setup_service_running, es_inputs):
     """
     This test runs indexing with the ElasticIndexer using multimodal docs.
 
