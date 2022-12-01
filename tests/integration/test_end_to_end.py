@@ -133,11 +133,7 @@ def test_backend_demo_data_remote(
         'deployment_type': 'remote',
         'proceed': True,
     }
-    # need to create local cluster and namespace to deploy playground and bff for WOLF deployment
-    # kind_path = _get_kind_path()
-    # create_local_cluster(kind_path, **kwargs)
-    # kubectl_path = _get_kubectl_path()
-    # cmd(f'{kubectl_path} create namespace nowapi')
+
     kwargs = Namespace(**kwargs)
     response = cli(args=kwargs)
 
@@ -458,19 +454,17 @@ def test_backend_custom_data(
         input_modality = 'image-or-text'
         output_modality = 'image-or-text'
 
-    assert_deployment_response(
-        app, deployment_type, input_modality, output_modality, response
-    )
+    assert_deployment_response(app, 'remote', input_modality, output_modality, response)
 
     request_body = {'text': 'test', 'limit': 9}
 
     print(f"Getting gateway from response")
     request_body['host'] = response['host']
     # Dump the flow details from response host to a tmp file for post cleanup
-    if deployment_type == 'remote':
-        flow_details = {'host': response['host']}
-        with open(f'{cleanup}/flow_details.json', 'w') as f:
-            json.dump(flow_details, f)
+
+    flow_details = {'host': response['host']}
+    with open(f'{cleanup}/flow_details.json', 'w') as f:
+        json.dump(flow_details, f)
 
     response = requests.post(
         f'http://localhost:30090/api/v1/{input_modality}-to-{output_modality}/search',
