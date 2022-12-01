@@ -29,30 +29,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'output_modality': 'image',
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DEMO,
-            'dataset_name': 'music-genres-mid',
-            'cluster': 'new',
-            'deployment_type': 'local',
-        },
-        {},
-    ),
-    (
-        {
-            'app': Apps.IMAGE_TEXT_RETRIEVAL,
-            'output_modality': 'image',
-            'flow_name': DEFAULT_FLOW_NAME,
-            'dataset_type': DatasetTypes.DEMO,
-            'dataset_name': 'music-genres-mix',
-            'cluster': 'new',
-            'deployment_type': 'local',
-        },
-        {},
-    ),
-    (
-        {
-            'app': Apps.IMAGE_TEXT_RETRIEVAL,
-            'output_modality': 'text',
-            'flow_name': DEFAULT_FLOW_NAME,
-            'dataset_type': DatasetTypes.DEMO,
             'dataset_name': 'tll',
             'cluster': 'new',
             'deployment_type': 'local',
@@ -78,6 +54,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DOCARRAY,
             'dataset_name': 'xxx',
+            'field_names': ['text', 'uri', 'tags'],
             'search_fields': ['x', 'y'],
             'filter_fields': ['z'],
             'cluster': 'new',
@@ -92,6 +69,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DOCARRAY,
             'dataset_name': 'xxx',
+            'field_names': ['text', 'uri', 'tags'],
             'search_fields': ['x', 'y'],
             'filter_fields': ['z'],
             'cluster': 'new',
@@ -106,22 +84,8 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.PATH,
             'dataset_path': 'xxx',
-            'search_fields': ['x', 'y'],
-            'filter_fields': ['z'],
-            'cluster': 'new',
-            'deployment_type': 'local',
-        },
-        {},
-    ),
-    (
-        {
-            'app': Apps.IMAGE_TEXT_RETRIEVAL,
-            'output_modality': 'image',
-            'flow_name': DEFAULT_FLOW_NAME,
-            'dataset_type': DatasetTypes.URL,
-            'dataset_url': 'xxx',
-            'search_fields': ['x', 'y'],
-            'filter_fields': ['z'],
+            'search_fields': None,
+            'filter_fields': None,
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -134,6 +98,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DOCARRAY,
             'dataset_name': 'xxx',
+            'field_names': ['text', 'uri', 'tags'],
             'search_fields': ['x', 'y'],
             'filter_fields': ['z'],
             'cluster': 'new',
@@ -149,7 +114,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'cluster': 'new',
             'deployment_type': 'local',
         },
-        {'app': Apps.IMAGE_TEXT_RETRIEVAL, 'output_modality': 'text'},
+        {'app': Apps.IMAGE_TEXT_RETRIEVAL, 'output_modality': 'image'},
     ),
     (
         {
@@ -159,11 +124,11 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'cluster': 'new',
             'deployment_type': 'local',
         },
-        {'app': Apps.IMAGE_TEXT_RETRIEVAL, 'output_modality': 'text'},
+        {'app': Apps.IMAGE_TEXT_RETRIEVAL, 'output_modality': 'image'},
     ),
     (
         {
-            'output_modality': 'text',
+            'output_modality': 'image',
         },
         {
             'app': Apps.IMAGE_TEXT_RETRIEVAL,
@@ -191,15 +156,11 @@ def test_configure_user_input(
     expected_user_input.__dict__.update(configure_kwargs)
     expected_user_input.__dict__.pop('app')
     mocker.patch('now.utils.prompt', CmdPromptMock(mocked_user_answers))
-
     user_input = configure_user_input(**configure_kwargs)
 
     if user_input.deployment_type == 'remote':
         user_input.__dict__.update({'jwt': None, 'admin_emails': None})
 
     user_input.__dict__.update({'app_instance': None})
-    if expected_user_input.dataset_type != DatasetTypes.DEMO:
-        expected_user_input.search_fields = ['x', 'y']
-        expected_user_input.filter_fields = ['z']
 
     assert user_input == expected_user_input

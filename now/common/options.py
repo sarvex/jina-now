@@ -480,7 +480,7 @@ base_options = (
     + data_s3
     + data_es
     + data_fields
+    + app_config
     + cluster
     + remote_cluster
-    + app_config
 )
