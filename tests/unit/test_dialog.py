@@ -3,6 +3,7 @@ Test the dialog.py module.
 
 Patches the `prompt` method to mock user input via the command line.
 """
+import os
 from typing import Dict
 
 import pytest
@@ -59,6 +60,8 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'filter_fields': ['z'],
             'cluster': 'new',
             'deployment_type': 'local',
+            'jwt': {'token': os.environ['WOLF_TOKEN']},
+            'admin_emails': ['florian.hoenicke@jina.ai'],
         },
         {},
     ),
@@ -74,6 +77,8 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'filter_fields': ['z'],
             'cluster': 'new',
             'deployment_type': 'local',
+            'jwt': {'token': os.environ['WOLF_TOKEN']},
+            'admin_emails': ['florian.hoenicke@jina.ai'],
         },
         {},
     ),
@@ -103,6 +108,8 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'filter_fields': ['z'],
             'cluster': 'new',
             'deployment_type': 'local',
+            'jwt': {'token': os.environ['WOLF_TOKEN']},
+            'admin_emails': ['florian.hoenicke@jina.ai'],
         },
         {},
     ),
