@@ -102,8 +102,13 @@ DATASET_TYPE = DialogOptions(
     ],
     prompt_type='list',
     is_terminal_command=True,
-    post_func=lambda user_input, **kwargs: _jina_auth_login(user_input, **kwargs),
+    post_func=lambda user_input, **kwargs: check_login_dataset(user_input),
 )
+
+
+def check_login_dataset(user_input):
+    if user_input.dataset_type == DatasetTypes.DOCARRAY and user_input.jwt is None:
+        _jina_auth_login(user_input)
 
 
 DEMO_DATA = DialogOptions(
@@ -302,8 +307,14 @@ DEPLOYMENT_TYPE = DialogOptions(
     is_terminal_command=True,
     description='Option is `local` and `remote`. Select `local` if you want search engine to be deployed on local '
     'cluster. Select `remote` to deploy it on Jina Cloud',
-    post_func=lambda user_input, **kwargs: _jina_auth_login(user_input, **kwargs),
+    post_func=lambda user_input, **kwargs: check_login_deployment(user_input),
 )
+
+
+def check_login_deployment(user_input):
+    if user_input.deployment_type == 'remote' and user_input.jwt is None:
+        _jina_auth_login(user_input)
+
 
 LOCAL_CLUSTER = DialogOptions(
     name='cluster',
@@ -414,11 +425,6 @@ def construct_app(app_name: str):
 
 
 def _jina_auth_login(user_input, **kwargs):
-    if user_input.deployment_type != 'remote' or user_input.jwt is not None:
-        return
-
-    if user_input.dataset_type != DatasetTypes.DOCARRAY or user_input.jwt is not None:
-        return
 
     try:
         jina_auth_login()
