@@ -565,6 +565,7 @@ class TestBaseIndexer:
             uses_metas=metas,
         )
         with f:
+            f.index(docs, return_results=True)
             f.post(
                 on='/curate',
                 parameters={
@@ -576,7 +577,6 @@ class TestBaseIndexer:
                     }
                 },
             )
-            f.index(docs, return_results=True)
             result = f.search(
                 inputs=Document(
                     chunks=[
