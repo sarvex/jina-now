@@ -9,6 +9,7 @@ from typing import Dict, Optional
 import requests
 from docarray import DocumentArray
 from jina.clients import Client
+from tqdm import tqdm
 
 from now.admin.update_api_keys import update_api_keys
 from now.app.base.app import JinaNOWApp
@@ -120,7 +121,7 @@ def index_docs(user_input, dataset, client):
     """
     Index the data right away
     """
-    print(f"▶ indexing {len(dataset)} documents")
+    print(f"▶ indexing {len(dataset)} documents in batches")
     params = {
         'user_input': user_input.__dict__,
         'access_paths': ACCESS_PATHS,
@@ -165,15 +166,28 @@ def call_flow(
                 print(e)
                 print(traceback.format_exc())
             sleep(1)
-    response = client.post(
-        on=endpoint,
-        request_size=request_size,
-        inputs=dataset,
-        show_progress=True,
-        parameters=parameters,
-        return_results=return_results,
-        continue_on_error=True,
-    )
+
+    # this is a hack for the current core/ wolf issue
+    # since we get errors while indexing, we retry
+    # TODO: remove this once the issue is fixed
+    l = list(dataset.batch(request_size * 100))
+    for j, batch in enumerate(tqdm(l)):
+        for i in range(5):
+            try:
+                response = client.post(
+                    on=endpoint,
+                    request_size=request_size,
+                    inputs=batch,
+                    show_progress=True,
+                    parameters=parameters,
+                    return_results=return_results,
+                    continue_on_error=True,
+                )
+                break
+            except Exception as e:
+                print(f'batch {j}, try {i}', e)
+                sleep(5 * (i + 1))
+
     if return_results and response:
         return DocumentArray.from_json(response.to_json())
 
