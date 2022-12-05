@@ -5,7 +5,10 @@ from docarray import Document
 from PIL import Image
 
 from now.constants import Modalities
-from now.data_loading.convert_datasets_to_jpeg import to_thumbnail_jpg
+from now.data_loading.convert_datasets_to_jpeg import (
+    ndarray_to_jpeg_bytes,
+    to_thumbnail_jpg,
+)
 
 NUM_FRAMES_SAMPLED = 3
 
@@ -104,19 +107,14 @@ def _sample_video(d):
     video_io = io.BytesIO(video)
     gif = Image.open(video_io)
     frame_indices = _select_frames(NUM_FRAMES_SAMPLED, gif.n_frames)
-    frames = []
     for i in frame_indices:
         gif.seek(i)
         frame = np.array(gif.convert("RGB"))
-        frame_pil = Image.fromarray(frame)
-        frame_pil_resized = frame_pil.resize((224, 224))
-        frames.append(frame_pil_resized)
-        frame_bytes = io.BytesIO()
-        frame_pil_resized.save(frame_bytes, format="JPEG", quality=95)
+        image_bytes = ndarray_to_jpeg_bytes(frame)
         d.chunks.append(
             Document(
                 uri=d.uri,
-                blob=frame_bytes.getvalue(),
+                blob=image_bytes,
                 tags=d.tags,
                 modality=Modalities.IMAGE,
                 mime_type='image/jpeg',
