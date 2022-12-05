@@ -31,6 +31,7 @@
 
 
 
+
 <a name=release-note-0-0-7></a>
 ## Release Note (`0.0.7`)
 
@@ -1063,4 +1064,37 @@
 
  - [[```90b178b3```](https://github.com/jina-ai/now/commit/90b178b3f05c63dc2174cc269f7bc306ae4e70e2)] __-__ Test cli (#681) (*Florian Hönicke*)
  - [[```398de005```](https://github.com/jina-ai/now/commit/398de00567d707c40f084104cc2946ccfbe47596)] __-__ __version__: the next version will be 0.0.38 (*Jina Dev Bot*)
+
+<a name=release-note-0-0-39></a>
+## Release Note (`0.0.39`)
+
+> Release time: 2022-12-05 11:14:34
+
+
+
+🙇 We'd like to thank all contributors for this new release! In particular,
+ Florian Hönicke,  Nikolas Pitsillos,  Mohammad Kalim Akram,  Aziz Belaweid,  Jina Dev Bot,  🙇
+
+
+### 🆕 New Features
+
+ - [[```241f56e0```](https://github.com/jina-ai/now/commit/241f56e0047d0e8fdee9239bcb3ac6a46e1d5349)] __-__ use jina 3.10.0 (#702) (*Aziz Belaweid*)
+
+### 🐞 Bug fixes
+
+ - [[```92121fa8```](https://github.com/jina-ai/now/commit/92121fa8a0d86971f82dd17072c36ccd25a4f5f8)] __-__ different search term after curation (#726) (*Florian Hönicke*)
+ - [[```fce54245```](https://github.com/jina-ai/now/commit/fce542459d01fe15587ac8add0eb9ad7d79146e6)] __-__ path from user dir (#716) (*Florian Hönicke*)
+ - [[```c6094fd7```](https://github.com/jina-ai/now/commit/c6094fd7cbf343428ef1091da1c328bd1412d632)] __-__ old clip encoder version (#717) (*Florian Hönicke*)
+ - [[```f688b931```](https://github.com/jina-ai/now/commit/f688b9312213310d72fcbee9cc52a04b07abc660)] __-__ bff text to video (#706) (*Florian Hönicke*)
+ - [[```94d666e1```](https://github.com/jina-ai/now/commit/94d666e17143f730d08afac1ea0d3142fafe50ab)] __-__ text to video (#705) (*Florian Hönicke*)
+ - [[```e2937e15```](https://github.com/jina-ai/now/commit/e2937e15df2e0e654a1281cb88fd9a35a8c33d53)] __-__ playground bug (#701) (*Aziz Belaweid*)
+
+### 🏁 Unit Test and CICD
+
+ - [[```48c80a3b```](https://github.com/jina-ai/now/commit/48c80a3b3804dcd4e73be6ef42fdee5ec0a7ced7)] __-__ separate remote and local tests (#719) (*Nikolas Pitsillos*)
+
+### 🍹 Other Improvements
+
+ - [[```ed8bc8c6```](https://github.com/jina-ai/now/commit/ed8bc8c688ae999e41207f4157fda23c54173805)] __-__ Fix top k in playground url (#709) (*Mohammad Kalim Akram*)
+ - [[```b9db94ad```](https://github.com/jina-ai/now/commit/b9db94adec21d6d462664d80c0ca6564c3a42f6a)] __-__ __version__: the next version will be 0.0.39 (*Jina Dev Bot*)
 

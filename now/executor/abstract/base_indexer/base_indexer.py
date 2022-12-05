@@ -250,9 +250,25 @@ class NOWBaseIndexer(Executor):
             )
         docs_with_matches[0].matches = (
             self.get_curated_matches(docs[0].text) + docs_with_matches[0].matches
-        )[:limit]
+        )
+        self.remove_duplicates(
+            docs_with_matches
+        )  # TODO combine with append_matches_if_not_exists - duplicate code
+        docs_with_matches[0].matches = docs_with_matches[0].matches[:limit]
         self.clean_response(docs_with_matches)
         return docs_with_matches
+
+    def remove_duplicates(self, docs_with_matches):
+        """Remove duplicate matches from the list of documents."""
+        parent_ids = set()
+        # curated matches can lead to duplicates since the document_list is on frame/sentence level
+        # TODO simplify this logic by letting the document_list be on root level
+        unique_curated_matches = DocumentArray([])
+        for match in docs_with_matches[0].matches:
+            if match.parent_id not in parent_ids:
+                parent_ids.add(match.parent_id)
+                unique_curated_matches.append(match)
+        docs_with_matches[0].matches = unique_curated_matches
 
     def merge_matches_by_score_after_half(
         self,
@@ -313,7 +329,7 @@ class NOWBaseIndexer(Executor):
         """
         curated_matches = DocumentArray([])
         if text_query:
-            for doc_filter in self.query_to_filter[text_query]:
+            for doc_filter in self.query_to_filter.get(text_query, []):
                 curated_matches.extend(self.document_list.find(doc_filter))
         return curated_matches
 
