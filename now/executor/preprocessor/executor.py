@@ -152,7 +152,23 @@ class NOWPreprocessor(Executor):
         """
         # TODO remove set user input. Should be only set once in constructor use api key instead of user token
         self._set_user_input(parameters=parameters)
-        return self._preprocess_maybe_cloud_download(docs=docs)
+        documents = self._preprocess_maybe_cloud_download(docs=docs)
+        docs_split_chunks = self._split_chunks(documents)
+        return docs_split_chunks
+
+    @staticmethod
+    def _split_chunks(docs):
+        flattened_docs = docs['@c']
+        new_da = DocumentArray()
+        for flat_doc in flattened_docs:
+            new_da.append(
+                Document(
+                    id=flat_doc.parent_id,
+                    tags={'model': 'clip'},  # should be changed based on modality
+                    chunks=flat_doc,
+                )
+            )
+        return new_da
 
     @secure_request(on='/temp_link_cloud_bucket', level=SecurityLevel.USER)
     def temporary_link_from_cloud_bucket(
@@ -196,30 +212,52 @@ class NOWPreprocessor(Executor):
 
 if __name__ == '__main__':
 
-    from jina import Flow
+    from docarray import dataclass
+    from docarray.typing import Image, Text
+    from jina import Document, DocumentArray, Executor, Flow
+
+    from now.data_loading.transform_docarray import transform_docarray
 
     app = Apps.IMAGE_TEXT_RETRIEVAL
 
     user_inpuT = UserInput()
-    user_inpuT.app_instance = construct_app(app)
     user_inpuT.dataset_type = DatasetTypes.S3_BUCKET
     user_inpuT.dataset_path = 's3://bucket/folder'
+    user_inpuT.search_fields = ['main_text', 'image', 'description']
 
-    text_docs = DocumentArray(
-        [
-            Document(chunks=DocumentArray([Document(text='hi')])),
-        ]
+    # text_docs = DocumentArray(
+    #     [
+    #         # Document(chunks=DocumentArray([Document(text='hi')])),
+    #         Document(text='hi'),
+    #         Document(text='hello'),
+    #     ]
+    # )
+
+    @dataclass
+    class Page:
+        main_text: Text
+        image: Image
+        description: Text
+
+    page = Page(
+        main_text='Hello world',
+        image='https://jina.ai/assets/images/text-to-image-output.png',
+        description='This is the image of an apple',
     )
+
+    doc = DocumentArray([Document(page)])
+
     executor = NOWPreprocessor(app=app)
-    result = executor.search(
-        docs=text_docs, parameters={'app': user_inpuT.app_instance.app_name}
+    result = executor.preprocess(
+        docs=doc, parameters={'app': app, 'user_input': user_inpuT.__dict__}
     )
     f = Flow().add(uses=NOWPreprocessor, uses_with={'app': app})
     with f:
         result = f.post(
             on='/search',
-            inputs=text_docs,
+            inputs=doc,
             show_progress=True,
+            parameters={'user_input': user_inpuT.__dict__},
         )
 
         result = DocumentArray.from_json(result.to_json())
