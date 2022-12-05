@@ -51,6 +51,7 @@ class ElasticIndexer(Executor):
         es_config: Optional[Dict[str, Any]] = None,
         metric: str = 'cosine',
         index_name: str = 'now-index',
+        es_mapping: Optional[Dict[str, Any]] = None,
         traversal_paths: str = '@r',
         limit: int = 100,
         **kwargs,
@@ -58,15 +59,16 @@ class ElasticIndexer(Executor):
         """
         Initializer function for the ElasticIndexer
 
+        :param default_semantic_scores: list of SemanticScore tuples that define how
+            to combine the scores of different fields and encoders.
+        :param document_mappings: list of FieldEmbedding tuples that define which encoder
+            encodes which fields, and the embedding size of the encoder.
         :param hosts: host configuration of the Elasticsearch node or cluster
         :param es_config: Elasticsearch cluster configuration object
         :param metric: The distance metric used for the vector index and vector search
-        :param dims: The dimensions of your embeddings.
         :param index_name: ElasticSearch Index name used for the storage
         :param es_mapping: Mapping for new index. If none is specified, this will be
-            generated from metric and dims. Embeddings from chunk documents will
-            always be stored in fields `embedding_x` where x iterates over the number
-            of embedding fields (length of `dims`) to be created in the index.
+            generated from `document_mappings` and `metric`.
         :param traversal_paths: Default traversal paths on docs
                 (used for indexing, delete and update), e.g. '@r', '@c', '@r,c'.
         :param limit: Default limit on the number of docs to be retrieved
@@ -84,8 +86,10 @@ class ElasticIndexer(Executor):
             for document_mapping in document_mappings
         }
         self.es_config = {'verify_certs': False} if not es_config else es_config
-        self.es_mapping = ElasticIndexer.generate_es_mapping(
-            document_mappings, self.metric
+        self.es_mapping = (
+            self.generate_es_mapping(document_mappings, self.metric)
+            if not es_mapping
+            else es_mapping
         )
         self.es = Elasticsearch(hosts=self.hosts, **self.es_config, ssl_show_warn=False)
         if not self.es.indices.exists(index=self.index_name):
@@ -125,7 +129,7 @@ class ElasticIndexer(Executor):
     def index(
         self,
         docs_map: Dict[str, DocumentArray] = None,  # encoder to docarray
-        parameters: dict = None,
+        parameters: dict = {},
         **kwargs,
     ) -> DocumentArray:
         """
@@ -137,12 +141,9 @@ class ElasticIndexer(Executor):
         """
         if not docs_map:
             return DocumentArray()
-        if not parameters:
-            parameters = {}
 
         es_docs = self._doc_map_to_es(docs_map)
         try:
-            # self.es.index(document=es_docs[0], index=es_docs[0]['_index'])
             success, _ = bulk(self.es, es_docs)
             self.es.indices.refresh(index=self.index_name)
         except Exception as e:
@@ -177,21 +178,27 @@ class ElasticIndexer(Executor):
         :param docs: query `Document`s.
         :param parameters: dictionary of options for searching.
             Keys accepted:
-                - 'filter' (dict): the filtering conditions on document tags
-                - 'traversal_paths' (str): traversal paths for the docs
-                - 'limit' (int): nr of matches to get per Document
+                - 'filter' (dict): The filtering conditions on document tags
+                - 'limit' (int): Number of matches to get per Document, default 100.
+                - 'get_score_breakdown' (bool): Wether to return the score breakdown, i.e. the scores of each
+                    field+encoder combination/comparison.
+                - 'apply_default_bm25' (bool): Whether to apply the default bm25 scoring. Default is False. Will
+                    be ignored if 'custom_bm25_query' is specified.
+                - 'custom_bm25_query' (dict): Custom query to use for BM25. Note: this query can only be
+                    passed if also passing `es_mapping`. Otherwise, only default bm25 scoring is enabled.
         """
         if not docs_map:
             return DocumentArray()
-        if not parameters:
-            parameters = {}
 
         # search_filter = parameters.get('filter', None)
         limit = parameters.get('limit', self.limit)
-        apply_bm25 = parameters.get('apply_bm25', False)
         get_score_breakdown = parameters.get('get_score_breakdown', False)
+        custom_bm25_query = parameters.get('custom_bm25_query', None)
+        apply_default_bm25 = parameters.get('apply_default_bm25', False)
 
-        es_queries = self._build_es_queries(docs_map, apply_bm25, get_score_breakdown)
+        es_queries = self._build_es_queries(
+            docs_map, apply_default_bm25, get_score_breakdown, custom_bm25_query
+        )
         for doc, query in es_queries:
             try:
                 result = self.es.search(
@@ -295,8 +302,9 @@ class ElasticIndexer(Executor):
     def _build_es_queries(
         self,
         docs_map,
-        apply_bm25: bool,
+        apply_default_bm25: bool,
         get_score_breakdown: bool,
+        custom_bm25_query: Optional[dict] = None,
     ) -> Dict:
         """
         Build script-score query used in Elasticsearch. To do this, we extract
@@ -306,12 +314,13 @@ class ElasticIndexer(Executor):
         their corresponding field+encoder as key.
 
         :param docs_map: dictionary mapping encoder to DocumentArray.
-        :param apply_bm25: whether to combine bm25 with vector search. If False,
+        :param apply_default_bm25: whether to combine bm25 with vector search. If False,
             will only perform vector search. If True, must supply a text
             field for bm25 searching.
         :param get_score_breakdown: whether to return the score breakdown for matches.
             For this function, this parameter determines whether to return the embeddings
             of a query document.
+        :param custom_bm25_query: custom query to use for BM25.
         :return: a dictionary containing query and filter.
         """
         queries = {}
@@ -327,9 +336,11 @@ class ElasticIndexer(Executor):
                     docs[doc.id].tags['embeddings'] = {}
 
                 if doc.id not in queries:
-                    queries[doc.id] = ElasticIndexer._get_default_query(doc, apply_bm25)
+                    queries[doc.id] = self.get_default_query(
+                        doc, apply_default_bm25, custom_bm25_query
+                    )
 
-                    if apply_bm25:
+                    if apply_default_bm25 or custom_bm25_query:
                         sources[doc.id] = '1.0 + _score / (_score + 10.0)'
                     else:
                         sources[doc.id] = '1.0'
@@ -373,9 +384,9 @@ class ElasticIndexer(Executor):
             es_queries.append((docs[doc_id], query_json))
         return es_queries
 
-    @staticmethod
-    def _get_default_query(doc, apply_bm25):
-
+    def get_default_query(
+        self, doc: Document, apply_default_bm25: bool, custom_bm25_query: Dict = None
+    ):
         query = {
             'bool': {
                 'should': [
@@ -385,10 +396,24 @@ class ElasticIndexer(Executor):
         }
 
         # build bm25 part
-        if apply_bm25:
-            text = doc.text
+        if apply_default_bm25:
+            bm25_semantic_score = next(
+                (
+                    x
+                    for x in self.default_semantic_scores
+                    if x.document_encoder == 'bm25'
+                ),
+                None,
+            )
+            if not bm25_semantic_score:
+                raise ValueError(
+                    'No bm25 semantic scores found. Please specify this in the default_semantic_scores.'
+                )
+            text = getattr(doc, bm25_semantic_score.query_field).text
             multi_match = {'multi_match': {'query': text, 'fields': ['bm25_text']}}
             query['bool']['should'].append(multi_match)
+        elif custom_bm25_query:
+            query['bool']['should'].append(custom_bm25_query)
 
         # add filter
         if 'es_search_filter' in doc.tags:
@@ -425,25 +450,24 @@ class ElasticIndexer(Executor):
             result = [result]
         da = DocumentArray()
         for es_doc in result:
-            doc = Document(id=es_doc['_id'])
+            doc = DocumentArray.from_base64(es_doc['_source']['serialized_doc'])[0]
             for k, v in es_doc['_source'].items():
-                if k.startswith('chunk'):
-                    chunk = Document.from_dict(v)
-                    doc.chunks.append(chunk)
-                elif (
+                if (
                     k.startswith('embedding') or k.endswith('embedding')
                 ) and get_score_breakdown:
                     if 'embeddings' not in doc.tags:
                         doc.tags['embeddings'] = {}
                     doc.tags['embeddings'][k] = v
-                elif k in ['bm25_text', '_score']:
-                    continue
-                else:
-                    doc.k = v
             da.append(doc)
         return da
 
     def _doc_map_to_es(self, docs_map: Dict[str, DocumentArray]) -> List[Dict]:
+        """
+        Transform a dictionary (mapping encoder to DocumentArray) into a list of Elasticsearch documents.
+
+        :param docs_map: dictionary mapping encoder to DocumentArray.
+        :return: a list of Elasticsearch documents as dictionaries ready to be indexed.
+        """
         es_docs = {}
 
         for encoder, documents in docs_map.items():
@@ -460,6 +484,7 @@ class ElasticIndexer(Executor):
 
                     if hasattr(field_doc, 'text') and field_doc.text:
                         es_doc['bm25_text'] += field_doc.text + ' '
+
         return list(es_docs.values())
 
     def _get_base_es_doc(self, doc: Document):
@@ -470,6 +495,9 @@ class ElasticIndexer(Executor):
         es_doc['_op_type'] = 'index'
         es_doc['_index'] = self.index_name
         es_doc['_id'] = doc.id
+        _doc = DocumentArray(Document(doc, copy=True))
+        _doc[..., 'embedding'] = [None for x in _doc[...]]
+        es_doc['serialized_doc'] = _doc.to_base64()
         return es_doc
 
     def _get_bm25_fields(self, doc: Document):
@@ -537,7 +565,7 @@ class ElasticIndexer(Executor):
                         str(linear_weight),
                     ]
                 )
-            ] = NamedScore(value=score)
+            ] = NamedScore(value=round(score, 6))
 
         # calculate bm25 score
         vector_total = sum(
@@ -547,8 +575,10 @@ class ElasticIndexer(Executor):
         bm25_normalized = overall_score - vector_total
         bm25_raw = (bm25_normalized - 1) * 10
 
-        retrieved_doc.scores['bm25_normalized'] = NamedScore(value=bm25_normalized)
-        retrieved_doc.scores['bm25_raw'] = NamedScore(value=bm25_raw)
+        retrieved_doc.scores['bm25_normalized'] = NamedScore(
+            value=round(bm25_normalized, 6)
+        )
+        retrieved_doc.scores['bm25_raw'] = NamedScore(value=round(bm25_raw, 6))
 
         # remove embeddings from document
         retrieved_doc.tags.pop('embeddings', None)
