@@ -1,5 +1,4 @@
 import base64
-import os
 from typing import Dict, List
 
 from docarray import Document, DocumentArray
@@ -13,12 +12,7 @@ from deployment.bff.app.v1.models.video import (
     NowVideoResponseModel,
 )
 from now.app.base.app import JinaNOWApp
-from now.common.utils import (
-    _get_clip_apps_with_dict,
-    common_setup,
-    get_email,
-    get_indexer_config,
-)
+from now.common.utils import _get_clip_apps_with_dict, common_setup, get_indexer_config
 from now.constants import CLIP_USES, Apps, Modalities
 from now.now_dataclasses import UserInput
 
@@ -52,30 +46,6 @@ class TextToVideo(JinaNOWApp):
     @property
     def required_docker_memory_in_gb(self) -> int:
         return 12
-
-    def set_flow_yaml(self, **kwargs):
-        finetuning = kwargs.get('finetuning', False)
-        dataset_len = kwargs.get('dataset_len', 0) * NUM_FRAMES_SAMPLED
-        is_jina_email = get_email().split('@')[-1] == 'jina.ai'
-
-        flow_dir = os.path.abspath(os.path.join(__file__, '..'))
-
-        if finetuning:
-            if dataset_len > 200_000 and is_jina_email:
-                print(f"🚀🚀🚀 You are using high performance flow")
-                self.flow_yaml = os.path.join(
-                    flow_dir, 'ft-flow-video-clip-high-performance.yml'
-                )
-            else:
-                self.flow_yaml = os.path.join(flow_dir, 'ft-flow-video-clip.yml')
-        else:
-            if dataset_len > 200_000 and is_jina_email:
-                print(f"🚀🚀🚀 You are using high performance flow")
-                self.flow_yaml = os.path.join(
-                    flow_dir, 'flow-video-clip-high-performance.yml'
-                )
-            else:
-                self.flow_yaml = os.path.join(flow_dir, 'flow-video-clip.yml')
 
     def setup(
         self, dataset: DocumentArray, user_input: UserInput, kubectl_path

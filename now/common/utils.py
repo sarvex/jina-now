@@ -5,7 +5,7 @@ import tempfile
 import time
 from copy import deepcopy
 from os.path import expanduser as user
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 import hubble
 from docarray import Document, DocumentArray
@@ -282,7 +282,7 @@ def setup_elastic_service(
     return host
 
 
-def _get_clip_apps_with_dict(user_input: UserInput) -> Tuple[Dict, Dict]:
+def _get_clip_apps_with_dict(user_input: UserInput) -> Dict:
     """Depending on whether this app will be remotely deployed, this function returns the with
     dictionary for the CLIP executor."""
     is_remote = user_input.deployment_type == 'remote'

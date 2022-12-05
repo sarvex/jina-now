@@ -115,7 +115,7 @@ class JinaNOWApp:
         return [item for sublist in sup_file for item in sublist]
 
     @property
-    def demo_datasets(self) -> Dict[str, List[DemoDataset]]:
+    def demo_datasets(self) -> Dict[Modalities, List[DemoDataset]]:
         """Get a list of example datasets for the app."""
         available_datasets = {}
         for output_modality in self.output_modality:
@@ -184,6 +184,94 @@ class JinaNOWApp:
             mem_check = self._check_docker_mem_limit()
         return req_check and mem_check
 
+    # TODO: Move the below stubs to search app when we have a single search app
+    @staticmethod
+    def autocomplete_stub() -> Dict:
+        """
+        Returns a dictionary of autocomplete executors to be added in the flow
+        """
+        return {
+            'name': 'autocomplete_executor',
+            'uses': '${{ ENV.AUTOCOMPLETE_EXECUTOR_NAME }}',
+            'needs': 'preprocessor',
+            'env': {'JINA_LOG_LEVEL': 'DEBUG'},
+            'uses_with': {
+                'api_keys': '${{ ENV.API_KEY }}',
+                'user_emails': '${{ ENV.USER_EMAILS }}',
+                'admin_emails': '${{ ENV.ADMIN_EMAILS }}',
+            },
+        }
+
+    @staticmethod
+    def preprocessor_stub() -> Dict:
+        """
+        Returns a dictionary of preprocessor executors to be added in the flow
+        """
+        return {
+            'name': 'preprocessor',
+            'uses': '${{ ENV.PREPROCESSOR_NAME }}',
+            'env': {'JINA_LOG_LEVEL': 'DEBUG'},
+            'uses_with': {
+                'app': '${{ ENV.APP }}',
+                'api_keys': '${{ ENV.API_KEY }}',
+                'user_emails': '${{ ENV.USER_EMAILS }}',
+                'admin_emails': '${{ ENV.ADMIN_EMAILS }}',
+            },
+            'jcloud': {
+                'resources': {
+                    'memory': '1G',
+                }
+            },
+        }
+
+    @staticmethod
+    def clip_encoder_stub() -> Dict:
+        return {
+            'name': 'clip_encoder',
+            'uses': '${{ ENV.ENCODER_NAME }}',
+            'host': '${{ ENV.ENCODER_HOST }}',
+            'port': '${{ ENV.ENCODER_PORT }}',
+            'tls': '${{ ENV.IS_REMOTE_DEPLOYMENT }}',
+            'external': '${{ ENV.IS_REMOTE_DEPLOYMENT }}',
+            'uses_with': {
+                'name': '${{ ENV.PRE_TRAINED_MODEL_NAME }}',
+            },
+            'env': {'JINA_LOG_LEVEL': 'DEBUG'},
+            'needs': 'preprocessor',
+        }
+
+    @staticmethod
+    def sbert_encoder_stub() -> Dict:
+        return {
+            'name': 'sbert_encoder',
+            'uses': '${{ ENV.ENCODER_NAME }}',
+            'host': '${{ ENV.ENCODER_HOST }}',
+            'port': '${{ ENV.ENCODER_PORT }}',
+            'tls': '${{ ENV.IS_REMOTE_DEPLOYMENT }}',
+            'external': '${{ ENV.IS_REMOTE_DEPLOYMENT }}',
+            'uses_with': {
+                'name': '${{ ENV.PRE_TRAINED_MODEL_NAME }}',
+            },
+            'env': {'JINA_LOG_LEVEL': 'DEBUG'},
+            'needs': 'preprocessor',
+        }
+
+    @staticmethod
+    def indexer_stub() -> Dict:
+        """
+        Returns a dictionary of indexers to be added in the flow
+        """
+        return {
+            'name': 'indexer',
+            'uses': '${{ ENV.INDEXER_NAME }}',
+            'env': {'JINA_LOG_LEVEL': 'DEBUG'},
+            'uses_with': {
+                'api_keys': '${{ ENV.API_KEY }}',
+                'user_emails': '${{ ENV.USER_EMAILS }}',
+                'admin_emails': '${{ ENV.ADMIN_EMAILS }}',
+            },
+        }
+
     # TODO Remove kubectl_path. At the moment, the setup function needs kubectl because of finetuning a custom
     #  dataset with local deployment. In that case, inference is done on the k8s cluster.
     def setup(
@@ -209,33 +297,61 @@ class JinaNOWApp:
                 and user_input.flow_name != DEFAULT_FLOW_NAME
                 else DEFAULT_FLOW_NAME
             )
-
             self.add_environment_variables(flow_yaml_content)
 
-            # append api_keys to the executor with name 'preprocessor' and 'indexer'
-            for executor in flow_yaml_content['executors']:
-                if executor['name'] == 'preprocessor' or executor['name'] == 'indexer':
-                    executor['uses_with']['api_keys'] = '${{ ENV.API_KEY }}'
+            if not flow_yaml_content['executors']:
+                flow_yaml_content['executors'] = []
+            encoders_list = []
+            init_execs_list = []
 
+            # 1. append preprocessors to the flow
+            preprocessor = self.preprocessor_stub()
+            init_execs_list.append(preprocessor['name'])
+            flow_yaml_content['executors'].append(preprocessor)
+
+            # 2. append autocomplete executor to the flow if output modality is text
             if Modalities.TEXT in self.input_modality:
                 if not any(
                     exec_dict['name'] == 'autocomplete_executor'
                     for exec_dict in flow_yaml_content['executors']
                 ):
-                    flow_yaml_content['executors'].insert(
-                        0,
-                        {
-                            'name': 'autocomplete_executor',
-                            'uses': '${{ ENV.AUTOCOMPLETE_EXECUTOR_NAME }}',
-                            'needs': 'gateway',
-                            'env': {'JINA_LOG_LEVEL': 'DEBUG'},
-                            'uses_with': {
-                                'api_keys': '${{ ENV.API_KEY }}',
-                                'user_emails': '${{ ENV.USER_EMAILS }}',
-                                'admin_emails': '${{ ENV.ADMIN_EMAILS }}',
-                            },
-                        },
-                    )
+                    autocomplete = self.autocomplete_stub()
+                    init_execs_list.append(autocomplete['name'])
+                    flow_yaml_content['executors'].append(autocomplete)
+
+            # 3. append sbert encoder to the flow if output modalities are texts
+            if Modalities.TEXT in user_input.output_modality:
+                sbert_encoder = self.sbert_encoder_stub()
+                encoders_list.append(sbert_encoder['name'])
+                sbert_encoder['needs'] = init_execs_list[-1]
+                sbert_encoder['when'] = {'tags__modality': {'$eq': 'text'}}
+                flow_yaml_content['executors'].append(sbert_encoder)
+
+            # 4. append clip encoder to the flow if output modalities are images
+            if Modalities.IMAGE in user_input.output_modality:
+                clip_encoder = self.clip_encoder_stub()
+                encoders_list.append(clip_encoder['name'])
+                clip_encoder['needs'] = init_execs_list[-1]
+                clip_encoder['when'] = {'tags__modality': {'$eq': 'image'}}
+                flow_yaml_content['executors'].append(clip_encoder)
+
+            # 5. append indexer to the flow
+            if not any(
+                exec_dict['name'] == 'indexer'
+                for exec_dict in flow_yaml_content['executors']
+            ):
+                indexer_stub = self.indexer_stub()
+                indexer_stub['needs'] = encoders_list
+                flow_yaml_content['executors'].append(indexer_stub)
+
+            # append api_keys to the executor with name 'preprocessor' and 'indexer'
+            for executor in flow_yaml_content['executors']:
+                if (
+                    'encoder' not in executor['name']
+                    and 'api_keys' not in executor['uses_with']
+                ):
+                    executor['uses_with']['api_keys'] = '${{ ENV.API_KEY }}'
+
             self.flow_yaml = flow_yaml_content
         return {}
 
