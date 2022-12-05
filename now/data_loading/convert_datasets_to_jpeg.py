@@ -6,15 +6,18 @@ from PIL import Image
 from tqdm import tqdm
 
 
+def ndarray_to_jpeg_bytes(arr: 'np.ndarray') -> bytes:
+    pil_img = Image.fromarray(arr)
+    pil_img.thumbnail((512, 512))
+    pil_img = pil_img.convert('RGB')
+    img_byte_arr = io.BytesIO()
+    pil_img.save(img_byte_arr, format="JPEG", quality=95)
+    return img_byte_arr.getvalue()
+
+
 def to_thumbnail_jpg(doc: Document):
     if doc.tensor is not None:
-        im = Image.fromarray(doc.tensor)
-        im.thumbnail((256, 256))
-        im = im.convert('RGB')
-        doc.tensor = None
-        img_byte_arr = io.BytesIO()
-        im.save(img_byte_arr, format="JPEG", quality=75)
-        doc.blob = img_byte_arr.getvalue()
+        doc.blob = ndarray_to_jpeg_bytes(doc.tensor)
     return doc
 
 
