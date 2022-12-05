@@ -6,7 +6,7 @@ from PIL import Image
 from tqdm import tqdm
 
 
-def ndarray_to_jpeg_bytes(arr: 'np.ndarray') -> bytes:
+def ndarray_to_jpeg_bytes(arr) -> bytes:
     pil_img = Image.fromarray(arr)
     pil_img.thumbnail((512, 512))
     pil_img = pil_img.convert('RGB')
