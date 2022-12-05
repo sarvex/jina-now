@@ -42,7 +42,7 @@ def test_get_schema_s3_bucket(get_aws_info):
         user_input.aws_access_key_id,
         user_input.aws_secret_access_key,
         user_input.aws_region_name,
-    ) = get_aws_info()
+    ) = get_aws_info
 
     _get_schema_s3_bucket(user_input)
 
@@ -64,7 +64,7 @@ def test_get_schema_s3_bucket_all_files():
         user_input.aws_access_key_id,
         user_input.aws_secret_access_key,
         user_input.aws_region_name,
-    ) = get_aws_info()
+    ) = get_aws_info
 
     _get_schema_s3_bucket(user_input)
 
