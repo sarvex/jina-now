@@ -69,7 +69,7 @@ def test_get_schema_s3_bucket_all_files(get_aws_info):
         user_input.aws_secret_access_key,
         user_input.aws_region_name,
     ) = get_aws_info
-
+    user_input.dataset_path = user_input.dataset_path + 'folder1/'
     _get_schema_s3_bucket(user_input)
 
     assert len(user_input.field_names) == 0
