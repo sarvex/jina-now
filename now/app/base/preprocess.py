@@ -28,7 +28,7 @@ def preprocess_text(
     from nltk.tokenize import sent_tokenize
 
     # TODO HACK (needs to be provided as general feature
-    d.text = 'loading' if d.text == 'loader' else d.text
+    d.text = 'loading' if d.text.lower() == 'loader' else d.text
 
     if not d.text and d.uri:
         d.load_uri_to_text(timeout=10)

@@ -541,10 +541,17 @@ class TestBaseIndexer:
                     Document(
                         chunks=[
                             Document(
+                                id='c1',
                                 embedding=np.random.random(DIM).astype(np.float32),
                                 tags={'color': 'red'},
                                 uri='uri2',
-                            )
+                            ),
+                            Document(
+                                id='c2',
+                                embedding=np.random.random(DIM).astype(np.float32),
+                                tags={'color': 'red'},
+                                uri='uri2',
+                            ),
                         ]
                     )
                 ]
@@ -583,7 +590,22 @@ class TestBaseIndexer:
                 return_results=True,
             )
             assert len(result) == 1
-            assert (
-                result[0].matches[0].uri == 'uri2'
-                and result[0].matches[0].tags['color'] == 'red'
+            assert result[0].matches[0].uri == 'uri2'
+            assert result[0].matches[1].uri != 'uri2'  # no duplicated results
+            assert result[0].matches[0].tags['color'] == 'red'
+
+            # not crashing in case of curated list + non-curated query
+            f.search(
+                inputs=Document(
+                    chunks=[
+                        Document(
+                            chunks=[
+                                Document(
+                                    text='another string',
+                                    embedding=np.array([0.1] * 128),
+                                )
+                            ]
+                        ),
+                    ]
+                )
             )

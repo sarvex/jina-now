@@ -7,7 +7,7 @@ from jina import Flow
 
 from now.app.image_text_retrieval.app import ImageTextRetrieval
 from now.app.text_to_video.app import TextToVideo
-from now.constants import ACCESS_PATHS, DatasetTypes
+from now.constants import ACCESS_PATHS, EXTERNAL_CLIP_HOST, DatasetTypes
 from now.data_loading.data_loading import load_data
 from now.data_loading.transform_docarray import transform_uni_modal_data
 from now.demo_data import DemoDatasetNames
@@ -81,7 +81,7 @@ def test_transform_inside_flow(
         )
         .add(
             uses='jinahub+docker://CLIPOnnxEncoder/latest-gpu',
-            host='encoderclip-bh-5f4efaff13.wolf.jina.ai',
+            host=EXTERNAL_CLIP_HOST,
             port=443,
             tls=True,
             external=True,
