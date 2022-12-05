@@ -456,6 +456,7 @@ def test_backend_custom_data(
         'aws_secret_access_key': os.environ.get('AWS_SECRET_ACCESS_KEY'),
         'aws_region_name': 'eu-west-1',
         'search_fields': 'x, y',
+        'filter_fields': 'z',
         'cluster': NEW_CLUSTER['value'],
         'deployment_type': 'remote',
         'proceed': True,
