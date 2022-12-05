@@ -335,13 +335,21 @@ class JinaNOWApp:
                 clip_encoder['when'] = {'tags__modality': {'$eq': 'image'}}
                 flow_yaml_content['executors'].append(clip_encoder)
 
+            if Modalities.VIDEO in user_input.output_modality:
+                clip_encoder = self.clip_encoder_stub()
+                encoders_list.append(clip_encoder['name'])
+                clip_encoder['needs'] = init_execs_list[-1]
+                clip_encoder['when'] = {'tags__modality': {'$eq': 'image'}}
+                flow_yaml_content['executors'].append(clip_encoder)
+
             # 5. append indexer to the flow
             if not any(
                 exec_dict['name'] == 'indexer'
                 for exec_dict in flow_yaml_content['executors']
             ):
                 indexer_stub = self.indexer_stub()
-                indexer_stub['needs'] = encoders_list
+                # skip connection to indexer + from all encoders
+                indexer_stub['needs'] = encoders_list + init_execs_list[-1]
                 flow_yaml_content['executors'].append(indexer_stub)
 
             # append api_keys to the executor with name 'preprocessor' and 'indexer'
