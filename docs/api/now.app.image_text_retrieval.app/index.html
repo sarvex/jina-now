@@ -6,7 +6,7 @@
 <meta property="og:title" content="now.app.image_text_retrieval.app module" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://now.jina.ai/api/now.app.image_text_retrieval.app/" />
-<meta property="og:site_name" content="NOW 0.0.38 Documentation" />
+<meta property="og:site_name" content="NOW 0.0.39 Documentation" />
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@JinaAI_">
 <meta name="twitter:creator" content="@JinaAI_">
@@ -29,7 +29,7 @@
         <link rel="canonical" href="https://now.jina.ai/api/now.app.image_text_retrieval.app.html" />
 
     <link rel="shortcut icon" href="../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.09.29"/>
-        <title>now.app.image_text_retrieval.app module - NOW 0.0.38 documentation</title>
+        <title>now.app.image_text_retrieval.app module - NOW 0.0.39 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
@@ -162,7 +162,7 @@
         </div>
         <div class="header-center">
             <a href="../../">
-                <div class="brand">NOW 0.0.38 documentation</div>
+                <div class="brand">NOW 0.0.39 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -369,15 +369,13 @@
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="now.app.image_text_retrieval.app.ImageTextRetrieval.get_index_query_access_paths">
-<span class="sig-name descname"><span class="pre">get_index_query_access_paths</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/now/app/image_text_retrieval/app/#ImageTextRetrieval.get_index_query_access_paths"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#now.app.image_text_retrieval.app.ImageTextRetrieval.get_index_query_access_paths" title="Permalink to this definition">#</a></dt>
-<dd><p>If <cite>split_by_sentences</cite> is set to True, the structure of the data
-will have 2 level chunks. (That’s the puspose of &#64;cc)
-Otherwise, we access documents on chunk level. (&#64;c)</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="now.app.image_text_retrieval.app.ImageTextRetrieval.finetune_datasets">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">finetune_datasets</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#now.app.image_text_retrieval.app.ImageTextRetrieval.finetune_datasets" title="Permalink to this definition">#</a></dt>
+<dd><p>Defines the list of demo datasets which are fine-tunable.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></p>
+<dd class="field-odd"><p>[<em>Tuple</em>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -421,17 +419,6 @@ Common use cases:</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="now.app.image_text_retrieval.app.ImageTextRetrieval.preprocess">
-<span class="sig-name descname"><span class="pre">preprocess</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">da</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">process_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">process_query</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/now/app/image_text_retrieval/app/#ImageTextRetrieval.preprocess"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#now.app.image_text_retrieval.app.ImageTextRetrieval.preprocess" title="Permalink to this definition">#</a></dt>
-<dd><p>Loads and preprocesses every document such that it is ready for finetuning/indexing.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">DocumentArray</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
 </dd></dl>
 
 </section>
@@ -452,7 +439,7 @@ Common use cases:</p>
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Nov 24, 2022.
+                            Last updated on Dec 05, 2022.
                         </div>
                     </div>
                     <div class="right-details">
