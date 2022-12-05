@@ -1,7 +1,9 @@
 import glob
 import json
 import os
+
 import requests
+
 from now.data_loading.utils import _get_s3_bucket_and_folder_prefix
 from now.now_dataclasses import UserInput
 
@@ -38,16 +40,16 @@ def _get_schema_s3_bucket(user_input: UserInput, **kwargs):
 
     all_files = True
     for obj in list(bucket.objects.filter(Prefix=folder_prefix))[
-               1:
-               ]:  # first is the bucket path
+        1:
+    ]:  # first is the bucket path
         if obj.key.endswith('/'):
             all_files = False
     if all_files:
         user_input.field_names = []
     else:
         for obj in list(bucket.objects.filter(Prefix=folder_prefix))[
-                   1:
-                   ]:  # first is the bucket path
+            1:
+        ]:  # first is the bucket path
             if obj.key.endswith('/'):
                 continue
             if len(obj.key.split('/')) - len(folder_prefix.split('/')) != 1:
@@ -59,8 +61,8 @@ def _get_schema_s3_bucket(user_input: UserInput, **kwargs):
             '/'
         )[-2]
         for field in list(bucket.objects.filter(Prefix=folder_prefix + first_folder))[
-                     1:
-                     ]:
+            1:
+        ]:
             if field.key.endswith('.json'):
                 data = json.loads(field.get()['Body'].read())
                 field_names.extend(list(data.keys()))

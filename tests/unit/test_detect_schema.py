@@ -2,7 +2,11 @@ import os
 
 import pytest
 
-from now.common.detect_schema import _get_schema_local_folder, _get_schema_s3_bucket, _get_schema_docarray
+from now.common.detect_schema import (
+    _get_schema_docarray,
+    _get_schema_local_folder,
+    _get_schema_s3_bucket,
+)
 from now.now_dataclasses import UserInput
 
 
@@ -70,6 +74,7 @@ def test_get_schema_s3_bucket_all_files(get_aws_info):
 
     assert len(user_input.field_names) == 0
 
+
 def test_get_schema_docarray():
     user_input = UserInput()
     user_input.dataset_name = 'subset_laion'
@@ -78,4 +83,13 @@ def test_get_schema_docarray():
     _get_schema_docarray(user_input)
 
     assert len(user_input.field_names) == 8
-    assert set(user_input.field_names) == {'text', 'uri', 'original_height', 'similarity', 'NSFW', 'height', 'original_width', 'width'}
+    assert set(user_input.field_names) == {
+        'text',
+        'uri',
+        'original_height',
+        'similarity',
+        'NSFW',
+        'height',
+        'original_width',
+        'width',
+    }
