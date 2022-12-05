@@ -1,28 +1,30 @@
 import glob
 import json
 import os
-
+import requests
 from now.data_loading.utils import _get_s3_bucket_and_folder_prefix
 from now.now_dataclasses import UserInput
 
 
 def _get_schema_docarray(user_input: UserInput, **kwargs):
-    from hubble import Client
+    cookies = {
+        'st': user_input.jwt['token'],
+    }
 
-    if user_input.jwt is None:
-        client = Client()
-    else:
-        client = Client(token=user_input.jwt['token'])
-
-    resp = client.get_artifact_info(name='test_subset_laion')
-    if resp.json()['code'] == 200:
-        field_names = resp.json()['data']['metaData']['summary'][3]['value']
-        ignored_fieldnames = ['embedding', 'id', 'mime_type']
-        user_input.field_names = [
-            field_name
-            for field_name in field_names
-            if field_name not in ignored_fieldnames
-        ]
+    json_data = {
+        'name': user_input.dataset_name,
+    }
+    response = requests.post(
+        'https://api.hubble.jina.ai/v2/rpc/docarray.getFirstDocuments',
+        cookies=cookies,
+        json=json_data,
+    )
+    if response.json()['code'] == 200:
+        response = requests.get(response.json()['data']['download'])
+        ignored_fieldnames = ['embedding', 'id', 'mimeType', 'tags']
+        field_names = [el for el in response.json()[0] if el not in ignored_fieldnames]
+        field_names.extend(list(response.json()[0]['tags']['fields'].keys()))
+        user_input.field_names = field_names
     else:
         raise ValueError('DocumentArray doesnt exist or you dont have access to it')
 
@@ -36,16 +38,16 @@ def _get_schema_s3_bucket(user_input: UserInput, **kwargs):
 
     all_files = True
     for obj in list(bucket.objects.filter(Prefix=folder_prefix))[
-        1:
-    ]:  # first is the bucket path
+               1:
+               ]:  # first is the bucket path
         if obj.key.endswith('/'):
             all_files = False
     if all_files:
         user_input.field_names = []
     else:
         for obj in list(bucket.objects.filter(Prefix=folder_prefix))[
-            1:
-        ]:  # first is the bucket path
+                   1:
+                   ]:  # first is the bucket path
             if obj.key.endswith('/'):
                 continue
             if len(obj.key.split('/')) - len(folder_prefix.split('/')) != 1:
@@ -57,8 +59,8 @@ def _get_schema_s3_bucket(user_input: UserInput, **kwargs):
             '/'
         )[-2]
         for field in list(bucket.objects.filter(Prefix=folder_prefix + first_folder))[
-            1:
-        ]:
+                     1:
+                     ]:
             if field.key.endswith('.json'):
                 data = json.loads(field.get()['Body'].read())
                 field_names.extend(list(data.keys()))
@@ -74,7 +76,6 @@ def check_path(path, root):
 
 
 def _get_schema_local_folder(user_input: UserInput, **kwargs):
-
     dataset_path = user_input.dataset_path.strip()
     if os.path.isfile(dataset_path):
         return []
