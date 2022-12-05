@@ -164,7 +164,10 @@ class NOWPreprocessor(Executor):
             new_da.append(
                 Document(
                     id=flat_doc.parent_id,
-                    tags={'model': 'clip'},  # should be changed based on modality
+                    tags={
+                        'modality': flat_doc.modality
+                    },  # should be changed based on modality
+                    modality=flat_doc.modality,
                     chunks=flat_doc,
                 )
             )
@@ -225,13 +228,12 @@ if __name__ == '__main__':
     user_inpuT.dataset_path = 's3://bucket/folder'
     user_inpuT.search_fields = ['main_text', 'image', 'description']
 
-    # text_docs = DocumentArray(
-    #     [
-    #         # Document(chunks=DocumentArray([Document(text='hi')])),
-    #         Document(text='hi'),
-    #         Document(text='hello'),
-    #     ]
-    # )
+    single_modal = DocumentArray(
+        [
+            Document(text='hi'),
+            Document(text='hello'),
+        ]
+    )
 
     @dataclass
     class Page:
@@ -245,17 +247,17 @@ if __name__ == '__main__':
         description='This is the image of an apple',
     )
 
-    doc = DocumentArray([Document(page)])
+    multimodal_doc = DocumentArray([Document(page) for _ in range(2)])
 
     executor = NOWPreprocessor(app=app)
     result = executor.preprocess(
-        docs=doc, parameters={'app': app, 'user_input': user_inpuT.__dict__}
+        docs=multimodal_doc, parameters={'app': app, 'user_input': user_inpuT.__dict__}
     )
     f = Flow().add(uses=NOWPreprocessor, uses_with={'app': app})
     with f:
         result = f.post(
             on='/search',
-            inputs=doc,
+            inputs=multimodal_doc,
             show_progress=True,
             parameters={'user_input': user_inpuT.__dict__},
         )

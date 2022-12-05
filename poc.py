@@ -2,6 +2,17 @@ from docarray import dataclass
 from docarray.typing import Image, Text
 from jina import Document, DocumentArray, Executor, Flow, requests
 
+from now.constants import Apps, DatasetTypes
+from now.executor.preprocessor import NOWPreprocessor
+from now.now_dataclasses import UserInput
+
+app = Apps.IMAGE_TEXT_RETRIEVAL
+
+user_input = UserInput()
+user_input.dataset_type = DatasetTypes.S3_BUCKET
+user_input.dataset_path = 's3://bucket/folder'
+user_input.search_fields = ['main_text', 'image', 'description']
+
 
 @dataclass
 class Page:
@@ -16,9 +27,22 @@ page = Page(
     description='This is the image of an apple',
 )
 
-doc = Document(page)
-# transformed_doc = transform_docarray(DocumentArray([doc]), search_fields=['image', 'description'])
-# print(transformed_doc)
+multimodal_doc = DocumentArray([Document(page) for _ in range(1)])
+
+single_modal = DocumentArray(
+    [
+        Document(text='hi'),
+        Document(text='hello'),
+    ]
+)
+
+"""
+Either manually call the preprocessor and transform the data or use it in the flow
+"""
+# executor = NOWPreprocessor(app=app)
+# transformed_doc = executor.preprocess(
+#     docs=single_modal, parameters={'app': app, 'user_input': user_input.__dict__}
+# )
 
 
 class FooExecutor(Executor):
@@ -31,49 +55,50 @@ class FooExecutor(Executor):
 class ImageExecutor(Executor):
     @requests
     async def bar(self, docs: DocumentArray, **kwargs):
-        print(f'Expecting only `image` chunk here')
-        docs[0].chunks.summary()
+        print(
+            f'Expecting only `image` modality here and got {len(docs)} documents',
+            docs.summary(),
+        )
 
 
 class DescriptionExecutor(Executor):
     @requests
     async def baz(self, docs: DocumentArray, **kwargs):
-        print(f'Expecting only `description` chunk here')
-        docs[0].chunks.summary()
+        print(
+            f'Expecting only `text` modality here and got {len(docs)} documents',
+            docs.summary(),
+        )
 
 
 f = (
     Flow()
+    .add(uses=NOWPreprocessor, uses_with={'app': app}, name='preprocessor')
     .add(uses=FooExecutor, name='fooExecutor')
     .add(
         uses=ImageExecutor,
-        name='barExecutor',
+        name='ImageExecutor',
         needs='fooExecutor',
-        when={'main_text': {'$exists': True}},
+        when={'tags__modality': {'$eq': 'image'}},
     )
     .add(
         uses=DescriptionExecutor,
-        name='bazExecutor',
+        name='DescriptionExecutor',
         needs='fooExecutor',
-        when={'image': {'$exists': True}},
+        when={'tags__modality': {'$eq': 'text'}},
     )
     .needs_all(name='join')
 )  # Create Flow with parallel Executors
 
-#                                   exec1
-#                                 /      \
-# Flow topology: Gateway --> first        join --> Gateway
-#                                 \      /
-#                                  exec2
+#                                                   exec1
+#                                                 /      \
+# Flow topology: Gateway --> preprocessor --> first        join --> Gateway
+#                                                 \      /
+#                                                  exec2
 
-input_doc = DocumentArray(
-    [Document(chunks=[Document(tags={'key': 5}), Document(tags={'key': 4})])]
-)
 
 with f:
     ret = f.post(
         on='/search',
-        inputs=doc,
+        inputs=multimodal_doc,
+        parameters={'user_input': user_input.__dict__},
     )
-
-print(ret[:, 'tags'])  # Each Document satisfies one parallel branch/filter
