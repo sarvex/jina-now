@@ -3,17 +3,15 @@ from collections import defaultdict, namedtuple
 from typing import Any, Dict, List, Mapping, Optional, Union
 
 from docarray import Document, DocumentArray
-from docarray.score import NamedScore
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
-from numpy import dot
-from numpy.linalg import norm
 
 from now.executor.abstract.auth import (
     SecurityLevel,
     get_auth_executor_class,
     secure_request,
 )
+from now.executor.indexer.elastic.es_converter import ESConverter
 from now.executor.indexer.elastic.semantic_score import Scores
 
 metrics_mapping = {
@@ -22,6 +20,7 @@ metrics_mapping = {
 }
 
 Executor = get_auth_executor_class()
+ESConverter = ESConverter()
 
 SemanticScore = namedtuple(
     'SemanticScores',
@@ -142,7 +141,9 @@ class ElasticIndexer(Executor):
         if not docs_map:
             return DocumentArray()
 
-        es_docs = self._doc_map_to_es(docs_map)
+        es_docs = ESConverter.convert_doc_map_to_es(
+            docs_map, self.index_name, self.encoder_to_fields
+        )
         try:
             success, _ = bulk(self.es, es_docs)
             self.es.indices.refresh(index=self.index_name)
@@ -207,10 +208,12 @@ class ElasticIndexer(Executor):
                     source=True,
                     size=limit,
                 )['hits']['hits']
-                doc.matches = self._transform_es_results_to_matches(
+                doc.matches = ESConverter.convert_es_results_to_matches(
                     query_doc=doc,
                     es_results=result,
                     get_score_breakdown=get_score_breakdown,
+                    metric=self.metric,
+                    semantic_scores=self.default_semantic_scores,
                 )
                 doc.tags.pop('embeddings', None)
             except Exception:
@@ -246,7 +249,7 @@ class ElasticIndexer(Executor):
         except Exception:
             print(traceback.format_exc())
         if result:
-            return self._transform_es_to_da(result, get_score_breakdown=False)
+            return ESConverter.convert_es_to_da(result, get_score_breakdown=False)
         else:
             return result
 
@@ -434,152 +437,3 @@ class ElasticIndexer(Executor):
             query['bool']['filter'] = es_search_filter
 
         return query
-
-    def _transform_es_to_da(
-        self, result: Union[Dict, List[Dict]], get_score_breakdown: bool
-    ) -> DocumentArray:
-        """
-        Transform Elasticsearch documents into DocumentArray. Assumes that all Elasticsearch
-        documents have a 'text' field. It returns embeddings as part of the tags for each field that is encoded.
-
-        :param result: results from an Elasticsearch query.
-        :param get_score_breakdown: whether to return the embeddings as tags for each document.
-        :return: a DocumentArray containing all results.
-        """
-        if isinstance(result, Dict):
-            result = [result]
-        da = DocumentArray()
-        for es_doc in result:
-            doc = DocumentArray.from_base64(es_doc['_source']['serialized_doc'])[0]
-            for k, v in es_doc['_source'].items():
-                if (
-                    k.startswith('embedding') or k.endswith('embedding')
-                ) and get_score_breakdown:
-                    if 'embeddings' not in doc.tags:
-                        doc.tags['embeddings'] = {}
-                    doc.tags['embeddings'][k] = v
-            da.append(doc)
-        return da
-
-    def _doc_map_to_es(self, docs_map: Dict[str, DocumentArray]) -> List[Dict]:
-        """
-        Transform a dictionary (mapping encoder to DocumentArray) into a list of Elasticsearch documents.
-
-        :param docs_map: dictionary mapping encoder to DocumentArray.
-        :return: a list of Elasticsearch documents as dictionaries ready to be indexed.
-        """
-        es_docs = {}
-
-        for encoder, documents in docs_map.items():
-            for doc in documents:
-                if doc.id not in es_docs:
-                    es_doc = self._get_base_es_doc(doc)
-                    es_docs[doc.id] = es_doc
-                else:
-                    es_doc = es_docs[doc.id]
-                for encoded_field in self.encoder_to_fields[encoder]:
-                    field_doc = getattr(doc, encoded_field)
-                    embedding = field_doc.embedding
-                    es_doc[f'{encoded_field}-{encoder}.embedding'] = embedding
-
-                    if hasattr(field_doc, 'text') and field_doc.text:
-                        es_doc['bm25_text'] += field_doc.text + ' '
-
-        return list(es_docs.values())
-
-    def _get_base_es_doc(self, doc: Document):
-        es_doc = {k: v for k, v in doc.to_dict().items() if v}
-        es_doc.pop('chunks', None)
-        es_doc.pop('_metadata', None)
-        es_doc['bm25_text'] = self._get_bm25_fields(doc)
-        es_doc['_op_type'] = 'index'
-        es_doc['_index'] = self.index_name
-        es_doc['_id'] = doc.id
-        _doc = DocumentArray(Document(doc, copy=True))
-        _doc[..., 'embedding'] = [None for x in _doc[...]]
-        es_doc['serialized_doc'] = _doc.to_base64()
-        return es_doc
-
-    def _get_bm25_fields(self, doc: Document):
-        try:
-            return doc.bm25_text.text
-        except:
-            return ''
-
-    def _transform_es_results_to_matches(
-        self, query_doc: Document, es_results: List[Dict], get_score_breakdown: bool
-    ) -> DocumentArray:
-        """
-        Transform a list of results from Elasticsearch into a matches in the form of a `DocumentArray`.
-        :param es_results: List of dictionaries containing results from Elasticsearch querying.
-        :return: `DocumentArray` that holds all matches in the form of `Document`s.
-        """
-        matches = DocumentArray()
-        for result in es_results:
-            d = self._transform_es_to_da(result, get_score_breakdown)[0]
-            d.scores[self.metric] = NamedScore(value=result['_score'])
-            if get_score_breakdown:
-                d = self.calculate_score_breakdown(query_doc, d)
-            matches.append(d)
-        return matches
-
-    def calculate_score_breakdown(
-        self, query_doc: Document, retrieved_doc: Document
-    ) -> Document:
-        """
-        Calculate the score breakdown for a given retrieved document. Each SemanticScore in the indexers
-        `default_semantic_scores` should have a corresponding value, returned inside a list of scores in the documents
-        tags under `score_breakdown`.
-
-        :param query_doc: The query document. Contains embeddings for the semantic score calculation at tag level.
-        :param retrieved_results: The Elasticsearch results, containing embeddings inside the `_source` field.
-        :return: List of integers representing the score breakdown.
-        """
-        for (
-            query_field,
-            query_encoder,
-            document_field,
-            document_encoder,
-            linear_weight,
-        ) in self.default_semantic_scores:
-            if document_encoder == 'bm25':
-                continue
-            q_emb = query_doc.tags['embeddings'][f'{query_field}-{query_encoder}']
-            d_emb = retrieved_doc.tags['embeddings'][
-                f'{document_field}-{document_encoder}.embedding'
-            ]
-            if self.metric == 'cosine':
-                score = (
-                    dot(q_emb, d_emb) / (norm(q_emb) * norm(d_emb))
-                ) * linear_weight
-            elif self.metric == 'l2_norm':
-                score = norm(q_emb - d_emb) * linear_weight
-            else:
-                raise ValueError(f'Invalid metric {self.metric}')
-            retrieved_doc.scores[
-                '-'.join(
-                    [
-                        query_field,
-                        document_field,
-                        document_encoder,
-                        str(linear_weight),
-                    ]
-                )
-            ] = NamedScore(value=round(score, 6))
-
-        # calculate bm25 score
-        vector_total = sum(
-            [v.value for k, v in retrieved_doc.scores.items() if k != self.metric]
-        )
-        overall_score = retrieved_doc.scores[self.metric].value
-        bm25_normalized = overall_score - vector_total
-        bm25_raw = (bm25_normalized - 1) * 10
-
-        retrieved_doc.scores['bm25_normalized'] = NamedScore(
-            value=round(bm25_normalized, 6)
-        )
-        retrieved_doc.scores['bm25_raw'] = NamedScore(value=round(bm25_raw, 6))
-
-        # remove embeddings from document
-        retrieved_doc.tags.pop('embeddings', None)
-        return retrieved_doc
