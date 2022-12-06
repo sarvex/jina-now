@@ -28,7 +28,7 @@ Executor = get_auth_executor_class()
 class NOWBaseIndexer(Executor):
     def __init__(
         self,
-        dim: int,
+        dim: int = None,
         columns: Optional[List] = None,
         metric: str = 'cosine',
         limit: int = 10,
@@ -52,7 +52,7 @@ class NOWBaseIndexer(Executor):
         self.metric = metric
         self.limit = limit
         self.max_values_per_tag = max_values_per_tag
-        self.construct()
+        self.construct(**kwargs)
         self.doc_id_tags = {}
         self.document_list = DocumentArray()
         self.load_document_list()
