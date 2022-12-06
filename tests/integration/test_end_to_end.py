@@ -451,7 +451,7 @@ def test_backend_custom_data(
         'flow_name': 'nowapi',
         'output_modality': 'image',
         'dataset_type': DatasetTypes.S3_BUCKET,
-        'dataset_path': os.environ.get('S3_SCHEMA_FOLDER_PATH'),
+        'dataset_path': os.environ.get('S3_IMAGE_TEST_DATA_PATH') + 'end_to_end_data/',
         'aws_access_key_id': os.environ.get('AWS_ACCESS_KEY_ID'),
         'aws_secret_access_key': os.environ.get('AWS_SECRET_ACCESS_KEY'),
         'aws_region_name': 'eu-west-1',
