@@ -126,7 +126,7 @@ Example of the Swagger UI.
 <img width="400" alt="image" src="https://user-images.githubusercontent.com/11627845/157087532-46ae36a2-c97f-45d7-9c3e-c624dcf6dc46.png">
 </details>
 
-<details><summary>🦆 Birds</summary>
+<details><summary>🦆 Birds </summary>
 <img width="400" alt="image" src="https://user-images.githubusercontent.com/11627845/157069954-615a5cb6-dda0-4a2f-9442-ea807ad4a8d5.png">
 </details>
 
