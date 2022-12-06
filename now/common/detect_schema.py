@@ -8,7 +8,15 @@ from now.data_loading.utils import _get_s3_bucket_and_folder_prefix
 from now.now_dataclasses import UserInput
 
 
-def _get_schema_docarray(user_input: UserInput, **kwargs):
+def get_schema_docarray(user_input: UserInput, **kwargs):
+    """
+    Get the schema from a DocArray
+
+    :param user_input: UserInput object
+
+    Makes a request to hubble API and downloads the first 10 documents
+    from the document array and uses the first document to get the schema and sets field_names in user_input
+    """
     cookies = {
         'st': user_input.jwt['token'],
     }
@@ -28,10 +36,18 @@ def _get_schema_docarray(user_input: UserInput, **kwargs):
         field_names.extend(list(response.json()[0]['tags']['fields'].keys()))
         user_input.field_names = field_names
     else:
-        raise ValueError('DocumentArray doesnt exist or you dont have access to it')
+        raise ValueError('DocumentArray does not exist or you do not have access to it')
 
 
-def _get_schema_s3_bucket(user_input: UserInput, **kwargs):
+def get_schema_s3_bucket(user_input: UserInput, **kwargs):
+    """
+    Get the schema from a S3 bucket
+
+    :param user_input: UserInput object
+
+    checks if the bucket exists and the format of the folder structure is correct,
+    if yes then downloads the first folder and sets its content as field_names in user_input
+    """
     bucket, folder_prefix = _get_s3_bucket_and_folder_prefix(
         user_input
     )  # user has to provide the folder where folder structure begins
@@ -54,7 +70,7 @@ def _get_schema_s3_bucket(user_input: UserInput, **kwargs):
                 continue
             if len(obj.key.split('/')) - len(folder_prefix.split('/')) != 1:
                 raise ValueError(
-                    'File format different than expected, please check documentation.'
+                    'File format different than expected, please check documentation https://now.jina.ai'
                 )
 
         first_folder = list(bucket.objects.filter(Prefix=folder_prefix))[1].key.split(
@@ -71,16 +87,27 @@ def _get_schema_s3_bucket(user_input: UserInput, **kwargs):
         user_input.field_names = field_names
 
 
-def check_path(path, root):
+def _ensure_distance_folder_root(path, root):
+    """Ensure that the path is a subfolder of the root"""
     path = os.path.abspath(path)
     root = os.path.abspath(root)
     return os.path.relpath(path, root).count(os.path.sep) == 1
 
 
-def _get_schema_local_folder(user_input: UserInput, **kwargs):
+def get_schema_local_folder(user_input: UserInput, **kwargs):
+    """
+    Get the schema from a local folder
+
+    :param user_input: UserInput object
+
+    checks if the folder exists and the format of the folder structure is correct,
+    if yes set the content of the first folder as field_names in user_input
+    """
     dataset_path = user_input.dataset_path.strip()
     if os.path.isfile(dataset_path):
-        return []
+        raise ValueError(
+            'The path provided is not a folder, please check documentation https://now.jina.ai'
+        )
     elif os.path.isdir(dataset_path):
         all_files = True
         for file_or_directory in os.listdir(dataset_path):
@@ -94,9 +121,9 @@ def _get_schema_local_folder(user_input: UserInput, **kwargs):
                 if not first_path:
                     first_path = path
 
-                if not check_path(path, dataset_path):
+                if not _ensure_distance_folder_root(path, dataset_path):
                     raise ValueError(
-                        'Folder format is not as expected, please check documentation'
+                        'Folder format is not as expected, please check documentation https://now.jina.ai'
                     )
             first_folder = '/'.join(first_path.split('/')[:-1])
             field_names = []

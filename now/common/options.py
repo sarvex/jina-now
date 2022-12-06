@@ -14,9 +14,9 @@ from hubble import AuthenticationRequiredError
 from kubernetes import client, config
 
 from now.common.detect_schema import (
-    _get_schema_docarray,
-    _get_schema_local_folder,
-    _get_schema_s3_bucket,
+    get_schema_docarray,
+    get_schema_local_folder,
+    get_schema_s3_bucket,
 )
 from now.constants import SUPPORTED_FILE_TYPES, Apps, DatasetTypes, Modalities
 from now.demo_data import AVAILABLE_DATASET
@@ -33,6 +33,7 @@ from now.utils import (
 
 NEW_CLUSTER = {'name': '🐣 create new', 'value': 'new'}
 AVAILABLE_SOON = 'will be available in upcoming versions'
+
 
 # Make sure you add this dialog option to your app in order of dependency, i.e., if some dialog option depends on other
 # than the parent should be called first before the dependant can called.
@@ -64,14 +65,12 @@ OUTPUT_MODALITY = DialogOptions(
     post_func=_create_app_from_output_modality,
 )
 
-
 APP_NAME = DialogOptions(
     name='flow_name',
     prompt_message='Choose a name for your application:',
     prompt_type='input',
     is_terminal_command=True,
 )
-
 
 DATASET_TYPE = DialogOptions(
     name='dataset_type',
@@ -106,9 +105,19 @@ DATASET_TYPE = DialogOptions(
 )
 
 
-def check_login_dataset(user_input):
+def check_login_dataset(user_input: UserInput):
     if user_input.dataset_type == DatasetTypes.DOCARRAY and user_input.jwt is None:
         _jina_auth_login(user_input)
+
+
+def _get_demo_data_choices(user_input: UserInput, **kwargs):
+    all_demo_datasets = []
+    for demo_datasets in AVAILABLE_DATASET.values():
+        all_demo_datasets.extend(demo_datasets)
+    return [
+        {'name': demo_data.display_name, 'value': demo_data.name}
+        for demo_data in all_demo_datasets
+    ]
 
 
 DEMO_DATA = DialogOptions(
@@ -125,18 +134,14 @@ DEMO_DATA = DialogOptions(
 )
 
 
-def _get_demo_data_choices(user_input: UserInput):
+def _infer_app_type_from_demo_data(user_input: UserInput):
+    """
+    Infer the app type from the demo data selected by the user.
 
-    all_demo_datasets = []
-    for demo_datasets in AVAILABLE_DATASET.values():
-        all_demo_datasets.extend(demo_datasets)
-    return [
-        {'name': demo_data.display_name, 'value': demo_data.name}
-        for demo_data in all_demo_datasets
-    ]
+    :param user_input: UserInput object
 
-
-def _infer_app_type_from_demo_data(user_input):
+    uses the demo data selected by the user to create application instance and set the output modality
+    """
     for modality, demos in AVAILABLE_DATASET.items():
         for demo in demos:
             if user_input.dataset_name == demo.name:
@@ -151,7 +156,7 @@ DOCARRAY_NAME = DialogOptions(
     depends_on=DATASET_TYPE,
     conditional_check=lambda user_input: user_input.dataset_type
     == DatasetTypes.DOCARRAY,
-    post_func=lambda user_input, **kwargs: _get_schema_docarray(user_input),
+    post_func=lambda user_input, **kwargs: get_schema_docarray(user_input),
 )
 
 DATASET_PATH = DialogOptions(
@@ -161,7 +166,7 @@ DATASET_PATH = DialogOptions(
     depends_on=DATASET_TYPE,
     is_terminal_command=True,
     conditional_check=lambda user_input: user_input.dataset_type == DatasetTypes.PATH,
-    post_func=lambda user_input, **kwargs: _get_schema_local_folder(user_input),
+    post_func=lambda user_input, **kwargs: get_schema_local_folder(user_input),
 )
 
 DATASET_PATH_S3 = DialogOptions(
@@ -198,26 +203,10 @@ AWS_REGION_NAME = DialogOptions(
     depends_on=DATASET_TYPE,
     conditional_check=lambda user_input: user_input.dataset_type
     == DatasetTypes.S3_BUCKET,
-    post_func=lambda user_input, **kwargs: _get_schema_s3_bucket(user_input),
+    post_func=lambda user_input, **kwargs: get_schema_s3_bucket(user_input),
 )
 
 # --------------------------------------------- #
-
-'''SEARCH_FIELDS = DialogOptions(
-    name='search_fields',
-    prompt_message='Enter comma-separated search fields:',
-    prompt_type='input',
-    depends_on=DATASET_TYPE,
-    is_terminal_command=True,
-    conditional_check=lambda user_input: user_input.dataset_type != DatasetTypes.DEMO,
-    post_func=lambda user_input, **kwargs: _parse_search_fields(user_input),
-)
-
-
-def _parse_search_fields(user_input: UserInput):
-    user_input.search_fields = [
-        field.strip() for field in user_input.search_fields.split(',')
-    ]'''
 
 
 SEARCH_FIELDS = DialogOptions(
@@ -311,7 +300,7 @@ DEPLOYMENT_TYPE = DialogOptions(
 )
 
 
-def check_login_deployment(user_input):
+def check_login_deployment(user_input: UserInput):
     if user_input.deployment_type == 'remote' and user_input.jwt is None:
         _jina_auth_login(user_input)
 
@@ -358,7 +347,6 @@ SECURED = DialogOptions(
     conditional_check=lambda user_inp: user_inp.deployment_type == 'remote',
 )
 
-
 API_KEY = DialogOptions(
     name='api_key',
     prompt_message='Do you want to generate an api_key to access this deployment?',
@@ -398,7 +386,7 @@ USER_EMAILS = DialogOptions(
 )
 
 
-def _set_value_to_none(user_input):
+def _set_value_to_none(user_input: UserInput):
     if not user_input.api_key:
         user_input.api_key = None
 
@@ -424,8 +412,7 @@ def construct_app(app_name: str):
     )()
 
 
-def _jina_auth_login(user_input, **kwargs):
-
+def _jina_auth_login(user_input: UserInput, **kwargs):
     try:
         jina_auth_login()
     except AuthenticationRequiredError:
@@ -439,7 +426,7 @@ def _jina_auth_login(user_input, **kwargs):
     os.environ['JCLOUD_NO_SURVEY'] = '1'
 
 
-def _construct_local_cluster_choices(user_input, **kwargs):
+def _construct_local_cluster_choices(user_input: UserInput, **kwargs):
     active_context = kwargs.get('active_context')
     contexts = kwargs.get('contexts')
     context_names = _get_context_names(contexts, active_context)
