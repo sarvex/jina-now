@@ -2,6 +2,7 @@ import os
 import shutil
 from unittest.mock import MagicMock, Mock
 
+import pytest
 from docarray import Document, DocumentArray
 
 import now.utils
@@ -16,11 +17,23 @@ def download_mock(url, destfile):
     shutil.copyfile(path, destfile)
 
 
-def test_s3_video():
+@pytest.mark.parametrize(
+    'file_path, num_chunks, ocr_text',
+    [
+        (
+            'image/6785325056.jpg',
+            1,
+            'Richard Branson TotallyLooksLike.com Zaphod Beeblebrox',
+        ),
+        ('gif/folder1/file.gif', 3, 'e'),
+    ],
+)
+def test_ocr_with_bucket(file_path, num_chunks, ocr_text):
+    uri = f's3://bucket_name/resources/{file_path}'
     da_index = DocumentArray(
         [
             Document(
-                uri='s3://bucket_name/resources/gif/folder1/file.gif',
+                uri=uri,
                 tags={'tag_uri': 's3://bucket_name/resources/gif/folder1/meta.json'},
             )
             for _ in range(2)
@@ -48,14 +61,13 @@ def test_s3_video():
         c = d.chunks[0]
         cc = c.chunks[0]
         assert len(cc.blob) > 0
-        uri = 's3://bucket_name/resources/gif/folder1/file.gif'
         assert cc.uri == uri
         assert c.uri == uri
-        assert len(c.chunks) == 3
+        assert len(c.chunks) == num_chunks
         tags = cc.tags
         assert tags['a1'] == 'v1'
         assert tags['a2'] == 'v2'
-        assert cc.tags[TAG_OCR_DETECTOR_TEXT_IN_DOC] == 'e'
+        assert cc.tags[TAG_OCR_DETECTOR_TEXT_IN_DOC] == ocr_text
 
 
 def test_text():

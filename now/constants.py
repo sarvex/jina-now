@@ -6,10 +6,10 @@ from now.utils import BetterEnum
 # from docarray import __version__ as docarray_version
 
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.134-refactor-simplify-preprocessing-45'
-NOW_PREPROCESSOR_VERSION = '0.0.104-dynamic-flow-100'
-NOW_QDRANT_INDEXER_VERSION = '0.0.8-refactor-simplify-preprocessing-45'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.7-refactor-simplify-preprocessing-45'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.134-top_k_fix-8'
+NOW_PREPROCESSOR_VERSION = '0.0.106-dynamic-flow-100'
+NOW_QDRANT_INDEXER_VERSION = '0.0.9-refactor-improve-performance-curation-3'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.8-refactor-improve-performance-curation-3'
 NOW_AUTOCOMPLETE_VERSION = '0.0.4-refactor-simplify-preprocessing-45'
 
 
@@ -63,7 +63,7 @@ CLIP_USES = {
     'local': ('CLIPOnnxEncoder/latest', 'ViT-B-32::openai', ModelDimensions.CLIP),
     'remote': ('CLIPOnnxEncoder/latest-gpu', 'ViT-B-32::openai', ModelDimensions.CLIP),
 }
-EXTERNAL_CLIP_HOST = 'encoderclip-game-gar-c70a0d0c79.wolf.jina.ai'
+EXTERNAL_CLIP_HOST = 'encoderclip-climbing-lobster-885354f905.wolf.jina.ai'
 
 DEFAULT_FLOW_NAME = 'nowapi'
 PREFETCH_NR = 10

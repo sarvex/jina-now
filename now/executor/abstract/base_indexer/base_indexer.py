@@ -1,3 +1,4 @@
+import itertools
 import json
 import os
 from collections import defaultdict
@@ -55,14 +56,16 @@ class NOWBaseIndexer(Executor):
         self.doc_id_tags = {}
         self.document_list = DocumentArray()
         self.load_document_list()
-        self.query_to_filter_path = (
-            os.path.join(self.workspace, 'query_to_filter.json')
+        self.query_to_curated_matches_path = (
+            os.path.join(self.workspace, 'query_to_curated_matches.json')
             if self.workspace
             else None
         )
-        self.query_to_filter = self.open_query_to_filter(self.query_to_filter_path)
+        self.query_to_curated_matches = self.open_query_to_curated_matches(
+            self.query_to_curated_matches_path
+        )
 
-    def open_query_to_filter(self, path):
+    def open_query_to_curated_matches(self, path):
         if path and os.path.exists(path):
             with open(path, 'r') as f:
                 return json.load(f)
@@ -250,9 +253,25 @@ class NOWBaseIndexer(Executor):
             )
         docs_with_matches[0].matches = (
             self.get_curated_matches(docs[0].text) + docs_with_matches[0].matches
-        )[:limit]
+        )
+        self.remove_duplicates(
+            docs_with_matches
+        )  # TODO combine with append_matches_if_not_exists - duplicate code
+        docs_with_matches[0].matches = docs_with_matches[0].matches[:limit]
         self.clean_response(docs_with_matches)
         return docs_with_matches
+
+    def remove_duplicates(self, docs_with_matches):
+        """Remove duplicate matches from the list of documents."""
+        parent_ids = set()
+        # curated matches can lead to duplicates since the document_list is on frame/sentence level
+        # TODO simplify this logic by letting the document_list be on root level
+        unique_curated_matches = DocumentArray([])
+        for match in docs_with_matches[0].matches:
+            if match.parent_id not in parent_ids:
+                parent_ids.add(match.parent_id)
+                unique_curated_matches.append(match)
+        docs_with_matches[0].matches = unique_curated_matches
 
     def merge_matches_by_score_after_half(
         self,
@@ -303,9 +322,22 @@ class NOWBaseIndexer(Executor):
             }
         }
         """
-        self.query_to_filter = parameters['query_to_filter']
-        with open(self.query_to_filter_path, 'w') as f:
-            json.dump(self.query_to_filter, f)
+
+        query_to_filter = parameters['query_to_filter']
+        for query, doc_filters in query_to_filter.items():
+            # a query can have multiple filters
+            # for each filter, we get the curated matches
+            # all matches are flattened into one list
+            curated_matches = DocumentArray(
+                itertools.chain(
+                    *[self.document_list.find(doc_filter) for doc_filter in doc_filters]
+                )
+            )
+            self.query_to_curated_matches[query] = curated_matches.to_list()
+
+        with open(self.query_to_curated_matches_path, 'w') as f:
+            json.dump(self.query_to_curated_matches, f)
+        print()
 
     def get_curated_matches(self, text_query: str = None) -> DocumentArray:
         """
@@ -313,8 +345,8 @@ class NOWBaseIndexer(Executor):
         """
         curated_matches = DocumentArray([])
         if text_query:
-            for doc_filter in self.query_to_filter[text_query]:
-                curated_matches.extend(self.document_list.find(doc_filter))
+            matches = self.query_to_curated_matches.get(text_query, [])
+            curated_matches.extend(DocumentArray.from_list(matches))
         return curated_matches
 
     def create_matches(self, docs, parameters, limit, retrieval_limit, search_filter):

@@ -161,13 +161,14 @@ def deploy_streamlit():
                 filter_selection[tag] = st.sidebar.selectbox(tag, values)
 
         st_ratio_options = []
-        for input_modality in params.input_modality.split('-or-'):
-            if input_modality == 'image':
-                st_ratio_options.extend(["Image", "Webcam"])
-            elif input_modality == 'music':
-                st_ratio_options.extend(["Music"])
-            elif input_modality == 'text':
-                st_ratio_options.extend(["Text"])
+        if params.input_modality:
+            for input_modality in params.input_modality.split('-or-'):
+                if input_modality == 'image':
+                    st_ratio_options.extend(["Image", "Webcam"])
+                elif input_modality == 'music':
+                    st_ratio_options.extend(["Music"])
+                elif input_modality == 'text':
+                    st_ratio_options.extend(["Text"])
         st_ratio_options = list(set(st_ratio_options))
         media_type = st.radio(
             '',
@@ -237,15 +238,19 @@ def _do_login(params):
     }
     if params.secured:
         query_params_var['secured'] = params.secured
+    if 'top_k' in st.experimental_get_query_params():
+        query_params_var['top_k'] = params.top_k
     st.experimental_set_query_params(**query_params_var)
 
     redirect_uri = (
         f'https://nowrun.jina.ai/?host={params.host}&input_modality={params.input_modality}'
         f'&output_modality={params.output_modality}&data={params.data}'
-        + f'&secured={params.secured}'
-        if params.secured
-        else ''
     )
+    if params.secured:
+        redirect_uri += f'&secured={params.secured}'
+    if 'top_k' in st.experimental_get_query_params():
+        redirect_uri += f'&top_k={params.top_k}'
+
     redirect_uri = quote(redirect_uri)
     redirect_uri = (
         'https://api.hubble.jina.ai/v2/oidc/authorize?prompt=login&target_link_uri='
@@ -265,7 +270,7 @@ def _do_logout():
     st.session_state.avatar_val = None
     st.session_state.token_val = None
     st.session_state.login = True
-    response = requests.post(
+    requests.post(
         'https://api.hubble.jina.ai/v2/rpc/user.session.dismiss',
         headers=headers,
     )
@@ -442,9 +447,9 @@ def render_matches(OUTPUT_MODALITY):
 
                 elif OUTPUT_MODALITY == 'image-or-text':
                     try:
-                        render_text_result(match, c)
-                    except:
                         render_graphic_result(match, c)
+                    except:
+                        render_text_result(match, c)
                 else:
                     raise ValueError(f'{OUTPUT_MODALITY} not handled')
 
