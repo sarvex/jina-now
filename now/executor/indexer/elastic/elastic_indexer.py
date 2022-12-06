@@ -6,11 +6,8 @@ from docarray import Document, DocumentArray
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 
-from now.executor.abstract.auth import (
-    SecurityLevel,
-    get_auth_executor_class,
-    secure_request,
-)
+from now.executor.abstract.auth import SecurityLevel, secure_request
+from now.executor.abstract.base_indexer import NOWBaseIndexer as Executor
 from now.executor.indexer.elastic.es_converter import ESConverter
 from now.executor.indexer.elastic.semantic_score import Scores
 
@@ -19,7 +16,6 @@ metrics_mapping = {
     'l2_norm': 'l2norm',
 }
 
-Executor = get_auth_executor_class()
 ESConverter = ESConverter()
 
 SemanticScore = namedtuple(
@@ -39,24 +35,32 @@ FieldEmbedding = namedtuple(
 )
 
 
-class ElasticIndexer(Executor):
-    def __init__(
+class NOWElasticIndexer(Executor):
+    """
+    NOWElasticIndexer indexes Documents into an Elasticsearch instance. To do this,
+    it uses the ESConverter, converting documents to and from the accepted Elasticsearch
+    format. It also uses the semantic scores to combine the scores of different fields/encoders,
+    allowing multi-modal documents to be indexed and searched with multi-modal queries.
+    """
+
+    # override
+    def construct(
         self,
         default_semantic_scores: List[SemanticScore],
         document_mappings: List[FieldEmbedding],
+        es_mapping: Dict = None,
         hosts: Union[
             str, List[Union[str, Mapping[str, Union[str, int]]]], None
         ] = 'https://elastic:elastic@localhost:9200',
         es_config: Optional[Dict[str, Any]] = None,
         metric: str = 'cosine',
         index_name: str = 'now-index',
-        es_mapping: Optional[Dict[str, Any]] = None,
         traversal_paths: str = '@r',
-        limit: int = 100,
+        limit: int = 20,
         **kwargs,
     ):
         """
-        Initializer function for the ElasticIndexer
+        Initialize/construct function for the NOWElasticIndexer.
 
         :param default_semantic_scores: list of SemanticScore tuples that define how
             to combine the scores of different fields and encoders.
@@ -65,15 +69,17 @@ class ElasticIndexer(Executor):
         :param hosts: host configuration of the Elasticsearch node or cluster
         :param es_config: Elasticsearch cluster configuration object
         :param metric: The distance metric used for the vector index and vector search
+        :param dims: The dimensions of your embeddings.
         :param index_name: ElasticSearch Index name used for the storage
         :param es_mapping: Mapping for new index. If none is specified, this will be
             generated from `document_mappings` and `metric`.
         :param traversal_paths: Default traversal paths on docs
+            generated from metric and dims. Embeddings from chunk documents will
+            always be stored in fields `embedding_x` where x iterates over the number
+            of embedding fields (length of `dims`) to be created in the index.
                 (used for indexing, delete and update), e.g. '@r', '@c', '@r,c'.
         :param limit: Default limit on the number of docs to be retrieved
         """
-        super().__init__(**kwargs)
-
         self.hosts = hosts
         self.metric = metric
         self.index_name = index_name
@@ -232,7 +238,7 @@ class ElasticIndexer(Executor):
         """List all indexed documents.
 
         Note: this implementation is naive and does not
-        consider the default maximum documents in a page returned by Elasticsearch.
+        consider the default maximum documents in a page returned by `Elasticsearch`.
         Should be addressed in future with `scroll`.
 
         :param parameters: dictionary with limit and offset
@@ -242,7 +248,6 @@ class ElasticIndexer(Executor):
         limit = int(parameters.get('limit', self.limit))
         offset = int(parameters.get('offset', 0))
         try:
-            # TODO: move the limit and offset to the ES query. That will speed up things a lot.
             result = self.es.search(
                 index=self.index_name, size=limit, from_=offset, query={'match_all': {}}
             )['hits']['hits']
@@ -302,6 +307,11 @@ class ElasticIndexer(Executor):
             )
         return DocumentArray()
 
+    # override
+    def batch_iterator(self):
+        """Unnecessary for ElasticIndexer, but need to override BaseIndexer."""
+        yield []
+
     def _build_es_queries(
         self,
         docs_map,
@@ -324,6 +334,7 @@ class ElasticIndexer(Executor):
             For this function, this parameter determines whether to return the embeddings
             of a query document.
         :param custom_bm25_query: custom query to use for BM25.
+        :param search_filter: dictionary of filters to apply to the search.
         :return: a dictionary containing query and filter.
         """
         queries = {}
