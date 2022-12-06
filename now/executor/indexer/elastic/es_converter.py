@@ -53,7 +53,6 @@ class ESConverter:
                             f'{encoded_field}-{encoder}'
                         ] = embedding
                     es_doc[f'{encoded_field}-{encoder}.embedding'] = embedding
-                    print(f'{encoded_field}-{encoder}.embedding')
 
                     if hasattr(field_doc, 'text') and field_doc.text:
                         es_doc['bm25_text'] += field_doc.text + ' '

@@ -10,8 +10,8 @@ from docarray.typing import Image, Text
 from jina import Document, DocumentArray
 
 from now.executor.indexer.elastic.elastic_indexer import (
-    ElasticIndexer,
     FieldEmbedding,
+    NOWElasticIndexer,
     SemanticScore,
 )
 from now.executor.indexer.elastic.es_converter import ESConverter
@@ -66,7 +66,7 @@ def test_generate_es_mappings(setup_service_running):
             },
         }
     }
-    result = ElasticIndexer.generate_es_mapping(
+    result = NOWElasticIndexer.generate_es_mapping(
         document_mappings=document_mappings, metric='cosine'
     )
     assert result == expected_mapping
@@ -226,7 +226,7 @@ def test_doc_map_to_es(setup_service_running, es_inputs):
 
 def test_index_and_search_with_multimodal_docs(setup_service_running, es_inputs):
     """
-    This test runs indexing with the ElasticIndexer using multimodal docs.
+    This test runs indexing with the NOWElasticIndexer using multimodal docs.
     """
     (
         index_docs_map,
@@ -238,7 +238,7 @@ def test_index_and_search_with_multimodal_docs(setup_service_running, es_inputs)
     # default should be: all combinations ?? TODO: clarify if that is true
     index_name = random_index_name()
 
-    indexer = ElasticIndexer(
+    indexer = NOWElasticIndexer(
         traversal_paths='c',
         document_mappings=document_mappings,
         default_semantic_scores=default_semantic_scores,
@@ -289,7 +289,7 @@ def test_index_and_search_with_multimodal_docs(setup_service_running, es_inputs)
 
 def test_list_endpoint(setup_service_running, es_inputs):
     """
-    This test tests the list endpoint of the ElasticIndexer.
+    This test tests the list endpoint of the NOWElasticIndexer.
     """
     (
         index_docs_map,
@@ -298,7 +298,7 @@ def test_list_endpoint(setup_service_running, es_inputs):
         default_semantic_scores,
     ) = es_inputs
     index_name = random_index_name()
-    es_indexer = ElasticIndexer(
+    es_indexer = NOWElasticIndexer(
         traversal_paths='c',
         document_mappings=document_mappings,
         default_semantic_scores=default_semantic_scores,
@@ -318,7 +318,7 @@ def test_list_endpoint(setup_service_running, es_inputs):
 
 def test_delete_by_id(setup_service_running, es_inputs):
     """
-    This test tests the delete endpoint of the ElasticIndexer, by deleting a list of IDs.
+    This test tests the delete endpoint of the NOWElasticIndexer, by deleting a list of IDs.
     """
     (
         index_docs_map,
@@ -327,7 +327,7 @@ def test_delete_by_id(setup_service_running, es_inputs):
         default_semantic_scores,
     ) = es_inputs
     index_name = random_index_name()
-    es_indexer = ElasticIndexer(
+    es_indexer = NOWElasticIndexer(
         traversal_paths='c',
         document_mappings=document_mappings,
         default_semantic_scores=default_semantic_scores,
@@ -395,7 +395,7 @@ def test_calculate_score_breakdown(setup_service_running, es_inputs):
 
 def test_custom_mapping_and_custom_bm25_search(setup_service_running, es_inputs):
     """
-    This test tests the custom mapping and bm25 functionality of the ElasticIndexer.
+    This test tests the custom mapping and bm25 functionality of the NOWElasticIndexer.
     """
     (
         index_docs_map,
@@ -450,7 +450,7 @@ def test_custom_mapping_and_custom_bm25_search(setup_service_running, es_inputs)
             },
         }
     }
-    es_indexer = ElasticIndexer(
+    es_indexer = NOWElasticIndexer(
         traversal_paths='c',
         document_mappings=document_mappings,
         default_semantic_scores=default_semantic_scores,
@@ -476,9 +476,5 @@ def test_custom_mapping_and_custom_bm25_search(setup_service_running, es_inputs)
         },
     )
     assert len(results[0].matches) == 2
-    print(results[0].matches[0].title.text)
-    print(results[0].matches[0].scores)
-    print(results[0].matches[1].title.text)
-    print(results[0].matches[1].scores)
     assert results[0].matches[0].id == '0'
     assert results[0].matches[1].id == '1'
