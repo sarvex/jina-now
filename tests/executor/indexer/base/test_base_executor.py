@@ -32,6 +32,10 @@ class TestBaseIndexer:
             f"docker-compose -f {compose_yml} --project-directory . down --remove-orphans"
         )
 
+    @pytest.fixture(scope='function', autouse=True)
+    def metas(self, tmpdir):
+        return {'workspace': str(tmpdir)}
+
     def gen_docs(self, num):
         res = DocumentArray()
         k = np.random.random((num, DIM)).astype(np.float32)
@@ -99,9 +103,8 @@ class TestBaseIndexer:
     @pytest.mark.parametrize(
         'offset, limit', [(0, 10), (10, 0), (0, 0), (10, 10), (None, None)]
     )
-    def test_list(self, tmpdir, offset, limit, indexer):
+    def test_list(self, offset, limit, indexer, metas):
         """Test list returns all indexed docs"""
-        metas = {'workspace': str(tmpdir)}
         docs = self.gen_docs(NUMBER_OF_DOCS)
         f = Flow().add(
             uses=indexer,
@@ -129,8 +132,7 @@ class TestBaseIndexer:
                 assert [d.uri for d in list_res] == ['my-parent-uri'] * l
                 assert [d.tags['parent_tag'] for d in list_res] == ['value'] * l
 
-    def test_search(self, tmpdir, indexer):
-        metas = {'workspace': str(tmpdir)}
+    def test_search(self, indexer, metas):
         docs = self.gen_docs(NUMBER_OF_DOCS)
         docs_query = self.gen_docs(1)
         f = Flow().add(
@@ -152,8 +154,7 @@ class TestBaseIndexer:
                     <= query_res[0].matches[i + 1].scores['cosine'].value
                 )
 
-    def test_search_match(self, tmpdir, indexer):
-        metas = {'workspace': str(tmpdir)}
+    def test_search_match(self, indexer, metas):
         docs = self.gen_docs(NUMBER_OF_DOCS)
         docs_query = self.gen_docs(NUMBER_OF_DOCS)
         f = Flow().add(
@@ -183,8 +184,7 @@ class TestBaseIndexer:
                     <= c.matches[i + 1].scores['cosine'].value
                 )
 
-    def test_search_with_filtering(self, tmpdir, indexer):
-        metas = {'workspace': str(tmpdir)}
+    def test_search_with_filtering(self, indexer, metas):
 
         docs = self.docs_with_tags(NUMBER_OF_DOCS)
         docs_query = self.gen_docs(1)
@@ -205,8 +205,7 @@ class TestBaseIndexer:
             )
             assert all([m.tags['price'] < 50 for m in query_res[0].matches])
 
-    def test_delete(self, tmpdir, indexer):
-        metas = {'workspace': str(tmpdir)}
+    def test_delete(self, indexer, metas):
         docs = self.gen_docs(NUMBER_OF_DOCS)
         f = Flow().add(
             uses=indexer,
@@ -229,8 +228,7 @@ class TestBaseIndexer:
             docs_query = self.gen_docs(NUMBER_OF_DOCS)
             f.post(on='/search', inputs=docs_query, return_results=True)
 
-    def test_get_tags(self, tmpdir, indexer):
-        metas = {'workspace': str(tmpdir)}
+    def test_get_tags(self, indexer, metas):
         docs = DocumentArray(
             [
                 Document(
@@ -278,8 +276,7 @@ class TestBaseIndexer:
                 0
             ].tags['tags']['color'] == ['blue', 'red']
 
-    def test_delete_tags(self, tmpdir, indexer):
-        metas = {'workspace': str(tmpdir)}
+    def test_delete_tags(self, indexer, metas):
         docs = DocumentArray(
             [
                 Document(
@@ -446,9 +443,8 @@ class TestBaseIndexer:
         ],
     )
     def test_search_chunk_using_sum_ranker(
-        self, documents, indexer, query, embedding, res_ids, tmpdir
+        self, documents, indexer, query, embedding, res_ids, metas
     ):
-        metas = {'workspace': str(tmpdir)}
         documents = DocumentArray([Document(chunks=[doc]) for doc in documents])
         with Flow().add(
             uses=indexer,
@@ -479,8 +475,7 @@ class TestBaseIndexer:
                 if d.uri:
                     assert d.blob == b'', f'got blob {d.blob} for {d.id}'
 
-    def test_no_blob_with_working_uri(self, tmpdir, indexer):
-        metas = {'workspace': str(tmpdir)}
+    def test_no_blob_with_working_uri(self, indexer, metas):
         with Flow().add(
             uses=indexer,
             uses_with={
@@ -531,9 +526,9 @@ class TestBaseIndexer:
             assert matches[3].blob == b''
             assert matches[4].tensor is None
 
-    def test_curate_endpoint(self, tmpdir, indexer):
+    def test_curate_endpoint(self, indexer, metas):
         """Test indexing does not return anything"""
-        metas = {'workspace': str(tmpdir)}
+
         docs = self.gen_docs(NUMBER_OF_DOCS)
         docs.append(
             Document(
@@ -565,6 +560,7 @@ class TestBaseIndexer:
             uses_metas=metas,
         )
         with f:
+            f.index(docs, return_results=True)
             f.post(
                 on='/curate',
                 parameters={
@@ -576,7 +572,6 @@ class TestBaseIndexer:
                     }
                 },
             )
-            f.index(docs, return_results=True)
             result = f.search(
                 inputs=Document(
                     chunks=[
@@ -609,3 +604,18 @@ class TestBaseIndexer:
                     ]
                 )
             )
+
+    def test_curate_endpoint_incorrect(self, indexer, metas):
+        f = Flow().add(
+            uses=indexer,
+            uses_with={
+                'dim': DIM,
+            },
+            uses_metas=metas,
+        )
+        with f:
+            with pytest.raises(Exception):
+                f.post(
+                    on='/curate',
+                    parameters={'queryfilter': {}},
+                )
