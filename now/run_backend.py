@@ -29,16 +29,20 @@ def run(
     **kwargs,
 ):
     """
-    TODO: Write docs
-
-    :param app_instance:
-    :param user_input:
-    :param kubectl_path:
-    :param ns:
+    This function will run the backend of the app. Specifically, it will:
+    - Load the data
+    - Set up the flow dynamically and get the environment variables
+    - Deploy the flow
+    - Index the data
+    :param app_instance: The app instance
+    :param user_input: The user input
+    :param kubectl_path: The path to the kubectl binary
+    :param kwargs: Additional arguments
     :return:
     """
     dataset = load_data(app_instance, user_input)
 
+    # Set up the app specific flow and also get the environment variables and its values
     env_dict = app_instance.setup(
         dataset=dataset, user_input=user_input, kubectl_path=kubectl_path
     )
@@ -64,7 +68,7 @@ def run(
     #     and user_input.dataset_type == DatasetTypes.S3_BUCKET
     #     and 'NOW_CI_RUN' not in os.environ
     # ):
-    #     # schedule the trigger which will syn the bucket with the indexer once a day
+    #     # schedule the trigger which will sync the bucket with the indexer once a day
     #     trigger_scheduler(user_input, gateway_host_internal)
     # else:
     # index the data right away

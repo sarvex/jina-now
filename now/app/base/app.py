@@ -288,6 +288,9 @@ class JinaNOWApp:
         :param user_input: user configuration based on the given options
         :return: dict used to replace variables in flow yaml and to clean up resources after the flow is terminated
         """
+        # Read the flow and add generic configuration such as labels in the flow
+        # Keep this function as simple as possible. It should only be used to add generic configuration needed
+        # for all apps. App specific configuration should be added in the app specific setup function.
         with open(self.flow_yaml) as input_f:
             flow_yaml_content = JAML.load(input_f.read())
             flow_yaml_content['jcloud']['labels'] = {'team': 'now'}
@@ -299,6 +302,7 @@ class JinaNOWApp:
             )
             self.add_environment_variables(flow_yaml_content)
 
+            # TODO: Move this content to the single search app function
             if not flow_yaml_content['executors']:
                 flow_yaml_content['executors'] = []
             encoders_list = []
@@ -349,7 +353,7 @@ class JinaNOWApp:
             ):
                 indexer_stub = self.indexer_stub()
                 # skip connection to indexer + from all encoders
-                indexer_stub['needs'] = encoders_list + init_execs_list[-1]
+                indexer_stub['needs'] = encoders_list + [init_execs_list[-1]]
                 flow_yaml_content['executors'].append(indexer_stub)
 
             # append api_keys to the executor with name 'preprocessor' and 'indexer'
