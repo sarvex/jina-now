@@ -63,7 +63,7 @@ CLIP_USES = {
     'local': ('CLIPOnnxEncoder/latest', 'ViT-B-32::openai', ModelDimensions.CLIP),
     'remote': ('CLIPOnnxEncoder/latest-gpu', 'ViT-B-32::openai', ModelDimensions.CLIP),
 }
-EXTERNAL_CLIP_HOST = 'encoderclip-climbing-lobster-885354f905.wolf.jina.ai'
+EXTERNAL_CLIP_HOST = 'encoderclip-knowing-lamprey-e00c3526d1.wolf.jina.ai'
 
 DEFAULT_FLOW_NAME = 'nowapi'
 PREFETCH_NR = 10
