@@ -4,8 +4,25 @@ import os
 
 import requests
 
+from now.constants import SUPPORTED_FILE_TYPES, DatasetTypes
 from now.data_loading.utils import get_s3_bucket_and_folder_prefix
 from now.now_dataclasses import UserInput
+
+
+def _create_search_fields(user_input: UserInput):
+    if user_input.dataset_type != DatasetTypes.DOCARRAY:
+        user_input.search_fields_modalities, user_input.search_fields_candidates = (
+            {},
+            [],
+        )
+        for field in user_input.field_names:
+            for modality, modality_types in SUPPORTED_FILE_TYPES.items():
+                if field.split('.')[-1] in modality_types:
+                    user_input.search_fields_modalities[field] = modality
+                    user_input.search_fields_candidates.append(field)
+                    break
+    else:
+        user_input.search_fields_candidates = user_input.field_names
 
 
 def set_field_names_from_docarray(user_input: UserInput, **kwargs):
@@ -115,6 +132,7 @@ def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
         bucket.objects.filter(Prefix=folder_prefix + first_folder)
     )[1:]
     user_input.field_names = _extract_field_names_s3_folder(first_folder_objects)
+    _create_search_fields(user_input)
 
 
 def _ensure_distance_folder_root(path, root):
@@ -194,3 +212,4 @@ def set_field_names_from_local_folder(user_input: UserInput, **kwargs):
     first_path = _check_folder_structure_local_folder(dataset_path)
     first_folder = '/'.join(first_path.split('/')[:-1])
     user_input.field_names = _extract_field_names_local_folder(first_folder)
+    _create_search_fields(user_input)

@@ -213,39 +213,15 @@ AWS_REGION_NAME = DialogOptions(
 
 SEARCH_FIELDS = DialogOptions(
     name='search_fields',
-    choices=lambda user_input, **kwargs: _get_field_names_from_user_input(user_input),
+    choices=lambda user_input, **kwargs: _get_search_field_from_user_input(user_input),
     prompt_message='Please select the search fields:',
     prompt_type='checkbox',
     depends_on=DATASET_TYPE,
     conditional_check=lambda user_input: user_input.field_names is not None
     and len(user_input.field_names) > 0
     and user_input.dataset_type != DatasetTypes.DEMO,
-    post_func=lambda user_input, **kwargs: _post_process_search_fields(user_input),
+    post_func=lambda user_input, **kwargs: _exclude_selected_search_fields(user_input),
 )
-
-
-def _post_process_search_fields(user_input: UserInput, **kwargs):
-    """
-    Extracts the modality from the search fields selected by the user
-    and sets it in the user_input object.
-    Calls _extract_modality_from_search_fields to remove selected search fields.
-
-    :param user_input: UserInput object
-    """
-    if user_input.dataset_type != DatasetTypes.DOCARRAY:
-        user_input.search_fields_modalities = []
-        for field in user_input.search_fields:
-            found_modality = False
-            for modality, modality_types in SUPPORTED_FILE_TYPES.items():
-                if field in modality_types:
-                    user_input.search_fields_modalities.append(modality)
-                    found_modality = True
-                    break
-            if not found_modality:
-                raise ValueError(
-                    f'Could not find modality for field {field}. Please check the search field names in your dataset.'
-                )
-    _exclude_selected_search_fields(user_input)
 
 
 def _exclude_selected_search_fields(user_input: UserInput, **kwargs):
@@ -256,7 +232,7 @@ def _exclude_selected_search_fields(user_input: UserInput, **kwargs):
     :param user_input: UserInput object
 
     fields with image, music and video modality and fields selected by user as search fields are excluded
-    from field names so we can use the remaining fields as filter fields
+    from field names, so we can use the remaining fields as filter fields
     """
     s = set(user_input.search_fields)
     user_input.field_names = [
@@ -271,7 +247,7 @@ def _exclude_selected_search_fields(user_input: UserInput, **kwargs):
 
 FILTER_FIELDS = DialogOptions(
     name='filter_fields',
-    choices=lambda user_input, **kwargs: _get_field_names_from_user_input(user_input),
+    choices=lambda user_input, **kwargs: _get_filter_fields_from_user_input(user_input),
     prompt_message='Please select the filter fields',
     prompt_type='checkbox',
     depends_on=DATASET_TYPE,
@@ -281,9 +257,22 @@ FILTER_FIELDS = DialogOptions(
 )
 
 
-def _get_field_names_from_user_input(user_input: UserInput):
+def _get_search_field_from_user_input(user_input: UserInput):
     """
-    Get the field names from the user input.
+    Get the search field names from the user input.
+
+    :param user_input: UserInput object
+
+    returns format necessary for fields to use in prompt
+    """
+    return [
+        {'name': field, 'value': field} for field in user_input.search_fields_candidates
+    ]
+
+
+def _get_filter_fields_from_user_input(user_input: UserInput):
+    """
+    Get the search field names from the user input.
 
     :param user_input: UserInput object
 
