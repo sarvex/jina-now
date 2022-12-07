@@ -3,7 +3,7 @@ with:
   name: nowapi
   monitoring: true
   port_expose: 8080
-  prefetch: 10
+  prefetch: 1000
   cors: true
   env:
     JINA_LOG_LEVEL: DEBUG
@@ -14,7 +14,7 @@ jcloud:
 executors:
   - name: preprocessor
     uses: ${{ ENV.PREPROCESSOR_NAME }}
-    replicas: 5
+    replicas: 20
     uses_with:
       app: ${{ ENV.APP }}
       admin_emails: ${{ ENV.ADMIN_EMAILS }}

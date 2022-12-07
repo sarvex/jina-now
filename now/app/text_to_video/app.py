@@ -160,4 +160,4 @@ class TextToVideo(JinaNOWApp):
     @property
     def max_request_size(self) -> int:
         """Max number of documents in one request"""
-        return 2
+        return 10
