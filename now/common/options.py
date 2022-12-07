@@ -14,9 +14,9 @@ from hubble import AuthenticationRequiredError
 from kubernetes import client, config
 
 from now.common.detect_schema import (
-    get_schema_docarray,
-    get_schema_local_folder,
-    get_schema_s3_bucket,
+    set_field_names_from_docarray,
+    set_field_names_from_local_folder,
+    set_field_names_from_s3_bucket,
 )
 from now.constants import SUPPORTED_FILE_TYPES, Apps, DatasetTypes, Modalities
 from now.demo_data import AVAILABLE_DATASET
@@ -156,7 +156,7 @@ DOCARRAY_NAME = DialogOptions(
     depends_on=DATASET_TYPE,
     conditional_check=lambda user_input: user_input.dataset_type
     == DatasetTypes.DOCARRAY,
-    post_func=lambda user_input, **kwargs: get_schema_docarray(user_input),
+    post_func=lambda user_input, **kwargs: set_field_names_from_docarray(user_input),
 )
 
 DATASET_PATH = DialogOptions(
@@ -166,7 +166,9 @@ DATASET_PATH = DialogOptions(
     depends_on=DATASET_TYPE,
     is_terminal_command=True,
     conditional_check=lambda user_input: user_input.dataset_type == DatasetTypes.PATH,
-    post_func=lambda user_input, **kwargs: get_schema_local_folder(user_input),
+    post_func=lambda user_input, **kwargs: set_field_names_from_local_folder(
+        user_input
+    ),
 )
 
 DATASET_PATH_S3 = DialogOptions(
@@ -203,7 +205,7 @@ AWS_REGION_NAME = DialogOptions(
     depends_on=DATASET_TYPE,
     conditional_check=lambda user_input: user_input.dataset_type
     == DatasetTypes.S3_BUCKET,
-    post_func=lambda user_input, **kwargs: get_schema_s3_bucket(user_input),
+    post_func=lambda user_input, **kwargs: set_field_names_from_s3_bucket(user_input),
 )
 
 # --------------------------------------------- #
@@ -211,18 +213,27 @@ AWS_REGION_NAME = DialogOptions(
 
 SEARCH_FIELDS = DialogOptions(
     name='search_fields',
-    choices=lambda user_input, **kwargs: _get_fields(user_input),
+    choices=lambda user_input, **kwargs: _get_field_names_from_user_input(user_input),
     prompt_message='Please select the search fields:',
     prompt_type='checkbox',
     depends_on=DATASET_TYPE,
     conditional_check=lambda user_input: user_input.field_names is not None
     and len(user_input.field_names) > 0
     and user_input.dataset_type != DatasetTypes.DEMO,
-    post_func=lambda user_input, **kwargs: _exclude_search_fields(user_input),
+    post_func=lambda user_input, **kwargs: _exclude_selected_search_fields(user_input),
 )
 
 
-def _exclude_search_fields(user_input: UserInput):
+def _exclude_selected_search_fields(user_input: UserInput):
+    """
+    Exclude the search fields selected by the user and fields that cannot be as filter fields
+     from the list of field names.
+
+    :param user_input: UserInput object
+
+    fields with image, music and video modality and fields selected by user as search fields are excluded
+    from field names so we can use the remaining fields as filter fields
+    """
     s = set(user_input.search_fields)
     user_input.field_names = [
         x
@@ -236,7 +247,7 @@ def _exclude_search_fields(user_input: UserInput):
 
 FILTER_FIELDS = DialogOptions(
     name='filter_fields',
-    choices=lambda user_input, **kwargs: _get_fields(user_input),
+    choices=lambda user_input, **kwargs: _get_field_names_from_user_input(user_input),
     prompt_message='Please select the filter fields',
     prompt_type='checkbox',
     depends_on=DATASET_TYPE,
@@ -246,7 +257,14 @@ FILTER_FIELDS = DialogOptions(
 )
 
 
-def _get_fields(user_input: UserInput):
+def _get_field_names_from_user_input(user_input: UserInput):
+    """
+    Get the field names from the user input.
+
+    :param user_input: UserInput object
+
+    returns format necessary for fields to use in prompt
+    """
     return [{'name': field, 'value': field} for field in user_input.field_names]
 
 

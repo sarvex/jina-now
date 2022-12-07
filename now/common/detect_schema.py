@@ -8,7 +8,7 @@ from now.data_loading.utils import _get_s3_bucket_and_folder_prefix
 from now.now_dataclasses import UserInput
 
 
-def get_schema_docarray(user_input: UserInput, **kwargs):
+def set_field_names_from_docarray(user_input: UserInput, **kwargs):
     """
     Get the schema from a DocArray
 
@@ -39,7 +39,7 @@ def get_schema_docarray(user_input: UserInput, **kwargs):
         raise ValueError('DocumentArray does not exist or you do not have access to it')
 
 
-def get_schema_s3_bucket(user_input: UserInput, **kwargs):
+def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
     """
     Get the schema from a S3 bucket
 
@@ -62,29 +62,32 @@ def get_schema_s3_bucket(user_input: UserInput, **kwargs):
             all_files = False
     if all_files:
         user_input.field_names = []
-    else:
-        for obj in list(bucket.objects.filter(Prefix=folder_prefix))[
-            1:
-        ]:  # first is the bucket path
-            if obj.key.endswith('/'):
-                continue
-            if len(obj.key.split('/')) - len(folder_prefix.split('/')) != 1:
-                raise ValueError(
-                    'File format different than expected, please check documentation https://now.jina.ai'
-                )
+        return
+    for obj in list(bucket.objects.filter(Prefix=folder_prefix))[
+        1:
+    ]:  # first is the bucket path
+        if obj.key.endswith('/'):
+            continue
+        current_path = obj.key.split('/')
+        root_folder_path = folder_prefix.split('/')
+        if (
+            len(current_path) - len(root_folder_path) != 1
+        ):  # checks if current path is a direct subfolder of
+            # root folder
+            raise ValueError(
+                'File format different than expected, please check documentation https://now.jina.ai'
+            )
 
-        first_folder = list(bucket.objects.filter(Prefix=folder_prefix))[1].key.split(
-            '/'
-        )[-2]
-        for field in list(bucket.objects.filter(Prefix=folder_prefix + first_folder))[
-            1:
-        ]:
-            if field.key.endswith('.json'):
-                data = json.loads(field.get()['Body'].read())
-                field_names.extend(list(data.keys()))
-            else:
-                field_names.append(field.key.split('/')[-1])
-        user_input.field_names = field_names
+    first_folder = list(bucket.objects.filter(Prefix=folder_prefix))[1].key.split('/')[
+        -2
+    ]
+    for field in list(bucket.objects.filter(Prefix=folder_prefix + first_folder))[1:]:
+        if field.key.endswith('.json'):
+            data = json.loads(field.get()['Body'].read())
+            field_names.extend(list(data.keys()))
+        else:
+            field_names.append(field.key.split('/')[-1])
+    user_input.field_names = field_names
 
 
 def _ensure_distance_folder_root(path, root):
@@ -94,7 +97,7 @@ def _ensure_distance_folder_root(path, root):
     return os.path.relpath(path, root).count(os.path.sep) == 1
 
 
-def get_schema_local_folder(user_input: UserInput, **kwargs):
+def set_field_names_from_local_folder(user_input: UserInput, **kwargs):
     """
     Get the schema from a local folder
 
@@ -115,23 +118,23 @@ def get_schema_local_folder(user_input: UserInput, **kwargs):
                 all_files = False
         if all_files:
             user_input.field_names = []
-        else:
-            first_path = ''
-            for path in sorted(glob.glob(os.path.join(dataset_path, '**/**'))):
-                if not first_path:
-                    first_path = path
+            return
+        first_path = ''
+        for path in sorted(glob.glob(os.path.join(dataset_path, '**/**'))):
+            if not first_path:
+                first_path = path
 
-                if not _ensure_distance_folder_root(path, dataset_path):
-                    raise ValueError(
-                        'Folder format is not as expected, please check documentation https://now.jina.ai'
-                    )
-            first_folder = '/'.join(first_path.split('/')[:-1])
-            field_names = []
-            for field_name in os.listdir(first_folder):
-                if field_name.endswith('.json'):
-                    json_f = open(os.path.join(first_folder, field_name))
-                    data = json.load(json_f)
-                    field_names.extend(list(data.keys()))
-                else:
-                    field_names.append(field_name)
-            user_input.field_names = field_names
+            if not _ensure_distance_folder_root(path, dataset_path):
+                raise ValueError(
+                    'Folder format is not as expected, please check documentation https://now.jina.ai'
+                )
+        first_folder = '/'.join(first_path.split('/')[:-1])
+        field_names = []
+        for field_name in os.listdir(first_folder):
+            if field_name.endswith('.json'):
+                json_f = open(os.path.join(first_folder, field_name))
+                data = json.load(json_f)
+                field_names.extend(list(data.keys()))
+            else:
+                field_names.append(field_name)
+        user_input.field_names = field_names
