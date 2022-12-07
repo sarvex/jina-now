@@ -274,6 +274,87 @@ class JinaNOWApp:
             },
         }
 
+    def get_executor_stubs(self, user_input, flow_yaml_content) -> Dict:
+        """
+        Returns a dictionary of executors to be added in the flow
+        """
+        # TODO: When refactoring, move this content to the single search app function
+        # and make this function abstract
+        if not flow_yaml_content['executors']:
+            flow_yaml_content['executors'] = []
+        encoders_list = []
+        init_execs_list = []
+
+        # 1. append autocomplete executor to the flow if output modality is text
+        if Modalities.TEXT in self.input_modality:
+            if not any(
+                exec_dict['name'] == 'autocomplete_executor'
+                for exec_dict in flow_yaml_content['executors']
+            ):
+                autocomplete = self.autocomplete_stub()
+                init_execs_list.append(autocomplete['name'])
+                flow_yaml_content['executors'].append(autocomplete)
+
+        # 2. append preprocessors to the flow
+        preprocessor = self.preprocessor_stub()
+        preprocessor['needs'] = init_execs_list[-1] if init_execs_list else 'gateway'
+        init_execs_list.append(preprocessor['name'])
+        flow_yaml_content['executors'].append(preprocessor)
+
+        # 3. append sbert encoder to the flow if output modalities are texts
+        if Modalities.TEXT in user_input.output_modality:
+            sbert_encoder = self.sbert_encoder_stub()
+            encoders_list.append(sbert_encoder['name'])
+            sbert_encoder['needs'] = init_execs_list[-1]
+            sbert_encoder['when'] = {'tags__modality': {'$eq': 'text'}}
+            flow_yaml_content['executors'].append(sbert_encoder)
+
+        # 4. append clip encoder to the flow if output modalities are images
+        if Modalities.IMAGE in user_input.output_modality:
+            clip_encoder = self.clip_encoder_stub()
+            encoders_list.append(clip_encoder['name'])
+            clip_encoder['needs'] = init_execs_list[-1]
+            clip_encoder['when'] = {
+                '$or': [
+                    {'tags__modality': {'$eq': 'image'}},
+                    {'tags__modality': {'$eq': 'text'}},
+                ]
+            }
+            flow_yaml_content['executors'].append(clip_encoder)
+
+        if Modalities.VIDEO in user_input.output_modality:
+            clip_encoder = self.clip_encoder_stub()
+            encoders_list.append(clip_encoder['name'])
+            clip_encoder['needs'] = init_execs_list[-1]
+            clip_encoder['when'] = {
+                '$or': [
+                    {'tags__modality': {'$eq': 'image'}},
+                    {'tags__modality': {'$eq': 'text'}},
+                ]
+            }
+            flow_yaml_content['executors'].append(clip_encoder)
+
+        # 5. append indexer to the flow
+        if not any(
+            exec_dict['name'] == 'indexer'
+            for exec_dict in flow_yaml_content['executors']
+        ):
+            indexer_stub = self.indexer_stub()
+            # skip connection to indexer + from all encoders
+            indexer_stub['needs'] = encoders_list + [init_execs_list[-1]]
+            indexer_stub['no_reduce'] = True
+            flow_yaml_content['executors'].append(indexer_stub)
+
+        # append api_keys to the executor with name 'preprocessor' and 'indexer'
+        for executor in flow_yaml_content['executors']:
+            if (
+                'encoder' not in executor['name']
+                and 'api_keys' not in executor['uses_with']
+            ):
+                executor['uses_with']['api_keys'] = '${{ ENV.API_KEY }}'
+
+        return flow_yaml_content
+
     # TODO Remove kubectl_path. At the moment, the setup function needs kubectl because of finetuning a custom
     #  dataset with local deployment. In that case, inference is done on the k8s cluster.
     def setup(
@@ -304,83 +385,9 @@ class JinaNOWApp:
             )
             self.add_environment_variables(flow_yaml_content)
 
-            # TODO: Move this content to the single search app function
-            if not flow_yaml_content['executors']:
-                flow_yaml_content['executors'] = []
-            encoders_list = []
-            init_execs_list = []
+            # Call the executor stubs function to add executors to the flow and return the whole flow content
+            self.flow_yaml = self.get_executor_stubs(user_input, flow_yaml_content)
 
-            # 1. append autocomplete executor to the flow if output modality is text
-            if Modalities.TEXT in self.input_modality:
-                if not any(
-                    exec_dict['name'] == 'autocomplete_executor'
-                    for exec_dict in flow_yaml_content['executors']
-                ):
-                    autocomplete = self.autocomplete_stub()
-                    init_execs_list.append(autocomplete['name'])
-                    flow_yaml_content['executors'].append(autocomplete)
-
-            # 2. append preprocessors to the flow
-            preprocessor = self.preprocessor_stub()
-            preprocessor['needs'] = (
-                init_execs_list[-1] if init_execs_list else 'gateway'
-            )
-            init_execs_list.append(preprocessor['name'])
-            flow_yaml_content['executors'].append(preprocessor)
-
-            # 3. append sbert encoder to the flow if output modalities are texts
-            if Modalities.TEXT in user_input.output_modality:
-                sbert_encoder = self.sbert_encoder_stub()
-                encoders_list.append(sbert_encoder['name'])
-                sbert_encoder['needs'] = init_execs_list[-1]
-                sbert_encoder['when'] = {'tags__modality': {'$eq': 'text'}}
-                flow_yaml_content['executors'].append(sbert_encoder)
-
-            # 4. append clip encoder to the flow if output modalities are images
-            if Modalities.IMAGE in user_input.output_modality:
-                clip_encoder = self.clip_encoder_stub()
-                encoders_list.append(clip_encoder['name'])
-                clip_encoder['needs'] = init_execs_list[-1]
-                clip_encoder['when'] = {
-                    '$or': [
-                        {'tags__modality': {'$eq': 'image'}},
-                        {'tags__modality': {'$eq': 'text'}},
-                    ]
-                }
-                flow_yaml_content['executors'].append(clip_encoder)
-
-            if Modalities.VIDEO in user_input.output_modality:
-                clip_encoder = self.clip_encoder_stub()
-                encoders_list.append(clip_encoder['name'])
-                clip_encoder['needs'] = init_execs_list[-1]
-                clip_encoder['when'] = {
-                    '$or': [
-                        {'tags__modality': {'$eq': 'image'}},
-                        {'tags__modality': {'$eq': 'text'}},
-                    ]
-                }
-                flow_yaml_content['executors'].append(clip_encoder)
-
-            # 5. append indexer to the flow
-            if not any(
-                exec_dict['name'] == 'indexer'
-                for exec_dict in flow_yaml_content['executors']
-            ):
-                indexer_stub = self.indexer_stub()
-                # skip connection to indexer + from all encoders
-                indexer_stub['needs'] = encoders_list + [init_execs_list[-1]]
-                indexer_stub['no_reduce'] = True
-                flow_yaml_content['executors'].append(indexer_stub)
-
-            # append api_keys to the executor with name 'preprocessor' and 'indexer'
-            for executor in flow_yaml_content['executors']:
-                if (
-                    'encoder' not in executor['name']
-                    and 'api_keys' not in executor['uses_with']
-                ):
-                    executor['uses_with']['api_keys'] = '${{ ENV.API_KEY }}'
-
-            self.flow_yaml = flow_yaml_content
         return {}
 
     def preprocess(
