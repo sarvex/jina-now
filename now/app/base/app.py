@@ -193,7 +193,7 @@ class JinaNOWApp:
         return {
             'name': 'autocomplete_executor',
             'uses': '${{ ENV.AUTOCOMPLETE_EXECUTOR_NAME }}',
-            'needs': 'preprocessor',
+            'needs': 'gateway',
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'uses_with': {
                 'api_keys': '${{ ENV.API_KEY }}',
@@ -266,6 +266,8 @@ class JinaNOWApp:
             'uses': '${{ ENV.INDEXER_NAME }}',
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'uses_with': {
+                'dim': '${{ENV.N_DIM}}',
+                'columns': '${{ENV.COLUMNS}}',
                 'api_keys': '${{ ENV.API_KEY }}',
                 'user_emails': '${{ ENV.USER_EMAILS }}',
                 'admin_emails': '${{ ENV.ADMIN_EMAILS }}',
@@ -308,12 +310,7 @@ class JinaNOWApp:
             encoders_list = []
             init_execs_list = []
 
-            # 1. append preprocessors to the flow
-            preprocessor = self.preprocessor_stub()
-            init_execs_list.append(preprocessor['name'])
-            flow_yaml_content['executors'].append(preprocessor)
-
-            # 2. append autocomplete executor to the flow if output modality is text
+            # 1. append autocomplete executor to the flow if output modality is text
             if Modalities.TEXT in self.input_modality:
                 if not any(
                     exec_dict['name'] == 'autocomplete_executor'
@@ -322,6 +319,14 @@ class JinaNOWApp:
                     autocomplete = self.autocomplete_stub()
                     init_execs_list.append(autocomplete['name'])
                     flow_yaml_content['executors'].append(autocomplete)
+
+            # 2. append preprocessors to the flow
+            preprocessor = self.preprocessor_stub()
+            preprocessor['needs'] = (
+                init_execs_list[-1] if init_execs_list else 'gateway'
+            )
+            init_execs_list.append(preprocessor['name'])
+            flow_yaml_content['executors'].append(preprocessor)
 
             # 3. append sbert encoder to the flow if output modalities are texts
             if Modalities.TEXT in user_input.output_modality:
@@ -354,6 +359,7 @@ class JinaNOWApp:
                 indexer_stub = self.indexer_stub()
                 # skip connection to indexer + from all encoders
                 indexer_stub['needs'] = encoders_list + [init_execs_list[-1]]
+                indexer_stub['no_reduce'] = True
                 flow_yaml_content['executors'].append(indexer_stub)
 
             # append api_keys to the executor with name 'preprocessor' and 'indexer'

@@ -4,7 +4,7 @@ import os
 from collections import defaultdict
 from copy import deepcopy
 from sys import maxsize
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from docarray import Document, DocumentArray
 
@@ -144,6 +144,7 @@ class NOWBaseIndexer(Executor):
         docs: Optional[DocumentArray] = None,
         parameters: dict = {},
         docs_matrix: Optional[List[DocumentArray]] = None,
+        docs_map: Optional[Dict[str, DocumentArray]] = None,
         **kwargs,
     ):
         """Base function for indexing documents. Handles the data management for the index and list endpoints.
