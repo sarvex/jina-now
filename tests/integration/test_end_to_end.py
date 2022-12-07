@@ -115,7 +115,7 @@ def test_end_to_end_remote(
     output_modality,
     with_hubble_login_patch,
 ):
-    test_end_to_end(
+    run_end_to_end(
         app,
         cleanup,
         dataset,
@@ -165,7 +165,7 @@ def test_end_to_end_local(
     output_modality,
     with_hubble_login_patch,
 ):
-    test_end_to_end(
+    run_end_to_end(
         app,
         cleanup,
         dataset,
@@ -177,7 +177,7 @@ def test_end_to_end_local(
     )
 
 
-def test_end_to_end(
+def run_end_to_end(
     app,
     cleanup,
     dataset,
