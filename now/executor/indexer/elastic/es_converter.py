@@ -28,10 +28,10 @@ class ESConverter:
         """
         prep_da = docs_map.pop('preprocessor')
         es_docs = {doc.id: self.get_base_es_doc(doc, index_name) for doc in prep_da}
-        for encoder, documents in docs_map.items():
+        for executor_name, documents in docs_map.items():
             for doc in documents:
                 es_doc = es_docs[doc.id]
-                for encoded_field in encoder_to_fields[encoder]:
+                for encoded_field in encoder_to_fields[executor_name]:
                     field_doc = getattr(doc, encoded_field)
                     if isinstance(field_doc, ChunkArray):
                         # average the embeddings of the chunks
@@ -43,16 +43,16 @@ class ESConverter:
                         if 'embeddings' not in prep_da[doc.id].tags:
                             prep_da[doc.id].tags['embeddings'] = {}
                         prep_da[doc.id].tags['embeddings'][
-                            f'{encoded_field}-{encoder}'
+                            f'{encoded_field}-{executor_name}'
                         ] = field_doc[
                             ..., 'embedding'
                         ]  # will be a matrix, stacked
                     else:
                         embedding = field_doc.embedding
                         prep_da[doc.id].tags['embeddings'][
-                            f'{encoded_field}-{encoder}'
+                            f'{encoded_field}-{executor_name}'
                         ] = embedding
-                    es_doc[f'{encoded_field}-{encoder}.embedding'] = embedding
+                    es_doc[f'{encoded_field}-{executor_name}.embedding'] = embedding
 
                     if hasattr(field_doc, 'text') and field_doc.text:
                         es_doc['bm25_text'] += field_doc.text + ' '
@@ -144,16 +144,15 @@ class ESConverter:
         """
         for (
             query_field,
-            query_encoder,
             document_field,
-            document_encoder,
+            encoder,
             linear_weight,
         ) in semantic_scores:
-            if document_encoder == 'bm25':
+            if encoder == 'bm25':
                 continue
-            q_emb = query_doc.tags['embeddings'][f'{query_field}-{query_encoder}']
+            q_emb = query_doc.tags['embeddings'][f'{query_field}-{encoder}']
             d_emb = retrieved_doc.tags['embeddings'][
-                f'{document_field}-{document_encoder}.embedding'
+                f'{document_field}-{encoder}.embedding'
             ]
             if metric == 'cosine':
                 score = (
@@ -168,7 +167,7 @@ class ESConverter:
                     [
                         query_field,
                         document_field,
-                        document_encoder,
+                        encoder,
                         str(linear_weight),
                     ]
                 )

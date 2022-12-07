@@ -1,33 +1,18 @@
 import traceback
-from collections import defaultdict, namedtuple
+from collections import namedtuple
 from typing import Any, Dict, List, Mapping, Optional, Union
 
-from docarray import Document, DocumentArray
+from docarray import DocumentArray
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 
 from now.executor.abstract.auth import SecurityLevel, secure_request
 from now.executor.abstract.base_indexer import NOWBaseIndexer as Executor
 from now.executor.indexer.elastic.es_converter import ESConverter
-from now.executor.indexer.elastic.semantic_score import Scores
-
-metrics_mapping = {
-    'cosine': 'cosineSimilarity',
-    'l2_norm': 'l2norm',
-}
+from now.executor.indexer.elastic.es_query_builder import ESQueryBuilder, SemanticScore
 
 ESConverter = ESConverter()
-
-SemanticScore = namedtuple(
-    'SemanticScores',
-    [
-        'query_field',
-        'query_encoder',
-        'document_field',
-        'document_encoder',
-        'linear_weight',
-    ],
-)
+ESQueryBuilder = ESQueryBuilder()
 
 FieldEmbedding = namedtuple(
     'FieldEmbedding',
@@ -85,7 +70,8 @@ class NOWElasticIndexer(Executor):
         self.index_name = index_name
         self.traversal_paths = traversal_paths
         self.limit = limit
-        self.default_semantic_scores = default_semantic_scores
+        if default_semantic_scores:
+            self.default_semantic_scores = default_semantic_scores
         self.encoder_to_fields = {
             document_mapping.encoder: document_mapping.fields
             for document_mapping in document_mappings
@@ -202,9 +188,22 @@ class NOWElasticIndexer(Executor):
         get_score_breakdown = parameters.get('get_score_breakdown', False)
         custom_bm25_query = parameters.get('custom_bm25_query', None)
         apply_default_bm25 = parameters.get('apply_default_bm25', False)
-
-        es_queries = self._build_es_queries(
-            docs_map, apply_default_bm25, get_score_breakdown, custom_bm25_query
+        semantic_scores = parameters.get('default_semantic_scores', None)
+        if not self.default_semantic_scores:
+            self.default_semantic_scores = (
+                ESQueryBuilder.generate_semantic_scores(
+                    docs_map, self.encoder_to_fields
+                )
+                if not semantic_scores
+                else semantic_scores
+            )
+        es_queries = ESQueryBuilder.build_es_queries(
+            docs_map=docs_map,
+            apply_default_bm25=apply_default_bm25,
+            get_score_breakdown=get_score_breakdown,
+            semantic_scores=self.default_semantic_scores,
+            custom_bm25_query=custom_bm25_query,
+            metric=self.metric,
         )
         for doc, query in es_queries:
             try:
@@ -221,7 +220,7 @@ class NOWElasticIndexer(Executor):
                     metric=self.metric,
                     semantic_scores=self.default_semantic_scores,
                 )
-                doc.tags.pop('embeddings', None)
+                doc.tags.pop('embeddings')
             except Exception:
                 print(traceback.format_exc())
         return DocumentArray(list(zip(*es_queries))[0])
@@ -311,140 +310,3 @@ class NOWElasticIndexer(Executor):
     def batch_iterator(self):
         """Unnecessary for ElasticIndexer, but need to override BaseIndexer."""
         yield []
-
-    def _build_es_queries(
-        self,
-        docs_map,
-        apply_default_bm25: bool,
-        get_score_breakdown: bool,
-        custom_bm25_query: Optional[dict] = None,
-    ) -> Dict:
-        """
-        Build script-score query used in Elasticsearch. To do this, we extract
-        embeddings from the query document and pass them in the script-score
-        query together with the fields to search on in the Elasticsearch index.
-        The query document will be returned with all of its embeddings as tags with
-        their corresponding field+encoder as key.
-
-        :param docs_map: dictionary mapping encoder to DocumentArray.
-        :param apply_default_bm25: whether to combine bm25 with vector search. If False,
-            will only perform vector search. If True, must supply a text
-            field for bm25 searching.
-        :param get_score_breakdown: whether to return the score breakdown for matches.
-            For this function, this parameter determines whether to return the embeddings
-            of a query document.
-        :param custom_bm25_query: custom query to use for BM25.
-        :param search_filter: dictionary of filters to apply to the search.
-        :return: a dictionary containing query and filter.
-        """
-        queries = {}
-        docs = {}
-        sources = {}
-        script_params = defaultdict(dict)
-        semantic_scores = self.default_semantic_scores
-        scores = Scores(semantic_scores)
-        for encoder, da in docs_map.items():
-            for doc in da:
-                if doc.id not in docs:
-                    docs[doc.id] = doc
-                    docs[doc.id].tags['embeddings'] = {}
-
-                if doc.id not in queries:
-                    queries[doc.id] = self.get_default_query(
-                        doc, apply_default_bm25, custom_bm25_query
-                    )
-
-                    if apply_default_bm25 or custom_bm25_query:
-                        sources[doc.id] = '1.0 + _score / (_score + 10.0)'
-                    else:
-                        sources[doc.id] = '1.0'
-
-                for (
-                    query_field,
-                    document_field,
-                    document_encoder,
-                    linear_weight,
-                ) in scores.get_scores(encoder):
-                    field_doc = getattr(doc, query_field)
-                    if get_score_breakdown:
-                        docs[doc.id].tags['embeddings'][
-                            f'{query_field}-{document_encoder}'
-                        ] = field_doc.embedding
-
-                    query_string = f'params.query_{query_field}_{encoder}'
-                    document_string = f'{document_field}-{document_encoder}'
-
-                    sources[
-                        doc.id
-                    ] += f" + {float(linear_weight)}*{metrics_mapping[self.metric]}({query_string}, '{document_string}.embedding')"
-
-                    script_params[doc.id][
-                        f'query_{query_field}_{encoder}'
-                    ] = field_doc.embedding
-
-        es_queries = []
-
-        for doc_id, query in queries.items():
-
-            query_json = {
-                'script_score': {
-                    'query': query,
-                    'script': {
-                        'source': sources[doc_id],
-                        'params': script_params[doc_id],
-                    },
-                }
-            }
-            es_queries.append((docs[doc_id], query_json))
-        return es_queries
-
-    def get_default_query(
-        self, doc: Document, apply_default_bm25: bool, custom_bm25_query: Dict = None
-    ):
-        query = {
-            'bool': {
-                'should': [
-                    {'match_all': {}},
-                ],
-            },
-        }
-
-        # build bm25 part
-        if apply_default_bm25:
-            bm25_semantic_score = next(
-                (
-                    x
-                    for x in self.default_semantic_scores
-                    if x.document_encoder == 'bm25'
-                ),
-                None,
-            )
-            if not bm25_semantic_score:
-                raise ValueError(
-                    'No bm25 semantic scores found. Please specify this in the default_semantic_scores.'
-                )
-            text = getattr(doc, bm25_semantic_score.query_field).text
-            multi_match = {'multi_match': {'query': text, 'fields': ['bm25_text']}}
-            query['bool']['should'].append(multi_match)
-        elif custom_bm25_query:
-            query['bool']['should'].append(custom_bm25_query)
-
-        # add filter
-        if 'es_search_filter' in doc.tags:
-            query['bool']['filter'] = doc.tags['search_filter']
-        elif 'search_filter' in doc.tags:
-            search_filter = doc.tags['search_filter']
-            es_search_filter = {}
-
-            for field, filters in search_filter.items():
-                for operator, filter in filters.items():
-                    if isinstance(filter, str):
-                        es_search_filter['term'] = {"tags." + field: filter}
-                    elif isinstance(filter, int) or isinstance(filter, float):
-                        operator = operator.replace('$', '')
-                        es_search_filter['range'] = {
-                            "tags." + field: {operator: filter}
-                        }
-            query['bool']['filter'] = es_search_filter
-
-        return query
