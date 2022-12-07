@@ -117,6 +117,15 @@ class NOWPreprocessor(Executor):
 
             docs = self.app.preprocess(docs)
             self._ocr_detect_text(docs)
+            for c in docs['@c']:
+                new_cc = DocumentArray()
+                for cc in c.chunks:
+                    if (
+                        c.modality != Modalities.IMAGE
+                        or c.tags[TAG_OCR_DETECTOR_TEXT_IN_DOC]
+                    ):
+                        new_cc.append(cc)
+                c.chunks = new_cc
 
             # as _maybe_download_from_s3 moves S3 URI to tags['uri'], need to move it back for post-processor & accurate
             # results.
