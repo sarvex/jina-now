@@ -4,7 +4,7 @@ import os
 
 import requests
 
-from now.data_loading.utils import _get_s3_bucket_and_folder_prefix
+from now.data_loading.utils import get_s3_bucket_and_folder_prefix
 from now.now_dataclasses import UserInput
 
 
@@ -99,7 +99,7 @@ def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
     checks if the bucket exists and the format of the folder structure is correct,
     if yes then downloads the first folder and sets its content as field_names in user_input
     """
-    bucket, folder_prefix = _get_s3_bucket_and_folder_prefix(
+    bucket, folder_prefix = get_s3_bucket_and_folder_prefix(
         user_input
     )  # user has to provide the folder where folder structure begins
 

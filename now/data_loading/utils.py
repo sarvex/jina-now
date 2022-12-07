@@ -58,7 +58,7 @@ def get_dataset_url(dataset: str, output_modality: Modalities) -> str:
         return f'{BASE_STORAGE_URL}/{data_folder}/{dataset}-{docarray_version}.bin'
 
 
-def _get_s3_bucket_and_folder_prefix(user_input: UserInput):
+def get_s3_bucket_and_folder_prefix(user_input: UserInput):
     import boto3.session
 
     s3_uri = user_input.dataset_path

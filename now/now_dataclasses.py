@@ -105,6 +105,7 @@ class UserInput(BaseModel):
     # Fields
     field_names: Optional[List] = None
     search_fields: Optional[List] = None
+    search_fields_modalities: Optional[List] = None
     filter_fields: Optional[List] = None
 
     # ES related

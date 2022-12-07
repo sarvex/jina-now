@@ -220,11 +220,35 @@ SEARCH_FIELDS = DialogOptions(
     conditional_check=lambda user_input: user_input.field_names is not None
     and len(user_input.field_names) > 0
     and user_input.dataset_type != DatasetTypes.DEMO,
-    post_func=lambda user_input, **kwargs: _exclude_selected_search_fields(user_input),
+    post_func=lambda user_input, **kwargs: _post_process_search_fields(user_input),
 )
 
 
-def _exclude_selected_search_fields(user_input: UserInput):
+def _post_process_search_fields(user_input: UserInput, **kwargs):
+    """
+    Extracts the modality from the search fields selected by the user
+    and sets it in the user_input object.
+    Calls _extract_modality_from_search_fields to remove selected search fields.
+
+    :param user_input: UserInput object
+    """
+    if user_input.dataset_type != DatasetTypes.DOCARRAY:
+        user_input.search_fields_modalities = []
+        for field in user_input.search_fields:
+            found_modality = False
+            for modality, modality_types in SUPPORTED_FILE_TYPES.items():
+                if field in modality_types:
+                    user_input.search_fields_modalities.append(modality)
+                    found_modality = True
+                    break
+            if not found_modality:
+                raise ValueError(
+                    f'Could not find modality for field {field}. Please check the search field names in your dataset.'
+                )
+    _exclude_selected_search_fields(user_input)
+
+
+def _exclude_selected_search_fields(user_input: UserInput, **kwargs):
     """
     Exclude the search fields selected by the user and fields that cannot be as filter fields
      from the list of field names.

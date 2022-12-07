@@ -9,9 +9,9 @@ from now.app.base.app import JinaNOWApp
 from now.constants import DatasetTypes
 from now.data_loading.es import ElasticsearchExtractor
 from now.data_loading.utils import (
-    _get_s3_bucket_and_folder_prefix,
     fetch_da_from_url,
     get_dataset_url,
+    get_s3_bucket_and_folder_prefix,
 )
 from now.demo_data import DemoDatasetNames
 from now.log import yaspin_extended
@@ -171,7 +171,7 @@ def _load_from_disk(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
 
 def _list_files_from_s3_bucket(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
 
-    bucket, folder_prefix = _get_s3_bucket_and_folder_prefix(user_input)
+    bucket, folder_prefix = get_s3_bucket_and_folder_prefix(user_input)
 
     docs = []
     with yaspin_extended(
