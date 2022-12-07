@@ -341,14 +341,24 @@ class JinaNOWApp:
                 clip_encoder = self.clip_encoder_stub()
                 encoders_list.append(clip_encoder['name'])
                 clip_encoder['needs'] = init_execs_list[-1]
-                clip_encoder['when'] = {'tags__modality': {'$eq': 'image'}}
+                clip_encoder['when'] = {
+                    '$or': [
+                        {'tags__modality': {'$eq': 'image'}},
+                        {'tags__modality': {'$eq': 'text'}},
+                    ]
+                }
                 flow_yaml_content['executors'].append(clip_encoder)
 
             if Modalities.VIDEO in user_input.output_modality:
                 clip_encoder = self.clip_encoder_stub()
                 encoders_list.append(clip_encoder['name'])
                 clip_encoder['needs'] = init_execs_list[-1]
-                clip_encoder['when'] = {'tags__modality': {'$eq': 'image'}}
+                clip_encoder['when'] = {
+                    '$or': [
+                        {'tags__modality': {'$eq': 'image'}},
+                        {'tags__modality': {'$eq': 'text'}},
+                    ]
+                }
                 flow_yaml_content['executors'].append(clip_encoder)
 
             # 5. append indexer to the flow

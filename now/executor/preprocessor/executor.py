@@ -164,7 +164,11 @@ class NOWPreprocessor(Executor):
             new_da.append(
                 Document(
                     id=flat_doc.parent_id,
-                    tags={'modality': flat_doc.modality},
+                    tags={
+                        'modality': flat_doc.modality,
+                        **flat_doc.tags,
+                        **flat_doc.chunks[0].tags,
+                    },
                     modality=flat_doc.modality,
                     chunks=flat_doc,
                 )
