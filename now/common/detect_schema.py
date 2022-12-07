@@ -39,6 +39,57 @@ def set_field_names_from_docarray(user_input: UserInput, **kwargs):
         raise ValueError('DocumentArray does not exist or you do not have access to it')
 
 
+def _check_contains_files_only_s3_bucket(objects):
+    """
+    Checks if the bucket contains only files and no subfolders
+
+    :param objects: list of objects in the bucket
+    """
+    for obj in objects[1:]:
+        if obj.key.endswith('/'):
+            return False
+    return True
+
+
+def _check_folder_structure_s3_bucket(objects, folder_prefix):
+    """
+    Checks if the folder contains only subfolders and no files and no subsub folders
+
+    :param objects: list of objects in the bucket
+    :param folder_prefix: root folder
+    """
+    for obj in objects[1:]:  # first is the bucket path
+        if obj.key.endswith('/'):
+            continue
+        current_path = obj.key.split('/')
+        root_folder_path = folder_prefix.split('/')
+        if (
+            len(current_path) - len(root_folder_path) != 1
+        ):  # checks if current path is a direct subfolder of
+            # root folder
+            raise ValueError(
+                'File format different than expected, please check documentation https://now.jina.ai'
+            )
+
+
+def _extract_field_names_s3_folder(first_folder_objects):
+    """
+    Extracts field names from the files in first folder in the bucket also
+    checks if folder contains json files and if yes then extracts the keys from the json files
+    and add to the field_names
+
+    :param first_folder_objects: list of objects in the first folder
+    """
+    field_names = []
+    for field in first_folder_objects:
+        if field.key.endswith('.json'):
+            data = json.loads(field.get()['Body'].read())
+            field_names.extend(list(data.keys()))
+        else:
+            field_names.append(field.key.split('/')[-1])
+    return field_names
+
+
 def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
     """
     Get the schema from a S3 bucket
@@ -52,42 +103,18 @@ def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
         user_input
     )  # user has to provide the folder where folder structure begins
 
-    field_names = []
-
-    all_files = True
-    for obj in list(bucket.objects.filter(Prefix=folder_prefix))[
-        1:
-    ]:  # first is the bucket path
-        if obj.key.endswith('/'):
-            all_files = False
-    if all_files:
+    objects = list(bucket.objects.filter(Prefix=folder_prefix))
+    if _check_contains_files_only_s3_bucket(objects):
         user_input.field_names = []
         return
-    for obj in list(bucket.objects.filter(Prefix=folder_prefix))[
-        1:
-    ]:  # first is the bucket path
-        if obj.key.endswith('/'):
-            continue
-        current_path = obj.key.split('/')
-        root_folder_path = folder_prefix.split('/')
-        if (
-            len(current_path) - len(root_folder_path) != 1
-        ):  # checks if current path is a direct subfolder of
-            # root folder
-            raise ValueError(
-                'File format different than expected, please check documentation https://now.jina.ai'
-            )
 
-    first_folder = list(bucket.objects.filter(Prefix=folder_prefix))[1].key.split('/')[
-        -2
-    ]
-    for field in list(bucket.objects.filter(Prefix=folder_prefix + first_folder))[1:]:
-        if field.key.endswith('.json'):
-            data = json.loads(field.get()['Body'].read())
-            field_names.extend(list(data.keys()))
-        else:
-            field_names.append(field.key.split('/')[-1])
-    user_input.field_names = field_names
+    _check_folder_structure_s3_bucket(objects, folder_prefix)
+
+    first_folder = objects[1].key.split('/')[-2]
+    first_folder_objects = list(
+        bucket.objects.filter(Prefix=folder_prefix + first_folder)
+    )[1:]
+    user_input.field_names = _extract_field_names_s3_folder(first_folder_objects)
 
 
 def _ensure_distance_folder_root(path, root):
@@ -95,6 +122,55 @@ def _ensure_distance_folder_root(path, root):
     path = os.path.abspath(path)
     root = os.path.abspath(root)
     return os.path.relpath(path, root).count(os.path.sep) == 1
+
+
+def _check_contains_files_only_local_folder(dataset_path):
+    """
+    Checks if the folder contains only files and no subfolders
+
+    :param dataset_path: path to the folder
+    """
+    for file_or_directory in os.listdir(dataset_path):
+        if not os.path.isfile(os.path.join(dataset_path, file_or_directory)):
+            return False
+    return True
+
+
+def _check_folder_structure_local_folder(dataset_path):
+    """
+    Checks if the folder contains only subfolders and no files and no subsub folders
+
+    :param dataset_path: path to the folder
+    """
+    first_path = ''
+    for path in sorted(glob.glob(os.path.join(dataset_path, '**/**'))):
+        if not first_path:
+            first_path = path
+
+        if not _ensure_distance_folder_root(path, dataset_path):
+            raise ValueError(
+                'Folder format is not as expected, please check documentation https://now.jina.ai'
+            )
+    return first_path
+
+
+def _extract_field_names_local_folder(first_folder):
+    """
+    Extracts field names from the files in first folder in the bucket also
+    checks if folder contains json files and if yes then extracts the keys from the json files
+    and add to the field_names
+
+    :param first_folder: list of objects in the first folder
+    """
+    field_names = []
+    for field_name in os.listdir(first_folder):
+        if field_name.endswith('.json'):
+            json_f = open(os.path.join(first_folder, field_name))
+            data = json.load(json_f)
+            field_names.extend(list(data.keys()))
+        else:
+            field_names.append(field_name)
+    return field_names
 
 
 def set_field_names_from_local_folder(user_input: UserInput, **kwargs):
@@ -111,30 +187,10 @@ def set_field_names_from_local_folder(user_input: UserInput, **kwargs):
         raise ValueError(
             'The path provided is not a folder, please check documentation https://now.jina.ai'
         )
-    elif os.path.isdir(dataset_path):
-        all_files = True
-        for file_or_directory in os.listdir(dataset_path):
-            if not os.path.isfile(os.path.join(dataset_path, file_or_directory)):
-                all_files = False
-        if all_files:
-            user_input.field_names = []
-            return
-        first_path = ''
-        for path in sorted(glob.glob(os.path.join(dataset_path, '**/**'))):
-            if not first_path:
-                first_path = path
+    if _check_contains_files_only_local_folder(dataset_path):
+        user_input.field_names = []
+        return
 
-            if not _ensure_distance_folder_root(path, dataset_path):
-                raise ValueError(
-                    'Folder format is not as expected, please check documentation https://now.jina.ai'
-                )
-        first_folder = '/'.join(first_path.split('/')[:-1])
-        field_names = []
-        for field_name in os.listdir(first_folder):
-            if field_name.endswith('.json'):
-                json_f = open(os.path.join(first_folder, field_name))
-                data = json.load(json_f)
-                field_names.extend(list(data.keys()))
-            else:
-                field_names.append(field_name)
-        user_input.field_names = field_names
+    first_path = _check_folder_structure_local_folder(dataset_path)
+    first_folder = '/'.join(first_path.split('/')[:-1])
+    user_input.field_names = _extract_field_names_local_folder(first_folder)
