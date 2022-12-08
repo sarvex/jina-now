@@ -323,12 +323,15 @@ class JinaNOWApp:
 
         # append api_keys to all executors except the remote executors
         for executor in flow_yaml_content['executors']:
-            if not executor.get('external', False):
+            if not (
+                executor.get('external', False)
+                and user_input.deployment_type == 'remote'
+            ):
                 if not executor.get('uses_with', None):
                     executor['uses_with'] = {}
                 executor['uses_with']['api_keys'] = '${{ ENV.API_KEY }}'
-                executor['uses_with']['user_emails'] = ('${{ ENV.USER_EMAILS }}',)
-                executor['uses_with']['admin_emails'] = ('${{ ENV.ADMIN_EMAILS }}',)
+                executor['uses_with']['user_emails'] = '${{ ENV.USER_EMAILS }}'
+                executor['uses_with']['admin_emails'] = '${{ ENV.ADMIN_EMAILS }}'
 
         return flow_yaml_content
 
