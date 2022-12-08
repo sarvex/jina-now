@@ -9,10 +9,12 @@ from now.data_loading.utils import get_s3_bucket_and_folder_prefix
 from now.now_dataclasses import UserInput
 
 
-def _create_candidate_search_fields(user_input: UserInput):
+def _create_candidate_search_filter_fields(user_input: UserInput):
     """
     Creates candidate search fields from the field_names
     A candidate search field is a field that we can detect its modality
+    A candidate filter field is a field that we can't detect its modality,
+    or it's modality is different from image, video or audio.
 
     In case of docarray, we assume all fields are potentially searchable
 
@@ -46,6 +48,19 @@ def _create_candidate_search_fields(user_input: UserInput):
         user_input.filter_fields_candidates = user_input.field_names
 
 
+def _extract_field_names_docarray(response):
+    """
+    Downloads the first document in the document array and extracts field names from it
+    if tags also exists then it extracts the keys from tags and adds to the field_names
+    """
+    response = requests.get(response.json()['data']['download'])
+    ignored_fieldnames = ['embedding', 'id', 'mimeType', 'tags']
+    field_names = [el for el in response.json()[0] if el not in ignored_fieldnames]
+    if 'tags' in response.json()[0]:
+        field_names.extend(response.json()[0]['tags'].keys())
+    return field_names
+
+
 def set_field_names_from_docarray(user_input: UserInput, **kwargs):
     """
     Get the schema from a DocArray
@@ -68,14 +83,10 @@ def set_field_names_from_docarray(user_input: UserInput, **kwargs):
         json=json_data,
     )
     if response.json()['code'] == 200:
-        response = requests.get(response.json()['data']['download'])
-        ignored_fieldnames = ['embedding', 'id', 'mimeType', 'tags']
-        field_names = [el for el in response.json()[0] if el not in ignored_fieldnames]
-        field_names.extend(list(response.json()[0]['tags']['fields'].keys()))
-        user_input.field_names = field_names
+        user_input.field_names = _extract_field_names_docarray(response)
     else:
         raise ValueError('DocumentArray does not exist or you do not have access to it')
-    _create_candidate_search_fields(user_input)
+    _create_candidate_search_filter_fields(user_input)
 
 
 def _check_contains_files_only_s3_bucket(objects):
@@ -154,7 +165,7 @@ def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
         bucket.objects.filter(Prefix=folder_prefix + first_folder)
     )[1:]
     user_input.field_names = _extract_field_names_s3_folder(first_folder_objects)
-    _create_candidate_search_fields(user_input)
+    _create_candidate_search_filter_fields(user_input)
 
 
 def _ensure_distance_folder_root(path, root):
@@ -234,4 +245,4 @@ def set_field_names_from_local_folder(user_input: UserInput, **kwargs):
     first_path = _check_folder_structure_local_folder(dataset_path)
     first_folder = '/'.join(first_path.split('/')[:-1])
     user_input.field_names = _extract_field_names_local_folder(first_folder)
-    _create_candidate_search_fields(user_input)
+    _create_candidate_search_filter_fields(user_input)

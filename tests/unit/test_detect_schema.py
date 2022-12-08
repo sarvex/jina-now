@@ -3,7 +3,7 @@ import os
 import pytest
 
 from now.common.detect_schema import (
-    _create_candidate_search_fields,
+    _create_candidate_search_filter_fields,
     set_field_names_from_docarray,
     set_field_names_from_local_folder,
     set_field_names_from_s3_bucket,
@@ -102,9 +102,11 @@ def test_create_candidate_search_fields():
     user_input.dataset_type = DatasetTypes.S3_BUCKET
     user_input.field_names = ['image.png', 'test.txt', 'tags', 'id', 'link', 'title']
 
-    _create_candidate_search_fields(user_input)
+    _create_candidate_search_filter_fields(user_input)
 
     assert len(user_input.search_fields_candidates) == 2
     assert len(user_input.search_fields_modalities.keys()) == 2
     assert user_input.search_fields_modalities['image.png'] == Modalities.IMAGE
     assert user_input.search_fields_modalities['test.txt'] == Modalities.TEXT
+
+    assert len(user_input.filter_fields_candidates) == 5
