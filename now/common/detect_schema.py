@@ -4,7 +4,7 @@ import os
 
 import requests
 
-from now.constants import SUPPORTED_FILE_TYPES, DatasetTypes
+from now.constants import SUPPORTED_FILE_TYPES, DatasetTypes, Modalities
 from now.data_loading.utils import get_s3_bucket_and_folder_prefix
 from now.now_dataclasses import UserInput
 
@@ -19,8 +19,13 @@ def _create_candidate_search_fields(user_input: UserInput):
     :param user_input: UserInput object
     """
     if user_input.dataset_type != DatasetTypes.DOCARRAY:
-        user_input.search_fields_modalities, user_input.search_fields_candidates = (
+        (
+            user_input.search_fields_modalities,
+            user_input.search_fields_candidates,
+            user_input.filter_fields_candidates,
+        ) = (
             {},
+            [],
             [],
         )
         for field in user_input.field_names:
@@ -29,8 +34,16 @@ def _create_candidate_search_fields(user_input: UserInput):
                     user_input.search_fields_modalities[field] = modality
                     user_input.search_fields_candidates.append(field)
                     break
+            if (
+                field.split('.')[-1]
+                not in SUPPORTED_FILE_TYPES[Modalities.IMAGE]
+                + SUPPORTED_FILE_TYPES[Modalities.VIDEO]
+                + SUPPORTED_FILE_TYPES[Modalities.MUSIC]
+            ):
+                user_input.filter_fields_candidates.append(field)
     else:
         user_input.search_fields_candidates = user_input.field_names
+        user_input.filter_fields_candidates = user_input.field_names
 
 
 def set_field_names_from_docarray(user_input: UserInput, **kwargs):

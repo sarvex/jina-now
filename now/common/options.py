@@ -18,7 +18,7 @@ from now.common.detect_schema import (
     set_field_names_from_local_folder,
     set_field_names_from_s3_bucket,
 )
-from now.constants import SUPPORTED_FILE_TYPES, Apps, DatasetTypes, Modalities
+from now.constants import Apps, DatasetTypes
 from now.demo_data import AVAILABLE_DATASET
 from now.deployment.deployment import cmd
 from now.log import yaspin_extended
@@ -213,41 +213,25 @@ AWS_REGION_NAME = DialogOptions(
 
 SEARCH_FIELDS = DialogOptions(
     name='search_fields',
-    choices=lambda user_input, **kwargs: _get_search_field_from_user_input(user_input),
+    choices=lambda user_input, **kwargs: [
+        {'name': field, 'value': field} for field in user_input.search_fields_candidates
+    ],
     prompt_message='Please select the search fields:',
     prompt_type='checkbox',
     depends_on=DATASET_TYPE,
     conditional_check=lambda user_input: user_input.field_names is not None
     and len(user_input.field_names) > 0
     and user_input.dataset_type != DatasetTypes.DEMO,
-    post_func=lambda user_input, **kwargs: _exclude_selected_search_fields(user_input),
 )
-
-
-def _exclude_selected_search_fields(user_input: UserInput, **kwargs):
-    """
-    Exclude the search fields selected by the user and fields that cannot be as filter fields
-     from the list of field names.
-
-    :param user_input: UserInput object
-
-    fields with image, music and video modality and fields selected by user as search fields are excluded
-    from field names, so we can use the remaining fields as filter fields
-    """
-    s = set(user_input.search_fields)
-    user_input.field_names = [
-        x
-        for x in user_input.field_names
-        if x not in s
-        and x.split('.')[-1] not in SUPPORTED_FILE_TYPES[Modalities.IMAGE]
-        and x.split('.')[-1] not in SUPPORTED_FILE_TYPES[Modalities.MUSIC]
-        and x.split('.')[-1] not in SUPPORTED_FILE_TYPES[Modalities.VIDEO]
-    ]
 
 
 FILTER_FIELDS = DialogOptions(
     name='filter_fields',
-    choices=lambda user_input, **kwargs: _get_filter_fields_from_user_input(user_input),
+    choices=lambda user_input, **kwargs: [
+        {'name': field, 'value': field}
+        for field in user_input.filter_fields_candidates
+        if field not in user_input.search_fields
+    ],
     prompt_message='Please select the filter fields',
     prompt_type='checkbox',
     depends_on=DATASET_TYPE,
@@ -255,30 +239,6 @@ FILTER_FIELDS = DialogOptions(
     and len(user_input.field_names) > 0
     and user_input.dataset_type != DatasetTypes.DEMO,
 )
-
-
-def _get_search_field_from_user_input(user_input: UserInput):
-    """
-    Get the search field names from the user input.
-
-    :param user_input: UserInput object
-
-    returns format necessary for fields to use in prompt
-    """
-    return [
-        {'name': field, 'value': field} for field in user_input.search_fields_candidates
-    ]
-
-
-def _get_filter_fields_from_user_input(user_input: UserInput):
-    """
-    Get the search field names from the user input.
-
-    :param user_input: UserInput object
-
-    returns format necessary for fields to use in prompt
-    """
-    return [{'name': field, 'value': field} for field in user_input.field_names]
 
 
 ES_INDEX_NAME = DialogOptions(
