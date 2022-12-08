@@ -5,10 +5,11 @@ with:
     JINA_LOG_LEVEL: DEBUG
 jcloud:
   version: '3.12.0'
-  gateway:
-    expose: false
   labels:
     team: now
+gateway:
+  jcloud:
+    expose: false
 executors:
   - name: encoderclip
     uses: jinahub+docker://CLIPOnnxEncoder/latest-gpu
