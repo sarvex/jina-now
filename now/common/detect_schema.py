@@ -9,7 +9,7 @@ from now.data_loading.utils import get_s3_bucket_and_folder_prefix
 from now.now_dataclasses import UserInput
 
 
-def _create_candidate_search_filter_fields(user_input: UserInput):
+def _create_candidate_search_filter_fields(dataset_type, fieldnames):
     """
     Creates candidate search fields from the field_names
     A candidate search field is a field that we can detect its modality
@@ -18,23 +18,18 @@ def _create_candidate_search_filter_fields(user_input: UserInput):
 
     In case of docarray, we assume all fields are potentially searchable
 
-    :param user_input: UserInput object
+    :param dataset_type: DatasetTypes object
+    :param fieldnames: list of field names
     """
-    if user_input.dataset_type != DatasetTypes.DOCARRAY:
-        (
-            user_input.search_fields_modalities,
-            user_input.search_fields_candidates,
-            user_input.filter_fields_candidates,
-        ) = (
-            {},
-            [],
-            [],
-        )
-        for field in user_input.field_names:
+    search_fields_modalities = {}
+    search_fields_candidates = []
+    filter_fields_candidates = []
+    if dataset_type != DatasetTypes.DOCARRAY:
+        for field in fieldnames:
             for modality, modality_types in SUPPORTED_FILE_TYPES.items():
                 if field.split('.')[-1] in modality_types:
-                    user_input.search_fields_modalities[field] = modality
-                    user_input.search_fields_candidates.append(field)
+                    search_fields_modalities[field] = modality
+                    search_fields_candidates.append(field)
                     break
             if (
                 field.split('.')[-1]
@@ -42,10 +37,11 @@ def _create_candidate_search_filter_fields(user_input: UserInput):
                 + SUPPORTED_FILE_TYPES[Modalities.VIDEO]
                 + SUPPORTED_FILE_TYPES[Modalities.MUSIC]
             ):
-                user_input.filter_fields_candidates.append(field)
+                filter_fields_candidates.append(field)
     else:
-        user_input.search_fields_candidates = user_input.field_names
-        user_input.filter_fields_candidates = user_input.field_names
+        search_fields_candidates = fieldnames
+        filter_fields_candidates = fieldnames
+    return search_fields_modalities, search_fields_candidates, filter_fields_candidates
 
 
 def _extract_field_names_docarray(response):
@@ -86,7 +82,16 @@ def set_field_names_from_docarray(user_input: UserInput, **kwargs):
         user_input.field_names = _extract_field_names_docarray(response)
     else:
         raise ValueError('DocumentArray does not exist or you do not have access to it')
-    _create_candidate_search_filter_fields(user_input)
+    (
+        search_fields_modalities,
+        search_fields_candidates,
+        filter_fields_candidates,
+    ) = _create_candidate_search_filter_fields(
+        user_input.dataset_type, user_input.field_names
+    )
+    user_input.search_fields_modalities = search_fields_modalities
+    user_input.search_fields_candidates = search_fields_candidates
+    user_input.filter_fields_candidates = filter_fields_candidates
 
 
 def _check_contains_files_only_s3_bucket(objects):
@@ -165,7 +170,16 @@ def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
         bucket.objects.filter(Prefix=folder_prefix + first_folder)
     )[1:]
     user_input.field_names = _extract_field_names_s3_folder(first_folder_objects)
-    _create_candidate_search_filter_fields(user_input)
+    (
+        search_fields_modalities,
+        search_fields_candidates,
+        filter_fields_candidates,
+    ) = _create_candidate_search_filter_fields(
+        user_input.dataset_type, user_input.field_names
+    )
+    user_input.search_fields_modalities = search_fields_modalities
+    user_input.search_fields_candidates = search_fields_candidates
+    user_input.filter_fields_candidates = filter_fields_candidates
 
 
 def _ensure_distance_folder_root(path, root):
@@ -245,4 +259,13 @@ def set_field_names_from_local_folder(user_input: UserInput, **kwargs):
     first_path = _check_folder_structure_local_folder(dataset_path)
     first_folder = '/'.join(first_path.split('/')[:-1])
     user_input.field_names = _extract_field_names_local_folder(first_folder)
-    _create_candidate_search_filter_fields(user_input)
+    (
+        search_fields_modalities,
+        search_fields_candidates,
+        filter_fields_candidates,
+    ) = _create_candidate_search_filter_fields(
+        user_input.dataset_type, user_input.field_names
+    )
+    user_input.search_fields_modalities = search_fields_modalities
+    user_input.search_fields_candidates = search_fields_candidates
+    user_input.filter_fields_candidates = filter_fields_candidates
