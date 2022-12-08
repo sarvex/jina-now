@@ -3,10 +3,12 @@ import os
 import pytest
 
 from now.common.detect_schema import (
+    _create_candidate_search_fields,
     set_field_names_from_docarray,
     set_field_names_from_local_folder,
     set_field_names_from_s3_bucket,
 )
+from now.constants import DatasetTypes, Modalities
 from now.now_dataclasses import UserInput
 
 
@@ -93,3 +95,16 @@ def test_set_field_names_from_docarray():
         'original_width',
         'width',
     }
+
+
+def test_create_candidate_search_fields():
+    user_input = UserInput()
+    user_input.dataset_type = DatasetTypes.S3_BUCKET
+    user_input.field_names = ['image.png', 'test.txt', 'tags', 'id', 'link', 'title']
+
+    _create_candidate_search_fields(user_input)
+
+    assert len(user_input.search_fields_candidates) == 2
+    assert len(user_input.search_fields_modalities.keys()) == 2
+    assert user_input.search_fields_modalities['image.png'] == Modalities.IMAGE
+    assert user_input.search_fields_modalities['test.txt'] == Modalities.TEXT
