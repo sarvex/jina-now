@@ -4,7 +4,7 @@ import os
 from collections import defaultdict
 from copy import deepcopy
 from sys import maxsize
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 from docarray import Document, DocumentArray
 
@@ -143,8 +143,6 @@ class NOWBaseIndexer(Executor):
         self,
         docs: Optional[DocumentArray] = None,
         parameters: dict = {},
-        docs_matrix: Optional[List[DocumentArray]] = None,
-        docs_map: Optional[Dict[str, DocumentArray]] = None,
         **kwargs,
     ):
         """Base function for indexing documents. Handles the data management for the index and list endpoints.
@@ -154,8 +152,6 @@ class NOWBaseIndexer(Executor):
         """
         # If the docs_map are populated then pick the document from there
         # Hack to make the CI green for now. Should be replaced by indexer PR
-        if docs_map:
-            docs = docs_map.get('encoderclip', None)
         flat_docs = docs[ACCESS_PATHS]
         # TODO please remove this check for empty docs
         if len(flat_docs) == 0:

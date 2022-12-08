@@ -195,11 +195,6 @@ class JinaNOWApp:
             'uses': '${{ ENV.AUTOCOMPLETE_EXECUTOR_NAME }}',
             'needs': 'gateway',
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
-            'uses_with': {
-                'api_keys': '${{ ENV.API_KEY }}',
-                'user_emails': '${{ ENV.USER_EMAILS }}',
-                'admin_emails': '${{ ENV.ADMIN_EMAILS }}',
-            },
         }
 
     @staticmethod
@@ -213,9 +208,6 @@ class JinaNOWApp:
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'uses_with': {
                 'app': '${{ ENV.APP }}',
-                'api_keys': '${{ ENV.API_KEY }}',
-                'user_emails': '${{ ENV.USER_EMAILS }}',
-                'admin_emails': '${{ ENV.ADMIN_EMAILS }}',
             },
             'jcloud': {
                 'resources': {
@@ -268,9 +260,6 @@ class JinaNOWApp:
             'uses_with': {
                 'dim': '${{ENV.N_DIM}}',
                 'columns': '${{ENV.COLUMNS}}',
-                'api_keys': '${{ ENV.API_KEY }}',
-                'user_emails': '${{ ENV.USER_EMAILS }}',
-                'admin_emails': '${{ ENV.ADMIN_EMAILS }}',
             },
         }
 
@@ -301,57 +290,45 @@ class JinaNOWApp:
         init_execs_list.append(preprocessor['name'])
         flow_yaml_content['executors'].append(preprocessor)
 
-        # 3. append sbert encoder to the flow if output modalities are texts
+        # 3a. append sbert encoder to the flow if output modalities are texts
         if Modalities.TEXT in user_input.output_modality:
             sbert_encoder = self.sbert_encoder_stub()
             encoders_list.append(sbert_encoder['name'])
             sbert_encoder['needs'] = init_execs_list[-1]
-            sbert_encoder['when'] = {'tags__modality': {'$eq': 'text'}}
             flow_yaml_content['executors'].append(sbert_encoder)
 
-        # 4. append clip encoder to the flow if output modalities are images
+        # 3b. append clip encoder to the flow if output modalities are images
         if Modalities.IMAGE in user_input.output_modality:
             clip_encoder = self.clip_encoder_stub()
             encoders_list.append(clip_encoder['name'])
             clip_encoder['needs'] = init_execs_list[-1]
-            clip_encoder['when'] = {
-                '$or': [
-                    {'tags__modality': {'$eq': 'image'}},
-                    {'tags__modality': {'$eq': 'text'}},
-                ]
-            }
             flow_yaml_content['executors'].append(clip_encoder)
 
+        # 3c. append clip encoder if the output modality is video
         if Modalities.VIDEO in user_input.output_modality:
             clip_encoder = self.clip_encoder_stub()
             encoders_list.append(clip_encoder['name'])
             clip_encoder['needs'] = init_execs_list[-1]
-            clip_encoder['when'] = {
-                '$or': [
-                    {'tags__modality': {'$eq': 'image'}},
-                    {'tags__modality': {'$eq': 'text'}},
-                ]
-            }
             flow_yaml_content['executors'].append(clip_encoder)
 
-        # 5. append indexer to the flow
+        # 4. append indexer to the flow
         if not any(
             exec_dict['name'] == 'indexer'
             for exec_dict in flow_yaml_content['executors']
         ):
             indexer_stub = self.indexer_stub()
             # skip connection to indexer + from all encoders
-            indexer_stub['needs'] = encoders_list + [init_execs_list[-1]]
-            indexer_stub['no_reduce'] = True
+            indexer_stub['needs'] = encoders_list
             flow_yaml_content['executors'].append(indexer_stub)
 
-        # append api_keys to the executor with name 'preprocessor' and 'indexer'
+        # append api_keys to all executors except the remote executors
         for executor in flow_yaml_content['executors']:
-            if (
-                'encoder' not in executor['name']
-                and 'api_keys' not in executor['uses_with']
-            ):
+            if not executor.get('external', False):
+                if not executor.get('uses_with', None):
+                    executor['uses_with'] = {}
                 executor['uses_with']['api_keys'] = '${{ ENV.API_KEY }}'
+                executor['uses_with']['user_emails'] = ('${{ ENV.USER_EMAILS }}',)
+                executor['uses_with']['admin_emails'] = ('${{ ENV.ADMIN_EMAILS }}',)
 
         return flow_yaml_content
 
