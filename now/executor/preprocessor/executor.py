@@ -121,8 +121,8 @@ class NOWPreprocessor(Executor):
                 new_cc = DocumentArray()
                 for cc in c.chunks:
                     if (
-                        c.modality != Modalities.IMAGE
-                        or not c.tags[TAG_OCR_DETECTOR_TEXT_IN_DOC]
+                        cc.modality != Modalities.IMAGE
+                        or not cc.tags[TAG_OCR_DETECTOR_TEXT_IN_DOC]
                     ):
                         new_cc.append(cc)
                 c.chunks = new_cc
