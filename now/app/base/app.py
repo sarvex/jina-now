@@ -261,6 +261,13 @@ class JinaNOWApp:
                 'dim': '${{ENV.N_DIM}}',
                 'columns': '${{ENV.COLUMNS}}',
             },
+            'jcloud': {
+                'resources': {
+                    'memory': '${{ENV.INDEXER_MEM}}',
+                    'cpu': '0.1',
+                    'capacity': 'on-demand',
+                }
+            },
         }
 
     def get_executor_stubs(self, user_input, flow_yaml_content) -> Dict:
