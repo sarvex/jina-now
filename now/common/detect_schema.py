@@ -57,7 +57,7 @@ def _extract_field_names_docarray(response):
     ignored_fieldnames = ['embedding', 'id', 'mimeType', 'tags']
     field_names = [el for el in response.json()[0] if el not in ignored_fieldnames]
     if 'tags' in response.json()[0]:
-        field_names.extend(response.json()[0]['tags'].keys())
+        field_names.extend(response.json()[0]['tags']['fields'].keys())
     return field_names
 
 
