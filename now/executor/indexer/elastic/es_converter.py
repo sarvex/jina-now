@@ -26,40 +26,38 @@ class ESConverter:
         :param encoder_to_fields: dictionary mapping encoder to fields.
         :return: a list of Elasticsearch documents as dictionaries ready to be indexed.
         """
-        prep_da = docs_map.pop('preprocessor')
-        es_docs = {doc.id: self.get_base_es_doc(doc, index_name) for doc in prep_da}
+        es_docs = {}
         for executor_name, documents in docs_map.items():
             for doc in documents:
+                if doc.id not in es_docs:
+                    es_docs[doc.id] = self.get_base_es_doc(doc, index_name)
+                    _doc = DocumentArray(Document(doc, copy=True))
+                    # remove embeddings from serialized doc
+                    _doc[..., 'embedding'] = None
+                    es_docs[doc.id]['serialized_doc'] = DocumentArray(
+                        _doc[0]
+                    ).to_base64()
                 es_doc = es_docs[doc.id]
                 for encoded_field in encoder_to_fields[executor_name]:
                     field_doc = getattr(doc, encoded_field)
-                    if isinstance(field_doc, ChunkArray):
-                        # average the embeddings of the chunks
-                        embedding = np.mean(
-                            [chunk.embedding for chunk in field_doc],
-                            axis=0,
-                        )
-                        # add embeddings of chunks to preprocessed document's tags
-                        if 'embeddings' not in prep_da[doc.id].tags:
-                            prep_da[doc.id].tags['embeddings'] = {}
-                        prep_da[doc.id].tags['embeddings'][
-                            f'{encoded_field}-{executor_name}'
-                        ] = field_doc[
-                            ..., 'embedding'
-                        ]  # will be a matrix, stacked
-                    else:
-                        embedding = field_doc.embedding
-                        prep_da[doc.id].tags['embeddings'][
-                            f'{encoded_field}-{executor_name}'
-                        ] = embedding
+                    embedding = self.get_embedding(field_doc)
                     es_doc[f'{encoded_field}-{executor_name}.embedding'] = embedding
-
                     if hasattr(field_doc, 'text') and field_doc.text:
                         es_doc['bm25_text'] += field_doc.text + ' '
-        # add serialized preprocessed document to Elasticsearch document
-        for doc in prep_da:
-            es_docs[doc.id]['serialized_doc'] = DocumentArray(doc).to_base64()
         return list(es_docs.values())
+
+    def get_embedding(self, field_doc: Union[ChunkArray, Document]) -> np.array:
+        if isinstance(field_doc, ChunkArray):
+            # average the embeddings of the chunks
+            # can be changed to first, last, etc. in future
+            embedding = self.average_embeddings_of_subdocuments(field_doc)
+        else:
+            embedding = field_doc.embedding
+        return embedding
+
+    @staticmethod
+    def average_embeddings_of_subdocuments(field_doc):
+        return np.mean([chunk.embedding for chunk in field_doc], axis=0)
 
     def get_base_es_doc(self, doc: Document, index_name: str) -> Dict:
         es_doc = {k: v for k, v in doc.to_dict().items() if v}
