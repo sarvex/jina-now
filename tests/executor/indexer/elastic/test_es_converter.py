@@ -5,7 +5,7 @@ from docarray.score import NamedScore
 from now.executor.indexer.elastic.es_converter import ESConverter
 
 
-def test_doc_map_to_es(es_inputs, random_index_name):
+def test_convert_doc_map_to_es(es_inputs, random_index_name):
     """
     This test should check whether the docs_map is correctly
     transformed to the expected format.
@@ -48,6 +48,24 @@ def test_doc_map_to_es(es_inputs, random_index_name):
         + ' '
     )
     assert first_result['_op_type'] == 'index'
+
+
+def test_convert_es_to_da(es_inputs):
+    """
+    This test should check whether retrieved elasticsearch documents are
+    correctly transformed back into Documents.
+    TODO: fill
+    """
+    pass
+
+
+def test_convert_es_results_to_matches(es_inputs):
+    """
+    This test should check whether the results from Elasticsearch are
+    correctly formed, but with and without score breakdown.
+    TODO: fill
+    """
+    pass
 
 
 def test_calculate_score_breakdown(es_inputs):
