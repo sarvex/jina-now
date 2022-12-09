@@ -91,15 +91,18 @@ def test_set_field_names_from_docarray():
 
 
 def test_create_candidate_search_fields():
-    user_input = UserInput()
-    user_input.dataset_type = DatasetTypes.S3_BUCKET
-    user_input.field_names = ['image.png', 'test.txt', 'tags', 'id', 'link', 'title']
 
-    _create_candidate_search_filter_fields(user_input)
+    (
+        search_fields_modalities,
+        search_fields_candidates,
+        filter_fields_candidates,
+    ) = _create_candidate_search_filter_fields(
+        DatasetTypes.S3_BUCKET, ['image.png', 'test.txt', 'tags', 'id', 'link', 'title']
+    )
 
-    assert len(user_input.search_fields_candidates) == 2
-    assert len(user_input.search_fields_modalities.keys()) == 2
-    assert user_input.search_fields_modalities['image.png'] == Modalities.IMAGE
-    assert user_input.search_fields_modalities['test.txt'] == Modalities.TEXT
+    assert len(search_fields_candidates) == 2
+    assert len(search_fields_modalities.keys()) == 2
+    assert search_fields_modalities['image.png'] == Modalities.IMAGE
+    assert search_fields_modalities['test.txt'] == Modalities.TEXT
 
-    assert len(user_input.filter_fields_candidates) == 5
+    assert len(filter_fields_candidates) == 5
