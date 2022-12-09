@@ -86,75 +86,75 @@ jobs:
         env:
           CHANGED_FILES: ${{ steps.file_changes.outputs.added_modified }}
 
-  update-preprocessor:
-    runs-on: ubuntu-latest
-    needs: [commit-lint, lint-flake-8, check-black]
-    steps:
-      - uses: actions/checkout@v2
-      - uses: ./.github/actions/push-executor
-        with:
-          executor_version_name: NOW_PREPROCESSOR_VERSION
-          executor_name: NOWPreprocessor
-          executor_path: now/executor/preprocessor
-          # for some reason, the first filter condition needs a different indentation
-          has_changed_filter: |
-            - now/app/base/**
-              - now/common/preprocess.py
-              - now/executor/preprocessor/**
-              - now/executor/abstract/auth/**
-          executor_id: vlxgoxlv
-          jina_auth_token: ${{ secrets.NOW_PREPROCESSOR_JCLOUD_TOKEN }}
-
-  update-qdrant:
-    runs-on: ubuntu-latest
-    needs: [commit-lint, lint-flake-8, check-black]
-    steps:
-      - uses: actions/checkout@v2
-      - uses: ./.github/actions/push-executor
-        with:
-          executor_version_name: NOW_QDRANT_INDEXER_VERSION
-          executor_name: NOWQdrantIndexer16
-          executor_path: now/executor/indexer/qdrant
-          # for some reason, the first filter condition needs a different indentation
-          has_changed_filter: |
-            - 'now/executor/abstract/**'
-              - 'now/executor/indexer/qdrant/**'
-          executor_id: 11yxatzh
-          jina_auth_token: ${{ secrets.NOW_STAGING_FLORIAN }}
-
-  update-elastic:
-    runs-on: ubuntu-latest
-    needs: [commit-lint, lint-flake-8, check-black]
-    steps:
-      - uses: actions/checkout@v2
-      - uses: ./.github/actions/push-executor
-        with:
-          executor_version_name: NOW_ELASTIC_INDEXER_VERSION
-          executor_name: NOWElasticIndexer
-          executor_path: now/executor/indexer/elastic
-          # for some reason, the first filter condition needs a different indentation
-          has_changed_filter: |
-            - 'now/executor/abstract/auth/**'
-              - 'now/executor/indexer/elastic/**'
-          executor_id: 11yxatzh
-          jina_auth_token: ${{ secrets.NOW_STAGING_FLORIAN }}
-
-  update-autocomplete:
-    runs-on: ubuntu-latest
-    needs: [commit-lint, lint-flake-8, check-black]
-    steps:
-      - uses: actions/checkout@v2
-      - uses: ./.github/actions/push-executor
-        with:
-          executor_version_name: NOW_AUTOCOMPLETE_VERSION
-          executor_name: NOWAutoCompleteExecutor2
-          executor_path: now/executor/autocomplete
-          # for some reason, the first filter condition needs a different indentation
-          has_changed_filter: |
-            - 'now/executor/abstract/auth/**'
-              - 'now/executor/autocomplete/**'
-          executor_id: 11yxatzh
-          jina_auth_token: ${{ secrets.NOW_STAGING_FLORIAN }}
+#  update-preprocessor:
+#    runs-on: ubuntu-latest
+#    needs: [commit-lint, lint-flake-8, check-black]
+#    steps:
+#      - uses: actions/checkout@v2
+#      - uses: ./.github/actions/push-executor
+#        with:
+#          executor_version_name: NOW_PREPROCESSOR_VERSION
+#          executor_name: NOWPreprocessor
+#          executor_path: now/executor/preprocessor
+#          # for some reason, the first filter condition needs a different indentation
+#          has_changed_filter: |
+#            - now/app/base/**
+#              - now/common/preprocess.py
+#              - now/executor/preprocessor/**
+#              - now/executor/abstract/auth/**
+#          executor_id: vlxgoxlv
+#          jina_auth_token: ${{ secrets.NOW_PREPROCESSOR_JCLOUD_TOKEN }}
+#
+#  update-qdrant:
+#    runs-on: ubuntu-latest
+#    needs: [commit-lint, lint-flake-8, check-black]
+#    steps:
+#      - uses: actions/checkout@v2
+#      - uses: ./.github/actions/push-executor
+#        with:
+#          executor_version_name: NOW_QDRANT_INDEXER_VERSION
+#          executor_name: NOWQdrantIndexer16
+#          executor_path: now/executor/indexer/qdrant
+#          # for some reason, the first filter condition needs a different indentation
+#          has_changed_filter: |
+#            - 'now/executor/abstract/**'
+#              - 'now/executor/indexer/qdrant/**'
+#          executor_id: 11yxatzh
+#          jina_auth_token: ${{ secrets.NOW_STAGING_FLORIAN }}
+#
+#  update-elastic:
+#    runs-on: ubuntu-latest
+#    needs: [commit-lint, lint-flake-8, check-black]
+#    steps:
+#      - uses: actions/checkout@v2
+#      - uses: ./.github/actions/push-executor
+#        with:
+#          executor_version_name: NOW_ELASTIC_INDEXER_VERSION
+#          executor_name: NOWElasticIndexer
+#          executor_path: now/executor/indexer/elastic
+#          # for some reason, the first filter condition needs a different indentation
+#          has_changed_filter: |
+#            - 'now/executor/abstract/auth/**'
+#              - 'now/executor/indexer/elastic/**'
+#          executor_id: 11yxatzh
+#          jina_auth_token: ${{ secrets.NOW_STAGING_FLORIAN }}
+#
+#  update-autocomplete:
+#    runs-on: ubuntu-latest
+#    needs: [commit-lint, lint-flake-8, check-black]
+#    steps:
+#      - uses: actions/checkout@v2
+#      - uses: ./.github/actions/push-executor
+#        with:
+#          executor_version_name: NOW_AUTOCOMPLETE_VERSION
+#          executor_name: NOWAutoCompleteExecutor2
+#          executor_path: now/executor/autocomplete
+#          # for some reason, the first filter condition needs a different indentation
+#          has_changed_filter: |
+#            - 'now/executor/abstract/auth/**'
+#              - 'now/executor/autocomplete/**'
+#          executor_id: 11yxatzh
+#          jina_auth_token: ${{ secrets.NOW_STAGING_FLORIAN }}
 
   update-bff-playground:
     runs-on: ubuntu-latest
