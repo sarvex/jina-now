@@ -1,0 +1,74 @@
+name: push executor
+description: push executor to the hub
+inputs:
+  executor_version_name:
+    description: The name of the executor to update.
+  executor_name:
+    description: The name of the executor to update.
+  executor_path:
+    description: The path of the executor to update.
+  has_changed_filter:
+    description: The filter to use for checking if the component has changed.
+  executor_id:
+    description: The id of the executor to update.
+  jina_auth_token:
+      description: The filter to use for checking if the component has changed.
+
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v2
+    - name: Check if preprocessing has changed
+      uses: dorny/paths-filter@v2
+      id: check_has_preprocessing_changed
+      with:
+        filters: |
+          has_preprocessing_changed:
+            ${{ inputs.has_changed_filter }}
+    - name: Get preprocessor tag
+      if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
+      shell: bash
+      run: |
+        FILE='now/constants.py'
+        VERSION=$(sed -n '/${{ inputs.executor_version_name }} =/p' $FILE | cut -d \' -f2)
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+    - name: Set up Python 3.7
+      if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.7
+    - name: Pip install jina
+      if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
+      shell: bash
+      run: pip install "jina[perf]"
+    - name: Check that tag isn't used already for preprocessor
+      if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
+      env:
+        VERSION: ${{ env.VERSION }}
+      shell: bash
+      run: |
+        if jina hub pull jinahub+docker://${{ inputs.executor_id }}/$VERSION; then
+          echo "NOW preprocessor version is used already. Please update the tag"
+          exit 1
+        else
+          echo "NOW preprocessor version isn't used already, continue to build..."
+        fi
+    # give the executor access to the now requirements in the early stages of the build
+    # that way the requirements are cached and don't need to be reinstalled every time
+    - name: optimization of executor build time
+      if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
+      shell: bash
+      run: cp requirements.txt ${{ inputs.executor_path }}/requirements-now.txt
+    # force the executor to rebuild even if nothing has changed in its folder
+    # code changes in the now repo would not be considered otherwise
+    - name: hack force rebuild when loading copying the files
+      if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
+      shell: bash
+      run: echo ${{ github.event.pull_request.head.sha }} > ${{ inputs.executor_path }}/force_push.txt
+    - name: Build and push executor
+      if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
+      shell: bash
+      env:
+        VERSION: ${{ env.VERSION }}
+      run: JINA_AUTH_TOKEN=${{ inputs.jina_auth_token }} jina hub push --verbose --force-update ${{ inputs.executor_name }} ${{ inputs.executor_path }}/. -t latest --protected-tag $VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}

@@ -1,2 +1,1 @@
-jina[filelock]>=3.12.0
 git+https://github.com/jina-ai/now@${JINA_NOW_COMMIT_SHA}

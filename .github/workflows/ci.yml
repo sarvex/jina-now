@@ -86,101 +86,75 @@ jobs:
         env:
           CHANGED_FILES: ${{ steps.file_changes.outputs.added_modified }}
 
-  update-preprocessor-if-required:
+  update-preprocessor:
     runs-on: ubuntu-latest
     needs: [commit-lint, lint-flake-8, check-black]
     steps:
       - uses: actions/checkout@v2
-      - name: Check if preprocessing has changed
-        uses: dorny/paths-filter@v2
-        id: check_has_preprocessing_changed
+      - uses: ./.github/actions/push-executor
         with:
-          filters: |
-            has_preprocessing_changed:
-            - 'now/app/base/**'
-            - 'now/common/preprocess.py'
-            - 'now/executor/preprocessor/**'
-            - 'now/executor/abstract/auth/**'
-      - name: Get preprocessor tag
-        if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
-        run: |
-          FILE='now/constants.py'
-          NOW_PREPROCESSOR_VERSION=$(sed -n '/NOW_PREPROCESSOR_VERSION =/p' $FILE | cut -d \' -f2)
-          echo "NOW_PREPROCESSOR_VERSION=$NOW_PREPROCESSOR_VERSION" >> $GITHUB_ENV
-      - name: Set up Python 3.7
-        if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.7
-      - name: Pip install jina
-        if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
-        run: pip install "jina[perf]"
-      - name: Check that tag isn't used already for preprocessor
-        if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
-        env:
-          NOW_PREPROCESSOR_VERSION: ${{ env.NOW_PREPROCESSOR_VERSION }}
-        run: |
-          if jina hub pull jinahub+docker://vlxgoxlv/$NOW_PREPROCESSOR_VERSION; then
-            echo "NOW preprocessor version is used already. Please update the tag"
-            exit 1
-          else
-            echo "NOW preprocessor version isn't used already, continue to build..."
-          fi
-      - name: hack force push
-        if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
-        run: echo ${{ github.event.pull_request.head.sha }} > now/executor/preprocessor/force_push.txt
-      - name: Build and push executor
-        if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
-        env:
-          NOW_PREPROCESSOR_VERSION: ${{ env.NOW_PREPROCESSOR_VERSION }}
-        run: JINA_AUTH_TOKEN=${{ secrets.NOW_PREPROCESSOR_JCLOUD_TOKEN }} jina hub push --verbose --force-update NOWPreprocessor now/executor/preprocessor/. -t latest --protected-tag $NOW_PREPROCESSOR_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
+          executor_version_name: NOW_PREPROCESSOR_VERSION
+          executor_name: NOWPreprocessor
+          executor_path: now/executor/preprocessor
+          # for some reason, the first filter condition needs a different indentation
+          has_changed_filter: |
+            - now/app/base/**
+              - now/common/preprocess.py
+              - now/executor/preprocessor/**
+              - now/executor/abstract/auth/**
+          executor_id: vlxgoxlv
+          jina_auth_token: ${{ secrets.NOW_PREPROCESSOR_JCLOUD_TOKEN }}
 
-  update-qdrant-executor-if-required:
+  update-qdrant:
     runs-on: ubuntu-latest
     needs: [commit-lint, lint-flake-8, check-black]
     steps:
       - uses: actions/checkout@v2
-      - name: Check if executor has changed
-        uses: dorny/paths-filter@v2
-        id: check_has_executor_changed
+      - uses: ./.github/actions/push-executor
         with:
-          filters: |
-            has_changed:
+          executor_version_name: NOW_QDRANT_INDEXER_VERSION
+          executor_name: NOWQdrantIndexer16
+          executor_path: now/executor/indexer/qdrant
+          # for some reason, the first filter condition needs a different indentation
+          has_changed_filter: |
             - 'now/executor/abstract/**'
-            - 'now/executor/indexer/qdrant/**'
-      - name: Get executor tag
-        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
-        run: |
-          FILE='now/constants.py'
-          NOW_QDRANT_INDEXER_VERSION=$(sed -n '/NOW_QDRANT_INDEXER_VERSION =/p' $FILE | cut -d \' -f2)
-          echo "NOW_QDRANT_INDEXER_VERSION=$NOW_QDRANT_INDEXER_VERSION" >> $GITHUB_ENV
-      - name: Set up Python 3.7
-        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
-        uses: actions/setup-python@v2
+              - 'now/executor/indexer/qdrant/**'
+          executor_id: 11yxatzh
+          jina_auth_token: ${{ secrets.NOW_STAGING_FLORIAN }}
+
+  update-elastic:
+    runs-on: ubuntu-latest
+    needs: [commit-lint, lint-flake-8, check-black]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ./.github/actions/push-executor
         with:
-          python-version: 3.7
-      - name: Pip install jina
-        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
-        run: pip install "jina[perf]"
-      - name: Check that tag isn't used already for executor
-        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
-        env:
-          NOW_QDRANT_INDEXER_VERSION: ${{ env.NOW_QDRANT_INDEXER_VERSION }}
-        run: |
-          if jina hub pull jinahub+docker://11yxatzh/$NOW_QDRANT_INDEXER_VERSION; then
-            echo "NOW Qdrant Indexer version is used already. Please update the tag"
-            exit 1
-          else
-            echo "NOW Qdrant Indexer version isn't used already, continue to build..."
-          fi
-      - name: hack force push
-        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
-        run: echo ${{ github.event.pull_request.head.sha }} > now/executor/indexer/qdrant/force_push.txt
-      - name: Build and push executor
-        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
-        env:
-          NOW_QDRANT_INDEXER_VERSION: ${{ env.NOW_QDRANT_INDEXER_VERSION }}
-        run: JINA_AUTH_TOKEN=${{ secrets.NOW_STAGING_FLORIAN }} jina hub push --verbose --force-update NOWQdrantIndexer16 now/executor/indexer/qdrant/.  -t latest --protected-tag $NOW_QDRANT_INDEXER_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
+          executor_version_name: NOW_ELASTIC_INDEXER_VERSION
+          executor_name: NOWElasticIndexer
+          executor_path: now/executor/indexer/elastic
+          # for some reason, the first filter condition needs a different indentation
+          has_changed_filter: |
+            - 'now/executor/abstract/auth/**'
+              - 'now/executor/indexer/elastic/**'
+          executor_id: 11yxatzh
+          jina_auth_token: ${{ secrets.NOW_STAGING_FLORIAN }}
+
+  update-autocomplete:
+    runs-on: ubuntu-latest
+    needs: [commit-lint, lint-flake-8, check-black]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ./.github/actions/push-executor
+        with:
+          executor_version_name: NOW_AUTOCOMPLETE_VERSION
+          executor_name: NOWAutoCompleteExecutor2
+          executor_path: now/executor/autocomplete
+          # for some reason, the first filter condition needs a different indentation
+          has_changed_filter: |
+            - 'now/executor/abstract/auth/**'
+              - 'now/executor/autocomplete/**'
+          executor_id: 11yxatzh
+          jina_auth_token: ${{ secrets.NOW_STAGING_FLORIAN }}
 
   update-bff-playground-if-required:
     runs-on: ubuntu-latest
@@ -246,101 +220,6 @@ jobs:
           context: deployment/playground/.
           push: true
           tags: jinaai/now-playground:${{ env.BFF_PLAYGROUND_TAG }}
-
-  update-elastic-executor-if-required:
-    runs-on: ubuntu-latest
-    needs: [commit-lint, lint-flake-8, check-black]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Check if executor has changed
-        uses: dorny/paths-filter@v2
-        id: check_has_executor_changed
-        with:
-          filters: |
-            has_changed:
-            - 'now/executor/abstract/auth/**'
-            - 'now/executor/indexer/elastic/**'
-      - name: Get executor tag
-        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
-        run: |
-          FILE='now/constants.py'
-          NOW_ELASTIC_INDEXER_VERSION=$(sed -n '/NOW_ELASTIC_INDEXER_VERSION =/p' $FILE | cut -d \' -f2)
-          echo "NOW_ELASTIC_INDEXER_VERSION=$NOW_ELASTIC_INDEXER_VERSION" >> $GITHUB_ENV
-      - name: Set up Python 3.7
-        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.7
-      - name: Pip install jina
-        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
-        run: pip install "jina[perf]"
-      - name: Check that tag isn't used already for executor
-        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
-        env:
-          NOW_ELASTIC_INDEXER_VERSION: ${{ env.NOW_ELASTIC_INDEXER_VERSION }}
-        run: |
-          if jina hub pull jinahub+docker://mdtuyaaj/$NOW_ELASTIC_INDEXER_VERSION; then
-            echo "NOW Elastic Indexer version is used already. Please update the tag"
-            exit 1
-          else
-            echo "NOW Elastic Indexer version isn't used already, continue to build..."
-          fi
-      - name: hack force push
-        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
-        run: echo ${{ github.event.pull_request.head.sha }} > now/executor/indexer/elastic/force_push.txt
-      - name: Build and push executor
-        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
-        env:
-          NOW_ELASTIC_INDEXER_VERSION: ${{ env.NOW_ELASTIC_INDEXER_VERSION }}
-        run: JINA_AUTH_TOKEN=${{ secrets.NOW_STAGING_FLORIAN }} jina hub push --verbose --force-update NOWElasticIndexer now/executor/indexer/elastic/. -t latest --protected-tag $NOW_ELASTIC_INDEXER_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
-
-  update-autocomplete-executor-if-required:
-    runs-on: ubuntu-latest
-    needs: [commit-lint, lint-flake-8, check-black]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Check if executor has changed
-        uses: dorny/paths-filter@v2
-        id: check_has_executor_changed
-        with:
-          filters: |
-            has_changed:
-            - 'now/executor/abstract/auth/**'
-            - 'now/executor/autocomplete/**'
-      - name: Get executor tag
-        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
-        run: |
-          FILE='now/constants.py'
-          NOW_AUTOCOMPLETE_VERSION=$(sed -n '/NOW_AUTOCOMPLETE_VERSION =/p' $FILE | cut -d \' -f2)
-          echo "NOW_AUTOCOMPLETE_VERSION=$NOW_AUTOCOMPLETE_VERSION" >> $GITHUB_ENV
-      - name: Set up Python 3.7
-        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.7
-      - name: Pip install jina
-        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
-        run: pip install "jina[perf]"
-      - name: Check that tag isn't used already for executor
-        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
-        env:
-          NOW_AUTOCOMPLETE_VERSION: ${{ env.NOW_AUTOCOMPLETE_VERSION }}
-        run: |
-          if jina hub pull jinahub+docker://w5w084h7/$NOW_AUTOCOMPLETE_VERSION; then
-            echo "NOW Autocomplete version is used already. Please update the tag"
-            exit 1
-          else
-            echo "NOW Autocomplete version isn't used already, continue to build..."
-          fi
-      - name: hack force push
-        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
-        run: echo ${{ github.event.pull_request.head.sha }} > now/executor/autocomplete/force_push.txt
-      - name: Build and push executor
-        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
-        env:
-          NOW_AUTOCOMPLETE_VERSION: ${{ env.NOW_AUTOCOMPLETE_VERSION }}
-        run: JINA_AUTH_TOKEN=${{ secrets.NOW_STAGING_FLORIAN }} jina hub push --verbose --force-update NOWAutoCompleteExecutor2 now/executor/autocomplete/. -t latest --protected-tag $NOW_AUTOCOMPLETE_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
-
   core-test:
     runs-on: ubuntu-latest
     needs: [ update-preprocessor-if-required, update-bff-playground-if-required,  update-autocomplete-executor-if-required, update-qdrant-executor-if-required, update-elastic-executor-if-required]
