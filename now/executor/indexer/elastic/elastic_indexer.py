@@ -31,8 +31,8 @@ class NOWElasticIndexer(Executor):
     # override
     def construct(
         self,
-        default_semantic_scores: List[SemanticScore],
         document_mappings: List[FieldEmbedding],
+        default_semantic_scores: Optional[List[SemanticScore]] = None,
         es_mapping: Dict = None,
         hosts: Union[
             str, List[Union[str, Mapping[str, Union[str, int]]]], None
