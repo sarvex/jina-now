@@ -53,176 +53,176 @@ jobs:
 #            This message will be deleted automatically when the commit messages get fixed.
 #          reaction-type: "eyes"
 
-  lint-flake-8:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.7
-      - name: Lint with flake8
-        run: |
-          pip install flake8
-          # stop the build if there are Python syntax errors or undefined names
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exclude .git,__pycache__,docs/source/conf.py,old,build,dist,tests/,jina/resources/,now/thirdparty
-          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --exclude .git,__pycache__,docs/source/conf.py,old,build,dist,tests/,jina/resources/,now/thirdparty
-
-  check-black:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.7
-      - id: file_changes
-        uses: Ana06/get-changed-files@v1.2
-      - name: check black
-        run: ./scripts/black.sh
-        env:
-          CHANGED_FILES: ${{ steps.file_changes.outputs.added_modified }}
-
-  update-preprocessor:
-    runs-on: ubuntu-latest
-    needs: [lint-flake-8, check-black]
-    steps:
-      - uses: actions/checkout@v2
-      - uses: ./.github/actions/push-executor
-        with:
-          executor_version_name: NOW_PREPROCESSOR_VERSION
-          executor_name: NOWPreprocessor
-          executor_path: now/executor/preprocessor
-          # for some reason, the first filter condition needs a different indentation
-          has_changed_filter: |
-            - now/app/base/**
-              - now/common/preprocess.py
-              - now/executor/preprocessor/**
-              - now/executor/abstract/auth/**
-          executor_id: vlxgoxlv
-          jina_auth_token: ${{ secrets.NOW_PREPROCESSOR_JCLOUD_TOKEN }}
-
-  update-qdrant:
-    runs-on: ubuntu-latest
-    needs: [lint-flake-8, check-black]
-    steps:
-      - uses: actions/checkout@v2
-      - uses: ./.github/actions/push-executor
-        with:
-          executor_version_name: NOW_QDRANT_INDEXER_VERSION
-          executor_name: NOWQdrantIndexer16
-          executor_path: now/executor/indexer/qdrant
-          # for some reason, the first filter condition needs a different indentation
-          has_changed_filter: |
-            - 'now/executor/abstract/**'
-              - 'now/executor/indexer/qdrant/**'
-          executor_id: 11yxatzh
-          jina_auth_token: ${{ secrets.NOW_STAGING_FLORIAN }}
-
-  update-elastic:
-    runs-on: ubuntu-latest
-    needs: [lint-flake-8, check-black]
-    steps:
-      - uses: actions/checkout@v2
-      - uses: ./.github/actions/push-executor
-        with:
-          executor_version_name: NOW_ELASTIC_INDEXER_VERSION
-          executor_name: NOWElasticIndexer
-          executor_path: now/executor/indexer/elastic
-          # for some reason, the first filter condition needs a different indentation
-          has_changed_filter: |
-            - 'now/executor/abstract/auth/**'
-              - 'now/executor/indexer/elastic/**'
-          executor_id: 11yxatzh
-          jina_auth_token: ${{ secrets.NOW_STAGING_FLORIAN }}
-
-  update-autocomplete:
-    runs-on: ubuntu-latest
-    needs: [lint-flake-8, check-black]
-    steps:
-      - uses: actions/checkout@v2
-      - uses: ./.github/actions/push-executor
-        with:
-          executor_version_name: NOW_AUTOCOMPLETE_VERSION
-          executor_name: NOWAutoCompleteExecutor2
-          executor_path: now/executor/autocomplete
-          # for some reason, the first filter condition needs a different indentation
-          has_changed_filter: |
-            - 'now/executor/abstract/auth/**'
-              - 'now/executor/autocomplete/**'
-          executor_id: 11yxatzh
-          jina_auth_token: ${{ secrets.NOW_STAGING_FLORIAN }}
-
-  update-bff-playground:
-    runs-on: ubuntu-latest
-    needs: [lint-flake-8, check-black]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Check if deployment has changed
-        uses: dorny/paths-filter@v2
-        id: check_has_deployment_changed
-        with:
-          filters: |
-            has_deployment_changed:
-            - 'deployment/playground/**'
-            - 'deployment/bff/**'
-      - name: Get bff and playground tag
-        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
-        run: |
-          FILE='now/constants.py'
-          BFF_PLAYGROUND_TAG=$(sed -n '/DOCKER_BFF_PLAYGROUND_TAG =/p' $FILE | cut -d \' -f2)
-          echo "BFF_PLAYGROUND_TAG=$BFF_PLAYGROUND_TAG" >> $GITHUB_ENV
-      - name: Check that tag isn't used already for bff
-        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
-        env:
-          IMAGE_TAG: ${{ env.BFF_PLAYGROUND_TAG }}
-        run: |
-          if docker manifest inspect jinaai/now-bff:$IMAGE_TAG; then
-            echo "Docker tag is used already for bff. Please update bff and playground tag"
-            exit 1
-          else
-            echo "Docker tag isn't used already for bff, continue to build..."
-          fi
-      - name: Check that tag isn't used already for playground
-        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
-        env:
-          IMAGE_TAG: ${{ env.BFF_PLAYGROUND_TAG }}
-        run: |
-          if docker manifest inspect jinaai/now-playground:$IMAGE_TAG; then
-            echo "Docker tag is used already for playground. Please update bff and playground tag"
-            exit 1
-          else
-            echo "Docker tag isn't used already for playground, continue to build..."
-          fi
-      - name: Set up Docker Buildx
-        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
-        uses: docker/setup-buildx-action@v1
-      - name: Login to DockerHub
-        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-      - name: Build and push bff
-        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
-        uses: docker/build-push-action@v3
-        with:
-          context: deployment/bff/.
-          push: true
-          tags: jinaai/now-bff:${{ env.BFF_PLAYGROUND_TAG }}
-      - name: Build and push playground
-        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
-        uses: docker/build-push-action@v3
-        with:
-          context: deployment/playground/.
-          push: true
-          tags: jinaai/now-playground:${{ env.BFF_PLAYGROUND_TAG }}
+#  lint-flake-8:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v2
+#      - name: Set up Python 3.7
+#        uses: actions/setup-python@v2
+#        with:
+#          python-version: 3.7
+#      - name: Lint with flake8
+#        run: |
+#          pip install flake8
+#          # stop the build if there are Python syntax errors or undefined names
+#          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exclude .git,__pycache__,docs/source/conf.py,old,build,dist,tests/,jina/resources/,now/thirdparty
+#          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+#          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --exclude .git,__pycache__,docs/source/conf.py,old,build,dist,tests/,jina/resources/,now/thirdparty
+#
+#  check-black:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v2
+#        with:
+#          fetch-depth: 0
+#      - name: Set up Python 3.7
+#        uses: actions/setup-python@v2
+#        with:
+#          python-version: 3.7
+#      - id: file_changes
+#        uses: Ana06/get-changed-files@v1.2
+#      - name: check black
+#        run: ./scripts/black.sh
+#        env:
+#          CHANGED_FILES: ${{ steps.file_changes.outputs.added_modified }}
+#
+#  update-preprocessor:
+#    runs-on: ubuntu-latest
+#    needs: [lint-flake-8, check-black]
+#    steps:
+#      - uses: actions/checkout@v2
+#      - uses: ./.github/actions/push-executor
+#        with:
+#          executor_version_name: NOW_PREPROCESSOR_VERSION
+#          executor_name: NOWPreprocessor
+#          executor_path: now/executor/preprocessor
+#          # for some reason, the first filter condition needs a different indentation
+#          has_changed_filter: |
+#            - now/app/base/**
+#              - now/common/preprocess.py
+#              - now/executor/preprocessor/**
+#              - now/executor/abstract/auth/**
+#          executor_id: vlxgoxlv
+#          jina_auth_token: ${{ secrets.NOW_PREPROCESSOR_JCLOUD_TOKEN }}
+#
+#  update-qdrant:
+#    runs-on: ubuntu-latest
+#    needs: [lint-flake-8, check-black]
+#    steps:
+#      - uses: actions/checkout@v2
+#      - uses: ./.github/actions/push-executor
+#        with:
+#          executor_version_name: NOW_QDRANT_INDEXER_VERSION
+#          executor_name: NOWQdrantIndexer16
+#          executor_path: now/executor/indexer/qdrant
+#          # for some reason, the first filter condition needs a different indentation
+#          has_changed_filter: |
+#            - 'now/executor/abstract/**'
+#              - 'now/executor/indexer/qdrant/**'
+#          executor_id: 11yxatzh
+#          jina_auth_token: ${{ secrets.NOW_STAGING_FLORIAN }}
+#
+#  update-elastic:
+#    runs-on: ubuntu-latest
+#    needs: [lint-flake-8, check-black]
+#    steps:
+#      - uses: actions/checkout@v2
+#      - uses: ./.github/actions/push-executor
+#        with:
+#          executor_version_name: NOW_ELASTIC_INDEXER_VERSION
+#          executor_name: NOWElasticIndexer
+#          executor_path: now/executor/indexer/elastic
+#          # for some reason, the first filter condition needs a different indentation
+#          has_changed_filter: |
+#            - 'now/executor/abstract/auth/**'
+#              - 'now/executor/indexer/elastic/**'
+#          executor_id: 11yxatzh
+#          jina_auth_token: ${{ secrets.NOW_STAGING_FLORIAN }}
+#
+#  update-autocomplete:
+#    runs-on: ubuntu-latest
+#    needs: [lint-flake-8, check-black]
+#    steps:
+#      - uses: actions/checkout@v2
+#      - uses: ./.github/actions/push-executor
+#        with:
+#          executor_version_name: NOW_AUTOCOMPLETE_VERSION
+#          executor_name: NOWAutoCompleteExecutor2
+#          executor_path: now/executor/autocomplete
+#          # for some reason, the first filter condition needs a different indentation
+#          has_changed_filter: |
+#            - 'now/executor/abstract/auth/**'
+#              - 'now/executor/autocomplete/**'
+#          executor_id: 11yxatzh
+#          jina_auth_token: ${{ secrets.NOW_STAGING_FLORIAN }}
+#
+#  update-bff-playground:
+#    runs-on: ubuntu-latest
+#    needs: [lint-flake-8, check-black]
+#    steps:
+#      - uses: actions/checkout@v2
+#      - name: Check if deployment has changed
+#        uses: dorny/paths-filter@v2
+#        id: check_has_deployment_changed
+#        with:
+#          filters: |
+#            has_deployment_changed:
+#            - 'deployment/playground/**'
+#            - 'deployment/bff/**'
+#      - name: Get bff and playground tag
+#        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
+#        run: |
+#          FILE='now/constants.py'
+#          BFF_PLAYGROUND_TAG=$(sed -n '/DOCKER_BFF_PLAYGROUND_TAG =/p' $FILE | cut -d \' -f2)
+#          echo "BFF_PLAYGROUND_TAG=$BFF_PLAYGROUND_TAG" >> $GITHUB_ENV
+#      - name: Check that tag isn't used already for bff
+#        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
+#        env:
+#          IMAGE_TAG: ${{ env.BFF_PLAYGROUND_TAG }}
+#        run: |
+#          if docker manifest inspect jinaai/now-bff:$IMAGE_TAG; then
+#            echo "Docker tag is used already for bff. Please update bff and playground tag"
+#            exit 1
+#          else
+#            echo "Docker tag isn't used already for bff, continue to build..."
+#          fi
+#      - name: Check that tag isn't used already for playground
+#        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
+#        env:
+#          IMAGE_TAG: ${{ env.BFF_PLAYGROUND_TAG }}
+#        run: |
+#          if docker manifest inspect jinaai/now-playground:$IMAGE_TAG; then
+#            echo "Docker tag is used already for playground. Please update bff and playground tag"
+#            exit 1
+#          else
+#            echo "Docker tag isn't used already for playground, continue to build..."
+#          fi
+#      - name: Set up Docker Buildx
+#        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
+#        uses: docker/setup-buildx-action@v1
+#      - name: Login to DockerHub
+#        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
+#        uses: docker/login-action@v1
+#        with:
+#          username: ${{ secrets.DOCKER_USERNAME }}
+#          password: ${{ secrets.DOCKER_PASSWORD }}
+#      - name: Build and push bff
+#        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
+#        uses: docker/build-push-action@v3
+#        with:
+#          context: deployment/bff/.
+#          push: true
+#          tags: jinaai/now-bff:${{ env.BFF_PLAYGROUND_TAG }}
+#      - name: Build and push playground
+#        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
+#        uses: docker/build-push-action@v3
+#        with:
+#          context: deployment/playground/.
+#          push: true
+#          tags: jinaai/now-playground:${{ env.BFF_PLAYGROUND_TAG }}
   core-test:
     runs-on: ubuntu-latest
-    needs: [ update-preprocessor, update-bff-playground,  update-autocomplete-executor, update-qdrant-executor, update-elastic-executor]
+#    needs: [ update-preprocessor, update-bff-playground,  update-autocomplete-executor, update-qdrant-executor, update-elastic-executor]
     strategy:
       fail-fast: false
       matrix:
@@ -270,7 +270,7 @@ jobs:
 
   executor-test:
     runs-on: ubuntu-latest
-    needs: [ update-preprocessor-if-required, update-qdrant-executor-if-required, update-bff-playground-if-required, update-elastic-executor-if-required, update-autocomplete-executor-if-required]
+#    needs: [ update-preprocessor-if-required, update-qdrant-executor-if-required, update-bff-playground-if-required, update-elastic-executor-if-required, update-autocomplete-executor-if-required]
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.7
