@@ -60,7 +60,6 @@ def es_inputs() -> namedtuple:
             ],
         ),
     ]
-    prep_docs = DocumentArray()
     clip_docs = DocumentArray()
     sbert_docs = DocumentArray()
     # encode our documents
@@ -79,12 +78,10 @@ def es_inputs() -> namedtuple:
         sbert_doc.title.embedding = np.random.random(5)
         sbert_doc.excerpt.embedding = np.random.random(5)
 
-        prep_docs.append(prep_doc)
         clip_docs.append(clip_doc)
         sbert_docs.append(sbert_doc)
 
     index_docs_map = {
-        'preprocessor': prep_docs,
         'clip': clip_docs,
         'sbert': sbert_docs,
     }
@@ -101,7 +98,6 @@ def es_inputs() -> namedtuple:
     sbert_doc.query_text.embedding = np.random.random(5)
 
     query_docs_map = {
-        'preprocessor': DocumentArray([query_doc]),
         'clip': DocumentArray([clip_doc]),
         'sbert': DocumentArray([sbert_doc]),
     }
