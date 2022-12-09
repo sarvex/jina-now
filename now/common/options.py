@@ -232,7 +232,8 @@ FILTER_FIELDS = DialogOptions(
     prompt_type='checkbox',
     depends_on=DATASET_TYPE,
     conditional_check=lambda user_input: user_input.filter_fields_candidates is not None
-    and len(user_input.filter_fields_candidates) > 0
+    and len(set(user_input.filter_fields_candidates) - set(user_input.search_fields))
+    > 0
     and user_input.dataset_type != DatasetTypes.DEMO,
 )
 
