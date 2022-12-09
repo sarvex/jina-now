@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 def ndarray_to_jpeg_bytes(arr) -> bytes:
     pil_img = Image.fromarray(arr)
-    pil_img.thumbnail((512, 512))
+    pil_img.thumbnail((224, 224))
     pil_img = pil_img.convert('RGB')
     img_byte_arr = io.BytesIO()
     pil_img.save(img_byte_arr, format="JPEG", quality=95)
