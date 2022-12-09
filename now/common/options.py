@@ -210,13 +210,14 @@ AWS_REGION_NAME = DialogOptions(
 SEARCH_FIELDS = DialogOptions(
     name='search_fields',
     choices=lambda user_input, **kwargs: [
-        {'name': field, 'value': field} for field in user_input.search_fields_candidates
+        {'name': field, 'value': field}
+        for field in user_input.search_fields_modalities.keys()
     ],
     prompt_message='Please select the search fields:',
     prompt_type='checkbox',
     depends_on=DATASET_TYPE,
     conditional_check=lambda user_input: user_input.search_fields_candidates is not None
-    and len(user_input.search_fields_candidates) > 0
+    and len(user_input.search_fields_candidates.keys()) > 0
     and user_input.dataset_type != DatasetTypes.DEMO,
 )
 
@@ -225,14 +226,16 @@ FILTER_FIELDS = DialogOptions(
     name='filter_fields',
     choices=lambda user_input, **kwargs: [
         {'name': field, 'value': field}
-        for field in user_input.filter_fields_candidates
+        for field in user_input.filter_fields_modalities.keys()
         if field not in user_input.search_fields
     ],
     prompt_message='Please select the filter fields',
     prompt_type='checkbox',
     depends_on=DATASET_TYPE,
-    conditional_check=lambda user_input: user_input.filter_fields_candidates is not None
-    and len(set(user_input.filter_fields_candidates) - set(user_input.search_fields))
+    conditional_check=lambda user_input: user_input.filter_fields_modalities is not None
+    and len(
+        set(user_input.filter_fields_modalities.keys()) - set(user_input.search_fields)
+    )
     > 0
     and user_input.dataset_type != DatasetTypes.DEMO,
 )

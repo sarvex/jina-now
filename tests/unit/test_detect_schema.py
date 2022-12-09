@@ -37,8 +37,8 @@ def test_set_fields_names_from_local_folder(
 
     set_field_names_from_local_folder(user_input)
 
-    assert set(user_input.search_fields_candidates) == search_field_names
-    assert set(user_input.filter_fields_candidates) == filter_field_names
+    assert set(user_input.search_fields_modalities.keys()) == search_field_names
+    assert set(user_input.filter_fields_modalities.keys()) == filter_field_names
 
 
 @pytest.mark.parametrize(
@@ -69,8 +69,8 @@ def test_set_field_names_from_s3_bucket(
 
     set_field_names_from_s3_bucket(user_input)
 
-    assert set(user_input.search_fields_candidates) == search_field_names
-    assert set(user_input.filter_fields_candidates) == filter_field_names
+    assert set(user_input.search_fields_modalities.keys()) == search_field_names
+    assert set(user_input.filter_fields_modalities.keys()) == filter_field_names
 
 
 def test_set_field_names_from_docarray():
@@ -81,8 +81,8 @@ def test_set_field_names_from_docarray():
 
     set_field_names_from_docarray(user_input)
 
-    assert len(user_input.search_fields_candidates) == 8
-    assert set(user_input.search_fields_candidates) == {
+    assert len(user_input.search_fields_modalities.keys()) == 8
+    assert set(user_input.search_fields_modalities.keys()) == {
         'text',
         'uri',
         'original_height',
@@ -98,15 +98,13 @@ def test_create_candidate_search_fields():
 
     (
         search_fields_modalities,
-        search_fields_candidates,
-        filter_fields_candidates,
+        filter_fields_modalities,
     ) = _create_candidate_search_filter_fields(
         DatasetTypes.S3_BUCKET, ['image.png', 'test.txt', 'tags', 'id', 'link', 'title']
     )
 
-    assert len(search_fields_candidates) == 2
     assert len(search_fields_modalities.keys()) == 2
     assert search_fields_modalities['image.png'] == Modalities.IMAGE
     assert search_fields_modalities['test.txt'] == Modalities.TEXT
 
-    assert len(filter_fields_candidates) == 5
+    assert len(filter_fields_modalities.keys()) == 5

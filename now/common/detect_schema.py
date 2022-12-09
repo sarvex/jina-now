@@ -4,12 +4,12 @@ import os
 
 import requests
 
-from now.constants import SUPPORTED_FILE_TYPES, DatasetTypes, Modalities
+from now.constants import SUPPORTED_FILE_TYPES, Modalities
 from now.data_loading.utils import get_s3_bucket_and_folder_prefix
 from now.now_dataclasses import UserInput
 
 
-def _create_candidate_search_filter_fields(dataset_type, fieldnames):
+def _create_candidate_search_filter_fields(field_name_to_value):
     """
     Creates candidate search fields from the field_names
     A candidate search field is a field that we can detect its modality
@@ -18,34 +18,29 @@ def _create_candidate_search_filter_fields(dataset_type, fieldnames):
 
     In case of docarray, we assume all fields are potentially searchable
 
-    :param dataset_type: DatasetTypes object
-    :param fieldnames: list of field names
+    :param field_name_to_value: dictionary
     """
     search_fields_modalities = {}
-    search_fields_candidates = []
-    filter_fields_candidates = []
-    if dataset_type != DatasetTypes.DOCARRAY:
-        for field in fieldnames:
-            for modality, modality_types in SUPPORTED_FILE_TYPES.items():
-                if field.split('.')[-1] in modality_types:
-                    search_fields_modalities[field] = modality
-                    search_fields_candidates.append(field)
-                    break
-            if (
-                field.split('.')[-1]
-                not in SUPPORTED_FILE_TYPES[Modalities.IMAGE]
-                + SUPPORTED_FILE_TYPES[Modalities.VIDEO]
-                + SUPPORTED_FILE_TYPES[Modalities.MUSIC]
-            ):
-                filter_fields_candidates.append(field)
-    else:
-        search_fields_candidates = fieldnames
-        filter_fields_candidates = fieldnames
-    if len(search_fields_candidates) == 0:
+    filter_field_modalities = {}
+    for field_name, field_value in field_name_to_value.items():
+        # we determine search modality
+        for modality, modality_types in SUPPORTED_FILE_TYPES.items():
+            if field_name().split('.')[-1] in modality_types:
+                search_fields_modalities[field_name] = modality
+                break
+        # we determine if it's a filter field
+        if (
+            field_value.split('.')[-1]
+            not in SUPPORTED_FILE_TYPES[Modalities.IMAGE]
+            + SUPPORTED_FILE_TYPES[Modalities.VIDEO]
+            + SUPPORTED_FILE_TYPES[Modalities.MUSIC]
+        ):
+            filter_field_modalities[field_name] = str(field_value.__class__.__name__)
+    if len(search_fields_modalities.keys()) == 0:
         raise ValueError(
             'No searchable fields found, please check documentation https://now.jina.ai'
         )
-    return search_fields_modalities, search_fields_candidates, filter_fields_candidates
+    return search_fields_modalities, filter_field_modalities
 
 
 def _extract_field_names_docarray(response):
@@ -53,11 +48,15 @@ def _extract_field_names_docarray(response):
     Downloads the first document in the document array and extracts field names from it
     if tags also exists then it extracts the keys from tags and adds to the field_names
     """
+    field_names = {}
     response = requests.get(response.json()['data']['download'])
     ignored_fieldnames = ['embedding', 'id', 'mimeType', 'tags']
-    field_names = [el for el in response.json()[0] if el not in ignored_fieldnames]
+    for el, value in response.json()[0].items():
+        if el not in ignored_fieldnames:
+            field_names[el] = value
     if 'tags' in response.json()[0]:
-        field_names.extend(response.json()[0]['tags']['fields'].keys())
+        for el, value in response.json()[0]['tags']['fields'].items():
+            field_names[el] = value
     return field_names
 
 
@@ -88,12 +87,10 @@ def set_field_names_from_docarray(user_input: UserInput, **kwargs):
         raise ValueError('DocumentArray does not exist or you do not have access to it')
     (
         search_fields_modalities,
-        search_fields_candidates,
-        filter_fields_candidates,
-    ) = _create_candidate_search_filter_fields(user_input.dataset_type, field_names)
+        filter_fields_modalities,
+    ) = _create_candidate_search_filter_fields(field_names)
     user_input.search_fields_modalities = search_fields_modalities
-    user_input.search_fields_candidates = search_fields_candidates
-    user_input.filter_fields_candidates = filter_fields_candidates
+    user_input.filter_fields_modalities = filter_fields_modalities
 
 
 def _check_contains_files_only_s3_bucket(objects):
@@ -137,13 +134,14 @@ def _extract_field_names_s3_folder(first_folder_objects):
 
     :param first_folder_objects: list of objects in the first folder
     """
-    field_names = []
+    field_names = {}
     for field in first_folder_objects:
         if field.key.endswith('.json'):
             data = json.loads(field.get()['Body'].read())
-            field_names.extend(list(data.keys()))
+            for el, value in data.items():
+                field_names[el] = value
         else:
-            field_names.append(field.key.split('/')[-1])
+            field_names[field.key.split('/')[-1]] = field.key.split('/')[-1]
     return field_names
 
 
@@ -173,12 +171,10 @@ def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
     field_names = _extract_field_names_s3_folder(first_folder_objects)
     (
         search_fields_modalities,
-        search_fields_candidates,
-        filter_fields_candidates,
-    ) = _create_candidate_search_filter_fields(user_input.dataset_type, field_names)
+        filter_fields_modalities,
+    ) = _create_candidate_search_filter_fields(field_names)
     user_input.search_fields_modalities = search_fields_modalities
-    user_input.search_fields_candidates = search_fields_candidates
-    user_input.filter_fields_candidates = filter_fields_candidates
+    user_input.filter_fields_modalities = filter_fields_modalities
 
 
 def _ensure_distance_folder_root(path, root):
@@ -226,14 +222,15 @@ def _extract_field_names_local_folder(first_folder):
 
     :param first_folder: list of objects in the first folder
     """
-    field_names = []
+    field_names = {}
     for field_name in os.listdir(first_folder):
         if field_name.endswith('.json'):
             json_f = open(os.path.join(first_folder, field_name))
             data = json.load(json_f)
-            field_names.extend(list(data.keys()))
+            for el, value in data.items():
+                field_names[el] = value
         else:
-            field_names.append(field_name)
+            field_names[field_name] = field_name
     return field_names
 
 
@@ -259,9 +256,7 @@ def set_field_names_from_local_folder(user_input: UserInput, **kwargs):
     field_names = _extract_field_names_local_folder(first_folder)
     (
         search_fields_modalities,
-        search_fields_candidates,
-        filter_fields_candidates,
-    ) = _create_candidate_search_filter_fields(user_input.dataset_type, field_names)
+        filter_fields_modalities,
+    ) = _create_candidate_search_filter_fields(field_names)
     user_input.search_fields_modalities = search_fields_modalities
-    user_input.search_fields_candidates = search_fields_candidates
-    user_input.filter_fields_candidates = filter_fields_candidates
+    user_input.filter_fields_modalities = filter_fields_modalities
