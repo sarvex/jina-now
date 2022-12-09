@@ -103,12 +103,11 @@ class UserInput(BaseModel):
     aws_region_name: Optional[str] = None
 
     # Fields
-    field_names: Optional[List] = None
-    search_fields: Optional[List] = None
-    search_fields_candidates: Optional[Dict] = None
-    search_fields_modalities: Optional[List] = None
-    filter_fields: Optional[List] = None
-    filter_fields_candidates: Optional[Dict] = None
+    search_fields: Optional[List] = []
+    search_fields_candidates: Optional[List] = []
+    search_fields_modalities: Optional[Dict] = {}
+    filter_fields: Optional[List] = []
+    filter_fields_candidates: Optional[List] = []
 
     # ES related
     task_config: Optional[Task] = None

@@ -32,7 +32,6 @@ class Apps(BetterEnum):
 class DatasetTypes(BetterEnum):
     DEMO = 'demo'
     PATH = 'path'
-    URL = 'url'
     DOCARRAY = 'docarray'
     S3_BUCKET = 's3_bucket'
     ELASTICSEARCH = 'elasticsearch'

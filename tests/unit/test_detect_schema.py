@@ -23,39 +23,41 @@ def get_aws_info():
 
 
 @pytest.mark.parametrize(
-    'dataset_path, field_names',
+    'dataset_path, search_field_names, filter_field_names',
     [
-        ('gif_resource_path', {'file.txt', 'file.gif', 'a1', 'a2'}),
-        ('image_resource_path', set()),
+        ('gif_resource_path', {'file.txt', 'file.gif'}, {'file.txt', 'a1', 'a2'}),
+        ('image_resource_path', set(), set()),
     ],
 )
-def test_set_fields_names_from_local_folder(dataset_path, field_names, request):
+def test_set_fields_names_from_local_folder(
+    dataset_path, search_field_names, filter_field_names, request
+):
     user_input = UserInput()
     user_input.dataset_path = request.getfixturevalue(dataset_path)
 
     set_field_names_from_local_folder(user_input)
 
-    assert set(user_input.field_names) == field_names
+    assert set(user_input.search_fields_candidates) == search_field_names
+    assert set(user_input.filter_fields_candidates) == filter_field_names
 
 
 @pytest.mark.parametrize(
-    'dataset_path, field_names',
+    'dataset_path, search_field_names, filter_field_names',
     [
         (
             '',
             {
                 'image.png',
                 'test.txt',
-                'tags',
-                'id',
-                'link',
-                'title',
             },
+            {'test.txt', 'tags', 'id', 'link', 'title'},
         ),
-        ('folder1/', set()),
+        ('folder1/', set(), set()),
     ],
 )
-def test_set_field_names_from_s3_bucket(dataset_path, field_names, get_aws_info):
+def test_set_field_names_from_s3_bucket(
+    dataset_path, search_field_names, filter_field_names, get_aws_info
+):
     user_input = UserInput()
     (
         user_input.dataset_path,
@@ -67,7 +69,8 @@ def test_set_field_names_from_s3_bucket(dataset_path, field_names, get_aws_info)
 
     set_field_names_from_s3_bucket(user_input)
 
-    assert set(user_input.field_names) == field_names
+    assert set(user_input.search_fields_candidates) == search_field_names
+    assert set(user_input.filter_fields_candidates) == filter_field_names
 
 
 def test_set_field_names_from_docarray():
@@ -77,8 +80,8 @@ def test_set_field_names_from_docarray():
 
     set_field_names_from_docarray(user_input)
 
-    assert len(user_input.field_names) == 8
-    assert set(user_input.field_names) == {
+    assert len(user_input.search_fields_candidates) == 8
+    assert set(user_input.search_fields_candidates) == {
         'text',
         'uri',
         'original_height',

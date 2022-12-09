@@ -82,10 +82,6 @@ DATASET_TYPE = DialogOptions(
             'value': DatasetTypes.DOCARRAY,
         },
         {
-            'name': 'DocumentArray URL',
-            'value': DatasetTypes.URL,
-        },
-        {
             'name': 'Local folder',
             'value': DatasetTypes.PATH,
         },
@@ -219,8 +215,8 @@ SEARCH_FIELDS = DialogOptions(
     prompt_message='Please select the search fields:',
     prompt_type='checkbox',
     depends_on=DATASET_TYPE,
-    conditional_check=lambda user_input: user_input.field_names is not None
-    and len(user_input.field_names) > 0
+    conditional_check=lambda user_input: user_input.search_fields_candidates is not None
+    and len(user_input.search_fields_candidates) > 0
     and user_input.dataset_type != DatasetTypes.DEMO,
 )
 
@@ -235,8 +231,8 @@ FILTER_FIELDS = DialogOptions(
     prompt_message='Please select the filter fields',
     prompt_type='checkbox',
     depends_on=DATASET_TYPE,
-    conditional_check=lambda user_input: user_input.field_names is not None
-    and len(user_input.field_names) > 0
+    conditional_check=lambda user_input: user_input.filter_fields_candidates is not None
+    and len(user_input.filter_fields_candidates) > 0
     and user_input.dataset_type != DatasetTypes.DEMO,
 )
 

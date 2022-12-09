@@ -66,7 +66,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DOCARRAY,
             'dataset_name': 'subset_laion',
-            'field_names': SUBSET_LAION_FIELD_NAMES,
             'search_fields_modalities': {},
             'search_fields_candidates': SUBSET_LAION_FIELD_NAMES,
             'filter_fields_candidates': SUBSET_LAION_FIELD_NAMES,
@@ -86,7 +85,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DOCARRAY,
             'dataset_name': 'subset_laion',
-            'field_names': SUBSET_LAION_FIELD_NAMES,
             'search_fields_candidates': SUBSET_LAION_FIELD_NAMES,
             'filter_fields_candidates': SUBSET_LAION_FIELD_NAMES,
             'search_fields_modalities': {},
@@ -108,7 +106,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'dataset_path': os.path.join(
                 os.path.dirname(__file__), '..', 'resources', 'image'
             ),
-            'field_names': [],
             'search_fields_candidates': None,
             'search_fields': None,
             'filter_fields': None,
@@ -124,7 +121,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DOCARRAY,
             'dataset_name': 'subset_laion',
-            'field_names': SUBSET_LAION_FIELD_NAMES,
             'search_fields_candidates': SUBSET_LAION_FIELD_NAMES,
             'filter_fields_candidates': SUBSET_LAION_FIELD_NAMES,
             'search_fields_modalities': {},

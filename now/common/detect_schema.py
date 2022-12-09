@@ -79,16 +79,14 @@ def set_field_names_from_docarray(user_input: UserInput, **kwargs):
         json=json_data,
     )
     if response.json()['code'] == 200:
-        user_input.field_names = _extract_field_names_docarray(response)
+        field_names = _extract_field_names_docarray(response)
     else:
         raise ValueError('DocumentArray does not exist or you do not have access to it')
     (
         search_fields_modalities,
         search_fields_candidates,
         filter_fields_candidates,
-    ) = _create_candidate_search_filter_fields(
-        user_input.dataset_type, user_input.field_names
-    )
+    ) = _create_candidate_search_filter_fields(user_input.dataset_type, field_names)
     user_input.search_fields_modalities = search_fields_modalities
     user_input.search_fields_candidates = search_fields_candidates
     user_input.filter_fields_candidates = filter_fields_candidates
@@ -160,7 +158,6 @@ def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
 
     objects = list(bucket.objects.filter(Prefix=folder_prefix))
     if _check_contains_files_only_s3_bucket(objects):
-        user_input.field_names = []
         return
 
     _check_folder_structure_s3_bucket(objects, folder_prefix)
@@ -169,14 +166,12 @@ def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
     first_folder_objects = list(
         bucket.objects.filter(Prefix=folder_prefix + first_folder)
     )[1:]
-    user_input.field_names = _extract_field_names_s3_folder(first_folder_objects)
+    field_names = _extract_field_names_s3_folder(first_folder_objects)
     (
         search_fields_modalities,
         search_fields_candidates,
         filter_fields_candidates,
-    ) = _create_candidate_search_filter_fields(
-        user_input.dataset_type, user_input.field_names
-    )
+    ) = _create_candidate_search_filter_fields(user_input.dataset_type, field_names)
     user_input.search_fields_modalities = search_fields_modalities
     user_input.search_fields_candidates = search_fields_candidates
     user_input.filter_fields_candidates = filter_fields_candidates
@@ -253,19 +248,16 @@ def set_field_names_from_local_folder(user_input: UserInput, **kwargs):
             'The path provided is not a folder, please check documentation https://now.jina.ai'
         )
     if _check_contains_files_only_local_folder(dataset_path):
-        user_input.field_names = []
         return
 
     first_path = _check_folder_structure_local_folder(dataset_path)
     first_folder = '/'.join(first_path.split('/')[:-1])
-    user_input.field_names = _extract_field_names_local_folder(first_folder)
+    field_names = _extract_field_names_local_folder(first_folder)
     (
         search_fields_modalities,
         search_fields_candidates,
         filter_fields_candidates,
-    ) = _create_candidate_search_filter_fields(
-        user_input.dataset_type, user_input.field_names
-    )
+    ) = _create_candidate_search_filter_fields(user_input.dataset_type, field_names)
     user_input.search_fields_modalities = search_fields_modalities
     user_input.search_fields_candidates = search_fields_candidates
     user_input.filter_fields_candidates = filter_fields_candidates
