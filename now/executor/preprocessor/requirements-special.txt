@@ -1,5 +1,0 @@
-# Install special requirements for the executor that don't need to be updated on every build
-boto3
-paddlepaddle==2.4.0rc0
-paddleocr>=2.0.1
-jina[filelock]>=3.12.0

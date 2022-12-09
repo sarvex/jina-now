@@ -60,12 +60,11 @@ runs:
       if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
       shell: bash
       run: cp requirements.txt ${{ inputs.executor_path }}/requirements-now.txt
-    # force the executor to rebuild even if nothing has changed in its folder
-    # code changes in the now repo would not be considered otherwise
-    - name: hack force rebuild when loading copying the files
+    # set correct now version in the dockerfile
+    - name: replace now commit hash in Dockerfile
       if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
       shell: bash
-      run: echo ${{ github.event.pull_request.head.sha }} > ${{ inputs.executor_path }}/force_push.txt
+      run: sed -i 's/JINA_NOW_COMMIT_SHA/${{ github.event.pull_request.head.sha }}/g' ${{ inputs.executor_path }}/Dockerfile
     - name: Build and push executor
       if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
       shell: bash
