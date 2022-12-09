@@ -106,9 +106,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'dataset_path': os.path.join(
                 os.path.dirname(__file__), '..', 'resources', 'image'
             ),
-            'search_fields_candidates': None,
-            'search_fields': None,
-            'filter_fields': None,
             'cluster': 'new',
             'deployment_type': 'local',
         },

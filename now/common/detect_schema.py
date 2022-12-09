@@ -41,6 +41,10 @@ def _create_candidate_search_filter_fields(dataset_type, fieldnames):
     else:
         search_fields_candidates = fieldnames
         filter_fields_candidates = fieldnames
+    if len(search_fields_candidates) == 0:
+        raise ValueError(
+            'No searchable fields found, please check documentation https://now.jina.ai'
+        )
     return search_fields_modalities, search_fields_candidates, filter_fields_candidates
 
 

@@ -75,6 +75,7 @@ def test_set_field_names_from_s3_bucket(
 
 def test_set_field_names_from_docarray():
     user_input = UserInput()
+    user_input.dataset_type = DatasetTypes.DOCARRAY
     user_input.dataset_name = 'subset_laion'
     user_input.jwt = {'token': os.environ['WOLF_TOKEN']}
 
