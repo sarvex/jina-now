@@ -31,9 +31,6 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
     if user_input.dataset_type == DatasetTypes.DOCARRAY:
         print('⬇  Pull DocumentArray dataset')
         da = _pull_docarray(user_input.dataset_name)
-    elif user_input.dataset_type == DatasetTypes.URL:
-        print('⬇  Pull DocumentArray dataset')
-        da = fetch_da_from_url(user_input.dataset_url)
     elif user_input.dataset_type == DatasetTypes.PATH:
         print('💿  Loading files from disk')
         da = _load_from_disk(app, user_input)
