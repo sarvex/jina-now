@@ -28,7 +28,24 @@ def _create_candidate_search_filter_fields(field_name_to_value):
             if field_name.split('.')[-1] in modality_types:
                 search_fields_modalities[field_name] = modality
                 break
+            if field_name == 'uri' and field_value.split('.')[-1] in modality_types:
+                search_fields_modalities[field_name] = modality
+                break
+            if field_name == 'text' and field_value:
+                search_fields_modalities[field_name] = Modalities.TEXT
+                break
         # we determine if it's a filter field
+        if field_name == 'uri':
+            if (
+                field_value.split('.')[-1]
+                not in SUPPORTED_FILE_TYPES[Modalities.IMAGE]
+                + SUPPORTED_FILE_TYPES[Modalities.VIDEO]
+                + SUPPORTED_FILE_TYPES[Modalities.MUSIC]
+            ):
+                filter_field_modalities[field_name] = str(
+                    field_value.__class__.__name__
+                )
+            continue
         if (
             field_name.split('.')[-1]
             not in SUPPORTED_FILE_TYPES[Modalities.IMAGE]
@@ -36,6 +53,7 @@ def _create_candidate_search_filter_fields(field_name_to_value):
             + SUPPORTED_FILE_TYPES[Modalities.MUSIC]
         ):
             filter_field_modalities[field_name] = str(field_value.__class__.__name__)
+
     if len(search_fields_modalities.keys()) == 0:
         raise ValueError(
             'No searchable fields found, please check documentation https://now.jina.ai'
