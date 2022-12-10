@@ -14,16 +14,16 @@ from now.demo_data import DemoDatasetNames
 from now.dialog import configure_user_input
 from now.now_dataclasses import UserInput
 
-SUBSET_LAION_FIELD_NAMES = [
-    'text',
-    'uri',
-    'original_height',
-    'similarity',
-    'NSFW',
-    'height',
-    'original_width',
-    'width',
-]
+SEARCH_FIELDS_MODALITIES = {'text': 'text', 'uri': 'image'}
+FILTER_FIELDS_MODALITIES = {
+    'text': 'str',
+    'original_height': 'dict',
+    'similarity': 'dict',
+    'NSFW': 'dict',
+    'height': 'dict',
+    'original_width': 'dict',
+    'width': 'dict',
+}
 
 
 class CmdPromptMock:
@@ -66,8 +66,8 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DOCARRAY,
             'dataset_name': 'subset_laion',
-            'filter_fields_modalities': {},
-            'search_fields_modalities': {},
+            'filter_fields_modalities': FILTER_FIELDS_MODALITIES,
+            'search_fields_modalities': SEARCH_FIELDS_MODALITIES,
             'search_fields': ['x', 'y'],
             'filter_fields': ['z'],
             'cluster': 'new',
@@ -84,8 +84,8 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DOCARRAY,
             'dataset_name': 'subset_laion',
-            'filter_fields_modalities': {},
-            'search_fields_modalities': {},
+            'filter_fields_modalities': FILTER_FIELDS_MODALITIES,
+            'search_fields_modalities': SEARCH_FIELDS_MODALITIES,
             'search_fields': ['x', 'y'],
             'filter_fields': ['z'],
             'cluster': 'new',
@@ -116,8 +116,8 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DOCARRAY,
             'dataset_name': 'subset_laion',
-            'filter_fields_modalities': {},
-            'search_fields_modalities': {},
+            'filter_fields_modalities': FILTER_FIELDS_MODALITIES,
+            'search_fields_modalities': SEARCH_FIELDS_MODALITIES,
             'search_fields': ['x', 'y'],
             'filter_fields': ['z'],
             'cluster': 'new',

@@ -81,16 +81,10 @@ def test_set_field_names_from_docarray():
 
     set_field_names_from_docarray(user_input)
 
-    assert len(user_input.search_fields_modalities.keys()) == 8
+    assert len(user_input.search_fields_modalities.keys()) == 2
     assert set(user_input.search_fields_modalities.keys()) == {
         'text',
         'uri',
-        'original_height',
-        'similarity',
-        'NSFW',
-        'height',
-        'original_width',
-        'width',
     }
 
 
