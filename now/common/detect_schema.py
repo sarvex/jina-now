@@ -25,12 +25,12 @@ def _create_candidate_search_filter_fields(field_name_to_value):
     for field_name, field_value in field_name_to_value.items():
         # we determine search modality
         for modality, modality_types in SUPPORTED_FILE_TYPES.items():
-            if field_name().split('.')[-1] in modality_types:
+            if field_name.split('.')[-1] in modality_types:
                 search_fields_modalities[field_name] = modality
                 break
         # we determine if it's a filter field
         if (
-            field_value.split('.')[-1]
+            field_name.split('.')[-1]
             not in SUPPORTED_FILE_TYPES[Modalities.IMAGE]
             + SUPPORTED_FILE_TYPES[Modalities.VIDEO]
             + SUPPORTED_FILE_TYPES[Modalities.MUSIC]

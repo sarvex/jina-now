@@ -216,8 +216,8 @@ SEARCH_FIELDS = DialogOptions(
     prompt_message='Please select the search fields:',
     prompt_type='checkbox',
     depends_on=DATASET_TYPE,
-    conditional_check=lambda user_input: user_input.search_fields_candidates is not None
-    and len(user_input.search_fields_candidates.keys()) > 0
+    conditional_check=lambda user_input: user_input.search_fields_modalities is not None
+    and len(user_input.search_fields_modalities.keys()) > 0
     and user_input.dataset_type != DatasetTypes.DEMO,
 )
 

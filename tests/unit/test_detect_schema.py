@@ -95,13 +95,18 @@ def test_set_field_names_from_docarray():
 
 
 def test_create_candidate_search_fields():
-
+    fields_to_modalities = {
+        'image.png': Modalities.IMAGE,
+        'test.txt': Modalities.TEXT,
+        'tags': 'str',
+        'id': 'str',
+        'link': 'str',
+        'title': 'str',
+    }
     (
         search_fields_modalities,
         filter_fields_modalities,
-    ) = _create_candidate_search_filter_fields(
-        DatasetTypes.S3_BUCKET, ['image.png', 'test.txt', 'tags', 'id', 'link', 'title']
-    )
+    ) = _create_candidate_search_filter_fields(fields_to_modalities)
 
     assert len(search_fields_modalities.keys()) == 2
     assert search_fields_modalities['image.png'] == Modalities.IMAGE
