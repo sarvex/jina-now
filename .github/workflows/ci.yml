@@ -247,17 +247,17 @@ jobs:
         run: |
           mkdir -p ~/.jina
           touch ~/.jina/config.json
-          echo "{\"auth_token\": \"${WOLF_TOKEN}\"}" > ~/.jina/config.json
+          echo "{\"auth_token\": \"${NOW_STAGING_FLORIAN}\"}" > ~/.jina/config.json
           cat ~/.jina/config.json
         env:
-          WOLF_TOKEN: ${{ secrets.WOLF_TOKEN }}
+          WOLF_TOKEN: ${{ secrets.NOW_STAGING_FLORIAN }}
       - name: Test
         id: test
         run: |
           pytest --suppress-no-test-exit-code --cov=now --ignore-glob=tests/executor -v -s -m "not gpu" --splits 9 --group ${{ matrix.group }} --splitting-algorithm least_duration tests/
         timeout-minutes: 25
         env:
-          WOLF_TOKEN: ${{ secrets.WOLF_TOKEN }}
+          WOLF_TOKEN: ${{ secrets.NOW_STAGING_FLORIAN }}
           S3_SCHEMA_FOLDER_PATH: ${{ secrets.S3_SCHEMA_FOLDER_PATH }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
