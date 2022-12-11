@@ -130,5 +130,6 @@ Example of the Swagger UI.
 <img width="400" alt="image" src="https://user-images.githubusercontent.com/11627845/157069954-615a5cb6-dda0-4a2f-9442-ea807ad4a8d5.png">
 </details>
 
+
 <!-- end elevator-pitch -->
 
