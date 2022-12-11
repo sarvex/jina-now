@@ -74,4 +74,4 @@ runs:
       shell: bash
       env:
         VERSION: ${{ env.VERSION }}
-      run: JINA_AUTH_TOKEN=${{ inputs.jina_auth_token }} jina hub push --verbose --force-update ${{ inputs.executor_name }} ${{ inputs.executor_path }}/. -t latest --protected-tag $VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
+      run: JINA_AUTH_TOKEN=${{ inputs.jina_auth_token }} jina hub push --verbose --force-update ${{ inputs.executor_name }} ${{ inputs.executor_path }}/. -t latest --protected-tag $VERSION

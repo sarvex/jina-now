@@ -12,4 +12,5 @@ RUN pip install git+https://github.com/jina-ai/now@JINA_NOW_COMMIT_SHA
 # setup the workspace
 COPY . /workdir/
 WORKDIR /workdir
+
 ENTRYPOINT ["jina", "executor", "--uses", "config.yml"]
