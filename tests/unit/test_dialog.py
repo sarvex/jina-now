@@ -3,6 +3,7 @@ Test the dialog.py module.
 
 Patches the `prompt` method to mock user input via the command line.
 """
+import os
 from typing import Dict
 
 import pytest
@@ -12,6 +13,17 @@ from now.constants import DEFAULT_FLOW_NAME, Apps, DatasetTypes
 from now.demo_data import DemoDatasetNames
 from now.dialog import configure_user_input
 from now.now_dataclasses import UserInput
+
+SEARCH_FIELDS_MODALITIES = {'text': 'text', 'uri': 'image'}
+FILTER_FIELDS_MODALITIES = {
+    'text': 'str',
+    'original_height': 'dict',
+    'similarity': 'dict',
+    'NSFW': 'dict',
+    'height': 'dict',
+    'original_width': 'dict',
+    'width': 'dict',
+}
 
 
 class CmdPromptMock:
@@ -27,30 +39,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
         {
             'app': Apps.IMAGE_TEXT_RETRIEVAL,
             'output_modality': 'image',
-            'flow_name': DEFAULT_FLOW_NAME,
-            'dataset_type': DatasetTypes.DEMO,
-            'dataset_name': 'music-genres-mid',
-            'cluster': 'new',
-            'deployment_type': 'local',
-        },
-        {},
-    ),
-    (
-        {
-            'app': Apps.IMAGE_TEXT_RETRIEVAL,
-            'output_modality': 'image',
-            'flow_name': DEFAULT_FLOW_NAME,
-            'dataset_type': DatasetTypes.DEMO,
-            'dataset_name': 'music-genres-mix',
-            'cluster': 'new',
-            'deployment_type': 'local',
-        },
-        {},
-    ),
-    (
-        {
-            'app': Apps.IMAGE_TEXT_RETRIEVAL,
-            'output_modality': 'text',
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': 'tll',
@@ -77,10 +65,15 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'output_modality': 'image',
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DOCARRAY,
-            'dataset_name': 'xxx',
-            'search_fields': 'x, y',
+            'dataset_name': 'subset_laion',
+            'filter_fields_modalities': FILTER_FIELDS_MODALITIES,
+            'search_fields_modalities': SEARCH_FIELDS_MODALITIES,
+            'search_fields': ['x', 'y'],
+            'filter_fields': ['z'],
             'cluster': 'new',
             'deployment_type': 'local',
+            'jwt': {'token': os.environ['WOLF_TOKEN']},
+            'admin_emails': ['florian.hoenicke@jina.ai'],
         },
         {},
     ),
@@ -90,10 +83,15 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'output_modality': 'image',
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DOCARRAY,
-            'dataset_name': 'xxx',
-            'search_fields': 'x, y',
+            'dataset_name': 'subset_laion',
+            'filter_fields_modalities': FILTER_FIELDS_MODALITIES,
+            'search_fields_modalities': SEARCH_FIELDS_MODALITIES,
+            'search_fields': ['x', 'y'],
+            'filter_fields': ['z'],
             'cluster': 'new',
             'deployment_type': 'local',
+            'jwt': {'token': os.environ['WOLF_TOKEN']},
+            'admin_emails': ['florian.hoenicke@jina.ai'],
         },
         {},
     ),
@@ -103,21 +101,9 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'output_modality': 'image',
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.PATH,
-            'dataset_path': 'xxx',
-            'search_fields': 'x, y',
-            'cluster': 'new',
-            'deployment_type': 'local',
-        },
-        {},
-    ),
-    (
-        {
-            'app': Apps.IMAGE_TEXT_RETRIEVAL,
-            'output_modality': 'image',
-            'flow_name': DEFAULT_FLOW_NAME,
-            'dataset_type': DatasetTypes.URL,
-            'dataset_url': 'xxx',
-            'search_fields': 'x, y',
+            'dataset_path': os.path.join(
+                os.path.dirname(__file__), '..', 'resources', 'image'
+            ),
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -129,10 +115,15 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'output_modality': 'image',
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DOCARRAY,
-            'dataset_name': 'xxx',
-            'search_fields': 'x, y',
+            'dataset_name': 'subset_laion',
+            'filter_fields_modalities': FILTER_FIELDS_MODALITIES,
+            'search_fields_modalities': SEARCH_FIELDS_MODALITIES,
+            'search_fields': ['x', 'y'],
+            'filter_fields': ['z'],
             'cluster': 'new',
             'deployment_type': 'local',
+            'jwt': {'token': os.environ['WOLF_TOKEN']},
+            'admin_emails': ['florian.hoenicke@jina.ai'],
         },
         {},
     ),
@@ -144,7 +135,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'cluster': 'new',
             'deployment_type': 'local',
         },
-        {'app': Apps.IMAGE_TEXT_RETRIEVAL, 'output_modality': 'text'},
+        {'app': Apps.IMAGE_TEXT_RETRIEVAL, 'output_modality': 'image'},
     ),
     (
         {
@@ -154,11 +145,11 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'cluster': 'new',
             'deployment_type': 'local',
         },
-        {'app': Apps.IMAGE_TEXT_RETRIEVAL, 'output_modality': 'text'},
+        {'app': Apps.IMAGE_TEXT_RETRIEVAL, 'output_modality': 'image'},
     ),
     (
         {
-            'output_modality': 'text',
+            'output_modality': 'image',
         },
         {
             'app': Apps.IMAGE_TEXT_RETRIEVAL,
@@ -186,14 +177,11 @@ def test_configure_user_input(
     expected_user_input.__dict__.update(configure_kwargs)
     expected_user_input.__dict__.pop('app')
     mocker.patch('now.utils.prompt', CmdPromptMock(mocked_user_answers))
-
     user_input = configure_user_input(**configure_kwargs)
 
     if user_input.deployment_type == 'remote':
         user_input.__dict__.update({'jwt': None, 'admin_emails': None})
 
     user_input.__dict__.update({'app_instance': None})
-    if expected_user_input.dataset_type != DatasetTypes.DEMO:
-        expected_user_input.search_fields = ['x', 'y']
 
     assert user_input == expected_user_input

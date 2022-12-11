@@ -7,6 +7,7 @@ from os.path import join as osp
 from docarray import DocumentArray
 
 from now.constants import BASE_STORAGE_URL, DEMO_DATASET_DOCARRAY_VERSION, Modalities
+from now.now_dataclasses import UserInput
 from now.utils import download
 
 
@@ -55,3 +56,24 @@ def get_dataset_url(dataset: str, output_modality: Modalities) -> str:
         return f'{BASE_STORAGE_URL}/{data_folder}/{dataset}.{model_name}-{docarray_version}.bin'
     else:
         return f'{BASE_STORAGE_URL}/{data_folder}/{dataset}-{docarray_version}.bin'
+
+
+def get_s3_bucket_and_folder_prefix(user_input: UserInput):
+    import boto3.session
+
+    s3_uri = user_input.dataset_path
+    if not s3_uri.startswith('s3://'):
+        raise ValueError(
+            f"Can't process S3 URI {s3_uri} as it assumes it starts with: 's3://'"
+        )
+
+    bucket = s3_uri.split('/')[2]
+    folder_prefix = '/'.join(s3_uri.split('/')[3:])
+
+    session = boto3.session.Session(
+        aws_access_key_id=user_input.aws_access_key_id,
+        aws_secret_access_key=user_input.aws_secret_access_key,
+    )
+    bucket = session.resource('s3').Bucket(bucket)
+
+    return bucket, folder_prefix

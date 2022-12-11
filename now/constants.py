@@ -9,10 +9,10 @@ DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 # ----------------------------------
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.135-test-reactivate'
 # ----------------------------------
-NOW_PREPROCESSOR_VERSION = '0.0.109-refactor-remove-redundancy-on-ci-11'
-NOW_QDRANT_INDEXER_VERSION = '0.0.10-refactor-remove-redundancy-on-ci-11'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.9-refactor-remove-redundancy-on-ci-11'
-NOW_AUTOCOMPLETE_VERSION = '0.0.5-refactor-remove-redundancy-on-ci-11'
+NOW_PREPROCESSOR_VERSION = '0.0.109-refactor-remove-redundancy-on-ci-12'
+NOW_QDRANT_INDEXER_VERSION = '0.0.10-refactor-remove-redundancy-on-ci-12'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.9-refactor-remove-redundancy-on-ci-12'
+NOW_AUTOCOMPLETE_VERSION = '0.0.5-refactor-remove-redundancy-on-ci-12'
 
 
 class Modalities(BetterEnum):
@@ -33,7 +33,6 @@ class Apps(BetterEnum):
 class DatasetTypes(BetterEnum):
     DEMO = 'demo'
     PATH = 'path'
-    URL = 'url'
     DOCARRAY = 'docarray'
     S3_BUCKET = 's3_bucket'
     ELASTICSEARCH = 'elasticsearch'
@@ -65,6 +64,7 @@ CLIP_USES = {
     'local': ('CLIPOnnxEncoder/latest', 'ViT-B-32::openai', ModelDimensions.CLIP),
     'remote': ('CLIPOnnxEncoder/latest-gpu', 'ViT-B-32::openai', ModelDimensions.CLIP),
 }
+
 EXTERNAL_CLIP_HOST = 'encoderclip-climbing-lobster-885354f905.wolf.jina.ai'
 
 DEFAULT_FLOW_NAME = 'nowapi'
