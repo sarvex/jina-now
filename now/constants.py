@@ -32,7 +32,6 @@ class Apps(BetterEnum):
 class DatasetTypes(BetterEnum):
     DEMO = 'demo'
     PATH = 'path'
-    URL = 'url'
     DOCARRAY = 'docarray'
     S3_BUCKET = 's3_bucket'
     ELASTICSEARCH = 'elasticsearch'
@@ -64,6 +63,7 @@ CLIP_USES = {
     'local': ('CLIPOnnxEncoder/latest', 'ViT-B-32::openai', ModelDimensions.CLIP),
     'remote': ('CLIPOnnxEncoder/latest-gpu', 'ViT-B-32::openai', ModelDimensions.CLIP),
 }
+
 EXTERNAL_CLIP_HOST = 'encoderclip-climbing-lobster-885354f905.wolf.jina.ai'
 
 DEFAULT_FLOW_NAME = 'nowapi'
