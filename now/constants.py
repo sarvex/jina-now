@@ -6,9 +6,10 @@ from now.utils import BetterEnum
 # from docarray import __version__ as docarray_version
 
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
+
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.135-test-reactivate'
-NOW_PREPROCESSOR_VERSION = '0.0.108-dynamic-flow-96'
-NOW_QDRANT_INDEXER_VERSION = '0.0.10-dynamic-flow-96'
+NOW_PREPROCESSOR_VERSION = '0.0.108-test-reactivate'
+NOW_QDRANT_INDEXER_VERSION = '0.0.9-refactor-improve-performance-curation-3'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.8-refactor-improve-performance-curation-3'
 NOW_AUTOCOMPLETE_VERSION = '0.0.4-refactor-simplify-preprocessing-45'
 
@@ -31,7 +32,6 @@ class Apps(BetterEnum):
 class DatasetTypes(BetterEnum):
     DEMO = 'demo'
     PATH = 'path'
-    URL = 'url'
     DOCARRAY = 'docarray'
     S3_BUCKET = 's3_bucket'
     ELASTICSEARCH = 'elasticsearch'
@@ -63,7 +63,8 @@ CLIP_USES = {
     'local': ('CLIPOnnxEncoder/latest', 'ViT-B-32::openai', ModelDimensions.CLIP),
     'remote': ('CLIPOnnxEncoder/latest-gpu', 'ViT-B-32::openai', ModelDimensions.CLIP),
 }
-EXTERNAL_CLIP_HOST = 'encoderclip-suited-fawn-1a1c61d4f6.wolf.jina.ai'
+
+EXTERNAL_CLIP_HOST = 'encoderclip-climbing-lobster-885354f905.wolf.jina.ai'
 
 DEFAULT_FLOW_NAME = 'nowapi'
 PREFETCH_NR = 10

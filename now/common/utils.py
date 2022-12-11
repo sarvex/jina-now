@@ -1,14 +1,12 @@
 import json
 import os
 import pathlib
-import tempfile
 import time
-from copy import deepcopy
 from os.path import expanduser as user
 from typing import Dict, List, Optional
 
 import hubble
-from docarray import Document, DocumentArray
+from docarray import DocumentArray
 from jina import __version__ as jina_version
 from jina.helper import random_port
 
@@ -22,7 +20,6 @@ from now.constants import (
     NOW_QDRANT_INDEXER_VERSION,
     PREFETCH_NR,
     TAG_INDEXER_DOC_HAS_TEXT,
-    DatasetTypes,
     Modalities,
 )
 from now.demo_data import DEFAULT_EXAMPLE_HOSTED
@@ -31,7 +28,6 @@ from now.executor.name_to_id_map import name_to_id_map
 from now.finetuning.run_finetuning import finetune
 from now.finetuning.settings import FinetuneSettings, parse_finetune_settings
 from now.now_dataclasses import UserInput
-from now.utils import maybe_download_from_s3
 
 cur_dir = pathlib.Path(__file__).parent.resolve()
 
@@ -123,7 +119,7 @@ def common_setup(
         add_embeddings=True,
         loss='TripletMarginLoss',
     )
-    tags = _extract_tags_for_indexer(deepcopy(dataset[0]), user_input)
+    tags = _extract_tags_for_indexer(user_input)
     env_dict = common_get_flow_env_dict(
         finetune_settings=finetune_settings,
         encoder_uses=encoder_uses,
@@ -219,19 +215,10 @@ def get_indexer_config(
     return config
 
 
-def _extract_tags_for_indexer(d: Document, user_input):
-    with tempfile.TemporaryDirectory() as tmpdir:
-        if user_input and user_input.dataset_type == DatasetTypes.S3_BUCKET:
-            maybe_download_from_s3(
-                docs=DocumentArray([d]),
-                tmpdir=tmpdir,
-                user_input=user_input,
-                max_workers=1,
-            )
-    tags = set()
-    for tag, _ in d.tags.items():
-        tags.add((tag, str(tag.__class__.__name__)))
-    final_tags = [list(tag) for tag in tags]
+def _extract_tags_for_indexer(user_input: UserInput):
+    final_tags = [
+        [tag, value] for tag, value in user_input.filter_fields_modalities.items()
+    ]
     if user_input.app_instance.output_modality in [
         Modalities.IMAGE,
         Modalities.VIDEO,

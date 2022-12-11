@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from itertools import chain, combinations, permutations
-from typing import Any, Dict, List
+from typing import List
 
 from docarray import Document, DocumentArray
 

@@ -1,13 +1,11 @@
+import logging
 import os
-from typing import Dict, List, Optional, Union, Set
+from typing import Dict, List, Optional, Set, Union
 
 from docarray import Document, DocumentArray
 from PIL import Image
 
 from now.data_loading.es.connector import ElasticsearchConnector
-
-import logging
-
 from now.data_loading.transform_docarray import transform_multi_modal_data
 
 logging.getLogger("PIL.Image").setLevel(logging.CRITICAL + 1)
