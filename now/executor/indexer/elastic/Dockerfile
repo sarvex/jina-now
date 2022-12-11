@@ -2,10 +2,16 @@ FROM docker.elastic.co/elasticsearch/elasticsearch:8.4.2
 USER root
 RUN apt-get update && apt-get install --no-install-recommends -y gcc g++ git python3 python3-pip
 
+## install requirements for the executor
+COPY requirements.txt .
+RUN pip install --compile -r requirements.txt
 
-COPY . /workspace
-WORKDIR /workspace
-RUN pip install -r requirements.txt --no-cache-dir
+# install latest code changes of the now repo
+RUN pip install git+https://github.com/jina-ai/now@JINA_NOW_COMMIT_SHA
+
+# setup the workspace
+COPY . /workdir/
+WORKDIR /workdir
 
 
 ENTRYPOINT ["jina", "executor", "--uses", "config.yml"]

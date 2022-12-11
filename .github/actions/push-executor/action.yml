@@ -54,12 +54,16 @@ runs:
         else
           echo "NOW preprocessor version isn't used already, continue to build..."
         fi
-    # give the executor access to the now requirements in the early stages of the build
-    # that way the requirements are cached and don't need to be reinstalled every time
+    # append the now requirements to the executor requirements for performance improvements
+    # that way the requirements are cached and don't need to be reinstalled every time someone changes the source code
     - name: optimization of executor build time
       if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
       shell: bash
-      run: cp requirements.txt ${{ inputs.executor_path }}/requirements-now.txt
+      run: |
+        dest=${{ inputs.executor_path }}/requirements.txt
+        # one extra line to not break the requirements.txt file
+        echo '' >> $dest
+        cat requirements.txt >> $dest
     # set correct now version in the dockerfile
     - name: replace now commit hash in Dockerfile
       if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
