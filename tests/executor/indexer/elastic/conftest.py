@@ -7,7 +7,6 @@ import pytest
 from docarray import Document, DocumentArray, dataclass
 from docarray.typing import Image, Text
 
-from now.executor.indexer.elastic.elastic_indexer import FieldEmbedding
 from now.executor.indexer.elastic.es_query_builder import SemanticScore
 
 
@@ -29,8 +28,8 @@ def es_inputs() -> namedtuple:
         query_text: Text
 
     document_mappings = [
-        FieldEmbedding('clip', 8, ['title', 'gif']),
-        FieldEmbedding('sbert', 5, ['title', 'excerpt']),
+        ('clip', 8, ['title', 'gif']),
+        ('sbert', 5, ['title', 'excerpt']),
     ]
 
     default_semantic_scores = [

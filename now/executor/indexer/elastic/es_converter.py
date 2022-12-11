@@ -40,8 +40,9 @@ class ESConverter:
                 es_doc = es_docs[doc.id]
                 for encoded_field in encoder_to_fields[executor_name]:
                     field_doc = getattr(doc, encoded_field)
-                    embedding = self.get_embedding(field_doc)
-                    es_doc[f'{encoded_field}-{executor_name}.embedding'] = embedding
+                    es_doc[
+                        f'{encoded_field}-{executor_name}.embedding'
+                    ] = field_doc.embedding
                     if hasattr(field_doc, 'text') and field_doc.text:
                         es_doc['bm25_text'] += field_doc.text + ' '
         return list(es_docs.values())
@@ -54,10 +55,6 @@ class ESConverter:
         else:
             embedding = field_doc.embedding
         return embedding
-
-    @staticmethod
-    def average_embeddings_of_subdocuments(field_doc):
-        return np.mean([chunk.embedding for chunk in field_doc], axis=0)
 
     def get_base_es_doc(self, doc: Document, index_name: str) -> Dict:
         es_doc = {k: v for k, v in doc.to_dict().items() if v}
@@ -125,6 +122,7 @@ class ESConverter:
                 d = self.calculate_score_breakdown(
                     query_doc, d, semantic_scores, metric
                 )
+            d.embedding = None
             matches.append(d)
         return matches
 

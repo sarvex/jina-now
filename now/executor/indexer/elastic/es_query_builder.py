@@ -67,6 +67,7 @@ class ESQueryBuilder:
         semantic_scores: List[SemanticScore],
         custom_bm25_query: Optional[dict] = None,
         metric: Optional[str] = 'cosine',
+        filter: dict = {},
     ) -> Dict:
         """
         Build script-score query used in Elasticsearch. To do this, we extract
@@ -83,7 +84,8 @@ class ESQueryBuilder:
             For this function, this parameter determines whether to return the embeddings
             of a query document.
         :param custom_bm25_query: custom query to use for BM25.
-        :param search_filter: dictionary of filters to apply to the search.
+        :param metric: metric to use for vector search.
+        :param filter: dictionary of filters to apply to the search.
         :return: a dictionary containing query and filter.
         """
         queries = {}
@@ -98,7 +100,11 @@ class ESQueryBuilder:
 
                 if doc.id not in queries:
                     queries[doc.id] = self.get_default_query(
-                        doc, apply_default_bm25, semantic_scores, custom_bm25_query
+                        doc,
+                        apply_default_bm25,
+                        semantic_scores,
+                        custom_bm25_query,
+                        filter,
                     )
 
                     if apply_default_bm25 or custom_bm25_query:
@@ -144,12 +150,13 @@ class ESQueryBuilder:
             es_queries.append((docs[doc_id], query_json))
         return es_queries
 
-    @staticmethod
     def get_default_query(
+        self,
         doc: Document,
         apply_default_bm25: bool,
         semantic_scores: List[SemanticScore],
         custom_bm25_query: Dict = None,
+        filter: Dict = {},
     ):
         query = {
             'bool': {
@@ -175,24 +182,23 @@ class ESQueryBuilder:
             query['bool']['should'].append(custom_bm25_query)
 
         # add filter
-        if 'es_search_filter' in doc.tags:
-            query['bool']['filter'] = doc.tags['search_filter']
-        elif 'search_filter' in doc.tags:
-            search_filter = doc.tags['search_filter']
-            es_search_filter = {}
-
-            for field, filters in search_filter.items():
-                for operator, filter in filters.items():
-                    if isinstance(filter, str):
-                        es_search_filter['term'] = {"tags." + field: filter}
-                    elif isinstance(filter, int) or isinstance(filter, float):
-                        operator = operator.replace('$', '')
-                        es_search_filter['range'] = {
-                            "tags." + field: {operator: filter}
-                        }
+        if filter:
+            es_search_filter = self.process_filter(filter)
             query['bool']['filter'] = es_search_filter
 
         return query
+
+    @staticmethod
+    def process_filter(filter) -> dict:
+        es_search_filter = {}
+        for field, filters in filter.items():
+            for operator, filter in filters.items():
+                if isinstance(filter, str):
+                    es_search_filter['term'] = {"tags." + field: filter}
+                elif isinstance(filter, int) or isinstance(filter, float):
+                    operator = operator.replace('$', '')
+                    es_search_filter['range'] = {"tags." + field: {operator: filter}}
+        return es_search_filter
 
     @staticmethod
     def get_scores(encoder, semantic_scores):

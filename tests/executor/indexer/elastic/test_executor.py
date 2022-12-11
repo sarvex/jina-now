@@ -69,14 +69,71 @@ def test_index_and_search_with_multimodal_docs(
     ) = es_inputs
 
     indexer = NOWElasticIndexer(
-        traversal_paths='c',
         document_mappings=document_mappings,
         default_semantic_scores=default_semantic_scores,
         # es_config={'api_key': os.environ['ELASTIC_API_KEY']},
         # hosts='https://5280f8303ccc410295d02bbb1f3726f7.eu-central-1.aws.cloud.es.io:443',
         hosts='http://localhost:9200',
         index_name=random_index_name,
-        document_structure='MMDoc()',
+    )
+
+    indexer.index(index_docs_map)
+    # check if documents are indexed
+    es = indexer.es
+    res = es.search(index=random_index_name, size=100, query={'match_all': {}})
+    assert len(res['hits']['hits']) == len(index_docs_map['clip'])
+    results = indexer.search(
+        query_docs_map,
+        parameters={'get_score_breakdown': True, 'apply_default_bm25': True},
+    )
+    print(results[0].matches[0].scores)
+    # asserts about matches
+    for (
+        query_field,
+        document_field,
+        encoder,
+        linear_weight,
+    ) in default_semantic_scores:
+        if encoder == 'bm25':
+            assert 'bm25_normalized' in results[0].matches[0].scores
+            assert 'bm25_raw' in results[0].matches[0].scores
+            assert isinstance(
+                results[0].matches[0].scores['bm25_normalized'].value, float
+            )
+            assert isinstance(results[0].matches[0].scores['bm25_raw'].value, float)
+        else:
+            score_string = '-'.join(
+                [
+                    query_field,
+                    document_field,
+                    encoder,
+                    str(linear_weight),
+                ]
+            )
+            assert score_string in results[0].matches[0].scores
+            assert isinstance(results[0].matches[0].scores[score_string].value, float)
+
+
+def test_index_and_search_with_multimodal_docs(
+    setup_service_running, es_inputs, random_index_name
+):
+    """
+    This test runs indexing with the NOWElasticIndexer using multimodal docs.
+    """
+    (
+        index_docs_map,
+        query_docs_map,
+        document_mappings,
+        default_semantic_scores,
+    ) = es_inputs
+
+    indexer = NOWElasticIndexer(
+        document_mappings=document_mappings,
+        default_semantic_scores=default_semantic_scores,
+        # es_config={'api_key': os.environ['ELASTIC_API_KEY']},
+        # hosts='https://5280f8303ccc410295d02bbb1f3726f7.eu-central-1.aws.cloud.es.io:443',
+        hosts='http://localhost:9200',
+        index_name=random_index_name,
     )
 
     indexer.index(index_docs_map)
@@ -169,6 +226,24 @@ def test_delete_by_id(setup_service_running, es_inputs, random_index_name):
     es = es_indexer.es
     res = es.search(index=random_index_name, size=100, query={'match_all': {}})
     assert len(res['hits']['hits']) == 0
+
+
+def test_delete_by_filter():
+    """
+    This test tests the delete endpoint of the NOWElasticIndexer, by deleting a filter.
+    """
+    # es_indexer = NOWElasticIndexer(
+    #     traversal_paths='c',
+    #     hosts='http://localhost:9200',
+    #     index_name='test_index',
+    # )
+    # # delete by filter
+    # es_indexer.delete(parameters={'filters': {'modality': 'image'}})
+    #
+    # es = es_indexer.es
+    # res = es.search(index='test_index', size=100, query={'match_all': {}})
+    # assert len(res['hits']['hits']) == 0
+    pass
 
 
 def test_custom_mapping_and_custom_bm25_search(

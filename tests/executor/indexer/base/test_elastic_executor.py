@@ -1,117 +1,122 @@
-import os
+import random
 from copy import deepcopy
 
 import numpy as np
 import pytest
-from jina import Document, DocumentArray, Flow
+from docarray import dataclass
+from docarray.typing import Text
+from jina import Document, DocumentArray, Executor, Flow, requests
 
 from now.constants import TAG_INDEXER_DOC_HAS_TEXT, TAG_OCR_DETECTOR_TEXT_IN_DOC
-from now.deployment.deployment import cmd
-from now.executor.indexer.in_memory.in_memory_indexer import InMemoryIndexer
-from now.executor.indexer.qdrant import NOWQdrantIndexer16
+from now.executor.indexer.elastic import NOWElasticIndexer
 
 NUMBER_OF_DOCS = 10
 DIM = 128
+MAX_RETRIES = 20
+
+
+class DummyEncoder1(Executor):
+    @requests
+    def foo(self, docs: DocumentArray, **kwargs):
+        pass
+
+
+class DummyEncoder2(Executor):
+    @requests
+    def foo(self, docs: DocumentArray, **kwargs):
+        pass
 
 
 @pytest.mark.parametrize(
-    'indexer',
-    [InMemoryIndexer, NOWQdrantIndexer16],
+    'indexer,setup',
+    [
+        (NOWElasticIndexer, 'setup_service_running'),
+    ],
 )
 class TestBaseIndexer:
-    @pytest.fixture(scope='function', autouse=True)
-    def setup(self):
-        cur_dir = os.path.dirname(os.path.abspath(__file__))
-        compose_yml = os.path.abspath(os.path.join(cur_dir, 'docker-compose.yml'))
-
-        cmd(
-            f"docker-compose -f {compose_yml} --project-directory . up  --build -d --remove-orphans"
-        )
-        yield
-        cmd(
-            f"docker-compose -f {compose_yml} --project-directory . down --remove-orphans"
-        )
-
-    @pytest.fixture(scope='function', autouse=True)
-    def metas(self, tmpdir):
-        return {'workspace': str(tmpdir)}
-
-    def gen_docs(self, num):
+    def get_docs(self, num):
+        prices = [10.0, 25.0, 50.0, 100.0]
+        categories = ['comics', 'movies', 'audiobook']
         res = DocumentArray()
+
+        @dataclass
+        class MMDoc:
+            title: Text
+
         k = np.random.random((num, DIM)).astype(np.float32)
         for i in range(num):
             doc = Document(
-                id=f'{i}',
-                text='parent',
-                uri='my-parent-uri',
-                tags={'parent_tag': 'value'},
-                chunks=[
-                    Document(
-                        chunks=[
-                            Document(
-                                id=f'{i}_child',
-                                embedding=k[i],
-                                uri='my-parent-uri',
-                                tags={'parent_tag': 'value'},
-                            )
-                        ]
-                    )
-                ],
+                MMDoc(
+                    title='parent',
+                )
             )
+            doc.title.embedding = k[i]
+            doc.id = str(i)
+            doc.tags['parent_tag'] = 'value'
+            doc.tags['price'] = np.random.choice(prices)
+            doc.tags['category'] = np.random.choice(categories)
             res.append(doc)
         return res
 
-    def docs_with_tags(self, NUMBER_OF_DOCS):
-        prices = [10.0, 25.0, 50.0, 100.0]
-        categories = ['comics', 'movies', 'audiobook']
-        X = np.random.random((NUMBER_OF_DOCS, DIM)).astype(np.float32)
-        docs = [
-            Document(
-                id=f'{i}',
-                chunks=[
-                    Document(
-                        id=f'{i}_child',
-                        embedding=X[i],
-                        tags={
-                            'price': np.random.choice(prices),
-                            'category': np.random.choice(categories),
-                        },
-                    )
-                ],
-            )
-            for i in range(NUMBER_OF_DOCS)
-        ]
-        da = DocumentArray(docs)
+    @pytest.fixture
+    def random_index_name(self):
+        return f"test-index-{random.randint(0, 10000)}"
 
-        return da
-
-    def test_index(self, tmpdir, indexer):
+    def test_index(self, tmpdir, indexer, setup, random_index_name, request):
         """Test indexing does not return anything"""
+        if setup:
+            request.getfixturevalue(setup)
         metas = {'workspace': str(tmpdir)}
-        docs = self.gen_docs(NUMBER_OF_DOCS)
-        f = Flow().add(
-            uses=indexer,
-            uses_with={
-                'dim': DIM,
-            },
-            uses_metas=metas,
+        docs = self.get_docs(NUMBER_OF_DOCS)
+        f = (
+            Flow()
+            .add(uses=DummyEncoder1, name='dummy_encoder1')
+            .add(uses=DummyEncoder2, name='dummy_encoder2')
+            .add(
+                uses=indexer,
+                uses_with={
+                    'hosts': 'http://localhost:9200',
+                    'index_name': random_index_name,
+                    'document_mappings': [
+                        ('dummy_encoder1', DIM, ['title']),
+                        ('dummy_encoder2', DIM, ['title']),
+                    ],
+                },
+                uses_metas=metas,
+                needs=['dummy_encoder1', 'dummy_encoder2'],
+                no_reduce=True,
+            )
         )
         with f:
             result = f.post(on='/index', inputs=docs, return_results=True)
+            print(result)
             assert len(result) == 0
 
     @pytest.mark.parametrize(
         'offset, limit', [(0, 10), (10, 0), (0, 0), (10, 10), (None, None)]
     )
-    def test_list(self, offset, limit, indexer, metas):
+    def test_list(self, tmpdir, offset, limit, indexer, setup, random_index_name):
         """Test list returns all indexed docs"""
-        docs = self.gen_docs(NUMBER_OF_DOCS)
-        f = Flow().add(
-            uses=indexer,
-            uses_with={
-                'dim': DIM,
-            },
-            uses_metas=metas,
+        metas = {'workspace': str(tmpdir)}
+        docs = self.get_docs(NUMBER_OF_DOCS)
+        f = (
+            Flow()
+            .add(uses=DummyEncoder1, name='dummy_encoder1')
+            .add(uses=DummyEncoder2, name='dummy_encoder2')
+            .add(
+                uses=indexer,
+                uses_with={
+                    'hosts': 'http://localhost:9200',
+                    'index_name': random_index_name,
+                    'document_mappings': [
+                        ('dummy_encoder1', DIM, ['title']),
+                        ('dummy_encoder2', DIM, ['title']),
+                    ],
+                },
+                uses_metas=metas,
+                needs=['dummy_encoder1', 'dummy_encoder2'],
+                no_reduce=True,
+            )
         )
         with f:
             parameters = {}
@@ -126,21 +131,33 @@ class TestBaseIndexer:
                 l = max(limit - offset, 0)
             assert len(list_res) == l
             if l > 0:
-                assert len(list_res[0].chunks) == 0
+                assert len(list_res[0].chunks) == 1
+                assert isinstance(list_res[0].title, Document)
                 assert len(set([d.id for d in list_res])) == l
-                assert [d.id for d in list_res] == [f'{i}_child' for i in range(l)]
-                assert [d.uri for d in list_res] == ['my-parent-uri'] * l
                 assert [d.tags['parent_tag'] for d in list_res] == ['value'] * l
 
-    def test_search(self, indexer, metas):
-        docs = self.gen_docs(NUMBER_OF_DOCS)
-        docs_query = self.gen_docs(1)
-        f = Flow().add(
-            uses=indexer,
-            uses_with={
-                'dim': DIM,
-            },
-            uses_metas=metas,
+    def test_search(self, tmpdir, indexer, setup, random_index_name):
+        metas = {'workspace': str(tmpdir)}
+        docs = self.get_docs(NUMBER_OF_DOCS)
+        docs_query = self.get_docs(1)
+        f = (
+            Flow()
+            .add(uses=DummyEncoder1, name='dummy_encoder1')
+            .add(uses=DummyEncoder2, name='dummy_encoder2')
+            .add(
+                uses=indexer,
+                uses_with={
+                    'hosts': 'http://localhost:9200',
+                    'index_name': random_index_name,
+                    'document_mappings': [
+                        ('dummy_encoder1', DIM, ['title']),
+                        ('dummy_encoder2', DIM, ['title']),
+                    ],
+                },
+                uses_metas=metas,
+                needs=['dummy_encoder1', 'dummy_encoder2'],
+                no_reduce=True,
+            )
         )
         with f:
             f.post(on='/index', inputs=docs)
@@ -151,18 +168,31 @@ class TestBaseIndexer:
             for i in range(len(query_res[0].matches) - 1):
                 assert (
                     query_res[0].matches[i].scores['cosine'].value
-                    <= query_res[0].matches[i + 1].scores['cosine'].value
+                    >= query_res[0].matches[i + 1].scores['cosine'].value
                 )
 
-    def test_search_match(self, indexer, metas):
-        docs = self.gen_docs(NUMBER_OF_DOCS)
-        docs_query = self.gen_docs(NUMBER_OF_DOCS)
-        f = Flow().add(
-            uses=indexer,
-            uses_with={
-                'dim': DIM,
-            },
-            uses_metas=metas,
+    def test_search_match(self, tmpdir, indexer, setup, random_index_name):
+        metas = {'workspace': str(tmpdir)}
+        docs = self.get_docs(NUMBER_OF_DOCS)
+        docs_query = self.get_docs(NUMBER_OF_DOCS)
+        f = (
+            Flow()
+            .add(uses=DummyEncoder1, name='dummy_encoder1')
+            .add(uses=DummyEncoder2, name='dummy_encoder2')
+            .add(
+                uses=indexer,
+                uses_with={
+                    'hosts': 'http://localhost:9200',
+                    'index_name': random_index_name,
+                    'document_mappings': [
+                        ('dummy_encoder1', DIM, ['title']),
+                        ('dummy_encoder2', DIM, ['title']),
+                    ],
+                },
+                uses_metas=metas,
+                needs=['dummy_encoder1', 'dummy_encoder2'],
+                no_reduce=True,
+            )
         )
         with f:
             f.post(on='/index', inputs=docs)
@@ -181,19 +211,33 @@ class TestBaseIndexer:
             for i in range(len(c.matches) - 1):
                 assert (
                     c.matches[i].scores['cosine'].value
-                    <= c.matches[i + 1].scores['cosine'].value
+                    >= c.matches[i + 1].scores['cosine'].value
                 )
 
-    def test_search_with_filtering(self, indexer, metas):
-
-        docs = self.docs_with_tags(NUMBER_OF_DOCS)
-        docs_query = self.gen_docs(1)
+    def test_search_with_filtering(self, tmpdir, indexer, setup, random_index_name):
+        metas = {'workspace': str(tmpdir)}
+        docs = self.get_docs(NUMBER_OF_DOCS)
+        docs_query = self.get_docs(1)
         columns = ['price', 'float', 'category', 'str']
 
-        f = Flow().add(
-            uses=indexer,
-            uses_with={'dim': DIM, 'columns': columns},
-            uses_metas=metas,
+        f = (
+            Flow()
+            .add(uses=DummyEncoder1, name='dummy_encoder1')
+            .add(uses=DummyEncoder2, name='dummy_encoder2')
+            .add(
+                uses=indexer,
+                uses_with={
+                    'hosts': 'http://localhost:9200',
+                    'index_name': random_index_name,
+                    'document_mappings': [
+                        ('dummy_encoder1', DIM, ['title']),
+                        ('dummy_encoder2', DIM, ['title']),
+                    ],
+                },
+                uses_metas=metas,
+                needs=['dummy_encoder1', 'dummy_encoder2'],
+                no_reduce=True,
+            )
         )
 
         with f:
@@ -205,66 +249,64 @@ class TestBaseIndexer:
             )
             assert all([m.tags['price'] < 50 for m in query_res[0].matches])
 
-    def test_delete(self, indexer, metas):
-        docs = self.gen_docs(NUMBER_OF_DOCS)
-        f = Flow().add(
-            uses=indexer,
-            uses_with={
-                'dim': DIM,
-            },
-            uses_metas=metas,
+    def test_delete(self, tmpdir, indexer, setup, random_index_name):
+        metas = {'workspace': str(tmpdir)}
+        docs = self.get_docs(NUMBER_OF_DOCS)
+        f = (
+            Flow()
+            .add(uses=DummyEncoder1, name='dummy_encoder1')
+            .add(uses=DummyEncoder2, name='dummy_encoder2')
+            .add(
+                uses=indexer,
+                uses_with={
+                    'hosts': 'http://localhost:9200',
+                    'index_name': random_index_name,
+                    'document_mappings': [
+                        ('dummy_encoder1', DIM, ['title']),
+                        ('dummy_encoder2', DIM, ['title']),
+                    ],
+                },
+                uses_metas=metas,
+                needs=['dummy_encoder1', 'dummy_encoder2'],
+                no_reduce=True,
+            )
         )
         with f:
-            docs[0].chunks[0].chunks[0].tags['parent_tag'] = 'different_value'
+            docs[0].tags['parent_tag'] = 'different_value'
             f.post(on='/index', inputs=docs)
             listed_docs = f.post(on='/list', return_results=True)
             assert len(listed_docs) == NUMBER_OF_DOCS
             f.post(
                 on='/delete',
-                parameters={'filter': {'tags__parent_tag': {'$eq': 'different_value'}}},
+                parameters={'filter': {'parent_tag': {'$eq': 'different_value'}}},
             )
             listed_docs = f.post(on='/list', return_results=True)
             assert len(listed_docs) == NUMBER_OF_DOCS - 1
-            docs_query = self.gen_docs(NUMBER_OF_DOCS)
+            docs_query = self.get_docs(NUMBER_OF_DOCS)
             f.post(on='/search', inputs=docs_query, return_results=True)
 
-    def test_get_tags(self, indexer, metas):
-        docs = DocumentArray(
-            [
-                Document(
-                    chunks=[
-                        Document(
-                            text='hi',
-                            embedding=np.random.rand(DIM).astype(np.float32),
-                            tags={'color': 'red'},
-                        )
-                    ]
-                ),
-                Document(
-                    chunks=[
-                        Document(
-                            blob=b'b12',
-                            embedding=np.random.rand(DIM).astype(np.float32),
-                            tags={'color': 'blue'},
-                        ),
-                    ]
-                ),
-                Document(
-                    chunks=[
-                        Document(
-                            blob=b'b12',
-                            embedding=np.random.rand(DIM).astype(np.float32),
-                            uri='file_will.never_exist',
-                        ),
-                    ]
-                ),
-            ]
-        )
-        docs = DocumentArray([Document(chunks=[doc]) for doc in docs])
-        f = Flow().add(
-            uses=indexer,
-            uses_with={'dim': DIM},
-            uses_metas=metas,
+    @pytest.mark.skip('not implemented for NOWElasticIndexer')
+    def test_get_tags(self, tmpdir, indexer, setup, random_index_name):
+        metas = {'workspace': str(tmpdir)}
+        docs = self.get_docs(NUMBER_OF_DOCS)
+        f = (
+            Flow()
+            .add(uses=DummyEncoder1, name='dummy_encoder1')
+            .add(uses=DummyEncoder2, name='dummy_encoder2')
+            .add(
+                uses=indexer,
+                uses_with={
+                    'hosts': 'http://localhost:9200',
+                    'index_name': random_index_name,
+                    'document_mappings': [
+                        ('dummy_encoder1', DIM, ['title']),
+                        ('dummy_encoder2', DIM, ['title']),
+                    ],
+                },
+                uses_metas=metas,
+                needs=['dummy_encoder1', 'dummy_encoder2'],
+                no_reduce=True,
+            )
         )
         with f:
             f.post(on='/index', inputs=docs)
@@ -276,60 +318,34 @@ class TestBaseIndexer:
                 0
             ].tags['tags']['color'] == ['blue', 'red']
 
-    def test_delete_tags(self, indexer, metas):
-        docs = DocumentArray(
-            [
-                Document(
-                    chunks=[
-                        Document(
-                            text='hi',
-                            embedding=np.random.rand(DIM).astype(np.float32),
-                            tags={'color': 'red'},
-                        ),
-                    ]
-                ),
-                Document(
-                    chunks=[
-                        Document(
-                            blob=b'b12',
-                            embedding=np.random.rand(DIM).astype(np.float32),
-                            tags={'color': 'blue'},
-                        ),
-                    ]
-                ),
-                Document(
-                    chunks=[
-                        Document(
-                            blob=b'b12',
-                            embedding=np.random.rand(DIM).astype(np.float32),
-                            uri='file_will.never_exist',
-                        ),
-                    ]
-                ),
-                Document(
-                    chunks=[
-                        Document(
-                            blob=b'b12',
-                            embedding=np.random.rand(DIM).astype(np.float32),
-                            tags={'greeting': 'hello'},
-                        ),
-                    ]
-                ),
-            ]
-        )
-        docs = DocumentArray([Document(chunks=[doc]) for doc in docs])
-        f = Flow().add(
-            uses=indexer,
-            uses_with={
-                'dim': DIM,
-            },
-            uses_metas=metas,
+    @pytest.mark.skip('not implemented for NOWElasticIndexer')
+    def test_delete_tags(self, tmpdir, indexer, setup, random_index_name):
+        metas = {'workspace': str(tmpdir)}
+        docs = self.get_docs(NUMBER_OF_DOCS)
+        f = (
+            Flow()
+            .add(uses=DummyEncoder1, name='dummy_encoder1')
+            .add(uses=DummyEncoder2, name='dummy_encoder2')
+            .add(
+                uses=indexer,
+                uses_with={
+                    'hosts': 'http://localhost:9200',
+                    'index_name': random_index_name,
+                    'document_mappings': [
+                        ('dummy_encoder1', DIM, ['title']),
+                        ('dummy_encoder2', DIM, ['title']),
+                    ],
+                },
+                uses_metas=metas,
+                needs=['dummy_encoder1', 'dummy_encoder2'],
+                no_reduce=True,
+            )
         )
         with f:
             f.post(on='/index', inputs=docs)
             f.post(
                 on='/delete',
-                parameters={'filter': {'tags__color': {'$eq': 'blue'}}},
+                parameters={'filter': {'color': {'$eq': 'blue'}}},
             )
             response = f.post(on='/tags')
             assert response[0].text == 'tags'
@@ -338,7 +354,7 @@ class TestBaseIndexer:
             assert response[0].tags['tags']['color'] == ['red']
             f.post(
                 on='/delete',
-                parameters={'filter': {'tags__greeting': {'$eq': 'hello'}}},
+                parameters={'filter': {'greeting': {'$eq': 'hello'}}},
             )
             response = f.post(on='/tags')
             assert 'greeting' not in response[0].tags['tags']
@@ -435,6 +451,7 @@ class TestBaseIndexer:
             ]
         )
 
+    @pytest.mark.skip('not implemented for NOWElasticIndexer')
     @pytest.mark.parametrize(
         'query,embedding,res_ids',
         [
@@ -443,8 +460,9 @@ class TestBaseIndexer:
         ],
     )
     def test_search_chunk_using_sum_ranker(
-        self, documents, indexer, query, embedding, res_ids, metas
+        self, documents, indexer, setup, query, embedding, res_ids, tmpdir
     ):
+        metas = {'workspace': str(tmpdir)}
         documents = DocumentArray([Document(chunks=[doc]) for doc in documents])
         with Flow().add(
             uses=indexer,
@@ -475,7 +493,9 @@ class TestBaseIndexer:
                 if d.uri:
                     assert d.blob == b'', f'got blob {d.blob} for {d.id}'
 
-    def test_no_blob_with_working_uri(self, indexer, metas):
+    @pytest.mark.skip('not implemented for NOWElasticIndexer')
+    def test_no_blob_with_working_uri(self, tmpdir, indexer, setup):
+        metas = {'workspace': str(tmpdir)}
         with Flow().add(
             uses=indexer,
             uses_with={
@@ -526,10 +546,11 @@ class TestBaseIndexer:
             assert matches[3].blob == b''
             assert matches[4].tensor is None
 
-    def test_curate_endpoint(self, indexer, metas):
+    @pytest.mark.skip('not implemented for NOWElasticIndexer')
+    def test_curate_endpoint(self, tmpdir, indexer, setup):
         """Test indexing does not return anything"""
-
-        docs = self.gen_docs(NUMBER_OF_DOCS)
+        metas = {'workspace': str(tmpdir)}
+        docs = self.get_docs(NUMBER_OF_DOCS)
         docs.append(
             Document(
                 chunks=[
@@ -560,7 +581,6 @@ class TestBaseIndexer:
             uses_metas=metas,
         )
         with f:
-            f.index(docs, return_results=True)
             f.post(
                 on='/curate',
                 parameters={
@@ -572,6 +592,7 @@ class TestBaseIndexer:
                     }
                 },
             )
+            f.index(docs, return_results=True)
             result = f.search(
                 inputs=Document(
                     chunks=[
@@ -604,18 +625,3 @@ class TestBaseIndexer:
                     ]
                 )
             )
-
-    def test_curate_endpoint_incorrect(self, indexer, metas):
-        f = Flow().add(
-            uses=indexer,
-            uses_with={
-                'dim': DIM,
-            },
-            uses_metas=metas,
-        )
-        with f:
-            with pytest.raises(Exception):
-                f.post(
-                    on='/curate',
-                    parameters={'queryfilter': {}},
-                )

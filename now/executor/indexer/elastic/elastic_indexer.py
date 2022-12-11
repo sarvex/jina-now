@@ -9,6 +9,7 @@ from elasticsearch.helpers import bulk
 from now.executor.abstract.auth import SecurityLevel, secure_request
 from now.executor.abstract.base_indexer import NOWBaseIndexer as Executor
 from now.executor.indexer.elastic.es_converter import ESConverter
+from now.executor.indexer.elastic.es_preprocessor import ESPreprocessor
 from now.executor.indexer.elastic.es_query_builder import ESQueryBuilder, SemanticScore
 
 ESConverter = ESConverter()
@@ -31,7 +32,7 @@ class NOWElasticIndexer(Executor):
     # override
     def construct(
         self,
-        document_mappings: List[FieldEmbedding],
+        document_mappings: List[List],  # cannot take FieldEmbedding (not serializable)
         default_semantic_scores: Optional[List[SemanticScore]] = None,
         es_mapping: Dict = None,
         hosts: Union[
@@ -70,15 +71,17 @@ class NOWElasticIndexer(Executor):
         self.index_name = index_name
         self.traversal_paths = traversal_paths
         self.limit = limit
-        if default_semantic_scores:
-            self.default_semantic_scores = default_semantic_scores
+        self.document_mappings = [FieldEmbedding(*dm) for dm in document_mappings]
+        self.default_semantic_scores = (
+            default_semantic_scores if default_semantic_scores else None
+        )
         self.encoder_to_fields = {
             document_mapping.encoder: document_mapping.fields
-            for document_mapping in document_mappings
+            for document_mapping in self.document_mappings
         }
         self.es_config = {'verify_certs': False} if not es_config else es_config
         self.es_mapping = (
-            self.generate_es_mapping(document_mappings, self.metric)
+            self.generate_es_mapping(self.document_mappings, self.metric)
             if not es_mapping
             else es_mapping
         )
@@ -119,7 +122,7 @@ class NOWElasticIndexer(Executor):
     @secure_request(on='/index', level=SecurityLevel.USER)
     def index(
         self,
-        docs_map: Dict[str, DocumentArray] = None,  # encoder to docarray
+        docs_map: Dict[str, DocumentArray],  # encoder to docarray
         parameters: dict = {},
         **kwargs,
     ) -> DocumentArray:
@@ -132,9 +135,11 @@ class NOWElasticIndexer(Executor):
         """
         if not docs_map:
             return DocumentArray()
-
+        preprocessed_docs_map = ESPreprocessor().preprocess_docs_map(
+            docs_map, self.encoder_to_fields
+        )
         es_docs = ESConverter.convert_doc_map_to_es(
-            docs_map, self.index_name, self.encoder_to_fields
+            preprocessed_docs_map, self.index_name, self.encoder_to_fields
         )
         try:
             success, _ = bulk(self.es, es_docs)
@@ -146,9 +151,7 @@ class NOWElasticIndexer(Executor):
             print(
                 f'Inserted {success} documents into Elasticsearch index {self.index_name}'
             )
-        return (
-            DocumentArray()
-        )  # prevent sending the data back by returning an empty DocumentArray
+        return DocumentArray([])
 
     @secure_request(on='/search', level=SecurityLevel.USER)
     def search(
@@ -189,6 +192,7 @@ class NOWElasticIndexer(Executor):
         custom_bm25_query = parameters.get('custom_bm25_query', None)
         apply_default_bm25 = parameters.get('apply_default_bm25', False)
         semantic_scores = parameters.get('default_semantic_scores', None)
+        filter = parameters.get('filter', {})
         if not self.default_semantic_scores:
             self.default_semantic_scores = (
                 ESQueryBuilder.generate_semantic_scores(
@@ -204,6 +208,7 @@ class NOWElasticIndexer(Executor):
             semantic_scores=self.default_semantic_scores,
             custom_bm25_query=custom_bm25_query,
             metric=self.metric,
+            filter=filter,
         )
         for doc, query in es_queries:
             try:
@@ -255,7 +260,7 @@ class NOWElasticIndexer(Executor):
         if result:
             return ESConverter.convert_es_to_da(result, get_score_breakdown=False)
         else:
-            return result
+            return DocumentArray()
 
     @secure_request(on='/delete', level=SecurityLevel.USER)
     def delete(self, parameters: dict = {}, **kwargs):
@@ -269,18 +274,11 @@ class NOWElasticIndexer(Executor):
         search_filter = parameters.get('filter', None)
         ids = parameters.get('ids', None)
         if search_filter:
-            es_search_filter = {'query': {'bool': {}}}
-            for field, filters in search_filter.items():
-                for operator, filter in filters.items():
-                    if isinstance(filter, str):
-                        es_search_filter['query']['bool']['filter'] = {
-                            'term': {'tags.' + field: filter}
-                        }
-                    elif isinstance(filter, int) or isinstance(filter, float):
-                        operator = operator.replace('$', '')
-                        es_search_filter['query']['bool']['filter'] = {
-                            'range': {'tags.' + field: {operator: filter}}
-                        }
+            es_search_filter = {
+                'query': {
+                    'bool': {'filter': ESQueryBuilder.process_filter(search_filter)}
+                }
+            }
             try:
                 resp = self.es.delete_by_query(
                     index=self.index_name, body=es_search_filter
