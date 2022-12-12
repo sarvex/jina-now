@@ -12,6 +12,7 @@ from jina import Document, DocumentArray
 from paddleocr import PaddleOCR
 
 from now.app.base.app import JinaNOWApp
+from now.app.base.transform_docarray import transform_docarray
 from now.common.options import construct_app
 from now.constants import (
     ACCESS_PATHS,
@@ -20,7 +21,6 @@ from now.constants import (
     DatasetTypes,
     Modalities,
 )
-from now.data_loading.transform_docarray import transform_docarray
 from now.executor.abstract.auth import (
     SecurityLevel,
     get_auth_executor_class,
