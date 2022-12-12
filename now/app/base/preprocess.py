@@ -5,10 +5,6 @@ from docarray import Document
 from PIL import Image
 
 from now.constants import Modalities
-from now.data_loading.convert_datasets_to_jpeg import (
-    ndarray_to_jpeg_bytes,
-    to_thumbnail_jpg,
-)
 
 NUM_FRAMES_SAMPLED = 3
 
@@ -123,3 +119,18 @@ def _sample_video(d):
     d.blob = None
     d.uri = None
     d.tensor = None
+
+
+def ndarray_to_jpeg_bytes(arr) -> bytes:
+    pil_img = Image.fromarray(arr)
+    pil_img.thumbnail((512, 512))
+    pil_img = pil_img.convert('RGB')
+    img_byte_arr = io.BytesIO()
+    pil_img.save(img_byte_arr, format="JPEG", quality=95)
+    return img_byte_arr.getvalue()
+
+
+def to_thumbnail_jpg(doc: Document):
+    if doc.tensor is not None:
+        doc.blob = ndarray_to_jpeg_bytes(doc.tensor)
+    return doc
