@@ -25,6 +25,8 @@ runs:
       with:
         filters: |
           has_preprocessing_changed:
+          - now/executor/abstract/auth/**
+          - requirements.txt
             ${{ inputs.has_changed_filter }}
     - name: Get preprocessor tag
       if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'

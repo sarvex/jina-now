@@ -101,7 +101,6 @@ jobs:
             - now/app/base/**
               - now/common/preprocess.py
               - now/executor/preprocessor/**
-              - now/executor/abstract/auth/**
           executor_id: vlxgoxlv
           jina_auth_token: ${{ secrets.NOW_PREPROCESSOR_JCLOUD_TOKEN }}
 
@@ -117,8 +116,8 @@ jobs:
           executor_path: now/executor/indexer/qdrant
           # for some reason, the first filter condition needs a different indentation
           has_changed_filter: |
-            - 'now/executor/abstract/**'
-              - 'now/executor/indexer/qdrant/**'
+            - now/executor/abstract/**
+              - now/executor/indexer/qdrant/**
           executor_id: 11yxatzh
           jina_auth_token: ${{ secrets.NOW_STAGING_FLORIAN }}
 
@@ -134,8 +133,7 @@ jobs:
           executor_path: now/executor/indexer/elastic
           # for some reason, the first filter condition needs a different indentation
           has_changed_filter: |
-            - 'now/executor/abstract/auth/**'
-              - 'now/executor/indexer/elastic/**'
+            - now/executor/indexer/elastic/**
           executor_id: 11yxatzh
           jina_auth_token: ${{ secrets.NOW_STAGING_FLORIAN }}
 
