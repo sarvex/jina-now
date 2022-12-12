@@ -6,8 +6,8 @@ RUN apt-get update && apt-get install --no-install-recommends -y gcc g++ git pyt
 COPY requirements.txt .
 RUN pip install --compile -r requirements.txt
 
-# install latest code changes of the now repo
-RUN pip install git+https://github.com/jina-ai/now@JINA_NOW_COMMIT_SHA
+# install latest code changes of the now repo without the requirements installed already
+RUN pip install git+https://github.com/jina-ai/now@JINA_NOW_COMMIT_SHA --no-dependencies
 
 # setup the workspace
 COPY . /workdir/
