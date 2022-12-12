@@ -8,8 +8,8 @@ Submodules
    :maxdepth: 4
 
    now.app.base.app
-   now.app.base.playground
    now.app.base.preprocess
+   now.app.base.transform_docarray
 
 Module contents
 ---------------

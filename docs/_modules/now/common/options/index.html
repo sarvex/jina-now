@@ -5,10 +5,10 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../../genindex/" /><link rel="search" title="Search" href="../../../../search/" />
         <link rel="canonical" href="https://now.jina.ai/_modules/now/common/options.html" />
 
-    <link rel="shortcut icon" href="../../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.09.29"/>
-        <title>now.common.options - NOW 0.0.39 documentation</title>
+    <link rel="shortcut icon" href="../../../../_static/favicon.png"/><!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
+        <title>now.common.options - NOW 0.0.40 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/tabs.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../../">
-                <div class="brand">NOW 0.0.39 documentation</div>
+                <div class="brand">NOW 0.0.40 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -183,7 +183,7 @@
   <a class="github-button" href="https://github.com/jina-ai/now" data-icon="octicon-star" data-show-count="true" aria-label="Star jina-ai/now on GitHub" style="opacity: 0;">Star</a>
   
 </div><form class="sidebar-search-container" method="get" action="../../../../search/" role="search">
-  <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
 </form>
@@ -208,10 +208,10 @@
                 <img class="sidebar-ecosys-logo only-light-line" src="../../../../_static/search-light.svg">
                 <img class="sidebar-ecosys-logo only-dark-line" src="../../../../_static/search-dark.svg">
                 Jina</a></li>
-        <li class="toctree-l1"><a class="reference external" href="https://hub.jina.ai">
+        <li class="toctree-l1"><a class="reference external" href="https://cloud.jina.ai">
             <img class="sidebar-ecosys-logo only-light-line" src="../../../../_static/hub-light.svg">
             <img class="sidebar-ecosys-logo only-dark-line" src="../../../../_static/hub-dark.svg">
-            Jina Hub</a></li>
+            Jina AI Cloud</a></li>
         <li class="toctree-l1"><a class="reference external" href="https://finetuner.jina.ai">
             <img class="sidebar-ecosys-logo only-light-line" src="../../../../_static/finetuner-light.svg">
             <img class="sidebar-ecosys-logo only-dark-line" src="../../../../_static/finetuner-dark.svg">
@@ -290,7 +290,13 @@
 <span class="kn">from</span> <span class="nn">hubble</span> <span class="kn">import</span> <span class="n">AuthenticationRequiredError</span>
 <span class="kn">from</span> <span class="nn">kubernetes</span> <span class="kn">import</span> <span class="n">client</span><span class="p">,</span> <span class="n">config</span>
 
+<span class="kn">from</span> <span class="nn">now.common.detect_schema</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">set_field_names_from_docarray</span><span class="p">,</span>
+    <span class="n">set_field_names_from_local_folder</span><span class="p">,</span>
+    <span class="n">set_field_names_from_s3_bucket</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span> <span class="nn">now.constants</span> <span class="kn">import</span> <span class="n">Apps</span><span class="p">,</span> <span class="n">DatasetTypes</span>
+<span class="kn">from</span> <span class="nn">now.demo_data</span> <span class="kn">import</span> <span class="n">AVAILABLE_DATASET</span>
 <span class="kn">from</span> <span class="nn">now.deployment.deployment</span> <span class="kn">import</span> <span class="n">cmd</span>
 <span class="kn">from</span> <span class="nn">now.log</span> <span class="kn">import</span> <span class="n">yaspin_extended</span>
 <span class="kn">from</span> <span class="nn">now.now_dataclasses</span> <span class="kn">import</span> <span class="n">DialogOptions</span><span class="p">,</span> <span class="n">UserInput</span>
@@ -304,6 +310,7 @@
 
 <span class="n">NEW_CLUSTER</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;🐣 create new&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="s1">&#39;new&#39;</span><span class="p">}</span>
 <span class="n">AVAILABLE_SOON</span> <span class="o">=</span> <span class="s1">&#39;will be available in upcoming versions&#39;</span>
+
 
 <span class="c1"># Make sure you add this dialog option to your app in order of dependency, i.e., if some dialog option depends on other</span>
 <span class="c1"># than the parent should be called first before the dependant can called.</span>
@@ -330,9 +337,10 @@
     <span class="n">prompt_message</span><span class="o">=</span><span class="s1">&#39;What modality do you want to index?&#39;</span><span class="p">,</span>
     <span class="n">description</span><span class="o">=</span><span class="s1">&#39;What is the index modality of your search system?&#39;</span><span class="p">,</span>
     <span class="n">is_terminal_command</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">depends_on</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">conditional_check</span><span class="o">=</span><span class="k">lambda</span> <span class="n">user_input</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">user_input</span><span class="o">.</span><span class="n">app_instance</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">post_func</span><span class="o">=</span><span class="n">_create_app_from_output_modality</span><span class="p">,</span>
 <span class="p">)</span>
-
 
 <span class="n">APP_NAME</span> <span class="o">=</span> <span class="n">DialogOptions</span><span class="p">(</span>
     <span class="n">name</span><span class="o">=</span><span class="s1">&#39;flow_name&#39;</span><span class="p">,</span>
@@ -340,7 +348,6 @@
     <span class="n">prompt_type</span><span class="o">=</span><span class="s1">&#39;input&#39;</span><span class="p">,</span>
     <span class="n">is_terminal_command</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span>
-
 
 <span class="n">DATASET_TYPE</span> <span class="o">=</span> <span class="n">DialogOptions</span><span class="p">(</span>
     <span class="n">name</span><span class="o">=</span><span class="s1">&#39;dataset_type&#39;</span><span class="p">,</span>
@@ -350,10 +357,6 @@
         <span class="p">{</span>
             <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;DocumentArray name (recommended)&#39;</span><span class="p">,</span>
             <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">DatasetTypes</span><span class="o">.</span><span class="n">DOCARRAY</span><span class="p">,</span>
-        <span class="p">},</span>
-        <span class="p">{</span>
-            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;DocumentArray URL&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">DatasetTypes</span><span class="o">.</span><span class="n">URL</span><span class="p">,</span>
         <span class="p">},</span>
         <span class="p">{</span>
             <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Local folder&#39;</span><span class="p">,</span>
@@ -371,7 +374,23 @@
     <span class="p">],</span>
     <span class="n">prompt_type</span><span class="o">=</span><span class="s1">&#39;list&#39;</span><span class="p">,</span>
     <span class="n">is_terminal_command</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">post_func</span><span class="o">=</span><span class="k">lambda</span> <span class="n">user_input</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">check_login_dataset</span><span class="p">(</span><span class="n">user_input</span><span class="p">),</span>
 <span class="p">)</span>
+
+
+<div class="viewcode-block" id="check_login_dataset"><a class="viewcode-back" href="../../../../api/now.common.options/#now.common.options.check_login_dataset">[docs]</a><span class="k">def</span> <span class="nf">check_login_dataset</span><span class="p">(</span><span class="n">user_input</span><span class="p">:</span> <span class="n">UserInput</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">user_input</span><span class="o">.</span><span class="n">dataset_type</span> <span class="o">==</span> <span class="n">DatasetTypes</span><span class="o">.</span><span class="n">DOCARRAY</span> <span class="ow">and</span> <span class="n">user_input</span><span class="o">.</span><span class="n">jwt</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">_jina_auth_login</span><span class="p">(</span><span class="n">user_input</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">_get_demo_data_choices</span><span class="p">(</span><span class="n">user_input</span><span class="p">:</span> <span class="n">UserInput</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">all_demo_datasets</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">demo_datasets</span> <span class="ow">in</span> <span class="n">AVAILABLE_DATASET</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+        <span class="n">all_demo_datasets</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">demo_datasets</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span>
+        <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">demo_data</span><span class="o">.</span><span class="n">display_name</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">demo_data</span><span class="o">.</span><span class="n">name</span><span class="p">}</span>
+        <span class="k">for</span> <span class="n">demo_data</span> <span class="ow">in</span> <span class="n">all_demo_datasets</span>
+    <span class="p">]</span>
 
 
 <span class="n">DEMO_DATA</span> <span class="o">=</span> <span class="n">DialogOptions</span><span class="p">(</span>
@@ -384,17 +403,23 @@
     <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Select one of the available demo datasets&#39;</span><span class="p">,</span>
     <span class="n">conditional_check</span><span class="o">=</span><span class="k">lambda</span> <span class="n">user_input</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">user_input</span><span class="o">.</span><span class="n">dataset_type</span>
     <span class="o">==</span> <span class="n">DatasetTypes</span><span class="o">.</span><span class="n">DEMO</span><span class="p">,</span>
+    <span class="n">post_func</span><span class="o">=</span><span class="k">lambda</span> <span class="n">user_input</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">_infer_app_type_from_demo_data</span><span class="p">(</span><span class="n">user_input</span><span class="p">),</span>
 <span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">_get_demo_data_choices</span><span class="p">(</span><span class="n">user_input</span><span class="p">:</span> <span class="n">UserInput</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">user_input</span><span class="o">.</span><span class="n">output_modality</span><span class="p">:</span>
-        <span class="n">ds</span> <span class="o">=</span> <span class="n">user_input</span><span class="o">.</span><span class="n">app_instance</span><span class="o">.</span><span class="n">demo_datasets</span><span class="p">[</span><span class="n">user_input</span><span class="o">.</span><span class="n">output_modality</span><span class="p">]</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">ds</span> <span class="o">=</span> <span class="n">user_input</span><span class="o">.</span><span class="n">app_instance</span><span class="o">.</span><span class="n">demo_datasets</span>
-    <span class="k">return</span> <span class="p">[</span>
-        <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">demo_data</span><span class="o">.</span><span class="n">display_name</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">demo_data</span><span class="o">.</span><span class="n">name</span><span class="p">}</span> <span class="k">for</span> <span class="n">demo_data</span> <span class="ow">in</span> <span class="n">ds</span>
-    <span class="p">]</span>
+<span class="k">def</span> <span class="nf">_infer_app_type_from_demo_data</span><span class="p">(</span><span class="n">user_input</span><span class="p">:</span> <span class="n">UserInput</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Infer the app type from the demo data selected by the user.</span>
+
+<span class="sd">    :param user_input: UserInput object</span>
+
+<span class="sd">    uses the demo data selected by the user to create application instance and set the output modality</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">modality</span><span class="p">,</span> <span class="n">demos</span> <span class="ow">in</span> <span class="n">AVAILABLE_DATASET</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">demo</span> <span class="ow">in</span> <span class="n">demos</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">user_input</span><span class="o">.</span><span class="n">dataset_name</span> <span class="o">==</span> <span class="n">demo</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+                <span class="n">user_input</span><span class="o">.</span><span class="n">output_modality</span> <span class="o">=</span> <span class="n">modality</span>
+    <span class="n">_create_app_from_output_modality</span><span class="p">(</span><span class="n">user_input</span><span class="p">)</span>
 
 
 <span class="n">DOCARRAY_NAME</span> <span class="o">=</span> <span class="n">DialogOptions</span><span class="p">(</span>
@@ -404,15 +429,7 @@
     <span class="n">depends_on</span><span class="o">=</span><span class="n">DATASET_TYPE</span><span class="p">,</span>
     <span class="n">conditional_check</span><span class="o">=</span><span class="k">lambda</span> <span class="n">user_input</span><span class="p">:</span> <span class="n">user_input</span><span class="o">.</span><span class="n">dataset_type</span>
     <span class="o">==</span> <span class="n">DatasetTypes</span><span class="o">.</span><span class="n">DOCARRAY</span><span class="p">,</span>
-<span class="p">)</span>
-
-<span class="n">DATASET_URL</span> <span class="o">=</span> <span class="n">DialogOptions</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;dataset_url&#39;</span><span class="p">,</span>
-    <span class="n">prompt_message</span><span class="o">=</span><span class="s1">&#39;Please paste in the URL to download your DocumentArray from:&#39;</span><span class="p">,</span>
-    <span class="n">prompt_type</span><span class="o">=</span><span class="s1">&#39;input&#39;</span><span class="p">,</span>
-    <span class="n">depends_on</span><span class="o">=</span><span class="n">DATASET_TYPE</span><span class="p">,</span>
-    <span class="n">is_terminal_command</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">conditional_check</span><span class="o">=</span><span class="k">lambda</span> <span class="n">user_input</span><span class="p">:</span> <span class="n">user_input</span><span class="o">.</span><span class="n">dataset_type</span> <span class="o">==</span> <span class="n">DatasetTypes</span><span class="o">.</span><span class="n">URL</span><span class="p">,</span>
+    <span class="n">post_func</span><span class="o">=</span><span class="k">lambda</span> <span class="n">user_input</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">set_field_names_from_docarray</span><span class="p">(</span><span class="n">user_input</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="n">DATASET_PATH</span> <span class="o">=</span> <span class="n">DialogOptions</span><span class="p">(</span>
@@ -422,6 +439,9 @@
     <span class="n">depends_on</span><span class="o">=</span><span class="n">DATASET_TYPE</span><span class="p">,</span>
     <span class="n">is_terminal_command</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">conditional_check</span><span class="o">=</span><span class="k">lambda</span> <span class="n">user_input</span><span class="p">:</span> <span class="n">user_input</span><span class="o">.</span><span class="n">dataset_type</span> <span class="o">==</span> <span class="n">DatasetTypes</span><span class="o">.</span><span class="n">PATH</span><span class="p">,</span>
+    <span class="n">post_func</span><span class="o">=</span><span class="k">lambda</span> <span class="n">user_input</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">set_field_names_from_local_folder</span><span class="p">(</span>
+        <span class="n">user_input</span>
+    <span class="p">),</span>
 <span class="p">)</span>
 
 <span class="n">DATASET_PATH_S3</span> <span class="o">=</span> <span class="n">DialogOptions</span><span class="p">(</span>
@@ -458,25 +478,44 @@
     <span class="n">depends_on</span><span class="o">=</span><span class="n">DATASET_TYPE</span><span class="p">,</span>
     <span class="n">conditional_check</span><span class="o">=</span><span class="k">lambda</span> <span class="n">user_input</span><span class="p">:</span> <span class="n">user_input</span><span class="o">.</span><span class="n">dataset_type</span>
     <span class="o">==</span> <span class="n">DatasetTypes</span><span class="o">.</span><span class="n">S3_BUCKET</span><span class="p">,</span>
+    <span class="n">post_func</span><span class="o">=</span><span class="k">lambda</span> <span class="n">user_input</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">set_field_names_from_s3_bucket</span><span class="p">(</span><span class="n">user_input</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="c1"># --------------------------------------------- #</span>
 
+
 <span class="n">SEARCH_FIELDS</span> <span class="o">=</span> <span class="n">DialogOptions</span><span class="p">(</span>
     <span class="n">name</span><span class="o">=</span><span class="s1">&#39;search_fields&#39;</span><span class="p">,</span>
-    <span class="n">prompt_message</span><span class="o">=</span><span class="s1">&#39;Enter comma-separated search fields:&#39;</span><span class="p">,</span>
-    <span class="n">prompt_type</span><span class="o">=</span><span class="s1">&#39;input&#39;</span><span class="p">,</span>
+    <span class="n">choices</span><span class="o">=</span><span class="k">lambda</span> <span class="n">user_input</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">field</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">field</span><span class="p">}</span>
+        <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">user_input</span><span class="o">.</span><span class="n">search_fields_modalities</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+    <span class="p">],</span>
+    <span class="n">prompt_message</span><span class="o">=</span><span class="s1">&#39;Please select the search fields:&#39;</span><span class="p">,</span>
+    <span class="n">prompt_type</span><span class="o">=</span><span class="s1">&#39;checkbox&#39;</span><span class="p">,</span>
     <span class="n">depends_on</span><span class="o">=</span><span class="n">DATASET_TYPE</span><span class="p">,</span>
-    <span class="n">is_terminal_command</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">conditional_check</span><span class="o">=</span><span class="k">lambda</span> <span class="n">user_input</span><span class="p">:</span> <span class="n">user_input</span><span class="o">.</span><span class="n">dataset_type</span> <span class="o">!=</span> <span class="n">DatasetTypes</span><span class="o">.</span><span class="n">DEMO</span><span class="p">,</span>
-    <span class="n">post_func</span><span class="o">=</span><span class="k">lambda</span> <span class="n">user_input</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">_parse_search_fields</span><span class="p">(</span><span class="n">user_input</span><span class="p">),</span>
+    <span class="n">conditional_check</span><span class="o">=</span><span class="k">lambda</span> <span class="n">user_input</span><span class="p">:</span> <span class="n">user_input</span><span class="o">.</span><span class="n">search_fields_modalities</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">user_input</span><span class="o">.</span><span class="n">search_fields_modalities</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="ow">and</span> <span class="n">user_input</span><span class="o">.</span><span class="n">dataset_type</span> <span class="o">!=</span> <span class="n">DatasetTypes</span><span class="o">.</span><span class="n">DEMO</span><span class="p">,</span>
 <span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">_parse_search_fields</span><span class="p">(</span><span class="n">user_input</span><span class="p">:</span> <span class="n">UserInput</span><span class="p">):</span>
-    <span class="n">user_input</span><span class="o">.</span><span class="n">search_fields</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="n">field</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">user_input</span><span class="o">.</span><span class="n">search_fields</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
-    <span class="p">]</span>
+<span class="n">FILTER_FIELDS</span> <span class="o">=</span> <span class="n">DialogOptions</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;filter_fields&#39;</span><span class="p">,</span>
+    <span class="n">choices</span><span class="o">=</span><span class="k">lambda</span> <span class="n">user_input</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">field</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">field</span><span class="p">}</span>
+        <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">user_input</span><span class="o">.</span><span class="n">filter_fields_modalities</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">field</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">user_input</span><span class="o">.</span><span class="n">search_fields</span>
+    <span class="p">],</span>
+    <span class="n">prompt_message</span><span class="o">=</span><span class="s1">&#39;Please select the filter fields&#39;</span><span class="p">,</span>
+    <span class="n">prompt_type</span><span class="o">=</span><span class="s1">&#39;checkbox&#39;</span><span class="p">,</span>
+    <span class="n">depends_on</span><span class="o">=</span><span class="n">DATASET_TYPE</span><span class="p">,</span>
+    <span class="n">conditional_check</span><span class="o">=</span><span class="k">lambda</span> <span class="n">user_input</span><span class="p">:</span> <span class="n">user_input</span><span class="o">.</span><span class="n">filter_fields_modalities</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span>
+        <span class="nb">set</span><span class="p">(</span><span class="n">user_input</span><span class="o">.</span><span class="n">filter_fields_modalities</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">user_input</span><span class="o">.</span><span class="n">search_fields</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="ow">and</span> <span class="n">user_input</span><span class="o">.</span><span class="n">dataset_type</span> <span class="o">!=</span> <span class="n">DatasetTypes</span><span class="o">.</span><span class="n">DEMO</span><span class="p">,</span>
+<span class="p">)</span>
 
 
 <span class="n">ES_INDEX_NAME</span> <span class="o">=</span> <span class="n">DialogOptions</span><span class="p">(</span>
@@ -525,8 +564,14 @@
     <span class="n">is_terminal_command</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Option is `local` and `remote`. Select `local` if you want search engine to be deployed on local &#39;</span>
     <span class="s1">&#39;cluster. Select `remote` to deploy it on Jina Cloud&#39;</span><span class="p">,</span>
-    <span class="n">post_func</span><span class="o">=</span><span class="k">lambda</span> <span class="n">user_input</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">_jina_auth_login</span><span class="p">(</span><span class="n">user_input</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span>
+    <span class="n">post_func</span><span class="o">=</span><span class="k">lambda</span> <span class="n">user_input</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">check_login_deployment</span><span class="p">(</span><span class="n">user_input</span><span class="p">),</span>
 <span class="p">)</span>
+
+
+<div class="viewcode-block" id="check_login_deployment"><a class="viewcode-back" href="../../../../api/now.common.options/#now.common.options.check_login_deployment">[docs]</a><span class="k">def</span> <span class="nf">check_login_deployment</span><span class="p">(</span><span class="n">user_input</span><span class="p">:</span> <span class="n">UserInput</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">user_input</span><span class="o">.</span><span class="n">deployment_type</span> <span class="o">==</span> <span class="s1">&#39;remote&#39;</span> <span class="ow">and</span> <span class="n">user_input</span><span class="o">.</span><span class="n">jwt</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">_jina_auth_login</span><span class="p">(</span><span class="n">user_input</span><span class="p">)</span></div>
+
 
 <span class="n">LOCAL_CLUSTER</span> <span class="o">=</span> <span class="n">DialogOptions</span><span class="p">(</span>
     <span class="n">name</span><span class="o">=</span><span class="s1">&#39;cluster&#39;</span><span class="p">,</span>
@@ -570,7 +615,6 @@
     <span class="n">conditional_check</span><span class="o">=</span><span class="k">lambda</span> <span class="n">user_inp</span><span class="p">:</span> <span class="n">user_inp</span><span class="o">.</span><span class="n">deployment_type</span> <span class="o">==</span> <span class="s1">&#39;remote&#39;</span><span class="p">,</span>
 <span class="p">)</span>
 
-
 <span class="n">API_KEY</span> <span class="o">=</span> <span class="n">DialogOptions</span><span class="p">(</span>
     <span class="n">name</span><span class="o">=</span><span class="s1">&#39;api_key&#39;</span><span class="p">,</span>
     <span class="n">prompt_message</span><span class="o">=</span><span class="s1">&#39;Do you want to generate an api_key to access this deployment?&#39;</span><span class="p">,</span>
@@ -610,7 +654,7 @@
 <span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">_set_value_to_none</span><span class="p">(</span><span class="n">user_input</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_set_value_to_none</span><span class="p">(</span><span class="n">user_input</span><span class="p">:</span> <span class="n">UserInput</span><span class="p">):</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">user_input</span><span class="o">.</span><span class="n">api_key</span><span class="p">:</span>
         <span class="n">user_input</span><span class="o">.</span><span class="n">api_key</span> <span class="o">=</span> <span class="kc">None</span>
 
@@ -636,10 +680,7 @@
     <span class="p">)()</span></div>
 
 
-<span class="k">def</span> <span class="nf">_jina_auth_login</span><span class="p">(</span><span class="n">user_input</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">user_input</span><span class="o">.</span><span class="n">deployment_type</span> <span class="o">!=</span> <span class="s1">&#39;remote&#39;</span><span class="p">:</span>
-        <span class="k">return</span>
-
+<span class="k">def</span> <span class="nf">_jina_auth_login</span><span class="p">(</span><span class="n">user_input</span><span class="p">:</span> <span class="n">UserInput</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">jina_auth_login</span><span class="p">()</span>
     <span class="k">except</span> <span class="n">AuthenticationRequiredError</span><span class="p">:</span>
@@ -653,7 +694,7 @@
     <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;JCLOUD_NO_SURVEY&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;1&#39;</span>
 
 
-<span class="k">def</span> <span class="nf">_construct_local_cluster_choices</span><span class="p">(</span><span class="n">user_input</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_construct_local_cluster_choices</span><span class="p">(</span><span class="n">user_input</span><span class="p">:</span> <span class="n">UserInput</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="n">active_context</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;active_context&#39;</span><span class="p">)</span>
     <span class="n">contexts</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;contexts&#39;</span><span class="p">)</span>
     <span class="n">context_names</span> <span class="o">=</span> <span class="n">_get_context_names</span><span class="p">(</span><span class="n">contexts</span><span class="p">,</span> <span class="n">active_context</span><span class="p">)</span>
@@ -681,9 +722,9 @@
 
 <span class="n">app_config</span> <span class="o">=</span> <span class="p">[</span><span class="n">OUTPUT_MODALITY</span><span class="p">,</span> <span class="n">APP_NAME</span><span class="p">]</span>
 <span class="n">data_type</span> <span class="o">=</span> <span class="p">[</span><span class="n">DATASET_TYPE</span><span class="p">]</span>
-<span class="n">data_fields</span> <span class="o">=</span> <span class="p">[</span><span class="n">SEARCH_FIELDS</span><span class="p">]</span>
+<span class="n">data_fields</span> <span class="o">=</span> <span class="p">[</span><span class="n">SEARCH_FIELDS</span><span class="p">,</span> <span class="n">FILTER_FIELDS</span><span class="p">]</span>
 <span class="n">data_demo</span> <span class="o">=</span> <span class="p">[</span><span class="n">DEMO_DATA</span><span class="p">]</span>
-<span class="n">data_da</span> <span class="o">=</span> <span class="p">[</span><span class="n">DOCARRAY_NAME</span><span class="p">,</span> <span class="n">DATASET_PATH</span><span class="p">,</span> <span class="n">DATASET_URL</span><span class="p">]</span>
+<span class="n">data_da</span> <span class="o">=</span> <span class="p">[</span><span class="n">DOCARRAY_NAME</span><span class="p">,</span> <span class="n">DATASET_PATH</span><span class="p">]</span>
 <span class="n">data_s3</span> <span class="o">=</span> <span class="p">[</span><span class="n">DATASET_PATH_S3</span><span class="p">,</span> <span class="n">AWS_ACCESS_KEY_ID</span><span class="p">,</span> <span class="n">AWS_SECRET_ACCESS_KEY</span><span class="p">,</span> <span class="n">AWS_REGION_NAME</span><span class="p">]</span>
 <span class="n">data_es</span> <span class="o">=</span> <span class="p">[</span>
     <span class="n">ES_HOST_NAME</span><span class="p">,</span>
@@ -694,13 +735,13 @@
 <span class="n">remote_cluster</span> <span class="o">=</span> <span class="p">[</span><span class="n">SECURED</span><span class="p">,</span> <span class="n">API_KEY</span><span class="p">,</span> <span class="n">ADDITIONAL_USERS</span><span class="p">,</span> <span class="n">USER_EMAILS</span><span class="p">]</span>
 
 <span class="n">base_options</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="n">app_config</span>
-    <span class="o">+</span> <span class="n">data_type</span>
+    <span class="n">data_type</span>
     <span class="o">+</span> <span class="n">data_demo</span>
     <span class="o">+</span> <span class="n">data_da</span>
     <span class="o">+</span> <span class="n">data_s3</span>
     <span class="o">+</span> <span class="n">data_es</span>
     <span class="o">+</span> <span class="n">data_fields</span>
+    <span class="o">+</span> <span class="n">app_config</span>
     <span class="o">+</span> <span class="n">cluster</span>
     <span class="o">+</span> <span class="n">remote_cluster</span>
 <span class="p">)</span>
@@ -721,7 +762,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Dec 05, 2022.
+                            Last updated on Dec 12, 2022.
                         </div>
                     </div>
                     <div class="right-details">
@@ -775,7 +816,9 @@
 <img referrerpolicy="no-referrer-when-downgrade" src="https://static.scarf.sh/a.png?x-pxid=cc97e3c2-cdb1-4e56-9cc9-ecde64264681" /><script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
     <script src="../../../../_static/jquery.js"></script>
     <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../_static/scripts/furo.js"></script>
     <script src="../../../../_static/clipboard.min.js"></script>
     <script src="../../../../_static/copybutton.js"></script>

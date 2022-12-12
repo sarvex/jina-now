@@ -5,10 +5,10 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../../genindex/" /><link rel="search" title="Search" href="../../../../search/" />
         <link rel="canonical" href="https://now.jina.ai/_modules/now/common/utils.html" />
 
-    <link rel="shortcut icon" href="../../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.09.29"/>
-        <title>now.common.utils - NOW 0.0.39 documentation</title>
+    <link rel="shortcut icon" href="../../../../_static/favicon.png"/><!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
+        <title>now.common.utils - NOW 0.0.40 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/tabs.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../../">
-                <div class="brand">NOW 0.0.39 documentation</div>
+                <div class="brand">NOW 0.0.40 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -183,7 +183,7 @@
   <a class="github-button" href="https://github.com/jina-ai/now" data-icon="octicon-star" data-show-count="true" aria-label="Star jina-ai/now on GitHub" style="opacity: 0;">Star</a>
   
 </div><form class="sidebar-search-container" method="get" action="../../../../search/" role="search">
-  <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
 </form>
@@ -208,10 +208,10 @@
                 <img class="sidebar-ecosys-logo only-light-line" src="../../../../_static/search-light.svg">
                 <img class="sidebar-ecosys-logo only-dark-line" src="../../../../_static/search-dark.svg">
                 Jina</a></li>
-        <li class="toctree-l1"><a class="reference external" href="https://hub.jina.ai">
+        <li class="toctree-l1"><a class="reference external" href="https://cloud.jina.ai">
             <img class="sidebar-ecosys-logo only-light-line" src="../../../../_static/hub-light.svg">
             <img class="sidebar-ecosys-logo only-dark-line" src="../../../../_static/hub-dark.svg">
-            Jina Hub</a></li>
+            Jina AI Cloud</a></li>
         <li class="toctree-l1"><a class="reference external" href="https://finetuner.jina.ai">
             <img class="sidebar-ecosys-logo only-light-line" src="../../../../_static/finetuner-light.svg">
             <img class="sidebar-ecosys-logo only-dark-line" src="../../../../_static/finetuner-dark.svg">
@@ -278,14 +278,12 @@
 <span></span><span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">pathlib</span>
-<span class="kn">import</span> <span class="nn">tempfile</span>
 <span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
 <span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">expanduser</span> <span class="k">as</span> <span class="n">user</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
 
 <span class="kn">import</span> <span class="nn">hubble</span>
-<span class="kn">from</span> <span class="nn">docarray</span> <span class="kn">import</span> <span class="n">Document</span><span class="p">,</span> <span class="n">DocumentArray</span>
+<span class="kn">from</span> <span class="nn">docarray</span> <span class="kn">import</span> <span class="n">DocumentArray</span>
 <span class="kn">from</span> <span class="nn">jina</span> <span class="kn">import</span> <span class="n">__version__</span> <span class="k">as</span> <span class="n">jina_version</span>
 <span class="kn">from</span> <span class="nn">jina.helper</span> <span class="kn">import</span> <span class="n">random_port</span>
 
@@ -299,7 +297,6 @@
     <span class="n">NOW_QDRANT_INDEXER_VERSION</span><span class="p">,</span>
     <span class="n">PREFETCH_NR</span><span class="p">,</span>
     <span class="n">TAG_INDEXER_DOC_HAS_TEXT</span><span class="p">,</span>
-    <span class="n">DatasetTypes</span><span class="p">,</span>
     <span class="n">Modalities</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">now.demo_data</span> <span class="kn">import</span> <span class="n">DEFAULT_EXAMPLE_HOSTED</span>
@@ -308,7 +305,6 @@
 <span class="kn">from</span> <span class="nn">now.finetuning.run_finetuning</span> <span class="kn">import</span> <span class="n">finetune</span>
 <span class="kn">from</span> <span class="nn">now.finetuning.settings</span> <span class="kn">import</span> <span class="n">FinetuneSettings</span><span class="p">,</span> <span class="n">parse_finetune_settings</span>
 <span class="kn">from</span> <span class="nn">now.now_dataclasses</span> <span class="kn">import</span> <span class="n">UserInput</span>
-<span class="kn">from</span> <span class="nn">now.utils</span> <span class="kn">import</span> <span class="n">maybe_download_from_s3</span>
 
 <span class="n">cur_dir</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
 
@@ -400,7 +396,7 @@
         <span class="n">add_embeddings</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">loss</span><span class="o">=</span><span class="s1">&#39;TripletMarginLoss&#39;</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">tags</span> <span class="o">=</span> <span class="n">_extract_tags_for_indexer</span><span class="p">(</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">user_input</span><span class="p">)</span>
+    <span class="n">tags</span> <span class="o">=</span> <span class="n">_extract_tags_for_indexer</span><span class="p">(</span><span class="n">user_input</span><span class="p">)</span>
     <span class="n">env_dict</span> <span class="o">=</span> <span class="n">common_get_flow_env_dict</span><span class="p">(</span>
         <span class="n">finetune_settings</span><span class="o">=</span><span class="n">finetune_settings</span><span class="p">,</span>
         <span class="n">encoder_uses</span><span class="o">=</span><span class="n">encoder_uses</span><span class="p">,</span>
@@ -496,19 +492,10 @@
     <span class="k">return</span> <span class="n">config</span></div>
 
 
-<span class="k">def</span> <span class="nf">_extract_tags_for_indexer</span><span class="p">(</span><span class="n">d</span><span class="p">:</span> <span class="n">Document</span><span class="p">,</span> <span class="n">user_input</span><span class="p">):</span>
-    <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">tmpdir</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">user_input</span> <span class="ow">and</span> <span class="n">user_input</span><span class="o">.</span><span class="n">dataset_type</span> <span class="o">==</span> <span class="n">DatasetTypes</span><span class="o">.</span><span class="n">S3_BUCKET</span><span class="p">:</span>
-            <span class="n">maybe_download_from_s3</span><span class="p">(</span>
-                <span class="n">docs</span><span class="o">=</span><span class="n">DocumentArray</span><span class="p">([</span><span class="n">d</span><span class="p">]),</span>
-                <span class="n">tmpdir</span><span class="o">=</span><span class="n">tmpdir</span><span class="p">,</span>
-                <span class="n">user_input</span><span class="o">=</span><span class="n">user_input</span><span class="p">,</span>
-                <span class="n">max_workers</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-            <span class="p">)</span>
-    <span class="n">tags</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-    <span class="k">for</span> <span class="n">tag</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="n">tags</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="n">tag</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">tag</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)))</span>
-    <span class="n">final_tags</span> <span class="o">=</span> <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">tag</span><span class="p">)</span> <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">]</span>
+<span class="k">def</span> <span class="nf">_extract_tags_for_indexer</span><span class="p">(</span><span class="n">user_input</span><span class="p">:</span> <span class="n">UserInput</span><span class="p">):</span>
+    <span class="n">final_tags</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">[</span><span class="n">tag</span><span class="p">,</span> <span class="n">value</span><span class="p">]</span> <span class="k">for</span> <span class="n">tag</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">user_input</span><span class="o">.</span><span class="n">filter_fields_modalities</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+    <span class="p">]</span>
     <span class="k">if</span> <span class="n">user_input</span><span class="o">.</span><span class="n">app_instance</span><span class="o">.</span><span class="n">output_modality</span> <span class="ow">in</span> <span class="p">[</span>
         <span class="n">Modalities</span><span class="o">.</span><span class="n">IMAGE</span><span class="p">,</span>
         <span class="n">Modalities</span><span class="o">.</span><span class="n">VIDEO</span><span class="p">,</span>
@@ -586,7 +573,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Dec 05, 2022.
+                            Last updated on Dec 12, 2022.
                         </div>
                     </div>
                     <div class="right-details">
@@ -640,7 +627,9 @@
 <img referrerpolicy="no-referrer-when-downgrade" src="https://static.scarf.sh/a.png?x-pxid=cc97e3c2-cdb1-4e56-9cc9-ecde64264681" /><script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
     <script src="../../../../_static/jquery.js"></script>
     <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../_static/scripts/furo.js"></script>
     <script src="../../../../_static/clipboard.min.js"></script>
     <script src="../../../../_static/copybutton.js"></script>

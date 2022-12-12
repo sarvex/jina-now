@@ -7,7 +7,7 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   now.data_loading.es
+   now.data_loading.elasticsearch
 
 Submodules
 ----------
@@ -15,13 +15,7 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
-   now.data_loading.build_datasets
-   now.data_loading.convert_datasets_to_jpeg
    now.data_loading.data_loading
-   now.data_loading.embed_datasets
-   now.data_loading.migrate_datasets
-   now.data_loading.transform_docarray
-   now.data_loading.utils
 
 Module contents
 ---------------

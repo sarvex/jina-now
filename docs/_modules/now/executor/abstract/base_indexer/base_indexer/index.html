@@ -5,10 +5,10 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../../../../genindex/" /><link rel="search" title="Search" href="../../../../../../search/" />
         <link rel="canonical" href="https://now.jina.ai/_modules/now/executor/abstract/base_indexer/base_indexer.html" />
 
-    <link rel="shortcut icon" href="../../../../../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.09.29"/>
-        <title>now.executor.abstract.base_indexer.base_indexer - NOW 0.0.39 documentation</title>
+    <link rel="shortcut icon" href="../../../../../../_static/favicon.png"/><!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
+        <title>now.executor.abstract.base_indexer.base_indexer - NOW 0.0.40 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../../../_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
+    <link rel="stylesheet" type="text/css" href="../../../../../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
     <link rel="stylesheet" type="text/css" href="../../../../../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../../../../../_static/tabs.css" />
     <link rel="stylesheet" type="text/css" href="../../../../../../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../../../../">
-                <div class="brand">NOW 0.0.39 documentation</div>
+                <div class="brand">NOW 0.0.40 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -183,7 +183,7 @@
   <a class="github-button" href="https://github.com/jina-ai/now" data-icon="octicon-star" data-show-count="true" aria-label="Star jina-ai/now on GitHub" style="opacity: 0;">Star</a>
   
 </div><form class="sidebar-search-container" method="get" action="../../../../../../search/" role="search">
-  <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
 </form>
@@ -208,10 +208,10 @@
                 <img class="sidebar-ecosys-logo only-light-line" src="../../../../../../_static/search-light.svg">
                 <img class="sidebar-ecosys-logo only-dark-line" src="../../../../../../_static/search-dark.svg">
                 Jina</a></li>
-        <li class="toctree-l1"><a class="reference external" href="https://hub.jina.ai">
+        <li class="toctree-l1"><a class="reference external" href="https://cloud.jina.ai">
             <img class="sidebar-ecosys-logo only-light-line" src="../../../../../../_static/hub-light.svg">
             <img class="sidebar-ecosys-logo only-dark-line" src="../../../../../../_static/hub-dark.svg">
-            Jina Hub</a></li>
+            Jina AI Cloud</a></li>
         <li class="toctree-l1"><a class="reference external" href="https://finetuner.jina.ai">
             <img class="sidebar-ecosys-logo only-light-line" src="../../../../../../_static/finetuner-light.svg">
             <img class="sidebar-ecosys-logo only-dark-line" src="../../../../../../_static/finetuner-dark.svg">
@@ -275,7 +275,8 @@
                 </div>
                 <article role="main">
                     <h1>Source code for now.executor.abstract.base_indexer.base_indexer</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">json</span>
+<span></span><span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
 <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
@@ -332,14 +333,16 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">doc_id_tags</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">document_list</span> <span class="o">=</span> <span class="n">DocumentArray</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">load_document_list</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">query_to_filter_path</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">workspace</span><span class="p">,</span> <span class="s1">&#39;query_to_filter.json&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">query_to_curated_matches_path</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">workspace</span><span class="p">,</span> <span class="s1">&#39;query_to_curated_matches.json&#39;</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">workspace</span>
             <span class="k">else</span> <span class="kc">None</span>
         <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">query_to_filter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">open_query_to_filter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query_to_filter_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">query_to_curated_matches</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">open_query_to_curated_matches</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">query_to_curated_matches_path</span>
+        <span class="p">)</span>
 
-<div class="viewcode-block" id="NOWBaseIndexer.open_query_to_filter"><a class="viewcode-back" href="../../../../../../api/now.executor.abstract.base_indexer.base_indexer/#now.executor.abstract.base_indexer.base_indexer.NOWBaseIndexer.open_query_to_filter">[docs]</a>    <span class="k">def</span> <span class="nf">open_query_to_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+<div class="viewcode-block" id="NOWBaseIndexer.open_query_to_curated_matches"><a class="viewcode-back" href="../../../../../../api/now.executor.abstract.base_indexer.base_indexer/#now.executor.abstract.base_indexer.base_indexer.NOWBaseIndexer.open_query_to_curated_matches">[docs]</a>    <span class="k">def</span> <span class="nf">open_query_to_curated_matches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">path</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
@@ -596,9 +599,22 @@
 <span class="sd">            }</span>
 <span class="sd">        }</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">query_to_filter</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;query_to_filter&#39;</span><span class="p">]</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query_to_filter_path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query_to_filter</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+
+        <span class="n">query_to_filter</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;query_to_filter&#39;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">query</span><span class="p">,</span> <span class="n">doc_filters</span> <span class="ow">in</span> <span class="n">query_to_filter</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="c1"># a query can have multiple filters</span>
+            <span class="c1"># for each filter, we get the curated matches</span>
+            <span class="c1"># all matches are flattened into one list</span>
+            <span class="n">curated_matches</span> <span class="o">=</span> <span class="n">DocumentArray</span><span class="p">(</span>
+                <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span>
+                    <span class="o">*</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">document_list</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">doc_filter</span><span class="p">)</span> <span class="k">for</span> <span class="n">doc_filter</span> <span class="ow">in</span> <span class="n">doc_filters</span><span class="p">]</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">query_to_curated_matches</span><span class="p">[</span><span class="n">query</span><span class="p">]</span> <span class="o">=</span> <span class="n">curated_matches</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query_to_curated_matches_path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query_to_curated_matches</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">()</span>
 
 <div class="viewcode-block" id="NOWBaseIndexer.get_curated_matches"><a class="viewcode-back" href="../../../../../../api/now.executor.abstract.base_indexer.base_indexer/#now.executor.abstract.base_indexer.base_indexer.NOWBaseIndexer.get_curated_matches">[docs]</a>    <span class="k">def</span> <span class="nf">get_curated_matches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text_query</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DocumentArray</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -606,8 +622,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">curated_matches</span> <span class="o">=</span> <span class="n">DocumentArray</span><span class="p">([])</span>
         <span class="k">if</span> <span class="n">text_query</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">doc_filter</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_to_filter</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">text_query</span><span class="p">,</span> <span class="p">[]):</span>
-                <span class="n">curated_matches</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">document_list</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">doc_filter</span><span class="p">))</span>
+            <span class="n">matches</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_to_curated_matches</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">text_query</span><span class="p">,</span> <span class="p">[])</span>
+            <span class="n">curated_matches</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">DocumentArray</span><span class="o">.</span><span class="n">from_list</span><span class="p">(</span><span class="n">matches</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">curated_matches</span></div>
 
 <div class="viewcode-block" id="NOWBaseIndexer.create_matches"><a class="viewcode-back" href="../../../../../../api/now.executor.abstract.base_indexer.base_indexer/#now.executor.abstract.base_indexer.base_indexer.NOWBaseIndexer.create_matches">[docs]</a>    <span class="k">def</span> <span class="nf">create_matches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">docs</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">limit</span><span class="p">,</span> <span class="n">retrieval_limit</span><span class="p">,</span> <span class="n">search_filter</span><span class="p">):</span>
@@ -764,7 +780,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Dec 05, 2022.
+                            Last updated on Dec 12, 2022.
                         </div>
                     </div>
                     <div class="right-details">
@@ -818,7 +834,9 @@
 <img referrerpolicy="no-referrer-when-downgrade" src="https://static.scarf.sh/a.png?x-pxid=cc97e3c2-cdb1-4e56-9cc9-ecde64264681" /><script data-url_root="../../../../../../" id="documentation_options" src="../../../../../../_static/documentation_options.js"></script>
     <script src="../../../../../../_static/jquery.js"></script>
     <script src="../../../../../../_static/underscore.js"></script>
+    <script src="../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../../_static/doctools.js"></script>
+    <script src="../../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../../_static/scripts/furo.js"></script>
     <script src="../../../../../../_static/clipboard.min.js"></script>
     <script src="../../../../../../_static/copybutton.js"></script>

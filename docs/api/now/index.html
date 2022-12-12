@@ -6,9 +6,9 @@
 <meta property="og:title" content="now package" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://now.jina.ai/api/now/" />
-<meta property="og:site_name" content="NOW 0.0.39 Documentation" />
-<meta property="og:description" content="Subpackages: now.admin package- Submodules- now.admin.add_curation module, now.admin.benchmark_flow module, now.admin.deploy_text_to_video module, now.admin.flow_results module, now.admin.run_performance_test module, now.admin.search module, now.admin.update_api_keys module, now.admin.update_emai..." />
-<meta name="description" content="Subpackages: now.admin package- Submodules- now.admin.add_curation module, now.admin.benchmark_flow module, now.admin.deploy_text_to_video module, now.admin.flow_results module, now.admin.run_performance_test module, now.admin.search module, now.admin.update_api_keys module, now.admin.update_emai..." />
+<meta property="og:site_name" content="NOW 0.0.40 Documentation" />
+<meta property="og:description" content="Subpackages: now.admin package- Submodules- now.admin.add_curation module, now.admin.benchmark_flow module, now.admin.build_datasets module, now.admin.deploy_text_to_video module- deploy()., now.admin.flow_results module, now.admin.run_performance_test module- call(), benchmark_deployment()., now..." />
+<meta name="description" content="Subpackages: now.admin package- Submodules- now.admin.add_curation module, now.admin.benchmark_flow module, now.admin.build_datasets module, now.admin.deploy_text_to_video module- deploy()., now.admin.flow_results module, now.admin.run_performance_test module- call(), benchmark_deployment()., now..." />
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@JinaAI_">
 <meta name="twitter:creator" content="@JinaAI_">
@@ -30,10 +30,10 @@
 <link rel="index" title="Index" href="../../genindex/" /><link rel="search" title="Search" href="../../search/" />
         <link rel="canonical" href="https://now.jina.ai/api/now.html" />
 
-    <link rel="shortcut icon" href="../../_static/favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.09.29"/>
-        <title>now package - NOW 0.0.39 documentation</title>
+    <link rel="shortcut icon" href="../../_static/favicon.png"/><!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
+        <title>now package - NOW 0.0.40 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/tabs.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
@@ -164,7 +164,7 @@
         </div>
         <div class="header-center">
             <a href="../../">
-                <div class="brand">NOW 0.0.39 documentation</div>
+                <div class="brand">NOW 0.0.40 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -208,7 +208,7 @@
   <a class="github-button" href="https://github.com/jina-ai/now" data-icon="octicon-star" data-show-count="true" aria-label="Star jina-ai/now on GitHub" style="opacity: 0;">Star</a>
   
 </div><form class="sidebar-search-container" method="get" action="../../search/" role="search">
-  <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
 </form>
@@ -233,10 +233,10 @@
                 <img class="sidebar-ecosys-logo only-light-line" src="../../_static/search-light.svg">
                 <img class="sidebar-ecosys-logo only-dark-line" src="../../_static/search-dark.svg">
                 Jina</a></li>
-        <li class="toctree-l1"><a class="reference external" href="https://hub.jina.ai">
+        <li class="toctree-l1"><a class="reference external" href="https://cloud.jina.ai">
             <img class="sidebar-ecosys-logo only-light-line" src="../../_static/hub-light.svg">
             <img class="sidebar-ecosys-logo only-dark-line" src="../../_static/hub-dark.svg">
-            Jina Hub</a></li>
+            Jina AI Cloud</a></li>
         <li class="toctree-l1"><a class="reference external" href="https://finetuner.jina.ai">
             <img class="sidebar-ecosys-logo only-light-line" src="../../_static/finetuner-light.svg">
             <img class="sidebar-ecosys-logo only-dark-line" src="../../_static/finetuner-dark.svg">
@@ -300,22 +300,39 @@
                 </div>
                 <article role="main">
                     <section id="now-package">
-<h1>now package<a class="headerlink" href="#now-package" title="Permalink to this headline">#</a></h1>
+<h1>now package<a class="headerlink" href="#now-package" title="Permalink to this heading">#</a></h1>
 <section id="subpackages">
-<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">#</a></h2>
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this heading">#</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../now.admin/">now.admin package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../now.admin/#submodules">Submodules</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../now.admin.add_curation/">now.admin.add_curation module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../now.admin.benchmark_flow/">now.admin.benchmark_flow module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../now.admin.deploy_text_to_video/">now.admin.deploy_text_to_video module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.admin.build_datasets/">now.admin.build_datasets module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.admin.deploy_text_to_video/">now.admin.deploy_text_to_video module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../now.admin.deploy_text_to_video/#now.admin.deploy_text_to_video.deploy"><code class="docutils literal notranslate"><span class="pre">deploy()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="../now.admin.flow_results/">now.admin.flow_results module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../now.admin.run_performance_test/">now.admin.run_performance_test module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.admin.run_performance_test/">now.admin.run_performance_test module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../now.admin.run_performance_test/#now.admin.run_performance_test.call"><code class="docutils literal notranslate"><span class="pre">call()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.admin.run_performance_test/#now.admin.run_performance_test.benchmark_deployment"><code class="docutils literal notranslate"><span class="pre">benchmark_deployment()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="../now.admin.search/">now.admin.search module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../now.admin.update_api_keys/">now.admin.update_api_keys module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../now.admin.update_email/">now.admin.update_email module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../now.admin.utils/">now.admin.utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.admin.update_api_keys/">now.admin.update_api_keys module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../now.admin.update_api_keys/#now.admin.update_api_keys.update_api_keys"><code class="docutils literal notranslate"><span class="pre">update_api_keys()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../now.admin.update_email/">now.admin.update_email module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../now.admin.update_email/#now.admin.update_email.update_emails"><code class="docutils literal notranslate"><span class="pre">update_emails()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../now.admin.utils/">now.admin.utils module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../now.admin.utils/#now.admin.utils.get_default_request_body"><code class="docutils literal notranslate"><span class="pre">get_default_request_body()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../now.admin/#module-now.admin">Module contents</a></li>
@@ -355,14 +372,37 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../now.cli/">now.cli package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../now.cli/#submodules">Submodules</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../now.cli.parser/">now.cli.parser module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.cli.parser/">now.cli.parser module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../now.cli.parser/#now.cli.parser.set_base_parser"><code class="docutils literal notranslate"><span class="pre">set_base_parser()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.cli.parser/#now.cli.parser.set_help_parser"><code class="docutils literal notranslate"><span class="pre">set_help_parser()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.cli.parser/#now.cli.parser.set_start_parser"><code class="docutils literal notranslate"><span class="pre">set_start_parser()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.cli.parser/#now.cli.parser.set_stop_parser"><code class="docutils literal notranslate"><span class="pre">set_stop_parser()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.cli.parser/#now.cli.parser.set_survey_parser"><code class="docutils literal notranslate"><span class="pre">set_survey_parser()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.cli.parser/#now.cli.parser.get_main_parser"><code class="docutils literal notranslate"><span class="pre">get_main_parser()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../now.cli/#module-now.cli">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../now.cli/#module-now.cli">Module contents</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../now.cli/#now.cli.get_task"><code class="docutils literal notranslate"><span class="pre">get_task()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.cli/#now.cli.cli"><code class="docutils literal notranslate"><span class="pre">cli()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.cli/#now.cli.parse_args"><code class="docutils literal notranslate"><span class="pre">parse_args()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.cli/#now.cli.print_version_line"><code class="docutils literal notranslate"><span class="pre">print_version_line()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.cli/#now.cli.get_environment_type"><code class="docutils literal notranslate"><span class="pre">get_environment_type()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../now.client/">now.client package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../now.client/#module-now.client">Module contents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../now.client/#module-now.client">Module contents</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../now.client/#now.client.Client"><code class="docutils literal notranslate"><span class="pre">Client</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../now.client/#now.client.Client.get_maps"><code class="docutils literal notranslate"><span class="pre">Client.get_maps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.client/#now.client.Client.send_request_bff"><code class="docutils literal notranslate"><span class="pre">Client.send_request_bff()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.client/#now.client.Client.send_request"><code class="docutils literal notranslate"><span class="pre">Client.send_request()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../now.common/">now.common package</a><ul>
@@ -374,9 +414,30 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../now.common/#submodules">Submodules</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../now.common.options/">now.common.options module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../now.common.testing/">now.common.testing module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../now.common.utils/">now.common.utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.common.detect_schema/">now.common.detect_schema module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../now.common.detect_schema/#now.common.detect_schema.set_field_names_from_docarray"><code class="docutils literal notranslate"><span class="pre">set_field_names_from_docarray()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.common.detect_schema/#now.common.detect_schema.set_field_names_from_s3_bucket"><code class="docutils literal notranslate"><span class="pre">set_field_names_from_s3_bucket()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.common.detect_schema/#now.common.detect_schema.set_field_names_from_local_folder"><code class="docutils literal notranslate"><span class="pre">set_field_names_from_local_folder()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../now.common.options/">now.common.options module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../now.common.options/#now.common.options.check_login_dataset"><code class="docutils literal notranslate"><span class="pre">check_login_dataset()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.common.options/#now.common.options.check_login_deployment"><code class="docutils literal notranslate"><span class="pre">check_login_deployment()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.common.options/#now.common.options.construct_app"><code class="docutils literal notranslate"><span class="pre">construct_app()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../now.common.testing/">now.common.testing module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../now.common.testing/#now.common.testing.handle_test_mode"><code class="docutils literal notranslate"><span class="pre">handle_test_mode()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../now.common.utils/">now.common.utils module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../now.common.utils/#now.common.utils.common_get_flow_env_dict"><code class="docutils literal notranslate"><span class="pre">common_get_flow_env_dict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.common.utils/#now.common.utils.common_setup"><code class="docutils literal notranslate"><span class="pre">common_setup()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.common.utils/#now.common.utils.get_email"><code class="docutils literal notranslate"><span class="pre">get_email()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.common.utils/#now.common.utils.get_indexer_config"><code class="docutils literal notranslate"><span class="pre">get_indexer_config()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.common.utils/#now.common.utils.setup_elastic_service"><code class="docutils literal notranslate"><span class="pre">setup_elastic_service()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../now.common/#module-now.common">Module contents</a></li>
@@ -384,21 +445,24 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../now.data_loading/">now.data_loading package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../now.data_loading/#subpackages">Subpackages</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../now.data_loading.es/">now.data_loading.es package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="../now.data_loading.es/#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../now.data_loading.es/#module-now.data_loading.es">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.data_loading.elasticsearch/">now.data_loading.elasticsearch package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../now.data_loading.elasticsearch/#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.data_loading.elasticsearch/#module-now.data_loading.elasticsearch">Module contents</a></li>
 </ul>
 </li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../now.data_loading/#submodules">Submodules</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../now.data_loading.build_datasets/">now.data_loading.build_datasets module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../now.data_loading.convert_datasets_to_jpeg/">now.data_loading.convert_datasets_to_jpeg module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../now.data_loading.data_loading/">now.data_loading.data_loading module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../now.data_loading.embed_datasets/">now.data_loading.embed_datasets module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../now.data_loading.migrate_datasets/">now.data_loading.migrate_datasets module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../now.data_loading.transform_docarray/">now.data_loading.transform_docarray module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../now.data_loading.utils/">now.data_loading.utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.data_loading.data_loading/">now.data_loading.data_loading module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../now.data_loading.data_loading/#now.data_loading.data_loading.load_data"><code class="docutils literal notranslate"><span class="pre">load_data()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.data_loading.data_loading/#now.data_loading.data_loading.select_ending"><code class="docutils literal notranslate"><span class="pre">select_ending()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.data_loading.data_loading/#now.data_loading.data_loading.match_types"><code class="docutils literal notranslate"><span class="pre">match_types()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.data_loading.data_loading/#now.data_loading.data_loading.fetch_da_from_url"><code class="docutils literal notranslate"><span class="pre">fetch_da_from_url()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.data_loading.data_loading/#now.data_loading.data_loading.get_dataset_url"><code class="docutils literal notranslate"><span class="pre">get_dataset_url()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.data_loading.data_loading/#now.data_loading.data_loading.get_s3_bucket_and_folder_prefix"><code class="docutils literal notranslate"><span class="pre">get_s3_bucket_and_folder_prefix()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.data_loading.data_loading/#now.data_loading.data_loading.deep_copy_da"><code class="docutils literal notranslate"><span class="pre">deep_copy_da()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../now.data_loading/#module-now.data_loading">Module contents</a></li>
@@ -406,8 +470,26 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../now.deployment/">now.deployment package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../now.deployment/#submodules">Submodules</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../now.deployment.deployment/">now.deployment.deployment module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../now.deployment.flow/">now.deployment.flow module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.deployment.deployment/">now.deployment.deployment module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../now.deployment.deployment/#now.deployment.deployment.deploy_wolf"><code class="docutils literal notranslate"><span class="pre">deploy_wolf()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.deployment.deployment/#now.deployment.deployment.terminate_wolf"><code class="docutils literal notranslate"><span class="pre">terminate_wolf()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.deployment.deployment/#now.deployment.deployment.status_wolf"><code class="docutils literal notranslate"><span class="pre">status_wolf()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.deployment.deployment/#now.deployment.deployment.get_or_create_eventloop"><code class="docutils literal notranslate"><span class="pre">get_or_create_eventloop()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.deployment.deployment/#now.deployment.deployment.list_all_wolf"><code class="docutils literal notranslate"><span class="pre">list_all_wolf()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.deployment.deployment/#now.deployment.deployment.cmd"><code class="docutils literal notranslate"><span class="pre">cmd()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.deployment.deployment/#now.deployment.deployment.which"><code class="docutils literal notranslate"><span class="pre">which()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.deployment.deployment/#now.deployment.deployment.apply_replace"><code class="docutils literal notranslate"><span class="pre">apply_replace()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../now.deployment.flow/">now.deployment.flow module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../now.deployment.flow/#now.deployment.flow.batch"><code class="docutils literal notranslate"><span class="pre">batch()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.deployment.flow/#now.deployment.flow.wait_for_lb"><code class="docutils literal notranslate"><span class="pre">wait_for_lb()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.deployment.flow/#now.deployment.flow.wait_for_all_pods_in_ns"><code class="docutils literal notranslate"><span class="pre">wait_for_all_pods_in_ns()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.deployment.flow/#now.deployment.flow.deploy_k8s"><code class="docutils literal notranslate"><span class="pre">deploy_k8s()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.deployment.flow/#now.deployment.flow.start_flow_in_process"><code class="docutils literal notranslate"><span class="pre">start_flow_in_process()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.deployment.flow/#now.deployment.flow.deploy_flow"><code class="docutils literal notranslate"><span class="pre">deploy_flow()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../now.deployment/#module-now.deployment">Module contents</a></li>
@@ -446,11 +528,33 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../now.finetuning/">now.finetuning package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../now.finetuning/#submodules">Submodules</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../now.finetuning.data_builder/">now.finetuning.data_builder module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../now.finetuning.dataset/">now.finetuning.dataset module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../now.finetuning.generation_fns/">now.finetuning.generation_fns module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../now.finetuning.run_finetuning/">now.finetuning.run_finetuning module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../now.finetuning.settings/">now.finetuning.settings module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.finetuning.data_builder/">now.finetuning.data_builder module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../now.finetuning.data_builder/#now.finetuning.data_builder.EncoderDataBuilder"><code class="docutils literal notranslate"><span class="pre">EncoderDataBuilder</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.finetuning.data_builder/#now.finetuning.data_builder.DataBuilder"><code class="docutils literal notranslate"><span class="pre">DataBuilder</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../now.finetuning.dataset/">now.finetuning.dataset module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../now.finetuning.dataset/#now.finetuning.dataset.FinetuneDataset"><code class="docutils literal notranslate"><span class="pre">FinetuneDataset</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.finetuning.dataset/#now.finetuning.dataset.build_finetuning_dataset"><code class="docutils literal notranslate"><span class="pre">build_finetuning_dataset()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../now.finetuning.generation_fns/">now.finetuning.generation_fns module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../now.finetuning.generation_fns/#now.finetuning.generation_fns.GeneratorFunction"><code class="docutils literal notranslate"><span class="pre">GeneratorFunction</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.finetuning.generation_fns/#now.finetuning.generation_fns.ImageNormalizer"><code class="docutils literal notranslate"><span class="pre">ImageNormalizer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.finetuning.generation_fns/#now.finetuning.generation_fns.TextProcessor"><code class="docutils literal notranslate"><span class="pre">TextProcessor</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../now.finetuning.run_finetuning/">now.finetuning.run_finetuning module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../now.finetuning.run_finetuning/#now.finetuning.run_finetuning.finetune"><code class="docutils literal notranslate"><span class="pre">finetune()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.finetuning.run_finetuning/#now.finetuning.run_finetuning.get_model_options"><code class="docutils literal notranslate"><span class="pre">get_model_options()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.finetuning.run_finetuning/#now.finetuning.run_finetuning.get_bi_modal_embedding"><code class="docutils literal notranslate"><span class="pre">get_bi_modal_embedding()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../now.finetuning.settings/">now.finetuning.settings module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../now.finetuning.settings/#now.finetuning.settings.FinetuneSettings"><code class="docutils literal notranslate"><span class="pre">FinetuneSettings</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.finetuning.settings/#now.finetuning.settings.parse_finetune_settings"><code class="docutils literal notranslate"><span class="pre">parse_finetune_settings()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../now.finetuning/#module-now.finetuning">Module contents</a></li>
@@ -458,7 +562,12 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../now.log/">now.log package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../now.log/#submodules">Submodules</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../now.log.log/">now.log.log module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.log.log/">now.log.log module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../now.log.log/#now.log.log.yaspin_extended"><code class="docutils literal notranslate"><span class="pre">yaspin_extended()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.log.log/#now.log.log.YaspinExtended"><code class="docutils literal notranslate"><span class="pre">YaspinExtended</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../now.log.log/#now.log.log.time_profiler"><code class="docutils literal notranslate"><span class="pre">time_profiler()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../now.log/#module-now.log">Module contents</a></li>
@@ -481,24 +590,217 @@
 </div>
 </section>
 <section id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">#</a></h2>
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">#</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../now.cloud_manager/">now.cloud_manager module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../now.constants/">now.constants module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../now.demo_data/">now.demo_data module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../now.dialog/">now.dialog module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../now.now_dataclasses/">now.now_dataclasses module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../now.run_all_k8s/">now.run_all_k8s module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../now.run_backend/">now.run_backend module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../now.run_bff_playground/">now.run_bff_playground module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../now.system_information/">now.system_information module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../now.utils/">now.utils module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../now.cloud_manager/">now.cloud_manager module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../now.cloud_manager/#now.cloud_manager.create_local_cluster"><code class="docutils literal notranslate"><span class="pre">create_local_cluster()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../now.cloud_manager/#now.cloud_manager.is_local_cluster"><code class="docutils literal notranslate"><span class="pre">is_local_cluster()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../now.cloud_manager/#now.cloud_manager.setup_cluster"><code class="docutils literal notranslate"><span class="pre">setup_cluster()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../now.cloud_manager/#now.cloud_manager.ask_existing"><code class="docutils literal notranslate"><span class="pre">ask_existing()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../now.constants/">now.constants module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../now.constants/#now.constants.Modalities"><code class="docutils literal notranslate"><span class="pre">Modalities</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../now.constants/#now.constants.Modalities.TEXT"><code class="docutils literal notranslate"><span class="pre">Modalities.TEXT</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.constants/#now.constants.Modalities.IMAGE"><code class="docutils literal notranslate"><span class="pre">Modalities.IMAGE</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.constants/#now.constants.Modalities.MUSIC"><code class="docutils literal notranslate"><span class="pre">Modalities.MUSIC</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.constants/#now.constants.Modalities.VIDEO"><code class="docutils literal notranslate"><span class="pre">Modalities.VIDEO</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.constants/#now.constants.Modalities.TEXT_AND_IMAGE"><code class="docutils literal notranslate"><span class="pre">Modalities.TEXT_AND_IMAGE</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../now.constants/#now.constants.Apps"><code class="docutils literal notranslate"><span class="pre">Apps</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../now.constants/#now.constants.Apps.IMAGE_TEXT_RETRIEVAL"><code class="docutils literal notranslate"><span class="pre">Apps.IMAGE_TEXT_RETRIEVAL</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.constants/#now.constants.Apps.MUSIC_TO_MUSIC"><code class="docutils literal notranslate"><span class="pre">Apps.MUSIC_TO_MUSIC</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.constants/#now.constants.Apps.TEXT_TO_VIDEO"><code class="docutils literal notranslate"><span class="pre">Apps.TEXT_TO_VIDEO</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.constants/#now.constants.Apps.TEXT_TO_TEXT_AND_IMAGE"><code class="docutils literal notranslate"><span class="pre">Apps.TEXT_TO_TEXT_AND_IMAGE</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../now.constants/#now.constants.DatasetTypes"><code class="docutils literal notranslate"><span class="pre">DatasetTypes</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../now.constants/#now.constants.DatasetTypes.DEMO"><code class="docutils literal notranslate"><span class="pre">DatasetTypes.DEMO</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.constants/#now.constants.DatasetTypes.PATH"><code class="docutils literal notranslate"><span class="pre">DatasetTypes.PATH</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.constants/#now.constants.DatasetTypes.DOCARRAY"><code class="docutils literal notranslate"><span class="pre">DatasetTypes.DOCARRAY</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.constants/#now.constants.DatasetTypes.S3_BUCKET"><code class="docutils literal notranslate"><span class="pre">DatasetTypes.S3_BUCKET</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.constants/#now.constants.DatasetTypes.ELASTICSEARCH"><code class="docutils literal notranslate"><span class="pre">DatasetTypes.ELASTICSEARCH</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../now.constants/#now.constants.ModelNames"><code class="docutils literal notranslate"><span class="pre">ModelNames</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../now.constants/#now.constants.ModelNames.MLP"><code class="docutils literal notranslate"><span class="pre">ModelNames.MLP</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.constants/#now.constants.ModelNames.SBERT"><code class="docutils literal notranslate"><span class="pre">ModelNames.SBERT</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.constants/#now.constants.ModelNames.CLIP"><code class="docutils literal notranslate"><span class="pre">ModelNames.CLIP</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../now.constants/#now.constants.ModelDimensions"><code class="docutils literal notranslate"><span class="pre">ModelDimensions</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../now.constants/#now.constants.ModelDimensions.SBERT"><code class="docutils literal notranslate"><span class="pre">ModelDimensions.SBERT</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.constants/#now.constants.ModelDimensions.CLIP"><code class="docutils literal notranslate"><span class="pre">ModelDimensions.CLIP</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../now.demo_data/">now.demo_data module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../now.demo_data/#now.demo_data.DemoDatasetNames"><code class="docutils literal notranslate"><span class="pre">DemoDatasetNames</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../now.demo_data/#now.demo_data.DemoDatasetNames.BEST_ARTWORKS"><code class="docutils literal notranslate"><span class="pre">DemoDatasetNames.BEST_ARTWORKS</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.demo_data/#now.demo_data.DemoDatasetNames.NFT_MONKEY"><code class="docutils literal notranslate"><span class="pre">DemoDatasetNames.NFT_MONKEY</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.demo_data/#now.demo_data.DemoDatasetNames.TLL"><code class="docutils literal notranslate"><span class="pre">DemoDatasetNames.TLL</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.demo_data/#now.demo_data.DemoDatasetNames.BIRD_SPECIES"><code class="docutils literal notranslate"><span class="pre">DemoDatasetNames.BIRD_SPECIES</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.demo_data/#now.demo_data.DemoDatasetNames.STANFORD_CARS"><code class="docutils literal notranslate"><span class="pre">DemoDatasetNames.STANFORD_CARS</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.demo_data/#now.demo_data.DemoDatasetNames.DEEP_FASHION"><code class="docutils literal notranslate"><span class="pre">DemoDatasetNames.DEEP_FASHION</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.demo_data/#now.demo_data.DemoDatasetNames.NIH_CHEST_XRAYS"><code class="docutils literal notranslate"><span class="pre">DemoDatasetNames.NIH_CHEST_XRAYS</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.demo_data/#now.demo_data.DemoDatasetNames.GEOLOCATION_GEOGUESSR"><code class="docutils literal notranslate"><span class="pre">DemoDatasetNames.GEOLOCATION_GEOGUESSR</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.demo_data/#now.demo_data.DemoDatasetNames.MUSIC_GENRES_ROCK"><code class="docutils literal notranslate"><span class="pre">DemoDatasetNames.MUSIC_GENRES_ROCK</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.demo_data/#now.demo_data.DemoDatasetNames.MUSIC_GENRES_MIX"><code class="docutils literal notranslate"><span class="pre">DemoDatasetNames.MUSIC_GENRES_MIX</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.demo_data/#now.demo_data.DemoDatasetNames.ROCK_LYRICS"><code class="docutils literal notranslate"><span class="pre">DemoDatasetNames.ROCK_LYRICS</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.demo_data/#now.demo_data.DemoDatasetNames.POP_LYRICS"><code class="docutils literal notranslate"><span class="pre">DemoDatasetNames.POP_LYRICS</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.demo_data/#now.demo_data.DemoDatasetNames.RAP_LYRICS"><code class="docutils literal notranslate"><span class="pre">DemoDatasetNames.RAP_LYRICS</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.demo_data/#now.demo_data.DemoDatasetNames.INDIE_LYRICS"><code class="docutils literal notranslate"><span class="pre">DemoDatasetNames.INDIE_LYRICS</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.demo_data/#now.demo_data.DemoDatasetNames.METAL_LYRICS"><code class="docutils literal notranslate"><span class="pre">DemoDatasetNames.METAL_LYRICS</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.demo_data/#now.demo_data.DemoDatasetNames.TUMBLR_GIFS"><code class="docutils literal notranslate"><span class="pre">DemoDatasetNames.TUMBLR_GIFS</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.demo_data/#now.demo_data.DemoDatasetNames.TUMBLR_GIFS_10K"><code class="docutils literal notranslate"><span class="pre">DemoDatasetNames.TUMBLR_GIFS_10K</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.demo_data/#now.demo_data.DemoDatasetNames.ES_ONLINE_SHOP_50"><code class="docutils literal notranslate"><span class="pre">DemoDatasetNames.ES_ONLINE_SHOP_50</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../now.demo_data/#now.demo_data.DemoDataset"><code class="docutils literal notranslate"><span class="pre">DemoDataset</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../now.demo_data/#now.demo_data.DemoDataset.name"><code class="docutils literal notranslate"><span class="pre">DemoDataset.name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.demo_data/#now.demo_data.DemoDataset.display_name"><code class="docutils literal notranslate"><span class="pre">DemoDataset.display_name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.demo_data/#now.demo_data.DemoDataset.display_modality"><code class="docutils literal notranslate"><span class="pre">DemoDataset.display_modality</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.demo_data/#now.demo_data.DemoDataset.get_data"><code class="docutils literal notranslate"><span class="pre">DemoDataset.get_data()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../now.dialog/">now.dialog module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../now.dialog/#now.dialog.configure_user_input"><code class="docutils literal notranslate"><span class="pre">configure_user_input()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../now.dialog/#now.dialog.configure_option"><code class="docutils literal notranslate"><span class="pre">configure_option()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../now.now_dataclasses/">now.now_dataclasses module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.TrainDataGeneratorConfig"><code class="docutils literal notranslate"><span class="pre">TrainDataGeneratorConfig</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.TrainDataGeneratorConfig.method"><code class="docutils literal notranslate"><span class="pre">TrainDataGeneratorConfig.method</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.TrainDataGeneratorConfig.parameters"><code class="docutils literal notranslate"><span class="pre">TrainDataGeneratorConfig.parameters</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.TrainDataGeneratorConfig.scope"><code class="docutils literal notranslate"><span class="pre">TrainDataGeneratorConfig.scope</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.TrainDataGenerationConfig"><code class="docutils literal notranslate"><span class="pre">TrainDataGenerationConfig</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.TrainDataGenerationConfig.query"><code class="docutils literal notranslate"><span class="pre">TrainDataGenerationConfig.query</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.TrainDataGenerationConfig.target"><code class="docutils literal notranslate"><span class="pre">TrainDataGenerationConfig.target</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.EncoderConfig"><code class="docutils literal notranslate"><span class="pre">EncoderConfig</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.EncoderConfig.name"><code class="docutils literal notranslate"><span class="pre">EncoderConfig.name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.EncoderConfig.encoder_type"><code class="docutils literal notranslate"><span class="pre">EncoderConfig.encoder_type</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.EncoderConfig.train_dataset_name"><code class="docutils literal notranslate"><span class="pre">EncoderConfig.train_dataset_name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.EncoderConfig.training_data_generation_methods"><code class="docutils literal notranslate"><span class="pre">EncoderConfig.training_data_generation_methods</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.Task"><code class="docutils literal notranslate"><span class="pre">Task</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.Task.name"><code class="docutils literal notranslate"><span class="pre">Task.name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.Task.encoders"><code class="docutils literal notranslate"><span class="pre">Task.encoders</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.Task.indexer_scope"><code class="docutils literal notranslate"><span class="pre">Task.indexer_scope</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.UserInput"><code class="docutils literal notranslate"><span class="pre">UserInput</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.UserInput.app_instance"><code class="docutils literal notranslate"><span class="pre">UserInput.app_instance</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.UserInput.output_modality"><code class="docutils literal notranslate"><span class="pre">UserInput.output_modality</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.UserInput.flow_name"><code class="docutils literal notranslate"><span class="pre">UserInput.flow_name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.UserInput.dataset_type"><code class="docutils literal notranslate"><span class="pre">UserInput.dataset_type</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.UserInput.dataset_name"><code class="docutils literal notranslate"><span class="pre">UserInput.dataset_name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.UserInput.dataset_url"><code class="docutils literal notranslate"><span class="pre">UserInput.dataset_url</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.UserInput.dataset_path"><code class="docutils literal notranslate"><span class="pre">UserInput.dataset_path</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.UserInput.aws_access_key_id"><code class="docutils literal notranslate"><span class="pre">UserInput.aws_access_key_id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.UserInput.aws_secret_access_key"><code class="docutils literal notranslate"><span class="pre">UserInput.aws_secret_access_key</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.UserInput.aws_region_name"><code class="docutils literal notranslate"><span class="pre">UserInput.aws_region_name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.UserInput.search_fields"><code class="docutils literal notranslate"><span class="pre">UserInput.search_fields</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.UserInput.filter_fields"><code class="docutils literal notranslate"><span class="pre">UserInput.filter_fields</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.UserInput.search_fields_modalities"><code class="docutils literal notranslate"><span class="pre">UserInput.search_fields_modalities</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.UserInput.filter_fields_modalities"><code class="docutils literal notranslate"><span class="pre">UserInput.filter_fields_modalities</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.UserInput.task_config"><code class="docutils literal notranslate"><span class="pre">UserInput.task_config</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.UserInput.es_index_name"><code class="docutils literal notranslate"><span class="pre">UserInput.es_index_name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.UserInput.es_host_name"><code class="docutils literal notranslate"><span class="pre">UserInput.es_host_name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.UserInput.es_additional_args"><code class="docutils literal notranslate"><span class="pre">UserInput.es_additional_args</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.UserInput.indexer_scope"><code class="docutils literal notranslate"><span class="pre">UserInput.indexer_scope</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.UserInput.cluster"><code class="docutils literal notranslate"><span class="pre">UserInput.cluster</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.UserInput.deployment_type"><code class="docutils literal notranslate"><span class="pre">UserInput.deployment_type</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.UserInput.secured"><code class="docutils literal notranslate"><span class="pre">UserInput.secured</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.UserInput.jwt"><code class="docutils literal notranslate"><span class="pre">UserInput.jwt</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.UserInput.admin_emails"><code class="docutils literal notranslate"><span class="pre">UserInput.admin_emails</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.UserInput.user_emails"><code class="docutils literal notranslate"><span class="pre">UserInput.user_emails</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.UserInput.additional_user"><code class="docutils literal notranslate"><span class="pre">UserInput.additional_user</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.UserInput.api_key"><code class="docutils literal notranslate"><span class="pre">UserInput.api_key</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.UserInput.Config"><code class="docutils literal notranslate"><span class="pre">UserInput.Config</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.UserInput.Config.arbitrary_types_allowed"><code class="docutils literal notranslate"><span class="pre">UserInput.Config.arbitrary_types_allowed</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.DialogOptions"><code class="docutils literal notranslate"><span class="pre">DialogOptions</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.DialogOptions.name"><code class="docutils literal notranslate"><span class="pre">DialogOptions.name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.DialogOptions.prompt_message"><code class="docutils literal notranslate"><span class="pre">DialogOptions.prompt_message</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.DialogOptions.prompt_type"><code class="docutils literal notranslate"><span class="pre">DialogOptions.prompt_type</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.DialogOptions.choices"><code class="docutils literal notranslate"><span class="pre">DialogOptions.choices</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.DialogOptions.is_terminal_command"><code class="docutils literal notranslate"><span class="pre">DialogOptions.is_terminal_command</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.DialogOptions.description"><code class="docutils literal notranslate"><span class="pre">DialogOptions.description</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.DialogOptions.depends_on"><code class="docutils literal notranslate"><span class="pre">DialogOptions.depends_on</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.DialogOptions.conditional_check"><code class="docutils literal notranslate"><span class="pre">DialogOptions.conditional_check</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../now.now_dataclasses/#now.now_dataclasses.DialogOptions.post_func"><code class="docutils literal notranslate"><span class="pre">DialogOptions.post_func</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../now.run_all_k8s/">now.run_all_k8s module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../now.run_all_k8s/#now.run_all_k8s.stop_now"><code class="docutils literal notranslate"><span class="pre">stop_now()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../now.run_all_k8s/#now.run_all_k8s.start_now"><code class="docutils literal notranslate"><span class="pre">start_now()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../now.run_backend/">now.run_backend module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../now.run_backend/#now.run_backend.run"><code class="docutils literal notranslate"><span class="pre">run()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../now.run_backend/#now.run_backend.trigger_scheduler"><code class="docutils literal notranslate"><span class="pre">trigger_scheduler()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../now.run_backend/#now.run_backend.index_docs"><code class="docutils literal notranslate"><span class="pre">index_docs()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../now.run_backend/#now.run_backend.call_flow"><code class="docutils literal notranslate"><span class="pre">call_flow()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../now.run_backend/#now.run_backend.estimate_request_size"><code class="docutils literal notranslate"><span class="pre">estimate_request_size()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../now.run_bff_playground/">now.run_bff_playground module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../now.run_bff_playground/#now.run_bff_playground.run"><code class="docutils literal notranslate"><span class="pre">run()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../now.system_information/">now.system_information module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../now.system_information/#now.system_information.get_system_state"><code class="docutils literal notranslate"><span class="pre">get_system_state()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../now.utils/">now.utils module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../now.utils/#now.utils.download_file"><code class="docutils literal notranslate"><span class="pre">download_file()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../now.utils/#now.utils.download"><code class="docutils literal notranslate"><span class="pre">download()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../now.utils/#now.utils.my_handler"><code class="docutils literal notranslate"><span class="pre">my_handler()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../now.utils/#now.utils.flow_definition"><code class="docutils literal notranslate"><span class="pre">flow_definition()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../now.utils/#now.utils.BetterEnum"><code class="docutils literal notranslate"><span class="pre">BetterEnum</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../now.utils/#now.utils.to_camel_case"><code class="docutils literal notranslate"><span class="pre">to_camel_case()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../now.utils/#now.utils.EnvironmentVariables"><code class="docutils literal notranslate"><span class="pre">EnvironmentVariables</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../now.utils/#now.utils.add_env_variables_to_flow"><code class="docutils literal notranslate"><span class="pre">add_env_variables_to_flow()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../now.utils/#now.utils.write_env_file"><code class="docutils literal notranslate"><span class="pre">write_env_file()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../now.utils/#now.utils.write_flow_file"><code class="docutils literal notranslate"><span class="pre">write_flow_file()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../now.utils/#now.utils.jina_auth_login"><code class="docutils literal notranslate"><span class="pre">jina_auth_login()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../now.utils/#now.utils.get_info_hubble"><code class="docutils literal notranslate"><span class="pre">get_info_hubble()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../now.utils/#now.utils.print_headline"><code class="docutils literal notranslate"><span class="pre">print_headline()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../now.utils/#now.utils.maybe_prompt_user"><code class="docutils literal notranslate"><span class="pre">maybe_prompt_user()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../now.utils/#now.utils.prompt_value"><code class="docutils literal notranslate"><span class="pre">prompt_value()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../now.utils/#now.utils.get_local_path"><code class="docutils literal notranslate"><span class="pre">get_local_path()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../now.utils/#now.utils.download_from_bucket"><code class="docutils literal notranslate"><span class="pre">download_from_bucket()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../now.utils/#now.utils.convert_fn"><code class="docutils literal notranslate"><span class="pre">convert_fn()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../now.utils/#now.utils.get_bucket"><code class="docutils literal notranslate"><span class="pre">get_bucket()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../now.utils/#now.utils.maybe_download_from_s3"><code class="docutils literal notranslate"><span class="pre">maybe_download_from_s3()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../now.utils/#now.utils.flatten_dict"><code class="docutils literal notranslate"><span class="pre">flatten_dict()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../now.utils/#now.utils.get_flow_id"><code class="docutils literal notranslate"><span class="pre">get_flow_id()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../now.utils/#now.utils.Dumper"><code class="docutils literal notranslate"><span class="pre">Dumper</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../now.utils/#now.utils.Dumper.increase_indent"><code class="docutils literal notranslate"><span class="pre">Dumper.increase_indent()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </div>
 </section>
 <section id="module-now">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-now" title="Permalink to this headline">#</a></h2>
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-now" title="Permalink to this heading">#</a></h2>
 </section>
 </section>
 
@@ -518,7 +820,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Dec 05, 2022.
+                            Last updated on Dec 12, 2022.
                         </div>
                     </div>
                     <div class="right-details">
@@ -593,7 +895,9 @@
 <img referrerpolicy="no-referrer-when-downgrade" src="https://static.scarf.sh/a.png?x-pxid=cc97e3c2-cdb1-4e56-9cc9-ecde64264681" /><script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     <script src="../../_static/scripts/furo.js"></script>
     <script src="../../_static/clipboard.min.js"></script>
     <script src="../../_static/copybutton.js"></script>
