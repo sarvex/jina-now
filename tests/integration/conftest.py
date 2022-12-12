@@ -1,11 +1,9 @@
 import logging
-
-import hubble
-from pytest_mock import MockerFixture
-
 import os
 
+import hubble
 import pytest
+from pytest_mock import MockerFixture
 
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__name__)
