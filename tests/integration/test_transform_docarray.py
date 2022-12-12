@@ -5,11 +5,11 @@ from docarray import Document, DocumentArray, dataclass
 from docarray.typing import Image, Text
 from jina import Flow
 
+from now.app.base.transform_docarray import transform_uni_modal_data
 from now.app.image_text_retrieval.app import ImageTextRetrieval
 from now.app.text_to_video.app import TextToVideo
 from now.constants import ACCESS_PATHS, EXTERNAL_CLIP_HOST, DatasetTypes
 from now.data_loading.data_loading import load_data
-from now.data_loading.transform_docarray import transform_uni_modal_data
 from now.demo_data import DemoDatasetNames
 from now.executor.indexer.in_memory import InMemoryIndexer
 from now.executor.preprocessor import NOWPreprocessor

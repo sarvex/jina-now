@@ -6,7 +6,7 @@ from tests.integration.data_loading.elastic.example_dataset import ExampleDatase
 from tests.integration.data_loading.elastic.utils import delete_es_index
 from urllib3.exceptions import InsecureRequestWarning, SecurityWarning
 
-from now.data_loading.es import ElasticsearchConnector
+from now.data_loading.elasticsearch import ElasticsearchConnector
 
 
 @pytest.fixture
