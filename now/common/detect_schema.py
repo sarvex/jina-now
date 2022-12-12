@@ -5,7 +5,7 @@ import os
 import requests
 
 from now.constants import SUPPORTED_FILE_TYPES, Modalities
-from now.data_loading.utils import get_s3_bucket_and_folder_prefix
+from now.data_loading.data_loading import get_s3_bucket_and_folder_prefix
 from now.now_dataclasses import UserInput
 
 
