@@ -1,8 +1,12 @@
+import os
+
+import pytest
 from docarray import Document, DocumentArray
 
 from now.app.image_text_retrieval.app import ImageTextRetrieval
 from now.common.options import construct_app
 from now.constants import Apps
+from now.now_dataclasses import UserInput
 
 
 def test_app_attributes():
@@ -26,3 +30,28 @@ def test_split_text_preprocessing():
     assert len(new_da) == 1
     assert len(new_da[0].chunks) == 1
     assert len(new_da[0].chunks[0].chunks) == 2
+
+
+@pytest.mark.parametrize('disable', [False, True])
+def test_disable_telemetry(disable):
+    if disable:
+        os.environ['JINA_OPTOUT_TELEMETRY'] = 'disableTelemetry'
+    else:
+        os.environ.pop('JINA_OPTOUT_TELEMETRY', None)
+
+    expected_value = 'disableTelemetry' if disable else None
+
+    app = ImageTextRetrieval()
+    user_input = UserInput()
+    user_input.flow_name = 'flow'
+    user_input.deployment_type = 'local'
+    user_input.app_instance = app
+    da = DocumentArray(
+        [Document(chunks=[Document(text='test. test', modality='text')])]
+    )
+
+    app.setup(dataset=da, user_input=user_input, kubectl_path='kube_path')
+
+    assert app.flow_yaml['with']['env'].get('JINA_OPTOUT_TELEMETRY') == expected_value
+    for executor in app.flow_yaml['executors']:
+        assert executor['env'].get('JINA_OPTOUT_TELEMETRY') == expected_value
