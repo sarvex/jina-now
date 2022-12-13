@@ -49,7 +49,6 @@ def index(f):
     f.index(
         [Document(text='test', tags={'doc_id': str(i)}) for i in range(10)],
         parameters={
-            'jwt': get_request_body()['jwt'],
             'user_input': UserInput().__dict__,
             'access_paths': ACCESS_PATHS,
         },
@@ -78,5 +77,6 @@ def test_search_with_filters():
             search_url,
             json=request_body,
         )
+        print(response)
         assert response.status_code == 200
         assert len(response.json()) == 1
