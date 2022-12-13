@@ -92,7 +92,7 @@ def test_token_exists():
 
 @pytest.mark.remote
 @pytest.mark.parametrize(
-    'app, input_modality, output_modality, search_field, filter_field dataset, deployment_type',
+    'app, input_modality, output_modality, search_field, filter_field, dataset, deployment_type',
     [
         (
             Apps.IMAGE_TEXT_RETRIEVAL,
