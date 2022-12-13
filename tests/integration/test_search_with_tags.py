@@ -1,5 +1,6 @@
+import os
 from multiprocessing import Process
-from time import sleep
+from time import sleep, time
 
 import requests
 from docarray import Document
@@ -13,7 +14,11 @@ from now.constants import (
     NOW_PREPROCESSOR_VERSION,
     NOW_QDRANT_INDEXER_VERSION,
 )
+from now.deployment.deployment import cmd
+from now.executor.indexer.in_memory import InMemoryIndexer
+from now.executor.indexer.qdrant import NOWQdrantIndexer16
 from now.executor.name_to_id_map import name_to_id_map
+from now.executor.preprocessor import NOWPreprocessor
 from now.now_dataclasses import UserInput
 
 
@@ -25,10 +30,18 @@ def get_request_body():
 
 
 def get_flow():
+    cur_dir = os.path.dirname(os.path.abspath(__file__))
+    compose_yml = os.path.abspath(os.path.join(cur_dir, 'docker-compose.yml'))
+
+    cmd(
+        f"docker-compose -f {compose_yml} --project-directory . up  --build -d --remove-orphans"
+    )
+
+    sleep(5)
     f = (
         Flow(port_expose=9089)
         .add(
-            uses=f'jinahub+docker://{name_to_id_map.get("NOWPreprocessor")}/{NOW_PREPROCESSOR_VERSION}',
+            uses=NOWPreprocessor,
             uses_with={'app': 'image_text_retrieval'},
         )
         .add(
@@ -38,7 +51,7 @@ def get_flow():
             external=True,
         )
         .add(
-            uses=f'jinahub+docker://{name_to_id_map.get("NOWQdrantIndexer16")}/{NOW_QDRANT_INDEXER_VERSION}',
+            uses=NOWQdrantIndexer16,
             uses_with={'dim': 512},
         )
     )
@@ -82,3 +95,10 @@ def test_search_with_filters():
         print(response)
         assert response.status_code == 200
         assert len(response.json()) == 1
+
+    cur_dir = os.path.dirname(os.path.abspath(__file__))
+    compose_yml = os.path.abspath(os.path.join(cur_dir, 'docker-compose.yml'))
+    cmd(
+        f"docker-compose -f {compose_yml} --project-directory . down --remove-orphans"
+    )
+
