@@ -46,8 +46,10 @@ def get_flow():
 
 
 def index(f):
+    docs = [Document(text='test', tags={'color': 'red'}) for _ in range(9)]
+    docs.append(Document(text='test', tags={'color': 'blue'}))
     f.index(
-        [Document(text='test', tags={'doc_id': str(i)}) for i in range(10)],
+        docs,
         parameters={
             'user_input': UserInput().__dict__,
             'access_paths': ACCESS_PATHS,
@@ -70,7 +72,7 @@ def test_search_with_filters():
 
         request_body = get_request_body()
         request_body['text'] = 'girl on motorbike'
-        request_body['filters'] = {'doc_id': '3'}
+        request_body['filters'] = {'color': 'blue'}
         base_url = 'http://localhost:8080/api/v1'
         search_url = f'{base_url}/image-or-text-to-image-or-text/search'
         response = requests.post(
@@ -80,3 +82,4 @@ def test_search_with_filters():
         print(response)
         assert response.status_code == 200
         assert len(response.json()) == 1
+
