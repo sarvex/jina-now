@@ -5,10 +5,10 @@ import pathlib
 import pickle
 import sys
 from os.path import join as osp
-from typing import List
+from typing import List, TypeVar
 
-from docarray import Document, DocumentArray, dataclass
-from docarray.typing import Blob, Image, Text, Video
+from docarray import Document, DocumentArray, dataclass, field
+from docarray.typing import Blob, Image, Text
 from tqdm import tqdm
 
 from now.constants import BASE_STORAGE_URL, DEMO_DATASET_DOCARRAY_VERSION, Modalities
@@ -16,6 +16,16 @@ from now.demo_data import AVAILABLE_DATASET, DemoDataset
 from now.utils import download
 
 current_module = sys.modules[__name__]
+
+MyVideo = TypeVar('MyVideo', bound=str)
+
+
+def my_setter(value) -> 'Document':
+    return Document(uri=value)
+
+
+def my_getter(doc: 'Document'):
+    return doc.uri
 
 
 def _convert_gif_doc(old: Document):
@@ -25,7 +35,7 @@ def _convert_gif_doc(old: Document):
     @dataclass
     class MMDoc:
         description: Text = None
-        video: Video = None
+        video: MyVideo = field(setter=my_setter, getter=my_getter, default=None)
 
     new = Document(MMDoc(video=old.uri, description=old.tags['description']))
     # There is no additional meaningful tags
@@ -42,16 +52,17 @@ def _convert_music_doc(old: Document):
 
     new = Document(
         MMDoc(
-            audio=old.blob,
+            audio=old.uri,
             genre_tags=old.tags['genre_tags'],
             title=old.tags['name'],
             artist=old.tags['artist'],
         )
     )
     new.tags['track_id'] = old.tags['track_id']
-    new.tags['location'] = old.tags['location']
-    new.tags['sr'] = old.tags['sr']
-    new.tags['album_cover_image_uri'] = old.tags['album_cover_image_uri']
+    new.tags['location'] = old.tags.get('location', '')
+    new.tags['sr'] = old.tags.get('sr', '')
+    new.tags['album_cover_image_url'] = old.tags.get('album_cover_image_url', '')
+    new.chunks[1].blob = b''  # set the blob to None
     return new
 
 
@@ -141,6 +152,34 @@ def _convert_doc_music_genres_mix(old: Document):
     return _convert_music_doc(old)
 
 
+def _convert_doc_rock_lyrics(old: Document):
+    return _convert_text_doc(old)
+
+
+def _convert_doc_pop_lyrics(old: Document):
+    return _convert_text_doc(old)
+
+
+def _convert_doc_rap_lyrics(old: Document):
+    return _convert_text_doc(old)
+
+
+def _convert_doc_indie_lyrics(old: Document):
+    return _convert_text_doc(old)
+
+
+def _convert_doc_metal_lyrics(old: Document):
+    return _convert_text_doc(old)
+
+
+def _convert_doc_tumblr_gifs(old: Document):
+    return _convert_gif_doc(old)
+
+
+def _convert_doc_tumblr_gifs_10k(old: Document):
+    return _convert_gif_doc(old)
+
+
 def convert_dataset(dataset: DemoDataset, modality: Modalities, num_workers: int = 8):
     path = f'{dataset}.bin'
 
@@ -157,9 +196,7 @@ def convert_dataset(dataset: DemoDataset, modality: Modalities, num_workers: int
     print(f'  Converting {dataset.name} ...')
     with mp.Pool(processes=num_workers) as pool:
         new_docs = [
-            item
-            for item in tqdm(pool.imap(encode_func, old_docs[:10]))
-            if item is not None
+            item for item in tqdm(pool.imap(encode_func, old_docs)) if item is not None
         ]
 
     new_docs = DocumentArray(new_docs)
@@ -167,7 +204,7 @@ def convert_dataset(dataset: DemoDataset, modality: Modalities, num_workers: int
     print(f'  New dataset {dataset.name} size: {len(new_docs)}')
 
     print(f'  Saving new docs {dataset.name} ...')
-    new_docs[:10].push(
+    new_docs.push(
         'totally-looks-like' if dataset.name == 'tll' else dataset.name,
         show_progress=True,
     )

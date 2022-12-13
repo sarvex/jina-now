@@ -3,6 +3,7 @@ import json
 import os
 
 import requests
+from docarray import DocumentArray
 
 from now.constants import SUPPORTED_FILE_TYPES, Modalities
 from now.data_loading.data_loading import get_s3_bucket_and_folder_prefix
@@ -66,16 +67,20 @@ def _extract_field_names_docarray(response):
     Downloads the first document in the document array and extracts field names from it
     if tags also exists then it extracts the keys from tags and adds to the field_names
     """
-    field_names = {}
+    search_modalities = {}
+    filter_modalities = {}
     response = requests.get(response.json()['data']['download'])
-    ignored_fieldnames = ['embedding', 'id', 'mimeType', 'tags']
-    for el, value in response.json()[0].items():
-        if el not in ignored_fieldnames:
-            field_names[el] = value
+    da = DocumentArray.from_dict(response.json())
+    mm_schema = da[0]._metadata['fields']['multi_modal_schema']
+    mm_fields = mm_schema['structValue']['fields']
+    for field_name, value in mm_fields.items():
+        search_modalities[field_name] = value['structValue']['fields']['type'][
+            'stringValue'
+        ]
     if 'tags' in response.json()[0]:
         for el, value in response.json()[0]['tags']['fields'].items():
-            field_names[el] = value
-    return field_names
+            filter_modalities[el] = value
+    return search_modalities, filter_modalities
 
 
 def set_field_names_from_docarray(user_input: UserInput, **kwargs):
@@ -100,15 +105,11 @@ def set_field_names_from_docarray(user_input: UserInput, **kwargs):
         json=json_data,
     )
     if response.json()['code'] == 200:
-        field_names = _extract_field_names_docarray(response)
+        search_modalities, filter_modalities = _extract_field_names_docarray(response)
     else:
         raise ValueError('DocumentArray does not exist or you do not have access to it')
-    (
-        search_fields_modalities,
-        filter_fields_modalities,
-    ) = _create_candidate_search_filter_fields(field_names)
-    user_input.search_fields_modalities = search_fields_modalities
-    user_input.filter_fields_modalities = filter_fields_modalities
+    user_input.search_fields_modalities = search_modalities
+    user_input.filter_fields_modalities = filter_modalities
 
 
 def _check_contains_files_only_s3_bucket(objects):

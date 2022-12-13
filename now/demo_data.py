@@ -10,7 +10,7 @@ from now.utils import BetterEnum
 class DemoDatasetNames(BetterEnum):
     BEST_ARTWORKS = 'best-artworks'
     NFT_MONKEY = 'nft-monkey'
-    TLL = 'tll'
+    TLL = 'totally-looks-like'
     BIRD_SPECIES = 'bird-species'
     STANFORD_CARS = 'stanford-cars'
     DEEP_FASHION = 'deepfashion'
@@ -34,55 +34,52 @@ class DemoDataset(BaseModel):
     display_modality: str
 
     def get_data(self, *args, **kwargs) -> DocumentArray:
-        from now.data_loading.data_loading import fetch_da_from_url, get_dataset_url
-
-        url = get_dataset_url(dataset=self.name, output_modality=self.display_modality)
-        return fetch_da_from_url(url)
+        return DocumentArray.pull(self.name)
 
 
 AVAILABLE_DATASET = {
-    # Modalities.IMAGE: [
-    #     DemoDataset(
-    #         name=DemoDatasetNames.BEST_ARTWORKS,
-    #         display_modality=Modalities.IMAGE,
-    #         display_name='🖼 artworks (≈8K docs)',
-    #     ),
-    #     DemoDataset(
-    #         name=DemoDatasetNames.NFT_MONKEY,
-    #         display_modality=Modalities.IMAGE,
-    #         display_name='💰 nft - bored apes (10K docs)',
-    #     ),
-    #     DemoDataset(
-    #         name=DemoDatasetNames.TLL,
-    #         display_modality=Modalities.IMAGE,
-    #         display_name='👬 totally looks like (≈12K docs)',
-    #     ),
-    #     DemoDataset(
-    #         name=DemoDatasetNames.BIRD_SPECIES,
-    #         display_modality=Modalities.IMAGE,
-    #         display_name='🦆 birds (≈12K docs)',
-    #     ),
-    #     DemoDataset(
-    #         name=DemoDatasetNames.STANFORD_CARS,
-    #         display_modality=Modalities.IMAGE,
-    #         display_name='🚗 cars (≈16K docs)',
-    #     ),
-    #     DemoDataset(
-    #         name=DemoDatasetNames.GEOLOCATION_GEOGUESSR,
-    #         display_modality=Modalities.IMAGE,
-    #         display_name='🌍 geolocation (≈50K docs)',
-    #     ),
-    #     DemoDataset(
-    #         name=DemoDatasetNames.DEEP_FASHION,
-    #         display_modality=Modalities.IMAGE,
-    #         display_name='👕 fashion (≈53K docs)',
-    #     ),
-    #     DemoDataset(
-    #         name=DemoDatasetNames.NIH_CHEST_XRAYS,
-    #         display_modality=Modalities.IMAGE,
-    #         display_name='☢ chest x-rays (≈100K docs)',
-    #     ),
-    # ],
+    Modalities.IMAGE: [
+        DemoDataset(
+            name=DemoDatasetNames.BEST_ARTWORKS,
+            display_modality=Modalities.IMAGE,
+            display_name='🖼 artworks (≈8K docs)',
+        ),
+        DemoDataset(
+            name=DemoDatasetNames.NFT_MONKEY,
+            display_modality=Modalities.IMAGE,
+            display_name='💰 nft - bored apes (10K docs)',
+        ),
+        DemoDataset(
+            name=DemoDatasetNames.TLL,
+            display_modality=Modalities.IMAGE,
+            display_name='👬 totally looks like (≈12K docs)',
+        ),
+        DemoDataset(
+            name=DemoDatasetNames.BIRD_SPECIES,
+            display_modality=Modalities.IMAGE,
+            display_name='🦆 birds (≈12K docs)',
+        ),
+        DemoDataset(
+            name=DemoDatasetNames.STANFORD_CARS,
+            display_modality=Modalities.IMAGE,
+            display_name='🚗 cars (≈16K docs)',
+        ),
+        DemoDataset(
+            name=DemoDatasetNames.GEOLOCATION_GEOGUESSR,
+            display_modality=Modalities.IMAGE,
+            display_name='🌍 geolocation (≈50K docs)',
+        ),
+        DemoDataset(
+            name=DemoDatasetNames.DEEP_FASHION,
+            display_modality=Modalities.IMAGE,
+            display_name='👕 fashion (≈53K docs)',
+        ),
+        DemoDataset(
+            name=DemoDatasetNames.NIH_CHEST_XRAYS,
+            display_modality=Modalities.IMAGE,
+            display_name='☢ chest x-rays (≈100K docs)',
+        ),
+    ],
     Modalities.MUSIC: [
         DemoDataset(
             name=DemoDatasetNames.MUSIC_GENRES_ROCK,
