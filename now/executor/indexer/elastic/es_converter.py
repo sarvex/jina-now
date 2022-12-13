@@ -34,6 +34,8 @@ class ESConverter:
                     _doc = DocumentArray(Document(doc, copy=True))
                     # remove embeddings from serialized doc
                     _doc[..., 'embedding'] = None
+                    _doc[..., 'tensor'] = None
+                    _doc[..., 'blob'] = b''
                     es_docs[doc.id]['serialized_doc'] = DocumentArray(
                         _doc[0]
                     ).to_base64()
@@ -123,6 +125,8 @@ class ESConverter:
                     query_doc, d, semantic_scores, metric
                 )
             d.embedding = None
+            d.tensor = None
+            d.blob = b''
             matches.append(d)
         return matches
 

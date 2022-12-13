@@ -1,10 +1,9 @@
 import random
-from copy import deepcopy
 
 import numpy as np
 import pytest
 from docarray import dataclass
-from docarray.typing import Text
+from docarray.typing import Image, Text
 from jina import Document, DocumentArray, Executor, Flow, requests
 
 from now.constants import TAG_INDEXER_DOC_HAS_TEXT, TAG_OCR_DETECTOR_TEXT_IN_DOC
@@ -89,7 +88,6 @@ class TestBaseIndexer:
         )
         with f:
             result = f.post(on='/index', inputs=docs, return_results=True)
-            print(result)
             assert len(result) == 0
 
     @pytest.mark.parametrize(
@@ -218,7 +216,6 @@ class TestBaseIndexer:
         metas = {'workspace': str(tmpdir)}
         docs = self.get_docs(NUMBER_OF_DOCS)
         docs_query = self.get_docs(1)
-        columns = ['price', 'float', 'category', 'str']
 
         f = (
             Flow()
@@ -493,58 +490,57 @@ class TestBaseIndexer:
                 if d.uri:
                     assert d.blob == b'', f'got blob {d.blob} for {d.id}'
 
-    @pytest.mark.skip('not implemented for NOWElasticIndexer')
-    def test_no_blob_with_working_uri(self, tmpdir, indexer, setup):
+    def test_no_blob_or_tensor_on_matches(
+        self, tmpdir, indexer, setup, random_index_name
+    ):
+        @dataclass
+        class Pic:
+            pic: Image
+
+        mdoc = Pic(pic='https://jina.ai/assets/images/text-to-image-output.png')
+        doc_with_tensor = Document(mdoc)
+        doc_with_tensor.pic.embedding = np.random.random([DIM])
+        doc_with_blob = Document(mdoc)
+        doc_with_blob.pic.load_uri_to_blob()
+        doc_with_blob.pic.embedding = np.random.random([DIM])
+        docs = DocumentArray([doc_with_tensor, doc_with_blob])
+
         metas = {'workspace': str(tmpdir)}
-        with Flow().add(
-            uses=indexer,
-            uses_with={
-                'dim': 3,
-            },
-            uses_metas=metas,
-        ) as f:
-            doc_blob = Document(
-                uri='https://jina.ai/assets/images/text-to-image-output.png',
-                embedding=np.array([0.1, 0.1, 0.4]),
-            ).load_uri_to_blob()
-
-            doc_tens = Document(
-                uri='https://jina.ai/assets/images/text-to-image-output.png',
-                embedding=np.array([0.1, 0.1, 0.5]),
-            ).load_uri_to_image_tensor()
-
-            inputs = DocumentArray(
-                [
-                    Document(text='hi', embedding=np.array([0.1, 0.1, 0.1])),
-                    Document(blob=b'b12', embedding=np.array([0.1, 0.1, 0.2])),
-                    Document(
-                        blob=b'b12',
-                        uri='file_will.never_exist',
-                        embedding=np.array([0.1, 0.1, 0.3]),
-                    ),
-                    doc_blob,
-                    doc_tens,
-                ]
+        f = (
+            Flow()
+            .add(uses=DummyEncoder1, name='dummy_encoder1')
+            .add(uses=DummyEncoder2, name='dummy_encoder2')
+            .add(
+                uses=indexer,
+                uses_with={
+                    'hosts': 'http://localhost:9200',
+                    'index_name': random_index_name,
+                    'document_mappings': [
+                        ('dummy_encoder1', DIM, ['pic']),
+                        ('dummy_encoder2', DIM, ['pic']),
+                    ],
+                },
+                uses_metas=metas,
+                needs=['dummy_encoder1', 'dummy_encoder2'],
+                no_reduce=True,
             )
-            inputs = DocumentArray(
-                [Document(chunks=[Document(chunks=[doc])]) for doc in inputs]
+        )
+        with f:
+            f.post(on='/index', inputs=docs)
+            query_doc = Document(
+                Pic(pic='https://jina.ai/assets/images/text-to-image-output.png')
             )
-
-            f.index(deepcopy(inputs), parameters={})
-
-            response = f.search(
-                Document(
-                    chunks=[
-                        Document(chunks=Document(embedding=np.array([0.1, 0.1, 0.1])))
-                    ]
-                )
+            query_doc.pic.embedding = np.random.random([DIM])
+            response = f.post(
+                on='/search',
+                inputs=DocumentArray([query_doc]),
+                return_results=True,
             )
             matches = response[0].matches
-            assert matches[0].text == inputs[0].chunks[0].chunks[0].text
-            assert matches[1].blob == inputs[1].chunks[0].chunks[0].blob
-            assert matches[2].blob == inputs[2].chunks[0].chunks[0].blob
-            assert matches[3].blob == b''
-            assert matches[4].tensor is None
+            assert matches[0].pic.blob == b''
+            assert matches[1].pic.blob == b''
+            assert matches[1].pic.tensor is None
+            assert matches[0].pic.tensor is None
 
     @pytest.mark.skip('not implemented for NOWElasticIndexer')
     def test_curate_endpoint(self, tmpdir, indexer, setup):
