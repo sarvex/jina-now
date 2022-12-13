@@ -86,7 +86,6 @@ def test_index_and_search_with_multimodal_docs(
         query_docs_map,
         parameters={'get_score_breakdown': True, 'apply_default_bm25': True},
     )
-    print(results[0].matches[0].scores)
     # asserts about matches
     for (
         query_field,
@@ -145,7 +144,6 @@ def test_index_and_search_with_multimodal_docs(
         query_docs_map,
         parameters={'get_score_breakdown': True, 'apply_default_bm25': True},
     )
-    print(results[0].matches[0].scores)
     # asserts about matches
     for (
         query_field,

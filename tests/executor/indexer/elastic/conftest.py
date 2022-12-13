@@ -64,6 +64,8 @@ def es_inputs() -> namedtuple:
     # encode our documents
     for i, doc in enumerate(docs):
         prep_doc = Document(doc)
+        prep_doc.tags['color'] = random.choice(['red', 'blue', 'green'])
+        prep_doc.tags['price'] = i + 0.5
         prep_doc.id = str(i)
         clip_doc = Document(prep_doc, copy=True)
         clip_doc.id = prep_doc.id
