@@ -7,7 +7,7 @@ from now.utils import BetterEnum
 
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 # ----------------------------------
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.136-filter-query'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.136-filter-query1'
 # ----------------------------------
 NOW_PREPROCESSOR_VERSION = '0.0.111-refactor-cleanup-data-loading-3'
 NOW_QDRANT_INDEXER_VERSION = '0.0.10-refactor-remove-redundancy-on-ci-18'
