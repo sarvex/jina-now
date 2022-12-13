@@ -4,10 +4,10 @@ behind their URLs.
 """
 import pytest
 import requests
+from docarray import DocumentArray
 from starlette import status
 
 from now.constants import DEMO_DATASET_DOCARRAY_VERSION, Modalities
-from now.data_loading.data_loading import get_dataset_url
 from now.demo_data import AVAILABLE_DATASET
 
 
@@ -19,7 +19,7 @@ def test_dataset_is_available(
     ds_name: str,
     modality: Modalities,
 ):
-    url = get_dataset_url(ds_name, modality)
+    url = DocumentArray.pull(ds_name)
 
     assert requests.head(url).status_code == status.HTTP_200_OK
 
