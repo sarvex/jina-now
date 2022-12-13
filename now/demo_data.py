@@ -40,48 +40,48 @@ class DemoDataset(BaseModel):
 
 
 AVAILABLE_DATASET = {
-    Modalities.IMAGE: [
-        DemoDataset(
-            name=DemoDatasetNames.BEST_ARTWORKS,
-            display_modality=Modalities.IMAGE,
-            display_name='🖼 artworks (≈8K docs)',
-        ),
-        DemoDataset(
-            name=DemoDatasetNames.NFT_MONKEY,
-            display_modality=Modalities.IMAGE,
-            display_name='💰 nft - bored apes (10K docs)',
-        ),
-        DemoDataset(
-            name=DemoDatasetNames.TLL,
-            display_modality=Modalities.IMAGE,
-            display_name='👬 totally looks like (≈12K docs)',
-        ),
-        DemoDataset(
-            name=DemoDatasetNames.BIRD_SPECIES,
-            display_modality=Modalities.IMAGE,
-            display_name='🦆 birds (≈12K docs)',
-        ),
-        DemoDataset(
-            name=DemoDatasetNames.STANFORD_CARS,
-            display_modality=Modalities.IMAGE,
-            display_name='🚗 cars (≈16K docs)',
-        ),
-        DemoDataset(
-            name=DemoDatasetNames.GEOLOCATION_GEOGUESSR,
-            display_modality=Modalities.IMAGE,
-            display_name='🌍 geolocation (≈50K docs)',
-        ),
-        DemoDataset(
-            name=DemoDatasetNames.DEEP_FASHION,
-            display_modality=Modalities.IMAGE,
-            display_name='👕 fashion (≈53K docs)',
-        ),
-        DemoDataset(
-            name=DemoDatasetNames.NIH_CHEST_XRAYS,
-            display_modality=Modalities.IMAGE,
-            display_name='☢ chest x-rays (≈100K docs)',
-        ),
-    ],
+    # Modalities.IMAGE: [
+    #     DemoDataset(
+    #         name=DemoDatasetNames.BEST_ARTWORKS,
+    #         display_modality=Modalities.IMAGE,
+    #         display_name='🖼 artworks (≈8K docs)',
+    #     ),
+    #     DemoDataset(
+    #         name=DemoDatasetNames.NFT_MONKEY,
+    #         display_modality=Modalities.IMAGE,
+    #         display_name='💰 nft - bored apes (10K docs)',
+    #     ),
+    #     DemoDataset(
+    #         name=DemoDatasetNames.TLL,
+    #         display_modality=Modalities.IMAGE,
+    #         display_name='👬 totally looks like (≈12K docs)',
+    #     ),
+    #     DemoDataset(
+    #         name=DemoDatasetNames.BIRD_SPECIES,
+    #         display_modality=Modalities.IMAGE,
+    #         display_name='🦆 birds (≈12K docs)',
+    #     ),
+    #     DemoDataset(
+    #         name=DemoDatasetNames.STANFORD_CARS,
+    #         display_modality=Modalities.IMAGE,
+    #         display_name='🚗 cars (≈16K docs)',
+    #     ),
+    #     DemoDataset(
+    #         name=DemoDatasetNames.GEOLOCATION_GEOGUESSR,
+    #         display_modality=Modalities.IMAGE,
+    #         display_name='🌍 geolocation (≈50K docs)',
+    #     ),
+    #     DemoDataset(
+    #         name=DemoDatasetNames.DEEP_FASHION,
+    #         display_modality=Modalities.IMAGE,
+    #         display_name='👕 fashion (≈53K docs)',
+    #     ),
+    #     DemoDataset(
+    #         name=DemoDatasetNames.NIH_CHEST_XRAYS,
+    #         display_modality=Modalities.IMAGE,
+    #         display_name='☢ chest x-rays (≈100K docs)',
+    #     ),
+    # ],
     Modalities.MUSIC: [
         DemoDataset(
             name=DemoDatasetNames.MUSIC_GENRES_ROCK,
@@ -132,13 +132,6 @@ AVAILABLE_DATASET = {
             display_modality=Modalities.VIDEO,
             display_name='🎦 tumblr gifs subset (10K gifs)',
         ),
-    ],
-    Modalities.TEXT_AND_IMAGE: [
-        DemoDataset(
-            name=DemoDatasetNames.ES_ONLINE_SHOP_50,
-            display_modality=Modalities.TEXT_AND_IMAGE,
-            display_name='online shop data (50 products)',
-        )
     ],
 }
 DEFAULT_EXAMPLE_HOSTED = {

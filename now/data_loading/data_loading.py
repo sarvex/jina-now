@@ -8,11 +8,7 @@ from docarray import Document, DocumentArray
 from now.app.base.app import JinaNOWApp
 from now.constants import DatasetTypes
 from now.data_loading.es import ElasticsearchExtractor
-from now.data_loading.utils import (
-    fetch_da_from_url,
-    get_dataset_url,
-    get_s3_bucket_and_folder_prefix,
-)
+from now.data_loading.utils import get_s3_bucket_and_folder_prefix
 from now.demo_data import DemoDatasetNames
 from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
@@ -42,8 +38,7 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
         da = _extract_es_data(user_input)
     elif user_input.dataset_type == DatasetTypes.DEMO:
         print('⬇  Download DocumentArray dataset')
-        url = get_dataset_url(user_input.dataset_name, user_input.output_modality)
-        da = fetch_da_from_url(url)
+        da = DocumentArray.pull(name=user_input.dataset_name, show_progress=True)
     if da is None:
         raise ValueError(
             f'Could not load DocumentArray dataset. Please check your configuration: {user_input}.'

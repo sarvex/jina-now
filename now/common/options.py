@@ -102,7 +102,10 @@ DATASET_TYPE = DialogOptions(
 
 
 def check_login_dataset(user_input: UserInput):
-    if user_input.dataset_type == DatasetTypes.DOCARRAY and user_input.jwt is None:
+    if (
+        user_input.dataset_type in [DatasetTypes.DEMO, DatasetTypes.DOCARRAY]
+        and user_input.jwt is None
+    ):
         _jina_auth_login(user_input)
 
 
@@ -126,7 +129,7 @@ DEMO_DATA = DialogOptions(
     description='Select one of the available demo datasets',
     conditional_check=lambda user_input, **kwargs: user_input.dataset_type
     == DatasetTypes.DEMO,
-    post_func=lambda user_input, **kwargs: _infer_app_type_from_demo_data(user_input),
+    post_func=lambda user_input, **kwargs: set_field_names_from_docarray(user_input),
 )
 
 
