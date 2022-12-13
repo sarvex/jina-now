@@ -82,4 +82,3 @@ def test_search_with_filters():
         print(response)
         assert response.status_code == 200
         assert len(response.json()) == 1
-
