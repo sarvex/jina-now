@@ -209,7 +209,6 @@ class JinaNOWApp:
                 and user_input.flow_name != DEFAULT_FLOW_NAME
                 else DEFAULT_FLOW_NAME
             )
-            self.add_environment_variables(flow_yaml_content)
 
             # append api_keys to the executor with name 'preprocessor' and 'indexer'
             for executor in flow_yaml_content['executors']:
@@ -236,7 +235,7 @@ class JinaNOWApp:
                         },
                     )
 
-            # self.add_environment_variables(flow_yaml_content)
+            self.add_environment_variables(flow_yaml_content)
             self.flow_yaml = flow_yaml_content
         return {}
 
@@ -324,7 +323,7 @@ class JinaNOWApp:
             flow_yaml_content['with']['env']['JINA_OPTOUT_TELEMETRY'] = os.environ[
                 'JINA_OPTOUT_TELEMETRY'
             ]
-            # for executor in flow_yaml_content['executors']:
-            #     executor['env']['JINA_OPTOUT_TELEMETRY'] = os.environ[
-            #         'JINA_OPTOUT_TELEMETRY'
-            #     ]
+            for executor in flow_yaml_content['executors']:
+                executor['env']['JINA_OPTOUT_TELEMETRY'] = os.environ[
+                    'JINA_OPTOUT_TELEMETRY'
+                ]
