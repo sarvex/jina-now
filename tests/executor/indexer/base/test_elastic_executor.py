@@ -35,7 +35,8 @@ class DummyEncoder2(Executor):
 class TestBaseIndexer:
     def get_docs(self, num):
         prices = [10.0, 25.0, 50.0, 100.0]
-        categories = ['comics', 'movies', 'audiobook']
+        colors = ['blue', 'red']
+        greetings = ['hello']
         res = DocumentArray()
 
         @dataclass
@@ -52,8 +53,9 @@ class TestBaseIndexer:
             doc.title.embedding = k[i]
             doc.id = str(i)
             doc.tags['parent_tag'] = 'value'
-            doc.tags['price'] = np.random.choice(prices)
-            doc.tags['category'] = np.random.choice(categories)
+            doc.tags['price'] = random.choice(prices)
+            doc.tags['color'] = random.choice(colors)
+            doc.tags['greeting'] = random.choice(greetings)
             res.append(doc)
         return res
 
@@ -282,7 +284,6 @@ class TestBaseIndexer:
             docs_query = self.get_docs(NUMBER_OF_DOCS)
             f.post(on='/search', inputs=docs_query, return_results=True)
 
-    @pytest.mark.skip('not implemented for NOWElasticIndexer')
     def test_get_tags(self, tmpdir, indexer, setup, random_index_name):
         metas = {'workspace': str(tmpdir)}
         docs = self.get_docs(NUMBER_OF_DOCS)
@@ -311,11 +312,8 @@ class TestBaseIndexer:
             assert response[0].text == 'tags'
             assert 'tags' in response[0].tags
             assert 'color' in response[0].tags['tags']
-            assert response[0].tags['tags']['color'] == ['red', 'blue'] or response[
-                0
-            ].tags['tags']['color'] == ['blue', 'red']
+            assert sorted(response[0].tags['tags']['color']) == sorted(['red', 'blue'])
 
-    @pytest.mark.skip('not implemented for NOWElasticIndexer')
     def test_delete_tags(self, tmpdir, indexer, setup, random_index_name):
         metas = {'workspace': str(tmpdir)}
         docs = self.get_docs(NUMBER_OF_DOCS)
@@ -348,13 +346,13 @@ class TestBaseIndexer:
             assert response[0].text == 'tags'
             assert 'tags' in response[0].tags
             assert 'color' in response[0].tags['tags']
-            assert response[0].tags['tags']['color'] == ['red']
+            assert 'blue' not in response[0].tags['tags']['color']
             f.post(
                 on='/delete',
                 parameters={'filter': {'greeting': {'$eq': 'hello'}}},
             )
             response = f.post(on='/tags')
-            assert 'greeting' not in response[0].tags['tags']
+            assert 'hello' not in response[0].tags['tags']['greeting']
 
     @pytest.fixture()
     def documents(self):
