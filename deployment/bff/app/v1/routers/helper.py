@@ -47,11 +47,12 @@ def process_query(
         )
     query = {}
     if conditions:
-        filter_query = []
         # construct filtering query from dictionary
         for key, value in conditions.items():
-            filter_query.append({f'{key}': {'$eq': value}})
-        query = {'$and': filter_query}  # different conditions are aggregated using and
+            if key not in query:
+                query[key] = {}
+            query[key]['$eq'] = value
+
     return query_doc, query
 
 
