@@ -2,7 +2,7 @@ import traceback
 from collections import namedtuple
 from typing import Any, Dict, List, Mapping, Optional, Union
 
-from docarray import DocumentArray
+from docarray import Document, DocumentArray
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 
@@ -151,6 +151,7 @@ class NOWElasticIndexer(Executor):
             print(
                 f'Inserted {success} documents into Elasticsearch index {self.index_name}'
             )
+        self.update_tags()
         return DocumentArray([])
 
     @secure_request(on='/search', level=SecurityLevel.USER)
@@ -284,6 +285,7 @@ class NOWElasticIndexer(Executor):
                     index=self.index_name, body=es_search_filter
                 )
                 self.es.indices.refresh(index=self.index_name)
+                self.update_tags()
             except Exception:
                 print(traceback.format_exc())
                 raise
@@ -303,6 +305,52 @@ class NOWElasticIndexer(Executor):
                 f"Deleted {resp['deleted']} documents in Elasticsearch index {self.index_name}"
             )
         return DocumentArray()
+
+    @secure_request(on='/tags', level=SecurityLevel.USER)
+    def get_tags_and_values(self, **kwargs):
+        """
+        Endpoint to get all tags and their possible values in the index.
+        """
+        return DocumentArray([Document(text='tags', tags={'tags': self.doc_id_tags})])
+
+    def update_tags(self):
+        """
+        The indexer keeps track of which tags are indexed and what their possible
+        values are, which is stored in self.doc_id_tags. This method queries the
+        elasticsearch index for the current es_mapping to find the current tags on all
+        indexed documents. It then queries elasticsearch for an aggregation of all values
+        inside this field, and updates the self.doc_id_tags dictionary with tags as keys,
+        and values as values in the dictionary.
+        """
+        es_mapping = self.es.indices.get_mapping(index=self.index_name)
+        tag_categories = (
+            es_mapping.get(self.index_name, {})
+            .get('mappings', {})
+            .get('properties', {})
+            .get('tags', {})
+            .get('properties', {})
+        )
+
+        aggs = {'aggs': {}, 'size': 0}
+        for tag, map in tag_categories.items():
+            if map['type'] == 'text':
+                aggs['aggs'][tag] = {
+                    'terms': {'field': f'tags.{tag}.keyword', 'size': 100}
+                }
+            elif map['type'] == 'float':
+                # aggs['aggs'][f'min_{tag}'] = {'min': {'field': f'tags.{tag}'}}
+                # aggs['aggs'][f'max_{tag}'] = {'max': {'field': f'tags.{tag}'}}
+                # aggs['aggs'][f'avg_{tag}'] = {'avg': {'field': f'tags.{tag}'}}
+                aggs['aggs'][tag] = {'terms': {'field': f'tags.{tag}', 'size': 100}}
+        try:
+            result = self.es.search(index=self.index_name, body=aggs)
+            aggregations = result['aggregations']
+            updated_tags = {}
+            for tag, agg in aggregations.items():
+                updated_tags[tag] = [bucket['key'] for bucket in agg['buckets']]
+            self.doc_id_tags = updated_tags
+        except Exception:
+            print(traceback.format_exc())
 
     # override
     def batch_iterator(self):
