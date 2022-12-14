@@ -2,6 +2,7 @@ import itertools
 import json
 import os
 from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
 from sys import maxsize
 from typing import List, Optional
@@ -207,32 +208,31 @@ class NOWBaseIndexer(Executor):
             ):
                 search_filter_raw = {'title': {'$regex': docs[0].text.lower()}}
             # search for documents which don't contain text
-            search_filter_raw[TAG_INDEXER_DOC_HAS_TEXT] = {'$eq': False}
-            search_filter = self.convert_filter_syntax(search_filter_raw)
-            docs_with_matches_no_text = self.create_matches(
-                docs,
-                parameters,
-                limit,
-                retrieval_limit,
-                search_filter,
-            )
-            # search for documents which contain text
-            search_filter_raw[TAG_INDEXER_DOC_HAS_TEXT] = {'$eq': True}
-            search_filter = self.convert_filter_syntax(search_filter_raw)
-            docs_with_matches_filter_title = self.create_matches(
-                docs,
-                parameters,
-                limit,
-                retrieval_limit,
-                search_filter,
-            )
+
+            with ThreadPoolExecutor(max_workers=2) as executor:
+                futures = []
+                for has_text in [False, True]:
+                    search_filter_raw[TAG_INDEXER_DOC_HAS_TEXT] = {'$eq': has_text}
+                    search_filter = self.convert_filter_syntax(search_filter_raw)
+                    future = executor.submit(
+                        docs,
+                        parameters,
+                        limit,
+                        retrieval_limit,
+                        search_filter,
+                    )
+                    futures.append(future)
+                result_no_text, result_with_text = [
+                    future.result() for future in futures
+                ]
+
             # merge the results such that documents with text are retrieved at a later stage
             self.merge_matches_by_score_after_half(
-                docs_with_matches_no_text,
-                docs_with_matches_filter_title,
+                result_no_text,
+                result_with_text,
                 limit,
             )
-            docs_with_matches = docs_with_matches_no_text
+            docs_with_matches = result_no_text
             # if we didn't retrieve enough results, try to fetch more
             if len(docs_with_matches) < limit:
                 search_filter = self.convert_filter_syntax(search_filter_orig)
