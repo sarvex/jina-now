@@ -10,7 +10,7 @@ from now.utils import BetterEnum
 class DemoDatasetNames(BetterEnum):
     BEST_ARTWORKS = 'best-artworks'
     NFT_MONKEY = 'nft-monkey'
-    TLL = 'totally-looks-like'
+    TLL = 'tll'
     BIRD_SPECIES = 'bird-species'
     STANFORD_CARS = 'stanford-cars'
     DEEP_FASHION = 'deepfashion'
@@ -49,11 +49,11 @@ AVAILABLE_DATASET = {
             display_modality=Modalities.IMAGE,
             display_name='💰 nft - bored apes (10K docs)',
         ),
-        DemoDataset(
-            name=DemoDatasetNames.TLL,
-            display_modality=Modalities.IMAGE,
-            display_name='👬 totally looks like (≈12K docs)',
-        ),
+        # DemoDataset(
+        #     name=DemoDatasetNames.TLL,
+        #     display_modality=Modalities.IMAGE,
+        #     display_name='👬 totally looks like (≈12K docs)',
+        # ),
         DemoDataset(
             name=DemoDatasetNames.BIRD_SPECIES,
             display_modality=Modalities.IMAGE,
