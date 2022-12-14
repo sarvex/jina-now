@@ -3,7 +3,7 @@ from __future__ import annotations, print_function, unicode_literals
 from now.utils import BetterEnum
 
 # ----------------------------------
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.136--demo-data-migration-6'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.136--demo-data-migration-7'
 # ----------------------------------
 NOW_PREPROCESSOR_VERSION = '0.0.112-demo-data-migration-4'
 NOW_QDRANT_INDEXER_VERSION = '0.0.10-refactor-remove-redundancy-on-ci-18'
