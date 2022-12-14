@@ -44,13 +44,14 @@ jobs:
         timeout-minutes: 35
         env:
           WOLF_TOKEN: ${{ secrets.WOLF_TOKEN }}
-          S3_IMAGE_TEST_DATA_PATH: ${{ secrets.S3_IMAGE_TEST_DATA_PATH }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          S3_SCHEMA_FOLDER_PATH: ${{ secrets.S3_SCHEMA_FOLDER_PATH }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      - name: Setup tmate session for debugging
-        if: ${{ failure() }}
-        uses: mxschmitt/action-tmate@v3
-        timeout-minutes: 60
+          S3_CUSTOM_DATA_PATH: ${{ secrets.S3_CUSTOM_DATA_PATH }}
+#      - name: Setup tmate session for debugging
+#        if: ${{ failure() }}
+#        uses: mxschmitt/action-tmate@v3
+#        timeout-minutes: 60
 
   executor-test:
     if: |
@@ -77,10 +78,10 @@ jobs:
           pytest --suppress-no-test-exit-code -v -s tests/executor/indexer/base
           pytest --suppress-no-test-exit-code -v -s tests/executor/indexer/elastic
           pytest --suppress-no-test-exit-code -v -s tests/executor/preprocessor
-      - name: Setup tmate session for debugging
-        if: ${{ failure() || (github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled) }}
-        uses: mxschmitt/action-tmate@v3
-        timeout-minutes: 60
+#      - name: Setup tmate session for debugging
+#        if: ${{ failure() || (github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled) }}
+#        uses: mxschmitt/action-tmate@v3
+#        timeout-minutes: 60
 
 
   prerelease:

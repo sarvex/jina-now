@@ -32,6 +32,7 @@
 
 
 
+
 <a name=release-note-0-0-7></a>
 ## Release Note (`0.0.7`)
 
@@ -1097,4 +1098,45 @@
 
  - [[```ed8bc8c6```](https://github.com/jina-ai/now/commit/ed8bc8c688ae999e41207f4157fda23c54173805)] __-__ Fix top k in playground url (#709) (*Mohammad Kalim Akram*)
  - [[```b9db94ad```](https://github.com/jina-ai/now/commit/b9db94adec21d6d462664d80c0ca6564c3a42f6a)] __-__ __version__: the next version will be 0.0.39 (*Jina Dev Bot*)
+
+<a name=release-note-0-0-40></a>
+## Release Note (`0.0.40`)
+
+> Release time: 2022-12-12 23:45:33
+
+
+
+🙇 We'd like to thank all contributors for this new release! In particular,
+ Florian Hönicke,  Mohammad Kalim Akram,  Aziz Belaweid,  Alex Cureton-Griffiths,  Isabelle Mohr,  Jina Dev Bot,  🙇
+
+
+### 🆕 New Features
+
+ - [[```873981dc```](https://github.com/jina-ai/now/commit/873981dc7170c62f674c81994b813ed7ef214c88)] __-__ add schema functions (#712) (*Aziz Belaweid*)
+ - [[```33eb8b02```](https://github.com/jina-ai/now/commit/33eb8b020ebb8d99223d77273fd53a1f91d72d85)] __-__ adapt new wolf gateway (#734) (*Aziz Belaweid*)
+ - [[```ad15ae2b```](https://github.com/jina-ai/now/commit/ad15ae2bae9b91e99de65b9ba1b669fc74b409c5)] __-__ quality improvement vision (#730) (*Florian Hönicke*)
+
+### 🐞 Bug fixes
+
+ - [[```023907c3```](https://github.com/jina-ai/now/commit/023907c39f0901c68644a15d428c6962845a50e4)] __-__ new remote deployment (#749) (*Mohammad Kalim Akram*)
+ - [[```14819672```](https://github.com/jina-ai/now/commit/14819672a63cc9c5f4a30f8bbed03e0884f0ac38)] __-__ bump version paddlepaddle (#738) (*Florian Hönicke*)
+ - [[```f643197c```](https://github.com/jina-ai/now/commit/f643197c886fb4db0ca545bda9dabbb26d42d5e2)] __-__ workaround core wolf (#728) (*Florian Hönicke*)
+ - [[```691392b9```](https://github.com/jina-ai/now/commit/691392b9e9ce820a5e5115199fc8781ab071aad5)] __-__ change all instances of jina hub to jina ai cloud (#727) (*Alex Cureton-Griffiths*)
+
+### 🧼 Code Refactoring
+
+ - [[```44720eee```](https://github.com/jina-ai/now/commit/44720eee3ef02a657e514a65132fee439fc1b4d0)] __-__ cleanup data loading (#752) (*Florian Hönicke*)
+ - [[```82078ffb```](https://github.com/jina-ai/now/commit/82078ffb549dd24480e644b70e0b454020557d07)] __-__ move jpeg compression (#751) (*Florian Hönicke*)
+ - [[```af8a0458```](https://github.com/jina-ai/now/commit/af8a0458ee35a13d26b9014b1c4a0c978d1ec6d3)] __-__ remove one level in call stack (#736) (*Florian Hönicke*)
+ - [[```2fe54b30```](https://github.com/jina-ai/now/commit/2fe54b30e6d5a0388710f2f5aadfce14fea57748)] __-__ improve performance curation (#731) (*Florian Hönicke*)
+
+### 🏁 Unit Test and CICD
+
+ - [[```df73d265```](https://github.com/jina-ai/now/commit/df73d265887f9b0ff62435366946716f9a3eec3d)] __-__ reactivate (#739) (*Florian Hönicke*)
+
+### 🍹 Other Improvements
+
+ - [[```a9b8a707```](https://github.com/jina-ai/now/commit/a9b8a707d12570cc6f20bb4684196dcc2a9cb5c0)] __-__ Refactor remove redundancy on ci (#746) (*Florian Hönicke*)
+ - [[```f356c457```](https://github.com/jina-ai/now/commit/f356c457a52a5651921666f03befb8db743dc305)] __-__ add a PR template (#725) (*Isabelle Mohr*)
+ - [[```e9c9919c```](https://github.com/jina-ai/now/commit/e9c9919ce3611a29e60036fe1c2010b6c1f8a85b)] __-__ __version__: the next version will be 0.0.40 (*Jina Dev Bot*)
 
