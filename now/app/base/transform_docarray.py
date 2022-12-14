@@ -118,7 +118,6 @@ def transform_docarray(
     :param documents: Data to be transformed.
     :param search_fields: Field names for neural search. Only required if multimodal data is given.
     """
-    DocumentArray.pull()
     if documents and documents[0].chunks:
         if 'multi_modal_schema' not in documents[0]._metadata:
             raise RuntimeError(

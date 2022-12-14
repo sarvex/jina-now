@@ -49,11 +49,11 @@ AVAILABLE_DATASET = {
             display_modality=Modalities.IMAGE,
             display_name='💰 nft - bored apes (10K docs)',
         ),
-        # DemoDataset(
-        #     name=DemoDatasetNames.TLL,
-        #     display_modality=Modalities.IMAGE,
-        #     display_name='👬 totally looks like (≈12K docs)',
-        # ),
+        DemoDataset(
+            name=DemoDatasetNames.TLL,
+            display_modality=Modalities.IMAGE,
+            display_name='👬 totally looks like (≈12K docs)',
+        ),
         DemoDataset(
             name=DemoDatasetNames.BIRD_SPECIES,
             display_modality=Modalities.IMAGE,
