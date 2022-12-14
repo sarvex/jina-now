@@ -234,7 +234,6 @@ class JinaNOWApp:
                             },
                         },
                     )
-
             self.add_environment_variables(flow_yaml_content)
             self.flow_yaml = flow_yaml_content
         return {}
