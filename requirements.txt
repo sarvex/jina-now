@@ -12,7 +12,7 @@ docker==5.0.3
 requests==2.27.1
 pydub==0.25.1
 nltk==3.7
-jcloud==0.1.5
+jcloud==0.1.6
 python-dotenv
 boto3
 dask[distributed]==2022.2.0
