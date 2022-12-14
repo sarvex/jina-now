@@ -10,8 +10,8 @@ DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.135-test-reactivate'
 # ----------------------------------
 NOW_PREPROCESSOR_VERSION = '0.0.112-test-experiment-lower-quality-images-4'
-NOW_QDRANT_INDEXER_VERSION = '0.0.11-refactor-threadpool-for-search-1'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.10-refactor-threadpool-for-search-1'
+NOW_QDRANT_INDEXER_VERSION = '0.0.11-refactor-threadpool-for-search-2'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.10-refactor-threadpool-for-search-2'
 NOW_AUTOCOMPLETE_VERSION = '0.0.5-refactor-remove-redundancy-on-ci-18'
 
 
