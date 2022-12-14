@@ -125,7 +125,7 @@ def jina_auth_login():
 
 
 def get_info_hubble(user_input):
-    user_token = hubble.utils.auth.Auth.get_user_token()
+    user_token = hubble.utils.auth.Auth.get_auth_token()
     client = hubble.Client(token=user_token, max_retries=None, jsonify=True)
     response = client.get_user_info()
     user_input.admin_emails = (
