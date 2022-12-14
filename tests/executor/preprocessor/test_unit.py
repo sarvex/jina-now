@@ -23,7 +23,7 @@ def download_mock(url, destfile):
         (
             'image/6785325056.jpg',
             1,
-            'Richard Branson TotallyLooksLike.com Zaphod Beeblebrox',
+            'RichavdE',  # with larger resolution it would be the following text: 'Richard Branson TotallyLooksLike.com Zaphod Beeblebrox',
         ),
         ('gif/folder1/file.gif', 3, 'e'),
     ],

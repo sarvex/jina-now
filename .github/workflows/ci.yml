@@ -133,7 +133,7 @@ jobs:
           # for some reason, the first filter condition needs a different indentation
           has_changed_filter: |
             - now/executor/indexer/elastic/**
-          executor_id: 11yxatzh
+          executor_id: mdtuyaaj
           jina_auth_token: ${{ secrets.NOW_STAGING_FLORIAN }}
 
   update-autocomplete:
@@ -150,7 +150,7 @@ jobs:
           has_changed_filter: |
             - 'now/executor/abstract/auth/**'
               - 'now/executor/autocomplete/**'
-          executor_id: 11yxatzh
+          executor_id: w5w084h7
           jina_auth_token: ${{ secrets.NOW_STAGING_FLORIAN }}
 
   update-bff-playground:
