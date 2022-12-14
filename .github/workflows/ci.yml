@@ -99,7 +99,6 @@ jobs:
           # for some reason, the first filter condition needs a different indentation
           has_changed_filter: |
             - now/app/base/**
-              - now/common/preprocess.py
               - now/executor/preprocessor/**
           executor_id: vlxgoxlv
           jina_auth_token: ${{ secrets.NOW_PREPROCESSOR_JCLOUD_TOKEN }}
