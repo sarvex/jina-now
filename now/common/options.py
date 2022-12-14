@@ -213,8 +213,8 @@ AWS_REGION_NAME = DialogOptions(
 SEARCH_FIELDS = DialogOptions(
     name='search_fields',
     choices=lambda user_input, **kwargs: [
-        {'name': f'{field} : {field_type}', 'value': field}
-        for field, field_type in user_input.search_fields_modalities.items()
+        {'name': f'{field}', 'value': field}
+        for field in user_input.search_fields_modalities.keys()
     ],
     prompt_message='Please select the search fields:',
     prompt_type='checkbox',

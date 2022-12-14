@@ -14,17 +14,6 @@ from now.demo_data import DemoDatasetNames
 from now.dialog import configure_user_input
 from now.now_dataclasses import UserInput
 
-SEARCH_FIELDS_MODALITIES = {'text': 'text', 'uri': 'image'}
-FILTER_FIELDS_MODALITIES = {
-    'text': 'str',
-    'original_height': 'dict',
-    'similarity': 'dict',
-    'NSFW': 'dict',
-    'height': 'dict',
-    'original_width': 'dict',
-    'width': 'dict',
-}
-
 
 class CmdPromptMock:
     def __init__(self, predefined_answers: Dict[str, str]):
@@ -41,7 +30,9 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'output_modality': 'image',
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DEMO,
-            'dataset_name': 'tll',
+            'dataset_name': 'totally-looks-like',
+            'search_fields': ['x', 'y'],
+            'search_fields_modalities': {'image': 'Blob', 'label': 'Text'},
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -53,45 +44,11 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'output_modality': 'image',
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DEMO,
+            'search_fields': ['x', 'y'],
+            'search_fields_modalities': {'image': 'Blob', 'label': 'Text'},
             'dataset_name': 'nih-chest-xrays',
             'cluster': 'new',
             'deployment_type': 'local',
-        },
-        {},
-    ),
-    (
-        {
-            'app': Apps.IMAGE_TEXT_RETRIEVAL,
-            'output_modality': 'image',
-            'flow_name': DEFAULT_FLOW_NAME,
-            'dataset_type': DatasetTypes.DOCARRAY,
-            'dataset_name': 'subset_laion',
-            'filter_fields_modalities': FILTER_FIELDS_MODALITIES,
-            'search_fields_modalities': SEARCH_FIELDS_MODALITIES,
-            'search_fields': ['x', 'y'],
-            'filter_fields': ['z'],
-            'cluster': 'new',
-            'deployment_type': 'local',
-            'jwt': {'token': os.environ['WOLF_TOKEN']},
-            'admin_emails': ['florian.hoenicke@jina.ai'],
-        },
-        {},
-    ),
-    (
-        {
-            'app': Apps.IMAGE_TEXT_RETRIEVAL,
-            'output_modality': 'image',
-            'flow_name': DEFAULT_FLOW_NAME,
-            'dataset_type': DatasetTypes.DOCARRAY,
-            'dataset_name': 'subset_laion',
-            'filter_fields_modalities': FILTER_FIELDS_MODALITIES,
-            'search_fields_modalities': SEARCH_FIELDS_MODALITIES,
-            'search_fields': ['x', 'y'],
-            'filter_fields': ['z'],
-            'cluster': 'new',
-            'deployment_type': 'local',
-            'jwt': {'token': os.environ['WOLF_TOKEN']},
-            'admin_emails': ['florian.hoenicke@jina.ai'],
         },
         {},
     ),
@@ -111,37 +68,11 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'app': Apps.IMAGE_TEXT_RETRIEVAL,
-            'output_modality': 'image',
             'flow_name': DEFAULT_FLOW_NAME,
-            'dataset_type': DatasetTypes.DOCARRAY,
-            'dataset_name': 'subset_laion',
-            'filter_fields_modalities': FILTER_FIELDS_MODALITIES,
-            'search_fields_modalities': SEARCH_FIELDS_MODALITIES,
+            'dataset_type': DatasetTypes.DEMO,
+            'dataset_name': DemoDatasetNames.TLL,
             'search_fields': ['x', 'y'],
-            'filter_fields': ['z'],
-            'cluster': 'new',
-            'deployment_type': 'local',
-            'jwt': {'token': os.environ['WOLF_TOKEN']},
-            'admin_emails': ['florian.hoenicke@jina.ai'],
-        },
-        {},
-    ),
-    (
-        {
-            'flow_name': DEFAULT_FLOW_NAME,
-            'dataset_type': DatasetTypes.DEMO,
-            'dataset_name': DemoDatasetNames.TLL,
-            'cluster': 'new',
-            'deployment_type': 'local',
-        },
-        {'app': Apps.IMAGE_TEXT_RETRIEVAL, 'output_modality': 'image'},
-    ),
-    (
-        {
-            'flow_name': DEFAULT_FLOW_NAME,
-            'dataset_type': DatasetTypes.DEMO,
-            'dataset_name': DemoDatasetNames.TLL,
+            'search_fields_modalities': {'image': 'Blob', 'label': 'Text'},
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -156,6 +87,8 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'flow_name': 'testapp',
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': DemoDatasetNames.BEST_ARTWORKS,
+            'search_fields': ['x', 'y'],
+            'search_fields_modalities': {'image': 'Blob', 'label': 'Text'},
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -172,16 +105,16 @@ def test_configure_user_input(
     mocked_user_answers: Dict[str, str],
     configure_kwargs: Dict,
 ):
+    # expected user input
     expected_user_input = UserInput()
     expected_user_input.__dict__.update(mocked_user_answers)
     expected_user_input.__dict__.update(configure_kwargs)
     expected_user_input.__dict__.pop('app')
+
+    # mocked user input
     mocker.patch('now.utils.prompt', CmdPromptMock(mocked_user_answers))
     user_input = configure_user_input(**configure_kwargs)
-
-    if user_input.deployment_type == 'remote':
-        user_input.__dict__.update({'jwt': None, 'admin_emails': None})
-
+    user_input.__dict__.update({'jwt': None, 'admin_emails': None})
     user_input.__dict__.update({'app_instance': None})
 
     assert user_input == expected_user_input

@@ -10,7 +10,7 @@ from now.utils import BetterEnum
 class DemoDatasetNames(BetterEnum):
     BEST_ARTWORKS = 'best-artworks'
     NFT_MONKEY = 'nft-monkey'
-    TLL = 'tll'
+    TLL = 'totally-looks-like'
     BIRD_SPECIES = 'bird-species'
     STANFORD_CARS = 'stanford-cars'
     DEEP_FASHION = 'deepfashion'

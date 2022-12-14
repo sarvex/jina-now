@@ -3,9 +3,9 @@ from __future__ import annotations, print_function, unicode_literals
 from now.utils import BetterEnum
 
 # ----------------------------------
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.136--demo-data-migration-5'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.136--demo-data-migration-6'
 # ----------------------------------
-NOW_PREPROCESSOR_VERSION = '0.0.112-demo-data-migration-5'
+NOW_PREPROCESSOR_VERSION = '0.0.112-demo-data-migration-6'
 NOW_QDRANT_INDEXER_VERSION = '0.0.10-refactor-remove-redundancy-on-ci-18'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.9-refactor-remove-redundancy-on-ci-18'
 NOW_AUTOCOMPLETE_VERSION = '0.0.5-refactor-remove-redundancy-on-ci-18'
