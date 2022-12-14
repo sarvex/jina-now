@@ -34,6 +34,7 @@ def test_split_text_preprocessing():
 
 @pytest.mark.parametrize('disable', [False, True])
 def test_disable_telemetry(disable):
+    initial_value = os.environ.get('JINA_OPTOUT_TELEMETRY')
     if disable:
         os.environ['JINA_OPTOUT_TELEMETRY'] = 'disableTelemetry'
     else:
@@ -55,3 +56,6 @@ def test_disable_telemetry(disable):
     assert app.flow_yaml['with']['env'].get('JINA_OPTOUT_TELEMETRY') == expected_value
     for executor in app.flow_yaml['executors']:
         assert executor['env'].get('JINA_OPTOUT_TELEMETRY') == expected_value
+
+    if initial_value:
+        os.environ['JINA_OPTOUT_TELEMETRY'] = initial_value
