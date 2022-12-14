@@ -13,6 +13,7 @@ Tell us what you think: <a href="https://10sw1tcpld4.typeform.com/to/VTAyYRpR?ut
 <a href="https://pypi.org/project/jina-now/"><img src="https://img.shields.io/pypi/v/jina-now?color=%23099cec&amp;label=PyPI&amp;logo=pypi&amp;logoColor=white" alt="PyPI"></a>
 </p>
 
+
 <p align="center">
 <img src="https://user-images.githubusercontent.com/11627845/164569398-5ef22a41-e2e1-438a-88a5-2ac43ad9426d.gif" alt="Jina NOW logo: The data structure for unstructured data" width="600px">
 

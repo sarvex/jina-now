@@ -9,10 +9,10 @@ DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 # ----------------------------------
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.135-test-reactivate'
 # ----------------------------------
-NOW_PREPROCESSOR_VERSION = '0.0.113-bump-jcloud'
-NOW_QDRANT_INDEXER_VERSION = '0.0.11-bump-jcloud'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.10-bump-jcloud'
-NOW_AUTOCOMPLETE_VERSION = '0.0.6-bump-jcloud'
+NOW_PREPROCESSOR_VERSION = '0.0.113-bump-jcloud-version'
+NOW_QDRANT_INDEXER_VERSION = '0.0.11-bump-jcloud-version'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.10-bump-jcloud-version'
+NOW_AUTOCOMPLETE_VERSION = '0.0.6-bump-jcloud-version'
 
 
 class Modalities(BetterEnum):
