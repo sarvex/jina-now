@@ -9,10 +9,10 @@ DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 # ----------------------------------
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.135-test-reactivate'
 # ----------------------------------
-NOW_PREPROCESSOR_VERSION = '0.0.113-fix-disable-telemetry'
-NOW_QDRANT_INDEXER_VERSION = '0.0.10-refactor-remove-redundancy-on-ci-18'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.9-refactor-remove-redundancy-on-ci-18'
-NOW_AUTOCOMPLETE_VERSION = '0.0.5-refactor-remove-redundancy-on-ci-18'
+NOW_PREPROCESSOR_VERSION = '0.0.114-fix-disable-telemetry'
+NOW_QDRANT_INDEXER_VERSION = '0.0.11-enable-local-testing-4'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.10-enable-local-testing-4'
+NOW_AUTOCOMPLETE_VERSION = '0.0.6-enable-local-testing-4'
 
 
 class Modalities(BetterEnum):
