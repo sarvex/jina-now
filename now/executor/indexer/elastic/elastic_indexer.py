@@ -88,6 +88,7 @@ class NOWElasticIndexer(Executor):
         self.es = Elasticsearch(hosts=self.hosts, **self.es_config, ssl_show_warn=False)
         if not self.es.indices.exists(index=self.index_name):
             self.es.indices.create(index=self.index_name, mappings=self.es_mapping)
+        self.query_to_curated_ids = {}
 
     @staticmethod
     def generate_es_mapping(
@@ -210,6 +211,7 @@ class NOWElasticIndexer(Executor):
             custom_bm25_query=custom_bm25_query,
             metric=self.metric,
             filter=filter,
+            query_to_curated_ids=self.query_to_curated_ids,
         )
         for doc, query in es_queries:
             try:
@@ -312,6 +314,55 @@ class NOWElasticIndexer(Executor):
         Endpoint to get all tags and their possible values in the index.
         """
         return DocumentArray([Document(text='tags', tags={'tags': self.doc_id_tags})])
+
+    @secure_request(on='/curate', level=SecurityLevel.USER)
+    def curate(self, parameters: dict = {}, **kwargs):
+        """
+        This endpoint is only relevant for text queries.
+        It defines the top results as a list of IDs for
+        each query, and stores these as dictionary items.
+        `query_to_filter` sent in the `parameters` should
+        have the following format:
+        {
+            'query_to_filter': {
+                'query1': [
+                    {'uri': {'$eq': 'uri1'}},
+                    {'tags__internal_id': {'$eq': 'id1'}},
+                ],
+                'query2': [
+                    {'uri': {'$eq': 'uri2'}},
+                    {'tags__color': {'$eq': 'red'}},
+                ],
+            }
+        }
+        """
+        search_filter = parameters.get('query_to_filter', None)
+        if search_filter:
+            self.update_curated_ids(search_filter)
+        else:
+            raise ValueError('No filter provided for curating.')
+
+    def update_curated_ids(self, search_filter):
+        for query, filters in search_filter.items():
+            if query not in self.query_to_curated_ids:
+                self.query_to_curated_ids[query] = []
+            for filter in filters:
+                es_query = {
+                    'query': {'bool': {'filter': ESQueryBuilder.process_filter(filter)}}
+                }
+                try:
+                    resp = self.es.search(
+                        index=self.index_name, body=es_query, size=100
+                    )
+                    self.es.indices.refresh(index=self.index_name)
+                    ids = [r['_id'] for r in resp['hits']['hits']]
+                    self.query_to_curated_ids[query] += [
+                        id for id in ids if id not in self.query_to_curated_ids[query]
+                    ]
+
+                except Exception:
+                    print(traceback.format_exc())
+                    raise
 
     def update_tags(self):
         """

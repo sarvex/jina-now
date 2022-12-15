@@ -15,7 +15,7 @@ def test_generate_semantic_scores(es_inputs):
         default_semantic_scores,
     ) = es_inputs
     encoder_to_fields = {
-        document_mapping.encoder: document_mapping.fields
+        document_mapping[0]: document_mapping[2]
         for document_mapping in document_mappings
     }
     default_semantic_scores = [

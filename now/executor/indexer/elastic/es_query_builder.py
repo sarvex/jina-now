@@ -68,6 +68,7 @@ class ESQueryBuilder:
         custom_bm25_query: Optional[dict] = None,
         metric: Optional[str] = 'cosine',
         filter: dict = {},
+        query_to_curated_ids: Dict[str, list] = {},
     ) -> Dict:
         """
         Build script-score query used in Elasticsearch. To do this, we extract
@@ -89,6 +90,7 @@ class ESQueryBuilder:
         :return: a dictionary containing query and filter.
         """
         queries = {}
+        pinned_queries = {}
         docs = {}
         sources = {}
         script_params = defaultdict(dict)
@@ -105,6 +107,10 @@ class ESQueryBuilder:
                         semantic_scores,
                         custom_bm25_query,
                         filter,
+                    )
+                    pinned_queries[doc.id] = self.get_pinned_query(
+                        doc,
+                        query_to_curated_ids,
                     )
 
                     if apply_default_bm25 or custom_bm25_query:
@@ -138,15 +144,31 @@ class ESQueryBuilder:
         es_queries = []
 
         for doc_id, query in queries.items():
-            query_json = {
-                'script_score': {
-                    'query': query,
-                    'script': {
-                        'source': sources[doc_id],
-                        'params': script_params[doc_id],
+            if pinned_queries[doc_id]:
+                query_json = {'pinned': pinned_queries[doc_id]['pinned']}
+                query_json['pinned']['organic'] = {
+                    'script_score': {
+                        'query': {
+                            'bool': query['bool'],
+                        },
+                        'script': {
+                            'source': sources[doc_id],
+                            'params': script_params[doc_id],
+                        },
                     },
                 }
-            }
+            else:
+                query_json = {
+                    'script_score': {
+                        'query': {
+                            'bool': query['bool'],
+                        },
+                        'script': {
+                            'source': sources[doc_id],
+                            'params': script_params[doc_id],
+                        },
+                    },
+                }
             es_queries.append((docs[doc_id], query_json))
         return es_queries
 
@@ -189,15 +211,27 @@ class ESQueryBuilder:
         return query
 
     @staticmethod
+    def get_pinned_query(
+        doc: Document, query_to_curated_ids: Dict[str, list] = {}
+    ) -> Dict:
+        pinned_query = {}
+        if getattr(doc, 'query_text', None):
+            query_text = doc.query_text.text
+            if query_text in query_to_curated_ids.keys():
+                pinned_query = {'pinned': {'ids': query_to_curated_ids[query_text]}}
+        return pinned_query
+
+    @staticmethod
     def process_filter(filter) -> dict:
         es_search_filter = {}
         for field, filters in filter.items():
             for operator, filter in filters.items():
+                field = field.replace('__', '.')
                 if isinstance(filter, str):
-                    es_search_filter['term'] = {"tags." + field: filter}
+                    es_search_filter['term'] = {field: filter}
                 elif isinstance(filter, int) or isinstance(filter, float):
                     operator = operator.replace('$', '')
-                    es_search_filter['range'] = {"tags." + field: {operator: filter}}
+                    es_search_filter['range'] = {field: {operator: filter}}
         return es_search_filter
 
     @staticmethod

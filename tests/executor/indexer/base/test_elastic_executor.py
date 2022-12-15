@@ -47,7 +47,7 @@ class TestBaseIndexer:
         for i in range(num):
             doc = Document(
                 MMDoc(
-                    title='parent',
+                    title=f'parent_{i}',
                 )
             )
             doc.title.embedding = k[i]
@@ -58,6 +58,15 @@ class TestBaseIndexer:
             doc.tags['greeting'] = random.choice(greetings)
             res.append(doc)
         return res
+
+    def get_query(self):
+        @dataclass
+        class MMQuery:
+            query_text: Text
+
+        q = Document(MMQuery(query_text='query_1'))
+        q.query_text.embedding = np.random.random(DIM)
+        return DocumentArray([q])
 
     @pytest.fixture
     def random_index_name(self):
@@ -139,7 +148,7 @@ class TestBaseIndexer:
     def test_search(self, tmpdir, indexer, setup, random_index_name):
         metas = {'workspace': str(tmpdir)}
         docs = self.get_docs(NUMBER_OF_DOCS)
-        docs_query = self.get_docs(1)
+        docs_query = self.get_query()
         f = (
             Flow()
             .add(uses=DummyEncoder1, name='dummy_encoder1')
@@ -174,7 +183,7 @@ class TestBaseIndexer:
     def test_search_match(self, tmpdir, indexer, setup, random_index_name):
         metas = {'workspace': str(tmpdir)}
         docs = self.get_docs(NUMBER_OF_DOCS)
-        docs_query = self.get_docs(NUMBER_OF_DOCS)
+        docs_query = self.get_query()
         f = (
             Flow()
             .add(uses=DummyEncoder1, name='dummy_encoder1')
@@ -217,7 +226,7 @@ class TestBaseIndexer:
     def test_search_with_filtering(self, tmpdir, indexer, setup, random_index_name):
         metas = {'workspace': str(tmpdir)}
         docs = self.get_docs(NUMBER_OF_DOCS)
-        docs_query = self.get_docs(1)
+        docs_query = self.get_query()
 
         f = (
             Flow()
@@ -244,7 +253,7 @@ class TestBaseIndexer:
             query_res = f.search(
                 inputs=docs_query,
                 return_results=True,
-                parameters={'filter': {'price': {'$lt': 50.0}}},
+                parameters={'filter': {'tags__price': {'$lt': 50.0}}},
             )
             assert all([m.tags['price'] < 50 for m in query_res[0].matches])
 
@@ -277,11 +286,11 @@ class TestBaseIndexer:
             assert len(listed_docs) == NUMBER_OF_DOCS
             f.post(
                 on='/delete',
-                parameters={'filter': {'parent_tag': {'$eq': 'different_value'}}},
+                parameters={'filter': {'tags__parent_tag': {'$eq': 'different_value'}}},
             )
             listed_docs = f.post(on='/list', return_results=True)
             assert len(listed_docs) == NUMBER_OF_DOCS - 1
-            docs_query = self.get_docs(NUMBER_OF_DOCS)
+            docs_query = self.get_query()
             f.post(on='/search', inputs=docs_query, return_results=True)
 
     def test_get_tags(self, tmpdir, indexer, setup, random_index_name):
@@ -340,7 +349,7 @@ class TestBaseIndexer:
             f.post(on='/index', inputs=docs)
             f.post(
                 on='/delete',
-                parameters={'filter': {'color': {'$eq': 'blue'}}},
+                parameters={'filter': {'tags__color': {'$eq': 'blue'}}},
             )
             response = f.post(on='/tags')
             assert response[0].text == 'tags'
@@ -349,7 +358,7 @@ class TestBaseIndexer:
             assert 'blue' not in response[0].tags['tags']['color']
             f.post(
                 on='/delete',
-                parameters={'filter': {'greeting': {'$eq': 'hello'}}},
+                parameters={'filter': {'tags__greeting': {'$eq': 'hello'}}},
             )
             response = f.post(on='/tags')
             assert 'hello' not in response[0].tags['tags']['greeting']
@@ -540,82 +549,59 @@ class TestBaseIndexer:
             assert matches[1].pic.tensor is None
             assert matches[0].pic.tensor is None
 
-    @pytest.mark.skip('not implemented for NOWElasticIndexer')
-    def test_curate_endpoint(self, tmpdir, indexer, setup):
+    def test_curate_endpoint(self, tmpdir, indexer, setup, random_index_name):
         """Test indexing does not return anything"""
         metas = {'workspace': str(tmpdir)}
         docs = self.get_docs(NUMBER_OF_DOCS)
-        docs.append(
-            Document(
-                chunks=[
-                    Document(
-                        chunks=[
-                            Document(
-                                id='c1',
-                                embedding=np.random.random(DIM).astype(np.float32),
-                                tags={'color': 'red'},
-                                uri='uri2',
-                            ),
-                            Document(
-                                id='c2',
-                                embedding=np.random.random(DIM).astype(np.float32),
-                                tags={'color': 'red'},
-                                uri='uri2',
-                            ),
-                        ]
-                    )
-                ]
+        f = (
+            Flow()
+            .add(uses=DummyEncoder1, name='dummy_encoder1')
+            .add(uses=DummyEncoder2, name='dummy_encoder2')
+            .add(
+                uses=indexer,
+                uses_with={
+                    'hosts': 'http://localhost:9200',
+                    'index_name': random_index_name,
+                    'document_mappings': [
+                        ('dummy_encoder1', DIM, ['title']),
+                        ('dummy_encoder2', DIM, ['title']),
+                    ],
+                },
+                uses_metas=metas,
+                needs=['dummy_encoder1', 'dummy_encoder2'],
+                no_reduce=True,
             )
         )
-        f = Flow().add(
-            uses=indexer,
-            uses_with={
-                'dim': DIM,
-            },
-            uses_metas=metas,
-        )
         with f:
+            f.index(docs)
             f.post(
                 on='/curate',
                 parameters={
                     'query_to_filter': {
-                        'query1': [
-                            {'uri': {'$eq': 'uri2'}},
+                        'query_1': [
+                            {'text': {'$eq': 'parent_1'}},
                             {'tags__color': {'$eq': 'red'}},
+                        ],
+                        'query_2': [
+                            {'text': {'$eq': 'parent_2'}},
                         ],
                     }
                 },
             )
-            f.index(docs, return_results=True)
+            query_doc = self.get_query()
             result = f.search(
-                inputs=Document(
-                    chunks=[
-                        Document(
-                            chunks=[
-                                Document(text='query1', embedding=np.array([0.1] * 128))
-                            ]
-                        ),
-                    ]
-                ),
+                inputs=query_doc,
                 return_results=True,
             )
+
             assert len(result) == 1
-            assert result[0].matches[0].uri == 'uri2'
-            assert result[0].matches[1].uri != 'uri2'  # no duplicated results
-            assert result[0].matches[0].tags['color'] == 'red'
+            assert result[0].matches[0].title.text == 'parent_1'
+            assert (
+                result[0].matches[1].title.text != 'parent_1'
+            )  # no duplicated results
+            assert result[0].matches[1].tags['color'] == 'red'
 
             # not crashing in case of curated list + non-curated query
-            f.search(
-                inputs=Document(
-                    chunks=[
-                        Document(
-                            chunks=[
-                                Document(
-                                    text='another string',
-                                    embedding=np.array([0.1] * 128),
-                                )
-                            ]
-                        ),
-                    ]
-                )
-            )
+            non_curated_query = self.get_query()
+            non_curated_query[0].query_text.text = 'parent_x'
+            f.search(inputs=non_curated_query)

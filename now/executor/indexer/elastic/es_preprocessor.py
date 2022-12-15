@@ -37,6 +37,8 @@ class ESPreprocessor:
                             ),  # concatenate texts of subdocuments
                             embedding=embedding,
                         )
+                        if field_doc[0].uri:
+                            new_doc.uri = field_doc[0].uri
                         new_doc.tags['embeddings'] = {}
                         new_doc.tags['embeddings'][
                             f'{field_name}-{executor_name}'

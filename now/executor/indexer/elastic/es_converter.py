@@ -35,10 +35,8 @@ class ESConverter:
                     # remove embeddings from serialized doc
                     _doc[..., 'embedding'] = None
                     _doc[..., 'tensor'] = None
-                    _doc[..., 'blob'] = b''
-                    es_docs[doc.id]['serialized_doc'] = DocumentArray(
-                        _doc[0]
-                    ).to_base64()
+                    _doc[..., 'blob'] = None
+                    es_docs[doc.id]['serialized_doc'] = _doc.to_base64()
                 es_doc = es_docs[doc.id]
                 for encoded_field in encoder_to_fields[executor_name]:
                     field_doc = getattr(doc, encoded_field)
@@ -47,6 +45,9 @@ class ESConverter:
                     ] = field_doc.embedding
                     if hasattr(field_doc, 'text') and field_doc.text:
                         es_doc['bm25_text'] += field_doc.text + ' '
+                        es_doc['text'] = field_doc.text
+                    if hasattr(field_doc, 'uri') and field_doc.uri:
+                        es_doc['uri'] = field_doc.uri
         return list(es_docs.values())
 
     def get_embedding(self, field_doc: Union[ChunkArray, Document]) -> np.array:
