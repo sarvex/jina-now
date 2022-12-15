@@ -115,8 +115,9 @@ def test_da_custom_ds(da: DocumentArray):
     app = ImageTextRetrieval()
     loaded_da = load_data(app, user_input)
 
+    assert len(loaded_da) > 0
     for doc in loaded_da:
-        assert doc.content
+        assert doc.chunks
 
 
 @pytest.fixture

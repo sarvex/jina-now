@@ -99,10 +99,9 @@ def _pull_docarray(dataset_name: str):
     try:
         return DocumentArray.pull(name=dataset_name, show_progress=True)
     except Exception:
-        print(
+        raise ValueError(
             '💔 oh no, the secret of your docarray is wrong, or it was deleted after 14 days'
         )
-        exit(1)
 
 
 def _load_to_datauri_and_save_into_tags(d: Document) -> Document:
