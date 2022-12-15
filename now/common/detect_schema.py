@@ -12,12 +12,11 @@ from now.now_dataclasses import UserInput
 
 def _create_candidate_search_filter_fields(field_name_to_value):
     """
-    Creates candidate search fields from the field_names
+    Creates candidate search fields from the field_names for s3
+    and local file path.
     A candidate search field is a field that we can detect its modality
     A candidate filter field is a field that we can't detect its modality,
     or it's modality is different from image, video or audio.
-
-    In case of docarray, we assume all fields are potentially searchable
 
     :param field_name_to_value: dictionary
     """
@@ -62,7 +61,7 @@ def _create_candidate_search_filter_fields(field_name_to_value):
     return search_fields_modalities, filter_field_modalities
 
 
-def _extract_field_names_docarray(response):
+def _extract_field_candidates_docarray(response):
     """
     Downloads the first document in the document array and extracts field names from it
     if tags also exists then it extracts the keys from tags and adds to the field_names
@@ -74,12 +73,15 @@ def _extract_field_names_docarray(response):
     mm_schema = da[0]._metadata['fields']['multi_modal_schema']
     mm_fields = mm_schema['structValue']['fields']
     for field_name, value in mm_fields.items():
-        search_modalities[field_name] = value['structValue']['fields']['type'][
-            'stringValue'
-        ]
-    if 'tags' in response.json()[0]:
-        for el, value in response.json()[0]['tags']['fields'].items():
-            filter_modalities[el] = value
+        field_type = value['structValue']['fields']['type']['stringValue']
+        field_pos = value['structValue']['fields']['position']['numberValue']
+        if da[0].chunks[field_pos].text != '':
+            filter_modalities[field_name] = field_type
+        search_modalities[field_name] = field_type
+    if da[0].tags:
+        for el, value in da[0].tags['fields'].items():
+            for val_type, val in value.items():
+                filter_modalities[el] = val_type
     return search_modalities, filter_modalities
 
 
@@ -105,11 +107,12 @@ def set_field_names_from_docarray(user_input: UserInput, **kwargs):
         json=json_data,
     )
     if response.json()['code'] == 200:
-        search_modalities, filter_modalities = _extract_field_names_docarray(response)
+        (
+            user_input.search_fields_modalities,
+            user_input.filter_fields_modalities,
+        ) = _extract_field_candidates_docarray(response)
     else:
         raise ValueError('DocumentArray does not exist or you do not have access to it')
-    user_input.search_fields_modalities = search_modalities
-    user_input.filter_fields_modalities = filter_modalities
 
 
 def _check_contains_files_only_s3_bucket(objects):

@@ -3,7 +3,9 @@ import io
 import os
 from collections import OrderedDict
 from copy import deepcopy
+from urllib.error import HTTPError
 from urllib.parse import quote, unquote
+from urllib.request import urlopen
 
 import av
 import extra_streamlit_components as stx
@@ -13,7 +15,14 @@ import streamlit.components.v1 as components
 from better_profanity import profanity
 from docarray import Document, DocumentArray
 from jina import Client
-from src.constants import BUTTONS, RTC_CONFIGURATION, SSO_COOKIE, SURVEY_LINK
+from src.constants import (
+    BUTTONS,
+    RTC_CONFIGURATION,
+    SSO_COOKIE,
+    SURVEY_LINK,
+    ds_set,
+    root_data_dir,
+)
 from src.search import (
     get_query_params,
     search_by_audio,
@@ -37,8 +46,9 @@ def convert_file_to_document(query):
     return doc
 
 
-def load_music_examples(ds_name) -> DocumentArray:
-    return DocumentArray().pull(ds_name)
+def load_music_examples(DATA) -> DocumentArray:
+    ds_url = root_data_dir + 'music/' + DATA + f'-music10.bin'
+    return load_data(ds_url)[0, 1, 4]
 
 
 @st.cache(allow_output_mutation=True, suppress_st_warning=True)
@@ -100,12 +110,9 @@ def deploy_streamlit():
     if redirect_to and st.session_state.login:
         nav_to(redirect_to)
     else:
-        try:
-            da_img = DocumentArray().pull(f'{params.data}-img10')
-            da_txt = DocumentArray().pull(f'{params.data}-txt10')
-        except Exception as e:  # noqa
-            da_img = None
-            da_txt = None
+        media_type = 'Text'
+
+        da_img, da_txt = load_example_queries(params.data, params.output_modality)
 
         if params.output_modality == 'text':
             # censor words in text incl. in custom data
@@ -263,6 +270,27 @@ def _do_logout():
         'https://api.hubble.jina.ai/v2/rpc/user.session.dismiss',
         headers=headers,
     )
+
+
+def load_example_queries(data, output_modality):
+    da_img = None
+    da_txt = None
+    if data in ds_set:
+        try:
+            if output_modality == 'image-or-text' or output_modality == 'video':
+                output_modality_dir = 'jpeg'
+                data_dir = root_data_dir + output_modality_dir + '/'
+                da_img, da_txt = load_data(data_dir + data + f'.img10.bin'), load_data(
+                    data_dir + data + f'.txt10.bin'
+                )
+            elif output_modality == 'text':
+                # for now deactivated sample images for text
+                output_modality_dir = 'text'
+                data_dir = root_data_dir + output_modality_dir + '/'
+                da_txt = load_data(data_dir + data + f'.txt10.bin')
+        except HTTPError as exc:
+            print('Could not load samples for the demo dataset', exc)
+    return da_img, da_txt
 
 
 def setup_design():
@@ -518,7 +546,7 @@ def render_music_app(ds_name, filter_selection):
 
     else:
         columns = st.columns(3)
-        music_examples = DocumentArray().pull(f'{ds_name}-music10')
+        music_examples = load_music_examples(ds_name)
 
         def on_button_click(doc_id: str):
             def callback():
@@ -634,6 +662,26 @@ def clear_match():
 def clear_text():
     st.session_state.text_search_box = ''
     clear_match()
+
+
+def load_data(data_path: str) -> DocumentArray:
+    if data_path.startswith('http'):
+        os.makedirs('data/tmp', exist_ok=True)
+        url = data_path
+        data_path = (
+            f"data/tmp/{base64.b64encode(bytes(url, 'utf-8')).decode('utf-8')}.bin"
+        )
+        if not os.path.exists(data_path):
+            with urlopen(url) as f:
+                content = f.read()
+            with open(data_path, 'wb') as f:
+                f.write(content)
+
+    try:
+        da = DocumentArray.load_binary(data_path)
+    except Exception:
+        da = DocumentArray.load_binary(data_path, compress='gzip')
+    return da
 
 
 def get_login_button(url):

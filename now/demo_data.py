@@ -34,7 +34,7 @@ class DemoDataset(BaseModel):
     display_modality: str
 
     def get_data(self, *args, **kwargs) -> DocumentArray:
-        return DocumentArray().pull(self.name)
+        return DocumentArray.pull(self.name)
 
 
 AVAILABLE_DATASET = {
