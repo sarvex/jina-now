@@ -7,6 +7,7 @@ import os
 from typing import Dict
 
 import pytest
+from docarray.typing import Image, Text
 from pytest_mock import MockerFixture
 
 from now.constants import DEFAULT_FLOW_NAME, Apps, DatasetTypes
@@ -14,15 +15,15 @@ from now.demo_data import DemoDatasetNames
 from now.dialog import configure_user_input
 from now.now_dataclasses import UserInput
 
-SEARCH_FIELDS_MODALITIES = {'text': 'text', 'uri': 'image'}
+SEARCH_FIELDS_MODALITIES = {'text': Text, 'uri': Image}
 FILTER_FIELDS_MODALITIES = {
-    'text': 'str',
-    'original_height': 'dict',
-    'similarity': 'dict',
-    'NSFW': 'dict',
-    'height': 'dict',
-    'original_width': 'dict',
-    'width': 'dict',
+    'text': str,
+    'original_height': dict,
+    'similarity': dict,
+    'NSFW': dict,
+    'height': dict,
+    'original_width': dict,
+    'width': dict,
 }
 
 
