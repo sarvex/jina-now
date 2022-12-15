@@ -9,10 +9,10 @@ DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 # ----------------------------------
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.135-test-reactivate'
 # ----------------------------------
-NOW_PREPROCESSOR_VERSION = '0.0.113-elastic-multimodal-8x'
-NOW_QDRANT_INDEXER_VERSION = '0.0.11-elastic-multimodal-8x'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.10-elastic-multimodal-8x'
-NOW_AUTOCOMPLETE_VERSION = '0.0.6-elastic-multimodal-8x'
+NOW_PREPROCESSOR_VERSION = '0.0.113-elastic-multimodal-9x'
+NOW_QDRANT_INDEXER_VERSION = '0.0.11-elastic-multimodal-9x'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.10-elastic-multimodal-9x'
+NOW_AUTOCOMPLETE_VERSION = '0.0.6-elastic-multimodal-9x'
 
 
 class Modalities(BetterEnum):
