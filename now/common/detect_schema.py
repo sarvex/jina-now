@@ -74,6 +74,11 @@ def _extract_field_candidates_docarray(response):
     mm_fields = mm_schema['structValue']['fields']
     for field_name, value in mm_fields.items():
         field_type = value['structValue']['fields']['type']['stringValue']
+        if 'position' not in value['structValue']['fields']:
+            raise ValueError(
+                'No modalities found in this multi-modal documents. Please follow the steps in the documentation'
+                ' to add modalities to your documents https://docarray.jina.ai/datatypes/multimodal/'
+            )
         field_pos = value['structValue']['fields']['position']['numberValue']
         if da[0].chunks[field_pos].text != '':
             filter_modalities[field_name] = field_type

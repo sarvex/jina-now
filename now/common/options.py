@@ -221,7 +221,21 @@ SEARCH_FIELDS = DialogOptions(
     depends_on=DATASET_TYPE,
     conditional_check=lambda user_input: user_input.search_fields_modalities is not None
     and len(user_input.search_fields_modalities.keys()) > 0,
+    post_func=lambda user_input, **kwargs: _update_filter_fields(user_input),
 )
+
+
+def _update_filter_fields(user_input: UserInput):
+    """
+    Update the filter fields based on the search fields selected by the user.
+
+    :param user_input: UserInput object
+    """
+    user_input.filter_fields_modalities = {
+        field: field_type
+        for field, field_type in user_input.filter_fields_modalities.items()
+        if field not in user_input.search_fields
+    }
 
 
 FILTER_FIELDS = DialogOptions(
@@ -235,11 +249,18 @@ FILTER_FIELDS = DialogOptions(
     prompt_type='checkbox',
     depends_on=DATASET_TYPE,
     conditional_check=lambda user_input: user_input.filter_fields_modalities is not None
-    and len(
-        set(user_input.filter_fields_modalities.keys()) - set(user_input.search_fields)
-    )
-    > 0,
+    and len(user_input.filter_fields_modalities.keys()) > 0,
+    post_func=lambda user_input, **kwargs: _reset_filter_modalities(user_input),
 )
+
+
+def _reset_filter_modalities(user_input: UserInput):
+    filter_modalities = {}
+    if user_input.filter_fields:
+        for field, field_type in user_input.filter_fields_modalities.items():
+            if field in user_input.filter_fields:
+                filter_modalities[field] = field_type
+    user_input.filter_fields_modalities = filter_modalities
 
 
 ES_INDEX_NAME = DialogOptions(
