@@ -7,7 +7,7 @@ import requests
 from starlette import status
 
 from now.constants import DEMO_DATASET_DOCARRAY_VERSION, Modalities
-from now.data_loading.utils import get_dataset_url
+from now.data_loading.data_loading import get_dataset_url
 from now.demo_data import AVAILABLE_DATASET
 
 

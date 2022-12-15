@@ -9,11 +9,10 @@ from rich.table import Column, Table
 
 from now import run_backend, run_bff_playground
 from now.cloud_manager import setup_cluster
-from now.constants import DOCKER_BFF_PLAYGROUND_TAG, SURVEY_LINK, DatasetTypes
+from now.constants import DOCKER_BFF_PLAYGROUND_TAG, DatasetTypes
 from now.deployment.deployment import cmd, list_all_wolf, status_wolf, terminate_wolf
 from now.dialog import configure_user_input
 from now.log import yaspin_extended
-from now.system_information import get_system_state
 from now.utils import _get_context_names, get_flow_id, maybe_prompt_user, sigmap
 
 
@@ -91,13 +90,6 @@ def stop_now(contexts, active_context, **kwargs):
             cmd(f'{kwargs["kubectl_path"]} delete ns nowapi')
             spinner.ok('💀')
         cowsay.cow(f'nowapi namespace removed from {cluster}')
-
-
-def get_task(kwargs):
-    for x in ['cli', 'now']:
-        if x in kwargs:
-            return kwargs[x]
-    raise Exception('kwargs do not contain a task')
 
 
 def start_now(**kwargs):
@@ -193,37 +185,3 @@ def start_now(**kwargs):
         'port': gateway_port_internal,
         'secured': user_input.secured,
     }
-
-
-def run_k8s(os_type: str = 'linux', arch: str = 'x86_64', **kwargs):
-    contexts, active_context = get_system_state(**kwargs)
-    task = get_task(kwargs)
-    if task == 'start':
-        return start_now(
-            contexts=contexts,
-            active_context=active_context,
-            os_type=os_type,
-            arch=arch,
-            **kwargs,
-        )
-    elif task == 'stop':
-        return stop_now(contexts, active_context, **kwargs)
-    elif task == 'survey':
-        import webbrowser
-
-        webbrowser.open(SURVEY_LINK, new=0, autoraise=True)
-    else:
-        raise Exception(f'unknown task, {task}')
-
-
-if __name__ == '__main__':
-    run_k8s(
-        app='text_to_image',
-        data='bird-species',
-        cluster='kind-jina-now',
-        deployment_type='local',
-        kubectl_path='/usr/local/bin/kubectl',
-        kind_path='/Users/sebastianlettner/.cache/jina-now/kind',
-        proceed=True,
-        now='start',
-    )
