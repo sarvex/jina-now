@@ -11,8 +11,13 @@ from now.deployment.deployment import cmd
 
 
 @pytest.fixture()
-def resources_folder_path() -> str:
-    return os.path.join(os.path.dirname(os.path.realpath(__file__)), 'resources')
+def resources_folder_path(tests_folder_path) -> str:
+    return os.path.join(tests_folder_path, 'resources')
+
+
+@pytest.fixture()
+def tests_folder_path() -> str:
+    return os.path.join(os.path.dirname(os.path.realpath(__file__)))
 
 
 @pytest.fixture(scope='session')
