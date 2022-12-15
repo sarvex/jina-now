@@ -4,7 +4,7 @@ import os
 
 import requests
 
-from now.constants import SUPPORTED_FILE_TYPES, Modalities
+from now.constants import SUPPORTED_FILE_TYPES, Modalities, modalities_mapping
 from now.data_loading.data_loading import get_s3_bucket_and_folder_prefix
 from now.now_dataclasses import UserInput
 
@@ -22,17 +22,18 @@ def _create_candidate_search_filter_fields(field_name_to_value):
     """
     search_fields_modalities = {}
     filter_field_modalities = {}
+    mapping_dict = modalities_mapping()
     for field_name, field_value in field_name_to_value.items():
         # we determine search modality
         for modality, modality_types in SUPPORTED_FILE_TYPES.items():
             if field_name.split('.')[-1] in modality_types:
-                search_fields_modalities[field_name] = modality
+                search_fields_modalities[field_name] = mapping_dict[modality]
                 break
             if field_name == 'uri' and field_value.split('.')[-1] in modality_types:
-                search_fields_modalities[field_name] = modality
+                search_fields_modalities[field_name] = mapping_dict[modality]
                 break
             if field_name == 'text' and field_value:
-                search_fields_modalities[field_name] = Modalities.TEXT
+                search_fields_modalities[field_name] = mapping_dict[Modalities.TEXT]
                 break
         # we determine if it's a filter field
         if field_name == 'uri':
@@ -42,9 +43,7 @@ def _create_candidate_search_filter_fields(field_name_to_value):
                 + SUPPORTED_FILE_TYPES[Modalities.VIDEO]
                 + SUPPORTED_FILE_TYPES[Modalities.MUSIC]
             ):
-                filter_field_modalities[field_name] = str(
-                    field_value.__class__.__name__
-                )
+                filter_field_modalities[field_name] = field_value.__class__
             continue
         if (
             field_name.split('.')[-1]
@@ -52,7 +51,7 @@ def _create_candidate_search_filter_fields(field_name_to_value):
             + SUPPORTED_FILE_TYPES[Modalities.VIDEO]
             + SUPPORTED_FILE_TYPES[Modalities.MUSIC]
         ):
-            filter_field_modalities[field_name] = str(field_value.__class__.__name__)
+            filter_field_modalities[field_name] = field_value.__class__
 
     if len(search_fields_modalities.keys()) == 0:
         raise ValueError(
@@ -117,10 +116,13 @@ def _check_contains_files_only_s3_bucket(objects):
 
     :param objects: list of objects in the bucket
     """
+    field_name = {}
     for obj in objects[1:]:
         if obj.key.endswith('/'):
-            return False
-    return True
+            return field_name
+    first_file_name = obj[1].key.split('/')[-1]
+    field_name[first_file_name] = first_file_name
+    return field_name
 
 
 def _check_folder_structure_s3_bucket(objects, folder_prefix):
@@ -154,12 +156,15 @@ def _extract_field_names_s3_folder(first_folder_objects):
     """
     field_names = {}
     for field in first_folder_objects:
+        file_name = field.key.split('/')[-1]
+        if file_name.startswith('.'):
+            continue
         if field.key.endswith('.json'):
             data = json.loads(field.get()['Body'].read())
             for el, value in data.items():
                 field_names[el] = value
         else:
-            field_names[field.key.split('/')[-1]] = field.key.split('/')[-1]
+            field_names[file_name] = file_name
     return field_names
 
 
@@ -177,7 +182,14 @@ def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
     )  # user has to provide the folder where folder structure begins
 
     objects = list(bucket.objects.filter(Prefix=folder_prefix))
-    if _check_contains_files_only_s3_bucket(objects):
+    field_names = _check_contains_files_only_s3_bucket(objects)
+    if field_names.keys():
+        (
+            search_fields_modalities,
+            filter_fields_modalities,
+        ) = _create_candidate_search_filter_fields(field_names)
+        user_input.search_fields_modalities = search_fields_modalities
+        user_input.filter_fields_modalities = filter_fields_modalities
         return
 
     _check_folder_structure_s3_bucket(objects, folder_prefix)
@@ -208,10 +220,15 @@ def _check_contains_files_only_local_folder(dataset_path):
 
     :param dataset_path: path to the folder
     """
+    file_name = {}
+    first_file = ''
     for file_or_directory in os.listdir(dataset_path):
         if not os.path.isfile(os.path.join(dataset_path, file_or_directory)):
-            return False
-    return True
+            return file_name
+        if not first_file and not file_or_directory.startswith('.'):
+            first_file = file_or_directory
+    file_name[first_file] = first_file
+    return file_name
 
 
 def _check_folder_structure_local_folder(dataset_path):
@@ -242,6 +259,8 @@ def _extract_field_names_local_folder(first_folder):
     """
     field_names = {}
     for field_name in os.listdir(first_folder):
+        if field_name.startswith('.'):
+            continue
         if field_name.endswith('.json'):
             json_f = open(os.path.join(first_folder, field_name))
             data = json.load(json_f)
@@ -266,7 +285,14 @@ def set_field_names_from_local_folder(user_input: UserInput, **kwargs):
         raise ValueError(
             'The path provided is not a folder, please check documentation https://now.jina.ai'
         )
-    if _check_contains_files_only_local_folder(dataset_path):
+    file_names = _check_contains_files_only_local_folder(dataset_path)
+    if file_names.keys():
+        (
+            search_fields_modalities,
+            filter_fields_modalities,
+        ) = _create_candidate_search_filter_fields(file_names)
+        user_input.search_fields_modalities = search_fields_modalities
+        user_input.filter_fields_modalities = filter_fields_modalities
         return
 
     first_path = _check_folder_structure_local_folder(dataset_path)

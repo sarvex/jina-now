@@ -1,5 +1,7 @@
 from __future__ import annotations, print_function, unicode_literals
 
+from docarray.typing import Audio, Image, Text, Video
+
 from now.utils import BetterEnum
 
 # TODO: Uncomment the DEMO_DATASET_DOCARRAY_VERSION when the DocumentArray datasets on GCloud has been changed
@@ -21,6 +23,15 @@ class Modalities(BetterEnum):
     MUSIC = 'music'
     VIDEO = 'video'
     TEXT_AND_IMAGE = 'text-and-image'
+
+
+def modalities_mapping():
+    return {
+        Modalities.TEXT: Text,
+        Modalities.IMAGE: Image,
+        Modalities.MUSIC: Audio,
+        Modalities.VIDEO: Video,
+    }
 
 
 class Apps(BetterEnum):

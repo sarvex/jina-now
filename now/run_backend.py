@@ -7,14 +7,14 @@ from time import sleep
 from typing import Dict, Optional
 
 import requests
-from docarray import DocumentArray
+from docarray import DocumentArray, dataclass, field
 from jina.clients import Client
 from tqdm import tqdm
 
 from now.admin.update_api_keys import update_api_keys
 from now.app.base.app import JinaNOWApp
 from now.common.testing import handle_test_mode
-from now.constants import ACCESS_PATHS
+from now.constants import ACCESS_PATHS, DatasetTypes
 from now.data_loading.data_loading import load_data
 from now.deployment.flow import deploy_flow
 from now.log import time_profiler
@@ -38,7 +38,8 @@ def run(
     :param ns:
     :return:
     """
-    dataset = load_data(app_instance, user_input)
+    data_class = create_dataclass(user_input)
+    dataset = load_data(user_input, data_class)
 
     env_dict = app_instance.setup(
         dataset=dataset, user_input=user_input, kubectl_path=kubectl_path
@@ -205,3 +206,95 @@ def estimate_request_size(index, max_request_size):
     max_size = 50_000
     request_size = max(min(max_request_size, int(max_size / size)), 1)
     return request_size
+
+
+def update_dict_with_no_overwrite(dict1, dict2):
+    """
+    Update dict1 with dict2, but only if the key does not exist in dict1
+    """
+    for key, value in dict2.items():
+        if key not in dict1:
+            dict1[key] = value
+
+
+def create_dataclass(user_input: UserInput):
+    """
+    Create a dataclass from the user input
+    """
+    all_annotations = {}
+    all_class_attributes = {}
+    (
+        search_fields_annotations,
+        search_fields_class_attributes,
+    ) = create_annotations_and_class_attributes(
+        user_input.search_fields,
+        user_input.search_fields_modalities,
+        user_input.dataset_type,
+    )
+    all_annotations.update(search_fields_annotations)
+    all_class_attributes.update(search_fields_class_attributes)
+
+    if user_input.dataset_type == DatasetTypes.S3_BUCKET:
+        S3Object, my_setter, my_getter = create_s3_type()
+        all_annotations['json_s3'] = S3Object
+        all_class_attributes['json_s3'] = field(
+            setter=my_setter, getter=my_getter, default=''
+        )
+
+    (
+        filter_fields_annotations,
+        filter_fields_class_attributes,
+    ) = create_annotations_and_class_attributes(
+        user_input.filter_fields,
+        user_input.filter_fields_modalities,
+        user_input.dataset_type,
+    )
+
+    update_dict_with_no_overwrite(all_annotations, filter_fields_annotations)
+    update_dict_with_no_overwrite(all_class_attributes, filter_fields_class_attributes)
+
+    if user_input.dataset_type == DatasetTypes.S3_BUCKET:
+        S3Object, my_setter, my_getter = create_s3_type()
+        all_annotations['json_s3'] = S3Object
+        all_class_attributes['json_s3'] = field(
+            setter=my_setter, getter=my_getter, default=''
+        )
+
+    mm_doc = type("MMDoc", (object,), all_class_attributes)
+    setattr(mm_doc, '__annotations__', all_annotations)
+    mm_doc = dataclass(mm_doc)
+    return mm_doc
+
+
+def create_annotations_and_class_attributes(fields, fields_modalities, dataset_type):
+    annotations = {}
+    class_attributes = {}
+    S3Object, my_setter, my_getter = create_s3_type()
+
+    for f in fields:
+        f_replaced = f.replace('.', '_')
+        if dataset_type == DatasetTypes.S3_BUCKET:
+            annotations[f_replaced] = S3Object
+            class_attributes[f_replaced] = field(
+                setter=my_setter, getter=my_getter, default=''
+            )
+        else:
+            annotations[f_replaced] = fields_modalities[f]
+            class_attributes[f_replaced] = None
+    return annotations, class_attributes
+
+
+def create_s3_type():
+    from typing import TypeVar
+
+    from docarray import Document
+
+    S3Object = TypeVar('S3Object', bound=str)
+
+    def my_setter(value) -> 'Document':
+        return Document(uri=value)
+
+    def my_getter(doc: 'Document'):
+        return doc.uri
+
+    return S3Object, my_setter, my_getter
