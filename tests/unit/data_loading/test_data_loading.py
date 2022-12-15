@@ -9,7 +9,7 @@ from pytest_mock import MockerFixture
 from now.app.image_text_retrieval.app import ImageTextRetrieval
 from now.app.music_to_music.app import MusicToMusic
 from now.constants import DatasetTypes
-from now.data_loading.data_loading import _load_tags_from_json_if_needed, load_data
+from now.data_loading.data_loading import load_data
 from now.demo_data import DemoDatasetNames
 from now.now_dataclasses import UserInput
 
@@ -131,28 +131,3 @@ def get_data(gif_resource_path, files):
     return DocumentArray(
         Document(uri=os.path.join(gif_resource_path, file)) for file in files
     )
-
-
-def test_load_tags_ignore_too_many_files(user_input, gif_resource_path: str):
-    da = get_data(
-        gif_resource_path,
-        [
-            'folder1/file.gif',
-            'folder1/meta.json',
-            'folder1/file.txt',
-            'folder2/file.gif',
-            'folder2/meta.json',
-        ],
-    )
-    da_merged = _load_tags_from_json_if_needed(da, user_input)
-    assert len(da_merged) == 2
-    assert da_merged[0].tags['tag_uri'].endswith('folder1/meta.json')
-    assert da_merged[1].tags['tag_uri'].endswith('folder2/meta.json')
-
-
-def test_load_tags_no_tags_if_missing(user_input, gif_resource_path: str):
-    da = get_data(
-        gif_resource_path, ['folder1/file.gif', 'folder2/file.gif', 'folder2/meta.json']
-    )
-    da_merged = _load_tags_from_json_if_needed(da, user_input)
-    assert len(da_merged) == 2
