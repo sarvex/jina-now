@@ -21,7 +21,7 @@ from now.now_dataclasses import UserInput
 from now.utils import download, sigmap
 
 
-def load_data(user_input: UserInput, data_class) -> DocumentArray:
+def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
     """Based on the user input, this function will pull the configured DocumentArray dataset ready for the preprocessing
     executor.
 
@@ -85,6 +85,12 @@ def _extract_es_data(user_input: UserInput) -> DocumentArray:
 
 
 def _load_from_disk(user_input: UserInput, dataclass) -> DocumentArray:
+    """
+    Loads the data from disk into multimodal documents.
+
+    :param user_input: The user input object.
+    :param dataclass: The dataclass to use for the DocumentArray.
+    """
     dataset_path = user_input.dataset_path.strip()
     dataset_path = os.path.expanduser(dataset_path)
     if os.path.isfile(dataset_path):
@@ -98,7 +104,7 @@ def _load_from_disk(user_input: UserInput, dataclass) -> DocumentArray:
             sigmap=sigmap, text="Loading data from folder", color="green"
         ) as spinner:
             spinner.ok('🏭')
-            docs = from_files(
+            docs = from_files_local(
                 dataset_path,
                 user_input.search_fields + user_input.filter_fields,
                 dataclass,
@@ -111,7 +117,7 @@ def _load_from_disk(user_input: UserInput, dataclass) -> DocumentArray:
         )
 
 
-def from_files(
+def from_files_local(
     path: str,
     fields: List[str],
     data_class,
@@ -121,6 +127,8 @@ def from_files(
     :param path: The path to the directory
     :param fields: The fields to search for in the directory
     :param data_class: The dataclass to use for the document
+
+    :return: A DocumentArray with the documents
     """
 
     def get_subdirectories_local_path(directory):
@@ -141,6 +149,17 @@ def from_files(
 def create_docs_from_subdirectories(
     subdirectories: List, path: str, fields: List[str], data_class
 ) -> List[Document]:
+    """
+    Creates a Multi Modal documentarray over a list of subdirectories.
+
+    :param subdirectories: The list of subdirectories
+    :param path: The path to the directory
+    :param fields: The fields to search for in the directory
+    :param data_class: The dataclass to use for the document
+
+    :return: The list of documents
+    """
+
     docs = []
     kwargs = {}
     for subdirectory in subdirectories:
@@ -158,6 +177,15 @@ def create_docs_from_subdirectories(
 
 
 def create_docs_from_files(path: str, fields: List[str], data_class) -> List[Document]:
+    """
+    Creates a Multi Modal documentarray over a list of files.
+
+    :param path: The path to the directory
+    :param fields: The fields to search for in the directory
+    :param data_class: The dataclass to use for the document
+
+    :return: A list of documents
+    """
     docs = []
     for file in os.listdir(os.path.join(path)):
         kwargs = {}
@@ -171,9 +199,25 @@ def create_docs_from_files(path: str, fields: List[str], data_class) -> List[Doc
 
 
 def _list_files_from_s3_bucket(user_input: UserInput, data_class) -> DocumentArray:
+    """
+    Loads the data from s3 into multimodal documents.
+
+    :param user_input: The user input object.
+    :param data_class: The dataclass to use for the DocumentArray.
+
+    :return: The DocumentArray with the documents.
+    """
     bucket, folder_prefix = get_s3_bucket_and_folder_prefix(user_input)
 
     def get_subdirectories(s3_bucket, root_folder):
+        """
+        Gets the subdirectories of a given folder in a s3 bucket.
+
+        :param s3_bucket: The s3 bucket.
+        :param root_folder: The root folder.
+
+        :return: The list of subdirectories.
+        """
         sub_directories = []
         for obj in list(s3_bucket.objects.filter(Prefix=root_folder))[1:]:
             if obj.key.endswith('/'):
@@ -207,6 +251,17 @@ def _list_files_from_s3_bucket(user_input: UserInput, data_class) -> DocumentArr
 def create_docs_from_subdirectories_s3(
     subdirectories: List, path: str, fields: List[str], data_class, bucket
 ) -> List[Document]:
+    """
+    Creates a Multi Modal documentarray over a list of subdirectories.
+
+    :param subdirectories: The list of subdirectories
+    :param path: The path to the directory
+    :param fields: The fields to search for in the directory
+    :param data_class: The dataclass to use for the document
+    :param bucket: The s3 bucket
+
+    :return: The list of documents
+    """
     docs = []
     kwargs = {}
     for subdirectory in subdirectories:
@@ -226,6 +281,17 @@ def create_docs_from_subdirectories_s3(
 def create_docs_from_files_s3(
     folder: str, path: str, fields: List[str], data_class, bucket
 ) -> List[Document]:
+    """
+    Creates a Multi Modal documentarray over a list of files.
+
+    :param folder: The folder to search for files
+    :param path: The path to the directory
+    :param fields: The fields to search for in the directory
+    :param data_class: The dataclass to use for the document
+    :param bucket: The s3 bucket
+
+    :return: A list of documents
+    """
     docs = []
     for obj in list(bucket.objects.filter(Prefix=folder))[1:]:
         kwargs = {}
@@ -286,6 +352,13 @@ def get_dataset_url(dataset: str, output_modality: str) -> str:
 
 
 def get_s3_bucket_and_folder_prefix(user_input: UserInput):
+    """
+    Gets the s3 bucket and folder prefix from the user input.
+
+    :param user_input: The user input
+
+    :return: The s3 bucket and folder prefix
+    """
     import boto3.session
 
     s3_uri = user_input.dataset_path

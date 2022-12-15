@@ -4,7 +4,7 @@ import sys
 import uuid
 from copy import deepcopy
 from time import sleep
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 import requests
 from docarray import DocumentArray, dataclass, field
@@ -208,9 +208,12 @@ def estimate_request_size(index, max_request_size):
     return request_size
 
 
-def update_dict_with_no_overwrite(dict1, dict2):
+def update_dict_with_no_overwrite(dict1: Dict, dict2: Dict):
     """
     Update dict1 with dict2, but only if the key does not exist in dict1
+
+    :param dict1: dict to be updated
+    :param dict2: dict to be used for updating
     """
     for key, value in dict2.items():
         if key not in dict1:
@@ -219,7 +222,10 @@ def update_dict_with_no_overwrite(dict1, dict2):
 
 def create_dataclass(user_input: UserInput):
     """
-    Create a dataclass from the user input
+    Create a dataclass from the user input using the selected search anf filter fields
+    and their corresponding modalities
+
+    :param user_input: user input
     """
     all_annotations = {}
     all_class_attributes = {}
@@ -266,7 +272,18 @@ def create_dataclass(user_input: UserInput):
     return mm_doc
 
 
-def create_annotations_and_class_attributes(fields, fields_modalities, dataset_type):
+def create_annotations_and_class_attributes(
+    fields: List, fields_modalities: Dict, dataset_type: DatasetTypes
+):
+    """
+    Create annotations and class attributes for the dataclass
+    In case of S3 bucket, new field is created to prevent uri loading
+
+
+    :param fields: list of fields
+    :param fields_modalities: dict of fields and their modalities
+    :param dataset_type: dataset type
+    """
     annotations = {}
     class_attributes = {}
     S3Object, my_setter, my_getter = create_s3_type()
@@ -285,6 +302,9 @@ def create_annotations_and_class_attributes(fields, fields_modalities, dataset_t
 
 
 def create_s3_type():
+    """
+    Create a new type for S3 bucket
+    """
     from typing import TypeVar
 
     from docarray import Document
@@ -292,6 +312,9 @@ def create_s3_type():
     S3Object = TypeVar('S3Object', bound=str)
 
     def my_setter(value) -> 'Document':
+        """
+        Custom setter for the S3Object type that doesn't load the content from the URI
+        """
         return Document(uri=value)
 
     def my_getter(doc: 'Document'):

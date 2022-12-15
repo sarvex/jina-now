@@ -57,7 +57,7 @@ def test_da_pull(da: DocumentArray):
     user_input.dataset_type = DatasetTypes.DOCARRAY
     user_input.dataset_name = 'secret-token'
 
-    loaded_da = load_data(ImageTextRetrieval(), user_input)
+    loaded_da = load_data(user_input)
 
     assert is_da_text_equal(da, loaded_da)
 
