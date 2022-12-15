@@ -14,21 +14,14 @@ def handle_test_mode(config):
             pass
 
         for k, v in config.items():
-            # if 'Encoder' in str(v):
-            #     config[k] = config[k].replace('+docker', '')
-            if 'Indexer' in str(v):
+            if not (isinstance(v, str) and v.startswith(EXECUTOR_PREFIX)):
+                continue
+            # replace only those executor config values which you want to locally test
+            if k == 'INDEXER_NAME':
                 config[k] = 'InMemoryIndexer'
-            if (
-                isinstance(v, str)
-                and 'jinahub' in v
-                and (
-                    # TODO: local testing on Qdrant needs to be disabled. At the moment, Qdrant does not start outside of docker
-                    # TODO: same for elastic
-                    not 'NOWQdrantIndexer' in v
-                    and not 'NOWElasticIndexer' in v
-                    and not 'CLIPOnnxEncoder' in v
-                    and not 'NOWOCRDetector9' in v
-                    and not 'TransformerSentenceEncoder' in v
-                )
-            ):
-                config[k] = config[k].replace(EXECUTOR_PREFIX, '').split('/')[0]
+            elif k == 'AUTOCOMPLETE_EXECUTOR_NAME':
+                config[k] = 'NOWAutoCompleteExecutor2'
+            elif k == 'PREPROCESSOR_NAME':
+                config[k] = 'NOWPreprocessor'
+            else:
+                continue
