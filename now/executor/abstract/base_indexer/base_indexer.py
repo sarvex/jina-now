@@ -337,7 +337,6 @@ class NOWBaseIndexer(Executor):
 
         with open(self.query_to_curated_matches_path, 'w') as f:
             json.dump(self.query_to_curated_matches, f)
-        print()
 
     def get_curated_matches(self, text_query: str = None) -> DocumentArray:
         """

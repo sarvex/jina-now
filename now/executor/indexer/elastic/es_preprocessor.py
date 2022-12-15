@@ -34,7 +34,7 @@ class ESPreprocessor:
                         new_doc = Document(
                             text=' '.join(
                                 field_doc.texts
-                            ),  # concatenate texts of subdocuments
+                            ).strip(),  # concatenate texts of subdocuments
                             embedding=embedding,
                         )
                         if field_doc[0].uri:
