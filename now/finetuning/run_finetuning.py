@@ -22,7 +22,7 @@ from now.finetuning.settings import FinetuneSettings
 from now.log import time_profiler, yaspin_extended
 from now.now_dataclasses import UserInput
 from now.run_backend import call_flow
-from now.utils import sigmap
+from now.utils import get_flow_id, sigmap
 
 
 @time_profiler
@@ -240,7 +240,6 @@ def _maybe_add_embeddings(
     client, _, _, gateway_host_internal, _, = deploy_flow(
         deployment_type=user_input.deployment_type,
         flow_yaml=app_instance.flow_yaml,
-        ns=_KS_NAMESPACE,
         env_dict=env_dict,
         kubectl_path=kubectl_path,
     )
@@ -274,9 +273,7 @@ def _maybe_add_embeddings(
             spinner.ok('💀')
         cowsay.cow(f'{_KS_NAMESPACE} namespace removed from kind-jina-now')
     elif user_input.deployment_type == 'remote':
-        flow_id = gateway_host_internal.replace('grpcs://nowapi-', '').replace(
-            '.wolf.jina.ai', ''
-        )
+        flow_id = get_flow_id(gateway_host_internal)
         terminate_wolf(flow_id=flow_id)
 
     return dataset

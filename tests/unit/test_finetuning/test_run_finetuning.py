@@ -43,7 +43,8 @@ def test_nest_construct_finetune_settings(encoder_type, get_task_config_path):
         user_input=user_input, dataset=dataset, encoder_type=encoder_type
     )
 
-    assert settings.perform_finetuning
+    # TODO: uncomment when finetuning is enabled for text-to-text-and-image
+    # assert settings.perform_finetuning
     if encoder_type == 'text-to-text':
         assert settings.model_name == ModelNames.SBERT
         assert settings.loss == 'TripletMarginLoss'

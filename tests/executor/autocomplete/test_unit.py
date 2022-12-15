@@ -1,6 +1,6 @@
 from docarray import Document, DocumentArray
 
-from now.executor.autocomplete.executor import NOWAutoCompleteExecutor
+from now.executor.autocomplete.executor import NOWAutoCompleteExecutor2
 
 
 def word_list():
@@ -33,7 +33,7 @@ def word_list():
 
 
 def test_empty():
-    executor = NOWAutoCompleteExecutor()
+    executor = NOWAutoCompleteExecutor2()
 
     assert executor.words == {}
 
@@ -45,13 +45,13 @@ def test_initialize():
     for word, count in zip(words, counts):
         new_words[word] = {'count': count}
 
-    executor = NOWAutoCompleteExecutor(words=new_words)
+    executor = NOWAutoCompleteExecutor2(words=new_words)
     assert len(executor.words) == 10
     assert executor.words['loading']['count'] == '39131'
 
 
 def test_search_update(tmpdir):
-    executor = NOWAutoCompleteExecutor(workspace=tmpdir)
+    executor = NOWAutoCompleteExecutor2(workspace=tmpdir)
 
     da = DocumentArray(
         [
@@ -71,7 +71,7 @@ def test_search_update(tmpdir):
 
 
 def test_search_update_profanity(tmpdir):
-    executor = NOWAutoCompleteExecutor(workspace=tmpdir)
+    executor = NOWAutoCompleteExecutor2(workspace=tmpdir)
 
     da = DocumentArray(
         [
@@ -94,7 +94,7 @@ def test_search_update_profanity(tmpdir):
 
 
 def test_get_suggestion(tmpdir):
-    executor = NOWAutoCompleteExecutor(workspace=tmpdir)
+    executor = NOWAutoCompleteExecutor2(workspace=tmpdir)
 
     da = DocumentArray(
         [
@@ -115,13 +115,13 @@ def test_get_suggestion(tmpdir):
     executor.get_suggestion(da_sugg_2)
     da_sugg_3 = DocumentArray([Document(text='bac')])
     executor.get_suggestion(da_sugg_3)
-    assert da_sugg_1[0].tags['suggestions'] == [['background'], ['bang']]
-    assert da_sugg_2[0].tags['suggestions'] == [['loading'], ['laugh']]
-    assert da_sugg_3[0].tags['suggestions'] == [['background']]
+    assert da_sugg_1[0].tags['suggestions'] == ['background', 'bang']
+    assert da_sugg_2[0].tags['suggestions'] == ['loading', 'laugh']
+    assert da_sugg_3[0].tags['suggestions'] == ['background']
 
 
 def test_get_suggestion_bitrigrams(tmpdir):
-    executor = NOWAutoCompleteExecutor(workspace=tmpdir)
+    executor = NOWAutoCompleteExecutor2(workspace=tmpdir)
 
     da = DocumentArray(
         [
@@ -144,11 +144,11 @@ def test_get_suggestion_bitrigrams(tmpdir):
     executor.get_suggestion(da_sugg_3)
     da_sugg_4 = DocumentArray([Document(text='l')])
     executor.get_suggestion(da_sugg_4)
-    assert da_sugg_1[0].tags['suggestions'] == [['aziz'], ['aziz test']]
+    assert da_sugg_1[0].tags['suggestions'] == ['aziz', 'aziz test']
     assert da_sugg_2[0].tags['suggestions'] == [
-        ['red'],
-        ['red dress'],
-        ['red long dress'],
+        'red',
+        'red dress',
+        'red long dress',
     ]
-    assert da_sugg_3[0].tags['suggestions'] == [['dress']]
-    assert da_sugg_4[0].tags['suggestions'] == [['long']]
+    assert da_sugg_3[0].tags['suggestions'] == ['dress']
+    assert da_sugg_4[0].tags['suggestions'] == ['long']

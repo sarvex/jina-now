@@ -10,22 +10,15 @@ import inspect
 import pathlib
 
 import now.utils
-from now.app.base.app import JinaNOWApp
 from now.common import options
 from now.now_dataclasses import DialogOptions, UserInput
 
 cur_dir = pathlib.Path(__file__).parent.resolve()
 
 
-def configure_app(**kwargs) -> JinaNOWApp:
-    now.utils.print_headline()
-    app_name = configure_option(options.APP, None, **kwargs)
-    return options.construct_app(app_name)
-
-
-def configure_user_input(app_instance: JinaNOWApp, **kwargs) -> UserInput:
+def configure_user_input(**kwargs) -> UserInput:
     user_input = UserInput()
-    user_input.app_instance = app_instance
+    now.utils.print_headline()
     # Ask the base/common options
     for option in options.base_options:
         configure_option(option, user_input, **kwargs)
@@ -40,7 +33,6 @@ def configure_option(option: DialogOptions, user_input: UserInput, **kwargs):
     # If there is any pre function then invoke that - commonly used to fill choices if needed
     # if inspect.isfunction(option.pre_func):
     #     option.post_func(user_input, option, **kwargs)
-
     # Check if it is dependent on some other dialog options
     if option.depends_on and not option.conditional_check(user_input):
         return
@@ -53,7 +45,6 @@ def configure_option(option: DialogOptions, user_input: UserInput, **kwargs):
         **option.__dict__,
         **kwargs,
     )
-
     if hasattr(user_input, option.name):
         setattr(user_input, option.name, val)
 

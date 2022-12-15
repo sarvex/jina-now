@@ -1,31 +1,36 @@
 import json
 import os
 import pathlib
-import tempfile
 import time
-from copy import deepcopy
 from os.path import expanduser as user
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 import hubble
-from docarray import Document, DocumentArray
+from docarray import DocumentArray
 from jina import __version__ as jina_version
+from jina.helper import random_port
 
 from now.app.base.app import JinaNOWApp
 from now.constants import (
+    EXECUTOR_PREFIX,
+    EXTERNAL_CLIP_HOST,
     NOW_AUTOCOMPLETE_VERSION,
     NOW_ELASTIC_INDEXER_VERSION,
     NOW_PREPROCESSOR_VERSION,
     NOW_QDRANT_INDEXER_VERSION,
     PREFETCH_NR,
-    DatasetTypes,
+    TAG_INDEXER_DOC_HAS_TEXT,
+    Modalities,
 )
 from now.demo_data import DEFAULT_EXAMPLE_HOSTED
 from now.deployment.deployment import cmd
+from now.executor.name_to_id_map import name_to_id_map
 from now.finetuning.run_finetuning import finetune
 from now.finetuning.settings import FinetuneSettings, parse_finetune_settings
 from now.now_dataclasses import UserInput
-from now.utils import _maybe_download_from_s3
+
+cur_dir = pathlib.Path(__file__).parent.resolve()
+
 
 MAX_RETRIES = 20
 
@@ -49,20 +54,24 @@ def common_get_flow_env_dict(
 
     config = {
         'JINA_VERSION': jina_version,
-        'ENCODER_NAME': f'jinahub+docker://{encoder_uses}',
+        'ENCODER_NAME': f'{EXECUTOR_PREFIX}{encoder_uses}',
+        'CAST_CONVERT_NAME': f'{EXECUTOR_PREFIX}CastNMoveNowExecutor/v0.0.3',
         'N_DIM': finetune_settings.finetune_layer_size
         if finetune_settings.perform_finetuning
         or user_input.app_instance.app_name == 'music_to_music'
         else pre_trained_embedding_size,
         'PRE_TRAINED_EMBEDDINGS_SIZE': pre_trained_embedding_size,
-        'INDEXER_NAME': f'jinahub+docker://{indexer_uses}',
+        'INDEXER_NAME': f'{EXECUTOR_PREFIX}{indexer_uses}',
         'PREFETCH': PREFETCH_NR,
-        'PREPROCESSOR_NAME': f'jinahub+docker://NOWPreprocessor/{NOW_PREPROCESSOR_VERSION}',
-        'AUTOCOMPLETE_EXECUTOR_NAME': f'jinahub+docker://NOWAutoCompleteExecutor/{NOW_AUTOCOMPLETE_VERSION}',
+        'PREPROCESSOR_NAME': f'{EXECUTOR_PREFIX}{name_to_id_map.get("NOWPreprocessor")}/{NOW_PREPROCESSOR_VERSION}',
+        'AUTOCOMPLETE_EXECUTOR_NAME': f'{EXECUTOR_PREFIX}{name_to_id_map.get("NOWAutoCompleteExecutor2")}/{NOW_AUTOCOMPLETE_VERSION}',
         'APP': user_input.app_instance.app_name,
         'COLUMNS': tags,
         'ADMIN_EMAILS': user_input.admin_emails or [] if user_input.secured else [],
         'USER_EMAILS': user_input.user_emails or [] if user_input.secured else [],
+        'API_KEY': [user_input.api_key]
+        if user_input.secured and user_input.api_key
+        else [],
         **encoder_with,
         **indexer_resources,
     }
@@ -75,14 +84,7 @@ def common_get_flow_env_dict(
         config['FINETUNE_ARTIFACT'] = finetune_settings.finetuned_model_artifact
         config['JINA_TOKEN'] = finetune_settings.token
 
-    # retention days
-    if 'NOW_CI_RUN' in os.environ:
-        config[
-            'RETENTION_DAYS'
-        ] = 0  # JCloud will delete after 24hrs of being idle if not deleted in CI
-    else:
-        config['RETENTION_DAYS'] = -1  # for user deployment set it to 30 days
-
+    config['CUSTOM_DNS'] = ''
     if 'NOW_EXAMPLES' in os.environ:
         valid_app = DEFAULT_EXAMPLE_HOSTED.get(user_input.app_instance.app_name, {})
         is_demo_ds = user_input.dataset_name in valid_app
@@ -91,6 +93,7 @@ def common_get_flow_env_dict(
                 'CUSTOM_DNS'
             ] = f'now-example-{user_input.app_instance.app_name}-{user_input.dataset_name}.dev.jina.ai'
             config['CUSTOM_DNS'] = config['CUSTOM_DNS'].replace('_', '-')
+
     return config
 
 
@@ -105,7 +108,6 @@ def common_setup(
     kubectl_path: str,
     encoder_with: Optional[Dict] = {},
     indexer_resources: Optional[Dict] = {},
-    elastic: bool = False,
 ) -> Dict:
     # should receive pre embedding size
     finetune_settings = parse_finetune_settings(
@@ -117,7 +119,7 @@ def common_setup(
         add_embeddings=True,
         loss='TripletMarginLoss',
     )
-    tags = _extract_tags_for_indexer(deepcopy(dataset[0]), user_input)
+    tags = _extract_tags_for_indexer(user_input)
     env_dict = common_get_flow_env_dict(
         finetune_settings=finetune_settings,
         encoder_uses=encoder_uses,
@@ -148,7 +150,8 @@ def common_setup(
             env_dict['JINA_TOKEN'] = finetune_settings.token
         except Exception as e:
             print(
-                'Finetuning is currently offline. The programm execution still continues without finetuning. Please report the following exception to us:'
+                'Finetuning is currently offline. The program execution still continues without'
+                ' finetuning. Please report the following exception to us:'
             )
             import traceback
 
@@ -158,7 +161,6 @@ def common_setup(
     app_instance.set_flow_yaml(
         finetuning=finetune_settings.perform_finetuning, dataset_len=len(dataset)
     )
-
     return env_dict
 
 
@@ -185,7 +187,7 @@ def get_indexer_config(
     """Depending on the number of samples, which will be indexed, indexer and its resources are determined.
 
     :param num_indexed_samples: number of samples which will be indexed; should incl. chunks for e.g. text-to-video app
-    :param elastic: hack to use ElasticIndexer, should be changed in future.
+    :param elastic: hack to use NOWElasticIndexer, should be changed in future.
     :param kubectl_path: path to kubectl binary
     :param deployment_type: deployment type, e.g. 'remote' or 'local'
     :return: dict with indexer and its resource config
@@ -193,11 +195,17 @@ def get_indexer_config(
 
     if elastic and deployment_type == 'local':
         config = {
-            'indexer_uses': f'ElasticIndexer/{NOW_ELASTIC_INDEXER_VERSION}',
+            'indexer_uses': f'{name_to_id_map.get("NOWElasticIndexer")}/{NOW_ELASTIC_INDEXER_VERSION}',
             'hosts': setup_elastic_service(kubectl_path),
         }
+    elif elastic and deployment_type == 'remote':
+        raise ValueError(
+            'NOWElasticIndexer is currently not supported for remote deployment. Please use local deployment.'
+        )
     else:
-        config = {'indexer_uses': f'NOWQdrantIndexer15/{NOW_QDRANT_INDEXER_VERSION}'}
+        config = {
+            'indexer_uses': f'{name_to_id_map.get("NOWQdrantIndexer16")}/{NOW_QDRANT_INDEXER_VERSION}'
+        }
     threshold1 = 250_000
     if num_indexed_samples <= threshold1:
         config['indexer_resources'] = {'INDEXER_CPU': 0.1, 'INDEXER_MEM': '2G'}
@@ -207,22 +215,15 @@ def get_indexer_config(
     return config
 
 
-def _extract_tags_for_indexer(d: Document, user_input):
-    print(
-        'We assume all tags follow the same structure, only first json file will be used to determine structure'
-    )
-    with tempfile.TemporaryDirectory() as tmpdir:
-        if user_input and user_input.dataset_type == DatasetTypes.S3_BUCKET:
-            _maybe_download_from_s3(
-                docs=DocumentArray([d]),
-                tmpdir=tmpdir,
-                user_input=user_input,
-                max_workers=1,
-            )
-    tags = set()
-    for tag, _ in d.tags.items():
-        tags.add((tag, str(tag.__class__.__name__)))
-    final_tags = [list(tag) for tag in tags]
+def _extract_tags_for_indexer(user_input: UserInput):
+    final_tags = [
+        [tag, value] for tag, value in user_input.filter_fields_modalities.items()
+    ]
+    if user_input.app_instance.output_modality in [
+        Modalities.IMAGE,
+        Modalities.VIDEO,
+    ]:
+        final_tags.append([TAG_INDEXER_DOC_HAS_TEXT, str(bool.__name__)])
     return final_tags
 
 
@@ -266,3 +267,15 @@ def setup_elastic_service(
         raise Exception(error_msg.decode("utf-8"))
     host = f"https://elastic:{es_password}@quickstart-es-http.default:9200"
     return host
+
+
+def _get_clip_apps_with_dict(user_input: UserInput) -> Tuple[Dict, Dict]:
+    """Depending on whether this app will be remotely deployed, this function returns the with
+    dictionary for the CLIP executor."""
+    is_remote = user_input.deployment_type == 'remote'
+    encoder_with = {
+        'ENCODER_HOST': EXTERNAL_CLIP_HOST if is_remote else '0.0.0.0',
+        'ENCODER_PORT': 443 if is_remote else random_port(),
+        'IS_REMOTE_DEPLOYMENT': is_remote,
+    }
+    return encoder_with

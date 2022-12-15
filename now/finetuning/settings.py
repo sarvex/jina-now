@@ -49,20 +49,22 @@ class FinetuneSettings:
 def _is_finetuning(
     user_input: UserInput, dataset: DocumentArray, finetuneable_datasets: Tuple
 ) -> bool:
-    if (
-        (
-            user_input.dataset_type == DatasetTypes.DEMO
-            and user_input.dataset_name in finetuneable_datasets
-        )
-        or (
-            user_input.dataset_type != DatasetTypes.DEMO
-            and all(['finetuner_label' in d.tags for d in dataset])
-        )
-        or user_input.app_instance.app_name == Apps.TEXT_TO_TEXT_AND_IMAGE
-    ):
-        return True
-    else:
-        return False
+    return False
+    # if (
+    #     (
+    #         user_input.dataset_type == DatasetTypes.DEMO
+    #         and user_input.dataset_name in finetuneable_datasets
+    #     )
+    #     or (
+    #         user_input.dataset_type != DatasetTypes.DEMO
+    #         and all(['finetuner_label' in d.tags for d in dataset])
+    #     )
+    #     # TODO: enable finetuning again when FinetunerExecutor has been updated
+    #     # or user_input.app_instance.app_name == Apps.TEXT_TO_TEXT_AND_IMAGE
+    # ):
+    #     return True
+    # else:
+    #     return False
 
 
 def _is_bi_modal(user_input: UserInput, dataset: DocumentArray) -> bool:

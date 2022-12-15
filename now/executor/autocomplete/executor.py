@@ -1,3 +1,4 @@
+import itertools
 import json
 import os
 from typing import Optional
@@ -6,16 +7,20 @@ from better_profanity import profanity
 from docarray import DocumentArray
 from fast_autocomplete import AutoComplete
 
-from now.executor.abstract.auth.auth import NOWAuthExecutor as Executor
-from now.executor.abstract.auth.auth import SecurityLevel, secure_request
+from now.executor.abstract.auth.auth import (
+    SecurityLevel,
+    get_auth_executor_class,
+    secure_request,
+)
+
+Executor = get_auth_executor_class()
 
 
-class NOWAutoCompleteExecutor(Executor):
-    def __init__(self, search_traversal_paths: str = '@r', words=None, *args, **kwargs):
+class NOWAutoCompleteExecutor2(Executor):
+    def __init__(self, words=None, *args, **kwargs):
         self.words = words if words else {}
-        self.search_traversal_paths = search_traversal_paths
         self.autocomplete = None
-        self.char_threshhold = 100
+        self.char_threshold = 100
 
         super().__init__(*args, **kwargs)
 
@@ -43,18 +48,15 @@ class NOWAutoCompleteExecutor(Executor):
     def search_update(
         self, docs: Optional[DocumentArray] = None, parameters: dict = {}, **kwargs
     ):
-        traversal_paths = parameters.get('traversal_paths', self.search_traversal_paths)
-        flat_docs = docs[traversal_paths]
-
-        for doc in flat_docs:
+        for doc in docs:
             if doc.text and not profanity.contains_profanity(doc.text):
                 search_words = doc.text.split(' ')
                 # prevent users from misusing API
-                if len(doc.text) < self.char_threshhold:
+                if len(doc.text) < self.char_threshold:
                     # in case query is composed of two words
                     for word in search_words:
                         self.update_save_words(word)
-                    # add bigram and tri gram suggestions
+                    # add bi-gram and tri-gram suggestions
                     if len(search_words) == 2 or len(search_words) == 3:
                         self.update_save_words(doc.text)
 
@@ -65,9 +67,12 @@ class NOWAutoCompleteExecutor(Executor):
     def get_suggestion(
         self, docs: Optional[DocumentArray] = None, parameters: dict = {}, **kwargs
     ):
-        if len(docs) and docs[0].text:
-            docs[0].tags['suggestions'] = self.auto_complete.search(
-                docs[0].text, max_cost=3, size=5
+        for doc in docs:
+            doc.tags['suggestions'] = self.flatten_list(
+                self.auto_complete.search(doc.text, max_cost=3, size=5)
             )
-            return docs
-        return
+        return docs
+
+    def flatten_list(self, regular_list):
+        flat_list = list(itertools.chain(*regular_list))
+        return flat_list

@@ -1,6 +1,5 @@
 import base64
 import io
-import json
 import os
 from collections import OrderedDict
 from copy import deepcopy
@@ -18,8 +17,8 @@ from docarray import Document, DocumentArray
 from jina import Client
 from src.constants import (
     BUTTONS,
-    JWT_COOKIE,
     RTC_CONFIGURATION,
+    SSO_COOKIE,
     SURVEY_LINK,
     ds_set,
     root_data_dir,
@@ -34,6 +33,8 @@ from streamlit.scriptrunner import add_script_run_ctx
 from streamlit.server.server import Server
 from streamlit_webrtc import WebRtcMode, webrtc_streamer
 from tornado.httputil import parse_cookie
+
+dir_path = os.path.dirname(os.path.realpath(__file__))
 
 # TODO: Uncomment the docarray_version when the file name on GCloud has been changed
 # from docarray import __version__ as docarray_version
@@ -103,7 +104,7 @@ def deploy_streamlit():
     redirect_to = render_auth_components(params)
 
     _, mid, _ = st.columns([0.8, 1, 1])
-    with open('./logo.svg', 'r') as f:
+    with open(os.path.join(dir_path, 'logo.svg'), 'r') as f:
         svg = f.read()
     with mid:
         b64 = base64.b64encode(svg.encode('utf-8')).decode("utf-8")
@@ -159,16 +160,21 @@ def deploy_streamlit():
                 values.insert(0, 'All')
                 filter_selection[tag] = st.sidebar.selectbox(tag, values)
 
-        if params.input_modality == 'image':
-            media_type = st.radio(
-                '',
-                ["Image", 'Webcam'],
-                on_change=clear_match,
-            )
-        elif params.input_modality == 'text':
-            media_type = 'Text'
-        elif params.input_modality == 'music':
-            media_type = 'Music'
+        st_ratio_options = []
+        if params.input_modality:
+            for input_modality in params.input_modality.split('-or-'):
+                if input_modality == 'image':
+                    st_ratio_options.extend(["Image", "Webcam"])
+                elif input_modality == 'music':
+                    st_ratio_options.extend(["Music"])
+                elif input_modality == 'text':
+                    st_ratio_options.extend(["Text"])
+        st_ratio_options = list(set(st_ratio_options))
+        media_type = st.radio(
+            '',
+            st_ratio_options,
+            on_change=clear_match,
+        )
 
         if media_type == "Image":
             render_image(da_img, deepcopy(filter_selection))
@@ -189,16 +195,25 @@ def deploy_streamlit():
 
 def render_auth_components(params):
     if params.secured.lower() == 'true':
-        jwt_val = get_cookie_value(cookie_name=JWT_COOKIE)
-        if jwt_val and not st.session_state.login:
-            jwt_val = json.loads(unquote(jwt_val))
-            if not st.session_state.jwt_val:
-                st.session_state.jwt_val = jwt_val
-            if not st.session_state.avatar_val:
-                st.session_state.avatar_val = jwt_val['user']['avatarUrl']
-            if not st.session_state.token_val:
-                st.session_state.token_val = jwt_val['token']
+        st_cookie = get_cookie_value(cookie_name=SSO_COOKIE)
+        resp_jwt = requests.get(
+            url=f'https://api.hubble.jina.ai/v2/rpc/user.identity.whoami',
+            cookies={SSO_COOKIE: st_cookie},
+        ).json()
         redirect_to = None
+        if resp_jwt['code'] != 200:
+            redirect_to = _do_login(params)
+
+        else:
+            st.session_state.login = False
+            if not st.session_state.jwt_val:
+                new_resp = {'token': st_cookie, 'user': resp_jwt['data']}
+                st.session_state.jwt_val = new_resp
+            if not st.session_state.avatar_val:
+                st.session_state.avatar_val = resp_jwt['data']['avatarUrl']
+            if not st.session_state.token_val:
+                st.session_state.token_val = st_cookie
+
         if not st.session_state.jwt_val:
             redirect_to = _do_login(params)
         _, logout, avatar = st.columns([0.7, 0.12, 0.12])
@@ -214,53 +229,35 @@ def render_auth_components(params):
 
 
 def _do_login(params):
-    code = params.code
-    state = params.state
-    if code and state:
-        # Whether it is fail or success, clear the query param
-        query_params_var = {
-            'host': unquote(params.host),
-            'input_modality': params.input_modality,
-            'output_modality': params.output_modality,
-            'data': params.data,
-        }
-        if params.secured:
-            query_params_var['secured'] = params.secured
-        st.experimental_set_query_params(**query_params_var)
+    # Whether it is fail or success, clear the query param
+    query_params_var = {
+        'host': unquote(params.host),
+        'input_modality': params.input_modality,
+        'output_modality': params.output_modality,
+        'data': params.data,
+    }
+    if params.secured:
+        query_params_var['secured'] = params.secured
+    if 'top_k' in st.experimental_get_query_params():
+        query_params_var['top_k'] = params.top_k
+    st.experimental_set_query_params(**query_params_var)
 
-        resp_jwt = requests.get(
-            url=f'https://api.hubble.jina.ai/v2/rpc/user.identity.grant.auto'
-            f'?code={code}&state={state}'
-        ).json()
-        if resp_jwt and resp_jwt['code'] == 200:
-            st.session_state.jwt_val = resp_jwt['data']
-            st.session_state.token_val = resp_jwt['data']['token']
-            st.session_state.avatar_val = resp_jwt['data']['user']['avatarUrl']
-            st.session_state.login = False
-            cookie_manager.set(
-                cookie=JWT_COOKIE, val=st.session_state.jwt_val, key=JWT_COOKIE
-            )
-            return
-        else:
-            st.session_state.login = True
-            params.code = None
-            params.state = None
-
-    st.session_state.login = True
     redirect_uri = (
         f'https://nowrun.jina.ai/?host={params.host}&input_modality={params.input_modality}'
         f'&output_modality={params.output_modality}&data={params.data}'
-        + f'&secured={params.secured}'
-        if params.secured
-        else ''
     )
+    if params.secured:
+        redirect_uri += f'&secured={params.secured}'
+    if 'top_k' in st.experimental_get_query_params():
+        redirect_uri += f'&top_k={params.top_k}'
+
     redirect_uri = quote(redirect_uri)
-    rsp = requests.get(
-        url=f'https://api.hubble.jina.ai/v2/rpc/user.identity.authorize'
-        f'?provider=jina-login&response_mode=query&redirect_uri={redirect_uri}&scope=email%20profile%20openid&prompt=login'
-    ).json()
-    redirect_to = rsp['data']['redirectTo']
-    return redirect_to
+    redirect_uri = (
+        'https://api.hubble.jina.ai/v2/oidc/authorize?prompt=login&target_link_uri='
+        + redirect_uri
+    )
+    st.session_state.login = True
+    return redirect_uri
 
 
 def _do_logout():
@@ -273,11 +270,10 @@ def _do_logout():
     st.session_state.avatar_val = None
     st.session_state.token_val = None
     st.session_state.login = True
-    response = requests.post(
+    requests.post(
         'https://api.hubble.jina.ai/v2/rpc/user.session.dismiss',
         headers=headers,
     )
-    cookie_manager.delete(cookie=JWT_COOKIE, key=JWT_COOKIE)
 
 
 def load_example_queries(data, output_modality):
@@ -285,7 +281,7 @@ def load_example_queries(data, output_modality):
     da_txt = None
     if data in ds_set:
         try:
-            if output_modality == 'image' or output_modality == 'video':
+            if output_modality == 'image-or-text' or output_modality == 'video':
                 output_modality_dir = 'jpeg'
                 data_dir = root_data_dir + output_modality_dir + '/'
                 da_img, da_txt = load_data(
@@ -439,47 +435,21 @@ def render_matches(OUTPUT_MODALITY):
                 match.mime_type = OUTPUT_MODALITY
 
                 if OUTPUT_MODALITY == 'text':
-                    if match.text == '' and match.uri != '':
-                        match.load_uri_to_text()
-                    display_text = profanity.censor(match.text).replace('\n', ' ')
-                    body = f"<!DOCTYPE html><html><body><blockquote>{display_text}</blockquote>"
-                    if match.tags.get('additional_info'):
-                        additional_info = match.tags.get('additional_info')
-                        if type(additional_info) == str:
-                            additional_info_text = additional_info
-                        elif type(additional_info) == list:
-                            if len(additional_info) == 1:
-                                # assumes just one line containing information on text name and creator, etc.
-                                additional_info_text = additional_info
-                            elif len(additional_info) == 2:
-                                # assumes first element is text name and second element is creator name
-                                additional_info_text = (
-                                    f"<em>{additional_info[0]}</em> "
-                                    f"<small>by {additional_info[1]}</small>"
-                                )
-
-                            else:
-                                additional_info_text = " ".join(additional_info)
-                        body += f"<figcaption>{additional_info_text}</figcaption>"
-                    body += "</body></html>"
-                    c.markdown(
-                        body=body,
-                        unsafe_allow_html=True,
-                    )
+                    render_text_result(match, c)
 
                 elif OUTPUT_MODALITY == 'music':
                     if match.uri:
-                        match.load_uri_to_blob()
+                        match.load_uri_to_blob(timeout=10)
                     display_song(c, match)
 
-                elif OUTPUT_MODALITY in ('image', 'video'):
-                    if match.blob != b'':
-                        match.convert_blob_to_datauri()
-                    elif match.tensor is not None:
-                        match.convert_image_tensor_to_uri()
+                elif OUTPUT_MODALITY == 'video':
+                    render_graphic_result(match, c)
 
-                    if match.uri != '':
-                        c.image(match.uri)
+                elif OUTPUT_MODALITY == 'image-or-text':
+                    try:
+                        render_graphic_result(match, c)
+                    except:
+                        render_text_result(match, c)
                 else:
                     raise ValueError(f'{OUTPUT_MODALITY} not handled')
 
@@ -521,6 +491,46 @@ def render_matches(OUTPUT_MODALITY):
             "Received error response from the server. Expand this to see the full error message"
         ):
             st.text(st.session_state.error_msg)
+
+
+def render_graphic_result(match, c):
+    if match.blob != b'':
+        match.convert_blob_to_datauri()
+    elif match.tensor is not None:
+        match.convert_image_tensor_to_uri()
+
+    if match.uri != '':
+        c.image(match.uri)
+
+
+def render_text_result(match, c):
+    if match.text == '' and match.uri != '':
+        match.load_uri_to_text(timeout=10)
+    display_text = profanity.censor(match.text).replace('\n', ' ')
+    body = f"<!DOCTYPE html><html><body><blockquote>{display_text}</blockquote>"
+    if match.tags.get('additional_info'):
+        additional_info = match.tags.get('additional_info')
+        if type(additional_info) == str:
+            additional_info_text = additional_info
+        elif type(additional_info) == list:
+            if len(additional_info) == 1:
+                # assumes just one line containing information on text name and creator, etc.
+                additional_info_text = additional_info
+            elif len(additional_info) == 2:
+                # assumes first element is text name and second element is creator name
+                additional_info_text = (
+                    f"<em>{additional_info[0]}</em> "
+                    f"<small>by {additional_info[1]}</small>"
+                )
+
+            else:
+                additional_info_text = " ".join(additional_info)
+        body += f"<figcaption>{additional_info_text}</figcaption>"
+    body += "</body></html>"
+    c.markdown(
+        body=body,
+        unsafe_allow_html=True,
+    )
 
 
 def render_music_app(DATA, filter_selection):

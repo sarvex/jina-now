@@ -8,8 +8,8 @@ from jina import DocumentArray
 from now.executor.abstract.base_indexer import NOWBaseIndexer as Executor
 
 
-class NOWQdrantIndexer15(Executor):
-    """NOWQdrantIndexer15 indexes Documents into a Qdrant server using DocumentArray  with `storage='qdrant'`"""
+class NOWQdrantIndexer16(Executor):
+    """NOWQdrantIndexer16 indexes Documents into a Qdrant server using DocumentArray  with `storage='qdrant'`."""
 
     # override
     def construct(self, **kwargs):
@@ -45,25 +45,32 @@ class NOWQdrantIndexer15(Executor):
             yield batch
 
     # override
-    def convert_filter_syntax(self, search_filter):
-        """supports exact matches and range filter"""
-        conditions = []
-        for attribute, condition in search_filter.items():
-            for operator, value in condition.items():
-                if operator in self.range_operators:
-                    operator_type = 'range'
-                    operator_string = operator.replace('$', '')
-                elif operator == '$eq':
-                    operator_type = 'match'
-                    operator_string = 'value'
-                else:
-                    continue
-                conditions.append(
-                    {"key": attribute, operator_type: {operator_string: value}}
-                )
+    def convert_filter_syntax(self, search_filter={}, search_filter_not={}):
+        """Supports exact matches and range filter."""
 
-        search_filter = {"must": conditions} if conditions else {}
-        return search_filter
+        def _convert_filter(filter_dict):
+            conditions = []
+            for attribute, condition in filter_dict.items():
+                for operator, value in condition.items():
+                    if operator in self.range_operators:
+                        operator_type = 'range'
+                        operator_string = operator.replace('$', '')
+                    elif operator in ['$eq', '$regex', '$in']:
+                        operator_type = 'match'
+                        operator_string = 'value'
+                    else:
+                        continue
+                    conditions.append(
+                        {"key": attribute, operator_type: {operator_string: value}}
+                    )
+            return conditions
+
+        search_filter_ret = {}
+        if search_filter:
+            search_filter_ret['must'] = _convert_filter(search_filter)
+        if search_filter_not:
+            search_filter_ret['must_not'] = _convert_filter(search_filter_not)
+        return search_filter_ret
 
     # override
     def index(self, docs: DocumentArray, parameters: dict, **kwargs):
@@ -90,9 +97,9 @@ class NOWQdrantIndexer15(Executor):
         parameters: dict,
         limit: int,
         search_filter: dict,
-        **kwargs
+        **kwargs,
     ):
-        """Perform a vector similarity search and retrieve Document matches"""
+        """Perform a vector similarity search and retrieve `Document` matches."""
         docs.match(self._index, filter=search_filter, limit=limit)
 
 
@@ -101,6 +108,7 @@ def setup_qdrant_server(workspace, logger):
     if workspace and os.path.exists(qdrant_config_path):
         logger.info('set new storage to network file system location in WOLF')
         qdrant_config = yaml.safe_load(open(qdrant_config_path))
+
         qdrant_config['storage'] = {
             'storage_path': os.path.join(workspace, 'user_input.json')
         }

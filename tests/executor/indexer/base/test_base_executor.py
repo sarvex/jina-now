@@ -4,16 +4,20 @@ from copy import deepcopy
 import numpy as np
 import pytest
 from jina import Document, DocumentArray, Flow
-from tests.executor.indexer.base.in_memory_indexer import InMemoryIndexer
 
+from now.constants import TAG_INDEXER_DOC_HAS_TEXT, TAG_OCR_DETECTOR_TEXT_IN_DOC
 from now.deployment.deployment import cmd
-from now.executor.indexer.qdrant import NOWQdrantIndexer15
+from now.executor.indexer.in_memory.in_memory_indexer import InMemoryIndexer
+from now.executor.indexer.qdrant import NOWQdrantIndexer16
 
 NUMBER_OF_DOCS = 10
 DIM = 128
 
 
-@pytest.mark.parametrize('indexer', [InMemoryIndexer, NOWQdrantIndexer15])
+@pytest.mark.parametrize(
+    'indexer',
+    [InMemoryIndexer, NOWQdrantIndexer16],
+)
 class TestBaseIndexer:
     @pytest.fixture(scope='function', autouse=True)
     def setup(self):
@@ -28,28 +32,32 @@ class TestBaseIndexer:
             f"docker-compose -f {compose_yml} --project-directory . down --remove-orphans"
         )
 
-    def gen_docs(self, num, has_chunk=False):
+    @pytest.fixture(scope='function', autouse=True)
+    def metas(self, tmpdir):
+        return {'workspace': str(tmpdir)}
+
+    def gen_docs(self, num):
         res = DocumentArray()
         k = np.random.random((num, DIM)).astype(np.float32)
         for i in range(num):
             doc = Document(
                 id=f'{i}',
                 text='parent',
-                embedding=k[i],
                 uri='my-parent-uri',
                 tags={'parent_tag': 'value'},
-            )
-            if has_chunk:
-                for j in range(2):
-                    doc.chunks.append(
-                        Document(
-                            id=f'{i}_{j}',
-                            embedding=doc.embedding,
-                            uri='my-parent-uri',
-                            tags={'parent_tag': 'value'},
-                        )
+                chunks=[
+                    Document(
+                        chunks=[
+                            Document(
+                                id=f'{i}_child',
+                                embedding=k[i],
+                                uri='my-parent-uri',
+                                tags={'parent_tag': 'value'},
+                            )
+                        ]
                     )
-                doc.embedding = None
+                ],
+            )
             res.append(doc)
         return res
 
@@ -60,11 +68,16 @@ class TestBaseIndexer:
         docs = [
             Document(
                 id=f'{i}',
-                embedding=X[i],
-                tags={
-                    'price': np.random.choice(prices),
-                    'category': np.random.choice(categories),
-                },
+                chunks=[
+                    Document(
+                        id=f'{i}_child',
+                        embedding=X[i],
+                        tags={
+                            'price': np.random.choice(prices),
+                            'category': np.random.choice(categories),
+                        },
+                    )
+                ],
             )
             for i in range(NUMBER_OF_DOCS)
         ]
@@ -88,13 +101,11 @@ class TestBaseIndexer:
             assert len(result) == 0
 
     @pytest.mark.parametrize(
-        'offset, limit', [(0, 0), (10, 0), (0, 10), (10, 10), (None, None)]
+        'offset, limit', [(0, 10), (10, 0), (0, 0), (10, 10), (None, None)]
     )
-    @pytest.mark.parametrize('has_chunk', [True, False])
-    def test_list(self, tmpdir, offset, limit, has_chunk, indexer):
+    def test_list(self, offset, limit, indexer, metas):
         """Test list returns all indexed docs"""
-        metas = {'workspace': str(tmpdir)}
-        docs = self.gen_docs(NUMBER_OF_DOCS, has_chunk=has_chunk)
+        docs = self.gen_docs(NUMBER_OF_DOCS)
         f = Flow().add(
             uses=indexer,
             uses_with={
@@ -106,8 +117,6 @@ class TestBaseIndexer:
             parameters = {}
             if offset is not None:
                 parameters.update({'offset': offset, 'limit': limit})
-            if has_chunk:
-                parameters.update({'traversal_paths': '@c', 'chunks_size': 2})
 
             f.post(on='/index', inputs=docs, parameters=parameters)
             list_res = f.post(on='/list', parameters=parameters, return_results=True)
@@ -117,22 +126,13 @@ class TestBaseIndexer:
                 l = max(limit - offset, 0)
             assert len(list_res) == l
             if l > 0:
-                if has_chunk:
-                    assert len(list_res[0].chunks) == 0
-                    assert len(set([d.id for d in list_res])) == l
-                    assert [d.id for d in list_res] == [f'{i}_0' for i in range(l)]
-                    assert [d.uri for d in list_res] == ['my-parent-uri'] * l
-                    assert [d.tags['parent_tag'] for d in list_res] == ['value'] * l
-                else:
-                    assert list_res[0].id == str(offset) if offset is not None else '0'
-                    assert list_res[0].uri == 'my-parent-uri'
-                    assert len(list_res[0].chunks) == 0
-                    assert list_res[0].embedding is None
-                    assert list_res[0].text == ''
-                    assert list_res[0].tags == {'parent_tag': 'value'}
+                assert len(list_res[0].chunks) == 0
+                assert len(set([d.id for d in list_res])) == l
+                assert [d.id for d in list_res] == [f'{i}_child' for i in range(l)]
+                assert [d.uri for d in list_res] == ['my-parent-uri'] * l
+                assert [d.tags['parent_tag'] for d in list_res] == ['value'] * l
 
-    def test_search(self, tmpdir, indexer):
-        metas = {'workspace': str(tmpdir)}
+    def test_search(self, indexer, metas):
         docs = self.gen_docs(NUMBER_OF_DOCS)
         docs_query = self.gen_docs(1)
         f = Flow().add(
@@ -154,15 +154,13 @@ class TestBaseIndexer:
                     <= query_res[0].matches[i + 1].scores['cosine'].value
                 )
 
-    def test_search_match(self, tmpdir, indexer):
-        metas = {'workspace': str(tmpdir)}
-        docs = self.gen_docs(NUMBER_OF_DOCS, has_chunk=True)
-        docs_query = self.gen_docs(NUMBER_OF_DOCS, has_chunk=True)
+    def test_search_match(self, indexer, metas):
+        docs = self.gen_docs(NUMBER_OF_DOCS)
+        docs_query = self.gen_docs(NUMBER_OF_DOCS)
         f = Flow().add(
             uses=indexer,
             uses_with={
                 'dim': DIM,
-                'traversal_paths': '@c',
             },
             uses_metas=metas,
         )
@@ -186,8 +184,7 @@ class TestBaseIndexer:
                     <= c.matches[i + 1].scores['cosine'].value
                 )
 
-    def test_search_with_filtering(self, tmpdir, indexer):
-        metas = {'workspace': str(tmpdir)}
+    def test_search_with_filtering(self, indexer, metas):
 
         docs = self.docs_with_tags(NUMBER_OF_DOCS)
         docs_query = self.gen_docs(1)
@@ -208,8 +205,7 @@ class TestBaseIndexer:
             )
             assert all([m.tags['price'] < 50 for m in query_res[0].matches])
 
-    def test_delete(self, tmpdir, indexer):
-        metas = {'workspace': str(tmpdir)}
+    def test_delete(self, indexer, metas):
         docs = self.gen_docs(NUMBER_OF_DOCS)
         f = Flow().add(
             uses=indexer,
@@ -219,7 +215,7 @@ class TestBaseIndexer:
             uses_metas=metas,
         )
         with f:
-            docs[0].tags['parent_tag'] = 'different_value'
+            docs[0].chunks[0].chunks[0].tags['parent_tag'] = 'different_value'
             f.post(on='/index', inputs=docs)
             listed_docs = f.post(on='/list', return_results=True)
             assert len(listed_docs) == NUMBER_OF_DOCS
@@ -232,32 +228,42 @@ class TestBaseIndexer:
             docs_query = self.gen_docs(NUMBER_OF_DOCS)
             f.post(on='/search', inputs=docs_query, return_results=True)
 
-    def test_get_tags(self, tmpdir, indexer):
-        metas = {'workspace': str(tmpdir)}
+    def test_get_tags(self, indexer, metas):
         docs = DocumentArray(
             [
                 Document(
-                    text='hi',
-                    embedding=np.random.rand(DIM).astype(np.float32),
-                    tags={'color': 'red'},
+                    chunks=[
+                        Document(
+                            text='hi',
+                            embedding=np.random.rand(DIM).astype(np.float32),
+                            tags={'color': 'red'},
+                        )
+                    ]
                 ),
                 Document(
-                    blob=b'b12',
-                    embedding=np.random.rand(DIM).astype(np.float32),
-                    tags={'color': 'blue'},
+                    chunks=[
+                        Document(
+                            blob=b'b12',
+                            embedding=np.random.rand(DIM).astype(np.float32),
+                            tags={'color': 'blue'},
+                        ),
+                    ]
                 ),
                 Document(
-                    blob=b'b12',
-                    embedding=np.random.rand(DIM).astype(np.float32),
-                    uri='file_will.never_exist',
+                    chunks=[
+                        Document(
+                            blob=b'b12',
+                            embedding=np.random.rand(DIM).astype(np.float32),
+                            uri='file_will.never_exist',
+                        ),
+                    ]
                 ),
             ]
         )
+        docs = DocumentArray([Document(chunks=[doc]) for doc in docs])
         f = Flow().add(
             uses=indexer,
-            uses_with={
-                'dim': DIM,
-            },
+            uses_with={'dim': DIM},
             uses_metas=metas,
         )
         with f:
@@ -270,32 +276,48 @@ class TestBaseIndexer:
                 0
             ].tags['tags']['color'] == ['blue', 'red']
 
-    def test_delete_tags(self, tmpdir, indexer):
-        metas = {'workspace': str(tmpdir)}
+    def test_delete_tags(self, indexer, metas):
         docs = DocumentArray(
             [
                 Document(
-                    text='hi',
-                    embedding=np.random.rand(DIM).astype(np.float32),
-                    tags={'color': 'red'},
+                    chunks=[
+                        Document(
+                            text='hi',
+                            embedding=np.random.rand(DIM).astype(np.float32),
+                            tags={'color': 'red'},
+                        ),
+                    ]
                 ),
                 Document(
-                    blob=b'b12',
-                    embedding=np.random.rand(DIM).astype(np.float32),
-                    tags={'color': 'blue'},
+                    chunks=[
+                        Document(
+                            blob=b'b12',
+                            embedding=np.random.rand(DIM).astype(np.float32),
+                            tags={'color': 'blue'},
+                        ),
+                    ]
                 ),
                 Document(
-                    blob=b'b12',
-                    embedding=np.random.rand(DIM).astype(np.float32),
-                    uri='file_will.never_exist',
+                    chunks=[
+                        Document(
+                            blob=b'b12',
+                            embedding=np.random.rand(DIM).astype(np.float32),
+                            uri='file_will.never_exist',
+                        ),
+                    ]
                 ),
                 Document(
-                    blob=b'b12',
-                    embedding=np.random.rand(DIM).astype(np.float32),
-                    tags={'greeting': 'hello'},
+                    chunks=[
+                        Document(
+                            blob=b'b12',
+                            embedding=np.random.rand(DIM).astype(np.float32),
+                            tags={'greeting': 'hello'},
+                        ),
+                    ]
                 ),
             ]
         )
+        docs = DocumentArray([Document(chunks=[doc]) for doc in docs])
         f = Flow().add(
             uses=indexer,
             uses_with={
@@ -337,14 +359,20 @@ class TestBaseIndexer:
                             id="chunk11",
                             blob=b"jpg...",
                             embedding=np.array([0.1, 0.1]),
-                            tags={'title': 'that is rEd for sure'},
+                            tags={
+                                'title': 'that is rEd for sure',
+                                TAG_OCR_DETECTOR_TEXT_IN_DOC: "r t",
+                            },
                             uri=uri,
                         ),
                         Document(
                             id="chunk12",
                             blob=b"jpg...",
                             embedding=np.array([0.2, 0.1]),
-                            tags={'title': 'really bluE'},
+                            tags={
+                                'title': 'really bluE',
+                                TAG_OCR_DETECTOR_TEXT_IN_DOC: "r t",
+                            },
                             uri=uri,
                         ),
                     ],
@@ -360,14 +388,20 @@ class TestBaseIndexer:
                             id="chunk21",
                             blob=b"jpg...",
                             embedding=np.array([0.3, 0.1]),
-                            tags={'title': 'my red shirt'},
+                            tags={
+                                'title': 'my red shirt',
+                                TAG_OCR_DETECTOR_TEXT_IN_DOC: "red shirt",
+                            },
                             uri=uri,
                         ),
                         Document(
                             id="chunk22",
                             blob=b"jpg...",
                             embedding=np.array([0.4, 0.1]),
-                            tags={'title': 'red is nice'},
+                            tags={
+                                'title': 'red is nice',
+                                TAG_OCR_DETECTOR_TEXT_IN_DOC: "red shirt",
+                            },
                             uri=uri,
                         ),
                     ],
@@ -376,14 +410,17 @@ class TestBaseIndexer:
                     id="doc3",
                     blob=b"jpg...",
                     embedding=np.array([0.5, 0.1, 0.1]),
-                    tags={'title': 'blue', 'length': 18},
+                    tags={'length': 18},
                     uri=uri,
                     chunks=[
                         Document(
                             id="chunk31",
                             blob=b"jpg...",
                             embedding=np.array([0.5, 0.1]),
-                            tags={'title': 'it is red'},
+                            tags={
+                                'title': 'blue red',
+                                TAG_OCR_DETECTOR_TEXT_IN_DOC: "i iz ret",
+                            },
                             uri=uri,
                         ),
                     ],
@@ -399,43 +436,38 @@ class TestBaseIndexer:
         )
 
     @pytest.mark.parametrize(
-        'level,query,embedding,res_ids',
+        'query,embedding,res_ids',
         [
-            ('@c', 'blue', [0.5, 0.1], ['chunk12', 'chunk22', 'chunk31']),
-            ('@c', 'red', [0.5, 0.1], ['chunk22', 'chunk31', 'chunk11']),
-            ('@r', 'blue', [0.8, 0.1, 0.1], ['doc4', 'doc3', 'doc1', 'doc2']),
-            ('@r', 'red', [0.8, 0.1, 0.1], ['doc2', 'doc4', 'doc3', 'doc1']),
+            ('blue', [0.5, 0.1], ['chunk12', 'chunk31', 'chunk22']),
+            ('red', [0.5, 0.1], ['chunk11', 'chunk31', 'chunk22']),
         ],
     )
     def test_search_chunk_using_sum_ranker(
-        self, documents, indexer, level, query, embedding, res_ids
+        self, documents, indexer, query, embedding, res_ids, metas
     ):
-        if indexer == InMemoryIndexer:
-            pytest.skip('InMemoryIndexer does not contain the title hack')
+        documents = DocumentArray([Document(chunks=[doc]) for doc in documents])
         with Flow().add(
             uses=indexer,
             uses_with={
-                "traversal_paths": level,
                 "dim": len(embedding),
-                'columns': ['title', 'str'],
+                'columns': ['title', 'str', TAG_INDEXER_DOC_HAS_TEXT, 'bool'],
             },
+            uses_metas=metas,
         ) as f:
             f.index(
                 documents,
             )
             result = f.search(
                 Document(
-                    id="doc_search",
-                    embedding=np.array(embedding) if level == '@r' else None,
-                    text=query,
                     chunks=Document(
-                        id="chunk_search",
-                        text=query,
-                        embedding=np.array(embedding) if level == '@c' else None,
+                        chunks=Document(
+                            id="chunk_search",
+                            text=query,
+                            embedding=np.array(embedding),
+                        ),
                     ),
                 ),
                 return_results=True,
-                parameters={'ranking_method': 'sum'},
             )
             print('all match ids', [match.id for match in result[0].matches])
             for d, res_id in zip(result[0].matches, res_ids):
@@ -443,8 +475,7 @@ class TestBaseIndexer:
                 if d.uri:
                     assert d.blob == b'', f'got blob {d.blob} for {d.id}'
 
-    def test_no_blob_with_working_uri(self, tmpdir, indexer):
-        metas = {'workspace': str(tmpdir)}
+    def test_no_blob_with_working_uri(self, indexer, metas):
         with Flow().add(
             uses=indexer,
             uses_with={
@@ -475,13 +506,116 @@ class TestBaseIndexer:
                     doc_tens,
                 ]
             )
+            inputs = DocumentArray(
+                [Document(chunks=[Document(chunks=[doc])]) for doc in inputs]
+            )
 
             f.index(deepcopy(inputs), parameters={})
 
-            response = f.search(Document(embedding=np.array([0.1, 0.1, 0.1])))
+            response = f.search(
+                Document(
+                    chunks=[
+                        Document(chunks=Document(embedding=np.array([0.1, 0.1, 0.1])))
+                    ]
+                )
+            )
             matches = response[0].matches
-            assert matches[0].text == inputs[0].text
-            assert matches[1].blob == inputs[1].blob
-            assert matches[2].blob == inputs[2].blob
+            assert matches[0].text == inputs[0].chunks[0].chunks[0].text
+            assert matches[1].blob == inputs[1].chunks[0].chunks[0].blob
+            assert matches[2].blob == inputs[2].chunks[0].chunks[0].blob
             assert matches[3].blob == b''
             assert matches[4].tensor is None
+
+    def test_curate_endpoint(self, indexer, metas):
+        """Test indexing does not return anything"""
+
+        docs = self.gen_docs(NUMBER_OF_DOCS)
+        docs.append(
+            Document(
+                chunks=[
+                    Document(
+                        chunks=[
+                            Document(
+                                id='c1',
+                                embedding=np.random.random(DIM).astype(np.float32),
+                                tags={'color': 'red'},
+                                uri='uri2',
+                            ),
+                            Document(
+                                id='c2',
+                                embedding=np.random.random(DIM).astype(np.float32),
+                                tags={'color': 'red'},
+                                uri='uri2',
+                            ),
+                        ]
+                    )
+                ]
+            )
+        )
+        f = Flow().add(
+            uses=indexer,
+            uses_with={
+                'dim': DIM,
+            },
+            uses_metas=metas,
+        )
+        with f:
+            f.index(docs, return_results=True)
+            f.post(
+                on='/curate',
+                parameters={
+                    'query_to_filter': {
+                        'query1': [
+                            {'uri': {'$eq': 'uri2'}},
+                            {'tags__color': {'$eq': 'red'}},
+                        ],
+                    }
+                },
+            )
+            result = f.search(
+                inputs=Document(
+                    chunks=[
+                        Document(
+                            chunks=[
+                                Document(text='query1', embedding=np.array([0.1] * 128))
+                            ]
+                        ),
+                    ]
+                ),
+                return_results=True,
+            )
+            assert len(result) == 1
+            assert result[0].matches[0].uri == 'uri2'
+            assert result[0].matches[1].uri != 'uri2'  # no duplicated results
+            assert result[0].matches[0].tags['color'] == 'red'
+
+            # not crashing in case of curated list + non-curated query
+            f.search(
+                inputs=Document(
+                    chunks=[
+                        Document(
+                            chunks=[
+                                Document(
+                                    text='another string',
+                                    embedding=np.array([0.1] * 128),
+                                )
+                            ]
+                        ),
+                    ]
+                )
+            )
+
+    def test_curate_endpoint_incorrect(self, indexer, metas):
+        f = Flow().add(
+            uses=indexer,
+            uses_with={
+                'dim': DIM,
+            },
+            uses_metas=metas,
+        )
+        with f:
+            with pytest.raises(Exception):
+                f.post(
+                    on='/curate',
+                    parameters={'queryfilter': {}},
+                )

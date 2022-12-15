@@ -40,7 +40,7 @@ component/cli:
 component/data:
   - now/data_loading/**/*
 
-component/deploymeny:
+component/deployment:
   - now/deployment/**/*
 
 component/finetuning:

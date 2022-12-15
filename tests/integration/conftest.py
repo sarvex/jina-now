@@ -1,15 +1,9 @@
 import logging
 import os
-from time import sleep
 
-import pytest
 import hubble
+import pytest
 from pytest_mock import MockerFixture
-from urllib3.exceptions import InsecureRequestWarning
-from warnings import filterwarnings, catch_warnings
-import requests
-
-from now.deployment.deployment import cmd
 
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__name__)

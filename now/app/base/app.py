@@ -7,7 +7,13 @@ from docarray import DocumentArray
 from jina import Client
 from jina.jaml import JAML
 
-from now.constants import Modalities
+from now.app.base.preprocess import (
+    preprocess_image,
+    preprocess_music,
+    preprocess_text,
+    preprocess_video,
+)
+from now.constants import DEFAULT_FLOW_NAME, SUPPORTED_FILE_TYPES, Modalities
 from now.demo_data import AVAILABLE_DATASET, DEFAULT_EXAMPLE_HOSTED, DemoDataset
 from now.now_dataclasses import DialogOptions, UserInput
 
@@ -47,7 +53,7 @@ class JinaNOWApp:
 
     @property
     @abc.abstractmethod
-    def input_modality(self) -> Modalities:
+    def input_modality(self) -> List[Modalities]:
         """
         Modality used for running search queries
         """
@@ -55,7 +61,7 @@ class JinaNOWApp:
 
     @property
     @abc.abstractmethod
-    def output_modality(self) -> Modalities:
+    def output_modality(self) -> List[Modalities]:
         """
         Modality used for indexing data
         """
@@ -104,12 +110,16 @@ class JinaNOWApp:
     @property
     def supported_file_types(self) -> List[str]:
         """Used to filter files in local structure or an S3 bucket."""
-        return ['**']
+        sup_file = [SUPPORTED_FILE_TYPES[modality] for modality in self.output_modality]
+        return [item for sublist in sup_file for item in sublist]
 
     @property
-    def demo_datasets(self) -> List[DemoDataset]:
+    def demo_datasets(self) -> Dict[str, List[DemoDataset]]:
         """Get a list of example datasets for the app."""
-        return AVAILABLE_DATASET.get(self.output_modality, [])
+        available_datasets = {}
+        for output_modality in self.output_modality:
+            available_datasets[output_modality] = AVAILABLE_DATASET[output_modality]
+        return available_datasets
 
     @property
     def required_docker_memory_in_gb(self) -> int:
@@ -189,47 +199,65 @@ class JinaNOWApp:
         :param user_input: user configuration based on the given options
         :return: dict used to replace variables in flow yaml and to clean up resources after the flow is terminated
         """
+        with open(self.flow_yaml) as input_f:
+            flow_yaml_content = JAML.load(input_f.read())
+            flow_yaml_content['jcloud']['labels'] = {'team': 'now'}
+            flow_yaml_content['jcloud']['name'] = (
+                user_input.flow_name + '-' + DEFAULT_FLOW_NAME
+                if user_input.flow_name != ''
+                and user_input.flow_name != DEFAULT_FLOW_NAME
+                else DEFAULT_FLOW_NAME
+            )
 
-        if self.input_modality == Modalities.TEXT:
-            with open(self.flow_yaml) as input_f:
-                flow_yaml = JAML.load(input_f.read())
+            # append api_keys to the executor with name 'preprocessor' and 'indexer'
+            for executor in flow_yaml_content['executors']:
+                if executor['name'] == 'preprocessor' or executor['name'] == 'indexer':
+                    executor['uses_with']['api_keys'] = '${{ ENV.API_KEY }}'
+
+            if Modalities.TEXT in self.input_modality:
                 if not any(
                     exec_dict['name'] == 'autocomplete_executor'
-                    for exec_dict in flow_yaml['executors']
+                    for exec_dict in flow_yaml_content['executors']
                 ):
-                    flow_yaml['executors'].insert(
+                    flow_yaml_content['executors'].insert(
                         0,
                         {
                             'name': 'autocomplete_executor',
                             'uses': '${{ ENV.AUTOCOMPLETE_EXECUTOR_NAME }}',
                             'needs': 'gateway',
                             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
+                            'uses_with': {
+                                'api_keys': '${{ ENV.API_KEY }}',
+                                'user_emails': '${{ ENV.USER_EMAILS }}',
+                                'admin_emails': '${{ ENV.ADMIN_EMAILS }}',
+                            },
                         },
                     )
-                    with open(self.flow_yaml, 'w') as output_f:
-                        JAML.dump(flow_yaml, output_f)
+            self.add_environment_variables(flow_yaml_content)
+            self.flow_yaml = flow_yaml_content
         return {}
-
-    def cleanup(self, app_config: dict) -> None:
-        """
-        Runs after the flow is terminated.
-        Cleans up the resources created during setup.
-        Common examples are:
-            - delete a database
-            - remove artifact
-            - notify other services
-        :param app_config: contains all information needed to clean up the allocated resources
-        """
-        pass
 
     def preprocess(
         self,
-        da: DocumentArray,
-        user_input: UserInput,
-        is_indexing: Optional[bool] = False,
+        docs: DocumentArray,
     ) -> DocumentArray:
         """Loads and preprocesses every document such that it is ready for finetuning/indexing."""
-        return da
+        for doc in docs:
+            for chunk in doc.chunks:
+                try:
+                    if chunk.modality == 'text':
+                        preprocess_text(chunk)
+                    elif chunk.modality == 'image':
+                        preprocess_image(chunk)
+                    elif chunk.modality == 'video':
+                        preprocess_video(chunk)
+                    elif chunk.modality == 'music':
+                        preprocess_music(chunk)
+                    else:
+                        raise ValueError(f'Unsupported modality {chunk.modality}')
+                except Exception as e:
+                    print(e)
+        return docs
 
     def is_demo_available(self, user_input) -> bool:
         hosted_ds = DEFAULT_EXAMPLE_HOSTED.get(self.app_name, {})
@@ -247,17 +275,22 @@ class JinaNOWApp:
             )
             try:
                 client.post('/dry_run', timeout=2)
-            except ConnectionError:
+            except Exception:
                 return False
             return True
         return False
 
     @property
-    def index_query_access_paths(self) -> str:
-        """Gives access paths for indexing and searching."""
-        return '@r'
-
-    @property
     def max_request_size(self) -> int:
         """Max number of documents in one request"""
         return 32
+
+    def add_environment_variables(self, flow_yaml_content):
+        if 'JINA_OPTOUT_TELEMETRY' in os.environ:
+            flow_yaml_content['with']['env']['JINA_OPTOUT_TELEMETRY'] = os.environ[
+                'JINA_OPTOUT_TELEMETRY'
+            ]
+            for executor in flow_yaml_content['executors']:
+                executor['env']['JINA_OPTOUT_TELEMETRY'] = os.environ[
+                    'JINA_OPTOUT_TELEMETRY'
+                ]

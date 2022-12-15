@@ -1,7 +1,5 @@
-import json
-
 import pytest
-from docarray import Document, DocumentArray
+from docarray import Document
 
 from now.app.text_to_text_and_image.app import TextToTextAndImage
 from now.constants import DatasetTypes
@@ -20,6 +18,7 @@ def test_data_generation():
     user_input = UserInput()
     user_input.dataset_type = DatasetTypes.DEMO
     user_input.dataset_name = DemoDatasetNames.ES_ONLINE_SHOP_50
+    user_input.output_modality = 'text-and-image'
     dataset = load_data(TextToTextAndImage(), user_input)
 
     initial_length = len(dataset)

@@ -7,16 +7,22 @@ from docarray.score import NamedScore
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 
-from now.executor.abstract.auth import NOWAuthExecutor as Executor
-from now.executor.abstract.auth import SecurityLevel, secure_request
+from now.constants import ModelDimensions
+from now.executor.abstract.auth import (
+    SecurityLevel,
+    get_auth_executor_class,
+    secure_request,
+)
 
 metrics_mapping = {
     'cosine': 'cosineSimilarity',
     'l2_norm': 'l2norm',
 }
 
+Executor = get_auth_executor_class()
 
-class ElasticIndexer(Executor):
+
+class NOWElasticIndexer(Executor):
     def __init__(
         self,
         dims: Union[List[int], int],
@@ -26,11 +32,10 @@ class ElasticIndexer(Executor):
         es_config: Optional[Dict[str, Any]] = None,
         metric: str = 'cosine',
         index_name: str = 'now-index',
-        traversal_paths: str = '@r',
         **kwargs,
     ):
         """
-        Initializer function for the ElasticIndexer
+        Initializer function for the NOWElasticIndexer.
 
         :param hosts: host configuration of the Elasticsearch node or cluster
         :param es_config: Elasticsearch cluster configuration object
@@ -41,7 +46,6 @@ class ElasticIndexer(Executor):
             generated from metric and dims. Embeddings from chunk documents will
             always be stored in fields `embedding_x` where x iterates over the number
             of embedding fields (length of `dims`) to be created in the index.
-        :param traversal_paths: Default traversal paths on docs
                 (used for indexing, delete and update), e.g. '@r', '@c', '@r,c'.
         """
         super().__init__(**kwargs)
@@ -49,7 +53,6 @@ class ElasticIndexer(Executor):
         self.hosts = hosts
         self.metric = metric
         self.index_name = index_name
-        self.traversal_paths = traversal_paths
         self.es_config = {'verify_certs': False} if not es_config else es_config
         self.dims = dims if isinstance(dims, list) else [dims]
         self.es_mapping = self._generate_es_mapping(dims)
@@ -64,35 +67,27 @@ class ElasticIndexer(Executor):
                 'bm25_text': {'type': 'text', 'analyzer': 'standard'},
             }
         }
-        if isinstance(dims, list) and 'c' in self.traversal_paths:
-            for i, dim in enumerate(self.dims):
-                es_mapping['properties'][f'chunk_{i}'] = {
-                    'properties': {
-                        f'embedding': {
-                            'type': 'dense_vector',
-                            'dims': dim,
-                            'similarity': self.metric,
-                            'index': 'true',
-                        }
+
+        for i, dim in enumerate(self.dims):
+            es_mapping['properties'][f'chunk_{i}'] = {
+                'properties': {
+                    f'embedding': {
+                        'type': 'dense_vector',
+                        'dims': dim,
+                        'similarity': self.metric,
+                        'index': 'true',
                     }
                 }
-        elif isinstance(dims, int) and 'r' in self.traversal_paths:
-            es_mapping['properties']['embedding'] = {
-                'type': 'dense_vector',
-                'dims': dims,
-                'similarity': self.metric,
-                'index': 'true',
             }
-        else:
-            raise ValueError(
-                f'Invalid combination of traversal_paths {self.traversal_paths} '
-                f'and dims {self.dims}'
-            )
         return es_mapping
 
     @secure_request(on='/index', level=SecurityLevel.USER)
     def index(
-        self, docs: DocumentArray, parameters: dict = None, **kwargs
+        self,
+        docs: DocumentArray,
+        docs_matrix: List[DocumentArray] = None,
+        parameters: dict = None,
+        **kwargs,
     ) -> DocumentArray:
         """
         Index new `Document`s by adding them to the Elasticsearch index.
@@ -102,11 +97,17 @@ class ElasticIndexer(Executor):
         :return: empty `DocumentArray`.
         """
         if not docs:
-            return
+            return docs
+        if docs_matrix:
+            if len(docs_matrix) > 1:
+                docs = self._join_docs_matrix_into_chunks(
+                    docs_matrix=docs_matrix, on='index'
+                )
+            else:
+                docs = docs_matrix[0]
         if not parameters:
             parameters = {}
-        traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
-        es_docs = self._transform_docs_to_es(docs, traversal_paths)
+        es_docs = self._transform_docs_to_es(docs)
         try:
             success, _ = bulk(self.es, es_docs)
             self.es.indices.refresh(index=self.index_name)
@@ -124,7 +125,11 @@ class ElasticIndexer(Executor):
 
     @secure_request(on='/search', level=SecurityLevel.USER)
     def search(
-        self, docs: Union[Document, DocumentArray], parameters: dict = {}, **kwargs
+        self,
+        docs: Union[Document, DocumentArray],
+        docs_matrix: Optional[List[DocumentArray]] = None,
+        parameters: dict = {},
+        **kwargs,
     ):
         """Perform traditional bm25 + vector search. By convention, BM25 will search on
         the 'bm25_text' field of the index. For now, this field contains a concatenation of
@@ -141,12 +146,17 @@ class ElasticIndexer(Executor):
         :param parameters: dictionary of options for searching.
             Keys accepted:
                 - 'filter' (dict): the filtering conditions on document tags
-                - 'traversal_paths' (str): traversal paths for the docs
                 - 'limit' (int): nr of matches to get per Document
         """
         if not docs:
-            return
-        traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
+            return docs
+        if docs_matrix:
+            if len(docs_matrix) > 1:
+                docs = self._join_docs_matrix_into_chunks(
+                    docs_matrix=docs_matrix, on='search'
+                )
+            else:
+                docs = docs_matrix[0]
         search_filter = parameters.get('filter', None)
         limit = parameters.get('limit', 20)
         apply_bm25 = parameters.get('apply_bm25', False)
@@ -154,7 +164,6 @@ class ElasticIndexer(Executor):
             query = self._build_es_query(
                 doc=doc,
                 apply_bm25=apply_bm25,
-                traversal_paths=traversal_paths,
                 search_filter=search_filter,
             )
             try:
@@ -181,7 +190,7 @@ class ElasticIndexer(Executor):
         """List all indexed documents.
 
         Note: this implementation is naive and does not
-        consider the default maximum documents in a page returned by Elasticsearch.
+        consider the default maximum documents in a page returned by `Elasticsearch`.
         Should be addressed in future with `scroll`.
 
         :param parameters: dictionary with limit and offset
@@ -240,7 +249,6 @@ class ElasticIndexer(Executor):
         self,
         doc: Document,
         apply_bm25: bool,
-        traversal_paths: str,
         search_filter: Optional[Dict] = None,
     ) -> Dict:
         """
@@ -253,7 +261,6 @@ class ElasticIndexer(Executor):
         :param apply_bm25: whether to combine bm25 with vector search. If False,
             will only perform vector search queries. If True, must supply a text
             field for bm25 searching.
-        :param traversal_paths: traversal paths for the query document.
         :param search_filter: dictionary of filters to apply to the search.
         :return: a dictionary containing query and filter.
         """
@@ -268,7 +275,7 @@ class ElasticIndexer(Executor):
 
         # build bm25 part
         if apply_bm25:
-            source += '_score / (_score + 10.0)'
+            source += '_score / (_score + 10.0) + '
             text = doc.text
             multi_match = {'multi_match': {'query': text, 'fields': ['bm25_text']}}
             query['bool']['should'].append(multi_match)
@@ -288,19 +295,15 @@ class ElasticIndexer(Executor):
             query['bool']['filter'] = es_search_filter
 
         # build vector search part
-        query_embeddings = self._extract_embeddings(
-            doc=doc, traversal_paths=traversal_paths
-        )
+        query_embeddings = self._extract_embeddings(doc)
         params = {}
         for key, embedding in query_embeddings.items():
             if key == 'embedding':
-                source += (
-                    f"+ 0.5*{metrics_mapping[self.metric]}(params.query_{key}, '{key}')"
-                )
+                source += f"0.5*{metrics_mapping[self.metric]}(params.query_{key}, '{key}') + "
             else:
-                source += f"+ 0.5*{metrics_mapping[self.metric]}(params.query_{key}, '{key}.embedding')"
+                source += f"0.5*{metrics_mapping[self.metric]}(params.query_{key}, '{key}.embedding') + "
             params[f'query_{key}'] = embedding
-        source += '+ 1.0'
+        source += '1.0'
         query_json = {
             'script_score': {
                 'query': query,
@@ -335,15 +338,12 @@ class ElasticIndexer(Executor):
             da.append(doc)
         return da
 
-    def _transform_docs_to_es(
-        self, docs: DocumentArray, traversal_paths: str
-    ) -> List[Dict]:
+    def _transform_docs_to_es(self, docs: DocumentArray) -> List[Dict]:
         """
         This function takes Documents as input and transforms them into a list of
         dictionaries that can be indexed in Elasticsearch.
 
         :param docs: documents containing text and image chunks.
-        :param traversal_paths: traversal paths to extract chunks from documents.
         :return: list of dictionaries containing text, text embedding and image embedding
         """
         es_docs = list()
@@ -352,11 +352,10 @@ class ElasticIndexer(Executor):
             es_doc['_id'] = doc.id
             es_doc['bm25_text'] = doc.text
             chunks = es_doc.pop('chunks', None)
-            if chunks and 'c' in traversal_paths:
-                for i, chunk in enumerate(chunks):
-                    es_doc[f'chunk_{i}'] = {k: v for k, v in chunk.items() if v}
-                    if chunk['text']:
-                        es_doc['bm25_text'] += " " + chunk['text']
+            for i, chunk in enumerate(chunks):
+                es_doc[f'chunk_{i}'] = {k: v for k, v in chunk.items() if v}
+                if chunk['text']:
+                    es_doc['bm25_text'] += " " + chunk['text']
             es_doc['_op_type'] = 'index'
             es_doc['_index'] = self.index_name
             es_docs.append(es_doc)
@@ -376,23 +375,68 @@ class ElasticIndexer(Executor):
             matches.append(d)
         return matches
 
-    def _extract_embeddings(
-        self, doc: Document, traversal_paths: str
-    ) -> Dict[str, np.ndarray]:
+    @staticmethod
+    def _extract_embeddings(doc: Document) -> Dict[str, np.ndarray]:
         """
         Get embeddings from a documents.
 
         :param doc: `Document` with chunks of text document and/or image document.
-        :param traversal_paths: traversal paths to extract embeddings from documents.
         :return: Embeddings as values in a dictionary, modality specified in key.
         """
         embeddings = {}
-        if 'r' in traversal_paths:
-            embeddings['embedding'] = doc.embedding
-        if 'c' in traversal_paths:
-            for i, chunk in enumerate(doc.chunks):
-                embeddings[f"chunk_{i}"] = chunk.embedding
+
+        for i, chunk in enumerate(doc.chunks):
+            embeddings[f"chunk_{i}"] = chunk.embedding
         if not embeddings:
             print('No embeddings extracted')
             raise
         return embeddings
+
+    @staticmethod
+    def _join_docs_matrix_into_chunks(
+        docs_matrix: List[DocumentArray], on: str = 'index'
+    ) -> DocumentArray:
+        """
+        Transform a matrix of DocumentArray's into one DocumentArray, by adding Documents to the chunk level.
+        If we are joining a docs_matrix during searching, we will keep both the clip text embedding
+        and sbert embedding generated for the text document chunk. Otherwise, if we are joining a docs_matrix
+        during indexing, we will only keep the sbert embedding and the image embedding generated by clip as
+        chunk documents.
+
+        :param on: str = 'index',
+        :param on: the endpoint which is called, if 'index', then we keep sbert embedding
+            and clip image embedding; if 'search', we keep sbert embedding and clip text embedding.
+        """
+        new_da = DocumentArray()
+        if on == 'search':
+            for doc1, doc2 in zip(*docs_matrix):
+                new_doc = Document(text=doc1.chunks[0].text)
+                if (
+                    len(doc1.chunks[0].embedding) == ModelDimensions.SBERT
+                    and len(doc2.chunks[0].embedding) == ModelDimensions.CLIP
+                ):
+                    new_doc.chunks.extend(doc1.chunks)
+                    new_doc.chunks.extend(doc2.chunks)
+                elif (
+                    len(doc1.chunks[0].embedding) == ModelDimensions.CLIP
+                    and len(doc2.chunks[0].embedding) == ModelDimensions.SBERT
+                ):
+                    new_doc.chunks.extend(doc2.chunks)
+                    new_doc.chunks.extend(doc1.chunks)
+                else:
+                    raise Exception('Embedding size not supported')
+                new_da.append(new_doc)
+        else:
+            for doc1, doc2 in zip(*docs_matrix):
+                new_doc = Document()
+                text_chunks = [
+                    c for c in doc1.chunks if c.text
+                ]  # doc1 from SBert with text embedding
+                image_chunks = [
+                    c for c in doc2.chunks if c.uri
+                ]  # doc2 from CLIP with image embedding
+                new_doc.chunks.extend(text_chunks)
+                new_doc.chunks.extend(image_chunks)
+                new_da.append(new_doc)
+
+        return new_da

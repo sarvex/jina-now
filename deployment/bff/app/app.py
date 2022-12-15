@@ -3,6 +3,7 @@ import sys
 
 import uvicorn
 from fastapi import APIRouter, FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.staticfiles import StaticFiles
 from starlette.applications import Starlette
@@ -10,13 +11,13 @@ from starlette.responses import JSONResponse
 from starlette.routing import Mount
 
 from deployment.bff.app.constants import (
-    DEFAULT_HOST,
     DEFAULT_LOGGING_CONFIG,
     DEFAULT_LOGGING_LEVEL,
     DEFAULT_PORT,
     DESCRIPTION,
     TITLE,
 )
+from deployment.bff.app.decorators import api_method, timed
 from deployment.bff.app.endpoint.legacy import admin, cloud_temp_link
 from deployment.bff.app.route_generation import create_endpoints
 from now.common.options import construct_app
@@ -37,11 +38,27 @@ def get_fast_api_app(app_name):
         },
         docs_url=None,
     )
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=['*'],
+        allow_credentials=True,
+        allow_methods=['*'],
+        allow_headers=['*'],
+    )
 
     try:
         app.mount("/static", StaticFiles(directory="static"), name="static")
     except Exception as e:
         logger.error(f'Failed to mount static files: {e}')
+
+    @app.get('/ping')
+    @api_method
+    @timed
+    def check_liveness() -> str:
+        """
+        Sanity check - this will let the caller know that the service is operational.
+        """
+        return 'pong!'
 
     @app.get("/docs", include_in_schema=False)
     async def custom_swagger_ui_html():
@@ -113,15 +130,13 @@ def build_app():
     return app
 
 
-def run_server():
+def run_server(port=8080):
     """Run server."""
     app = build_app()
-
-    # start the server!
     uvicorn.run(
         app,
-        host=DEFAULT_HOST,
-        port=DEFAULT_PORT,
+        host='0.0.0.0',
+        port=port,
         loop='uvloop',
         http='httptools',
     )
@@ -129,7 +144,7 @@ def run_server():
 
 if __name__ == '__main__':
     try:
-        run_server()
+        run_server(9090)
     except Exception as exc:
         logger.critical(str(exc))
         logger.exception(exc)

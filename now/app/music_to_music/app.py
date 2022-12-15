@@ -2,11 +2,17 @@ import os
 from typing import Dict, List
 
 import cowsay
-from docarray import Document, DocumentArray
+from docarray import DocumentArray
 
 from now.app.base.app import JinaNOWApp
 from now.common.utils import common_setup
-from now.constants import NOW_QDRANT_INDEXER_VERSION, Apps, Modalities
+from now.constants import (
+    EXECUTOR_PREFIX,
+    NOW_QDRANT_INDEXER_VERSION,
+    Apps,
+    Modalities,
+    ModelDimensions,
+)
 from now.demo_data import DemoDatasetNames
 from now.deployment.deployment import which
 from now.now_dataclasses import UserInput
@@ -38,12 +44,12 @@ class MusicToMusic(JinaNOWApp):
         return 'Music to music search app'
 
     @property
-    def input_modality(self) -> Modalities:
-        return Modalities.MUSIC
+    def input_modality(self) -> List[Modalities]:
+        return [Modalities.MUSIC]
 
     @property
-    def output_modality(self) -> Modalities:
-        return Modalities.MUSIC
+    def output_modality(self) -> List[Modalities]:
+        return [Modalities.MUSIC]
 
     @property
     def required_docker_memory_in_gb(self) -> int:
@@ -64,10 +70,6 @@ class MusicToMusic(JinaNOWApp):
             self.flow_yaml = os.path.join(flow_dir, 'demo-data-flow-music.yml')
         else:
             self.flow_yaml = os.path.join(flow_dir, 'ft-flow-music.yml')
-
-    @property
-    def supported_file_types(self) -> List[str]:
-        return ['mp3']
 
     def _check_requirements(self) -> bool:
         if not ffmpeg_is_installed():
@@ -92,10 +94,10 @@ class MusicToMusic(JinaNOWApp):
             dataset=dataset,
             encoder_uses='BiModalMusicTextEncoderV2',
             encoder_uses_with={},
-            indexer_uses=f'NOWQdrantIndexer15/{NOW_QDRANT_INDEXER_VERSION}',
+            indexer_uses=f'NOWQdrantIndexer16/{NOW_QDRANT_INDEXER_VERSION}',
             kubectl_path=kubectl_path,
             indexer_resources={},
-            pre_trained_embedding_size=512,
+            pre_trained_embedding_size=ModelDimensions.CLIP,
         )
 
         # can reuse large part of other code but need to make some adjustments
@@ -104,35 +106,12 @@ class MusicToMusic(JinaNOWApp):
 
             env_dict[
                 'LINEAR_HEAD_NAME'
-            ] = f"jinahub+docker://{pre_trained_head_map[user_input.dataset_name]}"
+            ] = f"{EXECUTOR_PREFIX}{pre_trained_head_map[user_input.dataset_name]}"
 
             self.set_flow_yaml(demo_data=True)
         super().setup(dataset=dataset, user_input=user_input, kubectl_path=kubectl_path)
 
         return env_dict
-
-    def preprocess(
-        self, da: DocumentArray, user_input: UserInput, is_indexing=False
-    ) -> DocumentArray:
-        from pydub import AudioSegment
-
-        def convert_fn(d: Document):
-            try:
-                if d.blob == b'':
-                    if d.uri:
-                        if d.uri.startswith(f'data:{d.mime_type}'):
-                            d.load_uri_to_blob()
-                        else:
-                            AudioSegment.from_file(d.uri)  # checks if file is valid
-                            with open(d.uri, 'rb') as fh:
-                                d.blob = fh.read()
-                return d
-            except Exception as e:
-                return d
-
-        for d in da:
-            convert_fn(d)
-        return DocumentArray(d for d in da if d.blob != b'')
 
 
 def ffmpeg_is_installed():

@@ -89,7 +89,9 @@ class Task:
 
 class UserInput(BaseModel):
     app_instance: Optional['JinaNOWApp'] = None  # noqa: F821
+    output_modality: Optional[str] = None
     # data related
+    flow_name: Optional[str] = None
     dataset_type: Optional[DatasetTypes] = None
     dataset_name: Optional[str] = None
     dataset_url: Optional[str] = None
@@ -100,13 +102,18 @@ class UserInput(BaseModel):
     aws_secret_access_key: Optional[str] = None
     aws_region_name: Optional[str] = None
 
+    # Fields
+    search_fields: Optional[List] = []
+    filter_fields: Optional[List] = []
+    search_fields_modalities: Optional[Dict] = {}
+    filter_fields_modalities: Optional[Dict] = {}
+
     # ES related
     task_config: Optional[Task] = None
-    es_text_fields: Optional[List] = None
-    es_image_fields: Optional[List] = None
     es_index_name: Optional[str] = None
     es_host_name: Optional[str] = None
     es_additional_args: Optional[Dict] = None
+    indexer_scope: Optional[Dict] = None
 
     # cluster related
     cluster: Optional[str] = None
@@ -116,6 +123,7 @@ class UserInput(BaseModel):
     admin_emails: Optional[List[str]] = None
     user_emails: Optional[List[str]] = None
     additional_user: Optional[StrictBool] = None
+    api_key: Optional[str] = None
 
     class Config:
         arbitrary_types_allowed = True

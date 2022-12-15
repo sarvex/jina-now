@@ -7,7 +7,6 @@ with:
     JINA_LOG_LEVEL: DEBUG
 jcloud:
   version: ${{ ENV.JINA_VERSION }}
-  retention_days: ${{ RETENTION_DAYS }}
 executors:
 - name: preprocessor
   uses: ${{ ENV.PREPROCESSOR_NAME }}
@@ -23,42 +22,24 @@ executors:
 - name: sbert_encoder
   uses: jinahub+docker://FinetunerExecutor
   uses_requests:
-    '/query_text': encode
-    '/index_text': encode
+    /search: encode
+    /index: encode
   uses_with:
     artifact: ${{ ENV.SBERT_ARTIFACT }}
     token: ${{ ENV.JINA_TOKEN }}
+    is_onnx: False
   env:
     JINA_LOG_LEVEL: DEBUG
-  when:
-    modality:
-      $eq: text
-- name: clip_text_encoder
+  needs: preprocessor
+- name: clip_encoder
   uses: jinahub+docker://FinetunerExecutor
-  uses_requests:
-    '/query_vision_text': encode
   uses_with:
     artifact: ${{ ENV.CLIP_ARTIFACT }}
     token: ${{ ENV.JINA_TOKEN }}
-    select_model: clip-text
+    is_onnx: False
   env:
     JINA_LOG_LEVEL: DEBUG
-  when:
-    modality:
-      $eq: text
-- name: clip_vision_encoder
-  uses: jinahub+docker://FinetunerExecutor
-  uses_requests:
-    '/index_vision': encode
-  uses_with:
-    artifact: ${{ ENV.CLIP_ARTIFACT }}
-    token: ${{ ENV.JINA_TOKEN }}
-    select_model: clip-vision
-  env:
-    JINA_LOG_LEVEL: DEBUG
-  when:
-    modalities:
-      $eq: image
+  needs: preprocessor
 - name: indexer
   uses: ${{ ENV.INDEXER_NAME }}
   uses_with:
@@ -68,9 +49,10 @@ executors:
     admin_emails: ${{ ENV.ADMIN_EMAILS }}
     user_emails: ${{ ENV.USER_EMAILS }}
   jcloud:
-    capacity: on-demand
     resources:
       memory: ${{ ENV.INDEXER_MEM }}
       cpu: 1.0
+      capacity: on-demand
   env:
     JINA_LOG_LEVEL: DEBUG
+  needs: [sbert_encoder, clip_encoder]

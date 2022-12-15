@@ -63,6 +63,7 @@ def search(
     attribute_name,
     attribute_value,
     jwt,
+    input_modality,
     top_k=None,
     filter_dict=None,
     endpoint='search',
@@ -94,7 +95,7 @@ def search(
 
 
 def get_suggestion(text, jwt):
-    return search('text', text, jwt, endpoint='suggestion')
+    return search('text', text, jwt, 'text', endpoint='suggestion')
 
 
 @deep_freeze_args
@@ -143,7 +144,7 @@ def call_flow(url_host, data, attribute_name, domain):
 
 
 def search_by_text(search_text, jwt, filter_selection) -> DocumentArray:
-    return search('text', search_text, jwt, filter_dict=filter_selection)
+    return search('text', search_text, jwt, 'text', filter_dict=filter_selection)
 
 
 def search_by_image(document: Document, jwt, filter_selection) -> DocumentArray:
@@ -155,12 +156,13 @@ def search_by_image(document: Document, jwt, filter_selection) -> DocumentArray:
         if query_doc.tensor is not None:
             query_doc.convert_image_tensor_to_blob()
         elif (query_doc.uri is not None) and query_doc.uri != '':
-            query_doc.load_uri_to_blob()
+            query_doc.load_uri_to_blob(timeout=10)
 
     return search(
         'image',
         base64.b64encode(query_doc.blob).decode('utf-8'),
         jwt,
+        input_modality='image',
         filter_dict=filter_selection,
     )
 
@@ -172,7 +174,8 @@ def search_by_audio(document: Document, jwt, filter_selection):
         'song',
         base64.b64encode(document.blob).decode('utf-8'),
         jwt,
-        TOP_K * 3,
+        input_modality='music',
+        top_k=TOP_K * 3,
         filter_dict=filter_selection,
     )
 
