@@ -103,7 +103,7 @@ def build_app():
     )
 
     # ImageTextRetrieval router
-    im_txt2im_txt_mount = '/api/v1/image-or-text-to-image-or-text'
+    im_txt2im_txt_mount = '/api/v1/text-or-image-to-text-or-image'
     im_txt2im_txt_app = get_app_instance()
     im_txt2im_txt_app.include_router(
         im_txt2im_txt.router, tags=['Image-Text Retrieval']

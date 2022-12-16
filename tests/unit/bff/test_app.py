@@ -5,7 +5,7 @@ import pytest
     'inp_mod, output_mod',
     [
         ('music', 'music'),
-        ('image-or-text', 'image-or-text'),
+        ('text-or-image', 'text-or-image'),
         ('text', 'video'),
     ],
 )
