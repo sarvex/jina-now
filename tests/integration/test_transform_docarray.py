@@ -33,12 +33,12 @@ def multi_modal_data(resources_folder_path):
 
     p1 = Page(
         main_text='main text 1',
-        image=os.path.join(resources_folder_path, 'image', '5109112832.jpg'),
+        image=os.path.join(resources_folder_path, 'image', 'a.jpg'),
         color='red',
     )
     p2 = Page(
         main_text='not main text',
-        image=os.path.join(resources_folder_path, 'image', '6785325056.jpg'),
+        image=os.path.join(resources_folder_path, 'image', 'b.jpg'),
         color='blue',
     )
     pages = [p1, p2]

@@ -21,7 +21,7 @@ def download_mock(url, destfile):
     'file_path, num_chunks, ocr_text',
     [
         (
-            'image/6785325056.jpg',
+            'image/b.jpg',
             1,
             'RichavdE',  # with larger resolution it would be the following text: 'Richard Branson TotallyLooksLike.com Zaphod Beeblebrox',
         ),

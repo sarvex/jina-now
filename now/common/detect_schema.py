@@ -4,7 +4,7 @@ import os
 
 import requests
 
-from now.constants import SUPPORTED_FILE_TYPES, Modalities, modalities_mapping
+from now.constants import MODALITIES_MAPPING, SUPPORTED_FILE_TYPES, Modalities
 from now.data_loading.data_loading import get_s3_bucket_and_folder_prefix
 from now.now_dataclasses import UserInput
 
@@ -22,18 +22,19 @@ def _create_candidate_search_filter_fields(field_name_to_value):
     """
     search_fields_modalities = {}
     filter_field_modalities = {}
-    mapping_dict = modalities_mapping()
     for field_name, field_value in field_name_to_value.items():
         # we determine search modality
         for modality, modality_types in SUPPORTED_FILE_TYPES.items():
             if field_name.split('.')[-1] in modality_types:
-                search_fields_modalities[field_name] = mapping_dict[modality]
+                search_fields_modalities[field_name] = MODALITIES_MAPPING[modality]
                 break
             if field_name == 'uri' and field_value.split('.')[-1] in modality_types:
-                search_fields_modalities[field_name] = mapping_dict[modality]
+                search_fields_modalities[field_name] = MODALITIES_MAPPING[modality]
                 break
             if field_name == 'text' and field_value:
-                search_fields_modalities[field_name] = mapping_dict[Modalities.TEXT]
+                search_fields_modalities[field_name] = MODALITIES_MAPPING[
+                    Modalities.TEXT
+                ]
                 break
         # we determine if it's a filter field
         if field_name == 'uri':

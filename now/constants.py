@@ -25,13 +25,12 @@ class Modalities(BetterEnum):
     TEXT_AND_IMAGE = 'text-and-image'
 
 
-def modalities_mapping():
-    return {
-        Modalities.TEXT: Text,
-        Modalities.IMAGE: Image,
-        Modalities.MUSIC: Audio,
-        Modalities.VIDEO: Video,
-    }
+MODALITIES_MAPPING = {
+    Modalities.TEXT: Text,
+    Modalities.IMAGE: Image,
+    Modalities.MUSIC: Audio,
+    Modalities.VIDEO: Video,
+}
 
 
 class Apps(BetterEnum):

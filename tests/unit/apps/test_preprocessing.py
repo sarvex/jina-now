@@ -69,7 +69,7 @@ def test_text_preprocessing(app_cls, is_indexing):
 def test_image_preprocessing(app_cls, is_indexing, resources_folder_path):
     """Test if the image to image preprocessing works for queries and indexing"""
     app = app_cls()
-    uri = os.path.join(resources_folder_path, 'image/5109112832.jpg')
+    uri = os.path.join(resources_folder_path, 'image/a.jpg')
     da = DocumentArray([Document(uri=uri)])
     da = transform_docarray(da, search_fields=[])
     da = app.preprocess(da)
@@ -87,9 +87,7 @@ def test_image_preprocessing(app_cls, is_indexing, resources_folder_path):
 def test_music_preprocessing(is_indexing, resources_folder_path):
     """Test if the music preprocessing works"""
     app = MusicToMusic()
-    uri = os.path.join(
-        resources_folder_path, 'music/0ac463f952880e622bc15962f4f75ea51a1861a1.mp3'
-    )
+    uri = os.path.join(resources_folder_path, 'music/a.mp3')
 
     da = DocumentArray([Document(uri=uri)])
     da = transform_docarray(da, search_fields=[])

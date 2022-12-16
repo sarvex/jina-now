@@ -16,9 +16,7 @@ def test_executor_persistence(tmpdir, resources_folder_path):
     text_docs = DocumentArray(
         [
             Document(text='test'),
-            Document(
-                uri=os.path.join(resources_folder_path, 'image', '6785325056.jpg')
-            ),
+            Document(uri=os.path.join(resources_folder_path, 'image', 'b.jpg')),
         ]
     )
 

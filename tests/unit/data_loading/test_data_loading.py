@@ -4,14 +4,15 @@ from typing import Tuple
 
 import pytest
 from docarray import Document, DocumentArray
+from docarray.typing import Image
 from pytest_mock import MockerFixture
 
 from now.app.image_text_retrieval.app import ImageTextRetrieval
-from now.app.music_to_music.app import MusicToMusic
 from now.constants import DatasetTypes
 from now.data_loading.data_loading import load_data
 from now.demo_data import DemoDatasetNames
 from now.now_dataclasses import UserInput
+from now.run_backend import create_dataclass
 
 
 @pytest.fixture()
@@ -68,7 +69,7 @@ def test_da_local_path(local_da: DocumentArray):
     user_input.dataset_type = DatasetTypes.PATH
     user_input.dataset_path = path
 
-    loaded_da = load_data(ImageTextRetrieval(), user_input)
+    loaded_da = load_data(user_input)
 
     assert is_da_text_equal(da, loaded_da)
 
@@ -77,32 +78,16 @@ def test_da_local_path_image_folder(image_resource_path: str):
     user_input = UserInput()
     user_input.dataset_type = DatasetTypes.PATH
     user_input.dataset_path = image_resource_path
-
-    app = ImageTextRetrieval()
-    loaded_da = load_data(app, user_input)
+    user_input.search_fields = ['a.jpg']
+    user_input.search_fields_modalities = {'a.jpg': Image}
+    data_class = create_dataclass(user_input)
+    loaded_da = load_data(user_input, data_class)
 
     assert len(loaded_da) == 2, (
         f'Expected two images, got {len(loaded_da)}.'
         f' Check the tests/resources/image folder'
     )
-    for doc in loaded_da:
-        assert doc.uri
-
-
-def test_da_local_path_music_folder(music_resource_path: str):
-    user_input = UserInput()
-    user_input.dataset_type = DatasetTypes.PATH
-    user_input.dataset_path = music_resource_path
-    user_input.output_modality = 'music'
-
-    app = MusicToMusic()
-    loaded_da = load_data(app, user_input)
-
-    assert len(loaded_da) == 2, (
-        f'Expected two music docs, got {len(loaded_da)}.'
-        f' Check the tests/resources/music folder'
-    )
-    for doc in loaded_da:
+    for doc in loaded_da[0].chunks:
         assert doc.uri
 
 
@@ -112,8 +97,7 @@ def test_da_custom_ds(da: DocumentArray):
     user_input.dataset_name = DemoDatasetNames.DEEP_FASHION
     user_input.output_modality = 'image'
 
-    app = ImageTextRetrieval()
-    loaded_da = load_data(app, user_input)
+    loaded_da = load_data(user_input)
 
     for doc in loaded_da:
         assert doc.content

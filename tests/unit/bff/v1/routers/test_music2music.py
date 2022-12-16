@@ -14,7 +14,7 @@ def base64_audio_string(resources_folder_path: str) -> str:
         os.path.join(
             resources_folder_path,
             'music',
-            '0ae22dba39adebd474025d6f97059d5e425e2cf2.mp3',
+            'b.mp3',
         ),
         'rb',
     ) as f:

@@ -21,9 +21,7 @@ from now.utils import get_flow_id
 
 @pytest.fixture
 def test_search_image(resources_folder_path: str):
-    with open(
-        os.path.join(resources_folder_path, 'image', '5109112832.jpg'), 'rb'
-    ) as f:
+    with open(os.path.join(resources_folder_path, 'image', 'a.jpg'), 'rb') as f:
         binary = f.read()
         img_query = base64.b64encode(binary).decode('utf-8')
     return img_query
@@ -35,7 +33,7 @@ def test_search_music(resources_folder_path: str):
         os.path.join(
             resources_folder_path,
             'music',
-            '0ac463f952880e622bc15962f4f75ea51a1861a1.mp3',
+            'a.mp3',
         ),
         'rb',
     ) as f:
