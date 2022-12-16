@@ -10,10 +10,14 @@ from now.executor.abstract.auth import SecurityLevel, secure_request
 from now.executor.abstract.base_indexer import NOWBaseIndexer as Executor
 from now.executor.indexer.elastic.es_converter import ESConverter
 from now.executor.indexer.elastic.es_preprocessor import ESPreprocessor
-from now.executor.indexer.elastic.es_query_builder import ESQueryBuilder, SemanticScore
+from now.executor.indexer.elastic.es_query_building import (
+    SemanticScore,
+    build_es_queries,
+    generate_semantic_scores,
+    process_filter,
+)
 
 ESConverter = ESConverter()
-ESQueryBuilder = ESQueryBuilder()
 
 FieldEmbedding = namedtuple(
     'FieldEmbedding',
@@ -72,18 +76,14 @@ class NOWElasticIndexer(Executor):
         self.traversal_paths = traversal_paths
         self.limit = limit
         self.document_mappings = [FieldEmbedding(*dm) for dm in document_mappings]
-        self.default_semantic_scores = (
-            default_semantic_scores if default_semantic_scores else None
-        )
+        self.default_semantic_scores = default_semantic_scores or None
         self.encoder_to_fields = {
             document_mapping.encoder: document_mapping.fields
             for document_mapping in self.document_mappings
         }
-        self.es_config = {'verify_certs': False} if not es_config else es_config
-        self.es_mapping = (
-            self.generate_es_mapping(self.document_mappings, self.metric)
-            if not es_mapping
-            else es_mapping
+        self.es_config = es_config or {'verify_certs': False}
+        self.es_mapping = es_mapping or self.generate_es_mapping(
+            self.document_mappings, self.metric
         )
         self.es = Elasticsearch(hosts=self.hosts, **self.es_config, ssl_show_warn=False)
         if not self.es.indices.exists(index=self.index_name):
@@ -146,10 +146,10 @@ class NOWElasticIndexer(Executor):
             success, _ = bulk(self.es, es_docs)
             self.es.indices.refresh(index=self.index_name)
         except Exception as e:
-            print(traceback.format_exc())
+            self.logger.info(traceback.format_exc())
             raise
         if success:
-            print(
+            self.logger.info(
                 f'Inserted {success} documents into Elasticsearch index {self.index_name}'
             )
         self.update_tags()
@@ -196,14 +196,10 @@ class NOWElasticIndexer(Executor):
         semantic_scores = parameters.get('default_semantic_scores', None)
         filter = parameters.get('filter', {})
         if not self.default_semantic_scores:
-            self.default_semantic_scores = (
-                ESQueryBuilder.generate_semantic_scores(
-                    docs_map, self.encoder_to_fields
-                )
-                if not semantic_scores
-                else semantic_scores
+            self.default_semantic_scores = semantic_scores or generate_semantic_scores(
+                docs_map, self.encoder_to_fields
             )
-        es_queries = ESQueryBuilder.build_es_queries(
+        es_queries = build_es_queries(
             docs_map=docs_map,
             apply_default_bm25=apply_default_bm25,
             get_score_breakdown=get_score_breakdown,
@@ -230,7 +226,7 @@ class NOWElasticIndexer(Executor):
                 )
                 doc.tags.pop('embeddings')
             except Exception:
-                print(traceback.format_exc())
+                self.logger.info(traceback.format_exc())
         return DocumentArray(list(zip(*es_queries))[0])
 
     @secure_request(on='/update', level=SecurityLevel.USER)
@@ -259,7 +255,7 @@ class NOWElasticIndexer(Executor):
                 index=self.index_name, size=limit, from_=offset, query={'match_all': {}}
             )['hits']['hits']
         except Exception:
-            print(traceback.format_exc())
+            self.logger.info(traceback.format_exc())
         if result:
             return ESConverter.convert_es_to_da(result, get_score_breakdown=False)
         else:
@@ -278,9 +274,7 @@ class NOWElasticIndexer(Executor):
         ids = parameters.get('ids', None)
         if search_filter:
             es_search_filter = {
-                'query': {
-                    'bool': {'filter': ESQueryBuilder.process_filter(search_filter)}
-                }
+                'query': {'bool': {'filter': process_filter(search_filter)}}
             }
             try:
                 resp = self.es.delete_by_query(
@@ -289,7 +283,7 @@ class NOWElasticIndexer(Executor):
                 self.es.indices.refresh(index=self.index_name)
                 self.update_tags()
             except Exception:
-                print(traceback.format_exc())
+                self.logger.info(traceback.format_exc())
                 raise
         elif ids:
             resp = {'deleted': 0}
@@ -299,11 +293,11 @@ class NOWElasticIndexer(Executor):
                     self.es.indices.refresh(index=self.index_name)
                     resp['deleted'] += r['result'] == 'deleted'
             except Exception as e:
-                print(traceback.format_exc(), e)
+                self.logger.info(traceback.format_exc(), e)
         else:
             raise ValueError('No filter or IDs provided for deletion.')
         if resp:
-            print(
+            self.logger.info(
                 f"Deleted {resp['deleted']} documents in Elasticsearch index {self.index_name}"
             )
         return DocumentArray()
@@ -347,9 +341,7 @@ class NOWElasticIndexer(Executor):
             if query not in self.query_to_curated_ids:
                 self.query_to_curated_ids[query] = []
             for filter in filters:
-                es_query = {
-                    'query': {'bool': {'filter': ESQueryBuilder.process_filter(filter)}}
-                }
+                es_query = {'query': {'bool': {'filter': process_filter(filter)}}}
                 try:
                     resp = self.es.search(
                         index=self.index_name, body=es_query, size=100
@@ -361,7 +353,7 @@ class NOWElasticIndexer(Executor):
                     ]
 
                 except Exception:
-                    print(traceback.format_exc())
+                    self.logger.info(traceback.format_exc())
                     raise
 
     def update_tags(self):
@@ -401,7 +393,7 @@ class NOWElasticIndexer(Executor):
                 updated_tags[tag] = [bucket['key'] for bucket in agg['buckets']]
             self.doc_id_tags = updated_tags
         except Exception:
-            print(traceback.format_exc())
+            self.logger.info(traceback.format_exc())
 
     # override
     def batch_iterator(self):

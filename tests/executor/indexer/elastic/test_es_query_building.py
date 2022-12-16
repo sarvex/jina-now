@@ -1,9 +1,13 @@
-from now.executor.indexer.elastic.es_query_builder import ESQueryBuilder, SemanticScore
+from now.executor.indexer.elastic.es_query_building import (
+    SemanticScore,
+    build_es_queries,
+    generate_semantic_scores,
+)
 
 
 def test_generate_semantic_scores(es_inputs):
     """
-    This test tests the generate_semantic_scores function of the ESQueryBuilder.
+    This test tests the generate_semantic_scores function from es_query_building.
     It should return a list of SemanticScores, with cosine comparisons between
     all query-doc field pairs that are in the same vector space (same encoder)
     and assign the same linear weight of 1.
@@ -24,27 +28,24 @@ def test_generate_semantic_scores(es_inputs):
         SemanticScore('query_text', 'title', 'sbert', 1),
         SemanticScore('query_text', 'excerpt', 'sbert', 1),
     ]
-    semantic_scores = ESQueryBuilder.generate_semantic_scores(
-        query_docs_map, encoder_to_fields
-    )
+    semantic_scores = generate_semantic_scores(query_docs_map, encoder_to_fields)
     assert semantic_scores == default_semantic_scores
 
 
 def test_build_es_queries(es_inputs):
     """
-    This test tests the build_es_queries function of the ESQueryBuilder.
+    This test tests the build_es_queries function es_query_building.
     It should return a list of ES queries, with cosine comparisons between
     all query-doc field pairs that are in the same vector space (same encoder)
     and assign the same linear weight of 1.
     """
-    query_builder = ESQueryBuilder()
     (
         index_docs_map,
         query_docs_map,
         document_mappings,
         default_semantic_scores,
     ) = es_inputs
-    query_doc, es_query = query_builder.build_es_queries(
+    query_doc, es_query = build_es_queries(
         docs_map=query_docs_map,
         apply_default_bm25=True,
         get_score_breakdown=False,

@@ -7,7 +7,7 @@ import pytest
 from docarray import Document, DocumentArray, dataclass
 from docarray.typing import Image, Text
 
-from now.executor.indexer.elastic.es_query_builder import SemanticScore
+from now.executor.indexer.elastic.es_query_building import SemanticScore
 
 
 @pytest.fixture

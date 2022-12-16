@@ -1,8 +1,6 @@
 from typing import Dict, List, Union
 
-import numpy as np
 from docarray import Document, DocumentArray
-from docarray.array.chunk import ChunkArray
 from docarray.score import NamedScore
 from numpy import dot
 from numpy.linalg import norm
@@ -36,7 +34,7 @@ class ESConverter:
                     _doc[..., 'embedding'] = None
                     _doc[..., 'tensor'] = None
                     _doc[..., 'blob'] = None
-                    es_docs[doc.id]['serialized_doc'] = _doc.to_base64()
+                    es_docs[doc.id]['serialized_doc'] = _doc[0].to_base64()
                 es_doc = es_docs[doc.id]
                 for encoded_field in encoder_to_fields[executor_name]:
                     field_doc = getattr(doc, encoded_field)
@@ -49,15 +47,6 @@ class ESConverter:
                     if hasattr(field_doc, 'uri') and field_doc.uri:
                         es_doc['uri'] = field_doc.uri
         return list(es_docs.values())
-
-    def get_embedding(self, field_doc: Union[ChunkArray, Document]) -> np.array:
-        if isinstance(field_doc, ChunkArray):
-            # average the embeddings of the chunks
-            # can be changed to first, last, etc. in future
-            embedding = self.average_embeddings_of_subdocuments(field_doc)
-        else:
-            embedding = field_doc.embedding
-        return embedding
 
     def get_base_es_doc(self, doc: Document, index_name: str) -> Dict:
         es_doc = {k: v for k, v in doc.to_dict().items() if v}
@@ -91,7 +80,7 @@ class ESConverter:
             result = [result]
         da = DocumentArray()
         for es_doc in result:
-            doc = DocumentArray.from_base64(es_doc['_source']['serialized_doc'])[0]
+            doc = Document.from_base64(es_doc['_source']['serialized_doc'])
             for k, v in es_doc['_source'].items():
                 if (
                     k.startswith('embedding') or k.endswith('embedding')
