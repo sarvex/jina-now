@@ -2,6 +2,6 @@ fastapi
 uvicorn
 uvloop
 pydantic
-jina[perf]==3.8.2
+jina[perf]==3.12.0
 docarray==0.16.4
 git+https://github.com/jina-ai/now@${JINA_NOW_COMMIT_SHA}
