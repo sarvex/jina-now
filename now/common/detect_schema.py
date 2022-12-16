@@ -70,6 +70,11 @@ def _extract_field_candidates_docarray(response):
     filter_modalities = {}
     response = requests.get(response.json()['data']['download'])
     da = DocumentArray.from_dict(response.json())
+    if not da[0]._metadata:
+        raise RuntimeError(
+            'Multi-modal schema is not provided. Please prepare your data following this guide - '
+            'https://docarray.jina.ai/datatypes/multimodal/'
+        )
     mm_schema = da[0]._metadata['fields']['multi_modal_schema']
     mm_fields = mm_schema['structValue']['fields']
     for field_name, value in mm_fields.items():

@@ -152,7 +152,10 @@ def deploy_flow(
             gateway_port_internal = None  # Since host contains protocol
 
         elif deployment_type == 'remote':
-            flow = deploy_wolf(path=flow_yaml)
+            try:
+                flow = deploy_wolf(path=flow_yaml)
+            except BaseException as e:
+                raise e
             host = flow.endpoints['gateway']
             client = Client(host=host)
 
