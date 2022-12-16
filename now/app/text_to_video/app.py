@@ -55,27 +55,20 @@ class TextToVideo(JinaNOWApp):
 
     def set_flow_yaml(self, **kwargs):
         finetuning = kwargs.get('finetuning', False)
+        deployment_type = kwargs.get('deployment_type')
         dataset_len = kwargs.get('dataset_len', 0) * NUM_FRAMES_SAMPLED
         is_jina_email = get_email().split('@')[-1] == 'jina.ai'
 
         flow_dir = os.path.abspath(os.path.join(__file__, '..'))
 
-        if finetuning:
-            if dataset_len > 200_000 and is_jina_email:
-                print(f"🚀🚀🚀 You are using high performance flow")
-                self.flow_yaml = os.path.join(
-                    flow_dir, 'ft-flow-video-clip-high-performance.yml'
-                )
-            else:
-                self.flow_yaml = os.path.join(flow_dir, 'ft-flow-video-clip.yml')
+        flow_prefix = 'ft-' if finetuning else ''
+        if dataset_len > 200_000 and is_jina_email and deployment_type == 'remote':
+            print(f"🚀🚀🚀 You are using high performance flow")
+            self.flow_yaml = os.path.join(
+                flow_dir, f'{flow_prefix}flow-video-clip-high-performance.yml'
+            )
         else:
-            if dataset_len > 200_000 and is_jina_email:
-                print(f"🚀🚀🚀 You are using high performance flow")
-                self.flow_yaml = os.path.join(
-                    flow_dir, 'flow-video-clip-high-performance.yml'
-                )
-            else:
-                self.flow_yaml = os.path.join(flow_dir, 'flow-video-clip.yml')
+            self.flow_yaml = os.path.join(flow_dir, f'{flow_prefix}flow-video-clip.yml')
 
     def setup(
         self, dataset: DocumentArray, user_input: UserInput, kubectl_path
