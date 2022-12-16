@@ -139,7 +139,7 @@ def deploy_flow(
             load_dotenv(env_file, override=True)
 
             f = Flow.load_config(flow_yaml)
-            f.gateway_args.timetout_send = -1
+            f.gateway_args.timeout_send = -1
             start_flow_in_process(f)
 
             host = 'localhost'
