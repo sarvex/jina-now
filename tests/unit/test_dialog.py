@@ -48,8 +48,8 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'dataset_type': DatasetTypes.DEMO,
             'search_fields_modalities': {'label': 'Text', 'image': 'MyImage'},
             'search_fields': ['image'],
-            # No filter fields for this particular dataset
             'filter_fields': [],
+            'filter_fields_modalities': {'label': 'Text'},
             'dataset_name': 'nih-chest-xrays',
             'cluster': 'new',
             'deployment_type': 'local',
@@ -101,9 +101,14 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
                 'genre_tags': 'List[Text]',
             },
             'filter_fields': ['title'],
-            # filter_fields_modalities is originally big, but it is updated
-            # to only contain the filter fields and their modalities
-            'filter_fields_modalities': {'title': 'Text'},
+            'filter_fields_modalities': {
+                'artist': 'Text',
+                'title': 'Text',
+                'album_cover_image_url': 'stringValue',
+                'location': 'numberValue',
+                'sr': 'numberValue',
+                'track_id': 'stringValue',
+            },
             'cluster': 'new',
             'deployment_type': 'local',
         },
