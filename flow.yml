@@ -1,0 +1,72 @@
+jtype: Flow
+with:
+  name: nowapi
+  monitoring: true
+  port_expose: 8080
+  prefetch: 10
+  cors: true
+  env:
+    JINA_LOG_LEVEL: DEBUG
+    JINA_OPTOUT_TELEMETRY: someValueToDeactivateTelemetry
+jcloud:
+  version: 3.12.0
+  custom_dns:
+    - null
+  labels:
+    team: now
+  name: nowapi
+executors:
+  - name: autocomplete_executor
+    uses: jinahub+docker://w5w084h7/0.0.6-enable-local-testing-4
+    needs: gateway
+    env:
+      JINA_LOG_LEVEL: DEBUG
+      JINA_OPTOUT_TELEMETRY: someValueToDeactivateTelemetry
+    uses_with:
+      api_keys: []
+      user_emails: []
+      admin_emails:
+        - team-now@jina.ai
+  - name: preprocessor
+    uses: jinahub+docker://vlxgoxlv/0.0.114-fix-disable-telemetry
+    uses_with:
+      app: image_text_retrieval
+      admin_emails:
+        - team-now@jina.ai
+      user_emails: []
+      api_keys: []
+    jcloud:
+      resources:
+        memory: 1G
+    env:
+      JINA_LOG_LEVEL: DEBUG
+      JINA_OPTOUT_TELEMETRY: someValueToDeactivateTelemetry
+  - name: encoder_clip
+    uses: jinahub+docker://CLIPOnnxEncoder/0.8.1-gpu
+    host: encoderclip-pretty-javelin-3aceb7f2cd.wolf.jina.ai
+    port: 443
+    tls: true
+    external: true
+    uses_with:
+      name: ViT-B-32::openai
+    env:
+      JINA_LOG_LEVEL: DEBUG
+      JINA_OPTOUT_TELEMETRY: someValueToDeactivateTelemetry
+  - name: indexer
+    uses: jinahub+docker://11yxatzh/0.0.12-demo-data-migration-13
+    disable_reduce: true
+    uses_with:
+      dim: 512
+      columns: []
+      admin_emails:
+        - team-now@jina.ai
+      user_emails: []
+      api_keys: []
+    jcloud:
+      resources:
+        memory: 2G
+        cpu: 0.1
+        capacity: on-demand
+    env:
+      JINA_LOG_LEVEL: DEBUG
+      JINA_OPTOUT_TELEMETRY: someValueToDeactivateTelemetry
