@@ -32,14 +32,6 @@ class BaseEndpoint:
         """
         return {}
 
-    def get_parameters(data, endpoint_name):
-        parameters = {}
-        if endpoint_name == 'search':
-            filter_parameters = get_filter(data['filters'])
-            parameters.update(filter_parameters)
-            parameters.update({'limit': data['limit']})
-        return parameters
-
     def map_outputs(self, docs: DocumentArray) -> Any:
         """This method is called after the response is received from Jina.
         It can be used to map the response to a different format.
