@@ -262,6 +262,7 @@ def set_field_names_from_local_folder(user_input: UserInput, **kwargs):
     if yes set the content of the first folder as field_names in user_input
     """
     dataset_path = user_input.dataset_path.strip()
+    dataset_path = os.path.expanduser(dataset_path)
     if os.path.isfile(dataset_path):
         raise ValueError(
             'The path provided is not a folder, please check documentation https://now.jina.ai'
