@@ -101,6 +101,8 @@ def get_pydantic_model(endpoint, modalities, is_request):
         base_model = endpoint.base_request_model()
     else:
         base_model = endpoint.base_response_model()
+    if endpoint.is_list(is_request):
+        base_model = type('TmpClass', (), {})
     tag_mixin = get_tag_mixin(endpoint, is_request)
     modality_mixin = get_modality_mixin(endpoint, modalities, is_request, endpoint.name)
     model = combine_mixins(base_model, tag_mixin, modality_mixin)
