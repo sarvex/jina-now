@@ -46,26 +46,17 @@ def common_get_flow_env_dict(
     user_input: UserInput,
     tags: List,
 ):
-    """Returns dictionary for the environments variables for the clip & music flow.yml files."""
-    if (
-        finetune_settings.perform_finetuning and finetune_settings.bi_modal
-    ) or user_input.app_instance.app_name == 'music_to_music':
-        pre_trained_embedding_size = pre_trained_embedding_size * 2
-
+    """Returns dictionary for the environments variables for the clip flow.yml files."""
     config = {
         'JINA_VERSION': jina_version,
         'ENCODER_NAME': f'{EXECUTOR_PREFIX}{encoder_uses}',
         'CAST_CONVERT_NAME': f'{EXECUTOR_PREFIX}CastNMoveNowExecutor/v0.0.3',
-        'N_DIM': finetune_settings.finetune_layer_size
-        if finetune_settings.perform_finetuning
-        or user_input.app_instance.app_name == 'music_to_music'
-        else pre_trained_embedding_size,
+        'N_DIM': pre_trained_embedding_size,
         'PRE_TRAINED_EMBEDDINGS_SIZE': pre_trained_embedding_size,
         'INDEXER_NAME': f'{EXECUTOR_PREFIX}{indexer_uses}',
         'PREFETCH': PREFETCH_NR,
         'PREPROCESSOR_NAME': f'{EXECUTOR_PREFIX}{name_to_id_map.get("NOWPreprocessor")}/{NOW_PREPROCESSOR_VERSION}',
         'AUTOCOMPLETE_EXECUTOR_NAME': f'{EXECUTOR_PREFIX}{name_to_id_map.get("NOWAutoCompleteExecutor2")}/{NOW_AUTOCOMPLETE_VERSION}',
-        'APP': user_input.app_instance.app_name,
         'COLUMNS': tags,
         'ADMIN_EMAILS': user_input.admin_emails or [] if user_input.secured else [],
         'USER_EMAILS': user_input.user_emails or [] if user_input.secured else [],
@@ -217,7 +208,9 @@ def get_indexer_config(
 
 def _extract_tags_for_indexer(user_input: UserInput):
     final_tags = [
-        [tag, value] for tag, value in user_input.filter_fields_modalities.items()
+        [tag, value]
+        for tag, value in user_input.filter_fields_modalities.items()
+        if tag in user_input.filter_fields
     ]
     if user_input.app_instance.output_modality in [
         Modalities.IMAGE,
