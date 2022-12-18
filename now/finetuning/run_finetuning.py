@@ -41,8 +41,6 @@ def finetune(
      2. If bi-modal, prepare the embeddings by concatenating zeros for the opposing modality
      3. Create model and run finetuning, get path to the tuned model and return
 
-    Note, for music we use cached models because the datasets are too large and consume too much time
-
     :param user_input: The configured user input object
     :param env_dict: environment variables for flow.yml file
     :param dataset: The dataset with the finetuning labels on all documents. Embeddings are optional and can

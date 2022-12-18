@@ -17,7 +17,6 @@ from deployment.bff.app.constants import (
     DESCRIPTION,
     TITLE,
 )
-from deployment.bff.app.decorators import api_method, timed
 from deployment.bff.app.endpoint.legacy import admin, cloud_temp_link
 from deployment.bff.app.route_generation import create_endpoints
 from now.common.options import construct_app
@@ -50,15 +49,6 @@ def get_fast_api_app(app_name):
         app.mount("/static", StaticFiles(directory="static"), name="static")
     except Exception as e:
         logger.error(f'Failed to mount static files: {e}')
-
-    @app.get('/ping')
-    @api_method
-    @timed
-    def check_liveness() -> str:
-        """
-        Sanity check - this will let the caller know that the service is operational.
-        """
-        return 'pong!'
 
     @app.get("/docs", include_in_schema=False)
     async def custom_swagger_ui_html():
