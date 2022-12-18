@@ -3,7 +3,7 @@ import os
 import pytest
 from docarray import Document, DocumentArray
 
-from now.app.image_text_retrieval.app import ImageTextRetrieval
+from now.app.SEARCH.app import ImageTextRetrieval
 from now.common.options import construct_app
 from now.constants import Apps
 from now.now_dataclasses import UserInput

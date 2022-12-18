@@ -10,13 +10,13 @@ from now.demo_data import DemoDatasetNames
 from now.now_dataclasses import UserInput
 
 
-class ImageTextRetrieval(JinaNOWApp):
+class Search(JinaNOWApp):
     def __init__(self):
         super().__init__()
 
     @property
     def app_name(self) -> str:
-        return Apps.IMAGE_TEXT_RETRIEVAL
+        return Apps.SEARCH
 
     @property
     def is_enabled(self) -> bool:

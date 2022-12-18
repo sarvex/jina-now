@@ -38,7 +38,7 @@ class CmdPromptMock:
 MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
-            'app': Apps.IMAGE_TEXT_RETRIEVAL,
+            'app': Apps.SEARCH,
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': 'tll',
@@ -49,7 +49,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'app': Apps.IMAGE_TEXT_RETRIEVAL,
+            'app': Apps.SEARCH,
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': 'nih-chest-xrays',
@@ -60,7 +60,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'app': Apps.IMAGE_TEXT_RETRIEVAL,
+            'app': Apps.SEARCH,
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DOCARRAY,
             'dataset_name': 'subset_laion',
@@ -77,7 +77,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'app': Apps.IMAGE_TEXT_RETRIEVAL,
+            'app': Apps.SEARCH,
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DOCARRAY,
             'dataset_name': 'subset_laion',
@@ -94,7 +94,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'app': Apps.IMAGE_TEXT_RETRIEVAL,
+            'app': Apps.SEARCH,
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.PATH,
             'dataset_path': os.path.join(
@@ -109,7 +109,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'app': Apps.IMAGE_TEXT_RETRIEVAL,
+            'app': Apps.SEARCH,
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DOCARRAY,
             'dataset_name': 'subset_laion',
@@ -132,7 +132,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'cluster': 'new',
             'deployment_type': 'local',
         },
-        {'app': Apps.IMAGE_TEXT_RETRIEVAL},
+        {'app': Apps.SEARCH},
     ),
     (
         {
@@ -142,12 +142,12 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'cluster': 'new',
             'deployment_type': 'local',
         },
-        {'app': Apps.IMAGE_TEXT_RETRIEVAL},
+        {'app': Apps.SEARCH},
     ),
     (
         {},
         {
-            'app': Apps.IMAGE_TEXT_RETRIEVAL,
+            'app': Apps.SEARCH,
             'flow_name': 'testapp',
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': DemoDatasetNames.BEST_ARTWORKS,

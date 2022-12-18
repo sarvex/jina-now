@@ -80,7 +80,7 @@ def test_token_exists():
     'app, input_modality, output_modality, dataset, deployment_type',
     [
         (
-            Apps.IMAGE_TEXT_RETRIEVAL,
+            Apps.SEARCH,
             Modalities.TEXT,
             Modalities.IMAGE,
             DemoDatasetNames.BEST_ARTWORKS,
@@ -114,14 +114,14 @@ def test_end_to_end_remote(
     'app, input_modality, output_modality, dataset, deployment_type',
     [
         (
-            Apps.IMAGE_TEXT_RETRIEVAL,
+            Apps.SEARCH,
             Modalities.IMAGE,
             Modalities.IMAGE,
             DemoDatasetNames.BIRD_SPECIES,
             'local',
         ),
         (
-            Apps.IMAGE_TEXT_RETRIEVAL,
+            Apps.SEARCH,
             Modalities.TEXT,
             Modalities.TEXT,
             DemoDatasetNames.POP_LYRICS,
@@ -189,7 +189,7 @@ def run_end_to_end(
         cmd(f'{kubectl_path} create namespace nowapi')
     kwargs = Namespace(**kwargs)
     response = cli(args=kwargs)
-    if app == Apps.IMAGE_TEXT_RETRIEVAL:
+    if app == Apps.SEARCH:
         input_modality = 'image-or-text'
         output_modality = 'image-or-text'
     assert_deployment_response(
@@ -329,10 +329,10 @@ def get_search_request_body(
     )
     request_body['limit'] = 9
     # Perform end-to-end check via bff
-    if app == Apps.IMAGE_TEXT_RETRIEVAL:
+    if app == Apps.SEARCH:
         request_body['image'] = test_search_image
     elif app in [
-        Apps.IMAGE_TEXT_RETRIEVAL,
+        Apps.SEARCH,
         Apps.TEXT_TO_VIDEO,
     ]:
         if dataset == DemoDatasetNames.BEST_ARTWORKS:
@@ -365,7 +365,7 @@ def assert_deployment_response(
 
 @pytest.mark.parametrize('deployment_type', ['remote'])
 @pytest.mark.parametrize('dataset', ['custom_s3_bucket'])
-@pytest.mark.parametrize('app', [Apps.IMAGE_TEXT_RETRIEVAL])
+@pytest.mark.parametrize('app', [Apps.SEARCH])
 @pytest.mark.parametrize('input_modality', [Modalities.IMAGE])
 @pytest.mark.parametrize('output_modality', [Modalities.IMAGE])
 def test_backend_custom_data(
@@ -403,7 +403,7 @@ def test_backend_custom_data(
     kwargs = Namespace(**kwargs)
     response = cli(args=kwargs)
 
-    if app == Apps.IMAGE_TEXT_RETRIEVAL:
+    if app == Apps.SEARCH:
         input_modality = 'image-or-text'
         output_modality = 'image-or-text'
 

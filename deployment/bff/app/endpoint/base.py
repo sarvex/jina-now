@@ -66,10 +66,6 @@ class BaseEndpoint:
         """If has_modality is True, the response model will have a modality field."""
         return False
 
-    def has_uri(self, is_request):
-        """If has_uri is True, the response model will have a uri field."""
-        return False
-
     def is_list(self, is_request):
         """If is_list is True, the response model will be wrapped as list."""
         return False

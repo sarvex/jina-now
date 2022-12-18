@@ -104,11 +104,13 @@ def create_endpoints(router, input_modality, output_modality):
         if not endpoint.is_active(input_modality, output_modality):
             continue
         endpoint_name = endpoint.name
-        request_modality = endpoint.request_modality(input_modality, output_modality)
-        response_modality = endpoint.response_modality(input_modality, output_modality)
-        RequestModel = get_pydantic_model(endpoint, request_modality, is_request=True)
+        request_modalities = endpoint.request_modality(input_modality, output_modality)
+        response_modalities = endpoint.response_modality(
+            input_modality, output_modality
+        )
+        RequestModel = get_pydantic_model(endpoint, request_modalities, is_request=True)
         ResponseModel = get_pydantic_model(
-            endpoint, response_modality, is_request=False
+            endpoint, response_modalities, is_request=False
         )
 
         def get_endpoint(endpoint_name, request_modality, response_modality):
@@ -137,7 +139,9 @@ def create_endpoints(router, input_modality, output_modality):
 
         router.add_api_route(
             f'/{endpoint_name}',
-            endpoint=get_endpoint(endpoint_name, request_modality, response_modality),
+            endpoint=get_endpoint(
+                endpoint_name, request_modalities, response_modalities
+            ),
             methods=['POST'],
             response_model=ResponseModel,
             summary=f'Endpoint to send {endpoint_name} requests',

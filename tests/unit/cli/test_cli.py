@@ -10,7 +10,7 @@ def test_start_with_parameters():
         os.path.dirname(__file__), '..', '..', 'resources', 'image'
     )
     bash_command = (
-        f"python main.py start --app image_text_retrieval --search_fields .jpg --dataset_path "
+        f"python main.py start --app SEARCH --search_fields .jpg --dataset_path "
         f"{dataset_path} --dataset_type path --deployment_type remote --flow_name test --secured false"
     )
     with pytest.raises(subprocess.TimeoutExpired):

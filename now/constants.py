@@ -22,7 +22,7 @@ class Modalities(BetterEnum):
 
 
 class Apps(BetterEnum):
-    IMAGE_TEXT_RETRIEVAL = 'image_text_retrieval'
+    SEARCH = 'search'
     TEXT_TO_VIDEO = 'text_to_video'
 
 

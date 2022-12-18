@@ -67,9 +67,6 @@ class SearchEndpoint(BaseEndpoint):
     def has_modality(self, is_request):
         return True
 
-    def has_uri(self, is_request):
-        return True
-
     def is_list(self, is_request):
         return not is_request
 

@@ -40,8 +40,5 @@ class DeleteEndpoint:
     def has_modality(self, is_request):
         return False
 
-    def has_uri(self, is_request):
-        return False
-
     def is_list(self, is_request):
         return False

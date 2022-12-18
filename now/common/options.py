@@ -60,7 +60,7 @@ def _create_app_from_user_input(user_input: UserInput, **kwargs):
             user_input.search_fields[0]
         ]
     if _search_modality in ['image', 'text']:
-        app_name = Apps.IMAGE_TEXT_RETRIEVAL
+        app_name = Apps.SEARCH
     elif _search_modality == 'video':
         app_name = Apps.TEXT_TO_VIDEO
     else:

@@ -31,9 +31,6 @@ class IndexEndpoint(BaseEndpoint):
     def has_modality(self, is_request):
         return is_request
 
-    def has_uri(self, is_request):
-        return is_request
-
     def is_list(self, is_request):
         return is_request
 
