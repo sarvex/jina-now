@@ -1,0 +1,71 @@
+jtype: Flow
+with:
+  name: nowapi
+  monitoring: true
+  port_expose: 8080
+  prefetch: 10
+  cors: true
+  env:
+    JINA_LOG_LEVEL: DEBUG
+jcloud:
+  version: ${{ ENV.JINA_VERSION }}
+  custom_dns:
+    - ${{ ENV.CUSTOM_DNS }}
+executors:
+  - name: preprocessor
+    uses: ${{ ENV.PREPROCESSOR_NAME }}
+    replicas: 5
+    uses_with:
+      admin_emails: ${{ ENV.ADMIN_EMAILS }}
+      user_emails: ${{ ENV.USER_EMAILS }}
+    jcloud:
+      resources:
+        cpu: 0.5
+        memory: 1G
+    env:
+      JINA_LOG_LEVEL: DEBUG
+  - name: encoder_clip
+    replicas: 3
+    uses: ${{ ENV.ENCODER_NAME }}
+    host: ${{ ENV.ENCODER_HOST }}
+    port: ${{ ENV.ENCODER_PORT }}
+    tls: ${{ ENV.IS_REMOTE_DEPLOYMENT }}
+    external: ${{ ENV.IS_REMOTE_DEPLOYMENT }}
+    uses_with:
+      name: ${{ ENV.PRE_TRAINED_MODEL_NAME }}
+    env:
+      JINA_LOG_LEVEL: DEBUG
+  - name: cast_convert
+    uses: ${{ ENV.CAST_CONVERT_NAME }}
+    uses_with:
+      output_size: ${{ ENV.PRE_TRAINED_EMBEDDINGS_SIZE }}
+    env:
+      JINA_LOG_LEVEL: DEBUG
+  - name: linear_head
+    uses: jinahub+docker://FinetunerExecutor/v0.9.2
+    uses_with:
+      artifact: ${{ ENV.FINETUNE_ARTIFACT }}
+      token: ${{ ENV.JINA_TOKEN }}
+    uses_requests:
+      /index: encode
+      /search: encode
+    output_array_type: numpy
+    jcloud:
+      resources:
+        memory: 4G
+    env:
+      JINA_LOG_LEVEL: DEBUG
+  - name: indexer
+    uses: ${{ ENV.INDEXER_NAME }}
+    uses_with:
+      dim: ${{ ENV.N_DIM }}
+      columns: ${{ ENV.COLUMNS }}
+      admin_emails: ${{ ENV.ADMIN_EMAILS }}
+      user_emails: ${{ ENV.USER_EMAILS }}
+    jcloud:
+      resources:
+        memory: 8G
+        cpu: 2.0
+        capacity: on-demand
+    env:
+      JINA_LOG_LEVEL: DEBUG

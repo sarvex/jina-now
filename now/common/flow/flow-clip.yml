@@ -1,0 +1,51 @@
+jtype: Flow
+with:
+  name: nowapi
+  monitoring: true
+  port_expose: 8080
+  prefetch: 10
+  cors: true
+  env:
+    JINA_LOG_LEVEL: DEBUG
+jcloud:
+  version: ${{ ENV.JINA_VERSION }}
+  custom_dns:
+    - ${{ ENV.CUSTOM_DNS }}
+  labels:
+    team: now
+executors:
+  - name: preprocessor
+    uses: ${{ ENV.PREPROCESSOR_NAME }}
+    uses_with:
+      admin_emails: ${{ ENV.ADMIN_EMAILS }}
+      user_emails: ${{ ENV.USER_EMAILS }}
+    jcloud:
+      resources:
+        memory: 1G
+    env:
+      JINA_LOG_LEVEL: DEBUG
+  - name: encoder_clip
+    uses: ${{ ENV.ENCODER_NAME }}
+    host: ${{ ENV.ENCODER_HOST }}
+    port: ${{ ENV.ENCODER_PORT }}
+    tls: ${{ ENV.IS_REMOTE_DEPLOYMENT }}
+    external: ${{ ENV.IS_REMOTE_DEPLOYMENT }}
+    uses_with:
+      name: ${{ ENV.PRE_TRAINED_MODEL_NAME }}
+    env:
+      JINA_LOG_LEVEL: DEBUG
+  - name: indexer
+    uses: ${{ ENV.INDEXER_NAME }}
+    disable_reduce: true
+    uses_with:
+      dim: ${{ ENV.N_DIM }}
+      columns: ${{ ENV.COLUMNS }}
+      admin_emails: ${{ ENV.ADMIN_EMAILS }}
+      user_emails: ${{ ENV.USER_EMAILS }}
+    jcloud:
+      resources:
+        memory: ${{ ENV.INDEXER_MEM }}
+        cpu: 0.1
+        capacity: on-demand
+    env:
+      JINA_LOG_LEVEL: DEBUG
