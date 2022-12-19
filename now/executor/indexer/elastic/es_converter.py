@@ -18,6 +18,12 @@ class ESConverter:
     ) -> List[Dict]:
         """
         Transform a dictionary (mapping encoder to DocumentArray) into a list of Elasticsearch documents.
+        The `docs_map` dictionary is expected to have the following structure:
+        {
+            'encoder1': DocumentArray([...]),
+            'encoder2': DocumentArray([...]), # same number of documents as encoder1
+            ...
+        }
 
         :param docs_map: dictionary mapping encoder to DocumentArray.
         :param index_name: name of the index to be used in Elasticsearch.
