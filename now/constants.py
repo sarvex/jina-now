@@ -3,11 +3,11 @@ from __future__ import annotations, print_function, unicode_literals
 from now.utils import BetterEnum
 
 # ----------------------------------
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.136-demo-data-migration-22'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.136-demo-data-migration-23'
 # ----------------------------------
 NOW_PREPROCESSOR_VERSION = '0.0.114-elastic-multimodal-15x'
-NOW_QDRANT_INDEXER_VERSION = '0.0.12-demo-data-migration-22'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.11-demo-data-migration-22'
+NOW_QDRANT_INDEXER_VERSION = '0.0.12-demo-data-migration-23'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.11-demo-data-migration-23'
 NOW_AUTOCOMPLETE_VERSION = '0.0.6-elastic-multimodal-15x'
 
 
@@ -47,6 +47,7 @@ SUPPORTED_FILE_TYPES = {
     Modalities.VIDEO: ['gif'],
 }
 AVAILABLE_MODALITIES_FOR_SEARCH = [Modalities.TEXT, Modalities.IMAGE, Modalities.VIDEO]
+AVAILABLE_MODALITIES_FOR_FILTER = [Modalities.TEXT]
 NOT_AVAILABLE_MODALITIES_FOR_FILTER = [
     Modalities.IMAGE,
     Modalities.VIDEO,

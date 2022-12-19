@@ -3,6 +3,7 @@ Test the dialog.py module.
 
 Patches the `prompt` method to mock user input via the command line.
 """
+import os
 from typing import Dict
 
 import pytest
@@ -53,21 +54,21 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
         },
         {},
     ),
-    # (
-    #     {
-    #         'app': Apps.IMAGE_TEXT_RETRIEVAL,
-    #         'flow_name': DEFAULT_FLOW_NAME,
-    #         'dataset_type': DatasetTypes.PATH,
-    #         'dataset_path': os.path.join(
-    #             os.path.dirname(__file__), '..', 'resources', 'image'
-    #         ),
-    #         'search_fields': ['.jpg'],
-    #         'search_fields_modalities': {'.jpg': 'image'},
-    #         'cluster': 'new',
-    #         'deployment_type': 'local',
-    #     },
-    #     {},
-    # ),
+    (
+        {
+            'app': Apps.IMAGE_TEXT_RETRIEVAL,
+            'flow_name': DEFAULT_FLOW_NAME,
+            'dataset_type': DatasetTypes.PATH,
+            'dataset_path': os.path.join(
+                os.path.dirname(__file__), '..', 'resources', 'image'
+            ),
+            'search_fields': ['.jpg'],
+            'search_fields_modalities': {'.jpg': 'image'},
+            'cluster': 'new',
+            'deployment_type': 'local',
+        },
+        {},
+    ),
     (
         {
             'flow_name': DEFAULT_FLOW_NAME,

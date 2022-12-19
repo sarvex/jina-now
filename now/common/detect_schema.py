@@ -7,6 +7,7 @@ import requests
 from docarray import DocumentArray
 
 from now.constants import (
+    AVAILABLE_MODALITIES_FOR_FILTER,
     AVAILABLE_MODALITIES_FOR_SEARCH,
     NOT_AVAILABLE_MODALITIES_FOR_FILTER,
     SUPPORTED_FILE_TYPES,
@@ -86,20 +87,19 @@ def _extract_field_candidates_docarray(response):
                 ' to add modalities to your documents https://docarray.jina.ai/datatypes/multimodal/'
             )
         field_pos = value['structValue']['fields']['position']['numberValue']
-        try:
-            modality = da[0].chunks[field_pos].modality.lower()
-            if modality not in AVAILABLE_MODALITIES_FOR_SEARCH:
-                raise ValueError(
-                    f'The modality {modality} is not supported for search. Please use one of the following modalities: '
-                    f'{AVAILABLE_MODALITIES_FOR_SEARCH}'
-                )
-        except Exception as e:
+        if not da[0].chunks[field_pos].modality:
             raise ValueError(
                 f'No modality found for {field_name}. Please follow the steps in the documentation'
                 f' to add modalities to your documents https://docarray.jina.ai/datatypes/multimodal/'
             )
-        # only the text fields are added to the filter modalities
-        if modality == 'text':
+        modality = da[0].chunks[field_pos].modality.lower()
+        if modality not in AVAILABLE_MODALITIES_FOR_SEARCH:
+            raise ValueError(
+                f'The modality {modality} is not supported for search. Please use '
+                f'one of the following modalities: {AVAILABLE_MODALITIES_FOR_SEARCH}'
+            )
+        # only the available modalities for filter are added to the filter modalities
+        if modality in AVAILABLE_MODALITIES_FOR_FILTER:
             filter_modalities[field_name] = modality
         # only the available modalities for search are added to search modalities
         if modality in AVAILABLE_MODALITIES_FOR_SEARCH:
