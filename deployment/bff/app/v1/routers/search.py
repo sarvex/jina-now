@@ -64,9 +64,9 @@ def search(data: SearchRequestModel):
             scores=scores,
             tags=doc.tags,
             fields={
-                'result_field': {
-                    doc.content_type: doc.content if doc.content else {'uri': doc.uri}
-                }
+                'result_field': {doc.content_type: doc.content}
+                if doc.content
+                else {'uri': doc.uri}
             },
         )
         matches.append(match)
