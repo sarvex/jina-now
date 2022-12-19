@@ -9,7 +9,9 @@ from __future__ import annotations, print_function, unicode_literals
 import importlib
 import os
 import uuid
+from typing import Text
 
+from docarray.typing import Image, Video
 from hubble import AuthenticationRequiredError
 from kubernetes import client, config
 
@@ -58,9 +60,9 @@ def _create_app_from_user_input(user_input: UserInput, **kwargs):
         _search_modality = user_input.search_fields_modalities[
             user_input.search_fields[0]
         ]
-    if _search_modality in ['image', 'text']:
+    if _search_modality in [Image, Text]:
         app_name = Apps.IMAGE_TEXT_RETRIEVAL
-    elif _search_modality == 'video':
+    elif _search_modality == Video:
         app_name = Apps.TEXT_TO_VIDEO
     else:
         raise ValueError(f'Invalid search modality: {_search_modality}')

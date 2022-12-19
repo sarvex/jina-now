@@ -14,45 +14,48 @@ S3Object, my_setter, my_getter = create_s3_type()
 
 
 @pytest.mark.parametrize(
-    "fields, fields_modalities, dataset_type, expected_annotations, expected_class_attributes",
+    "fields, fields_modalities, files_to_dataclass_fields, dataset_type, expected_annotations, "
+    "expected_class_attributes",
     [
         (
             ['image.png', 'description.txt'],
             {'image.png': Image, 'description.txt': Text},
+            {'image.png': 'image_0', 'description.txt': 'text_0'},
             DatasetTypes.PATH,
-            {'image_png': Image, 'description_txt': Text},
-            {'image_png': None, 'description_txt': None},
+            {'image_0': Image, 'text_0': Text},
+            {'image_0': None, 'text_0': None},
         ),
         (
             ['image.png', 'description.txt'],
             {'image.png': Image, 'description.txt': Text},
+            {'image.png': 'image_0', 'description.txt': 'text_0'},
             DatasetTypes.S3_BUCKET,
-            {'image_png': S3Object, 'description_txt': S3Object},
+            {'image_0': S3Object, 'text_0': S3Object},
             {
-                'image_png': field(setter=my_setter, getter=my_getter, default=''),
-                'description_txt': field(
-                    setter=my_setter, getter=my_getter, default=''
-                ),
+                'image_0': field(setter=my_setter, getter=my_getter, default=''),
+                'text_0': field(setter=my_setter, getter=my_getter, default=''),
             },
         ),
         (
             ['price', 'description'],
             {'price': float, 'description': str},
+            {'price': 'filter_0', 'description': 'filter_1'},
             DatasetTypes.PATH,
-            {'price': float, 'description': str},
-            {'price': None, 'description': None},
+            {'filter_0': float, 'filter_1': str},
+            {'filter_0': None, 'filter_1': None},
         ),
     ],
 )
 def test_create_annotations_and_class_attributes(
     fields,
     fields_modalities,
+    files_to_dataclass_fields,
     dataset_type,
     expected_annotations,
     expected_class_attributes,
 ):
     annotations, class_attributes = create_annotations_and_class_attributes(
-        fields, fields_modalities, dataset_type
+        fields, fields_modalities, files_to_dataclass_fields, dataset_type
     )
     for key, value in expected_annotations.items():
         assert str(annotations[key]) == str(value)
@@ -70,10 +73,10 @@ def test_create_annotations_and_class_attributes(
             ['price', 'description'],
             {'price': float, 'description': str},
             {
-                'image_png': Image,
-                'description_txt': Text,
-                'price': float,
-                'description': str,
+                'image_0': Image,
+                'text_0': Text,
+                'filter_0': float,
+                'filter_1': str,
             },
         ),
         (
@@ -83,10 +86,10 @@ def test_create_annotations_and_class_attributes(
             ['price', 'description'],
             {'price': float, 'description': str},
             {
-                'image_png': S3Object,
-                'description_txt': S3Object,
-                'price': S3Object,
-                'description': S3Object,
+                'image_0': S3Object,
+                'text_0': S3Object,
+                'filter_0': S3Object,
+                'filter_1': S3Object,
                 'json_s3': S3Object,
             },
         ),
