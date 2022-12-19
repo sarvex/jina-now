@@ -17,6 +17,7 @@ from now.now_dataclasses import UserInput
 
 SEARCH_FIELDS_MODALITIES = {'text': Text, 'uri': Image}
 FILTER_FIELDS_MODALITIES = {
+    'uri': 'str',
     'text': 'str',
     'original_height': 'dict',
     'similarity': 'dict',
@@ -87,7 +88,9 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'filter_fields': ['text'],
             'cluster': 'new',
             'deployment_type': 'local',
-            'jwt': {'token': os.environ['WOLF_TOKEN']},
+            'jwt': {
+                'token': "c1ceb8b00a24c206d5b659091069a4b8:a67b123cfe42b5944af90d88aa848781e5c0d0d4"
+            },  # os.environ['WOLF_TOKEN']
             'admin_emails': ['team-now@jina.ai'],
         },
         {},
@@ -101,7 +104,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
                 os.path.dirname(__file__), '..', 'resources', 'image'
             ),
             'search_fields': ['.jpg'],
-            'search_fields_modalities': {'.jpg': 'image'},
+            'search_fields_modalities': {'.jpg': Image},
             'cluster': 'new',
             'deployment_type': 'local',
         },
