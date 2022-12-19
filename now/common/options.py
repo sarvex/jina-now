@@ -197,10 +197,7 @@ SEARCH_FIELDS = DialogOptions(
     ],
     prompt_message='Please select the search fields:',
     prompt_type='checkbox',
-    depends_on=True,
     is_terminal_command=True,
-    conditional_check=lambda user_input: user_input.search_fields_modalities is not None
-    and len(user_input.search_fields_modalities.keys()) > 0,
     post_func=_create_app_from_user_input,
     argparse_kwargs={
         'type': lambda s: s.split(',') if s else UserInput().search_fields

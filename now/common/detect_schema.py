@@ -104,10 +104,16 @@ def _extract_field_candidates_docarray(response):
         # only the available modalities for search are added to search modalities
         if modality in AVAILABLE_MODALITIES_FOR_SEARCH:
             search_modalities[field_name] = modality
+
     if da[0].tags:  # if tags exist then we add them as well to the filter modalities
         for el, value in da[0].tags['fields'].items():
             for val_type, val in value.items():
                 filter_modalities[el] = val_type
+
+    if len(search_modalities.keys()) == 0:
+        raise ValueError(
+            'No searchable fields found, please check documentation https://now.jina.ai'
+        )
     return search_modalities, filter_modalities
 
 
