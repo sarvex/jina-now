@@ -98,10 +98,13 @@ def _extract_field_candidates_docarray(response):
                 f'No modality found for {field_name}. Please follow the steps in the documentation'
                 f' to add modalities to your documents https://docarray.jina.ai/datatypes/multimodal/'
             )
+        # only the text fields are added to the filter modalities
         if modality == 'text':
             filter_modalities[field_name] = modality
-        search_modalities[field_name] = modality
-    if da[0].tags:
+        # only the available modalities for search are added to search modalities
+        if modality in AVAILABLE_MODALITIES_FOR_SEARCH:
+            search_modalities[field_name] = modality
+    if da[0].tags:  # if tags exist then we add them as well to the filter modalities
         for el, value in da[0].tags['fields'].items():
             for val_type, val in value.items():
                 filter_modalities[el] = val_type
