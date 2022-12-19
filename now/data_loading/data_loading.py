@@ -11,6 +11,7 @@ from docarray import Document, DocumentArray
 from now.constants import (
     BASE_STORAGE_URL,
     DEMO_DATASET_DOCARRAY_VERSION,
+    MODALITIES_MAPPING,
     DatasetTypes,
     Modalities,
 )
@@ -361,14 +362,14 @@ def get_dataset_url(dataset: str) -> str:
 
     data_folder = None
     docarray_version = DEMO_DATASET_DOCARRAY_VERSION
-    if search_modality == Modalities.IMAGE:
+    if search_modality == MODALITIES_MAPPING[Modalities.IMAGE]:
         data_folder = 'jpeg'
-    elif search_modality == Modalities.TEXT:
+    elif search_modality == MODALITIES_MAPPING[Modalities.TEXT]:
         data_folder = 'text'
-    elif search_modality == Modalities.VIDEO:
+    elif search_modality == MODALITIES_MAPPING[Modalities.VIDEO]:
         data_folder = 'video'
 
-    if search_modality != Modalities.VIDEO:
+    if search_modality != MODALITIES_MAPPING[Modalities.VIDEO]:
         model_name = 'ViT-B32'
         return f'{BASE_STORAGE_URL}/{data_folder}/{dataset}.{model_name}-{docarray_version}.bin'
     else:
