@@ -20,6 +20,7 @@ from now.utils import sigmap, write_env_file, write_flow_file
 cur_dir = pathlib.Path(__file__).parent.resolve()
 MAX_WAIT_TIME = 1800
 
+
 def batch(data_list, n=1):
     l = len(data_list)
     for ndx in range(0, l, n):
@@ -55,7 +56,11 @@ def check_pods_health(ns):
                 container_status = pod.status.container_statuses[0]
                 if container_status.started is False or container_status.ready is False:
                     waiting_state = container_status.state.waiting
-                    if waiting_state is not None and waiting_state.message is not None and 'Error' in waiting_state.message:
+                    if (
+                        waiting_state is not None
+                        and waiting_state.message is not None
+                        and 'Error' in waiting_state.message
+                    ):
                         raise Exception(pod.metadata.name + " " + waiting_state.reason)
         except Exception as e:
             print(e)
