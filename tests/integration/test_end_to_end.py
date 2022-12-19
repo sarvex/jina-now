@@ -190,8 +190,8 @@ def run_end_to_end(
     kwargs = Namespace(**kwargs)
     response = cli(args=kwargs)
     if app == Apps.IMAGE_TEXT_RETRIEVAL:
-        input_modality = 'image-or-text'
-        output_modality = 'image-or-text'
+        input_modality = 'text-or-image'
+        output_modality = 'text-or-image'
     assert_deployment_response(
         app, deployment_type, input_modality, output_modality, response
     )
@@ -404,8 +404,8 @@ def test_backend_custom_data(
     response = cli(args=kwargs)
 
     if app == Apps.IMAGE_TEXT_RETRIEVAL:
-        input_modality = 'image-or-text'
-        output_modality = 'image-or-text'
+        input_modality = 'text-or-image'
+        output_modality = 'text-or-image'
 
     assert_deployment_response(
         app, deployment_type, input_modality, output_modality, response
