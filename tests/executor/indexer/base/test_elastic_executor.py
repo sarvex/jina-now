@@ -76,7 +76,9 @@ class TestBaseIndexer:
     def metas(self, tmpdir):
         return {'workspace': str(tmpdir)}
 
-    def test_index(self, metas, indexer, setup, random_index_name, request):
+    def test_index(
+        self, setup_service_running, metas, indexer, setup, random_index_name, request
+    ):
         """Test indexing does not return anything"""
         if setup:
             request.getfixturevalue(setup)
@@ -107,7 +109,16 @@ class TestBaseIndexer:
     @pytest.mark.parametrize(
         'offset, limit', [(0, 10), (10, 0), (0, 0), (10, 10), (None, None)]
     )
-    def test_list(self, metas, offset, limit, indexer, setup, random_index_name):
+    def test_list(
+        self,
+        setup_service_running,
+        metas,
+        offset,
+        limit,
+        indexer,
+        setup,
+        random_index_name,
+    ):
         """Test list returns all indexed docs"""
         docs = self.get_docs(NUMBER_OF_DOCS)
         f = (
@@ -147,7 +158,9 @@ class TestBaseIndexer:
                 assert len(set([d.id for d in list_res])) == l
                 assert [d.tags['parent_tag'] for d in list_res] == ['value'] * l
 
-    def test_search(self, metas, indexer, setup, random_index_name):
+    def test_search(
+        self, setup_service_running, metas, indexer, setup, random_index_name
+    ):
         docs = self.get_docs(NUMBER_OF_DOCS)
         docs_query = self.get_query()
         f = (
@@ -181,7 +194,9 @@ class TestBaseIndexer:
                     >= query_res[0].matches[i + 1].scores['cosine'].value
                 )
 
-    def test_search_match(self, metas, indexer, setup, random_index_name):
+    def test_search_match(
+        self, setup_service_running, metas, indexer, setup, random_index_name
+    ):
         docs = self.get_docs(NUMBER_OF_DOCS)
         docs_query = self.get_query()
         f = (
@@ -223,7 +238,9 @@ class TestBaseIndexer:
                     >= c.matches[i + 1].scores['cosine'].value
                 )
 
-    def test_search_with_filtering(self, metas, indexer, setup, random_index_name):
+    def test_search_with_filtering(
+        self, setup_service_running, metas, indexer, setup, random_index_name
+    ):
         docs = self.get_docs(NUMBER_OF_DOCS)
         docs_query = self.get_query()
 
@@ -256,7 +273,9 @@ class TestBaseIndexer:
             )
             assert all([m.tags['price'] < 50 for m in query_res[0].matches])
 
-    def test_delete(self, metas, indexer, setup, random_index_name):
+    def test_delete(
+        self, setup_service_running, metas, indexer, setup, random_index_name
+    ):
         docs = self.get_docs(NUMBER_OF_DOCS)
         f = (
             Flow()
@@ -291,7 +310,9 @@ class TestBaseIndexer:
             docs_query = self.get_query()
             f.post(on='/search', inputs=docs_query, return_results=True)
 
-    def test_get_tags(self, metas, indexer, setup, random_index_name):
+    def test_get_tags(
+        self, setup_service_running, metas, indexer, setup, random_index_name
+    ):
         docs = self.get_docs(NUMBER_OF_DOCS)
         f = (
             Flow()
@@ -320,7 +341,9 @@ class TestBaseIndexer:
             assert 'color' in response[0].tags['tags']
             assert sorted(response[0].tags['tags']['color']) == sorted(['red', 'blue'])
 
-    def test_delete_tags(self, metas, indexer, setup, random_index_name):
+    def test_delete_tags(
+        self, setup_service_running, metas, indexer, setup, random_index_name
+    ):
         docs = self.get_docs(NUMBER_OF_DOCS)
         f = (
             Flow()
@@ -460,7 +483,15 @@ class TestBaseIndexer:
         ],
     )
     def test_search_chunk_using_sum_ranker(
-        self, metas, documents, indexer, setup, query, embedding, res_ids
+        self,
+        setup_service_running,
+        metas,
+        documents,
+        indexer,
+        setup,
+        query,
+        embedding,
+        res_ids,
     ):
         documents = DocumentArray([Document(chunks=[doc]) for doc in documents])
         with Flow().add(
@@ -493,7 +524,7 @@ class TestBaseIndexer:
                     assert d.blob == b'', f'got blob {d.blob} for {d.id}'
 
     def test_no_blob_or_tensor_on_matches(
-        self, metas, indexer, setup, random_index_name
+        self, setup_service_running, metas, indexer, setup, random_index_name
     ):
         @dataclass
         class Pic:
@@ -543,7 +574,9 @@ class TestBaseIndexer:
             assert matches[1].pic.tensor is None
             assert matches[0].pic.tensor is None
 
-    def test_curate_endpoint(self, metas, indexer, setup, random_index_name):
+    def test_curate_endpoint(
+        self, setup_service_running, metas, indexer, setup, random_index_name
+    ):
         """Test indexing does not return anything"""
         docs = self.get_docs(NUMBER_OF_DOCS)
         f = (
@@ -599,7 +632,9 @@ class TestBaseIndexer:
             non_curated_query[0].query_text.text = 'parent_x'
             f.search(inputs=non_curated_query)
 
-    def test_curate_endpoint_incorrect(self, metas, indexer, setup, random_index_name):
+    def test_curate_endpoint_incorrect(
+        self, setup_service_running, metas, indexer, setup, random_index_name
+    ):
         f = (
             Flow()
             .add(uses=DummyEncoder1, name='dummy_encoder1')
