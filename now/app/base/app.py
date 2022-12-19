@@ -110,7 +110,7 @@ class JinaNOWApp:
         return [item for sublist in sup_file for item in sublist]
 
     @property
-    def demo_datasets(self) -> Dict[str, List[DemoDataset]]:
+    def demo_datasets(self) -> Dict[Modalities, List[DemoDataset]]:
         """Get a list of example datasets for the app."""
         available_datasets = {}
         for output_modality in self.output_modality:
@@ -179,6 +179,12 @@ class JinaNOWApp:
             mem_check = self._check_docker_mem_limit()
         return req_check and mem_check
 
+    def get_executor_stubs(self, user_input, flow_yaml_content) -> Dict:
+        """
+        Returns the stubs for the executors in the flow.
+        """
+        raise NotImplementedError()
+
     # TODO Remove kubectl_path. At the moment, the setup function needs kubectl because of finetuning a custom
     #  dataset with local deployment. In that case, inference is done on the k8s cluster.
     def setup(
@@ -195,6 +201,9 @@ class JinaNOWApp:
         :param user_input: user configuration based on the given options
         :return: dict used to replace variables in flow yaml and to clean up resources after the flow is terminated
         """
+        # Read the flow and add generic configuration such as labels in the flow
+        # Keep this function as simple as possible. It should only be used to add generic configuration needed
+        # for all apps. App specific configuration should be added in the app specific setup function.
         with open(self.flow_yaml) as input_f:
             flow_yaml_content = JAML.load(input_f.read())
             flow_yaml_content['jcloud']['labels'] = {'team': 'now'}
@@ -204,33 +213,10 @@ class JinaNOWApp:
                 and user_input.flow_name != DEFAULT_FLOW_NAME
                 else DEFAULT_FLOW_NAME
             )
-
-            # append api_keys to the executor with name 'preprocessor' and 'indexer'
-            for executor in flow_yaml_content['executors']:
-                if executor['name'] == 'preprocessor' or executor['name'] == 'indexer':
-                    executor['uses_with']['api_keys'] = '${{ ENV.API_KEY }}'
-
-            if Modalities.TEXT in self.input_modality:
-                if not any(
-                    exec_dict['name'] == 'autocomplete_executor'
-                    for exec_dict in flow_yaml_content['executors']
-                ):
-                    flow_yaml_content['executors'].insert(
-                        0,
-                        {
-                            'name': 'autocomplete_executor',
-                            'uses': '${{ ENV.AUTOCOMPLETE_EXECUTOR_NAME }}',
-                            'needs': 'gateway',
-                            'env': {'JINA_LOG_LEVEL': 'DEBUG'},
-                            'uses_with': {
-                                'api_keys': '${{ ENV.API_KEY }}',
-                                'user_emails': '${{ ENV.USER_EMAILS }}',
-                                'admin_emails': '${{ ENV.ADMIN_EMAILS }}',
-                            },
-                        },
-                    )
             self.add_environment_variables(flow_yaml_content)
-            self.flow_yaml = flow_yaml_content
+
+            # Call the executor stubs function to add executors to the flow and return the whole flow content
+            self.flow_yaml = self.get_executor_stubs(user_input, flow_yaml_content)
         return {}
 
     def preprocess(
