@@ -80,19 +80,6 @@ def preprocess_video(d: Document):
     _sample_video(d)
 
 
-def preprocess_music(d: Document):
-    from pydub import AudioSegment
-
-    if d.blob == b'':
-        if d.uri:
-            if d.uri.startswith(f'data:{d.mime_type}'):
-                d.load_uri_to_blob(timeout=10)
-            else:
-                AudioSegment.from_file(d.uri)  # checks if file is valid
-                with open(d.uri, 'rb') as fh:
-                    d.blob = fh.read()
-
-
 def _select_frames(num_selected_frames, num_total_frames):
     partition_size = num_total_frames / (num_selected_frames + 1)
     return [round(partition_size * (i + 1)) for i in range(num_selected_frames)]

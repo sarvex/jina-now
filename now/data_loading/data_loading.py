@@ -17,7 +17,7 @@ from now.constants import (
     Modalities,
 )
 from now.data_loading.elasticsearch import ElasticsearchExtractor
-from now.demo_data import DemoDatasetNames
+from now.demo_data import AVAILABLE_DATASETS
 from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
 from now.utils import download, sigmap
@@ -46,7 +46,7 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
         da = _extract_es_data(user_input)
     elif user_input.dataset_type == DatasetTypes.DEMO:
         print('⬇  Download DocumentArray dataset')
-        url = get_dataset_url(user_input.dataset_name, user_input.output_modality)
+        url = get_dataset_url(user_input.dataset_name)
         da = fetch_da_from_url(url)
     if da is None:
         raise ValueError(
@@ -54,13 +54,6 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
         )
     if 'NOW_CI_RUN' in os.environ:
         da = da[:50]
-    if (
-        user_input.dataset_name == DemoDatasetNames.MUSIC_GENRES_MIX
-        or user_input.dataset_name == DemoDatasetNames.MUSIC_GENRES_ROCK
-    ):
-        for doc in da:
-            if 'genre_tags' in doc.tags and isinstance(doc.tags['genre_tags'], list):
-                doc.tags['genre_tags'] = ' '.join(doc.tags['genre_tags'])
     return da
 
 
@@ -215,24 +208,22 @@ def fetch_da_from_url(
     return da
 
 
-def get_dataset_url(dataset: str, output_modality: Modalities) -> str:
+def get_dataset_url(dataset: str) -> str:
+    search_modality = None
+    for _modality, _demo_datasets in AVAILABLE_DATASETS.items():
+        if any([dataset == _demo_dataset.name for _demo_dataset in _demo_datasets]):
+            search_modality = _modality
+
     data_folder = None
     docarray_version = DEMO_DATASET_DOCARRAY_VERSION
-    if output_modality == Modalities.IMAGE:
+    if search_modality == Modalities.IMAGE:
         data_folder = 'jpeg'
-    elif output_modality == Modalities.TEXT:
+    elif search_modality == Modalities.TEXT:
         data_folder = 'text'
-    elif output_modality == Modalities.MUSIC:
-        data_folder = 'music'
-    elif output_modality == Modalities.VIDEO:
+    elif search_modality == Modalities.VIDEO:
         data_folder = 'video'
-    elif output_modality == Modalities.TEXT_AND_IMAGE:
-        data_folder = 'text-image'
-    if output_modality not in [
-        Modalities.MUSIC,
-        Modalities.VIDEO,
-        Modalities.TEXT_AND_IMAGE,
-    ]:
+
+    if search_modality != Modalities.VIDEO:
         model_name = 'ViT-B32'
         return f'{BASE_STORAGE_URL}/{data_folder}/{dataset}.{model_name}-{docarray_version}.bin'
     else:

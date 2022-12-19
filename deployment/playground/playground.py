@@ -23,12 +23,7 @@ from src.constants import (
     ds_set,
     root_data_dir,
 )
-from src.search import (
-    get_query_params,
-    search_by_audio,
-    search_by_image,
-    search_by_text,
-)
+from src.search import get_query_params, search_by_image, search_by_text
 from streamlit.scriptrunner import add_script_run_ctx
 from streamlit.server.server import Server
 from streamlit_webrtc import WebRtcMode, webrtc_streamer
@@ -48,11 +43,6 @@ def convert_file_to_document(query):
     data = query.read()
     doc = Document(blob=data)
     return doc
-
-
-def load_music_examples(DATA) -> DocumentArray:
-    ds_url = root_data_dir + 'music/' + DATA + f'-song5-{docarray_version}.bin'
-    return load_data(ds_url)[0, 1, 4]
 
 
 @st.cache(allow_output_mutation=True, suppress_st_warning=True)
@@ -165,8 +155,6 @@ def deploy_streamlit():
             for input_modality in params.input_modality.split('-or-'):
                 if input_modality == 'image':
                     st_ratio_options.extend(["Image", "Webcam"])
-                elif input_modality == 'music':
-                    st_ratio_options.extend(["Music"])
                 elif input_modality == 'text':
                     st_ratio_options.extend(["Text"])
         st_ratio_options = list(set(st_ratio_options))
@@ -184,9 +172,6 @@ def deploy_streamlit():
 
         elif media_type == 'Webcam':
             render_webcam(deepcopy(filter_selection))
-
-        elif media_type == 'Music':
-            render_music_app(params.data, deepcopy(filter_selection))
 
         render_matches(params.output_modality)
 
@@ -437,11 +422,6 @@ def render_matches(OUTPUT_MODALITY):
                 if OUTPUT_MODALITY == 'text':
                     render_text_result(match, c)
 
-                elif OUTPUT_MODALITY == 'music':
-                    if match.uri:
-                        match.load_uri_to_blob(timeout=10)
-                    display_song(c, match)
-
                 elif OUTPUT_MODALITY == 'video':
                     render_graphic_result(match, c)
 
@@ -531,40 +511,6 @@ def render_text_result(match, c):
         body=body,
         unsafe_allow_html=True,
     )
-
-
-def render_music_app(DATA, filter_selection):
-    st.header('Welcome to JinaNOW music search 👋🏽')
-    st.text('Upload a song to search with or select one of the examples.')
-    st.text('Pro tip: You can download search results and use them to search again :)')
-    query = st.file_uploader("", type=['mp3', 'wav'])
-    if query:
-        doc = convert_file_to_document(query)
-        st.subheader('Play your song')
-        st.audio(doc.blob)
-        st.session_state.matches = search_by_audio(
-            document=doc,
-            jwt=st.session_state.jwt_val,
-            filter_selection=filter_selection,
-        )
-
-    else:
-        columns = st.columns(3)
-        music_examples = load_music_examples(DATA)
-
-        def on_button_click(doc_id: str):
-            def callback():
-                st.session_state.matches = search_by_audio(
-                    music_examples[doc_id],
-                    jwt=st.session_state.jwt_val,
-                    filter_selection=filter_selection,
-                )
-
-            return callback
-
-        for c, song in zip(columns, music_examples):
-            display_song(c, song)
-            c.button('Search', on_click=on_button_click(song.id), key=song.id)
 
 
 def render_webcam(filter_selection):

@@ -1,45 +1,7 @@
 import pytest
 from docarray import Document
 
-from now.app.text_to_text_and_image.app import TextToTextAndImage
-from now.constants import DatasetTypes
-from now.data_loading.data_loading import load_data
-from now.demo_data import DemoDatasetNames
-from now.finetuning.data_builder import DataBuilder
 from now.finetuning.generation_fns import ImageNormalizer, TextProcessor
-
-# this test was failing because of the following error: TypeError: __init__() got an unexpected keyword argument 'data'
-#
-from now.now_dataclasses import UserInput
-
-
-def test_data_generation():
-    # load dataset
-    user_input = UserInput()
-    user_input.dataset_type = DatasetTypes.DEMO
-    user_input.dataset_name = DemoDatasetNames.ES_ONLINE_SHOP_50
-    user_input.output_modality = 'text-and-image'
-    dataset = load_data(TextToTextAndImage(), user_input)
-
-    initial_length = len(dataset)
-    task_config = TextToTextAndImage._create_task_config(user_input, dataset[0])
-    data = DataBuilder(dataset=dataset, config=task_config).build()
-    assert len(data) == 2
-    text_dataset, encoder_type = data[0]
-    assert encoder_type == 'text-to-text'
-    # for queries, we do powerset and permutations for 2 fields - >
-    # 4 combinations. plus number of target values. In the end we,
-    # should get (5 * initial length) examples.
-    assert len(text_dataset) == 5 * initial_length
-    assert text_dataset[0].text
-    vision_datset, encoder_type = data[1]
-    assert encoder_type == 'text-to-image'
-    # for queries, we generate powerset of 2 fields -> 3 combinations
-    # and we do product with number of uris for image data.
-    # in the end we should get (3 * number of uris) examples.
-    assert len(vision_datset) == 3 * initial_length
-    assert vision_datset[0].chunks[0].text
-    assert vision_datset[0].chunks[1].tensor.any()
 
 
 def test_image_normalizer():
