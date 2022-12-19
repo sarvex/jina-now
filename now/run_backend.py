@@ -356,9 +356,10 @@ def create_dataclass_fields_file_mappings(fields: List, fields_modalities: Dict)
                     f'{modality_name}_{modalities_count[modality_name]}'
                 ] = f
                 modalities_count[modality_name] += 1
-                continue
-        dataclass_fields_to_file_mapping[f'filter_{filter_count}'] = f
-        filter_count += 1
+                break
+        if f not in dataclass_fields_to_file_mapping.values():
+            dataclass_fields_to_file_mapping[f'filter_{filter_count}'] = f
+            filter_count += 1
     file_mapping_to_dataclass_fields = {
         v: k for k, v in dataclass_fields_to_file_mapping.items()
     }
