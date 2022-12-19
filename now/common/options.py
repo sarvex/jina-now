@@ -9,9 +9,8 @@ from __future__ import annotations, print_function, unicode_literals
 import importlib
 import os
 import uuid
-from typing import Text
 
-from docarray.typing import Image, Video
+from docarray.typing import Image, Text, Video
 from hubble import AuthenticationRequiredError
 from kubernetes import client, config
 

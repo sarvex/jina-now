@@ -113,23 +113,9 @@ def test_end_to_end_remote(
     [
         (
             Apps.IMAGE_TEXT_RETRIEVAL,
-            Modalities.IMAGE,
-            Modalities.IMAGE,
-            DemoDatasetNames.BIRD_SPECIES,
-            'local',
-        ),
-        (
-            Apps.IMAGE_TEXT_RETRIEVAL,
             Modalities.TEXT,
             Modalities.TEXT,
             DemoDatasetNames.POP_LYRICS,
-            'local',
-        ),
-        (
-            Apps.TEXT_TO_VIDEO,
-            Modalities.TEXT,
-            Modalities.VIDEO,
-            DemoDatasetNames.TUMBLR_GIFS_10K,
             'local',
         ),
     ],
