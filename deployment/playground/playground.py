@@ -31,10 +31,6 @@ from tornado.httputil import parse_cookie
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
-# TODO: Uncomment the docarray_version when the file name on GCloud has been changed
-# from docarray import __version__ as docarray_version
-docarray_version = '0.13.17'
-
 # HEADER
 st.set_page_config(page_title="NOW", page_icon='https://jina.ai/favicon.ico')
 
@@ -104,8 +100,6 @@ def deploy_streamlit():
     if redirect_to and st.session_state.login:
         nav_to(redirect_to)
     else:
-        media_type = 'Text'
-
         da_img, da_txt = load_example_queries(params.data, params.output_modality)
 
         if params.output_modality == 'text':
@@ -266,17 +260,8 @@ def load_example_queries(data, output_modality):
     da_txt = None
     if data in ds_set:
         try:
-            if output_modality == 'text-or-image' or output_modality == 'video':
-                output_modality_dir = 'jpeg'
-                data_dir = root_data_dir + output_modality_dir + '/'
-                da_img, da_txt = load_data(
-                    data_dir + data + f'.img10-{docarray_version}.bin'
-                ), load_data(data_dir + data + f'.txt10-{docarray_version}.bin')
-            elif output_modality == 'text':
-                # for now deactivated sample images for text
-                output_modality_dir = 'text'
-                data_dir = root_data_dir + output_modality_dir + '/'
-                da_txt = load_data(data_dir + data + f'.txt10-{docarray_version}.bin')
+            da_img = load_data(root_data_dir + data + f'.img10.bin')
+            da_txt = load_data(root_data_dir + data + f'.txt10.bin')
         except HTTPError as exc:
             print('Could not load samples for the demo dataset', exc)
     return da_img, da_txt
