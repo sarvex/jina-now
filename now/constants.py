@@ -3,10 +3,10 @@ from __future__ import annotations, print_function, unicode_literals
 from now.utils import BetterEnum
 
 # ----------------------------------
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.136-demo-data-migration-17'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.136-demo-data-migration-18'
 # ----------------------------------
 NOW_PREPROCESSOR_VERSION = '0.0.114-elastic-multimodal-15x'
-NOW_QDRANT_INDEXER_VERSION = '0.0.12-demo-data-migration-17'
+NOW_QDRANT_INDEXER_VERSION = '0.0.12-demo-data-migration-18'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.10-elastic-multimodal-15x'
 NOW_AUTOCOMPLETE_VERSION = '0.0.6-elastic-multimodal-15x'
 

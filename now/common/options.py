@@ -40,24 +40,16 @@ AVAILABLE_SOON = 'will be available in upcoming versions'
 
 
 def _create_app_from_user_input(user_input: UserInput, **kwargs):
-    if user_input.dataset_type == DatasetTypes.DEMO:
-        _search_modality = None
-        for _modality, _demo_datasets in AVAILABLE_DATASETS.items():
-            if any(
-                [
-                    user_input.dataset_name == _demo_dataset.name
-                    for _demo_dataset in _demo_datasets
-                ]
-            ):
-                _search_modality = _modality
-    else:
-        if len(user_input.search_fields) != 1:
-            raise ValueError(
-                'Currently only one search field is supported. Please choose one field.'
-            )
-        _search_modality = user_input.search_fields_modalities[
-            user_input.search_fields[0]
-        ]
+    if len(user_input.search_fields) != 1:
+        raise ValueError(
+            'Currently only one search field is supported. Please choose one field.'
+        )
+    if user_input.search_fields[0] not in user_input.search_fields_modalities.keys():
+        raise ValueError(
+            f'Search field specified is not among the search candidates field. Kindly '
+            'choose one of the following: {user_input.search_fields_modalities.keys()}'
+        )
+    _search_modality = user_input.search_fields_modalities[user_input.search_fields[0]]
     if _search_modality in ['image', 'text']:
         app_name = Apps.IMAGE_TEXT_RETRIEVAL
     elif _search_modality == 'video':
@@ -205,12 +197,10 @@ SEARCH_FIELDS = DialogOptions(
     ],
     prompt_message='Please select the search fields:',
     prompt_type='checkbox',
-    depends_on=DATASET_TYPE,
+    depends_on=True,
     is_terminal_command=True,
     conditional_check=lambda user_input: user_input.search_fields_modalities is not None
-    and len(user_input.search_fields_modalities.keys()) > 0
-    and len(user_input.search_fields_modalities.keys()) > 0
-    and user_input.dataset_type != DatasetTypes.DEMO,
+    and len(user_input.search_fields_modalities.keys()) > 0,
     post_func=_create_app_from_user_input,
     argparse_kwargs={
         'type': lambda s: s.split(',') if s else UserInput().search_fields
@@ -244,6 +234,7 @@ ES_INDEX_NAME = DialogOptions(
     conditional_check=lambda user_input: user_input.dataset_type
     == DatasetTypes.ELASTICSEARCH,
 )
+
 
 ES_HOST_NAME = DialogOptions(
     name='es_host_name',

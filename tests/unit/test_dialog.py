@@ -3,7 +3,6 @@ Test the dialog.py module.
 
 Patches the `prompt` method to mock user input via the command line.
 """
-import os
 from typing import Dict
 
 import pytest
@@ -29,11 +28,11 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'app': Apps.IMAGE_TEXT_RETRIEVAL,
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DEMO,
-            'dataset_name': 'totally-looks-like',
-            'search_fields_modalities': {'label': 'Text', 'image': 'MyImage'},
+            'dataset_name': DemoDatasetNames.TLL,
+            'search_fields_modalities': {'label': 'text', 'image': 'image'},
             'search_fields': ['label'],
-            # No filter fields for this particular dataset
             'filter_fields': [],
+            'filter_fields_modalities': {'label': 'text'},
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -44,40 +43,40 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'app': Apps.IMAGE_TEXT_RETRIEVAL,
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DEMO,
-            'search_fields_modalities': {'label': 'Text', 'image': 'MyImage'},
+            'dataset_name': DemoDatasetNames.NIH_CHEST_XRAYS,
+            'search_fields_modalities': {'label': 'text', 'image': 'image'},
             'search_fields': ['image'],
             'filter_fields': [],
-            'filter_fields_modalities': {'label': 'Text'},
-            'dataset_name': 'nih-chest-xrays',
+            'filter_fields_modalities': {'label': 'text'},
             'cluster': 'new',
             'deployment_type': 'local',
         },
         {},
     ),
-    (
-        {
-            'app': Apps.IMAGE_TEXT_RETRIEVAL,
-            'flow_name': DEFAULT_FLOW_NAME,
-            'dataset_type': DatasetTypes.PATH,
-            'dataset_path': os.path.join(
-                os.path.dirname(__file__), '..', 'resources', 'image'
-            ),
-            'search_fields': ['.jpg'],
-            'search_fields_modalities': {'.jpg': 'image'},
-            'cluster': 'new',
-            'deployment_type': 'local',
-        },
-        {},
-    ),
+    # (
+    #     {
+    #         'app': Apps.IMAGE_TEXT_RETRIEVAL,
+    #         'flow_name': DEFAULT_FLOW_NAME,
+    #         'dataset_type': DatasetTypes.PATH,
+    #         'dataset_path': os.path.join(
+    #             os.path.dirname(__file__), '..', 'resources', 'image'
+    #         ),
+    #         'search_fields': ['.jpg'],
+    #         'search_fields_modalities': {'.jpg': 'image'},
+    #         'cluster': 'new',
+    #         'deployment_type': 'local',
+    #     },
+    #     {},
+    # ),
     (
         {
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DEMO,
-            'dataset_name': DemoDatasetNames.TLL,
-            'search_fields': ['x', 'y'],
-            'search_fields_modalities': {'label': 'Text', 'image': 'MyImage'},
-            # No filter fields for this particular dataset
+            'dataset_name': DemoDatasetNames.DEEP_FASHION,
+            'search_fields': ['image'],
+            'search_fields_modalities': {'label': 'text', 'image': 'image'},
             'filter_fields': [],
+            'filter_fields_modalities': {'label': 'text'},
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -89,23 +88,26 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'app': Apps.IMAGE_TEXT_RETRIEVAL,
             'flow_name': 'testapp',
             'dataset_type': DatasetTypes.DEMO,
-            'dataset_name': DemoDatasetNames.MUSIC_GENRES_MIX,
-            'search_fields': ['audio', 'artist'],
-            'search_fields_modalities': {
-                'audio': 'MyAudio',
-                'artist': 'Text',
-                'title': 'Text',
-                'genre_tags': 'List[Text]',
-            },
+            'dataset_name': DemoDatasetNames.RAP_LYRICS,
+            'search_fields': ['lyrics'],
+            'search_fields_modalities': {'lyrics': 'text', 'title': 'text'},
             'filter_fields': ['title'],
-            'filter_fields_modalities': {
-                'artist': 'Text',
-                'title': 'Text',
-                'album_cover_image_url': 'stringValue',
-                'location': 'numberValue',
-                'sr': 'numberValue',
-                'track_id': 'stringValue',
-            },
+            'filter_fields_modalities': {'lyrics': 'text', 'title': 'text'},
+            'cluster': 'new',
+            'deployment_type': 'local',
+        },
+    ),
+    (
+        {},
+        {
+            'app': Apps.TEXT_TO_VIDEO,
+            'flow_name': 'testapp',
+            'dataset_type': DatasetTypes.DEMO,
+            'dataset_name': DemoDatasetNames.TUMBLR_GIFS_10K,
+            'search_fields': ['video'],
+            'search_fields_modalities': {'video': 'video', 'description': 'text'},
+            'filter_fields': ['title'],
+            'filter_fields_modalities': {'description': 'text'},
             'cluster': 'new',
             'deployment_type': 'local',
         },
