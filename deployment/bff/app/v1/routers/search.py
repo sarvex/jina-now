@@ -1,5 +1,6 @@
 from typing import List
 
+import docarray.score
 from docarray import Document, DocumentArray
 from fastapi import APIRouter
 
@@ -54,9 +55,13 @@ def search(data: SearchRequestModel):
     matches = []
     for doc in docs[0].matches:
         # todo: use multimodal doc in the future
+        scores = {}
+        for score_name, score_val in doc.scores.items():
+            if isinstance(score_val, docarray.score.NamedScore):
+                scores[score_name] = score_val.to_dict()
         match = SearchResponseModel(
             id=doc.id,
-            scores=doc.scores,
+            scores=scores,
             tags=doc.tags,
             fields={
                 'result_field': {
