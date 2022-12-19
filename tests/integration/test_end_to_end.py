@@ -193,7 +193,7 @@ def run_end_to_end(
         input_modality = 'image-or-text'
         output_modality = 'image-or-text'
     assert_deployment_response(
-        app, deployment_type, input_modality, output_modality, response
+        deployment_type, input_modality, output_modality, response
     )
     assert_deployment_queries(
         app,
@@ -215,8 +215,7 @@ def run_end_to_end(
             test_search_image,
             host,
         )
-        url = f'http://localhost:30090/api/v1'
-        suggest_url = f'{url}/{input_modality}-to-{output_modality}/suggestion'
+        suggest_url = f'http://localhost:30090/api/v1/app/suggestion'
         assert_suggest(suggest_url, request_body)
     # Dump the flow details from response host to a tmp file if the deployment is remote
     if deployment_type == 'remote':
@@ -239,7 +238,8 @@ def assert_search(search_url, request_body, expected_status_code=200):
 
 
 def assert_suggest(suggest_url, request_body):
-    old_request_text = request_body['text']
+    old_request_text = request_body.pop('query')
+    old_request_text = list(old_request_text.values())[0]['text']
     request_body['text'] = request_body['text'][0]
     response = requests.post(
         suggest_url,
@@ -278,7 +278,7 @@ def assert_deployment_queries(
         test_search_image,
         host,
     )
-    search_url = f'{url}/{input_modality}-to-{output_modality}/search'
+    search_url = f'{url}/app/search'
     assert_search(search_url, request_body)
 
     if kwargs.secured:
@@ -330,7 +330,7 @@ def get_search_request_body(
     request_body['limit'] = 9
     # Perform end-to-end check via bff
     if app == Apps.IMAGE_TEXT_RETRIEVAL:
-        request_body['image'] = test_search_image
+        request_body['query'] = {'image_field': {'blob': test_search_image}}
     elif app in [
         Apps.IMAGE_TEXT_RETRIEVAL,
         Apps.TEXT_TO_VIDEO,
@@ -341,17 +341,14 @@ def get_search_request_body(
             search_text = 'laser eyes'
         else:
             search_text = 'test'
-        request_body['text'] = search_text
+        request_body['query'] = {'text_field': {'text': search_text}}
     return request_body
 
 
 def assert_deployment_response(
-    app, deployment_type, input_modality, output_modality, response
+    deployment_type, input_modality, output_modality, response
 ):
-    assert (
-        response['bff']
-        == f'http://localhost:30090/api/v1/{input_modality}-to-{output_modality}/docs'
-    )
+    assert response['bff'] == f'http://localhost:30090/api/v1/app/docs'
     assert response['playground'].startswith('http://localhost:30080/?')
     assert response['input_modality'] == input_modality
     assert response['output_modality'] == output_modality
@@ -408,7 +405,7 @@ def test_backend_custom_data(
         output_modality = 'image-or-text'
 
     assert_deployment_response(
-        app, deployment_type, input_modality, output_modality, response
+        deployment_type, input_modality, output_modality, response
     )
 
     request_body = {'text': 'test', 'limit': 9}
@@ -422,7 +419,7 @@ def test_backend_custom_data(
             json.dump(flow_details, f)
 
     response = requests.post(
-        f'http://localhost:30090/api/v1/{input_modality}-to-{output_modality}/search',
+        f'http://localhost:30090/api/v1/app/search',
         json=request_body,
     )
 

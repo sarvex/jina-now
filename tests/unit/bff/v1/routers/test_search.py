@@ -90,10 +90,9 @@ def test_text_search_parse_response(
     )
 
     assert response_raw.status_code == status.HTTP_200_OK
-    print(f"response: {response_raw.content}")
     results = DocumentArray()
+    # todo: use multimodal doc in the future
     for response_json in response_raw.json():
-        # todo: use multimodal doc in the future
         content = list(response_json['fields'].values())[0]
         doc = Document(
             id=response_json['id'],
@@ -102,7 +101,5 @@ def test_text_search_parse_response(
             **content,
         )
         results.append(doc)
-    print(f"results: {results[0]}")
-    print(f"sample_search_response_text: {sample_search_response_text[0]}")
     assert len(results) == len(sample_search_response_text[0].matches)
     assert results[0].text == sample_search_response_text[0].matches[0].text

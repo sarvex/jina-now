@@ -12,13 +12,7 @@ from starlette.routing import Mount
 
 import deployment.bff.app.settings as api_settings
 from deployment.bff.app.decorators import api_method, timed
-from deployment.bff.app.v1.routers import (
-    admin,
-    cloud_temp_link,
-    im_txt2im_txt,
-    search,
-    txt2video,
-)
+from deployment.bff.app.v1.routers import admin, cloud_temp_link, search
 
 logging.config.dictConfig(api_settings.DEFAULT_LOGGING_CONFIG)
 logger = logging.getLogger('bff.app')
@@ -104,19 +98,7 @@ def build_app():
     # search app router
     search_app_mount = '/api/v1/app'
     search_app_app = get_app_instance()
-    search_app_app.include_router(search.router, tags=['Search'])
-
-    # ImageTextRetrieval router
-    im_txt2im_txt_mount = '/api/v1/image-or-text-to-image-or-text'
-    im_txt2im_txt_app = get_app_instance()
-    im_txt2im_txt_app.include_router(
-        im_txt2im_txt.router, tags=['Image-Text Retrieval']
-    )
-
-    # Text2Video router
-    text2video_mount = '/api/v1/text-to-video'
-    text2video_app = get_app_instance()
-    text2video_app.include_router(txt2video.router, tags=['Text-To-Video'])
+    search_app_app.include_router(search.router, tags=['Search App'])
 
     # Admin router
     admin_mount = '/api/v1/admin'
@@ -128,8 +110,6 @@ def build_app():
         routes=[
             Mount(cloud_temp_link_mount, cloud_temp_link_app),
             Mount(search_app_mount, search_app_app),
-            Mount(im_txt2im_txt_mount, im_txt2im_txt_app),
-            Mount(text2video_mount, text2video_app),
             Mount(admin_mount, admin_app),
         ]
     )
