@@ -165,28 +165,3 @@ def search_by_image(document: Document, jwt, filter_selection) -> DocumentArray:
         input_modality='image',
         filter_dict=filter_selection,
     )
-
-
-def search_by_audio(document: Document, jwt, filter_selection):
-    params = get_query_params()
-    TOP_K = params.top_k
-    result = search(
-        'song',
-        base64.b64encode(document.blob).decode('utf-8'),
-        jwt,
-        input_modality='music',
-        top_k=TOP_K * 3,
-        filter_dict=filter_selection,
-    )
-
-    already_added_tracks = set()
-    final_result = DocumentArray()
-    for doc in result:
-        if doc.tags['track_id'] in already_added_tracks or 'location' not in doc.tags:
-            continue
-        else:
-            final_result.append(doc)
-            already_added_tracks.add(doc.tags['track_id'])
-        if len(final_result) >= TOP_K:
-            break
-    return final_result

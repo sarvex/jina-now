@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       debug_enabled:
-        description: 'Run the tests with tmate debugging enabled'
+        description: "Run the tests with tmate debugging enabled"
         required: false
         default: false
 
@@ -133,8 +133,9 @@ jobs:
           executor_path: now/executor/indexer/elastic
           # for some reason, the first filter condition needs a different indentation
           has_changed_filter: |
-            - now/executor/indexer/elastic/**
-          executor_id: 11yxatzh
+            - now/executor/abstract/**
+              - now/executor/indexer/elastic/**
+          executor_id: mdtuyaaj
           jina_auth_token: ${{ secrets.NOW_STAGING_FLORIAN }}
 
   update-autocomplete:
@@ -149,9 +150,8 @@ jobs:
           executor_path: now/executor/autocomplete
           # for some reason, the first filter condition needs a different indentation
           has_changed_filter: |
-            - 'now/executor/abstract/auth/**'
-              - 'now/executor/autocomplete/**'
-          executor_id: 11yxatzh
+            - now/executor/autocomplete/**
+          executor_id: w5w084h7
           jina_auth_token: ${{ secrets.NOW_STAGING_FLORIAN }}
 
   update-bff-playground:
@@ -219,16 +219,21 @@ jobs:
           push: true
           tags: jinaai/now-playground:${{ env.BFF_PLAYGROUND_TAG }}
 
-
-
   core-test:
     runs-on: ubuntu-latest
-    needs: [ update-preprocessor, update-qdrant, update-elastic, update-autocomplete, update-bff-playground]
+    needs:
+      [
+        update-preprocessor,
+        update-qdrant,
+        update-elastic,
+        update-autocomplete,
+        update-bff-playground,
+      ]
     strategy:
       fail-fast: false
       matrix:
         python-version: [3.7]
-        group: [1, 2, 3, 4, 5, 6, 7, 8, 9]     # set to the number of end-to-end tests + 1
+        group: [1, 2, 3, 4, 5, 6, 7, 8, 9] # set to the number of end-to-end tests + 1
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
@@ -260,10 +265,10 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           S3_CUSTOM_DATA_PATH: ${{ secrets.S3_CUSTOM_DATA_PATH }}
-#      - name: Setup tmate session for debugging
-#        if: ${{ failure() || (github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled) }}
-#        uses: mxschmitt/action-tmate@v3
-#        timeout-minutes: 60
+      # - name: Setup tmate session for debugging
+      #   if: ${{ failure() || (github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled) }}
+      #   uses: mxschmitt/action-tmate@v3
+      #   timeout-minutes: 60
       - name: Upload coverage
         uses: actions/upload-artifact@v2
         with:
@@ -272,7 +277,14 @@ jobs:
 
   executor-test:
     runs-on: ubuntu-latest
-    needs: [ update-preprocessor, update-qdrant, update-elastic, update-autocomplete, update-bff-playground]
+    needs:
+      [
+        update-preprocessor,
+        update-qdrant,
+        update-elastic,
+        update-autocomplete,
+        update-bff-playground,
+      ]
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.7
@@ -286,17 +298,17 @@ jobs:
           python -m pip install wheel
           pip install --no-cache-dir ".[full,test]"
       - name: Test executors separately
-        timeout-minutes: 10
+        timeout-minutes: 15
         run: |
           pytest --suppress-no-test-exit-code --cov=now --cov-append -v -s tests/executor/auth
           pytest --suppress-no-test-exit-code --cov=now --cov-append -v -s tests/executor/indexer/base
           pytest --suppress-no-test-exit-code --cov=now --cov-append -v -s tests/executor/indexer/elastic
           pytest --suppress-no-test-exit-code --cov=now --cov-append -v -s tests/executor/preprocessor
           pytest --suppress-no-test-exit-code --cov=now --cov-append -v -s tests/executor/autocomplete
-#      - name: Setup tmate session for debugging
-#        if: ${{ failure() || (github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled) }}
-#        uses: mxschmitt/action-tmate@v3
-#        timeout-minutes: 60
+      #      - name: Setup tmate session for debugging
+      #        if: ${{ failure() || (github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled) }}
+      #        uses: mxschmitt/action-tmate@v3
+      #        timeout-minutes: 60
       - name: Upload coverage
         uses: actions/upload-artifact@v2
         with:

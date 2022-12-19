@@ -8,18 +8,18 @@ from starlette import status
 
 from now.constants import DEMO_DATASET_DOCARRAY_VERSION, Modalities
 from now.data_loading.data_loading import get_dataset_url
-from now.demo_data import AVAILABLE_DATASET
+from now.demo_data import AVAILABLE_DATASETS
 
 
 @pytest.mark.parametrize(
     'modality, ds_name',
-    [(m, d.name) for m in Modalities() for d in AVAILABLE_DATASET[m]],
+    [(m, d.name) for m in Modalities() for d in AVAILABLE_DATASETS[m]],
 )
 def test_dataset_is_available(
     ds_name: str,
     modality: Modalities,
 ):
-    url = get_dataset_url(ds_name, modality)
+    url = get_dataset_url(ds_name)
 
     assert requests.head(url).status_code == status.HTTP_200_OK
 
@@ -45,8 +45,6 @@ def test_dataset_is_available(
         "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/jpeg/bird-species.txt10-{}.bin",
         "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/jpeg/best-artworks.txt10-{}.bin",
         "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/jpeg/geolocation-geoguessr.txt10-{}.bin",
-        "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/music/music-genres-mid-song5-{}.bin",
-        "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/music/music-genres-mix-song5-{}.bin",
         "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/video/tumblr-gifs-{}.bin",
         "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/video/tumblr-gifs.img10-{}.bin",
         "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/video/tumblr-gifs.txt10-{}.bin",

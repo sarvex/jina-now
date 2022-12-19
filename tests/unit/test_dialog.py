@@ -17,6 +17,7 @@ from now.now_dataclasses import UserInput
 SEARCH_FIELDS_MODALITIES = {'text': 'text', 'uri': 'image'}
 FILTER_FIELDS_MODALITIES = {
     'text': 'str',
+    'uri': 'str',
     'original_height': 'dict',
     'similarity': 'dict',
     'NSFW': 'dict',
@@ -38,7 +39,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
             'app': Apps.IMAGE_TEXT_RETRIEVAL,
-            'output_modality': 'image',
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': 'tll',
@@ -50,7 +50,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
             'app': Apps.IMAGE_TEXT_RETRIEVAL,
-            'output_modality': 'image',
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': 'nih-chest-xrays',
@@ -62,48 +61,47 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
             'app': Apps.IMAGE_TEXT_RETRIEVAL,
-            'output_modality': 'image',
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DOCARRAY,
             'dataset_name': 'subset_laion',
             'filter_fields_modalities': FILTER_FIELDS_MODALITIES,
             'search_fields_modalities': SEARCH_FIELDS_MODALITIES,
-            'search_fields': ['x', 'y'],
-            'filter_fields': ['z'],
+            'search_fields': ['uri'],
+            'filter_fields': ['text'],
             'cluster': 'new',
             'deployment_type': 'local',
             'jwt': {'token': os.environ['WOLF_TOKEN']},
-            'admin_emails': ['florian.hoenicke@jina.ai'],
+            'admin_emails': ['team-now@jina.ai'],
         },
         {},
     ),
     (
         {
             'app': Apps.IMAGE_TEXT_RETRIEVAL,
-            'output_modality': 'image',
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DOCARRAY,
             'dataset_name': 'subset_laion',
             'filter_fields_modalities': FILTER_FIELDS_MODALITIES,
             'search_fields_modalities': SEARCH_FIELDS_MODALITIES,
-            'search_fields': ['x', 'y'],
-            'filter_fields': ['z'],
+            'search_fields': ['uri'],
+            'filter_fields': ['text'],
             'cluster': 'new',
             'deployment_type': 'local',
             'jwt': {'token': os.environ['WOLF_TOKEN']},
-            'admin_emails': ['florian.hoenicke@jina.ai'],
+            'admin_emails': ['team-now@jina.ai'],
         },
         {},
     ),
     (
         {
             'app': Apps.IMAGE_TEXT_RETRIEVAL,
-            'output_modality': 'image',
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.PATH,
             'dataset_path': os.path.join(
                 os.path.dirname(__file__), '..', 'resources', 'image'
             ),
+            'search_fields': ['.jpg'],
+            'search_fields_modalities': {'.jpg': 'image'},
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -112,18 +110,17 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
             'app': Apps.IMAGE_TEXT_RETRIEVAL,
-            'output_modality': 'image',
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DOCARRAY,
             'dataset_name': 'subset_laion',
             'filter_fields_modalities': FILTER_FIELDS_MODALITIES,
             'search_fields_modalities': SEARCH_FIELDS_MODALITIES,
-            'search_fields': ['x', 'y'],
-            'filter_fields': ['z'],
+            'search_fields': ['uri'],
+            'filter_fields': ['text'],
             'cluster': 'new',
             'deployment_type': 'local',
             'jwt': {'token': os.environ['WOLF_TOKEN']},
-            'admin_emails': ['florian.hoenicke@jina.ai'],
+            'admin_emails': ['team-now@jina.ai'],
         },
         {},
     ),
@@ -135,7 +132,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'cluster': 'new',
             'deployment_type': 'local',
         },
-        {'app': Apps.IMAGE_TEXT_RETRIEVAL, 'output_modality': 'image'},
+        {'app': Apps.IMAGE_TEXT_RETRIEVAL},
     ),
     (
         {
@@ -145,12 +142,10 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'cluster': 'new',
             'deployment_type': 'local',
         },
-        {'app': Apps.IMAGE_TEXT_RETRIEVAL, 'output_modality': 'image'},
+        {'app': Apps.IMAGE_TEXT_RETRIEVAL},
     ),
     (
-        {
-            'output_modality': 'image',
-        },
+        {},
         {
             'app': Apps.IMAGE_TEXT_RETRIEVAL,
             'flow_name': 'testapp',

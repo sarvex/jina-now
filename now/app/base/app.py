@@ -8,14 +8,9 @@ from jina import Client
 from jina.jaml import JAML
 from jina.serve.runtimes.gateway.http.models import JinaRequestModel, JinaResponseModel
 
-from now.app.base.preprocess import (
-    preprocess_image,
-    preprocess_music,
-    preprocess_text,
-    preprocess_video,
-)
+from now.app.base.preprocess import preprocess_image, preprocess_text, preprocess_video
 from now.constants import DEFAULT_FLOW_NAME, SUPPORTED_FILE_TYPES, Modalities
-from now.demo_data import AVAILABLE_DATASET, DEFAULT_EXAMPLE_HOSTED, DemoDataset
+from now.demo_data import AVAILABLE_DATASETS, DEFAULT_EXAMPLE_HOSTED, DemoDataset
 from now.now_dataclasses import DialogOptions, UserInput
 
 
@@ -119,7 +114,7 @@ class JinaNOWApp:
         """Get a list of example datasets for the app."""
         available_datasets = {}
         for output_modality in self.output_modality:
-            available_datasets[output_modality] = AVAILABLE_DATASET[output_modality]
+            available_datasets[output_modality] = AVAILABLE_DATASETS[output_modality]
         return available_datasets
 
     @property
@@ -391,8 +386,6 @@ class JinaNOWApp:
                         preprocess_image(chunk)
                     elif chunk.modality == 'video':
                         preprocess_video(chunk)
-                    elif chunk.modality == 'music':
-                        preprocess_music(chunk)
                     else:
                         raise ValueError(f'Unsupported modality {chunk.modality}')
                 except Exception as e:
@@ -461,3 +454,7 @@ class JinaNOWApp:
             flow_yaml_content['with']['env']['JINA_OPTOUT_TELEMETRY'] = os.environ[
                 'JINA_OPTOUT_TELEMETRY'
             ]
+            for executor in flow_yaml_content['executors']:
+                executor['env']['JINA_OPTOUT_TELEMETRY'] = os.environ[
+                    'JINA_OPTOUT_TELEMETRY'
+                ]

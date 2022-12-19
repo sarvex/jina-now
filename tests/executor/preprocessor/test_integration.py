@@ -11,7 +11,7 @@ from now.now_dataclasses import UserInput
 
 
 def test_executor_persistence(tmpdir, resources_folder_path):
-    e = NOWPreprocessor(Apps.IMAGE_TEXT_RETRIEVAL, metas={'workspace': tmpdir})
+    e = NOWPreprocessor(metas={'workspace': tmpdir})
     user_input = UserInput()
     text_docs = DocumentArray(
         [
@@ -59,17 +59,3 @@ def test_text_to_video(resources_folder_path, endpoint, tmpdir):
     assert result[1].chunks[0].chunks[0].blob
     assert TAG_OCR_DETECTOR_TEXT_IN_DOC not in result[0].chunks[0].chunks[0].tags
     assert TAG_OCR_DETECTOR_TEXT_IN_DOC in result[1].chunks[0].chunks[0].tags
-
-
-def test_user_input_preprocessing():
-    user_input = {'indexer_scope': {'text': 'title', 'image': 'uris'}}
-    with Flow().add(
-        uses=NOWPreprocessor, uses_with={'app': Apps.TEXT_TO_TEXT_AND_IMAGE}
-    ) as f:
-        result = f.post(
-            on='/index',
-            inputs=DocumentArray([Document(text='test')]),
-            parameters={'user_input': user_input},
-            show_progress=True,
-        )
-        result = DocumentArray.from_json(result.to_json())
