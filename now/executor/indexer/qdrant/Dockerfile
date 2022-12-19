@@ -1,4 +1,4 @@
-FROM qdrant/qdrant:v0.7.0
+FROM qdrant/qdrant:v0.10.1
 
 RUN apt-get update && apt-get install -y python3 python3-pip git
 
