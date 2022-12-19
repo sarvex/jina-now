@@ -62,7 +62,7 @@ class TextToVideo(JinaNOWApp):
         flow_dir = os.path.abspath(os.path.join(__file__, '..'))
 
         flow_prefix = 'ft-' if finetuning else ''
-        if dataset_len > 200_000 and is_jina_email and deployment_type == 'remote':
+        if dataset_len > 200_000 and is_jina_email:
             print(f"🚀🚀🚀 You are using high performance flow")
             self.flow_yaml = os.path.join(
                 flow_dir, f'{flow_prefix}flow-video-clip-high-performance.yml'

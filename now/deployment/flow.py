@@ -18,7 +18,7 @@ from now.log import time_profiler, yaspin_extended
 from now.utils import sigmap, write_env_file, write_flow_file
 
 cur_dir = pathlib.Path(__file__).parent.resolve()
-
+MAX_WAIT_TIME = 1800
 
 def batch(data_list, n=1):
     l = len(data_list)
@@ -45,22 +45,20 @@ def wait_for_lb(lb_name, ns):
     return ip
 
 
-def wait_for_all_pods_in_ns(f, ns, max_wait=1800):
+def check_pods_health(ns):
     config.load_kube_config()
     v1 = k8s_client.CoreV1Api()
-    for i in range(max_wait):
-        pods = v1.list_namespaced_pod(ns).items
-        not_ready = [
-            'x'
-            for pod in pods
-            if not pod.status
-            or not pod.status.container_statuses
-            or not len(pod.status.container_statuses) == 1
-            or not pod.status.container_statuses[0].ready
-        ]
-        if len(not_ready) == 0 and f.num_deployments == len(pods):
-            return
-        sleep(1)
+    pods = v1.list_namespaced_pod(ns).items
+    for pod in pods:
+        try:
+            if pod.status and pod.status.container_statuses:
+                container_status = pod.status.container_statuses[0]
+                if container_status.started is False or container_status.ready is False:
+                    waiting_state = container_status.state.waiting
+                    if waiting_state is not None and waiting_state.message is not None and 'Error' in waiting_state.message:
+                        raise Exception(pod.metadata.name + " " + waiting_state.reason)
+        except Exception as e:
+            print(e)
 
 
 def deploy_k8s(f, ns, tmpdir, kubectl_path):
@@ -95,11 +93,16 @@ def deploy_k8s(f, ns, tmpdir, kubectl_path):
             gateway_host = wait_for_lb('gateway-lb', ns)
             gateway_port = 8080
         cmd(f'{kubectl_path} apply -R -f {k8_path}')
-        # wait for flow to come up
-        wait_for_all_pods_in_ns(f, ns)
+
+        wait_time = 0
+        while not f.is_flow_ready() and wait_time <= MAX_WAIT_TIME:
+            check_pods_health(ns)
+            wait_time += 1
+            sleep(1)
+        if not f.is_flow_ready():
+            raise Exception('Flow execution timed out.')
         spinner.ok("🚀")
-    # work around - first request hangs
-    sleep(3)
+
     return gateway_host, gateway_port, gateway_host_internal, gateway_port_internal
 
 
