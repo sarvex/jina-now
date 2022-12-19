@@ -1,44 +1,65 @@
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import BaseModel, Field, root_validator
+from pydantic import BaseModel, Field
 
 from deployment.bff.app.v1.models.helper import BaseRequestModel
+from deployment.bff.app.v1.models.modality import ModalityModel
+
+_ProtoValueType = Optional[Union[bool, float, str, list, dict]]
+_StructValueType = Union[
+    _ProtoValueType, List[_ProtoValueType], Dict[str, _ProtoValueType]
+]
 
 
-class NowBaseModalityModel(BaseModel):
-    uri: Optional[str] = Field(
-        default=None, description='URI of the file or data URI of the query'
-    )
-
-    @root_validator(pre=True)
-    def validate_only_one_exists(cls, values):
-        # Get the names of all fields that are set (i.e. have a non-None value)
-        set_fields = [name for name, value in values.items() if value is not None]
-        if len(set_fields) != 1:
-            raise ValueError(f"Only one of {set_fields} can be set.")
+class _NamedScore(BaseModel):
+    value: Optional[float] = None
 
 
-class NowImageModel(NowBaseModalityModel):
-    blob: Optional[str] = Field(
-        default=None, description='Base64 encoded image in `utf-8` str format'
-    )
-
-
-class NowTextModel(NowBaseModalityModel):
-    text: Optional[str] = Field(default=None, description='Plan text')
-
-
-class NowVideoModel(NowBaseModalityModel):
-    blob: Optional[str] = Field(
-        default=None, description='Base64 encoded video in `utf-8` str format'
-    )
-
-
-class NowSearchIndexRequestModel(BaseRequestModel):
+class IndexRequestModel(BaseRequestModel):
     tags: List[Dict[str, Any]] = Field(
         default={}, description='List of tags of the documents to be indexed.'
     )
-    fields: List[Dict[str, Union[NowImageModel, NowTextModel, NowVideoModel]]] = Field(
+    data: List[Dict[str, ModalityModel]] = Field(
         default={},
-        description='List of dictionaries where each dictionary maps the field name to its value.',
+        description='List of dictionaries where each dictionary maps the field name to its value. '
+        'Each dictionary represents one multi-modal document.',
     )
+
+
+class SearchRequestModel(BaseRequestModel):
+    limit: int = Field(default=10, description='Number of matching results to return')
+    filters: Optional[Dict[str, str]] = Field(
+        default=None,
+        description='dictionary with filters for search results  {"tag_name" : "tag_value"}',
+    )
+    data: List[Dict[str, ModalityModel]] = Field(
+        default={}, description='Dictionary which maps the field name to its value. '
+    )
+
+
+class SearchResponseModel(BaseRequestModel):
+    id: str = Field(
+        default=..., nullable=False, description='Id of the matching result.'
+    )
+    scores: Optional[Dict[str, '_NamedScore']] = Field(
+        description='Similarity score with respect to the query.'
+    )
+    tags: Optional[Dict[str, '_StructValueType']] = Field(
+        description='Additional tags associated with the file.'
+    )
+    fields: List[Dict[str, ModalityModel]] = Field(
+        default={}, description='Dictionary which maps the field name to its value. '
+    )
+
+    class Config:
+        case_sensitive = False
+        arbitrary_types_allowed = True
+
+
+class SuggestionRequestModel(BaseRequestModel):
+    text: Optional[str] = Field(default=None, description='Text')
+
+
+IndexRequestModel.update_forward_refs()
+SearchRequestModel.update_forward_refs()
+SearchResponseModel.update_forward_refs()

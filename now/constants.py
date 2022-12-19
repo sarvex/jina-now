@@ -7,7 +7,7 @@ from now.utils import BetterEnum
 
 DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 # ----------------------------------
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.135-feat-multimodal-bff-1'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.135-feat-multimodal-bff-2'
 # ----------------------------------
 NOW_PREPROCESSOR_VERSION = '0.0.114-refactor-output_modality-29'
 NOW_QDRANT_INDEXER_VERSION = '0.0.11-enable-local-testing-4'

@@ -16,6 +16,7 @@ from deployment.bff.app.v1.routers import (
     admin,
     cloud_temp_link,
     im_txt2im_txt,
+    search,
     txt2video,
 )
 
@@ -100,6 +101,11 @@ def build_app():
         cloud_temp_link.router, tags=['Temporary-Link-Cloud']
     )
 
+    # search app router
+    search_app_mount = '/api/v1/app'
+    search_app_app = get_app_instance()
+    search_app_app.include_router(search.router, tags=['Search'])
+
     # ImageTextRetrieval router
     im_txt2im_txt_mount = '/api/v1/image-or-text-to-image-or-text'
     im_txt2im_txt_app = get_app_instance()
@@ -121,6 +127,7 @@ def build_app():
     app = Starlette(
         routes=[
             Mount(cloud_temp_link_mount, cloud_temp_link_app),
+            Mount(search_app_mount, search_app_app),
             Mount(im_txt2im_txt_mount, im_txt2im_txt_app),
             Mount(text2video_mount, text2video_app),
             Mount(admin_mount, admin_app),
