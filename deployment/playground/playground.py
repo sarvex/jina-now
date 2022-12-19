@@ -18,10 +18,10 @@ from jina import Client
 from src.constants import (
     BUTTONS,
     RTC_CONFIGURATION,
+    S3_DEMO_PATH,
     SSO_COOKIE,
     SURVEY_LINK,
     ds_set,
-    root_data_dir,
 )
 from src.search import get_query_params, search_by_image, search_by_text
 from streamlit.scriptrunner import add_script_run_ctx
@@ -260,8 +260,8 @@ def load_example_queries(data, output_modality):
     da_txt = None
     if data in ds_set:
         try:
-            da_img = load_data(root_data_dir + data + f'.img10.bin')
-            da_txt = load_data(root_data_dir + data + f'.txt10.bin')
+            da_img = load_data(S3_DEMO_PATH + data + f'.img10.bin')
+            da_txt = load_data(S3_DEMO_PATH + data + f'.txt10.bin')
         except HTTPError as exc:
             print('Could not load samples for the demo dataset', exc)
     return da_img, da_txt
