@@ -8,7 +8,6 @@ from docarray import Document, DocumentArray
 from now.app.base.app import JinaNOWApp
 from now.constants import DatasetTypes
 from now.data_loading.elasticsearch import ElasticsearchExtractor
-from now.demo_data import DemoDatasetNames
 from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
 from now.utils import sigmap
@@ -44,13 +43,6 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
         )
     if 'NOW_CI_RUN' in os.environ:
         da = da[:50]
-    if (
-        user_input.dataset_name == DemoDatasetNames.MUSIC_GENRES_MIX
-        or user_input.dataset_name == DemoDatasetNames.MUSIC_GENRES_ROCK
-    ):
-        for doc in da:
-            if 'genre_tags' in doc.tags and isinstance(doc.tags['genre_tags'], list):
-                doc.tags['genre_tags'] = ' '.join(doc.tags['genre_tags'])
     return da
 
 

@@ -89,7 +89,6 @@ class Task:
 
 class UserInput(BaseModel):
     app_instance: Optional['JinaNOWApp'] = None  # noqa: F821
-    output_modality: Optional[str] = None
     # data related
     flow_name: Optional[str] = None
     dataset_type: Optional[DatasetTypes] = None
@@ -141,6 +140,7 @@ class DialogOptions:
     is_terminal_command: StrictBool = (
         False  # set when this dialog is required as a cli param
     )
+    argparse_kwargs: Dict[str, Any] = dataclasses.field(default_factory=dict)
     description: str = None  # Description to show on terminal when used as a cli param
     depends_on: Optional['DialogOptions', StrictBool] = None
     conditional_check: Callable[[Any], bool] = None

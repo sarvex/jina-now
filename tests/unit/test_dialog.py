@@ -27,7 +27,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
             'app': Apps.IMAGE_TEXT_RETRIEVAL,
-            'output_modality': 'image',
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': 'totally-looks-like',
@@ -43,7 +42,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
             'app': Apps.IMAGE_TEXT_RETRIEVAL,
-            'output_modality': 'image',
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DEMO,
             'search_fields_modalities': {'label': 'Text', 'image': 'MyImage'},
@@ -59,12 +57,13 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
             'app': Apps.IMAGE_TEXT_RETRIEVAL,
-            'output_modality': 'image',
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.PATH,
             'dataset_path': os.path.join(
                 os.path.dirname(__file__), '..', 'resources', 'image'
             ),
+            'search_fields': ['.jpg'],
+            'search_fields_modalities': {'.jpg': 'image'},
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -82,12 +81,10 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'cluster': 'new',
             'deployment_type': 'local',
         },
-        {'app': Apps.IMAGE_TEXT_RETRIEVAL, 'output_modality': 'image'},
+        {'app': Apps.IMAGE_TEXT_RETRIEVAL},
     ),
     (
-        {
-            'output_modality': 'image',
-        },
+        {},
         {
             'app': Apps.IMAGE_TEXT_RETRIEVAL,
             'flow_name': 'testapp',

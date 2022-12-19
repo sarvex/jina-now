@@ -19,7 +19,7 @@ from now.common.detect_schema import (
     set_field_names_from_s3_bucket,
 )
 from now.constants import Apps, DatasetTypes
-from now.demo_data import AVAILABLE_DATASET
+from now.demo_data import AVAILABLE_DATASETS
 from now.deployment.deployment import cmd
 from now.log import yaspin_extended
 from now.now_dataclasses import DialogOptions, UserInput
@@ -39,31 +39,33 @@ AVAILABLE_SOON = 'will be available in upcoming versions'
 # than the parent should be called first before the dependant can called.
 
 
-def _create_app_from_output_modality(user_input: UserInput, **kwargs):
-    if user_input.output_modality in ['image', 'text']:
+def _create_app_from_user_input(user_input: UserInput, **kwargs):
+    if user_input.dataset_type == DatasetTypes.DEMO:
+        _search_modality = None
+        for _modality, _demo_datasets in AVAILABLE_DATASETS.items():
+            if any(
+                [
+                    user_input.dataset_name == _demo_dataset.name
+                    for _demo_dataset in _demo_datasets
+                ]
+            ):
+                _search_modality = _modality
+    else:
+        if len(user_input.search_fields) != 1:
+            raise ValueError(
+                'Currently only one search field is supported. Please choose one field.'
+            )
+        _search_modality = user_input.search_fields_modalities[
+            user_input.search_fields[0]
+        ]
+    if _search_modality in ['image', 'text']:
         app_name = Apps.IMAGE_TEXT_RETRIEVAL
-    elif user_input.output_modality == 'video':
+    elif _search_modality == 'video':
         app_name = Apps.TEXT_TO_VIDEO
     else:
-        raise ValueError(f'Invalid output modality: {user_input.output_modality}')
+        raise ValueError(f'Invalid search modality: {_search_modality}')
     user_input.app_instance = construct_app(app_name)
 
-
-OUTPUT_MODALITY = DialogOptions(
-    name='output_modality',
-    choices=[
-        {'name': '📝 text', 'value': 'text'},
-        {'name': '🏞 image', 'value': 'image'},
-        {'name': '🎦 video', 'value': 'video'},
-    ],
-    prompt_type='list',
-    prompt_message='What modality do you want to index?',
-    description='What is the index modality of your search system?',
-    is_terminal_command=True,
-    depends_on=True,
-    conditional_check=lambda user_input, **kwargs: user_input.app_instance is None,
-    post_func=_create_app_from_output_modality,
-)
 
 APP_NAME = DialogOptions(
     name='flow_name',
@@ -111,7 +113,7 @@ def check_login_dataset(user_input: UserInput):
 
 def _get_demo_data_choices(user_input: UserInput, **kwargs):
     all_demo_datasets = []
-    for demo_datasets in AVAILABLE_DATASET.values():
+    for demo_datasets in AVAILABLE_DATASETS.values():
         all_demo_datasets.extend(demo_datasets)
     return [
         {'name': demo_data.display_name, 'value': demo_data.name}
@@ -131,21 +133,6 @@ DEMO_DATA = DialogOptions(
     == DatasetTypes.DEMO,
     post_func=lambda user_input, **kwargs: set_field_names_from_docarray(user_input),
 )
-
-
-def _infer_app_type_from_demo_data(user_input: UserInput):
-    """
-    Infer the app type from the demo data selected by the user.
-
-    :param user_input: UserInput object
-
-    uses the demo data selected by the user to create application instance and set the output modality
-    """
-    for modality, demos in AVAILABLE_DATASET.items():
-        for demo in demos:
-            if user_input.dataset_name == demo.name:
-                user_input.output_modality = modality
-    _create_app_from_output_modality(user_input)
 
 
 DOCARRAY_NAME = DialogOptions(
@@ -213,14 +200,21 @@ AWS_REGION_NAME = DialogOptions(
 SEARCH_FIELDS = DialogOptions(
     name='search_fields',
     choices=lambda user_input, **kwargs: [
-        {'name': f'{field}', 'value': field}
+        {'name': field, 'value': field}
         for field in user_input.search_fields_modalities.keys()
     ],
     prompt_message='Please select the search fields:',
     prompt_type='checkbox',
     depends_on=DATASET_TYPE,
+    is_terminal_command=True,
     conditional_check=lambda user_input: user_input.search_fields_modalities is not None
-    and len(user_input.search_fields_modalities.keys()) > 0,
+    and len(user_input.search_fields_modalities.keys()) > 0
+    and len(user_input.search_fields_modalities.keys()) > 0
+    and user_input.dataset_type != DatasetTypes.DEMO,
+    post_func=_create_app_from_user_input,
+    argparse_kwargs={
+        'type': lambda s: s.split(',') if s else UserInput().search_fields
+    },
 )
 
 
@@ -444,7 +438,7 @@ def _cluster_running(cluster):
     return True
 
 
-app_config = [OUTPUT_MODALITY, APP_NAME]
+app_config = [APP_NAME]
 data_type = [DATASET_TYPE]
 data_fields = [SEARCH_FIELDS, FILTER_FIELDS]
 data_demo = [DEMO_DATA]

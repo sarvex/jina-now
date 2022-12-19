@@ -13,11 +13,9 @@ from paddleocr import PaddleOCR
 
 from now.app.base.app import JinaNOWApp
 from now.app.base.transform_docarray import transform_docarray
-from now.common.options import construct_app
 from now.constants import (
     ACCESS_PATHS,
     TAG_OCR_DETECTOR_TEXT_IN_DOC,
-    Apps,
     DatasetTypes,
     Modalities,
 )
@@ -41,10 +39,10 @@ class NOWPreprocessor(Executor):
     To update user_input, set the 'user_input' key in parameters dictionary.
     """
 
-    def __init__(self, app: str, max_workers: int = 15, *args, **kwargs):
+    def __init__(self, max_workers: int = 15, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.app: JinaNOWApp = construct_app(app)
+        self.app: JinaNOWApp = JinaNOWApp()
         self.max_workers = max_workers
         self.paddle_ocr = PaddleOCR(use_angle_cls=True, lang='en', show_log=False)
 
@@ -129,8 +127,7 @@ class NOWPreprocessor(Executor):
                     cloud_uri = d.tags.get('uri')
                     if isinstance(cloud_uri, str) and cloud_uri.startswith('s3://'):
                         d.uri = cloud_uri
-                        if self.app.app_name == Apps.TEXT_TO_VIDEO:
-                            d.chunks[:, 'uri'] = cloud_uri
+                        d.chunks[:, 'uri'] = cloud_uri
                     return d
 
                 for d in docs:
@@ -192,34 +189,3 @@ class NOWPreprocessor(Executor):
             convert_fn(d)
 
         return docs
-
-
-if __name__ == '__main__':
-
-    from jina import Flow
-
-    app = Apps.IMAGE_TEXT_RETRIEVAL
-
-    user_inpuT = UserInput()
-    user_inpuT.app_instance = construct_app(app)
-    user_inpuT.dataset_type = DatasetTypes.S3_BUCKET
-    user_inpuT.dataset_path = 's3://bucket/folder'
-
-    text_docs = DocumentArray(
-        [
-            Document(chunks=DocumentArray([Document(text='hi')])),
-        ]
-    )
-    executor = NOWPreprocessor(app=app)
-    result = executor.search(
-        docs=text_docs, parameters={'app': user_inpuT.app_instance.app_name}
-    )
-    f = Flow().add(uses=NOWPreprocessor, uses_with={'app': app})
-    with f:
-        result = f.post(
-            on='/search',
-            inputs=text_docs,
-            show_progress=True,
-        )
-
-        result = DocumentArray.from_json(result.to_json())

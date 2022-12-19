@@ -16,8 +16,6 @@ class DemoDatasetNames(BetterEnum):
     DEEP_FASHION = 'deepfashion'
     NIH_CHEST_XRAYS = 'nih-chest-xrays'
     GEOLOCATION_GEOGUESSR = 'geolocation-geoguessr'
-    MUSIC_GENRES_ROCK = 'music-genres-mid'
-    MUSIC_GENRES_MIX = 'music-genres-mix'
     ROCK_LYRICS = 'rock-lyrics'
     POP_LYRICS = 'pop-lyrics'
     RAP_LYRICS = 'rap-lyrics'
@@ -37,7 +35,7 @@ class DemoDataset(BaseModel):
         return DocumentArray.pull(self.name)
 
 
-AVAILABLE_DATASET = {
+AVAILABLE_DATASETS = {
     Modalities.IMAGE: [
         DemoDataset(
             name=DemoDatasetNames.BEST_ARTWORKS,
@@ -78,18 +76,6 @@ AVAILABLE_DATASET = {
             name=DemoDatasetNames.NIH_CHEST_XRAYS,
             display_modality=Modalities.IMAGE,
             display_name='☢ chest x-rays (≈100K docs)',
-        ),
-    ],
-    Modalities.MUSIC: [
-        DemoDataset(
-            name=DemoDatasetNames.MUSIC_GENRES_ROCK,
-            display_modality=Modalities.MUSIC,
-            display_name='🎸 rock music (≈2K songs)',
-        ),
-        DemoDataset(
-            name=DemoDatasetNames.MUSIC_GENRES_MIX,
-            display_modality=Modalities.MUSIC,
-            display_name='🎸 multiple genres (≈2K songs)',
         ),
     ],
     Modalities.TEXT: [
@@ -140,5 +126,4 @@ DEFAULT_EXAMPLE_HOSTED = {
     'image_to_text': [DemoDatasetNames.RAP_LYRICS],
     'image_to_image': [DemoDatasetNames.TLL],
     'text_to_text': [DemoDatasetNames.ROCK_LYRICS],
-    'music_to_music': [DemoDatasetNames.MUSIC_GENRES_MIX],
 }
