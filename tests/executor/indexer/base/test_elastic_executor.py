@@ -72,11 +72,14 @@ class TestBaseIndexer:
     def random_index_name(self):
         return f"test-index-{random.randint(0, 10000)}"
 
-    def test_index(self, tmpdir, indexer, setup, random_index_name, request):
+    @pytest.fixture(scope='function', autouse=True)
+    def metas(self, tmpdir):
+        return {'workspace': str(tmpdir)}
+
+    def test_index(self, metas, indexer, setup, random_index_name, request):
         """Test indexing does not return anything"""
         if setup:
             request.getfixturevalue(setup)
-        metas = {'workspace': str(tmpdir)}
         docs = self.get_docs(NUMBER_OF_DOCS)
         f = (
             Flow()
@@ -104,9 +107,8 @@ class TestBaseIndexer:
     @pytest.mark.parametrize(
         'offset, limit', [(0, 10), (10, 0), (0, 0), (10, 10), (None, None)]
     )
-    def test_list(self, tmpdir, offset, limit, indexer, setup, random_index_name):
+    def test_list(self, metas, offset, limit, indexer, setup, random_index_name):
         """Test list returns all indexed docs"""
-        metas = {'workspace': str(tmpdir)}
         docs = self.get_docs(NUMBER_OF_DOCS)
         f = (
             Flow()
@@ -145,8 +147,7 @@ class TestBaseIndexer:
                 assert len(set([d.id for d in list_res])) == l
                 assert [d.tags['parent_tag'] for d in list_res] == ['value'] * l
 
-    def test_search(self, tmpdir, indexer, setup, random_index_name):
-        metas = {'workspace': str(tmpdir)}
+    def test_search(self, metas, indexer, setup, random_index_name):
         docs = self.get_docs(NUMBER_OF_DOCS)
         docs_query = self.get_query()
         f = (
@@ -180,8 +181,7 @@ class TestBaseIndexer:
                     >= query_res[0].matches[i + 1].scores['cosine'].value
                 )
 
-    def test_search_match(self, tmpdir, indexer, setup, random_index_name):
-        metas = {'workspace': str(tmpdir)}
+    def test_search_match(self, metas, indexer, setup, random_index_name):
         docs = self.get_docs(NUMBER_OF_DOCS)
         docs_query = self.get_query()
         f = (
@@ -223,8 +223,7 @@ class TestBaseIndexer:
                     >= c.matches[i + 1].scores['cosine'].value
                 )
 
-    def test_search_with_filtering(self, tmpdir, indexer, setup, random_index_name):
-        metas = {'workspace': str(tmpdir)}
+    def test_search_with_filtering(self, metas, indexer, setup, random_index_name):
         docs = self.get_docs(NUMBER_OF_DOCS)
         docs_query = self.get_query()
 
@@ -257,8 +256,7 @@ class TestBaseIndexer:
             )
             assert all([m.tags['price'] < 50 for m in query_res[0].matches])
 
-    def test_delete(self, tmpdir, indexer, setup, random_index_name):
-        metas = {'workspace': str(tmpdir)}
+    def test_delete(self, metas, indexer, setup, random_index_name):
         docs = self.get_docs(NUMBER_OF_DOCS)
         f = (
             Flow()
@@ -293,8 +291,7 @@ class TestBaseIndexer:
             docs_query = self.get_query()
             f.post(on='/search', inputs=docs_query, return_results=True)
 
-    def test_get_tags(self, tmpdir, indexer, setup, random_index_name):
-        metas = {'workspace': str(tmpdir)}
+    def test_get_tags(self, metas, indexer, setup, random_index_name):
         docs = self.get_docs(NUMBER_OF_DOCS)
         f = (
             Flow()
@@ -323,8 +320,7 @@ class TestBaseIndexer:
             assert 'color' in response[0].tags['tags']
             assert sorted(response[0].tags['tags']['color']) == sorted(['red', 'blue'])
 
-    def test_delete_tags(self, tmpdir, indexer, setup, random_index_name):
-        metas = {'workspace': str(tmpdir)}
+    def test_delete_tags(self, metas, indexer, setup, random_index_name):
         docs = self.get_docs(NUMBER_OF_DOCS)
         f = (
             Flow()
@@ -464,9 +460,8 @@ class TestBaseIndexer:
         ],
     )
     def test_search_chunk_using_sum_ranker(
-        self, documents, indexer, setup, query, embedding, res_ids, tmpdir
+        self, metas, documents, indexer, setup, query, embedding, res_ids
     ):
-        metas = {'workspace': str(tmpdir)}
         documents = DocumentArray([Document(chunks=[doc]) for doc in documents])
         with Flow().add(
             uses=indexer,
@@ -498,7 +493,7 @@ class TestBaseIndexer:
                     assert d.blob == b'', f'got blob {d.blob} for {d.id}'
 
     def test_no_blob_or_tensor_on_matches(
-        self, tmpdir, indexer, setup, random_index_name
+        self, metas, indexer, setup, random_index_name
     ):
         @dataclass
         class Pic:
@@ -512,7 +507,6 @@ class TestBaseIndexer:
         doc_with_blob.pic.embedding = np.random.random([DIM])
         docs = DocumentArray([doc_with_tensor, doc_with_blob])
 
-        metas = {'workspace': str(tmpdir)}
         f = (
             Flow()
             .add(uses=DummyEncoder1, name='dummy_encoder1')
@@ -549,9 +543,8 @@ class TestBaseIndexer:
             assert matches[1].pic.tensor is None
             assert matches[0].pic.tensor is None
 
-    def test_curate_endpoint(self, tmpdir, indexer, setup, random_index_name):
+    def test_curate_endpoint(self, metas, indexer, setup, random_index_name):
         """Test indexing does not return anything"""
-        metas = {'workspace': str(tmpdir)}
         docs = self.get_docs(NUMBER_OF_DOCS)
         f = (
             Flow()
@@ -605,3 +598,30 @@ class TestBaseIndexer:
             non_curated_query = self.get_query()
             non_curated_query[0].query_text.text = 'parent_x'
             f.search(inputs=non_curated_query)
+
+    def test_curate_endpoint_incorrect(self, metas, indexer, setup, random_index_name):
+        f = (
+            Flow()
+            .add(uses=DummyEncoder1, name='dummy_encoder1')
+            .add(uses=DummyEncoder2, name='dummy_encoder2')
+            .add(
+                uses=indexer,
+                uses_with={
+                    'hosts': 'http://localhost:9200',
+                    'index_name': random_index_name,
+                    'document_mappings': [
+                        ('dummy_encoder1', DIM, ['title']),
+                        ('dummy_encoder2', DIM, ['title']),
+                    ],
+                },
+                uses_metas=metas,
+                needs=['dummy_encoder1', 'dummy_encoder2'],
+                no_reduce=True,
+            )
+        )
+        with f:
+            with pytest.raises(Exception):
+                f.post(
+                    on='/curate',
+                    parameters={'queryfilter': {}},
+                )

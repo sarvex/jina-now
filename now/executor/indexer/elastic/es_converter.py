@@ -145,11 +145,9 @@ class ESConverter:
                 f'{document_field}-{encoder}.embedding'
             ]
             if metric == 'cosine':
-                score = (
-                    dot(q_emb, d_emb) / (norm(q_emb) * norm(d_emb))
-                ) * linear_weight
+                score = self.calculate_cosine(d_emb, q_emb) * linear_weight
             elif metric == 'l2_norm':
-                score = norm(q_emb - d_emb) * linear_weight
+                score = self.calculate_l2_norm(d_emb, q_emb) * linear_weight
             else:
                 raise ValueError(f'Invalid metric {metric}')
             retrieved_doc.scores[
@@ -179,3 +177,9 @@ class ESConverter:
         # remove embeddings from document
         retrieved_doc.tags.pop('embeddings', None)
         return retrieved_doc
+
+    def calculate_l2_norm(self, d_emb, q_emb):
+        return norm(q_emb - d_emb)
+
+    def calculate_cosine(self, d_emb, q_emb):
+        return dot(q_emb, d_emb) / (norm(q_emb) * norm(d_emb))

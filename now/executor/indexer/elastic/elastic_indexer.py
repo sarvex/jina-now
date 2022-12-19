@@ -9,7 +9,7 @@ from elasticsearch.helpers import bulk
 from now.executor.abstract.auth import SecurityLevel, secure_request
 from now.executor.abstract.base_indexer import NOWBaseIndexer as Executor
 from now.executor.indexer.elastic.es_converter import ESConverter
-from now.executor.indexer.elastic.es_preprocessor import ESPreprocessor
+from now.executor.indexer.elastic.es_preprocessing import merge_subdocuments
 from now.executor.indexer.elastic.es_query_building import (
     SemanticScore,
     build_es_queries,
@@ -136,9 +136,7 @@ class NOWElasticIndexer(Executor):
         """
         if not docs_map:
             return DocumentArray()
-        preprocessed_docs_map = ESPreprocessor().preprocess_docs_map(
-            docs_map, self.encoder_to_fields
-        )
+        preprocessed_docs_map = merge_subdocuments(docs_map, self.encoder_to_fields)
         es_docs = ESConverter.convert_doc_map_to_es(
             preprocessed_docs_map, self.index_name, self.encoder_to_fields
         )

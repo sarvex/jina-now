@@ -27,9 +27,6 @@ def generate_semantic_scores(
     # either take fields names from _metadata, if multimodal doc
     # or take modality from tags of root doc
     for executor_name, da in docs_map.items():
-        if executor_name == 'preprocessor':
-            # skip preprocessor
-            continue
         first_doc = da[0]
         if first_doc._metadata:  # must be a multimodal doc
             field_names = first_doc._metadata['multi_modal_schema'].keys()
