@@ -16,3 +16,4 @@ class ModalityModel(BaseModel):
         set_fields = [name for name, value in values.items() if value is not None]
         if len(set_fields) != 1:
             raise ValueError(f"Only one of {set_fields} can be set.")
+        return values

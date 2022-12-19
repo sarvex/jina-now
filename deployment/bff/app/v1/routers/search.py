@@ -20,8 +20,10 @@ router = APIRouter()
 )
 def index(data: IndexRequestModel):
     index_docs = DocumentArray()
-    for field_dict in data.data:
-        index_docs.append(field_dict_to_doc(field_dict))
+    for field_dict, tags_dict in data.data:
+        doc = field_dict_to_doc(field_dict)
+        doc.tags.update(tags_dict)
+        index_docs.append(doc)
 
     jina_client_post(
         data=data,
@@ -36,13 +38,12 @@ def index(data: IndexRequestModel):
     summary='Search data via query',
 )
 def search(data: SearchRequestModel):
-    query_doc = field_dict_to_doc(data.data)
+    query_doc = field_dict_to_doc(data.query)
+
     list_query_filter = {}
     for key, value in data.filters.items():
         list_query_filter.append({f'{key}': {'$eq': value}})
-    query_filter = {
-        '$and': list_query_filter
-    }  # different conditions are aggregated using and
+    query_filter = {'$and': list_query_filter}
 
     docs = jina_client_post(
         endpoint='/search',
@@ -50,8 +51,21 @@ def search(data: SearchRequestModel):
         parameters={'limit': data.limit, 'filter': query_filter},
         data=data,
     )
-
-    return docs[0].matches.to_dict()
+    matches = []
+    for doc in docs[0].matches:
+        # todo: use multimodal doc in the future
+        match = SearchResponseModel(
+            id=doc.id,
+            scores=doc.scores,
+            tags=doc.tags,
+            fields={
+                'result_field': {
+                    doc.content_type: doc.content if doc.content else {'uri': doc.uri}
+                }
+            },
+        )
+        matches.append(match)
+    return matches
 
 
 @router.post(

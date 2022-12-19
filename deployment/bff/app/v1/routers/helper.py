@@ -21,13 +21,13 @@ def field_dict_to_doc(field_dict: dict) -> Document:
     try:
         for field_name, field_value in field_dict.items():
             if field_value.text:
-                doc = Document(text=field_value.text, tags=field_value.tags)
+                doc = Document(text=field_value.text)
             elif field_value.uri:
-                doc = Document(uri=field_value.uri, tags=field_value.tags)
+                doc = Document(uri=field_value.uri)
             elif field_value.blob:
                 base64_bytes = field_value.blob.encode('utf-8')
                 blob = base64.decodebytes(base64_bytes)
-                doc = Document(blob=blob, tags=field_value.tags)
+                doc = Document(blob=blob)
             else:
                 raise ValueError('None of the attributes uri, text or blob is set.')
     except BaseException as e:

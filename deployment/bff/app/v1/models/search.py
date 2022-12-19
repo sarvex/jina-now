@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, Field
 
@@ -16,28 +16,25 @@ class _NamedScore(BaseModel):
 
 
 class IndexRequestModel(BaseRequestModel):
-    tags: List[Dict[str, Any]] = Field(
-        default={}, description='List of tags of the documents to be indexed.'
-    )
-    data: List[Dict[str, ModalityModel]] = Field(
-        default={},
-        description='List of dictionaries where each dictionary maps the field name to its value. '
-        'Each dictionary represents one multi-modal document.',
+    data: List[Tuple[Dict[str, ModalityModel], Dict[str, Any]]] = Field(
+        default=[({}, {})],
+        description='List of tuples where each tuple contains a dictionary of data and a dictionary of tags. '
+        'The data dictionary maps the field name to its value. ',
     )
 
 
 class SearchRequestModel(BaseRequestModel):
     limit: int = Field(default=10, description='Number of matching results to return')
     filters: Optional[Dict[str, str]] = Field(
-        default=None,
+        default={},
         description='dictionary with filters for search results  {"tag_name" : "tag_value"}',
     )
-    data: List[Dict[str, ModalityModel]] = Field(
+    query: Dict[str, ModalityModel] = Field(
         default={}, description='Dictionary which maps the field name to its value. '
     )
 
 
-class SearchResponseModel(BaseRequestModel):
+class SearchResponseModel(BaseModel):
     id: str = Field(
         default=..., nullable=False, description='Id of the matching result.'
     )
@@ -47,7 +44,7 @@ class SearchResponseModel(BaseRequestModel):
     tags: Optional[Dict[str, '_StructValueType']] = Field(
         description='Additional tags associated with the file.'
     )
-    fields: List[Dict[str, ModalityModel]] = Field(
+    fields: Dict[str, ModalityModel] = Field(
         default={}, description='Dictionary which maps the field name to its value. '
     )
 
