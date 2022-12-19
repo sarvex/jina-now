@@ -4,7 +4,7 @@ import os
 import pathlib
 import pickle
 from os.path import join as osp
-from typing import List
+from typing import Dict, List, Type
 
 from docarray import Document, DocumentArray
 
@@ -107,6 +107,7 @@ def _load_from_disk(user_input: UserInput, dataclass) -> DocumentArray:
             docs = from_files_local(
                 dataset_path,
                 user_input.search_fields + user_input.filter_fields,
+                user_input.files_to_dataclass_fields,
                 dataclass,
             )
             return docs
@@ -120,12 +121,14 @@ def _load_from_disk(user_input: UserInput, dataclass) -> DocumentArray:
 def from_files_local(
     path: str,
     fields: List[str],
-    data_class,
+    files_to_dataclass_fields: dict,
+    data_class: Type,
 ) -> DocumentArray:
     """Creates a Multi Modal documentarray over a list of file path or the content of the files.
 
     :param path: The path to the directory
     :param fields: The fields to search for in the directory
+    :param files_to_dataclass_fields: The mapping of the files to the dataclass fields
     :param data_class: The dataclass to use for the document
 
     :return: A DocumentArray with the documents
@@ -140,14 +143,22 @@ def from_files_local(
 
     subdirectories = get_subdirectories_local_path(path)
     if subdirectories:
-        docs = create_docs_from_subdirectories(subdirectories, path, fields, data_class)
+        docs = create_docs_from_subdirectories(
+            subdirectories, path, fields, files_to_dataclass_fields, data_class
+        )
     else:
-        docs = create_docs_from_files(path, fields, data_class)
+        docs = create_docs_from_files(
+            path, fields, files_to_dataclass_fields, data_class
+        )
     return DocumentArray(docs)
 
 
 def create_docs_from_subdirectories(
-    subdirectories: List, path: str, fields: List[str], data_class
+    subdirectories: List,
+    path: str,
+    fields: List[str],
+    files_to_dataclass_fields: Dict,
+    data_class: Type,
 ) -> List[Document]:
     """
     Creates a Multi Modal documentarray over a list of subdirectories.
@@ -155,6 +166,7 @@ def create_docs_from_subdirectories(
     :param subdirectories: The list of subdirectories
     :param path: The path to the directory
     :param fields: The fields to search for in the directory
+    :param files_to_dataclass_fields: The mapping of the files to the dataclass fields
     :param data_class: The dataclass to use for the document
 
     :return: The list of documents
@@ -165,23 +177,28 @@ def create_docs_from_subdirectories(
     for subdirectory in subdirectories:
         for file in os.listdir(os.path.join(path, subdirectory)):
             if file in fields:
-                kwargs[file.replace('.', '_')] = os.path.join(path, subdirectory, file)
+                kwargs[files_to_dataclass_fields[file]] = os.path.join(
+                    path, subdirectory, file
+                )
                 continue
             if file.endswith('.json'):
                 json_f = open(os.path.join(path, subdirectory, file))
                 data = json.load(json_f)
                 for el, value in data.items():
-                    kwargs[el] = value
+                    kwargs[files_to_dataclass_fields[file]] = value
         docs.append(Document(data_class(**kwargs)))
     return docs
 
 
-def create_docs_from_files(path: str, fields: List[str], data_class) -> List[Document]:
+def create_docs_from_files(
+    path: str, fields: List[str], files_to_dataclass_fields: Dict, data_class: Type
+) -> List[Document]:
     """
     Creates a Multi Modal documentarray over a list of files.
 
     :param path: The path to the directory
     :param fields: The fields to search for in the directory
+    :param files_to_dataclass_fields: The mapping of the files to the dataclass fields
     :param data_class: The dataclass to use for the document
 
     :return: A list of documents
@@ -193,12 +210,14 @@ def create_docs_from_files(path: str, fields: List[str], data_class) -> List[Doc
         if (
             file_extension == fields[0].split('.')[-1]
         ):  # fields should have only one search field in case of files only
-            kwargs[fields[0].replace('.', '_')] = os.path.join(path, file)
+            kwargs[files_to_dataclass_fields[fields[0]]] = os.path.join(path, file)
             docs.append(Document(data_class(**kwargs)))
     return docs
 
 
-def _list_files_from_s3_bucket(user_input: UserInput, data_class) -> DocumentArray:
+def _list_files_from_s3_bucket(
+    user_input: UserInput, data_class: Type
+) -> DocumentArray:
     """
     Loads the data from s3 into multimodal documents.
 
@@ -234,6 +253,7 @@ def _list_files_from_s3_bucket(user_input: UserInput, data_class) -> DocumentArr
                 subdirectories,
                 folder_prefix,
                 user_input.search_fields + user_input.filter_fields,
+                user_input.files_to_dataclass_fields,
                 data_class,
                 bucket,
             )
@@ -242,6 +262,7 @@ def _list_files_from_s3_bucket(user_input: UserInput, data_class) -> DocumentArr
                 folder_prefix,
                 user_input.dataset_path,
                 user_input.search_fields + user_input.filter_fields,
+                user_input.files_to_dataclass_fields,
                 data_class,
                 bucket,
             )
@@ -249,7 +270,12 @@ def _list_files_from_s3_bucket(user_input: UserInput, data_class) -> DocumentArr
 
 
 def create_docs_from_subdirectories_s3(
-    subdirectories: List, path: str, fields: List[str], data_class, bucket
+    subdirectories: List,
+    path: str,
+    fields: List[str],
+    files_to_dataclass_fields: Dict,
+    data_class: Type,
+    bucket,
 ) -> List[Document]:
     """
     Creates a Multi Modal documentarray over a list of subdirectories.
@@ -257,6 +283,7 @@ def create_docs_from_subdirectories_s3(
     :param subdirectories: The list of subdirectories
     :param path: The path to the directory
     :param fields: The fields to search for in the directory
+    :param files_to_dataclass_fields: The mapping of the files to the dataclass fields
     :param data_class: The dataclass to use for the document
     :param bucket: The s3 bucket
 
@@ -267,10 +294,9 @@ def create_docs_from_subdirectories_s3(
     for subdirectory in subdirectories:
         for obj in list(bucket.objects.filter(Prefix=subdirectory))[1:]:
             file = obj.key.split('/')[-1]
-            file_replaced = file.replace('.', '_')
             file_full_path = '/'.join(path.split('/')[:3]) + '/' + obj.key
             if file in fields:
-                kwargs[file_replaced] = file_full_path
+                kwargs[files_to_dataclass_fields[file]] = file_full_path
                 continue
             if file.endswith('.json'):
                 kwargs['json_s3'] = file_full_path
@@ -279,7 +305,12 @@ def create_docs_from_subdirectories_s3(
 
 
 def create_docs_from_files_s3(
-    folder: str, path: str, fields: List[str], data_class, bucket
+    folder: str,
+    path: str,
+    fields: List[str],
+    files_to_dataclass_fields: Dict,
+    data_class: Type,
+    bucket,
 ) -> List[Document]:
     """
     Creates a Multi Modal documentarray over a list of files.
@@ -287,6 +318,7 @@ def create_docs_from_files_s3(
     :param folder: The folder to search for files
     :param path: The path to the directory
     :param fields: The fields to search for in the directory
+    :param files_to_dataclass_fields: The mapping of the files to the dataclass fields
     :param data_class: The dataclass to use for the document
     :param bucket: The s3 bucket
 
@@ -296,10 +328,11 @@ def create_docs_from_files_s3(
     for obj in list(bucket.objects.filter(Prefix=folder))[1:]:
         kwargs = {}
         file = obj.key.split('/')[-1]
-        file_replaced = file.replace('.', '_')
         file_full_path = '/'.join(path.split('/')[:3]) + '/' + obj.key
         if file in fields:
-            kwargs[file_replaced] = file_full_path
+            kwargs[
+                files_to_dataclass_fields[files_to_dataclass_fields]
+            ] = file_full_path
             docs.append(Document(data_class(**kwargs)))
     return docs
 

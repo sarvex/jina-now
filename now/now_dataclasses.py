@@ -107,6 +107,7 @@ class UserInput(BaseModel):
     filter_fields: Optional[List] = []
     search_fields_modalities: Optional[Dict] = {}
     filter_fields_modalities: Optional[Dict] = {}
+    files_to_dataclass_fields: Optional[Dict] = {}
 
     # ES related
     task_config: Optional[Task] = None

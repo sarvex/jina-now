@@ -4,12 +4,12 @@ from typing import Tuple
 
 import pytest
 from docarray import Document, DocumentArray
-from docarray.typing import Image
+from docarray.typing import Image, Text
 from pytest_mock import MockerFixture
 
 from now.app.image_text_retrieval.app import ImageTextRetrieval
 from now.constants import DatasetTypes
-from now.data_loading.data_loading import load_data
+from now.data_loading.data_loading import from_files_local, load_data
 from now.demo_data import DemoDatasetNames
 from now.now_dataclasses import UserInput
 from now.run_backend import create_dataclass
@@ -101,6 +101,21 @@ def test_da_custom_ds(da: DocumentArray):
 
     for doc in loaded_da:
         assert doc.content
+
+
+def test_from_files_local(resources_folder_path):
+    user_input = UserInput()
+    user_input.dataset_type = DatasetTypes.PATH
+    user_input.search_fields = ['a.jpg', 'test.txt']
+    user_input.search_fields_modalities = {'a.jpg': Image, 'test.txt': Text}
+    user_input.dataset_path = os.path.join(
+        resources_folder_path, 'subdirectories_structure_folder'
+    )
+
+    data_class = create_dataclass(user_input)
+    loaded_da = from_files_local(user_input, data_class)
+
+    assert len(loaded_da) == 2
 
 
 @pytest.fixture
