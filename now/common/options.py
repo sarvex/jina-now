@@ -46,7 +46,7 @@ def _create_app_from_user_input(user_input: UserInput, **kwargs):
         )
     if user_input.search_fields[0] not in user_input.search_fields_modalities.keys():
         raise ValueError(
-            f'Search field specified is not among the search candidates field. Kindly '
+            f'Search field specified is not among the search candidate fields. Kindly '
             'choose one of the following: {user_input.search_fields_modalities.keys()}'
         )
     _search_modality = user_input.search_fields_modalities[user_input.search_fields[0]]
