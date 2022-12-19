@@ -404,14 +404,17 @@ def test_backend_custom_data(
     response = cli(args=kwargs)
 
     if app == Apps.IMAGE_TEXT_RETRIEVAL:
-        input_modality = 'text-or-image'
-        output_modality = 'text-or-image'
+        input_modality_deployment = 'text-or-image'
+        output_modality_deployment = 'text-or-image'
+    else:
+        input_modality_deployment = input_modality
+        output_modality_deployment = output_modality
 
     assert_deployment_response(
-        deployment_type, input_modality, output_modality, response
+        deployment_type, input_modality_deployment, output_modality_deployment, response
     )
 
-    request_body = {'text': 'test', 'limit': 9}
+    request_body = {'query': {'text_field': {'text': 'test'}}, 'limit': 9}
 
     print(f"Getting gateway from response")
     request_body['host'] = response['host']
