@@ -118,7 +118,11 @@ def es_connection_params():
 
 @pytest.fixture(scope='session')
 def setup_service_running(es_connection_params) -> None:
-    cmd('docker-compose -f tests/resources/elastic/docker-compose.yml up -d')
+    docker_compose_file = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)),
+        'resources/elastic/docker-compose.yml',
+    )
+    cmd(f'docker-compose -f {docker_compose_file} up -d')
     hosts, _ = es_connection_params
     retries = 0
     while retries < MAX_RETRIES:
