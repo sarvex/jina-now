@@ -1,148 +1,119 @@
+import random
+from collections import namedtuple
+from typing import List
+
 import numpy as np
 import pytest
-from docarray import Document, DocumentArray
+from docarray import Document, DocumentArray, dataclass
+from docarray.typing import Image, Text
 
-from now.constants import ModelDimensions
-
-
-@pytest.fixture
-def multimodal_da():
-    return DocumentArray(
-        [
-            Document(
-                id='123',
-                tags={'cost': 18.0},
-                chunks=[
-                    Document(
-                        id='x',
-                        text='this is a flower',
-                        embedding=np.ones(7),
-                    ),
-                    Document(
-                        id='xx',
-                        uri='https://cdn.pixabay.com/photo/2015/04/23/21/59/tree-736877_1280.jpg',
-                        embedding=np.ones(5),
-                    ),
-                ],
-            ),
-            Document(
-                id='456',
-                tags={'cost': 21.0},
-                chunks=[
-                    Document(
-                        id='xxx',
-                        text='this is a cat',
-                        embedding=np.array([1, 2, 3, 4, 5, 6, 7]),
-                    ),
-                    Document(
-                        id='xxxx',
-                        uri='https://cdn.pixabay.com/photo/2015/04/23/21/59/tree-736877_1280.jpg',
-                        embedding=np.array([1, 2, 3, 4, 5]),
-                    ),
-                ],
-            ),
-        ]
-    )
+from now.executor.indexer.elastic.es_query_building import SemanticScore
 
 
 @pytest.fixture
-def multimodal_query():
-    return DocumentArray(
-        [
-            Document(
-                text='cat',
-                chunks=[
-                    Document(
-                        embedding=np.array([1, 2, 3, 4, 5, 6, 7]),
-                    ),
-                    Document(
-                        embedding=np.array([1, 2, 3, 4, 5]),
-                    ),
-                ],
-            )
-        ]
-    )
+def random_index_name():
+    return f"test-index-{random.randint(0, 10000)}"
 
 
 @pytest.fixture
-def text_da():
-    return DocumentArray(
-        [
-            Document(
-                id='123',
-                tags={'cost': 18.0},
-                text='test text',
-                embedding=np.ones(7),
-            ),
-            Document(
-                id='456',
-                tags={'cost': 21.0},
-                text='another text',
-                embedding=np.array([1, 2, 3, 4, 5, 6, 7]),
-            ),
-        ]
-    )
+def es_inputs() -> namedtuple:
+    @dataclass
+    class MMDoc:
+        title: Text
+        excerpt: Text
+        gif: List[Image]
 
+    @dataclass
+    class MMQuery:
+        query_text: Text
 
-@pytest.fixture
-def text_query():
-    return DocumentArray([Document(text='text', embedding=np.ones(7))])
-
-
-@pytest.fixture
-def docs_matrix_index():
-    return [
-        DocumentArray(
-            Document(
-                chunks=[
-                    Document(
-                        text='this', embedding=np.ones(ModelDimensions.SBERT)
-                    ),  # embedding from SBERT
-                    Document(
-                        uri='https://cdn.pixabay.com/photo/2015/04/23/21/59/tree-736877_1280.jpg'
-                    ),  # not encoded by SBERT
-                ]
-            )
-        ),
-        DocumentArray(
-            Document(
-                chunks=[
-                    Document(
-                        text='this', embedding=np.ones(ModelDimensions.CLIP)
-                    ),  # embedding from CLIP text model
-                    Document(
-                        uri='https://cdn.pixabay.com/photo/2015/04/23/21/59/tree-736877_1280.jpg',
-                        embedding=np.ones(ModelDimensions.CLIP),
-                    ),  # embedding from CLIP image model
-                ]
-            )
-        ),
+    document_mappings = [
+        ('clip', 8, ['title', 'gif']),
+        ('sbert', 5, ['title', 'excerpt']),
     ]
 
-
-@pytest.fixture
-def docs_matrix_search():
-    return [
-        DocumentArray(
-            [
-                Document(
-                    chunks=[
-                        Document(
-                            text='this', embedding=np.ones(ModelDimensions.SBERT)
-                        ),  # embedding from SBERT
-                    ]
-                )
-            ]
+    default_semantic_scores = [
+        SemanticScore('query_text', 'title', 'clip', 1),
+        SemanticScore('query_text', 'gif', 'clip', 1),
+        SemanticScore('query_text', 'title', 'sbert', 1),
+        SemanticScore('query_text', 'excerpt', 'sbert', 3),
+        SemanticScore('query_text', 'my_bm25_query', 'bm25', 1),
+    ]
+    docs = [
+        MMDoc(
+            title='cat test title cat',
+            excerpt='cat test excerpt cat',
+            gif=[
+                'https://product-finder.wordlift.io/wp-content/uploads/2021/06/93217825.jpeg',
+                'https://product-finder.wordlift.io/wp-content/uploads/2021/06/93217825.jpeg',
+                'https://product-finder.wordlift.io/wp-content/uploads/2021/06/93217825.jpeg',
+            ],
         ),
-        DocumentArray(
-            [
-                Document(
-                    chunks=[
-                        Document(
-                            text='this', embedding=np.ones(ModelDimensions.CLIP)
-                        ),  # embedding from CLIP text model
-                    ]
-                )
-            ]
+        MMDoc(
+            title='test title dog',
+            excerpt='test excerpt 2',
+            gif=[
+                'https://product-finder.wordlift.io/wp-content/uploads/2021/06/93217825.jpeg',
+                'https://product-finder.wordlift.io/wp-content/uploads/2021/06/93217825.jpeg',
+                'https://product-finder.wordlift.io/wp-content/uploads/2021/06/93217825.jpeg',
+            ],
         ),
     ]
+    clip_docs = DocumentArray()
+    sbert_docs = DocumentArray()
+    # encode our documents
+    for i, doc in enumerate(docs):
+        prep_doc = Document(doc)
+        prep_doc.tags['color'] = random.choice(['red', 'blue', 'green'])
+        prep_doc.tags['price'] = i + 0.5
+        prep_doc.id = str(i)
+        clip_doc = Document(prep_doc, copy=True)
+        clip_doc.id = prep_doc.id
+        sbert_doc = Document(prep_doc, copy=True)
+        sbert_doc.id = prep_doc.id
+
+        clip_doc.title.embedding = np.random.random(8)
+        clip_doc.gif[0].embedding = np.random.random(8)
+        clip_doc.gif[1].embedding = np.random.random(8)
+        clip_doc.gif[2].embedding = np.random.random(8)
+        sbert_doc.title.embedding = np.random.random(5)
+        sbert_doc.excerpt.embedding = np.random.random(5)
+
+        clip_docs.append(clip_doc)
+        sbert_docs.append(sbert_doc)
+
+    index_docs_map = {
+        'clip': clip_docs,
+        'sbert': sbert_docs,
+    }
+
+    query = MMQuery(query_text='cat')
+
+    query_doc = Document(query)
+    clip_doc = Document(query_doc, copy=True)
+    clip_doc.id = query_doc.id
+    sbert_doc = Document(query_doc, copy=True)
+    sbert_doc.id = query_doc.id
+
+    clip_doc.query_text.embedding = np.random.random(8)
+    sbert_doc.query_text.embedding = np.random.random(5)
+
+    query_docs_map = {
+        'clip': DocumentArray([clip_doc]),
+        'sbert': DocumentArray([sbert_doc]),
+    }
+    EsInputs = namedtuple(
+        'EsInputs',
+        [
+            'index_docs_map',
+            'query_docs_map',
+            'document_mappings',
+            'default_semantic_scores',
+        ],
+    )
+    return EsInputs(
+        index_docs_map,
+        query_docs_map,
+        document_mappings,
+        default_semantic_scores,
+    )
