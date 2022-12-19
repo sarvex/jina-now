@@ -1,6 +1,6 @@
 from __future__ import annotations, print_function, unicode_literals
 
-from docarray.typing import Audio, Image, Text, Video
+from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
@@ -26,7 +26,6 @@ class Modalities(BetterEnum):
 MODALITIES_MAPPING = {
     Modalities.TEXT: Text,
     Modalities.IMAGE: Image,
-    Modalities.MUSIC: Audio,
     Modalities.VIDEO: Video,
 }
 
