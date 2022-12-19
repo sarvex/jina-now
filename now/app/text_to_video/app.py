@@ -55,7 +55,6 @@ class TextToVideo(JinaNOWApp):
 
     def set_flow_yaml(self, **kwargs):
         finetuning = kwargs.get('finetuning', False)
-        deployment_type = kwargs.get('deployment_type')
         dataset_len = kwargs.get('dataset_len', 0) * NUM_FRAMES_SAMPLED
         is_jina_email = get_email().split('@')[-1] == 'jina.ai'
 
