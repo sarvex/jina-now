@@ -12,7 +12,7 @@ from now.constants import DatasetTypes
 from now.data_loading.data_loading import from_files_local, load_data
 from now.demo_data import DemoDatasetNames
 from now.now_dataclasses import UserInput
-from now.run_backend import create_dataclass
+from now.run_backend import create_dataclass, create_dataclass_fields_file_mappings
 
 
 @pytest.fixture()
@@ -88,7 +88,8 @@ def test_da_local_path_image_folder(image_resource_path: str):
         f' Check the tests/resources/image folder'
     )
     for doc in loaded_da:
-        assert doc.uri
+        assert doc.chunks[0].uri
+        assert doc.chunks[0].content is not None
 
 
 def test_da_custom_ds(da: DocumentArray):
@@ -110,9 +111,17 @@ def test_from_files_local(resources_folder_path):
     user_input.dataset_path = os.path.join(
         resources_folder_path, 'subdirectories_structure_folder'
     )
+    file_fields_file_mappings = create_dataclass_fields_file_mappings(
+        user_input.search_fields, user_input.search_fields_modalities
+    )
 
     data_class = create_dataclass(user_input)
-    loaded_da = from_files_local(user_input, data_class)
+    loaded_da = from_files_local(
+        user_input.dataset_path,
+        user_input.search_fields,
+        file_fields_file_mappings,
+        data_class,
+    )
 
     assert len(loaded_da) == 2
 

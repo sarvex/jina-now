@@ -114,7 +114,7 @@ def _load_from_disk(user_input: UserInput, dataclass) -> DocumentArray:
 def from_files_local(
     path: str,
     fields: List[str],
-    files_to_dataclass_fields: dict,
+    files_to_dataclass_fields: Dict,
     data_class: Type,
 ) -> DocumentArray:
     """Creates a Multi Modal documentarray over a list of file path or the content of the files.
