@@ -210,11 +210,11 @@ def run_end_to_end(
     if input_modality == Modalities.TEXT:
         host = response.get('host')
         request_body = get_search_request_body(
-            dataset,
-            deployment_type,
-            kwargs,
-            test_search_image,
-            host,
+            dataset=dataset,
+            deployment_type=deployment_type,
+            kwargs=kwargs,
+            test_search_image=test_search_image,
+            host=host,
             search_modality='text',
         )
         suggest_url = f'http://localhost:30090/api/v1/app/suggestion'
@@ -273,11 +273,11 @@ def assert_deployment_queries(
     host = response.get('host')
     # normal case
     request_body = get_search_request_body(
-        dataset,
-        deployment_type,
-        kwargs,
-        test_search_image,
-        host,
+        dataset=dataset,
+        deployment_type=deployment_type,
+        kwargs=kwargs,
+        test_search_image=test_search_image,
+        host=host,
         search_modality=input_modality,
     )
     search_url = f'{url}/app/search'
@@ -308,11 +308,11 @@ def assert_deployment_queries(
             raise Exception(f'Response status is {response.status_code}')
         # the same search should work now
         request_body = get_search_request_body(
-            dataset,
-            deployment_type,
-            kwargs,
-            test_search_image,
-            host,
+            dataset=dataset,
+            deployment_type=deployment_type,
+            kwargs=kwargs,
+            test_search_image=test_search_image,
+            host=host,
             search_modality=input_modality,
         )
         assert_search(search_url, request_body)
@@ -324,7 +324,6 @@ def assert_deployment_queries(
 
 
 def get_search_request_body(
-    app,
     dataset,
     deployment_type,
     kwargs,
