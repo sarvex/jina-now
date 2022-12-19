@@ -48,20 +48,41 @@ In a new Conda environment:
 ```bash
 jina now start
 ```
-**1.** Choose your app. Currently, we support image or text search, but in future, we'll add many more options.
+**1.** Choose your data source. 
 
-<img width="613" alt="Screenshot 2022-05-31 at 01 08 25" src="https://user-images.githubusercontent.com/40893766/192245825-c19274a5-2514-4c93-94ff-4d507dfef429.png">
+You may either choose a demo dataset hosted by NOW, or use your own custom dataset, to build an application.
+NOW can support your custom data in the form of a `DocumentArray`, as a path to a local folder, or S3 bucket.
 
-**2.** Choose your data source. Choose between demo datasets, a custom DocumentArray, local folder, or S3 bucket.
+```commandline
+? How do you want to provide input? (format: https://docarray.jina.ai/)  (Use arrow keys)
+ ❯ Demo dataset
+   DocumentArray name (recommended)
+   Local folder
+   S3 bucket
+   - Elasticsearch (will be available in upcoming versions)
+```
+If you choose `DocumentArray name`, NOW asks for your DocumentArray ID or URL.
 
-<img src="https://user-images.githubusercontent.com/47435119/195334616-9a8d5ad3-229f-49bb-9d49-f38243a0eb9b.png">
+```commandline
+? Please enter your DocumentArray name:
+```
+If you instead choose the local folder option, NOW asks for the path to the folder:
 
-- If you choose `docarray.pull` or DocumentArray URL, NOW asks for your DocumentArray ID or URL.
-- If you choose local path, NOW asks for the folder's path:
+```commandline
+? Please enter the path to the local folder:
+```
+If you choose the S3 bucket option, NOW asks for the URI to the S3 bucket, as well as the credentials and region thereof:
 
-<img width="506" alt="question-local-path" src="https://user-images.githubusercontent.com/11627845/170256044-67e82e86-6439-4a3e-98f1-dbdf1940de67.png">
+```commandline
+? Please enter the S3 URI to the folder:
+? Please enter the AWS access key ID:
+? Please enter the AWS secret access key:
+? Please enter the AWS region:
+```
 
-**3.** Choose your deployment type. We recommend cloud deployment to run your app on our servers. Alternatively, you can deploy locally.
+**2.** Choose your deployment type.
+
+We recommend cloud deployment to run your app on our servers. Alternatively, you can deploy locally.
 
 <img width="547" alt="question-deployment" src="https://user-images.githubusercontent.com/11627845/170256038-8c44a5b8-985a-4fe7-af5d-16df0244f4bb.png">
 
@@ -70,7 +91,7 @@ If you don't want to use an existing cluster, you can create a new one locally.
 
 <img width="643" alt="question-cluster" src="https://user-images.githubusercontent.com/11627845/170256027-99798fae-3ec4-42dc-8737-843f4a23f941.png">
 
-**4.** Follow the links. After NOW finishes processing, you'll see two links:
+**3.** Follow the links. After NOW finishes processing, you'll see two links:
 
 - The Swagger UI is useful for frontend integration.
 - The "playground" lets you run example queries and experiment with your search use case.
