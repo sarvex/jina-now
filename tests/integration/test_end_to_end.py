@@ -421,8 +421,9 @@ def test_backend_custom_data(
         with open(f'{cleanup}/flow_details.json', 'w') as f:
             json.dump(flow_details, f)
 
+    app_name = 'search'
     response = requests.post(
-        f'http://localhost:30090/api/v1/{input_modality}-to-{output_modality}/search',
+        f'http://localhost:30090/api/v1/{app_name}/search',
         json=request_body,
     )
 

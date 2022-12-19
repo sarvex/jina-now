@@ -2,26 +2,17 @@ import pytest
 
 
 @pytest.mark.parametrize(
-    'inp_mod, output_mod',
+    'app_name',
     [
-        ('image-or-text', 'image-or-text'),
-        ('text', 'video'),
+        ('search'),
+        ('text-to-video'),
     ],
 )
 class TestParametrized:
-    def test_check_liveness(self, client, inp_mod, output_mod):
-        response = client.get(f'/api/v1/{inp_mod}-to-{output_mod}/ping')
-        assert response.status_code == 200
-        assert response.json() == 'pong!'
-
-    def test_read_root(self, client, inp_mod, output_mod):
-        response = client.get(f'/api/v1/{inp_mod}-to-{output_mod}')
+    def test_get_docs(self, client, app_name):
+        response = client.get(f'/api/v1/{app_name}/docs')
         assert response.status_code == 200
 
-    def test_get_docs(self, client, inp_mod, output_mod):
-        response = client.get(f'/api/v1/{inp_mod}-to-{output_mod}/docs')
-        assert response.status_code == 200
-
-    def test_get_redoc(self, client, inp_mod, output_mod):
-        response = client.get(f'/api/v1/{inp_mod}-to-{output_mod}/redoc')
+    def test_get_redoc(self, client, app_name):
+        response = client.get(f'/api/v1/{app_name}/redoc')
         assert response.status_code == 200

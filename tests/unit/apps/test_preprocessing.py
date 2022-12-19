@@ -5,7 +5,7 @@ from docarray import Document, DocumentArray
 
 from now.app.base.preprocess import preprocess_text
 from now.app.base.transform_docarray import transform_docarray
-from now.app.SEARCH.app import ImageTextRetrieval
+from now.app.search.app import Search
 from now.app.text_to_video.app import TextToVideo
 
 
@@ -37,8 +37,8 @@ def test_text_to_video_preprocessing_indexing(resources_folder_path):
 @pytest.mark.parametrize(
     'app_cls,is_indexing',
     [
-        (ImageTextRetrieval, False),
-        (ImageTextRetrieval, True),
+        (Search, False),
+        (Search, True),
     ],
 )
 def test_text_preprocessing(app_cls, is_indexing):
@@ -57,8 +57,8 @@ def test_text_preprocessing(app_cls, is_indexing):
 @pytest.mark.parametrize(
     'app_cls,is_indexing',
     [
-        (ImageTextRetrieval, False),
-        (ImageTextRetrieval, True),
+        (Search, False),
+        (Search, True),
     ],
 )
 def test_image_preprocessing(app_cls, is_indexing, resources_folder_path):

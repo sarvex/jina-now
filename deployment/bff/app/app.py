@@ -90,7 +90,7 @@ def get_app_routes():
         input_modality = app_instance.input_modality
         output_modality = app_instance.output_modality
         create_endpoints(router, input_modality, output_modality)
-        app_name = app_instance.app_name
+        app_name = app_instance.app_name.replace('_', '-')
         mount_path = f'/api/v1/{app_name}'
         fast_api_app = get_fast_api_app(app_name)
 

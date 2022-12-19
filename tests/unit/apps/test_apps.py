@@ -3,7 +3,7 @@ import os
 import pytest
 from docarray import Document, DocumentArray
 
-from now.app.SEARCH.app import ImageTextRetrieval
+from now.app.search.app import Search
 from now.common.options import construct_app
 from now.constants import Apps
 from now.now_dataclasses import UserInput
@@ -22,7 +22,7 @@ def test_app_attributes():
 
 def test_split_text_preprocessing():
     """Test if splitting of sentences is carried out when preprocessing text documents at indexing time"""
-    app = ImageTextRetrieval()
+    app = Search()
     da = DocumentArray(
         [Document(chunks=[Document(text='test. test', modality='text')])]
     )

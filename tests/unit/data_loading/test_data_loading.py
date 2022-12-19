@@ -6,7 +6,7 @@ import pytest
 from docarray import Document, DocumentArray
 from pytest_mock import MockerFixture
 
-from now.app.SEARCH.app import ImageTextRetrieval
+from now.app.search.app import Search
 from now.constants import DatasetTypes
 from now.data_loading.data_loading import _load_tags_from_json_if_needed, load_data
 from now.demo_data import DemoDatasetNames
@@ -56,7 +56,7 @@ def test_da_pull(da: DocumentArray):
     user_input.dataset_type = DatasetTypes.DOCARRAY
     user_input.dataset_name = 'secret-token'
 
-    loaded_da = load_data(ImageTextRetrieval(), user_input)
+    loaded_da = load_data(Search(), user_input)
 
     assert is_da_text_equal(da, loaded_da)
 
