@@ -87,7 +87,7 @@ def test_da_local_path_image_folder(image_resource_path: str):
         f'Expected two images, got {len(loaded_da)}.'
         f' Check the tests/resources/image folder'
     )
-    for doc in loaded_da[0].chunks:
+    for doc in loaded_da:
         assert doc.uri
 
 
@@ -95,7 +95,6 @@ def test_da_custom_ds(da: DocumentArray):
     user_input = UserInput()
     user_input.dataset_type = DatasetTypes.DEMO
     user_input.dataset_name = DemoDatasetNames.DEEP_FASHION
-    user_input.output_modality = 'image'
 
     loaded_da = load_data(user_input)
 

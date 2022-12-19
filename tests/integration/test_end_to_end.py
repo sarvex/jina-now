@@ -27,21 +27,6 @@ def test_search_image(resources_folder_path: str):
     return img_query
 
 
-@pytest.fixture
-def test_search_music(resources_folder_path: str):
-    with open(
-        os.path.join(
-            resources_folder_path,
-            'music',
-            'a.mp3',
-        ),
-        'rb',
-    ) as f:
-        binary = f.read()
-        music_query = base64.b64encode(binary).decode('utf-8')
-    return music_query
-
-
 @pytest.fixture()
 def cleanup(deployment_type, dataset, app):
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -107,7 +92,6 @@ def test_end_to_end_remote(
     dataset: str,
     deployment_type: str,
     test_search_image,
-    test_search_music,
     cleanup,
     input_modality,
     output_modality,
@@ -121,7 +105,6 @@ def test_end_to_end_remote(
         input_modality,
         output_modality,
         test_search_image,
-        test_search_music,
     )
 
 
@@ -157,7 +140,6 @@ def test_end_to_end_local(
     dataset: str,
     deployment_type: str,
     test_search_image,
-    test_search_music,
     cleanup,
     input_modality,
     output_modality,
@@ -171,7 +153,6 @@ def test_end_to_end_local(
         input_modality,
         output_modality,
         test_search_image,
-        test_search_music,
     )
 
 
@@ -183,7 +164,6 @@ def run_end_to_end(
     input_modality,
     output_modality,
     test_search_image,
-    test_search_music,
 ):
     cluster = NEW_CLUSTER['value']
     kwargs = {
@@ -221,7 +201,6 @@ def run_end_to_end(
         kwargs,
         output_modality,
         test_search_image,
-        test_search_music,
         response,
     )
     if input_modality == Modalities.TEXT:
@@ -232,7 +211,6 @@ def run_end_to_end(
             deployment_type,
             kwargs,
             test_search_image,
-            test_search_music,
             host,
         )
         url = f'http://localhost:30090/api/v1'
@@ -284,7 +262,6 @@ def assert_deployment_queries(
     kwargs,
     output_modality,
     test_search_image,
-    test_search_music,
     response,
 ):
     port = response.get('bff_port') if os.environ.get('NOW_TESTING', False) else '30090'
@@ -297,7 +274,6 @@ def assert_deployment_queries(
         deployment_type,
         kwargs,
         test_search_image,
-        test_search_music,
         host,
     )
     search_url = f'{url}/{input_modality}-to-{output_modality}/search'
@@ -333,7 +309,6 @@ def assert_deployment_queries(
             deployment_type,
             kwargs,
             test_search_image,
-            test_search_music,
             host,
         )
         assert_search(search_url, request_body)
@@ -345,7 +320,7 @@ def assert_deployment_queries(
 
 
 def get_search_request_body(
-    app, dataset, deployment_type, kwargs, test_search_image, test_search_music, host
+    app, dataset, deployment_type, kwargs, test_search_image, host
 ):
     request_body = get_default_request_body(
         deployment_type, kwargs.secured, remote_host=host
@@ -354,12 +329,9 @@ def get_search_request_body(
     # Perform end-to-end check via bff
     if app == Apps.IMAGE_TEXT_RETRIEVAL:
         request_body['image'] = test_search_image
-    elif app == Apps.MUSIC_TO_MUSIC:
-        request_body['song'] = test_search_music
     elif app in [
         Apps.IMAGE_TEXT_RETRIEVAL,
         Apps.TEXT_TO_VIDEO,
-        Apps.TEXT_TO_TEXT_AND_IMAGE,
     ]:
         if dataset == DemoDatasetNames.BEST_ARTWORKS:
             search_text = 'impressionism'
@@ -413,8 +385,8 @@ def test_backend_custom_data(
         'aws_access_key_id': os.environ.get('AWS_ACCESS_KEY_ID'),
         'aws_secret_access_key': os.environ.get('AWS_SECRET_ACCESS_KEY'),
         'aws_region_name': 'eu-west-1',
-        'search_fields': ['image.png'],
-        'filter_fields': ['test.txt'],
+        'search_fields': ['.jpeg'],
+        'filter_fields': [],
         'cluster': NEW_CLUSTER['value'],
         'deployment_type': deployment_type,
         'proceed': True,

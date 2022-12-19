@@ -27,7 +27,7 @@ def get_aws_info():
     'dataset_path, search_field_names, filter_field_names',
     [
         ('gif_resource_path', {'file.txt', 'file.gif'}, {'file.txt', 'a1', 'a2'}),
-        ('image_resource_path', set(), set()),
+        ('image_resource_path', {'.jpg'}, set()),
     ],
 )
 def test_set_fields_names_from_local_folder(
@@ -53,7 +53,7 @@ def test_set_fields_names_from_local_folder(
             },
             {'test.txt', 'tags', 'id', 'link', 'title'},
         ),
-        ('folder1/', set(), set()),
+        ('folder1/', {'.png', '.txt'}, {'.txt', '.json'}),
     ],
 )
 def test_set_field_names_from_s3_bucket(
