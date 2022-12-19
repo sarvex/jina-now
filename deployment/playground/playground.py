@@ -266,7 +266,7 @@ def load_example_queries(data, output_modality):
     da_txt = None
     if data in ds_set:
         try:
-            if output_modality == 'image-or-text' or output_modality == 'video':
+            if output_modality == 'text-or-image' or output_modality == 'video':
                 output_modality_dir = 'jpeg'
                 data_dir = root_data_dir + output_modality_dir + '/'
                 da_img, da_txt = load_data(
@@ -425,7 +425,7 @@ def render_matches(OUTPUT_MODALITY):
                 elif OUTPUT_MODALITY == 'video':
                     render_graphic_result(match, c)
 
-                elif OUTPUT_MODALITY == 'image-or-text':
+                elif OUTPUT_MODALITY == 'text-or-image':
                     try:
                         render_graphic_result(match, c)
                     except:

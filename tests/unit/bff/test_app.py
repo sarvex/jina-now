@@ -4,7 +4,7 @@ import pytest
 @pytest.mark.parametrize(
     'inp_mod, output_mod',
     [
-        ('image-or-text', 'image-or-text'),
+        ('text-or-image', 'text-or-image'),
         ('text', 'video'),
     ],
 )
