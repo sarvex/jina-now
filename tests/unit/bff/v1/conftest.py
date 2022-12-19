@@ -7,12 +7,8 @@ from tests.conftest import get_resource_folder_path
 
 
 def base64_image_string() -> str:
-    with open(
-        os.path.join(get_resource_folder_path(), 'image', '5109112832.jpg'), 'rb'
-    ) as f:
-        binary = f.read()
-        img_string = base64.b64encode(binary).decode('utf-8')
-    return img_string
+    path = os.path.join(get_resource_folder_path(), 'image', '5109112832.jpg')
+    return Document(uri=path).convert_uri_to_datauri().uri
 
 
 def base64_audio_string() -> str:

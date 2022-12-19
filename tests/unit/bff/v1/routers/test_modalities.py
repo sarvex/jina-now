@@ -35,24 +35,22 @@ class TestEndpoints:
         attribute_name_input,
         attribute_name_output,
     ):
-        # with pytest.raises(ConnectionError):
-        client.post(
-            f'/api/v1/{app_name}/index',
-            json={
-                f'document_list': [
-                    {
-                        'fields': [
-                            {
+        with pytest.raises(ConnectionError):
+            result = client.post(
+                f'/api/v1/{app_name}/index',
+                json={
+                    f'document_list': [
+                        {
+                            'fields': {
                                 'product_image': {
-                                    'blob': content_dict['image'],
+                                    'image': content_dict['image'],
                                 }
-                            }
-                        ],
-                        'tags': {},
-                    }
-                ]
-            },
-        )
+                            },
+                            'tags': {},
+                        }
+                    ]
+                },
+            )
 
     def test_search_fails_with_no_flow_running(
         self,
@@ -66,41 +64,13 @@ class TestEndpoints:
         with pytest.raises(ConnectionError):
             client.post(
                 f'/api/v1/{app_name}/search',
-                json={attribute_name_input: content_dict[input_modality]},
-            )
-
-    def test_search_fails_with_incorrect_query(
-        self,
-        client: requests.Session,
-        app_name,
-        input_modality,
-        output_modality,
-        attribute_name_input,
-        attribute_name_output,
-    ):
-        if input_modality == 'text':
-            pytest.skip('text input can not be invalid')
-
-        response = client.post(
-            f'/api/v1/{app_name}/search',
-            json={attribute_name_input: 'hello'},
-        )
-        assert response.status_code == 500
-        assert 'Not a correct encoded query' in response.text
-
-    def test_search_fails_with_empty_query(
-        self,
-        client: requests.Session,
-        app_name,
-        input_modality,
-        output_modality,
-        attribute_name_input,
-        attribute_name_output,
-    ):
-        with pytest.raises(ValueError):
-            client.post(
-                f'/api/v1/{app_name}/search',
-                json={},
+                json={
+                    'fields': {
+                        'product_image': {
+                            'image': content_dict['image'],
+                        }
+                    },
+                },
             )
 
     def test_index(
@@ -115,11 +85,14 @@ class TestEndpoints:
         response = client_with_mocked_jina_client(DocumentArray()).post(
             f'/api/v1/{app_name}/index',
             json={
-                f'{output_modality}_list': [
+                f'document_list': [
                     {
-                        attribute_name_output: content_dict[output_modality],
-                        'tags': {'tag': 'val'},
-                        'uri': '',
+                        'fields': {
+                            'product_description': {
+                                'text': 'test 1, 2, 3',
+                            }
+                        },
+                        'tags': {},
                     }
                 ]
             },
@@ -138,7 +111,14 @@ class TestEndpoints:
     ):
         response = client_with_mocked_jina_client(sample_search_response).post(
             f'/api/v1/{app_name}/search',
-            json={attribute_name_input: content_dict[input_modality]},
+            json={
+                'fields': {
+                    'product_image': {
+                        'text': 'test 1, 2, 3',
+                    }
+                },
+                'limit': 10,
+            },
         )
 
         assert response.status_code == status.HTTP_200_OK

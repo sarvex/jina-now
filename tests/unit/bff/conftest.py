@@ -47,7 +47,7 @@ def client_with_mocked_jina_client(
         def _get_jina_client(host, port):
             return MockedJinaClient(response)
 
-        mocker.patch('deployment.bff.app.v1.client.get_jina_client', _get_jina_client)
+        mocker.patch('deployment.bff.app.client.get_jina_client', _get_jina_client)
 
         return TestClient(build_app())
 

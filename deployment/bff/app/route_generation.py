@@ -1,6 +1,7 @@
 import base64
 
-from docarray import Document, DocumentArray
+from docarray import Document, DocumentArray, dataclass
+from docarray.typing import Image, Text
 from fastapi import HTTPException
 
 from deployment.bff.app.client import jina_client_post
@@ -10,19 +11,61 @@ from deployment.bff.app.endpoint.suggestion import SuggestionEndpoint
 from deployment.bff.app.model_factory import get_pydantic_model
 
 
-def map_inputs(inputs, request_modality):
-    modality_list = inputs.get(f'{request_modality}_list', None)
+def get_field_type(field_values):
+    if 'image' in field_values:
+        return Image
+    elif 'text' in field_values:
+        return Text
+    elif 'video' in field_values:
+        return Image
+    else:
+        raise ValueError(f'Unknown field type {field_values}')
+
+
+def get_field_value(field_values):
+    if 'image' in field_values:
+        return field_values['image']
+    elif 'text' in field_values:
+        return field_values['text']
+    elif 'video' in field_values:
+        return field_values['video']
+    else:
+        raise ValueError(f'Unknown field type {field_values}')
+
+
+def get_multi_modality_doc(modality_dict):
+    fields = modality_dict['fields']
+    # TODO merge with code once https://github.com/jina-ai/now/pull/768 is merged
+    field_name_to_class = {
+        field_name: get_field_type(field_values)
+        for field_name, field_values in fields.items()
+    }
+    field_name_to_value = {
+        field_name: get_field_value(field_values)
+        for field_name, field_values in fields.items()
+    }
+    data_class = type("MMDoc", (object,), {f: None for f in field_name_to_class})
+    setattr(data_class, '__annotations__', field_name_to_class)
+    data_class = dataclass(data_class)
+    mm_doc = data_class(**field_name_to_value)
+    d = Document(mm_doc)
+    for c in d.chunks:
+        if c.tensor is not None:
+            c.convert_image_tensor_to_blob()
+    if 'tags' in modality_dict:
+        d.tags = modality_dict['tags']
+    return d
+
+
+def map_inputs(inputs):
+    modality_list = inputs.get(f'document_list', None)
     if not modality_list:
         modality_list = [inputs]
     da = DocumentArray()
     for modality_dict in modality_list:
-        da.append(
-            map_inputs_for_modality(
-                modality_dict.get('text', None),
-                modality_dict.get('blob', None),
-                modality_dict.get('uri', None),
-            )
-        )
+        print('append', modality_dict)
+        multi_modality_doc = get_multi_modality_doc(modality_dict)
+        da.append(multi_modality_doc)
     return da
 
 
@@ -120,9 +163,13 @@ def create_endpoints(router, input_modality, output_modality):
 
             def endpoint_fn(data: RequestModel) -> ResponseModel:
                 data = data.dict()
+                if '__root__' in data:
+                    data = data['__root__']
+
                 parameters = endpoint.get_parameters(data)
+                print('parameters', parameters)
                 print('### inputs before mapping', data)
-                inputs = map_inputs(data, request_modality)
+                inputs = map_inputs(data)
                 print('### inputs after mapping', inputs)
                 response_docs = jina_client_post(
                     endpoint=f'/{endpoint_name}',
@@ -131,8 +178,9 @@ def create_endpoints(router, input_modality, output_modality):
                     parameters=parameters,
                 )
                 response = endpoint.map_outputs(response_docs)
-
+                print('### response before mapping', response)
                 map_outputs(response_docs, endpoint_name, response_modality)
+                print('### response after mapping', response)
                 return response
 
             return endpoint_fn

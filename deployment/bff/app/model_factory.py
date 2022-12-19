@@ -1,16 +1,14 @@
 import random
 import string
-from typing import Dict, List, Union
+from typing import Dict, List
 
 from pydantic import BaseModel, Field, create_model
 
 from deployment.bff.app.models import (
     BaseRequestModel,
     BaseResponseModel,
+    MultiModalModel,
     NowBaseModel,
-    NowImageModel,
-    NowTextModel,
-    NowVideoModel,
     TagsMixin,
 )
 
@@ -37,7 +35,7 @@ def get_modality_mixin(endpoint, modalities, is_request, endpoint_name):
     if endpoint.has_modality(is_request):
         field_name = 'fields'
         field_value = Field(
-            default=[],
+            default={},
             title=field_name,
             description='\n'.join(
                 get_modality_description(modality, is_request, endpoint_name)
@@ -46,9 +44,7 @@ def get_modality_mixin(endpoint, modalities, is_request, endpoint_name):
         )
 
         class TmpModel(BaseModel):
-            fields: List[
-                Dict[str, Union[NowImageModel, NowTextModel, NowVideoModel]]
-            ] = field_value
+            fields: Dict[str, MultiModalModel] = field_value
 
     else:
         TmpModel = BaseModel

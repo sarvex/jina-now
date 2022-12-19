@@ -43,6 +43,7 @@ class SearchEndpoint(BaseEndpoint):
         """This method is used to get the parameters for the request to Jina.
         It is called before the request is sent to Jina.
         """
+        print(f"### limit: {inputs['limit']}")
         parameters = {}
         filter_parameters = get_filter(inputs['filters'])
         parameters.update(filter_parameters)
