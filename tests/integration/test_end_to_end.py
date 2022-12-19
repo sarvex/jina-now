@@ -172,7 +172,6 @@ def run_end_to_end(
         'now': 'start',
         'flow_name': 'nowapi',
         'dataset_type': DatasetTypes.DEMO,
-        'output_modality': output_modality,
         'dataset_name': dataset,
         'cluster': cluster,
         'secured': deployment_type == 'remote',
@@ -190,10 +189,13 @@ def run_end_to_end(
     kwargs = Namespace(**kwargs)
     response = cli(args=kwargs)
     if app == Apps.IMAGE_TEXT_RETRIEVAL:
-        input_modality = 'text-or-image'
-        output_modality = 'text-or-image'
+        input_modality_deployment = 'text-or-image'
+        output_modality_deployment = 'text-or-image'
+    else:
+        input_modality_deployment = input_modality
+        output_modality_deployment = output_modality
     assert_deployment_response(
-        deployment_type, input_modality, output_modality, response
+        deployment_type, input_modality_deployment, output_modality_deployment, response
     )
     assert_deployment_queries(
         app,
@@ -208,12 +210,12 @@ def run_end_to_end(
     if input_modality == Modalities.TEXT:
         host = response.get('host')
         request_body = get_search_request_body(
-            app,
             dataset,
             deployment_type,
             kwargs,
             test_search_image,
             host,
+            search_modality='text',
         )
         suggest_url = f'http://localhost:30090/api/v1/app/suggestion'
         assert_suggest(suggest_url, request_body)
@@ -271,12 +273,12 @@ def assert_deployment_queries(
     host = response.get('host')
     # normal case
     request_body = get_search_request_body(
-        app,
         dataset,
         deployment_type,
         kwargs,
         test_search_image,
         host,
+        search_modality=input_modality,
     )
     search_url = f'{url}/app/search'
     assert_search(search_url, request_body)
@@ -306,12 +308,12 @@ def assert_deployment_queries(
             raise Exception(f'Response status is {response.status_code}')
         # the same search should work now
         request_body = get_search_request_body(
-            app,
             dataset,
             deployment_type,
             kwargs,
             test_search_image,
             host,
+            search_modality=input_modality,
         )
         assert_search(search_url, request_body)
         # search with invalid api key
@@ -322,19 +324,20 @@ def assert_deployment_queries(
 
 
 def get_search_request_body(
-    app, dataset, deployment_type, kwargs, test_search_image, host
+    app,
+    dataset,
+    deployment_type,
+    kwargs,
+    test_search_image,
+    host,
+    search_modality,
 ):
     request_body = get_default_request_body(
         deployment_type, kwargs.secured, remote_host=host
     )
     request_body['limit'] = 9
     # Perform end-to-end check via bff
-    if app == Apps.IMAGE_TEXT_RETRIEVAL:
-        request_body['query'] = {'image_field': {'blob': test_search_image}}
-    elif app in [
-        Apps.IMAGE_TEXT_RETRIEVAL,
-        Apps.TEXT_TO_VIDEO,
-    ]:
+    if search_modality == Modalities.TEXT:
         if dataset == DemoDatasetNames.BEST_ARTWORKS:
             search_text = 'impressionism'
         elif dataset == DemoDatasetNames.NFT_MONKEY:
@@ -342,6 +345,8 @@ def get_search_request_body(
         else:
             search_text = 'test'
         request_body['query'] = {'text_field': {'text': search_text}}
+    elif search_modality == Modalities.IMAGE:
+        request_body['query'] = {'image_field': {'blob': test_search_image}}
     return request_body
 
 
@@ -378,7 +383,6 @@ def test_backend_custom_data(
         'now': 'start',
         'app': app,
         'flow_name': 'nowapi',
-        'output_modality': 'image',
         'dataset_type': DatasetTypes.S3_BUCKET,
         'dataset_path': os.environ.get('S3_CUSTOM_DATA_PATH'),
         'aws_access_key_id': os.environ.get('AWS_ACCESS_KEY_ID'),
