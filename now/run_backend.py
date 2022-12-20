@@ -303,6 +303,8 @@ def create_annotations_and_class_attributes(
     S3Object, my_setter, my_getter = create_s3_type()
 
     for f in fields:
+        if not isinstance(f, typing.Hashable):
+            continue
         if dataset_type == DatasetTypes.S3_BUCKET:
             annotations[files_to_dataclass_fields[f]] = S3Object
             class_attributes[files_to_dataclass_fields[f]] = field(
