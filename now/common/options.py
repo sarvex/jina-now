@@ -41,8 +41,8 @@ AVAILABLE_SOON = 'will be available in upcoming versions'
 
 
 def _create_app_from_user_input(user_input: UserInput, **kwargs):
-        if len(user_input.search_fields) != 1:
-            raise ValueError(
+    if len(user_input.search_fields) != 1:
+        raise ValueError(
             'Currently only one search field is supported. Please choose one field.'
         )
     if user_input.search_fields[0] not in user_input.search_fields_modalities.keys():
@@ -51,12 +51,12 @@ def _create_app_from_user_input(user_input: UserInput, **kwargs):
             f'choose one of the following: {user_input.search_fields_modalities.keys()}'
         )
     _search_modality = user_input.search_fields_modalities[user_input.search_fields[0]]
-    
+
     if user_input.dataset_type in [DatasetTypes.DEMO, DatasetTypes.DOCARRAY]:
         modality_types = ['image', 'text']
         video_type = 'video'
     else:
-        modality_types = [Image, Text]:
+        modality_types = [Image, Text]
         video_type = Video
     if _search_modality in modality_types:
         app_name = Apps.IMAGE_TEXT_RETRIEVAL
@@ -133,7 +133,6 @@ DEMO_DATA = DialogOptions(
     == DatasetTypes.DEMO,
     post_func=lambda user_input, **kwargs: set_field_names_from_docarray(user_input),
 )
-
 
 DOCARRAY_NAME = DialogOptions(
     name='dataset_name',
@@ -212,7 +211,6 @@ SEARCH_FIELDS = DialogOptions(
     },
 )
 
-
 FILTER_FIELDS = DialogOptions(
     name='filter_fields',
     choices=lambda user_input, **kwargs: [
@@ -230,7 +228,6 @@ FILTER_FIELDS = DialogOptions(
     > 0,
 )
 
-
 ES_INDEX_NAME = DialogOptions(
     name='es_index_name',
     prompt_message='Please enter the name of your Elasticsearch index:',
@@ -239,7 +236,6 @@ ES_INDEX_NAME = DialogOptions(
     conditional_check=lambda user_input: user_input.dataset_type
     == DatasetTypes.ELASTICSEARCH,
 )
-
 
 ES_HOST_NAME = DialogOptions(
     name='es_host_name',

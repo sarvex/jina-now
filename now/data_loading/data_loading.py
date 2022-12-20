@@ -1,28 +1,9 @@
-import base64
 import json
 import os
-import pathlib
-import pickle
-from os.path import join as osp
 from typing import Dict, List, Type
 
 from docarray import Document, DocumentArray
 
-from now.constants import (
-    BASE_STORAGE_URL,
-    DEMO_DATASET_DOCARRAY_VERSION,
-    MODALITIES_MAPPING,
-    DatasetTypes,
-    Modalities,
-)
-import os
-import uuid
-from collections import defaultdict
-from copy import deepcopy
-
-from docarray import Document, DocumentArray
-
-from now.app.base.app import JinaNOWApp
 from now.constants import DatasetTypes
 from now.data_loading.elasticsearch import ElasticsearchExtractor
 from now.log import yaspin_extended
@@ -334,51 +315,6 @@ def create_docs_from_files_s3(
             kwargs[files_to_dataclass_fields[fields[0]]] = file_full_path
             docs.append(Document(data_class(**kwargs)))
     return docs
-
-
-def fetch_da_from_url(
-    url: str, downloaded_path: str = '~/.cache/jina-now'
-) -> DocumentArray:
-    data_dir = os.path.expanduser(downloaded_path)
-    if not os.path.exists(osp(data_dir, 'data/tmp')):
-        os.makedirs(osp(data_dir, 'data/tmp'))
-    data_path = (
-        data_dir
-        + f"/data/tmp/{base64.b64encode(bytes(url, 'utf-8')).decode('utf-8')}.bin"
-    )
-    if not os.path.exists(data_path):
-        download(url, data_path)
-
-    try:
-        da = DocumentArray.load_binary(data_path)
-    except pickle.UnpicklingError:
-        path = pathlib.Path(data_path).expanduser().resolve()
-        os.remove(path)
-        download(url, data_path)
-        da = DocumentArray.load_binary(data_path)
-    return da
-
-
-def get_dataset_url(dataset: str) -> str:
-    search_modality = None
-    for _modality, _demo_datasets in AVAILABLE_DATASETS.items():
-        if any([dataset == _demo_dataset.name for _demo_dataset in _demo_datasets]):
-            search_modality = _modality
-
-    data_folder = None
-    docarray_version = DEMO_DATASET_DOCARRAY_VERSION
-    if search_modality == MODALITIES_MAPPING[Modalities.IMAGE]:
-        data_folder = 'jpeg'
-    elif search_modality == MODALITIES_MAPPING[Modalities.TEXT]:
-        data_folder = 'text'
-    elif search_modality == MODALITIES_MAPPING[Modalities.VIDEO]:
-        data_folder = 'video'
-
-    if search_modality != MODALITIES_MAPPING[Modalities.VIDEO]:
-        model_name = 'ViT-B32'
-        return f'{BASE_STORAGE_URL}/{data_folder}/{dataset}.{model_name}-{docarray_version}.bin'
-    else:
-        return f'{BASE_STORAGE_URL}/{data_folder}/{dataset}-{docarray_version}.bin'
 
 
 def get_s3_bucket_and_folder_prefix(user_input: UserInput):
