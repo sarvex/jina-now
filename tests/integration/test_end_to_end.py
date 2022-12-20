@@ -449,7 +449,6 @@ def test_backend_custom_data(
         response.status_code == 200
     ), f"Received code {response.status_code} with text: {response.json()['message']}"
     response_json = response.json()
-    DocumentArray.from_json(response.json())
     assert len(response_json) == 2
     for doc in response_json:
         field = list(doc['fields'].values())[0]
