@@ -1,6 +1,7 @@
 import os
 import random
 import sys
+import typing
 import uuid
 from copy import deepcopy
 from time import sleep
@@ -350,6 +351,8 @@ def create_dataclass_fields_file_mappings(fields: List, fields_modalities: Dict)
     dataclass_fields_to_file_mapping = {}
     filter_count = 0
     for f in fields:
+        if not isinstance(f, typing.Hashable):
+            continue
         for modality_name, modality_type in MODALITIES_MAPPING.items():
             if fields_modalities[f] == modality_type:
                 dataclass_fields_to_file_mapping[
