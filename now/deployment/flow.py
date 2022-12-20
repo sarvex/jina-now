@@ -99,12 +99,13 @@ def deploy_k8s(f, ns, tmpdir, kubectl_path):
             gateway_port = 8080
         cmd(f'{kubectl_path} apply -R -f {k8_path}')
 
+        client = Client(host=gateway_host, port=gateway_port)
         wait_time = 0
-        while not f.is_flow_ready() and wait_time <= MAX_WAIT_TIME:
+        while not client.is_flow_ready() and wait_time <= MAX_WAIT_TIME:
             check_pods_health(ns)
             wait_time += 1
             sleep(1)
-        if not f.is_flow_ready():
+        if not client.is_flow_ready():
             raise Exception('Flow execution timed out.')
         spinner.ok("🚀")
 
