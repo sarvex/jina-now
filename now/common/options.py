@@ -46,7 +46,7 @@ def _create_app_from_user_input(user_input: UserInput, **kwargs):
         )
     if user_input.search_fields[0] not in user_input.search_fields_modalities.keys():
         raise ValueError(
-            f'Search field specified is not among the search candidate fields. Kindly '
+            f'Search field specified is not among the search candidate fields. Please '
             f'choose one of the following: {user_input.search_fields_modalities.keys()}'
         )
     _search_modality = user_input.search_fields_modalities[user_input.search_fields[0]]
@@ -268,7 +268,7 @@ DEPLOYMENT_TYPE = DialogOptions(
         },
     ],
     is_terminal_command=True,
-    description='Option is `local` and `remote`. Select `local` if you want search engine to be deployed on local '
+    description='Options are `local` or `remote`. Select `local` if you want your search engine to be deployed on a local '
     'cluster. Select `remote` to deploy it on Jina Cloud',
     post_func=lambda user_input, **kwargs: check_login_deployment(user_input),
 )
@@ -298,7 +298,7 @@ LOCAL_CLUSTER = DialogOptions(
 
 PROCEED = DialogOptions(
     name='proceed',
-    prompt_message='jina-now is deployed already. Do you want to remove the current data?',
+    prompt_message='Jina NOW is already deployed. Do you want to remove the current data?',
     prompt_type='list',
     choices=[
         {'name': '⛔ no', 'value': False},
@@ -310,7 +310,7 @@ PROCEED = DialogOptions(
 
 SECURED = DialogOptions(
     name='secured',
-    prompt_message='Do you want to secure the flow?',
+    prompt_message='Do you want to secure the Flow?',
     prompt_type='list',
     choices=[
         {'name': '⛔ no', 'value': False},
@@ -323,7 +323,7 @@ SECURED = DialogOptions(
 
 API_KEY = DialogOptions(
     name='api_key',
-    prompt_message='Do you want to generate an api_key to access this deployment?',
+    prompt_message='Do you want to generate an API key to access this deployment?',
     prompt_type='list',
     choices=[
         {'name': '✅ yes', 'value': uuid.uuid4().hex},
@@ -331,7 +331,7 @@ API_KEY = DialogOptions(
     ],
     depends_on=SECURED,
     is_terminal_command=True,
-    description='Pass an api_key to access the flow once the deployment is complete. ',
+    description='Pass an API key to access the Flow once the deployment is complete. ',
     conditional_check=lambda user_inp: str(user_inp.secured).lower() == 'true',
     post_func=lambda user_input, **kwargs: _set_value_to_none(user_input),
 )
@@ -350,9 +350,9 @@ ADDITIONAL_USERS = DialogOptions(
 
 USER_EMAILS = DialogOptions(
     name='user_emails',
-    prompt_message='Please enter the comma separated Email IDs '
-    'who will have access to this flow.\nAdditionally, you can also specify comma separated domain name'
-    ' such that all users from that domain can access this flow. E.g. `jina.ai`\n',
+    prompt_message='Please enter email addresses (separated by commas) '
+    'to grant access to this Flow.\nAdditionally, you can specify comma-separated domain names'
+    ' such that all users from that domain can access this Flow, e.g. `jina.ai`\n',
     prompt_type='input',
     depends_on=ADDITIONAL_USERS,
     conditional_check=lambda user_inp: user_inp.additional_user,
@@ -391,7 +391,7 @@ def _jina_auth_login(user_input: UserInput, **kwargs):
         jina_auth_login()
     except AuthenticationRequiredError:
         with yaspin_extended(
-            sigmap=sigmap, text='Log in to JCloud', color='green'
+            sigmap=sigmap, text='Log in to Jina AI Cloud', color='green'
         ) as spinner:
             cmd('jina auth login')
         spinner.ok('🛠️')
