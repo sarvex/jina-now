@@ -10,7 +10,7 @@ from now.utils import BetterEnum
 class DemoDatasetNames(BetterEnum):
     BEST_ARTWORKS = 'best-artworks'
     NFT_MONKEY = 'nft-monkey'
-    TLL = 'tll'
+    TLL = 'totally-looks-like'
     BIRD_SPECIES = 'bird-species'
     STANFORD_CARS = 'stanford-cars'
     DEEP_FASHION = 'deepfashion'
@@ -32,10 +32,7 @@ class DemoDataset(BaseModel):
     display_modality: str
 
     def get_data(self, *args, **kwargs) -> DocumentArray:
-        from now.data_loading.data_loading import fetch_da_from_url, get_dataset_url
-
-        url = get_dataset_url(dataset=self.name)
-        return fetch_da_from_url(url)
+        return DocumentArray.pull(self.name)
 
 
 AVAILABLE_DATASETS = {
