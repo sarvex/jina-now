@@ -8,7 +8,7 @@ DOCKER_BFF_PLAYGROUND_TAG = '0.0.136-demo-data-migration-23'
 NOW_PREPROCESSOR_VERSION = '0.0.114-elastic-multimodal-15x'
 NOW_QDRANT_INDEXER_VERSION = '0.0.12-demo-data-migration-23'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.11-demo-data-migration-23'
-NOW_AUTOCOMPLETE_VERSION = '0.0.6-elastic-multimodal-15x'
+NOW_AUTOCOMPLETE_VERSION = '0.0.7-fix-m1-docker'
 
 
 class Modalities(BetterEnum):
