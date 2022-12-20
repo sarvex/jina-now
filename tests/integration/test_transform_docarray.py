@@ -60,7 +60,7 @@ def test_transform_inside_flow(
         user_input.search_fields = []
         user_input.dataset_type = DatasetTypes.DEMO
         user_input.dataset_name = DemoDatasetNames.TUMBLR_GIFS_10K
-        data = load_data(app_instance, user_input)[:2]
+        data = load_data(user_input)[:2]
         user_input.search_fields = ['description', 'video']
     elif input_type == 'single_modal':
         app_instance = ImageTextRetrieval()
