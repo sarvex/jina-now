@@ -453,4 +453,6 @@ def test_backend_custom_data(
     for doc in response_json:
         field = list(doc['fields'].values())[0]
         assert field['uri'].startswith('s3://'), f"received: {doc}"
-        assert 'blob' not in field.keys()
+        assert (
+            'blob' not in field.keys() or field['blob'] is None or field['blob'] == ''
+        )
