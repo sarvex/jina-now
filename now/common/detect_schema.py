@@ -229,7 +229,11 @@ def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
     )  # user has to provide the folder where folder structure begins
 
     objects = list(bucket.objects.filter(Prefix=folder_prefix))
-    file_paths = [obj.key for obj in objects if not obj.key.endswith('/')]
+    file_paths = [
+        obj.key
+        for obj in objects
+        if not obj.key.endswith('/') and not obj.key.startswith('.')
+    ]
     folder_structure = _identify_folder_structure(file_paths, '/')
     if folder_structure == 'single_folder':
         field_names = _extract_field_names_single_folder(file_paths, '/')
@@ -266,7 +270,9 @@ def set_field_names_from_local_folder(user_input: UserInput, **kwargs):
         )
     file_paths = []
     for root, dirs, files in os.walk(dataset_path):
-        file_paths.extend([os.path.join(root, file) for file in files])
+        file_paths.extend(
+            [os.path.join(root, file) for file in files if not file.startswith('.')]
+        )
     folder_structure = _identify_folder_structure(file_paths, os.sep)
     if folder_structure == 'single_folder':
         field_names = _extract_field_names_single_folder(file_paths, os.sep)

@@ -8,7 +8,7 @@ from time import sleep
 from typing import Dict, List, Optional
 
 import requests
-from docarray import DocumentArray, dataclass, field
+from docarray import Document, DocumentArray, dataclass, field
 from jina.clients import Client
 from tqdm import tqdm
 
@@ -228,8 +228,6 @@ def create_dataclass(user_input: UserInput):
 
     :param user_input: user input
     """
-    all_annotations = {}
-    all_class_attributes = {}
     all_modalities = {}
     all_modalities.update(user_input.search_fields_modalities)
     update_dict_with_no_overwrite(all_modalities, user_input.filter_fields_modalities)
@@ -238,17 +236,12 @@ def create_dataclass(user_input: UserInput):
         user_input.search_fields + user_input.filter_fields, all_modalities
     )
     user_input.files_to_dataclass_fields = file_mapping_to_dataclass_fields
-    (
-        search_fields_annotations,
-        search_fields_class_attributes,
-    ) = create_annotations_and_class_attributes(
-        user_input.search_fields,
-        user_input.search_fields_modalities,
+    (all_annotations, all_class_attributes,) = create_annotations_and_class_attributes(
+        user_input.search_fields + user_input.filter_fields,
+        all_modalities,
         file_mapping_to_dataclass_fields,
         user_input.dataset_type,
     )
-    all_annotations.update(search_fields_annotations)
-    all_class_attributes.update(search_fields_class_attributes)
 
     if user_input.dataset_type == DatasetTypes.S3_BUCKET:
         S3Object, my_setter, my_getter = create_s3_type()
@@ -256,18 +249,6 @@ def create_dataclass(user_input: UserInput):
         all_class_attributes['json_s3'] = field(
             setter=my_setter, getter=my_getter, default=''
         )
-    (
-        filter_fields_annotations,
-        filter_fields_class_attributes,
-    ) = create_annotations_and_class_attributes(
-        user_input.filter_fields,
-        user_input.filter_fields_modalities,
-        file_mapping_to_dataclass_fields,
-        user_input.dataset_type,
-    )
-
-    update_dict_with_no_overwrite(all_annotations, filter_fields_annotations)
-    update_dict_with_no_overwrite(all_class_attributes, filter_fields_class_attributes)
 
     mm_doc = type("MMDoc", (object,), all_class_attributes)
     setattr(mm_doc, '__annotations__', all_annotations)
