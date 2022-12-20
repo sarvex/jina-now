@@ -27,7 +27,7 @@ def field_dict_to_doc(field_dict: dict) -> Document:
             elif field_value.blob:
                 base64_bytes = field_value.blob.encode('utf-8')
                 blob = base64.decodebytes(base64_bytes)
-                doc = Document(blob=blob)
+                doc = Document(blob=blob, modality='image')
             else:
                 raise ValueError('None of the attributes uri, text or blob is set.')
     except BaseException as e:
