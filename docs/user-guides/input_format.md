@@ -57,7 +57,7 @@ Here is an example of what you interaction may look like in the CLI:
 
 # Support for Tags
 For most professional applications, you will want to provide additional information about your data, such as price, creator, brand, etc.
-This information can be provided in the `tags` of your `Documents` in case you selected the `DocumentArray` option.
+This information can be provided in the `tags` of your `Document`s in case you selected the `DocumentArray` option.
 If you selected the `local folder` or `S3 bucket` option, you can provide this information in a `json` file for each document.
 The example from above would look like this:
 ```
