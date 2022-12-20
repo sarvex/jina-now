@@ -4,7 +4,6 @@ import os
 from typing import Dict, List
 
 import requests
-from docarray import DocumentArray
 
 from now.constants import (
     AVAILABLE_MODALITIES_FOR_FILTER,
@@ -71,28 +70,32 @@ def _extract_field_candidates_docarray(response):
     """
     search_modalities = {}
     filter_modalities = {}
-    response = requests.get(response.json()['data']['download'])
-    da = DocumentArray.from_dict(response.json())
-    if not da[0]._metadata:
+    da = requests.get(response.json()['data']['download']).json()[
+        0
+    ]  # get the first document
+    if (
+        not da.get('_metadata', None)
+        or 'multi_modal_schema' not in da['_metadata']['fields']
+    ):
         raise RuntimeError(
             'Multi-modal schema is not provided. Please prepare your data following this guide - '
             'https://docarray.jina.ai/datatypes/multimodal/'
         )
-    mm_schema = da[0]._metadata['fields']['multi_modal_schema']
+    mm_schema = da['_metadata']['fields']['multi_modal_schema']
     mm_fields = mm_schema['structValue']['fields']
     for field_name, value in mm_fields.items():
         if 'position' not in value['structValue']['fields']:
             raise ValueError(
-                'No modalities found in this multi-modal documents. Please follow the steps in the documentation'
-                ' to add modalities to your documents https://docarray.jina.ai/datatypes/multimodal/'
+                f'No modality found for the dataclass field: `{field_name}`. Please follow the steps in the '
+                f'documentation to add modalities to your documents https://docarray.jina.ai/datatypes/multimodal/'
             )
         field_pos = value['structValue']['fields']['position']['numberValue']
-        if not da[0].chunks[field_pos].modality:
+        if not da['chunks'][field_pos]['modality']:
             raise ValueError(
                 f'No modality found for {field_name}. Please follow the steps in the documentation'
                 f' to add modalities to your documents https://docarray.jina.ai/datatypes/multimodal/'
             )
-        modality = da[0].chunks[field_pos].modality.lower()
+        modality = da['chunks'][field_pos]['modality'].lower()
         if modality not in AVAILABLE_MODALITIES_FOR_SEARCH:
             raise ValueError(
                 f'The modality {modality} is not supported for search. Please use '
@@ -105,8 +108,8 @@ def _extract_field_candidates_docarray(response):
         if modality in AVAILABLE_MODALITIES_FOR_SEARCH:
             search_modalities[field_name] = modality
 
-    if da[0].tags:  # if tags exist then we add them as well to the filter modalities
-        for el, value in da[0].tags['fields'].items():
+    if da['tags']:  # if tags exist then we add them as well to the filter modalities
+        for el, value in da['tags']['fields'].items():
             for val_type, val in value.items():
                 filter_modalities[el] = val_type
 
