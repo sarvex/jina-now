@@ -74,6 +74,7 @@ class ImageTextRetrieval(JinaNOWApp):
         """
         return {
             'name': 'preprocessor',
+            'replicas': '${{ ENV.PREPROCESSOR_REPLICAS }}',
             'uses': '${{ ENV.PREPROCESSOR_NAME }}',
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'uses_with': {
@@ -82,6 +83,8 @@ class ImageTextRetrieval(JinaNOWApp):
             'jcloud': {
                 'resources': {
                     'memory': '1G',
+                    'cpu': '${{ ENV.PREPROCESSOR_CPU }}',
+                    'capacity': 'on-demand',
                 }
             },
         }
@@ -90,6 +93,7 @@ class ImageTextRetrieval(JinaNOWApp):
     def clip_encoder_stub() -> Dict:
         return {
             'name': 'clip_encoder',
+            'replicas': '${{ ENV.CLIP_ENCODER_REPLICAS }}',
             'uses': '${{ ENV.ENCODER_NAME }}',
             'host': '${{ ENV.ENCODER_HOST }}',
             'port': '${{ ENV.ENCODER_PORT }}',
@@ -106,6 +110,7 @@ class ImageTextRetrieval(JinaNOWApp):
     def sbert_encoder_stub() -> Dict:
         return {
             'name': 'sbert_encoder',
+            'replicas': '${{ ENV.SBERT_ENCODER_REPLICAS }}',
             'uses': '${{ ENV.ENCODER_NAME }}',
             'host': '${{ ENV.ENCODER_HOST }}',
             'port': '${{ ENV.ENCODER_PORT }}',
@@ -134,7 +139,7 @@ class ImageTextRetrieval(JinaNOWApp):
             'jcloud': {
                 'resources': {
                     'memory': '${{ENV.INDEXER_MEM}}',
-                    'cpu': '0.1',
+                    'cpu': '1.0',
                     'capacity': 'on-demand',
                 }
             },
@@ -213,6 +218,7 @@ class ImageTextRetrieval(JinaNOWApp):
     def setup(
         self, dataset: DocumentArray, user_input: UserInput, kubectl_path
     ) -> Dict:
+        # Get the output modality to determine the executors to be added in the flow
         _search_modality = user_input.search_fields_modalities[
             user_input.search_fields[0]
         ]
