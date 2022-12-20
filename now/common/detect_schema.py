@@ -108,7 +108,7 @@ def _extract_field_candidates_docarray(response):
         if modality in AVAILABLE_MODALITIES_FOR_SEARCH:
             search_modalities[field_name] = modality
 
-    if da['tags']:  # if tags exist then we add them as well to the filter modalities
+    if da.get('tags', None):
         for el, value in da['tags']['fields'].items():
             for val_type, val in value.items():
                 filter_modalities[el] = val_type
