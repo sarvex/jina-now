@@ -17,6 +17,8 @@ def random_index_name():
 
 @pytest.fixture
 def es_inputs() -> namedtuple:
+    np.random.seed(42)
+
     @dataclass
     class MMDoc:
         title: Text

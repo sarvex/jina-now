@@ -208,11 +208,10 @@ def get_indexer_config(
 
 
 def _extract_tags_for_indexer(user_input: UserInput):
-    final_tags = [
-        [tag, value]
-        for tag, value in user_input.filter_fields_modalities.items()
-        if tag in user_input.filter_fields
-    ]
+    final_tags = []
+    for tag, value in user_input.filter_fields_modalities.items():
+        if tag in user_input.filter_fields:
+            final_tags.append([tag, value])
     if user_input.app_instance.output_modality in [
         Modalities.IMAGE,
         Modalities.VIDEO,
