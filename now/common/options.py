@@ -296,18 +296,6 @@ LOCAL_CLUSTER = DialogOptions(
     ),
 )
 
-PROCEED = DialogOptions(
-    name='proceed',
-    prompt_message='jina-now is deployed already. Do you want to remove the current data?',
-    prompt_type='list',
-    choices=[
-        {'name': '⛔ no', 'value': False},
-        {'name': '✅ yes', 'value': True},
-    ],
-    depends_on=LOCAL_CLUSTER,
-    conditional_check=lambda user_input: _check_if_namespace_exist(),
-)
-
 SECURED = DialogOptions(
     name='secured',
     prompt_message='Do you want to secure the flow?',
