@@ -198,14 +198,12 @@ def run_end_to_end(
         deployment_type, input_modality_deployment, output_modality_deployment, response
     )
     assert_deployment_queries(
-        app,
-        dataset,
-        deployment_type,
-        input_modality,
-        kwargs,
-        output_modality,
-        test_search_image,
-        response,
+        dataset=dataset,
+        deployment_type=deployment_type,
+        input_modality=input_modality,
+        kwargs=kwargs,
+        test_search_image=test_search_image,
+        response=response,
     )
     if input_modality == Modalities.TEXT:
         host = response.get('host')
@@ -259,12 +257,10 @@ def assert_suggest(suggest_url, request_body):
 
 
 def assert_deployment_queries(
-    app,
     dataset,
     deployment_type,
     input_modality,
     kwargs,
-    output_modality,
     test_search_image,
     response,
 ):
