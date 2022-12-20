@@ -1,3 +1,4 @@
+import base64
 from typing import List
 
 import docarray.score
@@ -59,15 +60,17 @@ def search(data: SearchRequestModel):
         for score_name, score_val in doc.scores.items():
             if isinstance(score_val, docarray.score.NamedScore):
                 scores[score_name] = score_val.to_dict()
+        if doc.uri:
+            result = {'uri': doc.uri}
+        elif doc.blob:
+            result = {'blob': base64.b64encode(doc.blob).decode('utf-8')}
+        elif doc.text:
+            result = {'text': doc.text}
         match = SearchResponseModel(
             id=doc.id,
             scores=scores,
             tags=doc.tags,
-            fields={
-                'result_field': {doc.content_type: doc.content}
-                if doc.content
-                else {'uri': doc.uri}
-            },
+            fields={'result_field': result},
         )
         matches.append(match)
     return matches
