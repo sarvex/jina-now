@@ -449,7 +449,9 @@ def test_backend_custom_data(
         response.status_code == 200
     ), f"Received code {response.status_code} with text: {response.json()['message']}"
     response_json = response.json()
+    DocumentArray.from_json(response.json())
     assert len(response_json) == 2
     for doc in response_json:
-        assert doc['uri'].startswith('s3://')
-        assert doc['blob'] is None or doc['blob'] == '' or doc['blob'] == b''
+        field = list(doc['fields'].values())[0]
+        assert field['uri'].startswith('s3://'), f"received: {doc}"
+        assert 'blob' not in field.keys()
