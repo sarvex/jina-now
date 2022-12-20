@@ -27,6 +27,7 @@ FILTER_FIELDS_MODALITIES = {
     'width': 'dict',
 }
 
+
 class CmdPromptMock:
     def __init__(self, predefined_answers: Dict[str, str]):
         self._answers = predefined_answers
