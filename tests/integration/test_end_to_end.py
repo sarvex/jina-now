@@ -235,7 +235,7 @@ def run_end_to_end(
             host=host,
             search_modality='text',
         )
-        suggest_url = f'http://localhost:30090/api/v1/app/suggestion'
+        suggest_url = f'http://localhost:30090/api/v1/search-app/suggestion'
         assert_suggest(suggest_url, request_body)
     # Dump the flow details from response host to a tmp file if the deployment is remote
     if deployment_type == 'remote':
@@ -296,7 +296,7 @@ def assert_deployment_queries(
         host=host,
         search_modality=input_modality,
     )
-    search_url = f'{url}/app/search'
+    search_url = f'{url}/search-app/search'
     assert_search(search_url, request_body)
 
     if kwargs.secured:
@@ -368,7 +368,7 @@ def get_search_request_body(
 def assert_deployment_response(
     deployment_type, input_modality, output_modality, response
 ):
-    assert response['bff'] == f'http://localhost:30090/api/v1/app/docs'
+    assert response['bff'] == f'http://localhost:30090/api/v1/search-app/docs'
     assert response['playground'].startswith('http://localhost:30080/?')
     assert response['input_modality'] == input_modality
     assert response['output_modality'] == output_modality
@@ -441,7 +441,7 @@ def test_backend_custom_data(
             json.dump(flow_details, f)
 
     response = requests.post(
-        f'http://localhost:30090/api/v1/app/search',
+        f'http://localhost:30090/api/v1/search-app/search',
         json=request_body,
     )
 

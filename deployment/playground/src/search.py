@@ -73,7 +73,7 @@ def search(
         domain = f"http://now-bff"
     else:
         domain = f"https://nowrun.jina.ai"
-    URL_HOST = f"{domain}/api/v1/app/{endpoint}"
+    URL_HOST = f"{domain}/api/v1/search-app/{endpoint}"
 
     updated_dict = {}
     if filter_dict is not None:

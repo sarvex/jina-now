@@ -96,7 +96,7 @@ def build_app():
     )
 
     # search app router
-    search_app_mount = '/api/v1/app'
+    search_app_mount = '/api/v1/search-app'
     search_app_app = get_app_instance()
     search_app_app.include_router(search.router, tags=['Search App'])
 

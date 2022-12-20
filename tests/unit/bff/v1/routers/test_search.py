@@ -9,7 +9,7 @@ from starlette import status
 def test_text_index_fails_with_no_flow_running(client: requests.Session):
     with pytest.raises(ConnectionError):
         client.post(
-            f'/api/v1/app/index',
+            f'/api/v1/search-app/index',
             json={'data': [({'text_field_name': {'text': 'Hello'}}, {})]},
         )
 
@@ -19,7 +19,7 @@ def test_text_search_fails_with_no_flow_running(
 ):
     with pytest.raises(ConnectionError):
         client.post(
-            f'/api/v1/app/search',
+            f'/api/v1/search-app/search',
             json={'query': {'image_field_name': {'blob': base64_image_string}}},
         )
 
@@ -27,7 +27,7 @@ def test_text_search_fails_with_no_flow_running(
 def test_text_search_fails_with_incorrect_query(client):
     with pytest.raises(ValueError):
         client.post(
-            f'/api/v1/app/search',
+            f'/api/v1/search-app/search',
             json={
                 'data': [
                     (
@@ -45,7 +45,7 @@ def test_text_search_fails_with_incorrect_query(client):
 def test_text_search_fails_with_emtpy_query(client: requests.Session):
     with pytest.raises(ValueError):
         client.post(
-            f'/api/v1/app/search',
+            f'/api/v1/search-app/search',
             json={},
         )
 
@@ -54,7 +54,7 @@ def test_text_index(
     client_with_mocked_jina_client: Callable[[DocumentArray], requests.Session],
 ):
     response = client_with_mocked_jina_client(DocumentArray()).post(
-        '/api/v1/app/index',
+        '/api/v1/search-app/index',
         json={'data': [({'text_field_name': {'text': 'Hello'}}, {'tag': 'val'})]},
         # json={'data': [({'text_field_name': {'text': "Hello"}}, {})]},
     )
@@ -68,7 +68,7 @@ def test_text_search_calls_flow(
     base64_image_string: str,
 ):
     response = client_with_mocked_jina_client(sample_search_response_text).post(
-        '/api/v1/app/search',
+        '/api/v1/search-app/search',
         json={'query': {'image_field_name': {'blob': base64_image_string}}},
     )
 
@@ -85,7 +85,7 @@ def test_text_search_parse_response(
     base64_image_string: str,
 ):
     response_raw = client_with_mocked_jina_client(sample_search_response_text).post(
-        '/api/v1/app/search',
+        '/api/v1/search-app/search',
         json={'query': {'image_field_name': {'blob': base64_image_string}}},
     )
 
