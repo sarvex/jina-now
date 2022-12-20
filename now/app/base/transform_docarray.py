@@ -20,7 +20,7 @@ def _get_multi_modal_format(document: Document) -> Document:
     """
     Create a multimodal docarray structure from a unimodal `Document`.
     """
-    from now.app.text_to_video.app import TextToVideo
+    from now.app.search_app import SearchApp
 
     modality = _get_modality(document)
     if document.blob:
@@ -28,7 +28,7 @@ def _get_multi_modal_format(document: Document) -> Document:
     elif document.uri:
         file_type = os.path.splitext(document.uri)[-1].replace('.', '')
         new_doc = Document(chunks=[Document(uri=document.uri)])
-        if file_type in TextToVideo().supported_file_types:
+        if file_type in SearchApp().supported_file_types:
             modality = Modalities.VIDEO
         else:
             modality = Modalities.IMAGE

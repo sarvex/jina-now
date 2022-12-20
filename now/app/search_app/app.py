@@ -10,7 +10,7 @@ from now.demo_data import DemoDatasetNames
 from now.now_dataclasses import UserInput
 
 
-class ImageTextRetrieval(JinaNOWApp):
+class SearchApp(JinaNOWApp):
     def __init__(self):
         super().__init__()
 
@@ -58,7 +58,7 @@ class ImageTextRetrieval(JinaNOWApp):
     def setup(
         self, dataset: DocumentArray, user_input: UserInput, kubectl_path
     ) -> Dict:
-        indexer_config = get_indexer_config(len(dataset))
+        indexer_config = get_indexer_config()
         encoder_with = _get_clip_apps_with_dict(user_input)
         env_dict = common_setup(
             app_instance=self,

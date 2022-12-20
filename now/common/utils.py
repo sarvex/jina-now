@@ -47,6 +47,7 @@ def common_get_flow_env_dict(
     tags: List,
 ):
     """Returns dictionary for the environments variables for the clip flow.yml files."""
+    is_jina_email = get_email().split('@')[-1] == 'jina.ai'
     config = {
         'JINA_VERSION': jina_version,
         'ENCODER_NAME': f'{EXECUTOR_PREFIX}{encoder_uses}',
@@ -56,6 +57,7 @@ def common_get_flow_env_dict(
         'INDEXER_NAME': f'{EXECUTOR_PREFIX}{indexer_uses}',
         'PREFETCH': PREFETCH_NR,
         'PREPROCESSOR_NAME': f'{EXECUTOR_PREFIX}{name_to_id_map.get("NOWPreprocessor")}/{NOW_PREPROCESSOR_VERSION}',
+        'PREPROCESSOR_REPLICAS': 20 if is_jina_email else 1,
         'AUTOCOMPLETE_EXECUTOR_NAME': f'{EXECUTOR_PREFIX}{name_to_id_map.get("NOWAutoCompleteExecutor2")}/{NOW_AUTOCOMPLETE_VERSION}',
         'COLUMNS': tags,
         'ADMIN_EMAILS': user_input.admin_emails or [] if user_input.secured else [],
@@ -170,7 +172,6 @@ def get_email():
 
 
 def get_indexer_config(
-    num_indexed_samples: int,
     elastic: Optional[bool] = False,
     kubectl_path: str = None,
     deployment_type: str = None,
@@ -197,11 +198,8 @@ def get_indexer_config(
         config = {
             'indexer_uses': f'{name_to_id_map.get("NOWQdrantIndexer16")}/{NOW_QDRANT_INDEXER_VERSION}'
         }
-    threshold1 = 250_000
-    if num_indexed_samples <= threshold1:
-        config['indexer_resources'] = {'INDEXER_CPU': 0.1, 'INDEXER_MEM': '2G'}
-    else:
-        config['indexer_resources'] = {'INDEXER_CPU': 1.0, 'INDEXER_MEM': '4G'}
+
+    config['indexer_resources'] = {'INDEXER_CPU': 0.5, 'INDEXER_MEM': '4G'}
 
     return config
 
