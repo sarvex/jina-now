@@ -323,10 +323,9 @@ def create_docs_from_files_s3(
         kwargs = {}
         file = obj.key.split('/')[-1]
         file_full_path = '/'.join(path.split('/')[:3]) + '/' + obj.key
-        if file in fields:
-            kwargs[
-                files_to_dataclass_fields[files_to_dataclass_fields]
-            ] = file_full_path
+        file_extension = file.split('.')[-1]
+        if file_extension == fields[0].split('.')[-1]:
+            kwargs[files_to_dataclass_fields[fields[0]]] = file_full_path
             docs.append(Document(data_class(**kwargs)))
     return docs
 

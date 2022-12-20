@@ -7,10 +7,50 @@ from now.now_dataclasses import UserInput
 from now.run_backend import (
     create_annotations_and_class_attributes,
     create_dataclass,
+    create_dataclass_fields_file_mappings,
     create_s3_type,
 )
 
 S3Object, my_setter, my_getter = create_s3_type()
+
+
+@pytest.mark.parametrize(
+    "fields, fields_modalities, expected_files_to_dataclass_fields",
+    [
+        (
+            ['image.png', 'description.txt'],
+            {'image.png': Image, 'description.txt': Text},
+            {'image.png': 'image_0', 'description.txt': 'text_0'},
+        ),
+        (
+            ['image.png', 'description.txt', 'description', 'price'],
+            {
+                'image.png': Image,
+                'description.txt': Text,
+                'price': float,
+                'description': str,
+            },
+            {
+                'image.png': 'image_0',
+                'description.txt': 'text_0',
+                'price': 'filter_1',
+                'description': 'filter_0',
+            },
+        ),
+        (
+            ['price', 'description'],
+            {'price': float, 'description': str},
+            {'price': 'filter_0', 'description': 'filter_1'},
+        ),
+    ],
+)
+def test_create_dataclass_fields_file_mappings(
+    fields, fields_modalities, expected_files_to_dataclass_fields
+):
+    files_to_dataclass_fields = create_dataclass_fields_file_mappings(
+        fields, fields_modalities
+    )
+    assert files_to_dataclass_fields == expected_files_to_dataclass_fields
 
 
 @pytest.mark.parametrize(
