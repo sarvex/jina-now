@@ -1,1 +1,1 @@
-from app import SearchApp
+from .app import SearchApp
