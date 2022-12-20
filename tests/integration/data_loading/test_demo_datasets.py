@@ -8,9 +8,7 @@ import os
 import pytest
 import requests
 
-
-from now.constants import DEMO_DATASET_DOCARRAY_VERSION, MODALITIES_MAPPING, Modalities
-from now.data_loading.data_loading import get_dataset_url
+from now.constants import MODALITIES_MAPPING, Modalities
 from now.demo_data import AVAILABLE_DATASETS
 
 
