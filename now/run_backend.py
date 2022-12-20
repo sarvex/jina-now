@@ -223,7 +223,7 @@ def update_dict_with_no_overwrite(dict1: Dict, dict2: Dict):
 
 def create_dataclass(user_input: UserInput):
     """
-    Create a dataclass from the user input using the selected search anf filter fields
+    Create a dataclass from the user input using the selected search and filter fields
     and their corresponding modalities
 
     :param user_input: user input
@@ -268,13 +268,6 @@ def create_dataclass(user_input: UserInput):
 
     update_dict_with_no_overwrite(all_annotations, filter_fields_annotations)
     update_dict_with_no_overwrite(all_class_attributes, filter_fields_class_attributes)
-
-    if user_input.dataset_type == DatasetTypes.S3_BUCKET:
-        S3Object, my_setter, my_getter = create_s3_type()
-        all_annotations['json_s3'] = S3Object
-        all_class_attributes['json_s3'] = field(
-            setter=my_setter, getter=my_getter, default=''
-        )
 
     mm_doc = type("MMDoc", (object,), all_class_attributes)
     setattr(mm_doc, '__annotations__', all_annotations)

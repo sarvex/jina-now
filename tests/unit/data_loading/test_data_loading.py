@@ -109,9 +109,7 @@ def test_from_files_local(resources_folder_path):
     user_input.dataset_type = DatasetTypes.PATH
     user_input.search_fields = ['a.jpg', 'test.txt']
     user_input.search_fields_modalities = {'a.jpg': Image, 'test.txt': Text}
-    user_input.dataset_path = os.path.join(
-        resources_folder_path, 'subdirectories_structure_folder'
-    )
+    user_input.dataset_path = os.path.join(resources_folder_path, 'subdirectories')
     file_fields_file_mappings = create_dataclass_fields_file_mappings(
         user_input.search_fields, user_input.search_fields_modalities
     )

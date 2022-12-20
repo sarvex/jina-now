@@ -271,11 +271,10 @@ def create_docs_from_subdirectories_s3(
     :return: The list of documents
     """
     docs = []
-    kwargs = {}
     for subdirectory in subdirectories:
+        kwargs = {}
         for obj in list(bucket.objects.filter(Prefix=subdirectory))[1:]:
-            file = obj.key.split('/')[-1]
-            file_full_path = '/'.join(path.split('/')[:3]) + '/' + obj.key
+            file, file_full_path = _extract_file_and_full_file_path_s3(obj, path)
             if file in fields:
                 kwargs[files_to_dataclass_fields[file]] = file_full_path
                 continue
@@ -283,6 +282,15 @@ def create_docs_from_subdirectories_s3(
                 kwargs['json_s3'] = file_full_path
         docs.append(Document(data_class(**kwargs)))
     return docs
+
+
+def _extract_file_and_full_file_path_s3(obj, path):
+    """
+    Extracts the file name and the full file path from an s3 object.
+    """
+    file = obj.key.split('/')[-1]
+    file_full_path = '/'.join(path.split('/')[:3]) + '/' + obj.key
+    return file, file_full_path
 
 
 def create_docs_from_files_s3(
@@ -308,8 +316,7 @@ def create_docs_from_files_s3(
     docs = []
     for obj in list(bucket.objects.filter(Prefix=folder))[1:]:
         kwargs = {}
-        file = obj.key.split('/')[-1]
-        file_full_path = '/'.join(path.split('/')[:3]) + '/' + obj.key
+        file, file_full_path = _extract_file_and_full_file_path_s3(obj, path)
         file_extension = file.split('.')[-1]
         if file_extension == fields[0].split('.')[-1]:
             kwargs[files_to_dataclass_fields[fields[0]]] = file_full_path
