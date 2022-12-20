@@ -143,6 +143,6 @@ class DialogOptions:
     )
     argparse_kwargs: Dict[str, Any] = dataclasses.field(default_factory=dict)
     description: str = None  # Description to show on terminal when used as a cli param
-    depends_on: Optional['DialogOptions'] = None
+    depends_on: Optional['DialogOptions', StrictBool] = None
     conditional_check: Callable[[Any], bool] = None
     post_func: Callable[[Any], None] = None

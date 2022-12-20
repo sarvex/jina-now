@@ -99,8 +99,9 @@ def test_da_custom_ds(da: DocumentArray):
 
     loaded_da = load_data(user_input)
 
+    assert len(loaded_da) > 0
     for doc in loaded_da:
-        assert doc.content
+        assert doc.chunks
 
 
 def test_from_files_local(resources_folder_path):

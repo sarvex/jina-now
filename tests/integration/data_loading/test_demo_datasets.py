@@ -1,10 +1,13 @@
 """
 This suite tests that the demo datasets are available
-behind their URLs.
+in hubble
 """
+
+import os
+
 import pytest
 import requests
-from starlette import status
+
 
 from now.constants import DEMO_DATASET_DOCARRAY_VERSION, MODALITIES_MAPPING, Modalities
 from now.data_loading.data_loading import get_dataset_url
@@ -23,42 +26,12 @@ def test_dataset_is_available(
     ds_name: str,
     modality: Modalities,
 ):
-    url = get_dataset_url(ds_name)
-
-    assert requests.head(url).status_code == status.HTTP_200_OK
-
-
-@pytest.mark.parametrize(
-    'ds_url',
-    [
-        "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/jpeg/nft-monkey.img10-{}.bin",
-        "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/jpeg/deepfashion.img10-{}.bin",
-        "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/jpeg/nih-chest-xrays.img10-{}.bin",
-        "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/jpeg/stanford-cars.img10-{}.bin",
-        "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/jpeg/bird-species.img10-{}.bin",
-        "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/jpeg/best-artworks.img10-{}.bin",
-        "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/jpeg/geolocation-geoguessr.img10-{}.bin",
-        "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/text/rock-lyrics.txt10-{}.bin",
-        "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/text/pop-lyrics.txt10-{}.bin",
-        "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/text/rap-lyrics.txt10-{}.bin",
-        "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/text/indie-lyrics.txt10-{}.bin",
-        "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/text/metal-lyrics.txt10-{}.bin",
-        "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/jpeg/deepfashion.txt10-{}.bin",
-        "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/jpeg/nih-chest-xrays.txt10-{}.bin",
-        "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/jpeg/stanford-cars.txt10-{}.bin",
-        "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/jpeg/bird-species.txt10-{}.bin",
-        "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/jpeg/best-artworks.txt10-{}.bin",
-        "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/jpeg/geolocation-geoguessr.txt10-{}.bin",
-        "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/video/tumblr-gifs-{}.bin",
-        "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/video/tumblr-gifs.img10-{}.bin",
-        "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/video/tumblr-gifs.txt10-{}.bin",
-        "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/video/tumblr-gifs-10k-{}.bin",
-        "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/video/tumblr-gifs-10k.img10-{}.bin",
-        "https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/video/tumblr-gifs-10k.txt10-{}.bin",
-    ],
-)
-def test_sample_data_is_available(ds_url: str):
-    assert (
-        requests.head(url=ds_url.format(DEMO_DATASET_DOCARRAY_VERSION)).status_code
-        == status.HTTP_200_OK
+    token = os.environ['WOLF_TOKEN']
+    cookies = {'st': token}
+    json_data = {'name': ds_name}
+    response = requests.post(
+        'https://api.hubble.jina.ai/v2/rpc/docarray.getFirstDocuments',
+        cookies=cookies,
+        json=json_data,
     )
+    assert response.json()['code'] == 200

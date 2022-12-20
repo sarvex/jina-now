@@ -15,11 +15,19 @@ from now.constants import (
     DatasetTypes,
     Modalities,
 )
+import os
+import uuid
+from collections import defaultdict
+from copy import deepcopy
+
+from docarray import Document, DocumentArray
+
+from now.app.base.app import JinaNOWApp
+from now.constants import DatasetTypes
 from now.data_loading.elasticsearch import ElasticsearchExtractor
-from now.demo_data import AVAILABLE_DATASETS
 from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
-from now.utils import download, sigmap
+from now.utils import sigmap
 
 
 def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
@@ -43,8 +51,7 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
         da = _extract_es_data(user_input)
     elif user_input.dataset_type == DatasetTypes.DEMO:
         print('⬇  Download DocumentArray dataset')
-        url = get_dataset_url(user_input.dataset_name)
-        da = fetch_da_from_url(url)
+        da = DocumentArray.pull(name=user_input.dataset_name, show_progress=True)
     if da is None:
         raise ValueError(
             f'Could not load DocumentArray dataset. Please check your configuration: {user_input}.'
@@ -58,10 +65,9 @@ def _pull_docarray(dataset_name: str):
     try:
         return DocumentArray.pull(name=dataset_name, show_progress=True)
     except Exception:
-        print(
+        raise ValueError(
             '💔 oh no, the secret of your docarray is wrong, or it was deleted after 14 days'
         )
-        exit(1)
 
 
 def _extract_es_data(user_input: UserInput) -> DocumentArray:
