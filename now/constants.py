@@ -43,7 +43,7 @@ class ModelDimensions(BetterEnum):
 
 SUPPORTED_FILE_TYPES = {
     Modalities.TEXT: ['txt', 'md'],
-    Modalities.IMAGE: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'tif'],
+    Modalities.IMAGE: ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'tif'],
     Modalities.VIDEO: ['gif'],
 }
 AVAILABLE_MODALITIES_FOR_SEARCH = [Modalities.TEXT, Modalities.IMAGE, Modalities.VIDEO]
