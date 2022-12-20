@@ -95,7 +95,7 @@ def test_add_key():
         print('# test api keys')
         print('# search with invalid api key')
         request_body = get_request_body()
-        request_body['text'] = 'girl on motorbike'
+        request_body['query'] = {'text_field': {'text': 'girl on motorbike'}}
         del request_body['jwt']
         request_body['api_key'] = API_KEY
         request_body['limit'] = 9
