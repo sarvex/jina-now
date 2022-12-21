@@ -167,7 +167,7 @@ def create_docs_from_subdirectories(
                 data = json.load(json_f)
                 for el, value in data.items():
                     kwargs[files_to_dataclass_fields[el]] = value
-        docs.append(Document(data_class(kwargs)))
+        docs.append(Document(data_class(**kwargs)))
     return docs
 
 
@@ -192,7 +192,7 @@ def create_docs_from_files(
             file_extension == fields[0].split('.')[-1]
         ):  # fields should have only one search field in case of files only
             kwargs[files_to_dataclass_fields[fields[0]]] = os.path.join(path, file)
-            docs.append(Document(data_class(kwargs)))
+            docs.append(Document(data_class(**kwargs)))
     return docs
 
 
