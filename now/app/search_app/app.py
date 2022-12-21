@@ -12,9 +12,22 @@ from deployment.bff.app.v1.models.video import (
     NowVideoResponseModel,
 )
 from now.app.base.app import JinaNOWApp
-from now.common.utils import _get_clip_apps_with_dict, common_setup, get_indexer_config
-from now.constants import CLIP_USES, Apps, Modalities
+from now.common.utils import (
+    _extract_tags_for_indexer,
+    _get_clip_apps_with_dict,
+    common_setup,
+    get_indexer_config,
+)
+from now.constants import (
+    CLIP_USES,
+    EXECUTOR_PREFIX,
+    NOW_AUTOCOMPLETE_VERSION,
+    NOW_PREPROCESSOR_VERSION,
+    Apps,
+    Modalities,
+)
 from now.demo_data import DemoDatasetNames
+from now.executor.name_to_id_map import name_to_id_map
 from now.now_dataclasses import UserInput
 
 
@@ -222,28 +235,39 @@ class SearchApp(JinaNOWApp):
         _search_modality = user_input.search_fields_modalities[
             user_input.search_fields[0]
         ]
+        # Get the encoder configuration
+        encoder_with = _get_clip_apps_with_dict(user_input)
+        # Get indexer configuration
         if _search_modality == 'video':
             indexer_config = get_indexer_config(
                 len(dataset) * self.samples_frames_video
             )
         else:
             indexer_config = get_indexer_config(len(dataset))
-        encoder_with = _get_clip_apps_with_dict(user_input)
+        # Get the filter fields to be passed to the indexer
+        tags = _extract_tags_for_indexer(user_input)
+        # All the environment variables to be passed to the flow
+        executor_args = {
+            **indexer_config,
+            **encoder_with,
+            'INDEXER_NAME': f'{EXECUTOR_PREFIX}{indexer_config["indexer_uses"]}',
+            'PRETRAINED_MODEL_NAME_OR_PATH': CLIP_USES[user_input.deployment_type][1],
+            'PRE_TRAINED_EMBEDDINGS_SIZE': CLIP_USES[user_input.deployment_type][2],
+            'CAST_CONVERT_NAME': f'{EXECUTOR_PREFIX}CastNMoveNowExecutor/v0.0.3',
+            'ENCODER_NAME': f'{EXECUTOR_PREFIX}{CLIP_USES[user_input.deployment_type][0]}',
+            'N_DIM': CLIP_USES[user_input.deployment_type][2],
+            'PREPROCESSOR_NAME': f'{EXECUTOR_PREFIX}{name_to_id_map.get("NOWPreprocessor")}/{NOW_PREPROCESSOR_VERSION}',
+            'AUTOCOMPLETE_EXECUTOR_NAME': f'{EXECUTOR_PREFIX}{name_to_id_map.get("NOWAutoCompleteExecutor2")}/{NOW_AUTOCOMPLETE_VERSION}',
+            'COLUMNS': tags,
+        }
+        # Call the common setup to get the flow yaml content
         env_dict = common_setup(
             app_instance=self,
             user_input=user_input,
             dataset=dataset,
-            encoder_uses=CLIP_USES[user_input.deployment_type][0],
-            encoder_with=encoder_with,
-            encoder_uses_with={
-                'pretrained_model_name_or_path': CLIP_USES[user_input.deployment_type][
-                    1
-                ]
-            },
-            pre_trained_embedding_size=CLIP_USES[user_input.deployment_type][2],
-            indexer_uses=indexer_config['indexer_uses'],
             kubectl_path=kubectl_path,
-            indexer_resources=indexer_config['indexer_resources'],
+            executor_args=executor_args,
+            tags=tags,
         )
         super().setup(dataset=dataset, user_input=user_input, kubectl_path=kubectl_path)
         return env_dict

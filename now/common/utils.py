@@ -14,9 +14,7 @@ from now.app.base.app import JinaNOWApp
 from now.constants import (
     EXECUTOR_PREFIX,
     EXTERNAL_CLIP_HOST,
-    NOW_AUTOCOMPLETE_VERSION,
     NOW_ELASTIC_INDEXER_VERSION,
-    NOW_PREPROCESSOR_VERSION,
     NOW_QDRANT_INDEXER_VERSION,
     PREFETCH_NR,
     TAG_INDEXER_DOC_HAS_TEXT,
@@ -36,45 +34,30 @@ MAX_RETRIES = 20
 
 
 def common_get_flow_env_dict(
-    finetune_settings: FinetuneSettings,
-    encoder_uses: str,
-    encoder_with: Dict,
-    encoder_uses_with: Dict,
-    pre_trained_embedding_size: int,
-    indexer_uses: str,
-    indexer_resources: Dict,
     user_input: UserInput,
     tags: List,
+    executor_args: Optional[Dict],
+    finetune_settings: FinetuneSettings = None,
 ):
     """Returns dictionary for the environments variables for the clip flow.yml files."""
     config = {
         'JINA_VERSION': jina_version,
-        'ENCODER_NAME': f'{EXECUTOR_PREFIX}{encoder_uses}',
-        'CAST_CONVERT_NAME': f'{EXECUTOR_PREFIX}CastNMoveNowExecutor/v0.0.3',
-        'N_DIM': pre_trained_embedding_size,
-        'PRE_TRAINED_EMBEDDINGS_SIZE': pre_trained_embedding_size,
-        'INDEXER_NAME': f'{EXECUTOR_PREFIX}{indexer_uses}',
         'PREFETCH': PREFETCH_NR,
-        'PREPROCESSOR_NAME': f'{EXECUTOR_PREFIX}{name_to_id_map.get("NOWPreprocessor")}/{NOW_PREPROCESSOR_VERSION}',
-        'AUTOCOMPLETE_EXECUTOR_NAME': f'{EXECUTOR_PREFIX}{name_to_id_map.get("NOWAutoCompleteExecutor2")}/{NOW_AUTOCOMPLETE_VERSION}',
         'COLUMNS': tags,
         'ADMIN_EMAILS': user_input.admin_emails or [] if user_input.secured else [],
         'USER_EMAILS': user_input.user_emails or [] if user_input.secured else [],
         'API_KEY': [user_input.api_key]
         if user_input.secured and user_input.api_key
         else [],
-        **encoder_with,
-        **indexer_resources,
+        **executor_args,
     }
 
-    if encoder_uses_with.get('pretrained_model_name_or_path'):
-        config['PRE_TRAINED_MODEL_NAME'] = encoder_uses_with[
-            "pretrained_model_name_or_path"
-        ]
-    if finetune_settings.perform_finetuning:
+    # Maybe this needs to be changed to a more general solution - later
+    if finetune_settings and finetune_settings.perform_finetuning:
         config['FINETUNE_ARTIFACT'] = finetune_settings.finetuned_model_artifact
         config['JINA_TOKEN'] = finetune_settings.token
 
+    # DNS configuration for the demo datasets deployment
     config['CUSTOM_DNS'] = ''
     if 'NOW_EXAMPLES' in os.environ:
         valid_app = DEFAULT_EXAMPLE_HOSTED.get(user_input.app_instance.app_name, {})
@@ -92,18 +75,13 @@ def common_setup(
     app_instance: JinaNOWApp,
     user_input: UserInput,
     dataset: DocumentArray,
-    encoder_uses: str,
-    encoder_uses_with: Dict,
-    indexer_uses: str,
-    pre_trained_embedding_size: int,
     kubectl_path: str,
-    encoder_with: Optional[Dict] = {},
-    indexer_resources: Optional[Dict] = {},
-    executor_resources: Optional[Dict] = {},
+    tags: List,
+    executor_args: Optional[Dict],
 ) -> Dict:
     # should receive pre embedding size
     finetune_settings = parse_finetune_settings(
-        pre_trained_embedding_size=pre_trained_embedding_size,
+        pre_trained_embedding_size=executor_args['pre_trained_embedding_size'],
         user_input=user_input,
         dataset=dataset,
         finetune_datasets=app_instance.finetune_datasets,
@@ -111,17 +89,11 @@ def common_setup(
         add_embeddings=True,
         loss='TripletMarginLoss',
     )
-    tags = _extract_tags_for_indexer(user_input)
     env_dict = common_get_flow_env_dict(
         finetune_settings=finetune_settings,
-        encoder_uses=encoder_uses,
-        encoder_with=encoder_with,
-        encoder_uses_with=encoder_uses_with,
-        pre_trained_embedding_size=pre_trained_embedding_size,
-        indexer_uses=indexer_uses,
-        indexer_resources=indexer_resources,
         user_input=user_input,
         tags=tags,
+        executor_args=executor_args,
     )
 
     if finetune_settings.perform_finetuning:
@@ -187,7 +159,7 @@ def get_indexer_config(
 
     if elastic and deployment_type == 'local':
         config = {
-            'indexer_uses': f'{name_to_id_map.get("NOWElasticIndexer")}/{NOW_ELASTIC_INDEXER_VERSION}',
+            'indexer_uses': f'{EXECUTOR_PREFIX}{name_to_id_map.get("NOWElasticIndexer")}/{NOW_ELASTIC_INDEXER_VERSION}',
             'hosts': setup_elastic_service(kubectl_path),
         }
     elif elastic and deployment_type == 'remote':
@@ -196,7 +168,7 @@ def get_indexer_config(
         )
     else:
         config = {
-            'indexer_uses': f'{name_to_id_map.get("NOWQdrantIndexer16")}/{NOW_QDRANT_INDEXER_VERSION}'
+            'indexer_uses': f'{EXECUTOR_PREFIX}{name_to_id_map.get("NOWQdrantIndexer16")}/{NOW_QDRANT_INDEXER_VERSION}'
         }
     threshold1 = 250_000
     if num_indexed_samples <= threshold1:
