@@ -243,13 +243,6 @@ def create_dataclass(user_input: UserInput):
         user_input.dataset_type,
     )
 
-    if user_input.dataset_type == DatasetTypes.S3_BUCKET:
-        S3Object, my_setter, my_getter = create_s3_type()
-        all_annotations['json_s3'] = S3Object
-        all_class_attributes['json_s3'] = field(
-            setter=my_setter, getter=my_getter, default=''
-        )
-
     mm_doc = type("MMDoc", (object,), all_class_attributes)
     setattr(mm_doc, '__annotations__', all_annotations)
     mm_doc = dataclass(mm_doc)

@@ -279,7 +279,9 @@ def create_docs_from_subdirectories_s3(
                 kwargs[files_to_dataclass_fields[file]] = file_full_path
                 continue
             if file.endswith('.json'):
-                kwargs['json_s3'] = file_full_path
+                for field in data_class.__annotations__.keys():
+                    if field not in kwargs.keys():
+                        kwargs[field] = file_full_path
         docs.append(Document(data_class(**kwargs)))
     return docs
 
