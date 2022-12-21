@@ -8,7 +8,7 @@ from now.app.base.transform_docarray import transform_docarray
 from now.app.search_app import SearchApp
 
 
-def test_text_to_video_preprocessing_query():
+def test_search_app_preprocessing_query():
     """Test if the text to video preprocessing works for queries"""
     app = SearchApp()
     da = DocumentArray([Document(text='test')])
@@ -20,7 +20,7 @@ def test_text_to_video_preprocessing_query():
     assert da[0].chunks[0].chunks[0].text == 'test'
 
 
-def test_text_to_video_preprocessing_indexing(resources_folder_path):
+def test_search_app_preprocessing_indexing(resources_folder_path):
     """Test if the text to video preprocessing works for indexing"""
     app = SearchApp()
     da = DocumentArray(

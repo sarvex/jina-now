@@ -16,7 +16,7 @@ class SearchApp(JinaNOWApp):
 
     @property
     def app_name(self) -> str:
-        return Apps.IMAGE_TEXT_RETRIEVAL
+        return Apps.SEARCH_APP
 
     @property
     def is_enabled(self) -> bool:

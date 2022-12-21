@@ -80,7 +80,7 @@ def test_token_exists():
     'app, input_modality, output_modality, search_field, filter_field, dataset, deployment_type',
     [
         (
-            Apps.IMAGE_TEXT_RETRIEVAL,
+            Apps.SEARCH_APP,
             Modalities.TEXT,
             Modalities.IMAGE,
             'image',
@@ -120,7 +120,7 @@ def test_end_to_end_remote(
     'app, input_modality,  output_modality, search_field, filter_field, dataset, deployment_type',
     [
         (
-            Apps.IMAGE_TEXT_RETRIEVAL,
+            Apps.SEARCH_APP,
             Modalities.IMAGE,
             Modalities.IMAGE,
             'image',
@@ -129,7 +129,7 @@ def test_end_to_end_remote(
             'local',
         ),
         (
-            Apps.IMAGE_TEXT_RETRIEVAL,
+            Apps.SEARCH_APP,
             Modalities.TEXT,
             Modalities.TEXT,
             'lyrics',
@@ -138,7 +138,7 @@ def test_end_to_end_remote(
             'local',
         ),
         (
-            Apps.TEXT_TO_VIDEO,
+            Apps.SEARCH_APP,
             Modalities.TEXT,
             Modalities.VIDEO,
             'video',
@@ -209,7 +209,7 @@ def run_end_to_end(
         cmd(f'{kubectl_path} create namespace nowapi')
     kwargs = Namespace(**kwargs)
     response = cli(args=kwargs)
-    if app == Apps.IMAGE_TEXT_RETRIEVAL:
+    if app == Apps.SEARCH_APP:
         input_modality = 'text-or-image'
         output_modality = 'text-or-image'
     assert_deployment_response(
@@ -349,19 +349,7 @@ def get_search_request_body(
     )
     request_body['limit'] = 9
     # Perform end-to-end check via bff
-    if app == Apps.IMAGE_TEXT_RETRIEVAL:
-        request_body['image'] = test_search_image
-    elif app in [
-        Apps.IMAGE_TEXT_RETRIEVAL,
-        Apps.TEXT_TO_VIDEO,
-    ]:
-        if dataset == DemoDatasetNames.BEST_ARTWORKS:
-            search_text = 'impressionism'
-        elif dataset == DemoDatasetNames.NFT_MONKEY:
-            search_text = 'laser eyes'
-        else:
-            search_text = 'test'
-        request_body['text'] = search_text
+    request_body['image'] = test_search_image
     return request_body
 
 
@@ -385,7 +373,7 @@ def assert_deployment_response(
 
 @pytest.mark.parametrize('deployment_type', ['remote'])
 @pytest.mark.parametrize('dataset', ['custom_s3_bucket'])
-@pytest.mark.parametrize('app', [Apps.IMAGE_TEXT_RETRIEVAL])
+@pytest.mark.parametrize('app', [Apps.SEARCH_APP])
 @pytest.mark.parametrize('input_modality', [Modalities.IMAGE])
 @pytest.mark.parametrize('output_modality', [Modalities.IMAGE])
 def test_backend_custom_data(
@@ -423,9 +411,8 @@ def test_backend_custom_data(
     kwargs = Namespace(**kwargs)
     response = cli(args=kwargs)
 
-    if app == Apps.IMAGE_TEXT_RETRIEVAL:
-        input_modality = 'text-or-image'
-        output_modality = 'text-or-image'
+    input_modality = 'text-or-image'
+    output_modality = 'text-or-image'
 
     assert_deployment_response(
         app, deployment_type, input_modality, output_modality, response

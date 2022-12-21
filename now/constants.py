@@ -18,8 +18,7 @@ class Modalities(BetterEnum):
 
 
 class Apps(BetterEnum):
-    IMAGE_TEXT_RETRIEVAL = 'image_text_retrieval'
-    TEXT_TO_VIDEO = 'text_to_video'
+    SEARCH_APP = 'search_app'
 
 
 class DatasetTypes(BetterEnum):
