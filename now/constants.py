@@ -6,8 +6,8 @@ from now.utils import BetterEnum
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.136-demo-data-migration-23'
 # ----------------------------------
 NOW_PREPROCESSOR_VERSION = '0.0.114-elastic-multimodal-15x'
-NOW_QDRANT_INDEXER_VERSION = '0.0.13-fix-data-schema-2'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.12-fix-data-schema-2'
+NOW_QDRANT_INDEXER_VERSION = '0.0.13-fix-data-schema-3'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.12-fix-data-schema-3'
 NOW_AUTOCOMPLETE_VERSION = '0.0.6-elastic-multimodal-15x'
 
 

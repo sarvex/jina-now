@@ -70,18 +70,16 @@ def _extract_field_candidates_docarray(response):
     """
     search_modalities = {}
     filter_modalities = {}
-    da = requests.get(response.json()['data']['download']).json()[
-        0
-    ]  # get the first document
+    doc = requests.get(response.json()['data']['download']).json()[0]
     if (
-        not da.get('_metadata', None)
-        or 'multi_modal_schema' not in da['_metadata']['fields']
+        not doc.get('_metadata', None)
+        or 'multi_modal_schema' not in doc['_metadata']['fields']
     ):
         raise RuntimeError(
             'Multi-modal schema is not provided. Please prepare your data following this guide - '
             'https://docarray.jina.ai/datatypes/multimodal/'
         )
-    mm_schema = da['_metadata']['fields']['multi_modal_schema']
+    mm_schema = doc['_metadata']['fields']['multi_modal_schema']
     mm_fields = mm_schema['structValue']['fields']
     for field_name, value in mm_fields.items():
         if 'position' not in value['structValue']['fields']:
@@ -90,12 +88,12 @@ def _extract_field_candidates_docarray(response):
                 f'documentation to add modalities to your documents https://docarray.jina.ai/datatypes/multimodal/'
             )
         field_pos = value['structValue']['fields']['position']['numberValue']
-        if not da['chunks'][field_pos]['modality']:
+        if not doc['chunks'][field_pos]['modality']:
             raise ValueError(
                 f'No modality found for {field_name}. Please follow the steps in the documentation'
                 f' to add modalities to your documents https://docarray.jina.ai/datatypes/multimodal/'
             )
-        modality = da['chunks'][field_pos]['modality'].lower()
+        modality = doc['chunks'][field_pos]['modality'].lower()
         if modality not in AVAILABLE_MODALITIES_FOR_SEARCH:
             raise ValueError(
                 f'The modality {modality} is not supported for search. Please use '
@@ -108,8 +106,8 @@ def _extract_field_candidates_docarray(response):
         if modality in AVAILABLE_MODALITIES_FOR_SEARCH:
             search_modalities[field_name] = modality
 
-    if da.get('tags', None):
-        for el, value in da['tags']['fields'].items():
+    if doc.get('tags', None):
+        for el, value in doc['tags']['fields'].items():
             for val_type, val in value.items():
                 filter_modalities[el] = val_type
 
