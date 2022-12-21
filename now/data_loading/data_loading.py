@@ -280,7 +280,7 @@ def create_docs_from_subdirectories_s3(
                 continue
             if file.endswith('.json'):
                 kwargs['json_s3'] = file_full_path
-        docs.append(Document(data_class(kwargs)))
+        docs.append(Document(data_class(**kwargs)))
     return docs
 
 
@@ -320,7 +320,7 @@ def create_docs_from_files_s3(
         file_extension = file.split('.')[-1]
         if file_extension == fields[0].split('.')[-1]:
             kwargs[files_to_dataclass_fields[fields[0]]] = file_full_path
-            docs.append(Document(data_class(kwargs)))
+            docs.append(Document(data_class(**kwargs)))
     return docs
 
 

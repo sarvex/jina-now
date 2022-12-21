@@ -7,7 +7,6 @@ from docarray import Document, DocumentArray
 from docarray.typing import Image, Text
 from pytest_mock import MockerFixture
 
-from now.app.image_text_retrieval.app import ImageTextRetrieval
 from now.app.text_to_video.app import TextToVideo
 from now.constants import DatasetTypes
 from now.data_loading.data_loading import (
@@ -140,6 +139,7 @@ def test_from_subfolders_s3(get_aws_info):
         user_input.aws_secret_access_key,
         user_input.aws_region_name,
     ) = get_aws_info
+    user_input.dataset_type = DatasetTypes.S3_BUCKET
     user_input.search_fields = ['image.png', 'test.txt']
     user_input.search_fields_modalities = {'image.png': Image, 'test.txt': Text}
     user_input.filter_fields = ['tags', 'id', 'title']
