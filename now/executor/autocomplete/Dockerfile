@@ -1,4 +1,4 @@
-FROM ubuntu:23.04
+FROM arm64v8/ubuntu:23.04
 
 RUN apt-get update && apt-get install -y python3 python3-pip git
 RUN apt-get update && apt-get install --no-install-recommends -y git && rm -rf /var/lib/apt/lists/*
