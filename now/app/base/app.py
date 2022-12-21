@@ -1,6 +1,6 @@
 import abc
 import os
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import docker
 from docarray import DocumentArray
@@ -9,8 +9,11 @@ from jina.jaml import JAML
 from jina.serve.runtimes.gateway.http.models import JinaRequestModel, JinaResponseModel
 
 from now.app.base.preprocess import preprocess_image, preprocess_text, preprocess_video
+from now.common.utils import get_common_env_dict
 from now.constants import DEFAULT_FLOW_NAME, SUPPORTED_FILE_TYPES, Modalities
 from now.demo_data import AVAILABLE_DATASETS, DEFAULT_EXAMPLE_HOSTED, DemoDataset
+from now.finetuning.run_finetuning import finetune
+from now.finetuning.settings import parse_finetune_settings
 from now.now_dataclasses import DialogOptions, UserInput
 
 
@@ -179,7 +182,9 @@ class JinaNOWApp:
             mem_check = self._check_docker_mem_limit()
         return req_check and mem_check
 
-    def get_executor_stubs(self, user_input, flow_yaml_content) -> Dict:
+    def get_executor_stubs(
+        self, dataset, is_finetuned, user_input, flow_yaml_content, **kwargs
+    ) -> Union[Dict, Dict]:
         """
         Returns the stubs for the executors in the flow.
         """
@@ -187,9 +192,7 @@ class JinaNOWApp:
 
     # TODO Remove kubectl_path. At the moment, the setup function needs kubectl because of finetuning a custom
     #  dataset with local deployment. In that case, inference is done on the k8s cluster.
-    def setup(
-        self, dataset: DocumentArray, user_input: UserInput, kubectl_path: str
-    ) -> Dict:
+    def setup(self, dataset: DocumentArray, user_input: UserInput, **kwargs) -> Dict:
         """
         Runs before the flow is deployed.
         Common use cases:
@@ -201,6 +204,13 @@ class JinaNOWApp:
         :param user_input: user configuration based on the given options
         :return: dict used to replace variables in flow yaml and to clean up resources after the flow is terminated
         """
+        # Perform the finetune setup
+        finetune_env_dict, is_finetuned = self.finetune_setup(
+            user_input=user_input,
+            dataset=dataset,
+            kubectl_path=kwargs['kubectl_path'],
+            pre_trained_embed_size=512,
+        )
         # Read the flow and add generic configuration such as labels in the flow
         # Keep this function as simple as possible. It should only be used to add generic configuration needed
         # for all apps. App specific configuration should be added in the app specific setup function.
@@ -213,11 +223,66 @@ class JinaNOWApp:
                 and user_input.flow_name != DEFAULT_FLOW_NAME
                 else DEFAULT_FLOW_NAME
             )
-            self.add_environment_variables(flow_yaml_content)
+            # Call the executor stubs function to get the executors for the flow and their env dict
+            flow_yaml_content, exec_env_dict = self.get_executor_stubs(
+                dataset, is_finetuned, user_input, flow_yaml_content, **kwargs
+            )
+            self.flow_yaml = self.add_telemetry_env(flow_yaml_content)
 
-            # Call the executor stubs function to add executors to the flow and return the whole flow content
-            self.flow_yaml = self.get_executor_stubs(user_input, flow_yaml_content)
-        return {}
+        common_env_dict = get_common_env_dict(user_input)
+
+        return {**finetune_env_dict, **exec_env_dict, **common_env_dict}
+
+    def finetune_setup(
+        self,
+        user_input: UserInput,
+        dataset: DocumentArray,
+        kubectl_path: str,
+        pre_trained_embed_size: int,
+    ) -> Tuple[Dict, bool]:
+        is_finetuned = False
+        env_dict = {}
+        # should receive pre embedding size
+        finetune_settings = parse_finetune_settings(
+            pre_trained_embedding_size=pre_trained_embed_size,
+            user_input=user_input,
+            dataset=dataset,
+            finetune_datasets=self.finetune_datasets,
+            model_name='mlp',
+            add_embeddings=True,
+            loss='TripletMarginLoss',
+        )
+
+        if finetune_settings.perform_finetuning:
+            try:
+                artifact_id, token = finetune(
+                    finetune_settings=finetune_settings,
+                    app_instance=self,
+                    dataset=dataset,
+                    user_input=user_input,
+                    env_dict=env_dict,
+                    kubectl_path=kubectl_path,
+                )
+
+                finetune_settings.finetuned_model_artifact = artifact_id
+                finetune_settings.token = token
+
+                env_dict[
+                    'FINETUNE_ARTIFACT'
+                ] = finetune_settings.finetuned_model_artifact
+                env_dict['JINA_TOKEN'] = finetune_settings.token
+                is_finetuned = True
+            except Exception:  # noqa
+                print(
+                    'Finetuning is currently offline. The program execution still continues without'
+                    ' finetuning. Please report the following exception to us:'
+                )
+                import traceback
+
+                traceback.print_exc()
+                finetune_settings.perform_finetuning = False
+
+        return env_dict, is_finetuned
 
     def preprocess(
         self,
@@ -296,7 +361,8 @@ class JinaNOWApp:
         """Max number of documents in one request"""
         return 32
 
-    def add_environment_variables(self, flow_yaml_content):
+    @staticmethod
+    def add_telemetry_env(flow_yaml_content):
         if 'JINA_OPTOUT_TELEMETRY' in os.environ:
             flow_yaml_content['with']['env']['JINA_OPTOUT_TELEMETRY'] = os.environ[
                 'JINA_OPTOUT_TELEMETRY'
@@ -305,3 +371,4 @@ class JinaNOWApp:
                 executor['env']['JINA_OPTOUT_TELEMETRY'] = os.environ[
                     'JINA_OPTOUT_TELEMETRY'
                 ]
+        return flow_yaml_content

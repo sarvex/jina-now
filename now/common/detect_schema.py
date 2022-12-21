@@ -140,8 +140,8 @@ def set_field_names_from_docarray(user_input: UserInput, **kwargs):
     )
     if response.json()['code'] == 200:
         (
-            user_input.search_fields_modalities,
-            user_input.filter_fields_modalities,
+            user_input.candidate_search_mods,
+            user_input.candidate_filter_mods,
         ) = _extract_field_candidates_docarray(response)
     else:
         raise ValueError('DocumentArray does not exist or you do not have access to it')
@@ -244,8 +244,8 @@ def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
             first_folder_objects, '/', bucket
         )
     (
-        user_input.search_fields_modalities,
-        user_input.filter_fields_modalities,
+        user_input.candidate_search_mods,
+        user_input.candidate_filter_mods,
     ) = _create_candidate_search_filter_fields(field_names)
 
 
@@ -279,6 +279,6 @@ def set_field_names_from_local_folder(user_input: UserInput, **kwargs):
         ]
         field_names = _extract_field_names_sub_folders(first_folder_files, os.sep)
     (
-        user_input.search_fields_modalities,
-        user_input.filter_fields_modalities,
+        user_input.candidate_search_mods,
+        user_input.candidate_filter_mods,
     ) = _create_candidate_search_filter_fields(field_names)

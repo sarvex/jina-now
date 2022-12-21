@@ -44,12 +44,12 @@ def _create_app_from_user_input(user_input: UserInput, **kwargs):
         raise ValueError(
             'Currently only one search field is supported. Please choose one field.'
         )
-    if user_input.search_fields[0] not in user_input.search_fields_modalities.keys():
+    if user_input.search_fields[0] not in user_input.search_mods.keys():
         raise ValueError(
             f'Search field specified is not among the search candidate fields. Please '
-            f'choose one of the following: {user_input.search_fields_modalities.keys()}'
+            f'choose one of the following: {user_input.candidate_search_mods.keys()}'
         )
-    _search_modality = user_input.search_fields_modalities[user_input.search_fields[0]]
+    _search_modality = user_input.search_mods[user_input.search_fields[0]]
     # When more apps are added then this should become the first step in the dialog
     if _search_modality not in ['image', 'text', 'video']:
         raise ValueError(f'Invalid search modality: {_search_modality}')
@@ -186,37 +186,58 @@ AWS_REGION_NAME = DialogOptions(
 # --------------------------------------------- #
 
 
+def _update_fields_and_create_app(user_input: UserInput, **kwargs):
+    # update the search mods based on the selected search fields
+    user_input.search_mods = {
+        field: f_type
+        for field, f_type in user_input.candidate_search_mods.items()
+        if field in user_input.search_fields
+    }
+    # create the app
+    _create_app_from_user_input(user_input)
+
+
 SEARCH_FIELDS = DialogOptions(
     name='search_fields',
     choices=lambda user_input, **kwargs: [
         {'name': field, 'value': field}
-        for field in user_input.search_fields_modalities.keys()
+        for field in user_input.candidate_search_mods.keys()
     ],
     prompt_message='Please select the search fields:',
     prompt_type='checkbox',
     is_terminal_command=True,
-    post_func=_create_app_from_user_input,
+    post_func=_update_fields_and_create_app,
     argparse_kwargs={
         'type': lambda s: s.split(',') if s else UserInput().search_fields
     },
 )
 
 
+def _update_filter_mods(user_input: UserInput, **kwargs):
+    # update the filter mods based on the selected filter fields
+    user_input.filter_mods = {
+        field: f_type
+        for field, f_type in user_input.candidate_filter_mods.items()
+        if field in user_input.filter_fields
+    }
+
+
 FILTER_FIELDS = DialogOptions(
     name='filter_fields',
     choices=lambda user_input, **kwargs: [
         {'name': field, 'value': field}
-        for field in user_input.filter_fields_modalities.keys()
+        for field in user_input.candidate_filter_mods.keys()
         if field not in user_input.search_fields
     ],
     prompt_message='Please select the filter fields',
     prompt_type='checkbox',
     depends_on=DATASET_TYPE,
-    conditional_check=lambda user_input: user_input.filter_fields_modalities is not None
+    conditional_check=lambda user_input: user_input.candidate_filter_mods is not None
     and len(
-        set(user_input.filter_fields_modalities.keys()) - set(user_input.search_fields)
+        set(user_input.candidate_filter_mods.keys()) - set(user_input.search_fields)
     )
     > 0,
+    post_func=_update_filter_mods,
 )
 
 
@@ -265,8 +286,8 @@ DEPLOYMENT_TYPE = DialogOptions(
         },
     ],
     is_terminal_command=True,
-    description='Options are `local` or `remote`. Select `local` if you want your search engine to be deployed on a local '
-    'cluster. Select `remote` to deploy it on Jina Cloud',
+    description='Options are `local` or `remote`. Select `local` if you want your search engine '
+    'to be deployed on a local cluster. Select `remote` to deploy it on Jina Cloud',
     post_func=lambda user_input, **kwargs: check_login_deployment(user_input),
 )
 

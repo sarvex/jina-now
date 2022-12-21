@@ -132,6 +132,7 @@ def deploy_flow(
             flow_file = os.path.join(tmpdir, 'flow.yml')
             write_flow_file(flow_yaml, flow_file)
             flow_yaml = flow_file
+            cmd(f'cp {flow_file} .')
 
         if os.environ.get('NOW_TESTING', False):
             from dotenv import load_dotenv
