@@ -135,3 +135,13 @@ def setup_service_running(es_connection_params) -> None:
         raise RuntimeError('Elasticsearch is not running')
     yield
     cmd('docker-compose -f tests/resources/elastic/docker-compose.yml down')
+
+
+@pytest.fixture
+def get_aws_info():
+    dataset_path = os.environ.get('S3_SCHEMA_FOLDER_PATH')
+    aws_access_key_id = os.environ.get('AWS_ACCESS_KEY_ID')
+    aws_secret_access_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
+    region = 'eu-west-1'
+
+    return dataset_path, aws_access_key_id, aws_secret_access_key, region

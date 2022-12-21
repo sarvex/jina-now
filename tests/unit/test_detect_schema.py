@@ -13,16 +13,6 @@ from now.constants import DatasetTypes
 from now.now_dataclasses import UserInput
 
 
-@pytest.fixture
-def get_aws_info():
-    dataset_path = os.environ.get('S3_SCHEMA_FOLDER_PATH')
-    aws_access_key_id = os.environ.get('AWS_ACCESS_KEY_ID')
-    aws_secret_access_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
-    region = 'eu-west-1'
-
-    return dataset_path, aws_access_key_id, aws_secret_access_key, region
-
-
 @pytest.mark.parametrize(
     'dataset_path, search_field_names, filter_field_names',
     [

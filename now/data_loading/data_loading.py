@@ -232,7 +232,7 @@ def _list_files_from_s3_bucket(
         if subdirectories:
             docs = create_docs_from_subdirectories_s3(
                 subdirectories,
-                folder_prefix,
+                user_input.dataset_path,
                 user_input.search_fields + user_input.filter_fields,
                 user_input.files_to_dataclass_fields,
                 data_class,

@@ -9,7 +9,11 @@ from pytest_mock import MockerFixture
 
 from now.app.image_text_retrieval.app import ImageTextRetrieval
 from now.constants import DatasetTypes
-from now.data_loading.data_loading import from_files_local, load_data
+from now.data_loading.data_loading import (
+    _list_files_from_s3_bucket,
+    from_files_local,
+    load_data,
+)
 from now.demo_data import DemoDatasetNames
 from now.now_dataclasses import UserInput
 from now.run_backend import create_dataclass, create_dataclass_fields_file_mappings
@@ -123,6 +127,30 @@ def test_from_files_local(resources_folder_path):
     )
 
     assert len(loaded_da) == 2
+    for doc in loaded_da:
+        assert doc.chunks[0].uri
+
+
+def test_from_subfolders_s3(get_aws_info):
+    user_input = UserInput()
+    (
+        user_input.dataset_path,
+        user_input.aws_access_key_id,
+        user_input.aws_secret_access_key,
+        user_input.aws_region_name,
+    ) = get_aws_info
+    user_input.search_fields = ['image.png', 'test.txt']
+    user_input.search_fields_modalities = {'image.png': Image, 'test.txt': Text}
+    user_input.filter_fields = ['tags', 'id', 'title']
+    user_input.filter_fields_modalities = {'tags': str, 'id': str, 'title': str}
+
+    data_class = create_dataclass(user_input)
+
+    loaded_da = _list_files_from_s3_bucket(user_input, data_class)
+    assert len(loaded_da) == 2
+    for doc in loaded_da:
+        assert doc.chunks[0].uri
+        assert doc.chunks[1].uri
 
 
 @pytest.fixture
