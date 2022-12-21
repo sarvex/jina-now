@@ -15,7 +15,6 @@ executors:
   - name: preprocessor
     uses: ${{ ENV.PREPROCESSOR_NAME }}
     uses_with:
-      app: ${{ ENV.APP }}
       admin_emails: ${{ ENV.ADMIN_EMAILS }}
       user_emails: ${{ ENV.USER_EMAILS }}
     jcloud:

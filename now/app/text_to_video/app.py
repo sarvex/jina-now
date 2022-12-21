@@ -1,17 +1,8 @@
-import base64
 import os
 from typing import Dict, List
 
-from docarray import Document, DocumentArray
-from jina.serve.runtimes.gateway.http.models import JinaRequestModel, JinaResponseModel
-from pydantic import BaseModel
+from docarray import DocumentArray
 
-from deployment.bff.app.v1.models.text import NowTextSearchRequestModel
-from deployment.bff.app.v1.models.video import (
-    NowVideoIndexRequestModel,
-    NowVideoListResponseModel,
-    NowVideoResponseModel,
-)
 from now.app.base.app import JinaNOWApp
 from now.common.utils import (
     _get_clip_apps_with_dict,
@@ -92,62 +83,6 @@ class TextToVideo(JinaNOWApp):
         )
         super().setup(dataset, user_input, kubectl_path)
         return env_dict
-
-    @property
-    def bff_mapping_fns(self):
-        def search_text_to_video_request_mapping_fn(
-            request: NowTextSearchRequestModel,
-        ) -> JinaRequestModel:
-            jina_request_model = JinaRequestModel()
-            jina_request_model.data = [Document(chunks=[Document(text=request.text)])]
-            jina_request_model.parameters = {
-                'limit': request.limit,
-                'api_key': request.api_key,
-                'jwt': request.jwt,
-            }
-            return jina_request_model
-
-        def search_video_response_mapping_fn(
-            request: NowTextSearchRequestModel, response: JinaResponseModel
-        ) -> List[NowVideoResponseModel]:
-            docs = response.data
-            limit = request.limit
-            return docs[0].matches[:limit].to_dict()
-
-        def index_text_to_video_request_mapping_fn(
-            request: NowVideoIndexRequestModel,
-        ) -> JinaRequestModel:
-            index_docs = DocumentArray()
-            for video, uri, tags in zip(request.videos, request.uris, request.tags):
-                if bool(video) + bool(uri) != 1:
-                    raise ValueError(
-                        f'Can only set one value but have video={video}, uri={uri}'
-                    )
-                if video:
-                    base64_bytes = video.encode('utf-8')
-                    message = base64.decodebytes(base64_bytes)
-                    index_docs.append(Document(blob=message, tags=tags))
-                else:
-                    index_docs.append(Document(uri=uri, tags=tags))
-            return JinaRequestModel(data=index_docs)
-
-        def no_response_mapping_fn(_: JinaResponseModel) -> BaseModel:
-            return BaseModel()
-
-        return {
-            '/search': (
-                NowTextSearchRequestModel,
-                NowVideoListResponseModel,
-                search_text_to_video_request_mapping_fn,
-                search_video_response_mapping_fn,
-            ),
-            '/index': (
-                NowVideoIndexRequestModel,
-                BaseModel,
-                index_text_to_video_request_mapping_fn,
-                no_response_mapping_fn,
-            ),
-        }
 
     @property
     def max_request_size(self) -> int:

@@ -10,14 +10,12 @@ from now.utils import BetterEnum
 class DemoDatasetNames(BetterEnum):
     BEST_ARTWORKS = 'best-artworks'
     NFT_MONKEY = 'nft-monkey'
-    TLL = 'tll'
+    TLL = 'totally-looks-like'
     BIRD_SPECIES = 'bird-species'
     STANFORD_CARS = 'stanford-cars'
     DEEP_FASHION = 'deepfashion'
     NIH_CHEST_XRAYS = 'nih-chest-xrays'
     GEOLOCATION_GEOGUESSR = 'geolocation-geoguessr'
-    MUSIC_GENRES_ROCK = 'music-genres-mid'
-    MUSIC_GENRES_MIX = 'music-genres-mix'
     ROCK_LYRICS = 'rock-lyrics'
     POP_LYRICS = 'pop-lyrics'
     RAP_LYRICS = 'rap-lyrics'
@@ -34,13 +32,10 @@ class DemoDataset(BaseModel):
     display_modality: str
 
     def get_data(self, *args, **kwargs) -> DocumentArray:
-        from now.data_loading.data_loading import fetch_da_from_url, get_dataset_url
-
-        url = get_dataset_url(dataset=self.name, output_modality=self.display_modality)
-        return fetch_da_from_url(url)
+        return DocumentArray.pull(self.name)
 
 
-AVAILABLE_DATASET = {
+AVAILABLE_DATASETS = {
     Modalities.IMAGE: [
         DemoDataset(
             name=DemoDatasetNames.BEST_ARTWORKS,
@@ -83,18 +78,6 @@ AVAILABLE_DATASET = {
             display_name='☢ chest x-rays (≈100K docs)',
         ),
     ],
-    Modalities.MUSIC: [
-        DemoDataset(
-            name=DemoDatasetNames.MUSIC_GENRES_ROCK,
-            display_modality=Modalities.MUSIC,
-            display_name='🎸 rock music (≈2K songs)',
-        ),
-        DemoDataset(
-            name=DemoDatasetNames.MUSIC_GENRES_MIX,
-            display_modality=Modalities.MUSIC,
-            display_name='🎸 multiple genres (≈2K songs)',
-        ),
-    ],
     Modalities.TEXT: [
         DemoDataset(
             name=DemoDatasetNames.ROCK_LYRICS,
@@ -134,13 +117,6 @@ AVAILABLE_DATASET = {
             display_name='🎦 tumblr gifs subset (10K gifs)',
         ),
     ],
-    Modalities.TEXT_AND_IMAGE: [
-        DemoDataset(
-            name=DemoDatasetNames.ES_ONLINE_SHOP_50,
-            display_modality=Modalities.TEXT_AND_IMAGE,
-            display_name='online shop data (50 products)',
-        )
-    ],
 }
 DEFAULT_EXAMPLE_HOSTED = {
     'text_to_image': [
@@ -150,5 +126,4 @@ DEFAULT_EXAMPLE_HOSTED = {
     'image_to_text': [DemoDatasetNames.RAP_LYRICS],
     'image_to_image': [DemoDatasetNames.TLL],
     'text_to_text': [DemoDatasetNames.ROCK_LYRICS],
-    'music_to_music': [DemoDatasetNames.MUSIC_GENRES_MIX],
 }

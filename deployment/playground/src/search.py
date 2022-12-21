@@ -63,7 +63,6 @@ def search(
     attribute_name,
     attribute_value,
     jwt,
-    input_modality,
     top_k=None,
     filter_dict=None,
     endpoint='search',
@@ -74,33 +73,36 @@ def search(
         domain = f"http://now-bff"
     else:
         domain = f"https://nowrun.jina.ai"
-    URL_HOST = f"{domain}/api/v1/{params.input_modality}-to-{params.output_modality}/{endpoint}"
+    URL_HOST = f"{domain}/api/v1/search-app/{endpoint}"
 
     updated_dict = {}
     if filter_dict is not None:
         updated_dict = {k: v for k, v in filter_dict.items() if v != 'All'}
     data = {
         'host': params.host,
-        attribute_name: attribute_value,
         'limit': top_k if top_k else params.top_k,
         'filters': updated_dict,
     }
+    if endpoint == 'suggestion':
+        data[attribute_name] = attribute_value
+    elif endpoint == 'search':
+        data['fields'] = {'search_field': {attribute_name: attribute_value}}
     # in case the jwt is none, no jwt will be sent. This is the case when no authentication is used for that flow
     if jwt is not None:
         data['jwt'] = jwt
     if params.port:
         data['port'] = params.port
 
-    return call_flow(URL_HOST, data, attribute_name, domain)
+    return call_flow(URL_HOST, data, attribute_name, domain, endpoint)
 
 
 def get_suggestion(text, jwt):
-    return search('text', text, jwt, 'text', endpoint='suggestion')
+    return search('text', text, jwt, endpoint='suggestion')
 
 
 @deep_freeze_args
 @functools.lru_cache(maxsize=10, typed=False)
-def call_flow(url_host, data, attribute_name, domain):
+def call_flow(url_host, data, attribute_name, domain, endpoint):
     st.session_state.search_count += 1
     data = unfreeze_param(data)
 
@@ -109,7 +111,20 @@ def call_flow(url_host, data, attribute_name, domain):
     )
 
     try:
-        docs = DocumentArray.from_json(response.content)
+        if endpoint == 'suggestion':
+            docs = DocumentArray.from_json(response.content)
+        elif endpoint == 'search':
+            docs = DocumentArray()
+            # todo: use multimodal doc in the future
+            for response_json in response.json():
+                content = list(response_json['fields'].values())[0]
+                doc = Document(
+                    id=response_json['id'],
+                    tags=response_json['tags'],
+                    scores=response_json['scores'],
+                    **content,
+                )
+                docs.append(doc)
     except Exception:
         try:
             json_response = response.json()
@@ -144,7 +159,7 @@ def call_flow(url_host, data, attribute_name, domain):
 
 
 def search_by_text(search_text, jwt, filter_selection) -> DocumentArray:
-    return search('text', search_text, jwt, 'text', filter_dict=filter_selection)
+    return search('text', search_text, jwt, filter_dict=filter_selection)
 
 
 def search_by_image(document: Document, jwt, filter_selection) -> DocumentArray:
@@ -159,34 +174,8 @@ def search_by_image(document: Document, jwt, filter_selection) -> DocumentArray:
             query_doc.load_uri_to_blob(timeout=10)
 
     return search(
-        'image',
+        'blob',
         base64.b64encode(query_doc.blob).decode('utf-8'),
         jwt,
-        input_modality='image',
         filter_dict=filter_selection,
     )
-
-
-def search_by_audio(document: Document, jwt, filter_selection):
-    params = get_query_params()
-    TOP_K = params.top_k
-    result = search(
-        'song',
-        base64.b64encode(document.blob).decode('utf-8'),
-        jwt,
-        input_modality='music',
-        top_k=TOP_K * 3,
-        filter_dict=filter_selection,
-    )
-
-    already_added_tracks = set()
-    final_result = DocumentArray()
-    for doc in result:
-        if doc.tags['track_id'] in already_added_tracks or 'location' not in doc.tags:
-            continue
-        else:
-            final_result.append(doc)
-            already_added_tracks.add(doc.tags['track_id'])
-        if len(final_result) >= TOP_K:
-            break
-    return final_result

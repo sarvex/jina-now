@@ -1,21 +1,15 @@
 import abc
 import os
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import docker
 from docarray import DocumentArray
 from jina import Client
 from jina.jaml import JAML
-from jina.serve.runtimes.gateway.http.models import JinaRequestModel, JinaResponseModel
 
-from now.app.base.preprocess import (
-    preprocess_image,
-    preprocess_music,
-    preprocess_text,
-    preprocess_video,
-)
+from now.app.base.preprocess import preprocess_image, preprocess_text, preprocess_video
 from now.constants import DEFAULT_FLOW_NAME, SUPPORTED_FILE_TYPES, Modalities
-from now.demo_data import AVAILABLE_DATASET, DEFAULT_EXAMPLE_HOSTED, DemoDataset
+from now.demo_data import AVAILABLE_DATASETS, DEFAULT_EXAMPLE_HOSTED, DemoDataset
 from now.now_dataclasses import DialogOptions, UserInput
 
 
@@ -119,7 +113,7 @@ class JinaNOWApp:
         """Get a list of example datasets for the app."""
         available_datasets = {}
         for output_modality in self.output_modality:
-            available_datasets[output_modality] = AVAILABLE_DATASET[output_modality]
+            available_datasets[output_modality] = AVAILABLE_DATASETS[output_modality]
         return available_datasets
 
     @property
@@ -252,8 +246,6 @@ class JinaNOWApp:
                         preprocess_image(chunk)
                     elif chunk.modality == 'video':
                         preprocess_video(chunk)
-                    elif chunk.modality == 'music':
-                        preprocess_music(chunk)
                     else:
                         raise ValueError(f'Unsupported modality {chunk.modality}')
                 except Exception as e:
@@ -280,37 +272,6 @@ class JinaNOWApp:
                 return False
             return True
         return False
-
-    @property
-    def bff_mapping_fns(
-        self,
-    ) -> Dict[
-        str,
-        Tuple[
-            Any,
-            Any,
-            Callable[[Any], JinaRequestModel],
-            Callable[[JinaResponseModel], Any],
-        ],
-    ]:
-        """
-        Apps usually have a custom input format and response which does not match the JinaRequestModel or JinaResponseModel.
-        To create the mapping each Jina NOW app can implement the two bff mapping functions for each path
-        - one for requests and one for responses
-
-        :return: dictionary from path to a tuple of request model, response model,
-        request mapping fn and response mapping fn.
-        By default, the mapping is the identity function and the request model and respond model are the default models.
-        The path is a regex expression.
-        """
-        return {
-            '.*': (
-                JinaRequestModel,
-                JinaResponseModel,
-                lambda x: x,
-                lambda x: x,
-            )
-        }
 
     @property
     def max_request_size(self) -> int:

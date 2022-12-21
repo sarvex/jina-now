@@ -6,7 +6,7 @@ import pytest
 from docarray import Document, DocumentArray
 
 import now.utils
-from now.constants import TAG_OCR_DETECTOR_TEXT_IN_DOC, Apps, DatasetTypes
+from now.constants import TAG_OCR_DETECTOR_TEXT_IN_DOC, DatasetTypes
 from now.executor.preprocessor import NOWPreprocessor
 
 curdir = os.path.dirname(os.path.abspath(__file__))
@@ -39,7 +39,7 @@ def test_ocr_with_bucket(file_path, num_chunks, ocr_text):
             for _ in range(2)
         ]
     )
-    preprocessor = NOWPreprocessor(Apps.TEXT_TO_VIDEO)
+    preprocessor = NOWPreprocessor()
 
     bucket_mock = Mock()
     bucket_mock.download_file = download_mock
@@ -74,7 +74,7 @@ def test_text():
     da_search = DocumentArray(
         [Document(text='This is the first Sentence. This is the second Sentence.')]
     )
-    preprocessor = NOWPreprocessor(Apps.TEXT_TO_VIDEO)
+    preprocessor = NOWPreprocessor()
     res_search = preprocessor.preprocess(da_search, parameters={})
     assert len(res_search) == 1
     assert len(res_search[0].chunks) == 1

@@ -141,13 +141,13 @@ def print_headline():
     f = Figlet(font='slant')
     print('Welcome to:')
     print(f.renderText('Jina NOW'))
-    print('Get your search case up and running - end to end.\n')
+    print('Get your search use case up and running - end to end.\n')
     print(
         'You can choose between image and text search. \nJina NOW trains a model, pushes it to Jina AI Cloud '
-        'and deploys a Flow and a playground app in the cloud or locally. \nCheck out one of our demos or bring '
+        'and deploys a Flow and playground app in the cloud or locally. \nCheck out our demos or bring '
         'your own data.\n'
     )
-    print('If you want learn more about our framework please visit docs.jina.ai')
+    print('Visit docs.jina.ai to learn more about our framework')
     print(
         '💡 Make sure you give enough memory to your Docker daemon. '
         '5GB - 8GB should be okay.'

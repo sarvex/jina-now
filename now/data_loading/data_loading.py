@@ -1,26 +1,16 @@
-import base64
 import os
-import pathlib
-import pickle
 import uuid
 from collections import defaultdict
 from copy import deepcopy
-from os.path import join as osp
 
 from docarray import Document, DocumentArray
 
 from now.app.base.app import JinaNOWApp
-from now.constants import (
-    BASE_STORAGE_URL,
-    DEMO_DATASET_DOCARRAY_VERSION,
-    DatasetTypes,
-    Modalities,
-)
+from now.constants import DatasetTypes
 from now.data_loading.elasticsearch import ElasticsearchExtractor
-from now.demo_data import DemoDatasetNames
 from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
-from now.utils import download, sigmap
+from now.utils import sigmap
 
 
 def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
@@ -46,21 +36,13 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
         da = _extract_es_data(user_input)
     elif user_input.dataset_type == DatasetTypes.DEMO:
         print('⬇  Download DocumentArray dataset')
-        url = get_dataset_url(user_input.dataset_name, user_input.output_modality)
-        da = fetch_da_from_url(url)
+        da = DocumentArray.pull(name=user_input.dataset_name, show_progress=True)
     if da is None:
         raise ValueError(
             f'Could not load DocumentArray dataset. Please check your configuration: {user_input}.'
         )
     if 'NOW_CI_RUN' in os.environ:
         da = da[:50]
-    if (
-        user_input.dataset_name == DemoDatasetNames.MUSIC_GENRES_MIX
-        or user_input.dataset_name == DemoDatasetNames.MUSIC_GENRES_ROCK
-    ):
-        for doc in da:
-            if 'genre_tags' in doc.tags and isinstance(doc.tags['genre_tags'], list):
-                doc.tags['genre_tags'] = ' '.join(doc.tags['genre_tags'])
     return da
 
 
@@ -109,10 +91,9 @@ def _pull_docarray(dataset_name: str):
     try:
         return DocumentArray.pull(name=dataset_name, show_progress=True)
     except Exception:
-        print(
+        raise ValueError(
             '💔 oh no, the secret of your docarray is wrong, or it was deleted after 14 days'
         )
-        exit(1)
 
 
 def _load_to_datauri_and_save_into_tags(d: Document) -> Document:
@@ -190,53 +171,6 @@ def _list_files_from_s3_bucket(app: JinaNOWApp, user_input: UserInput) -> Docume
                         break
 
     return DocumentArray(docs)
-
-
-def fetch_da_from_url(
-    url: str, downloaded_path: str = '~/.cache/jina-now'
-) -> DocumentArray:
-    data_dir = os.path.expanduser(downloaded_path)
-    if not os.path.exists(osp(data_dir, 'data/tmp')):
-        os.makedirs(osp(data_dir, 'data/tmp'))
-    data_path = (
-        data_dir
-        + f"/data/tmp/{base64.b64encode(bytes(url, 'utf-8')).decode('utf-8')}.bin"
-    )
-    if not os.path.exists(data_path):
-        download(url, data_path)
-
-    try:
-        da = DocumentArray.load_binary(data_path)
-    except pickle.UnpicklingError:
-        path = pathlib.Path(data_path).expanduser().resolve()
-        os.remove(path)
-        download(url, data_path)
-        da = DocumentArray.load_binary(data_path)
-    return da
-
-
-def get_dataset_url(dataset: str, output_modality: Modalities) -> str:
-    data_folder = None
-    docarray_version = DEMO_DATASET_DOCARRAY_VERSION
-    if output_modality == Modalities.IMAGE:
-        data_folder = 'jpeg'
-    elif output_modality == Modalities.TEXT:
-        data_folder = 'text'
-    elif output_modality == Modalities.MUSIC:
-        data_folder = 'music'
-    elif output_modality == Modalities.VIDEO:
-        data_folder = 'video'
-    elif output_modality == Modalities.TEXT_AND_IMAGE:
-        data_folder = 'text-image'
-    if output_modality not in [
-        Modalities.MUSIC,
-        Modalities.VIDEO,
-        Modalities.TEXT_AND_IMAGE,
-    ]:
-        model_name = 'ViT-B32'
-        return f'{BASE_STORAGE_URL}/{data_folder}/{dataset}.{model_name}-{docarray_version}.bin'
-    else:
-        return f'{BASE_STORAGE_URL}/{data_folder}/{dataset}-{docarray_version}.bin'
 
 
 def get_s3_bucket_and_folder_prefix(user_input: UserInput):

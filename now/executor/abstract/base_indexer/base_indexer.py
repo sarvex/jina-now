@@ -28,7 +28,7 @@ Executor = get_auth_executor_class()
 class NOWBaseIndexer(Executor):
     def __init__(
         self,
-        dim: int,
+        dim: int = None,
         columns: Optional[List] = None,
         metric: str = 'cosine',
         limit: int = 10,
@@ -52,7 +52,7 @@ class NOWBaseIndexer(Executor):
         self.metric = metric
         self.limit = limit
         self.max_values_per_tag = max_values_per_tag
-        self.construct()
+        self.construct(**kwargs)
         self.doc_id_tags = {}
         self.document_list = DocumentArray()
         self.load_document_list()
@@ -337,7 +337,6 @@ class NOWBaseIndexer(Executor):
 
         with open(self.query_to_curated_matches_path, 'w') as f:
             json.dump(self.query_to_curated_matches, f)
-        print()
 
     def get_curated_matches(self, text_query: str = None) -> DocumentArray:
         """
@@ -417,11 +416,18 @@ class NOWBaseIndexer(Executor):
         if columns:
             corrected_list = []
             for i in range(0, len(columns), 2):
+                # This conversion is needed for MMDocs
+                if columns[i + 1] in ['Text', 'stringValue']:
+                    columns[i + 1] = 'str'
+                elif columns[i + 1] in ['numberValue']:
+                    columns[i + 1] = 'float'
+                elif columns[i + 1] in ['boolValue']:
+                    columns[i + 1] = 'bool'
                 corrected_list.append((columns[i], columns[i + 1]))
             columns = corrected_list
             for n, t in columns:
                 assert (
-                    t in valid_input_columns
+                    t.lower() in valid_input_columns
                 ), f'column of type={t} is not supported. Supported types are {valid_input_columns}'
         return columns
 
