@@ -44,7 +44,7 @@ Similar to the local folder option, the S3 bucket should contain all files that 
 The only difference is that the S3 Uri should be in the following format: `s3://<bucket-name>/<path-to-data>`.
 Taking the example structure from above, the S3 URI would be `s3://my-<bucket-name>/usr/data/images`.
 
-Here is an example of what you interaction may look like in the CLI:
+Here is an example of what your interaction may look like in the CLI:
 
 ```commandline
 ? How do you want to provide input? (format: https://docarray.jina.ai/)  S3 bucket
