@@ -8,6 +8,7 @@ from docarray.typing import Image, Text
 from pytest_mock import MockerFixture
 
 from now.app.image_text_retrieval.app import ImageTextRetrieval
+from now.app.text_to_video.app import TextToVideo
 from now.constants import DatasetTypes
 from now.data_loading.data_loading import (
     _list_files_from_s3_bucket,
@@ -157,7 +158,7 @@ def test_from_subfolders_s3(get_aws_info):
 def user_input():
     user_input = UserInput()
     user_input.dataset_path = ''
-    user_input.app_instance = ImageTextRetrieval()
+    user_input.app_instance = TextToVideo()
     return user_input
 
 
