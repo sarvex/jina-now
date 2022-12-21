@@ -99,7 +99,6 @@ jobs:
           # for some reason, the first filter condition needs a different indentation
           has_changed_filter: |
             - now/app/base/**
-              - now/common/preprocess.py
               - now/executor/preprocessor/**
           executor_id: vlxgoxlv
           jina_auth_token: ${{ secrets.NOW_PREPROCESSOR_JCLOUD_TOKEN }}
@@ -133,7 +132,8 @@ jobs:
           executor_path: now/executor/indexer/elastic
           # for some reason, the first filter condition needs a different indentation
           has_changed_filter: |
-            - now/executor/indexer/elastic/**
+            - now/executor/abstract/**
+              - now/executor/indexer/elastic/**
           executor_id: mdtuyaaj
           jina_auth_token: ${{ secrets.NOW_STAGING_FLORIAN }}
 
@@ -149,8 +149,7 @@ jobs:
           executor_path: now/executor/autocomplete
           # for some reason, the first filter condition needs a different indentation
           has_changed_filter: |
-            - 'now/executor/abstract/auth/**'
-              - 'now/executor/autocomplete/**'
+            - now/executor/autocomplete/**
           executor_id: w5w084h7
           jina_auth_token: ${{ secrets.NOW_STAGING_FLORIAN }}
 
@@ -298,7 +297,7 @@ jobs:
           python -m pip install wheel
           pip install --no-cache-dir ".[full,test]"
       - name: Test executors separately
-        timeout-minutes: 10
+        timeout-minutes: 15
         run: |
           pytest --suppress-no-test-exit-code --cov=now --cov-append -v -s tests/executor/auth
           pytest --suppress-no-test-exit-code --cov=now --cov-append -v -s tests/executor/indexer/base

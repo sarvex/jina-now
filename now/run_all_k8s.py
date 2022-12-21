@@ -136,7 +136,7 @@ def start_now(**kwargs):
     bff_url = (
         bff_playground_host
         + ('' if str(bff_port) == '80' else f':{bff_port}')
-        + f'/api/v1/{input_modality}-to-{output_modality}/docs'
+        + f'/api/v1/search-app/docs'
     )
     playground_url = (
         bff_playground_host

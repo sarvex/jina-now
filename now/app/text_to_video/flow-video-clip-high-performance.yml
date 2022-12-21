@@ -16,7 +16,6 @@ executors:
     uses: ${{ ENV.PREPROCESSOR_NAME }}
     replicas: 20
     uses_with:
-      app: ${{ ENV.APP }}
       admin_emails: ${{ ENV.ADMIN_EMAILS }}
       user_emails: ${{ ENV.USER_EMAILS }}
     jcloud:

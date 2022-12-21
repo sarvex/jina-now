@@ -26,7 +26,7 @@ def get_aws_info():
     'dataset_path, search_field_names, filter_field_names',
     [
         ('gif_resource_path', {'file.txt', 'file.gif'}, {'file.txt', 'a1', 'a2'}),
-        ('image_resource_path', set(), set()),
+        ('image_resource_path', {'.jpg'}, set()),
     ],
 )
 def test_set_fields_names_from_local_folder(
@@ -52,7 +52,7 @@ def test_set_fields_names_from_local_folder(
             },
             {'test.txt', 'tags', 'id', 'link', 'title'},
         ),
-        ('folder1/', set(), set()),
+        ('folder1/', {'.png', '.txt'}, {'.txt', '.json'}),
     ],
 )
 def test_set_field_names_from_s3_bucket(
@@ -76,16 +76,26 @@ def test_set_field_names_from_s3_bucket(
 def test_set_field_names_from_docarray():
     user_input = UserInput()
     user_input.dataset_type = DatasetTypes.DOCARRAY
-    user_input.dataset_name = 'subset_laion'
+    # subset_laion dataset is not multi-modal
+    user_input.dataset_name = 'best-artworks'
     user_input.jwt = {'token': os.environ['WOLF_TOKEN']}
 
     set_field_names_from_docarray(user_input)
 
     assert len(user_input.search_fields_modalities.keys()) == 2
     assert set(user_input.search_fields_modalities.keys()) == {
-        'text',
-        'uri',
+        'label',
+        'image',
     }
+
+
+def test_failed_uni_modal_docarray():
+    user_input = UserInput()
+    user_input.dataset_type = DatasetTypes.DOCARRAY
+    user_input.dataset_name = 'test_lj'
+    user_input.jwt = {'token': os.environ['WOLF_TOKEN']}
+    with pytest.raises(RuntimeError):
+        set_field_names_from_docarray(user_input)
 
 
 def test_create_candidate_search_fields():

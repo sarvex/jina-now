@@ -19,7 +19,7 @@ from now.common.detect_schema import (
     set_field_names_from_s3_bucket,
 )
 from now.constants import Apps, DatasetTypes
-from now.demo_data import AVAILABLE_DATASET
+from now.demo_data import AVAILABLE_DATASETS
 from now.deployment.deployment import cmd
 from now.log import yaspin_extended
 from now.now_dataclasses import DialogOptions, UserInput
@@ -39,31 +39,25 @@ AVAILABLE_SOON = 'will be available in upcoming versions'
 # than the parent should be called first before the dependant can called.
 
 
-def _create_app_from_output_modality(user_input: UserInput, **kwargs):
-    if user_input.output_modality in ['image', 'text']:
+def _create_app_from_user_input(user_input: UserInput, **kwargs):
+    if len(user_input.search_fields) != 1:
+        raise ValueError(
+            'Currently only one search field is supported. Please choose one field.'
+        )
+    if user_input.search_fields[0] not in user_input.search_fields_modalities.keys():
+        raise ValueError(
+            f'Search field specified is not among the search candidate fields. Please '
+            f'choose one of the following: {user_input.search_fields_modalities.keys()}'
+        )
+    _search_modality = user_input.search_fields_modalities[user_input.search_fields[0]]
+    if _search_modality in ['image', 'text']:
         app_name = Apps.IMAGE_TEXT_RETRIEVAL
-    elif user_input.output_modality == 'video':
+    elif _search_modality == 'video':
         app_name = Apps.TEXT_TO_VIDEO
     else:
-        raise ValueError(f'Invalid output modality: {user_input.output_modality}')
+        raise ValueError(f'Invalid search modality: {_search_modality}')
     user_input.app_instance = construct_app(app_name)
 
-
-OUTPUT_MODALITY = DialogOptions(
-    name='output_modality',
-    choices=[
-        {'name': '📝 text', 'value': 'text'},
-        {'name': '🏞 image', 'value': 'image'},
-        {'name': '🎦 video', 'value': 'video'},
-    ],
-    prompt_type='list',
-    prompt_message='What modality do you want to index?',
-    description='What is the index modality of your search system?',
-    is_terminal_command=True,
-    depends_on=True,
-    conditional_check=lambda user_input, **kwargs: user_input.app_instance is None,
-    post_func=_create_app_from_output_modality,
-)
 
 APP_NAME = DialogOptions(
     name='flow_name',
@@ -102,13 +96,16 @@ DATASET_TYPE = DialogOptions(
 
 
 def check_login_dataset(user_input: UserInput):
-    if user_input.dataset_type == DatasetTypes.DOCARRAY and user_input.jwt is None:
+    if (
+        user_input.dataset_type in [DatasetTypes.DEMO, DatasetTypes.DOCARRAY]
+        and user_input.jwt is None
+    ):
         _jina_auth_login(user_input)
 
 
 def _get_demo_data_choices(user_input: UserInput, **kwargs):
     all_demo_datasets = []
-    for demo_datasets in AVAILABLE_DATASET.values():
+    for demo_datasets in AVAILABLE_DATASETS.values():
         all_demo_datasets.extend(demo_datasets)
     return [
         {'name': demo_data.display_name, 'value': demo_data.name}
@@ -126,23 +123,8 @@ DEMO_DATA = DialogOptions(
     description='Select one of the available demo datasets',
     conditional_check=lambda user_input, **kwargs: user_input.dataset_type
     == DatasetTypes.DEMO,
-    post_func=lambda user_input, **kwargs: _infer_app_type_from_demo_data(user_input),
+    post_func=lambda user_input, **kwargs: set_field_names_from_docarray(user_input),
 )
-
-
-def _infer_app_type_from_demo_data(user_input: UserInput):
-    """
-    Infer the app type from the demo data selected by the user.
-
-    :param user_input: UserInput object
-
-    uses the demo data selected by the user to create application instance and set the output modality
-    """
-    for modality, demos in AVAILABLE_DATASET.items():
-        for demo in demos:
-            if user_input.dataset_name == demo.name:
-                user_input.output_modality = modality
-    _create_app_from_output_modality(user_input)
 
 
 DOCARRAY_NAME = DialogOptions(
@@ -215,10 +197,11 @@ SEARCH_FIELDS = DialogOptions(
     ],
     prompt_message='Please select the search fields:',
     prompt_type='checkbox',
-    depends_on=DATASET_TYPE,
-    conditional_check=lambda user_input: user_input.search_fields_modalities is not None
-    and len(user_input.search_fields_modalities.keys()) > 0
-    and user_input.dataset_type != DatasetTypes.DEMO,
+    is_terminal_command=True,
+    post_func=_create_app_from_user_input,
+    argparse_kwargs={
+        'type': lambda s: s.split(',') if s else UserInput().search_fields
+    },
 )
 
 
@@ -236,8 +219,7 @@ FILTER_FIELDS = DialogOptions(
     and len(
         set(user_input.filter_fields_modalities.keys()) - set(user_input.search_fields)
     )
-    > 0
-    and user_input.dataset_type != DatasetTypes.DEMO,
+    > 0,
 )
 
 
@@ -249,6 +231,7 @@ ES_INDEX_NAME = DialogOptions(
     conditional_check=lambda user_input: user_input.dataset_type
     == DatasetTypes.ELASTICSEARCH,
 )
+
 
 ES_HOST_NAME = DialogOptions(
     name='es_host_name',
@@ -285,7 +268,7 @@ DEPLOYMENT_TYPE = DialogOptions(
         },
     ],
     is_terminal_command=True,
-    description='Option is `local` and `remote`. Select `local` if you want search engine to be deployed on local '
+    description='Options are `local` or `remote`. Select `local` if you want your search engine to be deployed on a local '
     'cluster. Select `remote` to deploy it on Jina Cloud',
     post_func=lambda user_input, **kwargs: check_login_deployment(user_input),
 )
@@ -313,21 +296,10 @@ LOCAL_CLUSTER = DialogOptions(
     ),
 )
 
-PROCEED = DialogOptions(
-    name='proceed',
-    prompt_message='jina-now is deployed already. Do you want to remove the current data?',
-    prompt_type='list',
-    choices=[
-        {'name': '⛔ no', 'value': False},
-        {'name': '✅ yes', 'value': True},
-    ],
-    depends_on=LOCAL_CLUSTER,
-    conditional_check=lambda user_input: _check_if_namespace_exist(),
-)
 
 SECURED = DialogOptions(
     name='secured',
-    prompt_message='Do you want to secure the flow?',
+    prompt_message='Do you want to secure the Flow?',
     prompt_type='list',
     choices=[
         {'name': '⛔ no', 'value': False},
@@ -340,7 +312,7 @@ SECURED = DialogOptions(
 
 API_KEY = DialogOptions(
     name='api_key',
-    prompt_message='Do you want to generate an api_key to access this deployment?',
+    prompt_message='Do you want to generate an API key to access this deployment?',
     prompt_type='list',
     choices=[
         {'name': '✅ yes', 'value': uuid.uuid4().hex},
@@ -348,7 +320,7 @@ API_KEY = DialogOptions(
     ],
     depends_on=SECURED,
     is_terminal_command=True,
-    description='Pass an api_key to access the flow once the deployment is complete. ',
+    description='Pass an API key to access the Flow once the deployment is complete. ',
     conditional_check=lambda user_inp: str(user_inp.secured).lower() == 'true',
     post_func=lambda user_input, **kwargs: _set_value_to_none(user_input),
 )
@@ -367,9 +339,9 @@ ADDITIONAL_USERS = DialogOptions(
 
 USER_EMAILS = DialogOptions(
     name='user_emails',
-    prompt_message='Please enter the comma separated Email IDs '
-    'who will have access to this flow.\nAdditionally, you can also specify comma separated domain name'
-    ' such that all users from that domain can access this flow. E.g. `jina.ai`\n',
+    prompt_message='Please enter email addresses (separated by commas) '
+    'to grant access to this Flow.\nAdditionally, you can specify comma-separated domain names'
+    ' such that all users from that domain can access this Flow, e.g. `jina.ai`\n',
     prompt_type='input',
     depends_on=ADDITIONAL_USERS,
     conditional_check=lambda user_inp: user_inp.additional_user,
@@ -408,7 +380,7 @@ def _jina_auth_login(user_input: UserInput, **kwargs):
         jina_auth_login()
     except AuthenticationRequiredError:
         with yaspin_extended(
-            sigmap=sigmap, text='Log in to JCloud', color='green'
+            sigmap=sigmap, text='Log in to Jina AI Cloud', color='green'
         ) as spinner:
             cmd('jina auth login')
         spinner.ok('🛠️')
@@ -443,7 +415,7 @@ def _cluster_running(cluster):
     return True
 
 
-app_config = [OUTPUT_MODALITY, APP_NAME]
+app_config = [APP_NAME]
 data_type = [DATASET_TYPE]
 data_fields = [SEARCH_FIELDS, FILTER_FIELDS]
 data_demo = [DEMO_DATA]

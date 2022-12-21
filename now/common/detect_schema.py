@@ -1,57 +1,60 @@
-import glob
+import itertools
 import json
 import os
+from typing import Dict, List
 
 import requests
+from docarray import DocumentArray
 
-from now.constants import SUPPORTED_FILE_TYPES, Modalities
+from now.constants import (
+    AVAILABLE_MODALITIES_FOR_FILTER,
+    AVAILABLE_MODALITIES_FOR_SEARCH,
+    NOT_AVAILABLE_MODALITIES_FOR_FILTER,
+    SUPPORTED_FILE_TYPES,
+    Modalities,
+)
 from now.data_loading.data_loading import get_s3_bucket_and_folder_prefix
 from now.now_dataclasses import UserInput
 
 
 def _create_candidate_search_filter_fields(field_name_to_value):
     """
-    Creates candidate search fields from the field_names
+    Creates candidate search fields from the field_names for s3
+    and local file path.
     A candidate search field is a field that we can detect its modality
     A candidate filter field is a field that we can't detect its modality,
     or it's modality is different from image, video or audio.
-
-    In case of docarray, we assume all fields are potentially searchable
 
     :param field_name_to_value: dictionary
     """
     search_fields_modalities = {}
     filter_field_modalities = {}
+    not_available_file_types_for_filter = list(
+        itertools.chain(
+            *[
+                SUPPORTED_FILE_TYPES[modality]
+                for modality in NOT_AVAILABLE_MODALITIES_FOR_FILTER
+            ]
+        )
+    )
     for field_name, field_value in field_name_to_value.items():
         # we determine search modality
-        for modality, modality_types in SUPPORTED_FILE_TYPES.items():
-            if field_name.split('.')[-1] in modality_types:
+        for modality in AVAILABLE_MODALITIES_FOR_SEARCH:
+            file_types = SUPPORTED_FILE_TYPES[modality]
+            if field_name.split('.')[-1] in file_types:
                 search_fields_modalities[field_name] = modality
                 break
-            if field_name == 'uri' and field_value.split('.')[-1] in modality_types:
+            elif field_name == 'uri' and field_value.split('.')[-1] in file_types:
                 search_fields_modalities[field_name] = modality
                 break
-            if field_name == 'text' and field_value:
+            elif field_name == 'text' and field_value:
                 search_fields_modalities[field_name] = Modalities.TEXT
                 break
         # we determine if it's a filter field
-        if field_name == 'uri':
-            if (
-                field_value.split('.')[-1]
-                not in SUPPORTED_FILE_TYPES[Modalities.IMAGE]
-                + SUPPORTED_FILE_TYPES[Modalities.VIDEO]
-                + SUPPORTED_FILE_TYPES[Modalities.MUSIC]
-            ):
-                filter_field_modalities[field_name] = str(
-                    field_value.__class__.__name__
-                )
-            continue
         if (
-            field_name.split('.')[-1]
-            not in SUPPORTED_FILE_TYPES[Modalities.IMAGE]
-            + SUPPORTED_FILE_TYPES[Modalities.VIDEO]
-            + SUPPORTED_FILE_TYPES[Modalities.MUSIC]
-        ):
+            field_name == 'uri'
+            and field_value.split('.')[-1] not in not_available_file_types_for_filter
+        ) or field_name.split('.')[-1] not in not_available_file_types_for_filter:
             filter_field_modalities[field_name] = str(field_value.__class__.__name__)
 
     if len(search_fields_modalities.keys()) == 0:
@@ -61,21 +64,57 @@ def _create_candidate_search_filter_fields(field_name_to_value):
     return search_fields_modalities, filter_field_modalities
 
 
-def _extract_field_names_docarray(response):
+def _extract_field_candidates_docarray(response):
     """
     Downloads the first document in the document array and extracts field names from it
     if tags also exists then it extracts the keys from tags and adds to the field_names
     """
-    field_names = {}
+    search_modalities = {}
+    filter_modalities = {}
     response = requests.get(response.json()['data']['download'])
-    ignored_fieldnames = ['embedding', 'id', 'mimeType', 'tags']
-    for el, value in response.json()[0].items():
-        if el not in ignored_fieldnames:
-            field_names[el] = value
-    if 'tags' in response.json()[0]:
-        for el, value in response.json()[0]['tags']['fields'].items():
-            field_names[el] = value
-    return field_names
+    da = DocumentArray.from_dict(response.json())
+    if not da[0]._metadata:
+        raise RuntimeError(
+            'Multi-modal schema is not provided. Please prepare your data following this guide - '
+            'https://docarray.jina.ai/datatypes/multimodal/'
+        )
+    mm_schema = da[0]._metadata['fields']['multi_modal_schema']
+    mm_fields = mm_schema['structValue']['fields']
+    for field_name, value in mm_fields.items():
+        if 'position' not in value['structValue']['fields']:
+            raise ValueError(
+                'No modalities found in this multi-modal documents. Please follow the steps in the documentation'
+                ' to add modalities to your documents https://docarray.jina.ai/datatypes/multimodal/'
+            )
+        field_pos = value['structValue']['fields']['position']['numberValue']
+        if not da[0].chunks[field_pos].modality:
+            raise ValueError(
+                f'No modality found for {field_name}. Please follow the steps in the documentation'
+                f' to add modalities to your documents https://docarray.jina.ai/datatypes/multimodal/'
+            )
+        modality = da[0].chunks[field_pos].modality.lower()
+        if modality not in AVAILABLE_MODALITIES_FOR_SEARCH:
+            raise ValueError(
+                f'The modality {modality} is not supported for search. Please use '
+                f'one of the following modalities: {AVAILABLE_MODALITIES_FOR_SEARCH}'
+            )
+        # only the available modalities for filter are added to the filter modalities
+        if modality in AVAILABLE_MODALITIES_FOR_FILTER:
+            filter_modalities[field_name] = modality
+        # only the available modalities for search are added to search modalities
+        if modality in AVAILABLE_MODALITIES_FOR_SEARCH:
+            search_modalities[field_name] = modality
+
+    if da[0].tags:  # if tags exist then we add them as well to the filter modalities
+        for el, value in da[0].tags['fields'].items():
+            for val_type, val in value.items():
+                filter_modalities[el] = val_type
+
+    if len(search_modalities.keys()) == 0:
+        raise ValueError(
+            'No searchable fields found, please check documentation https://now.jina.ai'
+        )
+    return search_modalities, filter_modalities
 
 
 def set_field_names_from_docarray(user_input: UserInput, **kwargs):
@@ -100,66 +139,79 @@ def set_field_names_from_docarray(user_input: UserInput, **kwargs):
         json=json_data,
     )
     if response.json()['code'] == 200:
-        field_names = _extract_field_names_docarray(response)
+        (
+            user_input.search_fields_modalities,
+            user_input.filter_fields_modalities,
+        ) = _extract_field_candidates_docarray(response)
     else:
         raise ValueError('DocumentArray does not exist or you do not have access to it')
-    (
-        search_fields_modalities,
-        filter_fields_modalities,
-    ) = _create_candidate_search_filter_fields(field_names)
-    user_input.search_fields_modalities = search_fields_modalities
-    user_input.filter_fields_modalities = filter_fields_modalities
 
 
-def _check_contains_files_only_s3_bucket(objects):
+def _identify_folder_structure(file_paths: List[str], separator: str) -> str:
+    """This function identifies the folder structure.
+    It works with a local file structure or a remote file structure.
+
+    :param file_paths: list of file paths
+    :param separator: separator used in the file paths
+    :return: if all the files are in the same folder then returns 'single_folder' else returns 'sub_folders'
+    :raises ValueError: if the files don't have the same depth in the file structure
     """
-    Checks if the bucket contains only files and no subfolders
+    # check if all files are in the same folder
+    depths = [len(path.split(separator)) for path in file_paths]
+    if len(set(depths)) != 1:
+        raise ValueError(
+            "Files have differing depth, please check documentation https://now.jina.ai"
+        )
+    # check if all files are in the same folder
+    if (
+        len(set([separator.join(path.split(separator)[:-1]) for path in file_paths]))
+        != 1
+    ):
+        return 'sub_folders'
+    return 'single_folder'
 
-    :param objects: list of objects in the bucket
+
+def _extract_field_names_single_folder(
+    file_paths: List[str], separator: str
+) -> Dict[str, str]:
+    """This function extracts the file endings in a single folder and returns them as field names.
+    It works with a local file structure or a remote file structure.
+
+    :param file_paths: list of relative file paths from data set path
+    :param separator: separator used in the file paths
+    :return: list of file endings
     """
-    for obj in objects[1:]:
-        if obj.key.endswith('/'):
-            return False
-    return True
+    file_endings = set(
+        ['.' + path.split(separator)[-1].split('.')[-1] for path in file_paths]
+    )
+    return {file_ending: file_ending for file_ending in file_endings}
 
 
-def _check_folder_structure_s3_bucket(objects, folder_prefix):
-    """
-    Checks if the folder contains only subfolders and no files and no subsub folders
+def _extract_field_names_sub_folders(
+    file_paths: List[str], separator: str, s3_bucket=None
+) -> Dict[str, str]:
+    """This function extracts the files in sub folders and returns them as field names. Also, it reads json files
+    and adds them as key-value pairs to the field names dictionary.
+    It works with a local file structure or a remote file structure.
 
-    :param objects: list of objects in the bucket
-    :param folder_prefix: root folder
-    """
-    for obj in objects[1:]:  # first is the bucket path
-        if obj.key.endswith('/'):
-            continue
-        current_path = obj.key.split('/')
-        root_folder_path = folder_prefix.split('/')
-        if (
-            len(current_path) - len(root_folder_path) != 1
-        ):  # checks if current path is a direct subfolder of
-            # root folder
-            raise ValueError(
-                'File format different than expected, please check documentation https://now.jina.ai'
-            )
-
-
-def _extract_field_names_s3_folder(first_folder_objects):
-    """
-    Extracts field names from the files in first folder in the bucket also
-    checks if folder contains json files and if yes then extracts the keys from the json files
-    and add to the field_names
-
-    :param first_folder_objects: list of objects in the first folder
+    :param file_paths: list of relative file paths from data set path
+    :param separator: separator used in the file paths
+    :param s3_bucket: s3 bucket object, only needed if interacting with s3 bucket
+    :return: list of file endings
     """
     field_names = {}
-    for field in first_folder_objects:
-        if field.key.endswith('.json'):
-            data = json.loads(field.get()['Body'].read())
+    for path in file_paths:
+        if path.endswith('.json'):
+            if s3_bucket:
+                data = json.loads(s3_bucket.Object(path).get()['Body'].read())
+            else:
+                with open(path) as f:
+                    data = json.load(f)
             for el, value in data.items():
                 field_names[el] = value
         else:
-            field_names[field.key.split('/')[-1]] = field.key.split('/')[-1]
+            file_name = path.split(separator)[-1]
+            field_names[file_name] = file_name
     return field_names
 
 
@@ -177,79 +229,24 @@ def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
     )  # user has to provide the folder where folder structure begins
 
     objects = list(bucket.objects.filter(Prefix=folder_prefix))
-    if _check_contains_files_only_s3_bucket(objects):
-        return
-
-    _check_folder_structure_s3_bucket(objects, folder_prefix)
-
-    first_folder = objects[1].key.split('/')[-2]
-    first_folder_objects = list(
-        bucket.objects.filter(Prefix=folder_prefix + first_folder)
-    )[1:]
-    field_names = _extract_field_names_s3_folder(first_folder_objects)
+    file_paths = [obj.key for obj in objects if not obj.key.endswith('/')]
+    folder_structure = _identify_folder_structure(file_paths, '/')
+    if folder_structure == 'single_folder':
+        field_names = _extract_field_names_single_folder(file_paths, '/')
+    elif folder_structure == 'sub_folders':
+        first_folder = '/'.join(objects[1].key.split('/')[:-1])
+        first_folder_objects = [
+            obj.key
+            for obj in bucket.objects.filter(Prefix=first_folder)
+            if not obj.key.endswith('/')
+        ]
+        field_names = _extract_field_names_sub_folders(
+            first_folder_objects, '/', bucket
+        )
     (
-        search_fields_modalities,
-        filter_fields_modalities,
+        user_input.search_fields_modalities,
+        user_input.filter_fields_modalities,
     ) = _create_candidate_search_filter_fields(field_names)
-    user_input.search_fields_modalities = search_fields_modalities
-    user_input.filter_fields_modalities = filter_fields_modalities
-
-
-def _ensure_distance_folder_root(path, root):
-    """Ensure that the path is a subfolder of the root"""
-    path = os.path.abspath(path)
-    root = os.path.abspath(root)
-    return os.path.relpath(path, root).count(os.path.sep) == 1
-
-
-def _check_contains_files_only_local_folder(dataset_path):
-    """
-    Checks if the folder contains only files and no subfolders
-
-    :param dataset_path: path to the folder
-    """
-    for file_or_directory in os.listdir(dataset_path):
-        if not os.path.isfile(os.path.join(dataset_path, file_or_directory)):
-            return False
-    return True
-
-
-def _check_folder_structure_local_folder(dataset_path):
-    """
-    Checks if the folder contains only subfolders and no files and no subsub folders
-
-    :param dataset_path: path to the folder
-    """
-    first_path = ''
-    for path in sorted(glob.glob(os.path.join(dataset_path, '**/**'))):
-        if not first_path:
-            first_path = path
-
-        if not _ensure_distance_folder_root(path, dataset_path):
-            raise ValueError(
-                'Folder format is not as expected, please check documentation https://now.jina.ai'
-            )
-    return first_path
-
-
-def _extract_field_names_local_folder(first_folder):
-    """
-    Extracts field names from the files in first folder in the bucket also
-    checks if folder contains json files and if yes then extracts the keys from the json files
-    and add to the field_names
-
-    :param first_folder: list of objects in the first folder
-    """
-    field_names = {}
-    for field_name in os.listdir(first_folder):
-        if field_name.endswith('.json'):
-            json_f = open(os.path.join(first_folder, field_name))
-            data = json.load(json_f)
-            for el, value in data.items():
-                field_names[el] = value
-        else:
-            field_names[field_name] = field_name
-    return field_names
 
 
 def set_field_names_from_local_folder(user_input: UserInput, **kwargs):
@@ -262,19 +259,26 @@ def set_field_names_from_local_folder(user_input: UserInput, **kwargs):
     if yes set the content of the first folder as field_names in user_input
     """
     dataset_path = user_input.dataset_path.strip()
+    dataset_path = os.path.expanduser(dataset_path)
     if os.path.isfile(dataset_path):
         raise ValueError(
             'The path provided is not a folder, please check documentation https://now.jina.ai'
         )
-    if _check_contains_files_only_local_folder(dataset_path):
-        return
-
-    first_path = _check_folder_structure_local_folder(dataset_path)
-    first_folder = '/'.join(first_path.split('/')[:-1])
-    field_names = _extract_field_names_local_folder(first_folder)
+    file_paths = []
+    for root, dirs, files in os.walk(dataset_path):
+        file_paths.extend([os.path.join(root, file) for file in files])
+    folder_structure = _identify_folder_structure(file_paths, os.sep)
+    if folder_structure == 'single_folder':
+        field_names = _extract_field_names_single_folder(file_paths, os.sep)
+    elif folder_structure == 'sub_folders':
+        first_folder = os.sep.join(file_paths[0].split(os.sep)[:-1])
+        first_folder_files = [
+            os.path.join(first_folder, file)
+            for file in os.listdir(first_folder)
+            if os.path.isfile(os.path.join(first_folder, file))
+        ]
+        field_names = _extract_field_names_sub_folders(first_folder_files, os.sep)
     (
-        search_fields_modalities,
-        filter_fields_modalities,
+        user_input.search_fields_modalities,
+        user_input.filter_fields_modalities,
     ) = _create_candidate_search_filter_fields(field_names)
-    user_input.search_fields_modalities = search_fields_modalities
-    user_input.filter_fields_modalities = filter_fields_modalities

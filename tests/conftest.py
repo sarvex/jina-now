@@ -41,11 +41,6 @@ def image_resource_path(resources_folder_path: str) -> str:
 
 
 @pytest.fixture()
-def music_resource_path(resources_folder_path: str) -> str:
-    return os.path.join(resources_folder_path, 'music')
-
-
-@pytest.fixture()
 def gif_resource_path(resources_folder_path: str) -> str:
     return os.path.join(resources_folder_path, 'gif')
 

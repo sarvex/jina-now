@@ -48,7 +48,7 @@ def multi_modal_data(resources_folder_path):
 
 @pytest.mark.parametrize(
     'input_type, num_expected_matches',
-    [['demo_dataset', 2], ['single_modal', 2], ['multi_modal', 4]],
+    [['demo_dataset', 4], ['single_modal', 2], ['multi_modal', 4]],
 )
 def test_transform_inside_flow(
     input_type, num_expected_matches, single_modal_data, multi_modal_data, tmpdir
@@ -60,8 +60,8 @@ def test_transform_inside_flow(
         user_input.search_fields = []
         user_input.dataset_type = DatasetTypes.DEMO
         user_input.dataset_name = DemoDatasetNames.TUMBLR_GIFS_10K
-        user_input.output_modality = 'video'
         data = load_data(app_instance, user_input)[:2]
+        user_input.search_fields = ['description', 'video']
     elif input_type == 'single_modal':
         app_instance = ImageTextRetrieval()
         data = single_modal_data

@@ -7,7 +7,7 @@ from docarray import Document, DocumentArray
 from pytest_mock import MockerFixture
 
 from now.app.image_text_retrieval.app import ImageTextRetrieval
-from now.app.music_to_music.app import MusicToMusic
+from now.app.text_to_video.app import TextToVideo
 from now.constants import DatasetTypes
 from now.data_loading.data_loading import _load_tags_from_json_if_needed, load_data
 from now.demo_data import DemoDatasetNames
@@ -89,41 +89,24 @@ def test_da_local_path_image_folder(image_resource_path: str):
         assert doc.uri
 
 
-def test_da_local_path_music_folder(music_resource_path: str):
-    user_input = UserInput()
-    user_input.dataset_type = DatasetTypes.PATH
-    user_input.dataset_path = music_resource_path
-    user_input.output_modality = 'music'
-
-    app = MusicToMusic()
-    loaded_da = load_data(app, user_input)
-
-    assert len(loaded_da) == 2, (
-        f'Expected two music docs, got {len(loaded_da)}.'
-        f' Check the tests/resources/music folder'
-    )
-    for doc in loaded_da:
-        assert doc.uri
-
-
 def test_da_custom_ds(da: DocumentArray):
     user_input = UserInput()
     user_input.dataset_type = DatasetTypes.DEMO
     user_input.dataset_name = DemoDatasetNames.DEEP_FASHION
-    user_input.output_modality = 'image'
 
     app = ImageTextRetrieval()
     loaded_da = load_data(app, user_input)
 
+    assert len(loaded_da) > 0
     for doc in loaded_da:
-        assert doc.content
+        assert doc.chunks
 
 
 @pytest.fixture
 def user_input():
     user_input = UserInput()
     user_input.dataset_path = ''
-    user_input.app_instance = ImageTextRetrieval()
+    user_input.app_instance = TextToVideo()
     return user_input
 
 
