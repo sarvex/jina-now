@@ -52,7 +52,7 @@ def _create_app_from_user_input(user_input: UserInput, **kwargs):
         )
     _search_modality = user_input.search_fields_modalities[user_input.search_fields[0]]
 
-    if _search_modality in Modalities:
+    if _search_modality in [Modalities.TEXT, Modalities.VIDEO, Modalities.IMAGE]:
         _search_modality = MODALITIES_MAPPING[_search_modality]
 
     if _search_modality in [Image, Text]:
