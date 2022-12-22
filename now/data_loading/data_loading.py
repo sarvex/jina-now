@@ -1,9 +1,14 @@
 import json
 import os
+from collections import defaultdict
 from typing import Dict, List, Type
 
 from docarray import Document, DocumentArray
 
+from now.common.detect_schema import (
+    get_s3_bucket_and_folder_prefix,
+    identify_folder_structure,
+)
 from now.constants import DatasetTypes
 from now.data_loading.elasticsearch import ElasticsearchExtractor
 from now.log import yaspin_extended
@@ -115,69 +120,116 @@ def from_files_local(
     :return: A DocumentArray with the documents
     """
 
-    def get_subdirectories_local_path(directory):
-        return [
-            name
-            for name in os.listdir(directory)
-            if os.path.isdir(os.path.join(directory, name))
-        ]
-
-    subdirectories = get_subdirectories_local_path(path)
-    if subdirectories:
+    file_paths = []
+    for root, dirs, files in os.walk(path):
+        file_paths.extend(
+            [os.path.join(root, file) for file in files if not file.startswith('.')]
+        )
+    folder_structure = identify_folder_structure(file_paths, os.sep)
+    if folder_structure == 'subdirectories':
         docs = create_docs_from_subdirectories(
-            subdirectories, path, fields, files_to_dataclass_fields, data_class
+            file_paths, fields, files_to_dataclass_fields, data_class
         )
     else:
         docs = create_docs_from_files(
-            path, fields, files_to_dataclass_fields, data_class
+            file_paths, fields, files_to_dataclass_fields, data_class
         )
     return DocumentArray(docs)
 
 
 def create_docs_from_subdirectories(
-    subdirectories: List,
-    path: str,
+    file_paths: List,
     fields: List[str],
     files_to_dataclass_fields: Dict,
     data_class: Type,
+    path: str = None,
+    s3_dataset: bool = False,
 ) -> List[Document]:
     """
     Creates a Multi Modal documentarray over a list of subdirectories.
 
-    :param subdirectories: The list of subdirectories
-    :param path: The path to the directory
+    :param file_paths: The list of file paths
     :param fields: The fields to search for in the directory
     :param files_to_dataclass_fields: The mapping of the files to the dataclass fields
     :param data_class: The dataclass to use for the document
+    :param path: The path to the directory
+    :param s3_dataset: Whether the dataset is stored on s3
 
     :return: The list of documents
     """
 
     docs = []
-    kwargs = {}
-    for subdirectory in subdirectories:
-        for file in os.listdir(os.path.join(path, subdirectory)):
+    folder_files = defaultdict(list)
+    for file in file_paths:
+        folder_files[file.split('/')[:-1]].append(file)
+    for folder, files in folder_files.items():
+        kwargs = {}
+        for file in files:
+            file, file_full_path = _extract_file_and_full_file_path_s3(
+                file, path, s3_dataset
+            )
             if file in fields:
-                kwargs[files_to_dataclass_fields[file]] = os.path.join(
-                    path, subdirectory, file
-                )
+                kwargs[files_to_dataclass_fields[file]] = file_full_path
                 continue
             if file.endswith('.json'):
-                json_f = open(os.path.join(path, subdirectory, file))
-                data = json.load(json_f)
-                for el, value in data.items():
-                    kwargs[files_to_dataclass_fields[el]] = value
+                if s3_dataset:
+                    for field in data_class.__annotations__.keys():
+                        if field not in kwargs.keys():
+                            kwargs[field] = file_full_path
+                else:
+                    json_f = open(file_full_path)
+                    data = json.load(json_f)
+                    for el, value in data.items():
+                        kwargs[files_to_dataclass_fields[el]] = value
         docs.append(Document(data_class(**kwargs)))
     return docs
 
 
 def create_docs_from_files(
-    path: str, fields: List[str], files_to_dataclass_fields: Dict, data_class: Type
+    file_paths: List,
+    fields: List[str],
+    files_to_dataclass_fields: Dict,
+    data_class: Type,
+    path: str = None,
+    s3_dataset: bool = False,
 ) -> List[Document]:
     """
     Creates a Multi Modal documentarray over a list of files.
 
+    :param file_paths: List of file paths
+    :param fields: The fields to search for in the directory
+    :param files_to_dataclass_fields: The mapping of the files to the dataclass fields
+    :param data_class: The dataclass to use for the document
     :param path: The path to the directory
+    :param s3_dataset: Whether the dataset is stored on s3
+
+    :return: A list of documents
+    """
+    docs = []
+    for file in file_paths:
+        kwargs = {}
+        file, file_full_path = _extract_file_and_full_file_path_s3(
+            file, path, s3_dataset
+        )
+        file_extension = file.split('.')[-1]
+        if (
+            file_extension == fields[0].split('.')[-1]
+        ):  # fields should have only one search field in case of files only
+            kwargs[files_to_dataclass_fields[fields[0]]] = file_full_path
+            docs.append(Document(data_class(**kwargs)))
+    return docs
+
+
+def create_docs_from_files(
+    file_paths: List,
+    fields: List[str],
+    files_to_dataclass_fields: Dict,
+    data_class: Type,
+) -> List[Document]:
+    """
+    Creates a Multi Modal documentarray over a list of files.
+
+    :param file_paths: List of file paths
     :param fields: The fields to search for in the directory
     :param files_to_dataclass_fields: The mapping of the files to the dataclass fields
     :param data_class: The dataclass to use for the document
@@ -185,13 +237,13 @@ def create_docs_from_files(
     :return: A list of documents
     """
     docs = []
-    for file in os.listdir(os.path.join(path)):
+    for file in file_paths:
         kwargs = {}
         file_extension = file.split('.')[-1]
         if (
             file_extension == fields[0].split('.')[-1]
         ):  # fields should have only one search field in case of files only
-            kwargs[files_to_dataclass_fields[fields[0]]] = os.path.join(path, file)
+            kwargs[files_to_dataclass_fields[fields[0]]] = file
             docs.append(Document(data_class(**kwargs)))
     return docs
 
@@ -209,146 +261,48 @@ def _list_files_from_s3_bucket(
     """
     bucket, folder_prefix = get_s3_bucket_and_folder_prefix(user_input)
 
-    def get_subdirectories(s3_bucket, root_folder):
-        """
-        Gets the subdirectories of a given folder in a s3 bucket.
+    objects = list(bucket.objects.filter(Prefix=folder_prefix))
+    file_paths = [
+        obj.key
+        for obj in objects
+        if not obj.key.endswith('/') and not obj.key.startswith('.')
+    ]
 
-        :param s3_bucket: The s3 bucket.
-        :param root_folder: The root folder.
-
-        :return: The list of subdirectories.
-        """
-        sub_directories = []
-        for obj in list(s3_bucket.objects.filter(Prefix=root_folder))[1:]:
-            if obj.key.endswith('/'):
-                sub_directories.append(obj.key)
-        return sub_directories
+    folder_structure = identify_folder_structure(file_paths, '/')
 
     with yaspin_extended(
         sigmap=sigmap, text="Listing files from S3 bucket ...", color="green"
     ) as spinner:
         spinner.ok('🏭')
-        subdirectories = get_subdirectories(bucket, folder_prefix)
-        if subdirectories:
-            docs = create_docs_from_subdirectories_s3(
-                subdirectories,
-                user_input.dataset_path,
+        if folder_structure == 'subdirectories':
+            docs = create_docs_from_subdirectories(
+                file_paths,
                 user_input.search_fields + user_input.filter_fields,
                 user_input.files_to_dataclass_fields,
                 data_class,
-                bucket,
+                user_input.dataset_path,
+                s3_dataset=True,
             )
         else:
-            docs = create_docs_from_files_s3(
-                folder_prefix,
-                user_input.dataset_path,
+            docs = create_docs_from_files(
+                file_paths,
                 user_input.search_fields + user_input.filter_fields,
                 user_input.files_to_dataclass_fields,
                 data_class,
-                bucket,
+                user_input.dataset_path,
+                s3_dataset=True,
             )
     return DocumentArray(docs)
 
 
-def create_docs_from_subdirectories_s3(
-    subdirectories: List,
-    path: str,
-    fields: List[str],
-    files_to_dataclass_fields: Dict,
-    data_class: Type,
-    bucket,
-) -> List[Document]:
+def _extract_file_and_full_file_path_s3(obj, path=None, s3_dataset=False):
     """
-    Creates a Multi Modal documentarray over a list of subdirectories.
-
-    :param subdirectories: The list of subdirectories
-    :param path: The path to the directory
-    :param fields: The fields to search for in the directory
-    :param files_to_dataclass_fields: The mapping of the files to the dataclass fields
-    :param data_class: The dataclass to use for the document
-    :param bucket: The s3 bucket
-
-    :return: The list of documents
+    Extracts the file name and the full file path from s3 object.
     """
-    docs = []
-    for subdirectory in subdirectories:
-        kwargs = {}
-        for obj in list(bucket.objects.filter(Prefix=subdirectory))[1:]:
-            file, file_full_path = _extract_file_and_full_file_path_s3(obj, path)
-            if file in fields:
-                kwargs[files_to_dataclass_fields[file]] = file_full_path
-                continue
-            if file.endswith('.json'):
-                for field in data_class.__annotations__.keys():
-                    if field not in kwargs.keys():
-                        kwargs[field] = file_full_path
-        docs.append(Document(data_class(**kwargs)))
-    return docs
-
-
-def _extract_file_and_full_file_path_s3(obj, path):
-    """
-    Extracts the file name and the full file path from an s3 object.
-    """
-    file = obj.key.split('/')[-1]
-    file_full_path = '/'.join(path.split('/')[:3]) + '/' + obj.key
+    if s3_dataset:
+        file = obj.key.split('/')[-1]
+        file_full_path = '/'.join(path.split('/')[:3]) + '/' + obj.key
+    else:
+        file_full_path = obj
+        file = obj.split(os.sep)[-1]
     return file, file_full_path
-
-
-def create_docs_from_files_s3(
-    folder: str,
-    path: str,
-    fields: List[str],
-    files_to_dataclass_fields: Dict,
-    data_class: Type,
-    bucket,
-) -> List[Document]:
-    """
-    Creates a Multi Modal documentarray over a list of files.
-
-    :param folder: The folder to search for files
-    :param path: The path to the directory
-    :param fields: The fields to search for in the directory
-    :param files_to_dataclass_fields: The mapping of the files to the dataclass fields
-    :param data_class: The dataclass to use for the document
-    :param bucket: The s3 bucket
-
-    :return: A list of documents
-    """
-    docs = []
-    for obj in list(bucket.objects.filter(Prefix=folder))[1:]:
-        kwargs = {}
-        file, file_full_path = _extract_file_and_full_file_path_s3(obj, path)
-        file_extension = file.split('.')[-1]
-        if file_extension == fields[0].split('.')[-1]:
-            kwargs[files_to_dataclass_fields[fields[0]]] = file_full_path
-            docs.append(Document(data_class(**kwargs)))
-    return docs
-
-
-def get_s3_bucket_and_folder_prefix(user_input: UserInput):
-    """
-    Gets the s3 bucket and folder prefix from the user input.
-
-    :param user_input: The user input
-
-    :return: The s3 bucket and folder prefix
-    """
-    import boto3.session
-
-    s3_uri = user_input.dataset_path
-    if not s3_uri.startswith('s3://'):
-        raise ValueError(
-            f"Can't process S3 URI {s3_uri} as it assumes it starts with: 's3://'"
-        )
-
-    bucket = s3_uri.split('/')[2]
-    folder_prefix = '/'.join(s3_uri.split('/')[3:])
-
-    session = boto3.session.Session(
-        aws_access_key_id=user_input.aws_access_key_id,
-        aws_secret_access_key=user_input.aws_secret_access_key,
-    )
-    bucket = session.resource('s3').Bucket(bucket)
-
-    return bucket, folder_prefix
