@@ -165,7 +165,7 @@ def create_docs_from_subdirectories(
     for folder, files in folder_files.items():
         kwargs = {}
         for file in files:
-            file, file_full_path = _extract_file_and_full_file_path_s3(
+            file, file_full_path = _extract_file_and_full_file_path(
                 file, path, s3_dataset
             )
             if file in fields:
@@ -208,42 +208,12 @@ def create_docs_from_files(
     docs = []
     for file in file_paths:
         kwargs = {}
-        file, file_full_path = _extract_file_and_full_file_path_s3(
-            file, path, s3_dataset
-        )
+        file, file_full_path = _extract_file_and_full_file_path(file, path, s3_dataset)
         file_extension = file.split('.')[-1]
         if (
             file_extension == fields[0].split('.')[-1]
         ):  # fields should have only one search field in case of files only
             kwargs[files_to_dataclass_fields[fields[0]]] = file_full_path
-            docs.append(Document(data_class(**kwargs)))
-    return docs
-
-
-def create_docs_from_files(
-    file_paths: List,
-    fields: List[str],
-    files_to_dataclass_fields: Dict,
-    data_class: Type,
-) -> List[Document]:
-    """
-    Creates a Multi Modal documentarray over a list of files.
-
-    :param file_paths: List of file paths
-    :param fields: The fields to search for in the directory
-    :param files_to_dataclass_fields: The mapping of the files to the dataclass fields
-    :param data_class: The dataclass to use for the document
-
-    :return: A list of documents
-    """
-    docs = []
-    for file in file_paths:
-        kwargs = {}
-        file_extension = file.split('.')[-1]
-        if (
-            file_extension == fields[0].split('.')[-1]
-        ):  # fields should have only one search field in case of files only
-            kwargs[files_to_dataclass_fields[fields[0]]] = file
             docs.append(Document(data_class(**kwargs)))
     return docs
 
@@ -295,7 +265,7 @@ def _list_files_from_s3_bucket(
     return DocumentArray(docs)
 
 
-def _extract_file_and_full_file_path_s3(obj, path=None, s3_dataset=False):
+def _extract_file_and_full_file_path(obj, path=None, s3_dataset=False):
     """
     Extracts the file name and the full file path from s3 object.
     """
