@@ -1,17 +1,8 @@
-import base64
 from typing import Dict, List, Tuple, Union
 
-from docarray import Document, DocumentArray
+from docarray import DocumentArray
 from jina.helper import random_port
-from jina.serve.runtimes.gateway.http.models import JinaRequestModel, JinaResponseModel
-from pydantic import BaseModel
 
-from deployment.bff.app.v1.models.text import NowTextSearchRequestModel
-from deployment.bff.app.v1.models.video import (
-    NowVideoIndexRequestModel,
-    NowVideoListResponseModel,
-    NowVideoResponseModel,
-)
 from now.app.base.app import JinaNOWApp
 from now.common.utils import _extract_tags_for_indexer, get_email, get_indexer_config
 from now.constants import (
@@ -25,6 +16,9 @@ from now.constants import (
 )
 from now.demo_data import DemoDatasetNames
 from now.executor.name_to_id_map import name_to_id_map
+from now.finetuning.run_finetuning import finetune
+from now.finetuning.settings import parse_finetune_settings
+from now.now_dataclasses import UserInput
 
 
 class SearchApp(JinaNOWApp):
@@ -135,6 +129,43 @@ class SearchApp(JinaNOWApp):
         return exec_stub, encoder_env
 
     @staticmethod
+    def cast_convert_stub(user_input) -> Tuple[Dict, Dict]:
+        exec_stub = {
+            'name': 'cast_convert',
+            'uses': '${{ENV.CAST_CONVERT_NAME}}',
+            'uses_with': {
+                'output_size': '${{ENV.PRE_TRAINED_EMBEDDINGS_SIZE}}',
+                'env': {'JINA_LOG_LEVEL': 'DEBUG'},
+            },
+        }
+        exec_env = {
+            'PRE_TRAINED_EMBEDDINGS_SIZE': 512,
+        }
+        return exec_stub, exec_env
+
+    @staticmethod
+    def linear_head_stub(user_input) -> Tuple[Dict, Dict]:
+        exec_stub = {
+            'name': 'linear_head',
+            'uses': 'jinahub+docker://FinetunerExecutor/v0.9.2',
+            'uses_with': {
+                'artifact': '${{ENV.FINETUNE_ARTIFACT}}',
+                'token': '${{ENV.JINA_TOKEN}}',
+            },
+            'uses_requests': {
+                '/index': 'encode',
+                '/ search': 'encode',
+            },
+            'output_array_type': 'numpy',
+            'jcloud': {'resources': {'memory': '4G'}},
+            'env': {'JINA_LOG_LEVEL': 'DEBUG'},
+        }
+        exec_env = {
+            'PRE_TRAINED_EMBEDDINGS_SIZE': 512,
+        }
+        return exec_stub, exec_env
+
+    @staticmethod
     def sbert_encoder_stub() -> Tuple[Dict, Dict]:
         exec_stub = {
             'name': 'sbert_encoder',
@@ -193,13 +224,53 @@ class SearchApp(JinaNOWApp):
         }
         return exec_stub, exec_env
 
+    def finetune_setup(
+        self,
+        dataset: DocumentArray,
+        user_input: UserInput,
+        finetune_settings,
+        env_dict,
+        **kwargs,
+    ) -> Tuple[Dict, bool]:
+        kubectl_path = kwargs.get('kubectl_path', 'kubectl')
+        is_finetuned = False
+        if finetune_settings.perform_finetuning:
+            try:
+                artifact_id, token = finetune(
+                    finetune_settings=finetune_settings,
+                    app_instance=self,
+                    dataset=dataset,
+                    user_input=user_input,
+                    env_dict=env_dict,
+                    kubectl_path=kubectl_path,
+                )
+
+                finetune_settings.finetuned_model_artifact = artifact_id
+                finetune_settings.token = token
+
+                env_dict[
+                    'FINETUNE_ARTIFACT'
+                ] = finetune_settings.finetuned_model_artifact
+                env_dict['JINA_TOKEN'] = finetune_settings.token
+                is_finetuned = True
+            except Exception:  # noqa
+                print(
+                    'Finetuning is currently offline. The program execution still continues without'
+                    ' finetuning. Please report the following exception to us:'
+                )
+                import traceback
+
+                traceback.print_exc()
+                finetune_settings.perform_finetuning = False
+
+        return env_dict, is_finetuned
+
     def get_executor_stubs(
-        self, dataset, is_finetuned, user_input, flow_yaml_content, **kwargs
+        self, dataset, user_input, flow_yaml_content, **kwargs
     ) -> Tuple[Dict, Dict]:
         """
         Returns a dictionary of executors to be added in the flow along with their env vars and its values
         :param dataset: DocumentArray of the dataset
-        :param is_finetuned: Boolean indicating if this app is finetuned
         :param user_input: user input
         :param flow_yaml_content: initial flow yaml content
         :param kwargs: additional arguments
@@ -229,7 +300,7 @@ class SearchApp(JinaNOWApp):
         flow_yaml_content['executors'].append(preprocessor)
         exec_env_dict.update(exec_env)
 
-        # TODO: add support for finetuned models
+        # TODO: add support for finetuning of all models
         # 3a. append sbert encoder to the flow if output modalities are texts
         if Modalities.TEXT in user_input.search_mods.values():
             sbert_encoder, exec_env = self.sbert_encoder_stub()
@@ -239,20 +310,46 @@ class SearchApp(JinaNOWApp):
             exec_env_dict.update(exec_env)
 
         # 3b. append clip encoder to the flow if output modalities are images
-        if Modalities.IMAGE in user_input.search_mods.values():
+        if (
+            Modalities.IMAGE in user_input.search_mods.values()
+            or Modalities.VIDEO in user_input.search_mods.values()
+        ):
+            # Parse finetuning settings. Should be refactored when finetuning is added
+            finetune_settings = parse_finetune_settings(
+                pre_trained_embedding_size=exec_env_dict['PRE_TRAINED_EMBEDDINGS_SIZE'],
+                user_input=user_input,
+                dataset=dataset,
+                finetune_datasets=self.finetune_datasets,
+                model_name='mlp',
+                add_embeddings=True,
+                loss='TripletMarginLoss',
+            )
+            # Perform the finetune setup
+            exec_env_dict, is_finetuned = self.finetune_setup(
+                dataset=dataset,
+                user_input=user_input,
+                finetune_settings=finetune_settings,
+                env_dict=exec_env_dict,
+                **kwargs,
+            )
             clip_encoder, exec_env = self.clip_encoder_stub(user_input)
             encoders_list.append(clip_encoder['name'])
             clip_encoder['needs'] = init_execs_list[-1]
             flow_yaml_content['executors'].append(clip_encoder)
             exec_env_dict.update(exec_env)
-
-        # 3c. append clip encoder if the output modality is video
-        if Modalities.VIDEO in user_input.search_mods.values():
-            clip_encoder, exec_env = self.clip_encoder_stub()
-            encoders_list.append(clip_encoder['name'])
-            clip_encoder['needs'] = init_execs_list[-1]
-            flow_yaml_content['executors'].append(clip_encoder)
-            exec_env_dict.update(exec_env)
+            if is_finetuned:
+                # Cast Convert
+                cast_convert, exec_env = self.cast_convert_stub()
+                cast_convert['needs'] = encoders_list[-1]
+                encoders_list.append(cast_convert['name'])
+                flow_yaml_content['executors'].append(cast_convert)
+                exec_env_dict.update(exec_env)
+                # Linear Head
+                linear_head, exec_env = self.linear_head_stub()
+                linear_head['needs'] = encoders_list[-1]
+                encoders_list.append(linear_head['name'])
+                flow_yaml_content['executors'].append(linear_head)
+                exec_env_dict.update(exec_env)
 
         # 4. append indexer to the flow
         if not any(
@@ -294,63 +391,8 @@ class SearchApp(JinaNOWApp):
                 'CAST_CONVERT_NAME': f'{EXECUTOR_PREFIX}CastNMoveNowExecutor/v0.0.3',
             }
         )
+
         return flow_yaml_content, exec_env_dict
-
-    @property
-    def bff_mapping_fns(self):
-        def search_text_to_video_request_mapping_fn(
-            request: NowTextSearchRequestModel,
-        ) -> JinaRequestModel:
-            jina_request_model = JinaRequestModel()
-            jina_request_model.data = [Document(chunks=[Document(text=request.text)])]
-            jina_request_model.parameters = {
-                'limit': request.limit,
-                'api_key': request.api_key,
-                'jwt': request.jwt,
-            }
-            return jina_request_model
-
-        def search_video_response_mapping_fn(
-            request: NowTextSearchRequestModel, response: JinaResponseModel
-        ) -> List[NowVideoResponseModel]:
-            docs = response.data
-            limit = request.limit
-            return docs[0].matches[:limit].to_dict()
-
-        def index_text_to_video_request_mapping_fn(
-            request: NowVideoIndexRequestModel,
-        ) -> JinaRequestModel:
-            index_docs = DocumentArray()
-            for video, uri, tags in zip(request.videos, request.uris, request.tags):
-                if bool(video) + bool(uri) != 1:
-                    raise ValueError(
-                        f'Can only set one value but have video={video}, uri={uri}'
-                    )
-                if video:
-                    base64_bytes = video.encode('utf-8')
-                    message = base64.decodebytes(base64_bytes)
-                    index_docs.append(Document(blob=message, tags=tags))
-                else:
-                    index_docs.append(Document(uri=uri, tags=tags))
-            return JinaRequestModel(data=index_docs)
-
-        def no_response_mapping_fn(_: JinaResponseModel) -> BaseModel:
-            return BaseModel()
-
-        return {
-            '/search': (
-                NowTextSearchRequestModel,
-                NowVideoListResponseModel,
-                search_text_to_video_request_mapping_fn,
-                search_video_response_mapping_fn,
-            ),
-            '/index': (
-                NowVideoIndexRequestModel,
-                BaseModel,
-                index_text_to_video_request_mapping_fn,
-                no_response_mapping_fn,
-            ),
-        }
 
     @property
     def max_request_size(self) -> int:

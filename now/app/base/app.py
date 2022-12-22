@@ -11,8 +11,6 @@ from now.app.base.preprocess import preprocess_image, preprocess_text, preproces
 from now.common.utils import get_common_env_dict
 from now.constants import DEFAULT_FLOW_NAME, SUPPORTED_FILE_TYPES, Modalities
 from now.demo_data import AVAILABLE_DATASETS, DEFAULT_EXAMPLE_HOSTED, DemoDataset
-from now.finetuning.run_finetuning import finetune
-from now.finetuning.settings import parse_finetune_settings
 from now.now_dataclasses import DialogOptions, UserInput
 
 
@@ -183,9 +181,17 @@ class JinaNOWApp:
 
     def get_executor_stubs(
         self, dataset, is_finetuned, user_input, flow_yaml_content, **kwargs
-    ) -> Union[Dict, Dict]:
+    ) -> Tuple[Dict, Dict]:
         """
         Returns the stubs for the executors in the flow.
+        """
+        raise NotImplementedError()
+
+    def finetune_setup(
+        self, dataset, user_input, finetune_settings, env_dict, **kwargs
+    ):
+        """
+        Perform the finetuning setup for the app. Maybe different approach for different apps.
         """
         raise NotImplementedError()
 
@@ -203,13 +209,7 @@ class JinaNOWApp:
         :param user_input: user configuration based on the given options
         :return: dict used to replace variables in flow yaml and to clean up resources after the flow is terminated
         """
-        # Perform the finetune setup
-        finetune_env_dict, is_finetuned = self.finetune_setup(
-            user_input=user_input,
-            dataset=dataset,
-            kubectl_path=kwargs['kubectl_path'],
-            pre_trained_embed_size=512,
-        )
+        common_env_dict = get_common_env_dict(user_input)
         # Read the flow and add generic configuration such as labels in the flow
         # Keep this function as simple as possible. It should only be used to add generic configuration needed
         # for all apps. App specific configuration should be added in the app specific setup function.
@@ -224,64 +224,13 @@ class JinaNOWApp:
             )
             # Call the executor stubs function to get the executors for the flow and their env dict
             flow_yaml_content, exec_env_dict = self.get_executor_stubs(
-                dataset, is_finetuned, user_input, flow_yaml_content, **kwargs
+                dataset, user_input, flow_yaml_content, **kwargs
             )
             self.flow_yaml = self.add_telemetry_env(flow_yaml_content)
 
-        common_env_dict = get_common_env_dict(user_input)
+        # Perform the finetune setup
 
         return {**finetune_env_dict, **exec_env_dict, **common_env_dict}
-
-    def finetune_setup(
-        self,
-        user_input: UserInput,
-        dataset: DocumentArray,
-        kubectl_path: str,
-        pre_trained_embed_size: int,
-    ) -> Tuple[Dict, bool]:
-        is_finetuned = False
-        env_dict = {}
-        # should receive pre embedding size
-        finetune_settings = parse_finetune_settings(
-            pre_trained_embedding_size=pre_trained_embed_size,
-            user_input=user_input,
-            dataset=dataset,
-            finetune_datasets=self.finetune_datasets,
-            model_name='mlp',
-            add_embeddings=True,
-            loss='TripletMarginLoss',
-        )
-
-        if finetune_settings.perform_finetuning:
-            try:
-                artifact_id, token = finetune(
-                    finetune_settings=finetune_settings,
-                    app_instance=self,
-                    dataset=dataset,
-                    user_input=user_input,
-                    env_dict=env_dict,
-                    kubectl_path=kubectl_path,
-                )
-
-                finetune_settings.finetuned_model_artifact = artifact_id
-                finetune_settings.token = token
-
-                env_dict[
-                    'FINETUNE_ARTIFACT'
-                ] = finetune_settings.finetuned_model_artifact
-                env_dict['JINA_TOKEN'] = finetune_settings.token
-                is_finetuned = True
-            except Exception:  # noqa
-                print(
-                    'Finetuning is currently offline. The program execution still continues without'
-                    ' finetuning. Please report the following exception to us:'
-                )
-                import traceback
-
-                traceback.print_exc()
-                finetune_settings.perform_finetuning = False
-
-        return env_dict, is_finetuned
 
     def preprocess(
         self,

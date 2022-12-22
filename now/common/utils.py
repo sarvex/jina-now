@@ -36,10 +36,10 @@ def get_common_env_dict(user_input: UserInput):
         'API_KEY': [user_input.api_key]
         if user_input.secured and user_input.api_key
         else [],
+        'CUSTOM_DNS': '',
     }
 
     # DNS configuration for the demo datasets deployment
-    config['CUSTOM_DNS'] = ''
     if 'NOW_EXAMPLES' in os.environ:
         valid_app = DEFAULT_EXAMPLE_HOSTED.get(user_input.app_instance.app_name, {})
         is_demo_ds = user_input.dataset_name in valid_app
