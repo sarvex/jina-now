@@ -129,7 +129,7 @@ class SearchApp(JinaNOWApp):
         return exec_stub, encoder_env
 
     @staticmethod
-    def cast_convert_stub(user_input) -> Tuple[Dict, Dict]:
+    def cast_convert_stub() -> Tuple[Dict, Dict]:
         exec_stub = {
             'name': 'cast_convert',
             'uses': '${{ENV.CAST_CONVERT_NAME}}',
@@ -140,11 +140,12 @@ class SearchApp(JinaNOWApp):
         }
         exec_env = {
             'PRE_TRAINED_EMBEDDINGS_SIZE': 512,
+            'CAST_CONVERT_NAME': f'{EXECUTOR_PREFIX}CastNMoveNowExecutor/v0.0.3',
         }
         return exec_stub, exec_env
 
     @staticmethod
-    def linear_head_stub(user_input) -> Tuple[Dict, Dict]:
+    def linear_head_stub() -> Tuple[Dict, Dict]:
         exec_stub = {
             'name': 'linear_head',
             'uses': 'jinahub+docker://FinetunerExecutor/v0.9.2',
@@ -160,9 +161,7 @@ class SearchApp(JinaNOWApp):
             'jcloud': {'resources': {'memory': '4G'}},
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
         }
-        exec_env = {
-            'PRE_TRAINED_EMBEDDINGS_SIZE': 512,
-        }
+        exec_env = {}
         return exec_stub, exec_env
 
     @staticmethod
@@ -211,7 +210,7 @@ class SearchApp(JinaNOWApp):
             'jcloud': {
                 'resources': {
                     'memory': '${{ENV.INDEXER_MEM}}',
-                    'cpu': '1.0',
+                    'cpu': '${{ENV.INDEXER_CPU}}',
                     'capacity': 'on-demand',
                 }
             },
@@ -281,6 +280,7 @@ class SearchApp(JinaNOWApp):
         encoders_list = []
         init_execs_list = []
         exec_env_dict = {}
+        ft_encoders_list = []
 
         # 1. append autocomplete executor to the flow if output modality is text
         if Modalities.TEXT in self.input_modality:
@@ -314,6 +314,22 @@ class SearchApp(JinaNOWApp):
             Modalities.IMAGE in user_input.search_mods.values()
             or Modalities.VIDEO in user_input.search_mods.values()
         ):
+            # First add the clip encoder and then check if finetuning is required
+            clip_encoder, exec_env = self.clip_encoder_stub(user_input)
+            encoders_list.append(clip_encoder['name'])
+            clip_encoder['needs'] = init_execs_list[-1]
+            flow_yaml_content['executors'].append(clip_encoder)
+            exec_env_dict.update(exec_env)
+            exec_env_dict.update(
+                {
+                    'PRETRAINED_MODEL_NAME_OR_PATH': CLIP_USES[
+                        user_input.deployment_type
+                    ][1],
+                    'PRE_TRAINED_EMBEDDINGS_SIZE': CLIP_USES[
+                        user_input.deployment_type
+                    ][2],
+                }
+            )
             # Parse finetuning settings. Should be refactored when finetuning is added
             finetune_settings = parse_finetune_settings(
                 pre_trained_embedding_size=exec_env_dict['PRE_TRAINED_EMBEDDINGS_SIZE'],
@@ -332,22 +348,18 @@ class SearchApp(JinaNOWApp):
                 env_dict=exec_env_dict,
                 **kwargs,
             )
-            clip_encoder, exec_env = self.clip_encoder_stub(user_input)
-            encoders_list.append(clip_encoder['name'])
-            clip_encoder['needs'] = init_execs_list[-1]
-            flow_yaml_content['executors'].append(clip_encoder)
-            exec_env_dict.update(exec_env)
+
             if is_finetuned:
                 # Cast Convert
                 cast_convert, exec_env = self.cast_convert_stub()
                 cast_convert['needs'] = encoders_list[-1]
-                encoders_list.append(cast_convert['name'])
+                encoders_list[-1] = cast_convert['name']
                 flow_yaml_content['executors'].append(cast_convert)
                 exec_env_dict.update(exec_env)
                 # Linear Head
                 linear_head, exec_env = self.linear_head_stub()
                 linear_head['needs'] = encoders_list[-1]
-                encoders_list.append(linear_head['name'])
+                encoders_list[-1] = linear_head['name']
                 flow_yaml_content['executors'].append(linear_head)
                 exec_env_dict.update(exec_env)
 
@@ -356,7 +368,7 @@ class SearchApp(JinaNOWApp):
             exec_dict['name'] == 'indexer'
             for exec_dict in flow_yaml_content['executors']
         ):
-            indexer_stub, exec_env = self.indexer_stub()
+            indexer_stub, exec_env = self.indexer_stub(user_input)
             # skip connection to indexer + from all encoders
             indexer_stub['needs'] = encoders_list
             flow_yaml_content['executors'].append(indexer_stub)
@@ -382,15 +394,6 @@ class SearchApp(JinaNOWApp):
                     'PREPROCESSOR_REPLICAS': '20',
                 }
             )
-        exec_env_dict.update(
-            {
-                'PRETRAINED_MODEL_NAME_OR_PATH': CLIP_USES[user_input.deployment_type][
-                    1
-                ],
-                'PRE_TRAINED_EMBEDDINGS_SIZE': CLIP_USES[user_input.deployment_type][2],
-                'CAST_CONVERT_NAME': f'{EXECUTOR_PREFIX}CastNMoveNowExecutor/v0.0.3',
-            }
-        )
 
         return flow_yaml_content, exec_env_dict
 

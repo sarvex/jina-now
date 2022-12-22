@@ -209,6 +209,7 @@ class JinaNOWApp:
         :param user_input: user configuration based on the given options
         :return: dict used to replace variables in flow yaml and to clean up resources after the flow is terminated
         """
+        self.set_flow_yaml(**kwargs)
         common_env_dict = get_common_env_dict(user_input)
         # Read the flow and add generic configuration such as labels in the flow
         # Keep this function as simple as possible. It should only be used to add generic configuration needed
@@ -228,9 +229,7 @@ class JinaNOWApp:
             )
             self.flow_yaml = self.add_telemetry_env(flow_yaml_content)
 
-        # Perform the finetune setup
-
-        return {**finetune_env_dict, **exec_env_dict, **common_env_dict}
+        return {**exec_env_dict, **common_env_dict}
 
     def preprocess(
         self,
