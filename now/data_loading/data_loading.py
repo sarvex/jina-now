@@ -185,7 +185,8 @@ def create_docs_from_subdirectories(
                     json_f = open(file_full_path)
                     data = json.load(json_f)
                     for el, value in data.items():
-                        kwargs[files_to_dataclass_fields[el]] = value
+                        if el in files_to_dataclass_fields.keys():
+                            kwargs[files_to_dataclass_fields[el]] = value
         docs.append(Document(data_class(**kwargs)))
     return docs
 
