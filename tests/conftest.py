@@ -20,6 +20,20 @@ def tests_folder_path() -> str:
     return os.path.join(os.path.dirname(os.path.realpath(__file__)))
 
 
+@pytest.fixture()
+def setup_qdrant(tests_folder_path):
+    docker_file_path = os.path.join(
+        tests_folder_path, 'executor/indexer/base/docker-compose.yml'
+    )
+    cmd(
+        f"docker-compose -f {docker_file_path} --project-directory . up  --build -d --remove-orphans"
+    )
+    yield
+    cmd(
+        f"docker-compose -f {docker_file_path} --project-directory . down --remove-orphans"
+    )
+
+
 @pytest.fixture(scope='session')
 def service_account_file_path() -> str:
     return os.path.join(
