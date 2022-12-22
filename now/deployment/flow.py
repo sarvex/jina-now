@@ -50,20 +50,16 @@ def check_pods_health(ns):
     config.load_kube_config()
     v1 = k8s_client.CoreV1Api()
     pods = v1.list_namespaced_pod(ns).items
+
     for pod in pods:
         try:
-            if pod.status and pod.status.container_statuses:
-                container_status = pod.status.container_statuses[0]
-                if container_status.started is False or container_status.ready is False:
-                    waiting_state = container_status.state.waiting
-                    if (
-                        waiting_state is not None
-                        and waiting_state.message is not None
-                        and 'Error' in waiting_state.message
-                    ):
-                        raise Exception(pod.metadata.name + " " + waiting_state.reason)
-        except Exception as e:
-            print(e)
+            container_statuses = pod.status.container_statuses
+            if 'Error' in container_statuses[0].state.waiting.message:
+                raise Exception(
+                    pod.metadata.name + " " + container_statuses[0].state.waiting.reason
+                )
+        except:
+            pass
 
 
 def deploy_k8s(f, ns, tmpdir, kubectl_path):
