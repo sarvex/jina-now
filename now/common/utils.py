@@ -45,10 +45,11 @@ def common_get_flow_env_dict(
     indexer_resources: Dict,
     user_input: UserInput,
     tags: List,
+    deployment_type: str,
 ):
     """Returns dictionary for the environments variables for the clip flow.yml files."""
     is_jina_email = get_email().split('@')[-1] == 'jina.ai'
-    if is_jina_email:
+    if is_jina_email and deployment_type == 'remote':
         print(
             f"🚀🚀🚀 As employee of Jina, you are using a high performance flow.\n"
             f"Therefore, your deployment will be faster.\n"
@@ -129,6 +130,7 @@ def common_setup(
         indexer_resources=indexer_resources,
         user_input=user_input,
         tags=tags,
+        deployment_type=user_input.deployment_type,
     )
 
     if finetune_settings.perform_finetuning:
