@@ -1,4 +1,3 @@
-import os
 from copy import deepcopy
 
 import numpy as np
@@ -6,7 +5,6 @@ import pytest
 from jina import Document, DocumentArray, Flow
 
 from now.constants import TAG_INDEXER_DOC_HAS_TEXT, TAG_OCR_DETECTOR_TEXT_IN_DOC
-from now.deployment.deployment import cmd
 from now.executor.indexer.in_memory.in_memory_indexer import InMemoryIndexer
 from now.executor.indexer.qdrant import NOWQdrantIndexer16
 
@@ -19,19 +17,6 @@ DIM = 128
     [InMemoryIndexer, NOWQdrantIndexer16],
 )
 class TestBaseIndexer:
-    @pytest.fixture(scope='function', autouse=True)
-    def setup(self):
-        cur_dir = os.path.dirname(os.path.abspath(__file__))
-        compose_yml = os.path.abspath(os.path.join(cur_dir, 'docker-compose.yml'))
-
-        cmd(
-            f"docker-compose -f {compose_yml} --project-directory . up  --build -d --remove-orphans"
-        )
-        yield
-        cmd(
-            f"docker-compose -f {compose_yml} --project-directory . down --remove-orphans"
-        )
-
     @pytest.fixture(scope='function', autouse=True)
     def metas(self, tmpdir):
         return {'workspace': str(tmpdir)}
@@ -85,7 +70,7 @@ class TestBaseIndexer:
 
         return da
 
-    def test_index(self, tmpdir, indexer):
+    def test_index(self, tmpdir, indexer, setup_qdrant):
         """Test indexing does not return anything"""
         metas = {'workspace': str(tmpdir)}
         docs = self.gen_docs(NUMBER_OF_DOCS)
@@ -103,7 +88,7 @@ class TestBaseIndexer:
     @pytest.mark.parametrize(
         'offset, limit', [(0, 10), (10, 0), (0, 0), (10, 10), (None, None)]
     )
-    def test_list(self, offset, limit, indexer, metas):
+    def test_list(self, offset, limit, indexer, metas, setup_qdrant):
         """Test list returns all indexed docs"""
         docs = self.gen_docs(NUMBER_OF_DOCS)
         f = Flow().add(
@@ -132,7 +117,7 @@ class TestBaseIndexer:
                 assert [d.uri for d in list_res] == ['my-parent-uri'] * l
                 assert [d.tags['parent_tag'] for d in list_res] == ['value'] * l
 
-    def test_search(self, indexer, metas):
+    def test_search(self, indexer, metas, setup_qdrant):
         docs = self.gen_docs(NUMBER_OF_DOCS)
         docs_query = self.gen_docs(1)
         f = Flow().add(
@@ -154,7 +139,7 @@ class TestBaseIndexer:
                     <= query_res[0].matches[i + 1].scores['cosine'].value
                 )
 
-    def test_search_match(self, indexer, metas):
+    def test_search_match(self, indexer, metas, setup_qdrant):
         docs = self.gen_docs(NUMBER_OF_DOCS)
         docs_query = self.gen_docs(NUMBER_OF_DOCS)
         f = Flow().add(
@@ -184,7 +169,7 @@ class TestBaseIndexer:
                     <= c.matches[i + 1].scores['cosine'].value
                 )
 
-    def test_search_with_filtering(self, indexer, metas):
+    def test_search_with_filtering(self, indexer, metas, setup_qdrant):
 
         docs = self.docs_with_tags(NUMBER_OF_DOCS)
         docs_query = self.gen_docs(1)
@@ -205,7 +190,7 @@ class TestBaseIndexer:
             )
             assert all([m.tags['price'] < 50 for m in query_res[0].matches])
 
-    def test_delete(self, indexer, metas):
+    def test_delete(self, indexer, metas, setup_qdrant):
         docs = self.gen_docs(NUMBER_OF_DOCS)
         f = Flow().add(
             uses=indexer,
@@ -228,7 +213,7 @@ class TestBaseIndexer:
             docs_query = self.gen_docs(NUMBER_OF_DOCS)
             f.post(on='/search', inputs=docs_query, return_results=True)
 
-    def test_get_tags(self, indexer, metas):
+    def test_get_tags(self, indexer, metas, setup_qdrant):
         docs = DocumentArray(
             [
                 Document(
@@ -276,7 +261,7 @@ class TestBaseIndexer:
                 0
             ].tags['tags']['color'] == ['blue', 'red']
 
-    def test_delete_tags(self, indexer, metas):
+    def test_delete_tags(self, indexer, metas, setup_qdrant):
         docs = DocumentArray(
             [
                 Document(
@@ -443,7 +428,7 @@ class TestBaseIndexer:
         ],
     )
     def test_search_chunk_using_sum_ranker(
-        self, documents, indexer, query, embedding, res_ids, metas
+        self, documents, indexer, query, embedding, res_ids, metas, setup_qdrant
     ):
         documents = DocumentArray([Document(chunks=[doc]) for doc in documents])
         with Flow().add(
@@ -469,13 +454,12 @@ class TestBaseIndexer:
                 ),
                 return_results=True,
             )
-            print('all match ids', [match.id for match in result[0].matches])
             for d, res_id in zip(result[0].matches, res_ids):
                 assert d.id == res_id
                 if d.uri:
                     assert d.blob == b'', f'got blob {d.blob} for {d.id}'
 
-    def test_no_blob_with_working_uri(self, indexer, metas):
+    def test_no_blob_with_working_uri(self, indexer, metas, setup_qdrant):
         with Flow().add(
             uses=indexer,
             uses_with={
@@ -526,7 +510,7 @@ class TestBaseIndexer:
             assert matches[3].blob == b''
             assert matches[4].tensor is None
 
-    def test_curate_endpoint(self, indexer, metas):
+    def test_curate_endpoint(self, indexer, metas, setup_qdrant):
         """Test indexing does not return anything"""
 
         docs = self.gen_docs(NUMBER_OF_DOCS)
@@ -605,7 +589,7 @@ class TestBaseIndexer:
                 )
             )
 
-    def test_curate_endpoint_incorrect(self, indexer, metas):
+    def test_curate_endpoint_incorrect(self, indexer, metas, setup_qdrant):
         f = Flow().add(
             uses=indexer,
             uses_with={

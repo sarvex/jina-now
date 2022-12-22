@@ -41,10 +41,7 @@ def index(data: IndexRequestModel):
 def search(data: SearchRequestModel):
     query_doc = field_dict_to_doc(data.query)
 
-    list_query_filter = {}
-    for key, value in data.filters.items():
-        list_query_filter.append({f'{key}': {'$eq': value}})
-    query_filter = {'$and': list_query_filter}
+    query_filter = {key: {'$eq': value} for key, value in data.filters.items()}
 
     docs = jina_client_post(
         endpoint='/search',
