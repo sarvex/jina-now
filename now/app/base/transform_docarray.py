@@ -1,9 +1,8 @@
-import os
 from typing import Dict, List, Union
 
 from docarray import Document, DocumentArray
 
-from now.constants import Modalities
+from now.constants import SUPPORTED_FILE_TYPES, Modalities
 
 
 def _get_modality(document: Document):
@@ -11,8 +10,12 @@ def _get_modality(document: Document):
     Detect document's modality based on its `modality` or `mime_type` attributes.
     """
     for modality in Modalities():
-        if modality in document.modality or modality in document.mime_type:
+        if modality in document.modality:
             return modality
+        elif document.mime_type:
+            file_from_mime = document.mime_type.split('/')[-1]
+            if file_from_mime in SUPPORTED_FILE_TYPES[modality]:
+                return modality
     return None
 
 
@@ -20,18 +23,12 @@ def _get_multi_modal_format(document: Document) -> Document:
     """
     Create a multimodal docarray structure from a unimodal `Document`.
     """
-    from now.app.text_to_video.app import TextToVideo
 
     modality = _get_modality(document)
     if document.blob:
         new_doc = Document(chunks=[Document(blob=document.blob)])
     elif document.uri:
-        file_type = os.path.splitext(document.uri)[-1].replace('.', '')
         new_doc = Document(chunks=[Document(uri=document.uri)])
-        if file_type in TextToVideo().supported_file_types:
-            modality = Modalities.VIDEO
-        else:
-            modality = Modalities.IMAGE
     elif document.text:
         new_doc = Document(chunks=[Document(text=document.text)])
         modality = Modalities.TEXT
@@ -61,7 +58,6 @@ def transform_uni_modal_data(documents: DocumentArray) -> DocumentArray:
         new_doc.chunks[0].embedding = document.embedding
         new_doc.tags = document.tags
         new_doc.chunks[0].tags.update(document.tags)
-        new_doc.chunks[0].mime_type = new_doc.chunks[0].modality
         transformed_docs.append(new_doc)
 
     return transformed_docs

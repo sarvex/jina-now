@@ -43,7 +43,7 @@ class SearchApp(JinaNOWApp):
 
     @property
     def output_modality(self) -> Union[Modalities, List[Modalities]]:
-        return [Modalities.IMAGE, Modalities.TEXT]
+        return [Modalities.IMAGE, Modalities.TEXT, Modalities.VIDEO]
 
     @property
     def required_docker_memory_in_gb(self) -> int:
@@ -91,7 +91,7 @@ class SearchApp(JinaNOWApp):
             'jcloud': {
                 'resources': {
                     'memory': '1G',
-                    'cpu': '${{ ENV.PREPROCESSOR_CPU }}',
+                    'cpu': '0.5',
                     'capacity': 'on-demand',
                 }
             },
@@ -99,7 +99,6 @@ class SearchApp(JinaNOWApp):
         exec_env = {
             'PREPROCESSOR_NAME': f'{EXECUTOR_PREFIX}{name_to_id_map.get("NOWPreprocessor")}/{NOW_PREPROCESSOR_VERSION}',
             'PREPROCESSOR_REPLICAS': 1,
-            'PREPROCESSOR_CPU': 1,
             'APP': Apps.SEARCH_APP,
         }
         return exec_stub, exec_env
@@ -117,7 +116,7 @@ class SearchApp(JinaNOWApp):
             'tls': is_remote,
             'external': is_remote,
             'uses_with': {
-                'name': 'ViT-B/32',
+                'name': 'ViT-B-32::openai',
             },
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'needs': 'preprocessor',
@@ -132,7 +131,7 @@ class SearchApp(JinaNOWApp):
     def cast_convert_stub() -> Tuple[Dict, Dict]:
         exec_stub = {
             'name': 'cast_convert',
-            'uses': '${{ENV.CAST_CONVERT_NAME}}',
+            'uses': f'{EXECUTOR_PREFIX}CastNMoveNowExecutor/v0.0.3',
             'uses_with': {
                 'output_size': '${{ENV.PRE_TRAINED_EMBEDDINGS_SIZE}}',
                 'env': {'JINA_LOG_LEVEL': 'DEBUG'},
@@ -140,7 +139,6 @@ class SearchApp(JinaNOWApp):
         }
         exec_env = {
             'PRE_TRAINED_EMBEDDINGS_SIZE': 512,
-            'CAST_CONVERT_NAME': f'{EXECUTOR_PREFIX}CastNMoveNowExecutor/v0.0.3',
         }
         return exec_stub, exec_env
 
@@ -148,14 +146,14 @@ class SearchApp(JinaNOWApp):
     def linear_head_stub() -> Tuple[Dict, Dict]:
         exec_stub = {
             'name': 'linear_head',
-            'uses': 'jinahub+docker://FinetunerExecutor/v0.9.2',
+            'uses': f'{EXECUTOR_PREFIX}FinetunerExecutor/v0.9.2',
             'uses_with': {
                 'artifact': '${{ENV.FINETUNE_ARTIFACT}}',
                 'token': '${{ENV.JINA_TOKEN}}',
             },
             'uses_requests': {
                 '/index': 'encode',
-                '/ search': 'encode',
+                '/search': 'encode',
             },
             'output_array_type': 'numpy',
             'jcloud': {'resources': {'memory': '4G'}},
@@ -169,24 +167,23 @@ class SearchApp(JinaNOWApp):
         exec_stub = {
             'name': 'sbert_encoder',
             'replicas': '${{ ENV.SBERT_ENCODER_REPLICAS }}',
-            'uses': '${{ ENV.ENCODER_NAME }}',
+            'uses': f'{EXECUTOR_PREFIX}SentenceTransformerEncoder',
             'host': '${{ ENV.ENCODER_HOST }}',
             'port': '${{ ENV.ENCODER_PORT }}',
             'tls': '${{ ENV.IS_REMOTE_DEPLOYMENT }}',
             'external': '${{ ENV.IS_REMOTE_DEPLOYMENT }}',
             'uses_with': {
-                'name': '${{ ENV.PRE_TRAINED_MODEL_NAME }}',
+                'name': '${{ ENV.PRE_TRAINED_SBERT }}',
             },
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'needs': 'preprocessor',
         }
         exec_env = {
             'SBERT_ENCODER_REPLICAS': 1,
-            'ENCODER_NAME': 'jinahub+docker://SentenceTransformerEncoder',
             'ENCODER_HOST': '',
             'ENCODER_PORT': 443,
             'IS_REMOTE_DEPLOYMENT': True,
-            'PRE_TRAINED_MODEL_NAME': 'paraphrase-MiniLM-L6-v2',
+            'PRE_TRAINED_SBERT': 'paraphrase-MiniLM-L6-v2',
         }
         return exec_stub, exec_env
 
@@ -201,7 +198,7 @@ class SearchApp(JinaNOWApp):
         tags = _extract_tags_for_indexer(user_input)
         exec_stub = {
             'name': 'indexer',
-            'uses': '${{ ENV.INDEXER_NAME }}',
+            'uses': f'{EXECUTOR_PREFIX}{indexer_config["indexer_uses"]}',
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'uses_with': {
                 'dim': '${{ENV.N_DIM}}',
@@ -217,7 +214,6 @@ class SearchApp(JinaNOWApp):
         }
         exec_env = {
             **indexer_config['indexer_resources'],
-            'INDEXER_NAME': f'{EXECUTOR_PREFIX}{indexer_config["indexer_uses"]}',
             'N_DIM': CLIP_USES[user_input.deployment_type][2],
             'COLUMNS': tags,
         }
@@ -391,7 +387,8 @@ class SearchApp(JinaNOWApp):
         if len(dataset) > 200_000 and is_jina_email:
             exec_env_dict.update(
                 {
-                    'PREPROCESSOR_REPLICAS': '20',
+                    'PREPROCESSOR_REPLICAS': 20,
+                    'CLIP_ENCODER_REPLICAS': 3,
                 }
             )
 
