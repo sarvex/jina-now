@@ -3,11 +3,11 @@ from __future__ import annotations, print_function, unicode_literals
 from now.utils import BetterEnum
 
 # ----------------------------------
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.136-demo-data-migration-23'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.136-feat-multimodal-bff-22'
 # ----------------------------------
-NOW_PREPROCESSOR_VERSION = '0.0.114-elastic-multimodal-15x'
-NOW_QDRANT_INDEXER_VERSION = '0.0.13-fix-data-schema-3'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.12-fix-data-schema-3'
+NOW_PREPROCESSOR_VERSION = '0.0.114-feat-multimodal-bff-21'
+NOW_QDRANT_INDEXER_VERSION = '0.0.13-fix-filter-field-type-4'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.12-fix-filter-field-type-4'
 NOW_AUTOCOMPLETE_VERSION = '0.0.6-elastic-multimodal-15x'
 
 
@@ -43,7 +43,7 @@ class ModelDimensions(BetterEnum):
 
 SUPPORTED_FILE_TYPES = {
     Modalities.TEXT: ['txt', 'md'],
-    Modalities.IMAGE: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'tif'],
+    Modalities.IMAGE: ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'tif'],
     Modalities.VIDEO: ['gif'],
 }
 AVAILABLE_MODALITIES_FOR_SEARCH = [Modalities.TEXT, Modalities.IMAGE, Modalities.VIDEO]
