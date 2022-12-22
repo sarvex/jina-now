@@ -48,8 +48,10 @@ def common_get_flow_env_dict(
     deployment_type: str,
 ):
     """Returns dictionary for the environments variables for the clip flow.yml files."""
-    is_jina_email = get_email().split('@')[-1] == 'jina.ai'
-    if is_jina_email and deployment_type == 'remote':
+    use_high_performance_flow = (
+        get_email().split('@')[-1] == 'jina.ai' and deployment_type == 'remote'
+    )
+    if use_high_performance_flow:
         print(
             f"🚀🚀🚀 As employee of Jina, you are using a high performance flow.\n"
             f"Therefore, your deployment will be faster.\n"
@@ -64,7 +66,7 @@ def common_get_flow_env_dict(
         'INDEXER_NAME': f'{EXECUTOR_PREFIX}{indexer_uses}',
         'PREFETCH': PREFETCH_NR,
         'PREPROCESSOR_NAME': f'{EXECUTOR_PREFIX}{name_to_id_map.get("NOWPreprocessor")}/{NOW_PREPROCESSOR_VERSION}',
-        'PREPROCESSOR_REPLICAS': 15 if is_jina_email else 1,
+        'PREPROCESSOR_REPLICAS': 15 if use_high_performance_flow else 1,
         'AUTOCOMPLETE_EXECUTOR_NAME': f'{EXECUTOR_PREFIX}{name_to_id_map.get("NOWAutoCompleteExecutor2")}/{NOW_AUTOCOMPLETE_VERSION}',
         'COLUMNS': tags,
         'ADMIN_EMAILS': user_input.admin_emails or [] if user_input.secured else [],
