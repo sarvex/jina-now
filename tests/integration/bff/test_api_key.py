@@ -1,5 +1,3 @@
-from time import sleep
-
 import hubble
 import requests
 from tests.integration.test_end_to_end import assert_search
@@ -26,7 +24,7 @@ def get_request_body():
     return request_body
 
 
-def test_add_key(start_bff, setup_qdrant):
+def test_add_key(start_bff):
     client = hubble.Client(
         token=get_request_body()['jwt']['token'], max_retries=None, jsonify=True
     )

@@ -7,7 +7,6 @@ from jina import Flow
 from deployment.bff.app.app import run_server
 from now.constants import ACCESS_PATHS, EXTERNAL_CLIP_HOST, NOW_QDRANT_INDEXER_VERSION
 from now.executor.indexer.in_memory import InMemoryIndexer
-from now.executor.indexer.qdrant import NOWQdrantIndexer16
 from now.executor.name_to_id_map import name_to_id_map
 from now.executor.preprocessor import NOWPreprocessor
 from now.now_dataclasses import UserInput

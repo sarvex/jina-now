@@ -1,4 +1,5 @@
 import base64
+from collections import defaultdict
 
 from docarray import Document, DocumentArray
 from fastapi import HTTPException, status
@@ -78,15 +79,13 @@ def process_query(
             status_code=500,
             detail=f'Not a correct encoded query. Please see the error stack for more information. \n{e}',
         )
-    query = {}
+    query = defaultdict(lambda: {})
     if conditions:
         # construct filtering query from dictionary
         for key, value in conditions.items():
-            if key not in query:
-                query[key] = {}
             query[key]['$eq'] = value
 
-    return query_doc, query
+    return query_doc, dict(query)
 
 
 def get_jina_client(host: str, port: int) -> Client:
