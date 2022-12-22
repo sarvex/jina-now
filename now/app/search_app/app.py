@@ -32,7 +32,7 @@ class SearchApp(JinaNOWApp):
 
     @property
     def output_modality(self) -> Union[Modalities, List[Modalities]]:
-        return [Modalities.TEXT, Modalities.IMAGE]
+        return [Modalities.TEXT, Modalities.IMAGE, Modalities.VIDEO]
 
     @property
     def required_docker_memory_in_gb(self) -> int:
