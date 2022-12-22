@@ -3,11 +3,11 @@ from __future__ import annotations, print_function, unicode_literals
 from now.utils import BetterEnum
 
 # ----------------------------------
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.137-filter-query4'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.137-filter-query5'
 # ----------------------------------
 NOW_PREPROCESSOR_VERSION = '0.0.114-feat-multimodal-bff-21'
-NOW_QDRANT_INDEXER_VERSION = '0.0.137-filter-query4'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.137-filter-query4'
+NOW_QDRANT_INDEXER_VERSION = '0.0.137-filter-query5'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.137-filter-query5'
 NOW_AUTOCOMPLETE_VERSION = '0.0.6-elastic-multimodal-15x'
 
 

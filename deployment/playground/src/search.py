@@ -5,6 +5,7 @@ from collections.abc import Collection, Hashable, Mapping
 import requests
 import streamlit as st
 from docarray import Document, DocumentArray
+from docarray.score import NamedScore
 from frozendict import frozendict
 
 from .constants import Parameters
@@ -86,7 +87,7 @@ def search(
     if endpoint == 'suggestion':
         data[attribute_name] = attribute_value
     elif endpoint == 'search':
-        data['fields'] = {'search_field': {attribute_name: attribute_value}}
+        data['query'] = {'search_field': {attribute_name: attribute_value}}
     # in case the jwt is none, no jwt will be sent. This is the case when no authentication is used for that flow
     if jwt is not None:
         data['jwt'] = jwt
@@ -121,9 +122,13 @@ def call_flow(url_host, data, attribute_name, domain, endpoint):
                 doc = Document(
                     id=response_json['id'],
                     tags=response_json['tags'],
-                    scores=response_json['scores'],
                     **content,
                 )
+                if doc.blob:
+                    base64_bytes = doc.blob.encode('utf-8')
+                    doc.blob = base64.decodebytes(base64_bytes)
+                for metric, value in response_json['scores'].items():
+                    doc.scores[metric] = NamedScore(value=value['value'])
                 docs.append(doc)
     except Exception:
         try:
