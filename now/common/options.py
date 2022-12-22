@@ -206,7 +206,7 @@ SEARCH_FIELDS = DialogOptions(
         {'name': field, 'value': field}
         for field in user_input.search_fields_modalities.keys()
     ],
-    prompt_message='Please select the search fields:',
+    prompt_message='Please select the index fields:',
     prompt_type='checkbox',
     is_terminal_command=True,
     post_func=_create_app_from_user_input,
