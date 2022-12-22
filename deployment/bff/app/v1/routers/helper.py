@@ -1,5 +1,4 @@
 import base64
-from collections import defaultdict
 
 from docarray import Document, DocumentArray
 from fastapi import HTTPException, status

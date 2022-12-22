@@ -1,5 +1,4 @@
 import base64
-from collections import defaultdict
 from typing import List
 
 from docarray import Document, DocumentArray
