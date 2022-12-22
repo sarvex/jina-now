@@ -51,22 +51,14 @@ class TextToVideo(JinaNOWApp):
 
         flow_dir = os.path.abspath(os.path.join(__file__, '..'))
 
-        if finetuning:
-            if dataset_len > 200_000 and is_jina_email:
-                print(f"🚀🚀🚀 You are using high performance flow")
-                self.flow_yaml = os.path.join(
-                    flow_dir, 'ft-flow-video-clip-high-performance.yml'
-                )
-            else:
-                self.flow_yaml = os.path.join(flow_dir, 'ft-flow-video-clip.yml')
+        flow_prefix = 'ft-' if finetuning else ''
+        if dataset_len > 200_000 and is_jina_email:
+            print(f"🚀🚀🚀 You are using high performance flow")
+            self.flow_yaml = os.path.join(
+                flow_dir, f'{flow_prefix}flow-video-clip-high-performance.yml'
+            )
         else:
-            if dataset_len > 200_000 and is_jina_email:
-                print(f"🚀🚀🚀 You are using high performance flow")
-                self.flow_yaml = os.path.join(
-                    flow_dir, 'flow-video-clip-high-performance.yml'
-                )
-            else:
-                self.flow_yaml = os.path.join(flow_dir, 'flow-video-clip.yml')
+            self.flow_yaml = os.path.join(flow_dir, f'{flow_prefix}flow-video-clip.yml')
 
     def setup(
         self, dataset: DocumentArray, user_input: UserInput, kubectl_path

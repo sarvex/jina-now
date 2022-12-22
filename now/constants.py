@@ -5,11 +5,11 @@ from docarray.typing import Image, Text, Video
 from now.utils import BetterEnum
 
 # ----------------------------------
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.136-feat-multimodal-bff-22'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.137-filter-query11'
 # ----------------------------------
 NOW_PREPROCESSOR_VERSION = '0.0.114-feat-multimodal-bff-21'
-NOW_QDRANT_INDEXER_VERSION = '0.0.12-demo-data-migration-23'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.11-demo-data-migration-23'
+NOW_QDRANT_INDEXER_VERSION = '0.0.137-filter-query11'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.137-filter-query11'
 NOW_AUTOCOMPLETE_VERSION = '0.0.6-elastic-multimodal-15x'
 
 

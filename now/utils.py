@@ -9,7 +9,6 @@ import sys
 import tempfile
 from collections.abc import MutableMapping
 from concurrent.futures import ThreadPoolExecutor
-from os.path import expanduser as user
 from typing import Dict, List, Optional, Union
 
 import boto3
