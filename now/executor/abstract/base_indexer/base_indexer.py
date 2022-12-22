@@ -143,7 +143,6 @@ class NOWBaseIndexer(Executor):
         self,
         docs: Optional[DocumentArray] = None,
         parameters: dict = {},
-        docs_matrix: Optional[List[DocumentArray]] = None,
         **kwargs,
     ):
         """Base function for indexing documents. Handles the data management for the index and list endpoints.
@@ -151,6 +150,8 @@ class NOWBaseIndexer(Executor):
         :param docs: the Documents to index
         :param parameters: dictionary with options for indexing
         """
+        # If the docs_map are populated then pick the document from there
+        # Hack to make the CI green for now. Should be replaced by indexer PR
         flat_docs = docs[ACCESS_PATHS]
         # TODO please remove this check for empty docs
         if len(flat_docs) == 0:

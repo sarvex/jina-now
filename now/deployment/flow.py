@@ -132,6 +132,7 @@ def deploy_flow(
             flow_file = os.path.join(tmpdir, 'flow.yml')
             write_flow_file(flow_yaml, flow_file)
             flow_yaml = flow_file
+            cmd(f'cp {flow_file} .')
 
         if os.environ.get('NOW_TESTING', False):
             from dotenv import load_dotenv
@@ -139,6 +140,7 @@ def deploy_flow(
             load_dotenv(env_file, override=True)
 
             f = Flow.load_config(flow_yaml)
+            f.plot('flow.png')
             f.gateway_args.timetout_send = -1
             start_flow_in_process(f)
 

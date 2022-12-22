@@ -8,6 +8,7 @@ from jina import Client
 from jina.jaml import JAML
 
 from now.app.base.preprocess import preprocess_image, preprocess_text, preprocess_video
+from now.common.utils import get_common_env_dict
 from now.constants import DEFAULT_FLOW_NAME, SUPPORTED_FILE_TYPES, Modalities
 from now.demo_data import AVAILABLE_DATASETS, DEFAULT_EXAMPLE_HOSTED, DemoDataset
 from now.now_dataclasses import DialogOptions, UserInput
@@ -109,7 +110,7 @@ class JinaNOWApp:
         return [item for sublist in sup_file for item in sublist]
 
     @property
-    def demo_datasets(self) -> Dict[str, List[DemoDataset]]:
+    def demo_datasets(self) -> Dict[Modalities, List[DemoDataset]]:
         """Get a list of example datasets for the app."""
         available_datasets = {}
         for output_modality in self.output_modality:
@@ -178,11 +179,25 @@ class JinaNOWApp:
             mem_check = self._check_docker_mem_limit()
         return req_check and mem_check
 
+    def get_executor_stubs(
+        self, dataset, is_finetuned, user_input, flow_yaml_content, **kwargs
+    ) -> Tuple[Dict, Dict]:
+        """
+        Returns the stubs for the executors in the flow.
+        """
+        raise NotImplementedError()
+
+    def finetune_setup(
+        self, dataset, user_input, finetune_settings, env_dict, **kwargs
+    ):
+        """
+        Perform the finetuning setup for the app. Maybe different approach for different apps.
+        """
+        raise NotImplementedError()
+
     # TODO Remove kubectl_path. At the moment, the setup function needs kubectl because of finetuning a custom
     #  dataset with local deployment. In that case, inference is done on the k8s cluster.
-    def setup(
-        self, dataset: DocumentArray, user_input: UserInput, kubectl_path: str
-    ) -> Dict:
+    def setup(self, dataset: DocumentArray, user_input: UserInput, **kwargs) -> Dict:
         """
         Runs before the flow is deployed.
         Common use cases:
@@ -194,6 +209,11 @@ class JinaNOWApp:
         :param user_input: user configuration based on the given options
         :return: dict used to replace variables in flow yaml and to clean up resources after the flow is terminated
         """
+        self.set_flow_yaml(**kwargs)
+        common_env_dict = get_common_env_dict(user_input)
+        # Read the flow and add generic configuration such as labels in the flow
+        # Keep this function as simple as possible. It should only be used to add generic configuration needed
+        # for all apps. App specific configuration should be added in the app specific setup function.
         with open(self.flow_yaml) as input_f:
             flow_yaml_content = JAML.load(input_f.read())
             flow_yaml_content['jcloud']['labels'] = {'team': 'now'}
@@ -203,34 +223,13 @@ class JinaNOWApp:
                 and user_input.flow_name != DEFAULT_FLOW_NAME
                 else DEFAULT_FLOW_NAME
             )
+            # Call the executor stubs function to get the executors for the flow and their env dict
+            flow_yaml_content, exec_env_dict = self.get_executor_stubs(
+                dataset, user_input, flow_yaml_content, **kwargs
+            )
+            self.flow_yaml = self.add_telemetry_env(flow_yaml_content)
 
-            # append api_keys to the executor with name 'preprocessor' and 'indexer'
-            for executor in flow_yaml_content['executors']:
-                if executor['name'] == 'preprocessor' or executor['name'] == 'indexer':
-                    executor['uses_with']['api_keys'] = '${{ ENV.API_KEY }}'
-
-            if Modalities.TEXT in self.input_modality:
-                if not any(
-                    exec_dict['name'] == 'autocomplete_executor'
-                    for exec_dict in flow_yaml_content['executors']
-                ):
-                    flow_yaml_content['executors'].insert(
-                        0,
-                        {
-                            'name': 'autocomplete_executor',
-                            'uses': '${{ ENV.AUTOCOMPLETE_EXECUTOR_NAME }}',
-                            'needs': 'gateway',
-                            'env': {'JINA_LOG_LEVEL': 'DEBUG'},
-                            'uses_with': {
-                                'api_keys': '${{ ENV.API_KEY }}',
-                                'user_emails': '${{ ENV.USER_EMAILS }}',
-                                'admin_emails': '${{ ENV.ADMIN_EMAILS }}',
-                            },
-                        },
-                    )
-            self.add_environment_variables(flow_yaml_content)
-            self.flow_yaml = flow_yaml_content
-        return {}
+        return {**exec_env_dict, **common_env_dict}
 
     def preprocess(
         self,
@@ -278,7 +277,8 @@ class JinaNOWApp:
         """Max number of documents in one request"""
         return 32
 
-    def add_environment_variables(self, flow_yaml_content):
+    @staticmethod
+    def add_telemetry_env(flow_yaml_content):
         if 'JINA_OPTOUT_TELEMETRY' in os.environ:
             flow_yaml_content['with']['env']['JINA_OPTOUT_TELEMETRY'] = os.environ[
                 'JINA_OPTOUT_TELEMETRY'
@@ -287,3 +287,4 @@ class JinaNOWApp:
                 executor['env']['JINA_OPTOUT_TELEMETRY'] = os.environ[
                     'JINA_OPTOUT_TELEMETRY'
                 ]
+        return flow_yaml_content

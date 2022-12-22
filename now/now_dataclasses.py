@@ -103,9 +103,11 @@ class UserInput(BaseModel):
 
     # Fields
     search_fields: Optional[List] = []
+    search_mods: Optional[Dict] = {}
+    candidate_search_mods: Optional[Dict] = {}
     filter_fields: Optional[List] = []
-    search_fields_modalities: Optional[Dict] = {}
-    filter_fields_modalities: Optional[Dict] = {}
+    filter_mods: Optional[Dict] = {}
+    candidate_filter_mods: Optional[Dict] = {}
 
     # ES related
     task_config: Optional[Task] = None

@@ -6,8 +6,7 @@ import pytest
 from docarray import Document, DocumentArray
 from pytest_mock import MockerFixture
 
-from now.app.image_text_retrieval.app import ImageTextRetrieval
-from now.app.text_to_video.app import TextToVideo
+from now.app.search_app.app import SearchApp
 from now.constants import DatasetTypes
 from now.data_loading.data_loading import _load_tags_from_json_if_needed, load_data
 from now.demo_data import DemoDatasetNames
@@ -57,7 +56,7 @@ def test_da_pull(da: DocumentArray):
     user_input.dataset_type = DatasetTypes.DOCARRAY
     user_input.dataset_name = 'secret-token'
 
-    loaded_da = load_data(ImageTextRetrieval(), user_input)
+    loaded_da = load_data(SearchApp(), user_input)
 
     assert is_da_text_equal(da, loaded_da)
 
@@ -68,7 +67,7 @@ def test_da_local_path(local_da: DocumentArray):
     user_input.dataset_type = DatasetTypes.PATH
     user_input.dataset_path = path
 
-    loaded_da = load_data(ImageTextRetrieval(), user_input)
+    loaded_da = load_data(SearchApp(), user_input)
 
     assert is_da_text_equal(da, loaded_da)
 
@@ -78,7 +77,7 @@ def test_da_local_path_image_folder(image_resource_path: str):
     user_input.dataset_type = DatasetTypes.PATH
     user_input.dataset_path = image_resource_path
 
-    app = ImageTextRetrieval()
+    app = SearchApp()
     loaded_da = load_data(app, user_input)
 
     assert len(loaded_da) == 2, (
@@ -94,7 +93,7 @@ def test_da_custom_ds(da: DocumentArray):
     user_input.dataset_type = DatasetTypes.DEMO
     user_input.dataset_name = DemoDatasetNames.DEEP_FASHION
 
-    app = ImageTextRetrieval()
+    app = SearchApp()
     loaded_da = load_data(app, user_input)
 
     assert len(loaded_da) > 0
@@ -106,7 +105,7 @@ def test_da_custom_ds(da: DocumentArray):
 def user_input():
     user_input = UserInput()
     user_input.dataset_path = ''
-    user_input.app_instance = TextToVideo()
+    user_input.app_instance = SearchApp()
     return user_input
 
 
