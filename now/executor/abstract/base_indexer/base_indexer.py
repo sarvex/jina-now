@@ -417,7 +417,7 @@ class NOWBaseIndexer(Executor):
             corrected_list = []
             for i in range(0, len(columns), 2):
                 # This conversion is needed for MMDocs
-                if columns[i + 1] in ['Text', 'stringValue']:
+                if columns[i + 1] in ['text', 'stringValue']:
                     columns[i + 1] = 'str'
                 elif columns[i + 1] in ['numberValue']:
                     columns[i + 1] = 'float'

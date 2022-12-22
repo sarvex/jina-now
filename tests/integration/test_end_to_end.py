@@ -77,14 +77,14 @@ def test_token_exists():
 
 @pytest.mark.remote
 @pytest.mark.parametrize(
-    'app, input_modality, output_modality, search_field, filter_field, dataset, deployment_type',
+    'app, input_modality, output_modality, search_fields, filter_fields, dataset, deployment_type',
     [
         (
             Apps.SEARCH_APP,
             Modalities.TEXT,
             Modalities.IMAGE,
-            'image',
-            [],
+            ['image'],
+            ['label'],
             DemoDatasetNames.BEST_ARTWORKS,
             'remote',
         ),
@@ -99,8 +99,8 @@ def test_end_to_end_remote(
     cleanup,
     input_modality,
     output_modality,
-    search_field,
-    filter_field,
+    search_fields,
+    filter_fields,
     with_hubble_login_patch,
 ):
     run_end_to_end(
@@ -110,21 +110,21 @@ def test_end_to_end_remote(
         deployment_type,
         input_modality,
         output_modality,
-        search_field,
-        filter_field,
+        search_fields,
+        filter_fields,
         test_search_image,
     )
 
 
 @pytest.mark.parametrize(
-    'app, input_modality,  output_modality, search_field, filter_field, dataset, deployment_type',
+    'app, input_modality,  output_modality, search_fields, filter_fields, dataset, deployment_type',
     [
         (
             Apps.SEARCH_APP,
             Modalities.IMAGE,
             Modalities.IMAGE,
-            'image',
-            [],
+            ['image'],
+            ['label'],
             DemoDatasetNames.BIRD_SPECIES,
             'local',
         ),
@@ -132,7 +132,7 @@ def test_end_to_end_remote(
             Apps.SEARCH_APP,
             Modalities.TEXT,
             Modalities.TEXT,
-            'lyrics',
+            ['lyrics'],
             [],
             DemoDatasetNames.POP_LYRICS,
             'local',
@@ -141,7 +141,7 @@ def test_end_to_end_remote(
             Apps.SEARCH_APP,
             Modalities.TEXT,
             Modalities.VIDEO,
-            'video',
+            ['video'],
             [],
             DemoDatasetNames.TUMBLR_GIFS_10K,
             'local',
@@ -157,8 +157,8 @@ def test_end_to_end_local(
     cleanup,
     input_modality,
     output_modality,
-    search_field,
-    filter_field,
+    search_fields,
+    filter_fields,
     with_hubble_login_patch,
 ):
     run_end_to_end(
@@ -168,8 +168,8 @@ def test_end_to_end_local(
         deployment_type,
         input_modality,
         output_modality,
-        search_field,
-        filter_field,
+        search_fields,
+        filter_fields,
         test_search_image,
     )
 
@@ -181,8 +181,8 @@ def run_end_to_end(
     deployment_type,
     input_modality,
     output_modality,
-    search_field,
-    filter_field,
+    search_fields,
+    filter_fields,
     test_search_image,
 ):
     cluster = NEW_CLUSTER['value']
@@ -190,8 +190,8 @@ def run_end_to_end(
         'now': 'start',
         'flow_name': 'nowapi',
         'dataset_type': DatasetTypes.DEMO,
-        'search_fields': [search_field],
-        'filter_fields': [filter_field],
+        'search_fields': search_fields,
+        'filter_fields': filter_fields,
         'dataset_name': dataset,
         'cluster': cluster,
         'secured': deployment_type == 'remote',

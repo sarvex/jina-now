@@ -113,6 +113,21 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'deployment_type': 'local',
         },
     ),
+    (
+        {
+            'app': Apps.IMAGE_TEXT_RETRIEVAL,
+            'flow_name': 'test this name *',
+            'dataset_type': DatasetTypes.DEMO,
+            'dataset_name': DemoDatasetNames.DEEP_FASHION,
+            'search_fields': ['image'],
+            'search_fields_modalities': {'label': 'text', 'image': 'image'},
+            'filter_fields': [],
+            'filter_fields_modalities': {'label': 'text'},
+            'cluster': 'new',
+            'deployment_type': 'local',
+        },
+        {'flow_name': 'testthisname'},
+    ),
 ]
 
 
