@@ -270,8 +270,8 @@ def _extract_file_and_full_file_path(obj, path=None, s3_dataset=False):
     Extracts the file name and the full file path from s3 object.
     """
     if s3_dataset:
-        file = obj.key.split('/')[-1]
-        file_full_path = '/'.join(path.split('/')[:3]) + '/' + obj.key
+        file = obj.split('/')[-1]
+        file_full_path = '/'.join(path.split('/')[:3]) + '/' + obj
     else:
         file_full_path = obj
         file = obj.split(os.sep)[-1]
