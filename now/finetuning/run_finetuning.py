@@ -13,7 +13,6 @@ import numpy as np
 from docarray import DocumentArray
 from finetuner.callback import EarlyStopping, EvaluationCallback
 
-from now.app.base.app import JinaNOWApp
 from now.constants import ModelNames
 from now.deployment.deployment import cmd, terminate_wolf
 from now.deployment.flow import deploy_flow
@@ -28,7 +27,7 @@ from now.utils import get_flow_id, sigmap
 @time_profiler
 def finetune(
     finetune_settings: FinetuneSettings,
-    app_instance: JinaNOWApp,
+    app_instance,
     dataset: DocumentArray,
     user_input: UserInput,
     env_dict: Dict,
@@ -214,7 +213,7 @@ _KS_NAMESPACE = 'embed-now'
 
 @time_profiler
 def _maybe_add_embeddings(
-    app_instance: JinaNOWApp,
+    app_instance,
     user_input: UserInput,
     env_dict: Dict,
     dataset: DocumentArray,
