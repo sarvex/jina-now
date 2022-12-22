@@ -26,7 +26,7 @@ def get_request_body():
     return request_body
 
 
-def test_add_key(start_bff):
+def test_add_key(start_bff, setup_qdrant):
     client = hubble.Client(
         token=get_request_body()['jwt']['token'], max_retries=None, jsonify=True
     )
@@ -38,8 +38,6 @@ def test_add_key(start_bff):
     )
     with f:
         index_data(f, jwt=get_request_body()['jwt'])
-        start_bff()
-        sleep(5)
 
         request_body = get_request_body()
         print('# Test adding user email')
