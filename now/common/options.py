@@ -64,7 +64,15 @@ APP_NAME = DialogOptions(
     prompt_message='Choose a name for your application:',
     prompt_type='input',
     is_terminal_command=True,
+    post_func=lambda user_input, **kwargs: clean_flow_name(user_input),
 )
+
+
+def clean_flow_name(user_input):
+    user_input.flow_name = ''.join(
+        [c for c in user_input.flow_name if c.isalnum() or c == '-']
+    ).lower()
+
 
 DATASET_TYPE = DialogOptions(
     name='dataset_type',
