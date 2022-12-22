@@ -48,34 +48,87 @@ In a new Conda environment:
 ```bash
 jina now start
 ```
-**1.** Choose your app. Currently, we support image or text search, but in future, we'll add many more options.
+**1.** Choose your data source. 
 
-<img width="613" alt="Screenshot 2022-05-31 at 01 08 25" src="https://user-images.githubusercontent.com/40893766/192245825-c19274a5-2514-4c93-94ff-4d507dfef429.png">
+You may either choose a demo dataset hosted by NOW, or use your own custom dataset, to build an application.
+NOW can support your custom data in the form of a `DocumentArray`, as a path to a local folder, or S3 bucket.
 
-**2.** Choose your data source. Choose between demo datasets, a custom DocumentArray, local folder, or S3 bucket.
+```commandline
+? How do you want to provide input? (format: https://docarray.jina.ai/)  (Use arrow keys)
+ ❯ Demo dataset
+   DocumentArray name (recommended)
+   Local folder
+   S3 bucket
+   - Elasticsearch (will be available in upcoming versions)
+```
 
-<img src="https://user-images.githubusercontent.com/47435119/195334616-9a8d5ad3-229f-49bb-9d49-f38243a0eb9b.png">
+You can choose a demo dataset to get started quickly. The demo datasets are hosted by NOW which can be easily
+used to build a search application. There is a large variety of datasets, including images, text, and audio.
 
-- If you choose `docarray.pull` or DocumentArray URL, NOW asks for your DocumentArray ID or URL.
-- If you choose local path, NOW asks for the folder's path:
+If you would like to use your own custom data, you can choose `DocumentArray name`. You will be asked to provide the
+DocumentArray ID (or name) or URL of your dataset.
 
-<img width="506" alt="question-local-path" src="https://user-images.githubusercontent.com/11627845/170256044-67e82e86-6439-4a3e-98f1-dbdf1940de67.png">
+```commandline
+? Please enter your DocumentArray name:
+```
 
-**3.** Choose your deployment type. We recommend cloud deployment to run your app on our servers. Alternatively, you can deploy locally.
+You can also choose the local folder option to upload your data, in which case
+NOW asks for the path to the folder containing your data:
 
-<img width="547" alt="question-deployment" src="https://user-images.githubusercontent.com/11627845/170256038-8c44a5b8-985a-4fe7-af5d-16df0244f4bb.png">
+```commandline
+? Please enter the path to the local folder:
+```
 
-For local deployment, NOW asks where you want to deploy it and reads your local .kube/config and lists all Kubernetes clusters you have access to.
+Perhaps your data is stored in an S3 bucket, which is an option NOW also supports. In this case,
+NOW asks for the URI to the S3 bucket, as well as the credentials and region thereof.
+
+```commandline
+? Please enter the S3 URI to the folder:
+? Please enter the AWS access key ID:
+? Please enter the AWS secret access key:
+? Please enter the AWS region:
+```
+
+A final step in loading your data is to choose the fields of your data that you would like to use for search and filter
+respectively. You can choose from the fields that are available in your data. For more information on this, see the
+[guide to loading your data](https://now.jina.ai/user-guides/input_format/).
+
+
+**2.** Choose your deployment type.
+
+We recommend cloud deployment to run your app on our servers. Alternatively, you can deploy locally.
+
+```commandline
+? Where do you want to deploy your search engine?  (Use arrow keys)
+ ❯ ⛅️ Jina Cloud
+   📍 Local
+```
+
+For local deployment, NOW asks where you want to deploy it and reads your local `.kube/config` and lists all Kubernetes clusters you have access to.
 If you don't want to use an existing cluster, you can create a new one locally.
 
-<img width="643" alt="question-cluster" src="https://user-images.githubusercontent.com/11627845/170256027-99798fae-3ec4-42dc-8737-843f4a23f941.png">
+```commandline
+? Which cluster do you want to use to deploy your search engine? (Use arrow keys)
+    kind-jina-now
+    minikube
+  ❯ 🐣create new
+```
 
-**4.** Follow the links. After NOW finishes processing, you'll see two links:
+
+**3.** Follow the links. After NOW finishes processing, you'll see two links:
 
 - The Swagger UI is useful for frontend integration.
 - The "playground" lets you run example queries and experiment with your search use case.
 
-<img width="709" alt="Screenshot 2022-05-26 at 16 34 56" src="https://user-images.githubusercontent.com/11627845/170511632-c741a418-1246-4c23-aadd-cfd74d783f6b.png">
+```commandline
+🚀 Deploy playground and BFF
+
+BFF docs are accessible at:
+http://localhost:30090/api/docs
+
+Playground is accessible at:
+http://localhost:30080/?host=gateway&search_field=image&data=best-artworks&port=8080
+```
 
 Example of the playground.
 
@@ -87,15 +140,13 @@ Example of the Swagger UI.
 
 [More information on using Jina NOW CLI and API](https://now.jina.ai/user-guides/cli_api/)
 
-## Supported apps (more coming soon)
+## Supported modalities (more coming soon)
 
-- 📝 ▶ 🏞 Text to Image search 
-- 🏞 ▶ 📝 Image to Text search 
-- 🏞 ▶ 🏞 Image to Image search 
-- 📝 ▶ 📝 Text to Text search 
-- 🥁 ▶ 🥁 Music to Music search 
-- 📝 ▶ 🎥 Text to Video search (for GIFs)
-- 📝 ▶ 🧊 Text to 3D Mesh search (coming soon)
+- 📝 Text
+- 🏞 Image
+- 🥁 Music
+- 🎥 Video (for GIFs)
+- 🧊 3D Mesh (coming soon)
 
 [![](https://user-images.githubusercontent.com/11627845/164571632-0e6a6c39-0137-413b-8287-21fc34785665.png)](https://www.youtube.com/watch?v=fdIaLP0ctpo)
 </p>

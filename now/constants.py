@@ -5,7 +5,7 @@ from docarray.typing import Image, Text, Video
 from now.utils import BetterEnum
 
 # ----------------------------------
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.136-feat-multimodal-bff-21'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.136-feat-multimodal-bff-22'
 # ----------------------------------
 NOW_PREPROCESSOR_VERSION = '0.0.114-feat-multimodal-bff-21'
 NOW_QDRANT_INDEXER_VERSION = '0.0.12-demo-data-migration-23'
