@@ -53,13 +53,12 @@ def check_pods_health(ns):
 
     for pod in pods:
         try:
-            container_statuses = pod.status.container_statuses
-            if 'Error' in container_statuses[0].state.waiting.message:
-                raise Exception(
-                    pod.metadata.name + " " + container_statuses[0].state.waiting.reason
-                )
+            message = pod.status.container_statuses[0].state.waiting.message
         except:
-            pass
+            message = None
+
+        if message and 'Error' in message:
+            raise Exception(pod.metadata.name + " " + message)
 
 
 def deploy_k8s(f, ns, tmpdir, kubectl_path):
