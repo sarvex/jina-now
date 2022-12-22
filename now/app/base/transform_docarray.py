@@ -3,7 +3,7 @@ from typing import Dict, List, Union
 
 from docarray import Document, DocumentArray
 
-from now.constants import Modalities
+from now.constants import FILETYPE_TO_MODALITY, Modalities
 
 
 def _get_modality(document: Document):
@@ -20,18 +20,13 @@ def _get_multi_modal_format(document: Document) -> Document:
     """
     Create a multimodal docarray structure from a unimodal `Document`.
     """
-    from now.app.search_app import SearchApp
-
     modality = _get_modality(document)
     if document.blob:
         new_doc = Document(chunks=[Document(blob=document.blob)])
     elif document.uri:
         file_type = os.path.splitext(document.uri)[-1].replace('.', '')
+        modality = FILETYPE_TO_MODALITY[file_type]
         new_doc = Document(chunks=[Document(uri=document.uri)])
-        if file_type in SearchApp().supported_file_types:
-            modality = Modalities.VIDEO
-        else:
-            modality = Modalities.IMAGE
     elif document.text:
         new_doc = Document(chunks=[Document(text=document.text)])
         modality = Modalities.TEXT

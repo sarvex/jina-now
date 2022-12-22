@@ -209,9 +209,9 @@ def run_end_to_end(
     kwargs = Namespace(**kwargs)
     response = cli(args=kwargs)
     input_modality = 'text-or-image'
-    output_modality = 'text-or-image'
+    output_modality = 'text-or-image-or-video'
     assert_deployment_response(
-        deployment_type, input_modality_deployment, output_modality_deployment, response
+        deployment_type, input_modality, output_modality, response
     )
     assert_deployment_queries(
         dataset=dataset,
