@@ -42,14 +42,12 @@ def index(data: IndexRequestModel):
 def search(data: SearchRequestModel):
     query_doc = field_dict_to_doc(data.query)
 
-    query_filter = defaultdict(lambda: {})
-    for key, value in data.filters.items():
-        query_filter[key]['$eq'] = value
+    query_filter = {key: {'$eq': value} for key, value in data.filters.items()}
 
     docs = jina_client_post(
         endpoint='/search',
         inputs=query_doc,
-        parameters={'limit': data.limit, 'filter': dict(query_filter)},
+        parameters={'limit': data.limit, 'filter': query_filter},
         data=data,
     )
     matches = []

@@ -79,13 +79,11 @@ def process_query(
             status_code=500,
             detail=f'Not a correct encoded query. Please see the error stack for more information. \n{e}',
         )
-    query = defaultdict(lambda: {})
-    if conditions:
-        # construct filtering query from dictionary
-        for key, value in conditions.items():
-            query[key]['$eq'] = value
+    query = (
+        {key: {'$eq': value} for key, value in conditions.items()} if conditions else {}
+    )
 
-    return query_doc, dict(query)
+    return query_doc, query
 
 
 def get_jina_client(host: str, port: int) -> Client:
