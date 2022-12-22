@@ -1,4 +1,4 @@
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Tuple
 
 from docarray import DocumentArray
 from jina.helper import random_port
@@ -6,6 +6,7 @@ from jina.helper import random_port
 from now.app.base.app import JinaNOWApp
 from now.common.utils import _extract_tags_for_indexer, get_email, get_indexer_config
 from now.constants import (
+    AVAILABLE_MODALITIES_FOR_SEARCH,
     CLIP_USES,
     EXECUTOR_PREFIX,
     EXTERNAL_CLIP_HOST,
@@ -38,12 +39,13 @@ class SearchApp(JinaNOWApp):
         return 'Image-text search app'
 
     @property
-    def input_modality(self) -> Union[Modalities, List[Modalities]]:
-        return [Modalities.IMAGE, Modalities.TEXT]
+    def output_modality(self) -> List[Modalities]:
+        return AVAILABLE_MODALITIES_FOR_SEARCH
 
-    @property
-    def output_modality(self) -> Union[Modalities, List[Modalities]]:
-        return [Modalities.IMAGE, Modalities.TEXT, Modalities.VIDEO]
+    def set_app_modalities(self, user_input) -> None:
+        self.output_modality = '-or-'.join(user_input.search_mods.values())
+        for mod in self.supported_output_modality:
+            pass
 
     @property
     def required_docker_memory_in_gb(self) -> int:
@@ -115,9 +117,7 @@ class SearchApp(JinaNOWApp):
             'port': 443 if is_remote else random_port(),
             'tls': is_remote,
             'external': is_remote,
-            'uses_with': {
-                'name': 'ViT-B-32::openai',
-            },
+            'uses_with': {'name': 'ViT-B-32::openai', 'access_paths': '@.[image_0]'},
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'needs': 'preprocessor',
         }
@@ -276,10 +276,9 @@ class SearchApp(JinaNOWApp):
         encoders_list = []
         init_execs_list = []
         exec_env_dict = {}
-        ft_encoders_list = []
 
         # 1. append autocomplete executor to the flow if output modality is text
-        if Modalities.TEXT in self.input_modality:
+        if Modalities.TEXT in user_input.search_mods.values():
             if not any(
                 exec_dict['name'] == 'autocomplete_executor'
                 for exec_dict in flow_yaml_content['executors']

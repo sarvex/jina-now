@@ -25,6 +25,8 @@ class JinaNOWApp:
 
     def __init__(self):
         self.flow_yaml = ''
+        self.input_modality = None
+        self.output_modality = None
 
     @property
     def app_name(self) -> str:
@@ -49,17 +51,16 @@ class JinaNOWApp:
 
     @property
     @abc.abstractmethod
-    def input_modality(self) -> List[Modalities]:
+    def supported_output_modality(self) -> List[Modalities]:
         """
-        Modality used for running search queries
+        Modality used for indexing data
         """
         raise NotImplementedError()
 
-    @property
     @abc.abstractmethod
-    def output_modality(self) -> List[Modalities]:
+    def set_modalities(self) -> None:
         """
-        Modality used for indexing data
+        Set the input and output modalities for the app.
         """
         raise NotImplementedError()
 
@@ -209,7 +210,11 @@ class JinaNOWApp:
         :param user_input: user configuration based on the given options
         :return: dict used to replace variables in flow yaml and to clean up resources after the flow is terminated
         """
+        # Initialize the base flow for the app extending it
         self.set_flow_yaml(**kwargs)
+        # Set the modalities dynamically based on the selected fields
+        self.set_modalities()
+        # Get the common env variables
         common_env_dict = get_common_env_dict(user_input)
         # Read the flow and add generic configuration such as labels in the flow
         # Keep this function as simple as possible. It should only be used to add generic configuration needed

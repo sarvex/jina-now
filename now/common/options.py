@@ -18,7 +18,7 @@ from now.common.detect_schema import (
     set_field_names_from_local_folder,
     set_field_names_from_s3_bucket,
 )
-from now.constants import Apps, DatasetTypes
+from now.constants import DatasetTypes
 from now.demo_data import AVAILABLE_DATASETS
 from now.deployment.deployment import cmd
 from now.log import yaspin_extended
@@ -39,7 +39,7 @@ AVAILABLE_SOON = 'will be available in upcoming versions'
 # than the parent should be called first before the dependant can called.
 
 
-def _create_app_from_user_input(user_input: UserInput, **kwargs):
+def _validate_user_input_for_search(user_input: UserInput, **kwargs):
     if len(user_input.search_fields) != 1:
         raise ValueError(
             'Currently only one search field is supported. Please choose one field.'
@@ -51,9 +51,8 @@ def _create_app_from_user_input(user_input: UserInput, **kwargs):
         )
     _search_modality = user_input.search_mods[user_input.search_fields[0]]
     # When more apps are added then this should become the first step in the dialog
-    if _search_modality not in ['image', 'text', 'video']:
+    if _search_modality not in user_input.app_instance.supported_output_modality:
         raise ValueError(f'Invalid search modality: {_search_modality}')
-    user_input.app_instance = construct_app(Apps.SEARCH_APP)
 
 
 APP_NAME = DialogOptions(
@@ -193,8 +192,8 @@ def _update_fields_and_create_app(user_input: UserInput, **kwargs):
         for field, f_type in user_input.candidate_search_mods.items()
         if field in user_input.search_fields
     }
-    # create the app
-    _create_app_from_user_input(user_input)
+    # Validate if the search app is allowed for the given config
+    _validate_user_input_for_search(user_input)
 
 
 SEARCH_FIELDS = DialogOptions(

@@ -209,8 +209,8 @@ def run_end_to_end(
     kwargs = Namespace(**kwargs)
     response = cli(args=kwargs)
     if app == Apps.SEARCH_APP:
-        input_modality_deployment = 'text-or-image'
-        output_modality_deployment = 'text-or-image'
+        input_modality_deployment = 'search-app'
+        output_modality_deployment = 'search-app'
     else:
         input_modality_deployment = input_modality
         output_modality_deployment = output_modality
@@ -420,8 +420,8 @@ def test_backend_custom_data(
     response = cli(args=kwargs)
 
     if app == Apps.SEARCH_APP:
-        input_modality_deployment = 'text-or-image'
-        output_modality_deployment = 'text-or-image'
+        input_modality_deployment = 'search-app'
+        output_modality_deployment = 'search-app'
     else:
         input_modality_deployment = input_modality
         output_modality_deployment = output_modality
