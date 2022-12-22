@@ -114,7 +114,6 @@ If you don't want to use an existing cluster, you can create a new one locally.
   ❯ 🐣create new
 ```
 
-<img width="643" alt="question-cluster" src="https://user-images.githubusercontent.com/11627845/170256027-99798fae-3ec4-42dc-8737-843f4a23f941.png">
 
 **3.** Follow the links. After NOW finishes processing, you'll see two links:
 
