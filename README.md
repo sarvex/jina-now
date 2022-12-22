@@ -61,17 +61,26 @@ NOW can support your custom data in the form of a `DocumentArray`, as a path to 
    S3 bucket
    - Elasticsearch (will be available in upcoming versions)
 ```
-If you choose `DocumentArray name`, NOW asks for your DocumentArray ID or URL.
+
+You can choose a demo dataset to get started quickly. The demo datasets are hosted by NOW which can be easily
+used to build a search application. There is a large variety of datasets, including images, text, and audio.
+
+If you would like to use your own custom data, you can choose `DocumentArray name`. You will be asked to provide the
+DocumentArray ID (or name) or URL of your dataset.
 
 ```commandline
 ? Please enter your DocumentArray name:
 ```
-If you instead choose the local folder option, NOW asks for the path to the folder:
+
+You can also choose the local folder option to upload your data, in which case
+NOW asks for the path to the folder containing your data:
 
 ```commandline
 ? Please enter the path to the local folder:
 ```
-If you choose the S3 bucket option, NOW asks for the URI to the S3 bucket, as well as the credentials and region thereof:
+
+Perhaps your data is stored in an S3 bucket, which is an option NOW also supports. In this case,
+NOW asks for the URI to the S3 bucket, as well as the credentials and region thereof.
 
 ```commandline
 ? Please enter the S3 URI to the folder:
@@ -80,14 +89,30 @@ If you choose the S3 bucket option, NOW asks for the URI to the S3 bucket, as we
 ? Please enter the AWS region:
 ```
 
+A final step in loading your data is to choose the fields of your data that you would like to use for search and filter
+respectively. You can choose from the fields that are available in your data. For more information on this, see the
+[guide to loading your data](https://now.jina.ai/user-guides/input_format/).
+
+
 **2.** Choose your deployment type.
 
 We recommend cloud deployment to run your app on our servers. Alternatively, you can deploy locally.
 
-<img width="547" alt="question-deployment" src="https://user-images.githubusercontent.com/11627845/170256038-8c44a5b8-985a-4fe7-af5d-16df0244f4bb.png">
+```commandline
+? Where do you want to deploy your search engine?  (Use arrow keys)
+ ❯ ⛅️ Jina Cloud
+   📍 Local
+```
 
-For local deployment, NOW asks where you want to deploy it and reads your local .kube/config and lists all Kubernetes clusters you have access to.
+For local deployment, NOW asks where you want to deploy it and reads your local `.kube/config` and lists all Kubernetes clusters you have access to.
 If you don't want to use an existing cluster, you can create a new one locally.
+
+```commandline
+? Which cluster do you want to use to deploy your search engine? (Use arrow keys)
+    kind-jina-now
+    minikube
+  ❯ 🐣create new
+```
 
 <img width="643" alt="question-cluster" src="https://user-images.githubusercontent.com/11627845/170256027-99798fae-3ec4-42dc-8737-843f4a23f941.png">
 
@@ -96,7 +121,15 @@ If you don't want to use an existing cluster, you can create a new one locally.
 - The Swagger UI is useful for frontend integration.
 - The "playground" lets you run example queries and experiment with your search use case.
 
-<img width="709" alt="Screenshot 2022-05-26 at 16 34 56" src="https://user-images.githubusercontent.com/11627845/170511632-c741a418-1246-4c23-aadd-cfd74d783f6b.png">
+```commandline
+🚀 Deploy playground and BFF
+
+BFF docs are accessible at:
+http://localhost:30090/api/docs
+
+Playground is accessible at:
+http://localhost:30080/?host=gateway&search_field=image&data=best-artworks&port=8080
+```
 
 Example of the playground.
 
@@ -108,15 +141,13 @@ Example of the Swagger UI.
 
 [More information on using Jina NOW CLI and API](https://now.jina.ai/user-guides/cli_api/)
 
-## Supported apps (more coming soon)
+## Supported modalities (more coming soon)
 
-- 📝 ▶ 🏞 Text to Image search 
-- 🏞 ▶ 📝 Image to Text search 
-- 🏞 ▶ 🏞 Image to Image search 
-- 📝 ▶ 📝 Text to Text search 
-- 🥁 ▶ 🥁 Music to Music search 
-- 📝 ▶ 🎥 Text to Video search (for GIFs)
-- 📝 ▶ 🧊 Text to 3D Mesh search (coming soon)
+- 📝 Text
+- 🏞 Image
+- 🥁 Music
+- 🎥 Video (for GIFs)
+- 🧊 3D Mesh (coming soon)
 
 [![](https://user-images.githubusercontent.com/11627845/164571632-0e6a6c39-0137-413b-8287-21fc34785665.png)](https://www.youtube.com/watch?v=fdIaLP0ctpo)
 </p>
