@@ -5,7 +5,7 @@ from now.utils import BetterEnum
 # ----------------------------------
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.137-filter-query11'
 # ----------------------------------
-NOW_PREPROCESSOR_VERSION = '0.0.115-refactor-remove-text-to-video-4'
+NOW_PREPROCESSOR_VERSION = '0.0.115-refactor-remove-text-to-video-5'
 NOW_QDRANT_INDEXER_VERSION = '0.0.137-filter-query11'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.137-filter-query11'
 NOW_AUTOCOMPLETE_VERSION = '0.0.6-elastic-multimodal-15x'

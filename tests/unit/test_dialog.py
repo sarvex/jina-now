@@ -115,7 +115,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'app': Apps.IMAGE_TEXT_RETRIEVAL,
+            'app': Apps.SEARCH_APP,
             'flow_name': 'test this name *',
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': DemoDatasetNames.DEEP_FASHION,
