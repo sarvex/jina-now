@@ -19,7 +19,7 @@ from now.common.detect_schema import (
     set_field_names_from_local_folder,
     set_field_names_from_s3_bucket,
 )
-from now.constants import Apps, DatasetTypes
+from now.constants import MODALITIES_MAPPING, Apps, DatasetTypes, Modalities
 from now.demo_data import AVAILABLE_DATASETS
 from now.deployment.deployment import cmd
 from now.log import yaspin_extended
@@ -52,15 +52,12 @@ def _create_app_from_user_input(user_input: UserInput, **kwargs):
         )
     _search_modality = user_input.search_fields_modalities[user_input.search_fields[0]]
 
-    if user_input.dataset_type in [DatasetTypes.DEMO, DatasetTypes.DOCARRAY]:
-        modality_types = ['image', 'text']
-        video_type = 'video'
-    else:
-        modality_types = [Image, Text]
-        video_type = Video
-    if _search_modality in modality_types:
+    if _search_modality in Modalities:
+        _search_modality = MODALITIES_MAPPING[_search_modality]
+
+    if _search_modality in [Image, Text]:
         app_name = Apps.IMAGE_TEXT_RETRIEVAL
-    elif _search_modality == video_type:
+    elif _search_modality == Video:
         app_name = Apps.TEXT_TO_VIDEO
     else:
         raise ValueError(f'Invalid search modality: {_search_modality}')
