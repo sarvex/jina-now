@@ -10,10 +10,7 @@ Submodules
    deployment.bff.app.v1.routers.admin
    deployment.bff.app.v1.routers.cloud_temp_link
    deployment.bff.app.v1.routers.helper
-   deployment.bff.app.v1.routers.im_txt2im_txt
-   deployment.bff.app.v1.routers.music2music
-   deployment.bff.app.v1.routers.txt2txt_and_img
-   deployment.bff.app.v1.routers.txt2video
+   deployment.bff.app.v1.routers.search
 
 Module contents
 ---------------

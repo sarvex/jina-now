@@ -6,7 +6,7 @@
         <link rel="canonical" href="https://now.jina.ai/_modules/now/common/detect_schema.html" />
 
     <link rel="shortcut icon" href="../../../../_static/favicon.png"/><!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
-        <title>now.common.detect_schema - NOW 0.0.40 documentation</title>
+        <title>now.common.detect_schema - NOW 0.0.41 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../../">
-                <div class="brand">NOW 0.0.40 documentation</div>
+                <div class="brand">NOW 0.0.41 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -191,9 +191,7 @@
     <p class="caption" role="heading"><span class="caption-text">User Guides</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../user-guides/cli_api/">How to use Jina NOW’s CLI and API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../user-guides/input_format/">Input Formats</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../user-guides/input_format/#support-for-tags">Support for Tags</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../user-guides/input_format/#supported-file-formats">Supported File Formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../user-guides/input_format/">Guide to loading your data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../user-guides/production/">Production readiness</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Developer Reference</span></p>
@@ -275,60 +273,62 @@
                 </div>
                 <article role="main">
                     <h1>Source code for now.common.detect_schema</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">glob</span>
+<span></span><span class="kn">import</span> <span class="nn">itertools</span>
 <span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span>
 
 <span class="kn">import</span> <span class="nn">requests</span>
 
-<span class="kn">from</span> <span class="nn">now.constants</span> <span class="kn">import</span> <span class="n">SUPPORTED_FILE_TYPES</span><span class="p">,</span> <span class="n">Modalities</span>
+<span class="kn">from</span> <span class="nn">now.constants</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AVAILABLE_MODALITIES_FOR_FILTER</span><span class="p">,</span>
+    <span class="n">AVAILABLE_MODALITIES_FOR_SEARCH</span><span class="p">,</span>
+    <span class="n">NOT_AVAILABLE_MODALITIES_FOR_FILTER</span><span class="p">,</span>
+    <span class="n">SUPPORTED_FILE_TYPES</span><span class="p">,</span>
+    <span class="n">Modalities</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span> <span class="nn">now.data_loading.data_loading</span> <span class="kn">import</span> <span class="n">get_s3_bucket_and_folder_prefix</span>
 <span class="kn">from</span> <span class="nn">now.now_dataclasses</span> <span class="kn">import</span> <span class="n">UserInput</span>
 
 
 <span class="k">def</span> <span class="nf">_create_candidate_search_filter_fields</span><span class="p">(</span><span class="n">field_name_to_value</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Creates candidate search fields from the field_names</span>
+<span class="sd">    Creates candidate search fields from the field_names for s3</span>
+<span class="sd">    and local file path.</span>
 <span class="sd">    A candidate search field is a field that we can detect its modality</span>
 <span class="sd">    A candidate filter field is a field that we can&#39;t detect its modality,</span>
 <span class="sd">    or it&#39;s modality is different from image, video or audio.</span>
-
-<span class="sd">    In case of docarray, we assume all fields are potentially searchable</span>
 
 <span class="sd">    :param field_name_to_value: dictionary</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">search_fields_modalities</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">filter_field_modalities</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">not_available_file_types_for_filter</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+        <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span>
+            <span class="o">*</span><span class="p">[</span>
+                <span class="n">SUPPORTED_FILE_TYPES</span><span class="p">[</span><span class="n">modality</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">modality</span> <span class="ow">in</span> <span class="n">NOT_AVAILABLE_MODALITIES_FOR_FILTER</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
     <span class="k">for</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">field_value</span> <span class="ow">in</span> <span class="n">field_name_to_value</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="c1"># we determine search modality</span>
-        <span class="k">for</span> <span class="n">modality</span><span class="p">,</span> <span class="n">modality_types</span> <span class="ow">in</span> <span class="n">SUPPORTED_FILE_TYPES</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">field_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="n">modality_types</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">modality</span> <span class="ow">in</span> <span class="n">AVAILABLE_MODALITIES_FOR_SEARCH</span><span class="p">:</span>
+            <span class="n">file_types</span> <span class="o">=</span> <span class="n">SUPPORTED_FILE_TYPES</span><span class="p">[</span><span class="n">modality</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">field_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="n">file_types</span><span class="p">:</span>
                 <span class="n">search_fields_modalities</span><span class="p">[</span><span class="n">field_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">modality</span>
                 <span class="k">break</span>
-            <span class="k">if</span> <span class="n">field_name</span> <span class="o">==</span> <span class="s1">&#39;uri&#39;</span> <span class="ow">and</span> <span class="n">field_value</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="n">modality_types</span><span class="p">:</span>
+            <span class="k">elif</span> <span class="n">field_name</span> <span class="o">==</span> <span class="s1">&#39;uri&#39;</span> <span class="ow">and</span> <span class="n">field_value</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="n">file_types</span><span class="p">:</span>
                 <span class="n">search_fields_modalities</span><span class="p">[</span><span class="n">field_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">modality</span>
                 <span class="k">break</span>
-            <span class="k">if</span> <span class="n">field_name</span> <span class="o">==</span> <span class="s1">&#39;text&#39;</span> <span class="ow">and</span> <span class="n">field_value</span><span class="p">:</span>
+            <span class="k">elif</span> <span class="n">field_name</span> <span class="o">==</span> <span class="s1">&#39;text&#39;</span> <span class="ow">and</span> <span class="n">field_value</span><span class="p">:</span>
                 <span class="n">search_fields_modalities</span><span class="p">[</span><span class="n">field_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">Modalities</span><span class="o">.</span><span class="n">TEXT</span>
                 <span class="k">break</span>
         <span class="c1"># we determine if it&#39;s a filter field</span>
-        <span class="k">if</span> <span class="n">field_name</span> <span class="o">==</span> <span class="s1">&#39;uri&#39;</span><span class="p">:</span>
-            <span class="k">if</span> <span class="p">(</span>
-                <span class="n">field_value</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-                <span class="ow">not</span> <span class="ow">in</span> <span class="n">SUPPORTED_FILE_TYPES</span><span class="p">[</span><span class="n">Modalities</span><span class="o">.</span><span class="n">IMAGE</span><span class="p">]</span>
-                <span class="o">+</span> <span class="n">SUPPORTED_FILE_TYPES</span><span class="p">[</span><span class="n">Modalities</span><span class="o">.</span><span class="n">VIDEO</span><span class="p">]</span>
-                <span class="o">+</span> <span class="n">SUPPORTED_FILE_TYPES</span><span class="p">[</span><span class="n">Modalities</span><span class="o">.</span><span class="n">MUSIC</span><span class="p">]</span>
-            <span class="p">):</span>
-                <span class="n">filter_field_modalities</span><span class="p">[</span><span class="n">field_name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span>
-                    <span class="n">field_value</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
-                <span class="p">)</span>
-            <span class="k">continue</span>
         <span class="k">if</span> <span class="p">(</span>
-            <span class="n">field_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-            <span class="ow">not</span> <span class="ow">in</span> <span class="n">SUPPORTED_FILE_TYPES</span><span class="p">[</span><span class="n">Modalities</span><span class="o">.</span><span class="n">IMAGE</span><span class="p">]</span>
-            <span class="o">+</span> <span class="n">SUPPORTED_FILE_TYPES</span><span class="p">[</span><span class="n">Modalities</span><span class="o">.</span><span class="n">VIDEO</span><span class="p">]</span>
-            <span class="o">+</span> <span class="n">SUPPORTED_FILE_TYPES</span><span class="p">[</span><span class="n">Modalities</span><span class="o">.</span><span class="n">MUSIC</span><span class="p">]</span>
-        <span class="p">):</span>
+            <span class="n">field_name</span> <span class="o">==</span> <span class="s1">&#39;uri&#39;</span>
+            <span class="ow">and</span> <span class="n">field_value</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">not_available_file_types_for_filter</span>
+        <span class="p">)</span> <span class="ow">or</span> <span class="n">field_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">not_available_file_types_for_filter</span><span class="p">:</span>
             <span class="n">filter_field_modalities</span><span class="p">[</span><span class="n">field_name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">field_value</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">search_fields_modalities</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -338,21 +338,59 @@
     <span class="k">return</span> <span class="n">search_fields_modalities</span><span class="p">,</span> <span class="n">filter_field_modalities</span>
 
 
-<span class="k">def</span> <span class="nf">_extract_field_names_docarray</span><span class="p">(</span><span class="n">response</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_extract_field_candidates_docarray</span><span class="p">(</span><span class="n">response</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Downloads the first document in the document array and extracts field names from it</span>
 <span class="sd">    if tags also exists then it extracts the keys from tags and adds to the field_names</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">field_names</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;download&#39;</span><span class="p">])</span>
-    <span class="n">ignored_fieldnames</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;embedding&#39;</span><span class="p">,</span> <span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;mimeType&#39;</span><span class="p">,</span> <span class="s1">&#39;tags&#39;</span><span class="p">]</span>
-    <span class="k">for</span> <span class="n">el</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="k">if</span> <span class="n">el</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ignored_fieldnames</span><span class="p">:</span>
-            <span class="n">field_names</span><span class="p">[</span><span class="n">el</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
-    <span class="k">if</span> <span class="s1">&#39;tags&#39;</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="mi">0</span><span class="p">]:</span>
-        <span class="k">for</span> <span class="n">el</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;tags&#39;</span><span class="p">][</span><span class="s1">&#39;fields&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="n">field_names</span><span class="p">[</span><span class="n">el</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
-    <span class="k">return</span> <span class="n">field_names</span>
+    <span class="n">search_modalities</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">filter_modalities</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">doc</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;download&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="p">(</span>
+        <span class="ow">not</span> <span class="n">doc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;_metadata&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="ow">or</span> <span class="s1">&#39;multi_modal_schema&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">doc</span><span class="p">[</span><span class="s1">&#39;_metadata&#39;</span><span class="p">][</span><span class="s1">&#39;fields&#39;</span><span class="p">]</span>
+    <span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+            <span class="s1">&#39;Multi-modal schema is not provided. Please prepare your data following this guide - &#39;</span>
+            <span class="s1">&#39;https://docarray.jina.ai/datatypes/multimodal/&#39;</span>
+        <span class="p">)</span>
+    <span class="n">mm_schema</span> <span class="o">=</span> <span class="n">doc</span><span class="p">[</span><span class="s1">&#39;_metadata&#39;</span><span class="p">][</span><span class="s1">&#39;fields&#39;</span><span class="p">][</span><span class="s1">&#39;multi_modal_schema&#39;</span><span class="p">]</span>
+    <span class="n">mm_fields</span> <span class="o">=</span> <span class="n">mm_schema</span><span class="p">[</span><span class="s1">&#39;structValue&#39;</span><span class="p">][</span><span class="s1">&#39;fields&#39;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">mm_fields</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="s1">&#39;position&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">value</span><span class="p">[</span><span class="s1">&#39;structValue&#39;</span><span class="p">][</span><span class="s1">&#39;fields&#39;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s1">&#39;No modality found for the dataclass field: `</span><span class="si">{</span><span class="n">field_name</span><span class="si">}</span><span class="s1">`. Please follow the steps in the &#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;documentation to add modalities to your documents https://docarray.jina.ai/datatypes/multimodal/&#39;</span>
+            <span class="p">)</span>
+        <span class="n">field_pos</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="s1">&#39;structValue&#39;</span><span class="p">][</span><span class="s1">&#39;fields&#39;</span><span class="p">][</span><span class="s1">&#39;position&#39;</span><span class="p">][</span><span class="s1">&#39;numberValue&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">doc</span><span class="p">[</span><span class="s1">&#39;chunks&#39;</span><span class="p">][</span><span class="n">field_pos</span><span class="p">][</span><span class="s1">&#39;modality&#39;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s1">&#39;No modality found for </span><span class="si">{</span><span class="n">field_name</span><span class="si">}</span><span class="s1">. Please follow the steps in the documentation&#39;</span>
+                <span class="sa">f</span><span class="s1">&#39; to add modalities to your documents https://docarray.jina.ai/datatypes/multimodal/&#39;</span>
+            <span class="p">)</span>
+        <span class="n">modality</span> <span class="o">=</span> <span class="n">doc</span><span class="p">[</span><span class="s1">&#39;chunks&#39;</span><span class="p">][</span><span class="n">field_pos</span><span class="p">][</span><span class="s1">&#39;modality&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">modality</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">AVAILABLE_MODALITIES_FOR_SEARCH</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s1">&#39;The modality </span><span class="si">{</span><span class="n">modality</span><span class="si">}</span><span class="s1"> is not supported for search. Please use &#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;one of the following modalities: </span><span class="si">{</span><span class="n">AVAILABLE_MODALITIES_FOR_SEARCH</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="p">)</span>
+        <span class="c1"># only the available modalities for filter are added to the filter modalities</span>
+        <span class="k">if</span> <span class="n">modality</span> <span class="ow">in</span> <span class="n">AVAILABLE_MODALITIES_FOR_FILTER</span><span class="p">:</span>
+            <span class="n">filter_modalities</span><span class="p">[</span><span class="n">field_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">modality</span>
+        <span class="c1"># only the available modalities for search are added to search modalities</span>
+        <span class="k">if</span> <span class="n">modality</span> <span class="ow">in</span> <span class="n">AVAILABLE_MODALITIES_FOR_SEARCH</span><span class="p">:</span>
+            <span class="n">search_modalities</span><span class="p">[</span><span class="n">field_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">modality</span>
+
+    <span class="k">if</span> <span class="n">doc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;tags&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">el</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">doc</span><span class="p">[</span><span class="s1">&#39;tags&#39;</span><span class="p">][</span><span class="s1">&#39;fields&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">val_type</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">value</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">filter_modalities</span><span class="p">[</span><span class="n">el</span><span class="p">]</span> <span class="o">=</span> <span class="n">val_type</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">search_modalities</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s1">&#39;No searchable fields found, please check documentation https://now.jina.ai&#39;</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">search_modalities</span><span class="p">,</span> <span class="n">filter_modalities</span>
 
 
 <div class="viewcode-block" id="set_field_names_from_docarray"><a class="viewcode-back" href="../../../../api/now.common.detect_schema/#now.common.detect_schema.set_field_names_from_docarray">[docs]</a><span class="k">def</span> <span class="nf">set_field_names_from_docarray</span><span class="p">(</span><span class="n">user_input</span><span class="p">:</span> <span class="n">UserInput</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -377,66 +415,79 @@
         <span class="n">json</span><span class="o">=</span><span class="n">json_data</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s1">&#39;code&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
-        <span class="n">field_names</span> <span class="o">=</span> <span class="n">_extract_field_names_docarray</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="p">(</span>
+            <span class="n">user_input</span><span class="o">.</span><span class="n">search_fields_modalities</span><span class="p">,</span>
+            <span class="n">user_input</span><span class="o">.</span><span class="n">filter_fields_modalities</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="n">_extract_field_candidates_docarray</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;DocumentArray does not exist or you do not have access to it&#39;</span><span class="p">)</span>
-    <span class="p">(</span>
-        <span class="n">search_fields_modalities</span><span class="p">,</span>
-        <span class="n">filter_fields_modalities</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">=</span> <span class="n">_create_candidate_search_filter_fields</span><span class="p">(</span><span class="n">field_names</span><span class="p">)</span>
-    <span class="n">user_input</span><span class="o">.</span><span class="n">search_fields_modalities</span> <span class="o">=</span> <span class="n">search_fields_modalities</span>
-    <span class="n">user_input</span><span class="o">.</span><span class="n">filter_fields_modalities</span> <span class="o">=</span> <span class="n">filter_fields_modalities</span></div>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;DocumentArray does not exist or you do not have access to it&#39;</span><span class="p">)</span></div>
 
 
-<span class="k">def</span> <span class="nf">_check_contains_files_only_s3_bucket</span><span class="p">(</span><span class="n">objects</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Checks if the bucket contains only files and no subfolders</span>
+<span class="k">def</span> <span class="nf">_identify_folder_structure</span><span class="p">(</span><span class="n">file_paths</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">separator</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;This function identifies the folder structure.</span>
+<span class="sd">    It works with a local file structure or a remote file structure.</span>
 
-<span class="sd">    :param objects: list of objects in the bucket</span>
+<span class="sd">    :param file_paths: list of file paths</span>
+<span class="sd">    :param separator: separator used in the file paths</span>
+<span class="sd">    :return: if all the files are in the same folder then returns &#39;single_folder&#39; else returns &#39;sub_folders&#39;</span>
+<span class="sd">    :raises ValueError: if the files don&#39;t have the same depth in the file structure</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">objects</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
-        <span class="k">if</span> <span class="n">obj</span><span class="o">.</span><span class="n">key</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">):</span>
-            <span class="k">return</span> <span class="kc">False</span>
-    <span class="k">return</span> <span class="kc">True</span>
+    <span class="c1"># check if all files are in the same folder</span>
+    <span class="n">depths</span> <span class="o">=</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">separator</span><span class="p">))</span> <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">file_paths</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">depths</span><span class="p">))</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Files have differing depth, please check documentation https://now.jina.ai&quot;</span>
+        <span class="p">)</span>
+    <span class="c1"># check if all files are in the same folder</span>
+    <span class="k">if</span> <span class="p">(</span>
+        <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="n">separator</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">separator</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">file_paths</span><span class="p">]))</span>
+        <span class="o">!=</span> <span class="mi">1</span>
+    <span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;sub_folders&#39;</span>
+    <span class="k">return</span> <span class="s1">&#39;single_folder&#39;</span>
 
 
-<span class="k">def</span> <span class="nf">_check_folder_structure_s3_bucket</span><span class="p">(</span><span class="n">objects</span><span class="p">,</span> <span class="n">folder_prefix</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Checks if the folder contains only subfolders and no files and no subsub folders</span>
+<span class="k">def</span> <span class="nf">_extract_field_names_single_folder</span><span class="p">(</span>
+    <span class="n">file_paths</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">separator</span><span class="p">:</span> <span class="nb">str</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;This function extracts the file endings in a single folder and returns them as field names.</span>
+<span class="sd">    It works with a local file structure or a remote file structure.</span>
 
-<span class="sd">    :param objects: list of objects in the bucket</span>
-<span class="sd">    :param folder_prefix: root folder</span>
+<span class="sd">    :param file_paths: list of relative file paths from data set path</span>
+<span class="sd">    :param separator: separator used in the file paths</span>
+<span class="sd">    :return: list of file endings</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">objects</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>  <span class="c1"># first is the bucket path</span>
-        <span class="k">if</span> <span class="n">obj</span><span class="o">.</span><span class="n">key</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">):</span>
-            <span class="k">continue</span>
-        <span class="n">current_path</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
-        <span class="n">root_folder_path</span> <span class="o">=</span> <span class="n">folder_prefix</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="p">(</span>
-            <span class="nb">len</span><span class="p">(</span><span class="n">current_path</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">root_folder_path</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span>
-        <span class="p">):</span>  <span class="c1"># checks if current path is a direct subfolder of</span>
-            <span class="c1"># root folder</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s1">&#39;File format different than expected, please check documentation https://now.jina.ai&#39;</span>
-            <span class="p">)</span>
+    <span class="n">file_endings</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span>
+        <span class="p">[</span><span class="s1">&#39;.&#39;</span> <span class="o">+</span> <span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">separator</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">file_paths</span><span class="p">]</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="n">file_ending</span><span class="p">:</span> <span class="n">file_ending</span> <span class="k">for</span> <span class="n">file_ending</span> <span class="ow">in</span> <span class="n">file_endings</span><span class="p">}</span>
 
 
-<span class="k">def</span> <span class="nf">_extract_field_names_s3_folder</span><span class="p">(</span><span class="n">first_folder_objects</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Extracts field names from the files in first folder in the bucket also</span>
-<span class="sd">    checks if folder contains json files and if yes then extracts the keys from the json files</span>
-<span class="sd">    and add to the field_names</span>
+<span class="k">def</span> <span class="nf">_extract_field_names_sub_folders</span><span class="p">(</span>
+    <span class="n">file_paths</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">separator</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">s3_bucket</span><span class="o">=</span><span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;This function extracts the files in sub folders and returns them as field names. Also, it reads json files</span>
+<span class="sd">    and adds them as key-value pairs to the field names dictionary.</span>
+<span class="sd">    It works with a local file structure or a remote file structure.</span>
 
-<span class="sd">    :param first_folder_objects: list of objects in the first folder</span>
+<span class="sd">    :param file_paths: list of relative file paths from data set path</span>
+<span class="sd">    :param separator: separator used in the file paths</span>
+<span class="sd">    :param s3_bucket: s3 bucket object, only needed if interacting with s3 bucket</span>
+<span class="sd">    :return: list of file endings</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">field_names</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">first_folder_objects</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">field</span><span class="o">.</span><span class="n">key</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.json&#39;</span><span class="p">):</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">get</span><span class="p">()[</span><span class="s1">&#39;Body&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+    <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">file_paths</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.json&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">s3_bucket</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">s3_bucket</span><span class="o">.</span><span class="n">Object</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">()[</span><span class="s1">&#39;Body&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">el</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="n">field_names</span><span class="p">[</span><span class="n">el</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">field_names</span><span class="p">[</span><span class="n">field</span><span class="o">.</span><span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">file_name</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">separator</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">field_names</span><span class="p">[</span><span class="n">file_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_name</span>
     <span class="k">return</span> <span class="n">field_names</span>
 
 
@@ -454,79 +505,24 @@
     <span class="p">)</span>  <span class="c1"># user has to provide the folder where folder structure begins</span>
 
     <span class="n">objects</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">bucket</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Prefix</span><span class="o">=</span><span class="n">folder_prefix</span><span class="p">))</span>
-    <span class="k">if</span> <span class="n">_check_contains_files_only_s3_bucket</span><span class="p">(</span><span class="n">objects</span><span class="p">):</span>
-        <span class="k">return</span>
-
-    <span class="n">_check_folder_structure_s3_bucket</span><span class="p">(</span><span class="n">objects</span><span class="p">,</span> <span class="n">folder_prefix</span><span class="p">)</span>
-
-    <span class="n">first_folder</span> <span class="o">=</span> <span class="n">objects</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
-    <span class="n">first_folder_objects</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
-        <span class="n">bucket</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Prefix</span><span class="o">=</span><span class="n">folder_prefix</span> <span class="o">+</span> <span class="n">first_folder</span><span class="p">)</span>
-    <span class="p">)[</span><span class="mi">1</span><span class="p">:]</span>
-    <span class="n">field_names</span> <span class="o">=</span> <span class="n">_extract_field_names_s3_folder</span><span class="p">(</span><span class="n">first_folder_objects</span><span class="p">)</span>
+    <span class="n">file_paths</span> <span class="o">=</span> <span class="p">[</span><span class="n">obj</span><span class="o">.</span><span class="n">key</span> <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">objects</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">obj</span><span class="o">.</span><span class="n">key</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)]</span>
+    <span class="n">folder_structure</span> <span class="o">=</span> <span class="n">_identify_folder_structure</span><span class="p">(</span><span class="n">file_paths</span><span class="p">,</span> <span class="s1">&#39;/&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">folder_structure</span> <span class="o">==</span> <span class="s1">&#39;single_folder&#39;</span><span class="p">:</span>
+        <span class="n">field_names</span> <span class="o">=</span> <span class="n">_extract_field_names_single_folder</span><span class="p">(</span><span class="n">file_paths</span><span class="p">,</span> <span class="s1">&#39;/&#39;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">folder_structure</span> <span class="o">==</span> <span class="s1">&#39;sub_folders&#39;</span><span class="p">:</span>
+        <span class="n">first_folder</span> <span class="o">=</span> <span class="s1">&#39;/&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">objects</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">first_folder_objects</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">key</span>
+            <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">bucket</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Prefix</span><span class="o">=</span><span class="n">first_folder</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">obj</span><span class="o">.</span><span class="n">key</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="n">field_names</span> <span class="o">=</span> <span class="n">_extract_field_names_sub_folders</span><span class="p">(</span>
+            <span class="n">first_folder_objects</span><span class="p">,</span> <span class="s1">&#39;/&#39;</span><span class="p">,</span> <span class="n">bucket</span>
+        <span class="p">)</span>
     <span class="p">(</span>
-        <span class="n">search_fields_modalities</span><span class="p">,</span>
-        <span class="n">filter_fields_modalities</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">=</span> <span class="n">_create_candidate_search_filter_fields</span><span class="p">(</span><span class="n">field_names</span><span class="p">)</span>
-    <span class="n">user_input</span><span class="o">.</span><span class="n">search_fields_modalities</span> <span class="o">=</span> <span class="n">search_fields_modalities</span>
-    <span class="n">user_input</span><span class="o">.</span><span class="n">filter_fields_modalities</span> <span class="o">=</span> <span class="n">filter_fields_modalities</span></div>
-
-
-<span class="k">def</span> <span class="nf">_ensure_distance_folder_root</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">root</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Ensure that the path is a subfolder of the root&quot;&quot;&quot;</span>
-    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-    <span class="n">root</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">relpath</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">root</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">sep</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
-
-
-<span class="k">def</span> <span class="nf">_check_contains_files_only_local_folder</span><span class="p">(</span><span class="n">dataset_path</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Checks if the folder contains only files and no subfolders</span>
-
-<span class="sd">    :param dataset_path: path to the folder</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">for</span> <span class="n">file_or_directory</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">dataset_path</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dataset_path</span><span class="p">,</span> <span class="n">file_or_directory</span><span class="p">)):</span>
-            <span class="k">return</span> <span class="kc">False</span>
-    <span class="k">return</span> <span class="kc">True</span>
-
-
-<span class="k">def</span> <span class="nf">_check_folder_structure_local_folder</span><span class="p">(</span><span class="n">dataset_path</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Checks if the folder contains only subfolders and no files and no subsub folders</span>
-
-<span class="sd">    :param dataset_path: path to the folder</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">first_path</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
-    <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dataset_path</span><span class="p">,</span> <span class="s1">&#39;**/**&#39;</span><span class="p">))):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">first_path</span><span class="p">:</span>
-            <span class="n">first_path</span> <span class="o">=</span> <span class="n">path</span>
-
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">_ensure_distance_folder_root</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">dataset_path</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s1">&#39;Folder format is not as expected, please check documentation https://now.jina.ai&#39;</span>
-            <span class="p">)</span>
-    <span class="k">return</span> <span class="n">first_path</span>
-
-
-<span class="k">def</span> <span class="nf">_extract_field_names_local_folder</span><span class="p">(</span><span class="n">first_folder</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Extracts field names from the files in first folder in the bucket also</span>
-<span class="sd">    checks if folder contains json files and if yes then extracts the keys from the json files</span>
-<span class="sd">    and add to the field_names</span>
-
-<span class="sd">    :param first_folder: list of objects in the first folder</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">field_names</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">for</span> <span class="n">field_name</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">first_folder</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">field_name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.json&#39;</span><span class="p">):</span>
-            <span class="n">json_f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">first_folder</span><span class="p">,</span> <span class="n">field_name</span><span class="p">))</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">json_f</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">el</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="n">field_names</span><span class="p">[</span><span class="n">el</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">field_names</span><span class="p">[</span><span class="n">field_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">field_name</span>
-    <span class="k">return</span> <span class="n">field_names</span>
+        <span class="n">user_input</span><span class="o">.</span><span class="n">search_fields_modalities</span><span class="p">,</span>
+        <span class="n">user_input</span><span class="o">.</span><span class="n">filter_fields_modalities</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">=</span> <span class="n">_create_candidate_search_filter_fields</span><span class="p">(</span><span class="n">field_names</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="set_field_names_from_local_folder"><a class="viewcode-back" href="../../../../api/now.common.detect_schema/#now.common.detect_schema.set_field_names_from_local_folder">[docs]</a><span class="k">def</span> <span class="nf">set_field_names_from_local_folder</span><span class="p">(</span><span class="n">user_input</span><span class="p">:</span> <span class="n">UserInput</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -539,22 +535,29 @@
 <span class="sd">    if yes set the content of the first folder as field_names in user_input</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">dataset_path</span> <span class="o">=</span> <span class="n">user_input</span><span class="o">.</span><span class="n">dataset_path</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="n">dataset_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">dataset_path</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">dataset_path</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
             <span class="s1">&#39;The path provided is not a folder, please check documentation https://now.jina.ai&#39;</span>
         <span class="p">)</span>
-    <span class="k">if</span> <span class="n">_check_contains_files_only_local_folder</span><span class="p">(</span><span class="n">dataset_path</span><span class="p">):</span>
-        <span class="k">return</span>
-
-    <span class="n">first_path</span> <span class="o">=</span> <span class="n">_check_folder_structure_local_folder</span><span class="p">(</span><span class="n">dataset_path</span><span class="p">)</span>
-    <span class="n">first_folder</span> <span class="o">=</span> <span class="s1">&#39;/&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">first_path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-    <span class="n">field_names</span> <span class="o">=</span> <span class="n">_extract_field_names_local_folder</span><span class="p">(</span><span class="n">first_folder</span><span class="p">)</span>
+    <span class="n">file_paths</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">dirs</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">dataset_path</span><span class="p">):</span>
+        <span class="n">file_paths</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span> <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">])</span>
+    <span class="n">folder_structure</span> <span class="o">=</span> <span class="n">_identify_folder_structure</span><span class="p">(</span><span class="n">file_paths</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">folder_structure</span> <span class="o">==</span> <span class="s1">&#39;single_folder&#39;</span><span class="p">:</span>
+        <span class="n">field_names</span> <span class="o">=</span> <span class="n">_extract_field_names_single_folder</span><span class="p">(</span><span class="n">file_paths</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">folder_structure</span> <span class="o">==</span> <span class="s1">&#39;sub_folders&#39;</span><span class="p">:</span>
+        <span class="n">first_folder</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">file_paths</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">first_folder_files</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">first_folder</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">first_folder</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">first_folder</span><span class="p">,</span> <span class="n">file</span><span class="p">))</span>
+        <span class="p">]</span>
+        <span class="n">field_names</span> <span class="o">=</span> <span class="n">_extract_field_names_sub_folders</span><span class="p">(</span><span class="n">first_folder_files</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">)</span>
     <span class="p">(</span>
-        <span class="n">search_fields_modalities</span><span class="p">,</span>
-        <span class="n">filter_fields_modalities</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">=</span> <span class="n">_create_candidate_search_filter_fields</span><span class="p">(</span><span class="n">field_names</span><span class="p">)</span>
-    <span class="n">user_input</span><span class="o">.</span><span class="n">search_fields_modalities</span> <span class="o">=</span> <span class="n">search_fields_modalities</span>
-    <span class="n">user_input</span><span class="o">.</span><span class="n">filter_fields_modalities</span> <span class="o">=</span> <span class="n">filter_fields_modalities</span></div>
+        <span class="n">user_input</span><span class="o">.</span><span class="n">search_fields_modalities</span><span class="p">,</span>
+        <span class="n">user_input</span><span class="o">.</span><span class="n">filter_fields_modalities</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">=</span> <span class="n">_create_candidate_search_filter_fields</span><span class="p">(</span><span class="n">field_names</span><span class="p">)</span></div>
 </pre></div>
                 </article>
             </div>
@@ -572,7 +575,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Dec 12, 2022.
+                            Last updated on Dec 22, 2022.
                         </div>
                     </div>
                     <div class="right-details">

@@ -3,12 +3,12 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-<meta property="og:title" content="Input Formats" />
+<meta property="og:title" content="Guide to loading your data" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://now.jina.ai/user-guides/input_format/" />
-<meta property="og:site_name" content="NOW 0.0.40 Documentation" />
-<meta property="og:description" content="When deploying your app, you will be asked to select the input format of your data. This is the format of the data that you will be sending to the API. We currently support the following input options for custom input: DocumentArray, DocumentArrayUrl, local path, S3 bucket. In the following, we w..." />
-<meta name="description" content="When deploying your app, you will be asked to select the input format of your data. This is the format of the data that you will be sending to the API. We currently support the following input options for custom input: DocumentArray, DocumentArrayUrl, local path, S3 bucket. In the following, we w..." />
+<meta property="og:site_name" content="NOW 0.0.41 Documentation" />
+<meta property="og:description" content="Input Formats: When deploying your search app, you will be asked to select the input format of your data. This is the format of the data that you will be sending to the API. We currently support the following input formats for your custom input: DocumentArray, local path or S3 bucket. In this sec..." />
+<meta name="description" content="Input Formats: When deploying your search app, you will be asked to select the input format of your data. This is the format of the data that you will be sending to the API. We currently support the following input formats for your custom input: DocumentArray, local path or S3 bucket. In this sec..." />
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@JinaAI_">
 <meta name="twitter:creator" content="@JinaAI_">
@@ -31,7 +31,7 @@
         <link rel="canonical" href="https://now.jina.ai/user-guides/input_format.html" />
 
     <link rel="shortcut icon" href="../../_static/favicon.png"/><!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
-        <title>Input Formats - NOW 0.0.40 documentation</title>
+        <title>Guide to loading your data - NOW 0.0.41 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
@@ -164,7 +164,7 @@
         </div>
         <div class="header-center">
             <a href="../../">
-                <div class="brand">NOW 0.0.40 documentation</div>
+                <div class="brand">NOW 0.0.41 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -216,9 +216,7 @@
     <p class="caption" role="heading"><span class="caption-text">User Guides</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../cli_api/">How to use Jina NOW’s CLI and API</a></li>
-<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Input Formats</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#support-for-tags">Support for Tags</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#supported-file-formats">Supported File Formats</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Guide to loading your data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../production/">Production readiness</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Developer Reference</span></p>
@@ -299,26 +297,30 @@
                     </label>
                 </div>
                 <article role="main">
-                    <section class="tex2jax_ignore mathjax_ignore" id="input-formats">
-<h1>Input Formats<a class="headerlink" href="#input-formats" title="Permalink to this heading">#</a></h1>
-<p>When deploying your app, you will be asked to select the input format of your data.
+                    <section class="tex2jax_ignore mathjax_ignore" id="guide-to-loading-your-data">
+<h1>Guide to loading your data<a class="headerlink" href="#guide-to-loading-your-data" title="Permalink to this heading">#</a></h1>
+<section id="input-formats">
+<h2>Input Formats<a class="headerlink" href="#input-formats" title="Permalink to this heading">#</a></h2>
+<p>When deploying your search app, you will be asked to select the input format of your data.
 This is the format of the data that you will be sending to the API.
-We currently support the following input options for custom input: DocumentArray, DocumentArrayUrl, local path, S3 bucket.
-In the following, we will explain each of these options in more detail.</p>
+We currently support the following input formats for your custom input: DocumentArray, local path or S3 bucket.
+In this section, we will explain each of these options in more detail.</p>
 <section id="documentarray">
-<h2>DocumentArray<a class="headerlink" href="#documentarray" title="Permalink to this heading">#</a></h2>
-<p>If you have your data as a <code class="docutils literal notranslate"><span class="pre">DocumentArray</span></code> you can use this option.
-More information about how to create and push your own <code class="docutils literal notranslate"><span class="pre">DocumentArray</span></code> can be found <a class="reference external" href="https://docarray.jina.ai/">here</a>.</p>
-</section>
-<section id="documentarray-url">
-<h2>DocumentArray Url<a class="headerlink" href="#documentarray-url" title="Permalink to this heading">#</a></h2>
-<p>Similar to the <code class="docutils literal notranslate"><span class="pre">DocumentArray</span></code> option, but instead of pushing your <code class="docutils literal notranslate"><span class="pre">DocumentArray</span></code> to the API, you can provide a URL to your data.</p>
+<h3>DocumentArray<a class="headerlink" href="#documentarray" title="Permalink to this heading">#</a></h3>
+<p>If you have loaded your data as a <code class="docutils literal notranslate"><span class="pre">DocumentArray</span></code>, this option is perfect for you. In this case, you can simply provide
+the name of your <code class="docutils literal notranslate"><span class="pre">DocumentArray</span></code> as the input. For example, if you have a <code class="docutils literal notranslate"><span class="pre">DocumentArray</span></code> called <code class="docutils literal notranslate"><span class="pre">cat_pictures</span></code>, you can
+simply provide <code class="docutils literal notranslate"><span class="pre">cat_pictures</span></code> as the input, which will automatically pull your dataset.</p>
+<div class="highlight-commandline notranslate"><div class="highlight"><pre><span></span>? How do you want to provide input? (format: https://docarray.jina.ai/)  DocumentArray name (recommended)
+? Please enter your DocumentArray name: cat_pictures
+</pre></div>
+</div>
+<p>More information about how to create and push your own <code class="docutils literal notranslate"><span class="pre">DocumentArray</span></code> can be found <a class="reference external" href="https://docarray.jina.ai/">here</a>.</p>
 </section>
 <section id="local-folder">
-<h2>Local Folder<a class="headerlink" href="#local-folder" title="Permalink to this heading">#</a></h2>
+<h3>Local Folder<a class="headerlink" href="#local-folder" title="Permalink to this heading">#</a></h3>
 <p>If you have your data stored locally, you can provide the path to the folder containing your data.
 The folder should contain all files that you want to index.</p>
-<p>Example structure for a text-to-image search app:</p>
+<p>Here is an example of a folder structure for text-to-image search:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>usr
 ├── data
 │   ├── images
@@ -328,20 +330,32 @@ The folder should contain all files that you want to index.</p>
 │   │   ├── 4.jpg
 </pre></div>
 </div>
-<p>The local path you provide should be <code class="docutils literal notranslate"><span class="pre">/usr/data/images</span></code>.</p>
+<p>In this case, the local path you should provide is <code class="docutils literal notranslate"><span class="pre">/usr/data/images</span></code>, as follows:</p>
+<div class="highlight-commandline notranslate"><div class="highlight"><pre><span></span>? How do you want to provide input? (format: https://docarray.jina.ai/)  Local folder
+? Please enter your local path: /usr/data/images
+</pre></div>
+</div>
 </section>
 <section id="aws-s3-bucket">
-<h2>AWS S3 bucket<a class="headerlink" href="#aws-s3-bucket" title="Permalink to this heading">#</a></h2>
+<h3>AWS S3 bucket<a class="headerlink" href="#aws-s3-bucket" title="Permalink to this heading">#</a></h3>
 <p>If you have your data stored in an AWS S3 bucket, you can provide the S3 URI, your <code class="docutils literal notranslate"><span class="pre">AWS</span> <span class="pre">access</span> <span class="pre">key</span> <span class="pre">ID</span></code> and <code class="docutils literal notranslate"><span class="pre">AWS</span> <span class="pre">secret</span> <span class="pre">key</span></code>.
 Similar to the local folder option, the S3 bucket should contain all files that you want to index.
 The only difference is that the S3 Uri should be in the following format: <code class="docutils literal notranslate"><span class="pre">s3://&lt;bucket-name&gt;/&lt;path-to-data&gt;</span></code>.
 Taking the example structure from above, the S3 URI would be <code class="docutils literal notranslate"><span class="pre">s3://my-&lt;bucket-name&gt;/usr/data/images</span></code>.</p>
+<p>Here is an example of what your interaction may look like in the CLI:</p>
+<div class="highlight-commandline notranslate"><div class="highlight"><pre><span></span>? How do you want to provide input? (format: https://docarray.jina.ai/)  S3 bucket
+? Please enter the S3 URI to the folder:  s3://&lt;bucket-name&gt;/&lt;path-to-data&gt;
+? Please enter the AWS access key ID:  &lt;my-key-id&gt;
+? Please enter the AWS secret access key:  &lt;my-access-key&gt;
+? Please enter the AWS region:  &lt;my-region&gt;
+</pre></div>
+</div>
 </section>
 </section>
-<section class="tex2jax_ignore mathjax_ignore" id="support-for-tags">
-<h1>Support for Tags<a class="headerlink" href="#support-for-tags" title="Permalink to this heading">#</a></h1>
+<section id="support-for-tags">
+<h2>Support for Tags<a class="headerlink" href="#support-for-tags" title="Permalink to this heading">#</a></h2>
 <p>For most professional applications, you will want to provide additional information about your data, such as price, creator, brand, etc.
-This information can be provided in the <code class="docutils literal notranslate"><span class="pre">tags</span></code> of your <code class="docutils literal notranslate"><span class="pre">Documents</span></code> in case you selected the <code class="docutils literal notranslate"><span class="pre">DocumentArray</span></code> or <code class="docutils literal notranslate"><span class="pre">DocumentArrayUrl</span></code> option.
+This information can be provided in the <code class="docutils literal notranslate"><span class="pre">tags</span></code> of your <code class="docutils literal notranslate"><span class="pre">Document</span></code>s in case you selected the <code class="docutils literal notranslate"><span class="pre">DocumentArray</span></code> option.
 If you selected the <code class="docutils literal notranslate"><span class="pre">local</span> <span class="pre">folder</span></code> or <code class="docutils literal notranslate"><span class="pre">S3</span> <span class="pre">bucket</span></code> option, you can provide this information in a <code class="docutils literal notranslate"><span class="pre">json</span></code> file for each document.
 The example from above would look like this:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>root
@@ -369,8 +383,8 @@ The example from above would look like this:</p>
 </pre></div>
 </div>
 </section>
-<section class="tex2jax_ignore mathjax_ignore" id="supported-file-formats">
-<h1>Supported File Formats<a class="headerlink" href="#supported-file-formats" title="Permalink to this heading">#</a></h1>
+<section id="supported-file-formats">
+<h2>Supported File Formats<a class="headerlink" href="#supported-file-formats" title="Permalink to this heading">#</a></h2>
 <p>Here is an overview of the supported file formats for each modality:</p>
 <ul class="simple">
 <li><p>Text: <code class="docutils literal notranslate"><span class="pre">.txt</span></code> (can also have a different extension, but has to be plain text)</p></li>
@@ -378,6 +392,32 @@ The example from above would look like this:</p>
 <li><p>Audio: <code class="docutils literal notranslate"><span class="pre">.wav</span></code>, <code class="docutils literal notranslate"><span class="pre">.mp3</span></code>, … (everything supported by <code class="docutils literal notranslate"><span class="pre">librosa</span></code>)</p></li>
 <li><p>Video: <code class="docutils literal notranslate"><span class="pre">.gif</span></code></p></li>
 </ul>
+</section>
+<section id="search-and-filter-fields">
+<h2>Search and filter fields<a class="headerlink" href="#search-and-filter-fields" title="Permalink to this heading">#</a></h2>
+<p>Once you have chosen your input type and ensured that your data is in the correct format, you will be asked to select
+the fields from your dataset that you want to search and filter on. NOW will automatically detect these fields for you,
+and list them for you to choose from. You can select only one field for searching. Here’s an example using the <code class="docutils literal notranslate"><span class="pre">birds</span></code>
+demo dataset:</p>
+<div class="highlight-commandline notranslate"><div class="highlight"><pre><span></span>? How do you want to provide input? (format: https://docarray.jina.ai/)  Demo dataset
+? What demo dataset do you want to use?  🦆 birds (≈12K docs)
+? Please select the search fields:  (&lt;up&gt;, &lt;down&gt; to move, &lt;space&gt; to select, &lt;a&gt; to toggle, &lt;i&gt; to invert)
+ ○ label
+❯○ image
+? Please select the filter fields  (&lt;up&gt;, &lt;down&gt; to move, &lt;space&gt; to select, &lt;a&gt; to toggle, &lt;i&gt; to invert)
+❯◯ label
+</pre></div>
+</div>
+<p>In the above commandline interaction, we have selected the <code class="docutils literal notranslate"><span class="pre">birds</span></code> dataset, and we can see that the <code class="docutils literal notranslate"><span class="pre">label</span></code> and <code class="docutils literal notranslate"><span class="pre">image</span></code>
+fields are available for us to search on. We have selected the <code class="docutils literal notranslate"><span class="pre">image</span></code> field for searching, and the <code class="docutils literal notranslate"><span class="pre">label</span></code> field for
+filtering.</p>
+</section>
+<section id="next-steps">
+<h2>Next steps<a class="headerlink" href="#next-steps" title="Permalink to this heading">#</a></h2>
+<p>Now that you have selected your input format and the fields you want to search and filter on, you can move on to the next step,
+where you will be asked to choose a name for your search app, where to make the deployment (📍local or on ⛅️ Jina Cloud),
+and whether you want to secure your application.</p>
+</section>
 </section>
 
                 </article>
@@ -418,7 +458,7 @@ The example from above would look like this:</p>
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Dec 12, 2022.
+                            Last updated on Dec 22, 2022.
                         </div>
                     </div>
                     <div class="right-details">
@@ -451,15 +491,19 @@ The example from above would look like this:</p>
                 <div class="toc-tree-container">
                     <div class="toc-tree">
                         <ul>
-<li><a class="reference internal" href="#">Input Formats</a><ul>
+<li><a class="reference internal" href="#">Guide to loading your data</a><ul>
+<li><a class="reference internal" href="#input-formats">Input Formats</a><ul>
 <li><a class="reference internal" href="#documentarray">DocumentArray</a></li>
-<li><a class="reference internal" href="#documentarray-url">DocumentArray Url</a></li>
 <li><a class="reference internal" href="#local-folder">Local Folder</a></li>
 <li><a class="reference internal" href="#aws-s3-bucket">AWS S3 bucket</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#support-for-tags">Support for Tags</a></li>
 <li><a class="reference internal" href="#supported-file-formats">Supported File Formats</a></li>
+<li><a class="reference internal" href="#search-and-filter-fields">Search and filter fields</a></li>
+<li><a class="reference internal" href="#next-steps">Next steps</a></li>
+</ul>
+</li>
 </ul>
 
                     </div>

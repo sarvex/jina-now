@@ -6,7 +6,7 @@
         <link rel="canonical" href="https://now.jina.ai/_modules/now/finetuning/settings.html" />
 
     <link rel="shortcut icon" href="../../../../_static/favicon.png"/><!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
-        <title>now.finetuning.settings - NOW 0.0.40 documentation</title>
+        <title>now.finetuning.settings - NOW 0.0.41 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../../">
-                <div class="brand">NOW 0.0.40 documentation</div>
+                <div class="brand">NOW 0.0.41 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -191,9 +191,7 @@
     <p class="caption" role="heading"><span class="caption-text">User Guides</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../user-guides/cli_api/">How to use Jina NOW’s CLI and API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../user-guides/input_format/">Input Formats</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../user-guides/input_format/#support-for-tags">Support for Tags</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../user-guides/input_format/#supported-file-formats">Supported File Formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../user-guides/input_format/">Guide to loading your data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../user-guides/production/">Production readiness</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Developer Reference</span></p>
@@ -281,7 +279,7 @@
 
 <span class="kn">from</span> <span class="nn">docarray</span> <span class="kn">import</span> <span class="n">DocumentArray</span>
 
-<span class="kn">from</span> <span class="nn">now.constants</span> <span class="kn">import</span> <span class="n">Apps</span><span class="p">,</span> <span class="n">DatasetTypes</span>
+<span class="kn">from</span> <span class="nn">now.constants</span> <span class="kn">import</span> <span class="n">DatasetTypes</span>
 <span class="kn">from</span> <span class="nn">now.now_dataclasses</span> <span class="kn">import</span> <span class="n">UserInput</span>
 
 <span class="n">DEFAULT_EPOCHS</span> <span class="o">=</span> <span class="mi">50</span>
@@ -345,9 +343,7 @@
 
 
 <span class="k">def</span> <span class="nf">_is_bi_modal</span><span class="p">(</span><span class="n">user_input</span><span class="p">:</span> <span class="n">UserInput</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">DocumentArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-    <span class="k">if</span> <span class="n">user_input</span><span class="o">.</span><span class="n">app_instance</span><span class="o">.</span><span class="n">app_name</span> <span class="o">==</span> <span class="n">Apps</span><span class="o">.</span><span class="n">TEXT_TO_TEXT_AND_IMAGE</span><span class="p">:</span>
-        <span class="k">return</span> <span class="kc">False</span>
-    <span class="k">elif</span> <span class="n">user_input</span><span class="o">.</span><span class="n">dataset_type</span> <span class="o">!=</span> <span class="n">DatasetTypes</span><span class="o">.</span><span class="n">DEMO</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">user_input</span><span class="o">.</span><span class="n">dataset_type</span> <span class="o">!=</span> <span class="n">DatasetTypes</span><span class="o">.</span><span class="n">DEMO</span><span class="p">:</span>
         <span class="n">has_blob</span> <span class="o">=</span> <span class="nb">any</span><span class="p">([</span><span class="n">d</span><span class="o">.</span><span class="n">blob</span> <span class="o">!=</span> <span class="sa">b</span><span class="s1">&#39;&#39;</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">])</span>
         <span class="n">has_text</span> <span class="o">=</span> <span class="nb">any</span><span class="p">([</span><span class="n">d</span><span class="o">.</span><span class="n">text</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">])</span>
         <span class="k">return</span> <span class="n">has_text</span> <span class="ow">and</span> <span class="n">has_blob</span>
@@ -390,7 +386,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Dec 12, 2022.
+                            Last updated on Dec 22, 2022.
                         </div>
                     </div>
                     <div class="right-details">

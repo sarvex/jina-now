@@ -6,7 +6,7 @@
         <link rel="canonical" href="https://now.jina.ai/_modules/deployment/bff/app/v1/routers/helper.html" />
 
     <link rel="shortcut icon" href="../../../../../../../_static/favicon.png"/><!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
-        <title>deployment.bff.app.v1.routers.helper - NOW 0.0.40 documentation</title>
+        <title>deployment.bff.app.v1.routers.helper - NOW 0.0.41 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../../../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
     <link rel="stylesheet" type="text/css" href="../../../../../../../_static/copybutton.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../../../../../">
-                <div class="brand">NOW 0.0.40 documentation</div>
+                <div class="brand">NOW 0.0.41 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -191,9 +191,7 @@
     <p class="caption" role="heading"><span class="caption-text">User Guides</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../../../user-guides/cli_api/">How to use Jina NOW’s CLI and API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../../../../user-guides/input_format/">Input Formats</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../../../../user-guides/input_format/#support-for-tags">Support for Tags</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../../../../user-guides/input_format/#supported-file-formats">Supported File Formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../user-guides/input_format/">Guide to loading your data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../../../user-guides/production/">Production readiness</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Developer Reference</span></p>
@@ -283,6 +281,39 @@
 <span class="kn">from</span> <span class="nn">jina.excepts</span> <span class="kn">import</span> <span class="n">BadServer</span>
 
 
+<div class="viewcode-block" id="field_dict_to_doc"><a class="viewcode-back" href="../../../../../../../api/deployment.bff.app.v1.routers.helper/#deployment.bff.app.v1.routers.helper.field_dict_to_doc">[docs]</a><span class="k">def</span> <span class="nf">field_dict_to_doc</span><span class="p">(</span><span class="n">field_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Document</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Converts a dictionary of field names to their values to a document.</span>
+
+<span class="sd">    :param field_dict: key-value pairs of field names and their values</span>
+<span class="sd">    :return: document</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">field_dict</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Multi-modal document isn&#39;t supported yet. &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Can only set one value but have </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">field_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">field_value</span> <span class="ow">in</span> <span class="n">field_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">field_value</span><span class="o">.</span><span class="n">text</span><span class="p">:</span>
+                <span class="n">doc</span> <span class="o">=</span> <span class="n">Document</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">field_value</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">field_value</span><span class="o">.</span><span class="n">uri</span><span class="p">:</span>
+                <span class="n">doc</span> <span class="o">=</span> <span class="n">Document</span><span class="p">(</span><span class="n">uri</span><span class="o">=</span><span class="n">field_value</span><span class="o">.</span><span class="n">uri</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">field_value</span><span class="o">.</span><span class="n">blob</span><span class="p">:</span>
+                <span class="n">base64_bytes</span> <span class="o">=</span> <span class="n">field_value</span><span class="o">.</span><span class="n">blob</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+                <span class="n">blob</span> <span class="o">=</span> <span class="n">base64</span><span class="o">.</span><span class="n">decodebytes</span><span class="p">(</span><span class="n">base64_bytes</span><span class="p">)</span>
+                <span class="n">doc</span> <span class="o">=</span> <span class="n">Document</span><span class="p">(</span><span class="n">blob</span><span class="o">=</span><span class="n">blob</span><span class="p">,</span> <span class="n">modality</span><span class="o">=</span><span class="s1">&#39;image&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;None of the attributes uri, text or blob is set.&#39;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">BaseException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span>
+            <span class="n">status_code</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
+            <span class="n">detail</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;Not a correct encoded query. Please see the error stack for more information. </span><span class="se">\n</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">doc</span></div>
+
+
 <div class="viewcode-block" id="process_query"><a class="viewcode-back" href="../../../../../../../api/deployment.bff.app.v1.routers.helper/#deployment.bff.app.v1.routers.helper.process_query">[docs]</a><span class="k">def</span> <span class="nf">process_query</span><span class="p">(</span>
     <span class="n">text</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">blob</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">b</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">uri</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">conditions</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Document</span><span class="p">:</span>
@@ -322,13 +353,10 @@
             <span class="n">status_code</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
             <span class="n">detail</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;Not a correct encoded query. Please see the error stack for more information. </span><span class="se">\n</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
         <span class="p">)</span>
-    <span class="n">query</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">if</span> <span class="n">conditions</span><span class="p">:</span>
-        <span class="n">filter_query</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="c1"># construct filtering query from dictionary</span>
-        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">conditions</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="n">filter_query</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;$eq&#39;</span><span class="p">:</span> <span class="n">value</span><span class="p">}})</span>
-        <span class="n">query</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;$and&#39;</span><span class="p">:</span> <span class="n">filter_query</span><span class="p">}</span>  <span class="c1"># different conditions are aggregated using and</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;$eq&#39;</span><span class="p">:</span> <span class="n">value</span><span class="p">}</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">conditions</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span> <span class="k">if</span> <span class="n">conditions</span> <span class="k">else</span> <span class="p">{}</span>
+    <span class="p">)</span>
+
     <span class="k">return</span> <span class="n">query_doc</span><span class="p">,</span> <span class="n">query</span></div>
 
 
@@ -398,7 +426,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Dec 12, 2022.
+                            Last updated on Dec 22, 2022.
                         </div>
                     </div>
                     <div class="right-details">

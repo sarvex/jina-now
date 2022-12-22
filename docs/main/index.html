@@ -6,7 +6,7 @@
 <meta property="og:title" content="Install" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://now.jina.ai/main/" />
-<meta property="og:site_name" content="NOW 0.0.40 Documentation" />
+<meta property="og:site_name" content="NOW 0.0.41 Documentation" />
 <meta property="og:description" content="Text-to-image Text-to-video Image-to-image Text-to-text NOW gives the world access to neural image search with just one command. ⛅ Cloud: We handle deployment and maintenance., 🐎 Fast and easy: Set up your search use case in minutes with minimal effort., 🌈 Quality: You provide the labels, NOW fin..." />
 <meta property="og:image" content="https://user-images.githubusercontent.com/11627845/164571632-0e6a6c39-0137-413b-8287-21fc34785665.png" />
 <meta property="og:image:alt" content="" />
@@ -33,7 +33,7 @@
         <link rel="canonical" href="https://now.jina.ai/main.html" />
 
     <link rel="shortcut icon" href="../_static/favicon.png"/><!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
-        <title>Install - NOW 0.0.40 documentation</title>
+        <title>Install - NOW 0.0.41 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
@@ -166,7 +166,7 @@
         </div>
         <div class="header-center">
             <a href="../">
-                <div class="brand">NOW 0.0.40 documentation</div>
+                <div class="brand">NOW 0.0.41 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -218,9 +218,7 @@
     <p class="caption" role="heading"><span class="caption-text">User Guides</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../user-guides/cli_api/">How to use Jina NOW’s CLI and API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../user-guides/input_format/">Input Formats</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../user-guides/input_format/#support-for-tags">Support for Tags</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../user-guides/input_format/#supported-file-formats">Supported File Formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user-guides/input_format/">Guide to loading your data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../user-guides/production/">Production readiness</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Developer Reference</span></p>
@@ -356,42 +354,83 @@ In a new Conda environment:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>jina now start
 </pre></div>
 </div>
-<p><strong>1.</strong> Choose your app. Currently, we support image or text search, but in future, we’ll add many more options.</p>
-<img width="613" alt="Screenshot 2022-05-31 at 01 08 25" src="https://user-images.githubusercontent.com/40893766/192245825-c19274a5-2514-4c93-94ff-4d507dfef429.png">
-<p><strong>2.</strong> Choose your data source. Choose between demo datasets, a custom DocumentArray, local folder, or S3 bucket.</p>
-<img src="https://user-images.githubusercontent.com/47435119/195334616-9a8d5ad3-229f-49bb-9d49-f38243a0eb9b.png">
-<ul class="simple">
-<li><p>If you choose <code class="docutils literal notranslate"><span class="pre">docarray.pull</span></code> or DocumentArray URL, NOW asks for your DocumentArray ID or URL.</p></li>
-<li><p>If you choose local path, NOW asks for the folder’s path:</p></li>
-</ul>
-<img width="506" alt="question-local-path" src="https://user-images.githubusercontent.com/11627845/170256044-67e82e86-6439-4a3e-98f1-dbdf1940de67.png">
-<p><strong>3.</strong> Choose your deployment type. We recommend cloud deployment to run your app on our servers. Alternatively, you can deploy locally.</p>
-<img width="547" alt="question-deployment" src="https://user-images.githubusercontent.com/11627845/170256038-8c44a5b8-985a-4fe7-af5d-16df0244f4bb.png">
-<p>For local deployment, NOW asks where you want to deploy it and reads your local .kube/config and lists all Kubernetes clusters you have access to.
+<p><strong>1.</strong> Choose your data source.</p>
+<p>You may either choose a demo dataset hosted by NOW, or use your own custom dataset, to build an application.
+NOW can support your custom data in the form of a <code class="docutils literal notranslate"><span class="pre">DocumentArray</span></code>, as a path to a local folder, or S3 bucket.</p>
+<div class="highlight-commandline notranslate"><div class="highlight"><pre><span></span>? How do you want to provide input? (format: https://docarray.jina.ai/)  (Use arrow keys)
+ ❯ Demo dataset
+   DocumentArray name (recommended)
+   Local folder
+   S3 bucket
+   - Elasticsearch (will be available in upcoming versions)
+</pre></div>
+</div>
+<p>You can choose a demo dataset to get started quickly. The demo datasets are hosted by NOW which can be easily
+used to build a search application. There is a large variety of datasets, including images, text, and audio.</p>
+<p>If you would like to use your own custom data, you can choose <code class="docutils literal notranslate"><span class="pre">DocumentArray</span> <span class="pre">name</span></code>. You will be asked to provide the
+DocumentArray ID (or name) or URL of your dataset.</p>
+<div class="highlight-commandline notranslate"><div class="highlight"><pre><span></span>? Please enter your DocumentArray name:
+</pre></div>
+</div>
+<p>You can also choose the local folder option to upload your data, in which case
+NOW asks for the path to the folder containing your data:</p>
+<div class="highlight-commandline notranslate"><div class="highlight"><pre><span></span>? Please enter the path to the local folder:
+</pre></div>
+</div>
+<p>Perhaps your data is stored in an S3 bucket, which is an option NOW also supports. In this case,
+NOW asks for the URI to the S3 bucket, as well as the credentials and region thereof.</p>
+<div class="highlight-commandline notranslate"><div class="highlight"><pre><span></span>? Please enter the S3 URI to the folder:
+? Please enter the AWS access key ID:
+? Please enter the AWS secret access key:
+? Please enter the AWS region:
+</pre></div>
+</div>
+<p>A final step in loading your data is to choose the fields of your data that you would like to use for search and filter
+respectively. You can choose from the fields that are available in your data. For more information on this, see the
+<a class="reference external" href="https://now.jina.ai/user-guides/input_format/">guide to loading your data</a>.</p>
+<p><strong>2.</strong> Choose your deployment type.</p>
+<p>We recommend cloud deployment to run your app on our servers. Alternatively, you can deploy locally.</p>
+<div class="highlight-commandline notranslate"><div class="highlight"><pre><span></span>? Where do you want to deploy your search engine?  (Use arrow keys)
+ ❯ ⛅️ Jina Cloud
+   📍 Local
+</pre></div>
+</div>
+<p>For local deployment, NOW asks where you want to deploy it and reads your local <code class="docutils literal notranslate"><span class="pre">.kube/config</span></code> and lists all Kubernetes clusters you have access to.
 If you don’t want to use an existing cluster, you can create a new one locally.</p>
-<img width="643" alt="question-cluster" src="https://user-images.githubusercontent.com/11627845/170256027-99798fae-3ec4-42dc-8737-843f4a23f941.png">
-<p><strong>4.</strong> Follow the links. After NOW finishes processing, you’ll see two links:</p>
+<div class="highlight-commandline notranslate"><div class="highlight"><pre><span></span>? Which cluster do you want to use to deploy your search engine? (Use arrow keys)
+    kind-jina-now
+    minikube
+  ❯ 🐣create new
+</pre></div>
+</div>
+<p><strong>3.</strong> Follow the links. After NOW finishes processing, you’ll see two links:</p>
 <ul class="simple">
 <li><p>The Swagger UI is useful for frontend integration.</p></li>
 <li><p>The “playground” lets you run example queries and experiment with your search use case.</p></li>
 </ul>
-<img width="709" alt="Screenshot 2022-05-26 at 16 34 56" src="https://user-images.githubusercontent.com/11627845/170511632-c741a418-1246-4c23-aadd-cfd74d783f6b.png">
+<div class="highlight-commandline notranslate"><div class="highlight"><pre><span></span>🚀 Deploy playground and BFF
+
+BFF docs are accessible at:
+http://localhost:30090/api/docs
+
+Playground is accessible at:
+http://localhost:30080/?host=gateway&amp;search_field=image&amp;data=best-artworks&amp;port=8080
+</pre></div>
+</div>
 <p>Example of the playground.</p>
 <img width="350" alt="Screenshot 2022-05-26 at 16 36 49" src="https://user-images.githubusercontent.com/11627845/170511607-3fb810f7-a5aa-47cd-9f70-e6034a96b9fd.png">
 <p>Example of the Swagger UI.</p>
 <img width="350" alt="Screenshot 2022-05-26 at 16 36 06" src="https://user-images.githubusercontent.com/11627845/170511580-230d1e41-5e14-4623-adb6-3d4b2d400dc9.png">
 <p><a class="reference external" href="https://now.jina.ai/user-guides/cli_api/">More information on using Jina NOW CLI and API</a></p>
 </section>
-<section id="supported-apps-more-coming-soon">
-<h1>Supported apps (more coming soon)<a class="headerlink" href="#supported-apps-more-coming-soon" title="Permalink to this heading">#</a></h1>
+<section id="supported-modalities-more-coming-soon">
+<h1>Supported modalities (more coming soon)<a class="headerlink" href="#supported-modalities-more-coming-soon" title="Permalink to this heading">#</a></h1>
 <ul class="simple">
-<li><p>📝 ▶ 🏞 Text to Image search</p></li>
-<li><p>🏞 ▶ 📝 Image to Text search</p></li>
-<li><p>🏞 ▶ 🏞 Image to Image search</p></li>
-<li><p>📝 ▶ 📝 Text to Text search</p></li>
-<li><p>🥁 ▶ 🥁 Music to Music search</p></li>
-<li><p>📝 ▶ 🎥 Text to Video search (for GIFs)</p></li>
-<li><p>📝 ▶ 🧊 Text to 3D Mesh search (coming soon)</p></li>
+<li><p>📝 Text</p></li>
+<li><p>🏞 Image</p></li>
+<li><p>🥁 Music</p></li>
+<li><p>🎥 Video (for GIFs)</p></li>
+<li><p>🧊 3D Mesh (coming soon)</p></li>
 </ul>
 <p><a class="reference external" href="https://www.youtube.com/watch?v=fdIaLP0ctpo"><img alt="" src="https://user-images.githubusercontent.com/11627845/164571632-0e6a6c39-0137-413b-8287-21fc34785665.png" /></a></p>
 </p>
@@ -438,7 +477,7 @@ If you don’t want to use an existing cluster, you can create a new one locally
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Dec 12, 2022.
+                            Last updated on Dec 22, 2022.
                         </div>
                     </div>
                     <div class="right-details">
@@ -476,7 +515,7 @@ If you don’t want to use an existing cluster, you can create a new one locally
 </ul>
 </li>
 <li><a class="reference internal" href="#quick-start">Quick start</a></li>
-<li><a class="reference internal" href="#supported-apps-more-coming-soon">Supported apps (more coming soon)</a></li>
+<li><a class="reference internal" href="#supported-modalities-more-coming-soon">Supported modalities (more coming soon)</a></li>
 <li><a class="reference internal" href="#example-datasets">Example datasets</a></li>
 </ul>
 

@@ -6,7 +6,7 @@
 <meta property="og:title" content="How to use Jina NOW’s CLI and API" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://now.jina.ai/user-guides/cli_api/" />
-<meta property="og:site_name" content="NOW 0.0.40 Documentation" />
+<meta property="og:site_name" content="NOW 0.0.41 Documentation" />
 <meta property="og:description" content="Use CLI Parameters: Instead of answering the questions manually, you can also provide command-line arguments when starting Jina NOW like shown here. Use API: You can now send requests to the API using the jina client. This case shows a local deployment. Cleanup: Requirements: Linux or Mac, Python..." />
 <meta name="description" content="Use CLI Parameters: Instead of answering the questions manually, you can also provide command-line arguments when starting Jina NOW like shown here. Use API: You can now send requests to the API using the jina client. This case shows a local deployment. Cleanup: Requirements: Linux or Mac, Python..." />
 <meta name="twitter:card" content="summary_large_image">
@@ -27,11 +27,11 @@
 
 <script async defer src="https://buttons.github.io/buttons.js"></script>
     
-<link rel="index" title="Index" href="../../genindex/" /><link rel="search" title="Search" href="../../search/" /><link rel="next" title="Input Formats" href="../input_format/" /><link rel="prev" title="Welcome to Jina NOW!" href="../../" />
+<link rel="index" title="Index" href="../../genindex/" /><link rel="search" title="Search" href="../../search/" /><link rel="next" title="Guide to loading your data" href="../input_format/" /><link rel="prev" title="Welcome to Jina NOW!" href="../../" />
         <link rel="canonical" href="https://now.jina.ai/user-guides/cli_api.html" />
 
     <link rel="shortcut icon" href="../../_static/favicon.png"/><!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
-        <title>How to use Jina NOW’s CLI and API - NOW 0.0.40 documentation</title>
+        <title>How to use Jina NOW’s CLI and API - NOW 0.0.41 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
@@ -164,7 +164,7 @@
         </div>
         <div class="header-center">
             <a href="../../">
-                <div class="brand">NOW 0.0.40 documentation</div>
+                <div class="brand">NOW 0.0.41 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -216,9 +216,7 @@
     <p class="caption" role="heading"><span class="caption-text">User Guides</span></p>
 <ul class="current">
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">How to use Jina NOW’s CLI and API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../input_format/">Input Formats</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../input_format/#support-for-tags">Support for Tags</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../input_format/#supported-file-formats">Supported File Formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../input_format/">Guide to loading your data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../production/">Production readiness</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Developer Reference</span></p>
@@ -304,7 +302,7 @@
 <section id="use-cli-parameters">
 <h2>Use CLI Parameters<a class="headerlink" href="#use-cli-parameters" title="Permalink to this heading">#</a></h2>
 <p>Instead of answering the questions manually, you can also provide command-line arguments when starting Jina NOW like shown here.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>jina now start --app text_to_image
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>jina now start --dataset-type <span class="s2">&quot;DocumentArray name&quot;</span> --dataset-id <span class="s2">&quot;my-documentarray-id&quot;</span> --search-fields <span class="s2">&quot;title&quot;</span> <span class="o">[</span>...<span class="o">]</span>
 </pre></div>
 </div>
 </section>
@@ -317,7 +315,7 @@
         <span class="nv">port</span><span class="o">=</span><span class="m">31080</span>,
 <span class="o">)</span> 
 <span class="nv">response</span> <span class="o">=</span> client.search<span class="o">(</span>
-        Document<span class="o">(</span><span class="nv">text</span><span class="o">=</span>search_text<span class="o">)</span>, <span class="c1"># or in case you send an image: Document(url=image_path),</span>
+        Document<span class="o">(</span><span class="nv">text</span><span class="o">=</span>search_text<span class="o">)</span>, <span class="c1"># or in case you send an image: Document(uri=image_path),</span>
         <span class="nv">parameters</span><span class="o">={</span><span class="s2">&quot;limit&quot;</span>: <span class="m">9</span>, <span class="s2">&quot;filter&quot;</span>: <span class="o">{}}</span>,
 <span class="o">)</span>
 </pre></div>
@@ -356,7 +354,7 @@
                             <div class="context">
                                 <span>Next</span>
                             </div>
-                            <div class="title">Input Formats</div>
+                            <div class="title">Guide to loading your data</div>
                         </div>
                         <svg>
                             <use href="#svg-arrow-right"></use>
@@ -384,7 +382,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Dec 12, 2022.
+                            Last updated on Dec 22, 2022.
                         </div>
                     </div>
                     <div class="right-details">

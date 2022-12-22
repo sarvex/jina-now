@@ -6,7 +6,7 @@
         <link rel="canonical" href="https://now.jina.ai/_modules/deployment/bff/app/app.html" />
 
     <link rel="shortcut icon" href="../../../../../_static/favicon.png"/><!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
-        <title>deployment.bff.app.app - NOW 0.0.40 documentation</title>
+        <title>deployment.bff.app.app - NOW 0.0.41 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../../../">
-                <div class="brand">NOW 0.0.40 documentation</div>
+                <div class="brand">NOW 0.0.41 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -191,9 +191,7 @@
     <p class="caption" role="heading"><span class="caption-text">User Guides</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../user-guides/cli_api/">How to use Jina NOW’s CLI and API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../../user-guides/input_format/">Input Formats</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../../user-guides/input_format/#support-for-tags">Support for Tags</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../../user-guides/input_format/#supported-file-formats">Supported File Formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../user-guides/input_format/">Guide to loading your data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../user-guides/production/">Production readiness</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Developer Reference</span></p>
@@ -289,14 +287,7 @@
 
 <span class="kn">import</span> <span class="nn">deployment.bff.app.settings</span> <span class="k">as</span> <span class="nn">api_settings</span>
 <span class="kn">from</span> <span class="nn">deployment.bff.app.decorators</span> <span class="kn">import</span> <span class="n">api_method</span><span class="p">,</span> <span class="n">timed</span>
-<span class="kn">from</span> <span class="nn">deployment.bff.app.v1.routers</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">admin</span><span class="p">,</span>
-    <span class="n">cloud_temp_link</span><span class="p">,</span>
-    <span class="n">im_txt2im_txt</span><span class="p">,</span>
-    <span class="n">music2music</span><span class="p">,</span>
-    <span class="n">txt2txt_and_img</span><span class="p">,</span>
-    <span class="n">txt2video</span><span class="p">,</span>
-<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">deployment.bff.app.v1.routers</span> <span class="kn">import</span> <span class="n">admin</span><span class="p">,</span> <span class="n">cloud_temp_link</span><span class="p">,</span> <span class="n">search</span>
 
 <span class="n">logging</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">dictConfig</span><span class="p">(</span><span class="n">api_settings</span><span class="o">.</span><span class="n">DEFAULT_LOGGING_CONFIG</span><span class="p">)</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;bff.app&#39;</span><span class="p">)</span>
@@ -379,29 +370,10 @@
         <span class="n">cloud_temp_link</span><span class="o">.</span><span class="n">router</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Temporary-Link-Cloud&#39;</span><span class="p">]</span>
     <span class="p">)</span>
 
-    <span class="c1"># ImageTextRetrieval router</span>
-    <span class="n">im_txt2im_txt_mount</span> <span class="o">=</span> <span class="s1">&#39;/api/v1/image-or-text-to-image-or-text&#39;</span>
-    <span class="n">im_txt2im_txt_app</span> <span class="o">=</span> <span class="n">get_app_instance</span><span class="p">()</span>
-    <span class="n">im_txt2im_txt_app</span><span class="o">.</span><span class="n">include_router</span><span class="p">(</span>
-        <span class="n">im_txt2im_txt</span><span class="o">.</span><span class="n">router</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Image-Text Retrieval&#39;</span><span class="p">]</span>
-    <span class="p">)</span>
-
-    <span class="c1"># Music2Music router</span>
-    <span class="n">music2music_mount</span> <span class="o">=</span> <span class="s1">&#39;/api/v1/music-to-music&#39;</span>
-    <span class="n">music2music_app</span> <span class="o">=</span> <span class="n">get_app_instance</span><span class="p">()</span>
-    <span class="n">music2music_app</span><span class="o">.</span><span class="n">include_router</span><span class="p">(</span><span class="n">music2music</span><span class="o">.</span><span class="n">router</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Music-To-Music&#39;</span><span class="p">])</span>
-
-    <span class="c1"># Text2Video router</span>
-    <span class="n">text2video_mount</span> <span class="o">=</span> <span class="s1">&#39;/api/v1/text-to-video&#39;</span>
-    <span class="n">text2video_app</span> <span class="o">=</span> <span class="n">get_app_instance</span><span class="p">()</span>
-    <span class="n">text2video_app</span><span class="o">.</span><span class="n">include_router</span><span class="p">(</span><span class="n">txt2video</span><span class="o">.</span><span class="n">router</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Text-To-Video&#39;</span><span class="p">])</span>
-
-    <span class="c1"># Text2TextAndImage router</span>
-    <span class="n">text2text_and_image_mount</span> <span class="o">=</span> <span class="s1">&#39;/api/v1/text-to-text-and-image&#39;</span>
-    <span class="n">text2text_and_image_app</span> <span class="o">=</span> <span class="n">get_app_instance</span><span class="p">()</span>
-    <span class="n">text2text_and_image_app</span><span class="o">.</span><span class="n">include_router</span><span class="p">(</span>
-        <span class="n">txt2txt_and_img</span><span class="o">.</span><span class="n">router</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Text-To-Text-And-Image&#39;</span><span class="p">]</span>
-    <span class="p">)</span>
+    <span class="c1"># search app router</span>
+    <span class="n">search_app_mount</span> <span class="o">=</span> <span class="s1">&#39;/api/v1/search-app&#39;</span>
+    <span class="n">search_app_app</span> <span class="o">=</span> <span class="n">get_app_instance</span><span class="p">()</span>
+    <span class="n">search_app_app</span><span class="o">.</span><span class="n">include_router</span><span class="p">(</span><span class="n">search</span><span class="o">.</span><span class="n">router</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Search App&#39;</span><span class="p">])</span>
 
     <span class="c1"># Admin router</span>
     <span class="n">admin_mount</span> <span class="o">=</span> <span class="s1">&#39;/api/v1/admin&#39;</span>
@@ -412,10 +384,7 @@
     <span class="n">app</span> <span class="o">=</span> <span class="n">Starlette</span><span class="p">(</span>
         <span class="n">routes</span><span class="o">=</span><span class="p">[</span>
             <span class="n">Mount</span><span class="p">(</span><span class="n">cloud_temp_link_mount</span><span class="p">,</span> <span class="n">cloud_temp_link_app</span><span class="p">),</span>
-            <span class="n">Mount</span><span class="p">(</span><span class="n">im_txt2im_txt_mount</span><span class="p">,</span> <span class="n">im_txt2im_txt_app</span><span class="p">),</span>
-            <span class="n">Mount</span><span class="p">(</span><span class="n">music2music_mount</span><span class="p">,</span> <span class="n">music2music_app</span><span class="p">),</span>
-            <span class="n">Mount</span><span class="p">(</span><span class="n">text2video_mount</span><span class="p">,</span> <span class="n">text2video_app</span><span class="p">),</span>
-            <span class="n">Mount</span><span class="p">(</span><span class="n">text2text_and_image_mount</span><span class="p">,</span> <span class="n">text2text_and_image_app</span><span class="p">),</span>
+            <span class="n">Mount</span><span class="p">(</span><span class="n">search_app_mount</span><span class="p">,</span> <span class="n">search_app_app</span><span class="p">),</span>
             <span class="n">Mount</span><span class="p">(</span><span class="n">admin_mount</span><span class="p">,</span> <span class="n">admin_app</span><span class="p">),</span>
         <span class="p">]</span>
     <span class="p">)</span>
@@ -461,7 +430,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Dec 12, 2022.
+                            Last updated on Dec 22, 2022.
                         </div>
                     </div>
                     <div class="right-details">
