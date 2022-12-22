@@ -5,9 +5,10 @@ from docarray import Document
 from jina import Flow
 
 from deployment.bff.app.app import run_server
-from now.constants import ACCESS_PATHS, EXTERNAL_CLIP_HOST
+from now.constants import ACCESS_PATHS, EXTERNAL_CLIP_HOST, NOW_QDRANT_INDEXER_VERSION
 from now.executor.indexer.in_memory import InMemoryIndexer
 from now.executor.indexer.qdrant import NOWQdrantIndexer16
+from now.executor.name_to_id_map import name_to_id_map
 from now.executor.preprocessor import NOWPreprocessor
 from now.now_dataclasses import UserInput
 
@@ -62,7 +63,9 @@ def get_flow(use_qdrant=True, preprocessor_args=None, indexer_args=None):
             external=True,
         )
         .add(
-            uses=NOWQdrantIndexer16 if use_qdrant else InMemoryIndexer,
+            uses=f'jinahub+docker://{name_to_id_map.get("NOWQdrantIndexer16")}/{NOW_QDRANT_INDEXER_VERSION}'
+            if use_qdrant
+            else InMemoryIndexer,
             uses_with={'dim': 512, **indexer_args},
         )
     )
