@@ -126,7 +126,7 @@ def from_files_local(
             [os.path.join(root, file) for file in files if not file.startswith('.')]
         )
     folder_structure = identify_folder_structure(file_paths, os.sep)
-    if folder_structure == 'subdirectories':
+    if folder_structure == 'sub_folders':
         docs = create_docs_from_subdirectories(
             file_paths, fields, files_to_dataclass_fields, data_class
         )
@@ -161,7 +161,12 @@ def create_docs_from_subdirectories(
     docs = []
     folder_files = defaultdict(list)
     for file in file_paths:
-        folder_files[file.split('/')[:-1]].append(file)
+        path_to_last_folder = (
+            '/'.join(file.split('/')[:-1])
+            if s3_dataset
+            else os.sep.join(file.split(os.sep)[:-1])
+        )
+        folder_files[path_to_last_folder].append(file)
     for folder, files in folder_files.items():
         kwargs = {}
         for file in files:
@@ -244,7 +249,7 @@ def _list_files_from_s3_bucket(
         sigmap=sigmap, text="Listing files from S3 bucket ...", color="green"
     ) as spinner:
         spinner.ok('🏭')
-        if folder_structure == 'subdirectories':
+        if folder_structure == 'sub_folders':
             docs = create_docs_from_subdirectories(
                 file_paths,
                 user_input.search_fields + user_input.filter_fields,
