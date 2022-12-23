@@ -66,7 +66,9 @@ def common_get_flow_env_dict(
         'INDEXER_NAME': f'{EXECUTOR_PREFIX}{indexer_uses}',
         'PREFETCH': PREFETCH_NR,
         'PREPROCESSOR_NAME': f'{EXECUTOR_PREFIX}{name_to_id_map.get("NOWPreprocessor")}/{NOW_PREPROCESSOR_VERSION}',
-        'PREPROCESSOR_REPLICAS': 15 if use_high_performance_flow else 1,
+        'PREPROCESSOR_REPLICAS': 15
+        if use_high_performance_flow and 'NOW_CI_RUN' not in os.environ
+        else 1,
         'AUTOCOMPLETE_EXECUTOR_NAME': f'{EXECUTOR_PREFIX}{name_to_id_map.get("NOWAutoCompleteExecutor2")}/{NOW_AUTOCOMPLETE_VERSION}',
         'COLUMNS': tags,
         'ADMIN_EMAILS': user_input.admin_emails or [] if user_input.secured else [],
