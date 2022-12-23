@@ -152,24 +152,16 @@ def _load_from_disk(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
 
 
 def _list_files_from_s3_bucket(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
-
     bucket, folder_prefix = get_s3_bucket_and_folder_prefix(user_input)
-
     docs = []
     with yaspin_extended(
         sigmap=sigmap, text="Listing files from S3 bucket ...", color="green"
     ) as spinner:
         spinner.ok('🏭')
         for obj in list(bucket.objects.filter(Prefix=folder_prefix)):
-            if app.supported_file_types[0] == '**':
+            file_type = str(obj.key).split('.')
+            if file_type[-1] in app.supported_file_types + ['json']:
                 docs.append(Document(uri=f"s3://{bucket.name}/{obj.key}"))
-            else:
-                for wild_card in app.supported_file_types + ['json']:
-                    _postfix = wild_card.split('*')[-1]
-                    if str(obj.key).endswith(_postfix):
-                        docs.append(Document(uri=f"s3://{bucket.name}/{obj.key}"))
-                        break
-
     return DocumentArray(docs)
 
 

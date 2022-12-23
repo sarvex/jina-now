@@ -10,7 +10,7 @@ os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
 def deploy():
     kwargs = {
         'now': 'start',
-        'app': Apps.TEXT_TO_VIDEO,
+        'app': Apps.SEARCH_APP,
         'dataset_type': DatasetTypes.S3_BUCKET,
         'dataset_path': '',
         'aws_access_key_id': '',

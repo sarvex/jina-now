@@ -80,7 +80,7 @@ def test_token_exists():
     'app, input_modality, output_modality, search_fields, filter_fields, dataset, deployment_type',
     [
         (
-            Apps.IMAGE_TEXT_RETRIEVAL,
+            Apps.SEARCH_APP,
             Modalities.TEXT,
             Modalities.IMAGE,
             ['image'],
@@ -120,7 +120,7 @@ def test_end_to_end_remote(
     'app, input_modality,  output_modality, search_fields, filter_fields, dataset, deployment_type',
     [
         (
-            Apps.IMAGE_TEXT_RETRIEVAL,
+            Apps.SEARCH_APP,
             Modalities.IMAGE,
             Modalities.IMAGE,
             ['image'],
@@ -129,7 +129,7 @@ def test_end_to_end_remote(
             'local',
         ),
         (
-            Apps.IMAGE_TEXT_RETRIEVAL,
+            Apps.SEARCH_APP,
             Modalities.TEXT,
             Modalities.TEXT,
             ['lyrics'],
@@ -138,7 +138,7 @@ def test_end_to_end_remote(
             'local',
         ),
         (
-            Apps.TEXT_TO_VIDEO,
+            Apps.SEARCH_APP,
             Modalities.TEXT,
             Modalities.VIDEO,
             ['video'],
@@ -208,14 +208,8 @@ def run_end_to_end(
         cmd(f'{kubectl_path} create namespace nowapi')
     kwargs = Namespace(**kwargs)
     response = cli(args=kwargs)
-    if app == Apps.IMAGE_TEXT_RETRIEVAL:
-        input_modality_deployment = 'text-or-image'
-        output_modality_deployment = 'text-or-image'
-    else:
-        input_modality_deployment = input_modality
-        output_modality_deployment = output_modality
     assert_deployment_response(
-        deployment_type, input_modality_deployment, output_modality_deployment, response
+        deployment_type, 'text-or-image', 'text-or-image-or-video', response
     )
     assert_deployment_queries(
         dataset=dataset,
@@ -382,7 +376,7 @@ def assert_deployment_response(
 
 @pytest.mark.parametrize('deployment_type', ['remote'])
 @pytest.mark.parametrize('dataset', ['custom_s3_bucket'])
-@pytest.mark.parametrize('app', [Apps.IMAGE_TEXT_RETRIEVAL])
+@pytest.mark.parametrize('app', [Apps.SEARCH_APP])
 @pytest.mark.parametrize('input_modality', [Modalities.IMAGE])
 @pytest.mark.parametrize('output_modality', [Modalities.IMAGE])
 def test_backend_custom_data(
@@ -418,16 +412,11 @@ def test_backend_custom_data(
 
     kwargs = Namespace(**kwargs)
     response = cli(args=kwargs)
-
-    if app == Apps.IMAGE_TEXT_RETRIEVAL:
-        input_modality_deployment = 'text-or-image'
-        output_modality_deployment = 'text-or-image'
-    else:
-        input_modality_deployment = input_modality
-        output_modality_deployment = output_modality
+    input_modality = 'text-or-image'
+    output_modality = 'text-or-image-or-video'
 
     assert_deployment_response(
-        deployment_type, input_modality_deployment, output_modality_deployment, response
+        deployment_type, input_modality, output_modality, response
     )
 
     request_body = {'query': {'text_field': {'text': 'test'}}, 'limit': 9}

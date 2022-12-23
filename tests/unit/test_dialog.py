@@ -26,7 +26,7 @@ class CmdPromptMock:
 MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
-            'app': Apps.IMAGE_TEXT_RETRIEVAL,
+            'app': Apps.SEARCH_APP,
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': DemoDatasetNames.TLL,
@@ -41,7 +41,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'app': Apps.IMAGE_TEXT_RETRIEVAL,
+            'app': Apps.SEARCH_APP,
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': DemoDatasetNames.NIH_CHEST_XRAYS,
@@ -56,7 +56,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'app': Apps.IMAGE_TEXT_RETRIEVAL,
+            'app': Apps.SEARCH_APP,
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.PATH,
             'dataset_path': os.path.join(
@@ -81,12 +81,12 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'cluster': 'new',
             'deployment_type': 'local',
         },
-        {'app': Apps.IMAGE_TEXT_RETRIEVAL},
+        {'app': Apps.SEARCH_APP},
     ),
     (
         {},
         {
-            'app': Apps.IMAGE_TEXT_RETRIEVAL,
+            'app': Apps.SEARCH_APP,
             'flow_name': 'testapp',
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': DemoDatasetNames.RAP_LYRICS,
@@ -101,7 +101,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {},
         {
-            'app': Apps.TEXT_TO_VIDEO,
+            'app': Apps.SEARCH_APP,
             'flow_name': 'testapp',
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': DemoDatasetNames.TUMBLR_GIFS_10K,
@@ -115,7 +115,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
     ),
     (
         {
-            'app': Apps.IMAGE_TEXT_RETRIEVAL,
+            'app': Apps.SEARCH_APP,
             'flow_name': 'test this name *',
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': DemoDatasetNames.DEEP_FASHION,

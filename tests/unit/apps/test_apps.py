@@ -3,7 +3,7 @@ import os
 import pytest
 from docarray import Document, DocumentArray
 
-from now.app.image_text_retrieval.app import ImageTextRetrieval
+from now.app.search_app import SearchApp
 from now.common.options import construct_app
 from now.constants import Apps
 from now.now_dataclasses import UserInput
@@ -22,7 +22,7 @@ def test_app_attributes():
 
 def test_split_text_preprocessing():
     """Test if splitting of sentences is carried out when preprocessing text documents at indexing time"""
-    app = ImageTextRetrieval()
+    app = SearchApp()
     da = DocumentArray(
         [Document(chunks=[Document(text='test. test', modality='text')])]
     )
@@ -42,7 +42,7 @@ def test_disable_telemetry(disable):
 
     expected_value = 'disableTelemetry' if disable else None
 
-    app = ImageTextRetrieval()
+    app = SearchApp()
     user_input = UserInput()
     user_input.flow_name = 'flow'
     user_input.deployment_type = 'local'
