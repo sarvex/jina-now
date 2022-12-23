@@ -10,6 +10,7 @@ NOW_QDRANT_INDEXER_VERSION = '0.0.138-refactor-remove-finetuning-2'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.138-refactor-remove-finetuning-2'
 NOW_AUTOCOMPLETE_VERSION = '0.0.7-refactor-remove-finetuning-2'
 
+
 class Modalities(BetterEnum):
     TEXT = 'text'
     IMAGE = 'image'
