@@ -34,6 +34,7 @@
 
 
 
+
 <a name=release-note-0-0-7></a>
 ## Release Note (`0.0.7`)
 
@@ -1190,4 +1191,30 @@
 
  - [[```dd2c6cb2```](https://github.com/jina-ai/now/commit/dd2c6cb21558e79c4ee2bb872f8892ad91cd07e9)] __-__ Feat multimodal bff (#772) (*Joschka Braun*)
  - [[```943a2e57```](https://github.com/jina-ai/now/commit/943a2e57d8e2d462b5db24255daf63463fdd682f)] __-__ __version__: the next version will be 0.0.41 (*Jina Dev Bot*)
+
+<a name=release-note-0-0-42></a>
+## Release Note (`0.0.42`)
+
+> Release time: 2022-12-23 15:10:54
+
+
+
+🙇 We'd like to thank all contributors for this new release! In particular,
+ Saba Sturua,  Florian Hönicke,  Jina Dev Bot,  🙇
+
+
+### 🆕 New Features
+
+ - [[```0fc0f08e```](https://github.com/jina-ai/now/commit/0fc0f08e511a92c2f64f3548079b43095892e7fc)] __-__ elastic cluster in executor (#804) (*Florian Hönicke*)
+
+### 🐞 Bug fixes
+
+ - [[```62f98bc0```](https://github.com/jina-ai/now/commit/62f98bc03d48d26f69e5bb43df26e11a8c2db9e8)] __-__ order of search options (#811) (*Saba Sturua*)
+ - [[```01d66b23```](https://github.com/jina-ai/now/commit/01d66b237177c6b50989631b2d4b37358a82409f)] __-__ index field (#802) (*Florian Hönicke*)
+ - [[```a77e7a16```](https://github.com/jina-ai/now/commit/a77e7a16ea4d11629b29265dfc076f58e750ab03)] __-__ handle new modality in playground (#806) (*Saba Sturua*)
+
+### 🍹 Other Improvements
+
+ - [[```c3c2a141```](https://github.com/jina-ai/now/commit/c3c2a14116522d81ce6dc708fe93adbff2053763)] __-__ Refactor remove text to video (#788) (*Florian Hönicke*)
+ - [[```789189ae```](https://github.com/jina-ai/now/commit/789189ae6e3b76197a8c3f1cadebf76a3161b678)] __-__ __version__: the next version will be 0.0.42 (*Jina Dev Bot*)
 
