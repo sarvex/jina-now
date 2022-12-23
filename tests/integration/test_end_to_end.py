@@ -413,7 +413,7 @@ def test_backend_custom_data(
     kwargs = Namespace(**kwargs)
     response = cli(args=kwargs)
     input_modality = 'text-or-image'
-    output_modality = 'text-or-image'
+    output_modality = 'text-or-image-video'
 
     assert_deployment_response(
         deployment_type, input_modality, output_modality, response
