@@ -228,7 +228,6 @@ def create_dataclass(user_input: UserInput):
     file_mapping_to_dataclass_fields = create_dataclass_fields_file_mappings(
         user_input.search_fields + user_input.filter_fields,
         all_modalities,
-        user_input.dataset_type,
     )
     user_input.files_to_dataclass_fields = file_mapping_to_dataclass_fields
     (all_annotations, all_class_attributes,) = create_annotations_and_class_attributes(
