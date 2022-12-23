@@ -3,13 +3,12 @@ from __future__ import annotations, print_function, unicode_literals
 from now.utils import BetterEnum
 
 # ----------------------------------
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.138-fix-video-modality'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.138-fix-search-options-order1'
 # ----------------------------------
-NOW_PREPROCESSOR_VERSION = '0.0.116-refactor-remove-finetuning-1'
-NOW_QDRANT_INDEXER_VERSION = '0.0.138-refactor-remove-finetuning-1'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.138-refactor-remove-finetuning-1'
-NOW_AUTOCOMPLETE_VERSION = '0.0.7-refactor-remove-finetuning-1'
-
+NOW_PREPROCESSOR_VERSION = '0.0.116-refactor-remove-finetuning-2'
+NOW_QDRANT_INDEXER_VERSION = '0.0.138-refactor-remove-finetuning-2'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.138-refactor-remove-finetuning-2'
+NOW_AUTOCOMPLETE_VERSION = '0.0.7-refactor-remove-finetuning-2'
 
 class Modalities(BetterEnum):
     TEXT = 'text'
