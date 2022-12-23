@@ -207,5 +207,5 @@
     "tests/unit/test_dialog.py::test_configure_user_input[mocked_user_answers6-configure_kwargs6]": 0.05469931400011774,
     "tests/unit/test_dialog.py::test_configure_user_input[mocked_user_answers7-configure_kwargs7]": 0.049788841000463435,
     "tests/unit/test_dialog.py::test_configure_user_input[mocked_user_answers8-configure_kwargs8]": 0.054710110999621975,
-    "tests/unit/test_dialog.py::test_configure_user_input[mocked_user_answers9-configure_kwargs9]": 0.05654386500009423,
+    "tests/unit/test_dialog.py::test_configure_user_input[mocked_user_answers9-configure_kwargs9]": 0.05654386500009423
 }
