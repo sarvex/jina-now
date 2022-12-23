@@ -55,10 +55,8 @@ def _create_app_from_user_input(user_input: UserInput, **kwargs):
     if _search_modality in [Modalities.TEXT, Modalities.VIDEO, Modalities.IMAGE]:
         _search_modality = MODALITIES_MAPPING[_search_modality]
 
-    if _search_modality in [Image, Text]:
-        app_name = Apps.IMAGE_TEXT_RETRIEVAL
-    elif _search_modality == Video:
-        app_name = Apps.TEXT_TO_VIDEO
+    if _search_modality in [Image, Text, Video]:
+        app_name = Apps.SEARCH_APP
     else:
         raise ValueError(f'Invalid search modality: {_search_modality}')
     user_input.app_instance = construct_app(app_name)

@@ -33,6 +33,7 @@
 
 
 
+
 <a name=release-note-0-0-7></a>
 ## Release Note (`0.0.7`)
 
@@ -1139,4 +1140,54 @@
  - [[```a9b8a707```](https://github.com/jina-ai/now/commit/a9b8a707d12570cc6f20bb4684196dcc2a9cb5c0)] __-__ Refactor remove redundancy on ci (#746) (*Florian Hönicke*)
  - [[```f356c457```](https://github.com/jina-ai/now/commit/f356c457a52a5651921666f03befb8db743dc305)] __-__ add a PR template (#725) (*Isabelle Mohr*)
  - [[```e9c9919c```](https://github.com/jina-ai/now/commit/e9c9919ce3611a29e60036fe1c2010b6c1f8a85b)] __-__ __version__: the next version will be 0.0.40 (*Jina Dev Bot*)
+
+<a name=release-note-0-0-41></a>
+## Release Note (`0.0.41`)
+
+> Release time: 2022-12-22 16:57:36
+
+
+
+🙇 We'd like to thank all contributors for this new release! In particular,
+ IyadhKhalfallah,  Saba Sturua,  Isabelle Mohr,  Mohammad Kalim Akram,  Joschka Braun,  Alex Cureton-Griffiths,  Florian Hönicke,  Nikolas Pitsillos,  Jina Dev Bot,  🙇
+
+
+### 🆕 New Features
+
+ - [[```dda9bd95```](https://github.com/jina-ai/now/commit/dda9bd9537c17ae1b0f709970674b616a7beef71)] __-__ migrate demo ds (#761) (*Mohammad Kalim Akram*)
+ - [[```00d059bc```](https://github.com/jina-ai/now/commit/00d059bc6bd27b3377a4055266b4e47d302cbaa8)] __-__ n-to-n ElasticIndexer multi modal doc (#735) (*Isabelle Mohr*)
+
+### 🐞 Bug fixes
+
+ - [[```36ef1650```](https://github.com/jina-ai/now/commit/36ef1650ab3d26d45dc9258d3981b82e898f76ef)] __-__ replicas for local deployment (#770) (*IyadhKhalfallah*)
+ - [[```72f1fa94```](https://github.com/jina-ai/now/commit/72f1fa94aa5058e7e576ade4fdede168eb3f2afd)] __-__ search with tags (#755) (*Saba Sturua*)
+ - [[```f18b09ad```](https://github.com/jina-ai/now/commit/f18b09ad81848a899015ccc81a33e4f6f1e28bd6)] __-__ remove unwanted chars from app name (#797) (*Isabelle Mohr*)
+ - [[```a6ac8b12```](https://github.com/jina-ai/now/commit/a6ac8b125ab07d28f7d8ea17ac2b51a0ecb048a5)] __-__ filter types (#785) (*Mohammad Kalim Akram*)
+ - [[```0a60c865```](https://github.com/jina-ai/now/commit/0a60c8659e69c64beaaf88e83ea7446584626352)] __-__ fix playground display blob (#796) (*Joschka Braun*)
+ - [[```6890ec51```](https://github.com/jina-ai/now/commit/6890ec51af9d990fb7e3477028b14cf38ba207ef)] __-__ grammar and naming (#781) (*Alex Cureton-Griffiths*)
+ - [[```5892568e```](https://github.com/jina-ai/now/commit/5892568e8d0c81b6c6d49c7cb450bdab16e82237)] __-__ gif in image app (#786) (*Florian Hönicke*)
+ - [[```c1467f62```](https://github.com/jina-ai/now/commit/c1467f624e5f5080c4558ac52e99565dceb781ea)] __-__ reversed text and image modalities (#771) (*IyadhKhalfallah*)
+ - [[```21eb3518```](https://github.com/jina-ai/now/commit/21eb3518fdf83801e8f6bb9c690b30fc6386989e)] __-__ expand user (#773) (*Florian Hönicke*)
+ - [[```fe22b5e3```](https://github.com/jina-ai/now/commit/fe22b5e3fedc24a193da3d7a3d040fd3137aba41)] __-__ disable telemetry for executors (#750) (*Saba Sturua*)
+ - [[```fd77921f```](https://github.com/jina-ai/now/commit/fd77921fddaf08cdb30a80ee6a10345a0572e6ce)] __-__ enable local testing (#767) (*Mohammad Kalim Akram*)
+
+### 🧼 Code Refactoring
+
+ - [[```89df9c5b```](https://github.com/jina-ai/now/commit/89df9c5b2b5bec9dfbbdd2152174385c767da6cc)] __-__ simplify dialog (#787) (*Florian Hönicke*)
+ - [[```7122af10```](https://github.com/jina-ai/now/commit/7122af10b6e160004f93e3804c69888fd1f1a341)] __-__ remove output modality (#763) (*Joschka Braun*)
+ - [[```0c284b15```](https://github.com/jina-ai/now/commit/0c284b15598ab2bec3fc1b59b30036f05510df3a)] __-__ __utils__: use hubble to get user token (#764) (*Nikolas Pitsillos*)
+
+### 📗 Documentation
+
+ - [[```6b1edc8f```](https://github.com/jina-ai/now/commit/6b1edc8ff959c4bdd01620373bb716c10c441c63)] __-__ refactor input format explanation (#775) (*Isabelle Mohr*)
+
+### 🏁 Unit Test and CICD
+
+ - [[```96857e50```](https://github.com/jina-ai/now/commit/96857e505d567a9b3f6b89f18d94a6e5bfadec87)] __-__ elastic executor tests fix (#777) (*Isabelle Mohr*)
+ - [[```989f8078```](https://github.com/jina-ai/now/commit/989f8078c8e03d4d787f350186f530b3756fab6f)] __-__ revert quality to 224x224 (#747) (*Florian Hönicke*)
+
+### 🍹 Other Improvements
+
+ - [[```dd2c6cb2```](https://github.com/jina-ai/now/commit/dd2c6cb21558e79c4ee2bb872f8892ad91cd07e9)] __-__ Feat multimodal bff (#772) (*Joschka Braun*)
+ - [[```943a2e57```](https://github.com/jina-ai/now/commit/943a2e57d8e2d462b5db24255daf63463fdd682f)] __-__ __version__: the next version will be 0.0.41 (*Jina Dev Bot*)
 

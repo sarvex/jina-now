@@ -7,7 +7,8 @@ from now.utils import BetterEnum
 # ----------------------------------
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.137-filter-query11'
 # ----------------------------------
-NOW_PREPROCESSOR_VERSION = '0.0.115-feat-dataclass-dataloading-1'
+
+NOW_PREPROCESSOR_VERSION = '0.0.115-feat-dataclass-dataloading-2'
 NOW_QDRANT_INDEXER_VERSION = '0.0.137-filter-query11'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.137-filter-query11'
 NOW_AUTOCOMPLETE_VERSION = '0.0.6-elastic-multimodal-15x'
@@ -27,8 +28,7 @@ MODALITIES_MAPPING = {
 
 
 class Apps(BetterEnum):
-    IMAGE_TEXT_RETRIEVAL = 'image_text_retrieval'
-    TEXT_TO_VIDEO = 'text_to_video'
+    SEARCH_APP = 'search_app'
 
 
 class DatasetTypes(BetterEnum):
@@ -54,6 +54,12 @@ SUPPORTED_FILE_TYPES = {
     Modalities.TEXT: ['txt', 'md'],
     Modalities.IMAGE: ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'tif'],
     Modalities.VIDEO: ['gif'],
+}
+
+FILETYPE_TO_MODALITY = {
+    filetype: modality
+    for modality, filetypes in SUPPORTED_FILE_TYPES.items()
+    for filetype in filetypes
 }
 AVAILABLE_MODALITIES_FOR_SEARCH = [Modalities.TEXT, Modalities.IMAGE, Modalities.VIDEO]
 AVAILABLE_MODALITIES_FOR_FILTER = [Modalities.TEXT]

@@ -6,8 +6,7 @@ from docarray.typing import Image, Text
 from jina import Flow
 
 from now.app.base.transform_docarray import transform_uni_modal_data
-from now.app.image_text_retrieval.app import ImageTextRetrieval
-from now.app.text_to_video.app import TextToVideo
+from now.app.search_app import SearchApp
 from now.constants import ACCESS_PATHS, EXTERNAL_CLIP_HOST, DatasetTypes
 from now.data_loading.data_loading import load_data
 from now.demo_data import DemoDatasetNames
@@ -56,17 +55,17 @@ def test_transform_inside_flow(
     metas = {'workspace': str(tmpdir)}
     user_input = UserInput()
     if input_type == 'demo_dataset':
-        app_instance = TextToVideo()
+        app_instance = SearchApp()
         user_input.search_fields = []
         user_input.dataset_type = DatasetTypes.DEMO
         user_input.dataset_name = DemoDatasetNames.TUMBLR_GIFS_10K
         data = load_data(user_input)[:2]
         user_input.search_fields = ['description', 'video']
     elif input_type == 'single_modal':
-        app_instance = ImageTextRetrieval()
+        app_instance = SearchApp()
         data = single_modal_data
     else:
-        app_instance = ImageTextRetrieval()
+        app_instance = SearchApp()
         data = multi_modal_data
         user_input.search_fields = ['main_text', 'image']
 
