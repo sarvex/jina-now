@@ -17,4 +17,4 @@ def test_start_with_parameters():
     with pytest.raises(subprocess.TimeoutExpired):
         # timeout means that the parsing was successful and the process is running
         process = subprocess.Popen(bash_command.split(' '))
-        process.wait(timeout=10)
+        process.communicate()
