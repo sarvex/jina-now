@@ -3,7 +3,7 @@ import base64
 from docarray import Document, DocumentArray
 from fastapi import HTTPException, status
 from jina import Client
-from jina.excepts import BadServer
+from jina.excepts import BadServer, BadServerFlow
 
 
 def field_dict_to_doc(field_dict: dict) -> Document:
@@ -125,7 +125,13 @@ def jina_client_post(
             *args,
             **kwargs,
         )
-    except BadServer as e:
+    except Exception as e:
+        handle_exception(e)
+    return result
+
+
+def handle_exception(e):
+    if isinstance(e, BadServer):
         if 'Not a valid user' in e.args[0].status.description:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -133,4 +139,8 @@ def jina_client_post(
             )
         else:
             raise e
-    return result
+    elif isinstance(e, BadServerFlow):
+        if 'no route matched' in e.args[0].lower():
+            raise Exception('Your flow is down')
+        else:
+            raise e
