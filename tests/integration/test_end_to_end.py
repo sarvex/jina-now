@@ -208,10 +208,8 @@ def run_end_to_end(
         cmd(f'{kubectl_path} create namespace nowapi')
     kwargs = Namespace(**kwargs)
     response = cli(args=kwargs)
-    input_modality = 'text-or-image'
-    output_modality = 'text-or-image-or-video'
     assert_deployment_response(
-        deployment_type, input_modality, output_modality, response
+        deployment_type, 'text-or-image', 'text-or-image-or-video', response
     )
     assert_deployment_queries(
         dataset=dataset,
