@@ -36,7 +36,7 @@ In this dataclass model, we have a `Page` document that has three fields: `main_
 You can instantiate the dataclass model with your actual data, and cast it to a `Document` as follows:
 
 ```python
-from docarray import Document
+from docarray import Document, DocumentArray
 
 page = Page(
     main_text='Hello world',
