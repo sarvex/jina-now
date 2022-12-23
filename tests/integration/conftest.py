@@ -34,4 +34,3 @@ def with_hubble_login_patch(mocker: MockerFixture) -> None:
     if 'WOLF_TOKEN' not in os.environ:
         hubble.login()
         os.environ['WOLF_TOKEN'] = hubble.Auth.get_auth_token()
-    mocker.patch(target='finetuner.client.base.hubble.Auth', new=HubbleAuthPatch)
