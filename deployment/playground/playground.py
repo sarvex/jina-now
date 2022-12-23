@@ -410,7 +410,7 @@ def render_matches(OUTPUT_MODALITY):
                 elif OUTPUT_MODALITY == 'video':
                     render_graphic_result(match, c)
 
-                elif OUTPUT_MODALITY == 'text-or-image':
+                elif OUTPUT_MODALITY == 'text-or-image-or-video':
                     try:
                         render_graphic_result(match, c)
                     except:

@@ -5,7 +5,7 @@ from docarray.typing import Image, Text, Video
 from now.utils import BetterEnum
 
 # ----------------------------------
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.137-filter-query11'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.138-fix-video-modality'
 # ----------------------------------
 
 NOW_PREPROCESSOR_VERSION = '0.0.115-feat-dataclass-dataloading-5'
