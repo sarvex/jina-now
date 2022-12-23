@@ -6,7 +6,7 @@
         <link rel="canonical" href="https://now.jina.ai/_modules/now/constants.html" />
 
     <link rel="shortcut icon" href="../../../_static/favicon.png"/><!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
-        <title>now.constants - NOW 0.0.41 documentation</title>
+        <title>now.constants - NOW 0.0.42 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../">
-                <div class="brand">NOW 0.0.41 documentation</div>
+                <div class="brand">NOW 0.0.42 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -278,11 +278,11 @@
 <span class="kn">from</span> <span class="nn">now.utils</span> <span class="kn">import</span> <span class="n">BetterEnum</span>
 
 <span class="c1"># ----------------------------------</span>
-<span class="n">DOCKER_BFF_PLAYGROUND_TAG</span> <span class="o">=</span> <span class="s1">&#39;0.0.137-filter-query11&#39;</span>
+<span class="n">DOCKER_BFF_PLAYGROUND_TAG</span> <span class="o">=</span> <span class="s1">&#39;0.0.138-fix-search-options-order1&#39;</span>
 <span class="c1"># ----------------------------------</span>
-<span class="n">NOW_PREPROCESSOR_VERSION</span> <span class="o">=</span> <span class="s1">&#39;0.0.114-feat-multimodal-bff-21&#39;</span>
+<span class="n">NOW_PREPROCESSOR_VERSION</span> <span class="o">=</span> <span class="s1">&#39;0.0.115-refactor-remove-text-to-video-12&#39;</span>
 <span class="n">NOW_QDRANT_INDEXER_VERSION</span> <span class="o">=</span> <span class="s1">&#39;0.0.137-filter-query11&#39;</span>
-<span class="n">NOW_ELASTIC_INDEXER_VERSION</span> <span class="o">=</span> <span class="s1">&#39;0.0.137-filter-query11&#39;</span>
+<span class="n">NOW_ELASTIC_INDEXER_VERSION</span> <span class="o">=</span> <span class="s1">&#39;0.0.138-feat-elastic-cluster-in-executor-1&#39;</span>
 <span class="n">NOW_AUTOCOMPLETE_VERSION</span> <span class="o">=</span> <span class="s1">&#39;0.0.6-elastic-multimodal-15x&#39;</span>
 
 
@@ -293,8 +293,7 @@
 
 
 <div class="viewcode-block" id="Apps"><a class="viewcode-back" href="../../../api/now.constants/#now.constants.Apps">[docs]</a><span class="k">class</span> <span class="nc">Apps</span><span class="p">(</span><span class="n">BetterEnum</span><span class="p">):</span>
-    <span class="n">IMAGE_TEXT_RETRIEVAL</span> <span class="o">=</span> <span class="s1">&#39;image_text_retrieval&#39;</span>
-    <span class="n">TEXT_TO_VIDEO</span> <span class="o">=</span> <span class="s1">&#39;text_to_video&#39;</span></div>
+    <span class="n">SEARCH_APP</span> <span class="o">=</span> <span class="s1">&#39;search_app&#39;</span></div>
 
 
 <div class="viewcode-block" id="DatasetTypes"><a class="viewcode-back" href="../../../api/now.constants/#now.constants.DatasetTypes">[docs]</a><span class="k">class</span> <span class="nc">DatasetTypes</span><span class="p">(</span><span class="n">BetterEnum</span><span class="p">):</span>
@@ -320,6 +319,12 @@
     <span class="n">Modalities</span><span class="o">.</span><span class="n">TEXT</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;txt&#39;</span><span class="p">,</span> <span class="s1">&#39;md&#39;</span><span class="p">],</span>
     <span class="n">Modalities</span><span class="o">.</span><span class="n">IMAGE</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;jpeg&#39;</span><span class="p">,</span> <span class="s1">&#39;png&#39;</span><span class="p">,</span> <span class="s1">&#39;bmp&#39;</span><span class="p">,</span> <span class="s1">&#39;tiff&#39;</span><span class="p">,</span> <span class="s1">&#39;tif&#39;</span><span class="p">],</span>
     <span class="n">Modalities</span><span class="o">.</span><span class="n">VIDEO</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;gif&#39;</span><span class="p">],</span>
+<span class="p">}</span>
+
+<span class="n">FILETYPE_TO_MODALITY</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">filetype</span><span class="p">:</span> <span class="n">modality</span>
+    <span class="k">for</span> <span class="n">modality</span><span class="p">,</span> <span class="n">filetypes</span> <span class="ow">in</span> <span class="n">SUPPORTED_FILE_TYPES</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">filetype</span> <span class="ow">in</span> <span class="n">filetypes</span>
 <span class="p">}</span>
 <span class="n">AVAILABLE_MODALITIES_FOR_SEARCH</span> <span class="o">=</span> <span class="p">[</span><span class="n">Modalities</span><span class="o">.</span><span class="n">TEXT</span><span class="p">,</span> <span class="n">Modalities</span><span class="o">.</span><span class="n">IMAGE</span><span class="p">,</span> <span class="n">Modalities</span><span class="o">.</span><span class="n">VIDEO</span><span class="p">]</span>
 <span class="n">AVAILABLE_MODALITIES_FOR_FILTER</span> <span class="o">=</span> <span class="p">[</span><span class="n">Modalities</span><span class="o">.</span><span class="n">TEXT</span><span class="p">]</span>
@@ -365,7 +370,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Dec 22, 2022.
+                            Last updated on Dec 23, 2022.
                         </div>
                     </div>
                     <div class="right-details">

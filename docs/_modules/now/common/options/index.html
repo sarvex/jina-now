@@ -6,7 +6,7 @@
         <link rel="canonical" href="https://now.jina.ai/_modules/now/common/options.html" />
 
     <link rel="shortcut icon" href="../../../../_static/favicon.png"/><!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
-        <title>now.common.options - NOW 0.0.41 documentation</title>
+        <title>now.common.options - NOW 0.0.42 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../../">
-                <div class="brand">NOW 0.0.41 documentation</div>
+                <div class="brand">NOW 0.0.42 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -325,10 +325,8 @@
             <span class="sa">f</span><span class="s1">&#39;choose one of the following: </span><span class="si">{</span><span class="n">user_input</span><span class="o">.</span><span class="n">search_fields_modalities</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span><span class="si">}</span><span class="s1">&#39;</span>
         <span class="p">)</span>
     <span class="n">_search_modality</span> <span class="o">=</span> <span class="n">user_input</span><span class="o">.</span><span class="n">search_fields_modalities</span><span class="p">[</span><span class="n">user_input</span><span class="o">.</span><span class="n">search_fields</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
-    <span class="k">if</span> <span class="n">_search_modality</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;image&#39;</span><span class="p">,</span> <span class="s1">&#39;text&#39;</span><span class="p">]:</span>
-        <span class="n">app_name</span> <span class="o">=</span> <span class="n">Apps</span><span class="o">.</span><span class="n">IMAGE_TEXT_RETRIEVAL</span>
-    <span class="k">elif</span> <span class="n">_search_modality</span> <span class="o">==</span> <span class="s1">&#39;video&#39;</span><span class="p">:</span>
-        <span class="n">app_name</span> <span class="o">=</span> <span class="n">Apps</span><span class="o">.</span><span class="n">TEXT_TO_VIDEO</span>
+    <span class="k">if</span> <span class="n">_search_modality</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;image&#39;</span><span class="p">,</span> <span class="s1">&#39;text&#39;</span><span class="p">,</span> <span class="s1">&#39;video&#39;</span><span class="p">]:</span>
+        <span class="n">app_name</span> <span class="o">=</span> <span class="n">Apps</span><span class="o">.</span><span class="n">SEARCH_APP</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid search modality: </span><span class="si">{</span><span class="n">_search_modality</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
     <span class="n">user_input</span><span class="o">.</span><span class="n">app_instance</span> <span class="o">=</span> <span class="n">construct_app</span><span class="p">(</span><span class="n">app_name</span><span class="p">)</span>
@@ -481,7 +479,7 @@
         <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">field</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">field</span><span class="p">}</span>
         <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">user_input</span><span class="o">.</span><span class="n">search_fields_modalities</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
     <span class="p">],</span>
-    <span class="n">prompt_message</span><span class="o">=</span><span class="s1">&#39;Please select the search fields:&#39;</span><span class="p">,</span>
+    <span class="n">prompt_message</span><span class="o">=</span><span class="s1">&#39;Please select the index fields:&#39;</span><span class="p">,</span>
     <span class="n">prompt_type</span><span class="o">=</span><span class="s1">&#39;checkbox&#39;</span><span class="p">,</span>
     <span class="n">is_terminal_command</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">post_func</span><span class="o">=</span><span class="n">_create_app_from_user_input</span><span class="p">,</span>
@@ -743,7 +741,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Dec 22, 2022.
+                            Last updated on Dec 23, 2022.
                         </div>
                     </div>
                     <div class="right-details">

@@ -6,7 +6,7 @@
         <link rel="canonical" href="https://now.jina.ai/_modules/now/common/utils.html" />
 
     <link rel="shortcut icon" href="../../../../_static/favicon.png"/><!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
-        <title>now.common.utils - NOW 0.0.41 documentation</title>
+        <title>now.common.utils - NOW 0.0.42 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../../">
-                <div class="brand">NOW 0.0.41 documentation</div>
+                <div class="brand">NOW 0.0.42 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -320,8 +320,18 @@
     <span class="n">indexer_resources</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span>
     <span class="n">user_input</span><span class="p">:</span> <span class="n">UserInput</span><span class="p">,</span>
     <span class="n">tags</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span>
+    <span class="n">deployment_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 <span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Returns dictionary for the environments variables for the clip flow.yml files.&quot;&quot;&quot;</span>
+    <span class="n">use_high_performance_flow</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">get_email</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;@&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;jina.ai&#39;</span> <span class="ow">and</span> <span class="n">deployment_type</span> <span class="o">==</span> <span class="s1">&#39;remote&#39;</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">use_high_performance_flow</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;🚀🚀🚀 As employee of Jina, you are using a high performance flow.</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Therefore, your deployment will be faster.</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;But make sure to scale it down after deployment.&quot;</span>
+        <span class="p">)</span>
     <span class="n">config</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s1">&#39;JINA_VERSION&#39;</span><span class="p">:</span> <span class="n">jina_version</span><span class="p">,</span>
         <span class="s1">&#39;ENCODER_NAME&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">EXECUTOR_PREFIX</span><span class="si">}{</span><span class="n">encoder_uses</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
@@ -331,6 +341,7 @@
         <span class="s1">&#39;INDEXER_NAME&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">EXECUTOR_PREFIX</span><span class="si">}{</span><span class="n">indexer_uses</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
         <span class="s1">&#39;PREFETCH&#39;</span><span class="p">:</span> <span class="n">PREFETCH_NR</span><span class="p">,</span>
         <span class="s1">&#39;PREPROCESSOR_NAME&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">EXECUTOR_PREFIX</span><span class="si">}{</span><span class="n">name_to_id_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;NOWPreprocessor&quot;</span><span class="p">)</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">NOW_PREPROCESSOR_VERSION</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;PREPROCESSOR_REPLICAS&#39;</span><span class="p">:</span> <span class="mi">15</span> <span class="k">if</span> <span class="n">use_high_performance_flow</span> <span class="k">else</span> <span class="mi">1</span><span class="p">,</span>
         <span class="s1">&#39;AUTOCOMPLETE_EXECUTOR_NAME&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">EXECUTOR_PREFIX</span><span class="si">}{</span><span class="n">name_to_id_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;NOWAutoCompleteExecutor2&quot;</span><span class="p">)</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">NOW_AUTOCOMPLETE_VERSION</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
         <span class="s1">&#39;COLUMNS&#39;</span><span class="p">:</span> <span class="n">tags</span><span class="p">,</span>
         <span class="s1">&#39;ADMIN_EMAILS&#39;</span><span class="p">:</span> <span class="n">user_input</span><span class="o">.</span><span class="n">admin_emails</span> <span class="ow">or</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">user_input</span><span class="o">.</span><span class="n">secured</span> <span class="k">else</span> <span class="p">[],</span>
@@ -396,6 +407,7 @@
         <span class="n">indexer_resources</span><span class="o">=</span><span class="n">indexer_resources</span><span class="p">,</span>
         <span class="n">user_input</span><span class="o">=</span><span class="n">user_input</span><span class="p">,</span>
         <span class="n">tags</span><span class="o">=</span><span class="n">tags</span><span class="p">,</span>
+        <span class="n">deployment_type</span><span class="o">=</span><span class="n">user_input</span><span class="o">.</span><span class="n">deployment_type</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">if</span> <span class="n">finetune_settings</span><span class="o">.</span><span class="n">perform_finetuning</span><span class="p">:</span>
@@ -445,7 +457,6 @@
 
 
 <div class="viewcode-block" id="get_indexer_config"><a class="viewcode-back" href="../../../../api/now.common.utils/#now.common.utils.get_indexer_config">[docs]</a><span class="k">def</span> <span class="nf">get_indexer_config</span><span class="p">(</span>
-    <span class="n">num_indexed_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">elastic</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">kubectl_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">deployment_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -472,11 +483,8 @@
         <span class="n">config</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s1">&#39;indexer_uses&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">name_to_id_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;NOWQdrantIndexer16&quot;</span><span class="p">)</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">NOW_QDRANT_INDEXER_VERSION</span><span class="si">}</span><span class="s1">&#39;</span>
         <span class="p">}</span>
-    <span class="n">threshold1</span> <span class="o">=</span> <span class="mi">250_000</span>
-    <span class="k">if</span> <span class="n">num_indexed_samples</span> <span class="o">&lt;=</span> <span class="n">threshold1</span><span class="p">:</span>
-        <span class="n">config</span><span class="p">[</span><span class="s1">&#39;indexer_resources&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;INDEXER_CPU&#39;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span> <span class="s1">&#39;INDEXER_MEM&#39;</span><span class="p">:</span> <span class="s1">&#39;2G&#39;</span><span class="p">}</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">config</span><span class="p">[</span><span class="s1">&#39;indexer_resources&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;INDEXER_CPU&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span> <span class="s1">&#39;INDEXER_MEM&#39;</span><span class="p">:</span> <span class="s1">&#39;4G&#39;</span><span class="p">}</span>
+
+    <span class="n">config</span><span class="p">[</span><span class="s1">&#39;indexer_resources&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;INDEXER_CPU&#39;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span> <span class="s1">&#39;INDEXER_MEM&#39;</span><span class="p">:</span> <span class="s1">&#39;4G&#39;</span><span class="p">}</span>
 
     <span class="k">return</span> <span class="n">config</span></div>
 
@@ -563,7 +571,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Dec 22, 2022.
+                            Last updated on Dec 23, 2022.
                         </div>
                     </div>
                     <div class="right-details">
