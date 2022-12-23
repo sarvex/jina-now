@@ -6,7 +6,7 @@ from docarray.typing import Image, Text
 from jina import Flow
 
 from now.app.base.transform_docarray import transform_uni_modal_data
-from now.app.search_app.app import SearchApp
+from now.app.search_app import SearchApp
 from now.constants import ACCESS_PATHS, EXTERNAL_CLIP_HOST, DatasetTypes
 from now.data_loading.data_loading import load_data
 from now.demo_data import DemoDatasetNames

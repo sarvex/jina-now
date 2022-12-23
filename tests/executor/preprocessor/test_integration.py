@@ -31,7 +31,7 @@ def test_executor_persistence(tmpdir, resources_folder_path):
 
 
 @pytest.mark.parametrize('endpoint', ['index', 'search'])
-def test_search_app_video(resources_folder_path, endpoint, tmpdir):
+def test_search_app(resources_folder_path, endpoint, tmpdir):
     metas = {'workspace': str(tmpdir)}
     app = Apps.SEARCH_APP
     user_input = UserInput()

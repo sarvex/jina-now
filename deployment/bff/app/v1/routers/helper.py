@@ -78,13 +78,10 @@ def process_query(
             status_code=500,
             detail=f'Not a correct encoded query. Please see the error stack for more information. \n{e}',
         )
-    query = {}
-    if conditions:
-        filter_query = []
-        # construct filtering query from dictionary
-        for key, value in conditions.items():
-            filter_query.append({f'{key}': {'$eq': value}})
-        query = {'$and': filter_query}  # different conditions are aggregated using and
+    query = (
+        {key: {'$eq': value} for key, value in conditions.items()} if conditions else {}
+    )
+
     return query_doc, query
 
 

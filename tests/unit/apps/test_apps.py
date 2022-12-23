@@ -3,6 +3,7 @@ import os
 import pytest
 from docarray import Document, DocumentArray
 
+from now.app.search_app import SearchApp
 from now.app.search_app.app import SearchApp
 from now.common.options import construct_app
 from now.constants import Apps

@@ -6,7 +6,7 @@ import pytest
 from docarray import Document, DocumentArray
 from pytest_mock import MockerFixture
 
-from now.app.search_app.app import SearchApp
+from now.app.search_app import SearchApp
 from now.constants import DatasetTypes
 from now.data_loading.data_loading import _load_tags_from_json_if_needed, load_data
 from now.demo_data import DemoDatasetNames

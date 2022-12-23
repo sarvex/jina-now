@@ -6,7 +6,6 @@ from jina.helper import random_port
 from now.app.base.app import JinaNOWApp
 from now.common.utils import _extract_tags_for_indexer, get_email, get_indexer_config
 from now.constants import (
-    AVAILABLE_MODALITIES_FOR_SEARCH,
     CLIP_USES,
     EXECUTOR_PREFIX,
     EXTERNAL_CLIP_HOST,
@@ -39,13 +38,12 @@ class SearchApp(JinaNOWApp):
         return 'Image-text search app'
 
     @property
-    def output_modality(self) -> List[Modalities]:
-        return AVAILABLE_MODALITIES_FOR_SEARCH
+    def input_modality(self) -> Union[Modalities, List[Modalities]]:
+        return [Modalities.TEXT, Modalities.IMAGE]
 
-    def set_app_modalities(self, user_input) -> None:
-        self.output_modality = '-or-'.join(user_input.search_mods.values())
-        for mod in self.supported_output_modality:
-            pass
+    @property
+    def output_modality(self) -> Union[Modalities, List[Modalities]]:
+        return [Modalities.TEXT, Modalities.IMAGE, Modalities.VIDEO]
 
     @property
     def required_docker_memory_in_gb(self) -> int:
