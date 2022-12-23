@@ -77,12 +77,14 @@ def test_token_exists():
 
 @pytest.mark.remote
 @pytest.mark.parametrize(
-    'app, input_modality, output_modality, dataset, deployment_type',
+    'app, input_modality, output_modality, search_fields, filter_fields, dataset, deployment_type',
     [
         (
-            Apps.IMAGE_TEXT_RETRIEVAL,
+            Apps.SEARCH_APP,
             Modalities.TEXT,
             Modalities.IMAGE,
+            ['image'],
+            ['label'],
             DemoDatasetNames.BEST_ARTWORKS,
             'remote',
         ),
@@ -97,6 +99,8 @@ def test_end_to_end_remote(
     cleanup,
     input_modality,
     output_modality,
+    search_fields,
+    filter_fields,
     with_hubble_login_patch,
 ):
     run_end_to_end(
@@ -106,31 +110,39 @@ def test_end_to_end_remote(
         deployment_type,
         input_modality,
         output_modality,
+        search_fields,
+        filter_fields,
         test_search_image,
     )
 
 
 @pytest.mark.parametrize(
-    'app, input_modality, output_modality, dataset, deployment_type',
+    'app, input_modality,  output_modality, search_fields, filter_fields, dataset, deployment_type',
     [
         (
-            Apps.IMAGE_TEXT_RETRIEVAL,
+            Apps.SEARCH_APP,
             Modalities.IMAGE,
             Modalities.IMAGE,
+            ['image'],
+            ['label'],
             DemoDatasetNames.BIRD_SPECIES,
             'local',
         ),
         (
-            Apps.IMAGE_TEXT_RETRIEVAL,
+            Apps.SEARCH_APP,
             Modalities.TEXT,
             Modalities.TEXT,
+            ['lyrics'],
+            [],
             DemoDatasetNames.POP_LYRICS,
             'local',
         ),
         (
-            Apps.TEXT_TO_VIDEO,
+            Apps.SEARCH_APP,
             Modalities.TEXT,
             Modalities.VIDEO,
+            ['video'],
+            [],
             DemoDatasetNames.TUMBLR_GIFS_10K,
             'local',
         ),
@@ -145,6 +157,8 @@ def test_end_to_end_local(
     cleanup,
     input_modality,
     output_modality,
+    search_fields,
+    filter_fields,
     with_hubble_login_patch,
 ):
     run_end_to_end(
@@ -154,6 +168,8 @@ def test_end_to_end_local(
         deployment_type,
         input_modality,
         output_modality,
+        search_fields,
+        filter_fields,
         test_search_image,
     )
 
@@ -165,6 +181,8 @@ def run_end_to_end(
     deployment_type,
     input_modality,
     output_modality,
+    search_fields,
+    filter_fields,
     test_search_image,
 ):
     cluster = NEW_CLUSTER['value']
@@ -172,7 +190,8 @@ def run_end_to_end(
         'now': 'start',
         'flow_name': 'nowapi',
         'dataset_type': DatasetTypes.DEMO,
-        'output_modality': output_modality,
+        'search_fields': search_fields,
+        'filter_fields': filter_fields,
         'dataset_name': dataset,
         'cluster': cluster,
         'secured': deployment_type == 'remote',
@@ -189,34 +208,28 @@ def run_end_to_end(
         cmd(f'{kubectl_path} create namespace nowapi')
     kwargs = Namespace(**kwargs)
     response = cli(args=kwargs)
-    if app == Apps.IMAGE_TEXT_RETRIEVAL:
-        input_modality = 'text-or-image'
-        output_modality = 'text-or-image'
     assert_deployment_response(
-        app, deployment_type, input_modality, output_modality, response
+        deployment_type, 'text-or-image', 'text-or-image-or-video', response
     )
     assert_deployment_queries(
-        app,
-        dataset,
-        deployment_type,
-        input_modality,
-        kwargs,
-        output_modality,
-        test_search_image,
-        response,
+        dataset=dataset,
+        deployment_type=deployment_type,
+        input_modality=input_modality,
+        kwargs=kwargs,
+        test_search_image=test_search_image,
+        response=response,
     )
     if input_modality == Modalities.TEXT:
         host = response.get('host')
         request_body = get_search_request_body(
-            app,
-            dataset,
-            deployment_type,
-            kwargs,
-            test_search_image,
-            host,
+            dataset=dataset,
+            deployment_type=deployment_type,
+            kwargs=kwargs,
+            test_search_image=test_search_image,
+            host=host,
+            search_modality='text',
         )
-        url = f'http://localhost:30090/api/v1'
-        suggest_url = f'{url}/{input_modality}-to-{output_modality}/suggestion'
+        suggest_url = f'http://localhost:30090/api/v1/search-app/suggestion'
         assert_suggest(suggest_url, request_body)
     # Dump the flow details from response host to a tmp file if the deployment is remote
     if deployment_type == 'remote':
@@ -239,8 +252,9 @@ def assert_search(search_url, request_body, expected_status_code=200):
 
 
 def assert_suggest(suggest_url, request_body):
-    old_request_text = request_body['text']
-    request_body['text'] = request_body['text'][0]
+    old_request_text = request_body.pop('query')
+    old_request_text = list(old_request_text.values())[0]['text']
+    request_body['text'] = old_request_text[0]
     response = requests.post(
         suggest_url,
         json=request_body,
@@ -257,12 +271,10 @@ def assert_suggest(suggest_url, request_body):
 
 
 def assert_deployment_queries(
-    app,
     dataset,
     deployment_type,
     input_modality,
     kwargs,
-    output_modality,
     test_search_image,
     response,
 ):
@@ -271,14 +283,14 @@ def assert_deployment_queries(
     host = response.get('host')
     # normal case
     request_body = get_search_request_body(
-        app,
-        dataset,
-        deployment_type,
-        kwargs,
-        test_search_image,
-        host,
+        dataset=dataset,
+        deployment_type=deployment_type,
+        kwargs=kwargs,
+        test_search_image=test_search_image,
+        host=host,
+        search_modality=input_modality,
     )
-    search_url = f'{url}/{input_modality}-to-{output_modality}/search'
+    search_url = f'{url}/search-app/search'
     assert_search(search_url, request_body)
 
     if kwargs.secured:
@@ -306,12 +318,12 @@ def assert_deployment_queries(
             raise Exception(f'Response status is {response.status_code}')
         # the same search should work now
         request_body = get_search_request_body(
-            app,
-            dataset,
-            deployment_type,
-            kwargs,
-            test_search_image,
-            host,
+            dataset=dataset,
+            deployment_type=deployment_type,
+            kwargs=kwargs,
+            test_search_image=test_search_image,
+            host=host,
+            search_modality=input_modality,
         )
         assert_search(search_url, request_body)
         # search with invalid api key
@@ -322,36 +334,35 @@ def assert_deployment_queries(
 
 
 def get_search_request_body(
-    app, dataset, deployment_type, kwargs, test_search_image, host
+    dataset,
+    deployment_type,
+    kwargs,
+    test_search_image,
+    host,
+    search_modality,
 ):
     request_body = get_default_request_body(
         deployment_type, kwargs.secured, remote_host=host
     )
     request_body['limit'] = 9
     # Perform end-to-end check via bff
-    if app == Apps.IMAGE_TEXT_RETRIEVAL:
-        request_body['image'] = test_search_image
-    elif app in [
-        Apps.IMAGE_TEXT_RETRIEVAL,
-        Apps.TEXT_TO_VIDEO,
-    ]:
+    if search_modality == Modalities.TEXT:
         if dataset == DemoDatasetNames.BEST_ARTWORKS:
             search_text = 'impressionism'
         elif dataset == DemoDatasetNames.NFT_MONKEY:
             search_text = 'laser eyes'
         else:
             search_text = 'test'
-        request_body['text'] = search_text
+        request_body['query'] = {'text_field': {'text': search_text}}
+    elif search_modality == Modalities.IMAGE:
+        request_body['query'] = {'image_field': {'blob': test_search_image}}
     return request_body
 
 
 def assert_deployment_response(
-    app, deployment_type, input_modality, output_modality, response
+    deployment_type, input_modality, output_modality, response
 ):
-    assert (
-        response['bff']
-        == f'http://localhost:30090/api/v1/{input_modality}-to-{output_modality}/docs'
-    )
+    assert response['bff'] == f'http://localhost:30090/api/v1/search-app/docs'
     assert response['playground'].startswith('http://localhost:30080/?')
     assert response['input_modality'] == input_modality
     assert response['output_modality'] == output_modality
@@ -365,7 +376,7 @@ def assert_deployment_response(
 
 @pytest.mark.parametrize('deployment_type', ['remote'])
 @pytest.mark.parametrize('dataset', ['custom_s3_bucket'])
-@pytest.mark.parametrize('app', [Apps.IMAGE_TEXT_RETRIEVAL])
+@pytest.mark.parametrize('app', [Apps.SEARCH_APP])
 @pytest.mark.parametrize('input_modality', [Modalities.IMAGE])
 @pytest.mark.parametrize('output_modality', [Modalities.IMAGE])
 def test_backend_custom_data(
@@ -381,7 +392,6 @@ def test_backend_custom_data(
         'now': 'start',
         'app': app,
         'flow_name': 'nowapi',
-        'output_modality': 'image',
         'dataset_type': DatasetTypes.S3_BUCKET,
         'dataset_path': os.environ.get('S3_CUSTOM_DATA_PATH'),
         'aws_access_key_id': os.environ.get('AWS_ACCESS_KEY_ID'),
@@ -402,16 +412,14 @@ def test_backend_custom_data(
 
     kwargs = Namespace(**kwargs)
     response = cli(args=kwargs)
-
-    if app == Apps.IMAGE_TEXT_RETRIEVAL:
-        input_modality = 'text-or-image'
-        output_modality = 'text-or-image'
+    input_modality = 'text-or-image'
+    output_modality = 'text-or-image-or-video'
 
     assert_deployment_response(
-        app, deployment_type, input_modality, output_modality, response
+        deployment_type, input_modality, output_modality, response
     )
 
-    request_body = {'text': 'test', 'limit': 9}
+    request_body = {'query': {'text_field': {'text': 'test'}}, 'limit': 9}
 
     print(f"Getting gateway from response")
     request_body['host'] = response['host']
@@ -422,7 +430,7 @@ def test_backend_custom_data(
             json.dump(flow_details, f)
 
     response = requests.post(
-        f'http://localhost:30090/api/v1/{input_modality}-to-{output_modality}/search',
+        f'http://localhost:30090/api/v1/search-app/search',
         json=request_body,
     )
 
@@ -432,5 +440,8 @@ def test_backend_custom_data(
     response_json = response.json()
     assert len(response_json) == 2
     for doc in response_json:
-        assert doc['uri'].startswith('s3://')
-        assert doc['blob'] is None or doc['blob'] == '' or doc['blob'] == b''
+        field = list(doc['fields'].values())[0]
+        assert field['uri'].startswith('s3://'), f"received: {doc}"
+        assert (
+            'blob' not in field.keys() or field['blob'] is None or field['blob'] == ''
+        )

@@ -10,13 +10,13 @@ from now.demo_data import DemoDatasetNames
 from now.now_dataclasses import UserInput
 
 
-class ImageTextRetrieval(JinaNOWApp):
+class SearchApp(JinaNOWApp):
     def __init__(self):
         super().__init__()
 
     @property
     def app_name(self) -> str:
-        return Apps.IMAGE_TEXT_RETRIEVAL
+        return Apps.SEARCH_APP
 
     @property
     def is_enabled(self) -> bool:
@@ -32,7 +32,7 @@ class ImageTextRetrieval(JinaNOWApp):
 
     @property
     def output_modality(self) -> Union[Modalities, List[Modalities]]:
-        return [Modalities.TEXT, Modalities.IMAGE]
+        return [Modalities.TEXT, Modalities.IMAGE, Modalities.VIDEO]
 
     @property
     def required_docker_memory_in_gb(self) -> int:
@@ -58,7 +58,7 @@ class ImageTextRetrieval(JinaNOWApp):
     def setup(
         self, dataset: DocumentArray, user_input: UserInput, kubectl_path
     ) -> Dict:
-        indexer_config = get_indexer_config(len(dataset))
+        indexer_config = get_indexer_config()
         encoder_with = _get_clip_apps_with_dict(user_input)
         env_dict = common_setup(
             app_instance=self,

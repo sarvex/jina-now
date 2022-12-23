@@ -99,7 +99,6 @@ jobs:
           # for some reason, the first filter condition needs a different indentation
           has_changed_filter: |
             - now/app/base/**
-              - now/common/preprocess.py
               - now/executor/preprocessor/**
           executor_id: vlxgoxlv
           jina_auth_token: ${{ secrets.NOW_PREPROCESSOR_JCLOUD_TOKEN }}
@@ -257,8 +256,8 @@ jobs:
       - name: Test
         id: test
         run: |
-          pytest --suppress-no-test-exit-code --cov=now -v -s -m "not gpu" --splits 9 --group ${{ matrix.group }} --splitting-algorithm least_duration tests/
-        timeout-minutes: 12
+          pytest --suppress-no-test-exit-code --cov=now --ignore-glob=tests/executor -v -s -m "not gpu" --splits 9 --group ${{ matrix.group }} --splitting-algorithm least_duration tests/
+        timeout-minutes: 20
         env:
           WOLF_TOKEN: ${{ secrets.WOLF_TOKEN }}
           S3_SCHEMA_FOLDER_PATH: ${{ secrets.S3_SCHEMA_FOLDER_PATH }}

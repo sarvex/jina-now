@@ -416,11 +416,18 @@ class NOWBaseIndexer(Executor):
         if columns:
             corrected_list = []
             for i in range(0, len(columns), 2):
+                # This conversion is needed for MMDocs
+                if columns[i + 1] in ['text', 'stringValue']:
+                    columns[i + 1] = 'str'
+                elif columns[i + 1] in ['numberValue']:
+                    columns[i + 1] = 'float'
+                elif columns[i + 1] in ['boolValue']:
+                    columns[i + 1] = 'bool'
                 corrected_list.append((columns[i], columns[i + 1]))
             columns = corrected_list
             for n, t in columns:
                 assert (
-                    t in valid_input_columns
+                    t.lower() in valid_input_columns
                 ), f'column of type={t} is not supported. Supported types are {valid_input_columns}'
         return columns
 

@@ -45,8 +45,18 @@ def common_get_flow_env_dict(
     indexer_resources: Dict,
     user_input: UserInput,
     tags: List,
+    deployment_type: str,
 ):
     """Returns dictionary for the environments variables for the clip flow.yml files."""
+    use_high_performance_flow = (
+        get_email().split('@')[-1] == 'jina.ai' and deployment_type == 'remote'
+    )
+    if use_high_performance_flow:
+        print(
+            f"🚀🚀🚀 As employee of Jina, you are using a high performance flow.\n"
+            f"Therefore, your deployment will be faster.\n"
+            f"But make sure to scale it down after deployment."
+        )
     config = {
         'JINA_VERSION': jina_version,
         'ENCODER_NAME': f'{EXECUTOR_PREFIX}{encoder_uses}',
@@ -56,6 +66,7 @@ def common_get_flow_env_dict(
         'INDEXER_NAME': f'{EXECUTOR_PREFIX}{indexer_uses}',
         'PREFETCH': PREFETCH_NR,
         'PREPROCESSOR_NAME': f'{EXECUTOR_PREFIX}{name_to_id_map.get("NOWPreprocessor")}/{NOW_PREPROCESSOR_VERSION}',
+        'PREPROCESSOR_REPLICAS': 15 if use_high_performance_flow else 1,
         'AUTOCOMPLETE_EXECUTOR_NAME': f'{EXECUTOR_PREFIX}{name_to_id_map.get("NOWAutoCompleteExecutor2")}/{NOW_AUTOCOMPLETE_VERSION}',
         'COLUMNS': tags,
         'ADMIN_EMAILS': user_input.admin_emails or [] if user_input.secured else [],
@@ -121,6 +132,7 @@ def common_setup(
         indexer_resources=indexer_resources,
         user_input=user_input,
         tags=tags,
+        deployment_type=user_input.deployment_type,
     )
 
     if finetune_settings.perform_finetuning:
@@ -170,7 +182,6 @@ def get_email():
 
 
 def get_indexer_config(
-    num_indexed_samples: int,
     elastic: Optional[bool] = False,
     kubectl_path: str = None,
     deployment_type: str = None,
@@ -197,21 +208,17 @@ def get_indexer_config(
         config = {
             'indexer_uses': f'{name_to_id_map.get("NOWQdrantIndexer16")}/{NOW_QDRANT_INDEXER_VERSION}'
         }
-    threshold1 = 250_000
-    if num_indexed_samples <= threshold1:
-        config['indexer_resources'] = {'INDEXER_CPU': 0.1, 'INDEXER_MEM': '2G'}
-    else:
-        config['indexer_resources'] = {'INDEXER_CPU': 1.0, 'INDEXER_MEM': '4G'}
+
+    config['indexer_resources'] = {'INDEXER_CPU': 0.5, 'INDEXER_MEM': '4G'}
 
     return config
 
 
 def _extract_tags_for_indexer(user_input: UserInput):
-    final_tags = [
-        [tag, value]
-        for tag, value in user_input.filter_fields_modalities.items()
-        if tag in user_input.filter_fields
-    ]
+    final_tags = []
+    for tag, value in user_input.filter_fields_modalities.items():
+        if tag in user_input.filter_fields:
+            final_tags.append([tag, value])
     if user_input.app_instance.output_modality in [
         Modalities.IMAGE,
         Modalities.VIDEO,

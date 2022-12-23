@@ -28,5 +28,4 @@ def merge_matches_sum(query_docs, limit):
         )
         matches = [sum_and_chunks[1][0] for _, sum_and_chunks in parent_to_sum_sorted]
         all_matches.extend(matches)
-        print(f'# num parents for group {group}: {len(matches)}')
     query_doc.matches = all_matches[:limit]

@@ -6,6 +6,39 @@ from jina import Client
 from jina.excepts import BadServer
 
 
+def field_dict_to_doc(field_dict: dict) -> Document:
+    """Converts a dictionary of field names to their values to a document.
+
+    :param field_dict: key-value pairs of field names and their values
+    :return: document
+    """
+    if len(field_dict) != 1:
+        raise ValueError(
+            f"Multi-modal document isn't supported yet. "
+            f"Can only set one value but have {list(field_dict.keys())}"
+        )
+
+    try:
+        for field_name, field_value in field_dict.items():
+            if field_value.text:
+                doc = Document(text=field_value.text)
+            elif field_value.uri:
+                doc = Document(uri=field_value.uri)
+            elif field_value.blob:
+                base64_bytes = field_value.blob.encode('utf-8')
+                blob = base64.decodebytes(base64_bytes)
+                doc = Document(blob=blob, modality='image')
+            else:
+                raise ValueError('None of the attributes uri, text or blob is set.')
+    except BaseException as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f'Not a correct encoded query. Please see the error stack for more information. \n{e}',
+        )
+
+    return doc
+
+
 def process_query(
     text: str = '', blob: str = b'', uri: str = None, conditions: dict = None
 ) -> Document:
@@ -45,13 +78,10 @@ def process_query(
             status_code=500,
             detail=f'Not a correct encoded query. Please see the error stack for more information. \n{e}',
         )
-    query = {}
-    if conditions:
-        filter_query = []
-        # construct filtering query from dictionary
-        for key, value in conditions.items():
-            filter_query.append({f'{key}': {'$eq': value}})
-        query = {'$and': filter_query}  # different conditions are aggregated using and
+    query = (
+        {key: {'$eq': value} for key, value in conditions.items()} if conditions else {}
+    )
+
     return query_doc, query
 
 

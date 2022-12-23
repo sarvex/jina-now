@@ -6,6 +6,7 @@ from typing import Dict, List
 import requests
 
 from now.constants import (
+    AVAILABLE_MODALITIES_FOR_FILTER,
     AVAILABLE_MODALITIES_FOR_SEARCH,
     NOT_AVAILABLE_MODALITIES_FOR_FILTER,
     SUPPORTED_FILE_TYPES,
@@ -17,12 +18,11 @@ from now.now_dataclasses import UserInput
 
 def _create_candidate_search_filter_fields(field_name_to_value):
     """
-    Creates candidate search fields from the field_names
+    Creates candidate search fields from the field_names for s3
+    and local file path.
     A candidate search field is a field that we can detect its modality
     A candidate filter field is a field that we can't detect its modality,
     or it's modality is different from image, video or audio.
-
-    In case of docarray, we assume all fields are potentially searchable
 
     :param field_name_to_value: dictionary
     """
@@ -63,21 +63,59 @@ def _create_candidate_search_filter_fields(field_name_to_value):
     return search_fields_modalities, filter_field_modalities
 
 
-def _extract_field_names_docarray(response):
+def _extract_field_candidates_docarray(response):
     """
     Downloads the first document in the document array and extracts field names from it
     if tags also exists then it extracts the keys from tags and adds to the field_names
     """
-    field_names = {}
-    response = requests.get(response.json()['data']['download'])
-    ignored_fieldnames = ['embedding', 'id', 'mimeType', 'tags']
-    for el, value in response.json()[0].items():
-        if el not in ignored_fieldnames:
-            field_names[el] = value
-    if 'tags' in response.json()[0]:
-        for el, value in response.json()[0]['tags']['fields'].items():
-            field_names[el] = value
-    return field_names
+    search_modalities = {}
+    filter_modalities = {}
+    doc = requests.get(response.json()['data']['download']).json()[0]
+    if (
+        not doc.get('_metadata', None)
+        or 'multi_modal_schema' not in doc['_metadata']['fields']
+    ):
+        raise RuntimeError(
+            'Multi-modal schema is not provided. Please prepare your data following this guide - '
+            'https://docarray.jina.ai/datatypes/multimodal/'
+        )
+    mm_schema = doc['_metadata']['fields']['multi_modal_schema']
+    mm_fields = mm_schema['structValue']['fields']
+    for field_name, value in mm_fields.items():
+        if 'position' not in value['structValue']['fields']:
+            raise ValueError(
+                f'No modality found for the dataclass field: `{field_name}`. Please follow the steps in the '
+                f'documentation to add modalities to your documents https://docarray.jina.ai/datatypes/multimodal/'
+            )
+        field_pos = value['structValue']['fields']['position']['numberValue']
+        if not doc['chunks'][field_pos]['modality']:
+            raise ValueError(
+                f'No modality found for {field_name}. Please follow the steps in the documentation'
+                f' to add modalities to your documents https://docarray.jina.ai/datatypes/multimodal/'
+            )
+        modality = doc['chunks'][field_pos]['modality'].lower()
+        if modality not in AVAILABLE_MODALITIES_FOR_SEARCH:
+            raise ValueError(
+                f'The modality {modality} is not supported for search. Please use '
+                f'one of the following modalities: {AVAILABLE_MODALITIES_FOR_SEARCH}'
+            )
+        # only the available modalities for filter are added to the filter modalities
+        if modality in AVAILABLE_MODALITIES_FOR_FILTER:
+            filter_modalities[field_name] = modality
+        # only the available modalities for search are added to search modalities
+        if modality in AVAILABLE_MODALITIES_FOR_SEARCH:
+            search_modalities[field_name] = modality
+
+    if doc.get('tags', None):
+        for el, value in doc['tags']['fields'].items():
+            for val_type, val in value.items():
+                filter_modalities[el] = val_type
+
+    if len(search_modalities.keys()) == 0:
+        raise ValueError(
+            'No searchable fields found, please check documentation https://now.jina.ai'
+        )
+    return search_modalities, filter_modalities
 
 
 def set_field_names_from_docarray(user_input: UserInput, **kwargs):
@@ -102,13 +140,12 @@ def set_field_names_from_docarray(user_input: UserInput, **kwargs):
         json=json_data,
     )
     if response.json()['code'] == 200:
-        field_names = _extract_field_names_docarray(response)
+        (
+            user_input.search_fields_modalities,
+            user_input.filter_fields_modalities,
+        ) = _extract_field_candidates_docarray(response)
     else:
         raise ValueError('DocumentArray does not exist or you do not have access to it')
-    (
-        user_input.search_fields_modalities,
-        user_input.filter_fields_modalities,
-    ) = _create_candidate_search_filter_fields(field_names)
 
 
 def _identify_folder_structure(file_paths: List[str], separator: str) -> str:

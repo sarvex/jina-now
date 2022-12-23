@@ -2,16 +2,12 @@ from __future__ import annotations, print_function, unicode_literals
 
 from now.utils import BetterEnum
 
-# TODO: Uncomment the DEMO_DATASET_DOCARRAY_VERSION when the DocumentArray datasets on GCloud has been changed
-# from docarray import __version__ as docarray_version
-
-DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
 # ----------------------------------
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.136-fix-playground-text'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.138-fix-search-options-order1'
 # ----------------------------------
-NOW_PREPROCESSOR_VERSION = '0.0.114-elastic-multimodal-15x'
-NOW_QDRANT_INDEXER_VERSION = '0.0.11-elastic-multimodal-15x'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.10-elastic-multimodal-15x'
+NOW_PREPROCESSOR_VERSION = '0.0.115-refactor-remove-text-to-video-12'
+NOW_QDRANT_INDEXER_VERSION = '0.0.137-filter-query11'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.138-feat-elastic-cluster-in-executor-1'
 NOW_AUTOCOMPLETE_VERSION = '0.0.6-elastic-multimodal-15x'
 
 
@@ -22,8 +18,7 @@ class Modalities(BetterEnum):
 
 
 class Apps(BetterEnum):
-    IMAGE_TEXT_RETRIEVAL = 'image_text_retrieval'
-    TEXT_TO_VIDEO = 'text_to_video'
+    SEARCH_APP = 'search_app'
 
 
 class DatasetTypes(BetterEnum):
@@ -47,10 +42,17 @@ class ModelDimensions(BetterEnum):
 
 SUPPORTED_FILE_TYPES = {
     Modalities.TEXT: ['txt', 'md'],
-    Modalities.IMAGE: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'tif'],
+    Modalities.IMAGE: ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'tif'],
     Modalities.VIDEO: ['gif'],
 }
+
+FILETYPE_TO_MODALITY = {
+    filetype: modality
+    for modality, filetypes in SUPPORTED_FILE_TYPES.items()
+    for filetype in filetypes
+}
 AVAILABLE_MODALITIES_FOR_SEARCH = [Modalities.TEXT, Modalities.IMAGE, Modalities.VIDEO]
+AVAILABLE_MODALITIES_FOR_FILTER = [Modalities.TEXT]
 NOT_AVAILABLE_MODALITIES_FOR_FILTER = [
     Modalities.IMAGE,
     Modalities.VIDEO,

@@ -5,13 +5,12 @@ from docarray import Document, DocumentArray
 
 from now.app.base.preprocess import preprocess_text
 from now.app.base.transform_docarray import transform_docarray
-from now.app.image_text_retrieval.app import ImageTextRetrieval
-from now.app.text_to_video.app import TextToVideo
+from now.app.search_app import SearchApp
 
 
-def test_text_to_video_preprocessing_query():
+def test_search_app_preprocessing_query():
     """Test if the text to video preprocessing works for queries"""
-    app = TextToVideo()
+    app = SearchApp()
     da = DocumentArray([Document(text='test')])
     da = transform_docarray(da, search_fields=[])
     da = app.preprocess(da)
@@ -21,9 +20,9 @@ def test_text_to_video_preprocessing_query():
     assert da[0].chunks[0].chunks[0].text == 'test'
 
 
-def test_text_to_video_preprocessing_indexing(resources_folder_path):
+def test_search_app_preprocessing_indexing(resources_folder_path):
     """Test if the text to video preprocessing works for indexing"""
-    app = TextToVideo()
+    app = SearchApp()
     da = DocumentArray(
         [Document(uri=os.path.join(resources_folder_path, 'gif/folder1/file.gif'))]
     )
@@ -37,8 +36,8 @@ def test_text_to_video_preprocessing_indexing(resources_folder_path):
 @pytest.mark.parametrize(
     'app_cls,is_indexing',
     [
-        (ImageTextRetrieval, False),
-        (ImageTextRetrieval, True),
+        (SearchApp, False),
+        (SearchApp, True),
     ],
 )
 def test_text_preprocessing(app_cls, is_indexing):
@@ -57,8 +56,8 @@ def test_text_preprocessing(app_cls, is_indexing):
 @pytest.mark.parametrize(
     'app_cls,is_indexing',
     [
-        (ImageTextRetrieval, False),
-        (ImageTextRetrieval, True),
+        (SearchApp, False),
+        (SearchApp, True),
     ],
 )
 def test_image_preprocessing(app_cls, is_indexing, resources_folder_path):

@@ -40,28 +40,18 @@ AVAILABLE_SOON = 'will be available in upcoming versions'
 
 
 def _create_app_from_user_input(user_input: UserInput, **kwargs):
-    if user_input.dataset_type == DatasetTypes.DEMO:
-        _search_modality = None
-        for _modality, _demo_datasets in AVAILABLE_DATASETS.items():
-            if any(
-                [
-                    user_input.dataset_name == _demo_dataset.name
-                    for _demo_dataset in _demo_datasets
-                ]
-            ):
-                _search_modality = _modality
-    else:
-        if len(user_input.search_fields) != 1:
-            raise ValueError(
-                'Currently only one search field is supported. Please choose one field.'
-            )
-        _search_modality = user_input.search_fields_modalities[
-            user_input.search_fields[0]
-        ]
-    if _search_modality in ['image', 'text']:
-        app_name = Apps.IMAGE_TEXT_RETRIEVAL
-    elif _search_modality == 'video':
-        app_name = Apps.TEXT_TO_VIDEO
+    if len(user_input.search_fields) != 1:
+        raise ValueError(
+            'Currently only one search field is supported. Please choose one field.'
+        )
+    if user_input.search_fields[0] not in user_input.search_fields_modalities.keys():
+        raise ValueError(
+            f'Search field specified is not among the search candidate fields. Please '
+            f'choose one of the following: {user_input.search_fields_modalities.keys()}'
+        )
+    _search_modality = user_input.search_fields_modalities[user_input.search_fields[0]]
+    if _search_modality in ['image', 'text', 'video']:
+        app_name = Apps.SEARCH_APP
     else:
         raise ValueError(f'Invalid search modality: {_search_modality}')
     user_input.app_instance = construct_app(app_name)
@@ -72,7 +62,18 @@ APP_NAME = DialogOptions(
     prompt_message='Choose a name for your application:',
     prompt_type='input',
     is_terminal_command=True,
+    post_func=lambda user_input, **kwargs: clean_flow_name(user_input),
 )
+
+
+def clean_flow_name(user_input: UserInput):
+    """
+    Clean the flow name to make it valid, removing special characters and spaces.
+    """
+    user_input.flow_name = ''.join(
+        [c for c in user_input.flow_name if c.isalnum() or c == '-']
+    ).lower()
+
 
 DATASET_TYPE = DialogOptions(
     name='dataset_type',
@@ -104,7 +105,10 @@ DATASET_TYPE = DialogOptions(
 
 
 def check_login_dataset(user_input: UserInput):
-    if user_input.dataset_type == DatasetTypes.DOCARRAY and user_input.jwt is None:
+    if (
+        user_input.dataset_type in [DatasetTypes.DEMO, DatasetTypes.DOCARRAY]
+        and user_input.jwt is None
+    ):
         _jina_auth_login(user_input)
 
 
@@ -128,7 +132,7 @@ DEMO_DATA = DialogOptions(
     description='Select one of the available demo datasets',
     conditional_check=lambda user_input, **kwargs: user_input.dataset_type
     == DatasetTypes.DEMO,
-    post_func=lambda user_input, **kwargs: _create_app_from_user_input(user_input),
+    post_func=lambda user_input, **kwargs: set_field_names_from_docarray(user_input),
 )
 
 
@@ -200,13 +204,9 @@ SEARCH_FIELDS = DialogOptions(
         {'name': field, 'value': field}
         for field in user_input.search_fields_modalities.keys()
     ],
-    prompt_message='Please select the search fields:',
+    prompt_message='Please select the index fields:',
     prompt_type='checkbox',
-    depends_on=DATASET_TYPE,
     is_terminal_command=True,
-    conditional_check=lambda user_input: user_input.search_fields_modalities is not None
-    and len(user_input.search_fields_modalities.keys()) > 0
-    and user_input.dataset_type != DatasetTypes.DEMO,
     post_func=_create_app_from_user_input,
     argparse_kwargs={
         'type': lambda s: s.split(',') if s else UserInput().search_fields
@@ -228,8 +228,7 @@ FILTER_FIELDS = DialogOptions(
     and len(
         set(user_input.filter_fields_modalities.keys()) - set(user_input.search_fields)
     )
-    > 0
-    and user_input.dataset_type != DatasetTypes.DEMO,
+    > 0,
 )
 
 
@@ -241,6 +240,7 @@ ES_INDEX_NAME = DialogOptions(
     conditional_check=lambda user_input: user_input.dataset_type
     == DatasetTypes.ELASTICSEARCH,
 )
+
 
 ES_HOST_NAME = DialogOptions(
     name='es_host_name',
@@ -277,7 +277,7 @@ DEPLOYMENT_TYPE = DialogOptions(
         },
     ],
     is_terminal_command=True,
-    description='Option is `local` and `remote`. Select `local` if you want search engine to be deployed on local '
+    description='Options are `local` or `remote`. Select `local` if you want your search engine to be deployed on a local '
     'cluster. Select `remote` to deploy it on Jina Cloud',
     post_func=lambda user_input, **kwargs: check_login_deployment(user_input),
 )
@@ -305,21 +305,10 @@ LOCAL_CLUSTER = DialogOptions(
     ),
 )
 
-PROCEED = DialogOptions(
-    name='proceed',
-    prompt_message='jina-now is deployed already. Do you want to remove the current data?',
-    prompt_type='list',
-    choices=[
-        {'name': '⛔ no', 'value': False},
-        {'name': '✅ yes', 'value': True},
-    ],
-    depends_on=LOCAL_CLUSTER,
-    conditional_check=lambda user_input: _check_if_namespace_exist(),
-)
 
 SECURED = DialogOptions(
     name='secured',
-    prompt_message='Do you want to secure the flow?',
+    prompt_message='Do you want to secure the Flow?',
     prompt_type='list',
     choices=[
         {'name': '⛔ no', 'value': False},
@@ -332,7 +321,7 @@ SECURED = DialogOptions(
 
 API_KEY = DialogOptions(
     name='api_key',
-    prompt_message='Do you want to generate an api_key to access this deployment?',
+    prompt_message='Do you want to generate an API key to access this deployment?',
     prompt_type='list',
     choices=[
         {'name': '✅ yes', 'value': uuid.uuid4().hex},
@@ -340,7 +329,7 @@ API_KEY = DialogOptions(
     ],
     depends_on=SECURED,
     is_terminal_command=True,
-    description='Pass an api_key to access the flow once the deployment is complete. ',
+    description='Pass an API key to access the Flow once the deployment is complete. ',
     conditional_check=lambda user_inp: str(user_inp.secured).lower() == 'true',
     post_func=lambda user_input, **kwargs: _set_value_to_none(user_input),
 )
@@ -359,9 +348,9 @@ ADDITIONAL_USERS = DialogOptions(
 
 USER_EMAILS = DialogOptions(
     name='user_emails',
-    prompt_message='Please enter the comma separated Email IDs '
-    'who will have access to this flow.\nAdditionally, you can also specify comma separated domain name'
-    ' such that all users from that domain can access this flow. E.g. `jina.ai`\n',
+    prompt_message='Please enter email addresses (separated by commas) '
+    'to grant access to this Flow.\nAdditionally, you can specify comma-separated domain names'
+    ' such that all users from that domain can access this Flow, e.g. `jina.ai`\n',
     prompt_type='input',
     depends_on=ADDITIONAL_USERS,
     conditional_check=lambda user_inp: user_inp.additional_user,
@@ -400,7 +389,7 @@ def _jina_auth_login(user_input: UserInput, **kwargs):
         jina_auth_login()
     except AuthenticationRequiredError:
         with yaspin_extended(
-            sigmap=sigmap, text='Log in to JCloud', color='green'
+            sigmap=sigmap, text='Log in to Jina AI Cloud', color='green'
         ) as spinner:
             cmd('jina auth login')
         spinner.ok('🛠️')

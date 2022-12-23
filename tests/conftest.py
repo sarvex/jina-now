@@ -11,8 +11,27 @@ from now.deployment.deployment import cmd
 
 
 @pytest.fixture()
-def resources_folder_path() -> str:
-    return os.path.join(os.path.dirname(os.path.realpath(__file__)), 'resources')
+def resources_folder_path(tests_folder_path) -> str:
+    return os.path.join(tests_folder_path, 'resources')
+
+
+@pytest.fixture()
+def tests_folder_path() -> str:
+    return os.path.join(os.path.dirname(os.path.realpath(__file__)))
+
+
+@pytest.fixture()
+def setup_qdrant(tests_folder_path):
+    docker_file_path = os.path.join(
+        tests_folder_path, 'executor/indexer/base/docker-compose.yml'
+    )
+    cmd(
+        f"docker-compose -f {docker_file_path} --project-directory . up  --build -d --remove-orphans"
+    )
+    yield
+    cmd(
+        f"docker-compose -f {docker_file_path} --project-directory . down --remove-orphans"
+    )
 
 
 @pytest.fixture(scope='session')
