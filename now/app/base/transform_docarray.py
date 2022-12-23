@@ -95,7 +95,8 @@ def transform_multi_modal_data(
                     )
                 )
             else:
-                document.tags[field_name] = chunk.content
+                if chunk.text:
+                    document.tags[field_name] = chunk.content
         document.chunks = new_chunks
         for chunk in document.chunks:
             chunk.tags.update(document.tags)
