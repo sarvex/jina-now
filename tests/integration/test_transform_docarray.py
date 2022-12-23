@@ -61,6 +61,10 @@ def test_transform_inside_flow(
         user_input.dataset_name = DemoDatasetNames.TUMBLR_GIFS_10K
         data = load_data(user_input)[:2]
         user_input.search_fields = ['description', 'video']
+        user_input.files_to_dataclass_fields = {
+            'description': 'description',
+            'video': 'video',
+        }
     elif input_type == 'single_modal':
         app_instance = SearchApp()
         data = single_modal_data
@@ -68,7 +72,10 @@ def test_transform_inside_flow(
         app_instance = SearchApp()
         data = multi_modal_data
         user_input.search_fields = ['main_text', 'image']
-
+        user_input.files_to_dataclass_fields = {
+            'main_text': 'main_text',
+            'image': 'image',
+        }
     query = Document(text='query_text')
 
     f = (
