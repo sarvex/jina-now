@@ -17,6 +17,42 @@ simply provide `cat_pictures` as the input, which will automatically pull your d
 ? Please enter your DocumentArray name: cat_pictures
 ```
 
+If you are using this `DocumentArray` option, please make sure to model your data using the `@dataclass` decorator from [docarray](https://docarray.jina.ai/datatypes/multimodal/).
+This allows you to model nested and multi-modal data as follows:
+
+```python
+from docarray import dataclass
+from docarray.typing import Image, Text
+
+
+@dataclass
+class Page:
+    main_text: Text
+    image: Image
+    description: Text
+```
+
+In this dataclass model, we have a `Page` document that has three fields: `main_text`, `image` and `description`. 
+You can instantiate the dataclass model with your actual data, and cast it to a `Document` as follows:
+
+```python
+from docarray import Document
+
+page = Page(
+    main_text='Hello world',
+    image='apple.png',
+    description='This is the image of an apple',
+)
+
+doc = Document(page)
+da = DocumentArray([doc])
+da.push(name="my_pages")
+```
+
+In the above example, we instantiate a `Page` document with some dummy data, and then cast it to a `Document`,
+and finally add it to a `DocumentArray` which we can push to Jina Cloud under the name "my_pages".
+This is the same name that we will use when deploying our search app with NOW.
+
 More information about how to create and push your own `DocumentArray` can be found [here](https://docarray.jina.ai/).
 
 ### Local Folder
