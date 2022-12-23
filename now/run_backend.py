@@ -38,7 +38,11 @@ def run(
     :param ns:
     :return:
     """
-    data_class = create_dataclass(user_input)
+    if user_input.dataset_type in [DatasetTypes.DEMO, DatasetTypes.DOCARRAY]:
+        user_input.files_to_dataclass_fields = user_input.search_fields_modalities
+        data_class = None
+    else:
+        data_class = create_dataclass(user_input)
     dataset = load_data(user_input, data_class)
 
     env_dict = app_instance.setup(
@@ -222,7 +226,9 @@ def create_dataclass(user_input: UserInput):
     update_dict_with_no_overwrite(all_modalities, user_input.filter_fields_modalities)
 
     file_mapping_to_dataclass_fields = create_dataclass_fields_file_mappings(
-        user_input.search_fields + user_input.filter_fields, all_modalities
+        user_input.search_fields + user_input.filter_fields,
+        all_modalities,
+        user_input.dataset_type,
     )
     user_input.files_to_dataclass_fields = file_mapping_to_dataclass_fields
     (all_annotations, all_class_attributes,) = create_annotations_and_class_attributes(
