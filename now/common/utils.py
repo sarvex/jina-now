@@ -25,8 +25,6 @@ from now.constants import (
 from now.demo_data import DEFAULT_EXAMPLE_HOSTED
 from now.deployment.deployment import cmd
 from now.executor.name_to_id_map import name_to_id_map
-from now.finetuning.run_finetuning import finetune
-from now.finetuning.settings import FinetuneSettings, parse_finetune_settings
 from now.now_dataclasses import UserInput
 
 cur_dir = pathlib.Path(__file__).parent.resolve()
@@ -36,7 +34,6 @@ MAX_RETRIES = 20
 
 
 def common_get_flow_env_dict(
-    finetune_settings: FinetuneSettings,
     encoder_uses: str,
     encoder_with: Dict,
     encoder_uses_with: Dict,
@@ -82,9 +79,6 @@ def common_get_flow_env_dict(
         config['PRE_TRAINED_MODEL_NAME'] = encoder_uses_with[
             "pretrained_model_name_or_path"
         ]
-    if finetune_settings.perform_finetuning:
-        config['FINETUNE_ARTIFACT'] = finetune_settings.finetuned_model_artifact
-        config['JINA_TOKEN'] = finetune_settings.token
 
     config['CUSTOM_DNS'] = ''
     if 'NOW_EXAMPLES' in os.environ:
@@ -111,19 +105,8 @@ def common_setup(
     encoder_with: Optional[Dict] = {},
     indexer_resources: Optional[Dict] = {},
 ) -> Dict:
-    # should receive pre embedding size
-    finetune_settings = parse_finetune_settings(
-        pre_trained_embedding_size=pre_trained_embedding_size,
-        user_input=user_input,
-        dataset=dataset,
-        finetune_datasets=app_instance.finetune_datasets,
-        model_name='mlp',
-        add_embeddings=True,
-        loss='TripletMarginLoss',
-    )
     tags = _extract_tags_for_indexer(user_input)
     env_dict = common_get_flow_env_dict(
-        finetune_settings=finetune_settings,
         encoder_uses=encoder_uses,
         encoder_with=encoder_with,
         encoder_uses_with=encoder_uses_with,
@@ -135,35 +118,6 @@ def common_setup(
         deployment_type=user_input.deployment_type,
     )
 
-    if finetune_settings.perform_finetuning:
-        try:
-            artifact_id, token = finetune(
-                finetune_settings=finetune_settings,
-                app_instance=app_instance,
-                dataset=dataset,
-                user_input=user_input,
-                env_dict=env_dict,
-                kubectl_path=kubectl_path,
-            )
-
-            finetune_settings.finetuned_model_artifact = artifact_id
-            finetune_settings.token = token
-
-            env_dict['FINETUNE_ARTIFACT'] = finetune_settings.finetuned_model_artifact
-            env_dict['JINA_TOKEN'] = finetune_settings.token
-        except Exception as e:
-            print(
-                'Finetuning is currently offline. The program execution still continues without'
-                ' finetuning. Please report the following exception to us:'
-            )
-            import traceback
-
-            traceback.print_exc()
-            finetune_settings.perform_finetuning = False
-
-    app_instance.set_flow_yaml(
-        finetuning=finetune_settings.perform_finetuning, dataset_len=len(dataset)
-    )
     return env_dict
 
 
