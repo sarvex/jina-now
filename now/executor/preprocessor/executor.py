@@ -100,6 +100,8 @@ class NOWPreprocessor(Executor):
             for search_field in self.user_input.search_fields:
                 search_fields.append(
                     self.user_input.files_to_dataclass_fields[search_field]
+                    if search_field in self.user_input.files_to_dataclass_fields
+                    else search_field
                 )
 
             docs = transform_docarray(
