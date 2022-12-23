@@ -147,11 +147,11 @@ def deploy_streamlit():
         st_ratio_options = []
         if params.input_modality:
             for input_modality in params.input_modality.split('-or-'):
-                if input_modality == 'image':
-                    st_ratio_options.extend(["Image", "Webcam"])
-                elif input_modality == 'text':
+                if input_modality == 'text':
                     st_ratio_options.extend(["Text"])
-        st_ratio_options = list(set(st_ratio_options))
+                elif input_modality == 'image':
+                    st_ratio_options.extend(["Image", "Webcam"])
+
         media_type = st.radio(
             '',
             st_ratio_options,
