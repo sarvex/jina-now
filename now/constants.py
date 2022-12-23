@@ -5,10 +5,10 @@ from now.utils import BetterEnum
 # ----------------------------------
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.138-fix-search-options-order1'
 # ----------------------------------
-NOW_PREPROCESSOR_VERSION = '0.0.116-refactor-remove-finetuning-5'
-NOW_QDRANT_INDEXER_VERSION = '0.0.138-refactor-remove-finetuning-5'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.138-refactor-remove-finetuning-5'
-NOW_AUTOCOMPLETE_VERSION = '0.0.7-refactor-remove-finetuning-5'
+NOW_PREPROCESSOR_VERSION = '0.0.116-refactor-remove-finetuning-6'
+NOW_QDRANT_INDEXER_VERSION = '0.0.138-refactor-remove-finetuning-6'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.138-refactor-remove-finetuning-6'
+NOW_AUTOCOMPLETE_VERSION = '0.0.7-refactor-remove-finetuning-6'
 
 
 class Modalities(BetterEnum):

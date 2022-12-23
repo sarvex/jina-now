@@ -117,7 +117,7 @@ def common_setup(
         tags=tags,
         deployment_type=user_input.deployment_type,
     )
-
+    app_instance.set_flow_yaml(dataset_len=len(dataset))
     return env_dict
 
 
