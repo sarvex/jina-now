@@ -3,12 +3,12 @@ from __future__ import annotations, print_function, unicode_literals
 from now.utils import BetterEnum
 
 # ----------------------------------
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.138-fix-search-options-order1'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.138-refactor-bump-jina-version-2'
 # ----------------------------------
-NOW_PREPROCESSOR_VERSION = '0.0.116-refactor-bump-jina-version'
-NOW_QDRANT_INDEXER_VERSION = '0.0.138-refactor-bump-jina-version'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.139-refactor-bump-jina-version'
-NOW_AUTOCOMPLETE_VERSION = '0.0.7-refactor-bump-jina-version'
+NOW_PREPROCESSOR_VERSION = '0.0.117-refactor-bump-jina-version-2'
+NOW_QDRANT_INDEXER_VERSION = '0.0.139-refactor-bump-jina-version-2'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.140-refactor-bump-jina-version-2'
+NOW_AUTOCOMPLETE_VERSION = '0.0.8-refactor-bump-jina-version-2'
 
 
 class Modalities(BetterEnum):
