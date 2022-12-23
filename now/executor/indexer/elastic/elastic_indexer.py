@@ -1,5 +1,7 @@
+import subprocess
 import traceback
 from collections import namedtuple
+from time import sleep
 from typing import Any, Dict, List, Mapping, Optional, Union
 
 from docarray import Document, DocumentArray
@@ -85,10 +87,22 @@ class NOWElasticIndexer(Executor):
         self.es_mapping = es_mapping or self.generate_es_mapping(
             self.document_mappings, self.metric
         )
+        self.setup_elastic_server()
         self.es = Elasticsearch(hosts=self.hosts, **self.es_config, ssl_show_warn=False)
         if not self.es.indices.exists(index=self.index_name):
             self.es.indices.create(index=self.index_name, mappings=self.es_mapping)
         self.query_to_curated_ids = {}
+
+    def setup_elastic_server(self):
+        # volume is not persisted at the moment
+        try:
+            subprocess.Popen(['/usr/local/bin/docker-entrypoint.sh'])
+            sleep(10)
+            self.logger.info('elastic server started')
+        except FileNotFoundError:
+            self.logger.info(
+                'Elastic started outside of docker, assume cluster started already.'
+            )
 
     @staticmethod
     def generate_es_mapping(
