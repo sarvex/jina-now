@@ -1,5 +1,5 @@
 """ Module holds reusable fixtures """
-
+import base64
 import os
 import time
 
@@ -18,6 +18,26 @@ def resources_folder_path(tests_folder_path) -> str:
 @pytest.fixture()
 def tests_folder_path() -> str:
     return os.path.join(os.path.dirname(os.path.realpath(__file__)))
+
+
+@pytest.fixture
+def base64_image_string(resources_folder_path: str) -> str:
+    with open(
+        os.path.join(resources_folder_path, 'image', '5109112832.jpg'), 'rb'
+    ) as f:
+        binary = f.read()
+        img_string = base64.b64encode(binary).decode('utf-8')
+    return img_string
+
+
+@pytest.fixture
+def base64_image_string(resources_folder_path: str) -> str:
+    with open(
+        os.path.join(resources_folder_path, 'image', '5109112832.jpg'), 'rb'
+    ) as f:
+        binary = f.read()
+        img_string = base64.b64encode(binary).decode('utf-8')
+    return img_string
 
 
 @pytest.fixture()
@@ -137,7 +157,11 @@ def es_connection_params():
 
 @pytest.fixture(scope='session')
 def setup_service_running(es_connection_params) -> None:
-    cmd('docker-compose -f tests/resources/elastic/docker-compose.yml up -d')
+    docker_compose_file = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)),
+        'resources/elastic/docker-compose.yml',
+    )
+    cmd(f'docker-compose -f {docker_compose_file} up -d')
     hosts, _ = es_connection_params
     retries = 0
     while retries < MAX_RETRIES:

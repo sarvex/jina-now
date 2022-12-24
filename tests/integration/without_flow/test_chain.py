@@ -8,7 +8,7 @@ from now.executor.indexer.elastic import NOWElasticIndexer
 from now.executor.preprocessor import NOWPreprocessor
 
 
-def test_chain(monkeypatch, setup_service_running, base64_image_string):
+def test_without_flow(monkeypatch, setup_service_running, base64_image_string):
     """
     Test all executors and bff together without creating a flow.
     The Clip Encoder is mocked because it is an external executor.
