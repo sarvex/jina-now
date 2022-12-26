@@ -39,14 +39,13 @@ class TestBaseIndexerElastic:
             title: Text
 
         k = np.random.random((num, DIM)).astype(np.float32)
-        preprocessor = NOWPreprocessor()
         for i in range(num):
             doc = Document(
                 MMDoc(
                     title=f'parent_{i}',
                 )
             )
-            doc = preprocessor.preprocess(DocumentArray(doc), {})[0]
+            doc = NOWPreprocessor().preprocess(DocumentArray(doc), {})[0]
             doc.title.chunks[0].embedding = k[i]
             doc.id = str(i)
             doc.tags['parent_tag'] = 'value'
@@ -62,8 +61,9 @@ class TestBaseIndexerElastic:
             query_text: Text
 
         q = Document(MMQuery(query_text='query_1'))
-        q.query_text.embedding = np.random.random(DIM)
-        return DocumentArray([q])
+        da = NOWPreprocessor().preprocess(DocumentArray([q]), {})
+        da[0].query_text.chunks[0].embedding = np.random.random(DIM)
+        return da
 
     @pytest.fixture
     def random_index_name(self):
