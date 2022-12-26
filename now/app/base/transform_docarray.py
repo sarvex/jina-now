@@ -113,22 +113,6 @@ def transform_docarray(
     :param documents: Data to be transformed.
     :param search_fields: Field names for neural search. Only required if multimodal data is given.
     """
-    if documents and documents[0].chunks:
-        # if 'multi_modal_schema' not in documents[0]._metadata:
-        #     raise RuntimeError(
-        #         'Multi-modal schema is not provided. Please prepare your data following this guide - '
-        #         'https://docarray.jina.ai/datatypes/multimodal/'
-        #     )
-        # field_names = {
-        #     int(field_info['position']): field_name
-        #     for field_name, field_info in documents[0]
-        #     ._metadata['multi_modal_schema']
-        #     .items()
-        # }
-        # documents = transform_multi_modal_data(
-        #     documents=documents, field_names=field_names, search_fields=search_fields
-        # )
-        pass
-    else:
+    if not documents and documents[0].chunks:
         documents = transform_uni_modal_data(documents=documents)
     return documents

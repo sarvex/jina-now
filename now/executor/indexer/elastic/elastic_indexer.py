@@ -359,19 +359,13 @@ class NOWElasticIndexer(Executor):
                 self.query_to_curated_ids[query] = []
             for filter in filters:
                 es_query = {'query': {'bool': {'filter': process_filter(filter)}}}
-                try:
-                    resp = self.es.search(
-                        index=self.index_name, body=es_query, size=100
-                    )
-                    self.es.indices.refresh(index=self.index_name)
-                    ids = [r['_id'] for r in resp['hits']['hits']]
-                    self.query_to_curated_ids[query] += [
-                        id for id in ids if id not in self.query_to_curated_ids[query]
-                    ]
 
-                except Exception:
-                    self.logger.info(traceback.format_exc())
-                    raise
+                resp = self.es.search(index=self.index_name, body=es_query, size=100)
+                self.es.indices.refresh(index=self.index_name)
+                ids = [r['_id'] for r in resp['hits']['hits']]
+                self.query_to_curated_ids[query] += [
+                    id for id in ids if id not in self.query_to_curated_ids[query]
+                ]
 
     def update_tags(self):
         """
