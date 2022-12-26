@@ -236,7 +236,7 @@ class JinaNOWApp:
         self,
         docs: DocumentArray,
     ) -> DocumentArray:
-        """Loads and preprocesses every document such that it is ready for finetuning/indexing."""
+        """Loads and preprocesses every document such that it is ready for indexing."""
         for doc in docs:
             for chunk in doc.chunks:
                 try:

@@ -43,17 +43,11 @@ class SearchApp(JinaNOWApp):
         return (DemoDatasetNames.DEEP_FASHION, DemoDatasetNames.BIRD_SPECIES)
 
     def set_flow_yaml(self, **kwargs):
-        finetuning = kwargs.get('finetuning', False)
-
         now_package_dir = os.path.abspath(
             os.path.join(__file__, '..', '..', '..', '..')
         )
         flow_dir = os.path.join(now_package_dir, 'now', 'common', 'flow')
-
-        if finetuning:
-            self.flow_yaml = os.path.join(flow_dir, 'ft-flow-clip.yml')
-        else:
-            self.flow_yaml = os.path.join(flow_dir, 'flow-clip.yml')
+        self.flow_yaml = os.path.join(flow_dir, 'flow-clip.yml')
 
     def setup(
         self, dataset: DocumentArray, user_input: UserInput, kubectl_path

@@ -5,13 +5,14 @@ from docarray.typing import Image, Text, Video
 from now.utils import BetterEnum
 
 # ----------------------------------
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.138-fix-video-modality'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.138-fix-search-options-order1'
 # ----------------------------------
 
-NOW_PREPROCESSOR_VERSION = '0.0.115-feat-dataclass-dataloading-11'
-NOW_QDRANT_INDEXER_VERSION = '0.0.137-filter-query11'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.137-filter-query11'
-NOW_AUTOCOMPLETE_VERSION = '0.0.6-elastic-multimodal-15x'
+NOW_PREPROCESSOR_VERSION = '0.0.115-feat-dataclass-dataloading-12'
+NOW_QDRANT_INDEXER_VERSION = '0.0.138-refactor-remove-finetuning-6'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.138-refactor-remove-finetuning-6'
+NOW_AUTOCOMPLETE_VERSION = '0.0.7-refactor-remove-finetuning-6'
+
 
 
 class Modalities(BetterEnum):

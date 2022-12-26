@@ -1,6 +1,3 @@
-import base64
-import os
-
 import pytest
 from docarray import Document, DocumentArray
 

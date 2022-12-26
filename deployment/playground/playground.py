@@ -32,7 +32,7 @@ from tornado.httputil import parse_cookie
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
 # HEADER
-st.set_page_config(page_title="NOW", page_icon='https://jina.ai/favicon.ico')
+st.set_page_config(page_title='NOW', page_icon='https://jina.ai/favicon.ico')
 
 
 def convert_file_to_document(query):
@@ -93,7 +93,7 @@ def deploy_streamlit():
     with open(os.path.join(dir_path, 'logo.svg'), 'r') as f:
         svg = f.read()
     with mid:
-        b64 = base64.b64encode(svg.encode('utf-8')).decode("utf-8")
+        b64 = base64.b64encode(svg.encode('utf-8')).decode('utf-8')
         html = r'<img width="250" src="data:image/svg+xml;base64,%s"/>' % b64
         st.write(html, unsafe_allow_html=True)
 
@@ -128,7 +128,7 @@ def deploy_streamlit():
 
         filter_selection = {}
         if st.session_state.filters != 'notags':
-            st.sidebar.title("Filters")
+            st.sidebar.title('Filters')
             if not st.session_state.filters_set:
                 for tag, values in st.session_state.filters.items():
                     values.insert(0, 'All')
@@ -139,7 +139,7 @@ def deploy_streamlit():
                     filter_selection[tag] = st.sidebar.selectbox(tag, values)
 
         if st.session_state.filters != 'notags' and not st.session_state.filters_set:
-            st.sidebar.title("Filters")
+            st.sidebar.title('Filters')
             for tag, values in st.session_state.filters.items():
                 values.insert(0, 'All')
                 filter_selection[tag] = st.sidebar.selectbox(tag, values)
@@ -147,21 +147,21 @@ def deploy_streamlit():
         st_ratio_options = []
         if params.input_modality:
             for input_modality in params.input_modality.split('-or-'):
-                if input_modality == 'image':
-                    st_ratio_options.extend(["Image", "Webcam"])
-                elif input_modality == 'text':
-                    st_ratio_options.extend(["Text"])
-        st_ratio_options = list(set(st_ratio_options))
+                if input_modality == 'text':
+                    st_ratio_options.extend(['Text'])
+                elif input_modality == 'image':
+                    st_ratio_options.extend(['Image', 'Webcam'])
+
         media_type = st.radio(
             '',
             st_ratio_options,
             on_change=clear_match,
         )
 
-        if media_type == "Image":
+        if media_type == 'Image':
             render_image(da_img, deepcopy(filter_selection))
 
-        elif media_type == "Text":
+        elif media_type == 'Text':
             render_text(da_txt, deepcopy(filter_selection))
 
         elif media_type == 'Webcam':
@@ -242,8 +242,8 @@ def _do_login(params):
 def _do_logout():
 
     headers = {
-        "Content-Type": "application/json; charset=utf-8",
-        "Authorization": 'Token ' + st.session_state.token_val,
+        'Content-Type': 'application/json; charset=utf-8',
+        'Authorization': 'Token ' + st.session_state.token_val,
     }
     st.session_state.jwt_val = None
     st.session_state.avatar_val = None
@@ -322,7 +322,7 @@ def render_image(da_img, filter_selection):
             filter_selection=filter_selection,
         )
     if da_img is not None:
-        st.subheader("samples:")
+        st.subheader('samples:')
         img_cs = st.columns(5)
         txt_cs = st.columns(5)
         for doc, c, txt in zip(da_img, img_cs, txt_cs):
@@ -338,14 +338,14 @@ def render_image(da_img, filter_selection):
 
 
 def render_text(da_txt, filter_selection):
-    query = st.text_input("", key="text_search_box", on_change=clear_match)
+    query = st.text_input('', key='text_search_box', on_change=clear_match)
     if query:
         st.session_state.matches = search_by_text(
             search_text=query,
             jwt=st.session_state.jwt_val,
             filter_selection=filter_selection,
         )
-    if st.button("Search", key="text_search", on_click=clear_match):
+    if st.button('Search', key='text_search', on_click=clear_match):
         st.session_state.matches = search_by_text(
             search_text=query,
             jwt=st.session_state.jwt_val,
@@ -353,7 +353,7 @@ def render_text(da_txt, filter_selection):
         )
 
     if da_txt is not None:
-        st.subheader("samples:")
+        st.subheader('samples:')
         c1, c2, c3 = st.columns(3)
         c4, c5, c6 = st.columns(3)
         for doc, col in zip(da_txt, [c1, c2, c3, c4, c5, c6]):
@@ -371,7 +371,7 @@ def render_matches(OUTPUT_MODALITY):
     if st.session_state.matches and not st.session_state.error_msg:
         if st.session_state.search_count > 2:
             st.write(
-                f"🔥 How did you like Jina NOW? [Please leave feedback]({SURVEY_LINK}) 🔥"
+                f'🔥 How did you like Jina NOW? [Please leave feedback]({SURVEY_LINK}) 🔥'
             )
         # make a copy and  sort them based on scores
         matches: DocumentArray = deepcopy(st.session_state.matches)
@@ -434,10 +434,10 @@ def render_matches(OUTPUT_MODALITY):
             prev, _, page, _, next = st.columns([1, 4, 2, 4, 1])
             page.write(f'Page {st.session_state.page_number + 1}/{len(list_matches)}')
             next.button(
-                "Next", disabled=st.session_state.disable_next, on_click=increment_page
+                'Next', disabled=st.session_state.disable_next, on_click=increment_page
             )
             prev.button(
-                "Previous",
+                'Previous',
                 disabled=st.session_state.disable_prev,
                 on_click=decrement_page,
             )
@@ -453,7 +453,7 @@ def render_matches(OUTPUT_MODALITY):
 
     if st.session_state.error_msg:
         with st.expander(
-            "Received error response from the server. Expand this to see the full error message"
+            'Received error response from the server. Expand this to see the full error message'
         ):
             st.text(st.session_state.error_msg)
 
@@ -506,15 +506,15 @@ def render_webcam(filter_selection):
             self.img = None
 
         def recv(self, frame):
-            self.img = frame.to_ndarray(format="rgb24")
+            self.img = frame.to_ndarray(format='rgb24')
 
-            return av.VideoFrame.from_ndarray(self.img, format="rgb24")
+            return av.VideoFrame.from_ndarray(self.img, format='rgb24')
 
     ctx = webrtc_streamer(
-        key="jina-now",
+        key='jina-now',
         mode=WebRtcMode.SENDRECV,
         rtc_configuration=RTC_CONFIGURATION,
-        media_stream_constraints={"video": True, "audio": False},
+        media_stream_constraints={'video': True, 'audio': False},
         video_processor_factory=VideoProcessor,
     )
     if ctx.state.playing:
