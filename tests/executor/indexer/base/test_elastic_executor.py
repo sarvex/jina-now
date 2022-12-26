@@ -8,6 +8,7 @@ from jina import Document, DocumentArray, Executor, Flow, requests
 
 from now.constants import TAG_INDEXER_DOC_HAS_TEXT, TAG_OCR_DETECTOR_TEXT_IN_DOC
 from now.executor.indexer.elastic import NOWElasticIndexer
+from now.executor.preprocessor import NOWPreprocessor
 
 NUMBER_OF_DOCS = 10
 DIM = 128
@@ -38,13 +39,15 @@ class TestBaseIndexerElastic:
             title: Text
 
         k = np.random.random((num, DIM)).astype(np.float32)
+        preprocessor = NOWPreprocessor()
         for i in range(num):
             doc = Document(
                 MMDoc(
                     title=f'parent_{i}',
                 )
             )
-            doc.title.embedding = k[i]
+            doc = preprocessor.preprocess(DocumentArray(doc), {})[0]
+            doc.title.chunks[0].embedding = k[i]
             doc.id = str(i)
             doc.tags['parent_tag'] = 'value'
             doc.tags['price'] = random.choice(prices)
