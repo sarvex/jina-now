@@ -498,12 +498,12 @@ class TestBaseIndexerElastic:
 
         mdoc = Pic(pic='https://jina.ai/assets/images/text-to-image-output.png')
         doc_with_tensor = Document(mdoc)
-        doc_with_tensor.pic.embedding = np.random.random([DIM])
         doc_with_blob = Document(mdoc)
         doc_with_blob.pic.load_uri_to_blob()
-        doc_with_blob.pic.embedding = np.random.random([DIM])
         docs = DocumentArray([doc_with_tensor, doc_with_blob])
-
+        docs = NOWPreprocessor().preprocess(docs, {})
+        docs[0].pic.chunks[0].embedding = np.random.random([DIM])
+        docs[1].pic.chunks[0].embedding = np.random.random([DIM])
         f = (
             Flow()
             .add(uses=DummyEncoder1, name='dummy_encoder1')
@@ -528,7 +528,8 @@ class TestBaseIndexerElastic:
             query_doc = Document(
                 Pic(pic='https://jina.ai/assets/images/text-to-image-output.png')
             )
-            query_doc.pic.embedding = np.random.random([DIM])
+            query_doc = NOWPreprocessor().preprocess(DocumentArray(query_doc), {})[0]
+            query_doc.pic.chunks[0].embedding = np.random.random([DIM])
             response = f.post(
                 on='/search',
                 inputs=DocumentArray([query_doc]),
