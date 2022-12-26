@@ -113,6 +113,6 @@ def transform_docarray(
     :param documents: Data to be transformed.
     :param search_fields: Field names for neural search. Only required if multimodal data is given.
     """
-    if not documents and documents[0].chunks:
+    if not (documents and documents[0].chunks):
         documents = transform_uni_modal_data(documents=documents)
     return documents
