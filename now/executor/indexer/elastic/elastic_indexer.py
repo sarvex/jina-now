@@ -150,7 +150,7 @@ class NOWElasticIndexer(Executor):
         """
         if not docs_map:
             return DocumentArray()
-        self.aggregate_embeddings(docs_map)
+        aggregate_embeddings(docs_map)
         preprocessed_docs_map = merge_subdocuments(docs_map, self.encoder_to_fields)
         es_docs = ESConverter.convert_doc_map_to_es(
             preprocessed_docs_map, self.index_name, self.encoder_to_fields
@@ -196,7 +196,7 @@ class NOWElasticIndexer(Executor):
         """
         if not docs_map:
             return DocumentArray()
-        self.aggregate_embeddings(docs_map)
+        aggregate_embeddings(docs_map)
 
         # search_filter = parameters.get('filter', None)
         limit = parameters.get('limit', self.limit)
@@ -309,17 +309,6 @@ class NOWElasticIndexer(Executor):
             )
         return DocumentArray()
 
-    def aggregate_embeddings(self, docs_map: Dict[str, DocumentArray]):
-        """Aggregate embeddings of cc level to c level.
-
-        :param docs_map: a dictionary of `DocumentArray`s, where the key is the embedding space aka encoder name.
-        """
-        for docs in docs_map.values():
-            for doc in docs:
-                for c in doc.chunks:
-                    if c.chunks.embeddings is not None:
-                        c.embedding = c.chunks.embeddings.mean(axis=0)
-
     @secure_request(on='/tags', level=SecurityLevel.USER)
     def get_tags_and_values(self, **kwargs):
         """
@@ -411,3 +400,16 @@ class NOWElasticIndexer(Executor):
     def batch_iterator(self):
         """Unnecessary for ElasticIndexer, but need to override BaseIndexer."""
         yield []
+
+
+def aggregate_embeddings(docs_map: Dict[str, DocumentArray]):
+    """Aggregate embeddings of cc level to c level.
+
+    :param docs_map: a dictionary of `DocumentArray`s, where the key is the embedding space aka encoder name.
+    """
+    for docs in docs_map.values():
+        for doc in docs:
+            for c in doc.chunks:
+                if c.chunks.embeddings is not None:
+                    c.embedding = c.chunks.embeddings.mean(axis=0)
+                    c.content = c.chunks[0].content
