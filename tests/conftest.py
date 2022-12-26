@@ -4,7 +4,6 @@ import os
 import random
 import time
 from collections import namedtuple
-from typing import List
 
 import hubble
 import numpy as np
@@ -15,6 +14,7 @@ from elasticsearch import Elasticsearch
 
 from now.deployment.deployment import cmd
 from now.executor.indexer.elastic.es_query_building import SemanticScore
+from now.executor.preprocessor import NOWPreprocessor
 
 
 @pytest.fixture()
@@ -193,14 +193,14 @@ def random_index_name():
 
 
 @pytest.fixture
-def es_inputs() -> namedtuple:
+def es_inputs(gif_resource_path) -> namedtuple:
     np.random.seed(42)
 
     @dataclass
     class MMDoc:
         title: Text
         excerpt: Text
-        gif: List[Image]
+        gif: Image
 
     @dataclass
     class MMQuery:
@@ -222,20 +222,12 @@ def es_inputs() -> namedtuple:
         MMDoc(
             title='cat test title cat',
             excerpt='cat test excerpt cat',
-            gif=[
-                'https://product-finder.wordlift.io/wp-content/uploads/2021/06/93217825.jpeg',
-                'https://product-finder.wordlift.io/wp-content/uploads/2021/06/93217825.jpeg',
-                'https://product-finder.wordlift.io/wp-content/uploads/2021/06/93217825.jpeg',
-            ],
+            gif=os.path.join(gif_resource_path, 'folder1/file.gif'),
         ),
         MMDoc(
             title='test title dog',
             excerpt='test excerpt 2',
-            gif=[
-                'https://product-finder.wordlift.io/wp-content/uploads/2021/06/93217825.jpeg',
-                'https://product-finder.wordlift.io/wp-content/uploads/2021/06/93217825.jpeg',
-                'https://product-finder.wordlift.io/wp-content/uploads/2021/06/93217825.jpeg',
-            ],
+            gif=os.path.join(gif_resource_path, 'folder1/file.gif'),
         ),
     ]
     clip_docs = DocumentArray()
@@ -243,6 +235,7 @@ def es_inputs() -> namedtuple:
     # encode our documents
     for i, doc in enumerate(docs):
         prep_doc = Document(doc)
+        prep_doc = NOWPreprocessor().preprocess(DocumentArray(prep_doc), {})[0]
         prep_doc.tags['color'] = random.choice(['red', 'blue', 'green'])
         prep_doc.tags['price'] = i + 0.5
         prep_doc.id = str(i)
@@ -251,12 +244,10 @@ def es_inputs() -> namedtuple:
         sbert_doc = Document(prep_doc, copy=True)
         sbert_doc.id = prep_doc.id
 
-        clip_doc.title.embedding = np.random.random(8)
-        clip_doc.gif[0].embedding = np.random.random(8)
-        clip_doc.gif[1].embedding = np.random.random(8)
-        clip_doc.gif[2].embedding = np.random.random(8)
-        sbert_doc.title.embedding = np.random.random(5)
-        sbert_doc.excerpt.embedding = np.random.random(5)
+        clip_doc.title.chunks[0].embedding = np.random.random(8)
+        clip_doc.gif.chunks[0].embedding = np.random.random(8)
+        sbert_doc.title.chunks[0].embedding = np.random.random(5)
+        sbert_doc.excerpt.chunks[0].embedding = np.random.random(5)
 
         clip_docs.append(clip_doc)
         sbert_docs.append(sbert_doc)
@@ -274,12 +265,16 @@ def es_inputs() -> namedtuple:
     sbert_doc = Document(query_doc, copy=True)
     sbert_doc.id = query_doc.id
 
-    clip_doc.query_text.embedding = np.random.random(8)
-    sbert_doc.query_text.embedding = np.random.random(5)
+    preprocessor = NOWPreprocessor()
+    da_clip = preprocessor.preprocess(DocumentArray([clip_doc]), {})
+    da_sbert = preprocessor.preprocess(DocumentArray([sbert_doc]), {})
+
+    clip_doc.query_text.chunks[0].embedding = np.random.random(8)
+    sbert_doc.query_text.chunks[0].embedding = np.random.random(5)
 
     query_docs_map = {
-        'clip': DocumentArray([clip_doc]),
-        'sbert': DocumentArray([sbert_doc]),
+        'clip': da_clip,
+        'sbert': da_sbert,
     }
     EsInputs = namedtuple(
         'EsInputs',

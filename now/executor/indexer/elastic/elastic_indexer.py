@@ -317,7 +317,8 @@ class NOWElasticIndexer(Executor):
         for docs in docs_map.values():
             for doc in docs:
                 for c in doc.chunks:
-                    c.embedding = c.chunks.embeddings.mean(axis=0)
+                    if c.chunks.embeddings is not None:
+                        c.embedding = c.chunks.embeddings.mean(axis=0)
 
     @secure_request(on='/tags', level=SecurityLevel.USER)
     def get_tags_and_values(self, **kwargs):
