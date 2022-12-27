@@ -51,7 +51,7 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
 def _pull_docarray(dataset_name: str):
     try:
         docs = DocumentArray.pull(name=dataset_name, show_progress=True)
-        if is_multimodal(docs):
+        if is_multimodal(docs[0]):
             return docs
         else:
             raise ValueError(
@@ -89,7 +89,7 @@ def _load_from_disk(user_input: UserInput, dataclass) -> DocumentArray:
     if os.path.isfile(dataset_path):
         try:
             docs = DocumentArray.load_binary(dataset_path)
-            if is_multimodal(docs):
+            if is_multimodal(docs[0]):
                 return docs
             else:
                 raise ValueError(
