@@ -234,10 +234,6 @@ def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
         for obj in objects
         if not obj.key.endswith('/') and not obj.key.startswith('.')
     ]
-    # ignore hidden files
-    file_paths = [
-        file for file in file_paths if not file.split('/')[-1].startswith('.')
-    ]
     folder_structure = identify_folder_structure(file_paths, '/')
     if folder_structure == 'single_folder':
         field_names = _extract_field_names_single_folder(file_paths, '/')
@@ -273,10 +269,10 @@ def set_field_names_from_local_folder(user_input: UserInput, **kwargs):
             'The path provided is not a folder, please check documentation https://now.jina.ai'
         )
     file_paths = []
-    for root, _, files in os.walk(dataset_path):
-        files = [file for file in files if not file.startswith('.')]
-        if files:
-            file_paths.extend([os.path.join(root, file) for file in files])
+    for root, dirs, files in os.walk(dataset_path):
+        file_paths.extend(
+            [os.path.join(root, file) for file in files if not file.startswith('.')]
+        )
     folder_structure = identify_folder_structure(file_paths, os.sep)
     if folder_structure == 'single_folder':
         field_names = _extract_field_names_single_folder(file_paths, os.sep)
