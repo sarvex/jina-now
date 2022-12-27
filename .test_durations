@@ -207,18 +207,5 @@
     "tests/unit/test_dialog.py::test_configure_user_input[mocked_user_answers6-configure_kwargs6]": 0.05469931400011774,
     "tests/unit/test_dialog.py::test_configure_user_input[mocked_user_answers7-configure_kwargs7]": 0.049788841000463435,
     "tests/unit/test_dialog.py::test_configure_user_input[mocked_user_answers8-configure_kwargs8]": 0.054710110999621975,
-    "tests/unit/test_dialog.py::test_configure_user_input[mocked_user_answers9-configure_kwargs9]": 0.05654386500009423,
-    "tests/unit/test_finetuning/test_data_builder.py::test_data_generation": 10,
-    "tests/unit/test_finetuning/test_data_builder.py::test_image_normalizer": 0.8729361610003252,
-    "tests/unit/test_finetuning/test_data_builder.py::test_text_processor[scope0-True-True-hello-4]": 0.003265709999595856,
-    "tests/unit/test_finetuning/test_data_builder.py::test_text_processor[scope1-True-False-hi hello-2]": 0.002082940000036615,
-    "tests/unit/test_finetuning/test_data_builder.py::test_text_processor[scope2-False-True-hello hi-3]": 0.0017850840004030033,
-    "tests/unit/test_finetuning/test_data_builder.py::test_text_processor[scope3-True-True-hello-1]": 0.0017379820001224289,
-    "tests/unit/test_finetuning/test_data_builder.py::test_text_processor[scope4-True-True-hi-1]": 0.0013644019995808776,
-    "tests/unit/test_finetuning/test_dataset.py::test_create_finetuning_dataset_size": 0.004052023000440386,
-    "tests/unit/test_finetuning/test_dataset.py::test_create_finetuning_dataset_split": 0.002269908000016585,
-    "tests/unit/test_finetuning/test_dataset.py::test_create_finetuning_dataset_val_index": 0.003841902000203845,
-    "tests/unit/test_finetuning/test_run_finetuning.py::test_get_model_options": 0.00042936600038956385,
-    "tests/unit/test_finetuning/test_run_finetuning.py::test_nest_construct_finetune_settings[text-to-image]": 22.62929173600014,
-    "tests/unit/test_finetuning/test_run_finetuning.py::test_nest_construct_finetune_settings[text-to-text]": 0.0018936220003524795
+    "tests/unit/test_dialog.py::test_configure_user_input[mocked_user_answers9-configure_kwargs9]": 0.05654386500009423
 }

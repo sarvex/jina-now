@@ -48,14 +48,6 @@ You can do this by specifying their email addresses and separate them using comm
 <img width="506" alt="question-emails" src="https://user-images.githubusercontent.com/40893766/191002764-049037fb-6eb7-44a6-8b22-c86687b95e0f.png
 ">
 
-## Finetuning
-
-To enable finetuning when you create your `DocumentArray`, provide labels inside
-the tags, specifically the `finetuner_label` tag. This triggers finetuning and your embeddings
-will be improved, enhancing the quality of your final NOW search application.
-
-[Find out more about the training data format](https://finetuner.jina.ai/walkthrough/create-training-data/#prepare-training-data)
-
 ## Backend for Frontend
 
 We provide a BFF (Backend For Frontend) API that you can call for your search application, which makes integrating with your custom

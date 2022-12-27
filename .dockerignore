@@ -3,8 +3,6 @@ data/
 test/
 env/
 deployed_flow.png
-finetuned.png
-finetuned_m.png
 NUL
 pretrained.png
 pretrained_m.png

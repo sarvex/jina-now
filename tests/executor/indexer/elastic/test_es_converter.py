@@ -2,6 +2,7 @@ import numpy as np
 from docarray import Document
 from docarray.score import NamedScore
 
+from now.executor.indexer.elastic.elastic_indexer import aggregate_embeddings
 from now.executor.indexer.elastic.es_converter import ESConverter
 from now.executor.indexer.elastic.es_preprocessing import merge_subdocuments
 
@@ -24,6 +25,7 @@ def test_convert_doc_map_to_es(es_inputs, random_index_name):
     es_converter = ESConverter()
     first_doc_clip = index_docs_map['clip'][0]
     first_doc_sbert = index_docs_map['sbert'][0]
+    aggregate_embeddings(index_docs_map)
     processed_docs_map = merge_subdocuments(index_docs_map, encoder_to_fields)
     first_result = es_converter.convert_doc_map_to_es(
         docs_map=processed_docs_map,
@@ -32,21 +34,21 @@ def test_convert_doc_map_to_es(es_inputs, random_index_name):
     )[0]
     assert first_result['id'] == first_doc_clip.id
     assert len(first_result['title-clip.embedding']) == len(
-        first_doc_clip.title.embedding.tolist()
+        first_doc_clip.title.chunks[0].embedding.tolist()
     )
     assert len(first_result['title-sbert.embedding']) == len(
-        first_doc_sbert.title.embedding.tolist()
+        first_doc_sbert.title.chunks[0].embedding.tolist()
     )
     assert len(first_result['excerpt-sbert.embedding']) == len(
-        first_doc_sbert.excerpt.embedding.tolist()
+        first_doc_sbert.excerpt.chunks[0].embedding.tolist()
     )
     assert (
         first_result['bm25_text']
-        == first_doc_clip.title.text
+        == first_doc_clip.title.chunks[0].text
         + ' '
-        + first_doc_sbert.title.text
+        + first_doc_sbert.title.chunks[0].text
         + ' '
-        + first_doc_sbert.excerpt.text
+        + first_doc_sbert.excerpt.chunks[0].text
         + ' '
     )
     assert first_result['_op_type'] == 'index'
