@@ -256,7 +256,7 @@ def _list_files_from_s3_bucket(
     file_paths = [
         obj.key
         for obj in objects
-        if not obj.key.endswith('/') and not obj.key.startswith('.')
+        if not obj.key.endswith('/') and not obj.key.split('/')[-1].startswith('.')
     ]
 
     folder_structure = identify_folder_structure(file_paths, '/')
