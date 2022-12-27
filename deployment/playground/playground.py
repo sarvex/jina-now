@@ -33,6 +33,7 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 
 # HEADER
 st.set_page_config(page_title='NOW', page_icon='https://jina.ai/favicon.ico')
+profanity.load_censor_words()
 
 
 def convert_file_to_document(query):
