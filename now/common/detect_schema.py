@@ -243,7 +243,7 @@ def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
         first_folder_objects = [
             obj.key
             for obj in bucket.objects.filter(Prefix=first_folder)
-            if not obj.key.endswith('/')
+            if not obj.key.endswith('/') and not obj.key.split('/')[-1].startswith('.')
         ]
         field_names = _extract_field_names_sub_folders(
             first_folder_objects, '/', bucket
