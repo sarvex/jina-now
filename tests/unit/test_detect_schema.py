@@ -45,14 +45,14 @@ def test_set_fields_names_from_local_folder(
     'dataset_path, search_field_names, filter_field_names',
     [
         (
-            '/',
+            '',
             {
                 'image.png',
                 'test.txt',
             },
             {'test.txt', 'tags', 'id', 'link', 'title'},
         ),
-        ('/folder1/', {'.png', '.txt'}, {'.txt', '.json'}),
+        ('folder1/', {'.png', '.txt'}, {'.txt', '.json'}),
     ],
 )
 def test_set_field_names_from_s3_bucket(
