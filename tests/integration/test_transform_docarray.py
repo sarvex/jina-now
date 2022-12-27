@@ -47,7 +47,7 @@ def multi_modal_data(resources_folder_path):
 
 @pytest.mark.parametrize(
     'input_type, num_expected_matches',
-    [['demo_dataset', 4], ['single_modal', 2], ['multi_modal', 4]],
+    [['demo_dataset', 4], ['single_modal', 2], ['multi_modal', 6]],
 )
 def test_transform_inside_flow(
     input_type, num_expected_matches, single_modal_data, multi_modal_data, tmpdir
