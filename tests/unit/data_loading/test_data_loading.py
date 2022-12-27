@@ -9,6 +9,10 @@ from pytest_mock import MockerFixture
 
 from now.app.search_app import SearchApp
 from now.constants import DatasetTypes
+from now.data_loading.create_dataclass import (
+    create_dataclass,
+    create_dataclass_fields_file_mappings,
+)
 from now.data_loading.data_loading import (
     _list_files_from_s3_bucket,
     from_files_local,
@@ -16,7 +20,6 @@ from now.data_loading.data_loading import (
 )
 from now.demo_data import DemoDatasetNames
 from now.now_dataclasses import UserInput
-from now.run_backend import create_dataclass, create_dataclass_fields_file_mappings
 
 
 @pytest.fixture()
