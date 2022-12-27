@@ -3,7 +3,7 @@ from __future__ import annotations, print_function, unicode_literals
 from now.utils import BetterEnum
 
 # ----------------------------------
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.138-fix-remove_output-modality-playground'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.138-fix-remove_output-modality-playground-1'
 # ----------------------------------
 NOW_PREPROCESSOR_VERSION = '0.0.117-test-local-end-to-end-12'
 NOW_QDRANT_INDEXER_VERSION = '0.0.138-refactor-remove-finetuning-6'
