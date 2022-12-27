@@ -150,7 +150,7 @@ def test_create_dataclass(
     user_input.filter_fields = filter_fields
     user_input.filter_fields_modalities = filter_fields_modalities
     mm_doc = create_dataclass(user_input)
-    assert str(mm_doc) == "<class 'now.run_backend.MMDoc'>"
+    assert str(mm_doc) == "<class 'now.data_loading.create_dataclass.MMDoc'>"
 
     for key, value in mm_doc.__annotations__.items():
         assert str(value) == str(expected_dataclass[key])
