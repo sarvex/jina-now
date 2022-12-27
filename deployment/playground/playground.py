@@ -100,13 +100,8 @@ def deploy_streamlit():
     if redirect_to and st.session_state.login:
         nav_to(redirect_to)
     else:
-        da_img, da_txt = load_example_queries(params.data, params.output_modality)
+        da_img, da_txt = load_example_queries(params.data)
 
-        if params.output_modality == 'text':
-            # censor words in text incl. in custom data
-            from better_profanity import profanity
-
-            profanity.load_censor_words()
         setup_design()
 
         if params.host and st.session_state.filters == 'notags':
@@ -167,7 +162,7 @@ def deploy_streamlit():
         elif media_type == 'Webcam':
             render_webcam(deepcopy(filter_selection))
 
-        render_matches(params.output_modality)
+        render_matches()
 
         add_social_share_buttons()
 
@@ -212,7 +207,6 @@ def _do_login(params):
     query_params_var = {
         'host': unquote(params.host),
         'input_modality': params.input_modality,
-        'output_modality': params.output_modality,
         'data': params.data,
     }
     if params.secured:
@@ -223,7 +217,7 @@ def _do_login(params):
 
     redirect_uri = (
         f'https://nowrun.jina.ai/?host={params.host}&input_modality={params.input_modality}'
-        f'&output_modality={params.output_modality}&data={params.data}'
+        f'&data={params.data}'
     )
     if params.secured:
         redirect_uri += f'&secured={params.secured}'
@@ -255,7 +249,7 @@ def _do_logout():
     )
 
 
-def load_example_queries(data, output_modality):
+def load_example_queries(data):
     da_img = None
     da_txt = None
     if data in ds_set:
@@ -366,7 +360,7 @@ def render_text(da_txt, filter_selection):
                     )
 
 
-def render_matches(OUTPUT_MODALITY):
+def render_matches():
     # TODO function is too large. Split up.
     if st.session_state.matches and not st.session_state.error_msg:
         if st.session_state.search_count > 2:
@@ -402,21 +396,11 @@ def render_matches(OUTPUT_MODALITY):
             all_cs = [c1, c2, c3, c4, c5, c6, c7, c8, c9]
 
             for c, match in zip(all_cs, list_matches[st.session_state.page_number]):
-                match.mime_type = OUTPUT_MODALITY
-
-                if OUTPUT_MODALITY == 'text':
-                    render_text_result(match, c)
-
-                elif OUTPUT_MODALITY == 'video':
+                match.mime_type = 'text-or-image-or-video'
+                try:
                     render_graphic_result(match, c)
-
-                elif OUTPUT_MODALITY == 'text-or-image-or-video':
-                    try:
-                        render_graphic_result(match, c)
-                    except:
-                        render_text_result(match, c)
-                else:
-                    raise ValueError(f'{OUTPUT_MODALITY} not handled')
+                except:
+                    render_text_result(match, c)
 
         if len(list_matches) > 1:
             # disable prev button or not
