@@ -3,13 +3,13 @@ from docarray import field
 from docarray.typing import Image, Text
 
 from now.constants import DatasetTypes
-from now.now_dataclasses import UserInput
-from now.run_backend import (
+from now.data_loading.create_dataclass import (
     create_annotations_and_class_attributes,
     create_dataclass,
     create_dataclass_fields_file_mappings,
     create_s3_type,
 )
+from now.now_dataclasses import UserInput
 
 S3Object, my_setter, my_getter = create_s3_type()
 

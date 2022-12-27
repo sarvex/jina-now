@@ -4,6 +4,7 @@ from collections import defaultdict
 from typing import Dict, List, Type
 
 from docarray import Document, DocumentArray
+from docarray.dataclasses import is_multimodal
 
 from now.common.detect_schema import (
     get_s3_bucket_and_folder_prefix,
@@ -49,7 +50,13 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
 
 def _pull_docarray(dataset_name: str):
     try:
-        return DocumentArray.pull(name=dataset_name, show_progress=True)
+        docs = DocumentArray.pull(name=dataset_name, show_progress=True)
+        if is_multimodal(docs):
+            return docs
+        else:
+            raise ValueError(
+                f'The dataset {dataset_name} does not contain a multimodal DocumentArray.'
+            )
     except Exception:
         raise ValueError(
             '💔 oh no, the secret of your docarray is wrong, or it was deleted after 14 days'
@@ -81,7 +88,13 @@ def _load_from_disk(user_input: UserInput, dataclass) -> DocumentArray:
     dataset_path = os.path.expanduser(dataset_path)
     if os.path.isfile(dataset_path):
         try:
-            return DocumentArray.load_binary(dataset_path)
+            docs = DocumentArray.load_binary(dataset_path)
+            if is_multimodal(docs):
+                return docs
+            else:
+                raise ValueError(
+                    f'The file {dataset_path} does not contain a multimodal DocumentArray.'
+                )
         except Exception:
             print(f'Failed to load the binary file provided under path {dataset_path}')
             exit(1)
@@ -143,7 +156,7 @@ def create_docs_from_subdirectories(
     files_to_dataclass_fields: Dict,
     data_class: Type,
     path: str = None,
-    s3_dataset: bool = False,
+    is_s3_dataset: bool = False,
 ) -> List[Document]:
     """
     Creates a Multi Modal documentarray over a list of subdirectories.
@@ -153,7 +166,7 @@ def create_docs_from_subdirectories(
     :param files_to_dataclass_fields: The mapping of the files to the dataclass fields
     :param data_class: The dataclass to use for the document
     :param path: The path to the directory
-    :param s3_dataset: Whether the dataset is stored on s3
+    :param is_s3_dataset: Whether the dataset is stored on s3
 
     :return: The list of documents
     """
@@ -163,7 +176,7 @@ def create_docs_from_subdirectories(
     for file in file_paths:
         path_to_last_folder = (
             '/'.join(file.split('/')[:-1])
-            if s3_dataset
+            if is_s3_dataset
             else os.sep.join(file.split(os.sep)[:-1])
         )
         folder_files[path_to_last_folder].append(file)
@@ -171,19 +184,19 @@ def create_docs_from_subdirectories(
         kwargs = {}
         for file in files:
             file, file_full_path = _extract_file_and_full_file_path(
-                file, path, s3_dataset
+                file, path, is_s3_dataset
             )
             if file in fields:
                 kwargs[files_to_dataclass_fields[file]] = file_full_path
                 continue
             if file.endswith('.json'):
-                if s3_dataset:
+                if is_s3_dataset:
                     for field in data_class.__annotations__.keys():
                         if field not in kwargs.keys():
                             kwargs[field] = file_full_path
                 else:
-                    json_f = open(file_full_path)
-                    data = json.load(json_f)
+                    with open(file_full_path) as f:
+                        data = json.load(f)
                     for el, value in data.items():
                         if el in files_to_dataclass_fields.keys():
                             kwargs[files_to_dataclass_fields[el]] = value
@@ -197,7 +210,7 @@ def create_docs_from_files(
     files_to_dataclass_fields: Dict,
     data_class: Type,
     path: str = None,
-    s3_dataset: bool = False,
+    is_s3_dataset: bool = False,
 ) -> List[Document]:
     """
     Creates a Multi Modal documentarray over a list of files.
@@ -207,14 +220,16 @@ def create_docs_from_files(
     :param files_to_dataclass_fields: The mapping of the files to the dataclass fields
     :param data_class: The dataclass to use for the document
     :param path: The path to the directory
-    :param s3_dataset: Whether the dataset is stored on s3
+    :param is_s3_dataset: Whether the dataset is stored on s3
 
     :return: A list of documents
     """
     docs = []
     for file in file_paths:
         kwargs = {}
-        file, file_full_path = _extract_file_and_full_file_path(file, path, s3_dataset)
+        file, file_full_path = _extract_file_and_full_file_path(
+            file, path, is_s3_dataset
+        )
         file_extension = file.split('.')[-1]
         if (
             file_extension == fields[0].split('.')[-1]
@@ -257,7 +272,7 @@ def _list_files_from_s3_bucket(
                 user_input.files_to_dataclass_fields,
                 data_class,
                 user_input.dataset_path,
-                s3_dataset=True,
+                is_s3_dataset=True,
             )
         else:
             docs = create_docs_from_files(
@@ -266,19 +281,25 @@ def _list_files_from_s3_bucket(
                 user_input.files_to_dataclass_fields,
                 data_class,
                 user_input.dataset_path,
-                s3_dataset=True,
+                is_s3_dataset=True,
             )
     return DocumentArray(docs)
 
 
-def _extract_file_and_full_file_path(obj, path=None, s3_dataset=False):
+def _extract_file_and_full_file_path(file_path, path=None, is_s3_dataset=False):
     """
     Extracts the file name and the full file path from s3 object.
+
+    :param file_path: The file path
+    :param path: The path to the directory
+    :param is_s3_dataset: Whether the dataset is stored on s3
+
+    :return: The file name and the full file path
     """
-    if s3_dataset:
-        file = obj.split('/')[-1]
-        file_full_path = '/'.join(path.split('/')[:3]) + '/' + obj
+    if is_s3_dataset:
+        file = file_path.split('/')[-1]
+        file_full_path = '/'.join(path.split('/')[:3]) + '/' + file_path
     else:
-        file_full_path = obj
-        file = obj.split(os.sep)[-1]
+        file_full_path = file_path
+        file = file_path.split(os.sep)[-1]
     return file, file_full_path
