@@ -116,4 +116,8 @@ def transform_docarray(
     """
     if not (documents and documents[0].chunks):
         documents = transform_uni_modal_data(documents=documents)
+    else:
+        for doc in documents:
+            for chunk in doc.chunks:
+                chunk.modality = chunk.modality or _get_modality(chunk)
     return documents
