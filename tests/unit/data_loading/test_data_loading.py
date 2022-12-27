@@ -3,7 +3,7 @@ import os
 from typing import Tuple
 
 import pytest
-from docarray import Document, DocumentArray
+from docarray import Document, DocumentArray, dataclass
 from docarray.typing import Image, Text
 from pytest_mock import MockerFixture
 
@@ -24,7 +24,13 @@ from now.now_dataclasses import UserInput
 
 @pytest.fixture()
 def da() -> DocumentArray:
-    return DocumentArray([Document(text='foo'), Document(text='bar')])
+    @dataclass
+    class MMDoc:
+        description: Text = 'description'
+
+    return DocumentArray(
+        [Document(MMDoc(description='foo')), Document(MMDoc(description='bar'))]
+    )
 
 
 @pytest.fixture(autouse=True)
