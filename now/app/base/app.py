@@ -17,6 +17,7 @@ class JinaNOWApp:
     """
     Interface for Jina NOW applications.
     To create a new application, you need to inherit from this class and override the methods.
+    Adding test CI
     Example:
         class TextToImageApp(JinaNowApp):
             pass
