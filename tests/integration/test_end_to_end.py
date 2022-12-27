@@ -77,12 +77,11 @@ def test_token_exists():
 
 @pytest.mark.remote
 @pytest.mark.parametrize(
-    'app, input_modality, output_modality, search_fields, filter_fields, dataset, deployment_type',
+    'app, input_modality, search_fields, filter_fields, dataset, deployment_type',
     [
         (
             Apps.SEARCH_APP,
             Modalities.TEXT,
-            Modalities.IMAGE,
             ['image'],
             ['label'],
             DemoDatasetNames.BEST_ARTWORKS,
@@ -98,7 +97,6 @@ def test_end_to_end_remote(
     test_search_image,
     cleanup,
     input_modality,
-    output_modality,
     search_fields,
     filter_fields,
     with_hubble_login_patch,
@@ -109,7 +107,6 @@ def test_end_to_end_remote(
         dataset,
         deployment_type,
         input_modality,
-        output_modality,
         search_fields,
         filter_fields,
         test_search_image,
@@ -117,11 +114,10 @@ def test_end_to_end_remote(
 
 
 @pytest.mark.parametrize(
-    'app, input_modality,  output_modality, search_fields, filter_fields, dataset, deployment_type',
+    'app, input_modality, search_fields, filter_fields, dataset, deployment_type',
     [
         (
             Apps.SEARCH_APP,
-            Modalities.IMAGE,
             Modalities.IMAGE,
             ['image'],
             ['label'],
@@ -131,7 +127,6 @@ def test_end_to_end_remote(
         (
             Apps.SEARCH_APP,
             Modalities.TEXT,
-            Modalities.TEXT,
             ['lyrics'],
             [],
             DemoDatasetNames.POP_LYRICS,
@@ -140,7 +135,6 @@ def test_end_to_end_remote(
         (
             Apps.SEARCH_APP,
             Modalities.TEXT,
-            Modalities.VIDEO,
             ['video'],
             [],
             DemoDatasetNames.TUMBLR_GIFS_10K,
@@ -156,7 +150,6 @@ def test_end_to_end_local(
     test_search_image,
     cleanup,
     input_modality,
-    output_modality,
     search_fields,
     filter_fields,
     with_hubble_login_patch,
@@ -167,7 +160,6 @@ def test_end_to_end_local(
         dataset,
         deployment_type,
         input_modality,
-        output_modality,
         search_fields,
         filter_fields,
         test_search_image,
@@ -180,7 +172,6 @@ def run_end_to_end(
     dataset,
     deployment_type,
     input_modality,
-    output_modality,
     search_fields,
     filter_fields,
     test_search_image,
@@ -208,9 +199,7 @@ def run_end_to_end(
         cmd(f'{kubectl_path} create namespace nowapi')
     kwargs = Namespace(**kwargs)
     response = cli(args=kwargs)
-    assert_deployment_response(
-        deployment_type, 'text-or-image', 'text-or-image-or-video', response
-    )
+    assert_deployment_response(deployment_type, 'text-or-image', response)
     assert_deployment_queries(
         dataset=dataset,
         deployment_type=deployment_type,
@@ -359,13 +348,10 @@ def get_search_request_body(
     return request_body
 
 
-def assert_deployment_response(
-    deployment_type, input_modality, output_modality, response
-):
+def assert_deployment_response(deployment_type, input_modality, response):
     assert response['bff'] == f'http://localhost:30090/api/v1/search-app/docs'
     assert response['playground'].startswith('http://localhost:30080/?')
     assert response['input_modality'] == input_modality
-    assert response['output_modality'] == output_modality
     if deployment_type == 'local':
         assert response['host'] == 'gateway.nowapi.svc.cluster.local'
     else:
@@ -378,13 +364,11 @@ def assert_deployment_response(
 @pytest.mark.parametrize('dataset', ['custom_s3_bucket'])
 @pytest.mark.parametrize('app', [Apps.SEARCH_APP])
 @pytest.mark.parametrize('input_modality', [Modalities.IMAGE])
-@pytest.mark.parametrize('output_modality', [Modalities.IMAGE])
 def test_backend_custom_data(
     app,
     deployment_type: str,
     dataset: str,
     input_modality: str,
-    output_modality: str,
     cleanup,
     with_hubble_login_patch,
 ):
@@ -413,11 +397,8 @@ def test_backend_custom_data(
     kwargs = Namespace(**kwargs)
     response = cli(args=kwargs)
     input_modality = 'text-or-image'
-    output_modality = 'text-or-image-or-video'
 
-    assert_deployment_response(
-        deployment_type, input_modality, output_modality, response
-    )
+    assert_deployment_response(deployment_type, input_modality, response)
 
     request_body = {'query': {'text_field': {'text': 'test'}}, 'limit': 9}
 

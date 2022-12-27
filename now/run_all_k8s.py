@@ -132,7 +132,6 @@ def start_now(**kwargs):
         playground_port = '80'
     # TODO: add separate BFF endpoints in print output
     input_modality = '-or-'.join(app_instance.input_modality)
-    output_modality = '-or-'.join(app_instance.output_modality)
     bff_url = (
         bff_playground_host
         + ('' if str(bff_port) == '80' else f':{bff_port}')
@@ -168,7 +167,7 @@ def start_now(**kwargs):
     console.print(
         Panel(
             my_table,
-            title=f':tada: {input_modality}-to-{output_modality} app is NOW ready!',
+            title=f':tada: Search app is NOW ready!',
             expand=False,
         )
     )
@@ -179,7 +178,6 @@ def start_now(**kwargs):
         'bff_port': bff_port,
         'playground_port': playground_port,
         'input_modality': input_modality,
-        'output_modality': output_modality,
         'host': gateway_host_internal,
         'port': gateway_port_internal,
         'secured': user_input.secured,
