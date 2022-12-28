@@ -61,6 +61,16 @@ def check_pods_health(ns):
             raise Exception(pod.metadata.name + " " + message)
 
 
+def wait_for_flow(client, ns):
+    wait_time = 0
+    while not client.is_flow_ready() and wait_time <= MAX_WAIT_TIME:
+        check_pods_health(ns)
+        wait_time += 1
+        sleep(1)
+    if not client.is_flow_ready():
+        raise Exception('Flow execution timed out.')
+
+
 def deploy_k8s(f, ns, tmpdir, kubectl_path):
     k8_path = os.path.join(tmpdir, f'k8s/{ns}')
     with yaspin_extended(
@@ -95,13 +105,7 @@ def deploy_k8s(f, ns, tmpdir, kubectl_path):
         cmd(f'{kubectl_path} apply -R -f {k8_path}')
 
         client = Client(host=gateway_host, port=gateway_port)
-        wait_time = 0
-        while not client.is_flow_ready() and wait_time <= MAX_WAIT_TIME:
-            check_pods_health(ns)
-            wait_time += 1
-            sleep(1)
-        if not client.is_flow_ready():
-            raise Exception('Flow execution timed out.')
+        wait_for_flow(client, ns)
         spinner.ok("🚀")
 
     return gateway_host, gateway_port, gateway_host_internal, gateway_port_internal
@@ -148,7 +152,7 @@ def deploy_flow(
 
             host = 'localhost'
             client = Client(host=host, port=8080)
-
+            wait_for_flow(client, DEFAULT_FLOW_NAME)
             # host & port
             gateway_host = 'remote'
             gateway_port = 8080
