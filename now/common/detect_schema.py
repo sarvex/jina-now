@@ -228,26 +228,25 @@ def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
     bucket, folder_prefix = get_s3_bucket_and_folder_prefix(
         user_input
     )  # user has to provide the folder where folder structure begins
+    first_file = list(bucket.objects.filter(Prefix=folder_prefix).limit(1))[0]
+    i = 1
+    try:
+        while first_file.key.endswith('/') or first_file.key.split('/')[-1].startswith(
+            '.'
+        ):
+            first_file = list(bucket.objects.filter(Prefix=folder_prefix).limit(1))[i]
+            i += 1
+    except Exception as e:
+        print(e)
 
-    objects = list(bucket.objects.filter(Prefix=folder_prefix))
-    file_paths = [
+    first_folder = '/'.join(first_file.key.split('/')[:-1])
+
+    first_folder_objects = [
         obj.key
-        for obj in objects
+        for obj in bucket.objects.filter(Prefix=first_folder)
         if not obj.key.endswith('/') and not obj.key.split('/')[-1].startswith('.')
     ]
-    folder_structure = _identify_folder_structure(file_paths, '/')
-    if folder_structure == 'single_folder':
-        field_names = _extract_field_names_single_folder(file_paths, '/')
-    elif folder_structure == 'sub_folders':
-        first_folder = '/'.join(objects[1].key.split('/')[:-1])
-        first_folder_objects = [
-            obj.key
-            for obj in bucket.objects.filter(Prefix=first_folder)
-            if not obj.key.endswith('/') and not obj.key.split('/')[-1].startswith('.')
-        ]
-        field_names = _extract_field_names_sub_folders(
-            first_folder_objects, '/', bucket
-        )
+    field_names = _extract_field_names_sub_folders(first_folder_objects, '/', bucket)
     (
         user_input.search_fields_modalities,
         user_input.filter_fields_modalities,
