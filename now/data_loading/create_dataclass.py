@@ -25,7 +25,24 @@ def create_dataclass(user_input: UserInput):
     Create a dataclass from the user input using the selected search and filter fields
     and their corresponding modalities
 
+    for example:
+    the search fields modalities can be:
+    {'test.txt': Text , 'image.png': Image}
+    the filter fields modalities can be:
+    {'price': float, 'description': str}
+
+    the dataclass will be:
+
+    @dataclass
+    class DataClass:
+        text_0: Text
+        image_0: Image
+        price: float
+        description: str
+
     :param user_input: user input
+
+    :return: dataclass object
     """
     all_modalities = {}
     all_modalities.update(user_input.search_fields_modalities)
