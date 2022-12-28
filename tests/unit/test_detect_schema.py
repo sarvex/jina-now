@@ -66,7 +66,6 @@ def test_set_field_names_from_s3_bucket(
         user_input.aws_region_name,
     ) = get_aws_info
     user_input.dataset_path = user_input.dataset_path + dataset_path
-
     set_field_names_from_s3_bucket(user_input)
 
     assert set(user_input.search_fields_modalities.keys()) == search_field_names
