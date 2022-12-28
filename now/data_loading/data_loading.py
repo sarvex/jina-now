@@ -31,7 +31,7 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
         da = _pull_docarray(user_input.dataset_name)
     elif user_input.dataset_type == DatasetTypes.PATH:
         print('💿  Loading files from disk')
-        da = _load_from_disk(user_input=user_input, dataclass=data_class)
+        da = _load_from_disk(user_input=user_input, data_class=data_class)
     elif user_input.dataset_type == DatasetTypes.S3_BUCKET:
         da = _list_files_from_s3_bucket(user_input=user_input, data_class=data_class)
     elif user_input.dataset_type == DatasetTypes.ELASTICSEARCH:
@@ -56,6 +56,7 @@ def _pull_docarray(dataset_name: str):
         else:
             raise ValueError(
                 f'The dataset {dataset_name} does not contain a multimodal DocumentArray.'
+                f'Please check documentation https://docarray.jina.ai/fundamentals/dataclass/construct/'
             )
     except Exception:
         raise ValueError(
@@ -77,12 +78,12 @@ def _extract_es_data(user_input: UserInput) -> DocumentArray:
     return extracted_docs
 
 
-def _load_from_disk(user_input: UserInput, dataclass) -> DocumentArray:
+def _load_from_disk(user_input: UserInput, data_class: Type) -> DocumentArray:
     """
     Loads the data from disk into multimodal documents.
 
     :param user_input: The user input object.
-    :param dataclass: The dataclass to use for the DocumentArray.
+    :param data_class: The dataclass to use for the DocumentArray.
     """
     dataset_path = user_input.dataset_path.strip()
     dataset_path = os.path.expanduser(dataset_path)
@@ -94,6 +95,7 @@ def _load_from_disk(user_input: UserInput, dataclass) -> DocumentArray:
             else:
                 raise ValueError(
                     f'The file {dataset_path} does not contain a multimodal DocumentArray.'
+                    f'Please check documentation https://docarray.jina.ai/fundamentals/dataclass/construct/'
                 )
         except Exception:
             print(f'Failed to load the binary file provided under path {dataset_path}')
@@ -107,7 +109,7 @@ def _load_from_disk(user_input: UserInput, dataclass) -> DocumentArray:
                 dataset_path,
                 user_input.search_fields + user_input.filter_fields,
                 user_input.files_to_dataclass_fields,
-                dataclass,
+                data_class,
             )
             return docs
     else:
