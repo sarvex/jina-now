@@ -344,7 +344,7 @@ jobs:
   # just for blocking the merge until all parallel core-test are successful
   success-all-test-coverage:
     runs-on: ubuntu-latest
-    needs: [core-test, executor-test]
+    needs: [core-test, executor-test_1, executor-test_2]
     if: always()
     steps:
       - uses: actions/checkout@v2
