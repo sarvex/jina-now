@@ -46,11 +46,9 @@ def _create_candidate_search_filter_fields(field_name_to_value):
             elif field_name == 'uri' and field_value.split('.')[-1] in file_types:
                 search_fields_modalities[field_name] = MODALITIES_MAPPING[modality]
                 break
-            elif field_name == 'text' and field_value:
-                search_fields_modalities[field_name] = MODALITIES_MAPPING[
-                    Modalities.TEXT
-                ]
-                break
+        if field_name == 'text' and field_value:
+            search_fields_modalities[field_name] = MODALITIES_MAPPING[Modalities.TEXT]
+
         # we determine if it's a filter field
         if (
             field_name == 'uri'
