@@ -297,10 +297,9 @@ jobs:
           python -m pip install wheel
           pip install --no-cache-dir ".[full,test]"
       - name: Test executors separately
-        timeout-minutes: 10
+        timeout-minutes: 15
         run: |
           pytest --suppress-no-test-exit-code --cov=now --cov-append -v -s tests/executor/auth
-          pytest --suppress-no-test-exit-code --cov=now --cov-append -v -s tests/executor/indexer/base
           pytest --suppress-no-test-exit-code --cov=now --cov-append -v -s tests/executor/indexer/elastic
       - name: Upload coverage
         uses: actions/upload-artifact@v2
@@ -331,8 +330,9 @@ jobs:
           python -m pip install wheel
           pip install --no-cache-dir ".[full,test]"
       - name: Test executors separately
-        timeout-minutes: 10
+        timeout-minutes: 15
         run: |
+          pytest --suppress-no-test-exit-code --cov=now --cov-append -v -s tests/executor/indexer/base
           pytest --suppress-no-test-exit-code --cov=now --cov-append -v -s tests/executor/preprocessor
           pytest --suppress-no-test-exit-code --cov=now --cov-append -v -s tests/executor/autocomplete
       - name: Upload coverage
