@@ -11,6 +11,7 @@ from now.constants import (
     MODALITIES_MAPPING,
     NOT_AVAILABLE_MODALITIES_FOR_FILTER,
     SUPPORTED_FILE_TYPES,
+    Modalities,
 )
 from now.now_dataclasses import UserInput
 
@@ -46,7 +47,9 @@ def _create_candidate_search_filter_fields(field_name_to_value):
                 search_fields_modalities[field_name] = MODALITIES_MAPPING[modality]
                 break
             elif field_name == 'text' and field_value:
-                search_fields_modalities[field_name] = MODALITIES_MAPPING['text']
+                search_fields_modalities[field_name] = MODALITIES_MAPPING[
+                    Modalities.TEXT
+                ]
                 break
         # we determine if it's a filter field
         if (
@@ -103,7 +106,7 @@ def _extract_field_candidates_docarray(response):
             filter_modalities[field_name] = modality
         # only the available modalities for search are added to search modalities
         if modality in AVAILABLE_MODALITIES_FOR_SEARCH:
-            search_modalities[field_name] = modality
+            search_modalities[field_name] = MODALITIES_MAPPING[modality]
 
     if doc.get('tags', None):
         for el, value in doc['tags']['fields'].items():

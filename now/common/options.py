@@ -10,7 +10,6 @@ import importlib
 import os
 import uuid
 
-from docarray.typing import Image, Text, Video
 from hubble import AuthenticationRequiredError
 from kubernetes import client, config
 
@@ -19,7 +18,7 @@ from now.common.detect_schema import (
     set_field_names_from_local_folder,
     set_field_names_from_s3_bucket,
 )
-from now.constants import MODALITIES_MAPPING, Apps, DatasetTypes, Modalities
+from now.constants import Apps, DatasetTypes
 from now.demo_data import AVAILABLE_DATASETS
 from now.deployment.deployment import cmd
 from now.log import yaspin_extended
@@ -51,14 +50,7 @@ def _create_app_from_user_input(user_input: UserInput, **kwargs):
             f'choose one of the following: {user_input.search_fields_modalities.keys()}'
         )
     _search_modality = user_input.search_fields_modalities[user_input.search_fields[0]]
-
-    if _search_modality in [Modalities.TEXT, Modalities.VIDEO, Modalities.IMAGE]:
-        _search_modality = MODALITIES_MAPPING[_search_modality]
-
-    if _search_modality in [Image, Text, Video]:
-        app_name = Apps.SEARCH_APP
-    else:
-        raise ValueError(f'Invalid search modality: {_search_modality}')
+    app_name = Apps.SEARCH_APP
     user_input.app_instance = construct_app(app_name)
 
 
