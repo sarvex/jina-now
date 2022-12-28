@@ -1,109 +1,80 @@
+from __future__ import annotations, print_function, unicode_literals
+
 from now.utils import BetterEnum
 
-# TODO: Uncomment the DEMO_DATASET_DOCARRAY_VERSION when the DocArray datasets on GCloud has been changed
-# from docarray import __version__ as docarray_version
-# DEMO_DATASET_DOCARRAY_VERSION = docarray_version
-DEMO_DATASET_DOCARRAY_VERSION = '0.13.17'
-
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.117-refactor-bump-jina-version'
-NOW_PREPROCESSOR_VERSION = '0.0.72-refactor-ci-preprocessor'
-
-NOW_AUTH_EXECUTOR_VERSION = '0.0.1'
+# ----------------------------------
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.139-refactor-bump-jina-version'
+# ----------------------------------
+NOW_PREPROCESSOR_VERSION = '0.0.117-refactor-bump-jina-version'
+NOW_QDRANT_INDEXER_VERSION = '0.0.138-refactor-bump-jina-version'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.139-refactor-bump-jina-version'
+NOW_AUTOCOMPLETE_VERSION = '0.0.7-refactor-bump-jina-version'
 
 
 class Modalities(BetterEnum):
     TEXT = 'text'
     IMAGE = 'image'
-    MUSIC = 'music'
     VIDEO = 'video'
-    TEXT_AND_IMAGE = 'text_and_image'
 
 
 class Apps(BetterEnum):
-    TEXT_TO_TEXT = 'text_to_text'
-    TEXT_TO_IMAGE = 'text_to_image'
-    IMAGE_TO_TEXT = 'image_to_text'
-    IMAGE_TO_IMAGE = 'image_to_image'
-    MUSIC_TO_MUSIC = 'music_to_music'
-    TEXT_TO_VIDEO = 'text_to_video'
-    TEXT_TO_TEXT_AND_IMAGE = 'text_to_text_and_image'
+    SEARCH_APP = 'search_app'
 
 
 class DatasetTypes(BetterEnum):
     DEMO = 'demo'
     PATH = 'path'
-    URL = 'url'
     DOCARRAY = 'docarray'
     S3_BUCKET = 's3_bucket'
+    ELASTICSEARCH = 'elasticsearch'
 
 
-class Qualities(BetterEnum):
-    MEDIUM = 'medium'
-    GOOD = 'good'
-    EXCELLENT = 'excellent'
+class ModelNames(BetterEnum):
+    MLP = 'mlp'
+    SBERT = 'sentence-transformers/msmarco-distilbert-base-v3'
+    CLIP = 'openai/clip-vit-base-patch32'
 
+
+class ModelDimensions(BetterEnum):
+    SBERT = 768
+    CLIP = 512
+
+
+SUPPORTED_FILE_TYPES = {
+    Modalities.TEXT: ['txt', 'md'],
+    Modalities.IMAGE: ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'tif'],
+    Modalities.VIDEO: ['gif'],
+}
+
+FILETYPE_TO_MODALITY = {
+    filetype: modality
+    for modality, filetypes in SUPPORTED_FILE_TYPES.items()
+    for filetype in filetypes
+}
+AVAILABLE_MODALITIES_FOR_SEARCH = [Modalities.TEXT, Modalities.IMAGE, Modalities.VIDEO]
+AVAILABLE_MODALITIES_FOR_FILTER = [Modalities.TEXT]
+NOT_AVAILABLE_MODALITIES_FOR_FILTER = [
+    Modalities.IMAGE,
+    Modalities.VIDEO,
+]
 
 BASE_STORAGE_URL = (
     'https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets'
 )
 
 CLIP_USES = {
-    'local': ('CLIPTorchEncoder/latest', 'ViT-B-32::openai', 512),
-    'remote': ('CLIPTorchEncoder/latest-gpu', 'ViT-L-14-336::openai', 768),
+    'local': ('CLIPOnnxEncoder/0.8.1', 'ViT-B-32::openai', ModelDimensions.CLIP),
+    'remote': ('CLIPOnnxEncoder/0.8.1-gpu', 'ViT-B-32::openai', ModelDimensions.CLIP),
 }
 
+EXTERNAL_CLIP_HOST = 'encoderclip-pretty-javelin-3aceb7f2cd.wolf.jina.ai'
+
+DEFAULT_FLOW_NAME = 'nowapi'
 PREFETCH_NR = 10
 
-
-class DemoDatasets:
-    BEST_ARTWORKS = 'best-artworks'
-    NFT_MONKEY = 'nft-monkey'
-    TLL = 'tll'
-    BIRD_SPECIES = 'bird-species'
-    STANFORD_CARS = 'stanford-cars'
-    DEEP_FASHION = 'deepfashion'
-    NIH_CHEST_XRAYS = 'nih-chest-xrays'
-    GEOLOCATION_GEOGUESSR = 'geolocation-geoguessr'
-    MUSIC_GENRES_ROCK = 'music-genres-mid'
-    MUSIC_GENRES_MIX = 'music-genres-mix'
-    ROCK_LYRICS = 'rock-lyrics'
-    POP_LYRICS = 'pop-lyrics'
-    RAP_LYRICS = 'rap-lyrics'
-    INDIE_LYRICS = 'indie-lyrics'
-    METAL_LYRICS = 'metal-lyrics'
-    TUMBLR_GIFS = 'tumblr-gifs'
-    TUMBLR_GIFS_10K = 'tumblr-gifs-10k'
-
-
-AVAILABLE_DATASET = {
-    Modalities.IMAGE: [
-        (DemoDatasets.BEST_ARTWORKS, '🖼 artworks (≈8K docs)'),
-        (DemoDatasets.NFT_MONKEY, '💰 nft - bored apes (10K docs)'),
-        (DemoDatasets.TLL, '👬 totally looks like (≈12K docs)'),
-        (DemoDatasets.BIRD_SPECIES, '🦆 birds (≈12K docs)'),
-        (DemoDatasets.STANFORD_CARS, '🚗 cars (≈16K docs)'),
-        (DemoDatasets.GEOLOCATION_GEOGUESSR, '🏞 geolocation (≈50K docs)'),
-        (DemoDatasets.DEEP_FASHION, '👕 fashion (≈53K docs)'),
-        (DemoDatasets.NIH_CHEST_XRAYS, '☢️ chest x-ray (≈100K docs)'),
-    ],
-    Modalities.MUSIC: [
-        (DemoDatasets.MUSIC_GENRES_ROCK, '🎸 rock music (≈2K songs)'),
-        (DemoDatasets.MUSIC_GENRES_MIX, '🎸 multiple genres (≈2K songs)'),
-    ],
-    Modalities.TEXT: [
-        (DemoDatasets.ROCK_LYRICS, '🎤 rock lyrics (200K docs)'),
-        (DemoDatasets.POP_LYRICS, '🎤 pop lyrics (200K docs)'),
-        (DemoDatasets.RAP_LYRICS, '🎤 rap lyrics (200K docs)'),
-        (DemoDatasets.INDIE_LYRICS, '🎤 indie lyrics (200K docs)'),
-        (DemoDatasets.METAL_LYRICS, '🎤 metal lyrics (200K docs)'),
-    ],
-    Modalities.VIDEO: [
-        (DemoDatasets.TUMBLR_GIFS, '🎦 tumblr gifs (100K gifs)'),
-        (DemoDatasets.TUMBLR_GIFS_10K, '🎦 tumblr gifs subset (10K gifs)'),
-    ],
-    Modalities.TEXT_AND_IMAGE: [],
-}
-
-JC_SECRET = '~/.cache/jina-now/wolf.json'
-
 SURVEY_LINK = 'https://10sw1tcpld4.typeform.com/to/VTAyYRpR?utm_source=cli'
+
+TAG_OCR_DETECTOR_TEXT_IN_DOC = '_ocr_detector_text_in_doc'
+TAG_INDEXER_DOC_HAS_TEXT = '_indexer_doc_has_text'
+EXECUTOR_PREFIX = 'jinahub+docker://'
+ACCESS_PATHS = '@cc'

@@ -36,3 +36,5 @@ docs/api/*
 docs/api/**/*
 
 secret.key
+
+*.lock

@@ -1,0 +1,24 @@
+jtype: Flow
+with:
+  monitoring: true
+  env:
+    JINA_LOG_LEVEL: DEBUG
+jcloud:
+  version: '3.12.0'
+  labels:
+    team: now
+gateway:
+  jcloud:
+    expose: false
+executors:
+  - name: encoderclip
+    uses: jinahub+docker://CLIPOnnxEncoder/0.8.1-gpu
+    uses_with:
+      name: ViT-B-32::openai
+    env:
+      JINA_LOG_LEVEL: DEBUG
+    jcloud:
+      expose: true
+      resources:
+        memory: 5G
+        gpu: '1'

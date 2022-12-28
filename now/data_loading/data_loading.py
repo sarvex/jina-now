@@ -1,22 +1,20 @@
-import base64
-import json
 import os
 import uuid
+from collections import defaultdict
 from copy import deepcopy
-from pathlib import Path
 
 from docarray import Document, DocumentArray
 
-from now.apps.base.app import JinaNOWApp
-from now.constants import DatasetTypes, DemoDatasets
-from now.data_loading.utils import _fetch_da_from_url, get_dataset_url
+from now.app.base.app import JinaNOWApp
+from now.constants import DatasetTypes
+from now.data_loading.elasticsearch import ElasticsearchExtractor
 from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
 from now.utils import sigmap
 
 
 def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
-    """Based on the user input, this function will pull the configured DocArray dataset ready for the preprocessing
+    """Based on the user input, this function will pull the configured DocumentArray dataset ready for the preprocessing
     executor.
 
     :param app: chosen JinaNOWApp
@@ -24,114 +22,78 @@ def load_data(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
     :return: The loaded DocumentArray.
     """
     da = None
-
-    if user_input.is_custom_dataset:
-        if user_input.custom_dataset_type == DatasetTypes.DOCARRAY:
-            print('⬇  Pull DocArray dataset')
-            da = _pull_docarray(user_input.dataset_name)
-        elif user_input.custom_dataset_type == DatasetTypes.URL:
-            print('⬇  Pull DocArray dataset')
-            da = _fetch_da_from_url(user_input.dataset_url)
-        elif user_input.custom_dataset_type == DatasetTypes.PATH:
-            print('💿  Loading files from disk')
-            da = _load_from_disk(app, user_input)
-            if any([doc.uri.endswith('.json') for doc in da]):
-                da = _load_tags_from_json(da, user_input)
-        elif user_input.custom_dataset_type == DatasetTypes.S3_BUCKET:
-            da = _list_files_from_s3_bucket(app=app, user_input=user_input)
-            if any([doc.uri.endswith('.json') for doc in da]):
-                da = _load_tags_from_json(da, user_input)
-    else:
-        print('⬇  Download DocArray dataset')
-        url = get_dataset_url(user_input.data, app.output_modality)
-        da = _fetch_da_from_url(url)
-        da[:, 'embedding'] = None
+    if user_input.dataset_type == DatasetTypes.DOCARRAY:
+        print('⬇  Pull DocumentArray dataset')
+        da = _pull_docarray(user_input.dataset_name)
+    elif user_input.dataset_type == DatasetTypes.PATH:
+        print('💿  Loading files from disk')
+        da = _load_from_disk(app, user_input)
+        da = _load_tags_from_json_if_needed(da, user_input)
+    elif user_input.dataset_type == DatasetTypes.S3_BUCKET:
+        da = _list_files_from_s3_bucket(app=app, user_input=user_input)
+        da = _load_tags_from_json_if_needed(da, user_input)
+    elif user_input.dataset_type == DatasetTypes.ELASTICSEARCH:
+        da = _extract_es_data(user_input)
+    elif user_input.dataset_type == DatasetTypes.DEMO:
+        print('⬇  Download DocumentArray dataset')
+        da = DocumentArray.pull(name=user_input.dataset_name, show_progress=True)
     if da is None:
         raise ValueError(
-            f'Could not load DocArray dataset. Please check your configuration: {user_input}.'
+            f'Could not load DocumentArray dataset. Please check your configuration: {user_input}.'
         )
     if 'NOW_CI_RUN' in os.environ:
-        if user_input.data == DemoDatasets.BEST_ARTWORKS:
-            da = da[:2000]
-        elif user_input.data == DemoDatasets.TUMBLR_GIFS_10K:
-            da = da[:600]
-        else:
-            da = da[:1000]
+        da = da[:50]
     return da
 
 
-def _open_json(path: str):
-    with open(path, 'r') as f:
-        data = json.load(f)
-    return data
+def select_ending(files, endings):
+    for file in files:
+        for ending in endings:
+            if file.endswith(ending):
+                return file
+    return None
 
 
-def _open_s3_json(path: str, user_input: UserInput):
-    import boto3
+def _load_tags_from_json_if_needed(da: DocumentArray, user_input: UserInput):
+    if any([doc.uri.endswith('.json') for doc in da]):
+        return _load_tags_from_json(da, user_input)
+    else:
+        return da
 
-    path_splits = path.split('/')
-    bucket = path_splits[2]
-    key = '/'.join(path_splits[3:])
 
-    client = boto3.client(
-        's3',
-        aws_access_key_id=user_input.aws_access_key_id,
-        aws_secret_access_key=user_input.aws_secret_access_key,
+def _load_tags_from_json(da, user_input):
+    print(
+        f'Loading tags! We assume that you have a folder for each document. The folder contains a content '
+        f'file (image, text, video, ...) and a json file containing the tags'
     )
-    response = client.get_object(Bucket=bucket, Key=key)
-    return json.loads(response['Body'].read())
-
-
-def _load_tags_from_json(da: DocumentArray, user_input: UserInput):
-
-    print('Loading tags!')
-    dic = {}
-    ids_to_delete = []
-    files_in_same_folder = []
-    for i, d in enumerate(da):
+    # map folders to all files they contain
+    folder_to_files = defaultdict(list)
+    for d in da:
         folder = d.uri.rsplit('/', 1)[0]
-        file_extension = d.uri.split('.')[-1]
-        if file_extension in [
-            wildcard.split('.')[-1] for wildcard in user_input.app.supported_wildcards
-        ]:
-            if folder not in dic:
-                dic[folder] = i
-            else:
-                files_in_same_folder.append(i)
+        folder_to_files[folder].append(d.uri)
 
-    if len(files_in_same_folder) > 0:
-        print('Files with the same modality are found within the same folder!')
-        print(
-            'Printing first 5 ids:',
-            ', '.join(str(id) for id in files_in_same_folder[:5]),
+    docs = DocumentArray()
+    for files in folder_to_files.values():
+        tag_file = select_ending(files, ['json'])
+        content_file = select_ending(
+            files, user_input.app_instance.supported_file_types
         )
-
-    for i, d in enumerate(da):
-        folder = d.uri.rsplit('/', 1)[0]
-        if d.uri.split('.')[-1] not in [
-            wildcard.split('.')[-1] for wildcard in user_input.app.supported_wildcards
-        ]:
-            ids_to_delete.append(i)
-        if d.uri.endswith('.json') and folder in dic:
-            if user_input.dataset_path.startswith('s3://'):
-                data = _open_s3_json(d.uri, user_input)
+        if content_file:
+            if tag_file:
+                tags = {'tag_uri': tag_file}
             else:
-                data = _open_json(d.uri)
-            for tag, value in data['tags'].items():
-                da[dic[folder]].tags[tag] = value['slug']
-    if len(ids_to_delete) > 0:
-        del da[ids_to_delete]
-    return da
+                tags = {}
+            docs.append(Document(uri=content_file, tags=tags))
+    return docs
 
 
 def _pull_docarray(dataset_name: str):
     try:
         return DocumentArray.pull(name=dataset_name, show_progress=True)
     except Exception:
-        print(
+        raise ValueError(
             '💔 oh no, the secret of your docarray is wrong, or it was deleted after 14 days'
         )
-        exit(1)
 
 
 def _load_to_datauri_and_save_into_tags(d: Document) -> Document:
@@ -139,8 +101,30 @@ def _load_to_datauri_and_save_into_tags(d: Document) -> Document:
     return d.convert_uri_to_datauri()
 
 
+def match_types(uri, supported_file_types):
+    for t in supported_file_types:
+        if t == '**' or uri.split('.')[-1] == t:
+            return True
+    return False
+
+
+def _extract_es_data(user_input: UserInput) -> DocumentArray:
+    query = {
+        'query': {'match_all': {}},
+        '_source': True,
+    }
+    es_extractor = ElasticsearchExtractor(
+        query=query,
+        index=user_input.es_index_name,
+        connection_str=user_input.es_host_name,
+    )
+    extracted_docs = es_extractor.extract(search_fields=user_input.search_fields)
+    return extracted_docs
+
+
 def _load_from_disk(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
     dataset_path = user_input.dataset_path.strip()
+    dataset_path = os.path.expanduser(dataset_path)
     if os.path.isfile(dataset_path):
         try:
             return DocumentArray.load_binary(dataset_path)
@@ -152,8 +136,11 @@ def _load_from_disk(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
             sigmap=sigmap, text="Loading data from folder", color="green"
         ) as spinner:
             spinner.ok('🏭')
-            docs = DocumentArray.from_files(
-                [f"{dataset_path}/{wild_card}" for wild_card in app.supported_wildcards]
+            docs = DocumentArray.from_files(f'{dataset_path}/**')
+            docs = DocumentArray(
+                d
+                for d in docs
+                if match_types(d.uri, app.supported_file_types + ['json'])
             )
             docs.apply(_load_to_datauri_and_save_into_tags)
             return docs
@@ -165,42 +152,20 @@ def _load_from_disk(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
 
 
 def _list_files_from_s3_bucket(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
-    import boto3.session
-
-    s3_uri = user_input.dataset_path
-    if not s3_uri.startswith('s3://'):
-        raise ValueError(
-            f"Can't process S3 URI {s3_uri} as it assumes it starts with: 's3://'"
-        )
-
-    bucket = s3_uri.split('/')[2]
-    folder_prefix = '/'.join(s3_uri.split('/')[3:])
-
-    session = boto3.session.Session(
-        aws_access_key_id=user_input.aws_access_key_id,
-        aws_secret_access_key=user_input.aws_secret_access_key,
-    )
-    bucket = session.resource('s3').Bucket(bucket)
-
+    bucket, folder_prefix = get_s3_bucket_and_folder_prefix(user_input)
     docs = []
     with yaspin_extended(
         sigmap=sigmap, text="Listing files from S3 bucket ...", color="green"
     ) as spinner:
         spinner.ok('🏭')
         for obj in list(bucket.objects.filter(Prefix=folder_prefix)):
-            if app.supported_wildcards[0] == '**':
+            file_type = str(obj.key).split('.')
+            if file_type[-1] in app.supported_file_types + ['json']:
                 docs.append(Document(uri=f"s3://{bucket.name}/{obj.key}"))
-            else:
-                for wild_card in app.supported_wildcards:
-                    _postfix = wild_card.split('*')[-1]
-                    if str(obj.key).endswith(_postfix):
-                        docs.append(Document(uri=f"s3://{bucket.name}/{obj.key}"))
-                        break
-
     return DocumentArray(docs)
 
 
-def _download_from_s3_bucket(app: JinaNOWApp, user_input: UserInput) -> DocumentArray:
+def get_s3_bucket_and_folder_prefix(user_input: UserInput):
     import boto3.session
 
     s3_uri = user_input.dataset_path
@@ -208,11 +173,6 @@ def _download_from_s3_bucket(app: JinaNOWApp, user_input: UserInput) -> Document
         raise ValueError(
             f"Can't process S3 URI {s3_uri} as it assumes it starts with: 's3://'"
         )
-
-    data_dir = os.path.expanduser(
-        f'~/.cache/jina-now/data/tmp/{base64.b64encode(bytes(s3_uri, "utf-8")).decode("utf-8")}'
-    )
-    Path(data_dir).mkdir(parents=True, exist_ok=True)
 
     bucket = s3_uri.split('/')[2]
     folder_prefix = '/'.join(s3_uri.split('/')[3:])
@@ -223,32 +183,7 @@ def _download_from_s3_bucket(app: JinaNOWApp, user_input: UserInput) -> Document
     )
     bucket = session.resource('s3').Bucket(bucket)
 
-    with yaspin_extended(
-        sigmap=sigmap, text="Loading data from S3 and creating DocArray", color="green"
-    ) as spinner:
-        spinner.ok('🏭')
-
-        for obj in list(bucket.objects.filter(Prefix=folder_prefix)):
-            if app.supported_wildcards[0] != '**':
-                matches_postfix = False
-                for wild_card in app.supported_wildcards:
-                    _postfix = wild_card.split('*')[-1]
-                    if str(obj.key).endswith(_postfix):
-                        matches_postfix = True
-                        break
-                if not matches_postfix:
-                    continue
-            # create nested directory structure
-            path_obj_machine = os.path.join(data_dir, obj.key)
-            Path(os.path.dirname(path_obj_machine)).mkdir(parents=True, exist_ok=True)
-            # save file with full path locally
-            bucket.download_file(obj.key, path_obj_machine)
-
-        docs = DocumentArray.from_files(
-            [f"{data_dir}/{wild_card}" for wild_card in app.supported_wildcards]
-        )
-        docs.apply(_load_to_datauri_and_save_into_tags)
-        return docs
+    return bucket, folder_prefix
 
 
 def deep_copy_da(da: DocumentArray) -> DocumentArray:

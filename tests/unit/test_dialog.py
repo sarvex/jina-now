@@ -3,12 +3,14 @@ Test the dialog.py module.
 
 Patches the `prompt` method to mock user input via the command line.
 """
+import os
 from typing import Dict
 
 import pytest
 from pytest_mock import MockerFixture
 
-from now.constants import Apps, DemoDatasets
+from now.constants import DEFAULT_FLOW_NAME, Apps, DatasetTypes
+from now.demo_data import DemoDatasetNames
 from now.dialog import configure_user_input
 from now.now_dataclasses import UserInput
 
@@ -24,220 +26,130 @@ class CmdPromptMock:
 MOCKED_DIALOGS_WITH_CONFIGS = [
     (
         {
-            'app': Apps.MUSIC_TO_MUSIC,
-            'data': 'music-genres-mid',
+            'app': Apps.SEARCH_APP,
+            'flow_name': DEFAULT_FLOW_NAME,
+            'dataset_type': DatasetTypes.DEMO,
+            'dataset_name': DemoDatasetNames.TLL,
+            'search_fields_modalities': {'label': 'text', 'image': 'image'},
+            'search_fields': ['label'],
+            'filter_fields': [],
+            'filter_fields_modalities': {'label': 'text'},
             'cluster': 'new',
             'deployment_type': 'local',
         },
         {},
-        UserInput(
-            is_custom_dataset=False,
-            create_new_cluster=True,
-        ),
     ),
     (
         {
-            'app': Apps.MUSIC_TO_MUSIC,
-            'data': 'music-genres-mix',
+            'app': Apps.SEARCH_APP,
+            'flow_name': DEFAULT_FLOW_NAME,
+            'dataset_type': DatasetTypes.DEMO,
+            'dataset_name': DemoDatasetNames.NIH_CHEST_XRAYS,
+            'search_fields_modalities': {'label': 'text', 'image': 'image'},
+            'search_fields': ['image'],
+            'filter_fields': [],
+            'filter_fields_modalities': {'label': 'text'},
             'cluster': 'new',
             'deployment_type': 'local',
         },
         {},
-        UserInput(
-            is_custom_dataset=False,
-            create_new_cluster=True,
-        ),
     ),
     (
         {
-            'app': Apps.TEXT_TO_IMAGE,
-            'data': 'tll',
-            'cluster': 'new',
-            'quality': 'good',
-            'deployment_type': 'local',
-        },
-        {},
-        UserInput(
-            is_custom_dataset=False,
-            create_new_cluster=True,
-        ),
-    ),
-    (
-        {
-            'app': Apps.TEXT_TO_IMAGE,
-            'data': 'nih-chest-xrays',
-            'cluster': 'new',
-            'quality': 'medium',
-            'deployment_type': 'local',
-        },
-        {},
-        UserInput(
-            is_custom_dataset=False,
-            create_new_cluster=True,
-        ),
-    ),
-    (
-        {
-            'app': Apps.TEXT_TO_IMAGE,
-            'data': 'custom',
-            'custom_dataset_type': 'docarray',
-            'dataset_name': 'xxx',
-            'cluster': 'new',
-            'quality': 'medium',
-            'deployment_type': 'local',
-        },
-        {},
-        UserInput(
-            is_custom_dataset=True,
-            create_new_cluster=True,
-        ),
-    ),
-    (
-        {
-            'app': Apps.MUSIC_TO_MUSIC,
-            'data': 'custom',
-            'custom_dataset_type': 'docarray',
-            'dataset_name': 'xxx',
+            'app': Apps.SEARCH_APP,
+            'flow_name': DEFAULT_FLOW_NAME,
+            'dataset_type': DatasetTypes.PATH,
+            'dataset_path': os.path.join(
+                os.path.dirname(__file__), '..', 'resources', 'image'
+            ),
+            'search_fields': ['.jpg'],
+            'search_fields_modalities': {'.jpg': 'image'},
             'cluster': 'new',
             'deployment_type': 'local',
         },
         {},
-        UserInput(
-            is_custom_dataset=True,
-            create_new_cluster=True,
-        ),
     ),
     (
         {
-            'app': Apps.MUSIC_TO_MUSIC,
-            'data': 'custom',
-            'custom_dataset_type': 'path',
-            'dataset_path': 'xxx',
+            'flow_name': DEFAULT_FLOW_NAME,
+            'dataset_type': DatasetTypes.DEMO,
+            'dataset_name': DemoDatasetNames.DEEP_FASHION,
+            'search_fields': ['image'],
+            'search_fields_modalities': {'label': 'text', 'image': 'image'},
+            'filter_fields': [],
+            'filter_fields_modalities': {'label': 'text'},
             'cluster': 'new',
             'deployment_type': 'local',
         },
+        {'app': Apps.SEARCH_APP},
+    ),
+    (
         {},
-        UserInput(
-            is_custom_dataset=True,
-            create_new_cluster=True,
-        ),
-    ),
-    (
         {
-            'app': Apps.MUSIC_TO_MUSIC,
-            'data': 'custom',
-            'custom_dataset_type': 'url',
-            'dataset_url': 'xxx',
+            'app': Apps.SEARCH_APP,
+            'flow_name': 'testapp',
+            'dataset_type': DatasetTypes.DEMO,
+            'dataset_name': DemoDatasetNames.RAP_LYRICS,
+            'search_fields': ['lyrics'],
+            'search_fields_modalities': {'lyrics': 'text', 'title': 'text'},
+            'filter_fields': ['title'],
+            'filter_fields_modalities': {'lyrics': 'text', 'title': 'text'},
             'cluster': 'new',
             'deployment_type': 'local',
         },
+    ),
+    (
         {},
-        UserInput(
-            is_custom_dataset=True,
-            create_new_cluster=True,
-        ),
-    ),
-    (
         {
-            'app': Apps.TEXT_TO_IMAGE,
-            'data': 'custom',
-            'custom_dataset_type': 'docarray',
-            'dataset_name': 'xxx',
-            'quality': 'medium',
+            'app': Apps.SEARCH_APP,
+            'flow_name': 'testapp',
+            'dataset_type': DatasetTypes.DEMO,
+            'dataset_name': DemoDatasetNames.TUMBLR_GIFS_10K,
+            'search_fields': ['video'],
+            'search_fields_modalities': {'video': 'video', 'description': 'text'},
+            'filter_fields': ['title'],
+            'filter_fields_modalities': {'description': 'text'},
             'cluster': 'new',
             'deployment_type': 'local',
         },
-        {},
-        UserInput(
-            is_custom_dataset=True,
-            create_new_cluster=True,
-        ),
     ),
     (
         {
-            'app': Apps.TEXT_TO_IMAGE,
-            'data': 'tll',
-            'quality': 'good',
-            'deployment_type': 'remote',
-            'secured': False,
-        },
-        {'os_type': 'darwin', 'arch': 'x86_64'},
-        UserInput(
-            is_custom_dataset=False,
-            secured=False,
-        ),
-    ),
-    (
-        {
-            'data': 'music-genres-mid',
+            'app': Apps.SEARCH_APP,
+            'flow_name': 'test this name *',
+            'dataset_type': DatasetTypes.DEMO,
+            'dataset_name': DemoDatasetNames.DEEP_FASHION,
+            'search_fields': ['image'],
+            'search_fields_modalities': {'label': 'text', 'image': 'image'},
+            'filter_fields': [],
+            'filter_fields_modalities': {'label': 'text'},
             'cluster': 'new',
             'deployment_type': 'local',
         },
-        {'app': Apps.MUSIC_TO_MUSIC},
-        UserInput(
-            is_custom_dataset=False,
-            create_new_cluster=True,
-        ),
-    ),
-    (
-        {
-            'data': DemoDatasets.TLL,
-            'cluster': 'new',
-            'deployment_type': 'local',
-        },
-        {'app': Apps.TEXT_TO_IMAGE, 'quality': 'good'},
-        UserInput(
-            is_custom_dataset=False,
-            create_new_cluster=True,
-        ),
-    ),
-    (
-        {
-            'data': DemoDatasets.ROCK_LYRICS,
-            'cluster': 'new',
-            'deployment_type': 'local',
-        },
-        {'app': Apps.IMAGE_TO_TEXT, 'quality': 'good'},
-        UserInput(
-            is_custom_dataset=False,
-            create_new_cluster=True,
-        ),
-    ),
-    (
-        {
-            'app': Apps.IMAGE_TO_TEXT,
-        },
-        {
-            'data': DemoDatasets.POP_LYRICS,
-            'cluster': 'new',
-            'deployment_type': 'local',
-            'quality': 'medium',
-        },
-        UserInput(
-            is_custom_dataset=False,
-            create_new_cluster=True,
-        ),
+        {'flow_name': 'testthisname'},
     ),
 ]
 
 
 @pytest.mark.parametrize(
-    ('mocked_user_answers', 'configure_kwargs', 'expected_user_input'),
+    ('mocked_user_answers', 'configure_kwargs'),
     MOCKED_DIALOGS_WITH_CONFIGS,
 )
 def test_configure_user_input(
     mocker: MockerFixture,
     mocked_user_answers: Dict[str, str],
     configure_kwargs: Dict,
-    expected_user_input: UserInput,
 ):
+    # expected user input
+    expected_user_input = UserInput()
     expected_user_input.__dict__.update(mocked_user_answers)
     expected_user_input.__dict__.update(configure_kwargs)
-    mocker.patch('now.dialog.prompt', CmdPromptMock(mocked_user_answers))
+    expected_user_input.__dict__.pop('app')
 
-    _, user_input = configure_user_input(**configure_kwargs)
-
-    if user_input.deployment_type == 'remote':
-        user_input.__dict__.update({'jwt': None, 'admin_emails': None})
+    # mocked user input
+    mocker.patch('now.utils.prompt', CmdPromptMock(mocked_user_answers))
+    user_input = configure_user_input(**configure_kwargs)
+    user_input.__dict__.update({'jwt': None, 'admin_emails': None})
+    user_input.__dict__.update({'app_instance': None})
 
     assert user_input == expected_user_input

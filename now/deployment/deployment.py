@@ -1,12 +1,12 @@
+import asyncio
 import subprocess
 import tempfile
 
 from jcloud.flow import CloudFlow
-from jina.helper import get_or_reuse_loop
 
 
-def deploy_wolf(path: str, name: str, env_file: str = None):
-    return CloudFlow(path=path, name=name, env_file=env_file).__enter__()
+def deploy_wolf(path: str):
+    return CloudFlow(path=path).__enter__()
 
 
 def terminate_wolf(flow_id: str):
@@ -14,15 +14,28 @@ def terminate_wolf(flow_id: str):
 
 
 def status_wolf(flow_id):
-    loop = get_or_reuse_loop()
+    loop = get_or_create_eventloop()
     return loop.run_until_complete(CloudFlow(flow_id=flow_id).status)
 
 
-def list_all_wolf(status=None):
-    loop = get_or_reuse_loop()
-    flows = loop.run_until_complete(CloudFlow().list_all(status=status))
+def get_or_create_eventloop():
+    try:
+        return asyncio.get_event_loop()
+    except RuntimeError as ex:
+        if "There is no current event loop in thread" in str(ex):
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            return asyncio.get_event_loop()
+
+
+def list_all_wolf(status='Serving', namespace='nowapi'):
+    loop = get_or_create_eventloop()
+    flows = loop.run_until_complete(CloudFlow().list_all(phase=status))
     if flows is None:
-        flows = []
+        return []
+    # filter by namespace - if the namespace is contained in the flow name
+    if namespace:
+        return [f for f in flows if namespace in f]
     return flows
 
 

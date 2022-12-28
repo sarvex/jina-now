@@ -5,22 +5,14 @@ import sys
 
 import uvicorn
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from starlette.applications import Starlette
 from starlette.responses import JSONResponse
 from starlette.routing import Mount
 
 import deployment.bff.app.settings as api_settings
 from deployment.bff.app.decorators import api_method, timed
-from deployment.bff.app.v1.routers import (
-    admin,
-    cloud_temp_link,
-    img2img,
-    img2txt,
-    music2music,
-    text2text,
-    txt2img,
-    txt2video,
-)
+from deployment.bff.app.v1.routers import admin, cloud_temp_link, search
 
 logging.config.dictConfig(api_settings.DEFAULT_LOGGING_CONFIG)
 logger = logging.getLogger('bff.app')
@@ -42,6 +34,14 @@ def get_app_instance():
             'author': AUTHOR,
             'email': EMAIL,
         },
+    )
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=['*'],
+        allow_credentials=True,
+        allow_methods=['*'],
+        allow_headers=['*'],
     )
 
     @app.get('/ping')
@@ -95,35 +95,10 @@ def build_app():
         cloud_temp_link.router, tags=['Temporary-Link-Cloud']
     )
 
-    # Image2Image router
-    img2img_mount = '/api/v1/image-to-image'
-    img2img_app = get_app_instance()
-    img2img_app.include_router(img2img.router, tags=['Image-To-Image'])
-
-    # Image2Text router
-    img2txt_mount = '/api/v1/image-to-text'
-    img2txt_app = get_app_instance()
-    img2txt_app.include_router(img2txt.router, tags=['Image-To-Text'])
-
-    # Text2Image router
-    txt2img_mount = '/api/v1/text-to-image'
-    txt2img_app = get_app_instance()
-    txt2img_app.include_router(txt2img.router, tags=['Text-To-Image'])
-
-    # Text2Text router
-    text2text_mount = '/api/v1/text-to-text'
-    text2text_app = get_app_instance()
-    text2text_app.include_router(text2text.router, tags=['Text-To-Text'])
-
-    # Music2Music router
-    music2music_mount = '/api/v1/music-to-music'
-    music2music_app = get_app_instance()
-    music2music_app.include_router(music2music.router, tags=['Music-To-Music'])
-
-    # Text2Video router
-    text2video_mount = '/api/v1/text-to-video'
-    text2video_app = get_app_instance()
-    text2video_app.include_router(txt2video.router, tags=['Text-To-Video'])
+    # search app router
+    search_app_mount = '/api/v1/search-app'
+    search_app_app = get_app_instance()
+    search_app_app.include_router(search.router, tags=['Search App'])
 
     # Admin router
     admin_mount = '/api/v1/admin'
@@ -134,12 +109,7 @@ def build_app():
     app = Starlette(
         routes=[
             Mount(cloud_temp_link_mount, cloud_temp_link_app),
-            Mount(img2img_mount, img2img_app),
-            Mount(img2txt_mount, img2txt_app),
-            Mount(txt2img_mount, txt2img_app),
-            Mount(text2text_mount, text2text_app),
-            Mount(music2music_mount, music2music_app),
-            Mount(text2video_mount, text2video_app),
+            Mount(search_app_mount, search_app_app),
             Mount(admin_mount, admin_app),
         ]
     )
@@ -149,15 +119,13 @@ def build_app():
 application = build_app()
 
 
-def run_server():
+def run_server(port=8080):
     """Run server."""
     app = build_app()
-
-    # start the server!
     uvicorn.run(
         app,
         host='0.0.0.0',
-        port=8080,
+        port=port,
         loop='uvloop',
         http='httptools',
     )
@@ -165,7 +133,7 @@ def run_server():
 
 if __name__ == '__main__':
     try:
-        run_server()
+        run_server(9090)
     except Exception as exc:
         logger.critical(str(exc))
         logger.exception(exc)

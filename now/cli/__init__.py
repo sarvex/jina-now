@@ -3,17 +3,20 @@ import pathlib
 import platform
 import sys
 import warnings
+from argparse import Namespace
 from os.path import expanduser as user
 
 import cpuinfo
 
+from now import __version__
 from now import __version__ as version
+from now.constants import SURVEY_LINK
 from now.deployment.deployment import cmd
+from now.run_all_k8s import start_now, stop_now
+from now.system_information import get_system_state
 
 warnings.filterwarnings("ignore")
 
-if len(sys.argv) != 1 and not ('-h' in sys.argv[1:] or '--help' in sys.argv[1:]):
-    print(f'Initialising Jina NOW v{version} ...')
 cur_dir = pathlib.Path(__file__).parents[1].resolve()
 
 os.environ['JINA_CHECK_VERSION'] = 'False'
@@ -28,6 +31,11 @@ def _get_run_args():
         parser.print_help()
         exit()
     args, unknown = parser.parse_known_args()
+
+    # clean up the args with None values
+    args = {k: v for k, v in vars(args).items() if v is not None}
+    # Convert args back to Namespace
+    args = Namespace(**args)
 
     if unknown:
         raise Exception('unknown args: ', unknown)
@@ -113,18 +121,59 @@ def _get_kubectl_path() -> str:
     return kubectl_path
 
 
+def get_task(kwargs):
+    for x in ['cli', 'now']:
+        if x in kwargs:
+            return kwargs[x]
+    raise Exception('kwargs do not contain a task')
+
+
 def cli(args=None):
     """The main entrypoint of the CLI"""
-    if not args:
-        args = _get_run_args()
+    os.environ['JINA_LOG_LEVEL'] = 'CRITICAL'
+    print_version_line()
+    kwargs = parse_args(args)
+    arch, os_type = get_environment_type()
 
+    kwargs['kubectl_path'] = _get_kubectl_path()
+    kwargs['kind_path'] = _get_kind_path()
+
+    contexts, active_context = get_system_state(**kwargs)
+    task = get_task(kwargs)
     if '--version' in sys.argv[1:]:
-        from now import __version__
-
         print(__version__)
         exit(0)
+    if task == 'start':
+        return start_now(
+            contexts=contexts,
+            active_context=active_context,
+            os_type=os_type,
+            arch=arch,
+            **kwargs,
+        )
+    elif task == 'stop':
+        return stop_now(contexts, active_context, **kwargs)
+    elif task == 'survey':
+        import webbrowser
 
-    os.environ['JINA_LOG_LEVEL'] = 'CRITICAL'
+        webbrowser.open(SURVEY_LINK, new=0, autoraise=True)
+    else:
+        raise Exception(f'unknown task, {task}')
+
+
+def parse_args(args):
+    if not args:
+        args = _get_run_args()
+    args = vars(args)  # Make it a dict from Namespace
+    return args
+
+
+def print_version_line():
+    if len(sys.argv) != 1 and not ('-h' in sys.argv[1:] or '--help' in sys.argv[1:]):
+        print(f'Initialising Jina NOW v{version} ...')
+
+
+def get_environment_type():
     os_type = platform.system().lower()
     arch = 'x86_64'
     if os_type == 'darwin':
@@ -134,13 +183,7 @@ def cli(args=None):
             arch = platform.machine()
     elif os_type == 'linux':
         arch = platform.machine()
-    args = vars(args)  # Make it a dict from Namespace
-
-    args['kubectl_path'] = _get_kubectl_path()
-    args['kind_path'] = _get_kind_path()
-    from now.run_all_k8s import run_k8s
-
-    return run_k8s(os_type=os_type, arch=arch, **args)
+    return arch, os_type
 
 
 if __name__ == '__main__':

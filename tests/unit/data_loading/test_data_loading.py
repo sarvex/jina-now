@@ -6,11 +6,10 @@ import pytest
 from docarray import Document, DocumentArray
 from pytest_mock import MockerFixture
 
-from now.apps.music_to_music.app import MusicToMusic
-from now.apps.text_to_image.app import TextToImage
-from now.apps.text_to_text.app import TextToText
-from now.constants import DatasetTypes, DemoDatasets
-from now.data_loading.data_loading import _load_tags_from_json, load_data
+from now.app.search_app import SearchApp
+from now.constants import DatasetTypes
+from now.data_loading.data_loading import _load_tags_from_json_if_needed, load_data
+from now.demo_data import DemoDatasetNames
 from now.now_dataclasses import UserInput
 
 
@@ -54,11 +53,10 @@ def is_da_text_equal(da_a: DocumentArray, da_b: DocumentArray):
 
 def test_da_pull(da: DocumentArray):
     user_input = UserInput()
-    user_input.is_custom_dataset = True
-    user_input.custom_dataset_type = DatasetTypes.DOCARRAY
+    user_input.dataset_type = DatasetTypes.DOCARRAY
     user_input.dataset_name = 'secret-token'
 
-    loaded_da = load_data(TextToImage(), user_input)
+    loaded_da = load_data(SearchApp(), user_input)
 
     assert is_da_text_equal(da, loaded_da)
 
@@ -66,97 +64,77 @@ def test_da_pull(da: DocumentArray):
 def test_da_local_path(local_da: DocumentArray):
     path, da = local_da
     user_input = UserInput()
-    user_input.is_custom_dataset = True
-    user_input.custom_dataset_type = DatasetTypes.PATH
+    user_input.dataset_type = DatasetTypes.PATH
     user_input.dataset_path = path
 
-    loaded_da = load_data(TextToText(), user_input)
+    loaded_da = load_data(SearchApp(), user_input)
 
     assert is_da_text_equal(da, loaded_da)
 
 
 def test_da_local_path_image_folder(image_resource_path: str):
     user_input = UserInput()
-    user_input.is_custom_dataset = True
-    user_input.custom_dataset_type = DatasetTypes.PATH
+    user_input.dataset_type = DatasetTypes.PATH
     user_input.dataset_path = image_resource_path
 
-    app = TextToImage()
+    app = SearchApp()
     loaded_da = load_data(app, user_input)
-    loaded_da = app.preprocess(da=loaded_da, user_input=user_input, is_indexing=True)
 
     assert len(loaded_da) == 2, (
         f'Expected two images, got {len(loaded_da)}.'
         f' Check the tests/resources/image folder'
     )
     for doc in loaded_da:
-        assert doc.blob != b''
-
-
-def test_da_local_path_music_folder(music_resource_path: str):
-    user_input = UserInput()
-    user_input.is_custom_dataset = True
-    user_input.custom_dataset_type = DatasetTypes.PATH
-    user_input.dataset_path = music_resource_path
-
-    app = MusicToMusic()
-    loaded_da = load_data(app, user_input)
-    loaded_da = app.preprocess(da=loaded_da, user_input=user_input)
-
-    assert len(loaded_da) == 2, (
-        f'Expected two music docs, got {len(loaded_da)}.'
-        f' Check the tests/resources/music folder'
-    )
-    for doc in loaded_da:
-        assert doc.blob != b''
+        assert doc.uri
 
 
 def test_da_custom_ds(da: DocumentArray):
     user_input = UserInput()
-    user_input.is_custom_dataset = False
-    user_input.custom_dataset_type = DatasetTypes.DEMO
-    user_input.data = DemoDatasets.DEEP_FASHION
+    user_input.dataset_type = DatasetTypes.DEMO
+    user_input.dataset_name = DemoDatasetNames.DEEP_FASHION
 
-    app = TextToImage()
+    app = SearchApp()
     loaded_da = load_data(app, user_input)
-    loaded_da = app.preprocess(da=loaded_da, user_input=user_input, is_indexing=True)
 
+    assert len(loaded_da) > 0
     for doc in loaded_da:
-        assert doc.blob != b''
+        assert doc.chunks
 
 
-def test_load_tags(gif_resource_path: str):
+@pytest.fixture
+def user_input():
     user_input = UserInput()
     user_input.dataset_path = ''
-    user_input.app = TextToImage()
-    da = DocumentArray(
-        [
-            Document(uri=os.path.join(gif_resource_path, 'folder1/file.gif')),
-            Document(uri=os.path.join(gif_resource_path, 'folder1/manifest.json')),
-            Document(uri=os.path.join(gif_resource_path, 'folder1/file.txt')),
-            Document(uri=os.path.join(gif_resource_path, 'folder2/file.gif')),
-            Document(uri=os.path.join(gif_resource_path, 'folder2/manifest.json')),
-        ]
+    user_input.app_instance = SearchApp()
+    return user_input
+
+
+def get_data(gif_resource_path, files):
+    return DocumentArray(
+        Document(uri=os.path.join(gif_resource_path, file)) for file in files
     )
 
-    da = _load_tags_from_json(da, user_input)
-    print(da[0].summary())
-    print(da[1].summary())
-    assert 'custom' in da[0].tags
-    assert 'custom' in da[1].tags
 
-    assert da[0].tags['custom'] == 'moneystack'
-    assert da[1].tags['ml'] == 'visual-arts'
-
-    da1 = DocumentArray(
+def test_load_tags_ignore_too_many_files(user_input, gif_resource_path: str):
+    da = get_data(
+        gif_resource_path,
         [
-            Document(uri=os.path.join(gif_resource_path, 'folder1/file.gif')),
-            Document(uri=os.path.join(gif_resource_path, 'folder2/file.gif')),
-            Document(uri=os.path.join(gif_resource_path, 'folder1/file.txt')),
-        ]
+            'folder1/file.gif',
+            'folder1/meta.json',
+            'folder1/file.txt',
+            'folder2/file.gif',
+            'folder2/meta.json',
+        ],
     )
+    da_merged = _load_tags_from_json_if_needed(da, user_input)
+    assert len(da_merged) == 2
+    assert da_merged[0].tags['tag_uri'].endswith('folder1/meta.json')
+    assert da_merged[1].tags['tag_uri'].endswith('folder2/meta.json')
 
-    da1 = _load_tags_from_json(da1, user_input)
 
-    for d in da1:
-        assert not 'custom' in d.tags
+def test_load_tags_no_tags_if_missing(user_input, gif_resource_path: str):
+    da = get_data(
+        gif_resource_path, ['folder1/file.gif', 'folder2/file.gif', 'folder2/meta.json']
+    )
+    da_merged = _load_tags_from_json_if_needed(da, user_input)
+    assert len(da_merged) == 2

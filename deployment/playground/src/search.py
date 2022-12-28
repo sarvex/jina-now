@@ -5,6 +5,7 @@ from collections.abc import Collection, Hashable, Mapping
 import requests
 import streamlit as st
 from docarray import Document, DocumentArray
+from docarray.score import NamedScore
 from frozendict import frozendict
 
 from .constants import Parameters
@@ -59,34 +60,50 @@ def get_query_params() -> Parameters:
     return parameters
 
 
-def search(attribute_name, attribute_value, jwt, top_k=None):
+def search(
+    attribute_name,
+    attribute_value,
+    jwt,
+    top_k=None,
+    filter_dict=None,
+    endpoint='search',
+):
     print(f'Searching by {attribute_name}')
     params = get_query_params()
     if params.host == 'gateway':  # need to call now-bff as we communicate between pods
         domain = f"http://now-bff"
     else:
         domain = f"https://nowrun.jina.ai"
-    URL_HOST = (
-        f"{domain}/api/v1/{params.input_modality}-to-{params.output_modality}/search"
-    )
+    URL_HOST = f"{domain}/api/v1/search-app/{endpoint}"
 
+    updated_dict = {}
+    if filter_dict is not None:
+        updated_dict = {k: v for k, v in filter_dict.items() if v != 'All'}
     data = {
         'host': params.host,
-        attribute_name: attribute_value,
         'limit': top_k if top_k else params.top_k,
+        'filters': updated_dict,
     }
+    if endpoint == 'suggestion':
+        data[attribute_name] = attribute_value
+    elif endpoint == 'search':
+        data['query'] = {'search_field': {attribute_name: attribute_value}}
     # in case the jwt is none, no jwt will be sent. This is the case when no authentication is used for that flow
     if jwt is not None:
         data['jwt'] = jwt
     if params.port:
         data['port'] = params.port
 
-    return call_flow(URL_HOST, data, attribute_name, domain)
+    return call_flow(URL_HOST, data, attribute_name, domain, endpoint)
+
+
+def get_suggestion(text, jwt):
+    return search('text', text, jwt, endpoint='suggestion')
 
 
 @deep_freeze_args
 @functools.lru_cache(maxsize=10, typed=False)
-def call_flow(url_host, data, attribute_name, domain):
+def call_flow(url_host, data, attribute_name, domain, endpoint):
     st.session_state.search_count += 1
     data = unfreeze_param(data)
 
@@ -95,7 +112,24 @@ def call_flow(url_host, data, attribute_name, domain):
     )
 
     try:
-        docs = DocumentArray.from_json(response.content)
+        if endpoint == 'suggestion':
+            docs = DocumentArray.from_json(response.content)
+        elif endpoint == 'search':
+            docs = DocumentArray()
+            # todo: use multimodal doc in the future
+            for response_json in response.json():
+                content = list(response_json['fields'].values())[0]
+                doc = Document(
+                    id=response_json['id'],
+                    tags=response_json['tags'],
+                    **content,
+                )
+                if doc.blob:
+                    base64_bytes = doc.blob.encode('utf-8')
+                    doc.blob = base64.decodebytes(base64_bytes)
+                for metric, value in response_json['scores'].items():
+                    doc.scores[metric] = NamedScore(value=value['value'])
+                docs.append(doc)
     except Exception:
         try:
             json_response = response.json()
@@ -126,15 +160,14 @@ def call_flow(url_host, data, attribute_name, domain):
         docs_temp_links = DocumentArray.from_json(response_temp_links.content)
         for _id, _uri in zip(*docs_temp_links[:, ['id', 'uri']]):
             docs[_id].uri = _uri
-
     return docs
 
 
-def search_by_text(search_text, jwt) -> DocumentArray:
-    return search('text', search_text, jwt)
+def search_by_text(search_text, jwt, filter_selection) -> DocumentArray:
+    return search('text', search_text, jwt, filter_dict=filter_selection)
 
 
-def search_by_image(document: Document, jwt) -> DocumentArray:
+def search_by_image(document: Document, jwt, filter_selection) -> DocumentArray:
     """
     Wrap file in Jina Document for searching, and do all necessary conversion to make similar to indexed Docs
     """
@@ -143,26 +176,11 @@ def search_by_image(document: Document, jwt) -> DocumentArray:
         if query_doc.tensor is not None:
             query_doc.convert_image_tensor_to_blob()
         elif (query_doc.uri is not None) and query_doc.uri != '':
-            query_doc.load_uri_to_blob()
+            query_doc.load_uri_to_blob(timeout=10)
 
-    return search('image', base64.b64encode(query_doc.blob).decode('utf-8'), jwt)
-
-
-def search_by_audio(document: Document, jwt):
-    params = get_query_params()
-    TOP_K = params.top_k
-    result = search(
-        'song', base64.b64encode(document.blob).decode('utf-8'), jwt, TOP_K * 3
+    return search(
+        'blob',
+        base64.b64encode(query_doc.blob).decode('utf-8'),
+        jwt,
+        filter_dict=filter_selection,
     )
-
-    already_added_tracks = set()
-    final_result = DocumentArray()
-    for doc in result:
-        if doc.tags['track_id'] in already_added_tracks or 'location' not in doc.tags:
-            continue
-        else:
-            final_result.append(doc)
-            already_added_tracks.add(doc.tags['track_id'])
-        if len(final_result) >= TOP_K:
-            break
-    return final_result

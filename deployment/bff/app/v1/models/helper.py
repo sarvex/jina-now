@@ -20,7 +20,7 @@ class BaseRequestModel(BaseModel):
     port: Optional[int] = Field(default=31080, description='Port at which to connect.')
     jwt: Optional[Dict[str, Any]] = Field(
         default=None,
-        description='User info obtained from the hubble along with token. To be passed when the flow is secure',
+        description="Dictionary with key 'token' which maps to token. To be passed when the flow is secure",
     )
     api_key: Optional[str] = Field(
         default=None,
@@ -49,8 +49,9 @@ class BaseSearchRequestModel(BaseRequestModel):
     uri: Optional[str] = Field(
         default=None, description='URI of the file or data URI of the query'
     )
-    conditions: Optional[dict] = Field(
-        default=None, description='dictionary with filter conditions for search results'
+    filters: Optional[Dict[str, str]] = Field(
+        default=None,
+        description='dictionary with filters for search results  {"tag_name" : "tag_value"}',
     )
 
 

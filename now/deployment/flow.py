@@ -1,10 +1,9 @@
-import json
 import os.path
 import pathlib
 import tempfile
-from os.path import expanduser as user
+from multiprocessing import Process
 from time import sleep
-from typing import Dict, List
+from typing import Dict
 
 from jina import Flow
 from jina.clients import Client
@@ -13,12 +12,13 @@ from kubernetes import config
 from yaspin.spinners import Spinners
 
 from now.cloud_manager import is_local_cluster
-from now.constants import JC_SECRET, NOW_AUTH_EXECUTOR_VERSION
+from now.constants import DEFAULT_FLOW_NAME
 from now.deployment.deployment import apply_replace, cmd, deploy_wolf
 from now.log import time_profiler, yaspin_extended
-from now.utils import sigmap, write_env_file
+from now.utils import sigmap, write_env_file, write_flow_file
 
 cur_dir = pathlib.Path(__file__).parent.resolve()
+MAX_WAIT_TIME = 1800
 
 
 def batch(data_list, n=1):
@@ -46,22 +46,29 @@ def wait_for_lb(lb_name, ns):
     return ip
 
 
-def wait_for_all_pods_in_ns(f, ns, max_wait=1800):
+def check_pods_health(ns):
     config.load_kube_config()
     v1 = k8s_client.CoreV1Api()
-    for i in range(max_wait):
-        pods = v1.list_namespaced_pod(ns).items
-        not_ready = [
-            'x'
-            for pod in pods
-            if not pod.status
-            or not pod.status.container_statuses
-            or not len(pod.status.container_statuses) == 1
-            or not pod.status.container_statuses[0].ready
-        ]
-        if len(not_ready) == 0 and f.num_deployments == len(pods):
-            return
+    pods = v1.list_namespaced_pod(ns).items
+
+    for pod in pods:
+        try:
+            message = pod.status.container_statuses[0].state.waiting.message
+        except:
+            message = None
+
+        if message and 'Error' in message:
+            raise Exception(pod.metadata.name + " " + message)
+
+
+def wait_for_flow(client, ns):
+    wait_time = 0
+    while not client.is_flow_ready() and wait_time <= MAX_WAIT_TIME:
+        check_pods_health(ns)
+        wait_time += 1
         sleep(1)
+    if not client.is_flow_ready():
+        raise Exception('Flow execution timed out.')
 
 
 def deploy_k8s(f, ns, tmpdir, kubectl_path):
@@ -96,67 +103,66 @@ def deploy_k8s(f, ns, tmpdir, kubectl_path):
             gateway_host = wait_for_lb('gateway-lb', ns)
             gateway_port = 8080
         cmd(f'{kubectl_path} apply -R -f {k8_path}')
-        # wait for flow to come up
-        wait_for_all_pods_in_ns(f, ns)
+
+        client = Client(host=gateway_host, port=gateway_port)
+        wait_for_flow(client, ns)
         spinner.ok("🚀")
-    # work around - first request hangs
-    sleep(3)
+
     return gateway_host, gateway_port, gateway_host_internal, gateway_port_internal
 
 
-def _extend_flow_yaml(flow_yaml, tmpdir, secured, admin_emails, user_emails):
-    if secured:
-        if flow_yaml.endswith('.yml') or flow_yaml.endswith('.yaml'):
-            with open(flow_yaml, 'r') as f:
-                flow_yaml = f.read()
-        first_part, second_part = flow_yaml.split('executors:')
-        executor_string = f"""
-  - name: security_check
-    uses: jinahub+docker://NOWAuthExecutor/v{NOW_AUTH_EXECUTOR_VERSION}
-    uses_with:
-      admin_emails: {admin_emails if admin_emails else []}
-      user_emails: {user_emails if user_emails else []}
-    jcloud:
-      resources:
-        memory: 1G
-    env:
-      JINA_LOG_LEVEL: DEBUG"""
-        full_yaml = f'{first_part}executors:{executor_string}{second_part}'
-        mod_path = os.path.join(tmpdir, 'mod.yml')
-        with open(mod_path, 'w') as f:
-            f.write(full_yaml)
-        return mod_path
-    else:
-        return flow_yaml
+def start_flow_in_process(f):
+    def start_flow():
+        with f:
+            print('flow started in process')
+            f.block()
+
+    p1 = Process(target=start_flow, args=())
+    p1.daemon = False
+    p1.start()
 
 
 @time_profiler
 def deploy_flow(
     deployment_type: str,
     flow_yaml: str,
-    ns: str,
     env_dict: Dict,
     kubectl_path: str,
-    secured: bool = False,
-    admin_emails: List[str] = None,
-    user_emails: List[str] = None,
 ):
+    """Deploy a Flow on JCloud, Kubernetes, or using Jina Orchestration"""
+    # TODO create tmpdir top level and pass it down
     with tempfile.TemporaryDirectory() as tmpdir:
-        flow_yaml = _extend_flow_yaml(
-            flow_yaml, tmpdir, secured, admin_emails, user_emails
-        )
         env_file = os.path.join(tmpdir, 'dot.env')
         write_env_file(env_file, env_dict)
 
-        if deployment_type == 'remote':
-            flow = deploy_wolf(path=flow_yaml, env_file=env_file, name=ns)
-            host = flow.gateway
-            client = Client(host=host)
+        # hack we don't know if the flow yaml is a path or a string
+        if type(flow_yaml) == dict:
+            flow_file = os.path.join(tmpdir, 'flow.yml')
+            write_flow_file(flow_yaml, flow_file)
+            flow_yaml = flow_file
 
-            # Dump the flow ID and gateway to keep track
-            pathlib.Path(user(JC_SECRET)).parent.mkdir(parents=True, exist_ok=True)
-            with open(user(JC_SECRET), 'w') as fp:
-                json.dump({'flow_id': flow.flow_id, 'gateway': host}, fp)
+        if os.environ.get('NOW_TESTING', False):
+            from dotenv import load_dotenv
+
+            load_dotenv(env_file, override=True)
+
+            f = Flow.load_config(flow_yaml)
+            f.gateway_args.timeout_send = -1
+            start_flow_in_process(f)
+
+            host = 'localhost'
+            client = Client(host=host, port=8080)
+            wait_for_flow(client, DEFAULT_FLOW_NAME)
+            # host & port
+            gateway_host = 'remote'
+            gateway_port = 8080
+            gateway_host_internal = host
+            gateway_port_internal = None  # Since host contains protocol
+
+        elif deployment_type == 'remote':
+            flow = deploy_wolf(path=flow_yaml)
+            host = flow.endpoints['gateway']
+            client = Client(host=host)
 
             # host & port
             gateway_host = 'remote'
@@ -175,7 +181,7 @@ def deploy_flow(
                 gateway_port_internal,
             ) = deploy_k8s(
                 f,
-                ns,
+                DEFAULT_FLOW_NAME,
                 tmpdir,
                 kubectl_path=kubectl_path,
             )

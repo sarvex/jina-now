@@ -1,1 +1,0 @@
-jina-hubble-sdk==0.8.1

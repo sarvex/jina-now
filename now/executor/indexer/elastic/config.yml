@@ -1,0 +1,8 @@
+jtype: NOWElasticIndexer
+py_modules:
+  - elastic_indexer.py
+metas:
+  name: NOWElasticIndexer
+  description: Indexer that uses an Elasticsearch server as backend. Allows filtering and bm25 scoring of documents.
+  url: https://github.com/jina-ai/now/tree/main/now/executor/indexer/elastic
+  keywords: [indexer, elastic, bm25, vector_search, filter]

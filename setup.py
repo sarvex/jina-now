@@ -40,7 +40,6 @@ import pathlib
 
 install_requires = get_requirements_list('requirements.txt')
 extra_require = get_requirements_list('requirements-test.txt')
-
 sys_platform = platform.system().lower()
 # if sys_platform == 'darwin':
 # torch_requirement = ['torch==1.10.2']

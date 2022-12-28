@@ -1,0 +1,8 @@
+jtype: NOWAutoCompleteExecutor2
+py_modules:
+  - executor.py
+metas:
+  name: NOWAutoCompleteExecutor2
+  description: Executor for auto completing suggestions for apps with text input
+  url: https://github.com/jina-ai/now/tree/feat-add-autocomplete/now_executors/NOWAutoCompleteExecutor2
+  keywords: [auto complete, text]
