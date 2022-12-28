@@ -1,11 +1,11 @@
 from __future__ import annotations, print_function, unicode_literals
 
+from docarray.typing import Image, Text, Video
+
 from now.utils import BetterEnum
 
-# ----------------------------------
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.138-fix-remove_output-modality-playground-3'
-# ----------------------------------
-NOW_PREPROCESSOR_VERSION = '0.0.117-test-local-end-to-end-12'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.139-fix-dataclass-8'
+NOW_PREPROCESSOR_VERSION = '0.0.117-test-local-end-to-end-31'
 NOW_QDRANT_INDEXER_VERSION = '0.0.138-refactor-remove-finetuning-6'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.139-test-local-end-to-end-12'
 NOW_AUTOCOMPLETE_VERSION = '0.0.7-refactor-remove-finetuning-6'
@@ -15,6 +15,13 @@ class Modalities(BetterEnum):
     TEXT = 'text'
     IMAGE = 'image'
     VIDEO = 'video'
+
+
+MODALITIES_MAPPING = {
+    Modalities.TEXT: Text,
+    Modalities.IMAGE: Image,
+    Modalities.VIDEO: Video,
+}
 
 
 class Apps(BetterEnum):

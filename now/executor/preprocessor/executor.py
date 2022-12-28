@@ -96,11 +96,18 @@ class NOWPreprocessor(Executor):
 
     def _preprocess_maybe_cloud_download(self, docs: DocumentArray) -> DocumentArray:
         with tempfile.TemporaryDirectory() as tmpdir:
+            search_fields = []
+            if self.user_input:
+                for search_field in self.user_input.search_fields:
+                    search_fields.append(
+                        self.user_input.files_to_dataclass_fields[search_field]
+                        if search_field in self.user_input.files_to_dataclass_fields
+                        else search_field
+                    )
+
             docs = transform_docarray(
                 documents=docs,
-                search_fields=self.user_input.search_fields
-                if self.user_input and self.user_input.search_fields
-                else [],
+                search_fields=search_fields,
             )
             if (
                 self.user_input

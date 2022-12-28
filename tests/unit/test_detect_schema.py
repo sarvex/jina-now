@@ -1,6 +1,7 @@
 import os
 
 import pytest
+from docarray.typing import Image, Text
 
 from now.common.detect_schema import (
     _create_candidate_search_filter_fields,
@@ -8,18 +9,8 @@ from now.common.detect_schema import (
     set_field_names_from_local_folder,
     set_field_names_from_s3_bucket,
 )
-from now.constants import DatasetTypes, Modalities
+from now.constants import DatasetTypes
 from now.now_dataclasses import UserInput
-
-
-@pytest.fixture
-def get_aws_info():
-    dataset_path = os.environ.get('S3_SCHEMA_FOLDER_PATH')
-    aws_access_key_id = os.environ.get('AWS_ACCESS_KEY_ID')
-    aws_secret_access_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
-    region = 'eu-west-1'
-
-    return dataset_path, aws_access_key_id, aws_secret_access_key, region
 
 
 @pytest.mark.parametrize(
@@ -99,12 +90,12 @@ def test_failed_uni_modal_docarray():
 
 def test_create_candidate_search_fields():
     fields_to_modalities = {
-        'image.png': Modalities.IMAGE,
-        'test.txt': Modalities.TEXT,
-        'tags': 'str',
-        'id': 'str',
-        'link': 'str',
-        'title': 'str',
+        'image.png': Image,
+        'test.txt': Text,
+        'tags': str,
+        'id': str,
+        'link': str,
+        'title': str,
     }
     (
         search_fields_modalities,
@@ -112,7 +103,7 @@ def test_create_candidate_search_fields():
     ) = _create_candidate_search_filter_fields(fields_to_modalities)
 
     assert len(search_fields_modalities.keys()) == 2
-    assert search_fields_modalities['image.png'] == Modalities.IMAGE
-    assert search_fields_modalities['test.txt'] == Modalities.TEXT
+    assert search_fields_modalities['image.png'] == Image
+    assert search_fields_modalities['test.txt'] == Text
 
     assert len(filter_fields_modalities.keys()) == 5

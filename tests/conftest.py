@@ -29,9 +29,7 @@ def tests_folder_path() -> str:
 
 @pytest.fixture
 def base64_image_string(resources_folder_path: str) -> str:
-    with open(
-        os.path.join(resources_folder_path, 'image', '5109112832.jpg'), 'rb'
-    ) as f:
+    with open(os.path.join(resources_folder_path, 'image', 'a.jpg'), 'rb') as f:
         binary = f.read()
         img_string = base64.b64encode(binary).decode('utf-8')
     return img_string
@@ -39,9 +37,7 @@ def base64_image_string(resources_folder_path: str) -> str:
 
 @pytest.fixture
 def base64_image_string(resources_folder_path: str) -> str:
-    with open(
-        os.path.join(resources_folder_path, 'image', '5109112832.jpg'), 'rb'
-    ) as f:
+    with open(os.path.join(resources_folder_path, 'image', 'a.jpg'), 'rb') as f:
         binary = f.read()
         img_string = base64.b64encode(binary).decode('utf-8')
     return img_string
@@ -185,6 +181,16 @@ def setup_service_running(es_connection_params) -> None:
         raise RuntimeError('Elasticsearch is not running')
     yield
     cmd('docker-compose -f tests/resources/elastic/docker-compose.yml down')
+
+
+@pytest.fixture
+def get_aws_info():
+    dataset_path = os.environ.get('S3_SCHEMA_FOLDER_PATH')
+    aws_access_key_id = os.environ.get('AWS_ACCESS_KEY_ID')
+    aws_secret_access_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
+    region = 'eu-west-1'
+
+    return dataset_path, aws_access_key_id, aws_secret_access_key, region
 
 
 @pytest.fixture

@@ -95,7 +95,8 @@ def transform_multi_modal_data(
                     )
                 )
             else:
-                document.tags[field_name] = chunk.content
+                if chunk.text:
+                    document.tags[field_name] = chunk.content
         document.chunks = new_chunks
         for chunk in document.chunks:
             chunk.tags.update(document.tags)
@@ -115,4 +116,8 @@ def transform_docarray(
     """
     if not (documents and documents[0].chunks):
         documents = transform_uni_modal_data(documents=documents)
+    else:
+        for doc in documents:
+            for chunk in doc.chunks:
+                chunk.modality = chunk.modality or _get_modality(chunk)
     return documents

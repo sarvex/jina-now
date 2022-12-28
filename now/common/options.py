@@ -50,10 +50,7 @@ def _create_app_from_user_input(user_input: UserInput, **kwargs):
             f'choose one of the following: {user_input.search_fields_modalities.keys()}'
         )
     _search_modality = user_input.search_fields_modalities[user_input.search_fields[0]]
-    if _search_modality in ['image', 'text', 'video']:
-        app_name = Apps.SEARCH_APP
-    else:
-        raise ValueError(f'Invalid search modality: {_search_modality}')
+    app_name = Apps.SEARCH_APP
     user_input.app_instance = construct_app(app_name)
 
 
@@ -135,7 +132,6 @@ DEMO_DATA = DialogOptions(
     post_func=lambda user_input, **kwargs: set_field_names_from_docarray(user_input),
 )
 
-
 DOCARRAY_NAME = DialogOptions(
     name='dataset_name',
     prompt_message='Please enter your DocumentArray name:',
@@ -213,7 +209,6 @@ SEARCH_FIELDS = DialogOptions(
     },
 )
 
-
 FILTER_FIELDS = DialogOptions(
     name='filter_fields',
     choices=lambda user_input, **kwargs: [
@@ -231,7 +226,6 @@ FILTER_FIELDS = DialogOptions(
     > 0,
 )
 
-
 ES_INDEX_NAME = DialogOptions(
     name='es_index_name',
     prompt_message='Please enter the name of your Elasticsearch index:',
@@ -240,7 +234,6 @@ ES_INDEX_NAME = DialogOptions(
     conditional_check=lambda user_input: user_input.dataset_type
     == DatasetTypes.ELASTICSEARCH,
 )
-
 
 ES_HOST_NAME = DialogOptions(
     name='es_host_name',
