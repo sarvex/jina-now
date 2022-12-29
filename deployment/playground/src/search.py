@@ -87,7 +87,7 @@ def search(
     if endpoint == 'suggestion':
         data[attribute_name] = attribute_value
     elif endpoint == 'search':
-        data['query'] = {'search_field': {attribute_name: attribute_value}}
+        data['query'] = {f'query_{attribute_name}': {attribute_name: attribute_value}}
     # in case the jwt is none, no jwt will be sent. This is the case when no authentication is used for that flow
     if jwt is not None:
         data['jwt'] = jwt
@@ -147,7 +147,7 @@ def call_flow(url_host, data, attribute_name, domain, endpoint):
     # update URI to temporary URI for any cloud bucket resources
     docs_cloud = docs.find({'uri': {'$regex': r"\As3://"}})
     if len(docs_cloud) > 0:
-        del data[attribute_name]
+        del data['query']
         del data['limit']
         data['ids'] = docs_cloud[:, 'id']
         data['uris'] = docs_cloud[:, 'uri']

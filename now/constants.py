@@ -1,20 +1,29 @@
 from __future__ import annotations, print_function, unicode_literals
 
+from docarray.typing import Image, Text, Video
+
 from now.utils import BetterEnum
 
 # ----------------------------------
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.139-refactor-bump-jina-version1'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.139-refactor-bump-jina-version2'
 # ----------------------------------
-NOW_PREPROCESSOR_VERSION = '0.0.117-refactor-bump-jina-version1'
-NOW_QDRANT_INDEXER_VERSION = '0.0.138-refactor-bump-jina-version1'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.139-refactor-bump-jina-version1'
-NOW_AUTOCOMPLETE_VERSION = '0.0.7-refactor-bump-jina-version1'
+NOW_PREPROCESSOR_VERSION = '0.0.117-refactor-bump-jina-version2'
+NOW_QDRANT_INDEXER_VERSION = '0.0.138-refactor-bump-jina-version2'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.139-refactor-bump-jina-version2'
+NOW_AUTOCOMPLETE_VERSION = '0.0.7-refactor-bump-jina-version2'
 
 
 class Modalities(BetterEnum):
     TEXT = 'text'
     IMAGE = 'image'
     VIDEO = 'video'
+
+
+MODALITIES_MAPPING = {
+    Modalities.TEXT: Text,
+    Modalities.IMAGE: Image,
+    Modalities.VIDEO: Video,
+}
 
 
 class Apps(BetterEnum):

@@ -30,7 +30,10 @@ def _get_multi_modal_format(document: Document) -> Document:
     elif document.text:
         new_doc = Document(chunks=[Document(text=document.text)])
         modality = Modalities.TEXT
+    elif document.tensor:
+        new_doc = Document(chunks=[Document(tensor=document.tensor)])
     else:
+        document.summary()
         raise Exception(f'Document {document} cannot be transformed.')
     if modality:
         new_doc.chunks[0].modality = modality
@@ -95,7 +98,8 @@ def transform_multi_modal_data(
                     )
                 )
             else:
-                document.tags[field_name] = chunk.content
+                if chunk.text:
+                    document.tags[field_name] = chunk.content
         document.chunks = new_chunks
         for chunk in document.chunks:
             chunk.tags.update(document.tags)
@@ -115,4 +119,8 @@ def transform_docarray(
     """
     if not (documents and documents[0].chunks):
         documents = transform_uni_modal_data(documents=documents)
+    else:
+        for doc in documents:
+            for chunk in doc.chunks:
+                chunk.modality = chunk.modality or _get_modality(chunk)
     return documents

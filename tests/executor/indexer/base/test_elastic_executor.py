@@ -541,10 +541,6 @@ class TestBaseIndexerElastic:
             assert matches[1].pic.tensor is None
             assert matches[0].pic.tensor is None
 
-    # TODO: reactivate this test
-    @pytest.mark.skip(
-        'the current pr breaks curation in elastic. Plase fix and then re-activate it.'
-    )
     def test_curate_endpoint(self, metas, setup_service_running, random_index_name):
         """Test indexing does not return anything"""
         docs = self.get_docs(NUMBER_OF_DOCS)

@@ -1,6 +1,7 @@
 from __future__ import annotations, print_function, unicode_literals
 
 from docarray import DocumentArray
+from docarray.typing import Image, Text, Video
 from pydantic import BaseModel
 
 from now.constants import Modalities
@@ -36,7 +37,7 @@ class DemoDataset(BaseModel):
 
 
 AVAILABLE_DATASETS = {
-    Modalities.IMAGE: [
+    Image: [
         DemoDataset(
             name=DemoDatasetNames.BEST_ARTWORKS,
             display_modality=Modalities.IMAGE,
@@ -78,7 +79,7 @@ AVAILABLE_DATASETS = {
             display_name='☢ chest x-rays (≈100K docs)',
         ),
     ],
-    Modalities.TEXT: [
+    Text: [
         DemoDataset(
             name=DemoDatasetNames.ROCK_LYRICS,
             display_modality=Modalities.TEXT,
@@ -105,7 +106,7 @@ AVAILABLE_DATASETS = {
             display_name='🎤 metal lyrics (200K docs)',
         ),
     ],
-    Modalities.VIDEO: [
+    Video: [
         DemoDataset(
             name=DemoDatasetNames.TUMBLR_GIFS,
             display_modality=Modalities.VIDEO,

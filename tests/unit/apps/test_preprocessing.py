@@ -63,7 +63,7 @@ def test_text_preprocessing(app_cls, is_indexing):
 def test_image_preprocessing(app_cls, is_indexing, resources_folder_path):
     """Test if the image to image preprocessing works for queries and indexing"""
     app = app_cls()
-    uri = os.path.join(resources_folder_path, 'image/5109112832.jpg')
+    uri = os.path.join(resources_folder_path, 'image/a.jpg')
     da = DocumentArray([Document(uri=uri)])
     da = transform_docarray(da, search_fields=[])
     da = app.preprocess(da)

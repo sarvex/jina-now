@@ -100,7 +100,7 @@ jobs:
           has_changed_filter: |
             - now/app/base/**
               - now/executor/preprocessor/**
-          executor_id: vlxgoxlv
+          executor_id: 2hgojz3z
           jina_auth_token: ${{ secrets.NOW_PREPROCESSOR_JCLOUD_TOKEN }}
 
   update-qdrant:
@@ -203,6 +203,10 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: replace now commit hash in Dockerfile
+        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
+        shell: bash
+        run: sed -i 's/JINA_NOW_COMMIT_SHA/${{ github.event.pull_request.head.sha }}/g' deployment/bff/Dockerfile
       - name: Build and push bff
         if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
         uses: docker/build-push-action@v3

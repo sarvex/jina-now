@@ -8,11 +8,11 @@ import requests
 from now.constants import (
     AVAILABLE_MODALITIES_FOR_FILTER,
     AVAILABLE_MODALITIES_FOR_SEARCH,
+    MODALITIES_MAPPING,
     NOT_AVAILABLE_MODALITIES_FOR_FILTER,
     SUPPORTED_FILE_TYPES,
     Modalities,
 )
-from now.data_loading.data_loading import get_s3_bucket_and_folder_prefix
 from now.now_dataclasses import UserInput
 
 
@@ -41,20 +41,20 @@ def _create_candidate_search_filter_fields(field_name_to_value):
         for modality in AVAILABLE_MODALITIES_FOR_SEARCH:
             file_types = SUPPORTED_FILE_TYPES[modality]
             if field_name.split('.')[-1] in file_types:
-                search_fields_modalities[field_name] = modality
+                search_fields_modalities[field_name] = MODALITIES_MAPPING[modality]
                 break
             elif field_name == 'uri' and field_value.split('.')[-1] in file_types:
-                search_fields_modalities[field_name] = modality
+                search_fields_modalities[field_name] = MODALITIES_MAPPING[modality]
                 break
-            elif field_name == 'text' and field_value:
-                search_fields_modalities[field_name] = Modalities.TEXT
-                break
+        if field_name == 'text' and field_value:
+            search_fields_modalities[field_name] = MODALITIES_MAPPING[Modalities.TEXT]
+
         # we determine if it's a filter field
         if (
             field_name == 'uri'
             and field_value.split('.')[-1] not in not_available_file_types_for_filter
         ) or field_name.split('.')[-1] not in not_available_file_types_for_filter:
-            filter_field_modalities[field_name] = str(field_value.__class__.__name__)
+            filter_field_modalities[field_name] = field_value.__class__.__name__
 
     if len(search_fields_modalities.keys()) == 0:
         raise ValueError(
@@ -104,7 +104,7 @@ def _extract_field_candidates_docarray(response):
             filter_modalities[field_name] = modality
         # only the available modalities for search are added to search modalities
         if modality in AVAILABLE_MODALITIES_FOR_SEARCH:
-            search_modalities[field_name] = modality
+            search_modalities[field_name] = MODALITIES_MAPPING[modality]
 
     if doc.get('tags', None):
         for el, value in doc['tags']['fields'].items():
@@ -148,7 +148,7 @@ def set_field_names_from_docarray(user_input: UserInput, **kwargs):
         raise ValueError('DocumentArray does not exist or you do not have access to it')
 
 
-def _identify_folder_structure(file_paths: List[str], separator: str) -> str:
+def identify_folder_structure(file_paths: List[str], separator: str) -> str:
     """This function identifies the folder structure.
     It works with a local file structure or a remote file structure.
 
@@ -235,7 +235,7 @@ def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
         for obj in objects
         if not obj.key.endswith('/') and not obj.key.split('/')[-1].startswith('.')
     ]
-    folder_structure = _identify_folder_structure(file_paths, '/')
+    folder_structure = identify_folder_structure(file_paths, '/')
     if folder_structure == 'single_folder':
         field_names = _extract_field_names_single_folder(file_paths, '/')
     elif folder_structure == 'sub_folders':
@@ -274,7 +274,7 @@ def set_field_names_from_local_folder(user_input: UserInput, **kwargs):
         file_paths.extend(
             [os.path.join(root, file) for file in files if not file.startswith('.')]
         )
-    folder_structure = _identify_folder_structure(file_paths, os.sep)
+    folder_structure = identify_folder_structure(file_paths, os.sep)
     if folder_structure == 'single_folder':
         field_names = _extract_field_names_single_folder(file_paths, os.sep)
     elif folder_structure == 'sub_folders':
@@ -289,3 +289,31 @@ def set_field_names_from_local_folder(user_input: UserInput, **kwargs):
         user_input.search_fields_modalities,
         user_input.filter_fields_modalities,
     ) = _create_candidate_search_filter_fields(field_names)
+
+
+def get_s3_bucket_and_folder_prefix(user_input: UserInput):
+    """
+    Gets the s3 bucket and folder prefix from the user input.
+
+    :param user_input: The user input
+
+    :return: The s3 bucket and folder prefix
+    """
+    import boto3.session
+
+    s3_uri = user_input.dataset_path
+    if not s3_uri.startswith('s3://'):
+        raise ValueError(
+            f"Can't process S3 URI {s3_uri} as it assumes it starts with: 's3://'"
+        )
+
+    bucket = s3_uri.split('/')[2]
+    folder_prefix = '/'.join(s3_uri.split('/')[3:])
+
+    session = boto3.session.Session(
+        aws_access_key_id=user_input.aws_access_key_id,
+        aws_secret_access_key=user_input.aws_secret_access_key,
+    )
+    bucket = session.resource('s3').Bucket(bucket)
+
+    return bucket, folder_prefix
