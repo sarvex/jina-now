@@ -100,7 +100,7 @@ jobs:
           has_changed_filter: |
             - now/app/base/**
               - now/executor/preprocessor/**
-          executor_id: vlxgoxlv
+          executor_id: 2hgojz3z
           jina_auth_token: ${{ secrets.NOW_PREPROCESSOR_JCLOUD_TOKEN }}
 
   update-qdrant:
