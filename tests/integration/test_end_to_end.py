@@ -340,9 +340,9 @@ def get_search_request_body(
             search_text = 'laser eyes'
         else:
             search_text = 'test'
-        request_body['query'] = {'text_field': {'text': search_text}}
+        request_body['query'] = {'query_text': {'text': search_text}}
     elif search_modality == Modalities.IMAGE:
-        request_body['query'] = {'image_field': {'blob': test_search_image}}
+        request_body['query'] = {'query_image': {'blob': test_search_image}}
     return request_body
 
 
@@ -398,7 +398,7 @@ def test_backend_custom_data(
 
     assert_deployment_response(deployment_type, input_modality, response)
 
-    request_body = {'query': {'text_field': {'text': 'test'}}, 'limit': 9}
+    request_body = {'query': {'query_text': {'text': 'test'}}, 'limit': 9}
 
     print(f"Getting gateway from response")
     request_body['host'] = response['host']
