@@ -165,9 +165,6 @@ def call_flow(
     parameters['user_input'].pop('app_instance', None)
     parameters['user_input'].pop('search_fields_modalities', None)
     parameters['user_input'].pop('filter_fields_modalities', None)
-    task_config = parameters['user_input'].pop('task_config', None)
-    if task_config:
-        parameters['user_input']['indexer_scope'] = task_config.indexer_scope
 
     # this is a hack for the current core/ wolf issue
     # since we get errors while indexing, we retry

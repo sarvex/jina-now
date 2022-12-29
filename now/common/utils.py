@@ -149,13 +149,13 @@ def get_indexer_config(
 
 def _extract_tags_for_indexer(user_input: UserInput):
     final_tags = []
-    for tag, value in user_input.filter_mods.items():
-        if tag in user_input.filter_fields:
-            final_tags.append([tag, value])
-    if user_input.app_instance.output_modality in [
-        Modalities.IMAGE,
-        Modalities.VIDEO,
-    ]:
+    for tag in user_input.filter_fields:
+        final_tags.append([tag, user_input.filter_field_candidates_to_modalities[tag]])
+    if any(
+        user_input.search_field_candidates_to_modalities[search_field]
+        in [Modalities.IMAGE, Modalities.VIDEO]
+        for search_field in user_input.search_fields
+    ):
         final_tags.append([TAG_INDEXER_DOC_HAS_TEXT, str(bool.__name__)])
     return final_tags
 

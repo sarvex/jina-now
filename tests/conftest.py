@@ -83,11 +83,6 @@ def gif_resource_path(resources_folder_path: str) -> str:
 
 
 @pytest.fixture
-def get_task_config_path(resources_folder_path: str) -> str:
-    return os.path.join(resources_folder_path, 'text+image/config.json')
-
-
-@pytest.fixture
 def admin_email():
     return 'alpha.omega@jina.ai'
 

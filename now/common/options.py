@@ -18,7 +18,7 @@ from now.common.detect_schema import (
     set_field_names_from_local_folder,
     set_field_names_from_s3_bucket,
 )
-from now.constants import DatasetTypes
+from now.constants import Apps, DatasetTypes
 from now.demo_data import AVAILABLE_DATASETS
 from now.deployment.deployment import cmd
 from now.log import yaspin_extended
@@ -39,17 +39,22 @@ AVAILABLE_SOON = 'will be available in upcoming versions'
 # than the parent should be called first before the dependant can called.
 
 
-def _validate_user_input_for_search(user_input: UserInput, **kwargs):
+def _create_app_from_user_input(user_input: UserInput, **kwargs):
     if len(user_input.search_fields) != 1:
         raise ValueError(
             'Currently only one search field is supported. Please choose one field.'
         )
-    if user_input.search_fields[0] not in user_input.search_mods.keys():
+    if (
+        user_input.search_fields[0]
+        not in user_input.search_field_candidates_to_modalities.keys()
+    ):
         raise ValueError(
             f'Search field specified is not among the search candidate fields. Please '
-            f'choose one of the following: {user_input.candidate_search_mods.keys()}'
+            f'choose one of the following: {user_input.search_field_candidates_to_modalities.keys()}'
         )
-    _search_modality = user_input.search_fields_modalities[user_input.search_fields[0]]
+    _search_modality = user_input.search_field_candidates_to_modalities[
+        user_input.search_fields[0]
+    ]
     app_name = Apps.SEARCH_APP
     user_input.app_instance = construct_app(app_name)
 
@@ -194,58 +199,38 @@ AWS_REGION_NAME = DialogOptions(
 # --------------------------------------------- #
 
 
-def _update_fields_and_create_app(user_input: UserInput, **kwargs):
-    # update the search mods based on the selected search fields
-    user_input.search_mods = {
-        field: f_type
-        for field, f_type in user_input.candidate_search_mods.items()
-        if field in user_input.search_fields
-    }
-    # Validate if the search app is allowed for the given config
-    _validate_user_input_for_search(user_input)
-
-
 SEARCH_FIELDS = DialogOptions(
     name='search_fields',
     choices=lambda user_input, **kwargs: [
         {'name': field, 'value': field}
-        for field in user_input.candidate_search_mods.keys()
+        for field in user_input.search_field_candidates_to_modalities.keys()
     ],
     prompt_message='Please select the index fields:',
     prompt_type='checkbox',
     is_terminal_command=True,
-    post_func=_update_fields_and_create_app,
+    post_func=_create_app_from_user_input,
     argparse_kwargs={
         'type': lambda s: s.split(',') if s else UserInput().search_fields
     },
 )
 
-
-def _update_filter_mods(user_input: UserInput, **kwargs):
-    # update the filter mods based on the selected filter fields
-    user_input.filter_mods = {
-        field: f_type
-        for field, f_type in user_input.candidate_filter_mods.items()
-        if field in user_input.filter_fields
-    }
-
-
 FILTER_FIELDS = DialogOptions(
     name='filter_fields',
     choices=lambda user_input, **kwargs: [
         {'name': field, 'value': field}
-        for field in user_input.candidate_filter_mods.keys()
+        for field in user_input.filter_field_candidates_to_modalities.keys()
         if field not in user_input.search_fields
     ],
     prompt_message='Please select the filter fields',
     prompt_type='checkbox',
     depends_on=DATASET_TYPE,
-    conditional_check=lambda user_input: user_input.candidate_filter_mods is not None
+    conditional_check=lambda user_input: user_input.filter_field_candidates_to_modalities
+    is not None
     and len(
-        set(user_input.candidate_filter_mods.keys()) - set(user_input.search_fields)
+        set(user_input.filter_field_candidates_to_modalities.keys())
+        - set(user_input.search_fields)
     )
     > 0,
-    post_func=_update_filter_mods,
 )
 
 ES_INDEX_NAME = DialogOptions(

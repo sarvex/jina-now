@@ -45,8 +45,10 @@ def create_dataclass(user_input: UserInput):
     :return: dataclass object
     """
     all_modalities = {}
-    all_modalities.update(user_input.search_fields_modalities)
-    update_dict_with_no_overwrite(all_modalities, user_input.filter_fields_modalities)
+    all_modalities.update(user_input.search_field_candidates_to_modalities)
+    update_dict_with_no_overwrite(
+        all_modalities, user_input.filter_field_candidates_to_modalities
+    )
 
     file_mapping_to_dataclass_fields = create_dataclass_fields_file_mappings(
         user_input.search_fields + user_input.filter_fields,

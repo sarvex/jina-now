@@ -28,8 +28,14 @@ def test_set_fields_names_from_local_folder(
 
     set_field_names_from_local_folder(user_input)
 
-    assert set(user_input.candidate_search_mods.keys()) == search_field_names
-    assert set(user_input.candidate_filter_mods.keys()) == filter_field_names
+    assert (
+        set(user_input.search_field_candidates_to_modalities.keys())
+        == search_field_names
+    )
+    assert (
+        set(user_input.filter_field_candidates_to_modalities.keys())
+        == filter_field_names
+    )
 
 
 @pytest.mark.parametrize(
@@ -59,8 +65,14 @@ def test_set_field_names_from_s3_bucket(
     user_input.dataset_path = user_input.dataset_path + dataset_path
     set_field_names_from_s3_bucket(user_input)
 
-    assert set(user_input.candidate_search_mods.keys()) == search_field_names
-    assert set(user_input.candidate_filter_mods.keys()) == filter_field_names
+    assert (
+        set(user_input.search_field_candidates_to_modalities.keys())
+        == search_field_names
+    )
+    assert (
+        set(user_input.filter_field_candidates_to_modalities.keys())
+        == filter_field_names
+    )
 
 
 def test_set_field_names_from_docarray():
@@ -72,8 +84,8 @@ def test_set_field_names_from_docarray():
 
     set_field_names_from_docarray(user_input)
 
-    assert len(user_input.candidate_search_mods.keys()) == 2
-    assert set(user_input.candidate_filter_mods.keys()) == {
+    assert len(user_input.search_field_candidates_to_modalities.keys()) == 2
+    assert set(user_input.filter_field_candidates_to_modalities.keys()) == {
         'label',
         'image',
     }

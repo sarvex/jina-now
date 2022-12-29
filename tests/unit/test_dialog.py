@@ -46,7 +46,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'search_fields_modalities': {'label': Text, 'image': Image},
             'search_fields': ['label'],
             'filter_fields': [],
-            'candidate_filter_mods': {'label': 'text'},
+            'filter_fields_modalities': {'label': 'text'},
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -61,7 +61,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'search_fields_modalities': {'label': Text, 'image': Image},
             'search_fields': ['image'],
             'filter_fields': [],
-            'candidate_filter_mods': {'label': 'text'},
+            'filter_fields_modalities': {'label': 'text'},
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -90,7 +90,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'search_fields': ['image'],
             'search_fields_modalities': {'label': Text, 'image': Image},
             'filter_fields': [],
-            'candidate_filter_mods': {'label': 'text'},
+            'filter_fields_modalities': {'label': 'text'},
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -106,7 +106,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'search_fields': ['lyrics'],
             'search_fields_modalities': {'lyrics': Text, 'title': Text},
             'filter_fields': ['title'],
-            'candidate_filter_mods': {'lyrics': 'text', 'title': 'text'},
+            'filter_fields_modalities': {'lyrics': 'text', 'title': 'text'},
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -121,7 +121,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'search_fields': ['video'],
             'search_fields_modalities': {'video': Video, 'description': Text},
             'filter_fields': ['title'],
-            'candidate_filter_mods': {'description': 'text'},
+            'filter_fields_modalities': {'description': 'text'},
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -164,6 +164,5 @@ def test_configure_user_input(
     user_input = configure_user_input(**configure_kwargs)
     user_input.__dict__.update({'jwt': None, 'admin_emails': None})
     user_input.__dict__.update({'app_instance': None})
-    user_input.__dict__.update({'search_mods': {}, 'filter_mods': {}})
 
     assert user_input == expected_user_input
