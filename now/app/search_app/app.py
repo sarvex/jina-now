@@ -1,6 +1,5 @@
-from typing import Dict, List, Tuple
+from typing import Dict, Tuple
 
-from docarray import DocumentArray
 from jina.helper import random_port
 
 from now.app.base.app import JinaNOWApp
@@ -16,9 +15,7 @@ from now.constants import (
 )
 from now.demo_data import DemoDatasetNames
 from now.executor.name_to_id_map import name_to_id_map
-from now.finetuning.run_finetuning import finetune
 from now.finetuning.settings import parse_finetune_settings
-from now.now_dataclasses import UserInput
 
 
 class SearchApp(JinaNOWApp):
@@ -38,25 +35,12 @@ class SearchApp(JinaNOWApp):
         return 'Image-text search app'
 
     @property
-    def input_modality(self) -> Union[Modalities, List[Modalities]]:
-        return [Modalities.TEXT, Modalities.IMAGE]
-
-    @property
-    def output_modality(self) -> Union[Modalities, List[Modalities]]:
-        return [Modalities.TEXT, Modalities.IMAGE, Modalities.VIDEO]
-
-    @property
     def required_docker_memory_in_gb(self) -> int:
         return 8
 
     @property
     def finetune_datasets(self) -> [Tuple]:
         return DemoDatasetNames.DEEP_FASHION, DemoDatasetNames.BIRD_SPECIES
-
-    @property
-    def samples_frames_video(self) -> int:
-        """Number of frames to sample from a video"""
-        return 3
 
     @staticmethod
     def autocomplete_stub() -> Tuple[Dict, Dict]:
@@ -216,47 +200,6 @@ class SearchApp(JinaNOWApp):
             'COLUMNS': tags,
         }
         return exec_stub, exec_env
-
-    def finetune_setup(
-        self,
-        dataset: DocumentArray,
-        user_input: UserInput,
-        finetune_settings,
-        env_dict,
-        **kwargs,
-    ) -> Tuple[Dict, bool]:
-        kubectl_path = kwargs.get('kubectl_path', 'kubectl')
-        is_finetuned = False
-        if finetune_settings.perform_finetuning:
-            try:
-                artifact_id, token = finetune(
-                    finetune_settings=finetune_settings,
-                    app_instance=self,
-                    dataset=dataset,
-                    user_input=user_input,
-                    env_dict=env_dict,
-                    kubectl_path=kubectl_path,
-                )
-
-                finetune_settings.finetuned_model_artifact = artifact_id
-                finetune_settings.token = token
-
-                env_dict[
-                    'FINETUNE_ARTIFACT'
-                ] = finetune_settings.finetuned_model_artifact
-                env_dict['JINA_TOKEN'] = finetune_settings.token
-                is_finetuned = True
-            except Exception:  # noqa
-                print(
-                    'Finetuning is currently offline. The program execution still continues without'
-                    ' finetuning. Please report the following exception to us:'
-                )
-                import traceback
-
-                traceback.print_exc()
-                finetune_settings.perform_finetuning = False
-
-        return env_dict, is_finetuned
 
     def get_executor_stubs(
         self, dataset, user_input, flow_yaml_content, **kwargs

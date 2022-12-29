@@ -188,14 +188,6 @@ class JinaNOWApp:
         """
         raise NotImplementedError()
 
-    def finetune_setup(
-        self, dataset, user_input, finetune_settings, env_dict, **kwargs
-    ):
-        """
-        Perform the finetuning setup for the app. Maybe different approach for different apps.
-        """
-        raise NotImplementedError()
-
     # TODO Remove kubectl_path. At the moment, the setup function needs kubectl because of finetuning a custom
     #  dataset with local deployment. In that case, inference is done on the k8s cluster.
     def setup(self, dataset: DocumentArray, user_input: UserInput, **kwargs) -> Dict:
