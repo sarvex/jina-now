@@ -32,7 +32,10 @@ def _get_multi_modal_format(document: Document) -> Document:
     elif document.text:
         new_doc = Document(chunks=[Document(text=document.text)])
         modality = Modalities.TEXT
+    elif document.tensor:
+        new_doc = Document(chunks=[Document(tensor=document.tensor)])
     else:
+        document.summary()
         raise Exception(f'Document {document} cannot be transformed.')
     if modality:
         new_doc.chunks[0].modality = modality
