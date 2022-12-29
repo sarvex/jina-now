@@ -16,6 +16,7 @@ from now.constants import (
 )
 from now.demo_data import AVAILABLE_DATASETS, DemoDataset, DemoDatasetNames
 from now.executor.name_to_id_map import name_to_id_map
+from now.now_dataclasses import UserInput
 
 
 class SearchApp(JinaNOWApp):
@@ -139,7 +140,7 @@ class SearchApp(JinaNOWApp):
         }
 
     def get_executor_stubs(
-        self, dataset, user_input, flow_yaml_content, **kwargs
+        self, dataset, user_input: UserInput, flow_yaml_content, **kwargs
     ) -> Dict:
         """
         Returns a dictionary of executors to be added in the flow along with their env vars and its values
@@ -149,8 +150,6 @@ class SearchApp(JinaNOWApp):
         :param kwargs: additional arguments
         :return: executors stubs with filled-in env vars
         """
-        if not flow_yaml_content['executors']:
-            flow_yaml_content['executors'] = []
         encoders_list = []
 
         flow_yaml_content['executors'].append(self.autocomplete_stub())
@@ -162,13 +161,17 @@ class SearchApp(JinaNOWApp):
             )
         )
 
-        if Modalities.TEXT in user_input.search_mods.values():
+        if any(
+            user_input.search_field_candidates_to_modalities[field] == Modalities.TEXT
+            for field in user_input.search_fields
+        ):
             sbert_encoder = self.sbert_encoder_stub()
             encoders_list.append(sbert_encoder['name'])
             flow_yaml_content['executors'].append(sbert_encoder)
         if any(
-            _mod in user_input.search_mods.values()
-            for _mod in [Modalities.IMAGE, Modalities.VIDEO]
+            user_input.search_field_candidates_to_modalities[field]
+            in [Modalities.IMAGE, Modalities.VIDEO]
+            for field in user_input.search_fields
         ):
             clip_encoder = self.clip_encoder_stub(user_input)
             encoders_list.append(clip_encoder['name'])
@@ -177,18 +180,6 @@ class SearchApp(JinaNOWApp):
         indexer_stub = self.indexer_stub(user_input)
         indexer_stub['needs'] = encoders_list
         flow_yaml_content['executors'].append(indexer_stub)
-
-        # append api_keys to all executors except the remote executors
-        for executor in flow_yaml_content['executors']:
-            if not (
-                executor.get('external', False)
-                and user_input.deployment_type == 'remote'
-            ):
-                if not executor.get('uses_with', None):
-                    executor['uses_with'] = {}
-                executor['uses_with']['api_keys'] = '${{ ENV.API_KEY }}'
-                executor['uses_with']['user_emails'] = '${{ ENV.USER_EMAILS }}'
-                executor['uses_with']['admin_emails'] = '${{ ENV.ADMIN_EMAILS }}'
 
         return flow_yaml_content
 
