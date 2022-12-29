@@ -3,7 +3,6 @@ from typing import Dict, List, Optional, Tuple
 
 import docker
 from docarray import DocumentArray
-from jina import Client
 from jina import __version__ as jina_version
 from jina.jaml import JAML
 
@@ -236,25 +235,7 @@ class JinaNOWApp:
         return docs
 
     def is_demo_available(self, user_input) -> bool:
-        hosted_ds = DEFAULT_EXAMPLE_HOSTED.get(self.app_name, {})
-        if (
-            hosted_ds
-            and user_input.dataset_name in hosted_ds
-            and user_input.deployment_type == 'remote'
-            and 'NOW_EXAMPLES' not in os.environ
-            and 'NOW_CI_RUN' not in os.environ
-        ):
-            client = Client(
-                host=f'grpcs://now-example-{self.app_name}-{user_input.dataset_name}.dev.jina.ai'.replace(
-                    '_', '-'
-                )
-            )
-            try:
-                client.post('/dry_run', timeout=2)
-            except Exception:
-                return False
-            return True
-        return False
+        raise NotImplementedError()
 
     @property
     def max_request_size(self) -> int:

@@ -1,6 +1,7 @@
 import os
 from typing import Dict, List, Tuple
 
+from jina import Client
 from jina.helper import random_port
 
 from now.app.base.app import JinaNOWApp
@@ -17,7 +18,12 @@ from now.constants import (
     Apps,
     Modalities,
 )
-from now.demo_data import AVAILABLE_DATASETS, DemoDataset, DemoDatasetNames
+from now.demo_data import (
+    AVAILABLE_DATASETS,
+    DEFAULT_EXAMPLE_HOSTED,
+    DemoDataset,
+    DemoDatasetNames,
+)
 from now.executor.name_to_id_map import name_to_id_map
 from now.now_dataclasses import UserInput
 from now.utils import get_email
@@ -50,6 +56,26 @@ class SearchApp(JinaNOWApp):
     @property
     def finetune_datasets(self) -> [Tuple]:
         return DemoDatasetNames.DEEP_FASHION, DemoDatasetNames.BIRD_SPECIES
+
+    def is_demo_available(self, user_input) -> bool:
+        if (
+            DEFAULT_EXAMPLE_HOSTED
+            and user_input.dataset_name in DEFAULT_EXAMPLE_HOSTED
+            and user_input.deployment_type == 'remote'
+            and 'NOW_EXAMPLES' not in os.environ
+            and 'NOW_CI_RUN' not in os.environ
+        ):
+            client = Client(
+                host=f'grpcs://now-example-{self.app_name}-{user_input.dataset_name}.dev.jina.ai'.replace(
+                    '_', '-'
+                )
+            )
+            try:
+                client.post('/dry_run', timeout=2)
+            except Exception:
+                return False
+            return True
+        return False
 
     @staticmethod
     def autocomplete_stub() -> Dict:
@@ -147,15 +173,13 @@ class SearchApp(JinaNOWApp):
         self, dataset, user_input: UserInput, flow_yaml_content, **kwargs
     ) -> Dict:
         """
-        Returns a dictionary of executors to be added in the flow along with their env vars and its values
+        Returns a dictionary of executors to be added in the flow
         :param dataset: DocumentArray of the dataset
         :param user_input: user input
         :param flow_yaml_content: initial flow yaml content
         :param kwargs: additional arguments
         :return: executors stubs with filled-in env vars
         """
-        encoders_list = []
-
         flow_yaml_content['executors'].append(self.autocomplete_stub())
 
         flow_yaml_content['executors'].append(
@@ -165,6 +189,7 @@ class SearchApp(JinaNOWApp):
             )
         )
 
+        encoders_list = []
         if any(
             user_input.search_field_candidates_to_modalities[field] == Modalities.TEXT
             for field in user_input.search_fields
@@ -181,9 +206,9 @@ class SearchApp(JinaNOWApp):
             encoders_list.append(clip_encoder['name'])
             flow_yaml_content['executors'].append(clip_encoder)
 
-        indexer_stub = self.indexer_stub(user_input)
-        indexer_stub['needs'] = encoders_list
-        flow_yaml_content['executors'].append(indexer_stub)
+        flow_yaml_content['executors'].append(
+            self.indexer_stub(user_input, encoders_list=encoders_list)
+        )
 
         return flow_yaml_content
 

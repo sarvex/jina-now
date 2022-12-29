@@ -19,7 +19,6 @@ from now.common.detect_schema import (
     set_field_names_from_s3_bucket,
 )
 from now.constants import Apps, DatasetTypes
-from now.demo_data import AVAILABLE_DATASETS
 from now.deployment.deployment import cmd
 from now.log import yaspin_extended
 from now.now_dataclasses import DialogOptions, UserInput
@@ -116,7 +115,7 @@ def check_login_dataset(user_input: UserInput):
 
 def _get_demo_data_choices(user_input: UserInput, **kwargs):
     all_demo_datasets = []
-    for demo_datasets in AVAILABLE_DATASETS.values():
+    for demo_datasets in user_input.app_instance.demo_datasets.values():
         all_demo_datasets.extend(demo_datasets)
     return [
         {'name': demo_data.display_name, 'value': demo_data.name}
