@@ -36,17 +36,6 @@ class DatasetTypes(BetterEnum):
     ELASTICSEARCH = 'elasticsearch'
 
 
-class ModelNames(BetterEnum):
-    MLP = 'mlp'
-    SBERT = 'sentence-transformers/msmarco-distilbert-base-v3'
-    CLIP = 'openai/clip-vit-base-patch32'
-
-
-class ModelDimensions(BetterEnum):
-    SBERT = 768
-    CLIP = 512
-
-
 SUPPORTED_FILE_TYPES = {
     Modalities.TEXT: ['txt', 'md'],
     Modalities.IMAGE: ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'tif'],
@@ -64,8 +53,8 @@ BASE_STORAGE_URL = (
 )
 
 CLIP_USES = {
-    'local': ('CLIPOnnxEncoder/0.8.1', 'ViT-B-32::openai', ModelDimensions.CLIP),
-    'remote': ('CLIPOnnxEncoder/0.8.1-gpu', 'ViT-B-32::openai', ModelDimensions.CLIP),
+    'local': ('CLIPOnnxEncoder/0.8.1', 'ViT-B-32::openai', 512),
+    'remote': ('CLIPOnnxEncoder/0.8.1-gpu', 'ViT-B-32::openai', 512),
 }
 
 EXTERNAL_CLIP_HOST = 'encoderclip-pretty-javelin-3aceb7f2cd.wolf.jina.ai'

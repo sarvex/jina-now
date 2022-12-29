@@ -1,4 +1,3 @@
-import abc
 import os
 from typing import Dict, List, Optional, Tuple
 
@@ -9,12 +8,7 @@ from jina import __version__ as jina_version
 from jina.jaml import JAML
 
 from now.app.base.preprocess import preprocess_image, preprocess_text, preprocess_video
-from now.constants import (
-    DEFAULT_FLOW_NAME,
-    PREFETCH_NR,
-    SUPPORTED_FILE_TYPES,
-    Modalities,
-)
+from now.constants import DEFAULT_FLOW_NAME, PREFETCH_NR, Modalities
 from now.demo_data import DEFAULT_EXAMPLE_HOSTED, DemoDataset
 from now.now_dataclasses import DialogOptions, UserInput
 
@@ -29,9 +23,8 @@ class JinaNOWApp:
     """
 
     def __init__(self):
-        self.flow_yaml = ''
-        self.input_modality = None
-        self.output_modality = None
+        flow_dir = os.path.abspath(os.path.join(__file__, '..'))
+        self.flow_yaml = os.path.join(flow_dir, 'flow.yml')
 
     @property
     def app_name(self) -> str:
@@ -53,31 +46,6 @@ class JinaNOWApp:
         Short description of the app.
         """
         return 'Jina NOW app'
-
-    @property
-    @abc.abstractmethod
-    def supported_output_modality(self) -> List[Modalities]:
-        """
-        Modality used for indexing data
-        """
-        raise NotImplementedError()
-
-    @abc.abstractmethod
-    def set_modalities(self) -> None:
-        """
-        Set the input and output modalities for the app.
-        """
-        raise NotImplementedError()
-
-    def set_flow_yaml(self, **kwargs):
-        """Used to configure the flow yaml in the Jina NOW app.
-        The interface is as follows:
-        - if kwargs['finetuning']=True, choose finetuning flow
-        - if kwargs['encode']=True, choose encoding flow (to get embeddings for finetuning)
-        - temporarily introduced kwargs['dataset_len'], if app optimizes different flows to it
-        """
-        flow_dir = os.path.abspath(os.path.join(__file__, '..'))
-        self.flow_yaml = os.path.join(flow_dir, 'flow.yml')
 
     @property
     def bff(self) -> Optional[str]:
@@ -108,12 +76,6 @@ class JinaNOWApp:
         :return: List[DialogOptions]
         """
         return []
-
-    @property
-    def supported_file_types(self) -> List[str]:
-        """Used to filter files in local structure or an S3 bucket."""
-        sup_file = [SUPPORTED_FILE_TYPES[modality] for modality in self.output_modality]
-        return [item for sublist in sup_file for item in sublist]
 
     @property
     def demo_datasets(self) -> Dict[Modalities, List[DemoDataset]]:
@@ -184,7 +146,7 @@ class JinaNOWApp:
 
     def get_executor_stubs(
         self, dataset, is_finetuned, user_input, flow_yaml_content, **kwargs
-    ) -> Tuple[Dict, Dict]:
+    ) -> Dict:
         """
         Returns the stubs for the executors in the flow.
         """
@@ -202,10 +164,6 @@ class JinaNOWApp:
         :param user_input: user configuration based on the given options
         :return: dict used to replace variables in flow yaml and to clean up resources after the flow is terminated
         """
-        # Initialize the base flow for the app extending it
-        self.set_flow_yaml(**kwargs)
-        # Set the modalities dynamically based on the selected fields
-        self.set_modalities()
         # Get the common env variables
         common_env_dict = {
             'JINA_VERSION': jina_version,
@@ -239,12 +197,12 @@ class JinaNOWApp:
                 else DEFAULT_FLOW_NAME
             )
             # Call the executor stubs function to get the executors for the flow and their env dict
-            flow_yaml_content, exec_env_dict = self.get_executor_stubs(
+            flow_yaml_content = self.get_executor_stubs(
                 dataset, user_input, flow_yaml_content, **kwargs
             )
             self.flow_yaml = self.add_telemetry_env(flow_yaml_content)
 
-        return {**exec_env_dict, **common_env_dict}
+        return common_env_dict
 
     def preprocess(
         self,
