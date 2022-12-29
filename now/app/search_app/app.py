@@ -4,7 +4,10 @@ from typing import Dict, List, Tuple
 from jina.helper import random_port
 
 from now.app.base.app import JinaNOWApp
-from now.common.utils import _extract_tags_for_indexer, get_email, get_indexer_config
+from now.app.search_app.indexer_utils import (
+    _extract_tags_for_indexer,
+    get_indexer_config,
+)
 from now.constants import (
     CLIP_USES,
     EXECUTOR_PREFIX,
@@ -17,6 +20,7 @@ from now.constants import (
 from now.demo_data import AVAILABLE_DATASETS, DemoDataset, DemoDatasetNames
 from now.executor.name_to_id_map import name_to_id_map
 from now.now_dataclasses import UserInput
+from now.utils import get_email
 
 
 class SearchApp(JinaNOWApp):
