@@ -1,4 +1,4 @@
-from typing import Dict, Tuple
+from typing import Dict, List, Tuple
 
 from jina.helper import random_port
 
@@ -13,9 +13,8 @@ from now.constants import (
     Apps,
     Modalities,
 )
-from now.demo_data import DemoDatasetNames
+from now.demo_data import AVAILABLE_DATASETS, DemoDataset, DemoDatasetNames
 from now.executor.name_to_id_map import name_to_id_map
-from now.finetuning.settings import parse_finetune_settings
 
 
 class SearchApp(JinaNOWApp):
@@ -32,11 +31,15 @@ class SearchApp(JinaNOWApp):
 
     @property
     def description(self) -> str:
-        return 'Image-text search app'
+        return 'Search app'
 
     @property
     def required_docker_memory_in_gb(self) -> int:
         return 8
+
+    @property
+    def demo_datasets(self) -> Dict[Modalities, List[DemoDataset]]:
+        return AVAILABLE_DATASETS
 
     @property
     def finetune_datasets(self) -> [Tuple]:
@@ -266,21 +269,10 @@ class SearchApp(JinaNOWApp):
                     ][2],
                 }
             )
-            # Parse finetuning settings. Should be refactored when finetuning is added
-            finetune_settings = parse_finetune_settings(
-                pre_trained_embedding_size=exec_env_dict['PRE_TRAINED_EMBEDDINGS_SIZE'],
-                user_input=user_input,
-                dataset=dataset,
-                finetune_datasets=self.finetune_datasets,
-                model_name='mlp',
-                add_embeddings=True,
-                loss='TripletMarginLoss',
-            )
             # Perform the finetune setup
             exec_env_dict, is_finetuned = self.finetune_setup(
                 dataset=dataset,
                 user_input=user_input,
-                finetune_settings=finetune_settings,
                 env_dict=exec_env_dict,
                 **kwargs,
             )

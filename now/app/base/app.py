@@ -5,12 +5,17 @@ from typing import Dict, List, Optional, Tuple
 import docker
 from docarray import DocumentArray
 from jina import Client
+from jina import __version__ as jina_version
 from jina.jaml import JAML
 
 from now.app.base.preprocess import preprocess_image, preprocess_text, preprocess_video
-from now.common.utils import get_common_env_dict
-from now.constants import DEFAULT_FLOW_NAME, SUPPORTED_FILE_TYPES, Modalities
-from now.demo_data import AVAILABLE_DATASETS, DEFAULT_EXAMPLE_HOSTED, DemoDataset
+from now.constants import (
+    DEFAULT_FLOW_NAME,
+    PREFETCH_NR,
+    SUPPORTED_FILE_TYPES,
+    Modalities,
+)
+from now.demo_data import DEFAULT_EXAMPLE_HOSTED, DemoDataset
 from now.now_dataclasses import DialogOptions, UserInput
 
 
@@ -113,10 +118,7 @@ class JinaNOWApp:
     @property
     def demo_datasets(self) -> Dict[Modalities, List[DemoDataset]]:
         """Get a list of example datasets for the app."""
-        available_datasets = {}
-        for output_modality in self.output_modality:
-            available_datasets[output_modality] = AVAILABLE_DATASETS[output_modality]
-        return available_datasets
+        raise NotImplementedError()
 
     @property
     def required_docker_memory_in_gb(self) -> int:
@@ -188,8 +190,6 @@ class JinaNOWApp:
         """
         raise NotImplementedError()
 
-    # TODO Remove kubectl_path. At the moment, the setup function needs kubectl because of finetuning a custom
-    #  dataset with local deployment. In that case, inference is done on the k8s cluster.
     def setup(self, dataset: DocumentArray, user_input: UserInput, **kwargs) -> Dict:
         """
         Runs before the flow is deployed.
@@ -207,7 +207,25 @@ class JinaNOWApp:
         # Set the modalities dynamically based on the selected fields
         self.set_modalities()
         # Get the common env variables
-        common_env_dict = get_common_env_dict(user_input)
+        common_env_dict = {
+            'JINA_VERSION': jina_version,
+            'PREFETCH': PREFETCH_NR,
+            'ADMIN_EMAILS': user_input.admin_emails or [] if user_input.secured else [],
+            'USER_EMAILS': user_input.user_emails or [] if user_input.secured else [],
+            'API_KEY': [user_input.api_key]
+            if user_input.secured and user_input.api_key
+            else [],
+            'CUSTOM_DNS': '',
+        }
+        if 'NOW_EXAMPLES' in os.environ:
+            valid_app = DEFAULT_EXAMPLE_HOSTED.get(user_input.app_instance.app_name, {})
+            is_demo_ds = user_input.dataset_name in valid_app
+            if is_demo_ds:
+                common_env_dict[
+                    'CUSTOM_DNS'
+                ] = f'now-example-{user_input.app_instance.app_name}-{user_input.dataset_name}.dev.jina.ai'.replace(
+                    '_', '-'
+                )
         # Read the flow and add generic configuration such as labels in the flow
         # Keep this function as simple as possible. It should only be used to add generic configuration needed
         # for all apps. App specific configuration should be added in the app specific setup function.
