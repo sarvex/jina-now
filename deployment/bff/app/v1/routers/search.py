@@ -1,7 +1,8 @@
 import base64
 from typing import List
 
-from docarray import Document, DocumentArray
+from docarray import Document, DocumentArray, dataclass, field
+from docarray.typing import Image, Text, Video
 from fastapi import APIRouter
 
 from deployment.bff.app.v1.models.search import (
@@ -10,7 +11,12 @@ from deployment.bff.app.v1.models.search import (
     SearchResponseModel,
     SuggestionRequestModel,
 )
-from deployment.bff.app.v1.routers.helper import field_dict_to_doc, jina_client_post
+from deployment.bff.app.v1.routers.helper import (
+    fetch_user_input,
+    field_dict_to_mm_doc,
+    jina_client_post,
+)
+from now.data_loading.create_dataclass import create_dataclass
 
 router = APIRouter()
 
@@ -21,13 +27,21 @@ router = APIRouter()
 )
 def index(data: IndexRequestModel):
     index_docs = DocumentArray()
+
+    user_input = fetch_user_input(data)
+    data_class = create_dataclass(user_input)
+
     for field_dict, tags_dict in data.data:
-        doc = field_dict_to_doc(field_dict)
+        doc = field_dict_to_mm_doc(
+            field_dict,
+            data_class=data_class,
+            field_names_to_dataclass_fields=user_input.files_to_dataclass_fields,
+        )
         doc.tags.update(tags_dict)
         index_docs.append(doc)
 
     jina_client_post(
-        data=data,
+        request_model=data,
         inputs=index_docs,
         endpoint='/index',
     )
@@ -39,7 +53,14 @@ def index(data: IndexRequestModel):
     summary='Search data via query',
 )
 def search(data: SearchRequestModel):
-    query_doc = field_dict_to_doc(data.query)
+    # temporary class until actual mm docs are created
+    @dataclass
+    class MMQueryDoc:
+        query_text: Text = field(default=None)
+        query_image: Image = field(default=None)
+        query_video: Video = field(default=None)
+
+    query_doc = field_dict_to_mm_doc(data.query, data_class=MMQueryDoc)
 
     query_filter = {key: {'$eq': value} for key, value in data.filters.items()}
 
@@ -47,7 +68,7 @@ def search(data: SearchRequestModel):
         endpoint='/search',
         inputs=query_doc,
         parameters={'limit': data.limit, 'filter': query_filter},
-        data=data,
+        request_model=data,
     )
     matches = []
     for doc in docs[0].matches:
@@ -80,6 +101,6 @@ def suggestion(data: SuggestionRequestModel):
     docs = jina_client_post(
         endpoint='/suggestion',
         inputs=suggest_doc,
-        data=data,
+        request_model=data,
     )
     return docs.to_dict()
