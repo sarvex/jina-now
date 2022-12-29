@@ -113,64 +113,6 @@ def test_index_and_search_with_multimodal_docs(
             assert isinstance(results[0].matches[0].scores[score_string].value, float)
 
 
-def test_index_and_search_with_multimodal_docs(
-    setup_service_running, es_inputs, random_index_name
-):
-    """
-    This test runs indexing with the NOWElasticIndexer using multimodal docs.
-    """
-    (
-        index_docs_map,
-        query_docs_map,
-        document_mappings,
-        default_semantic_scores,
-    ) = es_inputs
-
-    indexer = NOWElasticIndexer(
-        document_mappings=document_mappings,
-        default_semantic_scores=default_semantic_scores,
-        # es_config={'api_key': os.environ['ELASTIC_API_KEY']},
-        # hosts='https://5280f8303ccc410295d02bbb1f3726f7.eu-central-1.aws.cloud.es.io:443',
-        hosts='http://localhost:9200',
-        index_name=random_index_name,
-    )
-
-    indexer.index(index_docs_map)
-    # check if documents are indexed
-    es = indexer.es
-    res = es.search(index=random_index_name, size=100, query={'match_all': {}})
-    assert len(res['hits']['hits']) == len(index_docs_map['clip'])
-    results = indexer.search(
-        query_docs_map,
-        parameters={'get_score_breakdown': True, 'apply_default_bm25': True},
-    )
-    # asserts about matches
-    for (
-        query_field,
-        document_field,
-        encoder,
-        linear_weight,
-    ) in default_semantic_scores:
-        if encoder == 'bm25':
-            assert 'bm25_normalized' in results[0].matches[0].scores
-            assert 'bm25_raw' in results[0].matches[0].scores
-            assert isinstance(
-                results[0].matches[0].scores['bm25_normalized'].value, float
-            )
-            assert isinstance(results[0].matches[0].scores['bm25_raw'].value, float)
-        else:
-            score_string = '-'.join(
-                [
-                    query_field,
-                    document_field,
-                    encoder,
-                    str(linear_weight),
-                ]
-            )
-            assert score_string in results[0].matches[0].scores
-            assert isinstance(results[0].matches[0].scores[score_string].value, float)
-
-
 def test_list_endpoint(setup_service_running, es_inputs, random_index_name):
     """
     This test tests the list endpoint of the NOWElasticIndexer.

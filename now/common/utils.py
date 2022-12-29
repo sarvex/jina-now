@@ -26,11 +26,27 @@ cur_dir = pathlib.Path(__file__).parent.resolve()
 MAX_RETRIES = 20
 
 
-def get_common_env_dict(user_input: UserInput):
+def common_get_flow_env_dict(
+    encoder_uses: str,
+    encoder_with: Dict,
+    encoder_uses_with: Dict,
+    pre_trained_embedding_size: int,
+    indexer_uses: str,
+    indexer_resources: Dict,
+    user_input: UserInput,
+    tags: List,
+    deployment_type: str,
+):
     """Returns dictionary for the environments variables for the clip flow.yml files."""
     config = {
         'JINA_VERSION': jina_version,
         'PREFETCH': PREFETCH_NR,
+        'PREPROCESSOR_NAME': f'{EXECUTOR_PREFIX}{name_to_id_map.get("NOWPreprocessor")}/{NOW_PREPROCESSOR_VERSION}',
+        'PREPROCESSOR_REPLICAS': 15
+        if use_high_performance_flow and 'NOW_CI_RUN' not in os.environ
+        else 1,
+        'AUTOCOMPLETE_EXECUTOR_NAME': f'{EXECUTOR_PREFIX}{name_to_id_map.get("NOWAutoCompleteExecutor2")}/{NOW_AUTOCOMPLETE_VERSION}',
+        'COLUMNS': tags,
         'ADMIN_EMAILS': user_input.admin_emails or [] if user_input.secured else [],
         'USER_EMAILS': user_input.user_emails or [] if user_input.secured else [],
         'API_KEY': [user_input.api_key]
@@ -39,6 +55,12 @@ def get_common_env_dict(user_input: UserInput):
         'CUSTOM_DNS': '',
     }
 
+    if encoder_uses_with.get('pretrained_model_name_or_path'):
+        config['PRE_TRAINED_MODEL_NAME'] = encoder_uses_with[
+            "pretrained_model_name_or_path"
+        ]
+
+    config['CUSTOM_DNS'] = ''
     # DNS configuration for the demo datasets deployment
     if 'NOW_EXAMPLES' in os.environ:
         valid_app = DEFAULT_EXAMPLE_HOSTED.get(user_input.app_instance.app_name, {})
@@ -50,6 +72,34 @@ def get_common_env_dict(user_input: UserInput):
             config['CUSTOM_DNS'] = config['CUSTOM_DNS'].replace('_', '-')
 
     return config
+
+
+def common_setup(
+    app_instance: JinaNOWApp,
+    user_input: UserInput,
+    dataset: DocumentArray,
+    encoder_uses: str,
+    encoder_uses_with: Dict,
+    indexer_uses: str,
+    pre_trained_embedding_size: int,
+    kubectl_path: str,
+    encoder_with: Optional[Dict] = {},
+    indexer_resources: Optional[Dict] = {},
+) -> Dict:
+    tags = _extract_tags_for_indexer(user_input)
+    env_dict = common_get_flow_env_dict(
+        encoder_uses=encoder_uses,
+        encoder_with=encoder_with,
+        encoder_uses_with=encoder_uses_with,
+        pre_trained_embedding_size=pre_trained_embedding_size,
+        indexer_uses=indexer_uses,
+        indexer_resources=indexer_resources,
+        user_input=user_input,
+        tags=tags,
+        deployment_type=user_input.deployment_type,
+    )
+    app_instance.set_flow_yaml(dataset_len=len(dataset))
+    return env_dict
 
 
 def get_email():

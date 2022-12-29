@@ -96,7 +96,8 @@ def transform_multi_modal_data(
                     )
                 )
             else:
-                document.tags[field_name] = chunk.content
+                if chunk.text:
+                    document.tags[field_name] = chunk.content
         document.chunks = new_chunks
         for chunk in document.chunks:
             chunk.tags.update(document.tags)
@@ -114,21 +115,10 @@ def transform_docarray(
     :param documents: Data to be transformed.
     :param search_fields: Field names for neural search. Only required if multimodal data is given.
     """
-    if documents and documents[0].chunks:
-        if 'multi_modal_schema' not in documents[0]._metadata:
-            raise RuntimeError(
-                'Multi-modal schema is not provided. Please prepare your data following this guide - '
-                'https://docarray.jina.ai/datatypes/multimodal/'
-            )
-        field_names = {
-            int(field_info['position']): field_name
-            for field_name, field_info in documents[0]
-            ._metadata['multi_modal_schema']
-            .items()
-        }
-        documents = transform_multi_modal_data(
-            documents=documents, field_names=field_names, search_fields=search_fields
-        )
-    else:
+    if not (documents and documents[0].chunks):
         documents = transform_uni_modal_data(documents=documents)
+    else:
+        for doc in documents:
+            for chunk in doc.chunks:
+                chunk.modality = chunk.modality or _get_modality(chunk)
     return documents

@@ -8,13 +8,17 @@ import os
 import pytest
 import requests
 
-from now.constants import Modalities
+from now.constants import MODALITIES_MAPPING, Modalities
 from now.demo_data import AVAILABLE_DATASETS
 
 
 @pytest.mark.parametrize(
     'modality, ds_name',
-    [(m, d.name) for m, ds in AVAILABLE_DATASETS.items() for d in ds],
+    [
+        (m, d.name)
+        for m in Modalities()
+        for d in AVAILABLE_DATASETS[MODALITIES_MAPPING[m]]
+    ],
 )
 def test_dataset_is_available(
     ds_name: str,

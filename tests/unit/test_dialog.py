@@ -7,12 +7,25 @@ import os
 from typing import Dict
 
 import pytest
+from docarray.typing import Image, Text, Video
 from pytest_mock import MockerFixture
 
 from now.constants import DEFAULT_FLOW_NAME, Apps, DatasetTypes
 from now.demo_data import DemoDatasetNames
 from now.dialog import configure_user_input
 from now.now_dataclasses import UserInput
+
+SEARCH_FIELDS_MODALITIES = {'text': Text, 'uri': Image}
+FILTER_FIELDS_MODALITIES = {
+    'uri': 'str',
+    'text': 'str',
+    'original_height': 'dict',
+    'similarity': 'dict',
+    'NSFW': 'dict',
+    'height': 'dict',
+    'original_width': 'dict',
+    'width': 'dict',
+}
 
 
 class CmdPromptMock:
@@ -30,7 +43,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': DemoDatasetNames.TLL,
-            'candidate_search_mods': {'label': 'text', 'image': 'image'},
+            'search_fields_modalities': {'label': Text, 'image': Image},
             'search_fields': ['label'],
             'filter_fields': [],
             'candidate_filter_mods': {'label': 'text'},
@@ -45,7 +58,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': DemoDatasetNames.NIH_CHEST_XRAYS,
-            'candidate_search_mods': {'label': 'text', 'image': 'image'},
+            'search_fields_modalities': {'label': Text, 'image': Image},
             'search_fields': ['image'],
             'filter_fields': [],
             'candidate_filter_mods': {'label': 'text'},
@@ -63,7 +76,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
                 os.path.dirname(__file__), '..', 'resources', 'image'
             ),
             'search_fields': ['.jpg'],
-            'candidate_search_mods': {'.jpg': 'image'},
+            'search_fields_modalities': {'.jpg': Image},
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -75,7 +88,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': DemoDatasetNames.DEEP_FASHION,
             'search_fields': ['image'],
-            'candidate_search_mods': {'label': 'text', 'image': 'image'},
+            'search_fields_modalities': {'label': Text, 'image': Image},
             'filter_fields': [],
             'candidate_filter_mods': {'label': 'text'},
             'cluster': 'new',
@@ -91,7 +104,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': DemoDatasetNames.RAP_LYRICS,
             'search_fields': ['lyrics'],
-            'candidate_search_mods': {'lyrics': 'text', 'title': 'text'},
+            'search_fields_modalities': {'lyrics': Text, 'title': Text},
             'filter_fields': ['title'],
             'candidate_filter_mods': {'lyrics': 'text', 'title': 'text'},
             'cluster': 'new',
@@ -106,7 +119,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': DemoDatasetNames.TUMBLR_GIFS_10K,
             'search_fields': ['video'],
-            'candidate_search_mods': {'video': 'video', 'description': 'text'},
+            'search_fields_modalities': {'video': Video, 'description': Text},
             'filter_fields': ['title'],
             'candidate_filter_mods': {'description': 'text'},
             'cluster': 'new',
@@ -120,7 +133,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': DemoDatasetNames.DEEP_FASHION,
             'search_fields': ['image'],
-            'search_fields_modalities': {'label': 'text', 'image': 'image'},
+            'search_fields_modalities': {'label': Text, 'image': Image},
             'filter_fields': [],
             'filter_fields_modalities': {'label': 'text'},
             'cluster': 'new',

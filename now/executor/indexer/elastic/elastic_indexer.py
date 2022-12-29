@@ -1,5 +1,7 @@
+import subprocess
 import traceback
 from collections import namedtuple
+from time import sleep
 from typing import Any, Dict, List, Mapping, Optional, Union
 
 from docarray import Document, DocumentArray
@@ -85,10 +87,22 @@ class NOWElasticIndexer(Executor):
         self.es_mapping = es_mapping or self.generate_es_mapping(
             self.document_mappings, self.metric
         )
+        self.setup_elastic_server()
         self.es = Elasticsearch(hosts=self.hosts, **self.es_config, ssl_show_warn=False)
         if not self.es.indices.exists(index=self.index_name):
             self.es.indices.create(index=self.index_name, mappings=self.es_mapping)
         self.query_to_curated_ids = {}
+
+    def setup_elastic_server(self):
+        # volume is not persisted at the moment
+        try:
+            subprocess.Popen(['/usr/local/bin/docker-entrypoint.sh'])
+            sleep(10)
+            self.logger.info('elastic server started')
+        except FileNotFoundError:
+            self.logger.info(
+                'Elastic started outside of docker, assume cluster started already.'
+            )
 
     @staticmethod
     def generate_es_mapping(
@@ -136,16 +150,13 @@ class NOWElasticIndexer(Executor):
         """
         if not docs_map:
             return DocumentArray()
+        aggregate_embeddings(docs_map)
         preprocessed_docs_map = merge_subdocuments(docs_map, self.encoder_to_fields)
         es_docs = ESConverter.convert_doc_map_to_es(
             preprocessed_docs_map, self.index_name, self.encoder_to_fields
         )
-        try:
-            success, _ = bulk(self.es, es_docs)
-            self.es.indices.refresh(index=self.index_name)
-        except Exception as e:
-            self.logger.info(traceback.format_exc())
-            raise
+        success, _ = bulk(self.es, es_docs)
+        self.es.indices.refresh(index=self.index_name)
         if success:
             self.logger.info(
                 f'Inserted {success} documents into Elasticsearch index {self.index_name}'
@@ -185,6 +196,7 @@ class NOWElasticIndexer(Executor):
         """
         if not docs_map:
             return DocumentArray()
+        aggregate_embeddings(docs_map)
 
         # search_filter = parameters.get('filter', None)
         limit = parameters.get('limit', self.limit)
@@ -208,23 +220,20 @@ class NOWElasticIndexer(Executor):
             query_to_curated_ids=self.query_to_curated_ids,
         )
         for doc, query in es_queries:
-            try:
-                result = self.es.search(
-                    index=self.index_name,
-                    query=query,
-                    source=True,
-                    size=limit,
-                )['hits']['hits']
-                doc.matches = ESConverter.convert_es_results_to_matches(
-                    query_doc=doc,
-                    es_results=result,
-                    get_score_breakdown=get_score_breakdown,
-                    metric=self.metric,
-                    semantic_scores=self.default_semantic_scores,
-                )
-                doc.tags.pop('embeddings')
-            except Exception:
-                self.logger.info(traceback.format_exc())
+            result = self.es.search(
+                index=self.index_name,
+                query=query,
+                source=True,
+                size=limit,
+            )['hits']['hits']
+            doc.matches = ESConverter.convert_es_results_to_matches(
+                query_doc=doc,
+                es_results=result,
+                get_score_breakdown=get_score_breakdown,
+                metric=self.metric,
+                semantic_scores=self.default_semantic_scores,
+            )
+            doc.tags.pop('embeddings')
         return DocumentArray(list(zip(*es_queries))[0])
 
     @secure_request(on='/update', level=SecurityLevel.USER)
@@ -340,19 +349,13 @@ class NOWElasticIndexer(Executor):
                 self.query_to_curated_ids[query] = []
             for filter in filters:
                 es_query = {'query': {'bool': {'filter': process_filter(filter)}}}
-                try:
-                    resp = self.es.search(
-                        index=self.index_name, body=es_query, size=100
-                    )
-                    self.es.indices.refresh(index=self.index_name)
-                    ids = [r['_id'] for r in resp['hits']['hits']]
-                    self.query_to_curated_ids[query] += [
-                        id for id in ids if id not in self.query_to_curated_ids[query]
-                    ]
 
-                except Exception:
-                    self.logger.info(traceback.format_exc())
-                    raise
+                resp = self.es.search(index=self.index_name, body=es_query, size=100)
+                self.es.indices.refresh(index=self.index_name)
+                ids = [r['_id'] for r in resp['hits']['hits']]
+                self.query_to_curated_ids[query] += [
+                    id for id in ids if id not in self.query_to_curated_ids[query]
+                ]
 
     def update_tags(self):
         """
@@ -397,3 +400,16 @@ class NOWElasticIndexer(Executor):
     def batch_iterator(self):
         """Unnecessary for ElasticIndexer, but need to override BaseIndexer."""
         yield []
+
+
+def aggregate_embeddings(docs_map: Dict[str, DocumentArray]):
+    """Aggregate embeddings of cc level to c level.
+
+    :param docs_map: a dictionary of `DocumentArray`s, where the key is the embedding space aka encoder name.
+    """
+    for docs in docs_map.values():
+        for doc in docs:
+            for c in doc.chunks:
+                if c.chunks.embeddings is not None:
+                    c.embedding = c.chunks.embeddings.mean(axis=0)
+                    c.content = c.chunks[0].content

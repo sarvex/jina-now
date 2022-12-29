@@ -8,6 +8,7 @@ from jina import Document, DocumentArray, Executor, Flow, requests
 
 from now.constants import TAG_INDEXER_DOC_HAS_TEXT, TAG_OCR_DETECTOR_TEXT_IN_DOC
 from now.executor.indexer.elastic import NOWElasticIndexer
+from now.executor.preprocessor import NOWPreprocessor
 
 NUMBER_OF_DOCS = 10
 DIM = 128
@@ -44,7 +45,8 @@ class TestBaseIndexerElastic:
                     title=f'parent_{i}',
                 )
             )
-            doc.title.embedding = k[i]
+            doc = NOWPreprocessor().preprocess(DocumentArray(doc), {})[0]
+            doc.title.chunks[0].embedding = k[i]
             doc.id = str(i)
             doc.tags['parent_tag'] = 'value'
             doc.tags['price'] = random.choice(prices)
@@ -59,8 +61,9 @@ class TestBaseIndexerElastic:
             query_text: Text
 
         q = Document(MMQuery(query_text='query_1'))
-        q.query_text.embedding = np.random.random(DIM)
-        return DocumentArray([q])
+        da = NOWPreprocessor().preprocess(DocumentArray([q]), {})
+        da[0].query_text.chunks[0].embedding = np.random.random(DIM)
+        return da
 
     @pytest.fixture
     def random_index_name(self):
@@ -495,12 +498,12 @@ class TestBaseIndexerElastic:
 
         mdoc = Pic(pic='https://jina.ai/assets/images/text-to-image-output.png')
         doc_with_tensor = Document(mdoc)
-        doc_with_tensor.pic.embedding = np.random.random([DIM])
         doc_with_blob = Document(mdoc)
         doc_with_blob.pic.load_uri_to_blob()
-        doc_with_blob.pic.embedding = np.random.random([DIM])
         docs = DocumentArray([doc_with_tensor, doc_with_blob])
-
+        docs = NOWPreprocessor().preprocess(docs, {})
+        docs[0].pic.chunks[0].embedding = np.random.random([DIM])
+        docs[1].pic.chunks[0].embedding = np.random.random([DIM])
         f = (
             Flow()
             .add(uses=DummyEncoder1, name='dummy_encoder1')
@@ -525,7 +528,8 @@ class TestBaseIndexerElastic:
             query_doc = Document(
                 Pic(pic='https://jina.ai/assets/images/text-to-image-output.png')
             )
-            query_doc.pic.embedding = np.random.random([DIM])
+            query_doc = NOWPreprocessor().preprocess(DocumentArray(query_doc), {})[0]
+            query_doc.pic.chunks[0].embedding = np.random.random([DIM])
             response = f.post(
                 on='/search',
                 inputs=DocumentArray([query_doc]),
@@ -582,9 +586,9 @@ class TestBaseIndexerElastic:
             )
 
             assert len(result) == 1
-            assert result[0].matches[0].title.text == 'parent_1'
+            assert result[0].matches[0].title.chunks[0].text == 'parent_1'
             assert (
-                result[0].matches[1].title.text != 'parent_1'
+                result[0].matches[1].title.chunks[0].text != 'parent_1'
             )  # no duplicated results
             assert result[0].matches[1].tags['color'] == 'red'
 

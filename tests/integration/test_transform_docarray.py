@@ -32,12 +32,12 @@ def multi_modal_data(resources_folder_path):
 
     p1 = Page(
         main_text='main text 1',
-        image=os.path.join(resources_folder_path, 'image', '5109112832.jpg'),
+        image=os.path.join(resources_folder_path, 'image', 'a.jpg'),
         color='red',
     )
     p2 = Page(
         main_text='not main text',
-        image=os.path.join(resources_folder_path, 'image', '6785325056.jpg'),
+        image=os.path.join(resources_folder_path, 'image', 'b.jpg'),
         color='blue',
     )
     pages = [p1, p2]
@@ -47,7 +47,7 @@ def multi_modal_data(resources_folder_path):
 
 @pytest.mark.parametrize(
     'input_type, num_expected_matches',
-    [['demo_dataset', 4], ['single_modal', 2], ['multi_modal', 4]],
+    [['demo_dataset', 4], ['single_modal', 2], ['multi_modal', 6]],
 )
 def test_transform_inside_flow(
     input_type, num_expected_matches, single_modal_data, multi_modal_data, tmpdir
@@ -59,8 +59,12 @@ def test_transform_inside_flow(
         user_input.search_fields = []
         user_input.dataset_type = DatasetTypes.DEMO
         user_input.dataset_name = DemoDatasetNames.TUMBLR_GIFS_10K
-        data = load_data(app_instance, user_input)[:2]
+        data = load_data(user_input)[:2]
         user_input.search_fields = ['description', 'video']
+        user_input.files_to_dataclass_fields = {
+            'description': 'description',
+            'video': 'video',
+        }
     elif input_type == 'single_modal':
         app_instance = SearchApp()
         data = single_modal_data
@@ -68,7 +72,10 @@ def test_transform_inside_flow(
         app_instance = SearchApp()
         data = multi_modal_data
         user_input.search_fields = ['main_text', 'image']
-
+        user_input.files_to_dataclass_fields = {
+            'main_text': 'main_text',
+            'image': 'image',
+        }
     query = Document(text='query_text')
 
     f = (

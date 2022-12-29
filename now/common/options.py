@@ -49,10 +49,9 @@ def _validate_user_input_for_search(user_input: UserInput, **kwargs):
             f'Search field specified is not among the search candidate fields. Please '
             f'choose one of the following: {user_input.candidate_search_mods.keys()}'
         )
-    _search_modality = user_input.search_mods[user_input.search_fields[0]]
-    # When more apps are added then this should become the first step in the dialog
-    if _search_modality not in user_input.app_instance.supported_output_modality:
-        raise ValueError(f'Invalid search modality: {_search_modality}')
+    _search_modality = user_input.search_fields_modalities[user_input.search_fields[0]]
+    app_name = Apps.SEARCH_APP
+    user_input.app_instance = construct_app(app_name)
 
 
 APP_NAME = DialogOptions(
@@ -133,7 +132,6 @@ DEMO_DATA = DialogOptions(
     post_func=lambda user_input, **kwargs: set_field_names_from_docarray(user_input),
 )
 
-
 DOCARRAY_NAME = DialogOptions(
     name='dataset_name',
     prompt_message='Please enter your DocumentArray name:',
@@ -213,7 +211,7 @@ SEARCH_FIELDS = DialogOptions(
         {'name': field, 'value': field}
         for field in user_input.candidate_search_mods.keys()
     ],
-    prompt_message='Please select the search fields:',
+    prompt_message='Please select the index fields:',
     prompt_type='checkbox',
     is_terminal_command=True,
     post_func=_update_fields_and_create_app,
@@ -250,7 +248,6 @@ FILTER_FIELDS = DialogOptions(
     post_func=_update_filter_mods,
 )
 
-
 ES_INDEX_NAME = DialogOptions(
     name='es_index_name',
     prompt_message='Please enter the name of your Elasticsearch index:',
@@ -259,7 +256,6 @@ ES_INDEX_NAME = DialogOptions(
     conditional_check=lambda user_input: user_input.dataset_type
     == DatasetTypes.ELASTICSEARCH,
 )
-
 
 ES_HOST_NAME = DialogOptions(
     name='es_host_name',

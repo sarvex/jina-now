@@ -1,3 +1,4 @@
+from now.executor.indexer.elastic.elastic_indexer import aggregate_embeddings
 from now.executor.indexer.elastic.es_query_building import (
     SemanticScore,
     build_es_queries,
@@ -45,7 +46,8 @@ def test_build_es_queries(es_inputs):
         document_mappings,
         default_semantic_scores,
     ) = es_inputs
-    query_doc, es_query = build_es_queries(
+    aggregate_embeddings(query_docs_map)
+    _, es_query = build_es_queries(
         docs_map=query_docs_map,
         apply_default_bm25=True,
         get_score_breakdown=False,

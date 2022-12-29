@@ -106,6 +106,9 @@ class UserInput(BaseModel):
     search_mods: Optional[Dict] = {}
     candidate_search_mods: Optional[Dict] = {}
     filter_fields: Optional[List] = []
+    search_fields_modalities: Optional[Dict] = {}
+    filter_fields_modalities: Optional[Dict] = {}
+    files_to_dataclass_fields: Optional[Dict] = {}
     filter_mods: Optional[Dict] = {}
     candidate_filter_mods: Optional[Dict] = {}
 
