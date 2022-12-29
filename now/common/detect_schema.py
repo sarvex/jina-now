@@ -55,7 +55,6 @@ def _create_candidate_search_filter_fields(field_name_to_value):
             and field_value.split('.')[-1] not in not_available_file_types_for_filter
         ) or field_name.split('.')[-1] not in not_available_file_types_for_filter:
             filter_field_modalities[field_name] = field_value.__class__
-
     if len(search_fields_modalities.keys()) == 0:
         raise ValueError(
             'No searchable fields found, please check documentation https://now.jina.ai'
