@@ -255,7 +255,7 @@ def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
     (
         user_input.index_field_candidates_to_modalities,
         user_input.filter_field_candidates_to_modalities,
-    ) = _create_candidate_search_filter_fields(field_names)
+    ) = _create_candidate_index_filter_fields(field_names)
 
 
 def set_field_names_from_local_folder(user_input: UserInput, **kwargs):
@@ -292,7 +292,7 @@ def set_field_names_from_local_folder(user_input: UserInput, **kwargs):
     (
         user_input.index_field_candidates_to_modalities,
         user_input.filter_field_candidates_to_modalities,
-    ) = _create_candidate_search_filter_fields(field_names)
+    ) = _create_candidate_index_filter_fields(field_names)
 
 
 def get_s3_bucket_and_folder_prefix(user_input: UserInput):
