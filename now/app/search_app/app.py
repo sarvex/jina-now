@@ -11,7 +11,6 @@ from now.app.search_app.indexer_utils import (
     get_indexer_config,
 )
 from now.constants import (
-    CLIP_USES,
     EXECUTOR_PREFIX,
     EXTERNAL_CLIP_HOST,
     NOW_AUTOCOMPLETE_VERSION,
@@ -106,18 +105,19 @@ class SearchApp(JinaNOWApp):
     @staticmethod
     def clip_encoder_stub(user_input) -> Dict:
         is_remote = user_input.deployment_type == 'remote'
-        clip_uses = CLIP_USES[user_input.deployment_type]
         return {
             'name': 'clip_encoder',
-            'uses': f'{EXECUTOR_PREFIX}{clip_uses[0]}',
+            'uses': f'{EXECUTOR_PREFIX}CLIPOnnxEncoder/0.8.1' + '-gpu'
+            if is_remote
+            else '',
             'host': EXTERNAL_CLIP_HOST if is_remote else '0.0.0.0',
             'port': 443 if is_remote else random_port(),
             'tls': is_remote,
             'external': is_remote,
-            'uses_with': {'name': clip_uses[1]},
+            'uses_with': {'name': 'ViT-B-32::openai'},
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'needs': 'preprocessor',
-        }
+        }, 512
 
     @staticmethod
     def sbert_encoder_stub() -> Dict:
@@ -127,30 +127,26 @@ class SearchApp(JinaNOWApp):
             'uses_with': {'name': 'msmarco-distilbert-base-v3'},
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'needs': 'preprocessor',
-        }
+        }, 768
 
     @staticmethod
-    def indexer_stub(user_input, encoders_list: List[str]) -> Dict:
+    def indexer_stub(user_input, encoder2dim: Dict[str, int]) -> Dict:
         """Creates indexer stub.
 
         :param user_input: User input
-        :param encoders_list: List of encoders for data
+        :param encoder2dim: maps encoder name to its output dimension
         """
         indexer_config = get_indexer_config()
         tags = _extract_tags_for_indexer(user_input)
-        if len(encoders_list) != 1:
+        if len(encoder2dim) != 1:
             raise ValueError(
-                f'Indexer can only be created for one encoder but have encoders: {encoders_list}'
+                f'Indexer can only be created for one encoder but have encoders: {encoder2dim}'
             )
         else:
-            dim = (
-                CLIP_USES[user_input.deployment_type][2]
-                if encoders_list[0] == 'clip'
-                else 768
-            )
+            dim = list(encoder2dim.values())[0]
         return {
             'name': 'indexer',
-            'needs': encoders_list,
+            'needs': encoder2dim,
             'uses': f'{EXECUTOR_PREFIX}{indexer_config["indexer_uses"]}',
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'uses_with': {
@@ -184,24 +180,24 @@ class SearchApp(JinaNOWApp):
             ),
         ]
 
-        encoders_list = []
+        encoder2dim = {}
         if any(
             user_input.index_field_candidates_to_modalities[field] == Text
             for field in user_input.index_fields
         ):
-            sbert_encoder = self.sbert_encoder_stub()
-            encoders_list.append(sbert_encoder['name'])
+            sbert_encoder, sbert_dim = self.sbert_encoder_stub()
+            encoder2dim[sbert_encoder['name']] = sbert_dim
             flow_yaml_executors.append(sbert_encoder)
         if any(
             user_input.index_field_candidates_to_modalities[field] in [Image, Video]
             for field in user_input.index_fields
         ):
-            clip_encoder = self.clip_encoder_stub(user_input)
-            encoders_list.append(clip_encoder['name'])
+            clip_encoder, clip_dim = self.clip_encoder_stub(user_input)
+            encoder2dim[clip_encoder['name']] = clip_dim
             flow_yaml_executors.append(clip_encoder)
 
         flow_yaml_executors.append(
-            self.indexer_stub(user_input, encoders_list=encoders_list)
+            self.indexer_stub(user_input, encoder2dim=encoder2dim)
         )
 
         return flow_yaml_executors

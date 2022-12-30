@@ -62,7 +62,7 @@ def test_offline_flow(monkeypatch, setup_service_running, base64_image_string):
 
     @dataclass
     class Query:
-        query: Text
+        query_text: Text
 
     query = Query(
         query='search query',
