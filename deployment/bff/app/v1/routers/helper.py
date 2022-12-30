@@ -3,6 +3,7 @@ import os
 from copy import deepcopy
 from tempfile import TemporaryDirectory
 
+import filetype
 from docarray import Document, DocumentArray
 from fastapi import HTTPException, status
 from jina import Client
@@ -39,9 +40,13 @@ def field_dict_to_mm_doc(
             for field_name_data_class, field_value in field_dict.items():
                 # save blob into a temporary file such that it can be loaded by the multimodal class
                 if field_value.blob:
-                    file_path = os.path.join(tmp_dir, field_name_data_class)
+                    base64_decoded = base64.b64decode(field_value.blob.encode('utf-8'))
+                    file_ending = filetype.guess(base64_decoded).extension
+                    file_path = os.path.join(
+                        tmp_dir, field_name_data_class + '.' + file_ending
+                    )
                     with open(file_path, 'wb') as f:
-                        f.write(base64.b64decode(field_value.blob.encode('utf-8')))
+                        f.write(base64_decoded)
                     field_value.blob = None
                     field_value.uri = file_path
                 data_class_kwargs[field_name_data_class] = field_value.content

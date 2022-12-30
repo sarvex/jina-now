@@ -14,3 +14,4 @@ python-Levenshtein==0.20.5
 better_profanity==0.7.0
 paddlepaddle==2.4.0rc0
 paddleocr>=2.0.1
+filetype
