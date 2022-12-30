@@ -32,7 +32,7 @@ FieldEmbedding = namedtuple(
 class NOWElasticIndexer(Executor):
     """
     NOWElasticIndexer indexes Documents into an Elasticsearch instance. To do this,
-    it uses the ESConverter, converting documents to and from the accepted Elasticsearch
+    it uses helper functions from es_converter, converting documents to and from the accepted Elasticsearch
     format. It also uses the semantic scores to combine the scores of different fields/encoders,
     allowing multi-modal documents to be indexed and searched with multi-modal queries.
     """
