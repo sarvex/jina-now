@@ -17,7 +17,7 @@ def get_request_body():
     [True, False],
 )
 def test_search_filters(use_qdrant, start_bff):
-    f = get_flow(use_qdrant=use_qdrant, indexer_args={'columns': ['color', 'str']})
+    f = get_flow(use_qdrant=use_qdrant, indexer_args={'columns': [['color', 'str']]})
     with f:
         index_data(f)
         request_body = get_request_body()

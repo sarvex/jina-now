@@ -53,7 +53,7 @@ def get_flow(use_qdrant=True, preprocessor_args=None, indexer_args=None):
         Flow(port_expose=9089)
         .add(
             uses=NOWPreprocessor,
-            uses_with={'app': 'search_app', **preprocessor_args},
+            uses_with=preprocessor_args,
         )
         .add(
             host=EXTERNAL_CLIP_HOST,
