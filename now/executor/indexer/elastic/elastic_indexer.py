@@ -46,7 +46,6 @@ class NOWElasticIndexer(Executor):
         *args,
         **kwargs,
     ):
-        super().__init__(dim, columns, metric, limit, max_values_per_tag, args, kwargs)
         self.query_to_curated_ids = None
         self.es = None
         self.es_mapping = None
@@ -57,6 +56,9 @@ class NOWElasticIndexer(Executor):
         self.index_name = None
         self.hosts = None
         self.es_config = None
+        super().__init__(
+            dim, columns, metric, limit, max_values_per_tag, args, **kwargs
+        )
 
     def construct(
         self,
