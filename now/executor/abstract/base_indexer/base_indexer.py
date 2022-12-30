@@ -29,7 +29,7 @@ class NOWBaseIndexer(Executor):
     def __init__(
         self,
         dim: int = None,
-        columns: Optional[List] = None,
+        columns: Optional[List] = [],
         metric: str = 'cosine',
         limit: int = 10,
         max_values_per_tag: int = 10,
