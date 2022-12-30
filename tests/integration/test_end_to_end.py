@@ -197,6 +197,12 @@ def run_end_to_end(
         cmd(f'{kubectl_path} create namespace nowapi')
     kwargs = Namespace(**kwargs)
     response = cli(args=kwargs)
+    # Dump the flow details from response host to a tmp file if the deployment is remote
+    if deployment_type == 'remote':
+        flow_details = {'host': response['host']}
+        with open(f'{cleanup}/flow_details.json', 'w') as f:
+            json.dump(flow_details, f)
+
     assert_deployment_response(deployment_type, 'text-or-image', response)
     assert_deployment_queries(
         dataset=dataset,
@@ -218,11 +224,6 @@ def run_end_to_end(
         )
         suggest_url = f'http://localhost:30090/api/v1/search-app/suggestion'
         assert_suggest(suggest_url, request_body)
-    # Dump the flow details from response host to a tmp file if the deployment is remote
-    if deployment_type == 'remote':
-        flow_details = {'host': response['host']}
-        with open(f'{cleanup}/flow_details.json', 'w') as f:
-            json.dump(flow_details, f)
 
 
 def assert_search(search_url, request_body, expected_status_code=200):
