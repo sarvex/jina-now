@@ -29,8 +29,8 @@ def _create_candidate_search_filter_fields(field_name_to_value):
 
     :param field_name_to_value: dictionary
     """
-    search_fields_modalities = {}
-    filter_field_modalities = {}
+    search_field_candidates_to_modalities = {}
+    filter_field_candidates_to_modalities = {}
     not_available_file_types_for_filter = list(
         itertools.chain(
             *[
@@ -44,26 +44,28 @@ def _create_candidate_search_filter_fields(field_name_to_value):
         for modality in AVAILABLE_MODALITIES_FOR_SEARCH:
             file_types = SUPPORTED_FILE_TYPES[modality]
             if field_name.split('.')[-1] in file_types:
-                search_fields_modalities[field_name] = modality
+                search_field_candidates_to_modalities[field_name] = modality
                 break
             elif field_name == 'uri' and field_value.split('.')[-1] in file_types:
-                search_fields_modalities[field_name] = modality
+                search_field_candidates_to_modalities[field_name] = modality
                 break
         if field_name == 'text' and field_value:
-            search_fields_modalities[field_name] = Text
+            search_field_candidates_to_modalities[field_name] = Text
 
         # we determine if it's a filter field
         if (
             field_name == 'uri'
             and field_value.split('.')[-1] not in not_available_file_types_for_filter
         ) or field_name.split('.')[-1] not in not_available_file_types_for_filter:
-            filter_field_modalities[field_name] = field_value.__class__.__name__
+            filter_field_candidates_to_modalities[
+                field_name
+            ] = field_value.__class__.__name__
 
-    if len(search_fields_modalities.keys()) == 0:
+    if len(search_field_candidates_to_modalities.keys()) == 0:
         raise ValueError(
             'No searchable fields found, please check documentation https://now.jina.ai'
         )
-    return search_fields_modalities, filter_field_modalities
+    return search_field_candidates_to_modalities, filter_field_candidates_to_modalities
 
 
 def _extract_field_candidates_docarray(response):

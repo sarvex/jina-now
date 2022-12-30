@@ -60,7 +60,8 @@ def test_text_index(
 
     def _mocked_fetch_user_input(data):
         return UserInput(
-            search_fields_modalities={'title': Text}, search_fields=['title']
+            search_field_candidates_to_modalities={'title': Text},
+            search_fields=['title'],
         )
 
     bff_search.fetch_user_input = _mocked_fetch_user_input

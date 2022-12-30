@@ -163,8 +163,8 @@ def call_flow(
 
     # Pop app_instance from parameters to be passed to the flow
     parameters['user_input'].pop('app_instance', None)
-    parameters['user_input'].pop('search_fields_modalities', None)
-    parameters['user_input'].pop('filter_fields_modalities', None)
+    parameters['user_input'].pop('search_field_candidates_to_modalities', None)
+    parameters['user_input'].pop('filter_field_candidates_to_modalities', None)
 
     # this is a hack for the current core/ wolf issue
     # since we get errors while indexing, we retry

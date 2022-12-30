@@ -104,7 +104,7 @@ def test_create_annotations_and_class_attributes(
 
 
 @pytest.mark.parametrize(
-    "dataset_type, search_fields, search_fields_modalities, filter_fields, filter_fields_modalities, expected_dataclass",
+    "dataset_type, search_fields, search_field_candidates_to_modalities, filter_fields, filter_field_candidates_to_modalities, expected_dataclass",
     [
         (
             DatasetTypes.PATH,
@@ -138,17 +138,21 @@ def test_create_annotations_and_class_attributes(
 def test_create_dataclass(
     dataset_type,
     search_fields,
-    search_fields_modalities,
+    search_field_candidates_to_modalities,
     filter_fields,
-    filter_fields_modalities,
+    filter_field_candidates_to_modalities,
     expected_dataclass,
 ):
     user_input = UserInput()
     user_input.dataset_type = dataset_type
     user_input.search_fields = search_fields
-    user_input.search_field_candidates_to_modalities = search_fields_modalities
+    user_input.search_field_candidates_to_modalities = (
+        search_field_candidates_to_modalities
+    )
     user_input.filter_fields = filter_fields
-    user_input.filter_field_candidates_to_modalities = filter_fields_modalities
+    user_input.filter_field_candidates_to_modalities = (
+        filter_field_candidates_to_modalities
+    )
     mm_doc = create_dataclass(user_input)
     assert str(mm_doc) == "<class 'now.data_loading.create_dataclass.MMDoc'>"
 

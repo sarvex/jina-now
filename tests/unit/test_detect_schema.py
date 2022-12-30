@@ -110,12 +110,12 @@ def test_create_candidate_search_fields():
         'title': str,
     }
     (
-        search_fields_modalities,
-        filter_fields_modalities,
+        search_field_candidates_to_modalities,
+        filter_field_candidates_to_modalities,
     ) = _create_candidate_search_filter_fields(fields_to_modalities)
 
-    assert len(search_fields_modalities.keys()) == 2
-    assert search_fields_modalities['image.png'] == Image
-    assert search_fields_modalities['test.txt'] == Text
+    assert len(search_field_candidates_to_modalities.keys()) == 2
+    assert search_field_candidates_to_modalities['image.png'] == Image
+    assert search_field_candidates_to_modalities['test.txt'] == Text
 
-    assert len(filter_fields_modalities.keys()) == 5
+    assert len(filter_field_candidates_to_modalities.keys()) == 5
