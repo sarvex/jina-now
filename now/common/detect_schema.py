@@ -13,7 +13,10 @@ from now.constants import (
     SUPPORTED_FILE_TYPES,
 )
 from now.now_dataclasses import UserInput
-from utils import docarray_typing_to_modality_string, modality_string_to_docarray_typing
+from now.utils import (
+    docarray_typing_to_modality_string,
+    modality_string_to_docarray_typing,
+)
 
 
 def _create_candidate_search_filter_fields(field_name_to_value):
