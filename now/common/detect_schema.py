@@ -151,7 +151,7 @@ def set_field_names_from_docarray(user_input: UserInput, **kwargs):
 def identify_folder_structure(first_file: str, folder_prefix: str) -> str:
     """This function identifies the folder structure.
 
-    :param bucket: s3 bucket
+    :param first_file: first file in folder
     :param folder_prefix: prefix of the s3 folder
     :return: if all the files are in the same folder then returns 'single_folder' else returns 'sub_folders'
     """
