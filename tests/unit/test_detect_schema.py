@@ -85,10 +85,7 @@ def test_set_field_names_from_docarray():
     set_field_names_from_docarray(user_input)
 
     assert len(user_input.search_field_candidates_to_modalities.keys()) == 2
-    assert set(user_input.filter_field_candidates_to_modalities.keys()) == {
-        'label',
-        'image',
-    }
+    assert set(user_input.filter_field_candidates_to_modalities.keys()) == {'label'}
 
 
 def test_failed_uni_modal_docarray():
