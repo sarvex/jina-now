@@ -10,7 +10,7 @@ from fastapi import HTTPException, status
 from jina import Client
 from jina.excepts import BadServer
 
-from constants import SUPPORTED_FILE_TYPES
+from now.constants import SUPPORTED_FILE_TYPES
 from now.now_dataclasses import UserInput
 
 
