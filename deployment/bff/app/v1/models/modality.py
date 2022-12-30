@@ -17,3 +17,7 @@ class ModalityModel(BaseModel):
         if len(set_fields) != 1:
             raise ValueError(f"Only one of {set_fields} can be set.")
         return values
+
+    @property
+    def content(self):
+        return getattr(self, list(self.__fields_set__)[0])

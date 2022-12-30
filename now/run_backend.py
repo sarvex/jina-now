@@ -13,7 +13,8 @@ from tqdm import tqdm
 from now.admin.update_api_keys import update_api_keys
 from now.app.base.app import JinaNOWApp
 from now.common.testing import handle_test_mode
-from now.constants import ACCESS_PATHS
+from now.constants import ACCESS_PATHS, DatasetTypes
+from now.data_loading.create_dataclass import create_dataclass
 from now.data_loading.data_loading import load_data
 from now.deployment.flow import deploy_flow
 from now.log import time_profiler
@@ -37,7 +38,15 @@ def run(
     :param ns:
     :return:
     """
-    dataset = load_data(app_instance, user_input)
+
+    if user_input.dataset_type in [DatasetTypes.DEMO, DatasetTypes.DOCARRAY]:
+        user_input.files_to_dataclass_fields = {
+            field: field for field in user_input.search_fields
+        }
+        data_class = None
+    else:
+        data_class = create_dataclass(user_input)
+    dataset = load_data(user_input, data_class)
 
     env_dict = app_instance.setup(
         dataset=dataset, user_input=user_input, kubectl_path=kubectl_path
@@ -150,6 +159,8 @@ def call_flow(
 
     # Pop app_instance from parameters to be passed to the flow
     parameters['user_input'].pop('app_instance', None)
+    parameters['user_input'].pop('search_fields_modalities', None)
+    parameters['user_input'].pop('filter_fields_modalities', None)
     task_config = parameters['user_input'].pop('task_config', None)
     if task_config:
         parameters['user_input']['indexer_scope'] = task_config.indexer_scope
