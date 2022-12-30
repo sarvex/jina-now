@@ -72,7 +72,7 @@ jobs:
           python -m pip install wheel
           pip install --no-cache-dir ".[full,test]"
       - name: Test executors separately
-        timeout-minutes: 15
+        timeout-minutes: 10
         run: |
           pytest --suppress-no-test-exit-code -v -s tests/executor/indexer/base
           pytest --suppress-no-test-exit-code -v -s tests/executor/indexer/elastic
@@ -100,7 +100,7 @@ jobs:
           python -m pip install wheel
           pip install --no-cache-dir ".[full,test]"
       - name: Test executors separately
-        timeout-minutes: 15
+        timeout-minutes: 10
         run: |
           pytest --suppress-no-test-exit-code -v -s tests/executor/auth
           pytest --suppress-no-test-exit-code -v -s tests/executor/preprocessor
