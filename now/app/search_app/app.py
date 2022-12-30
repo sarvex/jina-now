@@ -123,7 +123,7 @@ class SearchApp(JinaNOWApp):
     def sbert_encoder_stub() -> Dict:
         return {
             'name': 'sbert_encoder',
-            'uses': f'{EXECUTOR_PREFIX}SentenceTransformerEncoder',
+            'uses': f'{EXECUTOR_PREFIX}TransformerSentenceEncoder',
             'uses_with': {'name': 'msmarco-distilbert-base-v3'},
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'needs': 'preprocessor',
