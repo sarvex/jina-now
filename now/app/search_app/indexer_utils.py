@@ -10,7 +10,7 @@ from now.constants import (
 )
 from now.deployment.deployment import cmd
 from now.executor.name_to_id_map import name_to_id_map
-from now_dataclasses import UserInput
+from now.now_dataclasses import UserInput
 
 
 def get_indexer_config(
