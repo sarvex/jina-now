@@ -259,7 +259,7 @@ def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
     except Exception as e:
         raise Exception(f'Empty folder, data is missing.')
 
-    folder_structure = _identify_s3_folder_structure(bucket, folder_prefix)
+    folder_structure = identify_s3_folder_structure(bucket, folder_prefix)
     if folder_structure == 'single_folder':
         objects = list(bucket.objects.filter(Prefix=folder_prefix))
         file_paths = [
