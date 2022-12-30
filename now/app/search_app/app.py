@@ -103,7 +103,7 @@ class SearchApp(JinaNOWApp):
         }
 
     @staticmethod
-    def clip_encoder_stub(user_input) -> Dict:
+    def clip_encoder_stub(user_input) -> Tuple[Dict, int]:
         is_remote = user_input.deployment_type == 'remote'
         return {
             'name': 'clip_encoder',
@@ -120,7 +120,7 @@ class SearchApp(JinaNOWApp):
         }, 512
 
     @staticmethod
-    def sbert_encoder_stub() -> Dict:
+    def sbert_encoder_stub() -> Tuple[Dict, int]:
         return {
             'name': 'sbert_encoder',
             'uses': f'{EXECUTOR_PREFIX}TransformerSentenceEncoder',
@@ -143,10 +143,11 @@ class SearchApp(JinaNOWApp):
                 f'Indexer can only be created for one encoder but have encoders: {encoder2dim}'
             )
         else:
-            dim = list(encoder2dim.values())[0]
+            encoder_name = list(encoder2dim.keys())[0]
+            dim = encoder2dim[encoder_name]
         return {
             'name': 'indexer',
-            'needs': encoder2dim,
+            'needs': encoder_name,
             'uses': f'{EXECUTOR_PREFIX}{indexer_config["indexer_uses"]}',
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'uses_with': {
