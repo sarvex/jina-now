@@ -36,29 +36,6 @@ class NOWElasticIndexer(Executor):
     """
 
     # override
-    def __init__(
-        self,
-        dim: int = None,
-        columns: Optional[List] = None,
-        metric: str = 'cosine',
-        limit: int = 10,
-        max_values_per_tag: int = 10,
-        *args,
-        **kwargs,
-    ):
-        self.query_to_curated_ids = None
-        self.es = None
-        self.es_mapping = None
-        self.default_semantic_scores = None
-        self.encoder_to_fields = None
-        self.document_mappings = None
-        self.traversal_paths = None
-        self.index_name = None
-        self.hosts = None
-        self.es_config = None
-        super().__init__(
-            dim, columns, metric, limit, max_values_per_tag, args, **kwargs
-        )
 
     def construct(
         self,
