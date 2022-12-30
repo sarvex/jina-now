@@ -148,7 +148,7 @@ def set_field_names_from_docarray(user_input: UserInput, **kwargs):
         raise ValueError('DocumentArray does not exist or you do not have access to it')
 
 
-def identify_s3_folder_structure(bucket, folder_prefix) -> str:
+def identify_folder_structure(first_file, folder_prefix) -> str:
     """This function identifies the folder structure.
     It works with a local file structure or a remote file structure.
 
@@ -157,44 +157,21 @@ def identify_s3_folder_structure(bucket, folder_prefix) -> str:
     :return: if all the files are in the same folder then returns 'single_folder' else returns 'sub_folders'
     :raises Exception: if a file exists in sub_folder structure
     """
-
-    structure_identifier = list(bucket.objects.filter(Prefix=folder_prefix).limit(2))[
-        1
-    ].key
-    structure_identifier = structure_identifier[len(folder_prefix) :].split('/')
+    # gets the first file in an s3 bucket, index 0 is reserved for the root folder name
+    # first_file = list(bucket.objects.filter(Prefix=folder_prefix).limit(2))[
+    #     1
+    # ].key
+    structure_identifier = first_file[len(folder_prefix) :].split('/')
     if len(structure_identifier) > 1:
-        if (
-            len(
-                list(
-                    bucket.objects.filter(Prefix=folder_prefix, Delimiter='/').limit(2)
-                )
-            )
-            > 1
-        ):
-            raise Exception('Files exist in sub_folder structure')
-        return 'sub_folders'
-    return 'single_folder'
-
-
-def identify_local_folder_structure(file_paths: List[str], separator: str) -> str:
-    """This function identifies the folder structure.
-    It works with a local file structure or a remote file structure.
-    :param file_paths: list of file paths
-    :param separator: separator used in the file paths
-    :return: if all the files are in the same folder then returns 'single_folder' else returns 'sub_folders'
-    :raises ValueError: if the files don't have the same depth in the file structure
-    """
-    # check if all files are in the same folder
-    depths = [len(path.split(separator)) for path in file_paths]
-    if len(set(depths)) != 1:
-        raise ValueError(
-            "Files have differing depth, please check documentation https://now.jina.ai"
-        )
-    # check if all files are in the same folder
-    if (
-        len(set([separator.join(path.split(separator)[:-1]) for path in file_paths]))
-        != 1
-    ):
+        # if (
+        #     len(
+        #         list(
+        #             bucket.objects.filter(Prefix=folder_prefix, Delimiter='/').limit(2)
+        #         )
+        #     )
+        #     > 1
+        # ):
+        #     raise Exception('Files exist in sub_folder structure')
         return 'sub_folders'
     return 'single_folder'
 
@@ -255,11 +232,12 @@ def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
     bucket, folder_prefix = get_s3_bucket_and_folder_prefix(user_input)
     # user has to provide the folder where folder structure begins
     try:
-        first_file = list(bucket.objects.filter(Prefix=folder_prefix).limit(2))[1]
+        # gets the first file in an s3 bucket, index 0 is reserved for the root folder name
+        first_file = list(bucket.objects.filter(Prefix=folder_prefix).limit(2))[1].key
     except Exception as e:
         raise Exception(f'Empty folder, data is missing.')
 
-    folder_structure = identify_s3_folder_structure(bucket, folder_prefix)
+    folder_structure = identify_folder_structure(first_file, folder_prefix)
     if folder_structure == 'single_folder':
         objects = list(bucket.objects.filter(Prefix=folder_prefix))
         file_paths = [
@@ -269,7 +247,7 @@ def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
         ]
         field_names = _extract_field_names_single_folder(file_paths, '/')
     elif folder_structure == 'sub_folders':
-        first_folder = '/'.join(first_file.key.split('/')[:-1])
+        first_folder = '/'.join(first_file.split('/')[:-1])
         first_folder_objects = [
             obj.key
             for obj in bucket.objects.filter(Prefix=first_folder)
@@ -300,19 +278,27 @@ def set_field_names_from_local_folder(user_input: UserInput, **kwargs):
             'The path provided is not a folder, please check documentation https://now.jina.ai'
         )
     file_paths = []
-    for root, _, files in os.walk(dataset_path):
-        file_paths.extend(
-            [os.path.join(root, file) for file in files if not file.startswith('.')]
-        )
-    folder_structure = identify_local_folder_structure(file_paths, os.sep)
+    folder_generator = os.walk(dataset_path, topdown=True)
+    current_level = folder_generator.__next__()
+    folder_structure = 'sub_folders' if len(current_level[1]) > 0 else 'single_folder'
     if folder_structure == 'single_folder':
+        file_paths.extend(
+            [
+                os.path.join(dataset_path, file)
+                for file in current_level[2]
+                if not file.startswith('.')
+            ]
+        )
         field_names = _extract_field_names_single_folder(file_paths, os.sep)
     elif folder_structure == 'sub_folders':
-        first_folder = os.sep.join(file_paths[0].split(os.sep)[:-1])
+        while len(current_level[1]) > 0:
+            current_level = folder_generator.__next__()
+        first_folder = current_level[0]
         first_folder_files = [
             os.path.join(first_folder, file)
             for file in os.listdir(first_folder)
             if os.path.isfile(os.path.join(first_folder, file))
+            and not file.startswith('.')
         ]
         field_names = _extract_field_names_sub_folders(first_folder_files, os.sep)
     (
