@@ -4,24 +4,11 @@ from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.140-feat-one-search-dynamic-flow-4'
-NOW_PREPROCESSOR_VERSION = '0.0.118-feat-one-search-dynamic-flow-4'
-NOW_QDRANT_INDEXER_VERSION = '0.0.138-feat-one-search-dynamic-flow-4'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.139-feat-one-search-dynamic-flow-4'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.140-feat-one-search-dynamic-flow-5'
+NOW_PREPROCESSOR_VERSION = '0.0.118-feat-one-search-dynamic-flow-5'
+NOW_QDRANT_INDEXER_VERSION = '0.0.138-feat-one-search-dynamic-flow-5'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.139-feat-one-search-dynamic-flow-5'
 NOW_AUTOCOMPLETE_VERSION = '0.0.7-create-mm-docs-in-bff-18'
-
-
-class Modalities(BetterEnum):
-    TEXT = 'text'
-    IMAGE = 'image'
-    VIDEO = 'video'
-
-
-MODALITIES_MAPPING = {
-    Modalities.TEXT: Text,
-    Modalities.IMAGE: Image,
-    Modalities.VIDEO: Video,
-}
 
 
 class Apps(BetterEnum):
@@ -37,16 +24,13 @@ class DatasetTypes(BetterEnum):
 
 
 SUPPORTED_FILE_TYPES = {
-    Modalities.TEXT: ['txt', 'md'],
-    Modalities.IMAGE: ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'tif'],
-    Modalities.VIDEO: ['gif'],
+    Text: ['txt', 'md'],
+    Image: ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'tif'],
+    Video: ['gif'],
 }
-AVAILABLE_MODALITIES_FOR_SEARCH = [Modalities.TEXT, Modalities.IMAGE, Modalities.VIDEO]
-AVAILABLE_MODALITIES_FOR_FILTER = [Modalities.TEXT]
-NOT_AVAILABLE_MODALITIES_FOR_FILTER = [
-    Modalities.IMAGE,
-    Modalities.VIDEO,
-]
+AVAILABLE_MODALITIES_FOR_SEARCH = [Text, Image, Video]
+AVAILABLE_MODALITIES_FOR_FILTER = [Text]
+NOT_AVAILABLE_MODALITIES_FOR_FILTER = [Image, Video]
 
 BASE_STORAGE_URL = (
     'https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets'

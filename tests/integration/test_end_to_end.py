@@ -13,7 +13,7 @@ from now.admin.utils import get_default_request_body
 from now.cli import _get_kind_path, _get_kubectl_path, cli
 from now.cloud_manager import create_local_cluster
 from now.common.options import NEW_CLUSTER
-from now.constants import Apps, DatasetTypes, Modalities
+from now.constants import Apps, DatasetTypes
 from now.demo_data import DemoDatasetNames
 from now.deployment.deployment import cmd, list_all_wolf, terminate_wolf
 from now.utils import get_flow_id
@@ -79,7 +79,7 @@ def test_token_exists():
     [
         (
             Apps.SEARCH_APP,
-            Modalities.TEXT,
+            'text',
             ['image'],
             ['label'],
             DemoDatasetNames.BEST_ARTWORKS,
@@ -116,7 +116,7 @@ def test_end_to_end_remote(
     [
         (
             Apps.SEARCH_APP,
-            Modalities.IMAGE,
+            'image',
             ['image'],
             ['label'],
             DemoDatasetNames.BIRD_SPECIES,
@@ -124,7 +124,7 @@ def test_end_to_end_remote(
         ),
         (
             Apps.SEARCH_APP,
-            Modalities.TEXT,
+            'text',
             ['lyrics'],
             [],
             DemoDatasetNames.POP_LYRICS,
@@ -132,7 +132,7 @@ def test_end_to_end_remote(
         ),
         (
             Apps.SEARCH_APP,
-            Modalities.TEXT,
+            'text',
             ['video'],
             [],
             DemoDatasetNames.TUMBLR_GIFS_10K,
@@ -206,7 +206,7 @@ def run_end_to_end(
         test_search_image=test_search_image,
         response=response,
     )
-    if input_modality == Modalities.TEXT:
+    if input_modality == 'text':
         host = response.get('host')
         request_body = get_search_request_body(
             dataset=dataset,
@@ -333,7 +333,7 @@ def get_search_request_body(
     )
     request_body['limit'] = 9
     # Perform end-to-end check via bff
-    if search_modality == Modalities.TEXT:
+    if search_modality == 'text':
         if dataset == DemoDatasetNames.BEST_ARTWORKS:
             search_text = 'impressionism'
         elif dataset == DemoDatasetNames.NFT_MONKEY:
@@ -341,7 +341,7 @@ def get_search_request_body(
         else:
             search_text = 'test'
         request_body['query'] = {'query_text': {'text': search_text}}
-    elif search_modality == Modalities.IMAGE:
+    elif search_modality == 'image':
         request_body['query'] = {'query_image': {'blob': test_search_image}}
     return request_body
 
@@ -361,7 +361,7 @@ def assert_deployment_response(deployment_type, input_modality, response):
 @pytest.mark.parametrize('deployment_type', ['remote'])
 @pytest.mark.parametrize('dataset', ['custom_s3_bucket'])
 @pytest.mark.parametrize('app', [Apps.SEARCH_APP])
-@pytest.mark.parametrize('input_modality', [Modalities.IMAGE])
+@pytest.mark.parametrize('input_modality', ['image'])
 def test_backend_custom_data(
     app,
     deployment_type: str,

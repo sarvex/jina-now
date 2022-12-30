@@ -1,5 +1,5 @@
 import os
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, TypeVar
 
 import docker
 from docarray import DocumentArray
@@ -7,7 +7,7 @@ from jina import __version__ as jina_version
 from jina.jaml import JAML
 
 from now.app.base.preprocess import preprocess_image, preprocess_text, preprocess_video
-from now.constants import DEFAULT_FLOW_NAME, PREFETCH_NR, Modalities
+from now.constants import DEFAULT_FLOW_NAME, PREFETCH_NR
 from now.demo_data import DEFAULT_EXAMPLE_HOSTED, DemoDataset
 from now.now_dataclasses import DialogOptions, UserInput
 
@@ -77,7 +77,7 @@ class JinaNOWApp:
         return []
 
     @property
-    def demo_datasets(self) -> Dict[Modalities, List[DemoDataset]]:
+    def demo_datasets(self) -> Dict[TypeVar, List[DemoDataset]]:
         """Get a list of example datasets for the app."""
         raise NotImplementedError()
 
@@ -196,8 +196,8 @@ class JinaNOWApp:
                 else DEFAULT_FLOW_NAME
             )
             # Call the executor stubs function to get the executors for the flow
-            flow_yaml_content = self.get_executor_stubs(
-                dataset, user_input, flow_yaml_content, **kwargs
+            flow_yaml_content['executors'] = self.get_executor_stubs(
+                dataset, user_input
             )
             # append api_keys to all executors except the remote executors
             for executor in flow_yaml_content['executors']:

@@ -13,4 +13,3 @@ jcloud:
     - ${{ ENV.CUSTOM_DNS }}
   labels:
     team: now
-executors:

@@ -1,6 +1,7 @@
 import os
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, TypeVar
 
+from docarray.typing import Image, Text, Video
 from jina import Client
 from jina.helper import random_port
 
@@ -16,7 +17,6 @@ from now.constants import (
     NOW_AUTOCOMPLETE_VERSION,
     NOW_PREPROCESSOR_VERSION,
     Apps,
-    Modalities,
 )
 from now.demo_data import (
     AVAILABLE_DATASETS,
@@ -50,7 +50,7 @@ class SearchApp(JinaNOWApp):
         return 8
 
     @property
-    def demo_datasets(self) -> Dict[Modalities, List[DemoDataset]]:
+    def demo_datasets(self) -> Dict[TypeVar, List[DemoDataset]]:
         return AVAILABLE_DATASETS
 
     @property
@@ -87,14 +87,11 @@ class SearchApp(JinaNOWApp):
         }
 
     @staticmethod
-    def preprocessor_stub(use_high_performance_flow: bool) -> Dict:
+    def preprocessor_stub(use_high_perf_flow: bool) -> Dict:
         return {
             'name': 'preprocessor',
             'needs': 'gateway',
-            'replicas': 15
-            if use_high_performance_flow
-            and not any(_var in os.environ for _var in ['NOW_CI_RUN', 'NOW_TESTING'])
-            else 1,
+            'replicas': 15 if use_high_perf_flow else 1,
             'uses': f'{EXECUTOR_PREFIX}{name_to_id_map.get("NOWPreprocessor")}/{NOW_PREPROCESSOR_VERSION}',
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'jcloud': {
@@ -169,48 +166,45 @@ class SearchApp(JinaNOWApp):
             },
         }
 
-    def get_executor_stubs(
-        self, dataset, user_input: UserInput, flow_yaml_content, **kwargs
-    ) -> Dict:
-        """
-        Returns a dictionary of executors to be added in the flow
+    def get_executor_stubs(self, dataset, user_input: UserInput) -> Dict:
+        """Returns a dictionary of executors to be added in the flow
+
         :param dataset: DocumentArray of the dataset
         :param user_input: user input
-        :param flow_yaml_content: initial flow yaml content
-        :param kwargs: additional arguments
         :return: executors stubs with filled-in env vars
         """
-        flow_yaml_content['executors'].append(self.autocomplete_stub())
-
-        flow_yaml_content['executors'].append(
+        flow_yaml_executors = [
+            self.autocomplete_stub(),
             self.preprocessor_stub(
-                use_high_performance_flow=get_email().split('@')[-1] == 'jina.ai'
+                use_high_perf_flow=get_email().split('@')[-1] == 'jina.ai'
                 and user_input.deployment_type == 'remote'
-            )
-        )
+                and not any(
+                    _var in os.environ for _var in ['NOW_CI_RUN', 'NOW_TESTING']
+                )
+            ),
+        ]
 
         encoders_list = []
         if any(
-            user_input.search_field_candidates_to_modalities[field] == Modalities.TEXT
+            user_input.search_field_candidates_to_modalities[field] == Text
             for field in user_input.search_fields
         ):
             sbert_encoder = self.sbert_encoder_stub()
             encoders_list.append(sbert_encoder['name'])
-            flow_yaml_content['executors'].append(sbert_encoder)
+            flow_yaml_executors.append(sbert_encoder)
         if any(
-            user_input.search_field_candidates_to_modalities[field]
-            in [Modalities.IMAGE, Modalities.VIDEO]
+            user_input.search_field_candidates_to_modalities[field] in [Image, Video]
             for field in user_input.search_fields
         ):
             clip_encoder = self.clip_encoder_stub(user_input)
             encoders_list.append(clip_encoder['name'])
-            flow_yaml_content['executors'].append(clip_encoder)
+            flow_yaml_executors.append(clip_encoder)
 
-        flow_yaml_content['executors'].append(
+        flow_yaml_executors.append(
             self.indexer_stub(user_input, encoders_list=encoders_list)
         )
 
-        return flow_yaml_content
+        return flow_yaml_executors
 
     @property
     def max_request_size(self) -> int:

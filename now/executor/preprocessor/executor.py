@@ -13,12 +13,7 @@ from paddleocr import PaddleOCR
 
 from now.app.base.app import JinaNOWApp
 from now.app.base.transform_docarray import transform_docarray
-from now.constants import (
-    ACCESS_PATHS,
-    TAG_OCR_DETECTOR_TEXT_IN_DOC,
-    DatasetTypes,
-    Modalities,
-)
+from now.constants import ACCESS_PATHS, TAG_OCR_DETECTOR_TEXT_IN_DOC, DatasetTypes
 from now.executor.abstract.auth import (
     SecurityLevel,
     get_auth_executor_class,
@@ -73,7 +68,7 @@ class NOWPreprocessor(Executor):
     def _ocr_detect_text(self, docs: DocumentArray):
         """Iterates over all documents, detects text in images and saves it into the tags of the document."""
         for doc in docs[ACCESS_PATHS]:
-            if doc.modality == Modalities.IMAGE:
+            if doc.modality == 'image':
                 ocr_result = self.paddle_ocr.ocr(doc.blob)
                 text_list = [text for _, (text, _) in ocr_result[0]]
                 doc.tags[TAG_OCR_DETECTOR_TEXT_IN_DOC] = ' '.join(text_list)

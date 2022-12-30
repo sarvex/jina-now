@@ -7,7 +7,7 @@ the dialog won't ask for the value.
 from __future__ import annotations, print_function, unicode_literals
 
 import dataclasses
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, TypeVar, Union
 
 from pydantic import BaseModel, StrictBool
 
@@ -30,9 +30,9 @@ class UserInput(BaseModel):
 
     # Fields
     search_fields: Optional[List] = []
-    search_field_candidates_to_modalities: Optional[Dict] = {}
+    search_field_candidates_to_modalities: Optional[Dict[str, TypeVar]] = {}
     filter_fields: Optional[List] = []
-    filter_field_candidates_to_modalities: Optional[Dict] = {}
+    filter_field_candidates_to_modalities: Optional[Dict[str, str]] = {}
     files_to_dataclass_fields: Optional[Dict] = {}
 
     # ES related

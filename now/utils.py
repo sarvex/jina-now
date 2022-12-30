@@ -10,9 +10,10 @@ import tempfile
 from collections.abc import MutableMapping
 from concurrent.futures import ThreadPoolExecutor
 from os.path import expanduser as user
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, TypeVar, Union
 
 import boto3
+import docarray
 import hubble
 import yaml
 from docarray import Document, DocumentArray
@@ -310,3 +311,13 @@ def get_email():
         return ''
     except FileNotFoundError:
         return ''
+
+
+def docarray_typing_to_modality_string(T: TypeVar) -> str:
+    """E.g. docarray.typing.Image -> image"""
+    return T.__name__.lower()
+
+
+def modality_string_to_docarray_typing(s: str) -> TypeVar:
+    """E.g. image -> docarray.typing.Image"""
+    return getattr(docarray.typing, s.capitalize())

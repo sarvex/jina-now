@@ -2,11 +2,12 @@ import pathlib
 import time
 from typing import Dict, Optional
 
+from docarray.typing import Image, Video
+
 from now.constants import (
     NOW_ELASTIC_INDEXER_VERSION,
     NOW_QDRANT_INDEXER_VERSION,
     TAG_INDEXER_DOC_HAS_TEXT,
-    Modalities,
 )
 from now.deployment.deployment import cmd
 from now.executor.name_to_id_map import name_to_id_map
@@ -49,8 +50,7 @@ def _extract_tags_for_indexer(user_input: UserInput):
     for tag in user_input.filter_fields:
         final_tags.append([tag, user_input.filter_field_candidates_to_modalities[tag]])
     if any(
-        user_input.search_field_candidates_to_modalities[search_field]
-        in [Modalities.IMAGE, Modalities.VIDEO]
+        user_input.search_field_candidates_to_modalities[search_field] in [Image, Video]
         for search_field in user_input.search_fields
     ):
         final_tags.append([TAG_INDEXER_DOC_HAS_TEXT, str(bool.__name__)])

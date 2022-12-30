@@ -4,16 +4,16 @@ import os
 from typing import Dict, List
 
 import requests
+from docarray.typing import Text
 
 from now.constants import (
     AVAILABLE_MODALITIES_FOR_FILTER,
     AVAILABLE_MODALITIES_FOR_SEARCH,
-    MODALITIES_MAPPING,
     NOT_AVAILABLE_MODALITIES_FOR_FILTER,
     SUPPORTED_FILE_TYPES,
-    Modalities,
 )
 from now.now_dataclasses import UserInput
+from utils import docarray_typing_to_modality_string, modality_string_to_docarray_typing
 
 
 def _create_candidate_search_filter_fields(field_name_to_value):
@@ -41,13 +41,13 @@ def _create_candidate_search_filter_fields(field_name_to_value):
         for modality in AVAILABLE_MODALITIES_FOR_SEARCH:
             file_types = SUPPORTED_FILE_TYPES[modality]
             if field_name.split('.')[-1] in file_types:
-                search_fields_modalities[field_name] = MODALITIES_MAPPING[modality]
+                search_fields_modalities[field_name] = modality
                 break
             elif field_name == 'uri' and field_value.split('.')[-1] in file_types:
-                search_fields_modalities[field_name] = MODALITIES_MAPPING[modality]
+                search_fields_modalities[field_name] = modality
                 break
         if field_name == 'text' and field_value:
-            search_fields_modalities[field_name] = MODALITIES_MAPPING[Modalities.TEXT]
+            search_fields_modalities[field_name] = Text
 
         # we determine if it's a filter field
         if (
@@ -94,17 +94,16 @@ def _extract_field_candidates_docarray(response):
                 f' to add modalities to your documents https://docarray.jina.ai/datatypes/multimodal/'
             )
         modality = doc['chunks'][field_pos]['modality'].lower()
-        if modality not in AVAILABLE_MODALITIES_FOR_SEARCH:
+        docarray_type = modality_string_to_docarray_typing(modality)
+        if docarray_type in AVAILABLE_MODALITIES_FOR_SEARCH:
+            search_modalities[field_name] = docarray_type
+        else:
             raise ValueError(
-                f'The modality {modality} is not supported for search. Please use '
-                f'one of the following modalities: {AVAILABLE_MODALITIES_FOR_SEARCH}'
+                f'The modality {modality} is not supported for search. Please use one of the following modalities: '
+                f'{map(docarray_typing_to_modality_string, AVAILABLE_MODALITIES_FOR_SEARCH)}'
             )
-        # only the available modalities for filter are added to the filter modalities
-        if modality in AVAILABLE_MODALITIES_FOR_FILTER:
+        if docarray_type in AVAILABLE_MODALITIES_FOR_FILTER:
             filter_modalities[field_name] = modality
-        # only the available modalities for search are added to search modalities
-        if modality in AVAILABLE_MODALITIES_FOR_SEARCH:
-            search_modalities[field_name] = MODALITIES_MAPPING[modality]
 
     if doc.get('tags', None):
         for el, value in doc['tags']['fields'].items():

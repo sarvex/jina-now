@@ -4,8 +4,9 @@ from typing import Dict, List
 
 from docarray import dataclass, field
 
-from now.constants import MODALITIES_MAPPING, DatasetTypes
+from now.constants import AVAILABLE_MODALITIES_FOR_SEARCH, DatasetTypes
 from now.now_dataclasses import UserInput
+from now.utils import docarray_typing_to_modality_string
 
 
 def update_dict_with_no_overwrite(dict1: Dict, dict2: Dict):
@@ -139,14 +140,13 @@ def create_dataclass_fields_file_mappings(fields: List, fields_modalities: Dict)
     for f in fields:
         if not isinstance(f, typing.Hashable):
             continue
-        for modality_name, modality_type in MODALITIES_MAPPING.items():
-            if fields_modalities[f] == modality_type:
-                dataclass_fields_to_file_mapping[
-                    f'{modality_name}_{modalities_count[modality_name]}'
-                ] = f
-                modalities_count[modality_name] += 1
-                break
-        if f not in dataclass_fields_to_file_mapping.values():
+        field_modality = fields_modalities[f]
+        if field_modality in AVAILABLE_MODALITIES_FOR_SEARCH:
+            dataclass_fields_to_file_mapping[
+                f'{docarray_typing_to_modality_string(field_modality)}_{modalities_count[field_modality]}'
+            ] = f
+            modalities_count[fields_modalities[f]] += 1
+        else:
             dataclass_fields_to_file_mapping[f'filter_{filter_count}'] = f
             filter_count += 1
     file_mapping_to_dataclass_fields = {

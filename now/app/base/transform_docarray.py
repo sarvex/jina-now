@@ -2,20 +2,19 @@ from typing import Dict, List, Union
 
 from docarray import Document, DocumentArray
 
-from now.constants import SUPPORTED_FILE_TYPES, Modalities
+from now.constants import SUPPORTED_FILE_TYPES
+from now.utils import docarray_typing_to_modality_string
 
 
 def _get_modality(document: Document):
-    """
-    Detect document's modality based on its `modality` or `mime_type` attributes.
-    """
-    for modality in Modalities():
-        if modality in document.modality:
-            return modality
-        elif document.mime_type:
-            file_from_mime = document.mime_type.split('/')[-1]
-            if file_from_mime in SUPPORTED_FILE_TYPES[modality]:
-                return modality
+    """Detect document's modality based on its `modality` or `mime_type` attributes."""
+    if document.modality:
+        return document.modality
+    elif document.mime_type:
+        file_from_mime_type = document.mime_type.split('/')[-1]
+        for modality_type, file_types in SUPPORTED_FILE_TYPES.items():
+            if file_from_mime_type in file_types:
+                return docarray_typing_to_modality_string(modality_type)
     return None
 
 
@@ -31,7 +30,7 @@ def _get_multi_modal_format(document: Document) -> Document:
         new_doc = Document(chunks=[Document(uri=document.uri)])
     elif document.text:
         new_doc = Document(chunks=[Document(text=document.text)])
-        modality = Modalities.TEXT
+        modality = 'text'
     elif document.tensor:
         new_doc = Document(chunks=[Document(tensor=document.tensor)])
     else:
