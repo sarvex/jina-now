@@ -274,40 +274,7 @@ jobs:
           name: coverage${{ matrix.group }}
           path: .coverage
 
-  executor-test_1:
-    runs-on: ubuntu-latest
-    needs:
-      [
-        update-preprocessor,
-        update-qdrant,
-        update-elastic,
-        update-autocomplete,
-        update-bff-playground,
-      ]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.7
-      - name: Prepare environment
-        run: |
-          sudo apt update && sudo apt install ffmpeg
-          python -m pip install --upgrade pip
-          python -m pip install wheel
-          pip install --no-cache-dir ".[full,test]"
-      - name: Test executors separately
-        timeout-minutes: 15
-        run: |
-          pytest --suppress-no-test-exit-code --cov=now --cov-append -v -s tests/executor/auth
-          pytest --suppress-no-test-exit-code --cov=now --cov-append -v -s tests/executor/indexer/elastic
-      - name: Upload coverage
-        uses: actions/upload-artifact@v2
-        with:
-          name: coverage_executor
-          path: .coverage
-
-  executor-test_2:
+  executor-test_indexers:
     runs-on: ubuntu-latest
     needs:
       [
@@ -333,6 +300,39 @@ jobs:
         timeout-minutes: 15
         run: |
           pytest --suppress-no-test-exit-code --cov=now --cov-append -v -s tests/executor/indexer/base
+          pytest --suppress-no-test-exit-code --cov=now --cov-append -v -s tests/executor/indexer/elastic
+      - name: Upload coverage
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage_executor
+          path: .coverage
+
+  executor-test:
+    runs-on: ubuntu-latest
+    needs:
+      [
+        update-preprocessor,
+        update-qdrant,
+        update-elastic,
+        update-autocomplete,
+        update-bff-playground,
+      ]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+      - name: Prepare environment
+        run: |
+          sudo apt update && sudo apt install ffmpeg
+          python -m pip install --upgrade pip
+          python -m pip install wheel
+          pip install --no-cache-dir ".[full,test]"
+      - name: Test executors separately
+        timeout-minutes: 15
+        run: |
+          pytest --suppress-no-test-exit-code --cov=now --cov-append -v -s tests/executor/auth
           pytest --suppress-no-test-exit-code --cov=now --cov-append -v -s tests/executor/preprocessor
           pytest --suppress-no-test-exit-code --cov=now --cov-append -v -s tests/executor/autocomplete
       - name: Upload coverage
@@ -344,7 +344,7 @@ jobs:
   # just for blocking the merge until all parallel core-test are successful
   success-all-test-coverage:
     runs-on: ubuntu-latest
-    needs: [core-test, executor-test_1, executor-test_2]
+    needs: [core-test, executor-test_indexers, executor-test]
     if: always()
     steps:
       - uses: actions/checkout@v2
