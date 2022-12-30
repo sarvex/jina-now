@@ -106,7 +106,7 @@ def test_create_candidate_index_fields():
     (
         index_field_candidates_to_modalities,
         filter_field_candidates_to_modalities,
-    ) = _create_candidate_search_filter_fields(fields_to_modalities)
+    ) = test_create_candidate_index_fields(fields_to_modalities)
 
     assert len(index_field_candidates_to_modalities.keys()) == 2
     assert index_field_candidates_to_modalities['image.png'] == Image

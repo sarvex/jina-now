@@ -4,10 +4,10 @@ from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.140-feat-one-search-dynamic-flow-14'
-NOW_PREPROCESSOR_VERSION = '0.0.118-feat-one-search-dynamic-flow-14'
-NOW_QDRANT_INDEXER_VERSION = '0.0.138-feat-one-search-dynamic-flow-14'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.139-feat-one-search-dynamic-flow-14'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.140-feat-one-search-dynamic-flow-15'
+NOW_PREPROCESSOR_VERSION = '0.0.118-feat-one-search-dynamic-flow-15'
+NOW_QDRANT_INDEXER_VERSION = '0.0.138-feat-one-search-dynamic-flow-15'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.139-feat-one-search-dynamic-flow-15'
 NOW_AUTOCOMPLETE_VERSION = '0.0.7-create-mm-docs-in-bff-18'
 
 
