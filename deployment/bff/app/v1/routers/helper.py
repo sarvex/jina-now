@@ -1,4 +1,5 @@
 import base64
+import itertools
 import os
 from copy import deepcopy
 from tempfile import TemporaryDirectory
@@ -9,6 +10,7 @@ from fastapi import HTTPException, status
 from jina import Client
 from jina.excepts import BadServer
 
+from constants import SUPPORTED_FILE_TYPES
 from now.now_dataclasses import UserInput
 
 
@@ -41,7 +43,20 @@ def field_dict_to_mm_doc(
                 # save blob into a temporary file such that it can be loaded by the multimodal class
                 if field_value.blob:
                     base64_decoded = base64.b64decode(field_value.blob.encode('utf-8'))
-                    file_ending = filetype.guess(base64_decoded).extension
+                    file_ending = filetype.guess(base64_decoded)
+                    if file_ending is None:
+                        raise ValueError(
+                            f'Could not guess file type of blob {field_value.blob}. '
+                            f'Please provide a valid file type.'
+                        )
+                    file_ending = file_ending.extension
+                    if file_ending not in itertools.chain(
+                        *SUPPORTED_FILE_TYPES.values()
+                    ):
+                        raise ValueError(
+                            f'File type {file_ending} is not supported. '
+                            f'Please provide a valid file type.'
+                        )
                     file_path = os.path.join(
                         tmp_dir, field_name_data_class + '.' + file_ending
                     )
