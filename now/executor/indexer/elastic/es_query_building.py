@@ -129,7 +129,7 @@ def build_es_queries(
 
                 sources[
                     doc.id
-                ] += f" + {float(linear_weight)}*{metrics_mapping[metric]}({query_string}, '{document_string}.embedding') "
+                ] += f" + {float(linear_weight)}*{metrics_mapping[metric]}({query_string}, '{document_string}.embedding')"
 
                 script_params[doc.id][
                     f'query_{query_field}_{executor_name}'
