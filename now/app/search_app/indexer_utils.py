@@ -50,8 +50,8 @@ def _extract_tags_for_indexer(user_input: UserInput):
     for tag in user_input.filter_fields:
         final_tags.append([tag, user_input.filter_field_candidates_to_modalities[tag]])
     if any(
-        user_input.search_field_candidates_to_modalities[search_field] in [Image, Video]
-        for search_field in user_input.search_fields
+        user_input.index_field_candidates_to_modalities[index_field] in [Image, Video]
+        for index_field in user_input.index_fields
     ):
         final_tags.append([TAG_INDEXER_DOC_HAS_TEXT, str(bool.__name__)])
     return final_tags

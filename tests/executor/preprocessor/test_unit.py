@@ -50,7 +50,7 @@ def test_ocr_with_bucket(file_path, num_chunks, ocr_text):
         parameters={
             'user_input': {
                 'dataset_type': DatasetTypes.S3_BUCKET,
-                'search_fields': [],
+                'index_fields': [],
                 'aws_region_name': 'test',
             }
         },

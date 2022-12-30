@@ -15,7 +15,7 @@ from now.demo_data import DemoDatasetNames
 from now.dialog import configure_user_input
 from now.now_dataclasses import UserInput
 
-SEARCH_FIELD_CANDIDATES_TO_MODALITIES = {'text': Text, 'uri': Image}
+index_field_CANDIDATES_TO_MODALITIES = {'text': Text, 'uri': Image}
 FILTER_FIELD_CANDIDATES_TO_MODALITIES = {
     'uri': 'str',
     'text': 'str',
@@ -43,8 +43,8 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': DemoDatasetNames.TLL,
-            'search_field_candidates_to_modalities': {'label': Text, 'image': Image},
-            'search_fields': ['label'],
+            'index_field_candidates_to_modalities': {'label': Text, 'image': Image},
+            'index_fields': ['label'],
             'filter_fields': [],
             'filter_field_candidates_to_modalities': {'label': 'text'},
             'cluster': 'new',
@@ -58,8 +58,8 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': DemoDatasetNames.NIH_CHEST_XRAYS,
-            'search_field_candidates_to_modalities': {'label': Text, 'image': Image},
-            'search_fields': ['image'],
+            'index_field_candidates_to_modalities': {'label': Text, 'image': Image},
+            'index_fields': ['image'],
             'filter_fields': [],
             'filter_field_candidates_to_modalities': {'label': 'text'},
             'cluster': 'new',
@@ -75,8 +75,8 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'dataset_path': os.path.join(
                 os.path.dirname(__file__), '..', 'resources', 'image'
             ),
-            'search_fields': ['.jpg'],
-            'search_field_candidates_to_modalities': {'.jpg': Image},
+            'index_fields': ['.jpg'],
+            'index_field_candidates_to_modalities': {'.jpg': Image},
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -87,8 +87,8 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': DemoDatasetNames.DEEP_FASHION,
-            'search_fields': ['image'],
-            'search_field_candidates_to_modalities': {'label': Text, 'image': Image},
+            'index_fields': ['image'],
+            'index_field_candidates_to_modalities': {'label': Text, 'image': Image},
             'filter_fields': [],
             'filter_field_candidates_to_modalities': {'label': 'text'},
             'cluster': 'new',
@@ -103,8 +103,8 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'flow_name': 'testapp',
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': DemoDatasetNames.RAP_LYRICS,
-            'search_fields': ['lyrics'],
-            'search_field_candidates_to_modalities': {'lyrics': Text, 'title': Text},
+            'index_fields': ['lyrics'],
+            'index_field_candidates_to_modalities': {'lyrics': Text, 'title': Text},
             'filter_fields': ['title'],
             'filter_field_candidates_to_modalities': {
                 'lyrics': 'text',
@@ -121,8 +121,8 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'flow_name': 'testapp',
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': DemoDatasetNames.TUMBLR_GIFS_10K,
-            'search_fields': ['video'],
-            'search_field_candidates_to_modalities': {
+            'index_fields': ['video'],
+            'index_field_candidates_to_modalities': {
                 'video': Video,
                 'description': Text,
             },
@@ -138,8 +138,8 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'flow_name': 'test this name *',
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': DemoDatasetNames.DEEP_FASHION,
-            'search_fields': ['image'],
-            'search_field_candidates_to_modalities': {'label': Text, 'image': Image},
+            'index_fields': ['image'],
+            'index_field_candidates_to_modalities': {'label': Text, 'image': Image},
             'filter_fields': [],
             'filter_field_candidates_to_modalities': {'label': 'text'},
             'cluster': 'new',

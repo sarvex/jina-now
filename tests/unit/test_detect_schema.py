@@ -4,7 +4,6 @@ import pytest
 from docarray.typing import Image, Text
 
 from now.common.detect_schema import (
-    _create_candidate_search_filter_fields,
     set_field_names_from_docarray,
     set_field_names_from_local_folder,
     set_field_names_from_s3_bucket,
@@ -14,14 +13,14 @@ from now.now_dataclasses import UserInput
 
 
 @pytest.mark.parametrize(
-    'dataset_path, search_field_names, filter_field_names',
+    'dataset_path, index_field_names, filter_field_names',
     [
         ('gif_resource_path', {'file.txt', 'file.gif'}, {'file.txt', 'a1', 'a2'}),
         ('image_resource_path', {'.jpg'}, set()),
     ],
 )
 def test_set_fields_names_from_local_folder(
-    dataset_path, search_field_names, filter_field_names, request
+    dataset_path, index_field_names, filter_field_names, request
 ):
     user_input = UserInput()
     user_input.dataset_path = request.getfixturevalue(dataset_path)
@@ -29,8 +28,7 @@ def test_set_fields_names_from_local_folder(
     set_field_names_from_local_folder(user_input)
 
     assert (
-        set(user_input.search_field_candidates_to_modalities.keys())
-        == search_field_names
+        set(user_input.index_field_candidates_to_modalities.keys()) == index_field_names
     )
     assert (
         set(user_input.filter_field_candidates_to_modalities.keys())
@@ -39,7 +37,7 @@ def test_set_fields_names_from_local_folder(
 
 
 @pytest.mark.parametrize(
-    'dataset_path, search_field_names, filter_field_names',
+    'dataset_path, index_field_names, filter_field_names',
     [
         (
             '',
@@ -53,7 +51,7 @@ def test_set_fields_names_from_local_folder(
     ],
 )
 def test_set_field_names_from_s3_bucket(
-    dataset_path, search_field_names, filter_field_names, get_aws_info
+    dataset_path, index_field_names, filter_field_names, get_aws_info
 ):
     user_input = UserInput()
     (
@@ -66,8 +64,7 @@ def test_set_field_names_from_s3_bucket(
     set_field_names_from_s3_bucket(user_input)
 
     assert (
-        set(user_input.search_field_candidates_to_modalities.keys())
-        == search_field_names
+        set(user_input.index_field_candidates_to_modalities.keys()) == index_field_names
     )
     assert (
         set(user_input.filter_field_candidates_to_modalities.keys())
@@ -84,7 +81,7 @@ def test_set_field_names_from_docarray():
 
     set_field_names_from_docarray(user_input)
 
-    assert len(user_input.search_field_candidates_to_modalities.keys()) == 2
+    assert len(user_input.index_field_candidates_to_modalities.keys()) == 2
     assert set(user_input.filter_field_candidates_to_modalities.keys()) == {'label'}
 
 
@@ -97,7 +94,7 @@ def test_failed_uni_modal_docarray():
         set_field_names_from_docarray(user_input)
 
 
-def test_create_candidate_search_fields():
+def test_create_candidate_index_fields():
     fields_to_modalities = {
         'image.png': Image,
         'test.txt': Text,
@@ -107,12 +104,12 @@ def test_create_candidate_search_fields():
         'title': str,
     }
     (
-        search_field_candidates_to_modalities,
+        index_field_candidates_to_modalities,
         filter_field_candidates_to_modalities,
     ) = _create_candidate_search_filter_fields(fields_to_modalities)
 
-    assert len(search_field_candidates_to_modalities.keys()) == 2
-    assert search_field_candidates_to_modalities['image.png'] == Image
-    assert search_field_candidates_to_modalities['test.txt'] == Text
+    assert len(index_field_candidates_to_modalities.keys()) == 2
+    assert index_field_candidates_to_modalities['image.png'] == Image
+    assert index_field_candidates_to_modalities['test.txt'] == Text
 
     assert len(filter_field_candidates_to_modalities.keys()) == 5

@@ -29,8 +29,8 @@ class UserInput(BaseModel):
     aws_region_name: Optional[str] = None
 
     # Fields
-    search_fields: Optional[List] = []
-    search_field_candidates_to_modalities: Optional[Dict[str, TypeVar]] = {}
+    index_fields: Optional[List] = []
+    index_field_candidates_to_modalities: Optional[Dict[str, TypeVar]] = {}
     filter_fields: Optional[List] = []
     filter_field_candidates_to_modalities: Optional[Dict[str, str]] = {}
     files_to_dataclass_fields: Optional[Dict] = {}

@@ -50,7 +50,7 @@ class ElasticsearchExtractor:
         )
         self._supported_pil_extensions = self._get_supported_image_extensions()
 
-    def extract(self, search_fields: List[str]) -> DocumentArray:
+    def extract(self, index_fields: List[str]) -> DocumentArray:
         """
         Returns extracted data as a `DocumentArray` where every `Document`
         contains chunks for each field.
@@ -62,7 +62,7 @@ class ElasticsearchExtractor:
                 ]
         )
 
-        :param search_fields: List of field names used for searching.
+        :param index_fields: List of field names used for searching.
         :return: extracted documents.
         """
         docs = DocumentArray(
@@ -75,7 +75,7 @@ class ElasticsearchExtractor:
         docs = transform_multi_modal_data(
             documents=docs,
             field_names=field_names,
-            search_fields=search_fields,
+            index_fields=index_fields,
         )
         return docs
 

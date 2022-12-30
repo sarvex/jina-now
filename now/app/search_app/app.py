@@ -186,15 +186,15 @@ class SearchApp(JinaNOWApp):
 
         encoders_list = []
         if any(
-            user_input.search_field_candidates_to_modalities[field] == Text
-            for field in user_input.search_fields
+            user_input.index_field_candidates_to_modalities[field] == Text
+            for field in user_input.index_fields
         ):
             sbert_encoder = self.sbert_encoder_stub()
             encoders_list.append(sbert_encoder['name'])
             flow_yaml_executors.append(sbert_encoder)
         if any(
-            user_input.search_field_candidates_to_modalities[field] in [Image, Video]
-            for field in user_input.search_fields
+            user_input.index_field_candidates_to_modalities[field] in [Image, Video]
+            for field in user_input.index_fields
         ):
             clip_encoder = self.clip_encoder_stub(user_input)
             encoders_list.append(clip_encoder['name'])

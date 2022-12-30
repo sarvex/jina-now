@@ -92,8 +92,8 @@ def test_da_local_path_image_folder(image_resource_path: str):
     user_input.dataset_type = DatasetTypes.PATH
     user_input.dataset_path = image_resource_path
 
-    user_input.search_fields = ['a.jpg']
-    user_input.search_field_candidates_to_modalities = {'a.jpg': Image}
+    user_input.index_fields = ['a.jpg']
+    user_input.index_field_candidates_to_modalities = {'a.jpg': Image}
     data_class = create_dataclass(user_input)
     loaded_da = load_data(user_input, data_class)
 
@@ -121,20 +121,20 @@ def test_da_custom_ds(da: DocumentArray):
 def test_from_files_local(resources_folder_path):
     user_input = UserInput()
     user_input.dataset_type = DatasetTypes.PATH
-    user_input.search_fields = ['a.jpg', 'test.txt']
-    user_input.search_field_candidates_to_modalities = {
+    user_input.index_fields = ['a.jpg', 'test.txt']
+    user_input.index_field_candidates_to_modalities = {
         'a.jpg': Image,
         'test.txt': Text,
     }
     user_input.dataset_path = os.path.join(resources_folder_path, 'subdirectories')
     file_fields_file_mappings = create_dataclass_fields_file_mappings(
-        user_input.search_fields, user_input.search_field_candidates_to_modalities
+        user_input.index_fields, user_input.index_field_candidates_to_modalities
     )
 
     data_class = create_dataclass(user_input)
     loaded_da = from_files_local(
         user_input.dataset_path,
-        user_input.search_fields,
+        user_input.index_fields,
         file_fields_file_mappings,
         data_class,
     )
@@ -153,8 +153,8 @@ def test_from_subfolders_s3(get_aws_info):
         user_input.aws_region_name,
     ) = get_aws_info
     user_input.dataset_type = DatasetTypes.S3_BUCKET
-    user_input.search_fields = ['image.png', 'test.txt']
-    user_input.search_field_candidates_to_modalities = {
+    user_input.index_fields = ['image.png', 'test.txt']
+    user_input.index_field_candidates_to_modalities = {
         'image.png': Image,
         'test.txt': Text,
     }

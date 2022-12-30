@@ -19,17 +19,17 @@ from now.utils import (
 )
 
 
-def _create_candidate_search_filter_fields(field_name_to_value):
+def _create_candidate_index_filter_fields(field_name_to_value):
     """
-    Creates candidate search fields from the field_names for s3
+    Creates candidate index fields from the field_names for s3
     and local file path.
-    A candidate search field is a field that we can detect its modality
+    A candidate index field is a field that we can detect its modality
     A candidate filter field is a field that we can't detect its modality,
     or it's modality is different from image, video or audio.
 
     :param field_name_to_value: dictionary
     """
-    search_field_candidates_to_modalities = {}
+    index_field_candidates_to_modalities = {}
     filter_field_candidates_to_modalities = {}
     not_available_file_types_for_filter = list(
         itertools.chain(
@@ -44,13 +44,13 @@ def _create_candidate_search_filter_fields(field_name_to_value):
         for modality in AVAILABLE_MODALITIES_FOR_SEARCH:
             file_types = SUPPORTED_FILE_TYPES[modality]
             if field_name.split('.')[-1] in file_types:
-                search_field_candidates_to_modalities[field_name] = modality
+                index_field_candidates_to_modalities[field_name] = modality
                 break
             elif field_name == 'uri' and field_value.split('.')[-1] in file_types:
-                search_field_candidates_to_modalities[field_name] = modality
+                index_field_candidates_to_modalities[field_name] = modality
                 break
         if field_name == 'text' and field_value:
-            search_field_candidates_to_modalities[field_name] = Text
+            index_field_candidates_to_modalities[field_name] = Text
 
         # we determine if it's a filter field
         if (
@@ -61,11 +61,11 @@ def _create_candidate_search_filter_fields(field_name_to_value):
                 field_name
             ] = field_value.__class__.__name__
 
-    if len(search_field_candidates_to_modalities.keys()) == 0:
+    if len(index_field_candidates_to_modalities.keys()) == 0:
         raise ValueError(
             'No searchable fields found, please check documentation https://now.jina.ai'
         )
-    return search_field_candidates_to_modalities, filter_field_candidates_to_modalities
+    return index_field_candidates_to_modalities, filter_field_candidates_to_modalities
 
 
 def _extract_field_candidates_docarray(response):
@@ -145,7 +145,7 @@ def set_field_names_from_docarray(user_input: UserInput, **kwargs):
     )
     if response.json()['code'] == 200:
         (
-            user_input.search_field_candidates_to_modalities,
+            user_input.index_field_candidates_to_modalities,
             user_input.filter_field_candidates_to_modalities,
         ) = _extract_field_candidates_docarray(response)
     else:
@@ -253,7 +253,7 @@ def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
             first_folder_objects, '/', bucket
         )
     (
-        user_input.search_field_candidates_to_modalities,
+        user_input.index_field_candidates_to_modalities,
         user_input.filter_field_candidates_to_modalities,
     ) = _create_candidate_search_filter_fields(field_names)
 
@@ -290,7 +290,7 @@ def set_field_names_from_local_folder(user_input: UserInput, **kwargs):
         ]
         field_names = _extract_field_names_sub_folders(first_folder_files, os.sep)
     (
-        user_input.search_field_candidates_to_modalities,
+        user_input.index_field_candidates_to_modalities,
         user_input.filter_field_candidates_to_modalities,
     ) = _create_candidate_search_filter_fields(field_names)
 
