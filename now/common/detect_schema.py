@@ -150,30 +150,13 @@ def set_field_names_from_docarray(user_input: UserInput, **kwargs):
 
 def identify_folder_structure(first_file, folder_prefix) -> str:
     """This function identifies the folder structure.
-    It works with a local file structure or a remote file structure.
 
     :param bucket: s3 bucket
     :param folder_prefix: prefix of the s3 folder
     :return: if all the files are in the same folder then returns 'single_folder' else returns 'sub_folders'
-    :raises Exception: if a file exists in sub_folder structure
     """
-    # gets the first file in an s3 bucket, index 0 is reserved for the root folder name
-    # first_file = list(bucket.objects.filter(Prefix=folder_prefix).limit(2))[
-    #     1
-    # ].key
     structure_identifier = first_file[len(folder_prefix) :].split('/')
-    if len(structure_identifier) > 1:
-        # if (
-        #     len(
-        #         list(
-        #             bucket.objects.filter(Prefix=folder_prefix, Delimiter='/').limit(2)
-        #         )
-        #     )
-        #     > 1
-        # ):
-        #     raise Exception('Files exist in sub_folder structure')
-        return 'sub_folders'
-    return 'single_folder'
+    return 'sub_folders' if len(structure_identifier) > 1 else 'single_folder'
 
 
 def _extract_field_names_single_folder(
@@ -280,6 +263,7 @@ def set_field_names_from_local_folder(user_input: UserInput, **kwargs):
     file_paths = []
     folder_generator = os.walk(dataset_path, topdown=True)
     current_level = folder_generator.__next__()
+    # check if the first level contains any folders
     folder_structure = 'sub_folders' if len(current_level[1]) > 0 else 'single_folder'
     if folder_structure == 'single_folder':
         file_paths.extend(
@@ -291,6 +275,7 @@ def set_field_names_from_local_folder(user_input: UserInput, **kwargs):
         )
         field_names = _extract_field_names_single_folder(file_paths, os.sep)
     elif folder_structure == 'sub_folders':
+        # depth-first search of the first nested folder containing files
         while len(current_level[1]) > 0:
             current_level = folder_generator.__next__()
         first_folder = current_level[0]
