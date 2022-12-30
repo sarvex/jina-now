@@ -22,11 +22,11 @@ def update_dict_with_no_overwrite(dict1: Dict, dict2: Dict):
 
 def create_dataclass(user_input: UserInput):
     """
-    Create a dataclass from the user input using the selected search and filter fields
+    Create a dataclass from the user input using the selected index and filter fields
     and their corresponding modalities
 
     for example:
-    the search fields modalities can be:
+    the index fields modalities can be:
     {'test.txt': Text , 'image.png': Image}
     the filter fields modalities can be:
     {'price': float, 'description': str}
@@ -45,16 +45,16 @@ def create_dataclass(user_input: UserInput):
     :return: dataclass object
     """
     all_modalities = {}
-    all_modalities.update(user_input.search_fields_modalities)
+    all_modalities.update(user_input.index_fields_modalities)
     update_dict_with_no_overwrite(all_modalities, user_input.filter_fields_modalities)
 
     file_mapping_to_dataclass_fields = create_dataclass_fields_file_mappings(
-        user_input.search_fields + user_input.filter_fields,
+        user_input.index_fields + user_input.filter_fields,
         all_modalities,
     )
     user_input.files_to_dataclass_fields = file_mapping_to_dataclass_fields
     (all_annotations, all_class_attributes,) = create_annotations_and_class_attributes(
-        user_input.search_fields + user_input.filter_fields,
+        user_input.index_fields + user_input.filter_fields,
         all_modalities,
         file_mapping_to_dataclass_fields,
         user_input.dataset_type,

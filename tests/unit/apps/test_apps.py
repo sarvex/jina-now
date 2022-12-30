@@ -16,8 +16,6 @@ def test_app_attributes():
         if app_instance.is_enabled:
             assert app_instance.app_name
             assert app_instance.description
-            assert app_instance.input_modality
-            assert app_instance.output_modality
 
 
 def test_split_text_preprocessing():

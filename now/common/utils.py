@@ -14,6 +14,7 @@ from now.app.base.app import JinaNOWApp
 from now.constants import (
     EXECUTOR_PREFIX,
     EXTERNAL_CLIP_HOST,
+    MODALITIES_MAPPING,
     NOW_AUTOCOMPLETE_VERSION,
     NOW_ELASTIC_INDEXER_VERSION,
     NOW_PREPROCESSOR_VERSION,
@@ -84,8 +85,7 @@ def common_get_flow_env_dict(
 
     config['CUSTOM_DNS'] = ''
     if 'NOW_EXAMPLES' in os.environ:
-        valid_app = DEFAULT_EXAMPLE_HOSTED.get(user_input.app_instance.app_name, {})
-        is_demo_ds = user_input.dataset_name in valid_app
+        is_demo_ds = user_input.dataset_name in DEFAULT_EXAMPLE_HOSTED
         if is_demo_ds:
             config[
                 'CUSTOM_DNS'
@@ -175,11 +175,13 @@ def _extract_tags_for_indexer(user_input: UserInput):
     for tag, value in user_input.filter_fields_modalities.items():
         if tag in user_input.filter_fields:
             final_tags.append([tag, value])
-    if user_input.app_instance.output_modality in [
-        Modalities.IMAGE,
-        Modalities.VIDEO,
-    ]:
-        final_tags.append([TAG_INDEXER_DOC_HAS_TEXT, str(bool.__name__)])
+
+    for field, modality in user_input.filter_fields_modalities.items():
+        if modality in [
+            MODALITIES_MAPPING[Modalities.IMAGE],
+            MODALITIES_MAPPING[Modalities.VIDEO],
+        ]:
+            final_tags.append([TAG_INDEXER_DOC_HAS_TEXT, str(bool.__name__)])
     return final_tags
 
 

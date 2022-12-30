@@ -1,11 +1,11 @@
 import os
-from typing import Dict, List, Tuple, Union
+from typing import Dict, Tuple
 
 from docarray import DocumentArray
 
 from now.app.base.app import JinaNOWApp
 from now.common.utils import _get_clip_apps_with_dict, common_setup, get_indexer_config
-from now.constants import CLIP_USES, Apps, Modalities
+from now.constants import CLIP_USES, Apps
 from now.demo_data import DemoDatasetNames
 from now.now_dataclasses import UserInput
 
@@ -25,14 +25,6 @@ class SearchApp(JinaNOWApp):
     @property
     def description(self) -> str:
         return 'Image-text search app'
-
-    @property
-    def input_modality(self) -> Union[Modalities, List[Modalities]]:
-        return [Modalities.TEXT, Modalities.IMAGE]
-
-    @property
-    def output_modality(self) -> Union[Modalities, List[Modalities]]:
-        return [Modalities.TEXT, Modalities.IMAGE, Modalities.VIDEO]
 
     @property
     def required_docker_memory_in_gb(self) -> int:
