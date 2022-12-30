@@ -464,7 +464,7 @@ class TestBaseIndexerElastic:
             uses=NOWElasticIndexer,
             uses_with={
                 "dim": len(embedding),
-                'columns': ['title', 'str', TAG_INDEXER_DOC_HAS_TEXT, 'bool'],
+                'columns': [['title', 'str'], [TAG_INDEXER_DOC_HAS_TEXT, 'bool']],
             },
             uses_metas=metas,
         ) as f:

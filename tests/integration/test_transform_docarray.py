@@ -97,12 +97,9 @@ def test_transform_inside_flow(
             uses=InMemoryIndexer,
             uses_with={
                 'columns': [
-                    'split',
-                    'str',
-                    'finetuner_label',
-                    'str',
-                    'content_type',
-                    'str',
+                    ['split', 'str'],
+                    ['finetuner_label', 'str'],
+                    ['content_type', 'str'],
                 ],
                 'dim': 512,
             },
