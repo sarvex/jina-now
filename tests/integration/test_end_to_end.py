@@ -212,7 +212,7 @@ def run_end_to_end(
         test_search_image=test_search_image,
         response=response,
     )
-    if query_fields == Modalities.TEXT:
+    if query_fields == 'text':
         host = response.get('host')
         request_body = get_search_request_body(
             dataset=dataset,

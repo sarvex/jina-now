@@ -4,6 +4,7 @@ import pytest
 from docarray.typing import Image, Text
 
 from now.common.detect_schema import (
+    _create_candidate_index_filter_fields,
     set_field_names_from_docarray,
     set_field_names_from_local_folder,
     set_field_names_from_s3_bucket,
@@ -106,7 +107,7 @@ def test_create_candidate_index_fields():
     (
         index_field_candidates_to_modalities,
         filter_field_candidates_to_modalities,
-    ) = test_create_candidate_index_fields(fields_to_modalities)
+    ) = _create_candidate_index_filter_fields(fields_to_modalities)
 
     assert len(index_field_candidates_to_modalities.keys()) == 2
     assert index_field_candidates_to_modalities['image.png'] == Image
