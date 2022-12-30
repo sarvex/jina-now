@@ -148,10 +148,37 @@ def set_field_names_from_docarray(user_input: UserInput, **kwargs):
         raise ValueError('DocumentArray does not exist or you do not have access to it')
 
 
-def _identify_folder_structure(file_paths: List[str], separator: str) -> str:
+def _identify_s3_folder_structure(bucket, folder_prefix) -> str:
     """This function identifies the folder structure.
     It works with a local file structure or a remote file structure.
 
+    :param bucket: s3 bucket
+    :param folder_prefix: prefix of the s3 folder
+    :return: if all the files are in the same folder then returns 'single_folder' else returns 'sub_folders'
+    :raises Exception: if a file exists in sub_folder structure
+    """
+
+    structure_identifier = list(bucket.objects.filter(Prefix=folder_prefix).limit(2))[
+        1
+    ].key
+    structure_identifier = structure_identifier[len(folder_prefix) :].split(separator)
+    if len(structure_identifier) > 1:
+        if (
+            len(
+                list(
+                    bucket.objects.filter(Prefix=folder_prefix, Delimiter='/').limit(2)
+                )
+            )
+            > 1
+        ):
+            raise Exception('Files exist in sub_folder structure')
+        return 'sub_folders'
+    return 'single_folder'
+
+
+def identify_local_folder_structure(file_paths: List[str], separator: str) -> str:
+    """This function identifies the folder structure.
+    It works with a local file structure or a remote file structure.
     :param file_paths: list of file paths
     :param separator: separator used in the file paths
     :return: if all the files are in the same folder then returns 'single_folder' else returns 'sub_folders'
@@ -225,28 +252,32 @@ def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
     checks if the bucket exists and the format of the folder structure is correct,
     if yes then downloads the first folder and sets its content as field_names in user_input
     """
-    bucket, folder_prefix = get_s3_bucket_and_folder_prefix(
-        user_input
-    )  # user has to provide the folder where folder structure begins
-    first_file = list(bucket.objects.filter(Prefix=folder_prefix).limit(1))[0]
-    i = 1
+    bucket, folder_prefix = get_s3_bucket_and_folder_prefix(user_input)
+    # user has to provide the folder where folder structure begins
     try:
-        while first_file.key.endswith('/') or first_file.key.split('/')[-1].startswith(
-            '.'
-        ):
-            first_file = list(bucket.objects.filter(Prefix=folder_prefix).limit(1))[i]
-            i += 1
+        first_file = list(bucket.objects.filter(Prefix=folder_prefix).limit(2))[1]
     except Exception as e:
-        print(e)
+        raise Exception(f'Empty folder, data is missing.')
 
-    first_folder = '/'.join(first_file.key.split('/')[:-1])
-
-    first_folder_objects = [
-        obj.key
-        for obj in bucket.objects.filter(Prefix=first_folder)
-        if not obj.key.endswith('/') and not obj.key.split('/')[-1].startswith('.')
-    ]
-    field_names = _extract_field_names_sub_folders(first_folder_objects, '/', bucket)
+    folder_structure = _identify_s3_folder_structure(bucket, folder_prefix)
+    if folder_structure == 'single_folder':
+        objects = list(bucket.objects.filter(Prefix=folder_prefix))
+        file_paths = [
+            obj.key
+            for obj in objects
+            if not obj.key.endswith('/') and not obj.key.split('/')[-1].startswith('.')
+        ]
+        field_names = _extract_field_names_single_folder(file_paths, '/')
+    elif folder_structure == 'sub_folders':
+        first_folder = '/'.join(first_file.key.split('/')[:-1])
+        first_folder_objects = [
+            obj.key
+            for obj in bucket.objects.filter(Prefix=first_folder)
+            if not obj.key.endswith('/') and not obj.key.split('/')[-1].startswith('.')
+        ]
+        field_names = _extract_field_names_sub_folders(
+            first_folder_objects, '/', bucket
+        )
     (
         user_input.search_fields_modalities,
         user_input.filter_fields_modalities,
@@ -273,7 +304,7 @@ def set_field_names_from_local_folder(user_input: UserInput, **kwargs):
         file_paths.extend(
             [os.path.join(root, file) for file in files if not file.startswith('.')]
         )
-    folder_structure = _identify_folder_structure(file_paths, os.sep)
+    folder_structure = identify_local_folder_structure(file_paths, os.sep)
     if folder_structure == 'single_folder':
         field_names = _extract_field_names_single_folder(file_paths, os.sep)
     elif folder_structure == 'sub_folders':
