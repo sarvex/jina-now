@@ -10,7 +10,7 @@ from elasticsearch.helpers import bulk
 
 from now.executor.abstract.auth import SecurityLevel, secure_request
 from now.executor.abstract.base_indexer import NOWBaseIndexer as Executor
-from now.executor.indexer.elastic.es_converter import ESConverter
+from now.executor.indexer.elastic.es_converter import ESConverter, convert_es_to_da
 from now.executor.indexer.elastic.es_preprocessing import merge_subdocuments
 from now.executor.indexer.elastic.es_query_building import (
     SemanticScore,
@@ -36,6 +36,28 @@ class NOWElasticIndexer(Executor):
     """
 
     # override
+    def __init__(
+        self,
+        dim: int = None,
+        columns: Optional[List] = None,
+        metric: str = 'cosine',
+        limit: int = 10,
+        max_values_per_tag: int = 10,
+        *args,
+        **kwargs,
+    ):
+        super().__init__(dim, columns, metric, limit, max_values_per_tag, args, kwargs)
+        self.query_to_curated_ids = None
+        self.es = None
+        self.es_mapping = None
+        self.default_semantic_scores = None
+        self.encoder_to_fields = None
+        self.document_mappings = None
+        self.traversal_paths = None
+        self.index_name = None
+        self.hosts = None
+        self.es_config = None
+
     def construct(
         self,
         document_mappings: List[List],  # cannot take FieldEmbedding (not serializable)
@@ -61,7 +83,6 @@ class NOWElasticIndexer(Executor):
         :param hosts: host configuration of the Elasticsearch node or cluster
         :param es_config: Elasticsearch cluster configuration object
         :param metric: The distance metric used for the vector index and vector search
-        :param dims: The dimensions of your embeddings.
         :param index_name: ElasticSearch Index name used for the storage
         :param es_mapping: Mapping for new index. If none is specified, this will be
             generated from `document_mappings` and `metric`.
@@ -144,7 +165,7 @@ class NOWElasticIndexer(Executor):
         """
         Index new `Document`s by adding them to the Elasticsearch index.
 
-        :param docs: Documents to be indexed.
+        :param docs_map: map of encoder to DocumentArray
         :param parameters: dictionary with options for indexing.
         :return: empty `DocumentArray`.
         """
@@ -182,7 +203,7 @@ class NOWElasticIndexer(Executor):
             - operator: Binary operation between two values. Some supported operators include `['>','<','=','<=','>=']`.
             - value: value used to compare a candidate.
 
-        :param docs: query `Document`s.
+        :param docs_map: map of encoder to DocumentArray
         :param parameters: dictionary of options for searching.
             Keys accepted:
                 - 'filter' (dict): The filtering conditions on document tags
@@ -264,7 +285,7 @@ class NOWElasticIndexer(Executor):
         except Exception:
             self.logger.info(traceback.format_exc())
         if result:
-            return ESConverter.convert_es_to_da(result, get_score_breakdown=False)
+            return convert_es_to_da(result, get_score_breakdown=False)
         else:
             return DocumentArray()
 

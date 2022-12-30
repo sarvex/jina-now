@@ -76,9 +76,11 @@ def build_es_queries(
     :param get_score_breakdown: whether to return the score breakdown for matches.
         For this function, this parameter determines whether to return the embeddings
         of a query document.
+    :param semantic_scores: list of semantic scores to use for query.
     :param custom_bm25_query: custom query to use for BM25.
     :param metric: metric to use for vector search.
     :param filter: dictionary of filters to apply to the search.
+    :param query_to_curated_ids: dictionary mapping query text to list of curated ids.
     :return: a dictionary containing query and filter.
     """
     queries = {}
@@ -127,7 +129,7 @@ def build_es_queries(
 
                 sources[
                     doc.id
-                ] += f" + {float(linear_weight)}*{metrics_mapping[metric]}({query_string}, '{document_string}.embedding')"
+                ] += f" + {float(linear_weight)}*{metrics_mapping[metric]}({query_string}, '{document_string}.embedding') "
 
                 script_params[doc.id][
                     f'query_{query_field}_{executor_name}'

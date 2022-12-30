@@ -6,6 +6,40 @@ from numpy import dot
 from numpy.linalg import norm
 
 
+def get_bm25_fields(doc: Document) -> str:
+    try:
+        return doc.bm25_text.text
+    except AttributeError:
+        return ''
+
+
+def convert_es_to_da(
+    result: Union[Dict, List[Dict]], get_score_breakdown: bool
+) -> DocumentArray:
+    """
+    Transform Elasticsearch documents into DocumentArray. Assumes that all Elasticsearch
+    documents have a 'text' field. It returns embeddings as part of the tags for each field that is encoded.
+
+    :param result: results from an Elasticsearch query.
+    :param get_score_breakdown: whether to return the embeddings as tags for each document.
+    :return: a DocumentArray containing all results.
+    """
+    if isinstance(result, Dict):
+        result = [result]
+    da = DocumentArray()
+    for es_doc in result:
+        doc = Document.from_base64(es_doc['_source']['serialized_doc'])
+        for k, v in es_doc['_source'].items():
+            if (
+                k.startswith('embedding') or k.endswith('embedding')
+            ) and get_score_breakdown:
+                if 'embeddings' not in doc.tags:
+                    doc.tags['embeddings'] = {}
+                doc.tags['embeddings'][k] = v
+        da.append(doc)
+    return da
+
+
 class ESConverter:
     def __init__(self):
         pass
@@ -54,48 +88,17 @@ class ESConverter:
                         es_doc['uri'] = field_doc.uri
         return list(es_docs.values())
 
-    def get_base_es_doc(self, doc: Document, index_name: str) -> Dict:
+    @staticmethod
+    def get_base_es_doc(doc: Document, index_name: str) -> Dict:
         es_doc = {k: v for k, v in doc.to_dict().items() if v}
         es_doc.pop('chunks', None)
         es_doc.pop('_metadata', None)
-        es_doc['bm25_text'] = self.get_bm25_fields(doc)
+        es_doc['bm25_text'] = get_bm25_fields(doc)
         es_doc['_op_type'] = 'index'
         es_doc['_index'] = index_name
         es_doc['_id'] = doc.id
         doc.tags['embeddings'] = {}
         return es_doc
-
-    def get_bm25_fields(self, doc: Document) -> str:
-        try:
-            return doc.bm25_text.text
-        except AttributeError:
-            return ''
-
-    def convert_es_to_da(
-        self, result: Union[Dict, List[Dict]], get_score_breakdown: bool
-    ) -> DocumentArray:
-        """
-        Transform Elasticsearch documents into DocumentArray. Assumes that all Elasticsearch
-        documents have a 'text' field. It returns embeddings as part of the tags for each field that is encoded.
-
-        :param result: results from an Elasticsearch query.
-        :param get_score_breakdown: whether to return the embeddings as tags for each document.
-        :return: a DocumentArray containing all results.
-        """
-        if isinstance(result, Dict):
-            result = [result]
-        da = DocumentArray()
-        for es_doc in result:
-            doc = Document.from_base64(es_doc['_source']['serialized_doc'])
-            for k, v in es_doc['_source'].items():
-                if (
-                    k.startswith('embedding') or k.endswith('embedding')
-                ) and get_score_breakdown:
-                    if 'embeddings' not in doc.tags:
-                        doc.tags['embeddings'] = {}
-                    doc.tags['embeddings'][k] = v
-            da.append(doc)
-        return da
 
     def convert_es_results_to_matches(
         self,
@@ -108,13 +111,17 @@ class ESConverter:
         """
         Transform a list of results from Elasticsearch into a matches in the form of a `DocumentArray`.
 
+        :param query_doc: the query document.
         :param es_results: List of dictionaries containing results from Elasticsearch querying.
         :param get_score_breakdown: whether to calculate the score breakdown for matches.
+        :param metric: the metric used to calculate the score.
+        :param semantic_scores: the semantic scores for each match.
+
         :return: `DocumentArray` that holds all matches in the form of `Document`s.
         """
         matches = DocumentArray()
         for result in es_results:
-            d = self.convert_es_to_da(result, get_score_breakdown)[0]
+            d = convert_es_to_da(result, get_score_breakdown)[0]
             d.scores[metric] = NamedScore(value=result['_score'])
             if get_score_breakdown:
                 d = self.calculate_score_breakdown(
@@ -135,7 +142,10 @@ class ESConverter:
         tags under `score_breakdown`.
 
         :param query_doc: The query document. Contains embeddings for the semantic score calculation at tag level.
-        :param retrieved_results: The Elasticsearch results, containing embeddings inside the `_source` field.
+        :param retrieved_doc: The Elasticsearch results, containing embeddings inside the `_source` field.
+        :param semantic_scores: The semantic scores to be used for the score breakdown.
+        :param metric: The metric to be used for the score breakdown.
+
         :return: List of integers representing the score breakdown.
         """
         for (
@@ -184,8 +194,10 @@ class ESConverter:
         retrieved_doc.tags.pop('embeddings', None)
         return retrieved_doc
 
-    def calculate_l2_norm(self, d_emb, q_emb):
+    @staticmethod
+    def calculate_l2_norm(d_emb, q_emb):
         return norm(q_emb - d_emb)
 
-    def calculate_cosine(self, d_emb, q_emb):
+    @staticmethod
+    def calculate_cosine(d_emb, q_emb):
         return dot(q_emb, d_emb) / (norm(q_emb) * norm(d_emb))
