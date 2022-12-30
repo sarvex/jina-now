@@ -18,7 +18,7 @@ spec:
           image: jinaai/now-playground:{docker_bff_playground_tag}
           imagePullPolicy: Always
           command: ["streamlit"]
-          args: ["run", "playground.py", "--server.port", "80"]
+          args: ["run", "playground.py", "--server.port", "80",  "--server.headless", "true", "--server.fileWatcherType", "none", "--browser.gatherUsageStats", "false"]
           ports:
             - containerPort: 80
 ---

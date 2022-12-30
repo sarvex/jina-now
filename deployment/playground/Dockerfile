@@ -17,4 +17,4 @@ EXPOSE 8501
 
 ENV PYTHONUNBUFFERED=1
 
-ENTRYPOINT ["streamlit", "run", "playground.py", "--server.port", "8501"]
+ENTRYPOINT ["streamlit", "run", "playground.py", "--server.port", "8501",  "--server.headless", "true", "--server.fileWatcherType", "none", "--browser.gatherUsageStats", "false"]
