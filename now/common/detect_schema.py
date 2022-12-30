@@ -148,7 +148,7 @@ def set_field_names_from_docarray(user_input: UserInput, **kwargs):
         raise ValueError('DocumentArray does not exist or you do not have access to it')
 
 
-def identify_folder_structure(first_file, folder_prefix) -> str:
+def identify_folder_structure(first_file: str, folder_prefix: str) -> str:
     """This function identifies the folder structure.
 
     :param bucket: s3 bucket
