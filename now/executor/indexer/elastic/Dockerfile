@@ -1,6 +1,7 @@
 FROM docker.elastic.co/elasticsearch/elasticsearch:8.4.2
 USER root
 RUN apt-get update && apt-get install --no-install-recommends -y gcc g++ git python3 python3-pip
+USER elasticsearch:elasticsearch
 
 ## install requirements for the executor
 COPY requirements.txt .
@@ -12,5 +13,5 @@ RUN pip install git+https://github.com/jina-ai/now@JINA_NOW_COMMIT_SHA --no-depe
 # setup the workspace
 COPY . /workdir/
 WORKDIR /workdir
-USER elasticsearch:elasticsearch
+
 ENTRYPOINT ["jina", "executor", "--uses", "config.yml"]
