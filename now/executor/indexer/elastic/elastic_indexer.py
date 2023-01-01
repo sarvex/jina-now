@@ -41,7 +41,9 @@ class NOWElasticIndexer(Executor):
 
     def construct(
         self,
-        document_mappings: List[List],  # cannot take FieldEmbedding (not serializable)
+        document_mappings: Union[
+            List[List], str
+        ],  # cannot take FieldEmbedding (not serializable) also can be provided as string since list of list is not possible with the current k8s implementation of the core
         default_semantic_scores: Optional[List[SemanticScore]] = None,
         es_mapping: Dict = None,
         hosts: Union[
@@ -79,6 +81,11 @@ class NOWElasticIndexer(Executor):
         self.index_name = index_name
         self.traversal_paths = traversal_paths
         self.limit = limit
+        # hack is needed to work with the current bug in the core where list of list is not possible to pass
+        for document_mapping in document_mappings:
+            if isinstance(document_mapping[2], str):
+                document_mapping[2] = document_mapping[2].split(',')
+
         self.document_mappings = [FieldEmbedding(*dm) for dm in document_mappings]
         self.default_semantic_scores = default_semantic_scores or None
         self.encoder_to_fields = {
