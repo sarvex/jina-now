@@ -46,7 +46,7 @@ class NOWElasticIndexer(Executor):
         es_mapping: Dict = None,
         hosts: Union[
             str, List[Union[str, Mapping[str, Union[str, int]]]], None
-        ] = 'https://elastic:elastic@localhost:9200',
+        ] = 'http://localhost:9200',
         es_config: Optional[Dict[str, Any]] = None,
         metric: str = 'cosine',
         index_name: str = 'now-index',
