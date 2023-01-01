@@ -101,6 +101,7 @@ class NOWElasticIndexer(Executor):
             document_mapping.encoder: document_mapping.fields
             for document_mapping in self.document_mappings
         }
+        print('### self.encoder_to_fields', self.encoder_to_fields)
         self.es_config = es_config or {'verify_certs': False}
         self.es_mapping = es_mapping or self.generate_es_mapping(
             self.document_mappings, self.metric
@@ -214,7 +215,9 @@ class NOWElasticIndexer(Executor):
         """
         if not docs_map:
             return DocumentArray()
+        print('### docs_map before aggregation', docs_map)
         aggregate_embeddings(docs_map)
+        print('### docs_map after aggregation', docs_map)
 
         # search_filter = parameters.get('filter', None)
         limit = parameters.get('limit', self.limit)
