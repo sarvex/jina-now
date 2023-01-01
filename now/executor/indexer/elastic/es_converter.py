@@ -67,8 +67,6 @@ def convert_doc_map_to_es(
                 _doc = DocumentArray(Document(doc, copy=True))
                 # remove embeddings from serialized doc
                 _doc[..., 'embedding'] = None
-                _doc[..., 'tensor'] = None
-                _doc[..., 'blob'] = None
                 es_docs[doc.id]['serialized_doc'] = _doc[0].to_base64()
             es_doc = es_docs[doc.id]
             for encoded_field in encoder_to_fields[executor_name]:
