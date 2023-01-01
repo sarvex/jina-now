@@ -81,6 +81,9 @@ class NOWElasticIndexer(Executor):
         self.index_name = index_name
         self.traversal_paths = traversal_paths
         self.limit = limit
+
+        print('#### document_mappings', type(document_mappings), document_mappings)
+
         # hack is needed to work with the current bug in the core where list of list is not possible to pass
         for document_mapping in document_mappings:
             if isinstance(document_mapping[2], str):
