@@ -85,9 +85,15 @@ class NOWElasticIndexer(Executor):
         print('#### document_mappings', type(document_mappings), document_mappings)
 
         # hack is needed to work with the current bug in the core where list of list is not possible to pass
-        for document_mapping in document_mappings:
-            if isinstance(document_mapping[2], str):
-                document_mapping[2] = document_mapping[2].split(',')
+        # at the moment document_mappings arrives as ['clip', 512, 'product_image', 'product_description']
+        if document_mappings and isinstance(document_mappings[0], str):
+            document_mappings[2] = document_mappings[2].split(',')
+            document_mappings = [document_mappings]
+            print(
+                '#### document_mappings afterwards',
+                type(document_mappings),
+                document_mappings,
+            )
 
         self.document_mappings = [FieldEmbedding(*dm) for dm in document_mappings]
         self.default_semantic_scores = default_semantic_scores or None
