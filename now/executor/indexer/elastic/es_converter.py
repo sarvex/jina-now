@@ -116,13 +116,15 @@ def convert_es_results_to_matches(
     """
     matches = DocumentArray()
     for result in es_results:
+        print('### match result', result)
         d = convert_es_to_da(result, get_score_breakdown)[0]
         d.scores[metric] = NamedScore(value=result['_score'])
         if get_score_breakdown:
             d = calculate_score_breakdown(query_doc, d, semantic_scores, metric)
         d.embedding = None
-        d.tensor = None
-        d.blob = b''
+        # d.tensor = None
+        # d.blob = b''
+        print('### content of doc', d.content)
         matches.append(d)
     return matches
 

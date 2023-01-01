@@ -255,6 +255,7 @@ class NOWElasticIndexer(Executor):
                 semantic_scores=self.default_semantic_scores,
             )
             doc.tags.pop('embeddings')
+            print('doc.matches', doc.matches)
         return DocumentArray(list(zip(*es_queries))[0])
 
     @secure_request(on='/update', level=SecurityLevel.USER)
