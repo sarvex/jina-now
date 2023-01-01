@@ -98,7 +98,7 @@ class NOWElasticIndexer(Executor):
     def setup_elastic_server(self):
         # volume is not persisted at the moment
         try:
-            subprocess.Popen(['/usr/local/bin/docker-entrypoint.sh'])
+            subprocess.Popen(['./start-elastic-search-cluster.sh'])
             sleep(10)
             self.logger.info('elastic server started')
         except FileNotFoundError:
