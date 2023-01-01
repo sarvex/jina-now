@@ -18,7 +18,6 @@ from now.constants import (
     NOW_AUTOCOMPLETE_VERSION,
     NOW_ELASTIC_INDEXER_VERSION,
     NOW_PREPROCESSOR_VERSION,
-    NOW_QDRANT_INDEXER_VERSION,
     PREFETCH_NR,
     TAG_INDEXER_DOC_HAS_TEXT,
     Modalities,
@@ -29,7 +28,6 @@ from now.executor.name_to_id_map import name_to_id_map
 from now.now_dataclasses import UserInput
 
 cur_dir = pathlib.Path(__file__).parent.resolve()
-
 
 MAX_RETRIES = 20
 
@@ -69,6 +67,13 @@ def common_get_flow_env_dict(
         else 1,
         'AUTOCOMPLETE_EXECUTOR_NAME': f'{EXECUTOR_PREFIX}{name_to_id_map.get("NOWAutoCompleteExecutor2")}/{NOW_AUTOCOMPLETE_VERSION}',
         'COLUMNS': tags,
+        'DOCUMENT_MAPPINGS': json.dumps(
+            {
+                'document_mappings': [
+                    ('clip', 512, user_input.index_fields),
+                ]
+            }
+        ),
         'ADMIN_EMAILS': user_input.admin_emails or [] if user_input.secured else [],
         'USER_EMAILS': user_input.user_emails or [] if user_input.secured else [],
         'API_KEY': [user_input.api_key]
@@ -151,22 +156,11 @@ def get_indexer_config(
     :return: dict with indexer and its resource config
     """
 
-    if elastic and deployment_type == 'local':
-        config = {
-            'indexer_uses': f'{name_to_id_map.get("NOWElasticIndexer")}/{NOW_ELASTIC_INDEXER_VERSION}',
-            'hosts': setup_elastic_service(kubectl_path),
-        }
-    elif elastic and deployment_type == 'remote':
-        raise ValueError(
-            'NOWElasticIndexer is currently not supported for remote deployment. Please use local deployment.'
-        )
-    else:
-        config = {
-            'indexer_uses': f'{name_to_id_map.get("NOWQdrantIndexer16")}/{NOW_QDRANT_INDEXER_VERSION}'
-        }
-
-    config['indexer_resources'] = {'INDEXER_CPU': 0.5, 'INDEXER_MEM': '4G'}
-
+    config = {
+        'indexer_uses': f'{name_to_id_map.get("NOWElasticIndexer")}/{NOW_ELASTIC_INDEXER_VERSION}',
+        # 'hosts': setup_elastic_service(kubectl_path),
+        'indexer_resources': {'INDEXER_CPU': 0.5, 'INDEXER_MEM': '4G'},
+    }
     return config
 
 

@@ -12,5 +12,5 @@ RUN pip install git+https://github.com/jina-ai/now@JINA_NOW_COMMIT_SHA --no-depe
 # setup the workspace
 COPY . /workdir/
 WORKDIR /workdir
-
+USER elasticsearch:elasticsearch
 ENTRYPOINT ["jina", "executor", "--uses", "config.yml"]
