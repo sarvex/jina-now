@@ -49,7 +49,9 @@ def field_dict_to_mm_doc(
                         f.write(base64_decoded)
                     field_value.blob = None
                     field_value.uri = file_path
-                data_class_kwargs[field_name_data_class] = field_value.content
+                data_class_kwargs[
+                    f'query_{field_name_data_class}'
+                ] = field_value.content
             doc = Document(data_class(**data_class_kwargs))
         except BaseException as e:
             raise HTTPException(
@@ -70,7 +72,7 @@ def get_jina_client(host: str, port: int) -> Client:
 def jina_client_post(
     request_model,
     endpoint: str,
-    inputs: DocumentArray,
+    inputs: Document,
     parameters=None,
     *args,
     **kwargs,

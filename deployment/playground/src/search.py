@@ -87,7 +87,7 @@ def search(
     if endpoint == 'suggestion':
         data[attribute_name] = attribute_value
     elif endpoint == 'search':
-        data['query'] = {f'query_{attribute_name}': {attribute_name: attribute_value}}
+        data['query'] = {attribute_name: {attribute_name: attribute_value}}
     # in case the jwt is none, no jwt will be sent. This is the case when no authentication is used for that flow
     if jwt is not None:
         data['jwt'] = jwt
