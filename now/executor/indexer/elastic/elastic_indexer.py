@@ -15,7 +15,6 @@ from now.executor.indexer.elastic.es_converter import (
     convert_es_results_to_matches,
     convert_es_to_da,
 )
-from now.executor.indexer.elastic.es_preprocessing import merge_subdocuments
 from now.executor.indexer.elastic.es_query_building import (
     SemanticScore,
     build_es_queries,
@@ -170,9 +169,8 @@ class NOWElasticIndexer(Executor):
         if not docs_map:
             return DocumentArray()
         aggregate_embeddings(docs_map)
-        preprocessed_docs_map = merge_subdocuments(docs_map, self.encoder_to_fields)
         es_docs = convert_doc_map_to_es(
-            preprocessed_docs_map, self.index_name, self.encoder_to_fields
+            docs_map, self.index_name, self.encoder_to_fields
         )
         success, _ = bulk(self.es, es_docs)
         self.es.indices.refresh(index=self.index_name)
@@ -435,3 +433,4 @@ def aggregate_embeddings(docs_map: Dict[str, DocumentArray]):
                 if c.chunks.embeddings is not None:
                     c.embedding = c.chunks.embeddings.mean(axis=0)
                     c.content = c.chunks[0].content
+                    print('### set chunk level content', c.content)

@@ -68,6 +68,8 @@ def convert_doc_map_to_es(
                 # remove embeddings from serialized doc
                 _doc[..., 'embedding'] = None
                 es_docs[doc.id]['serialized_doc'] = _doc[0].to_base64()
+                print('### serialized doc: ', _doc[0].to_base64())
+                print('### doc has this content: ', _doc[0].content)
             es_doc = es_docs[doc.id]
             for encoded_field in encoder_to_fields[executor_name]:
                 field_doc = getattr(doc, encoded_field)
@@ -90,6 +92,7 @@ def get_base_es_doc(doc: Document, index_name: str) -> Dict:
     es_doc['_op_type'] = 'index'
     es_doc['_index'] = index_name
     es_doc['_id'] = doc.id
+    # TODO remove side effect - should not be part of this function
     doc.tags['embeddings'] = {}
     return es_doc
 
