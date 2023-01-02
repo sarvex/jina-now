@@ -81,18 +81,15 @@ class NOWElasticIndexer(Executor):
         self.traversal_paths = traversal_paths
         self.limit = limit
 
-        print('#### document_mappings', type(document_mappings), document_mappings)
-
         # hack is needed to work with the current bug in the core where list of list is not possible to pass
         # at the moment document_mappings arrives as ['clip', 512, 'product_image', 'product_description']
         if document_mappings and isinstance(document_mappings[0], str):
             document_mappings[2] = document_mappings[2].split(',')
             document_mappings = [document_mappings]
-            print(
-                '#### document_mappings afterwards',
-                type(document_mappings),
-                document_mappings,
-            )
+
+        # punctuation needs to be removed for the field names
+        for document_mapping in document_mappings:
+            pass
 
         self.document_mappings = [FieldEmbedding(*dm) for dm in document_mappings]
         self.default_semantic_scores = default_semantic_scores or None
@@ -100,7 +97,6 @@ class NOWElasticIndexer(Executor):
             document_mapping.encoder: document_mapping.fields
             for document_mapping in self.document_mappings
         }
-        print('### self.encoder_to_fields', self.encoder_to_fields)
         self.es_config = es_config or {'verify_certs': False}
         self.es_mapping = es_mapping or self.generate_es_mapping(
             self.document_mappings, self.metric
@@ -214,9 +210,7 @@ class NOWElasticIndexer(Executor):
         """
         if not docs_map:
             return DocumentArray()
-        print('### docs_map before aggregation', docs_map)
         aggregate_embeddings(docs_map)
-        print('### docs_map after aggregation', docs_map)
 
         # search_filter = parameters.get('filter', None)
         limit = parameters.get('limit', self.limit)
@@ -254,8 +248,6 @@ class NOWElasticIndexer(Executor):
                 semantic_scores=self.default_semantic_scores,
             )
             doc.tags.pop('embeddings')
-            print('doc.matches', doc.matches)
-            print('self.es.search result', result)
         return DocumentArray(list(zip(*es_queries))[0])
 
     @secure_request(on='/update', level=SecurityLevel.USER)
@@ -435,7 +427,6 @@ def aggregate_embeddings(docs_map: Dict[str, DocumentArray]):
                 if c.chunks.embeddings is not None:
                     c.embedding = c.chunks.embeddings.mean(axis=0)
                     c.content = c.chunks[0].content
-                    print('### set chunk level content', c.content)
 
 
 def wait_until_cluster_is_up(es, hosts):

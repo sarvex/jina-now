@@ -42,6 +42,7 @@ def common_get_flow_env_dict(
     user_input: UserInput,
     tags: List,
     deployment_type: str,
+    data_class,
 ):
     """Returns dictionary for the environments variables for the clip flow.yml files."""
     use_high_performance_flow = (
@@ -53,6 +54,10 @@ def common_get_flow_env_dict(
             f"Therefore, your deployment will be faster.\n"
             f"But make sure to scale it down after deployment."
         )
+    if data_class:
+        index_field_names = list(data_class.__dataclass_fields__.keys())
+    else:
+        index_field_names = user_input.index_fields
     config = {
         'JINA_VERSION': jina_version,
         'ENCODER_NAME': f'{EXECUTOR_PREFIX}{encoder_uses}',
@@ -69,7 +74,7 @@ def common_get_flow_env_dict(
         'COLUMNS': tags,
         'DOCUMENT_MAPPINGS': json.dumps(
             [
-                ('encoderclip', 512, ','.join(user_input.index_fields)),
+                ('encoderclip', 512, ','.join(index_field_names)),
             ]
         ),
         'ADMIN_EMAILS': user_input.admin_emails or [] if user_input.secured else [],
@@ -107,6 +112,7 @@ def common_setup(
     indexer_uses: str,
     pre_trained_embedding_size: int,
     kubectl_path: str,
+    data_class,
     encoder_with: Optional[Dict] = {},
     indexer_resources: Optional[Dict] = {},
 ) -> Dict:
@@ -121,6 +127,7 @@ def common_setup(
         user_input=user_input,
         tags=tags,
         deployment_type=user_input.deployment_type,
+        data_class=data_class,
     )
     app_instance.set_flow_yaml(dataset_len=len(dataset))
     return env_dict

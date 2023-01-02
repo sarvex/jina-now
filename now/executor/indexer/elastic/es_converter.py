@@ -68,10 +68,6 @@ def convert_doc_map_to_es(
                 # remove embeddings from serialized doc
                 _doc[..., 'embedding'] = None
                 es_docs[doc.id]['serialized_doc'] = _doc[0].to_base64()
-                print('### serialized doc: ', _doc[0].to_base64())
-                print(
-                    '### first doc chunk has this content: ', _doc[0].chunks[0].content
-                )
             es_doc = es_docs[doc.id]
             for encoded_field in encoder_to_fields[executor_name]:
                 field_doc = getattr(doc, encoded_field)
@@ -119,16 +115,11 @@ def convert_es_results_to_matches(
     """
     matches = DocumentArray()
     for result in es_results:
-        print('### match result', result)
         d = convert_es_to_da(result, get_score_breakdown)[0]
         d.scores[metric] = NamedScore(value=result['_score'])
         if get_score_breakdown:
             d = calculate_score_breakdown(query_doc, d, semantic_scores, metric)
         d.embedding = None
-        # d.tensor = None
-        # d.blob = b''
-        print('### content of doc', d.content)
-        print('### content of first chunk', d.chunks[0].content)
         matches.append(d)
     return matches
 
