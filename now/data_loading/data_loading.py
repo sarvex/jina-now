@@ -74,7 +74,7 @@ def _extract_es_data(user_input: UserInput) -> DocumentArray:
         index=user_input.es_index_name,
         connection_str=user_input.es_host_name,
     )
-    extracted_docs = es_extractor.extract(search_fields=user_input.search_fields)
+    extracted_docs = es_extractor.extract(index_fields=user_input.index_fields)
     return extracted_docs
 
 
@@ -107,7 +107,7 @@ def _load_from_disk(user_input: UserInput, data_class: Type) -> DocumentArray:
             spinner.ok('🏭')
             docs = from_files_local(
                 dataset_path,
-                user_input.search_fields + user_input.filter_fields,
+                user_input.index_fields + user_input.filter_fields,
                 user_input.files_to_dataclass_fields,
                 data_class,
             )
@@ -237,7 +237,7 @@ def create_docs_from_files(
         file_extension = file.split('.')[-1]
         if (
             file_extension == fields[0].split('.')[-1]
-        ):  # fields should have only one search field in case of files only
+        ):  # fields should have only one index field in case of files only
             kwargs[files_to_dataclass_fields[fields[0]]] = file_full_path
             docs.append(Document(data_class(**kwargs)))
     return docs
@@ -281,7 +281,7 @@ def _list_files_from_s3_bucket(
         if folder_structure == 'sub_folders':
             docs = create_docs_from_subdirectories(
                 file_paths,
-                user_input.search_fields + user_input.filter_fields,
+                user_input.index_fields + user_input.filter_fields,
                 user_input.files_to_dataclass_fields,
                 data_class,
                 user_input.dataset_path,
@@ -290,7 +290,7 @@ def _list_files_from_s3_bucket(
         else:
             docs = create_docs_from_files(
                 file_paths,
-                user_input.search_fields + user_input.filter_fields,
+                user_input.index_fields + user_input.filter_fields,
                 user_input.files_to_dataclass_fields,
                 data_class,
                 user_input.dataset_path,

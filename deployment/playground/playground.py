@@ -140,13 +140,7 @@ def deploy_streamlit():
                 values.insert(0, 'All')
                 filter_selection[tag] = st.sidebar.selectbox(tag, values)
 
-        st_ratio_options = []
-        if params.input_modality:
-            for input_modality in params.input_modality.split('-or-'):
-                if input_modality == 'text':
-                    st_ratio_options.extend(['Text'])
-                elif input_modality == 'image':
-                    st_ratio_options.extend(['Image', 'Webcam'])
+        st_ratio_options = ['Text', 'Image', 'Webcam']
 
         media_type = st.radio(
             '',
@@ -207,7 +201,6 @@ def _do_login(params):
     # Whether it is fail or success, clear the query param
     query_params_var = {
         'host': unquote(params.host),
-        'input_modality': params.input_modality,
         'data': params.data,
     }
     if params.secured:
@@ -216,10 +209,7 @@ def _do_login(params):
         query_params_var['top_k'] = params.top_k
     st.experimental_set_query_params(**query_params_var)
 
-    redirect_uri = (
-        f'https://nowrun.jina.ai/?host={params.host}&input_modality={params.input_modality}'
-        f'&data={params.data}'
-    )
+    redirect_uri = f'https://nowrun.jina.ai/?host={params.host}' f'&data={params.data}'
     if params.secured:
         redirect_uri += f'&secured={params.secured}'
     if 'top_k' in st.experimental_get_query_params():

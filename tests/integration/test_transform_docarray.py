@@ -56,11 +56,11 @@ def test_transform_inside_flow(
     user_input = UserInput()
     if input_type == 'demo_dataset':
         app_instance = SearchApp()
-        user_input.search_fields = []
+        user_input.index_fields = []
         user_input.dataset_type = DatasetTypes.DEMO
         user_input.dataset_name = DemoDatasetNames.TUMBLR_GIFS_10K
         data = load_data(user_input)[:2]
-        user_input.search_fields = ['description', 'video']
+        user_input.index_fields = ['description', 'video']
         user_input.files_to_dataclass_fields = {
             'description': 'description',
             'video': 'video',
@@ -71,7 +71,7 @@ def test_transform_inside_flow(
     else:
         app_instance = SearchApp()
         data = multi_modal_data
-        user_input.search_fields = ['main_text', 'image']
+        user_input.index_fields = ['main_text', 'image']
         user_input.files_to_dataclass_fields = {
             'main_text': 'main_text',
             'image': 'image',
