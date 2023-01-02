@@ -3,7 +3,10 @@ from docarray import Document
 from docarray.score import NamedScore
 
 from now.executor.indexer.elastic.elastic_indexer import aggregate_embeddings
-from now.executor.indexer.elastic.es_converter import ESConverter
+from now.executor.indexer.elastic.es_converter import (
+    calculate_score_breakdown,
+    convert_doc_map_to_es,
+)
 from now.executor.indexer.elastic.es_preprocessing import merge_subdocuments
 
 
@@ -22,12 +25,11 @@ def test_convert_doc_map_to_es(es_inputs, random_index_name):
         document_mapping[0]: document_mapping[2]
         for document_mapping in document_mappings
     }
-    es_converter = ESConverter()
     first_doc_clip = index_docs_map['clip'][0]
     first_doc_sbert = index_docs_map['sbert'][0]
     aggregate_embeddings(index_docs_map)
     processed_docs_map = merge_subdocuments(index_docs_map, encoder_to_fields)
-    first_result = es_converter.convert_doc_map_to_es(
+    first_result = convert_doc_map_to_es(
         docs_map=processed_docs_map,
         index_name=random_index_name,
         encoder_to_fields=encoder_to_fields,
@@ -56,7 +58,7 @@ def test_convert_doc_map_to_es(es_inputs, random_index_name):
 
 def test_calculate_score_breakdown(es_inputs):
     """
-    This test tests the calculate_score_breakdown function of the ESConverter.
+    This test tests the calculate_score_breakdown function.
     """
     default_semantic_scores = es_inputs.default_semantic_scores
     metric = 'cosine'
@@ -83,8 +85,7 @@ def test_calculate_score_breakdown(es_inputs):
         },
         scores={metric: NamedScore(value=5.0)},
     )
-    es_converter = ESConverter()
-    doc_score_breakdown = es_converter.calculate_score_breakdown(
+    doc_score_breakdown = calculate_score_breakdown(
         query_doc=query_doc,
         retrieved_doc=retrieved_doc,
         metric=metric,
