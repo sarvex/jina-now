@@ -28,6 +28,9 @@ class InMemoryIndexer(NOWBaseIndexer):
         return converted_filter
 
     def index(self, docs, parameters, **kwargs):
+        for d in docs:
+            if 'title' in d.tags:
+                d.tags['title'] = d.tags['title'].lower()
         self._index.extend(docs)
 
     def delete(self, filtered_docs, *args, **kwargs):
