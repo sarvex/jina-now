@@ -117,7 +117,6 @@ class NOWElasticIndexer(Executor):
         # volume is not persisted at the moment
         try:
             subprocess.Popen(['./start-elastic-search-cluster.sh'])
-            sleep(40)
             self.logger.info('elastic server started')
         except FileNotFoundError:
             self.logger.info(
