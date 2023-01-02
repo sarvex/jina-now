@@ -102,5 +102,6 @@ def suggestion(data: SuggestionRequestModel):
         endpoint='/suggestion',
         inputs=suggest_doc,
         request_model=data,
+        target_executor=r'\Aautocomplete_executor\Z',
     )
     return docs.to_dict()
