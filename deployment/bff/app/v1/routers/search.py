@@ -77,7 +77,11 @@ def search(data: SearchRequestModel):
         for score_name, named_score in doc.scores.items():
             scores[score_name] = named_score.to_dict()
         # since multimodal doc is not supported, we take the first chunk
-        chunk = doc.chunks[0]
+        if doc.chunks:
+            chunk = doc.chunks[0]
+        else:
+            # TODO remove else path. It is only used to support the inmemory indexer since that one is operating on chunks while elastic responds with root documents
+            chunk = doc
         if chunk.uri:
             result = {'uri': chunk.uri}
         elif chunk.blob:
