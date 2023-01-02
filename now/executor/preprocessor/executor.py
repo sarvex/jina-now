@@ -12,7 +12,6 @@ from jina import Document, DocumentArray
 from paddleocr import PaddleOCR
 
 from now.app.base.app import JinaNOWApp
-from now.app.base.transform_docarray import transform_docarray
 from now.constants import (
     ACCESS_PATHS,
     TAG_OCR_DETECTOR_TEXT_IN_DOC,
@@ -104,11 +103,6 @@ class NOWPreprocessor(Executor):
                         if index_field in self.user_input.files_to_dataclass_fields
                         else index_field
                     )
-
-            docs = transform_docarray(
-                documents=docs,
-                index_fields=index_fields,
-            )
             if (
                 self.user_input
                 and self.user_input.dataset_type == DatasetTypes.S3_BUCKET

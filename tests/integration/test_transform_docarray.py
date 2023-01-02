@@ -5,7 +5,6 @@ from docarray import Document, DocumentArray, dataclass
 from docarray.typing import Image, Text
 from jina import Flow
 
-from now.app.base.transform_docarray import transform_uni_modal_data
 from now.app.search_app import SearchApp
 from now.constants import ACCESS_PATHS, EXTERNAL_CLIP_HOST, DatasetTypes
 from now.data_loading.data_loading import load_data
@@ -130,18 +129,3 @@ def test_transform_inside_flow(
         )
     assert len(query_res[0].matches) == num_expected_matches
     assert not query_res[0].matches[0].uri.startswith('data:')
-
-
-def test_uni_to_multi_modal(resources_folder_path, single_modal_data):
-    data = single_modal_data
-    data.append(
-        Document(
-            uri=os.path.join(resources_folder_path, 'gif', 'folder1/file.gif'),
-            tags={'color': 'red'},
-        )
-    )
-    transformed_data = transform_uni_modal_data(documents=data)
-
-    assert len(transformed_data) == len(data)
-    assert 'color' in transformed_data[0].tags
-    assert len(transformed_data[1].chunks) == 1

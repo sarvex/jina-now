@@ -5,7 +5,6 @@ from typing import Dict, List, Optional, Set, Union
 from docarray import Document, DocumentArray
 from PIL import Image
 
-from now.app.base.transform_docarray import transform_multi_modal_data
 from now.data_loading.elasticsearch.connector import ElasticsearchConnector
 
 logging.getLogger("PIL.Image").setLevel(logging.CRITICAL + 1)
@@ -72,11 +71,6 @@ class ElasticsearchExtractor:
             int(position): chunk.tags['field_name']
             for position, chunk in enumerate(docs[0].chunks)
         }
-        docs = transform_multi_modal_data(
-            documents=docs,
-            field_names=field_names,
-            index_fields=index_fields,
-        )
         return docs
 
     def _extract_documents(self):
