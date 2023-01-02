@@ -217,6 +217,11 @@ def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
     try:
         # gets the first file in an s3 bucket, index 0 is reserved for the root folder name
         first_file = list(bucket.objects.filter(Prefix=folder_prefix).limit(2))[1].key
+        i = 2
+        while first_file.split('/')[-1].startswith('.'):
+            first_file = list(bucket.objects.filter(Prefix=folder_prefix).limit(i + 1))[
+                i
+            ].key
     except Exception as e:
         raise Exception(f'Empty folder, data is missing.')
 
