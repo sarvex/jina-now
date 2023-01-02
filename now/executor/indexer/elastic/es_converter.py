@@ -128,6 +128,7 @@ def convert_es_results_to_matches(
         # d.tensor = None
         # d.blob = b''
         print('### content of doc', d.content)
+        print('### content of first chunk', d.chunks[0].content)
         matches.append(d)
     return matches
 

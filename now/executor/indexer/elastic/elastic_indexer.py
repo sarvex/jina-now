@@ -107,6 +107,8 @@ class NOWElasticIndexer(Executor):
         )
         self.setup_elastic_server()
         self.es = Elasticsearch(hosts=self.hosts, **self.es_config, ssl_show_warn=False)
+        wait_until_cluster_is_up(self.es, self.hosts)
+
         if not self.es.indices.exists(index=self.index_name):
             self.es.indices.create(index=self.index_name, mappings=self.es_mapping)
         self.query_to_curated_ids = {}
@@ -115,7 +117,7 @@ class NOWElasticIndexer(Executor):
         # volume is not persisted at the moment
         try:
             subprocess.Popen(['./start-elastic-search-cluster.sh'])
-            sleep(30)
+            sleep(40)
             self.logger.info('elastic server started')
         except FileNotFoundError:
             self.logger.info(
@@ -254,6 +256,7 @@ class NOWElasticIndexer(Executor):
             )
             doc.tags.pop('embeddings')
             print('doc.matches', doc.matches)
+            print('self.es.search result', result)
         return DocumentArray(list(zip(*es_queries))[0])
 
     @secure_request(on='/update', level=SecurityLevel.USER)
@@ -434,3 +437,24 @@ def aggregate_embeddings(docs_map: Dict[str, DocumentArray]):
                     c.embedding = c.chunks.embeddings.mean(axis=0)
                     c.content = c.chunks[0].content
                     print('### set chunk level content', c.content)
+
+
+def wait_until_cluster_is_up(es, hosts):
+    MAX_RETRIES = 20
+    SLEEP = 5
+    retries = 0
+    while retries < MAX_RETRIES:
+        try:
+            if es.ping():
+                break
+            else:
+                retries += 1
+                sleep(SLEEP)
+        except Exception:
+            print(
+                f'Elasticsearch is not running yet, are you connecting to the right hosts? {hosts}'
+            )
+    if retries >= MAX_RETRIES:
+        raise RuntimeError(
+            f'Elasticsearch is not running after {MAX_RETRIES} retries ('
+        )

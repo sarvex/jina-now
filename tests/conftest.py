@@ -2,7 +2,6 @@
 import base64
 import os
 import random
-import time
 from collections import namedtuple
 
 import hubble
@@ -10,7 +9,6 @@ import numpy as np
 import pytest
 from docarray import Document, DocumentArray, dataclass
 from docarray.typing import Image, Text
-from elasticsearch import Elasticsearch
 
 from now.deployment.deployment import cmd
 from now.executor.indexer.elastic.es_query_building import SemanticScore
@@ -148,9 +146,6 @@ def mock_hubble_admin_email(monkeypatch, admin_email):
     # hubble.Client = MockedClient
 
 
-MAX_RETRIES = 20
-
-
 @pytest.fixture(scope="session")
 def es_connection_params():
     connection_str = 'http://localhost:9200'
@@ -166,19 +161,6 @@ def setup_service_running(es_connection_params) -> None:
     )
     cmd(f'docker-compose -f {docker_compose_file} up -d')
     hosts, _ = es_connection_params
-    retries = 0
-    while retries < MAX_RETRIES:
-        try:
-            es = Elasticsearch(hosts=hosts)
-            if es.ping():
-                break
-            else:
-                retries += 1
-                time.sleep(5)
-        except Exception:
-            print('Elasticsearch is not running')
-    if retries >= MAX_RETRIES:
-        raise RuntimeError('Elasticsearch is not running')
     yield
     cmd('docker-compose -f tests/resources/elastic/docker-compose.yml down')
 
