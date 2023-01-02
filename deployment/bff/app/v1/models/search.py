@@ -31,9 +31,10 @@ class SearchRequestModel(BaseRequestModel):
     )
     query: Dict[str, ModalityModel] = Field(
         default={},
-        description='Nested dictionary where key can be only one of the following: '
-        '``text``, ``image``, or ``video``, and the value is a dictionary with either uri, '
-        'blob, or text as key. E.g., {image": {"uri": "https://example.com/image.jpg"}.',
+        description='Nested dictionary where key can be only one of the following: ``query_text``, ``query_image``, '
+        'or ``query_video`` for a query with text, image, or video respectively, and the value is a '
+        'dictionary with either uri, blob, or text as key. '
+        'E.g., ``{"query_image": {"uri": "https://example.com/image.jpg"}``',
     )
 
 
