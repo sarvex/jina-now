@@ -16,7 +16,11 @@ from now.now_dataclasses import UserInput
 @pytest.mark.parametrize(
     'dataset_path, index_field_names, filter_field_names',
     [
-        ('gif_resource_path', {'file.txt', 'file.gif'}, {'file.txt', 'a1', 'a2'}),
+        (
+            'gif_resource_path',
+            {'file.txt', 'file.gif', 'a1', 'a2'},
+            {'file.txt', 'a1', 'a2'},
+        ),
         ('image_resource_path', {'.jpg'}, set()),
     ],
 )

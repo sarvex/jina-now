@@ -50,7 +50,11 @@ def _create_candidate_index_filter_fields(field_name_to_value):
             elif field_name == 'uri' and field_value.split('.')[-1] in file_types:
                 index_fields_modalities[field_name] = MODALITIES_MAPPING[modality]
                 break
-        if field_value and (field_name == 'text' or isinstance(field_value, str)):
+        if (
+            field_name not in index_fields_modalities
+            and field_value
+            and (field_name == 'text' or isinstance(field_value, str))
+        ):
             index_fields_modalities[field_name] = MODALITIES_MAPPING[Modalities.TEXT]
 
         # we determine if it's a filter field
