@@ -295,6 +295,28 @@ def set_field_names_from_local_folder(user_input: UserInput, **kwargs):
     ) = _create_candidate_index_filter_fields(fields_dict)
 
 
+def set_field_names_elasticsearch(user_input: UserInput, **kwargs):
+    """
+    Get the schema from an Elasticsearch instance
+
+    :param user_input: UserInput object
+
+    """
+    es_connector = ElasticsearchConnector(
+        connection_str=user_input.es_host_name,
+    )
+    first_docs = list(
+        es_connector.get_documents(index_name=user_input.es_index_name, page_size=1)
+    )[
+        0
+    ]  # get one document
+    fields_dict = first_docs['_source']
+    (
+        user_input.index_fields_modalities,
+        user_input.filter_fields_modalities,
+    ) = _create_candidate_index_filter_fields(fields_dict)
+
+
 def get_s3_bucket_and_folder_prefix(user_input: UserInput):
     """
     Gets the s3 bucket and folder prefix from the user input.
@@ -321,25 +343,3 @@ def get_s3_bucket_and_folder_prefix(user_input: UserInput):
     bucket = session.resource('s3').Bucket(bucket)
 
     return bucket, folder_prefix
-
-
-def set_field_names_elasticsearch(user_input: UserInput, **kwargs):
-    """
-    Get the schema from an Elasticsearch instance
-
-    :param user_input: UserInput object
-
-    """
-    es_connector = ElasticsearchConnector(
-        connection_str=user_input.es_host_name,
-    )
-    first_docs = list(
-        es_connector.get_documents(index_name=user_input.es_index_name, page_size=1)
-    )[
-        0
-    ]  # get one document
-    fields_dict = first_docs['_source']
-    (
-        user_input.index_fields_modalities,
-        user_input.filter_fields_modalities,
-    ) = _create_candidate_index_filter_fields(fields_dict)

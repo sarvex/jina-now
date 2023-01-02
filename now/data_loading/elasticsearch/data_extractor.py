@@ -1,8 +1,7 @@
 import logging
-from typing import Dict, Optional, Set, Type, Union
+from typing import Dict, Optional, Type, Union
 
 from docarray import Document, DocumentArray
-from PIL import Image
 
 from now.data_loading.elasticsearch.connector import ElasticsearchConnector
 from now.now_dataclasses import UserInput
@@ -50,7 +49,6 @@ class ElasticsearchExtractor:
         self._query_result = self._es_connector.get_documents_by_query(
             self._query, self._index
         )
-        self._supported_pil_extensions = self._get_supported_image_extensions()
 
     def extract(self) -> DocumentArray:
         return DocumentArray([doc for doc in self._extract_documents()])
@@ -97,8 +95,3 @@ class ElasticsearchExtractor:
                 continue
 
         return Document(self._data_class(**kwargs))
-
-    @staticmethod
-    def _get_supported_image_extensions() -> Set[str]:
-        extensions = Image.registered_extensions()
-        return {ex for ex, f in extensions.items() if f in Image.OPEN}
