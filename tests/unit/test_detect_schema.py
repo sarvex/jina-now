@@ -44,10 +44,13 @@ def test_set_fields_names_from_local_folder(
             {
                 'image.png',
                 'test.txt',
+                'title',
+                'link',
+                'id',
             },
             {'test.txt', 'tags', 'id', 'link', 'title'},
         ),
-        ('folder1/', {'.png', '.txt'}, {'.txt', '.json'}),
+        ('folder1/', {'.png', '.txt', '.json'}, {'.txt', '.json'}),
     ],
 )
 def test_set_field_names_from_s3_bucket(
@@ -94,19 +97,19 @@ def test_failed_uni_modal_docarray():
 
 def test_create_candidate_index_fields():
     fields_to_modalities = {
-        'image.png': Image,
-        'test.txt': Text,
-        'tags': str,
-        'id': str,
-        'link': str,
-        'title': str,
+        'image.png': 'image.png',
+        'test.txt': 'test.txt',
+        'tags': 'str',
+        'id': 'str',
+        'link': 'str',
+        'title': 'str',
     }
     (
         index_fields_modalities,
         filter_fields_modalities,
     ) = _create_candidate_index_filter_fields(fields_to_modalities)
 
-    assert len(index_fields_modalities.keys()) == 2
+    assert len(index_fields_modalities.keys()) == 6
     assert index_fields_modalities['image.png'] == Image
     assert index_fields_modalities['test.txt'] == Text
 

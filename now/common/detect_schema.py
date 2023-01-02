@@ -43,6 +43,7 @@ def _create_candidate_index_filter_fields(field_name_to_value):
             file_types = SUPPORTED_FILE_TYPES[modality]
             if (
                 not isinstance(field_value, list)
+                and not isinstance(field_value, dict)
                 and field_value.split('.')[-1] in file_types
             ):
                 index_fields_modalities[field_name] = MODALITIES_MAPPING[modality]
