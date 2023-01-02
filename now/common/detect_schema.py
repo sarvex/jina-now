@@ -13,6 +13,7 @@ from now.constants import (
     SUPPORTED_FILE_TYPES,
     Modalities,
 )
+from now.data_loading.elasticsearch import ElasticsearchConnector
 from now.now_dataclasses import UserInput
 
 
@@ -40,13 +41,16 @@ def _create_candidate_index_filter_fields(field_name_to_value):
         # we determine search modality
         for modality in AVAILABLE_MODALITIES_FOR_SEARCH:
             file_types = SUPPORTED_FILE_TYPES[modality]
-            if field_name.split('.')[-1] in file_types:
+            if (
+                not isinstance(field_value, list)
+                and field_value.split('.')[-1] in file_types
+            ):
                 index_fields_modalities[field_name] = MODALITIES_MAPPING[modality]
                 break
             elif field_name == 'uri' and field_value.split('.')[-1] in file_types:
                 index_fields_modalities[field_name] = MODALITIES_MAPPING[modality]
                 break
-        if field_name == 'text' and field_value:
+        if field_value and (field_name == 'text' or isinstance(field_value, str)):
             index_fields_modalities[field_name] = MODALITIES_MAPPING[Modalities.TEXT]
 
         # we determine if it's a filter field
@@ -200,7 +204,7 @@ def _extract_field_names_sub_folders(
     :param s3_bucket: s3 bucket object, only needed if interacting with s3 bucket
     :return: list of file endings
     """
-    field_names = {}
+    fields_dict = {}
     for path in file_paths:
         if path.endswith('.json'):
             if s3_bucket:
@@ -209,11 +213,11 @@ def _extract_field_names_sub_folders(
                 with open(path) as f:
                     data = json.load(f)
             for el, value in data.items():
-                field_names[el] = value
+                fields_dict[el] = value
         else:
             file_name = path.split(separator)[-1]
-            field_names[file_name] = file_name
-    return field_names
+            fields_dict[file_name] = file_name
+    return fields_dict
 
 
 def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
@@ -223,7 +227,7 @@ def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
     :param user_input: UserInput object
 
     checks if the bucket exists and the format of the folder structure is correct,
-    if yes then downloads the first folder and sets its content as field_names in user_input
+    if yes then downloads the first folder and sets its content as fields_dict in user_input
     """
     bucket, folder_prefix = get_s3_bucket_and_folder_prefix(
         user_input
@@ -237,7 +241,7 @@ def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
     ]
     folder_structure = identify_folder_structure(file_paths, '/')
     if folder_structure == 'single_folder':
-        field_names = _extract_field_names_single_folder(file_paths, '/')
+        fields_dict = _extract_field_names_single_folder(file_paths, '/')
     elif folder_structure == 'sub_folders':
         first_folder = '/'.join(objects[1].key.split('/')[:-1])
         first_folder_objects = [
@@ -245,13 +249,13 @@ def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
             for obj in bucket.objects.filter(Prefix=first_folder)
             if not obj.key.endswith('/') and not obj.key.split('/')[-1].startswith('.')
         ]
-        field_names = _extract_field_names_sub_folders(
+        fields_dict = _extract_field_names_sub_folders(
             first_folder_objects, '/', bucket
         )
     (
         user_input.index_fields_modalities,
         user_input.filter_fields_modalities,
-    ) = _create_candidate_index_filter_fields(field_names)
+    ) = _create_candidate_index_filter_fields(fields_dict)
 
 
 def set_field_names_from_local_folder(user_input: UserInput, **kwargs):
@@ -276,7 +280,7 @@ def set_field_names_from_local_folder(user_input: UserInput, **kwargs):
         )
     folder_structure = identify_folder_structure(file_paths, os.sep)
     if folder_structure == 'single_folder':
-        field_names = _extract_field_names_single_folder(file_paths, os.sep)
+        fields_dict = _extract_field_names_single_folder(file_paths, os.sep)
     elif folder_structure == 'sub_folders':
         first_folder = os.sep.join(file_paths[0].split(os.sep)[:-1])
         first_folder_files = [
@@ -284,11 +288,11 @@ def set_field_names_from_local_folder(user_input: UserInput, **kwargs):
             for file in os.listdir(first_folder)
             if os.path.isfile(os.path.join(first_folder, file))
         ]
-        field_names = _extract_field_names_sub_folders(first_folder_files, os.sep)
+        fields_dict = _extract_field_names_sub_folders(first_folder_files, os.sep)
     (
         user_input.index_fields_modalities,
         user_input.filter_fields_modalities,
-    ) = _create_candidate_index_filter_fields(field_names)
+    ) = _create_candidate_index_filter_fields(fields_dict)
 
 
 def get_s3_bucket_and_folder_prefix(user_input: UserInput):
@@ -317,3 +321,25 @@ def get_s3_bucket_and_folder_prefix(user_input: UserInput):
     bucket = session.resource('s3').Bucket(bucket)
 
     return bucket, folder_prefix
+
+
+def set_field_names_elasticsearch(user_input: UserInput, **kwargs):
+    """
+    Get the schema from an Elasticsearch instance
+
+    :param user_input: UserInput object
+
+    """
+    es_connector = ElasticsearchConnector(
+        connection_str=user_input.es_host_name,
+    )
+    first_docs = list(
+        es_connector.get_documents(index_name=user_input.es_index_name, page_size=1)
+    )[
+        0
+    ]  # get one document
+    fields_dict = first_docs['_source']
+    (
+        user_input.index_fields_modalities,
+        user_input.filter_fields_modalities,
+    ) = _create_candidate_index_filter_fields(fields_dict)

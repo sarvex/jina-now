@@ -71,7 +71,11 @@ class ElasticsearchConnector:
         :return: Generator which yields one page of documents on each call.
         """
         resp = self.es.search(
-            **query, index=index_name, scroll='2m', size=page_size, source=False
+            **query,
+            index=index_name,
+            scroll='2m',
+            size=page_size,
+            source=False,
         )
         documents = [
             {**doc['_source'], **{'id': doc['_id']}} for doc in resp['hits']['hits']

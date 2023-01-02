@@ -14,6 +14,7 @@ from hubble import AuthenticationRequiredError
 from kubernetes import client, config
 
 from now.common.detect_schema import (
+    set_field_names_elasticsearch,
     set_field_names_from_docarray,
     set_field_names_from_local_folder,
     set_field_names_from_s3_bucket,
@@ -92,7 +93,6 @@ DATASET_TYPE = DialogOptions(
         {
             'name': 'Elasticsearch',
             'value': DatasetTypes.ELASTICSEARCH,
-            'disabled': AVAILABLE_SOON,
         },
     ],
     prompt_type='list',
@@ -251,6 +251,7 @@ ES_ADDITIONAL_ARGS = DialogOptions(
     depends_on=DATASET_TYPE,
     conditional_check=lambda user_input: user_input.dataset_type
     == DatasetTypes.ELASTICSEARCH,
+    post_func=lambda user_input, **kwargs: set_field_names_elasticsearch(user_input),
 )
 
 # --------------------------------------------- #

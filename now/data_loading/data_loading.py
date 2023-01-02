@@ -35,7 +35,7 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
     elif user_input.dataset_type == DatasetTypes.S3_BUCKET:
         da = _list_files_from_s3_bucket(user_input=user_input, data_class=data_class)
     elif user_input.dataset_type == DatasetTypes.ELASTICSEARCH:
-        da = _extract_es_data(user_input)
+        da = _extract_es_data(user_input=user_input, data_class=data_class)
     elif user_input.dataset_type == DatasetTypes.DEMO:
         print('⬇  Download DocumentArray dataset')
         da = DocumentArray.pull(name=user_input.dataset_name, show_progress=True)
@@ -64,7 +64,7 @@ def _pull_docarray(dataset_name: str):
         )
 
 
-def _extract_es_data(user_input: UserInput) -> DocumentArray:
+def _extract_es_data(user_input: UserInput, data_class: Type) -> DocumentArray:
     query = {
         'query': {'match_all': {}},
         '_source': True,
@@ -72,9 +72,11 @@ def _extract_es_data(user_input: UserInput) -> DocumentArray:
     es_extractor = ElasticsearchExtractor(
         query=query,
         index=user_input.es_index_name,
+        user_input=user_input,
+        data_class=data_class,
         connection_str=user_input.es_host_name,
     )
-    extracted_docs = es_extractor.extract(index_fields=user_input.index_fields)
+    extracted_docs = es_extractor.extract()
     return extracted_docs
 
 
