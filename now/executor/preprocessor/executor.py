@@ -107,7 +107,6 @@ class NOWPreprocessor(Executor):
 
             docs = transform_docarray(
                 documents=docs,
-                index_fields=index_fields,
             )
             if (
                 self.user_input

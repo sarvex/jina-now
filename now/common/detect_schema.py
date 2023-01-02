@@ -301,6 +301,8 @@ def set_field_names_elasticsearch(user_input: UserInput, **kwargs):
 
     :param user_input: UserInput object
 
+    checks if the Elasticsearch instance exists and grabs the first document from the index,
+    the first document is then used to create modalities dicts for index and filter fields
     """
     es_connector = ElasticsearchConnector(
         connection_str=user_input.es_host_name,

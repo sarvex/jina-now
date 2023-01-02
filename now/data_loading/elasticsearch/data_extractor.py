@@ -82,6 +82,12 @@ class ElasticsearchExtractor:
     def _construct_document(self, es_document: Dict) -> Document:
         """
         Constructs a `docarray.Document` object from an Elasticsearch document.
+
+        :param es_document: Elasticsearch document
+
+        :return: `docarray.Document` object
+
+        Creates a document using the dataclass specified in the user input.
         """
         kwargs = {}
         for field_name, field_value in es_document.items():

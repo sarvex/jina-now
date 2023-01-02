@@ -72,7 +72,7 @@ def transform_docarray(
     Gets either multimodal or unimodal data and turns it into standardized format.
 
     :param documents: Data to be transformed.
-    :param index_fields: Field names for neural search. Only required if multimodal data is given.
+    :return: Transformed data.
     """
     if not (documents and documents[0].chunks):
         documents = transform_uni_modal_data(documents=documents)
