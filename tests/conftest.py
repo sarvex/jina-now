@@ -9,8 +9,10 @@ import numpy as np
 import pytest
 from docarray import Document, DocumentArray, dataclass
 from docarray.typing import Image, Text
+from elasticsearch import Elasticsearch
 
 from now.deployment.deployment import cmd
+from now.executor.indexer.elastic.elastic_indexer import wait_until_cluster_is_up
 from now.executor.indexer.elastic.es_query_building import SemanticScore
 from now.executor.preprocessor import NOWPreprocessor
 
@@ -161,6 +163,7 @@ def setup_service_running(es_connection_params) -> None:
     )
     cmd(f'docker-compose -f {docker_compose_file} up -d')
     hosts, _ = es_connection_params
+    wait_until_cluster_is_up(es=Elasticsearch(hosts=hosts), hosts=hosts)
     yield
     cmd('docker-compose -f tests/resources/elastic/docker-compose.yml down')
 
