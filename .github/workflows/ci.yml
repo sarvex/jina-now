@@ -103,23 +103,6 @@ jobs:
           executor_id: 2hgojz3z
           jina_auth_token: ${{ secrets.NOW_PREPROCESSOR_JCLOUD_TOKEN }}
 
-  update-qdrant:
-    runs-on: ubuntu-latest
-    needs: [lint-flake-8, check-black, commit-lint]
-    steps:
-      - uses: actions/checkout@v2
-      - uses: ./.github/actions/push-executor
-        with:
-          executor_version_name: NOW_QDRANT_INDEXER_VERSION
-          executor_name: NOWQdrantIndexer16
-          executor_path: now/executor/indexer/qdrant
-          # for some reason, the first filter condition needs a different indentation
-          has_changed_filter: |
-            - now/executor/abstract/**
-              - now/executor/indexer/qdrant/**
-          executor_id: 11yxatzh
-          jina_auth_token: ${{ secrets.NOW_STAGING_FLORIAN }}
-
   update-elastic:
     runs-on: ubuntu-latest
     needs: [lint-flake-8, check-black, commit-lint]
@@ -227,7 +210,6 @@ jobs:
     needs:
       [
         update-preprocessor,
-        update-qdrant,
         update-elastic,
         update-autocomplete,
         update-bff-playground,
@@ -283,7 +265,6 @@ jobs:
     needs:
       [
         update-preprocessor,
-        update-qdrant,
         update-elastic,
         update-autocomplete,
         update-bff-playground,
