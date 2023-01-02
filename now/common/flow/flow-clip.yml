@@ -25,7 +25,7 @@ executors:
         memory: 1G
     env:
       JINA_LOG_LEVEL: DEBUG
-  - name: encoder_clip
+  - name: encoderclip
     uses: ${{ ENV.ENCODER_NAME }}
     host: ${{ ENV.ENCODER_HOST }}
     port: ${{ ENV.ENCODER_PORT }}

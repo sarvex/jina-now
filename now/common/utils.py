@@ -69,7 +69,7 @@ def common_get_flow_env_dict(
         'COLUMNS': tags,
         'DOCUMENT_MAPPINGS': json.dumps(
             [
-                ('encoder_clip', 512, ','.join(user_input.index_fields)),
+                ('encoderclip', 512, ','.join(user_input.index_fields)),
             ]
         ),
         'ADMIN_EMAILS': user_input.admin_emails or [] if user_input.secured else [],
