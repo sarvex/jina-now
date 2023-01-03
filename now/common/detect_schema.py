@@ -253,10 +253,15 @@ def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
         fields_dict = _extract_field_names_sub_folders(
             first_folder_objects, '/', bucket
         )
+    fields_dict_cleaned = {
+        field_key: field_value
+        for field_key, field_value in fields_dict.items()
+        if not isinstance(field_value, list) and not isinstance(field_value, dict)
+    }
     (
         user_input.index_fields_modalities,
         user_input.filter_fields_modalities,
-    ) = _create_candidate_index_filter_fields(fields_dict)
+    ) = _create_candidate_index_filter_fields(fields_dict_cleaned)
 
 
 def set_field_names_from_local_folder(user_input: UserInput, **kwargs):
@@ -290,10 +295,15 @@ def set_field_names_from_local_folder(user_input: UserInput, **kwargs):
             if os.path.isfile(os.path.join(first_folder, file))
         ]
         fields_dict = _extract_field_names_sub_folders(first_folder_files, os.sep)
+    fields_dict_cleaned = {
+        field_key: field_value
+        for field_key, field_value in fields_dict.items()
+        if not isinstance(field_value, list) and not isinstance(field_value, dict)
+    }
     (
         user_input.index_fields_modalities,
         user_input.filter_fields_modalities,
-    ) = _create_candidate_index_filter_fields(fields_dict)
+    ) = _create_candidate_index_filter_fields(fields_dict_cleaned)
 
 
 def set_field_names_elasticsearch(user_input: UserInput, **kwargs):
@@ -308,7 +318,7 @@ def set_field_names_elasticsearch(user_input: UserInput, **kwargs):
     es_connector = ElasticsearchConnector(
         connection_str=user_input.es_host_name,
     )
-    query = {"match_all": {}}
+    query = {"query": {"match_all": {}}}
     first_docs = list(
         es_connector.get_documents_by_query(
             query=query, index_name=user_input.es_index_name, page_size=1
