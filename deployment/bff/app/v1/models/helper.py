@@ -16,9 +16,8 @@ class _NamedScore(BaseModel):
 class BaseRequestModel(BaseModel):
     host: Optional[str] = Field(
         default='localhost',
-        description='Host address of the flow returned after the app deployment. '
-        'For local deployment, use localhost. For remote deployment the host address '
-        'should be in this format: grpcs://*.wolf.jina.ai',
+        description='Host address of the flow returned after the app deployment. For remote deployment '
+        'the host address should be in this format: grpcs://*.wolf.jina.ai',
     )
     port: Optional[int] = Field(
         default=31080,
@@ -27,7 +26,8 @@ class BaseRequestModel(BaseModel):
     )
     jwt: Optional[Dict[str, Any]] = Field(
         default=None,
-        description="Dictionary with key 'token' which maps to cloud token value. To be passed when the flow is secure",
+        description="Dictionary with key 'token' which maps to Jina Cloud token value."
+        " To be passed when the flow is secure",
     )
     api_key: Optional[str] = Field(
         default=None,
