@@ -318,7 +318,10 @@ def set_field_names_elasticsearch(user_input: UserInput, **kwargs):
     es_connector = ElasticsearchConnector(
         connection_str=user_input.es_host_name,
     )
-    query = {"query": {"match_all": {}}}
+    query = {
+        'query': {'match_all': {}},
+        '_source': True,
+    }
     first_docs = list(
         es_connector.get_documents_by_query(
             query=query, index_name=user_input.es_index_name, page_size=1
@@ -326,7 +329,7 @@ def set_field_names_elasticsearch(user_input: UserInput, **kwargs):
     )[
         0
     ]  # get one document
-    fields_dict = first_docs['_source']
+    fields_dict = first_docs[0]
     fields_dict_cleaned = {
         field_key: field_value
         for field_key, field_value in fields_dict.items()

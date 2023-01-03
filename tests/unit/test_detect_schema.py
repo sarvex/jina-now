@@ -49,7 +49,7 @@ def test_set_fields_names_from_local_folder(
                 'link',
                 'id',
             },
-            {'test.txt', 'tags', 'id', 'link', 'title'},
+            {'test.txt', 'id', 'link', 'title'},
         ),
         ('folder1/', {'.png', '.txt', '.json'}, {'.txt', '.json'}),
     ],
@@ -104,13 +104,12 @@ def test_set_field_names_elasticsearch(setup_online_shop_db, es_connection_param
         'product_id': Text,
         'id': Text,
     }
-    assert len(user_input.filter_fields_modalities.keys()) == 6
+    assert len(user_input.filter_fields_modalities.keys()) == 5
     assert user_input.filter_fields_modalities == {
         'title': 'str',
         'text': 'str',
         'url': 'str',
         'product_id': 'str',
-        'uris': 'list',
         'id': 'str',
     }
 
