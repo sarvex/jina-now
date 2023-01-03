@@ -108,9 +108,9 @@ class SearchApp(JinaNOWApp):
         is_remote = user_input.deployment_type == 'remote'
         return {
             'name': 'clip_encoder',
-            'uses': f'{EXECUTOR_PREFIX}CLIPOnnxEncoder/0.8.1' + '-gpu'
-            if is_remote
-            else '',
+            'uses': f'{EXECUTOR_PREFIX}CLIPOnnxEncoder/0.8.1'(
+                +'-gpu' if is_remote else ''
+            ),
             'host': EXTERNAL_CLIP_HOST if is_remote else '0.0.0.0',
             'port': 443 if is_remote else random_port(),
             'tls': is_remote,
