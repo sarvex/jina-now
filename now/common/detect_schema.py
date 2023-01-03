@@ -57,9 +57,7 @@ def _create_candidate_index_filter_fields(field_name_to_value):
             field_name == 'uri'
             and field_value.split('.')[-1] not in not_available_file_types_for_filter
         ) or field_name.split('.')[-1] not in not_available_file_types_for_filter:
-            filter_field_candidates_to_modalities[
-                field_name
-            ] = field_value.__class__.__name__
+            filter_field_candidates_to_modalities[field_name] = field_value.__class__
 
     if len(index_field_candidates_to_modalities.keys()) == 0:
         raise ValueError(
