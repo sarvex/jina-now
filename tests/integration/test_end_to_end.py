@@ -75,7 +75,7 @@ def test_token_exists():
 
 @pytest.mark.remote
 @pytest.mark.parametrize(
-    'app, input_modality, search_fields, filter_fields, dataset, deployment_type',
+    'app, query_fields, index_fields, filter_fields, dataset, deployment_type',
     [
         (
             Apps.SEARCH_APP,
@@ -94,8 +94,8 @@ def test_end_to_end_remote(
     deployment_type: str,
     test_search_image,
     cleanup,
-    input_modality,
-    search_fields,
+    query_fields,
+    index_fields,
     filter_fields,
     with_hubble_login_patch,
 ):
@@ -104,15 +104,15 @@ def test_end_to_end_remote(
         cleanup,
         dataset,
         deployment_type,
-        input_modality,
-        search_fields,
+        query_fields,
+        index_fields,
         filter_fields,
         test_search_image,
     )
 
 
 @pytest.mark.parametrize(
-    'app, input_modality, search_fields, filter_fields, dataset, deployment_type',
+    'app, query_fields, index_fields, filter_fields, dataset, deployment_type',
     [
         (
             Apps.SEARCH_APP,
@@ -147,8 +147,8 @@ def test_end_to_end_local(
     deployment_type: str,
     test_search_image,
     cleanup,
-    input_modality,
-    search_fields,
+    query_fields,
+    index_fields,
     filter_fields,
     with_hubble_login_patch,
 ):
@@ -157,8 +157,8 @@ def test_end_to_end_local(
         cleanup,
         dataset,
         deployment_type,
-        input_modality,
-        search_fields,
+        query_fields,
+        index_fields,
         filter_fields,
         test_search_image,
     )
@@ -169,8 +169,8 @@ def run_end_to_end(
     cleanup,
     dataset,
     deployment_type,
-    input_modality,
-    search_fields,
+    query_fields,
+    index_fields,
     filter_fields,
     test_search_image,
 ):
@@ -179,7 +179,7 @@ def run_end_to_end(
         'now': 'start',
         'flow_name': 'nowapi',
         'dataset_type': DatasetTypes.DEMO,
-        'search_fields': search_fields,
+        'index_fields': index_fields,
         'filter_fields': filter_fields,
         'dataset_name': dataset,
         'cluster': cluster,
@@ -203,16 +203,16 @@ def run_end_to_end(
         with open(f'{cleanup}/flow_details.json', 'w') as f:
             json.dump(flow_details, f)
 
-    assert_deployment_response(deployment_type, 'text-or-image', response)
+    assert_deployment_response(deployment_type, response)
     assert_deployment_queries(
         dataset=dataset,
         deployment_type=deployment_type,
-        input_modality=input_modality,
+        query_fields=query_fields,
         kwargs=kwargs,
         test_search_image=test_search_image,
         response=response,
     )
-    if input_modality == Modalities.TEXT:
+    if query_fields == Modalities.TEXT:
         host = response.get('host')
         request_body = get_search_request_body(
             dataset=dataset,
@@ -261,7 +261,7 @@ def assert_suggest(suggest_url, request_body):
 def assert_deployment_queries(
     dataset,
     deployment_type,
-    input_modality,
+    query_fields,
     kwargs,
     test_search_image,
     response,
@@ -276,7 +276,7 @@ def assert_deployment_queries(
         kwargs=kwargs,
         test_search_image=test_search_image,
         host=host,
-        search_modality=input_modality,
+        search_modality=query_fields,
     )
     search_url = f'{url}/search-app/search'
     assert_search(search_url, request_body)
@@ -311,7 +311,7 @@ def assert_deployment_queries(
             kwargs=kwargs,
             test_search_image=test_search_image,
             host=host,
-            search_modality=input_modality,
+            search_modality=query_fields,
         )
         assert_search(search_url, request_body)
         # search with invalid api key
@@ -347,10 +347,9 @@ def get_search_request_body(
     return request_body
 
 
-def assert_deployment_response(deployment_type, input_modality, response):
+def assert_deployment_response(deployment_type, response):
     assert response['bff'] == f'http://localhost:30090/api/v1/search-app/docs'
     assert response['playground'].startswith('http://localhost:30080/?')
-    assert response['input_modality'] == input_modality
     if deployment_type == 'local':
         assert response['host'] == 'gateway.nowapi.svc.cluster.local'
     else:
@@ -362,12 +361,12 @@ def assert_deployment_response(deployment_type, input_modality, response):
 @pytest.mark.parametrize('deployment_type', ['remote'])
 @pytest.mark.parametrize('dataset', ['custom_s3_bucket'])
 @pytest.mark.parametrize('app', [Apps.SEARCH_APP])
-@pytest.mark.parametrize('input_modality', [Modalities.IMAGE])
+@pytest.mark.parametrize('query_fields', [Modalities.IMAGE])
 def test_backend_custom_data(
     app,
     deployment_type: str,
     dataset: str,
-    input_modality: str,
+    query_fields: str,
     cleanup,
     with_hubble_login_patch,
 ):
@@ -380,7 +379,7 @@ def test_backend_custom_data(
         'aws_access_key_id': os.environ.get('AWS_ACCESS_KEY_ID'),
         'aws_secret_access_key': os.environ.get('AWS_SECRET_ACCESS_KEY'),
         'aws_region_name': 'eu-west-1',
-        'search_fields': ['.jpeg'],
+        'index_fields': ['.jpeg'],
         'filter_fields': [],
         'cluster': NEW_CLUSTER['value'],
         'deployment_type': deployment_type,
@@ -395,9 +394,8 @@ def test_backend_custom_data(
 
     kwargs = Namespace(**kwargs)
     response = cli(args=kwargs)
-    input_modality = 'text-or-image'
 
-    assert_deployment_response(deployment_type, input_modality, response)
+    assert_deployment_response(deployment_type, response)
 
     request_body = {'query': {'query_text': {'text': 'test'}}, 'limit': 9}
 

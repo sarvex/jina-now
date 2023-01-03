@@ -24,7 +24,7 @@ def test_offline_flow(monkeypatch, setup_service_running, base64_image_string):
     monkeypatch.setattr(helper, 'get_jina_client', lambda **kwargs: offline_client)
 
     user_input = UserInput()
-    user_input.search_fields = ['product_title', 'product_description', 'product_image']
+    user_input.index_fields = ['product_title', 'product_description', 'product_image']
 
     @dataclass
     class Product:

@@ -1,4 +1,3 @@
-import abc
 import os
 from typing import Dict, List, Optional, Tuple
 
@@ -8,8 +7,8 @@ from jina import Client
 from jina.jaml import JAML
 
 from now.app.base.preprocess import preprocess_image, preprocess_text, preprocess_video
-from now.constants import DEFAULT_FLOW_NAME, SUPPORTED_FILE_TYPES, Modalities
-from now.demo_data import AVAILABLE_DATASETS, DEFAULT_EXAMPLE_HOSTED, DemoDataset
+from now.constants import DEFAULT_FLOW_NAME
+from now.demo_data import DEFAULT_EXAMPLE_HOSTED
 from now.now_dataclasses import DialogOptions, UserInput
 
 
@@ -45,22 +44,6 @@ class JinaNOWApp:
         Short description of the app.
         """
         return 'Jina NOW app'
-
-    @property
-    @abc.abstractmethod
-    def input_modality(self) -> List[Modalities]:
-        """
-        Modality used for running search queries
-        """
-        raise NotImplementedError()
-
-    @property
-    @abc.abstractmethod
-    def output_modality(self) -> List[Modalities]:
-        """
-        Modality used for indexing data
-        """
-        raise NotImplementedError()
 
     def set_flow_yaml(self, **kwargs):
         """Used to configure the flow yaml in the Jina NOW app.
@@ -101,20 +84,6 @@ class JinaNOWApp:
         :return: List[DialogOptions]
         """
         return []
-
-    @property
-    def supported_file_types(self) -> List[str]:
-        """Used to filter files in local structure or an S3 bucket."""
-        sup_file = [SUPPORTED_FILE_TYPES[modality] for modality in self.output_modality]
-        return [item for sublist in sup_file for item in sublist]
-
-    @property
-    def demo_datasets(self) -> Dict[str, List[DemoDataset]]:
-        """Get a list of example datasets for the app."""
-        available_datasets = {}
-        for output_modality in self.output_modality:
-            available_datasets[output_modality] = AVAILABLE_DATASETS[output_modality]
-        return available_datasets
 
     @property
     def required_docker_memory_in_gb(self) -> int:
@@ -209,25 +178,24 @@ class JinaNOWApp:
                 if executor['name'] == 'preprocessor' or executor['name'] == 'indexer':
                     executor['uses_with']['api_keys'] = '${{ ENV.API_KEY }}'
 
-            if Modalities.TEXT in self.input_modality:
-                if not any(
-                    exec_dict['name'] == 'autocomplete_executor'
-                    for exec_dict in flow_yaml_content['executors']
-                ):
-                    flow_yaml_content['executors'].insert(
-                        0,
-                        {
-                            'name': 'autocomplete_executor',
-                            'uses': '${{ ENV.AUTOCOMPLETE_EXECUTOR_NAME }}',
-                            'needs': 'gateway',
-                            'env': {'JINA_LOG_LEVEL': 'DEBUG'},
-                            'uses_with': {
-                                'api_keys': '${{ ENV.API_KEY }}',
-                                'user_emails': '${{ ENV.USER_EMAILS }}',
-                                'admin_emails': '${{ ENV.ADMIN_EMAILS }}',
-                            },
+            if not any(
+                exec_dict['name'] == 'autocomplete_executor'
+                for exec_dict in flow_yaml_content['executors']
+            ):
+                flow_yaml_content['executors'].insert(
+                    0,
+                    {
+                        'name': 'autocomplete_executor',
+                        'uses': '${{ ENV.AUTOCOMPLETE_EXECUTOR_NAME }}',
+                        'needs': 'gateway',
+                        'env': {'JINA_LOG_LEVEL': 'DEBUG'},
+                        'uses_with': {
+                            'api_keys': '${{ ENV.API_KEY }}',
+                            'user_emails': '${{ ENV.USER_EMAILS }}',
+                            'admin_emails': '${{ ENV.ADMIN_EMAILS }}',
                         },
-                    )
+                    },
+                )
             self.add_environment_variables(flow_yaml_content)
             self.flow_yaml = flow_yaml_content
         return {}
@@ -253,7 +221,7 @@ class JinaNOWApp:
         return docs
 
     def is_demo_available(self, user_input) -> bool:
-        hosted_ds = DEFAULT_EXAMPLE_HOSTED.get(self.app_name, {})
+        hosted_ds = DEFAULT_EXAMPLE_HOSTED
         if (
             hosted_ds
             and user_input.dataset_name in hosted_ds

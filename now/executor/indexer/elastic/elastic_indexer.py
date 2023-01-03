@@ -10,7 +10,11 @@ from elasticsearch.helpers import bulk
 
 from now.executor.abstract.auth import SecurityLevel, secure_request
 from now.executor.abstract.base_indexer import NOWBaseIndexer as Executor
-from now.executor.indexer.elastic.es_converter import ESConverter
+from now.executor.indexer.elastic.es_converter import (
+    convert_doc_map_to_es,
+    convert_es_results_to_matches,
+    convert_es_to_da,
+)
 from now.executor.indexer.elastic.es_preprocessing import merge_subdocuments
 from now.executor.indexer.elastic.es_query_building import (
     SemanticScore,
@@ -18,8 +22,6 @@ from now.executor.indexer.elastic.es_query_building import (
     generate_semantic_scores,
     process_filter,
 )
-
-ESConverter = ESConverter()
 
 FieldEmbedding = namedtuple(
     'FieldEmbedding',
@@ -30,12 +32,13 @@ FieldEmbedding = namedtuple(
 class NOWElasticIndexer(Executor):
     """
     NOWElasticIndexer indexes Documents into an Elasticsearch instance. To do this,
-    it uses the ESConverter, converting documents to and from the accepted Elasticsearch
+    it uses helper functions from es_converter, converting documents to and from the accepted Elasticsearch
     format. It also uses the semantic scores to combine the scores of different fields/encoders,
     allowing multi-modal documents to be indexed and searched with multi-modal queries.
     """
 
     # override
+
     def construct(
         self,
         document_mappings: List[List],  # cannot take FieldEmbedding (not serializable)
@@ -61,7 +64,6 @@ class NOWElasticIndexer(Executor):
         :param hosts: host configuration of the Elasticsearch node or cluster
         :param es_config: Elasticsearch cluster configuration object
         :param metric: The distance metric used for the vector index and vector search
-        :param dims: The dimensions of your embeddings.
         :param index_name: ElasticSearch Index name used for the storage
         :param es_mapping: Mapping for new index. If none is specified, this will be
             generated from `document_mappings` and `metric`.
@@ -144,7 +146,7 @@ class NOWElasticIndexer(Executor):
         """
         Index new `Document`s by adding them to the Elasticsearch index.
 
-        :param docs: Documents to be indexed.
+        :param docs_map: map of encoder to DocumentArray
         :param parameters: dictionary with options for indexing.
         :return: empty `DocumentArray`.
         """
@@ -152,7 +154,7 @@ class NOWElasticIndexer(Executor):
             return DocumentArray()
         aggregate_embeddings(docs_map)
         preprocessed_docs_map = merge_subdocuments(docs_map, self.encoder_to_fields)
-        es_docs = ESConverter.convert_doc_map_to_es(
+        es_docs = convert_doc_map_to_es(
             preprocessed_docs_map, self.index_name, self.encoder_to_fields
         )
         success, _ = bulk(self.es, es_docs)
@@ -182,7 +184,7 @@ class NOWElasticIndexer(Executor):
             - operator: Binary operation between two values. Some supported operators include `['>','<','=','<=','>=']`.
             - value: value used to compare a candidate.
 
-        :param docs: query `Document`s.
+        :param docs_map: map of encoder to DocumentArray
         :param parameters: dictionary of options for searching.
             Keys accepted:
                 - 'filter' (dict): The filtering conditions on document tags
@@ -226,7 +228,7 @@ class NOWElasticIndexer(Executor):
                 source=True,
                 size=limit,
             )['hits']['hits']
-            doc.matches = ESConverter.convert_es_results_to_matches(
+            doc.matches = convert_es_results_to_matches(
                 query_doc=doc,
                 es_results=result,
                 get_score_breakdown=get_score_breakdown,
@@ -264,7 +266,7 @@ class NOWElasticIndexer(Executor):
         except Exception:
             self.logger.info(traceback.format_exc())
         if result:
-            return ESConverter.convert_es_to_da(result, get_score_breakdown=False)
+            return convert_es_to_da(result, get_score_breakdown=False)
         else:
             return DocumentArray()
 
