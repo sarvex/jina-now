@@ -53,7 +53,7 @@ def preprocess_image(d: Document):
         if d.blob != b'':
             d.convert_blob_to_image_tensor()
         elif d.uri:
-            d.load_uri_to_image_tensor(timeout=10)
+            d.load_uri_to_image_tensor()
     if 'uri' in d.tags:
         d.uri = d.tags['uri']
     to_thumbnail_jpg(d)
@@ -74,7 +74,7 @@ def preprocess_image(d: Document):
 def preprocess_video(d: Document):
     if d.blob == b'':
         if d.uri:
-            d.load_uri_to_blob(timeout=10)
+            d.load_uri_to_blob()
         elif d.tensor is not None:
             d.convert_tensor_to_blob()
     _sample_video(d)

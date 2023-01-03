@@ -315,20 +315,20 @@ def set_field_names_elasticsearch(user_input: UserInput, **kwargs):
     checks if the Elasticsearch instance exists and grabs the first document from the index,
     the first document is then used to create modalities dicts for index and filter fields
     """
-    es_connector = ElasticsearchConnector(
+    with ElasticsearchConnector(
         connection_str=user_input.es_host_name,
-    )
-    query = {
-        'query': {'match_all': {}},
-        '_source': True,
-    }
-    first_docs = list(
-        es_connector.get_documents_by_query(
-            query=query, index_name=user_input.es_index_name, page_size=1
-        )
-    )[
-        0
-    ]  # get one document
+    ) as es_connector:
+        query = {
+            'query': {'match_all': {}},
+            '_source': True,
+        }
+        first_docs = list(
+            es_connector.get_documents_by_query(
+                query=query, index_name=user_input.es_index_name, page_size=1
+            )
+        )[
+            0
+        ]  # get one document
     fields_dict = first_docs[0]
     fields_dict_cleaned = {
         field_key: field_value

@@ -12,7 +12,6 @@ from jina import Document, DocumentArray
 from paddleocr import PaddleOCR
 
 from now.app.base.app import JinaNOWApp
-from now.app.base.transform_docarray import transform_docarray
 from now.constants import (
     ACCESS_PATHS,
     TAG_OCR_DETECTOR_TEXT_IN_DOC,
@@ -105,9 +104,6 @@ class NOWPreprocessor(Executor):
                         else index_field
                     )
 
-            docs = transform_docarray(
-                documents=docs,
-            )
             if (
                 self.user_input
                 and self.user_input.dataset_type == DatasetTypes.S3_BUCKET
@@ -154,6 +150,11 @@ class NOWPreprocessor(Executor):
         :return: preprocessed documents which are ready to be encoded and indexed
         """
         # TODO remove set user input. Should be only set once in constructor use api key instead of user token
+        if not (docs and docs[0].chunks):
+            raise ValueError(
+                'Documents are not in multi modal format. Please check documentation'
+                'https://docarray.jina.ai/datatypes/multimodal/'
+            )
         self._set_user_input(parameters=parameters)
         return self._preprocess_maybe_cloud_download(docs=docs)
 
