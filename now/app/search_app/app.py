@@ -11,6 +11,7 @@ from now.app.search_app.indexer_utils import (
     get_indexer_config,
 )
 from now.constants import (
+    ACCESS_PATHS,
     EXECUTOR_PREFIX,
     EXTERNAL_CLIP_HOST,
     NOW_AUTOCOMPLETE_VERSION,
@@ -114,7 +115,7 @@ class SearchApp(JinaNOWApp):
             'port': 443 if is_remote else random_port(),
             'tls': is_remote,
             'external': is_remote,
-            'uses_with': {'name': 'ViT-B-32::openai'},
+            'uses_with': {'access_paths': ACCESS_PATHS, 'name': 'ViT-B-32::openai'},
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'needs': 'preprocessor',
         }, 512
@@ -124,7 +125,10 @@ class SearchApp(JinaNOWApp):
         return {
             'name': 'sbert_encoder',
             'uses': f'{EXECUTOR_PREFIX}TransformerSentenceEncoder',
-            'uses_with': {'model_name': 'msmarco-distilbert-base-v3'},
+            'uses_with': {
+                'access_paths': ACCESS_PATHS,
+                'model_name': 'msmarco-distilbert-base-v3',
+            },
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'needs': 'preprocessor',
         }, 768
