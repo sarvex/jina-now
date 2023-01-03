@@ -190,9 +190,7 @@ class NOWBaseIndexer(Executor):
         limit = int(parameters.get('limit', self.limit))
         search_filter_raw = parameters.get('filter', {})
         search_filter_orig = deepcopy(search_filter_raw)
-        self.logger.debug(f"docs before flattening: {docs.summary()}")
         docs = docs[ACCESS_PATHS][:1]  # only search on the first document for now
-        self.logger.debug(f"docs after flattening: {docs.summary()}")
         # TODO remove this check for empty docs and make sure everything else works
         if len(docs) == 0:
             return
