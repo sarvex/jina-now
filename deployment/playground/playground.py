@@ -364,14 +364,17 @@ def render_matches():
             m.scores['cosine'].value = 1 - m.scores['cosine'].value
         sorted(matches, key=lambda m: m.scores['cosine'].value, reverse=True)
 
-        # filter based on threshold and then group them for pagination
-        matches = DocumentArray(
-            [
-                m
-                for m in matches
-                if m.scores['cosine'].value > st.session_state.min_confidence
-            ]
-        )
+        # TODO: the filter functionality should be removed since it is not used:
+        # it is not working with qdrant and elastic at the same time (distance vs score
+
+        # # filter based on threshold and then group them for pagination
+        # matches = DocumentArray(
+        #     [
+        #         m
+        #         for m in matches
+        #         if m.scores['cosine'].value > st.session_state.min_confidence
+        #     ]
+        # )
         list_matches = [matches[i : i + 9] for i in range(0, len(matches), 9)]
 
         # render the current page or the last page if filtered documents are less
