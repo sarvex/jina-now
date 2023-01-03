@@ -67,6 +67,7 @@ def search(
     top_k=None,
     filter_dict=None,
     endpoint='search',
+    field_name=None,
 ):
     print(f'Searching by {attribute_name}')
     params = get_query_params()
@@ -87,14 +88,14 @@ def search(
     if endpoint == 'suggestion':
         data[attribute_name] = attribute_value
     elif endpoint == 'search':
-        data['query'] = {f'query_{attribute_name}': {attribute_name: attribute_value}}
+        data['query'] = {f'query_{field_name}': {attribute_name: attribute_value}}
     # in case the jwt is none, no jwt will be sent. This is the case when no authentication is used for that flow
     if jwt is not None:
         data['jwt'] = jwt
     if params.port:
         data['port'] = params.port
 
-    return call_flow(URL_HOST, data, attribute_name, domain, endpoint)
+    return call_flow(URL_HOST, data, domain, endpoint)
 
 
 def get_suggestion(text, jwt):
@@ -103,7 +104,7 @@ def get_suggestion(text, jwt):
 
 @deep_freeze_args
 @functools.lru_cache(maxsize=10, typed=False)
-def call_flow(url_host, data, attribute_name, domain, endpoint):
+def call_flow(url_host, data, domain, endpoint):
     st.session_state.search_count += 1
     data = unfreeze_param(data)
 
@@ -164,7 +165,9 @@ def call_flow(url_host, data, attribute_name, domain, endpoint):
 
 
 def search_by_text(search_text, jwt, filter_selection) -> DocumentArray:
-    return search('text', search_text, jwt, filter_dict=filter_selection)
+    return search(
+        'text', search_text, jwt, filter_dict=filter_selection, field_name='text'
+    )
 
 
 def search_by_image(document: Document, jwt, filter_selection) -> DocumentArray:
@@ -183,4 +186,5 @@ def search_by_image(document: Document, jwt, filter_selection) -> DocumentArray:
         base64.b64encode(query_doc.blob).decode('utf-8'),
         jwt,
         filter_dict=filter_selection,
+        field_name='image',
     )
