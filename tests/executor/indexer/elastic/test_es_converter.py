@@ -7,7 +7,6 @@ from now.executor.indexer.elastic.es_converter import (
     calculate_score_breakdown,
     convert_doc_map_to_es,
 )
-from now.executor.indexer.elastic.es_preprocessing import merge_subdocuments
 
 
 def test_convert_doc_map_to_es(es_inputs, random_index_name):
@@ -28,9 +27,8 @@ def test_convert_doc_map_to_es(es_inputs, random_index_name):
     first_doc_clip = index_docs_map['clip'][0]
     first_doc_sbert = index_docs_map['sbert'][0]
     aggregate_embeddings(index_docs_map)
-    processed_docs_map = merge_subdocuments(index_docs_map, encoder_to_fields)
     first_result = convert_doc_map_to_es(
-        docs_map=processed_docs_map,
+        docs_map=index_docs_map,
         index_name=random_index_name,
         encoder_to_fields=encoder_to_fields,
     )[0]
