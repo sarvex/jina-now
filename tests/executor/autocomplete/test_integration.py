@@ -10,14 +10,16 @@ def test_autocomplete():
             on='/search',
             inputs=DocumentArray(
                 [
-                    Document(text='background'),
-                    Document(text='background'),
-                    Document(text='bang'),
-                    Document(text='loading'),
-                    Document(text='loading'),
-                    Document(text='laugh'),
-                    Document(text='fuck'),
-                    Document(text='red long dress'),
+                    Document(chunks=[Document(chunks=[Document(text='background')])]),
+                    Document(chunks=[Document(chunks=[Document(text='background')])]),
+                    Document(chunks=[Document(chunks=[Document(text='bang')])]),
+                    Document(chunks=[Document(chunks=[Document(text='loading')])]),
+                    Document(chunks=[Document(chunks=[Document(text='loading')])]),
+                    Document(chunks=[Document(chunks=[Document(text='laugh')])]),
+                    Document(chunks=[Document(chunks=[Document(text='hello')])]),
+                    Document(
+                        chunks=[Document(chunks=[Document(text='red long dress')])]
+                    ),
                 ]
             ),
         )
