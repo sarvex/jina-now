@@ -151,28 +151,7 @@ class NOWPreprocessor(Executor):
         """
         # TODO remove set user input. Should be only set once in constructor use api key instead of user token
         self._set_user_input(parameters=parameters)
-        documents = self._preprocess_maybe_cloud_download(docs=docs)
-        docs_split_chunks = self._split_chunks(documents)
-        return docs_split_chunks
-
-    @staticmethod
-    def _split_chunks(docs):
-        flattened_docs = docs['@c']
-        new_da = DocumentArray()
-        for flat_doc in flattened_docs:
-            new_da.append(
-                Document(
-                    id=flat_doc.parent_id,
-                    tags={
-                        'modality': flat_doc.modality,
-                        **flat_doc.tags,
-                        **flat_doc.chunks[0].tags,
-                    },
-                    modality=flat_doc.modality,
-                    chunks=flat_doc,
-                )
-            )
-        return new_da
+        return self._preprocess_maybe_cloud_download(docs=docs)
 
     @secure_request(on='/temp_link_cloud_bucket', level=SecurityLevel.USER)
     def temporary_link_from_cloud_bucket(
