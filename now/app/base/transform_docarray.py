@@ -13,7 +13,7 @@ def _get_modality(document: Document):
     elif document.mime_type:
         file_from_mime_type = document.mime_type.split('/')[-1]
         return FILETYPE_TO_MODALITY[file_from_mime_type]
-    raise Exception(f'Document {document} has no modality.')
+    return None
 
 
 def _get_multi_modal_format(document: Document) -> Document:

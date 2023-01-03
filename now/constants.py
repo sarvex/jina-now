@@ -4,10 +4,10 @@ from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.139-feat-integrate-elastic-29'
-NOW_PREPROCESSOR_VERSION = '0.0.118-feat-integrate-elastic-29'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.140-feat-integrate-elastic-29'
-NOW_AUTOCOMPLETE_VERSION = '0.0.8-feat-integrate-elastic-29'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.139-feat-integrate-elastic-30'
+NOW_PREPROCESSOR_VERSION = '0.0.118-feat-integrate-elastic-30'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.140-feat-integrate-elastic-30'
+NOW_AUTOCOMPLETE_VERSION = '0.0.8-feat-integrate-elastic-30'
 
 
 class Modalities(BetterEnum):
