@@ -33,7 +33,12 @@ def index_data(f, **kwargs):
         )
         for _ in range(9)
     ]
-    docs.append(Document(text='test', tags={'color': 'blue'}))
+    docs.append(
+        Document(
+            chunks=[Document(text='test', tags={'color': 'blue'})],
+            tags={'color': 'blue'},
+        )
+    )
     f.index(
         docs,
         parameters={
