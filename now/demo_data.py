@@ -119,4 +119,13 @@ AVAILABLE_DATASETS = {
         ),
     ],
 }
-DEFAULT_EXAMPLE_HOSTED = []
+DEFAULT_EXAMPLE_HOSTED = {
+    'search_app': [
+        (DemoDatasetNames.BEST_ARTWORKS, 'image', 'label'),
+        (DemoDatasetNames.STANFORD_CARS, 'image', 'label'),
+        (DemoDatasetNames.TLL, 'image', 'label'),
+        (DemoDatasetNames.BIRD_SPECIES, 'image', 'label'),
+        (DemoDatasetNames.POP_LYRICS, 'lyrics', 'title'),
+        (DemoDatasetNames.TUMBLR_GIFS_10K, 'video', 'description'),
+    ]
+}

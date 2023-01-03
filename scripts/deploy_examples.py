@@ -84,7 +84,9 @@ if __name__ == '__main__':
     deployment_type = os.environ.get('DEPLOYMENT_TYPE', 'partial').lower()
     index = int(sys.argv[-1])
     to_deploy = [
-        (app, ds) for app, data in DEFAULT_EXAMPLE_HOSTED.items() for ds in data
+        (app, data)
+        for app, ds_list in DEFAULT_EXAMPLE_HOSTED.items()
+        for data in ds_list
     ][index]
 
     print(f'Deploying {to_deploy} with deployment type {deployment_type}')
