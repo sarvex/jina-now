@@ -430,8 +430,8 @@ def aggregate_embeddings(docs_map: Dict[str, DocumentArray]):
 
 
 def wait_until_cluster_is_up(es, hosts):
-    MAX_RETRIES = 20
-    SLEEP = 5
+    MAX_RETRIES = 300
+    SLEEP = 1
     retries = 0
     while retries < MAX_RETRIES:
         try:
