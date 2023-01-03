@@ -5,7 +5,7 @@
 Instead of answering the questions manually, you can also provide command-line arguments when starting Jina NOW like shown here.
 
 ```bash
-jina now start --app text_to_image
+jina now start --dataset-type "DocumentArray name" --dataset-id "my-documentarray-id" --search-fields "title" [...]
 ```
   
 ## Use API
@@ -19,7 +19,7 @@ client = Client(
         port=31080,
 ) 
 response = client.search(
-        Document(text=search_text), # or in case you send an image: Document(url=image_path),
+        Document(text=search_text), # or in case you send an image: Document(uri=image_path),
         parameters={"limit": 9, "filter": {}},
 )
 ```

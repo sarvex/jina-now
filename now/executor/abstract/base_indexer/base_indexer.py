@@ -1,3 +1,4 @@
+import itertools
 import json
 import os
 from collections import defaultdict
@@ -7,7 +8,11 @@ from typing import List, Optional
 
 from docarray import Document, DocumentArray
 
-from now.constants import TAG_INDEXER_DOC_HAS_TEXT, TAG_OCR_DETECTOR_TEXT_IN_DOC
+from now.constants import (
+    ACCESS_PATHS,
+    TAG_INDEXER_DOC_HAS_TEXT,
+    TAG_OCR_DETECTOR_TEXT_IN_DOC,
+)
 from now.executor.abstract.auth import (
     SecurityLevel,
     get_auth_executor_class,
@@ -23,11 +28,10 @@ Executor = get_auth_executor_class()
 class NOWBaseIndexer(Executor):
     def __init__(
         self,
-        dim: int,
+        dim: int = None,
         columns: Optional[List] = None,
         metric: str = 'cosine',
         limit: int = 10,
-        traversal_paths: str = '@c',
         max_values_per_tag: int = 10,
         *args,
         **kwargs,
@@ -38,7 +42,6 @@ class NOWBaseIndexer(Executor):
         parsed as a valid Python type.
         :param metric: Distance metric type. Can be 'euclidean', 'inner_product', or 'cosine'
         :param limit: Number of results to get for each query document in search
-        :param traversal_paths: Default traversal paths on docs
         :param max_values_per_tag: Maximum number of values per tag
         (used for search), e.g. '@r', '@c', '@r,c'
         """
@@ -48,20 +51,21 @@ class NOWBaseIndexer(Executor):
         self.dim = dim
         self.metric = metric
         self.limit = limit
-        self.traversal_paths = traversal_paths
         self.max_values_per_tag = max_values_per_tag
-        self.construct()
+        self.construct(**kwargs)
         self.doc_id_tags = {}
         self.document_list = DocumentArray()
         self.load_document_list()
-        self.query_to_filter_path = (
-            os.path.join(self.workspace, 'query_to_filter.json')
+        self.query_to_curated_matches_path = (
+            os.path.join(self.workspace, 'query_to_curated_matches.json')
             if self.workspace
             else None
         )
-        self.query_to_filter = self.open_query_to_filter(self.query_to_filter_path)
+        self.query_to_curated_matches = self.open_query_to_curated_matches(
+            self.query_to_curated_matches_path
+        )
 
-    def open_query_to_filter(self, path):
+    def open_query_to_curated_matches(self, path):
         if path and os.path.exists(path):
             with open(path, 'r') as f:
                 return json.load(f)
@@ -107,30 +111,32 @@ class NOWBaseIndexer(Executor):
         limit = int(parameters.get('limit', maxsize))
         offset = int(parameters.get('offset', 0))
         # add removal of duplicates
-        traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
-        if traversal_paths == '@c,cc':
-            docs = DocumentArray()
-            chunks_size = int(parameters.get('chunks_size', 3))
-            parent_ids = set()
-            for d in self.document_list[offset * chunks_size :]:
-                if len(parent_ids) == limit:
-                    break
-                if d.parent_id in parent_ids:
-                    continue
-                parent_ids.add(d.parent_id)
-                docs.append(d)
-        else:
-            docs = self.document_list[offset : offset + limit]
+        parent_ids = sorted({doc.parent_id for doc in self.document_list})
+        # filter by offset and limit
+        filtered_parent_ids = parent_ids[offset : offset + limit]
+        # get the documents of filtered parent ids
+        docs = DocumentArray(
+            [doc for doc in self.document_list if doc.parent_id in filtered_parent_ids]
+        )
         return docs
 
     @staticmethod
+    def has_text(doc):
+        # TODO: pop is an unwanted side effect cleaning up the docs should be done somewhere else
+        text_in_doc = doc.tags.pop(TAG_OCR_DETECTOR_TEXT_IN_DOC, '')
+        text_in_doc = text_in_doc.split(' ')
+        text_in_doc = filter(lambda s: len(s) > 1 and s.isalnum(), text_in_doc)
+        return len(list(text_in_doc)) > 0
+
+    @staticmethod
     def set_doc_has_text_tag(docs: DocumentArray):
-        # update the tags of the documents to include the detected text
+        """
+        Mark documents with the tag TAG_INDEXER_DOC_HAS_TEXT.
+        If two documents have the same parent, then they are all marked as having text.
+        """
+        parent_ids = {d.parent_id for d in docs if NOWBaseIndexer.has_text(d)}
         for doc in docs:
-            text_in_doc = doc.tags.pop(TAG_OCR_DETECTOR_TEXT_IN_DOC, '')
-            text_in_doc = text_in_doc.split(' ')
-            text_in_doc = filter(lambda s: len(s) > 1 and s.isalnum(), text_in_doc)
-            doc.tags[TAG_INDEXER_DOC_HAS_TEXT] = len(list(text_in_doc)) > 0
+            doc.tags[TAG_INDEXER_DOC_HAS_TEXT] = doc.parent_id in parent_ids
 
     @secure_request(on='/index', level=SecurityLevel.USER)
     def index_endpoint(
@@ -145,8 +151,8 @@ class NOWBaseIndexer(Executor):
         :param docs: the Documents to index
         :param parameters: dictionary with options for indexing
         """
-        traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
-        flat_docs = docs[traversal_paths]
+        flat_docs = docs[ACCESS_PATHS]
+        # TODO please remove this check for empty docs
         if len(flat_docs) == 0:
             return
         flat_docs = DocumentArray(
@@ -183,13 +189,11 @@ class NOWBaseIndexer(Executor):
         limit = int(parameters.get('limit', self.limit))
         search_filter_raw = parameters.get('filter', {})
         search_filter_orig = deepcopy(search_filter_raw)
-        traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
-        docs = docs[traversal_paths][:1]  # only search on the first document for now
-
-        if traversal_paths == '@c,cc':
-            retrieval_limit = limit * 3
-        else:
-            retrieval_limit = limit
+        docs = docs[ACCESS_PATHS][:1]  # only search on the first document for now
+        # TODO remove this check for empty docs and make sure everything else works
+        if len(docs) == 0:
+            return
+        retrieval_limit = limit * 3
 
         # if OCR detector was used to check if documents contain text in indexed image modality adjust retrieval step
         if self.columns and TAG_INDEXER_DOC_HAS_TEXT in [
@@ -208,7 +212,6 @@ class NOWBaseIndexer(Executor):
             docs_with_matches_no_text = self.create_matches(
                 docs,
                 parameters,
-                traversal_paths,
                 limit,
                 retrieval_limit,
                 search_filter,
@@ -219,7 +222,6 @@ class NOWBaseIndexer(Executor):
             docs_with_matches_filter_title = self.create_matches(
                 docs,
                 parameters,
-                traversal_paths,
                 limit,
                 retrieval_limit,
                 search_filter,
@@ -237,7 +239,6 @@ class NOWBaseIndexer(Executor):
                 docs_with_additonal_matches = self.create_matches(
                     docs,
                     parameters,
-                    traversal_paths,
                     limit,
                     retrieval_limit,
                     search_filter,
@@ -248,72 +249,29 @@ class NOWBaseIndexer(Executor):
         else:
             search_filter = self.convert_filter_syntax(search_filter_orig)
             docs_with_matches = self.create_matches(
-                docs, parameters, traversal_paths, limit, retrieval_limit, search_filter
+                docs, parameters, limit, retrieval_limit, search_filter
             )
-
         docs_with_matches[0].matches = (
             self.get_curated_matches(docs[0].text) + docs_with_matches[0].matches
-        )[:limit]
+        )
+        self.remove_duplicates(
+            docs_with_matches
+        )  # TODO combine with append_matches_if_not_exists - duplicate code
+        docs_with_matches[0].matches = docs_with_matches[0].matches[:limit]
         self.clean_response(docs_with_matches)
         return docs_with_matches
 
-    @secure_request(on='/curate', level=SecurityLevel.USER)
-    def curate(self, parameters: dict = {}, **kwargs):
-        """
-        This endpoint is only relevant for text queries.
-        It defines the top results for each query.
-        `parameters` should have the following format:
-        {
-            'query_to_filter': {
-                'query1': [
-                    {'uri': {'$eq': 'uri1'}},
-                    {'tags__internal_id': {'$eq': 'id1'}},
-                ],
-                'query2': [
-                    {'uri': {'$eq': 'uri2'}},
-                    {'tags__color': {'$eq': 'red'}},
-                ],
-            }
-        }
-        """
-        self.query_to_filter = parameters['query_to_filter']
-        with open(self.query_to_filter_path, 'w') as f:
-            json.dump(self.query_to_filter, f)
-
-    def get_curated_matches(self, text_query: str = None) -> DocumentArray:
-        """
-        Get curated matches for a given text query.
-        """
-        curated_matches = DocumentArray([])
-        if text_query:
-            for doc_filter in self.query_to_filter[text_query]:
-                curated_matches.extend(self.document_list.find(doc_filter))
-        return curated_matches
-
-    def create_matches(
-        self, docs, parameters, traversal_paths, limit, retrieval_limit, search_filter
-    ):
-        docs_copy = deepcopy(docs)
-        self.search(docs_copy, parameters, retrieval_limit, search_filter)
-        if traversal_paths == '@c,cc':
-            merge_matches_sum(docs_copy, limit)
-        return docs_copy
-
-    def append_matches_if_not_exists(
-        self, docs_with_matches, docs_with_matches_to_add, limit
-    ):
-        # get all parent_ids of the matches of the docs_with_matches
+    def remove_duplicates(self, docs_with_matches):
+        """Remove duplicate matches from the list of documents."""
         parent_ids = set()
-        for doc, doc_to_add in zip(docs_with_matches, docs_with_matches_to_add):
-            for match in doc.matches:
+        # curated matches can lead to duplicates since the document_list is on frame/sentence level
+        # TODO simplify this logic by letting the document_list be on root level
+        unique_curated_matches = DocumentArray([])
+        for match in docs_with_matches[0].matches:
+            if match.parent_id not in parent_ids:
                 parent_ids.add(match.parent_id)
-
-            # append matches to docs_with_matches if they are not already in the matches
-            for match in doc_to_add.matches:
-                if match.parent_id not in parent_ids:
-                    if len(doc.matches) >= limit:
-                        break
-                    doc.matches.append(match)
+                unique_curated_matches.append(match)
+        docs_with_matches[0].matches = unique_curated_matches
 
     def merge_matches_by_score_after_half(
         self,
@@ -344,6 +302,73 @@ class NOWBaseIndexer(Executor):
                     if len(doc.matches) >= limit:
                         break
                     doc.matches.append(_match)
+
+    @secure_request(on='/curate', level=SecurityLevel.USER)
+    def curate(self, parameters: dict = {}, **kwargs):
+        """
+        This endpoint is only relevant for text queries.
+        It defines the top results for each query.
+        `parameters` should have the following format:
+        {
+            'query_to_filter': {
+                'query1': [
+                    {'uri': {'$eq': 'uri1'}},
+                    {'tags__internal_id': {'$eq': 'id1'}},
+                ],
+                'query2': [
+                    {'uri': {'$eq': 'uri2'}},
+                    {'tags__color': {'$eq': 'red'}},
+                ],
+            }
+        }
+        """
+
+        query_to_filter = parameters['query_to_filter']
+        for query, doc_filters in query_to_filter.items():
+            # a query can have multiple filters
+            # for each filter, we get the curated matches
+            # all matches are flattened into one list
+            curated_matches = DocumentArray(
+                itertools.chain(
+                    *[self.document_list.find(doc_filter) for doc_filter in doc_filters]
+                )
+            )
+            self.query_to_curated_matches[query] = curated_matches.to_list()
+
+        with open(self.query_to_curated_matches_path, 'w') as f:
+            json.dump(self.query_to_curated_matches, f)
+
+    def get_curated_matches(self, text_query: str = None) -> DocumentArray:
+        """
+        Get curated matches for a given text query.
+        """
+        curated_matches = DocumentArray([])
+        if text_query:
+            matches = self.query_to_curated_matches.get(text_query, [])
+            curated_matches.extend(DocumentArray.from_list(matches))
+        return curated_matches
+
+    def create_matches(self, docs, parameters, limit, retrieval_limit, search_filter):
+        docs_copy = deepcopy(docs)
+        self.search(docs_copy, parameters, retrieval_limit, search_filter)
+        merge_matches_sum(docs_copy, limit)
+        return docs_copy
+
+    def append_matches_if_not_exists(
+        self, docs_with_matches, docs_with_matches_to_add, limit
+    ):
+        # get all parent_ids of the matches of the docs_with_matches
+        parent_ids = set()
+        for doc, doc_to_add in zip(docs_with_matches, docs_with_matches_to_add):
+            for match in doc.matches:
+                parent_ids.add(match.parent_id)
+
+            # append matches to docs_with_matches if they are not already in the matches
+            for match in doc_to_add.matches:
+                if match.parent_id not in parent_ids:
+                    if len(doc.matches) >= limit:
+                        break
+                    doc.matches.append(match)
 
     @staticmethod
     def maybe_drop_blob_tensor(docs: DocumentArray):
@@ -391,11 +416,18 @@ class NOWBaseIndexer(Executor):
         if columns:
             corrected_list = []
             for i in range(0, len(columns), 2):
+                # This conversion is needed for MMDocs
+                if columns[i + 1] in ['text', 'stringValue']:
+                    columns[i + 1] = 'str'
+                elif columns[i + 1] in ['numberValue']:
+                    columns[i + 1] = 'float'
+                elif columns[i + 1] in ['boolValue']:
+                    columns[i + 1] = 'bool'
                 corrected_list.append((columns[i], columns[i + 1]))
             columns = corrected_list
             for n, t in columns:
                 assert (
-                    t in valid_input_columns
+                    t.lower() in valid_input_columns
                 ), f'column of type={t} is not supported. Supported types are {valid_input_columns}'
         return columns
 

@@ -16,8 +16,8 @@ jcloud:
 executors:
   - name: preprocessor
     uses: ${{ ENV.PREPROCESSOR_NAME }}
+    replicas: ${{ ENV.PREPROCESSOR_REPLICAS }}
     uses_with:
-      app: ${{ ENV.APP }}
       admin_emails: ${{ ENV.ADMIN_EMAILS }}
       user_emails: ${{ ENV.USER_EMAILS }}
     jcloud:
@@ -37,7 +37,6 @@ executors:
       JINA_LOG_LEVEL: DEBUG
   - name: indexer
     uses: ${{ ENV.INDEXER_NAME }}
-    disable_reduce: true
     uses_with:
       dim: ${{ ENV.N_DIM }}
       columns: ${{ ENV.COLUMNS }}

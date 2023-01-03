@@ -29,7 +29,7 @@ def benchmark_deployment(jcloud_id, api_key):
 
     client = Client(
         jcloud_id=jcloud_id,
-        app=Apps.TEXT_TO_VIDEO,
+        app=Apps.SEARCH_APP,
         api_key=api_key,
     )
 

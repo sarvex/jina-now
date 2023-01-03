@@ -5,12 +5,10 @@ from docarray import Document, DocumentArray, dataclass
 from docarray.typing import Image, Text
 from jina import Flow
 
-from now.app.text_to_image.app import TextToImage
-from now.app.text_to_text.app import TextToText
-from now.app.text_to_video.app import TextToVideo
-from now.constants import DatasetTypes
+from now.app.base.transform_docarray import transform_uni_modal_data
+from now.app.search_app import SearchApp
+from now.constants import ACCESS_PATHS, EXTERNAL_CLIP_HOST, DatasetTypes
 from now.data_loading.data_loading import load_data
-from now.data_loading.transform_docarray import transform_uni_modal_data
 from now.demo_data import DemoDatasetNames
 from now.executor.indexer.in_memory import InMemoryIndexer
 from now.executor.preprocessor import NOWPreprocessor
@@ -34,12 +32,12 @@ def multi_modal_data(resources_folder_path):
 
     p1 = Page(
         main_text='main text 1',
-        image=os.path.join(resources_folder_path, 'image', '5109112832.jpg'),
+        image=os.path.join(resources_folder_path, 'image', 'a.jpg'),
         color='red',
     )
     p2 = Page(
         main_text='not main text',
-        image=os.path.join(resources_folder_path, 'image', '6785325056.jpg'),
+        image=os.path.join(resources_folder_path, 'image', 'b.jpg'),
         color='blue',
     )
     pages = [p1, p2]
@@ -47,32 +45,49 @@ def multi_modal_data(resources_folder_path):
     return DocumentArray([Document(page) for page in pages])
 
 
-@pytest.mark.parametrize('input_type', ['demo_dataset', 'single_modal', 'multi_modal'])
-def test_transform_inside_flow(input_type, single_modal_data, multi_modal_data):
+@pytest.mark.parametrize(
+    'input_type, num_expected_matches',
+    [['demo_dataset', 4], ['single_modal', 2], ['multi_modal', 6]],
+)
+def test_transform_inside_flow(
+    input_type, num_expected_matches, single_modal_data, multi_modal_data, tmpdir
+):
+    metas = {'workspace': str(tmpdir)}
     user_input = UserInput()
     if input_type == 'demo_dataset':
-        app_instance = TextToVideo()
-        user_input.search_fields = []
+        app_instance = SearchApp()
+        user_input.index_fields = []
         user_input.dataset_type = DatasetTypes.DEMO
         user_input.dataset_name = DemoDatasetNames.TUMBLR_GIFS_10K
-        data = load_data(app_instance, user_input)[:10]  # includes 2 videos
+        data = load_data(user_input)[:2]
+        user_input.index_fields = ['description', 'video']
+        user_input.files_to_dataclass_fields = {
+            'description': 'description',
+            'video': 'video',
+        }
     elif input_type == 'single_modal':
-        app_instance = TextToText()
+        app_instance = SearchApp()
         data = single_modal_data
     else:
-        app_instance = TextToImage()
+        app_instance = SearchApp()
         data = multi_modal_data
-        user_input.search_fields = ['main_text', 'image']
-
+        user_input.index_fields = ['main_text', 'image']
+        user_input.files_to_dataclass_fields = {
+            'main_text': 'main_text',
+            'image': 'image',
+        }
     query = Document(text='query_text')
-    num_expected_matches = 2
 
     f = (
         Flow()
-        .add(uses=NOWPreprocessor, uses_with={'app': app_instance.app_name})
+        .add(
+            uses=NOWPreprocessor,
+            uses_with={'app': app_instance.app_name},
+            uses_metas=metas,
+        )
         .add(
             uses='jinahub+docker://CLIPOnnxEncoder/latest-gpu',
-            host='encoderclip-bh-5f4efaff13.wolf.jina.ai',
+            host=EXTERNAL_CLIP_HOST,
             port=443,
             tls=True,
             external=True,
@@ -91,6 +106,7 @@ def test_transform_inside_flow(input_type, single_modal_data, multi_modal_data):
                 ],
                 'dim': 512,
             },
+            uses_metas=metas,
         )
     )
     with f:
@@ -99,8 +115,7 @@ def test_transform_inside_flow(input_type, single_modal_data, multi_modal_data):
             data,
             parameters={
                 'user_input': user_input.__dict__,
-                'access_paths': app_instance.get_index_query_access_paths(),
-                'traversal_paths': app_instance.get_index_query_access_paths(),
+                'access_paths': ACCESS_PATHS,
             },
         )
 
@@ -109,13 +124,12 @@ def test_transform_inside_flow(input_type, single_modal_data, multi_modal_data):
             query,
             parameters={
                 'user_input': user_input.__dict__,
-                'access_paths': app_instance.get_index_query_access_paths(),
-                'traversal_paths': app_instance.get_index_query_access_paths(),
+                'access_paths': ACCESS_PATHS,
             },
             return_results=True,
         )
-    assert query_res[0].matches
     assert len(query_res[0].matches) == num_expected_matches
+    assert not query_res[0].matches[0].uri.startswith('data:')
 
 
 def test_uni_to_multi_modal(resources_folder_path, single_modal_data):

@@ -5,29 +5,23 @@ from now.constants import EXECUTOR_PREFIX
 
 def handle_test_mode(config):
     if os.environ.get('NOW_TESTING', False):
-        from now.executor.autocomplete import NOWAutoCompleteExecutor
+        from now.executor.autocomplete import NOWAutoCompleteExecutor2
         from now.executor.indexer.in_memory import InMemoryIndexer
         from now.executor.preprocessor import NOWPreprocessor
 
         # this is a hack to make sure the import is not removed
-        if NOWPreprocessor and NOWAutoCompleteExecutor and InMemoryIndexer:
+        if NOWPreprocessor and NOWAutoCompleteExecutor2 and InMemoryIndexer:
             pass
 
         for k, v in config.items():
-            # if 'Encoder' in str(v):
-            #     config[k] = config[k].replace('+docker', '')
-            if 'Indexer' in str(v):
+            if not (isinstance(v, str) and v.startswith(EXECUTOR_PREFIX)):
+                continue
+            # replace only those executor config values which you want to locally test
+            if k == 'INDEXER_NAME':
                 config[k] = 'InMemoryIndexer'
-            if (
-                isinstance(v, str)
-                and 'jinahub' in v
-                and (
-                    # TODO: local testing on Qdrant needs to be disabled. At the moment, Qdrant does not start outside of docker
-                    # TODO: same for elastic
-                    not 'NOWQdrantIndexer' in v
-                    and not 'ElasticIndexer' in v
-                    and not 'CLIPOnnxEncoder' in v
-                    and not 'NOWOCRDetector9' in v
-                )
-            ):
-                config[k] = config[k].replace(EXECUTOR_PREFIX, '').split('/')[0]
+            elif k == 'AUTOCOMPLETE_EXECUTOR_NAME':
+                config[k] = 'NOWAutoCompleteExecutor2'
+            elif k == 'PREPROCESSOR_NAME':
+                config[k] = 'NOWPreprocessor'
+            else:
+                continue

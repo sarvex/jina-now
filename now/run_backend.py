@@ -1,4 +1,3 @@
-import os
 import random
 import sys
 import uuid
@@ -9,11 +8,13 @@ from typing import Dict, Optional
 import requests
 from docarray import DocumentArray
 from jina.clients import Client
+from tqdm import tqdm
 
 from now.admin.update_api_keys import update_api_keys
 from now.app.base.app import JinaNOWApp
 from now.common.testing import handle_test_mode
-from now.constants import DatasetTypes
+from now.constants import ACCESS_PATHS, DatasetTypes
+from now.data_loading.create_dataclass import create_dataclass
 from now.data_loading.data_loading import load_data
 from now.deployment.flow import deploy_flow
 from now.log import time_profiler
@@ -37,7 +38,15 @@ def run(
     :param ns:
     :return:
     """
-    dataset = load_data(app_instance, user_input)
+
+    if user_input.dataset_type in [DatasetTypes.DEMO, DatasetTypes.DOCARRAY]:
+        user_input.files_to_dataclass_fields = {
+            field: field for field in user_input.index_fields
+        }
+        data_class = None
+    else:
+        data_class = create_dataclass(user_input)
+    dataset = load_data(user_input, data_class)
 
     env_dict = app_instance.setup(
         dataset=dataset, user_input=user_input, kubectl_path=kubectl_path
@@ -58,16 +67,17 @@ def run(
         kubectl_path=kubectl_path,
     )
 
-    if (
-        user_input.deployment_type == 'remote'
-        and user_input.dataset_type == DatasetTypes.S3_BUCKET
-        and 'NOW_CI_RUN' not in os.environ
-    ):
-        # schedule the trigger which will syn the bucket with the indexer once a day
-        trigger_scheduler(user_input, gateway_host_internal)
-    else:
-        # index the data right away
-        index_docs(user_input, dataset, client)
+    # TODO at the moment the scheduler is not working. So we index the data right away
+    # if (
+    #     user_input.deployment_type == 'remote'
+    #     and user_input.dataset_type == DatasetTypes.S3_BUCKET
+    #     and 'NOW_CI_RUN' not in os.environ
+    # ):
+    #     # schedule the trigger which will syn the bucket with the indexer once a day
+    #     trigger_scheduler(user_input, gateway_host_internal)
+    # else:
+    # index the data right away
+    index_docs(user_input, dataset, client)
 
     return (
         gateway_host,
@@ -119,11 +129,10 @@ def index_docs(user_input, dataset, client):
     """
     Index the data right away
     """
-    print(f"▶ indexing {len(dataset)} documents")
+    print(f"▶ indexing {len(dataset)} documents in batches")
     params = {
         'user_input': user_input.__dict__,
-        'traversal_paths': user_input.app_instance.get_index_query_access_paths(),
-        'access_paths': user_input.app_instance.get_index_query_access_paths(),
+        'access_paths': ACCESS_PATHS,
     }
     if user_input.secured:
         params['jwt'] = user_input.jwt
@@ -150,30 +159,37 @@ def call_flow(
 
     # Pop app_instance from parameters to be passed to the flow
     parameters['user_input'].pop('app_instance', None)
+    parameters['user_input'].pop('index_fields_modalities', None)
+    parameters['user_input'].pop('filter_fields_modalities', None)
     task_config = parameters['user_input'].pop('task_config', None)
     if task_config:
         parameters['user_input']['indexer_scope'] = task_config.indexer_scope
-    # double check that flow is up and running - should be done by wolf/core in the future
-    while True:
-        try:
-            client.post(on=endpoint, inputs=DocumentArray(), parameters=parameters)
-            break
-        except Exception as e:
-            if 'NOW_CI_RUN' in os.environ:
-                import traceback
 
-                print(e)
-                print(traceback.format_exc())
-            sleep(1)
-    response = client.post(
-        on=endpoint,
-        request_size=request_size,
-        inputs=dataset,
-        show_progress=True,
-        parameters=parameters,
-        return_results=return_results,
-        continue_on_error=True,
-    )
+    # this is a hack for the current core/ wolf issue
+    # since we get errors while indexing, we retry
+    # TODO: remove this once the issue is fixed
+    batches = list(dataset.batch(request_size * 100))
+    for current_batch_nr, batch in enumerate(tqdm(batches)):
+        for try_nr in range(5):
+            try:
+                response = client.post(
+                    on=endpoint,
+                    request_size=request_size,
+                    inputs=batch,
+                    show_progress=True,
+                    parameters=parameters,
+                    return_results=return_results,
+                    continue_on_error=True,
+                )
+                break
+            except Exception as e:
+                if try_nr == 4:
+                    # if we tried 5 times and still failed, raise the error
+                    raise e
+                print(f'batch {current_batch_nr}, try {try_nr}', e)
+                sleep(5 * (try_nr + 1))  # sleep for 5, 10, 15, 20 seconds
+                continue
+
     if return_results and response:
         return DocumentArray.from_json(response.to_json())
 

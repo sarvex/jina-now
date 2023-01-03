@@ -18,6 +18,7 @@ from now.log import time_profiler, yaspin_extended
 from now.utils import sigmap, write_env_file, write_flow_file
 
 cur_dir = pathlib.Path(__file__).parent.resolve()
+MAX_WAIT_TIME = 1800
 
 
 def batch(data_list, n=1):
@@ -45,22 +46,29 @@ def wait_for_lb(lb_name, ns):
     return ip
 
 
-def wait_for_all_pods_in_ns(f, ns, max_wait=1800):
+def check_pods_health(ns):
     config.load_kube_config()
     v1 = k8s_client.CoreV1Api()
-    for i in range(max_wait):
-        pods = v1.list_namespaced_pod(ns).items
-        not_ready = [
-            'x'
-            for pod in pods
-            if not pod.status
-            or not pod.status.container_statuses
-            or not len(pod.status.container_statuses) == 1
-            or not pod.status.container_statuses[0].ready
-        ]
-        if len(not_ready) == 0 and f.num_deployments == len(pods):
-            return
+    pods = v1.list_namespaced_pod(ns).items
+
+    for pod in pods:
+        try:
+            message = pod.status.container_statuses[0].state.waiting.message
+        except:
+            message = None
+
+        if message and 'Error' in message:
+            raise Exception(pod.metadata.name + " " + message)
+
+
+def wait_for_flow(client, ns):
+    wait_time = 0
+    while not client.is_flow_ready() and wait_time <= MAX_WAIT_TIME:
+        check_pods_health(ns)
+        wait_time += 1
         sleep(1)
+    if not client.is_flow_ready():
+        raise Exception('Flow execution timed out.')
 
 
 def deploy_k8s(f, ns, tmpdir, kubectl_path):
@@ -95,11 +103,11 @@ def deploy_k8s(f, ns, tmpdir, kubectl_path):
             gateway_host = wait_for_lb('gateway-lb', ns)
             gateway_port = 8080
         cmd(f'{kubectl_path} apply -R -f {k8_path}')
-        # wait for flow to come up
-        wait_for_all_pods_in_ns(f, ns)
+
+        client = Client(host=gateway_host, port=gateway_port)
+        wait_for_flow(client, ns)
         spinner.ok("🚀")
-    # work around - first request hangs
-    sleep(3)
+
     return gateway_host, gateway_port, gateway_host_internal, gateway_port_internal
 
 
@@ -139,12 +147,12 @@ def deploy_flow(
             load_dotenv(env_file, override=True)
 
             f = Flow.load_config(flow_yaml)
-            f.gateway_args.timetout_send = -1
+            f.gateway_args.timeout_send = -1
             start_flow_in_process(f)
 
             host = 'localhost'
             client = Client(host=host, port=8080)
-
+            wait_for_flow(client, DEFAULT_FLOW_NAME)
             # host & port
             gateway_host = 'remote'
             gateway_port = 8080

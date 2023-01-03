@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       debug_enabled:
-        description: 'Run the tests with tmate debugging enabled'
+        description: "Run the tests with tmate debugging enabled"
         required: false
         default: false
 
@@ -84,105 +84,76 @@ jobs:
         env:
           CHANGED_FILES: ${{ steps.file_changes.outputs.added_modified }}
 
-  update-preprocessor-if-required:
+  update-preprocessor:
     runs-on: ubuntu-latest
-    needs: [commit-lint, lint-flake-8, check-black]
+    needs: [lint-flake-8, check-black, commit-lint]
     steps:
       - uses: actions/checkout@v2
-      - name: Check if preprocessing has changed
-        uses: dorny/paths-filter@v2
-        id: check_has_preprocessing_changed
+      - uses: ./.github/actions/push-executor
         with:
-          filters: |
-            has_preprocessing_changed:
-            - 'now/app/**'
-            - 'now/common/preprocess.py'
-            - 'now/executor/preprocessor/**'
-            - 'now/executor/abstract/auth/**'
-      - name: Get preprocessor tag
-        if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
-        run: |
-          FILE='now/constants.py'
-          NOW_PREPROCESSOR_VERSION=$(sed -n '/NOW_PREPROCESSOR_VERSION =/p' $FILE | cut -d \' -f2)
-          echo "NOW_PREPROCESSOR_VERSION=$NOW_PREPROCESSOR_VERSION" >> $GITHUB_ENV
-      - name: Set up Python 3.7
-        if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.7
-      - name: Pip install jina
-        if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
-        run: pip install "jina[perf]"
-      - name: Check that tag isn't used already for preprocessor
-        if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
-        env:
-          NOW_PREPROCESSOR_VERSION: ${{ env.NOW_PREPROCESSOR_VERSION }}
-        run: |
-          if jina hub pull jinahub+docker://vlxgoxlv/$NOW_PREPROCESSOR_VERSION; then
-            echo "NOW preprocessor version is used already. Please update the tag"
-            exit 1
-          else
-            echo "NOW preprocessor version isn't used already, continue to build..."
-          fi
-      - name: hack force push
-        if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
-        run: echo ${{ github.event.pull_request.head.sha }} > now/executor/preprocessor/force_push.txt
-      - name: Build and push executor
-        if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
-        env:
-          NOW_PREPROCESSOR_VERSION: ${{ env.NOW_PREPROCESSOR_VERSION }}
-        run: JINA_AUTH_TOKEN=${{ secrets.NOW_PREPROCESSOR_JCLOUD_TOKEN }} jina hub push --verbose --force-update NOWPreprocessor now/executor/preprocessor/. -t latest --protected-tag $NOW_PREPROCESSOR_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
+          executor_version_name: NOW_PREPROCESSOR_VERSION
+          executor_name: NOWPreprocessor
+          executor_path: now/executor/preprocessor
+          # for some reason, the first filter condition needs a different indentation
+          has_changed_filter: |
+            - now/app/base/**
+              - now/executor/preprocessor/**
+          executor_id: 2hgojz3z
+          jina_auth_token: ${{ secrets.NOW_PREPROCESSOR_JCLOUD_TOKEN }}
 
-  update-qdrant-executor-if-required:
+  update-qdrant:
     runs-on: ubuntu-latest
-    needs: [commit-lint, lint-flake-8, check-black]
+    needs: [lint-flake-8, check-black, commit-lint]
     steps:
       - uses: actions/checkout@v2
-      - name: Check if executor has changed
-        uses: dorny/paths-filter@v2
-        id: check_has_executor_changed
+      - uses: ./.github/actions/push-executor
         with:
-          filters: |
-            has_changed:
-            - 'now/executor/abstract/**'
-            - 'now/executor/indexer/qdrant/**'
-      - name: Get executor tag
-        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
-        run: |
-          FILE='now/constants.py'
-          NOW_QDRANT_INDEXER_VERSION=$(sed -n '/NOW_QDRANT_INDEXER_VERSION =/p' $FILE | cut -d \' -f2)
-          echo "NOW_QDRANT_INDEXER_VERSION=$NOW_QDRANT_INDEXER_VERSION" >> $GITHUB_ENV
-      - name: Set up Python 3.7
-        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.7
-      - name: Pip install jina
-        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
-        run: pip install "jina[perf]"
-      - name: Check that tag isn't used already for executor
-        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
-        env:
-          NOW_QDRANT_INDEXER_VERSION: ${{ env.NOW_QDRANT_INDEXER_VERSION }}
-        run: |
-          if jina hub pull jinahub+docker://2b1opoje/$NOW_QDRANT_INDEXER_VERSION; then
-            echo "NOW Qdrant Indexer version is used already. Please update the tag"
-            exit 1
-          else
-            echo "NOW Qdrant Indexer version isn't used already, continue to build..."
-          fi
-      - name: hack force push
-        if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
-        run: echo ${{ github.event.pull_request.head.sha }} > now/executor/indexer/qdrant/force_push.txt
-      - name: Build and push executor
-        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
-        env:
-          NOW_QDRANT_INDEXER_VERSION: ${{ env.NOW_QDRANT_INDEXER_VERSION }}
-        run: jina hub push --no-cache --verbose --force-update NOWQdrantIndexer15 now/executor/indexer/qdrant --secret ${{ secrets.NOW_QDRANT_EXECUTOR_SECRET }} -t latest --protected-tag $NOW_QDRANT_INDEXER_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
+          executor_version_name: NOW_QDRANT_INDEXER_VERSION
+          executor_name: NOWQdrantIndexer16
+          executor_path: now/executor/indexer/qdrant
+          # for some reason, the first filter condition needs a different indentation
+          has_changed_filter: |
+            - now/executor/abstract/**
+              - now/executor/indexer/qdrant/**
+          executor_id: 11yxatzh
+          jina_auth_token: ${{ secrets.NOW_STAGING_FLORIAN }}
 
-  update-bff-playground-if-required:
+  update-elastic:
     runs-on: ubuntu-latest
-    needs: [commit-lint, lint-flake-8, check-black]
+    needs: [lint-flake-8, check-black, commit-lint]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ./.github/actions/push-executor
+        with:
+          executor_version_name: NOW_ELASTIC_INDEXER_VERSION
+          executor_name: NOWElasticIndexer
+          executor_path: now/executor/indexer/elastic
+          # for some reason, the first filter condition needs a different indentation
+          has_changed_filter: |
+            - now/executor/abstract/**
+              - now/executor/indexer/elastic/**
+          executor_id: mdtuyaaj
+          jina_auth_token: ${{ secrets.NOW_STAGING_FLORIAN }}
+
+  update-autocomplete:
+    runs-on: ubuntu-latest
+    needs: [lint-flake-8, check-black, commit-lint]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ./.github/actions/push-executor
+        with:
+          executor_version_name: NOW_AUTOCOMPLETE_VERSION
+          executor_name: NOWAutoCompleteExecutor2
+          executor_path: now/executor/autocomplete
+          # for some reason, the first filter condition needs a different indentation
+          has_changed_filter: |
+            - now/executor/autocomplete/**
+          executor_id: w5w084h7
+          jina_auth_token: ${{ secrets.NOW_STAGING_FLORIAN }}
+
+  update-bff-playground:
+    runs-on: ubuntu-latest
+    needs: [lint-flake-8, check-black, commit-lint]
     steps:
       - uses: actions/checkout@v2
       - name: Check if deployment has changed
@@ -230,6 +201,10 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: replace now commit hash in Dockerfile
+        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
+        shell: bash
+        run: sed -i 's/JINA_NOW_COMMIT_SHA/${{ github.event.pull_request.head.sha }}/g' deployment/bff/Dockerfile
       - name: Build and push bff
         if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
         uses: docker/build-push-action@v3
@@ -245,108 +220,21 @@ jobs:
           push: true
           tags: jinaai/now-playground:${{ env.BFF_PLAYGROUND_TAG }}
 
-  update-elastic-executor-if-required:
-    runs-on: ubuntu-latest
-    needs: [commit-lint, lint-flake-8, check-black]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Check if executor has changed
-        uses: dorny/paths-filter@v2
-        id: check_has_executor_changed
-        with:
-          filters: |
-            has_changed:
-            - 'now/executor/abstract/auth/**'
-            - 'now/executor/indexer/elastic/**'
-      - name: Get executor tag
-        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
-        run: |
-          FILE='now/constants.py'
-          NOW_ELASTIC_INDEXER_VERSION=$(sed -n '/NOW_ELASTIC_INDEXER_VERSION =/p' $FILE | cut -d \' -f2)
-          echo "NOW_ELASTIC_INDEXER_VERSION=$NOW_ELASTIC_INDEXER_VERSION" >> $GITHUB_ENV
-      - name: Set up Python 3.7
-        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.7
-      - name: Pip install jina
-        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
-        run: pip install "jina[perf]"
-      - name: Check that tag isn't used already for executor
-        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
-        env:
-          NOW_ELASTIC_INDEXER_VERSION: ${{ env.NOW_ELASTIC_INDEXER_VERSION }}
-        run: |
-          if jina hub pull jinahub+docker://i7asjny7/$NOW_ELASTIC_INDEXER_VERSION; then
-            echo "NOW Elastic Indexer version is used already. Please update the tag"
-            exit 1
-          else
-            echo "NOW Elastic Indexer version isn't used already, continue to build..."
-          fi
-      - name: hack force push
-        if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
-        run: echo ${{ github.event.pull_request.head.sha }} > now/executor/indexer/elastic/force_push.txt
-      - name: Build and push executor
-        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
-        env:
-          NOW_ELASTIC_INDEXER_VERSION: ${{ env.NOW_ELASTIC_INDEXER_VERSION }}
-        run: jina hub push --no-cache --verbose --force-update ElasticIndexer now/executor/indexer/elastic --secret ${{ secrets.NOW_ELASTIC_EXECUTOR_SECRET }} -t latest --protected-tag $NOW_ELASTIC_INDEXER_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
-
-  update-autocomplete-executor-if-required:
-    runs-on: ubuntu-latest
-    needs: [commit-lint, lint-flake-8, check-black]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Check if executor has changed
-        uses: dorny/paths-filter@v2
-        id: check_has_executor_changed
-        with:
-          filters: |
-            has_changed:
-            - 'now/executor/abstract/auth/**'
-            - 'now/executor/autocomplete/**'
-      - name: Get executor tag
-        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
-        run: |
-          FILE='now/constants.py'
-          NOW_AUTOCOMPLETE_VERSION=$(sed -n '/NOW_AUTOCOMPLETE_VERSION =/p' $FILE | cut -d \' -f2)
-          echo "NOW_AUTOCOMPLETE_VERSION=$NOW_AUTOCOMPLETE_VERSION" >> $GITHUB_ENV
-      - name: Set up Python 3.7
-        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.7
-      - name: Pip install jina
-        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
-        run: pip install "jina[perf]"
-      - name: Check that tag isn't used already for executor
-        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
-        env:
-          NOW_AUTOCOMPLETE_VERSION: ${{ env.NOW_AUTOCOMPLETE_VERSION }}
-        run: |
-          if jina hub pull jinahub+docker://s5peqqvb/$NOW_AUTOCOMPLETE_VERSION; then
-            echo "NOW Autocomplete version is used already. Please update the tag"
-            exit 1
-          else
-            echo "NOW Autocomplete version isn't used already, continue to build..."
-          fi
-      - name: hack force push
-        if: steps.check_has_preprocessing_changed.outputs.has_preprocessing_changed == 'true'
-        run: echo ${{ github.event.pull_request.head.sha }} > now/executor/autocomplete/force_push.txt
-      - name: Build and push executor
-        if: steps.check_has_executor_changed.outputs.has_changed == 'true'
-        env:
-          NOW_AUTOCOMPLETE_VERSION: ${{ env.NOW_AUTOCOMPLETE_VERSION }}
-        run: jina hub push --no-cache --verbose --force-update NOWAutoCompleteExecutor now/executor/autocomplete --secret ${{ secrets.NOW_AUTOCOMPLETE_SECRET }} -t latest --protected-tag $NOW_AUTOCOMPLETE_VERSION --build-env JINA_NOW_COMMIT_SHA=${{ github.event.pull_request.head.sha }}
-
   core-test:
     runs-on: ubuntu-latest
-    needs: [ update-preprocessor-if-required, update-bff-playground-if-required,  update-autocomplete-executor-if-required, update-qdrant-executor-if-required, update-elastic-executor-if-required]
+    needs:
+      [
+        update-preprocessor,
+        update-qdrant,
+        update-elastic,
+        update-autocomplete,
+        update-bff-playground,
+      ]
     strategy:
       fail-fast: false
       matrix:
         python-version: [3.7]
-        group: [1, 2, 3, 4, 5, 6, 7, 8, 9]     # set to the number of end-to-end tests + 1
+        group: [1, 2, 3, 4, 5, 6, 7, 8, 9] # set to the number of end-to-end tests + 1
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
@@ -371,16 +259,17 @@ jobs:
         id: test
         run: |
           pytest --suppress-no-test-exit-code --cov=now --ignore-glob=tests/executor -v -s -m "not gpu" --splits 9 --group ${{ matrix.group }} --splitting-algorithm least_duration tests/
-        timeout-minutes: 25
+        timeout-minutes: 20
         env:
           WOLF_TOKEN: ${{ secrets.WOLF_TOKEN }}
-          S3_IMAGE_TEST_DATA_PATH: ${{ secrets.S3_IMAGE_TEST_DATA_PATH }}
+          S3_SCHEMA_FOLDER_PATH: ${{ secrets.S3_SCHEMA_FOLDER_PATH }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      - name: Setup tmate session for debugging
-        if: ${{ failure() || (github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled) }}
-        uses: mxschmitt/action-tmate@v3
-        timeout-minutes: 60
+          S3_CUSTOM_DATA_PATH: ${{ secrets.S3_CUSTOM_DATA_PATH }}
+      # - name: Setup tmate session for debugging
+      #   if: ${{ failure() || (github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled) }}
+      #   uses: mxschmitt/action-tmate@v3
+      #   timeout-minutes: 60
       - name: Upload coverage
         uses: actions/upload-artifact@v2
         with:
@@ -389,7 +278,14 @@ jobs:
 
   executor-test:
     runs-on: ubuntu-latest
-    needs: [ update-preprocessor-if-required, update-qdrant-executor-if-required, update-bff-playground-if-required, update-elastic-executor-if-required, update-autocomplete-executor-if-required]
+    needs:
+      [
+        update-preprocessor,
+        update-qdrant,
+        update-elastic,
+        update-autocomplete,
+        update-bff-playground,
+      ]
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.7
@@ -403,17 +299,17 @@ jobs:
           python -m pip install wheel
           pip install --no-cache-dir ".[full,test]"
       - name: Test executors separately
-        timeout-minutes: 10
+        timeout-minutes: 15
         run: |
           pytest --suppress-no-test-exit-code --cov=now --cov-append -v -s tests/executor/auth
           pytest --suppress-no-test-exit-code --cov=now --cov-append -v -s tests/executor/indexer/base
           pytest --suppress-no-test-exit-code --cov=now --cov-append -v -s tests/executor/indexer/elastic
           pytest --suppress-no-test-exit-code --cov=now --cov-append -v -s tests/executor/preprocessor
           pytest --suppress-no-test-exit-code --cov=now --cov-append -v -s tests/executor/autocomplete
-      - name: Setup tmate session for debugging
-        if: ${{ failure() || (github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled) }}
-        uses: mxschmitt/action-tmate@v3
-        timeout-minutes: 60
+      #      - name: Setup tmate session for debugging
+      #        if: ${{ failure() || (github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled) }}
+      #        uses: mxschmitt/action-tmate@v3
+      #        timeout-minutes: 60
       - name: Upload coverage
         uses: actions/upload-artifact@v2
         with:

@@ -12,17 +12,7 @@ from starlette.routing import Mount
 
 import deployment.bff.app.settings as api_settings
 from deployment.bff.app.decorators import api_method, timed
-from deployment.bff.app.v1.routers import (
-    admin,
-    cloud_temp_link,
-    img2img,
-    img2txt,
-    music2music,
-    text2text,
-    txt2img,
-    txt2txt_and_img,
-    txt2video,
-)
+from deployment.bff.app.v1.routers import admin, cloud_temp_link, search
 
 logging.config.dictConfig(api_settings.DEFAULT_LOGGING_CONFIG)
 logger = logging.getLogger('bff.app')
@@ -105,42 +95,10 @@ def build_app():
         cloud_temp_link.router, tags=['Temporary-Link-Cloud']
     )
 
-    # Image2Image router
-    img2img_mount = '/api/v1/image-to-image'
-    img2img_app = get_app_instance()
-    img2img_app.include_router(img2img.router, tags=['Image-To-Image'])
-
-    # Image2Text router
-    img2txt_mount = '/api/v1/image-to-text'
-    img2txt_app = get_app_instance()
-    img2txt_app.include_router(img2txt.router, tags=['Image-To-Text'])
-
-    # Text2Image router
-    txt2img_mount = '/api/v1/text-to-image'
-    txt2img_app = get_app_instance()
-    txt2img_app.include_router(txt2img.router, tags=['Text-To-Image'])
-
-    # Text2Text router
-    text2text_mount = '/api/v1/text-to-text'
-    text2text_app = get_app_instance()
-    text2text_app.include_router(text2text.router, tags=['Text-To-Text'])
-
-    # Music2Music router
-    music2music_mount = '/api/v1/music-to-music'
-    music2music_app = get_app_instance()
-    music2music_app.include_router(music2music.router, tags=['Music-To-Music'])
-
-    # Text2Video router
-    text2video_mount = '/api/v1/text-to-video'
-    text2video_app = get_app_instance()
-    text2video_app.include_router(txt2video.router, tags=['Text-To-Video'])
-
-    # Text2TextAndImage router
-    text2text_and_image_mount = '/api/v1/text-to-text-and-image'
-    text2text_and_image_app = get_app_instance()
-    text2text_and_image_app.include_router(
-        txt2txt_and_img.router, tags=['Text-To-Text-And-Image']
-    )
+    # search app router
+    search_app_mount = '/api/v1/search-app'
+    search_app_app = get_app_instance()
+    search_app_app.include_router(search.router, tags=['Search App'])
 
     # Admin router
     admin_mount = '/api/v1/admin'
@@ -151,13 +109,7 @@ def build_app():
     app = Starlette(
         routes=[
             Mount(cloud_temp_link_mount, cloud_temp_link_app),
-            Mount(img2img_mount, img2img_app),
-            Mount(img2txt_mount, img2txt_app),
-            Mount(txt2img_mount, txt2img_app),
-            Mount(text2text_mount, text2text_app),
-            Mount(music2music_mount, music2music_app),
-            Mount(text2video_mount, text2video_app),
-            Mount(text2text_and_image_mount, text2text_and_image_app),
+            Mount(search_app_mount, search_app_app),
             Mount(admin_mount, admin_app),
         ]
     )

@@ -1,24 +1,22 @@
 from __future__ import annotations, print_function, unicode_literals
 
 from docarray import DocumentArray
+from docarray.typing import Image, Text, Video
 from pydantic import BaseModel
 
 from now.constants import Modalities
-from now.data_loading.utils import fetch_da_from_url, get_dataset_url
 from now.utils import BetterEnum
 
 
 class DemoDatasetNames(BetterEnum):
     BEST_ARTWORKS = 'best-artworks'
     NFT_MONKEY = 'nft-monkey'
-    TLL = 'tll'
+    TLL = 'totally-looks-like'
     BIRD_SPECIES = 'bird-species'
     STANFORD_CARS = 'stanford-cars'
     DEEP_FASHION = 'deepfashion'
     NIH_CHEST_XRAYS = 'nih-chest-xrays'
     GEOLOCATION_GEOGUESSR = 'geolocation-geoguessr'
-    MUSIC_GENRES_ROCK = 'music-genres-mid'
-    MUSIC_GENRES_MIX = 'music-genres-mix'
     ROCK_LYRICS = 'rock-lyrics'
     POP_LYRICS = 'pop-lyrics'
     RAP_LYRICS = 'rap-lyrics'
@@ -35,12 +33,11 @@ class DemoDataset(BaseModel):
     display_modality: str
 
     def get_data(self, *args, **kwargs) -> DocumentArray:
-        url = get_dataset_url(dataset=self.name, output_modality=self.display_modality)
-        return fetch_da_from_url(url)
+        return DocumentArray.pull(self.name)
 
 
-AVAILABLE_DATASET = {
-    Modalities.IMAGE: [
+AVAILABLE_DATASETS = {
+    Image: [
         DemoDataset(
             name=DemoDatasetNames.BEST_ARTWORKS,
             display_modality=Modalities.IMAGE,
@@ -82,19 +79,7 @@ AVAILABLE_DATASET = {
             display_name='☢ chest x-rays (≈100K docs)',
         ),
     ],
-    Modalities.MUSIC: [
-        DemoDataset(
-            name=DemoDatasetNames.MUSIC_GENRES_ROCK,
-            display_modality=Modalities.MUSIC,
-            display_name='🎸 rock music (≈2K songs)',
-        ),
-        DemoDataset(
-            name=DemoDatasetNames.MUSIC_GENRES_MIX,
-            display_modality=Modalities.MUSIC,
-            display_name='🎸 multiple genres (≈2K songs)',
-        ),
-    ],
-    Modalities.TEXT: [
+    Text: [
         DemoDataset(
             name=DemoDatasetNames.ROCK_LYRICS,
             display_modality=Modalities.TEXT,
@@ -121,7 +106,7 @@ AVAILABLE_DATASET = {
             display_name='🎤 metal lyrics (200K docs)',
         ),
     ],
-    Modalities.VIDEO: [
+    Video: [
         DemoDataset(
             name=DemoDatasetNames.TUMBLR_GIFS,
             display_modality=Modalities.VIDEO,
@@ -133,21 +118,5 @@ AVAILABLE_DATASET = {
             display_name='🎦 tumblr gifs subset (10K gifs)',
         ),
     ],
-    Modalities.TEXT_AND_IMAGE: [
-        DemoDataset(
-            name=DemoDatasetNames.ES_ONLINE_SHOP_50,
-            display_modality=Modalities.TEXT_AND_IMAGE,
-            display_name='online shop data (50 products)',
-        )
-    ],
 }
-DEFAULT_EXAMPLE_HOSTED = {
-    'text_to_image': [
-        DemoDatasetNames.BEST_ARTWORKS,
-        DemoDatasetNames.DEEP_FASHION,
-    ],
-    'image_to_text': [DemoDatasetNames.RAP_LYRICS],
-    'image_to_image': [DemoDatasetNames.TLL],
-    'text_to_text': [DemoDatasetNames.ROCK_LYRICS],
-    'music_to_music': [DemoDatasetNames.MUSIC_GENRES_MIX],
-}
+DEFAULT_EXAMPLE_HOSTED = []

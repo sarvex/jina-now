@@ -1,11 +1,9 @@
 import logging
-
-import hubble
-from pytest_mock import MockerFixture
-
 import os
 
+import hubble
 import pytest
+from pytest_mock import MockerFixture
 
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__name__)
@@ -36,4 +34,3 @@ def with_hubble_login_patch(mocker: MockerFixture) -> None:
     if 'WOLF_TOKEN' not in os.environ:
         hubble.login()
         os.environ['WOLF_TOKEN'] = hubble.Auth.get_auth_token()
-    mocker.patch(target='finetuner.client.base.hubble.Auth', new=HubbleAuthPatch)

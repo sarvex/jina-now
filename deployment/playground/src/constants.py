@@ -4,8 +4,7 @@ from streamlit_webrtc import RTCConfiguration
 class Parameters:
     host: str = None
     port: str = None
-    input_modality: str = None
-    output_modality: str = None
+    index_fields: str = None  # concatenated string of fields for indexing
     data: str = None
     code: str = None
     state: str = None
@@ -17,9 +16,7 @@ RTC_CONFIGURATION = RTCConfiguration(
     {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
 )
 
-root_data_dir = (
-    'https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/'
-)
+S3_DEMO_PATH = 'https://jina-now-demo.s3.eu-central-1.amazonaws.com/'
 
 ds_set = [
     'nft-monkey',
@@ -69,6 +66,6 @@ BUTTONS = {
             """,
 }
 
-JWT_COOKIE = 'JinaNOW_Jwt'
+SSO_COOKIE = 'st'
 AVATAR_COOKIE = 'AvatarUrl'
 TOKEN_COOKIE = 'JinaNOW_Token'

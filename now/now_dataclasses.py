@@ -102,7 +102,11 @@ class UserInput(BaseModel):
     aws_region_name: Optional[str] = None
 
     # Fields
-    search_fields: Optional[List] = None
+    index_fields: Optional[List] = []
+    filter_fields: Optional[List] = []
+    index_fields_modalities: Optional[Dict] = {}
+    filter_fields_modalities: Optional[Dict] = {}
+    files_to_dataclass_fields: Optional[Dict] = {}
 
     # ES related
     task_config: Optional[Task] = None
@@ -137,7 +141,8 @@ class DialogOptions:
     is_terminal_command: StrictBool = (
         False  # set when this dialog is required as a cli param
     )
+    argparse_kwargs: Dict[str, Any] = dataclasses.field(default_factory=dict)
     description: str = None  # Description to show on terminal when used as a cli param
-    depends_on: Optional['DialogOptions'] = None
+    depends_on: Optional['DialogOptions', StrictBool] = None
     conditional_check: Callable[[Any], bool] = None
     post_func: Callable[[Any], None] = None

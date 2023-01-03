@@ -88,10 +88,14 @@ def set_start_parser(sp):
     # Add common app options
     for option in options.base_options:
         if option.is_terminal_command:
+            _kwargs = {
+                'help': option.description,
+                'type': str,
+            }
+            _kwargs.update(option.argparse_kwargs)
             parser.add_argument(
                 f'--{option.name}',
-                help=option.description,
-                type=str,
+                **_kwargs,
             )
 
     # Add app sub-command and its options

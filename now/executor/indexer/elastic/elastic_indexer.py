@@ -1,31 +1,49 @@
+import subprocess
 import traceback
+from collections import namedtuple
+from time import sleep
 from typing import Any, Dict, List, Mapping, Optional, Union
 
-import numpy as np
 from docarray import Document, DocumentArray
-from docarray.score import NamedScore
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 
-from now.constants import ModelDimensions
-from now.executor.abstract.auth import (
-    SecurityLevel,
-    get_auth_executor_class,
-    secure_request,
+from now.executor.abstract.auth import SecurityLevel, secure_request
+from now.executor.abstract.base_indexer import NOWBaseIndexer as Executor
+from now.executor.indexer.elastic.es_converter import (
+    convert_doc_map_to_es,
+    convert_es_results_to_matches,
+    convert_es_to_da,
+)
+from now.executor.indexer.elastic.es_preprocessing import merge_subdocuments
+from now.executor.indexer.elastic.es_query_building import (
+    SemanticScore,
+    build_es_queries,
+    generate_semantic_scores,
+    process_filter,
 )
 
-metrics_mapping = {
-    'cosine': 'cosineSimilarity',
-    'l2_norm': 'l2norm',
-}
-
-Executor = get_auth_executor_class()
+FieldEmbedding = namedtuple(
+    'FieldEmbedding',
+    ['encoder', 'embedding_size', 'fields'],
+)
 
 
-class ElasticIndexer(Executor):
-    def __init__(
+class NOWElasticIndexer(Executor):
+    """
+    NOWElasticIndexer indexes Documents into an Elasticsearch instance. To do this,
+    it uses helper functions from es_converter, converting documents to and from the accepted Elasticsearch
+    format. It also uses the semantic scores to combine the scores of different fields/encoders,
+    allowing multi-modal documents to be indexed and searched with multi-modal queries.
+    """
+
+    # override
+
+    def construct(
         self,
-        dims: Union[List[int], int],
+        document_mappings: List[List],  # cannot take FieldEmbedding (not serializable)
+        default_semantic_scores: Optional[List[SemanticScore]] = None,
+        es_mapping: Dict = None,
         hosts: Union[
             str, List[Union[str, Mapping[str, Union[str, int]]]], None
         ] = 'https://elastic:elastic@localhost:9200',
@@ -33,117 +51,125 @@ class ElasticIndexer(Executor):
         metric: str = 'cosine',
         index_name: str = 'now-index',
         traversal_paths: str = '@r',
+        limit: int = 20,
         **kwargs,
     ):
         """
-        Initializer function for the ElasticIndexer.
+        Initialize/construct function for the NOWElasticIndexer.
 
+        :param default_semantic_scores: list of SemanticScore tuples that define how
+            to combine the scores of different fields and encoders.
+        :param document_mappings: list of FieldEmbedding tuples that define which encoder
+            encodes which fields, and the embedding size of the encoder.
         :param hosts: host configuration of the Elasticsearch node or cluster
         :param es_config: Elasticsearch cluster configuration object
         :param metric: The distance metric used for the vector index and vector search
-        :param dims: The dimensions of your embeddings.
         :param index_name: ElasticSearch Index name used for the storage
         :param es_mapping: Mapping for new index. If none is specified, this will be
+            generated from `document_mappings` and `metric`.
+        :param traversal_paths: Default traversal paths on docs
             generated from metric and dims. Embeddings from chunk documents will
             always be stored in fields `embedding_x` where x iterates over the number
             of embedding fields (length of `dims`) to be created in the index.
-        :param traversal_paths: Default traversal paths on docs
                 (used for indexing, delete and update), e.g. '@r', '@c', '@r,c'.
+        :param limit: Default limit on the number of docs to be retrieved
         """
-        super().__init__(**kwargs)
-
         self.hosts = hosts
         self.metric = metric
         self.index_name = index_name
         self.traversal_paths = traversal_paths
-        self.es_config = {'verify_certs': False} if not es_config else es_config
-        self.dims = dims if isinstance(dims, list) else [dims]
-        self.es_mapping = self._generate_es_mapping(dims)
+        self.limit = limit
+        self.document_mappings = [FieldEmbedding(*dm) for dm in document_mappings]
+        self.default_semantic_scores = default_semantic_scores or None
+        self.encoder_to_fields = {
+            document_mapping.encoder: document_mapping.fields
+            for document_mapping in self.document_mappings
+        }
+        self.es_config = es_config or {'verify_certs': False}
+        self.es_mapping = es_mapping or self.generate_es_mapping(
+            self.document_mappings, self.metric
+        )
+        self.setup_elastic_server()
         self.es = Elasticsearch(hosts=self.hosts, **self.es_config, ssl_show_warn=False)
         if not self.es.indices.exists(index=self.index_name):
             self.es.indices.create(index=self.index_name, mappings=self.es_mapping)
+        self.query_to_curated_ids = {}
 
-    def _generate_es_mapping(self, dims: List[int]) -> Dict:
+    def setup_elastic_server(self):
+        # volume is not persisted at the moment
+        try:
+            subprocess.Popen(['/usr/local/bin/docker-entrypoint.sh'])
+            sleep(10)
+            self.logger.info('elastic server started')
+        except FileNotFoundError:
+            self.logger.info(
+                'Elastic started outside of docker, assume cluster started already.'
+            )
+
+    @staticmethod
+    def generate_es_mapping(
+        document_mappings: List[FieldEmbedding], metric: str
+    ) -> Dict:
+        """Creates Elasticsearch mapping for the defined document fields.
+
+        :param document_mappings: field descriptions of the to-be-queryable vector representations
+        :param metric: The distance metric used for the vector index and vector search
+        """
         es_mapping = {
             'properties': {
                 'id': {'type': 'keyword'},
                 'bm25_text': {'type': 'text', 'analyzer': 'standard'},
             }
         }
-        if isinstance(dims, list) and 'c' in self.traversal_paths:
-            for i, dim in enumerate(self.dims):
-                es_mapping['properties'][f'chunk_{i}'] = {
+
+        for encoder, embedding_size, fields in document_mappings:
+            for field in fields:
+                es_mapping['properties'][f'{field}-{encoder}'] = {
                     'properties': {
                         f'embedding': {
                             'type': 'dense_vector',
-                            'dims': dim,
-                            'similarity': self.metric,
+                            'dims': str(embedding_size),
+                            'similarity': metric,
                             'index': 'true',
                         }
                     }
                 }
-        elif isinstance(dims, int) and 'r' in self.traversal_paths:
-            es_mapping['properties']['embedding'] = {
-                'type': 'dense_vector',
-                'dims': dims,
-                'similarity': self.metric,
-                'index': 'true',
-            }
-        else:
-            raise ValueError(
-                f'Invalid combination of traversal_paths {self.traversal_paths} '
-                f'and dims {self.dims}'
-            )
         return es_mapping
 
     @secure_request(on='/index', level=SecurityLevel.USER)
     def index(
         self,
-        docs: DocumentArray,
-        docs_matrix: List[DocumentArray] = None,
-        parameters: dict = None,
+        docs_map: Dict[str, DocumentArray],  # encoder to docarray
+        parameters: dict = {},
         **kwargs,
     ) -> DocumentArray:
         """
         Index new `Document`s by adding them to the Elasticsearch index.
 
-        :param docs: Documents to be indexed.
+        :param docs_map: map of encoder to DocumentArray
         :param parameters: dictionary with options for indexing.
         :return: empty `DocumentArray`.
         """
-        if not docs:
-            return docs
-        if docs_matrix:
-            if len(docs_matrix) > 1:
-                docs = self._join_docs_matrix_into_chunks(
-                    docs_matrix=docs_matrix, on='index'
-                )
-            else:
-                docs = docs_matrix[0]
-        if not parameters:
-            parameters = {}
-        traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
-        es_docs = self._transform_docs_to_es(docs, traversal_paths)
-        try:
-            success, _ = bulk(self.es, es_docs)
-            self.es.indices.refresh(index=self.index_name)
-        except Exception as e:
-            print(e)
-            print(traceback.format_exc())
-            raise
+        if not docs_map:
+            return DocumentArray()
+        aggregate_embeddings(docs_map)
+        preprocessed_docs_map = merge_subdocuments(docs_map, self.encoder_to_fields)
+        es_docs = convert_doc_map_to_es(
+            preprocessed_docs_map, self.index_name, self.encoder_to_fields
+        )
+        success, _ = bulk(self.es, es_docs)
+        self.es.indices.refresh(index=self.index_name)
         if success:
-            print(
+            self.logger.info(
                 f'Inserted {success} documents into Elasticsearch index {self.index_name}'
             )
-        return (
-            DocumentArray()
-        )  # prevent sending the data back by returning an empty DocumentArray
+        self.update_tags()
+        return DocumentArray([])
 
     @secure_request(on='/search', level=SecurityLevel.USER)
     def search(
         self,
-        docs: Union[Document, DocumentArray],
-        docs_matrix: Optional[List[DocumentArray]] = None,
+        docs_map: Dict[str, DocumentArray] = None,  # encoder to docarray
         parameters: dict = {},
         **kwargs,
     ):
@@ -158,44 +184,59 @@ class ElasticIndexer(Executor):
             - operator: Binary operation between two values. Some supported operators include `['>','<','=','<=','>=']`.
             - value: value used to compare a candidate.
 
-        :param docs: query `Document`s.
+        :param docs_map: map of encoder to DocumentArray
         :param parameters: dictionary of options for searching.
             Keys accepted:
-                - 'filter' (dict): the filtering conditions on document tags
-                - 'traversal_paths' (str): traversal paths for the docs
-                - 'limit' (int): nr of matches to get per Document
+                - 'filter' (dict): The filtering conditions on document tags
+                - 'limit' (int): Number of matches to get per Document, default 100.
+                - 'get_score_breakdown' (bool): Wether to return the score breakdown, i.e. the scores of each
+                    field+encoder combination/comparison.
+                - 'apply_default_bm25' (bool): Whether to apply the default bm25 scoring. Default is False. Will
+                    be ignored if 'custom_bm25_query' is specified.
+                - 'custom_bm25_query' (dict): Custom query to use for BM25. Note: this query can only be
+                    passed if also passing `es_mapping`. Otherwise, only default bm25 scoring is enabled.
         """
-        if not docs:
-            return docs
-        if docs_matrix:
-            if len(docs_matrix) > 1:
-                docs = self._join_docs_matrix_into_chunks(
-                    docs_matrix=docs_matrix, on='search'
-                )
-            else:
-                docs = docs_matrix[0]
-        traversal_paths = parameters.get('traversal_paths', self.traversal_paths)
-        search_filter = parameters.get('filter', None)
-        limit = parameters.get('limit', 20)
-        apply_bm25 = parameters.get('apply_bm25', False)
-        for doc in docs:
-            query = self._build_es_query(
-                doc=doc,
-                apply_bm25=apply_bm25,
-                traversal_paths=traversal_paths,
-                search_filter=search_filter,
+        if not docs_map:
+            return DocumentArray()
+        aggregate_embeddings(docs_map)
+
+        # search_filter = parameters.get('filter', None)
+        limit = parameters.get('limit', self.limit)
+        get_score_breakdown = parameters.get('get_score_breakdown', False)
+        custom_bm25_query = parameters.get('custom_bm25_query', None)
+        apply_default_bm25 = parameters.get('apply_default_bm25', False)
+        semantic_scores = parameters.get('default_semantic_scores', None)
+        filter = parameters.get('filter', {})
+        if not self.default_semantic_scores:
+            self.default_semantic_scores = semantic_scores or generate_semantic_scores(
+                docs_map, self.encoder_to_fields
             )
-            try:
-                result = self.es.search(
-                    index=self.index_name,
-                    query=query,
-                    source=True,
-                    size=limit,
-                )['hits']['hits']
-                doc.matches = self._transform_es_results_to_matches(result)
-            except Exception:
-                print(traceback.format_exc())
-        return docs
+        es_queries = build_es_queries(
+            docs_map=docs_map,
+            apply_default_bm25=apply_default_bm25,
+            get_score_breakdown=get_score_breakdown,
+            semantic_scores=self.default_semantic_scores,
+            custom_bm25_query=custom_bm25_query,
+            metric=self.metric,
+            filter=filter,
+            query_to_curated_ids=self.query_to_curated_ids,
+        )
+        for doc, query in es_queries:
+            result = self.es.search(
+                index=self.index_name,
+                query=query,
+                source=True,
+                size=limit,
+            )['hits']['hits']
+            doc.matches = convert_es_results_to_matches(
+                query_doc=doc,
+                es_results=result,
+                get_score_breakdown=get_score_breakdown,
+                metric=self.metric,
+                semantic_scores=self.default_semantic_scores,
+            )
+            doc.tags.pop('embeddings')
+        return DocumentArray(list(zip(*es_queries))[0])
 
     @secure_request(on='/update', level=SecurityLevel.USER)
     def update(self, docs: DocumentArray, **kwargs) -> DocumentArray:
@@ -216,259 +257,161 @@ class ElasticIndexer(Executor):
         - offset (int): number of documents to skip
         - limit (int): number of retrieved documents
         """
-        limit = int(parameters.get('limit', 20))
+        limit = int(parameters.get('limit', self.limit))
         offset = int(parameters.get('offset', 0))
         try:
-            result = self.es.search(index=self.index_name, query={'match_all': {}})[
-                'hits'
-            ]['hits']
+            result = self.es.search(
+                index=self.index_name, size=limit, from_=offset, query={'match_all': {}}
+            )['hits']['hits']
         except Exception:
-            print(traceback.format_exc())
+            self.logger.info(traceback.format_exc())
         if result:
-            result_da = self._transform_es_to_da(result)
-            return result_da[offset : offset + limit]
+            return convert_es_to_da(result, get_score_breakdown=False)
         else:
-            return result
+            return DocumentArray()
 
     @secure_request(on='/delete', level=SecurityLevel.USER)
     def delete(self, parameters: dict = {}, **kwargs):
         """
-        Delete endpoint to delete document/documents from the index.
+        Endpoint to delete documents from an index. Either delete documents by filter condition
+        or by specifying a list of document IDs.
 
-        :param parameters: dictionary with filter conditions to select
+        :param parameters: dictionary with filter conditions or list of IDs to select
             documents for deletion.
         """
         search_filter = parameters.get('filter', None)
+        ids = parameters.get('ids', None)
         if search_filter:
-            es_search_filter = {'query': {'bool': {}}}
-            for field, filters in search_filter.items():
-                for operator, filter in filters.items():
-                    if isinstance(filter, str):
-                        es_search_filter['query']['bool']['filter'] = {
-                            'term': {'tags.' + field: filter}
-                        }
-                    elif isinstance(filter, int) or isinstance(filter, float):
-                        operator = operator.replace('$', '')
-                        es_search_filter['query']['bool']['filter'] = {
-                            'range': {'tags.' + field: {operator: filter}}
-                        }
-        try:
-            resp = self.es.delete_by_query(index=self.index_name, body=es_search_filter)
-            self.es.indices.refresh(index=self.index_name)
-        except Exception:
-            print(traceback.format_exc())
-            raise
+            es_search_filter = {
+                'query': {'bool': {'filter': process_filter(search_filter)}}
+            }
+            try:
+                resp = self.es.delete_by_query(
+                    index=self.index_name, body=es_search_filter
+                )
+                self.es.indices.refresh(index=self.index_name)
+                self.update_tags()
+            except Exception:
+                self.logger.info(traceback.format_exc())
+                raise
+        elif ids:
+            resp = {'deleted': 0}
+            try:
+                for id in ids:
+                    r = self.es.delete(index=self.index_name, id=id)
+                    self.es.indices.refresh(index=self.index_name)
+                    resp['deleted'] += r['result'] == 'deleted'
+            except Exception as e:
+                self.logger.info(traceback.format_exc(), e)
+        else:
+            raise ValueError('No filter or IDs provided for deletion.')
         if resp:
-            print(
+            self.logger.info(
                 f"Deleted {resp['deleted']} documents in Elasticsearch index {self.index_name}"
             )
         return DocumentArray()
 
-    def _build_es_query(
-        self,
-        doc: Document,
-        apply_bm25: bool,
-        traversal_paths: str,
-        search_filter: Optional[Dict] = None,
-    ) -> Dict:
+    @secure_request(on='/tags', level=SecurityLevel.USER)
+    def get_tags_and_values(self, **kwargs):
         """
-        Build script-score query used in Elasticsearch. To do this, we extract
-        embeddings from the query document and pass them in the s   cript-score
-        query together with the fields to search on in the Elasticsearch index.
+        Endpoint to get all tags and their possible values in the index.
+        """
+        return DocumentArray([Document(text='tags', tags={'tags': self.doc_id_tags})])
 
-        :param query: a `Document` with chunks containing a text embedding and
-            image embedding.
-        :param apply_bm25: whether to combine bm25 with vector search. If False,
-            will only perform vector search queries. If True, must supply a text
-            field for bm25 searching.
-        :param traversal_paths: traversal paths for the query document.
-        :param search_filter: dictionary of filters to apply to the search.
-        :return: a dictionary containing query and filter.
+    @secure_request(on='/curate', level=SecurityLevel.USER)
+    def curate(self, parameters: dict = {}, **kwargs):
         """
-        source = ''
-        query = {
-            'bool': {
-                'should': [
-                    {'match_all': {}},
+        This endpoint is only relevant for text queries.
+        It defines the top results as a list of IDs for
+        each query, and stores these as dictionary items.
+        `query_to_filter` sent in the `parameters` should
+        have the following format:
+        {
+            'query_to_filter': {
+                'query1': [
+                    {'uri': {'$eq': 'uri1'}},
+                    {'tags__internal_id': {'$eq': 'id1'}},
                 ],
-            },
-        }
-
-        # build bm25 part
-        if apply_bm25:
-            source += '_score / (_score + 10.0) + '
-            text = doc.text
-            multi_match = {'multi_match': {'query': text, 'fields': ['bm25_text']}}
-            query['bool']['should'].append(multi_match)
-
-        # add filter
-        if search_filter:
-            es_search_filter = {}
-            for field, filters in search_filter.items():
-                for operator, filter in filters.items():
-                    if isinstance(filter, str):
-                        es_search_filter['term'] = {"tags." + field: filter}
-                    elif isinstance(filter, int) or isinstance(filter, float):
-                        operator = operator.replace('$', '')
-                        es_search_filter['range'] = {
-                            "tags." + field: {operator: filter}
-                        }
-            query['bool']['filter'] = es_search_filter
-
-        # build vector search part
-        query_embeddings = self._extract_embeddings(
-            doc=doc, traversal_paths=traversal_paths
-        )
-        params = {}
-        for key, embedding in query_embeddings.items():
-            if key == 'embedding':
-                source += f"0.5*{metrics_mapping[self.metric]}(params.query_{key}, '{key}') + "
-            else:
-                source += f"0.5*{metrics_mapping[self.metric]}(params.query_{key}, '{key}.embedding') + "
-            params[f'query_{key}'] = embedding
-        source += '1.0'
-        query_json = {
-            'script_score': {
-                'query': query,
-                'script': {'source': source, 'params': params},
+                'query2': [
+                    {'uri': {'$eq': 'uri2'}},
+                    {'tags__color': {'$eq': 'red'}},
+                ],
             }
         }
-        return query_json
-
-    def _transform_es_to_da(self, result: Union[Dict, List[Dict]]) -> DocumentArray:
         """
-        Transform Elasticsearch documents into DocumentArray. Assumes that all Elasticsearch
-        documents have a 'text' field. It does not return embeddings as part of the Document.
-
-        :param result: results from an Elasticsearch query.
-        :return: a DocumentArray containing all results.
-        """
-        if isinstance(result, Dict):
-            result = [result]
-        da = DocumentArray()
-        for es_doc in result:
-            doc = Document(id=es_doc['_id'])
-            for k, v in es_doc['_source'].items():
-                if k.startswith('chunk'):
-                    chunk = Document.from_dict(v)
-                    doc.chunks.append(chunk)
-                elif k.startswith('embedding'):
-                    continue
-                elif k in ['bm25_text', '_score']:
-                    continue
-                else:
-                    doc.k = v
-            da.append(doc)
-        return da
-
-    def _transform_docs_to_es(
-        self, docs: DocumentArray, traversal_paths: str
-    ) -> List[Dict]:
-        """
-        This function takes Documents as input and transforms them into a list of
-        dictionaries that can be indexed in Elasticsearch.
-
-        :param docs: documents containing text and image chunks.
-        :param traversal_paths: traversal paths to extract chunks from documents.
-        :return: list of dictionaries containing text, text embedding and image embedding
-        """
-        es_docs = list()
-        for doc in docs:
-            es_doc = {k: v for k, v in doc.to_dict().items() if v}
-            es_doc['_id'] = doc.id
-            es_doc['bm25_text'] = doc.text
-            chunks = es_doc.pop('chunks', None)
-            if chunks and 'c' in traversal_paths:
-                for i, chunk in enumerate(chunks):
-                    es_doc[f'chunk_{i}'] = {k: v for k, v in chunk.items() if v}
-                    if chunk['text']:
-                        es_doc['bm25_text'] += " " + chunk['text']
-            es_doc['_op_type'] = 'index'
-            es_doc['_index'] = self.index_name
-            es_docs.append(es_doc)
-        return es_docs
-
-    def _transform_es_results_to_matches(self, es_results: List[Dict]) -> DocumentArray:
-        """
-        Transform a list of results from Elasticsearch into a matches in the form of a `DocumentArray`.
-
-        :param es_results: List of dictionaries containing results from Elasticsearch querying.
-        :return: `DocumentArray` that holds all matches in the form of `Document`s.
-        """
-        matches = DocumentArray()
-        for result in es_results:
-            d = self._transform_es_to_da(result)[0]
-            d.scores[self.metric] = NamedScore(value=result['_score'])
-            matches.append(d)
-        return matches
-
-    @staticmethod
-    def _extract_embeddings(
-        doc: Document, traversal_paths: str
-    ) -> Dict[str, np.ndarray]:
-        """
-        Get embeddings from a documents.
-
-        :param doc: `Document` with chunks of text document and/or image document.
-        :param traversal_paths: traversal paths to extract embeddings from documents.
-        :return: Embeddings as values in a dictionary, modality specified in key.
-        """
-        embeddings = {}
-        if 'r' in traversal_paths:
-            embeddings['embedding'] = doc.embedding
-        if 'c' in traversal_paths:
-            for i, chunk in enumerate(doc.chunks):
-                embeddings[f"chunk_{i}"] = chunk.embedding
-        if not embeddings:
-            print('No embeddings extracted')
-            raise
-        return embeddings
-
-    @staticmethod
-    def _join_docs_matrix_into_chunks(
-        docs_matrix: List[DocumentArray], on: str = 'index'
-    ) -> DocumentArray:
-        """
-        Transform a matrix of DocumentArray's into one DocumentArray, by adding Documents to the chunk level.
-        If we are joining a docs_matrix during searching, we will keep both the clip text embedding
-        and sbert embedding generated for the text document chunk. Otherwise, if we are joining a docs_matrix
-        during indexing, we will only keep the sbert embedding and the image embedding generated by clip as
-        chunk documents.
-
-        :param on: str = 'index',
-        :param on: the endpoint which is called, if 'index', then we keep sbert embedding
-            and clip image embedding; if 'search', we keep sbert embedding and clip text embedding.
-        """
-        new_da = DocumentArray()
-        if on == 'search':
-            for doc1, doc2 in zip(*docs_matrix):
-                new_doc = Document(text=doc1.chunks[0].text)
-                if (
-                    len(doc1.chunks[0].embedding) == ModelDimensions.SBERT
-                    and len(doc2.chunks[0].embedding) == ModelDimensions.CLIP
-                ):
-                    new_doc.chunks.extend(doc1.chunks)
-                    new_doc.chunks.extend(doc2.chunks)
-                elif (
-                    len(doc1.chunks[0].embedding) == ModelDimensions.CLIP
-                    and len(doc2.chunks[0].embedding) == ModelDimensions.SBERT
-                ):
-                    new_doc.chunks.extend(doc2.chunks)
-                    new_doc.chunks.extend(doc1.chunks)
-                else:
-                    raise Exception('Embedding size not supported')
-                new_da.append(new_doc)
+        search_filter = parameters.get('query_to_filter', None)
+        if search_filter:
+            self.update_curated_ids(search_filter)
         else:
-            for doc1, doc2 in zip(*docs_matrix):
-                new_doc = Document()
-                text_chunks = [
-                    c for c in doc1.chunks if c.text
-                ]  # doc1 from SBert with text embedding
-                image_chunks = [
-                    c for c in doc2.chunks if c.uri
-                ]  # doc2 from CLIP with image embedding
-                new_doc.chunks.extend(text_chunks)
-                new_doc.chunks.extend(image_chunks)
-                new_da.append(new_doc)
+            raise ValueError('No filter provided for curating.')
 
-        return new_da
+    def update_curated_ids(self, search_filter):
+        for query, filters in search_filter.items():
+            if query not in self.query_to_curated_ids:
+                self.query_to_curated_ids[query] = []
+            for filter in filters:
+                es_query = {'query': {'bool': {'filter': process_filter(filter)}}}
+
+                resp = self.es.search(index=self.index_name, body=es_query, size=100)
+                self.es.indices.refresh(index=self.index_name)
+                ids = [r['_id'] for r in resp['hits']['hits']]
+                self.query_to_curated_ids[query] += [
+                    id for id in ids if id not in self.query_to_curated_ids[query]
+                ]
+
+    def update_tags(self):
+        """
+        The indexer keeps track of which tags are indexed and what their possible
+        values are, which is stored in self.doc_id_tags. This method queries the
+        elasticsearch index for the current es_mapping to find the current tags on all
+        indexed documents. It then queries elasticsearch for an aggregation of all values
+        inside this field, and updates the self.doc_id_tags dictionary with tags as keys,
+        and values as values in the dictionary.
+        """
+        es_mapping = self.es.indices.get_mapping(index=self.index_name)
+        tag_categories = (
+            es_mapping.get(self.index_name, {})
+            .get('mappings', {})
+            .get('properties', {})
+            .get('tags', {})
+            .get('properties', {})
+        )
+
+        aggs = {'aggs': {}, 'size': 0}
+        for tag, map in tag_categories.items():
+            if map['type'] == 'text':
+                aggs['aggs'][tag] = {
+                    'terms': {'field': f'tags.{tag}.keyword', 'size': 100}
+                }
+            elif map['type'] == 'float':
+                # aggs['aggs'][f'min_{tag}'] = {'min': {'field': f'tags.{tag}'}}
+                # aggs['aggs'][f'max_{tag}'] = {'max': {'field': f'tags.{tag}'}}
+                # aggs['aggs'][f'avg_{tag}'] = {'avg': {'field': f'tags.{tag}'}}
+                aggs['aggs'][tag] = {'terms': {'field': f'tags.{tag}', 'size': 100}}
+        try:
+            result = self.es.search(index=self.index_name, body=aggs)
+            aggregations = result['aggregations']
+            updated_tags = {}
+            for tag, agg in aggregations.items():
+                updated_tags[tag] = [bucket['key'] for bucket in agg['buckets']]
+            self.doc_id_tags = updated_tags
+        except Exception:
+            self.logger.info(traceback.format_exc())
+
+    # override
+    def batch_iterator(self):
+        """Unnecessary for ElasticIndexer, but need to override BaseIndexer."""
+        yield []
+
+
+def aggregate_embeddings(docs_map: Dict[str, DocumentArray]):
+    """Aggregate embeddings of cc level to c level.
+
+    :param docs_map: a dictionary of `DocumentArray`s, where the key is the embedding space aka encoder name.
+    """
+    for docs in docs_map.values():
+        for doc in docs:
+            for c in doc.chunks:
+                if c.chunks.embeddings is not None:
+                    c.embedding = c.chunks.embeddings.mean(axis=0)
+                    c.content = c.chunks[0].content

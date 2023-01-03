@@ -13,7 +13,13 @@ import uuid
 from hubble import AuthenticationRequiredError
 from kubernetes import client, config
 
+from now.common.detect_schema import (
+    set_field_names_from_docarray,
+    set_field_names_from_local_folder,
+    set_field_names_from_s3_bucket,
+)
 from now.constants import Apps, DatasetTypes
+from now.demo_data import AVAILABLE_DATASETS
 from now.deployment.deployment import cmd
 from now.log import yaspin_extended
 from now.now_dataclasses import DialogOptions, UserInput
@@ -28,52 +34,42 @@ from now.utils import (
 NEW_CLUSTER = {'name': '🐣 create new', 'value': 'new'}
 AVAILABLE_SOON = 'will be available in upcoming versions'
 
-# Make sure you add this dialog option to your app in order of dependency, i.e., if some dialog option depends on other
-# then the parent should be called first before the dependant can called.
 
-APP = DialogOptions(
-    name='app',
-    choices=[
-        {
-            'name': '📝 ▶ 🏞 text to image search',
-            'value': Apps.TEXT_TO_IMAGE,
-        },
-        {
-            'name': '🏞 ▶ 📝 image to text search',
-            'value': Apps.IMAGE_TO_TEXT,
-        },
-        {
-            'name': '🏞 ▶ 🏞 image to image search',
-            'value': Apps.IMAGE_TO_IMAGE,
-        },
-        {'name': '📝 ▶ 📝 text to text search', 'value': Apps.TEXT_TO_TEXT},
-        {
-            'name': '📝 ▶ 🎦 text to video search (gif only at the moment)',
-            'value': Apps.TEXT_TO_VIDEO,
-        },
-        {
-            'name': '🥁 ▶ 🥁 music to music search',
-            'value': Apps.MUSIC_TO_MUSIC,
-            'disabled': AVAILABLE_SOON,
-        },
-        {
-            'name': '📝 ▶ 📝+🏞 text to text+image search',
-            'value': Apps.TEXT_TO_TEXT_AND_IMAGE,
-            'disabled': AVAILABLE_SOON,
-        },
-    ],
-    prompt_message='What sort of search engine would you like to build?',
-    prompt_type='list',
-    is_terminal_command=True,
-    description='What sort of search engine would you like to build?',
-)
+# Make sure you add this dialog option to your app in order of dependency, i.e., if some dialog option depends on other
+# than the parent should be called first before the dependant can called.
+
+
+def _create_app_from_user_input(user_input: UserInput, **kwargs):
+    if len(user_input.index_fields) != 1:
+        raise ValueError(
+            'Currently only one index field is supported. Please choose one field.'
+        )
+    if user_input.index_fields[0] not in user_input.index_fields_modalities.keys():
+        raise ValueError(
+            f'Index field specified is not among the candidate fields. Please '
+            f'choose one of the following: {user_input.index_fields_modalities.keys()}'
+        )
+    _search_modality = user_input.index_fields_modalities[user_input.index_fields[0]]
+    app_name = Apps.SEARCH_APP
+    user_input.app_instance = construct_app(app_name)
+
 
 APP_NAME = DialogOptions(
     name='flow_name',
     prompt_message='Choose a name for your application:',
     prompt_type='input',
     is_terminal_command=True,
+    post_func=lambda user_input, **kwargs: clean_flow_name(user_input),
 )
+
+
+def clean_flow_name(user_input: UserInput):
+    """
+    Clean the flow name to make it valid, removing special characters and spaces.
+    """
+    user_input.flow_name = ''.join(
+        [c for c in user_input.flow_name if c.isalnum() or c == '-']
+    ).lower()
 
 
 DATASET_TYPE = DialogOptions(
@@ -84,10 +80,6 @@ DATASET_TYPE = DialogOptions(
         {
             'name': 'DocumentArray name (recommended)',
             'value': DatasetTypes.DOCARRAY,
-        },
-        {
-            'name': 'DocumentArray URL',
-            'value': DatasetTypes.URL,
         },
         {
             'name': 'Local folder',
@@ -104,25 +96,40 @@ DATASET_TYPE = DialogOptions(
         },
     ],
     prompt_type='list',
-    is_terminal_command=True
-    # post_func=lambda user_input, **kwargs: _parse_custom_data_from_cli(
-    #     user_input, **kwargs
-    # ),
+    is_terminal_command=True,
+    post_func=lambda user_input, **kwargs: check_login_dataset(user_input),
 )
+
+
+def check_login_dataset(user_input: UserInput):
+    if (
+        user_input.dataset_type in [DatasetTypes.DEMO, DatasetTypes.DOCARRAY]
+        and user_input.jwt is None
+    ):
+        _jina_auth_login(user_input)
+
+
+def _get_demo_data_choices(user_input: UserInput, **kwargs):
+    all_demo_datasets = []
+    for demo_datasets in AVAILABLE_DATASETS.values():
+        all_demo_datasets.extend(demo_datasets)
+    return [
+        {'name': demo_data.display_name, 'value': demo_data.name}
+        for demo_data in all_demo_datasets
+    ]
+
 
 DEMO_DATA = DialogOptions(
     name='dataset_name',
     prompt_message='What demo dataset do you want to use?',
-    choices=lambda user_input, **kwargs: [
-        {'name': demo_data.display_name, 'value': demo_data.name}
-        for demo_data in user_input.app_instance.demo_datasets
-    ],
+    choices=lambda user_input, **kwargs: _get_demo_data_choices(user_input),
     prompt_type='list',
     depends_on=DATASET_TYPE,
     is_terminal_command=True,
     description='Select one of the available demo datasets',
     conditional_check=lambda user_input, **kwargs: user_input.dataset_type
     == DatasetTypes.DEMO,
+    post_func=lambda user_input, **kwargs: set_field_names_from_docarray(user_input),
 )
 
 DOCARRAY_NAME = DialogOptions(
@@ -132,15 +139,7 @@ DOCARRAY_NAME = DialogOptions(
     depends_on=DATASET_TYPE,
     conditional_check=lambda user_input: user_input.dataset_type
     == DatasetTypes.DOCARRAY,
-)
-
-DATASET_URL = DialogOptions(
-    name='dataset_url',
-    prompt_message='Please paste in the URL to download your DocumentArray from:',
-    prompt_type='input',
-    depends_on=DATASET_TYPE,
-    is_terminal_command=True,
-    conditional_check=lambda user_input: user_input.dataset_type == DatasetTypes.URL,
+    post_func=lambda user_input, **kwargs: set_field_names_from_docarray(user_input),
 )
 
 DATASET_PATH = DialogOptions(
@@ -150,6 +149,9 @@ DATASET_PATH = DialogOptions(
     depends_on=DATASET_TYPE,
     is_terminal_command=True,
     conditional_check=lambda user_input: user_input.dataset_type == DatasetTypes.PATH,
+    post_func=lambda user_input, **kwargs: set_field_names_from_local_folder(
+        user_input
+    ),
 )
 
 DATASET_PATH_S3 = DialogOptions(
@@ -186,26 +188,43 @@ AWS_REGION_NAME = DialogOptions(
     depends_on=DATASET_TYPE,
     conditional_check=lambda user_input: user_input.dataset_type
     == DatasetTypes.S3_BUCKET,
+    post_func=lambda user_input, **kwargs: set_field_names_from_s3_bucket(user_input),
 )
 
 # --------------------------------------------- #
 
-SEARCH_FIELDS = DialogOptions(
-    name='search_fields',
-    prompt_message='Enter comma-separated search fields:',
-    prompt_type='input',
-    depends_on=DATASET_TYPE,
+
+INDEX_FIELDS = DialogOptions(
+    name='index_fields',
+    choices=lambda user_input, **kwargs: [
+        {'name': field, 'value': field}
+        for field in user_input.index_fields_modalities.keys()
+    ],
+    prompt_message='Please select the index fields:',
+    prompt_type='checkbox',
     is_terminal_command=True,
-    conditional_check=lambda user_input: user_input.dataset_type != DatasetTypes.DEMO,
-    post_func=lambda user_input, **kwargs: _parse_search_fields(user_input),
+    post_func=_create_app_from_user_input,
+    argparse_kwargs={
+        'type': lambda fields: fields.split(',') if fields else UserInput().index_fields
+    },
 )
 
-
-def _parse_search_fields(user_input: UserInput):
-    user_input.search_fields = [
-        field.strip() for field in user_input.search_fields.split(',')
-    ]
-
+FILTER_FIELDS = DialogOptions(
+    name='filter_fields',
+    choices=lambda user_input, **kwargs: [
+        {'name': field, 'value': field}
+        for field in user_input.filter_fields_modalities.keys()
+        if field not in user_input.index_fields
+    ],
+    prompt_message='Please select the filter fields',
+    prompt_type='checkbox',
+    depends_on=DATASET_TYPE,
+    conditional_check=lambda user_input: user_input.filter_fields_modalities is not None
+    and len(
+        set(user_input.filter_fields_modalities.keys()) - set(user_input.index_fields)
+    )
+    > 0,
+)
 
 ES_INDEX_NAME = DialogOptions(
     name='es_index_name',
@@ -251,10 +270,16 @@ DEPLOYMENT_TYPE = DialogOptions(
         },
     ],
     is_terminal_command=True,
-    description='Option is `local` and `remote`. Select `local` if you want search engine to be deployed on local '
+    description='Options are `local` or `remote`. Select `local` if you want your search engine to be deployed on a local '
     'cluster. Select `remote` to deploy it on Jina Cloud',
-    post_func=lambda user_input, **kwargs: _jina_auth_login(user_input, **kwargs),
+    post_func=lambda user_input, **kwargs: check_login_deployment(user_input),
 )
+
+
+def check_login_deployment(user_input: UserInput):
+    if user_input.deployment_type == 'remote' and user_input.jwt is None:
+        _jina_auth_login(user_input)
+
 
 LOCAL_CLUSTER = DialogOptions(
     name='cluster',
@@ -273,21 +298,10 @@ LOCAL_CLUSTER = DialogOptions(
     ),
 )
 
-PROCEED = DialogOptions(
-    name='proceed',
-    prompt_message='jina-now is deployed already. Do you want to remove the current data?',
-    prompt_type='list',
-    choices=[
-        {'name': '⛔ no', 'value': False},
-        {'name': '✅ yes', 'value': True},
-    ],
-    depends_on=LOCAL_CLUSTER,
-    conditional_check=lambda user_input: _check_if_namespace_exist(),
-)
 
 SECURED = DialogOptions(
     name='secured',
-    prompt_message='Do you want to secure the flow?',
+    prompt_message='Do you want to secure the Flow?',
     prompt_type='list',
     choices=[
         {'name': '⛔ no', 'value': False},
@@ -298,19 +312,19 @@ SECURED = DialogOptions(
     conditional_check=lambda user_inp: user_inp.deployment_type == 'remote',
 )
 
-
 API_KEY = DialogOptions(
     name='api_key',
-    prompt_message='Do you want to generate an api_key to access this deployment?',
+    prompt_message='Do you want to generate an API key to access this deployment?',
     prompt_type='list',
     choices=[
         {'name': '✅ yes', 'value': uuid.uuid4().hex},
-        {'name': '⛔ no', 'value': None},
+        {'name': '⛔ no', 'value': False},
     ],
     depends_on=SECURED,
     is_terminal_command=True,
-    description='Pass an api_key to access the flow once the deployment is complete. ',
+    description='Pass an API key to access the Flow once the deployment is complete. ',
     conditional_check=lambda user_inp: str(user_inp.secured).lower() == 'true',
+    post_func=lambda user_input, **kwargs: _set_value_to_none(user_input),
 )
 
 ADDITIONAL_USERS = DialogOptions(
@@ -327,14 +341,19 @@ ADDITIONAL_USERS = DialogOptions(
 
 USER_EMAILS = DialogOptions(
     name='user_emails',
-    prompt_message='Please enter the comma separated Email IDs '
-    'who will have access to this flow.\nAdditionally, you can also specify comma separated domain name'
-    ' such that all users from that domain can access this flow. E.g. `jina.ai`\n',
+    prompt_message='Please enter email addresses (separated by commas) '
+    'to grant access to this Flow.\nAdditionally, you can specify comma-separated domain names'
+    ' such that all users from that domain can access this Flow, e.g. `jina.ai`\n',
     prompt_type='input',
     depends_on=ADDITIONAL_USERS,
     conditional_check=lambda user_inp: user_inp.additional_user,
     post_func=lambda user_input, **kwargs: _add_additional_users(user_input, **kwargs),
 )
+
+
+def _set_value_to_none(user_input: UserInput):
+    if not user_input.api_key:
+        user_input.api_key = None
 
 
 def _add_additional_users(user_input: UserInput, **kwargs):
@@ -358,15 +377,12 @@ def construct_app(app_name: str):
     )()
 
 
-def _jina_auth_login(user_input, **kwargs):
-    if user_input.deployment_type != 'remote':
-        return
-
+def _jina_auth_login(user_input: UserInput, **kwargs):
     try:
         jina_auth_login()
     except AuthenticationRequiredError:
         with yaspin_extended(
-            sigmap=sigmap, text='Log in to JCloud', color='green'
+            sigmap=sigmap, text='Log in to Jina AI Cloud', color='green'
         ) as spinner:
             cmd('jina auth login')
         spinner.ok('🛠️')
@@ -375,7 +391,7 @@ def _jina_auth_login(user_input, **kwargs):
     os.environ['JCLOUD_NO_SURVEY'] = '1'
 
 
-def _construct_local_cluster_choices(user_input, **kwargs):
+def _construct_local_cluster_choices(user_input: UserInput, **kwargs):
     active_context = kwargs.get('active_context')
     contexts = kwargs.get('contexts')
     context_names = _get_context_names(contexts, active_context)
@@ -401,11 +417,11 @@ def _cluster_running(cluster):
     return True
 
 
-app_name = [APP_NAME]
+app_config = [APP_NAME]
 data_type = [DATASET_TYPE]
-data_fields = [SEARCH_FIELDS]
+data_fields = [INDEX_FIELDS, FILTER_FIELDS]
 data_demo = [DEMO_DATA]
-data_da = [DOCARRAY_NAME, DATASET_PATH, DATASET_URL]
+data_da = [DOCARRAY_NAME, DATASET_PATH]
 data_s3 = [DATASET_PATH_S3, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION_NAME]
 data_es = [
     ES_HOST_NAME,
@@ -416,13 +432,13 @@ cluster = [DEPLOYMENT_TYPE, LOCAL_CLUSTER]
 remote_cluster = [SECURED, API_KEY, ADDITIONAL_USERS, USER_EMAILS]
 
 base_options = (
-    app_name
-    + data_type
+    data_type
     + data_demo
     + data_da
     + data_s3
     + data_es
     + data_fields
+    + app_config
     + cluster
     + remote_cluster
 )

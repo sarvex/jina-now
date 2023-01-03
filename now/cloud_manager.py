@@ -93,27 +93,8 @@ def ask_existing(kubectl_path, **kwargs):
     config.load_kube_config()
     v1 = client.CoreV1Api()
     if 'nowapi' in [item.metadata.name for item in v1.list_namespace().items]:
-        questions = [
-            {
-                'type': 'list',
-                'name': 'proceed',
-                'message': (
-                    'jina-now is deployed already. Do you want to remove the '
-                    'current data?'
-                ),
-                'choices': [
-                    {'name': '⛔ no', 'value': False},
-                    {'name': '✅ yes', 'value': True},
-                ],
-            },
-        ]
-        remove = maybe_prompt_user(questions, 'proceed')
-        if remove:
-            with yaspin_extended(
-                sigmap=sigmap, text="Remove old deployment", color="green"
-            ) as spinner:
-                cmd(f'{kubectl_path} delete ns nowapi')
-                spinner.ok('💀')
-        else:
-            cowsay.cow('see you soon 👋')
-            exit(0)
+        with yaspin_extended(
+            sigmap=sigmap, text="Remove old deployment", color="green"
+        ) as spinner:
+            cmd(f'{kubectl_path} delete ns nowapi')
+            spinner.ok('💀')

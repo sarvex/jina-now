@@ -1,15 +1,14 @@
-import abc
 import os
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import docker
 from docarray import DocumentArray
 from jina import Client
 from jina.jaml import JAML
-from jina.serve.runtimes.gateway.http.models import JinaRequestModel, JinaResponseModel
 
-from now.constants import DEFAULT_FLOW_NAME, SUPPORTED_FILE_TYPES, Modalities
-from now.demo_data import AVAILABLE_DATASET, DEFAULT_EXAMPLE_HOSTED, DemoDataset
+from now.app.base.preprocess import preprocess_image, preprocess_text, preprocess_video
+from now.constants import DEFAULT_FLOW_NAME
+from now.demo_data import DEFAULT_EXAMPLE_HOSTED
 from now.now_dataclasses import DialogOptions, UserInput
 
 
@@ -45,22 +44,6 @@ class JinaNOWApp:
         Short description of the app.
         """
         return 'Jina NOW app'
-
-    @property
-    @abc.abstractmethod
-    def input_modality(self) -> Modalities:
-        """
-        Modality used for running search queries
-        """
-        raise NotImplementedError()
-
-    @property
-    @abc.abstractmethod
-    def output_modality(self) -> Modalities:
-        """
-        Modality used for indexing data
-        """
-        raise NotImplementedError()
 
     def set_flow_yaml(self, **kwargs):
         """Used to configure the flow yaml in the Jina NOW app.
@@ -101,16 +84,6 @@ class JinaNOWApp:
         :return: List[DialogOptions]
         """
         return []
-
-    @property
-    def supported_file_types(self) -> List[str]:
-        """Used to filter files in local structure or an S3 bucket."""
-        return SUPPORTED_FILE_TYPES[self.output_modality]
-
-    @property
-    def demo_datasets(self) -> List[DemoDataset]:
-        """Get a list of example datasets for the app."""
-        return AVAILABLE_DATASET.get(self.output_modality, [])
 
     @property
     def required_docker_memory_in_gb(self) -> int:
@@ -199,52 +172,56 @@ class JinaNOWApp:
                 and user_input.flow_name != DEFAULT_FLOW_NAME
                 else DEFAULT_FLOW_NAME
             )
+
             # append api_keys to the executor with name 'preprocessor' and 'indexer'
             for executor in flow_yaml_content['executors']:
                 if executor['name'] == 'preprocessor' or executor['name'] == 'indexer':
                     executor['uses_with']['api_keys'] = '${{ ENV.API_KEY }}'
 
-            if self.input_modality == Modalities.TEXT:
-                if not any(
-                    exec_dict['name'] == 'autocomplete_executor'
-                    for exec_dict in flow_yaml_content['executors']
-                ):
-                    flow_yaml_content['executors'].insert(
-                        0,
-                        {
-                            'name': 'autocomplete_executor',
-                            'uses': '${{ ENV.AUTOCOMPLETE_EXECUTOR_NAME }}',
-                            'needs': 'gateway',
-                            'env': {'JINA_LOG_LEVEL': 'DEBUG'},
+            if not any(
+                exec_dict['name'] == 'autocomplete_executor'
+                for exec_dict in flow_yaml_content['executors']
+            ):
+                flow_yaml_content['executors'].insert(
+                    0,
+                    {
+                        'name': 'autocomplete_executor',
+                        'uses': '${{ ENV.AUTOCOMPLETE_EXECUTOR_NAME }}',
+                        'needs': 'gateway',
+                        'env': {'JINA_LOG_LEVEL': 'DEBUG'},
+                        'uses_with': {
+                            'api_keys': '${{ ENV.API_KEY }}',
+                            'user_emails': '${{ ENV.USER_EMAILS }}',
+                            'admin_emails': '${{ ENV.ADMIN_EMAILS }}',
                         },
-                    )
+                    },
+                )
+            self.add_environment_variables(flow_yaml_content)
             self.flow_yaml = flow_yaml_content
         return {}
 
-    def cleanup(self, app_config: dict) -> None:
-        """
-        Runs after the flow is terminated.
-        Cleans up the resources created during setup.
-        Common examples are:
-            - delete a database
-            - remove artifact
-            - notify other services
-        :param app_config: contains all information needed to clean up the allocated resources
-        """
-        pass
-
     def preprocess(
         self,
-        da: DocumentArray,
-        user_input: UserInput,
-        process_index: bool = False,
-        process_query: bool = True,
+        docs: DocumentArray,
     ) -> DocumentArray:
-        """Loads and preprocesses every document such that it is ready for finetuning/indexing."""
-        return da
+        """Loads and preprocesses every document such that it is ready for indexing."""
+        for doc in docs:
+            for chunk in doc.chunks:
+                try:
+                    if chunk.modality == 'text':
+                        preprocess_text(chunk)
+                    elif chunk.modality == 'image':
+                        preprocess_image(chunk)
+                    elif chunk.modality == 'video':
+                        preprocess_video(chunk)
+                    else:
+                        raise ValueError(f'Unsupported modality {chunk.modality}')
+                except Exception as e:
+                    print(e)
+        return docs
 
     def is_demo_available(self, user_input) -> bool:
-        hosted_ds = DEFAULT_EXAMPLE_HOSTED.get(self.app_name, {})
+        hosted_ds = DEFAULT_EXAMPLE_HOSTED
         if (
             hosted_ds
             and user_input.dataset_name in hosted_ds
@@ -265,49 +242,16 @@ class JinaNOWApp:
         return False
 
     @property
-    def bff_mapping_fns(
-        self,
-    ) -> Dict[
-        str,
-        Tuple[
-            Any,
-            Any,
-            Callable[[Any], JinaRequestModel],
-            Callable[[JinaResponseModel], Any],
-        ],
-    ]:
-        """
-        Apps usually have a custom input format and response which does not match the JinaRequestModel or JinaResponseModel.
-        To create the mapping each Jina NOW app can implement the two bff mapping functions for each path
-        - one for requests and one for responses
-
-        :return: dictionary from path to a tuple of request model, response model,
-        request mapping fn and response mapping fn.
-        By default, the mapping is the identity function and the request model and respond model are the default models.
-        The path is a regex expression.
-        """
-        return {
-            '.*': (
-                JinaRequestModel,
-                JinaResponseModel,
-                lambda x: x,
-                lambda x: x,
-            )
-        }
-
-    def get_index_query_access_paths(
-        self, search_fields: Optional[List[str]] = None
-    ) -> str:
-        """Gives access paths for indexing and searching. Returns a path to search fields
-        if provided, otherwise a path to chunk level.
-
-        :param search_fields: Optional list of search fields.
-        """
-        if search_fields:
-            return '@.[' + ', '.join(search_fields) + ']'
-        return '@c'
-
-    @property
     def max_request_size(self) -> int:
         """Max number of documents in one request"""
         return 32
+
+    def add_environment_variables(self, flow_yaml_content):
+        if 'JINA_OPTOUT_TELEMETRY' in os.environ:
+            flow_yaml_content['with']['env']['JINA_OPTOUT_TELEMETRY'] = os.environ[
+                'JINA_OPTOUT_TELEMETRY'
+            ]
+            for executor in flow_yaml_content['executors']:
+                executor['env']['JINA_OPTOUT_TELEMETRY'] = os.environ[
+                    'JINA_OPTOUT_TELEMETRY'
+                ]

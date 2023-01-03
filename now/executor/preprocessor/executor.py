@@ -5,7 +5,6 @@ import random
 import string
 import tempfile
 import urllib
-from collections import defaultdict
 from typing import Dict, Optional
 
 import boto3
@@ -13,16 +12,20 @@ from jina import Document, DocumentArray
 from paddleocr import PaddleOCR
 
 from now.app.base.app import JinaNOWApp
-from now.common.options import construct_app
-from now.data_loading.transform_docarray import transform_docarray
-from now.constants import TAG_OCR_DETECTOR_TEXT_IN_DOC, Apps, DatasetTypes
+from now.app.base.transform_docarray import transform_docarray
+from now.constants import (
+    ACCESS_PATHS,
+    TAG_OCR_DETECTOR_TEXT_IN_DOC,
+    DatasetTypes,
+    Modalities,
+)
 from now.executor.abstract.auth import (
     SecurityLevel,
     get_auth_executor_class,
     secure_request,
 )
 from now.now_dataclasses import UserInput
-from now.utils import _maybe_download_from_s3
+from now.utils import maybe_download_from_s3
 
 Executor = get_auth_executor_class()
 
@@ -36,12 +39,12 @@ class NOWPreprocessor(Executor):
     To update user_input, set the 'user_input' key in parameters dictionary.
     """
 
-    def __init__(self, app: str, max_workers: int = 15, *args, **kwargs):
+    def __init__(self, max_workers: int = 15, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.app: JinaNOWApp = construct_app(app)
+        self.app: JinaNOWApp = JinaNOWApp()
         self.max_workers = max_workers
-        self.paddle_ocr = PaddleOCR(use_angle_cls=True, lang='en')
+        self.paddle_ocr = PaddleOCR(use_angle_cls=True, lang='en', show_log=False)
 
         self.user_input_path = (
             os.path.join(self.workspace, 'user_input.json') if self.workspace else None
@@ -69,37 +72,11 @@ class NOWPreprocessor(Executor):
 
     def _ocr_detect_text(self, docs: DocumentArray):
         """Iterates over all documents, detects text in images and saves it into the tags of the document."""
-        flat_docs = docs[self.app.get_index_query_access_paths()]
-        # select documents whose mime_type starts with 'image'
-        flat_docs = [
-            doc
-            for doc in flat_docs
-            if doc.mime_type.startswith('image') or doc.modality == 'image'
-        ]
-        id_to_text = defaultdict(str)
-        with tempfile.TemporaryDirectory() as tmpdir:
-            for doc in flat_docs:
-                if doc.blob:
-                    doc.convert_blob_to_datauri()
-                elif doc.tensor:
-                    doc.convert_image_tensor_to_uri()
-                result = self.paddle_ocr.ocr(
-                    self._save_uri_to_tmp_file(doc.uri, tmpdir), cls=True
-                )
-                for _, (text_in_doc, _) in result[0]:
-                    if '@cc' in self.app.get_index_query_access_paths():
-                        id_to_text[doc.parent_id] += text_in_doc + ' '
-                    else:
-                        id_to_text[doc.id] = text_in_doc
-        for doc in flat_docs:
-            text_in_doc = id_to_text[
-                doc.parent_id
-                if '@cc' in self.app.get_index_query_access_paths()
-                else doc.id
-            ]
-            doc.tags[TAG_OCR_DETECTOR_TEXT_IN_DOC] = text_in_doc.strip()
-            if 'uri' in doc.tags:
-                doc.uri = doc.tags['uri']
+        for doc in docs[ACCESS_PATHS]:
+            if doc.modality == Modalities.IMAGE:
+                ocr_result = self.paddle_ocr.ocr(doc.blob)
+                text_list = [text for _, (text, _) in ocr_result[0]]
+                doc.tags[TAG_OCR_DETECTOR_TEXT_IN_DOC] = ' '.join(text_list)
 
     @staticmethod
     def _save_uri_to_tmp_file(uri, tmpdir) -> str:
@@ -117,35 +94,34 @@ class NOWPreprocessor(Executor):
                 f.write(binary_fn.read())
         return tmp_fn
 
-    def _preprocess_maybe_cloud_download(
-        self,
-        docs: DocumentArray,
-        is_indexing,
-        encode: bool = False,
-    ) -> DocumentArray:
+    def _preprocess_maybe_cloud_download(self, docs: DocumentArray) -> DocumentArray:
         with tempfile.TemporaryDirectory() as tmpdir:
+            index_fields = []
+            if self.user_input:
+                for index_field in self.user_input.index_fields:
+                    index_fields.append(
+                        self.user_input.files_to_dataclass_fields[index_field]
+                        if index_field in self.user_input.files_to_dataclass_fields
+                        else index_field
+                    )
+
+            docs = transform_docarray(
+                documents=docs,
+                index_fields=index_fields,
+            )
             if (
                 self.user_input
                 and self.user_input.dataset_type == DatasetTypes.S3_BUCKET
             ):
-                _maybe_download_from_s3(
+                maybe_download_from_s3(
                     docs=docs,
                     tmpdir=tmpdir,
                     user_input=self.user_input,
                     max_workers=self.max_workers,
                 )
-            docs = transform_docarray(
-                documents=docs,
-                search_fields=self.user_input.search_fields or [],
-            )
-            docs = self.app.preprocess(
-                da=docs,
-                user_input=self.user_input,
-                process_query=True if encode else not is_indexing,
-                process_index=True if encode else is_indexing,
-            )
-            if is_indexing:
-                self._ocr_detect_text(docs)
+
+            docs = self.app.preprocess(docs)
+            self._ocr_detect_text(docs)
 
             # as _maybe_download_from_s3 moves S3 URI to tags['uri'], need to move it back for post-processor & accurate
             # results.
@@ -158,17 +134,18 @@ class NOWPreprocessor(Executor):
                     cloud_uri = d.tags.get('uri')
                     if isinstance(cloud_uri, str) and cloud_uri.startswith('s3://'):
                         d.uri = cloud_uri
-                        if self.app.app_name == Apps.TEXT_TO_VIDEO:
-                            d.chunks[:, 'uri'] = cloud_uri
+                        d.chunks[:, 'uri'] = cloud_uri
                     return d
 
                 for d in docs:
-                    move_uri(d)
+                    for c in d.chunks:
+                        # TODO please fix this hack - uri should not be in tags
+                        move_uri(c)
 
         return docs
 
-    @secure_request(on='/index', level=SecurityLevel.USER)
-    def index(
+    @secure_request(on=None, level=SecurityLevel.USER)
+    def preprocess(
         self, docs: DocumentArray, parameters: Optional[Dict] = None, *args, **kwargs
     ) -> DocumentArray:
         """If necessary downloads data from cloud bucket. Applies preprocessing to documents as defined by apps.
@@ -177,37 +154,9 @@ class NOWPreprocessor(Executor):
         :param parameters: user input, used to construct UserInput object
         :return: preprocessed documents which are ready to be encoded and indexed
         """
+        # TODO remove set user input. Should be only set once in constructor use api key instead of user token
         self._set_user_input(parameters=parameters)
-        return self._preprocess_maybe_cloud_download(docs=docs, is_indexing=True)
-
-    @secure_request(on='/encode', level=SecurityLevel.USER)
-    def encode(
-        self, docs: DocumentArray, parameters: Optional[Dict] = None, *args, **kwargs
-    ):
-        """Encodes the documents and returns the embeddings. It merges index and search endpoint results as the
-        documents for encoding can be multimodal.
-
-        :param docs: loaded data but not preprocessed
-        :param parameters: user input, used to construct UserInput object
-        :return: preprocessed documents which are ready to be encoded and indexed
-        """
-        self._set_user_input(parameters=parameters)
-        return self._preprocess_maybe_cloud_download(
-            docs=docs, is_indexing=True, encode=True
-        )
-
-    @secure_request(on='/search', level=SecurityLevel.USER)
-    def search(
-        self, docs: DocumentArray, parameters: Optional[Dict] = None, *args, **kwargs
-    ) -> DocumentArray:
-        """If necessary downloads data from cloud bucket. Applies preprocessing to document as defined by apps.
-
-        :param docs: loaded data but not preprocessed
-        :param parameters: user input, used to construct UserInput object
-        :return: preprocessed documents which are ready to be used for search
-        """
-        self._set_user_input(parameters=parameters)
-        return self._preprocess_maybe_cloud_download(docs=docs, is_indexing=False)
+        return self._preprocess_maybe_cloud_download(docs=docs)
 
     @secure_request(on='/temp_link_cloud_bucket', level=SecurityLevel.USER)
     def temporary_link_from_cloud_bucket(
@@ -248,33 +197,14 @@ class NOWPreprocessor(Executor):
 
         return docs
 
+    @secure_request(on='/get_user_input', level=SecurityLevel.USER)
+    def get_user_input(self, *args, **kwargs) -> Dict:
+        """Returns user input as DocumentArray.
 
-if __name__ == '__main__':
-
-    from jina import Flow
-
-    app = Apps.TEXT_TO_VIDEO
-
-    user_inpuT = UserInput()
-    user_inpuT.app_instance = construct_app(app)
-    user_inpuT.dataset_type = DatasetTypes.S3_BUCKET
-    user_inpuT.dataset_path = 's3://bucket/folder'
-
-    text_docs = DocumentArray(
-        [
-            Document(chunks=DocumentArray([Document(text='hi')])),
-        ]
-    )
-    executor = NOWPreprocessor(app=app)
-    result = executor.search(
-        docs=text_docs, parameters={'app': user_inpuT.app_instance.app_name}
-    )
-    f = Flow().add(uses=NOWPreprocessor, uses_with={'app': app})
-    with f:
-        result = f.post(
-            on='/search',
-            inputs=text_docs,
-            show_progress=True,
-        )
-
-        result = DocumentArray.from_json(result.to_json())
+        :return: user input as dictionary
+        """
+        return {
+            'user_input': self.user_input.__dict__
+            if self.user_input is not None
+            else {}
+        }

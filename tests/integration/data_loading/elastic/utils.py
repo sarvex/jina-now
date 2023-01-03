@@ -2,7 +2,7 @@ from typing import Dict, List, Optional
 
 from elasticsearch.helpers import bulk
 
-from now.data_loading.es import ElasticsearchConnector
+from now.data_loading.elasticsearch import ElasticsearchConnector
 
 
 def delete_es_index(connector: ElasticsearchConnector, name: str) -> None:
