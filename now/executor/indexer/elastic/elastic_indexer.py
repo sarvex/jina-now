@@ -165,6 +165,11 @@ class NOWElasticIndexer(Executor):
         """
         if not docs_map:
             return DocumentArray()
+        for key, da in docs_map.items():
+            print('######## da insights')
+            print('key', key)
+            da[0].summary()
+            da.summary()
         aggregate_embeddings(docs_map)
         es_docs = convert_doc_map_to_es(
             docs_map, self.index_name, self.encoder_to_fields
