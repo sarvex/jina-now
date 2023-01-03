@@ -4,12 +4,12 @@ from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.140-refactor-bump-jina-version5'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.140-refactor-bump-jina-version6'
 # ----------------------------------
-NOW_PREPROCESSOR_VERSION = '0.0.117-refactor-bump-jina-version5'
-NOW_QDRANT_INDEXER_VERSION = '0.0.138-refactor-bump-jina-version5'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.139-refactor-bump-jina-version5'
-NOW_AUTOCOMPLETE_VERSION = '0.0.7-refactor-bump-jina-version5'
+NOW_PREPROCESSOR_VERSION = '0.0.117-refactor-bump-jina-version6'
+NOW_QDRANT_INDEXER_VERSION = '0.0.138-refactor-bump-jina-version6'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.139-refactor-bump-jina-version6'
+NOW_AUTOCOMPLETE_VERSION = '0.0.7-refactor-bump-jina-version6'
 
 
 class Modalities(BetterEnum):
