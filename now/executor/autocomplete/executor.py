@@ -50,6 +50,7 @@ class NOWAutoCompleteExecutor2(Executor):
         self, docs: Optional[DocumentArray] = None, parameters: dict = {}, **kwargs
     ):
         for doc in docs[ACCESS_PATHS]:
+            print(f"got doc with text: {doc.text}")
             if doc.text and not profanity.contains_profanity(doc.text):
                 search_words = doc.text.split(' ')
                 # prevent users from misusing API
@@ -69,9 +70,13 @@ class NOWAutoCompleteExecutor2(Executor):
         self, docs: Optional[DocumentArray] = None, parameters: dict = {}, **kwargs
     ):
         for doc in docs:
-            doc.tags['suggestions'] = self.flatten_list(
+            print(f"got doc with text: {doc.text}")
+            suggestions = self.flatten_list(
                 self.auto_complete.search(doc.text, max_cost=3, size=5)
             )
+            print(f"have suggestions for it: {suggestions}")
+
+            doc.tags['suggestions'] = suggestions
         return docs
 
     def flatten_list(self, regular_list):
