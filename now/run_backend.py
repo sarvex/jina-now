@@ -41,7 +41,7 @@ def run(
 
     if user_input.dataset_type in [DatasetTypes.DEMO, DatasetTypes.DOCARRAY]:
         user_input.files_to_dataclass_fields = {
-            field: field for field in user_input.search_fields
+            field: field for field in user_input.index_fields
         }
         data_class = None
     else:
@@ -159,7 +159,7 @@ def call_flow(
 
     # Pop app_instance from parameters to be passed to the flow
     parameters['user_input'].pop('app_instance', None)
-    parameters['user_input'].pop('search_fields_modalities', None)
+    parameters['user_input'].pop('index_fields_modalities', None)
     parameters['user_input'].pop('filter_fields_modalities', None)
     task_config = parameters['user_input'].pop('task_config', None)
     if task_config:

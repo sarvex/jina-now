@@ -30,7 +30,10 @@ def _get_multi_modal_format(document: Document) -> Document:
     elif document.text:
         new_doc = Document(chunks=[Document(text=document.text)])
         modality = Modalities.TEXT
+    elif document.tensor:
+        new_doc = Document(chunks=[Document(tensor=document.tensor)])
     else:
+        document.summary()
         raise Exception(f'Document {document} cannot be transformed.')
     if modality:
         new_doc.chunks[0].modality = modality
@@ -63,7 +66,7 @@ def transform_uni_modal_data(documents: DocumentArray) -> DocumentArray:
 
 
 def transform_multi_modal_data(
-    documents: DocumentArray, field_names: Dict[int, str], search_fields: List[str]
+    documents: DocumentArray, field_names: Dict[int, str], index_fields: List[str]
 ):
     """
     Transforms multimodal data into standardized format, which looks like this:
@@ -84,7 +87,7 @@ def transform_multi_modal_data(
         for position, chunk in enumerate(document.chunks):
             field_name = field_names[position]
             modality = chunk.modality or _get_modality(chunk)
-            if field_name in search_fields:
+            if field_name in index_fields:
                 new_chunks.append(
                     Document(
                         content=chunk.content,
@@ -106,13 +109,13 @@ def transform_multi_modal_data(
 
 def transform_docarray(
     documents: Union[Document, DocumentArray],
-    search_fields: List[str],
+    index_fields: List[str],
 ) -> DocumentArray:
     """
     Gets either multimodal or unimodal data and turns it into standardized format.
 
     :param documents: Data to be transformed.
-    :param search_fields: Field names for neural search. Only required if multimodal data is given.
+    :param index_fields: Field names for neural search. Only required if multimodal data is given.
     """
     if not (documents and documents[0].chunks):
         documents = transform_uni_modal_data(documents=documents)

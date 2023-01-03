@@ -11,7 +11,7 @@ def test_elasticsearch_data_loading(setup_online_shop_db, es_connection_params):
     user_input = UserInput()
     user_input.dataset_type = DatasetTypes.ELASTICSEARCH
     user_input.es_index_name = index_name
-    user_input.search_fields = ['uris', 'title', 'text']
+    user_input.index_fields = ['uris', 'title', 'text']
     user_input.es_host_name = connection_str
 
     transformed_docs = load_data(user_input=user_input)

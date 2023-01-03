@@ -10,7 +10,7 @@ from deployment.bff.app.v1.models.search import (
     SearchRequestModel,
     SearchResponseModel,
 )
-from deployment.bff.app.v1.routers.helper import field_dict_to_doc, jina_client_post
+from deployment.bff.app.v1.routers.helper import field_dict_to_mm_doc, jina_client_post
 from now.common.options import construct_app
 
 
@@ -44,7 +44,9 @@ class Client:
             raise NotImplementedError('Only search endpoint is supported for now')
 
         if 'text' in kwargs:
-            query_doc = field_dict_to_doc({'text_field': {'text': kwargs.pop('text')}})
+            query_doc = field_dict_to_mm_doc(
+                {'query_text': {'text': kwargs.pop('text')}}
+            )
 
         app_request = SearchRequestModel(
             host=f'grpcs://nowapi-{self.jcloud_id}.wolf.jina.ai',

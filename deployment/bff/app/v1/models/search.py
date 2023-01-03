@@ -30,7 +30,10 @@ class SearchRequestModel(BaseRequestModel):
         description='dictionary with filters for search results  {"tag_name" : "tag_value"}',
     )
     query: Dict[str, ModalityModel] = Field(
-        default={}, description='Dictionary which maps the field name to its value. '
+        default={},
+        description='Dictionary which maps the field name to its value. Currently only supports one field. '
+        'Use as key query_text, query_image, or query_video, for a query with text, image, or'
+        'video.',
     )
 
 

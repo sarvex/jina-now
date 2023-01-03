@@ -40,16 +40,16 @@ AVAILABLE_SOON = 'will be available in upcoming versions'
 
 
 def _create_app_from_user_input(user_input: UserInput, **kwargs):
-    if len(user_input.search_fields) != 1:
+    if len(user_input.index_fields) != 1:
         raise ValueError(
-            'Currently only one search field is supported. Please choose one field.'
+            'Currently only one index field is supported. Please choose one field.'
         )
-    if user_input.search_fields[0] not in user_input.search_fields_modalities.keys():
+    if user_input.index_fields[0] not in user_input.index_fields_modalities.keys():
         raise ValueError(
-            f'Search field specified is not among the search candidate fields. Please '
-            f'choose one of the following: {user_input.search_fields_modalities.keys()}'
+            f'Index field specified is not among the candidate fields. Please '
+            f'choose one of the following: {user_input.index_fields_modalities.keys()}'
         )
-    _search_modality = user_input.search_fields_modalities[user_input.search_fields[0]]
+    _search_modality = user_input.index_fields_modalities[user_input.index_fields[0]]
     app_name = Apps.SEARCH_APP
     user_input.app_instance = construct_app(app_name)
 
@@ -194,18 +194,18 @@ AWS_REGION_NAME = DialogOptions(
 # --------------------------------------------- #
 
 
-SEARCH_FIELDS = DialogOptions(
-    name='search_fields',
+INDEX_FIELDS = DialogOptions(
+    name='index_fields',
     choices=lambda user_input, **kwargs: [
         {'name': field, 'value': field}
-        for field in user_input.search_fields_modalities.keys()
+        for field in user_input.index_fields_modalities.keys()
     ],
     prompt_message='Please select the index fields:',
     prompt_type='checkbox',
     is_terminal_command=True,
     post_func=_create_app_from_user_input,
     argparse_kwargs={
-        'type': lambda s: s.split(',') if s else UserInput().search_fields
+        'type': lambda fields: fields.split(',') if fields else UserInput().index_fields
     },
 )
 
@@ -214,14 +214,14 @@ FILTER_FIELDS = DialogOptions(
     choices=lambda user_input, **kwargs: [
         {'name': field, 'value': field}
         for field in user_input.filter_fields_modalities.keys()
-        if field not in user_input.search_fields
+        if field not in user_input.index_fields
     ],
     prompt_message='Please select the filter fields',
     prompt_type='checkbox',
     depends_on=DATASET_TYPE,
     conditional_check=lambda user_input: user_input.filter_fields_modalities is not None
     and len(
-        set(user_input.filter_fields_modalities.keys()) - set(user_input.search_fields)
+        set(user_input.filter_fields_modalities.keys()) - set(user_input.index_fields)
     )
     > 0,
 )
@@ -419,7 +419,7 @@ def _cluster_running(cluster):
 
 app_config = [APP_NAME]
 data_type = [DATASET_TYPE]
-data_fields = [SEARCH_FIELDS, FILTER_FIELDS]
+data_fields = [INDEX_FIELDS, FILTER_FIELDS]
 data_demo = [DEMO_DATA]
 data_da = [DOCARRAY_NAME, DATASET_PATH]
 data_s3 = [DATASET_PATH_S3, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION_NAME]

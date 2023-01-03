@@ -4,11 +4,11 @@ from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.139-fix-dataclass-8'
-NOW_PREPROCESSOR_VERSION = '0.0.117-test-local-end-to-end-31'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.139-fix-pg-bff-blob-1'
+NOW_PREPROCESSOR_VERSION = '0.0.117-refactor-rename-fields-19'
 NOW_QDRANT_INDEXER_VERSION = '0.0.138-refactor-remove-finetuning-6'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.139-test-local-end-to-end-12'
-NOW_AUTOCOMPLETE_VERSION = '0.0.7-refactor-remove-finetuning-6'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.139-test-local-end-to-end-17'
+NOW_AUTOCOMPLETE_VERSION = '0.0.7-create-mm-docs-in-bff-18'
 
 
 class Modalities(BetterEnum):

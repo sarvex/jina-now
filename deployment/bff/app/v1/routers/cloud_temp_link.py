@@ -24,11 +24,11 @@ def temp_link(data: CloudTempLinkRequestModel):
         docs.append(Document(id=id, uri=uri))
 
     docs = jina_client_post(
-        data=data,
+        request_model=data,
         inputs=DocumentArray(docs),
         endpoint='/temp_link_cloud_bucket',
         parameters={},
-        target_executor=r'\Asecurity_check\Z|\Apreprocessor\Z',
+        target_executor=r'\Apreprocessor\Z',
     )
 
     return docs.to_dict()

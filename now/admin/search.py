@@ -30,7 +30,7 @@ else:
         'host': host,
         'port': port,
         'api_key': API_KEY,
-        'fields': {'search_field_name': {'text': 'girl on motorbike'}},
+        'fields': {'index_field_name': {'text': 'girl on motorbike'}},
     }
 
     response = requests.post(
