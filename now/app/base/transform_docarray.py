@@ -120,13 +120,11 @@ def transform_docarray(
     if not (documents and documents[0].chunks):
         documents = transform_uni_modal_data(documents=documents)
     else:
-        fields = documents[0]._metadata['multi_modal_schema'].keys()
         for doc in documents:
             new_chunks = []
-            for field in fields:
-                if field in index_fields:
-                    chunk = doc.__getattr__(field)
-                    chunk.modality = chunk.modality or _get_modality(chunk)
-                    new_chunks.append(chunk)
-            doc.chunks = new_chunks
+            for field in index_fields:
+                chunk = doc.__getattr__(field)
+                chunk.modality = chunk.modality or _get_modality(chunk)
+                new_chunks.append(chunk)
+            doc.chunks = new_chunks or doc.chunks
     return documents
