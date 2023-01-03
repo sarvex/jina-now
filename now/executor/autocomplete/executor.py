@@ -7,6 +7,7 @@ from better_profanity import profanity
 from docarray import DocumentArray
 from fast_autocomplete import AutoComplete
 
+from now.constants import ACCESS_PATHS
 from now.executor.abstract.auth.auth import (
     SecurityLevel,
     get_auth_executor_class,
@@ -48,7 +49,7 @@ class NOWAutoCompleteExecutor2(Executor):
     def search_update(
         self, docs: Optional[DocumentArray] = None, parameters: dict = {}, **kwargs
     ):
-        for doc in docs['@r,c']:
+        for doc in docs[ACCESS_PATHS]:
             if doc.text and not profanity.contains_profanity(doc.text):
                 search_words = doc.text.split(' ')
                 # prevent users from misusing API
