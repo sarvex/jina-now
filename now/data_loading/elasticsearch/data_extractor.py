@@ -69,7 +69,7 @@ class ElasticsearchExtractor:
         In order to retrieve further documents, Elasticsearch documents are retrieved
         in pages of multiple documents. After retrieving a page, its contained
         documents are stored in a document cache. If documents are left in the cache
-        this function returns of those documents. Otherwise, the next page is
+        this function returns one of those documents. Otherwise, the next page is
         queried. If there is no page left, None will be returned.
         :return: extracted document
         """

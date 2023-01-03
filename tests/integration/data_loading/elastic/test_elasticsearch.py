@@ -16,7 +16,7 @@ def test_elasticsearch_data_loading(setup_online_shop_db, es_connection_params):
     user_input.index_fields = ['title']
     user_input.filter_fields = ['text']
     user_input.index_fields_modalities = {'title': Text}
-    user_input.filter_fields_modalities = {'text': Text}
+    user_input.filter_fields_modalities = {'text': str}
     data_class = create_dataclass(user_input)
     user_input.es_host_name = connection_str
 
@@ -24,4 +24,4 @@ def test_elasticsearch_data_loading(setup_online_shop_db, es_connection_params):
 
     assert len(transformed_docs) == 50
     assert isinstance(transformed_docs[0], Document)
-    assert len(transformed_docs[0].chunks) == 2
+    assert len(transformed_docs[0].chunks) == 1

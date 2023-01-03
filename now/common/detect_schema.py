@@ -41,11 +41,7 @@ def _create_candidate_index_filter_fields(field_name_to_value):
         # we determine search modality
         for modality in AVAILABLE_MODALITIES_FOR_SEARCH:
             file_types = SUPPORTED_FILE_TYPES[modality]
-            if (
-                not isinstance(field_value, list)
-                and not isinstance(field_value, dict)
-                and field_value.split('.')[-1] in file_types
-            ):
+            if field_value.split('.')[-1] in file_types:
                 index_fields_modalities[field_name] = MODALITIES_MAPPING[modality]
                 break
             elif field_name == 'uri' and field_value.split('.')[-1] in file_types:
@@ -312,16 +308,24 @@ def set_field_names_elasticsearch(user_input: UserInput, **kwargs):
     es_connector = ElasticsearchConnector(
         connection_str=user_input.es_host_name,
     )
+    query = {"match_all": {}}
     first_docs = list(
-        es_connector.get_documents(index_name=user_input.es_index_name, page_size=1)
+        es_connector.get_documents_by_query(
+            query=query, index_name=user_input.es_index_name, page_size=1
+        )
     )[
         0
     ]  # get one document
     fields_dict = first_docs['_source']
+    fields_dict_cleaned = {
+        field_key: field_value
+        for field_key, field_value in fields_dict.items()
+        if not isinstance(field_value, list) and not isinstance(field_value, dict)
+    }
     (
         user_input.index_fields_modalities,
         user_input.filter_fields_modalities,
-    ) = _create_candidate_index_filter_fields(fields_dict)
+    ) = _create_candidate_index_filter_fields(fields_dict_cleaned)
 
 
 def get_s3_bucket_and_folder_prefix(user_input: UserInput):
