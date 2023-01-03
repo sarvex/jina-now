@@ -185,15 +185,17 @@ class SearchApp(JinaNOWApp):
         ]
 
         encoder2dim = {}
+        # todo: comment out the following if-block to enable sbert for text index fields
+        # if any(
+        #     user_input.index_field_candidates_to_modalities[field] == Text
+        #     for field in user_input.index_fields
+        # ):
+        #     sbert_encoder, sbert_dim = self.sbert_encoder_stub()
+        #     encoder2dim[sbert_encoder['name']] = sbert_dim
+        #     flow_yaml_executors.append(sbert_encoder)
         if any(
-            user_input.index_field_candidates_to_modalities[field] == Text
-            for field in user_input.index_fields
-        ):
-            sbert_encoder, sbert_dim = self.sbert_encoder_stub()
-            encoder2dim[sbert_encoder['name']] = sbert_dim
-            flow_yaml_executors.append(sbert_encoder)
-        if any(
-            user_input.index_field_candidates_to_modalities[field] in [Image, Video]
+            user_input.index_field_candidates_to_modalities[field]
+            in [Image, Video, Text]
             for field in user_input.index_fields
         ):
             clip_encoder, clip_dim = self.clip_encoder_stub(user_input)
