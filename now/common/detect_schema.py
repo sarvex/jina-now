@@ -63,6 +63,21 @@ def _create_candidate_index_filter_fields(field_name_to_value):
     return index_fields_modalities, filter_field_modalities
 
 
+def get_first_file_in_folder_structure(bucket, folder_prefix, dataset_path):
+    try:
+        # gets the first file in an s3 bucket, index 0 is reserved for the root folder name
+        first_file = list(bucket.objects.filter(Prefix=folder_prefix).limit(2))[1].key
+        i = 2
+        while first_file.split('/')[-1].startswith('.'):
+            first_file = list(bucket.objects.filter(Prefix=folder_prefix).limit(i + 1))[
+                i
+            ].key
+            i += 1
+    except Exception as e:
+        raise Exception(f'Empty folder {dataset_path}, data is missing.')
+    return first_file
+
+
 def _extract_field_candidates_docarray(response):
     """
     Downloads the first document in the document array and extracts field names from it
@@ -148,17 +163,6 @@ def set_field_names_from_docarray(user_input: UserInput, **kwargs):
         raise ValueError('DocumentArray does not exist or you do not have access to it')
 
 
-def identify_folder_structure(first_file: str, folder_prefix: str) -> str:
-    """This function identifies the folder structure.
-
-    :param first_file: first file in folder
-    :param folder_prefix: prefix of the s3 folder
-    :return: if all the files are in the same folder then returns 'single_folder' else returns 'sub_folders'
-    """
-    structure_identifier = first_file[len(folder_prefix) :].split('/')
-    return 'sub_folders' if len(structure_identifier) > 1 else 'single_folder'
-
-
 def _extract_field_names_single_folder(
     file_paths: List[str], separator: str
 ) -> Dict[str, str]:
@@ -214,20 +218,15 @@ def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
     """
     bucket, folder_prefix = get_s3_bucket_and_folder_prefix(user_input)
     # user has to provide the folder where folder structure begins
-    try:
-        # gets the first file in an s3 bucket, index 0 is reserved for the root folder name
-        first_file = list(bucket.objects.filter(Prefix=folder_prefix).limit(2))[1].key
-        i = 2
-        while first_file.split('/')[-1].startswith('.'):
-            first_file = list(bucket.objects.filter(Prefix=folder_prefix).limit(i + 1))[
-                i
-            ].key
-    except Exception as e:
-        raise Exception(f'Empty folder, data is missing.')
-
-    folder_structure = identify_folder_structure(first_file, folder_prefix)
+    first_file = get_first_file_in_folder_structure(
+        bucket, folder_prefix, user_input.dataset_path
+    )
+    structure_identifier = first_file[len(folder_prefix) :].split('/')
+    folder_structure = (
+        'sub_folders' if len(structure_identifier) > 1 else 'single_folder'
+    )
     if folder_structure == 'single_folder':
-        objects = list(bucket.objects.filter(Prefix=folder_prefix))
+        objects = list(bucket.objects.filter(Prefix=folder_prefix).limit(100))
         file_paths = [
             obj.key
             for obj in objects
