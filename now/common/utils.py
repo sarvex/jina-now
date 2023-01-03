@@ -164,7 +164,7 @@ def get_indexer_config(
     config = {
         'indexer_uses': f'{name_to_id_map.get("NOWElasticIndexer")}/{NOW_ELASTIC_INDEXER_VERSION}',
         # 'hosts': setup_elastic_service(kubectl_path),
-        'indexer_resources': {'INDEXER_CPU': 0.5, 'INDEXER_MEM': '4G'},
+        'indexer_resources': {'INDEXER_CPU': 0.5, 'INDEXER_MEM': '8G'},
     }
     return config
 
