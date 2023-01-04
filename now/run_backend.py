@@ -133,9 +133,11 @@ def index_docs(user_input, dataset, client):
     Index the data right away
     """
     print(f"▶ indexing {len(dataset)} documents in batches")
+    fields = ', '.join(user_input.index_fields)
+    access_paths = f'@.[{fields}]c'
     params = {
         'user_input': user_input.__dict__,
-        'access_paths': f'@.{user_input.index_fields}c'
+        'access_paths': access_paths
         if user_input.index_fields
         else ACCESS_PATHS,
     }
