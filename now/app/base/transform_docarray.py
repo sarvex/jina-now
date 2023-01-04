@@ -2,6 +2,8 @@ from typing import Dict, List, Union
 
 from docarray import Document, DocumentArray
 
+from now.constants import FILETYPE_TO_MODALITY
+
 
 def _get_modality(document: Document):
     """Detect document's modality based on its `modality` or `mime_type` attributes."""

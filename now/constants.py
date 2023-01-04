@@ -4,10 +4,10 @@ from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.140-feat-one-search-dynamic-flow-34'
-NOW_PREPROCESSOR_VERSION = '0.0.118-feat-one-search-dynamic-flow-34'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.139-feat-one-search-dynamic-flow-34'
-NOW_AUTOCOMPLETE_VERSION = '0.0.7-feat-one-search-dynamic-flow-34'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.140-feat-one-search-dynamic-flow-35'
+NOW_PREPROCESSOR_VERSION = '0.0.118-feat-one-search-dynamic-flow-35'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.139-feat-one-search-dynamic-flow-35'
+NOW_AUTOCOMPLETE_VERSION = '0.0.7-feat-one-search-dynamic-flow-35'
 
 
 class Apps(BetterEnum):
@@ -26,6 +26,11 @@ SUPPORTED_FILE_TYPES = {
     Text: ['txt', 'md'],
     Image: ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'tif'],
     Video: ['gif'],
+}
+FILETYPE_TO_MODALITY = {
+    filetype: modality
+    for modality, filetypes in SUPPORTED_FILE_TYPES.items()
+    for filetype in filetypes
 }
 AVAILABLE_MODALITIES_FOR_SEARCH = [Text, Image, Video]
 AVAILABLE_MODALITIES_FOR_FILTER = [Text]
