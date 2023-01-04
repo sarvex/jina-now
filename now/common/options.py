@@ -71,7 +71,7 @@ def clean_flow_name(user_input: UserInput):
     Clean the flow name to make it valid, removing special characters and spaces.
     """
     user_input.flow_name = ''.join(
-        [c for c in user_input.flow_name if c.isalnum() or c == '-']
+        [c for c in user_input.flow_name or '' if c.isalnum() or c == '-']
     ).lower()
 
 
