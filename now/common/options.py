@@ -360,6 +360,8 @@ def _set_value_to_none(user_input: UserInput):
 
 
 def _add_additional_users(user_input: UserInput, **kwargs):
+    if not kwargs.get('user_emails', None):
+        raise RetryException('Please provide at least one email address')
     user_input.user_emails = (
         [email.strip() for email in kwargs['user_emails'].split(',')]
         if kwargs['user_emails']
