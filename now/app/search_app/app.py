@@ -42,7 +42,7 @@ class SearchApp(JinaNOWApp):
         self.flow_yaml = os.path.join(flow_dir, 'flow-clip.yml')
 
     def setup(
-        self, dataset: DocumentArray, user_input: UserInput, kubectl_path
+        self, dataset: DocumentArray, user_input: UserInput, kubectl_path, data_class
     ) -> Dict:
         indexer_config = get_indexer_config()
         encoder_with = _get_clip_apps_with_dict(user_input)
@@ -61,6 +61,12 @@ class SearchApp(JinaNOWApp):
             indexer_uses=indexer_config['indexer_uses'],
             kubectl_path=kubectl_path,
             indexer_resources=indexer_config['indexer_resources'],
+            data_class=data_class,
         )
-        super().setup(dataset=dataset, user_input=user_input, kubectl_path=kubectl_path)
+        super().setup(
+            dataset=dataset,
+            user_input=user_input,
+            kubectl_path=kubectl_path,
+            data_class=data_class,
+        )
         return env_dict

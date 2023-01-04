@@ -363,15 +363,6 @@ def render_matches():
         for m in matches:
             m.scores['cosine'].value = 1 - m.scores['cosine'].value
         sorted(matches, key=lambda m: m.scores['cosine'].value, reverse=True)
-
-        # filter based on threshold and then group them for pagination
-        matches = DocumentArray(
-            [
-                m
-                for m in matches
-                if m.scores['cosine'].value > st.session_state.min_confidence
-            ]
-        )
         list_matches = [matches[i : i + 9] for i in range(0, len(matches), 9)]
 
         # render the current page or the last page if filtered documents are less
@@ -416,15 +407,6 @@ def render_matches():
                 disabled=st.session_state.disable_prev,
                 on_click=decrement_page,
             )
-
-        st.markdown("""---""")
-        st.session_state.min_confidence = st.slider(
-            'Confidence threshold',
-            0.0,
-            1.0,
-            key='slider',
-            on_change=update_conf,
-        )
 
     if st.session_state.error_msg:
         with st.expander(
@@ -554,16 +536,11 @@ def decrement_page():
     st.session_state.page_number -= 1
 
 
-def update_conf():
-    st.session_state.min_confidence = st.session_state.slider
-
-
 def clear_match():
     st.session_state.matches = (
         None  # TODO move this to when we choose a suggestion or search button
     )
     st.session_state.slider = 0.0
-    st.session_state.min_confidence = 0.0
     st.session_state.snap = None
     st.session_state.error_msg = None
     st.session_state.page_number = 0
@@ -655,9 +632,6 @@ def get_logout_button(url):
 def setup_session_state():
     if 'matches' not in st.session_state:
         st.session_state.matches = None
-
-    if 'min_confidence' not in st.session_state:
-        st.session_state.min_confidence = 0.0
 
     if 'im' not in st.session_state:
         st.session_state.im = None

@@ -24,7 +24,7 @@ def get_request_body():
     return request_body
 
 
-def test_add_key(start_bff):
+def test_add_key(start_bff, tmpdir):
     client = hubble.Client(
         token=get_request_body()['jwt']['token'], max_retries=None, jsonify=True
     )
@@ -33,6 +33,7 @@ def test_add_key(start_bff):
     f = get_flow(
         preprocessor_args={'admin_emails': [admin_email]},
         indexer_args={'admin_emails': [admin_email]},
+        tmpdir=tmpdir,
     )
     with f:
         index_data(f, jwt=get_request_body()['jwt'])

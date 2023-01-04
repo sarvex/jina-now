@@ -150,7 +150,11 @@ class JinaNOWApp:
     # TODO Remove kubectl_path. At the moment, the setup function needs kubectl because of finetuning a custom
     #  dataset with local deployment. In that case, inference is done on the k8s cluster.
     def setup(
-        self, dataset: DocumentArray, user_input: UserInput, kubectl_path: str
+        self,
+        dataset: DocumentArray,
+        user_input: UserInput,
+        kubectl_path: str,
+        data_class,
     ) -> Dict:
         """
         Runs before the flow is deployed.
