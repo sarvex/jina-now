@@ -3,6 +3,7 @@ from typing import Dict, List, Union
 from docarray import Document, DocumentArray
 
 from now.constants import FILETYPE_TO_MODALITY
+from now.utils import docarray_typing_to_modality_string
 
 
 def _get_modality(document: Document):
@@ -11,7 +12,9 @@ def _get_modality(document: Document):
         return document.modality
     elif document.mime_type:
         file_from_mime_type = document.mime_type.split('/')[-1]
-        return FILETYPE_TO_MODALITY[file_from_mime_type]
+        return docarray_typing_to_modality_string(
+            FILETYPE_TO_MODALITY[file_from_mime_type]
+        )
     return None
 
 
