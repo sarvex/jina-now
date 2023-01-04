@@ -8,12 +8,22 @@ import requests
 from now.constants import (
     AVAILABLE_MODALITIES_FOR_FILTER,
     AVAILABLE_MODALITIES_FOR_SEARCH,
+    FILETYPE_TO_MODALITY,
     MODALITIES_MAPPING,
     NOT_AVAILABLE_MODALITIES_FOR_FILTER,
     SUPPORTED_FILE_TYPES,
-    Modalities,
 )
 from now.now_dataclasses import UserInput
+from now.utils import flatten_dict
+
+
+def get_field_type(field_value):
+    split = field_value.split('.')
+    # if there is a file_ending and it is among the known file types
+    if len(split) > 1 and split[-1] in FILETYPE_TO_MODALITY:
+        return split[-1]
+    else:
+        return 'txt'
 
 
 def _create_candidate_index_filter_fields(field_name_to_value):
@@ -38,16 +48,9 @@ def _create_candidate_index_filter_fields(field_name_to_value):
     )
     for field_name, field_value in field_name_to_value.items():
         # we determine search modality
-        for modality in AVAILABLE_MODALITIES_FOR_SEARCH:
-            file_types = SUPPORTED_FILE_TYPES[modality]
-            if field_name.split('.')[-1] in file_types:
-                index_fields_modalities[field_name] = MODALITIES_MAPPING[modality]
-                break
-            elif field_name == 'uri' and field_value.split('.')[-1] in file_types:
-                index_fields_modalities[field_name] = MODALITIES_MAPPING[modality]
-                break
-        if field_name == 'text' and field_value:
-            index_fields_modalities[field_name] = MODALITIES_MAPPING[Modalities.TEXT]
+        file_type = get_field_type(field_value)
+        modality = FILETYPE_TO_MODALITY[file_type]
+        index_fields_modalities[field_name] = MODALITIES_MAPPING[modality]
 
         # we determine if it's a filter field
         if (
@@ -199,8 +202,8 @@ def _extract_field_names_sub_folders(
             else:
                 with open(path) as f:
                     data = json.load(f)
-            for el, value in data.items():
-                field_names[el] = value
+            flattened_dict = flatten_dict(data)
+            field_names.update(flattened_dict)
         else:
             file_name = path.split(separator)[-1]
             field_names[file_name] = file_name
