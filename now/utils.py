@@ -301,3 +301,8 @@ def get_flow_id(host):
 class Dumper(yaml.Dumper):
     def increase_indent(self, flow=False, *args, **kwargs):
         return super().increase_indent(flow=flow, indentless=False)
+
+
+# Add a custom retry exception
+class RetryException(Exception):
+    pass

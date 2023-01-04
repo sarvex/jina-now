@@ -7,8 +7,8 @@ from docarray import Document, DocumentArray
 from docarray.dataclasses import is_multimodal
 
 from now.common.detect_schema import (
+    get_first_file_in_folder_structure_s3,
     get_s3_bucket_and_folder_prefix,
-    identify_folder_structure,
 )
 from now.constants import DatasetTypes
 from now.data_loading.elasticsearch import ElasticsearchExtractor
@@ -140,7 +140,9 @@ def from_files_local(
         file_paths.extend(
             [os.path.join(root, file) for file in files if not file.startswith('.')]
         )
-    folder_structure = identify_folder_structure(file_paths, os.sep)
+    folder_generator = os.walk(path, topdown=True)
+    current_level = folder_generator.__next__()
+    folder_structure = 'sub_folders' if len(current_level[1]) > 0 else 'single_folder'
     if folder_structure == 'sub_folders':
         docs = create_docs_from_subdirectories(
             file_paths, fields, files_to_dataclass_fields, data_class
@@ -253,7 +255,9 @@ def _list_files_from_s3_bucket(
     :return: The DocumentArray with the documents.
     """
     bucket, folder_prefix = get_s3_bucket_and_folder_prefix(user_input)
-
+    first_file = get_first_file_in_folder_structure_s3(
+        bucket, folder_prefix, user_input.dataset_path
+    )
     objects = list(bucket.objects.filter(Prefix=folder_prefix))
     file_paths = [
         obj.key
@@ -261,7 +265,10 @@ def _list_files_from_s3_bucket(
         if not obj.key.endswith('/') and not obj.key.split('/')[-1].startswith('.')
     ]
 
-    folder_structure = identify_folder_structure(file_paths, '/')
+    structure_identifier = first_file[len(folder_prefix) :].split('/')
+    folder_structure = (
+        'sub_folders' if len(structure_identifier) > 1 else 'single_folder'
+    )
 
     with yaspin_extended(
         sigmap=sigmap, text="Listing files from S3 bucket ...", color="green"
