@@ -63,6 +63,7 @@ def test_set_fields_names_from_local_folder(
                 'tags__colors__slug',
                 'tags__ml__name',
                 'link',
+                'test.txt',
                 'tags__custom__slug',
             },
         ),
