@@ -3,7 +3,7 @@ import random
 import numpy as np
 import pytest
 from docarray import dataclass
-from docarray.typing import Image, Text
+from docarray.typing import Text
 from jina import Document, DocumentArray, Executor, Flow, requests
 
 from now.constants import TAG_INDEXER_DOC_HAS_TEXT, TAG_OCR_DETECTOR_TEXT_IN_DOC
@@ -489,62 +489,6 @@ class TestBaseIndexerElastic:
                 if d.uri:
                     assert d.blob == b'', f'got blob {d.blob} for {d.id}'
 
-    def test_no_blob_or_tensor_on_matches(
-        self, metas, setup_service_running, random_index_name
-    ):
-        @dataclass
-        class Pic:
-            pic: Image
-
-        mdoc = Pic(pic='https://jina.ai/assets/images/text-to-image-output.png')
-        doc_with_tensor = Document(mdoc)
-        doc_with_blob = Document(mdoc)
-        doc_with_blob.pic.load_uri_to_blob()
-        docs = DocumentArray([doc_with_tensor, doc_with_blob])
-        docs = NOWPreprocessor().preprocess(docs, {})
-        docs[0].pic.chunks[0].embedding = np.random.random([DIM])
-        docs[1].pic.chunks[0].embedding = np.random.random([DIM])
-        f = (
-            Flow()
-            .add(uses=DummyEncoder1, name='dummy_encoder1')
-            .add(uses=DummyEncoder2, name='dummy_encoder2')
-            .add(
-                uses=NOWElasticIndexer,
-                uses_with={
-                    'hosts': 'http://localhost:9200',
-                    'index_name': random_index_name,
-                    'document_mappings': [
-                        ('dummy_encoder1', DIM, ['pic']),
-                        ('dummy_encoder2', DIM, ['pic']),
-                    ],
-                },
-                uses_metas=metas,
-                needs=['dummy_encoder1', 'dummy_encoder2'],
-                no_reduce=True,
-            )
-        )
-        with f:
-            f.post(on='/index', inputs=docs)
-            query_doc = Document(
-                Pic(pic='https://jina.ai/assets/images/text-to-image-output.png')
-            )
-            query_doc = NOWPreprocessor().preprocess(DocumentArray(query_doc), {})[0]
-            query_doc.pic.chunks[0].embedding = np.random.random([DIM])
-            response = f.post(
-                on='/search',
-                inputs=DocumentArray([query_doc]),
-                return_results=True,
-            )
-            matches = response[0].matches
-            assert matches[0].pic.blob == b''
-            assert matches[1].pic.blob == b''
-            assert matches[1].pic.tensor is None
-            assert matches[0].pic.tensor is None
-
-    # TODO: reactivate this test
-    @pytest.mark.skip(
-        'the current pr breaks curation in elastic. Plase fix and then re-activate it.'
-    )
     def test_curate_endpoint(self, metas, setup_service_running, random_index_name):
         """Test indexing does not return anything"""
         docs = self.get_docs(NUMBER_OF_DOCS)

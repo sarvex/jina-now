@@ -10,6 +10,7 @@ from deployment.bff.app.v1.routers import helper
 from now.executor.autocomplete import NOWAutoCompleteExecutor2
 from now.executor.indexer.elastic import NOWElasticIndexer
 from now.executor.preprocessor import NOWPreprocessor
+from now.now_dataclasses import UserInput
 
 
 def test_offline_flow(monkeypatch, setup_service_running, base64_image_string):
@@ -21,6 +22,9 @@ def test_offline_flow(monkeypatch, setup_service_running, base64_image_string):
     offline_flow = OfflineFlow()
     offline_client = get_client(offline_flow)
     monkeypatch.setattr(helper, 'get_jina_client', lambda **kwargs: offline_client)
+
+    user_input = UserInput()
+    user_input.index_fields = ['product_title', 'product_description', 'product_image']
 
     @dataclass
     class Product:
@@ -41,7 +45,10 @@ def test_offline_flow(monkeypatch, setup_service_running, base64_image_string):
     index_result = offline_flow.post(
         '/index',
         inputs=DocumentArray(Document(product)),
-        parameters={'access_paths': '@cc'},
+        parameters={
+            'access_paths': '@cc',
+            'user_input': user_input.__dict__,
+        },
     )
     print('index_result', index_result)
 

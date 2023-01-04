@@ -96,11 +96,18 @@ class NOWPreprocessor(Executor):
 
     def _preprocess_maybe_cloud_download(self, docs: DocumentArray) -> DocumentArray:
         with tempfile.TemporaryDirectory() as tmpdir:
+            index_fields = []
+            if self.user_input:
+                for index_field in self.user_input.index_fields:
+                    index_fields.append(
+                        self.user_input.files_to_dataclass_fields[index_field]
+                        if index_field in self.user_input.files_to_dataclass_fields
+                        else index_field
+                    )
+
             docs = transform_docarray(
                 documents=docs,
-                search_fields=self.user_input.search_fields
-                if self.user_input and self.user_input.search_fields
-                else [],
+                index_fields=index_fields,
             )
             if (
                 self.user_input
@@ -189,3 +196,15 @@ class NOWPreprocessor(Executor):
             convert_fn(d)
 
         return docs
+
+    @secure_request(on='/get_user_input', level=SecurityLevel.USER)
+    def get_user_input(self, *args, **kwargs) -> Dict:
+        """Returns user input as DocumentArray.
+
+        :return: user input as dictionary
+        """
+        return {
+            'user_input': self.user_input.__dict__
+            if self.user_input is not None
+            else {}
+        }

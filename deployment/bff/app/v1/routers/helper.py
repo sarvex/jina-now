@@ -1,16 +1,28 @@
 import base64
+import itertools
+import os
+from copy import deepcopy
+from tempfile import TemporaryDirectory
 
+import filetype
 from docarray import Document, DocumentArray
 from fastapi import HTTPException, status
 from jina import Client
 from jina.excepts import BadServer
 
+from now.constants import SUPPORTED_FILE_TYPES
+from now.now_dataclasses import UserInput
 
-def field_dict_to_doc(field_dict: dict) -> Document:
+
+def field_dict_to_mm_doc(
+    field_dict: dict, data_class: type, field_names_to_dataclass_fields={}
+) -> Document:
     """Converts a dictionary of field names to their values to a document.
 
     :param field_dict: key-value pairs of field names and their values
-    :return: document
+    :param data_class: @docarray.dataclass class which encapsulates the fields of the multimodal document
+    :param field_names_to_dataclass_fields: mapping of field names to data class fields (e.g. {'title': 'text_0'})
+    :return: multi-modal document
     """
     if len(field_dict) != 1:
         raise ValueError(
@@ -18,71 +30,54 @@ def field_dict_to_doc(field_dict: dict) -> Document:
             f"Can only set one value but have {list(field_dict.keys())}"
         )
 
-    try:
-        for field_name, field_value in field_dict.items():
-            if field_value.text:
-                doc = Document(text=field_value.text)
-            elif field_value.uri:
-                doc = Document(uri=field_value.uri)
-            elif field_value.blob:
-                base64_bytes = field_value.blob.encode('utf-8')
-                blob = base64.decodebytes(base64_bytes)
-                doc = Document(blob=blob, modality='image')
-            else:
-                raise ValueError('None of the attributes uri, text or blob is set.')
-    except BaseException as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f'Not a correct encoded query. Please see the error stack for more information. \n{e}',
-        )
+    with TemporaryDirectory() as tmp_dir:
+        try:
+            if field_names_to_dataclass_fields:
+                field_dict_orig = deepcopy(field_dict)
+                field_dict = {
+                    field_name_data_class: field_dict_orig[file_name]
+                    for file_name, field_name_data_class in field_names_to_dataclass_fields.items()
+                }
+            data_class_kwargs = {}
+            for field_name_data_class, field_value in field_dict.items():
+                # save blob into a temporary file such that it can be loaded by the multimodal class
+                if field_value.blob:
+                    base64_decoded = base64.b64decode(field_value.blob.encode('utf-8'))
+                    file_ending = filetype.guess(base64_decoded)
+                    if file_ending is None:
+                        raise ValueError(
+                            f'Could not guess file type of blob {field_value.blob}. '
+                            f'Please provide a valid file type.'
+                        )
+                    file_ending = file_ending.extension
+                    if file_ending not in itertools.chain(
+                        *SUPPORTED_FILE_TYPES.values()
+                    ):
+                        raise ValueError(
+                            f'File type {file_ending} is not supported. '
+                            f'Please provide a valid file type.'
+                        )
+                    file_path = os.path.join(
+                        tmp_dir, field_name_data_class + '.' + file_ending
+                    )
+                    with open(file_path, 'wb') as f:
+                        f.write(base64_decoded)
+                    field_value.blob = None
+                    field_value.uri = file_path
+                if field_value.content is not None:
+                    data_class_kwargs[field_name_data_class] = field_value.content
+                else:
+                    raise ValueError(
+                        f'Content of field {field_name_data_class} is None. '
+                    )
+            doc = Document(data_class(**data_class_kwargs))
+        except BaseException as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f'Not a correctly encoded request. Please see the error stack for more information. \n{e}',
+            )
 
     return doc
-
-
-def process_query(
-    text: str = '', blob: str = b'', uri: str = None, conditions: dict = None
-) -> Document:
-    """
-    Processes query image or text  into a document and prepares the filetring query
-    for the results.
-    Currently we support '$and' between different conditions means we return results
-    that have all the conditions. Also we only support '$eq' opperand for tag
-    which means a tag should be equal to an exact value.
-    Same query is passed to indexers, in docarray
-    executor we do preprocessing by adding tags__ to the query
-
-    :param text: text of the query
-    :param blob: the blob of the image
-    :param uri: uri of the ressource provided
-    :param conditions: dictionary with the conditions to apply as filter
-        tag should be the key and desired value is assigned as value
-        to the key
-    """
-    if bool(text) + bool(blob) + bool(uri) != 1:
-        raise ValueError(
-            f'Can only set one value but have text={text}, blob={blob}, uri={uri}'
-        )
-    try:
-        if uri:
-            query_doc = Document(uri=uri)
-        elif text:
-            query_doc = Document(text=text, mime_type='text')
-        elif blob:
-            base64_bytes = blob.encode('utf-8')
-            message_bytes = base64.decodebytes(base64_bytes)
-            query_doc = Document(blob=message_bytes, mime_type='image')
-        else:
-            raise ValueError('None of the attributes uri, text or blob is set.')
-    except BaseException as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f'Not a correct encoded query. Please see the error stack for more information. \n{e}',
-        )
-    query = (
-        {key: {'$eq': value} for key, value in conditions.items()} if conditions else {}
-    )
-
-    return query_doc, query
 
 
 def get_jina_client(host: str, port: int) -> Client:
@@ -93,11 +88,16 @@ def get_jina_client(host: str, port: int) -> Client:
 
 
 def jina_client_post(
-    data, endpoint: str, inputs, parameters=None, *args, **kwargs
+    request_model,
+    endpoint: str,
+    inputs: Document,
+    parameters=None,
+    *args,
+    **kwargs,
 ) -> DocumentArray:
     """Posts to the endpoint of the Jina client.
 
-    :param data: contains the request model of the flow
+    :param request_model: contains the request model of the flow
     :param endpoint: endpoint which shall be called, e.g. '/index' or '/search'
     :param inputs: document(s) which shall be passed in
     :param parameters: parameters to pass to the executors, e.g. jwt for securitization or limit for search
@@ -107,12 +107,12 @@ def jina_client_post(
     """
     if parameters is None:
         parameters = {}
-    client = get_jina_client(host=data.host, port=data.port)
+    client = get_jina_client(host=request_model.host, port=request_model.port)
     auth_dict = {}
-    if data.api_key is not None:
-        auth_dict['api_key'] = data.api_key
-    if data.jwt is not None:
-        auth_dict['jwt'] = data.jwt
+    if request_model.api_key is not None:
+        auth_dict['api_key'] = request_model.api_key
+    if request_model.jwt is not None:
+        auth_dict['jwt'] = request_model.jwt
     try:
         result = client.post(
             endpoint,
@@ -134,3 +134,30 @@ def jina_client_post(
         else:
             raise e
     return result
+
+
+def fetch_user_input(request_model) -> UserInput:
+    """Fetches the user input from the preprocessor.
+
+    :param request_model: contains the request model of the flow
+    :return: user input
+    """
+    client = get_jina_client(host=request_model.host, port=request_model.port)
+    auth_dict = {}
+    if request_model.api_key is not None:
+        auth_dict['api_key'] = request_model.api_key
+    if request_model.jwt is not None:
+        auth_dict['jwt'] = request_model.jwt
+    user_input_flow_response = client.post(
+        '/get_user_input',
+        inputs=DocumentArray(),
+        parameters=auth_dict,
+        target_executor=r'\Apreprocessor\Z',
+        return_responses=True,
+    )[0].parameters
+    user_input_dict = list(user_input_flow_response['__results__'].values())[0][
+        'user_input'
+    ]
+    user_input = UserInput(**user_input_dict)
+
+    return user_input

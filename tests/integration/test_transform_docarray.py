@@ -32,12 +32,12 @@ def multi_modal_data(resources_folder_path):
 
     p1 = Page(
         main_text='main text 1',
-        image=os.path.join(resources_folder_path, 'image', '5109112832.jpg'),
+        image=os.path.join(resources_folder_path, 'image', 'a.jpg'),
         color='red',
     )
     p2 = Page(
         main_text='not main text',
-        image=os.path.join(resources_folder_path, 'image', '6785325056.jpg'),
+        image=os.path.join(resources_folder_path, 'image', 'b.jpg'),
         color='blue',
     )
     pages = [p1, p2]
@@ -56,19 +56,26 @@ def test_transform_inside_flow(
     user_input = UserInput()
     if input_type == 'demo_dataset':
         app_instance = SearchApp()
-        user_input.search_fields = []
+        user_input.index_fields = []
         user_input.dataset_type = DatasetTypes.DEMO
         user_input.dataset_name = DemoDatasetNames.TUMBLR_GIFS_10K
-        data = load_data(app_instance, user_input)[:2]
-        user_input.search_fields = ['description', 'video']
+        data = load_data(user_input)[:2]
+        user_input.index_fields = ['description', 'video']
+        user_input.files_to_dataclass_fields = {
+            'description': 'description',
+            'video': 'video',
+        }
     elif input_type == 'single_modal':
         app_instance = SearchApp()
         data = single_modal_data
     else:
         app_instance = SearchApp()
         data = multi_modal_data
-        user_input.search_fields = ['main_text', 'image']
-
+        user_input.index_fields = ['main_text', 'image']
+        user_input.files_to_dataclass_fields = {
+            'main_text': 'main_text',
+            'image': 'image',
+        }
     query = Document(text='query_text')
 
     f = (
