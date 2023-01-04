@@ -16,7 +16,11 @@ from now.now_dataclasses import UserInput
 @pytest.mark.parametrize(
     'dataset_path, index_field_names, filter_field_names',
     [
-        ('gif_resource_path', {'file.txt', 'file.gif'}, {'file.txt', 'a1', 'a2'}),
+        (
+            'gif_resource_path',
+            {'file.txt', 'file.gif', 'a1', 'a2'},
+            {'file.txt', 'a1', 'a2'},
+        ),
         ('image_resource_path', {'.jpg'}, set()),
     ],
 )
@@ -41,9 +45,19 @@ def test_set_fields_names_from_local_folder(
                 'image.png',
                 'test.txt',
             },
-            {'test.txt', 'tags', 'id', 'link', 'title'},
+            {
+                'id',
+                'tags__ml__slug',
+                'title',
+                'tags__colors__name',
+                'tags__custom__name',
+                'tags__colors__slug',
+                'tags__ml__name',
+                'link',
+                'tags__custom__slug',
+            },
         ),
-        ('folder1/', {'.png', '.txt'}, {'.txt', '.json'}),
+        ('folder1/', {'.png', '.txt', '.json'}, {'.txt', '.json'}),
     ],
 )
 def test_set_field_names_from_s3_bucket(
