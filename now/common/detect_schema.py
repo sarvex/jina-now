@@ -1,7 +1,6 @@
 import itertools
 import json
 import os
-from collections.abc import MutableMapping
 from typing import Dict, List
 
 import requests
@@ -15,6 +14,7 @@ from now.constants import (
     SUPPORTED_FILE_TYPES,
 )
 from now.now_dataclasses import UserInput
+from now.utils import flatten_dict
 
 
 def get_field_type(field_value):
@@ -191,22 +191,6 @@ def _extract_field_names_single_folder(
     return {file_ending: file_ending for file_ending in file_endings}
 
 
-def nested_dict_to_attrs(d, parent_key='', sep='__'):
-    """
-    This function converts a nested dictionary into a dictionary of attirbutes using '__' as a separator.
-    Example:
-        {'a': {'b': {'c': 1, 'd': 2}}} -> {'a__b__c': 1, 'a__b__c': 2}
-    """
-    items = []
-    for k, v in d.items():
-        new_key = parent_key + sep + k if parent_key else k
-        if isinstance(v, MutableMapping):
-            items.extend(nested_dict_to_attrs(v, new_key, sep=sep).items())
-        else:
-            items.append((new_key, str(v)))
-    return dict(items)
-
-
 def _extract_field_names_sub_folders(
     file_paths: List[str], separator: str, s3_bucket=None
 ) -> Dict[str, str]:
@@ -227,7 +211,7 @@ def _extract_field_names_sub_folders(
             else:
                 with open(path) as f:
                     data = json.load(f)
-            flattened_dict = nested_dict_to_attrs(data)
+            flattened_dict = flatten_dict(data)
             field_names.update(flattened_dict)
         else:
             file_name = path.split(separator)[-1]
@@ -248,6 +232,7 @@ def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
         user_input
     )  # user has to provide the folder where folder structure begins
 
+    folder_prefix = '2017/02'
     objects = list(bucket.objects.filter(Prefix=folder_prefix))
     file_paths = [
         obj.key
