@@ -1,48 +1,11 @@
 import pathlib
 import time
-from typing import Dict, Optional
 
 from docarray.typing import Image, Video
 
-from now.constants import (
-    NOW_ELASTIC_INDEXER_VERSION,
-    NOW_QDRANT_INDEXER_VERSION,
-    TAG_INDEXER_DOC_HAS_TEXT,
-)
+from now.constants import TAG_INDEXER_DOC_HAS_TEXT
 from now.deployment.deployment import cmd
-from now.executor.name_to_id_map import name_to_id_map
 from now.now_dataclasses import UserInput
-
-
-def get_indexer_config(
-    elastic: Optional[bool] = False,
-    kubectl_path: str = None,
-    deployment_type: str = None,
-) -> Dict:
-    """Depending on the number of samples, which will be indexed, indexer and its resources are determined.
-
-    :param elastic: hack to use NOWElasticIndexer, should be changed in future.
-    :param kubectl_path: path to kubectl binary
-    :param deployment_type: deployment type, e.g. 'remote' or 'local'
-    :return: dict with indexer and its resource config
-    """
-
-    if elastic and deployment_type == 'local':
-        config = {
-            'indexer_uses': f'{name_to_id_map.get("NOWElasticIndexer")}/{NOW_ELASTIC_INDEXER_VERSION}',
-            'hosts': setup_elastic_service(kubectl_path),
-        }
-    elif elastic and deployment_type == 'remote':
-        raise ValueError(
-            'NOWElasticIndexer is currently not supported for remote deployment. Please use local deployment.'
-        )
-    else:
-        config = {
-            'indexer_uses': f'{name_to_id_map.get("NOWQdrantIndexer16")}/{NOW_QDRANT_INDEXER_VERSION}'
-        }
-    config['indexer_resources'] = {'INDEXER_CPU': 0.5, 'INDEXER_MEM': '4G'}
-
-    return config
 
 
 def _extract_tags_for_indexer(user_input: UserInput):

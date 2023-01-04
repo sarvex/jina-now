@@ -6,15 +6,13 @@ from jina import Client
 from jina.helper import random_port
 
 from now.app.base.app import JinaNOWApp
-from now.app.search_app.indexer_utils import (
-    _extract_tags_for_indexer,
-    get_indexer_config,
-)
+from now.app.search_app.indexer_utils import _extract_tags_for_indexer
 from now.constants import (
     ACCESS_PATHS,
     EXECUTOR_PREFIX,
     EXTERNAL_CLIP_HOST,
     NOW_AUTOCOMPLETE_VERSION,
+    NOW_ELASTIC_INDEXER_VERSION,
     NOW_PREPROCESSOR_VERSION,
     Apps,
 )
@@ -133,13 +131,12 @@ class SearchApp(JinaNOWApp):
         }, 768
 
     @staticmethod
-    def indexer_stub(user_input, encoder2dim: Dict[str, int]) -> Dict:
+    def indexer_stub(user_input: UserInput, encoder2dim: Dict[str, int]) -> Dict:
         """Creates indexer stub.
 
         :param user_input: User input
         :param encoder2dim: maps encoder name to its output dimension
         """
-        indexer_config = get_indexer_config()
         tags = _extract_tags_for_indexer(user_input)
         if len(encoder2dim) != 1:
             raise ValueError(
@@ -151,16 +148,23 @@ class SearchApp(JinaNOWApp):
         return {
             'name': 'indexer',
             'needs': encoder_name,
-            'uses': f'{EXECUTOR_PREFIX}{indexer_config["indexer_uses"]}',
+            'uses': f'{EXECUTOR_PREFIX}{name_to_id_map.get("NOWElasticIndexer")}/{NOW_ELASTIC_INDEXER_VERSION}',
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'uses_with': {
                 'dim': dim,
                 'columns': tags,
+                'document_mappings': [
+                    [
+                        encoder_name,
+                        dim,
+                        ','.join(list(user_input.files_to_dataclass_fields.keys())),
+                    ]
+                ],
             },
             'jcloud': {
                 'resources': {
-                    'memory': indexer_config['indexer_resources']['INDEXER_MEM'],
-                    'cpu': indexer_config['indexer_resources']['INDEXER_CPU'],
+                    'memory': '8G',
+                    'cpu': 0.5,
                     'capacity': 'on-demand',
                 }
             },
