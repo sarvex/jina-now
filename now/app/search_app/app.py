@@ -105,7 +105,7 @@ class SearchApp(JinaNOWApp):
     def clip_encoder_stub(user_input) -> Tuple[Dict, int]:
         is_remote = user_input.deployment_type == 'remote'
         return {
-            'name': 'clip_encoder',
+            'name': 'encoderclip',
             'uses': f'{EXECUTOR_PREFIX}CLIPOnnxEncoder/0.8.1'
             + ('-gpu' if is_remote else ''),
             'host': EXTERNAL_CLIP_HOST if is_remote else '0.0.0.0',
@@ -120,7 +120,7 @@ class SearchApp(JinaNOWApp):
     @staticmethod
     def sbert_encoder_stub() -> Tuple[Dict, int]:
         return {
-            'name': 'sbert_encoder',
+            'name': 'encodersbert',
             'uses': f'{EXECUTOR_PREFIX}TransformerSentenceEncoder',
             'uses_with': {
                 'access_paths': ACCESS_PATHS,
