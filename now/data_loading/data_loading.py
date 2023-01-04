@@ -7,7 +7,7 @@ from docarray import Document, DocumentArray
 from docarray.dataclasses import is_multimodal
 
 from now.common.detect_schema import (
-    get_first_file_in_folder_structure,
+    get_first_file_in_folder_structure_s3,
     get_s3_bucket_and_folder_prefix,
 )
 from now.constants import DatasetTypes
@@ -255,7 +255,7 @@ def _list_files_from_s3_bucket(
     :return: The DocumentArray with the documents.
     """
     bucket, folder_prefix = get_s3_bucket_and_folder_prefix(user_input)
-    first_file = get_first_file_in_folder_structure(
+    first_file = get_first_file_in_folder_structure_s3(
         bucket, folder_prefix, user_input.dataset_path
     )
     objects = list(bucket.objects.filter(Prefix=folder_prefix))

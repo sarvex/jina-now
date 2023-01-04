@@ -24,7 +24,7 @@ def test_offline_flow(monkeypatch, setup_service_running, base64_image_string):
     monkeypatch.setattr(helper, 'get_jina_client', lambda **kwargs: offline_client)
 
     user_input = UserInput()
-    user_input.index_fields = ['product_title', 'product_description', 'product_image']
+    user_input.index_fields = ['image']
 
     @dataclass
     class Product:
@@ -42,9 +42,10 @@ def test_offline_flow(monkeypatch, setup_service_running, base64_image_string):
         product_image=tensor,
         product_description='this is a product',
     )
+    da = DocumentArray.pull('stanford-cars', show_progress=True)
     index_result = offline_flow.post(
         '/index',
-        inputs=DocumentArray(Document(product)),
+        inputs=da[:50],
         parameters={
             'access_paths': '@cc',
             'user_input': user_input.__dict__,
@@ -96,7 +97,7 @@ class OfflineFlow:
         self.preprocessor = NOWPreprocessor()
         self.encoder = MockedEncoder()
         document_mappings = [
-            ('clip', 5, ['product_title', 'product_image', 'product_description']),
+            ('clip', 5, ['image']),
         ]
         self.indexer = NOWElasticIndexer(
             document_mappings=document_mappings,
