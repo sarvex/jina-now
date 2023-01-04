@@ -90,7 +90,7 @@ def get_jina_client(host: str, port: int) -> Client:
 def jina_client_post(
     request_model,
     endpoint: str,
-    inputs: DocumentArray,
+    inputs: Document,
     parameters=None,
     *args,
     **kwargs,
