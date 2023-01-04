@@ -261,7 +261,7 @@ class NOWElasticIndexer(Executor):
         offset = int(parameters.get('offset', 0))
         try:
             result = self.es.search(
-                index=self.index_name, size=100, from_=offset, query={'match_all': {}}
+                index=self.index_name, size=limit, from_=offset, query={'match_all': {}}
             )['hits']['hits']
         except Exception:
             self.logger.info(traceback.format_exc())
