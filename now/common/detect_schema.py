@@ -1,6 +1,7 @@
 import itertools
 import json
 import os
+from collections.abc import MutableMapping
 from typing import Dict, List
 
 import requests
@@ -8,12 +9,21 @@ import requests
 from now.constants import (
     AVAILABLE_MODALITIES_FOR_FILTER,
     AVAILABLE_MODALITIES_FOR_SEARCH,
+    FILETYPE_TO_MODALITY,
     MODALITIES_MAPPING,
     NOT_AVAILABLE_MODALITIES_FOR_FILTER,
     SUPPORTED_FILE_TYPES,
-    Modalities,
 )
 from now.now_dataclasses import UserInput
+
+
+def get_field_type(field_value):
+    split = field_value.split('.')
+    # if there is a file_ending and it is among the known file types
+    if len(split) > 1 and split[-1] in FILETYPE_TO_MODALITY:
+        return split[-1]
+    else:
+        return 'txt'
 
 
 def _create_candidate_index_filter_fields(field_name_to_value):
@@ -38,16 +48,9 @@ def _create_candidate_index_filter_fields(field_name_to_value):
     )
     for field_name, field_value in field_name_to_value.items():
         # we determine search modality
-        for modality in AVAILABLE_MODALITIES_FOR_SEARCH:
-            file_types = SUPPORTED_FILE_TYPES[modality]
-            if field_name.split('.')[-1] in file_types:
-                index_fields_modalities[field_name] = MODALITIES_MAPPING[modality]
-                break
-            elif field_name == 'uri' and field_value.split('.')[-1] in file_types:
-                index_fields_modalities[field_name] = MODALITIES_MAPPING[modality]
-                break
-        if field_name == 'text' and field_value:
-            index_fields_modalities[field_name] = MODALITIES_MAPPING[Modalities.TEXT]
+        file_type = get_field_type(field_value)
+        modality = FILETYPE_TO_MODALITY[file_type]
+        index_fields_modalities[field_name] = MODALITIES_MAPPING[modality]
 
         # we determine if it's a filter field
         if (
@@ -188,6 +191,22 @@ def _extract_field_names_single_folder(
     return {file_ending: file_ending for file_ending in file_endings}
 
 
+def nested_dict_to_attrs(d, parent_key='', sep='__'):
+    """
+    This function converts a nested dictionary into a dictionary of attirbutes using '__' as a separator.
+    Example:
+        {'a': {'b': {'c': 1, 'd': 2}}} -> {'a__b__c': 1, 'a__b__c': 2}
+    """
+    items = []
+    for k, v in d.items():
+        new_key = parent_key + sep + k if parent_key else k
+        if isinstance(v, MutableMapping):
+            items.extend(nested_dict_to_attrs(v, new_key, sep=sep).items())
+        else:
+            items.append((new_key, str(v)))
+    return dict(items)
+
+
 def _extract_field_names_sub_folders(
     file_paths: List[str], separator: str, s3_bucket=None
 ) -> Dict[str, str]:
@@ -208,8 +227,8 @@ def _extract_field_names_sub_folders(
             else:
                 with open(path) as f:
                     data = json.load(f)
-            for el, value in data.items():
-                field_names[el] = value
+            flattened_dict = nested_dict_to_attrs(data)
+            field_names.update(flattened_dict)
         else:
             file_name = path.split(separator)[-1]
             field_names[file_name] = file_name
@@ -239,7 +258,7 @@ def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
     if folder_structure == 'single_folder':
         field_names = _extract_field_names_single_folder(file_paths, '/')
     elif folder_structure == 'sub_folders':
-        first_folder = '/'.join(objects[1].key.split('/')[:-1])
+        first_folder = '/'.join(file_paths[1].split('/')[:-1])
         first_folder_objects = [
             obj.key
             for obj in bucket.objects.filter(Prefix=first_folder)
