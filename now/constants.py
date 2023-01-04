@@ -6,7 +6,7 @@ from now.utils import BetterEnum
 
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.140-update-documentation-4'
 NOW_PREPROCESSOR_VERSION = '0.0.118-feat-integrate-elastic-33'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.140-filter-fields-for-indexing2'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.140-filter-fields-for-indexing3'
 NOW_AUTOCOMPLETE_VERSION = '0.0.8-feat-integrate-elastic-33'
 
 

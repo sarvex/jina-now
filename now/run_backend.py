@@ -137,9 +137,7 @@ def index_docs(user_input, dataset, client):
     access_paths = f'@.[{fields}]c'
     params = {
         'user_input': user_input.__dict__,
-        'access_paths': access_paths
-        if user_input.index_fields
-        else ACCESS_PATHS,
+        'access_paths': access_paths if user_input.index_fields else ACCESS_PATHS,
     }
     if user_input.secured:
         params['jwt'] = user_input.jwt
