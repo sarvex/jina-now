@@ -5,9 +5,8 @@ from docarray import Document
 from jina import Flow
 
 from deployment.bff.app.app import run_server
-from now.constants import ACCESS_PATHS, EXTERNAL_CLIP_HOST, NOW_QDRANT_INDEXER_VERSION
+from now.constants import ACCESS_PATHS, EXTERNAL_CLIP_HOST
 from now.executor.indexer.in_memory import InMemoryIndexer
-from now.executor.name_to_id_map import name_to_id_map
 from now.executor.preprocessor import NOWPreprocessor
 from now.now_dataclasses import UserInput
 
@@ -39,9 +38,8 @@ def index_data(f, **kwargs):
     )
 
 
-def get_flow(use_qdrant=True, preprocessor_args=None, indexer_args=None):
+def get_flow(preprocessor_args=None, indexer_args=None, tmpdir=None):
     """
-    :param use_qdrant: if True, uses the NOWQdrantIndexer16 indexer, otherwise InMemoryIndexer.
     :param preprocessor_args: additional arguments for the preprocessor,
         e.g. {'admin_emails': [admin_email]}
     :param indexer_args: additional arguments for the indexer,
@@ -49,11 +47,13 @@ def get_flow(use_qdrant=True, preprocessor_args=None, indexer_args=None):
     """
     preprocessor_args = preprocessor_args or {}
     indexer_args = indexer_args or {}
+    metas = {'workspace': str(tmpdir)}
     f = (
         Flow(port_expose=9089)
         .add(
             uses=NOWPreprocessor,
             uses_with=preprocessor_args,
+            uses_metas=metas,
         )
         .add(
             host=EXTERNAL_CLIP_HOST,
@@ -62,10 +62,9 @@ def get_flow(use_qdrant=True, preprocessor_args=None, indexer_args=None):
             external=True,
         )
         .add(
-            uses=f'jinahub+docker://{name_to_id_map.get("NOWQdrantIndexer16")}/{NOW_QDRANT_INDEXER_VERSION}'
-            if use_qdrant
-            else InMemoryIndexer,
+            uses=InMemoryIndexer,
             uses_with={'dim': 512, **indexer_args},
+            uses_metas=metas,
         )
     )
     return f

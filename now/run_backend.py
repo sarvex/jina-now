@@ -53,7 +53,10 @@ def run(
 
     # Set up the app specific flow and also get the environment variables and its values
     env_dict = app_instance.setup(
-        dataset=dataset, user_input=user_input, kubectl_path=kubectl_path
+        dataset=dataset,
+        user_input=user_input,
+        kubectl_path=kubectl_path,
+        data_class=data_class,
     )
 
     handle_test_mode(env_dict)

@@ -2,9 +2,6 @@ from typing import Dict, List, Union
 
 from docarray import Document, DocumentArray
 
-from now.constants import SUPPORTED_FILE_TYPES
-from now.utils import docarray_typing_to_modality_string
-
 
 def _get_modality(document: Document):
     """Detect document's modality based on its `modality` or `mime_type` attributes."""
@@ -12,9 +9,7 @@ def _get_modality(document: Document):
         return document.modality
     elif document.mime_type:
         file_from_mime_type = document.mime_type.split('/')[-1]
-        for modality_type, file_types in SUPPORTED_FILE_TYPES.items():
-            if file_from_mime_type in file_types:
-                return docarray_typing_to_modality_string(modality_type)
+        return FILETYPE_TO_MODALITY[file_from_mime_type]
     return None
 
 
