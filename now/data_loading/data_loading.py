@@ -254,7 +254,6 @@ def _list_files_from_s3_bucket(
     """
     bucket, folder_prefix = get_s3_bucket_and_folder_prefix(user_input)
 
-    folder_prefix = '2017/02'
     objects = list(bucket.objects.filter(Prefix=folder_prefix))
     file_paths = [
         obj.key

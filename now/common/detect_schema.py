@@ -232,7 +232,6 @@ def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
         user_input
     )  # user has to provide the folder where folder structure begins
 
-    folder_prefix = '2017/02'
     objects = list(bucket.objects.filter(Prefix=folder_prefix))
     file_paths = [
         obj.key
