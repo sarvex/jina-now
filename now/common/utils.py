@@ -54,10 +54,10 @@ def common_get_flow_env_dict(
             f"Therefore, your deployment will be faster.\n"
             f"But make sure to scale it down after deployment."
         )
-    if data_class:
-        index_field_names = list(data_class.__dataclass_fields__.keys())
-    else:
-        index_field_names = user_input.index_fields
+    # if data_class:
+    #     index_field_names = list(data_class.__dataclass_fields__.keys())
+    # else:
+    index_field_names = user_input.index_fields
     config = {
         'JINA_VERSION': jina_version,
         'ENCODER_NAME': f'{EXECUTOR_PREFIX}{encoder_uses}',
