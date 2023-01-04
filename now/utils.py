@@ -269,7 +269,7 @@ def maybe_download_from_s3(
             f.result()
 
 
-def flatten_dict(d, parent_key='', sep='_'):
+def flatten_dict(d, parent_key='', sep='__'):
     """
     This function converts a nested dictionary into a dictionary of attirbutes using '__' as a separator.
     Example:
