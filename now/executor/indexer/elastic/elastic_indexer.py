@@ -81,6 +81,12 @@ class NOWElasticIndexer(Executor):
         self.traversal_paths = traversal_paths
         self.limit = limit
 
+        # hack is needed to work with the current bug in the core where list of list is not possible to pass
+        # at the moment document_mappings arrives as ['clip', 512, 'product_image', 'product_description']
+        if document_mappings and isinstance(document_mappings[0], str):
+            document_mappings[2] = document_mappings[2].split(',')
+            document_mappings = [document_mappings]
+
         # punctuation needs to be removed for the field names
         for document_mapping in document_mappings:
             pass
