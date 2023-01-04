@@ -151,7 +151,8 @@ class NOWBaseIndexer(Executor):
         :param docs: the Documents to index
         :param parameters: dictionary with options for indexing
         """
-        flat_docs = docs[ACCESS_PATHS]
+        access_paths = parameters.get('access_paths', ACCESS_PATHS)
+        flat_docs = docs[access_paths]
         # TODO please remove this check for empty docs
         if len(flat_docs) == 0:
             return

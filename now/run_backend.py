@@ -13,7 +13,7 @@ from tqdm import tqdm
 from now.admin.update_api_keys import update_api_keys
 from now.app.base.app import JinaNOWApp
 from now.common.testing import handle_test_mode
-from now.constants import ACCESS_PATHS, DatasetTypes
+from now.constants import DatasetTypes, ACCESS_PATHS
 from now.data_loading.create_dataclass import create_dataclass
 from now.data_loading.data_loading import load_data
 from now.deployment.flow import deploy_flow
@@ -135,7 +135,9 @@ def index_docs(user_input, dataset, client):
     print(f"▶ indexing {len(dataset)} documents in batches")
     params = {
         'user_input': user_input.__dict__,
-        'access_paths': ACCESS_PATHS,
+        'access_paths': f'@.{user_input.index_fields}c'
+        if user_input.index_fields
+        else ACCESS_PATHS,
     }
     if user_input.secured:
         params['jwt'] = user_input.jwt
