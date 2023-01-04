@@ -6,7 +6,7 @@
         <link rel="canonical" href="https://now.jina.ai/_modules/now/data_loading/elasticsearch/connector.html" />
 
     <link rel="shortcut icon" href="../../../../../_static/favicon.png"/><!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
-        <title>now.data_loading.elasticsearch.connector - NOW 0.0.42 documentation</title>
+        <title>now.data_loading.elasticsearch.connector - NOW 0.0.43 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../../../">
-                <div class="brand">NOW 0.0.42 documentation</div>
+                <div class="brand">NOW 0.0.43 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -288,7 +288,7 @@
         <span class="n">connection_str</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;http://localhost:9200&#39;</span><span class="p">,</span>
         <span class="n">connection_args</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Provides an interface to an Elasticsearch database.</span>
 <span class="sd">        :param connection_str: A connection string for the ES instance. Usually, it</span>
 <span class="sd">            includes url, port, username, password, etc. Typically, it has the form:</span>
@@ -311,7 +311,7 @@
 <div class="viewcode-block" id="ElasticsearchConnector.get_documents"><a class="viewcode-back" href="../../../../../api/now.data_loading.elasticsearch.connector/#now.data_loading.elasticsearch.connector.ElasticsearchConnector.get_documents">[docs]</a>    <span class="k">def</span> <span class="nf">get_documents</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">index_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">page_size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns all documents stored in a specific index</span>
 <span class="sd">        :param index_name: Name of the index in the Elasticsearch database</span>
 <span class="sd">        :param page_size: To retrieve a large number of documents, multiple request are</span>
@@ -337,7 +337,7 @@
 <div class="viewcode-block" id="ElasticsearchConnector.get_documents_by_query"><a class="viewcode-back" href="../../../../../api/now.data_loading.elasticsearch.connector/#now.data_loading.elasticsearch.connector.ElasticsearchConnector.get_documents_by_query">[docs]</a>    <span class="k">def</span> <span class="nf">get_documents_by_query</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">index_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">page_size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Executes an Elasticsearch query on a given index and returns a generator which</span>
 <span class="sd">        yields pages of documents from the query results.</span>
 <span class="sd">        :param query: Elasticsearch query</span>
@@ -363,7 +363,7 @@
             <span class="n">scroll_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">documents</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ElasticsearchConnector.close"><a class="viewcode-back" href="../../../../../api/now.data_loading.elasticsearch.connector/#now.data_loading.elasticsearch.connector.ElasticsearchConnector.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Closes Elasticsearch connection.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">es</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div></div>
@@ -384,7 +384,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Dec 23, 2022.
+                            Last updated on Jan 04, 2023.
                         </div>
                     </div>
                     <div class="right-details">

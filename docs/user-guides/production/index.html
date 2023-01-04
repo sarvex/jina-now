@@ -6,7 +6,7 @@
 <meta property="og:title" content="Production readiness" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://now.jina.ai/user-guides/production/" />
-<meta property="og:site_name" content="NOW 0.0.42 Documentation" />
+<meta property="og:site_name" content="NOW 0.0.43 Documentation" />
 <meta property="og:description" content="Jina NOW apps are production ready: Our goal is to provide you with a search pipeline that is easy to integrate in your production system. NOW also comes with other aspects, such as AWS S3 Bucket data integration, security and finetuning. Models we use: SBERT : sentence-transformers/msmarco-disti..." />
 <meta name="description" content="Jina NOW apps are production ready: Our goal is to provide you with a search pipeline that is easy to integrate in your production system. NOW also comes with other aspects, such as AWS S3 Bucket data integration, security and finetuning. Models we use: SBERT : sentence-transformers/msmarco-disti..." />
 <meta name="twitter:card" content="summary_large_image">
@@ -31,7 +31,7 @@
         <link rel="canonical" href="https://now.jina.ai/user-guides/production.html" />
 
     <link rel="shortcut icon" href="../../_static/favicon.png"/><!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
-        <title>Production readiness - NOW 0.0.42 documentation</title>
+        <title>Production readiness - NOW 0.0.43 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
@@ -164,7 +164,7 @@
         </div>
         <div class="header-center">
             <a href="../../">
-                <div class="brand">NOW 0.0.42 documentation</div>
+                <div class="brand">NOW 0.0.43 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -337,13 +337,6 @@ and provides text suggestions. This is how the API looks like if you would like 
 <p><img width="506" alt="question-emails" src="https://user-images.githubusercontent.com/40893766/191002764-049037fb-6eb7-44a6-8b22-c86687b95e0f.png
 "></p>
 </section>
-<section id="finetuning">
-<h2>Finetuning<a class="headerlink" href="#finetuning" title="Permalink to this heading">#</a></h2>
-<p>To enable finetuning when you create your <code class="docutils literal notranslate"><span class="pre">DocumentArray</span></code>, provide labels inside
-the tags, specifically the <code class="docutils literal notranslate"><span class="pre">finetuner_label</span></code> tag. This triggers finetuning and your embeddings
-will be improved, enhancing the quality of your final NOW search application.</p>
-<p><a class="reference external" href="https://finetuner.jina.ai/walkthrough/create-training-data/#prepare-training-data">Find out more about the training data format</a></p>
-</section>
 <section id="backend-for-frontend">
 <h2>Backend for Frontend<a class="headerlink" href="#backend-for-frontend" title="Permalink to this heading">#</a></h2>
 <p>We provide a BFF (Backend For Frontend) API that you can call for your search application, which makes integrating with your custom
@@ -354,7 +347,7 @@ frontend easy and seamless.</p>
 <section id="update-your-api-keys">
 <h2>Update your API keys<a class="headerlink" href="#update-your-api-keys" title="Permalink to this heading">#</a></h2>
 <p>To update your API keys use this simple script:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python now/admin/update_api_keys.py
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>now/admin/update_api_keys.py
 </pre></div>
 </div>
 </section>
@@ -398,7 +391,7 @@ frontend easy and seamless.</p>
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Dec 23, 2022.
+                            Last updated on Jan 04, 2023.
                         </div>
                     </div>
                     <div class="right-details">
@@ -435,7 +428,6 @@ frontend easy and seamless.</p>
 <li><a class="reference internal" href="#aws-s3-bucket-support">AWS S3 bucket support</a></li>
 <li><a class="reference internal" href="#auto-complete-suggestions">Auto-complete suggestions</a></li>
 <li><a class="reference internal" href="#security">Security</a></li>
-<li><a class="reference internal" href="#finetuning">Finetuning</a></li>
 <li><a class="reference internal" href="#backend-for-frontend">Backend for Frontend</a></li>
 <li><a class="reference internal" href="#update-your-api-keys">Update your API keys</a></li>
 </ul>

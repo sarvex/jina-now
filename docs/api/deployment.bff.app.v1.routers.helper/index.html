@@ -6,7 +6,7 @@
 <meta property="og:title" content="deployment.bff.app.v1.routers.helper module" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://now.jina.ai/api/deployment.bff.app.v1.routers.helper/" />
-<meta property="og:site_name" content="NOW 0.0.42 Documentation" />
+<meta property="og:site_name" content="NOW 0.0.43 Documentation" />
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@JinaAI_">
 <meta name="twitter:creator" content="@JinaAI_">
@@ -29,7 +29,7 @@
         <link rel="canonical" href="https://now.jina.ai/api/deployment.bff.app.v1.routers.helper.html" />
 
     <link rel="shortcut icon" href="../../_static/favicon.png"/><!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
-        <title>deployment.bff.app.v1.routers.helper module - NOW 0.0.42 documentation</title>
+        <title>deployment.bff.app.v1.routers.helper module - NOW 0.0.43 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
@@ -162,7 +162,7 @@
         </div>
         <div class="header-center">
             <a href="../../">
-                <div class="brand">NOW 0.0.42 documentation</div>
+                <div class="brand">NOW 0.0.43 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -180,7 +180,7 @@
                     </svg>
                 </button>
             </div>
-            <label class="toc-overlay-icon toc-header-icon" for="__toc">
+            <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
                 <div class="visually-hidden">Toggle table of contents sidebar</div>
                 <i class="icon">
                     <svg>
@@ -284,7 +284,7 @@
                             </svg>
                         </button>
                     </div>
-                    <label class="toc-overlay-icon toc-content-icon"
+                    <label class="toc-overlay-icon toc-content-icon no-toc"
                            for="__toc">
                         <div class="visually-hidden">Toggle table of contents sidebar</div>
                         <i class="icon">
@@ -295,86 +295,8 @@
                     </label>
                 </div>
                 <article role="main">
-                    <section id="module-deployment.bff.app.v1.routers.helper">
-<span id="deployment-bff-app-v1-routers-helper-module"></span><h1>deployment.bff.app.v1.routers.helper module<a class="headerlink" href="#module-deployment.bff.app.v1.routers.helper" title="Permalink to this heading">#</a></h1>
-<dl class="py function">
-<dt class="sig sig-object py" id="deployment.bff.app.v1.routers.helper.field_dict_to_doc">
-<span class="sig-prename descclassname"><span class="pre">deployment.bff.app.v1.routers.helper.</span></span><span class="sig-name descname"><span class="pre">field_dict_to_doc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field_dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/deployment/bff/app/v1/routers/helper/#field_dict_to_doc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#deployment.bff.app.v1.routers.helper.field_dict_to_doc" title="Permalink to this definition">#</a></dt>
-<dd><p>Converts a dictionary of field names to their values to a document.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>field_dict</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>) – key-value pairs of field names and their values</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Document</span></code></p>
-</dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>document</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="deployment.bff.app.v1.routers.helper.process_query">
-<span class="sig-prename descclassname"><span class="pre">deployment.bff.app.v1.routers.helper.</span></span><span class="sig-name descname"><span class="pre">process_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">blob</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">b''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uri</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conditions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/deployment/bff/app/v1/routers/helper/#process_query"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#deployment.bff.app.v1.routers.helper.process_query" title="Permalink to this definition">#</a></dt>
-<dd><p>Processes query image or text  into a document and prepares the filetring query
-for the results.
-Currently we support ‘$and’ between different conditions means we return results
-that have all the conditions. Also we only support ‘$eq’ opperand for tag
-which means a tag should be equal to an exact value.
-Same query is passed to indexers, in docarray
-executor we do preprocessing by adding <a href="#id1"><span class="problematic" id="id2">tags__</span></a> to the query</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>text</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – text of the query</p></li>
-<li><p><strong>blob</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – the blob of the image</p></li>
-<li><p><strong>uri</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]) – uri of the ressource provided</p></li>
-<li><p><strong>conditions</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>]) – dictionary with the conditions to apply as filter
-tag should be the key and desired value is assigned as value
-to the key</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Document</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="deployment.bff.app.v1.routers.helper.get_jina_client">
-<span class="sig-prename descclassname"><span class="pre">deployment.bff.app.v1.routers.helper.</span></span><span class="sig-name descname"><span class="pre">get_jina_client</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/deployment/bff/app/v1/routers/helper/#get_jina_client"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#deployment.bff.app.v1.routers.helper.get_jina_client" title="Permalink to this definition">#</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Client</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="deployment.bff.app.v1.routers.helper.jina_client_post">
-<span class="sig-prename descclassname"><span class="pre">deployment.bff.app.v1.routers.helper.</span></span><span class="sig-name descname"><span class="pre">jina_client_post</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endpoint</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/deployment/bff/app/v1/routers/helper/#jina_client_post"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#deployment.bff.app.v1.routers.helper.jina_client_post" title="Permalink to this definition">#</a></dt>
-<dd><p>Posts to the endpoint of the Jina client.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> – contains the request model of the flow</p></li>
-<li><p><strong>endpoint</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – endpoint which shall be called, e.g. ‘/index’ or ‘/search’</p></li>
-<li><p><strong>inputs</strong> – document(s) which shall be passed in</p></li>
-<li><p><strong>parameters</strong> – parameters to pass to the executors, e.g. jwt for securitization or limit for search</p></li>
-<li><p><strong>args</strong> – any additional arguments passed to the <cite>client.post</cite> method</p></li>
-<li><p><strong>kwargs</strong> – any additional keyword arguments passed to the <cite>client.post</cite> method</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">DocumentArray</span></code></p>
-</dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>response of <cite>client.post</cite></p>
-</dd>
-</dl>
-</dd></dl>
-
+                    <section id="deployment-bff-app-v1-routers-helper-module">
+<h1>deployment.bff.app.v1.routers.helper module<a class="headerlink" href="#deployment-bff-app-v1-routers-helper-module" title="Permalink to this heading">#</a></h1>
 </section>
 
                 </article>
@@ -393,7 +315,7 @@ to the key</p></li>
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Dec 23, 2022.
+                            Last updated on Jan 04, 2023.
                         </div>
                     </div>
                     <div class="right-details">
@@ -414,30 +336,8 @@ to the key</p></li>
                 
             </footer>
         </div>
-        <aside class="toc-drawer">
+        <aside class="toc-drawer no-toc">
             
-            
-            <div class="toc-sticky toc-scroll">
-                <div class="toc-title-container">
-          <span class="toc-title">
-            Contents
-          </span>
-                </div>
-                <div class="toc-tree-container">
-                    <div class="toc-tree">
-                        <ul>
-<li><a class="reference internal" href="#">deployment.bff.app.v1.routers.helper module</a><ul>
-<li><a class="reference internal" href="#deployment.bff.app.v1.routers.helper.field_dict_to_doc"><code class="docutils literal notranslate"><span class="pre">field_dict_to_doc()</span></code></a></li>
-<li><a class="reference internal" href="#deployment.bff.app.v1.routers.helper.process_query"><code class="docutils literal notranslate"><span class="pre">process_query()</span></code></a></li>
-<li><a class="reference internal" href="#deployment.bff.app.v1.routers.helper.get_jina_client"><code class="docutils literal notranslate"><span class="pre">get_jina_client()</span></code></a></li>
-<li><a class="reference internal" href="#deployment.bff.app.v1.routers.helper.jina_client_post"><code class="docutils literal notranslate"><span class="pre">jina_client_post()</span></code></a></li>
-</ul>
-</li>
-</ul>
-
-                    </div>
-                </div>
-            </div>
             
             
         </aside>

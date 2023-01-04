@@ -6,7 +6,7 @@
 <meta property="og:title" content="Guide to loading your data" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://now.jina.ai/user-guides/input_format/" />
-<meta property="og:site_name" content="NOW 0.0.42 Documentation" />
+<meta property="og:site_name" content="NOW 0.0.43 Documentation" />
 <meta property="og:description" content="Input Formats: When deploying your search app, you will be asked to select the input format of your data. This is the format of the data that you will be sending to the API. We currently support the following input formats for your custom input: DocumentArray, local path or S3 bucket. In this sec..." />
 <meta name="description" content="Input Formats: When deploying your search app, you will be asked to select the input format of your data. This is the format of the data that you will be sending to the API. We currently support the following input formats for your custom input: DocumentArray, local path or S3 bucket. In this sec..." />
 <meta name="twitter:card" content="summary_large_image">
@@ -31,7 +31,7 @@
         <link rel="canonical" href="https://now.jina.ai/user-guides/input_format.html" />
 
     <link rel="shortcut icon" href="../../_static/favicon.png"/><!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
-        <title>Guide to loading your data - NOW 0.0.42 documentation</title>
+        <title>Guide to loading your data - NOW 0.0.43 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
@@ -164,7 +164,7 @@
         </div>
         <div class="header-center">
             <a href="../../">
-                <div class="brand">NOW 0.0.42 documentation</div>
+                <div class="brand">NOW 0.0.43 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -314,6 +314,37 @@ simply provide <code class="docutils literal notranslate"><span class="pre">cat_
 ? Please enter your DocumentArray name: cat_pictures
 </pre></div>
 </div>
+<p>If you are using this <code class="docutils literal notranslate"><span class="pre">DocumentArray</span></code> option, please make sure to model your data using the <code class="docutils literal notranslate"><span class="pre">&#64;dataclass</span></code> decorator from <a class="reference external" href="https://docarray.jina.ai/datatypes/multimodal/">docarray</a>.
+This allows you to model nested and multi-modal data as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">docarray</span> <span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span> <span class="nn">docarray.typing</span> <span class="kn">import</span> <span class="n">Image</span><span class="p">,</span> <span class="n">Text</span>
+
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">Page</span><span class="p">:</span>
+    <span class="n">main_text</span><span class="p">:</span> <span class="n">Text</span>
+    <span class="n">image</span><span class="p">:</span> <span class="n">Image</span>
+    <span class="n">description</span><span class="p">:</span> <span class="n">Text</span>
+</pre></div>
+</div>
+<p>In this dataclass model, we have a <code class="docutils literal notranslate"><span class="pre">Page</span></code> document that has three fields: <code class="docutils literal notranslate"><span class="pre">main_text</span></code>, <code class="docutils literal notranslate"><span class="pre">image</span></code> and <code class="docutils literal notranslate"><span class="pre">description</span></code>.
+You can instantiate the dataclass model with your actual data, and cast it to a <code class="docutils literal notranslate"><span class="pre">Document</span></code> as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">docarray</span> <span class="kn">import</span> <span class="n">Document</span><span class="p">,</span> <span class="n">DocumentArray</span>
+
+<span class="n">page</span> <span class="o">=</span> <span class="n">Page</span><span class="p">(</span>
+    <span class="n">main_text</span><span class="o">=</span><span class="s1">&#39;Hello world&#39;</span><span class="p">,</span>
+    <span class="n">image</span><span class="o">=</span><span class="s1">&#39;apple.png&#39;</span><span class="p">,</span>
+    <span class="n">description</span><span class="o">=</span><span class="s1">&#39;This is the image of an apple&#39;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">doc</span> <span class="o">=</span> <span class="n">Document</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
+<span class="n">da</span> <span class="o">=</span> <span class="n">DocumentArray</span><span class="p">([</span><span class="n">doc</span><span class="p">])</span>
+<span class="n">da</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;my_pages&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In the above example, we instantiate a <code class="docutils literal notranslate"><span class="pre">Page</span></code> document with some dummy data, and then cast it to a <code class="docutils literal notranslate"><span class="pre">Document</span></code>,
+and finally add it to a <code class="docutils literal notranslate"><span class="pre">DocumentArray</span></code> which we can push to Jina Cloud under the name “my_pages”.
+This is the same name that we will use when deploying our search app with NOW.</p>
 <p>More information about how to create and push your own <code class="docutils literal notranslate"><span class="pre">DocumentArray</span></code> can be found <a class="reference external" href="https://docarray.jina.ai/">here</a>.</p>
 </section>
 <section id="local-folder">
@@ -401,7 +432,7 @@ and list them for you to choose from. You can select only one field for searchin
 demo dataset:</p>
 <div class="highlight-commandline notranslate"><div class="highlight"><pre><span></span>? How do you want to provide input? (format: https://docarray.jina.ai/)  Demo dataset
 ? What demo dataset do you want to use?  🦆 birds (≈12K docs)
-? Please select the search fields:  (&lt;up&gt;, &lt;down&gt; to move, &lt;space&gt; to select, &lt;a&gt; to toggle, &lt;i&gt; to invert)
+? Please select the index fields:  (&lt;up&gt;, &lt;down&gt; to move, &lt;space&gt; to select, &lt;a&gt; to toggle, &lt;i&gt; to invert)
  ○ label
 ❯○ image
 ? Please select the filter fields  (&lt;up&gt;, &lt;down&gt; to move, &lt;space&gt; to select, &lt;a&gt; to toggle, &lt;i&gt; to invert)
@@ -458,7 +489,7 @@ and whether you want to secure your application.</p>
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Dec 23, 2022.
+                            Last updated on Jan 04, 2023.
                         </div>
                     </div>
                     <div class="right-details">

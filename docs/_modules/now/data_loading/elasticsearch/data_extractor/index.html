@@ -6,7 +6,7 @@
         <link rel="canonical" href="https://now.jina.ai/_modules/now/data_loading/elasticsearch/data_extractor.html" />
 
     <link rel="shortcut icon" href="../../../../../_static/favicon.png"/><!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
-        <title>now.data_loading.elasticsearch.data_extractor - NOW 0.0.42 documentation</title>
+        <title>now.data_loading.elasticsearch.data_extractor - NOW 0.0.43 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../../../">
-                <div class="brand">NOW 0.0.42 documentation</div>
+                <div class="brand">NOW 0.0.43 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -299,7 +299,7 @@
         <span class="n">connection_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">connection_args</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        For extracting documents from Elasticsearch into a `docarray.DocumentArray`</span>
 <span class="sd">        dataset, this class implements an iterator which yields `docarray.Document`</span>
 <span class="sd">        objects. To specify the data for extraction, one needs to provide an</span>
@@ -325,8 +325,8 @@
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_supported_pil_extensions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_supported_image_extensions</span><span class="p">()</span>
 
-<div class="viewcode-block" id="ElasticsearchExtractor.extract"><a class="viewcode-back" href="../../../../../api/now.data_loading.elasticsearch.data_extractor/#now.data_loading.elasticsearch.data_extractor.ElasticsearchExtractor.extract">[docs]</a>    <span class="k">def</span> <span class="nf">extract</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">search_fields</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">DocumentArray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="ElasticsearchExtractor.extract"><a class="viewcode-back" href="../../../../../api/now.data_loading.elasticsearch.data_extractor/#now.data_loading.elasticsearch.data_extractor.ElasticsearchExtractor.extract">[docs]</a>    <span class="k">def</span> <span class="nf">extract</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index_fields</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">DocumentArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns extracted data as a `DocumentArray` where every `Document`</span>
 <span class="sd">        contains chunks for each field.</span>
 <span class="sd">        For Example:</span>
@@ -337,7 +337,7 @@
 <span class="sd">                ]</span>
 <span class="sd">        )</span>
 
-<span class="sd">        :param search_fields: List of field names used for searching.</span>
+<span class="sd">        :param index_fields: List of field names used for searching.</span>
 <span class="sd">        :return: extracted documents.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">docs</span> <span class="o">=</span> <span class="n">DocumentArray</span><span class="p">(</span>
@@ -350,7 +350,7 @@
         <span class="n">docs</span> <span class="o">=</span> <span class="n">transform_multi_modal_data</span><span class="p">(</span>
             <span class="n">documents</span><span class="o">=</span><span class="n">docs</span><span class="p">,</span>
             <span class="n">field_names</span><span class="o">=</span><span class="n">field_names</span><span class="p">,</span>
-            <span class="n">search_fields</span><span class="o">=</span><span class="n">search_fields</span><span class="p">,</span>
+            <span class="n">index_fields</span><span class="o">=</span><span class="n">index_fields</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">docs</span></div>
 
@@ -366,7 +366,7 @@
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">_flatten_es_doc</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">document</span><span class="p">:</span> <span class="n">Document</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Document</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Transform data extracted from Elasticsearch to a more convenient form.</span>
 <span class="sd">        :param document: `Document` containing ES data.</span>
 <span class="sd">        :return: Transformed `Document`.</span>
@@ -393,7 +393,7 @@
         <span class="n">attr_modalities</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span>
         <span class="n">names</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Extract attributes and modalities from a `Document` and store it as a dictionary.</span>
 <span class="sd">        Recursively iterates across different chunks of the `Document` and collects</span>
 <span class="sd">        attributes with their corresponding values.</span>
@@ -418,7 +418,7 @@
                 <span class="bp">cls</span><span class="o">.</span><span class="n">_parse_es_doc</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="n">attr_values</span><span class="p">,</span> <span class="n">attr_modalities</span><span class="p">,</span> <span class="n">names</span><span class="p">[:])</span>
 
     <span class="k">def</span> <span class="nf">_get_next_document</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Document</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the next document from the Elasticsearch database.</span>
 <span class="sd">        In order to retrieve further documents, Elasticsearch documents are retrieved</span>
 <span class="sd">        in pages of multiple documents. After retrieving a page, its contained</span>
@@ -434,7 +434,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_construct_document</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_document_cache</span><span class="o">.</span><span class="n">pop</span><span class="p">())</span>
 
     <span class="k">def</span> <span class="nf">_construct_simple_document</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">content</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Document</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Transforms the values of a filed of an Elasticsearch document into a</span>
 <span class="sd">        `docarray.Document` object (without chunks).</span>
 <span class="sd">        The name of the field where the attribute is extracted from is added as a tag</span>
@@ -473,7 +473,7 @@
             <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_construct_document</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">es_document</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Document</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Constructs a `docarray.Document` from an Elasticsearch document returned by the</span>
 <span class="sd">        `ElasticsearchConnector.get_documents_by_query` function.</span>
 <span class="sd">        :param es_document: dictionary containing the content of an Elasticsearch</span>
@@ -539,7 +539,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Dec 23, 2022.
+                            Last updated on Jan 04, 2023.
                         </div>
                     </div>
                     <div class="right-details">
