@@ -297,7 +297,6 @@ jobs:
     needs:
       [
         update-preprocessor,
-        update-qdrant,
         update-elastic,
         update-autocomplete,
         update-bff-playground,
