@@ -90,7 +90,7 @@ class SearchApp(JinaNOWApp):
     def preprocessor_stub(use_high_perf_flow: bool) -> Dict:
         return {
             'name': 'preprocessor',
-            'needs': 'gateway',
+            'needs': 'autocomplete_executor',
             'replicas': 15 if use_high_perf_flow else 1,
             'uses': f'{EXECUTOR_PREFIX}{name_to_id_map.get("NOWPreprocessor")}/{NOW_PREPROCESSOR_VERSION}',
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
