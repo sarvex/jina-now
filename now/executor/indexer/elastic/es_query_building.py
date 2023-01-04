@@ -36,7 +36,7 @@ def generate_semantic_scores(
             document_fields = encoder_to_fields[executor_name]
         except KeyError as e:
             raise KeyError(
-                'Documents are not encoded with same encoder as query.'
+                f'Documents are not encoded with same encoder as query. executor_name: {executor_name}, encoder_to_fields: {encoder_to_fields}'
             ) from e
         for field_name in field_names:
             for document_field in document_fields:

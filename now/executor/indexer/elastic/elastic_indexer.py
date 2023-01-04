@@ -15,7 +15,6 @@ from now.executor.indexer.elastic.es_converter import (
     convert_es_results_to_matches,
     convert_es_to_da,
 )
-from now.executor.indexer.elastic.es_preprocessing import merge_subdocuments
 from now.executor.indexer.elastic.es_query_building import (
     SemanticScore,
     build_es_queries,
@@ -41,12 +40,14 @@ class NOWElasticIndexer(Executor):
 
     def construct(
         self,
-        document_mappings: List[List],  # cannot take FieldEmbedding (not serializable)
+        document_mappings: Union[
+            List[List], str
+        ],  # cannot take FieldEmbedding (not serializable) also can be provided as string since list of list is not possible with the current k8s implementation of the core
         default_semantic_scores: Optional[List[SemanticScore]] = None,
         es_mapping: Dict = None,
         hosts: Union[
             str, List[Union[str, Mapping[str, Union[str, int]]]], None
-        ] = 'https://elastic:elastic@localhost:9200',
+        ] = 'http://localhost:9200',
         es_config: Optional[Dict[str, Any]] = None,
         metric: str = 'cosine',
         index_name: str = 'now-index',
@@ -79,6 +80,17 @@ class NOWElasticIndexer(Executor):
         self.index_name = index_name
         self.traversal_paths = traversal_paths
         self.limit = limit
+
+        # hack is needed to work with the current bug in the core where list of list is not possible to pass
+        # at the moment document_mappings arrives as ['clip', 512, 'product_image', 'product_description']
+        if document_mappings and isinstance(document_mappings[0], str):
+            document_mappings[2] = document_mappings[2].split(',')
+            document_mappings = [document_mappings]
+
+        # punctuation needs to be removed for the field names
+        for document_mapping in document_mappings:
+            pass
+
         self.document_mappings = [FieldEmbedding(*dm) for dm in document_mappings]
         self.default_semantic_scores = default_semantic_scores or None
         self.encoder_to_fields = {
@@ -91,6 +103,8 @@ class NOWElasticIndexer(Executor):
         )
         self.setup_elastic_server()
         self.es = Elasticsearch(hosts=self.hosts, **self.es_config, ssl_show_warn=False)
+        wait_until_cluster_is_up(self.es, self.hosts)
+
         if not self.es.indices.exists(index=self.index_name):
             self.es.indices.create(index=self.index_name, mappings=self.es_mapping)
         self.query_to_curated_ids = {}
@@ -98,8 +112,7 @@ class NOWElasticIndexer(Executor):
     def setup_elastic_server(self):
         # volume is not persisted at the moment
         try:
-            subprocess.Popen(['/usr/local/bin/docker-entrypoint.sh'])
-            sleep(10)
+            subprocess.Popen(['./start-elastic-search-cluster.sh'])
             self.logger.info('elastic server started')
         except FileNotFoundError:
             self.logger.info(
@@ -153,9 +166,8 @@ class NOWElasticIndexer(Executor):
         if not docs_map:
             return DocumentArray()
         aggregate_embeddings(docs_map)
-        preprocessed_docs_map = merge_subdocuments(docs_map, self.encoder_to_fields)
         es_docs = convert_doc_map_to_es(
-            preprocessed_docs_map, self.index_name, self.encoder_to_fields
+            docs_map, self.index_name, self.encoder_to_fields
         )
         success, _ = bulk(self.es, es_docs)
         self.es.indices.refresh(index=self.index_name)
@@ -415,3 +427,24 @@ def aggregate_embeddings(docs_map: Dict[str, DocumentArray]):
                 if c.chunks.embeddings is not None:
                     c.embedding = c.chunks.embeddings.mean(axis=0)
                     c.content = c.chunks[0].content
+
+
+def wait_until_cluster_is_up(es, hosts):
+    MAX_RETRIES = 300
+    SLEEP = 1
+    retries = 0
+    while retries < MAX_RETRIES:
+        try:
+            if es.ping():
+                break
+            else:
+                retries += 1
+                sleep(SLEEP)
+        except Exception:
+            print(
+                f'Elasticsearch is not running yet, are you connecting to the right hosts? {hosts}'
+            )
+    if retries >= MAX_RETRIES:
+        raise RuntimeError(
+            f'Elasticsearch is not running after {MAX_RETRIES} retries ('
+        )

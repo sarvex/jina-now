@@ -7,12 +7,12 @@ from now.constants import FILETYPE_TO_MODALITY, Modalities
 
 
 def _get_modality(document: Document):
-    """
-    Detect document's modality based on its `modality` or `mime_type` attributes.
-    """
-    for modality in Modalities():
-        if modality in document.modality or modality in document.mime_type:
-            return modality
+    """Detect document's modality based on its `modality` or `mime_type` attributes."""
+    if document.modality:
+        return document.modality
+    elif document.mime_type:
+        file_from_mime_type = document.mime_type.split('/')[-1]
+        return FILETYPE_TO_MODALITY[file_from_mime_type]
     return None
 
 

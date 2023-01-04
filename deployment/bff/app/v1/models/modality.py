@@ -20,4 +20,7 @@ class ModalityModel(BaseModel):
 
     @property
     def content(self):
-        return getattr(self, list(self.__fields_set__)[0])
+        for field_name in self.__fields_set__:
+            field_value = getattr(self, field_name)
+            if field_value:
+                return field_value

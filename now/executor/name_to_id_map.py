@@ -1,7 +1,6 @@
 # TODO this should not be needed in the future
 name_to_id_map = {
     'NOWPreprocessor': '2hgojz3z',
-    'NOWQdrantIndexer16': '11yxatzh',
     'NOWElasticIndexer': 'mdtuyaaj',
     'NOWAutoCompleteExecutor2': 'w5w084h7',
 }
