@@ -53,7 +53,8 @@ def configure_option(option: DialogOptions, user_input: UserInput, **kwargs):
             # If there is any post function then invoke that
             if inspect.isfunction(option.post_func):
                 option.post_func(user_input, **kwargs)
-        except RetryException:
+        except RetryException as e:
+            print(e)
             continue
         else:
             break

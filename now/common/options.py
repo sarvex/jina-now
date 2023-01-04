@@ -70,9 +70,10 @@ def clean_flow_name(user_input: UserInput):
     """
     Clean the flow name to make it valid, removing special characters and spaces.
     """
-    user_input.flow_name = ''.join(
-        [c for c in user_input.flow_name if c.isalnum() or c == '-']
-    ).lower()
+    if user_input.flow_name:
+        user_input.flow_name = ''.join(
+            [c for c in user_input.flow_name if c.isalnum() or c == '-']
+        ).lower()
 
 
 DATASET_TYPE = DialogOptions(
@@ -360,6 +361,8 @@ def _set_value_to_none(user_input: UserInput):
 
 
 def _add_additional_users(user_input: UserInput, **kwargs):
+    if not kwargs.get('user_emails', None):
+        raise RetryException('Please provide at least one email address')
     user_input.user_emails = (
         [email.strip() for email in kwargs['user_emails'].split(',')]
         if kwargs['user_emails']
