@@ -24,6 +24,9 @@ from now.deployment.deployment import cmd
 from now.log import yaspin_extended
 from now.now_dataclasses import DialogOptions, UserInput
 from now.utils import (
+    RetryException,  # raise this error when the option should be asked again
+)
+from now.utils import (
     _get_context_names,
     get_info_hubble,
     jina_auth_login,
@@ -41,7 +44,7 @@ AVAILABLE_SOON = 'will be available in upcoming versions'
 
 def _create_app_from_user_input(user_input: UserInput, **kwargs):
     if len(user_input.index_fields) != 1:
-        raise ValueError(
+        raise RetryException(
             'Currently only one index field is supported. Please choose one field.'
         )
     if user_input.index_fields[0] not in user_input.index_fields_modalities.keys():
