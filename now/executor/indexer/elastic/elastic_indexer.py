@@ -165,7 +165,7 @@ class NOWElasticIndexer(Executor):
         :return: empty `DocumentArray`.
         """
         if not docs_map and docs and len(self.encoder_to_fields) == 1:
-            docs_map = {self.encoder_to_fields.keys()[0]: docs}
+            docs_map = {list(self.encoder_to_fields.keys())[0]: docs}
         if not docs_map:
             return DocumentArray()
         aggregate_embeddings(docs_map)
@@ -214,7 +214,7 @@ class NOWElasticIndexer(Executor):
         """
         if not docs_map:
             if docs and len(self.encoder_to_fields) == 1:
-                docs_map = {self.encoder_to_fields.keys()[0]: docs}
+                docs_map = {list(self.encoder_to_fields.keys())[0]: docs}
             else:
                 return DocumentArray()
         aggregate_embeddings(docs_map)
