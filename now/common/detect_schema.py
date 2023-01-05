@@ -12,7 +12,6 @@ from now.constants import (
     MODALITIES_MAPPING,
     NOT_AVAILABLE_MODALITIES_FOR_FILTER,
     SUPPORTED_FILE_TYPES,
-    Modalities,
 )
 from now.data_loading.elasticsearch import ElasticsearchConnector
 from now.now_dataclasses import UserInput
@@ -53,12 +52,6 @@ def _create_candidate_index_filter_fields(field_name_to_value):
         file_type = get_field_type(field_value)
         modality = FILETYPE_TO_MODALITY[file_type]
         index_fields_modalities[field_name] = MODALITIES_MAPPING[modality]
-        if (
-            field_name not in index_fields_modalities
-            and field_value
-            and (field_name == 'text' or isinstance(field_value, str))
-        ):
-            index_fields_modalities[field_name] = MODALITIES_MAPPING[Modalities.TEXT]
 
         # we determine if it's a filter field
         if (
