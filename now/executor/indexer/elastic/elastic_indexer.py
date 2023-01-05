@@ -208,12 +208,6 @@ class NOWElasticIndexer(Executor):
                 - 'custom_bm25_query' (dict): Custom query to use for BM25. Note: this query can only be
                     passed if also passing `es_mapping`. Otherwise, only default bm25 scoring is enabled.
         """
-        self.logger.info(f'docs_map keys: {docs_map.keys()}')
-        for _encoder, _docs in docs_map.items():
-            self.logger.info(f'{_encoder} has {len(_docs)} docs')
-            self.logger.info(f'{_encoder} docs: {_docs.summary()}')
-            if len(_docs) >= 0:
-                self.logger.info(f'{_encoder} doc0: {_docs[0].summary()}')
         if not docs_map:
             return DocumentArray()
         aggregate_embeddings(docs_map)
