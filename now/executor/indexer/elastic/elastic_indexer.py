@@ -166,7 +166,9 @@ class NOWElasticIndexer(Executor):
         self.logger.info(f'docs_map keys: {docs_map.keys()}')
         for _encoder, _docs in docs_map.items():
             self.logger.info(f'{_encoder} has {len(_docs)} docs')
-            self.logger.info(f'{_encoder} has docs {_docs.summary()}')
+            self.logger.info(f'{_encoder} docs: {_docs.summary()}')
+            if len(_docs) >= 0:
+                self.logger.info(f'{_encoder} doc0: {_docs[0].summary()}')
         if not docs_map:
             return DocumentArray()
         aggregate_embeddings(docs_map)
