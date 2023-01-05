@@ -16,7 +16,6 @@ from now.executor.indexer.elastic.es_converter import (
     convert_es_to_da,
 )
 from now.executor.indexer.elastic.es_query_building import (
-    SemanticScore,
     build_es_queries,
     generate_semantic_scores,
     process_filter,
@@ -43,7 +42,6 @@ class NOWElasticIndexer(Executor):
         document_mappings: Union[
             List[Tuple[str, int, List[str]]],
         ],  # cannot take FieldEmbedding (not serializable)
-        default_semantic_scores: Optional[List[SemanticScore]] = None,
         es_mapping: Dict = None,
         hosts: Union[
             str, List[Union[str, Mapping[str, Union[str, int]]]], None
@@ -58,8 +56,6 @@ class NOWElasticIndexer(Executor):
         """
         Initialize/construct function for the NOWElasticIndexer.
 
-        :param default_semantic_scores: list of SemanticScore tuples that define how
-            to combine the scores of different fields and encoders.
         :param document_mappings: list of FieldEmbedding tuples that define which encoder
             encodes which fields, and the embedding size of the encoder.
         :param hosts: host configuration of the Elasticsearch node or cluster
@@ -82,7 +78,6 @@ class NOWElasticIndexer(Executor):
         self.limit = limit
 
         self.document_mappings = [FieldEmbedding(*dm) for dm in document_mappings]
-        self.default_semantic_scores = default_semantic_scores or None
         self.encoder_to_fields = {
             document_mapping.encoder: document_mapping.fields
             for document_mapping in self.document_mappings
@@ -214,17 +209,15 @@ class NOWElasticIndexer(Executor):
         get_score_breakdown = parameters.get('get_score_breakdown', False)
         custom_bm25_query = parameters.get('custom_bm25_query', None)
         apply_default_bm25 = parameters.get('apply_default_bm25', False)
-        semantic_scores = parameters.get('default_semantic_scores', None)
+        semantic_scores = parameters.get(
+            'default_semantic_scores', None
+        ) or generate_semantic_scores(docs_map, self.encoder_to_fields)
         filter = parameters.get('filter', {})
-        if not self.default_semantic_scores:
-            self.default_semantic_scores = semantic_scores or generate_semantic_scores(
-                docs_map, self.encoder_to_fields
-            )
         es_queries = build_es_queries(
             docs_map=docs_map,
             apply_default_bm25=apply_default_bm25,
             get_score_breakdown=get_score_breakdown,
-            semantic_scores=self.default_semantic_scores,
+            semantic_scores=semantic_scores,
             custom_bm25_query=custom_bm25_query,
             metric=self.metric,
             filter=filter,
@@ -242,7 +235,7 @@ class NOWElasticIndexer(Executor):
                 es_results=result,
                 get_score_breakdown=get_score_breakdown,
                 metric=self.metric,
-                semantic_scores=self.default_semantic_scores,
+                semantic_scores=semantic_scores,
             )
             doc.tags.pop('embeddings')
         return DocumentArray(list(zip(*es_queries))[0])
