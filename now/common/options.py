@@ -18,7 +18,7 @@ from now.common.detect_schema import (
     set_field_names_from_local_folder,
     set_field_names_from_s3_bucket,
 )
-from now.constants import Apps, DatasetTypes
+from now.constants import DatasetTypes
 from now.deployment.deployment import cmd
 from now.log import yaspin_extended
 from now.now_dataclasses import DialogOptions, UserInput
@@ -41,7 +41,7 @@ AVAILABLE_SOON = 'will be available in upcoming versions'
 # than the parent should be called first before the dependant can called.
 
 
-def _create_app_from_user_input(user_input: UserInput, **kwargs):
+def _check_index_field(user_input: UserInput, **kwargs):
     if len(user_input.index_fields) != 1:
         raise RetryException(
             'Currently only one index field is supported. Please choose one field.'
@@ -54,11 +54,6 @@ def _create_app_from_user_input(user_input: UserInput, **kwargs):
             f'Index field specified is not among the index candidate fields. Please '
             f'choose one of the following: {user_input.index_field_candidates_to_modalities.keys()}'
         )
-    _search_modality = user_input.index_field_candidates_to_modalities[
-        user_input.index_fields[0]
-    ]
-    app_name = Apps.SEARCH_APP
-    user_input.app_instance = construct_app(app_name)
 
 
 APP_NAME = DialogOptions(
@@ -210,7 +205,7 @@ INDEX_FIELDS = DialogOptions(
     prompt_message='Please select the index fields:',
     prompt_type='checkbox',
     is_terminal_command=True,
-    post_func=_create_app_from_user_input,
+    post_func=_check_index_field,
     argparse_kwargs={
         'type': lambda fields: fields.split(',') if fields else UserInput().index_fields
     },
