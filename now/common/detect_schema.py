@@ -50,14 +50,9 @@ def _create_candidate_index_filter_fields(field_name_to_value):
     )
     for field_name, field_value in field_name_to_value.items():
         # we determine search modality
-        for modality in AVAILABLE_MODALITIES_FOR_SEARCH:
-            file_types = SUPPORTED_FILE_TYPES[modality]
-            if field_value.split('.')[-1] in file_types:
-                index_fields_modalities[field_name] = MODALITIES_MAPPING[modality]
-                break
-            elif field_name == 'uri' and field_value.split('.')[-1] in file_types:
-                index_fields_modalities[field_name] = MODALITIES_MAPPING[modality]
-                break
+        file_type = get_field_type(field_value)
+        modality = FILETYPE_TO_MODALITY[file_type]
+        index_fields_modalities[field_name] = MODALITIES_MAPPING[modality]
         if (
             field_name not in index_fields_modalities
             and field_value

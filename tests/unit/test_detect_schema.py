@@ -154,7 +154,7 @@ def test_create_candidate_index_fields():
         filter_fields_modalities,
     ) = _create_candidate_index_filter_fields(fields_to_modalities)
 
-    assert len(index_fields_modalities.keys()) == 2
+    assert len(index_fields_modalities.keys()) == 6
     assert index_fields_modalities['image.png'] == Image
     assert index_fields_modalities['test.txt'] == Text
 
