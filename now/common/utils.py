@@ -46,7 +46,9 @@ def common_get_flow_env_dict(
 ):
     """Returns dictionary for the environments variables for the clip flow.yml files."""
     use_high_performance_flow = (
-        get_email().split('@')[-1] == 'jina.ai' and deployment_type == 'remote'
+        get_email().split('@')[-1] == 'jina.ai'
+        and deployment_type == 'remote'
+        and 'NOW_CI_RUN' not in os.environ
     )
     if use_high_performance_flow:
         print(
