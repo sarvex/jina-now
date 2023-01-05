@@ -71,7 +71,11 @@ class OfflineFlow:
         self.preprocessor = NOWPreprocessor()
         self.encoder = MockedEncoder()
         document_mappings = [
-            ('clip', 5, ['product_title', 'product_image', 'product_description']),
+            'clip',
+            5,
+            'product_title',
+            'product_image',
+            'product_description',
         ]
         self.indexer = NOWElasticIndexer(
             document_mappings=document_mappings,

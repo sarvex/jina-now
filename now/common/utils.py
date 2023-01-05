@@ -74,11 +74,7 @@ def common_get_flow_env_dict(
         else 1,
         'AUTOCOMPLETE_EXECUTOR_NAME': f'{EXECUTOR_PREFIX}{name_to_id_map.get("NOWAutoCompleteExecutor2")}/{NOW_AUTOCOMPLETE_VERSION}',
         'COLUMNS': tags,
-        'DOCUMENT_MAPPINGS': json.dumps(
-            [
-                ('encoderclip', 512, ','.join(index_field_names)),
-            ]
-        ),
+        'DOCUMENT_MAPPINGS': ['encoderclip', 512, *index_field_names],
         'ADMIN_EMAILS': user_input.admin_emails or [] if user_input.secured else [],
         'USER_EMAILS': user_input.user_emails or [] if user_input.secured else [],
         'API_KEY': [user_input.api_key]
