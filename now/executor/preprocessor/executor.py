@@ -8,7 +8,6 @@ import urllib
 from typing import Dict, Optional
 
 import boto3
-from docarray.dataclasses.types import is_multimodal
 from jina import Document, DocumentArray
 from paddleocr import PaddleOCR
 
@@ -95,7 +94,7 @@ class NOWPreprocessor(Executor):
         return tmp_fn
 
     def _preprocess_maybe_cloud_download(self, docs: DocumentArray) -> DocumentArray:
-        if len(docs) > 0 and not is_multimodal(docs[0]):
+        if len(docs) > 0 and not docs[0].chunks:
             raise ValueError(
                 'Documents are not in multi modal format. Please check documentation'
                 'https://docarray.jina.ai/datatypes/multimodal/'
