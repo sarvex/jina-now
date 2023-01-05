@@ -1,10 +1,10 @@
 import base64
 import random
-from typing import Dict, Text
+from typing import Dict
 
 import numpy as np
 from docarray import Document, DocumentArray, dataclass
-from docarray.typing import Image
+from docarray.typing import Image, Text
 
 from deployment.bff.app.v1.models.search import SearchRequestModel
 from deployment.bff.app.v1.routers import helper
@@ -53,21 +53,15 @@ def test_offline_flow(monkeypatch, setup_service_running, base64_image_string):
         },
     )
 
-    assert index_result == []
+    assert index_result == DocumentArray()
     search_result = search(
         SearchRequestModel(
-            query={'query': {'text': 'girl on motorbike'}},
+            query={'query_text': {'text': 'girl on motorbike'}},
         )
     )
-    assert (
-        '_ocr_detector_text_in_doc'
-        in search_result[0].matches[0].product_image.chunks[0].tags
-    )
-    assert search_result[0].matches[0].product_title.chunks[0].content == 'fancy title'
-    assert (
-        search_result[0].matches[0].product_description.chunks[0].content
-        == 'this is a product'
-    )
+    assert search_result[0].fields['product_title'].text == 'fancy title'
+    assert search_result[0].fields['product_image'].blob != b''
+    assert search_result[0].fields['product_description'].text == 'this is a product'
 
 
 class OfflineFlow:
