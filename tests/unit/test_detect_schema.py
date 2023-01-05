@@ -16,7 +16,11 @@ from now.now_dataclasses import UserInput
 @pytest.mark.parametrize(
     'dataset_path, index_field_names, filter_field_names',
     [
-        ('gif_resource_path', {'file.txt', 'file.gif'}, {'file.txt', 'a1', 'a2'}),
+        (
+            'gif_resource_path',
+            {'file.txt', 'file.gif', 'a1', 'a2'},
+            {'file.txt', 'a1', 'a2'},
+        ),
         ('image_resource_path', {'.jpg'}, set()),
     ],
 )
@@ -43,12 +47,32 @@ def test_set_fields_names_from_local_folder(
         (
             '',
             {
+                'id',
                 'image.png',
+                'link',
+                'tags__colors__name',
+                'tags__colors__slug',
+                'tags__custom__name',
+                'tags__custom__slug',
+                'tags__ml__name',
+                'tags__ml__slug',
                 'test.txt',
+                'title',
             },
-            {'test.txt', 'tags', 'id', 'link', 'title'},
+            {
+                'id',
+                'tags__ml__slug',
+                'title',
+                'tags__colors__name',
+                'tags__custom__name',
+                'tags__colors__slug',
+                'tags__ml__name',
+                'link',
+                'test.txt',
+                'tags__custom__slug',
+            },
         ),
-        ('folder1/', {'.png', '.txt'}, {'.txt', '.json'}),
+        ('folder1/', {'.png', '.txt', '.json'}, {'.txt', '.json'}),
     ],
 )
 def test_set_field_names_from_s3_bucket(
@@ -97,8 +121,8 @@ def test_failed_uni_modal_docarray():
 
 def test_create_candidate_index_fields():
     fields_to_modalities = {
-        'image.png': Image,
-        'test.txt': Text,
+        'image.png': 'image.png',
+        'test.txt': 'test.txt',
         'tags': str,
         'id': str,
         'link': str,
@@ -109,7 +133,7 @@ def test_create_candidate_index_fields():
         filter_field_candidates_to_modalities,
     ) = _create_candidate_index_filter_fields(fields_to_modalities)
 
-    assert len(index_field_candidates_to_modalities.keys()) == 2
+    assert len(index_field_candidates_to_modalities.keys()) == 6
     assert index_field_candidates_to_modalities['image.png'] == Image
     assert index_field_candidates_to_modalities['test.txt'] == Text
 

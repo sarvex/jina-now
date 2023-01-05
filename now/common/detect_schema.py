@@ -4,19 +4,29 @@ import os
 from typing import Dict, List
 
 import requests
-from docarray.typing import Text
 
 from now.constants import (
     AVAILABLE_MODALITIES_FOR_FILTER,
     AVAILABLE_MODALITIES_FOR_SEARCH,
+    FILETYPE_TO_MODALITY,
     NOT_AVAILABLE_MODALITIES_FOR_FILTER,
     SUPPORTED_FILE_TYPES,
 )
 from now.now_dataclasses import UserInput
 from now.utils import (
     docarray_typing_to_modality_string,
+    flatten_dict,
     modality_string_to_docarray_typing,
 )
+
+
+def get_field_type(field_value):
+    split = field_value.split('.')
+    # if there is a file_ending and it is among the known file types
+    if len(split) > 1 and split[-1] in FILETYPE_TO_MODALITY:
+        return split[-1]
+    else:
+        return 'txt'
 
 
 def _create_candidate_index_filter_fields(field_name_to_value):
@@ -41,16 +51,10 @@ def _create_candidate_index_filter_fields(field_name_to_value):
     )
     for field_name, field_value in field_name_to_value.items():
         # we determine search modality
-        for modality in AVAILABLE_MODALITIES_FOR_SEARCH:
-            file_types = SUPPORTED_FILE_TYPES[modality]
-            if field_name.split('.')[-1] in file_types:
-                index_field_candidates_to_modalities[field_name] = modality
-                break
-            elif field_name == 'uri' and field_value.split('.')[-1] in file_types:
-                index_field_candidates_to_modalities[field_name] = modality
-                break
-        if field_name == 'text' and field_value:
-            index_field_candidates_to_modalities[field_name] = Text
+        file_type = get_field_type(field_value)
+        index_field_candidates_to_modalities[field_name] = FILETYPE_TO_MODALITY[
+            file_type
+        ]
 
         # we determine if it's a filter field
         if (
@@ -64,6 +68,21 @@ def _create_candidate_index_filter_fields(field_name_to_value):
             'No searchable fields found, please check documentation https://now.jina.ai'
         )
     return index_field_candidates_to_modalities, filter_field_candidates_to_modalities
+
+
+def get_first_file_in_folder_structure_s3(bucket, folder_prefix, dataset_path):
+    try:
+        # gets the first file in an s3 bucket, index 0 is reserved for the root folder name
+        first_file = list(bucket.objects.filter(Prefix=folder_prefix).limit(2))[1].key
+        i = 2
+        while first_file.split('/')[-1].startswith('.'):
+            first_file = list(bucket.objects.filter(Prefix=folder_prefix).limit(i + 1))[
+                i
+            ].key
+            i += 1
+    except Exception as e:
+        raise Exception(f'Empty folder {dataset_path}, data is missing.')
+    return first_file
 
 
 def _extract_field_candidates_docarray(response):
@@ -150,30 +169,6 @@ def set_field_names_from_docarray(user_input: UserInput, **kwargs):
         raise ValueError('DocumentArray does not exist or you do not have access to it')
 
 
-def identify_folder_structure(file_paths: List[str], separator: str) -> str:
-    """This function identifies the folder structure.
-    It works with a local file structure or a remote file structure.
-
-    :param file_paths: list of file paths
-    :param separator: separator used in the file paths
-    :return: if all the files are in the same folder then returns 'single_folder' else returns 'sub_folders'
-    :raises ValueError: if the files don't have the same depth in the file structure
-    """
-    # check if all files are in the same folder
-    depths = [len(path.split(separator)) for path in file_paths]
-    if len(set(depths)) != 1:
-        raise ValueError(
-            "Files have differing depth, please check documentation https://now.jina.ai"
-        )
-    # check if all files are in the same folder
-    if (
-        len(set([separator.join(path.split(separator)[:-1]) for path in file_paths]))
-        != 1
-    ):
-        return 'sub_folders'
-    return 'single_folder'
-
-
 def _extract_field_names_single_folder(
     file_paths: List[str], separator: str
 ) -> Dict[str, str]:
@@ -210,8 +205,8 @@ def _extract_field_names_sub_folders(
             else:
                 with open(path) as f:
                     data = json.load(f)
-            for el, value in data.items():
-                field_names[el] = value
+            flattened_dict = flatten_dict(data)
+            field_names.update(flattened_dict)
         else:
             file_name = path.split(separator)[-1]
             field_names[file_name] = file_name
@@ -227,21 +222,25 @@ def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
     checks if the bucket exists and the format of the folder structure is correct,
     if yes then downloads the first folder and sets its content as field_names in user_input
     """
-    bucket, folder_prefix = get_s3_bucket_and_folder_prefix(
-        user_input
-    )  # user has to provide the folder where folder structure begins
-
-    objects = list(bucket.objects.filter(Prefix=folder_prefix))
-    file_paths = [
-        obj.key
-        for obj in objects
-        if not obj.key.endswith('/') and not obj.key.split('/')[-1].startswith('.')
-    ]
-    folder_structure = identify_folder_structure(file_paths, '/')
+    bucket, folder_prefix = get_s3_bucket_and_folder_prefix(user_input)
+    # user has to provide the folder where folder structure begins
+    first_file = get_first_file_in_folder_structure_s3(
+        bucket, folder_prefix, user_input.dataset_path
+    )
+    structure_identifier = first_file[len(folder_prefix) :].split('/')
+    folder_structure = (
+        'sub_folders' if len(structure_identifier) > 1 else 'single_folder'
+    )
     if folder_structure == 'single_folder':
+        objects = list(bucket.objects.filter(Prefix=folder_prefix).limit(100))
+        file_paths = [
+            obj.key
+            for obj in objects
+            if not obj.key.endswith('/') and not obj.key.split('/')[-1].startswith('.')
+        ]
         field_names = _extract_field_names_single_folder(file_paths, '/')
     elif folder_structure == 'sub_folders':
-        first_folder = '/'.join(objects[1].key.split('/')[:-1])
+        first_folder = '/'.join(first_file.split('/')[:-1])
         first_folder_objects = [
             obj.key
             for obj in bucket.objects.filter(Prefix=first_folder)
@@ -272,19 +271,29 @@ def set_field_names_from_local_folder(user_input: UserInput, **kwargs):
             'The path provided is not a folder, please check documentation https://now.jina.ai'
         )
     file_paths = []
-    for root, _, files in os.walk(dataset_path):
-        file_paths.extend(
-            [os.path.join(root, file) for file in files if not file.startswith('.')]
-        )
-    folder_structure = identify_folder_structure(file_paths, os.sep)
+    folder_generator = os.walk(dataset_path, topdown=True)
+    current_level = folder_generator.__next__()
+    # check if the first level contains any folders
+    folder_structure = 'sub_folders' if len(current_level[1]) > 0 else 'single_folder'
     if folder_structure == 'single_folder':
+        file_paths.extend(
+            [
+                os.path.join(dataset_path, file)
+                for file in current_level[2]
+                if not file.startswith('.')
+            ]
+        )
         field_names = _extract_field_names_single_folder(file_paths, os.sep)
     elif folder_structure == 'sub_folders':
-        first_folder = os.sep.join(file_paths[0].split(os.sep)[:-1])
+        # depth-first search of the first nested folder containing files
+        while len(current_level[1]) > 0:
+            current_level = folder_generator.__next__()
+        first_folder = current_level[0]
         first_folder_files = [
             os.path.join(first_folder, file)
             for file in os.listdir(first_folder)
             if os.path.isfile(os.path.join(first_folder, file))
+            and not file.startswith('.')
         ]
         field_names = _extract_field_names_sub_folders(first_folder_files, os.sep)
     (

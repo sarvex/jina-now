@@ -152,7 +152,7 @@ class NOWElasticIndexer(Executor):
     @secure_request(on='/index', level=SecurityLevel.USER)
     def index(
         self,
-        docs_map: Dict[str, DocumentArray],  # encoder to docarray
+        docs_map: Dict[str, DocumentArray] = None,  # encoder to docarray
         parameters: dict = {},
         **kwargs,
     ) -> DocumentArray:
@@ -163,6 +163,10 @@ class NOWElasticIndexer(Executor):
         :param parameters: dictionary with options for indexing.
         :return: empty `DocumentArray`.
         """
+        self.logger.info(f'docs_map keys: {docs_map.keys()}')
+        for _encoder, _docs in docs_map.items():
+            self.logger.info(f'{_encoder} has {len(_docs)} docs')
+            self.logger.info(f'{_encoder} has docs {_docs.summary()}')
         if not docs_map:
             return DocumentArray()
         aggregate_embeddings(docs_map)
@@ -208,6 +212,10 @@ class NOWElasticIndexer(Executor):
                 - 'custom_bm25_query' (dict): Custom query to use for BM25. Note: this query can only be
                     passed if also passing `es_mapping`. Otherwise, only default bm25 scoring is enabled.
         """
+        self.logger.info(f'docs_map keys: {docs_map.keys()}')
+        for _encoder, _docs in docs_map.items():
+            self.logger.info(f'{_encoder} has {len(_docs)} docs')
+            self.logger.info(f'{_encoder} has docs {_docs.summary()}')
         if not docs_map:
             return DocumentArray()
         aggregate_embeddings(docs_map)

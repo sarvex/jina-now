@@ -271,14 +271,20 @@ def maybe_download_from_s3(
             f.result()
 
 
-def flatten_dict(d, parent_key='', sep='_'):
+def flatten_dict(d, parent_key='', sep='__'):
+    """
+    This function converts a nested dictionary into a dictionary of attirbutes using '__' as a separator.
+    Example:
+        {'a': {'b': {'c': 1, 'd': 2}}} -> {'a__b__c': 1, 'a__b__c': 2}
+    """
     items = []
     for k, v in d.items():
         new_key = parent_key + sep + k if parent_key else k
         if isinstance(v, MutableMapping):
             items.extend(flatten_dict(v, new_key, sep=sep).items())
         else:
-            items.append((new_key, v))
+            # TODO for now, we just have string values, str(v) should be removed once we support numeric values
+            items.append((new_key, str(v)))
     return dict(items)
 
 
@@ -321,3 +327,8 @@ def docarray_typing_to_modality_string(T: TypeVar) -> str:
 def modality_string_to_docarray_typing(s: str) -> TypeVar:
     """E.g. image -> docarray.typing.Image"""
     return getattr(docarray.typing, s.capitalize())
+
+
+# Add a custom retry exception
+class RetryException(Exception):
+    pass
