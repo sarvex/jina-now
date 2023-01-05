@@ -39,22 +39,22 @@ def configure_option(option: DialogOptions, user_input: UserInput, **kwargs):
     if option.choices and inspect.isfunction(option.choices):
         option.choices = option.choices(user_input, **kwargs)
 
-    val = []
     while True:
+        val = now.utils.prompt_value(
+            **option.__dict__,
+            **kwargs,
+        )
+
+        if val and hasattr(user_input, option.name):
+            setattr(user_input, option.name, val)
+            kwargs[option.name] = val
+
         try:
-            val = now.utils.prompt_value(
-                **option.__dict__,
-                **kwargs,
-            )
-
-            if val and hasattr(user_input, option.name):
-                setattr(user_input, option.name, val)
-                kwargs[option.name] = val
-
             # If there is any post function then invoke that
             if inspect.isfunction(option.post_func):
                 option.post_func(user_input, **kwargs)
-        except RetryException:
+        except RetryException as e:
+            print(e)
             continue
         else:
             break
