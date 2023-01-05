@@ -2,7 +2,7 @@ import subprocess
 import traceback
 from collections import namedtuple
 from time import sleep
-from typing import Any, Dict, List, Mapping, Optional, Union
+from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
 
 from docarray import Document, DocumentArray
 from elasticsearch import Elasticsearch
@@ -41,8 +41,8 @@ class NOWElasticIndexer(Executor):
     def construct(
         self,
         document_mappings: Union[
-            List[List], str
-        ],  # cannot take FieldEmbedding (not serializable) also can be provided as string since list of list is not possible with the current k8s implementation of the core
+            List[Tuple[str, int, List[str]]],
+        ],  # cannot take FieldEmbedding (not serializable)
         default_semantic_scores: Optional[List[SemanticScore]] = None,
         es_mapping: Dict = None,
         hosts: Union[
@@ -80,10 +80,6 @@ class NOWElasticIndexer(Executor):
         self.index_name = index_name
         self.traversal_paths = traversal_paths
         self.limit = limit
-
-        # punctuation needs to be removed for the field names
-        for document_mapping in document_mappings:
-            pass
 
         self.document_mappings = [FieldEmbedding(*dm) for dm in document_mappings]
         self.default_semantic_scores = default_semantic_scores or None

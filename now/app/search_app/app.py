@@ -157,7 +157,7 @@ class SearchApp(JinaNOWApp):
                     [
                         encoder_name,
                         dim,
-                        ','.join(list(user_input.files_to_dataclass_fields.keys())),
+                        list(user_input.files_to_dataclass_fields.keys()),
                     ]
                 ],
             },
