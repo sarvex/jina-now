@@ -6,11 +6,16 @@ from typing import Dict, List, Type
 from docarray import Document, DocumentArray
 from docarray.dataclasses import is_multimodal
 
+from deployment.bff.app.v1.routers.helper import field_dict_to_mm_doc
 from now.common.detect_schema import (
     get_first_file_in_folder_structure_s3,
     get_s3_bucket_and_folder_prefix,
 )
 from now.constants import DatasetTypes
+from now.data_loading.create_dataclass import (
+    create_dataclass,
+    create_dataclass_fields_file_mappings,
+)
 from now.data_loading.elasticsearch import ElasticsearchExtractor
 from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
@@ -44,8 +49,23 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
             f'Could not load DocumentArray dataset. Please check your configuration: {user_input}.'
         )
     if 'NOW_CI_RUN' in os.environ:
-        da = da[:50]
-    return da
+        da = da[:10]
+
+    da = da[:10]
+    dataclass = create_dataclass(user_input)
+    clean_da = []
+    for d in da:
+        dict_index_fields = {}
+        dataclass_mappings = create_dataclass_fields_file_mappings(
+            user_input.index_fields, user_input.index_fields_modalities
+        )
+        for field in user_input.index_fields:
+            _index_field_doc = getattr(d, field)
+            dict_index_fields[field] = _index_field_doc
+        mm_doc = field_dict_to_mm_doc(dict_index_fields, dataclass, dataclass_mappings)
+        clean_da.append(mm_doc)
+    clean_da = DocumentArray(clean_da)
+    return clean_da
 
 
 def _pull_docarray(dataset_name: str):
