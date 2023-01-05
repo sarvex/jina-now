@@ -4,8 +4,8 @@ from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.142-refactor-remove-bff-index-3'
-NOW_PREPROCESSOR_VERSION = '0.0.119-refactor-remove-bff-index-3'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.142-refactor-remove-bff-index-4'
+NOW_PREPROCESSOR_VERSION = '0.0.119-refactor-remove-bff-index-4'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.140-feat-integrate-elastic-33'
 NOW_AUTOCOMPLETE_VERSION = '0.0.8-feat-integrate-elastic-33'
 
