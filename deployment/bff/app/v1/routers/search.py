@@ -35,7 +35,7 @@ def index(data: IndexRequestModel):
         doc = field_dict_to_mm_doc(
             field_dict,
             data_class=data_class,
-            field_names_to_dataclass_fields=user_input.files_to_dataclass_fields,
+            field_names_to_dataclass_fields=user_input.field_names_to_dataclass_fields,
         )
         doc.tags.update(tags_dict)
         index_docs.append(doc)

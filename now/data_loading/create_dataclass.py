@@ -55,7 +55,7 @@ def create_dataclass(user_input: UserInput):
         user_input.index_fields + user_input.filter_fields,
         all_modalities,
     )
-    user_input.files_to_dataclass_fields = file_mapping_to_dataclass_fields
+    user_input.field_names_to_dataclass_fields = file_mapping_to_dataclass_fields
     (all_annotations, all_class_attributes,) = create_annotations_and_class_attributes(
         user_input.index_fields + user_input.filter_fields,
         all_modalities,
@@ -72,7 +72,7 @@ def create_dataclass(user_input: UserInput):
 def create_annotations_and_class_attributes(
     fields: List,
     fields_modalities: Dict,
-    files_to_dataclass_fields: Dict,
+    field_names_to_dataclass_fields: Dict,
     dataset_type: DatasetTypes,
 ):
     """
@@ -82,7 +82,7 @@ def create_annotations_and_class_attributes(
 
     :param fields: list of fields
     :param fields_modalities: dict of fields and their modalities
-    :param files_to_dataclass_fields: dict of files and their corresponding fields
+    :param field_names_to_dataclass_fields: dict of selected field names and their corresponding fields in dataclass
     :param dataset_type: dataset type
     """
     annotations = {}
@@ -93,13 +93,13 @@ def create_annotations_and_class_attributes(
         if not isinstance(f, typing.Hashable):
             continue
         if dataset_type == DatasetTypes.S3_BUCKET:
-            annotations[files_to_dataclass_fields[f]] = S3Object
-            class_attributes[files_to_dataclass_fields[f]] = field(
+            annotations[field_names_to_dataclass_fields[f]] = S3Object
+            class_attributes[field_names_to_dataclass_fields[f]] = field(
                 setter=my_setter, getter=my_getter, default=''
             )
         else:
-            annotations[files_to_dataclass_fields[f]] = fields_modalities[f]
-            class_attributes[files_to_dataclass_fields[f]] = None
+            annotations[field_names_to_dataclass_fields[f]] = fields_modalities[f]
+            class_attributes[field_names_to_dataclass_fields[f]] = None
     return annotations, class_attributes
 
 

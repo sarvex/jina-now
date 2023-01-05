@@ -33,7 +33,7 @@ class UserInput(BaseModel):
     index_field_candidates_to_modalities: Optional[Dict[str, TypeVar]] = {}
     filter_fields: Optional[List] = []
     filter_field_candidates_to_modalities: Optional[Dict[str, str]] = {}
-    files_to_dataclass_fields: Optional[Dict] = {}
+    field_names_to_dataclass_fields: Optional[Dict] = {}
 
     # ES related
     es_index_name: Optional[str] = None

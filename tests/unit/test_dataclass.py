@@ -15,7 +15,7 @@ S3Object, my_setter, my_getter = create_s3_type()
 
 
 @pytest.mark.parametrize(
-    "fields, fields_modalities, expected_files_to_dataclass_fields",
+    "fields, fields_modalities, expected_field_names_to_dataclass_fields",
     [
         (
             ['image.png', 'description.txt'],
@@ -45,16 +45,16 @@ S3Object, my_setter, my_getter = create_s3_type()
     ],
 )
 def test_create_dataclass_fields_file_mappings(
-    fields, fields_modalities, expected_files_to_dataclass_fields
+    fields, fields_modalities, expected_field_names_to_dataclass_fields
 ):
-    files_to_dataclass_fields = create_dataclass_fields_file_mappings(
+    field_names_to_dataclass_fields = create_dataclass_fields_file_mappings(
         fields, fields_modalities
     )
-    assert files_to_dataclass_fields == expected_files_to_dataclass_fields
+    assert field_names_to_dataclass_fields == expected_field_names_to_dataclass_fields
 
 
 @pytest.mark.parametrize(
-    "fields, fields_modalities, files_to_dataclass_fields, dataset_type, expected_annotations, "
+    "fields, fields_modalities, field_names_to_dataclass_fields, dataset_type, expected_annotations, "
     "expected_class_attributes",
     [
         (
@@ -89,13 +89,13 @@ def test_create_dataclass_fields_file_mappings(
 def test_create_annotations_and_class_attributes(
     fields,
     fields_modalities,
-    files_to_dataclass_fields,
+    field_names_to_dataclass_fields,
     dataset_type,
     expected_annotations,
     expected_class_attributes,
 ):
     annotations, class_attributes = create_annotations_and_class_attributes(
-        fields, fields_modalities, files_to_dataclass_fields, dataset_type
+        fields, fields_modalities, field_names_to_dataclass_fields, dataset_type
     )
     for key, value in expected_annotations.items():
         assert str(annotations[key]) == str(value)

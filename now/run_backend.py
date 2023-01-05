@@ -43,7 +43,7 @@ def run(
     """
 
     if user_input.dataset_type in [DatasetTypes.DEMO, DatasetTypes.DOCARRAY]:
-        user_input.files_to_dataclass_fields = {
+        user_input.field_names_to_dataclass_fields = {
             field: field for field in user_input.index_fields
         }
         data_class = None

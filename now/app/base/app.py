@@ -143,9 +143,7 @@ class JinaNOWApp:
             mem_check = self._check_docker_mem_limit()
         return req_check and mem_check
 
-    def get_executor_stubs(
-        self, dataset, is_finetuned, user_input, flow_yaml_content, **kwargs
-    ) -> Dict:
+    def get_executor_stubs(self, dataset, user_input, **kwargs) -> Dict:
         """
         Returns the stubs for the executors in the flow.
         """

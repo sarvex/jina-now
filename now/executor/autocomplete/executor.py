@@ -68,11 +68,9 @@ class NOWAutoCompleteExecutor2(Executor):
         self, docs: Optional[DocumentArray] = None, parameters: dict = {}, **kwargs
     ):
         for doc in docs:
-            suggestions = self.flatten_list(
+            doc.tags['suggestions'] = self.flatten_list(
                 self.auto_complete.search(doc.text, max_cost=3, size=5)
             )
-
-            doc.tags['suggestions'] = suggestions
         return docs
 
     def flatten_list(self, regular_list):

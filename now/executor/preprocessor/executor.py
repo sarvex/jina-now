@@ -95,8 +95,9 @@ class NOWPreprocessor(Executor):
             if self.user_input:
                 for index_field in self.user_input.index_fields:
                     index_fields.append(
-                        self.user_input.files_to_dataclass_fields[index_field]
-                        if index_field in self.user_input.files_to_dataclass_fields
+                        self.user_input.field_names_to_dataclass_fields[index_field]
+                        if index_field
+                        in self.user_input.field_names_to_dataclass_fields
                         else index_field
                     )
 
