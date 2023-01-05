@@ -150,10 +150,6 @@ class NOWPreprocessor(Executor):
         :return: preprocessed documents which are ready to be encoded and indexed
         """
         # TODO remove set user input. Should be only set once in constructor use api key instead of user token
-        if docs:
-            self.logger.info(f'docs: {docs.summary()}')
-            if len(docs) >= 0:
-                self.logger.info(f'doc0: {docs[0].summary()}')
         self._set_user_input(parameters=parameters)
         return self._preprocess_maybe_cloud_download(docs=docs)
 
