@@ -7,6 +7,10 @@ with:
   cors: true
   env:
     JINA_LOG_LEVEL: DEBUG
+gateway:
+  timeout_ready: 1200000
+  jcloud:
+    timeout: 1200
 jcloud:
   version: ${{ ENV.JINA_VERSION }}
   custom_dns:
