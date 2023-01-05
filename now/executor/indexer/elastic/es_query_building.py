@@ -30,6 +30,7 @@ def generate_semantic_scores(
         first_doc = da[0]
         if first_doc._metadata:  # must be a multimodal doc
             field_names = first_doc._metadata['multi_modal_schema'].keys()
+            print(f'Using fields from multimodal schema: {field_names}')
         else:  # must be a unimodal doc
             field_names = [first_doc.tags['modality']]
         try:
