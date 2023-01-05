@@ -3,7 +3,7 @@ from typing import List
 from pydantic import Field
 from pydantic.main import BaseModel
 
-from deployment.bff.app.v1.models.helper import BaseRequestModel
+from deployment.bff.app.v1.models.shared import BaseRequestModel
 
 
 class CloudTempLinkRequestModel(BaseRequestModel):
