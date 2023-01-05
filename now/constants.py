@@ -4,9 +4,8 @@ from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.140-es-dataclass-5'
-NOW_PREPROCESSOR_VERSION = '0.0.118-es-dataclass-25'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.140-es-dataclass-6'
+NOW_PREPROCESSOR_VERSION = '0.0.118-es-dataclass-26'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.140-feat-integrate-elastic-33'
 NOW_AUTOCOMPLETE_VERSION = '0.0.8-feat-integrate-elastic-33'
 
