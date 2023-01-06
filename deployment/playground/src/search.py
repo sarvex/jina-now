@@ -118,16 +118,21 @@ def call_flow(url_host, data, domain, endpoint):
         elif endpoint == 'search':
             docs = DocumentArray()
             # todo: use multimodal doc in the future
+
             for response_json in response.json():
-                content = list(response_json['fields'].values())[0]
+                chunks = []
+                for name, type_to_content in sorted(response_json['fields'].items()):
+                    chunk = Document(**type_to_content)
+                    if chunk.blob:
+                        base64_bytes = chunk.blob.encode('utf-8')
+                        chunk.blob = base64.decodebytes(base64_bytes)
+
+                    chunks.append(chunk)
                 doc = Document(
                     id=response_json['id'],
                     tags=response_json['tags'],
-                    **content,
+                    chunks=chunks,
                 )
-                if doc.blob:
-                    base64_bytes = doc.blob.encode('utf-8')
-                    doc.blob = base64.decodebytes(base64_bytes)
                 for metric, value in response_json['scores'].items():
                     doc.scores[metric] = NamedScore(value=value['value'])
                 docs.append(doc)
