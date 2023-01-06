@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from jina import Document, DocumentArray, Flow
 
-from now.constants import TAG_INDEXER_DOC_HAS_TEXT, TAG_OCR_DETECTOR_TEXT_IN_DOC
+from now.constants import TAG_OCR_DETECTOR_TEXT_IN_DOC
 from now.executor.indexer.in_memory.in_memory_indexer import InMemoryIndexer
 
 NUMBER_OF_DOCS = 10
@@ -433,7 +433,7 @@ class TestBaseIndexer:
             uses=indexer,
             uses_with={
                 "dim": len(embedding),
-                'columns': ['title', 'str', TAG_INDEXER_DOC_HAS_TEXT, 'bool'],
+                "ocr_is_needed": True,
             },
             uses_metas=metas,
         ) as f:
