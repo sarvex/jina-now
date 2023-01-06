@@ -3,7 +3,7 @@ import os
 import pathlib
 import time
 from os.path import expanduser as user
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 import hubble
 from docarray import DocumentArray
@@ -19,7 +19,6 @@ from now.constants import (
     NOW_ELASTIC_INDEXER_VERSION,
     NOW_PREPROCESSOR_VERSION,
     PREFETCH_NR,
-    TAG_INDEXER_DOC_HAS_TEXT,
     Modalities,
 )
 from now.demo_data import DEFAULT_EXAMPLE_HOSTED
@@ -40,7 +39,7 @@ def common_get_flow_env_dict(
     indexer_uses: str,
     indexer_resources: Dict,
     user_input: UserInput,
-    tags: List,
+    ocr_has_text: bool,
     deployment_type: str,
     data_class,
 ):
@@ -73,7 +72,7 @@ def common_get_flow_env_dict(
         if use_high_performance_flow and 'NOW_CI_RUN' not in os.environ
         else 1,
         'AUTOCOMPLETE_EXECUTOR_NAME': f'{EXECUTOR_PREFIX}{name_to_id_map.get("NOWAutoCompleteExecutor2")}/{NOW_AUTOCOMPLETE_VERSION}',
-        'COLUMNS': tags,
+        'OCR_HAS_TAGS': check_if_ocr_is_needed(user_input),
         'DOCUMENT_MAPPINGS': ['encoderclip', 512, *index_field_names],
         'ADMIN_EMAILS': user_input.admin_emails or [] if user_input.secured else [],
         'USER_EMAILS': user_input.user_emails or [] if user_input.secured else [],
@@ -114,7 +113,6 @@ def common_setup(
     encoder_with: Optional[Dict] = {},
     indexer_resources: Optional[Dict] = {},
 ) -> Dict:
-    tags = _extract_tags_for_indexer(user_input)
     env_dict = common_get_flow_env_dict(
         encoder_uses=encoder_uses,
         encoder_with=encoder_with,
@@ -123,7 +121,6 @@ def common_setup(
         indexer_uses=indexer_uses,
         indexer_resources=indexer_resources,
         user_input=user_input,
-        tags=tags,
         deployment_type=user_input.deployment_type,
         data_class=data_class,
     )
@@ -167,19 +164,14 @@ def get_indexer_config(
     return config
 
 
-def _extract_tags_for_indexer(user_input: UserInput):
-    final_tags = []
-    for tag, value in user_input.filter_fields_modalities.items():
-        if tag in user_input.filter_fields:
-            final_tags.append([tag, value])
-
+def check_if_ocr_is_needed(user_input: UserInput):
     for field, modality in user_input.filter_fields_modalities.items():
         if modality in [
             MODALITIES_MAPPING[Modalities.IMAGE],
             MODALITIES_MAPPING[Modalities.VIDEO],
         ]:
-            final_tags.append([TAG_INDEXER_DOC_HAS_TEXT, str(bool.__name__)])
-    return final_tags
+            return True
+    return False
 
 
 def setup_elastic_service(

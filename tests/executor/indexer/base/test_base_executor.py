@@ -172,11 +172,10 @@ class TestBaseIndexer:
 
         docs = self.docs_with_tags(NUMBER_OF_DOCS)
         docs_query = self.gen_docs(1)
-        columns = ['price', 'float', 'category', 'str']
 
         f = Flow().add(
             uses=indexer,
-            uses_with={'dim': DIM, 'columns': columns},
+            uses_with={'dim': DIM},
             uses_metas=metas,
         )
 

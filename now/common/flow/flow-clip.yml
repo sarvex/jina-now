@@ -39,7 +39,7 @@ executors:
     uses: ${{ ENV.INDEXER_NAME }}
     uses_with:
       dim: ${{ ENV.N_DIM }}
-      columns: ${{ ENV.COLUMNS }}
+      ocr_is_needed: ${{ ENV.OCR_IS_NEEDED }}
       document_mappings: ${{ ENV.DOCUMENT_MAPPINGS }}
       admin_emails: ${{ ENV.ADMIN_EMAILS }}
       user_emails: ${{ ENV.USER_EMAILS }}
