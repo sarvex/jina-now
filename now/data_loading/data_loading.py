@@ -323,7 +323,7 @@ def _get_modality(document: Document):
 
     :param document: The document to detect the modality for.
     """
-    for modality in AVAILABLE_MODALITIES_FOR_SEARCH.keys():
+    for modality in AVAILABLE_MODALITIES_FOR_SEARCH:
         modality_string = docarray_typing_to_modality_string(modality)
         if (
             modality_string in document.modality
