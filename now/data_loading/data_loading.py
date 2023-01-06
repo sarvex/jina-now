@@ -118,13 +118,14 @@ def get_da_with_index_fields(da: DocumentArray, user_input: UserInput):
     dataclass = create_dataclass(user_input)
     clean_da = []
     non_index_fields = list(
-        set(user_input.index_fields_modalities.keys()) - set(user_input.index_fields)
+        set(user_input.index_field_candidates_to_modalities.keys())
+        - set(user_input.index_fields)
     )
     for d in da:
         dict_index_fields = {}
         dict_non_index_fields = {}
         dataclass_mappings = create_dataclass_fields_file_mappings(
-            user_input.index_fields, user_input.index_fields_modalities
+            user_input.index_fields, user_input.index_field_candidates_to_modalities
         )
         for field in non_index_fields:
             non_index_field_doc = getattr(d, field)
