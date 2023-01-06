@@ -1,6 +1,8 @@
 import pathlib
 import time
 
+from docarray.typing import Image, Video
+
 from now.deployment.deployment import cmd
 from now.now_dataclasses import UserInput
 
