@@ -21,7 +21,7 @@ class DummyEncoder1(Executor):
         pass
 
 
-DOCUMENT_MAPPINGS = ['dummy_encoder1', DIM, 'title']
+DOCUMENT_MAPPINGS = [['dummy_encoder1', DIM, ['title']]]
 
 
 @pytest.fixture
