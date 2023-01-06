@@ -153,9 +153,10 @@ class NOWElasticIndexer(Executor):
         :param parameters: dictionary with options for indexing.
         :return: empty `DocumentArray`.
         """
-        docs_map = self._handle_no_docs_map(docs)
-        if len(docs_map) == 0:
-            return DocumentArray()
+        if docs_map is None:
+            docs_map = self._handle_no_docs_map(docs)
+            if len(docs_map) == 0:
+                return DocumentArray()
 
         aggregate_embeddings(docs_map)
         es_docs = convert_doc_map_to_es(
@@ -201,9 +202,10 @@ class NOWElasticIndexer(Executor):
                 - 'custom_bm25_query' (dict): Custom query to use for BM25. Note: this query can only be
                     passed if also passing `es_mapping`. Otherwise, only default bm25 scoring is enabled.
         """
-        docs_map = self._handle_no_docs_map(docs)
-        if len(docs_map) == 0:
-            return DocumentArray()
+        if docs_map is None:
+            docs_map = self._handle_no_docs_map(docs)
+            if len(docs_map) == 0:
+                return DocumentArray()
 
         aggregate_embeddings(docs_map)
 
