@@ -39,9 +39,7 @@ class NOWElasticIndexer(Executor):
 
     def construct(
         self,
-        document_mappings: Union[
-            List[Tuple[str, int, List[str]]],
-        ],  # cannot take FieldEmbedding (not serializable)
+        document_mappings: List[Tuple[str, int, List[str]]],
         es_mapping: Dict = None,
         hosts: Union[
             str, List[Union[str, Mapping[str, Union[str, int]]]], None
@@ -134,6 +132,12 @@ class NOWElasticIndexer(Executor):
                 }
         return es_mapping
 
+    def _handle_no_docs_map(self, docs: DocumentArray):
+        if docs and len(self.encoder_to_fields) == 1:
+            return {list(self.encoder_to_fields.keys())[0]: docs}
+        else:
+            return {}
+
     @secure_request(on='/index', level=SecurityLevel.USER)
     def index(
         self,
@@ -149,9 +153,8 @@ class NOWElasticIndexer(Executor):
         :param parameters: dictionary with options for indexing.
         :return: empty `DocumentArray`.
         """
-        if not docs_map and docs and len(self.encoder_to_fields) == 1:
-            docs_map = {list(self.encoder_to_fields.keys())[0]: docs}
-        if not docs_map:
+        docs_map = self._handle_no_docs_map(docs)
+        if len(docs_map) == 0:
             return DocumentArray()
 
         aggregate_embeddings(docs_map)
@@ -198,11 +201,9 @@ class NOWElasticIndexer(Executor):
                 - 'custom_bm25_query' (dict): Custom query to use for BM25. Note: this query can only be
                     passed if also passing `es_mapping`. Otherwise, only default bm25 scoring is enabled.
         """
-        if not docs_map:
-            if docs and len(self.encoder_to_fields) == 1:
-                docs_map = {list(self.encoder_to_fields.keys())[0]: docs}
-            else:
-                return DocumentArray()
+        docs_map = self._handle_no_docs_map(docs)
+        if len(docs_map) == 0:
+            return DocumentArray()
 
         aggregate_embeddings(docs_map)
 
