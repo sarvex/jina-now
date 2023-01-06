@@ -11,7 +11,6 @@ def test_generate_es_mappings(setup_service_running):
     """
     document_mappings = [
         FieldEmbedding('clip', 8, ['title']),
-        FieldEmbedding('sbert', 5, ['title', 'excerpt']),
     ]
     expected_mapping = {
         'properties': {
@@ -22,26 +21,6 @@ def test_generate_es_mappings(setup_service_running):
                     'embedding': {
                         'type': 'dense_vector',
                         'dims': '8',
-                        'similarity': 'cosine',
-                        'index': 'true',
-                    }
-                }
-            },
-            'title-sbert': {
-                'properties': {
-                    'embedding': {
-                        'type': 'dense_vector',
-                        'dims': '5',
-                        'similarity': 'cosine',
-                        'index': 'true',
-                    },
-                }
-            },
-            'excerpt-sbert': {
-                'properties': {
-                    'embedding': {
-                        'type': 'dense_vector',
-                        'dims': '5',
                         'similarity': 'cosine',
                         'index': 'true',
                     }
@@ -213,31 +192,11 @@ def test_custom_mapping_and_custom_bm25_search(
                     }
                 }
             },
-            'title-sbert': {
-                'properties': {
-                    'embedding': {
-                        'type': 'dense_vector',
-                        'dims': '5',
-                        'similarity': 'cosine',
-                        'index': 'true',
-                    }
-                }
-            },
             'gif-clip': {
                 'properties': {
                     'embedding': {
                         'type': 'dense_vector',
                         'dims': '8',
-                        'similarity': 'cosine',
-                        'index': 'true',
-                    }
-                }
-            },
-            'excerpt-sbert': {
-                'properties': {
-                    'embedding': {
-                        'type': 'dense_vector',
-                        'dims': '5',
                         'similarity': 'cosine',
                         'index': 'true',
                     }

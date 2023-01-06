@@ -79,15 +79,13 @@ class NOWElasticIndexer(Executor):
 
         # hack is needed to work with the current bug in the core where list of list is not possible to pass
         # at the moment document_mappings arrives as ['clip', 512, 'product_image', 'product_description']
-        if document_mappings and isinstance(document_mappings[0], str):
-            document_mappings[2] = document_mappings[2].split(',')
-            document_mappings = [document_mappings]
 
-        # punctuation needs to be removed for the field names
-        for document_mapping in document_mappings:
-            pass
+        encoder_name = document_mappings[0]
+        embedding_size = document_mappings[1]
+        fields = document_mappings[2:]
+        document_mappings = [encoder_name, embedding_size, fields]
 
-        self.document_mappings = [FieldEmbedding(*dm) for dm in document_mappings]
+        self.document_mappings = [FieldEmbedding(*document_mappings)]
         self.encoder_to_fields = {
             document_mapping.encoder: document_mapping.fields
             for document_mapping in self.document_mappings
@@ -160,6 +158,7 @@ class NOWElasticIndexer(Executor):
         """
         if not docs_map:
             return DocumentArray()
+
         aggregate_embeddings(docs_map)
         es_docs = convert_doc_map_to_es(
             docs_map, self.index_name, self.encoder_to_fields
@@ -205,6 +204,7 @@ class NOWElasticIndexer(Executor):
         """
         if not docs_map:
             return DocumentArray()
+
         aggregate_embeddings(docs_map)
 
         # search_filter = parameters.get('filter', None)
@@ -241,7 +241,8 @@ class NOWElasticIndexer(Executor):
                 semantic_scores=semantic_scores,
             )
             doc.tags.pop('embeddings')
-        return DocumentArray(list(zip(*es_queries))[0])
+        results = DocumentArray(list(zip(*es_queries))[0])
+        return results
 
     @secure_request(on='/update', level=SecurityLevel.USER)
     def update(self, docs: DocumentArray, **kwargs) -> DocumentArray:

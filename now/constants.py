@@ -5,9 +5,9 @@ from docarray.typing import Image, Text, Video
 from now.utils import BetterEnum
 
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.140-es-dataclass-9'
-NOW_PREPROCESSOR_VERSION = '0.0.118-es-dataclass-29'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.140-fix-elastic-different-queries'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.140-es-dataclass-10'
+NOW_PREPROCESSOR_VERSION = '0.0.118-es-dataclass-30'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.141-fix-enable-multi-modal-support-13'
 NOW_AUTOCOMPLETE_VERSION = '0.0.8-feat-integrate-elastic-33'
 
 
