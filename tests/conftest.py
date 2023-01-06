@@ -183,7 +183,7 @@ def es_inputs(gif_resource_path) -> namedtuple:
     class MMQuery:
         query_text: Text
 
-    document_mappings = ['clip', 8, 'title', 'gif']
+    document_mappings = [['clip', 8, ['title', 'gif']]]
 
     default_semantic_scores = [
         SemanticScore('query_text', 'title', 'clip', 1),
