@@ -96,7 +96,7 @@ class ElasticsearchExtractor:
                 in self._user_input.index_fields + self._user_input.filter_fields
             ):
                 kwargs[
-                    self._user_input.files_to_dataclass_fields[field_name]
+                    self._user_input.field_names_to_dataclass_fields[field_name]
                 ] = field_value
                 continue
 

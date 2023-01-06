@@ -51,9 +51,7 @@ def test_search_app(resources_folder_path, endpoint, tmpdir):
         ]
     )
 
-    with Flow().add(
-        uses=NOWPreprocessor, uses_with={'app': app}, uses_metas=metas
-    ) as f:
+    with Flow().add(uses=NOWPreprocessor, uses_metas=metas) as f:
         result = f.post(
             on=f'/{endpoint}',
             inputs=text_docs,

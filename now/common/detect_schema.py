@@ -9,13 +9,16 @@ from now.constants import (
     AVAILABLE_MODALITIES_FOR_FILTER,
     AVAILABLE_MODALITIES_FOR_SEARCH,
     FILETYPE_TO_MODALITY,
-    MODALITIES_MAPPING,
     NOT_AVAILABLE_MODALITIES_FOR_FILTER,
     SUPPORTED_FILE_TYPES,
 )
 from now.data_loading.elasticsearch import ElasticsearchConnector
 from now.now_dataclasses import UserInput
-from now.utils import flatten_dict
+from now.utils import (
+    docarray_typing_to_modality_string,
+    flatten_dict,
+    modality_string_to_docarray_typing,
+)
 
 
 def get_field_type(field_value):
@@ -37,8 +40,8 @@ def _create_candidate_index_filter_fields(field_name_to_value):
 
     :param field_name_to_value: dictionary
     """
-    index_fields_modalities = {}
-    filter_field_modalities = {}
+    index_field_candidates_to_modalities = {}
+    filter_field_candidates_to_modalities = {}
     not_available_file_types_for_filter = list(
         itertools.chain(
             *[
@@ -50,21 +53,22 @@ def _create_candidate_index_filter_fields(field_name_to_value):
     for field_name, field_value in field_name_to_value.items():
         # we determine search modality
         file_type = get_field_type(field_value)
-        modality = FILETYPE_TO_MODALITY[file_type]
-        index_fields_modalities[field_name] = MODALITIES_MAPPING[modality]
+        index_field_candidates_to_modalities[field_name] = FILETYPE_TO_MODALITY[
+            file_type
+        ]
 
         # we determine if it's a filter field
         if (
             field_name == 'uri'
             and field_value.split('.')[-1] not in not_available_file_types_for_filter
         ) or field_name.split('.')[-1] not in not_available_file_types_for_filter:
-            filter_field_modalities[field_name] = field_value.__class__
+            filter_field_candidates_to_modalities[field_name] = field_value.__class__
 
-    if len(index_fields_modalities.keys()) == 0:
+    if len(index_field_candidates_to_modalities.keys()) == 0:
         raise ValueError(
             'No searchable fields found, please check documentation https://now.jina.ai'
         )
-    return index_fields_modalities, filter_field_modalities
+    return index_field_candidates_to_modalities, filter_field_candidates_to_modalities
 
 
 def get_first_file_in_folder_structure_s3(bucket, folder_prefix, dataset_path):
@@ -113,17 +117,16 @@ def _extract_field_candidates_docarray(response):
                 f' to add modalities to your documents https://docarray.jina.ai/datatypes/multimodal/'
             )
         modality = doc['chunks'][field_pos]['modality'].lower()
-        if modality not in AVAILABLE_MODALITIES_FOR_SEARCH:
+        docarray_type = modality_string_to_docarray_typing(modality)
+        if docarray_type in AVAILABLE_MODALITIES_FOR_SEARCH:
+            search_modalities[field_name] = docarray_type
+        else:
             raise ValueError(
-                f'The modality {modality} is not supported for search. Please use '
-                f'one of the following modalities: {AVAILABLE_MODALITIES_FOR_SEARCH}'
+                f'The modality {modality} is not supported for search. Please use one of the following modalities: '
+                f'{map(docarray_typing_to_modality_string, AVAILABLE_MODALITIES_FOR_SEARCH)}'
             )
-        # only the available modalities for filter are added to the filter modalities
-        if modality in AVAILABLE_MODALITIES_FOR_FILTER:
+        if docarray_type in AVAILABLE_MODALITIES_FOR_FILTER:
             filter_modalities[field_name] = modality
-        # only the available modalities for search are added to search modalities
-        if modality in AVAILABLE_MODALITIES_FOR_SEARCH:
-            search_modalities[field_name] = MODALITIES_MAPPING[modality]
 
     if doc.get('tags', None):
         for el, value in doc['tags']['fields'].items():
@@ -160,8 +163,8 @@ def set_field_names_from_docarray(user_input: UserInput, **kwargs):
     )
     if response.json()['code'] == 200:
         (
-            user_input.index_fields_modalities,
-            user_input.filter_fields_modalities,
+            user_input.index_field_candidates_to_modalities,
+            user_input.filter_field_candidates_to_modalities,
         ) = _extract_field_candidates_docarray(response)
     else:
         raise ValueError('DocumentArray does not exist or you do not have access to it')
@@ -255,8 +258,8 @@ def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
         if not isinstance(field_value, list) and not isinstance(field_value, dict)
     }
     (
-        user_input.index_fields_modalities,
-        user_input.filter_fields_modalities,
+        user_input.index_field_candidates_to_modalities,
+        user_input.filter_field_candidates_to_modalities,
     ) = _create_candidate_index_filter_fields(fields_dict_cleaned)
 
 
@@ -307,8 +310,8 @@ def set_field_names_from_local_folder(user_input: UserInput, **kwargs):
         if not isinstance(field_value, list) and not isinstance(field_value, dict)
     }
     (
-        user_input.index_fields_modalities,
-        user_input.filter_fields_modalities,
+        user_input.index_field_candidates_to_modalities,
+        user_input.filter_field_candidates_to_modalities,
     ) = _create_candidate_index_filter_fields(fields_dict_cleaned)
 
 
@@ -342,8 +345,8 @@ def set_field_names_elasticsearch(user_input: UserInput, **kwargs):
         if not isinstance(field_value, list) and not isinstance(field_value, dict)
     }
     (
-        user_input.index_fields_modalities,
-        user_input.filter_fields_modalities,
+        user_input.index_field_candidates_to_modalities,
+        user_input.filter_field_candidates_to_modalities,
     ) = _create_candidate_index_filter_fields(fields_dict_cleaned)
 
 

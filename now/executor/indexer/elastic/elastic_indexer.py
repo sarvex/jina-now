@@ -2,7 +2,7 @@ import subprocess
 import traceback
 from collections import namedtuple
 from time import sleep
-from typing import Any, Dict, List, Mapping, Optional, Union
+from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
 
 from docarray import Document, DocumentArray
 from elasticsearch import Elasticsearch
@@ -39,9 +39,7 @@ class NOWElasticIndexer(Executor):
 
     def construct(
         self,
-        document_mappings: Union[
-            List[List], str
-        ],  # cannot take FieldEmbedding (not serializable) also can be provided as string since list of list is not possible with the current k8s implementation of the core
+        document_mappings: List[Tuple[str, int, List[str]]],
         es_mapping: Dict = None,
         hosts: Union[
             str, List[Union[str, Mapping[str, Union[str, int]]]], None
@@ -77,15 +75,7 @@ class NOWElasticIndexer(Executor):
         self.traversal_paths = traversal_paths
         self.limit = limit
 
-        # hack is needed to work with the current bug in the core where list of list is not possible to pass
-        # at the moment document_mappings arrives as ['clip', 512, 'product_image', 'product_description']
-
-        encoder_name = document_mappings[0]
-        embedding_size = document_mappings[1]
-        fields = document_mappings[2:]
-        document_mappings = [encoder_name, embedding_size, fields]
-
-        self.document_mappings = [FieldEmbedding(*document_mappings)]
+        self.document_mappings = [FieldEmbedding(*dm) for dm in document_mappings]
         self.encoder_to_fields = {
             document_mapping.encoder: document_mapping.fields
             for document_mapping in self.document_mappings
@@ -142,11 +132,18 @@ class NOWElasticIndexer(Executor):
                 }
         return es_mapping
 
+    def _handle_no_docs_map(self, docs: DocumentArray):
+        if docs and len(self.encoder_to_fields) == 1:
+            return {list(self.encoder_to_fields.keys())[0]: docs}
+        else:
+            return {}
+
     @secure_request(on='/index', level=SecurityLevel.USER)
     def index(
         self,
-        docs_map: Dict[str, DocumentArray],  # encoder to docarray
+        docs_map: Dict[str, DocumentArray] = None,  # encoder to docarray
         parameters: dict = {},
+        docs: Optional[DocumentArray] = None,
         **kwargs,
     ) -> DocumentArray:
         """
@@ -156,8 +153,10 @@ class NOWElasticIndexer(Executor):
         :param parameters: dictionary with options for indexing.
         :return: empty `DocumentArray`.
         """
-        if not docs_map:
-            return DocumentArray()
+        if docs_map is None:
+            docs_map = self._handle_no_docs_map(docs)
+            if len(docs_map) == 0:
+                return DocumentArray()
 
         aggregate_embeddings(docs_map)
         es_docs = convert_doc_map_to_es(
@@ -177,6 +176,7 @@ class NOWElasticIndexer(Executor):
         self,
         docs_map: Dict[str, DocumentArray] = None,  # encoder to docarray
         parameters: dict = {},
+        docs: Optional[DocumentArray] = None,
         **kwargs,
     ):
         """Perform traditional bm25 + vector search. By convention, BM25 will search on
@@ -202,8 +202,10 @@ class NOWElasticIndexer(Executor):
                 - 'custom_bm25_query' (dict): Custom query to use for BM25. Note: this query can only be
                     passed if also passing `es_mapping`. Otherwise, only default bm25 scoring is enabled.
         """
-        if not docs_map:
-            return DocumentArray()
+        if docs_map is None:
+            docs_map = self._handle_no_docs_map(docs)
+            if len(docs_map) == 0:
+                return DocumentArray()
 
         aggregate_embeddings(docs_map)
 

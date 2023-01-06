@@ -74,11 +74,6 @@ def gif_resource_path(resources_folder_path: str) -> str:
 
 
 @pytest.fixture
-def get_task_config_path(resources_folder_path: str) -> str:
-    return os.path.join(resources_folder_path, 'text+image/config.json')
-
-
-@pytest.fixture
 def admin_email():
     return 'alpha.omega@jina.ai'
 
@@ -188,7 +183,7 @@ def es_inputs(gif_resource_path) -> namedtuple:
     class MMQuery:
         query_text: Text
 
-    document_mappings = ['clip', 8, 'title', 'gif']
+    document_mappings = [['clip', 8, ['title', 'gif']]]
 
     default_semantic_scores = [
         SemanticScore('query_text', 'title', 'clip', 1),
