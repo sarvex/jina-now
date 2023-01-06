@@ -269,12 +269,16 @@ jobs:
         update-autocomplete,
         update-bff-playground,
       ]
+    strategy:
+      matrix:
+        python-version: [ 3.7 ]
+        group: [ 1, 2 ] # set to the number of end-to-end tests + 1
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python 3.7
+      - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
-          python-version: 3.7
+          python-version: ${{ matrix.python-version }}
       - name: Prepare environment
         run: |
           sudo apt update && sudo apt install ffmpeg
@@ -284,11 +288,7 @@ jobs:
       - name: Test executors separately
         timeout-minutes: 15
         run: |
-          pytest --suppress-no-test-exit-code --cov=now --cov-append -v -s tests/executor/auth
-          pytest --suppress-no-test-exit-code --cov=now --cov-append -v -s tests/executor/indexer/base
-          pytest --suppress-no-test-exit-code --cov=now --cov-append -v -s tests/executor/indexer/elastic
-          pytest --suppress-no-test-exit-code --cov=now --cov-append -v -s tests/executor/preprocessor
-          pytest --suppress-no-test-exit-code --cov=now --cov-append -v -s tests/executor/autocomplete
+          pytest --suppress-no-test-exit-code --cov=now --cov-append -v -s --splits 2 --group ${{ matrix.group }} --splitting-algorithm least_duration tests/executor
       #      - name: Setup tmate session for debugging
       #        if: ${{ failure() || (github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled) }}
       #        uses: mxschmitt/action-tmate@v3
@@ -296,7 +296,7 @@ jobs:
       - name: Upload coverage
         uses: actions/upload-artifact@v2
         with:
-          name: coverage_executor
+          name: coverage_executor${{ matrix.group }}
           path: .coverage
 
   # just for blocking the merge until all parallel core-test are successful
