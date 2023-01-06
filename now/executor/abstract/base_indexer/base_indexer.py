@@ -403,26 +403,6 @@ class NOWBaseIndexer(Executor):
             for match in doc.matches:
                 _clean_response(match)
 
-    @staticmethod
-    def parse_columns(columns):
-        """Parse the columns to index"""
-        valid_input_columns = ['str', 'float', 'int', 'bool']
-        corrected_columns = []
-        for column_name, column_type in columns:
-            if column_type in ['text', 'stringValue']:
-                column_type = 'str'
-            elif column_type in ['numberValue']:
-                column_type = 'float'
-            elif column_type in ['booleanValue']:
-                column_type = 'bool'
-            if column_type not in valid_input_columns:
-                raise ValueError(
-                    f'Invalid column type {column_type} for column {column_name}. '
-                    f'Valid column types are {valid_input_columns}'
-                )
-            corrected_columns.append((column_name, column_type))
-        return corrected_columns
-
     def load_document_list(self):
         """is needed for the list endpoint"""
         document_list = DocumentArray()
