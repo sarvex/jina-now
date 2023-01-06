@@ -12,13 +12,7 @@ from jina import Document, DocumentArray
 from paddleocr import PaddleOCR
 
 from now.app.base.app import JinaNOWApp
-from now.app.base.transform_docarray import transform_docarray
-from now.constants import (
-    ACCESS_PATHS,
-    TAG_OCR_DETECTOR_TEXT_IN_DOC,
-    DatasetTypes,
-    Modalities,
-)
+from now.constants import ACCESS_PATHS, TAG_OCR_DETECTOR_TEXT_IN_DOC, DatasetTypes
 from now.executor.abstract.auth import (
     SecurityLevel,
     get_auth_executor_class,
@@ -73,7 +67,7 @@ class NOWPreprocessor(Executor):
     def _ocr_detect_text(self, docs: DocumentArray):
         """Iterates over all documents, detects text in images and saves it into the tags of the document."""
         for doc in docs[ACCESS_PATHS]:
-            if doc.modality == Modalities.IMAGE:
+            if doc.modality == 'image':
                 ocr_result = self.paddle_ocr.ocr(doc.blob)
                 text_list = [text for _, (text, _) in ocr_result[0]]
                 doc.tags[TAG_OCR_DETECTOR_TEXT_IN_DOC] = ' '.join(text_list)
@@ -95,20 +89,22 @@ class NOWPreprocessor(Executor):
         return tmp_fn
 
     def _preprocess_maybe_cloud_download(self, docs: DocumentArray) -> DocumentArray:
+        if len(docs) > 0 and not docs[0].chunks:
+            raise ValueError(
+                'Documents are not in multi modal format. Please check documentation'
+                'https://docarray.jina.ai/datatypes/multimodal/'
+            )
         with tempfile.TemporaryDirectory() as tmpdir:
             index_fields = []
             if self.user_input:
                 for index_field in self.user_input.index_fields:
                     index_fields.append(
-                        self.user_input.files_to_dataclass_fields[index_field]
-                        if index_field in self.user_input.files_to_dataclass_fields
+                        self.user_input.field_names_to_dataclass_fields[index_field]
+                        if index_field
+                        in self.user_input.field_names_to_dataclass_fields
                         else index_field
                     )
 
-            docs = transform_docarray(
-                documents=docs,
-                index_fields=index_fields,
-            )
             if (
                 self.user_input
                 and self.user_input.dataset_type == DatasetTypes.S3_BUCKET
@@ -196,15 +192,3 @@ class NOWPreprocessor(Executor):
             convert_fn(d)
 
         return docs
-
-    @secure_request(on='/get_user_input', level=SecurityLevel.USER)
-    def get_user_input(self, *args, **kwargs) -> Dict:
-        """Returns user input as DocumentArray.
-
-        :return: user input as dictionary
-        """
-        return {
-            'user_input': self.user_input.__dict__
-            if self.user_input is not None
-            else {}
-        }

@@ -12,7 +12,7 @@ def get_request_body():
 
 
 def test_search_filters(start_bff, tmpdir):
-    f = get_flow(indexer_args={'columns': ['color', 'str']}, tmpdir=tmpdir)
+    f = get_flow(tmpdir=tmpdir)
     with f:
         index_data(f)
         request_body = get_request_body()

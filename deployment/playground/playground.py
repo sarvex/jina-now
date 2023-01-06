@@ -366,7 +366,7 @@ def render_matches():
         list_matches = [matches[i : i + 9] for i in range(0, len(matches), 9)]
 
         # render the current page or the last page if filtered documents are less
-        if len(list_matches) > 0:
+        if list_matches:
             st.session_state.page_number = min(
                 st.session_state.page_number, len(list_matches) - 1
             )
@@ -376,13 +376,8 @@ def render_matches():
             c4, c5, c6 = st.columns(3)
             c7, c8, c9 = st.columns(3)
             all_cs = [c1, c2, c3, c4, c5, c6, c7, c8, c9]
-
             for c, match in zip(all_cs, list_matches[st.session_state.page_number]):
-                match.mime_type = 'text-or-image-or-video'
-                try:
-                    render_graphic_result(match, c)
-                except:
-                    render_text_result(match, c)
+                render_multi_modal_result(match, c)
 
         if len(list_matches) > 1:
             # disable prev button or not
@@ -415,44 +410,37 @@ def render_matches():
             st.text(st.session_state.error_msg)
 
 
-def render_graphic_result(match, c):
-    if match.blob != b'':
-        match.convert_blob_to_datauri()
-    elif match.tensor is not None:
-        match.convert_image_tensor_to_uri()
+def render_multi_modal_result(match, c):
+    for chunk in match.chunks:
+        render_graphic_result(chunk, c)
+        render_text_result(chunk, c)
 
-    if match.uri != '':
+
+# I'm not so happy about these two functions, let's refactor them
+def render_graphic_result(match, c):
+    try:
+        match.mime_type = 'text-or-image-or-video'
+        if match.blob:
+            match.convert_blob_to_datauri()
+        elif match.tensor is not None:
+            match.convert_image_tensor_to_uri()
         c.image(match.uri)
+    except:
+        pass
 
 
 def render_text_result(match, c):
-    if match.text == '' and match.uri != '':
-        match.load_uri_to_text(timeout=10)
-    display_text = profanity.censor(match.text).replace('\n', ' ')
-    body = f"<!DOCTYPE html><html><body><blockquote>{display_text}</blockquote>"
-    if match.tags.get('additional_info'):
-        additional_info = match.tags.get('additional_info')
-        if type(additional_info) == str:
-            additional_info_text = additional_info
-        elif type(additional_info) == list:
-            if len(additional_info) == 1:
-                # assumes just one line containing information on text name and creator, etc.
-                additional_info_text = additional_info
-            elif len(additional_info) == 2:
-                # assumes first element is text name and second element is creator name
-                additional_info_text = (
-                    f"<em>{additional_info[0]}</em> "
-                    f"<small>by {additional_info[1]}</small>"
-                )
-
-            else:
-                additional_info_text = " ".join(additional_info)
-        body += f"<figcaption>{additional_info_text}</figcaption>"
-    body += "</body></html>"
-    c.markdown(
-        body=body,
-        unsafe_allow_html=True,
-    )
+    try:
+        if match.text == '' and match.uri != '':
+            match.load_uri_to_text(timeout=10)
+        display_text = profanity.censor(match.text).replace('\n', ' ')
+        body = f"<!DOCTYPE html><html><body>{display_text}</body></html>"
+        c.markdown(
+            body=body,
+            unsafe_allow_html=True,
+        )
+    except:
+        pass
 
 
 def render_webcam(filter_selection):

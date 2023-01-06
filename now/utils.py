@@ -9,9 +9,11 @@ import sys
 import tempfile
 from collections.abc import MutableMapping
 from concurrent.futures import ThreadPoolExecutor
-from typing import Dict, List, Optional, Union
+from os.path import expanduser as user
+from typing import Dict, List, Optional, TypeVar, Union
 
 import boto3
+import docarray
 import hubble
 import yaml
 from docarray import Document, DocumentArray
@@ -184,7 +186,6 @@ def prompt_value(
 
     if choices is not None:
         qs['choices'] = choices
-        # qs['type'] = 'list'
     return maybe_prompt_user(qs, name, **kwargs)
 
 
@@ -301,6 +302,30 @@ def get_flow_id(host):
 class Dumper(yaml.Dumper):
     def increase_indent(self, flow=False, *args, **kwargs):
         return super().increase_indent(flow=flow, indentless=False)
+
+
+def get_email():
+    try:
+        with open(user('~/.jina/config.json')) as fp:
+            config_val = json.load(fp)
+            user_token = config_val['auth_token']
+            client = hubble.Client(token=user_token, max_retries=None, jsonify=True)
+            response = client.get_user_info()
+        if 'email' in response['data']:
+            return response['data']['email']
+        return ''
+    except FileNotFoundError:
+        return ''
+
+
+def docarray_typing_to_modality_string(T: TypeVar) -> str:
+    """E.g. docarray.typing.Image -> image"""
+    return T.__name__.lower()
+
+
+def modality_string_to_docarray_typing(s: str) -> TypeVar:
+    """E.g. image -> docarray.typing.Image"""
+    return getattr(docarray.typing, s.capitalize())
 
 
 # Add a custom retry exception
