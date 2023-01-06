@@ -2,7 +2,7 @@ import typing
 from collections import defaultdict
 from typing import Dict, List
 
-from docarray import dataclass, field
+from docarray import Document, dataclass, field
 
 from now.constants import AVAILABLE_MODALITIES_FOR_SEARCH, DatasetTypes
 from now.now_dataclasses import UserInput
@@ -67,15 +67,21 @@ def create_dataclass(user_input: UserInput):
     setattr(mm_doc, '__annotations__', all_annotations)
     mm_doc = dataclass(mm_doc)
 
-    def extended_constructor(cls, *args, **kwargs):
-        doc = cls.__call__(*args, **kwargs)
-        for chunk, name in zip(doc.chunks, user_input.index_fields):
+    mm_doc.to_document = get_document_converter(user_input.index_fields)
+    return mm_doc
+
+
+def get_document_converter(field_names):
+    def document_converter(self):
+        doc = Document(self)
+        for chunk, name in zip(doc.chunks, field_names):
             chunk.tags = {
                 'field_name': name,
             }
+        self.self = doc
+        return doc
 
-    mm_doc.__call__ = extended_constructor
-    return mm_doc
+    return document_converter
 
 
 def create_annotations_and_class_attributes(

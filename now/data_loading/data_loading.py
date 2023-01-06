@@ -207,7 +207,7 @@ def create_docs_from_subdirectories(
                     for el, value in data.items():
                         if el in field_names_to_dataclass_fields.keys():
                             kwargs[field_names_to_dataclass_fields[el]] = value
-        docs.append(Document(data_class(**kwargs)))
+        docs.append(data_class(**kwargs).to_document())
     return docs
 
 
@@ -242,7 +242,7 @@ def create_docs_from_files(
             file_extension == fields[0].split('.')[-1]
         ):  # fields should have only one index field in case of files only
             kwargs[field_names_to_dataclass_fields[fields[0]]] = file_full_path
-            docs.append(Document(data_class(**kwargs)))
+            docs.append(data_class(**kwargs).to_document())
     return docs
 
 
