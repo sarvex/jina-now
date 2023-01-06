@@ -12,7 +12,6 @@ from jina import Document, DocumentArray
 from paddleocr import PaddleOCR
 
 from now.app.base.app import JinaNOWApp
-from now.app.base.transform_docarray import transform_docarray
 from now.constants import (
     ACCESS_PATHS,
     TAG_OCR_DETECTOR_TEXT_IN_DOC,
@@ -95,6 +94,11 @@ class NOWPreprocessor(Executor):
         return tmp_fn
 
     def _preprocess_maybe_cloud_download(self, docs: DocumentArray) -> DocumentArray:
+        if len(docs) > 0 and not docs[0].chunks:
+            raise ValueError(
+                'Documents are not in multi modal format. Please check documentation'
+                'https://docarray.jina.ai/datatypes/multimodal/'
+            )
         with tempfile.TemporaryDirectory() as tmpdir:
             index_fields = []
             if self.user_input:
@@ -105,10 +109,6 @@ class NOWPreprocessor(Executor):
                         else index_field
                     )
 
-            docs = transform_docarray(
-                documents=docs,
-                index_fields=index_fields,
-            )
             if (
                 self.user_input
                 and self.user_input.dataset_type == DatasetTypes.S3_BUCKET

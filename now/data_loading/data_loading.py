@@ -10,7 +10,7 @@ from now.common.detect_schema import (
     get_first_file_in_folder_structure_s3,
     get_s3_bucket_and_folder_prefix,
 )
-from now.constants import DatasetTypes
+from now.constants import DatasetTypes, Modalities
 from now.data_loading.elasticsearch import ElasticsearchExtractor
 from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
@@ -35,10 +35,11 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
     elif user_input.dataset_type == DatasetTypes.S3_BUCKET:
         da = _list_files_from_s3_bucket(user_input=user_input, data_class=data_class)
     elif user_input.dataset_type == DatasetTypes.ELASTICSEARCH:
-        da = _extract_es_data(user_input)
+        da = _extract_es_data(user_input=user_input, data_class=data_class)
     elif user_input.dataset_type == DatasetTypes.DEMO:
         print('⬇  Download DocumentArray dataset')
         da = DocumentArray.pull(name=user_input.dataset_name, show_progress=True)
+    da = set_modality_da(da)
     if da is None:
         raise ValueError(
             f'Could not load DocumentArray dataset. Please check your configuration: {user_input}.'
@@ -64,7 +65,7 @@ def _pull_docarray(dataset_name: str):
         )
 
 
-def _extract_es_data(user_input: UserInput) -> DocumentArray:
+def _extract_es_data(user_input: UserInput, data_class: Type) -> DocumentArray:
     query = {
         'query': {'match_all': {}},
         '_source': True,
@@ -72,9 +73,11 @@ def _extract_es_data(user_input: UserInput) -> DocumentArray:
     es_extractor = ElasticsearchExtractor(
         query=query,
         index=user_input.es_index_name,
+        user_input=user_input,
+        data_class=data_class,
         connection_str=user_input.es_host_name,
     )
-    extracted_docs = es_extractor.extract(index_fields=user_input.index_fields)
+    extracted_docs = es_extractor.extract()
     return extracted_docs
 
 
@@ -312,3 +315,29 @@ def _extract_file_and_full_file_path(file_path, path=None, is_s3_dataset=False):
         file_full_path = file_path
         file = file_path.split(os.sep)[-1]
     return file, file_full_path
+
+
+def _get_modality(document: Document):
+    """
+    Detect document's modality based on its `modality` or `mime_type` attributes.
+
+    :param document: The document to detect the modality for.
+    """
+    for modality in Modalities():
+        if modality in document.modality or modality in document.mime_type:
+            return modality
+    return None
+
+
+def set_modality_da(documents: DocumentArray):
+    """
+    Set document's modality based on its `modality` or `mime_type` attributes.
+
+    :param documents: The DocumentArray to set the modality for.
+
+    :return: The DocumentArray with the modality set.
+    """
+    for doc in documents:
+        for chunk in doc.chunks:
+            chunk.modality = chunk.modality or _get_modality(chunk)
+    return documents
