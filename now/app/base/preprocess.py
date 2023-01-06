@@ -1,4 +1,5 @@
 import io
+import json
 
 import numpy as np
 from docarray import Document
@@ -29,6 +30,10 @@ def preprocess_text(
 
     if not d.text and d.uri:
         d.load_uri_to_text(timeout=10)
+        # In case it is a json file, we need to get the right field
+        if d.uri.endswith('.json'):
+            json_dict = json.loads(d.text)
+            d.text = json_dict[d.tags['field_name']]
         d.tags['additional_info'] = d.uri
     d.chunks = [
         Document(

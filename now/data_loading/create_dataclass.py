@@ -66,6 +66,15 @@ def create_dataclass(user_input: UserInput):
     mm_doc = type("MMDoc", (object,), all_class_attributes)
     setattr(mm_doc, '__annotations__', all_annotations)
     mm_doc = dataclass(mm_doc)
+
+    def extended_constructor(cls, *args, **kwargs):
+        doc = cls.__call__(*args, **kwargs)
+        for chunk, name in zip(doc.chunks, user_input.index_fields):
+            chunk.tags = {
+                'field_name': name,
+            }
+
+    mm_doc.__call__ = extended_constructor
     return mm_doc
 
 
