@@ -153,6 +153,7 @@ class NOWElasticIndexer(Executor):
             docs_map = {list(self.encoder_to_fields.keys())[0]: docs}
         if not docs_map:
             return DocumentArray()
+
         aggregate_embeddings(docs_map)
         es_docs = convert_doc_map_to_es(
             docs_map, self.index_name, self.encoder_to_fields
@@ -202,6 +203,7 @@ class NOWElasticIndexer(Executor):
                 docs_map = {list(self.encoder_to_fields.keys())[0]: docs}
             else:
                 return DocumentArray()
+
         aggregate_embeddings(docs_map)
 
         # search_filter = parameters.get('filter', None)
@@ -238,7 +240,8 @@ class NOWElasticIndexer(Executor):
                 semantic_scores=semantic_scores,
             )
             doc.tags.pop('embeddings')
-        return DocumentArray(list(zip(*es_queries))[0])
+        results = DocumentArray(list(zip(*es_queries))[0])
+        return results
 
     @secure_request(on='/update', level=SecurityLevel.USER)
     def update(self, docs: DocumentArray, **kwargs) -> DocumentArray:

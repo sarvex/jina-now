@@ -61,7 +61,6 @@ def configure_option(option: DialogOptions, user_input: UserInput, **kwargs):
         except RetryException as e:
             print(e)
             continue
-        else:
-            break
+        break
 
     return val

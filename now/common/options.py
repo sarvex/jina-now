@@ -14,6 +14,7 @@ from hubble import AuthenticationRequiredError
 from kubernetes import client, config
 
 from now.common.detect_schema import (
+    set_field_names_elasticsearch,
     set_field_names_from_docarray,
     set_field_names_from_local_folder,
     set_field_names_from_s3_bucket,
@@ -23,9 +24,7 @@ from now.deployment.deployment import cmd
 from now.log import yaspin_extended
 from now.now_dataclasses import DialogOptions, UserInput
 from now.utils import (
-    RetryException,  # raise this error when the option should be asked again
-)
-from now.utils import (
+    RetryException,
     _get_context_names,
     get_info_hubble,
     jina_auth_login,
@@ -42,14 +41,7 @@ AVAILABLE_SOON = 'will be available in upcoming versions'
 
 
 def _check_index_field(user_input: UserInput, **kwargs):
-    if len(user_input.index_fields) != 1:
-        raise RetryException(
-            'Currently only one index field is supported. Please choose one field.'
-        )
-    if (
-        user_input.index_fields[0]
-        not in user_input.index_field_candidates_to_modalities.keys()
-    ):
+    if user_input.index_fields[0] not in user_input.index_fields_modalities.keys():
         raise ValueError(
             f'Index field specified is not among the index candidate fields. Please '
             f'choose one of the following: {user_input.index_field_candidates_to_modalities.keys()}'
@@ -94,7 +86,6 @@ DATASET_TYPE = DialogOptions(
         {
             'name': 'Elasticsearch',
             'value': DatasetTypes.ELASTICSEARCH,
-            'disabled': AVAILABLE_SOON,
         },
     ],
     prompt_type='list',
@@ -255,6 +246,7 @@ ES_ADDITIONAL_ARGS = DialogOptions(
     depends_on=DATASET_TYPE,
     conditional_check=lambda user_input: user_input.dataset_type
     == DatasetTypes.ELASTICSEARCH,
+    post_func=lambda user_input, **kwargs: set_field_names_elasticsearch(user_input),
 )
 
 # --------------------------------------------- #

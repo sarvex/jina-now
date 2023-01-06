@@ -18,23 +18,31 @@ def download_mock(url, destfile):
 
 
 @pytest.mark.parametrize(
-    'file_path, num_chunks, ocr_text',
+    'file_path, modality, num_chunks, ocr_text',
     [
         (
             'image/b.jpg',
+            'image',
             1,
             'RichavdE',  # with larger resolution it would be the following text: 'Richard Branson TotallyLooksLike.com Zaphod Beeblebrox',
         ),
-        ('gif/folder1/file.gif', 3, 'e'),
+        ('gif/folder1/file.gif', 'video', 3, 'e'),
     ],
 )
-def test_ocr_with_bucket(file_path, num_chunks, ocr_text):
+def test_ocr_with_bucket(file_path, modality, num_chunks, ocr_text):
     uri = f's3://bucket_name/resources/{file_path}'
     da_index = DocumentArray(
         [
             Document(
-                uri=uri,
-                tags={'tag_uri': 's3://bucket_name/resources/gif/folder1/meta.json'},
+                chunks=[
+                    Document(
+                        uri=uri,
+                        tags={
+                            'tag_uri': 's3://bucket_name/resources/gif/folder1/meta.json'
+                        },
+                        modality=modality,
+                    )
+                ]
             )
             for _ in range(1)  # changing range here from 2 to 1 to fix threading issues
         ]
@@ -72,7 +80,16 @@ def test_ocr_with_bucket(file_path, num_chunks, ocr_text):
 
 def test_text():
     da_search = DocumentArray(
-        [Document(text='This is the first Sentence. This is the second Sentence.')]
+        [
+            Document(
+                chunks=[
+                    Document(
+                        text='This is the first Sentence. This is the second Sentence.',
+                        modality='text',
+                    )
+                ]
+            )
+        ]
     )
     preprocessor = NOWPreprocessor()
     res_search = preprocessor.preprocess(da_search, parameters={})

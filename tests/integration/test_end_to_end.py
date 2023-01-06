@@ -133,7 +133,7 @@ def test_end_to_end_remote(
         (
             Apps.SEARCH_APP,
             'text',
-            ['video'],
+            ['video', 'description'],
             [],
             DemoDatasetNames.TUMBLR_GIFS_10K,
             'local',

@@ -15,8 +15,12 @@ def test_executor_persistence(tmpdir, resources_folder_path):
     user_input = UserInput()
     text_docs = DocumentArray(
         [
-            Document(text='test'),
-            Document(uri=os.path.join(resources_folder_path, 'image', 'b.jpg')),
+            Document(chunks=[Document(text='test')]),
+            Document(
+                chunks=[
+                    Document(uri=os.path.join(resources_folder_path, 'image', 'b.jpg'))
+                ]
+            ),
         ]
     )
 
@@ -35,8 +39,15 @@ def test_search_app(resources_folder_path, endpoint, tmpdir):
     user_input = UserInput()
     text_docs = DocumentArray(
         [
-            Document(text='test'),
-            Document(uri=os.path.join(resources_folder_path, 'gif/folder1/file.gif')),
+            Document(chunks=[Document(text='test', modality='text')]),
+            Document(
+                chunks=[
+                    Document(
+                        uri=os.path.join(resources_folder_path, 'gif/folder1/file.gif'),
+                        modality='video',
+                    )
+                ]
+            ),
         ]
     )
 
