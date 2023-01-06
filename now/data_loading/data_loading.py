@@ -10,11 +10,11 @@ from now.common.detect_schema import (
     get_first_file_in_folder_structure_s3,
     get_s3_bucket_and_folder_prefix,
 )
-from now.constants import DatasetTypes, Modalities
+from now.constants import AVAILABLE_MODALITIES_FOR_SEARCH, DatasetTypes
 from now.data_loading.elasticsearch import ElasticsearchExtractor
 from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
-from now.utils import sigmap
+from now.utils import docarray_typing_to_modality_string, sigmap
 
 
 def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
@@ -323,9 +323,13 @@ def _get_modality(document: Document):
 
     :param document: The document to detect the modality for.
     """
-    for modality in Modalities():
-        if modality in document.modality or modality in document.mime_type:
-            return modality
+    for modality in AVAILABLE_MODALITIES_FOR_SEARCH.keys():
+        modality_string = docarray_typing_to_modality_string(modality)
+        if (
+            modality_string in document.modality
+            or modality_string in document.mime_type
+        ):
+            return modality_string
     return None
 
 
