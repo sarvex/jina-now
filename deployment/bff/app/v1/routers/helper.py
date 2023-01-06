@@ -46,7 +46,7 @@ def field_dict_to_mm_doc(
                     file_ending = filetype.guess(base64_decoded)
                     if file_ending is None:
                         raise ValueError(
-                            f'Could not guess file type of blob {base64_decoded}. '
+                            f'Could not guess file type of blob {field_value.blob}. '
                             f'Please provide a valid file type.'
                         )
                     file_ending = file_ending.extension
@@ -61,7 +61,7 @@ def field_dict_to_mm_doc(
                         tmp_dir, field_name_data_class + '.' + file_ending
                     )
                     with open(file_path, 'wb') as f:
-                        f.write(field_value.blob)
+                        f.write(base64_decoded)
                     field_value.blob = None
                     field_value.uri = file_path
                     data_class_kwargs[field_name_data_class] = field_value.uri

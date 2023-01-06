@@ -163,9 +163,7 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
             f'Could not load DocumentArray dataset. Please check your configuration: {user_input}.'
         )
     if 'NOW_CI_RUN' in os.environ:
-        da = da[:10]
-
-    da = da[:10]
+        da = da[:50]
     clean_da = get_da_with_index_fields(da)
     return clean_da
 
