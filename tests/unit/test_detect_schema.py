@@ -128,8 +128,8 @@ def test_set_field_names_elasticsearch(setup_online_shop_db, es_connection_param
         'product_id': Text,
         'id': Text,
     }
-    assert len(user_input.filter_fields_candidates_to_modalities.keys()) == 5
-    assert user_input.filter_fields_candidates_to_modalities == {
+    assert len(user_input.filter_field_candidates_to_modalities.keys()) == 5
+    assert user_input.filter_field_candidates_to_modalities == {
         'title': str,
         'text': str,
         'url': str,
