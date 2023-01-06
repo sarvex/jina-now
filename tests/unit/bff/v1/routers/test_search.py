@@ -3,18 +3,7 @@ from typing import Callable
 import pytest
 import requests
 from docarray import Document, DocumentArray
-from docarray.typing import Text
 from starlette import status
-
-from now.now_dataclasses import UserInput
-
-
-def test_text_index_fails_with_no_flow_running(client: requests.Session):
-    with pytest.raises(ConnectionError):
-        client.post(
-            f'/api/v1/search-app/index',
-            json={'data': [({'query_text': {'text': 'Hello'}}, {})]},
-        )
 
 
 def test_text_search_fails_with_no_flow_running(
@@ -51,26 +40,6 @@ def test_text_search_fails_with_emtpy_query(client: requests.Session):
             f'/api/v1/search-app/search',
             json={},
         )
-
-
-def test_text_index(
-    client_with_mocked_jina_client: Callable[[DocumentArray], requests.Session],
-):
-    import deployment.bff.app.v1.routers.search as bff_search
-
-    def _mocked_fetch_user_input(data):
-        return UserInput(
-            index_field_candidates_to_modalities={'title': Text},
-            index_fields=['title'],
-        )
-
-    bff_search.fetch_user_input = _mocked_fetch_user_input
-
-    response = client_with_mocked_jina_client(DocumentArray()).post(
-        '/api/v1/search-app/index',
-        json={'data': [({'title': {'text': 'Hello'}}, {'tag': 'val'})]},
-    )
-    assert response.status_code == status.HTTP_200_OK
 
 
 def test_text_search_calls_flow(

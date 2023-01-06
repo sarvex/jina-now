@@ -4,8 +4,8 @@ from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.141-feat-one-search-dynamic-flow-56'
-NOW_PREPROCESSOR_VERSION = '0.0.118-feat-one-search-dynamic-flow-56'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.142-feat-one-search-dynamic-flow-56'
+NOW_PREPROCESSOR_VERSION = '0.0.119-feat-one-search-dynamic-flow-56'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.141-feat-one-search-dynamic-flow-56'
 NOW_AUTOCOMPLETE_VERSION = '0.0.8-feat-one-search-dynamic-flow-56'
 

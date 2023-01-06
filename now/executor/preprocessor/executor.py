@@ -192,15 +192,3 @@ class NOWPreprocessor(Executor):
             convert_fn(d)
 
         return docs
-
-    @secure_request(on='/get_user_input', level=SecurityLevel.USER)
-    def get_user_input(self, *args, **kwargs) -> Dict:
-        """Returns user input as DocumentArray.
-
-        :return: user input as dictionary
-        """
-        return {
-            'user_input': self.user_input.__dict__
-            if self.user_input is not None
-            else {}
-        }
