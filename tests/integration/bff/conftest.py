@@ -63,7 +63,7 @@ def get_flow(preprocessor_args=None, indexer_args=None, tmpdir=None):
         Flow(port_expose=9089)
         .add(
             uses=NOWPreprocessor,
-            uses_with={'app': 'search_app', **preprocessor_args},
+            uses_with=preprocessor_args,
             uses_metas=metas,
         )
         .add(

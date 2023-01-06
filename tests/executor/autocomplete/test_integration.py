@@ -4,20 +4,20 @@ from jina import Flow
 from now.executor.autocomplete.executor import NOWAutoCompleteExecutor2
 
 
-def test_autocomplete():
-    with Flow().add(uses=NOWAutoCompleteExecutor2) as f:
+def test_autocomplete(tmpdir):
+    with Flow().add(uses=NOWAutoCompleteExecutor2, workspace=tmpdir) as f:
         f.post(
             on='/search',
             inputs=DocumentArray(
                 [
-                    Document(text='background'),
-                    Document(text='background'),
-                    Document(text='bang'),
-                    Document(text='loading'),
-                    Document(text='loading'),
-                    Document(text='laugh'),
-                    Document(text='fuck'),
-                    Document(text='red long dress'),
+                    Document(chunks=[Document(text='background')]),
+                    Document(chunks=[Document(text='background')]),
+                    Document(chunks=[Document(text='bang')]),
+                    Document(chunks=[Document(text='loading')]),
+                    Document(chunks=[Document(text='loading')]),
+                    Document(chunks=[Document(text='laugh')]),
+                    Document(chunks=[Document(text='hello')]),
+                    Document(chunks=[Document(text='red long dress')]),
                 ]
             ),
         )

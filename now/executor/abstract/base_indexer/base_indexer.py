@@ -29,7 +29,7 @@ class NOWBaseIndexer(Executor):
     def __init__(
         self,
         dim: int = None,
-        columns: Optional[List] = None,
+        columns: Optional[List] = [],
         metric: str = 'cosine',
         limit: int = 10,
         max_values_per_tag: int = 10,
@@ -413,23 +413,21 @@ class NOWBaseIndexer(Executor):
     def parse_columns(columns):
         """Parse the columns to index"""
         valid_input_columns = ['str', 'float', 'int', 'bool']
-        if columns:
-            corrected_list = []
-            for i in range(0, len(columns), 2):
-                # This conversion is needed for MMDocs
-                if columns[i + 1] in ['text', 'stringValue']:
-                    columns[i + 1] = 'str'
-                elif columns[i + 1] in ['numberValue']:
-                    columns[i + 1] = 'float'
-                elif columns[i + 1] in ['boolValue']:
-                    columns[i + 1] = 'bool'
-                corrected_list.append((columns[i], columns[i + 1]))
-            columns = corrected_list
-            for n, t in columns:
-                assert (
-                    t.lower() in valid_input_columns
-                ), f'column of type={t} is not supported. Supported types are {valid_input_columns}'
-        return columns
+        corrected_columns = []
+        for column_name, column_type in columns:
+            if column_type in ['text', 'stringValue']:
+                column_type = 'str'
+            elif column_type in ['numberValue']:
+                column_type = 'float'
+            elif column_type in ['booleanValue']:
+                column_type = 'bool'
+            if column_type not in valid_input_columns:
+                raise ValueError(
+                    f'Invalid column type {column_type} for column {column_name}. '
+                    f'Valid column types are {valid_input_columns}'
+                )
+            corrected_columns.append((column_name, column_type))
+        return corrected_columns
 
     def load_document_list(self):
         """is needed for the list endpoint"""
