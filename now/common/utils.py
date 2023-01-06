@@ -39,7 +39,6 @@ def common_get_flow_env_dict(
     indexer_uses: str,
     indexer_resources: Dict,
     user_input: UserInput,
-    ocr_has_text: bool,
     deployment_type: str,
     data_class,
 ):
