@@ -4,8 +4,6 @@ import numpy as np
 from docarray import Document
 from PIL import Image
 
-from now.constants import Modalities
-
 NUM_FRAMES_SAMPLED = 3
 
 
@@ -34,8 +32,8 @@ def preprocess_text(
         d.tags['additional_info'] = d.uri
     d.chunks = [
         Document(
-            mime_type=Modalities.TEXT,
-            modality=Modalities.TEXT,
+            mime_type='text',
+            modality='text',
             text=sentence,
             tags=d.tags,
         )
@@ -63,7 +61,7 @@ def preprocess_image(d: Document):
             uri=d.uri,
             blob=d.blob,
             tags=d.tags,
-            modality=Modalities.IMAGE,
+            modality='image',
             mime_type='image/jpeg',
         )
     )
@@ -99,7 +97,7 @@ def _sample_video(d):
                 uri=d.uri,
                 blob=image_bytes,
                 tags=d.tags,
-                modality=Modalities.IMAGE,
+                modality='image',
                 mime_type='image/jpeg',
             )
         )

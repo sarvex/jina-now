@@ -15,7 +15,7 @@ S3Object, my_setter, my_getter = create_s3_type()
 
 
 @pytest.mark.parametrize(
-    "fields, fields_modalities, expected_files_to_dataclass_fields",
+    "fields, fields_modalities, expected_field_names_to_dataclass_fields",
     [
         (
             ['image.png', 'description.txt'],
@@ -45,16 +45,16 @@ S3Object, my_setter, my_getter = create_s3_type()
     ],
 )
 def test_create_dataclass_fields_file_mappings(
-    fields, fields_modalities, expected_files_to_dataclass_fields
+    fields, fields_modalities, expected_field_names_to_dataclass_fields
 ):
-    files_to_dataclass_fields = create_dataclass_fields_file_mappings(
+    field_names_to_dataclass_fields = create_dataclass_fields_file_mappings(
         fields, fields_modalities
     )
-    assert files_to_dataclass_fields == expected_files_to_dataclass_fields
+    assert field_names_to_dataclass_fields == expected_field_names_to_dataclass_fields
 
 
 @pytest.mark.parametrize(
-    "fields, fields_modalities, files_to_dataclass_fields, dataset_type, expected_annotations, "
+    "fields, fields_modalities, field_names_to_dataclass_fields, dataset_type, expected_annotations, "
     "expected_class_attributes",
     [
         (
@@ -89,13 +89,13 @@ def test_create_dataclass_fields_file_mappings(
 def test_create_annotations_and_class_attributes(
     fields,
     fields_modalities,
-    files_to_dataclass_fields,
+    field_names_to_dataclass_fields,
     dataset_type,
     expected_annotations,
     expected_class_attributes,
 ):
     annotations, class_attributes = create_annotations_and_class_attributes(
-        fields, fields_modalities, files_to_dataclass_fields, dataset_type
+        fields, fields_modalities, field_names_to_dataclass_fields, dataset_type
     )
     for key, value in expected_annotations.items():
         assert str(annotations[key]) == str(value)
@@ -104,7 +104,7 @@ def test_create_annotations_and_class_attributes(
 
 
 @pytest.mark.parametrize(
-    "dataset_type, index_fields, index_fields_modalities, filter_fields, filter_fields_modalities, expected_dataclass",
+    "dataset_type, index_fields, index_field_candidates_to_modalities, filter_fields, filter_field_candidates_to_modalities, expected_dataclass",
     [
         (
             DatasetTypes.PATH,
@@ -138,17 +138,21 @@ def test_create_annotations_and_class_attributes(
 def test_create_dataclass(
     dataset_type,
     index_fields,
-    index_fields_modalities,
+    index_field_candidates_to_modalities,
     filter_fields,
-    filter_fields_modalities,
+    filter_field_candidates_to_modalities,
     expected_dataclass,
 ):
     user_input = UserInput()
     user_input.dataset_type = dataset_type
     user_input.index_fields = index_fields
-    user_input.index_fields_modalities = index_fields_modalities
+    user_input.index_field_candidates_to_modalities = (
+        index_field_candidates_to_modalities
+    )
     user_input.filter_fields = filter_fields
-    user_input.filter_fields_modalities = filter_fields_modalities
+    user_input.filter_field_candidates_to_modalities = (
+        filter_field_candidates_to_modalities
+    )
     mm_doc = create_dataclass(user_input)
     assert str(mm_doc) == "<class 'now.data_loading.create_dataclass.MMDoc'>"
 

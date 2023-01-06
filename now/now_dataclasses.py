@@ -7,84 +7,11 @@ the dialog won't ask for the value.
 from __future__ import annotations, print_function, unicode_literals
 
 import dataclasses
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, TypeVar, Union
 
 from pydantic import BaseModel, StrictBool
-from pydantic.dataclasses import dataclass
 
 from now.constants import DatasetTypes
-
-
-@dataclass
-class TrainDataGeneratorConfig:
-    """
-    Configuration of a specific data generation method for an encoder model.
-
-    Fields
-    ------
-    method : Method to generate "artificial queries".
-    parameters : Parameters to pass to the training data generation method.
-    scope : Fields to apply the method on.
-    """
-
-    method: str
-    parameters: Dict[str, Any]
-    scope: List[str]
-
-
-@dataclass
-class TrainDataGenerationConfig:
-    """
-    Configuration of the training data generation for a bi-encoder
-    which encodes queries and targets.
-
-    Fields
-    ------
-    query : Method to generate "artificial queries".
-    target : Method to generate training targets and do preprocessing before
-        encoding documents.
-    """
-
-    query: TrainDataGeneratorConfig
-    target: TrainDataGeneratorConfig
-
-
-@dataclass
-class EncoderConfig:
-    """
-    Configuration of an encoder to encode queries and targets (text+image).
-
-    Fields
-    ------
-    name : Encoder name.
-    encoder_type : Datatypes which are matched by this encoder pair - in the first
-        version either "text-to-text" or "text-to-image".
-    train_dataset_name: Name of a dataset generated for this encoder.
-    training_data_generation_methods: Configuration of methods to generate training data.
-    """
-
-    name: str
-    encoder_type: str
-    train_dataset_name: str
-    training_data_generation_methods: List[TrainDataGenerationConfig]
-
-
-@dataclass
-class Task:
-    """
-    Task configuration for text to text+image apps.
-
-    Fields
-    ------
-    name : Unique name for the task.
-    encoders : Configuration of the models to encode queries and
-        elastic search documents.
-    indexer_scope: Fields to consider during indexing for each modality.
-    """
-
-    name: str
-    encoders: List[EncoderConfig]
-    indexer_scope: Dict[str, str]
 
 
 class UserInput(BaseModel):
@@ -103,17 +30,15 @@ class UserInput(BaseModel):
 
     # Fields
     index_fields: Optional[List] = []
+    index_field_candidates_to_modalities: Optional[Dict[str, TypeVar]] = {}
     filter_fields: Optional[List] = []
-    index_fields_modalities: Optional[Dict] = {}
-    filter_fields_modalities: Optional[Dict] = {}
-    files_to_dataclass_fields: Optional[Dict] = {}
+    filter_field_candidates_to_modalities: Optional[Dict[str, str]] = {}
+    field_names_to_dataclass_fields: Optional[Dict] = {}
 
     # ES related
-    task_config: Optional[Task] = None
     es_index_name: Optional[str] = None
     es_host_name: Optional[str] = None
     es_additional_args: Optional[Dict] = None
-    indexer_scope: Optional[Dict] = None
 
     # cluster related
     cluster: Optional[str] = None
