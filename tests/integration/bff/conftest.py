@@ -26,8 +26,19 @@ def start_bff():
 
 
 def index_data(f, **kwargs):
-    docs = [Document(text='test', tags={'color': 'red'}) for _ in range(9)]
-    docs.append(Document(text='test', tags={'color': 'blue'}))
+    docs = [
+        Document(
+            chunks=[Document(text='test', tags={'color': 'red'}, modality='text')],
+            tags={'color': 'red'},
+        )
+        for _ in range(9)
+    ]
+    docs.append(
+        Document(
+            chunks=[Document(text='test', tags={'color': 'blue'}, modality='text')],
+            tags={'color': 'blue'},
+        )
+    )
     f.index(
         docs,
         parameters={

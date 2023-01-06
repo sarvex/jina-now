@@ -5,6 +5,7 @@ from docarray.typing import Image, Text
 
 from now.common.detect_schema import (
     _create_candidate_index_filter_fields,
+    set_field_names_elasticsearch,
     set_field_names_from_docarray,
     set_field_names_from_local_folder,
     set_field_names_from_s3_bucket,
@@ -100,6 +101,33 @@ def test_set_field_names_from_docarray():
     assert set(user_input.index_fields_modalities.keys()) == {
         'label',
         'image',
+    }
+
+
+def test_set_field_names_elasticsearch(setup_online_shop_db, es_connection_params):
+    _, index_name = setup_online_shop_db
+    connection_str, _ = es_connection_params
+    user_input = UserInput()
+    user_input.dataset_type = DatasetTypes.ELASTICSEARCH
+    user_input.es_index_name = index_name
+    user_input.es_host_name = connection_str
+
+    set_field_names_elasticsearch(user_input)
+    assert len(user_input.index_fields_modalities.keys()) == 5
+    assert user_input.index_fields_modalities == {
+        'title': Text,
+        'text': Text,
+        'url': Text,
+        'product_id': Text,
+        'id': Text,
+    }
+    assert len(user_input.filter_fields_modalities.keys()) == 5
+    assert user_input.filter_fields_modalities == {
+        'title': str,
+        'text': str,
+        'url': str,
+        'product_id': str,
+        'id': str,
     }
 
 
