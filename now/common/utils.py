@@ -18,7 +18,6 @@ from now.constants import (
     NOW_AUTOCOMPLETE_VERSION,
     NOW_ELASTIC_INDEXER_VERSION,
     NOW_PREPROCESSOR_VERSION,
-    NOW_QDRANT_INDEXER_VERSION,
     PREFETCH_NR,
     TAG_INDEXER_DOC_HAS_TEXT,
     Modalities,
@@ -29,7 +28,6 @@ from now.executor.name_to_id_map import name_to_id_map
 from now.now_dataclasses import UserInput
 
 cur_dir = pathlib.Path(__file__).parent.resolve()
-
 
 MAX_RETRIES = 20
 
@@ -44,10 +42,13 @@ def common_get_flow_env_dict(
     user_input: UserInput,
     tags: List,
     deployment_type: str,
+    data_class,
 ):
     """Returns dictionary for the environments variables for the clip flow.yml files."""
     use_high_performance_flow = (
-        get_email().split('@')[-1] == 'jina.ai' and deployment_type == 'remote'
+        get_email().split('@')[-1] == 'jina.ai'
+        and deployment_type == 'remote'
+        and 'NOW_CI_RUN' not in os.environ
     )
     if use_high_performance_flow:
         print(
@@ -55,6 +56,10 @@ def common_get_flow_env_dict(
             f"Therefore, your deployment will be faster.\n"
             f"But make sure to scale it down after deployment."
         )
+    if data_class:
+        index_field_names = list(data_class.__dataclass_fields__.keys())
+    else:
+        index_field_names = user_input.index_fields
     config = {
         'JINA_VERSION': jina_version,
         'ENCODER_NAME': f'{EXECUTOR_PREFIX}{encoder_uses}',
@@ -69,6 +74,7 @@ def common_get_flow_env_dict(
         else 1,
         'AUTOCOMPLETE_EXECUTOR_NAME': f'{EXECUTOR_PREFIX}{name_to_id_map.get("NOWAutoCompleteExecutor2")}/{NOW_AUTOCOMPLETE_VERSION}',
         'COLUMNS': tags,
+        'DOCUMENT_MAPPINGS': ['encoderclip', 512, *index_field_names],
         'ADMIN_EMAILS': user_input.admin_emails or [] if user_input.secured else [],
         'USER_EMAILS': user_input.user_emails or [] if user_input.secured else [],
         'API_KEY': [user_input.api_key]
@@ -104,6 +110,7 @@ def common_setup(
     indexer_uses: str,
     pre_trained_embedding_size: int,
     kubectl_path: str,
+    data_class,
     encoder_with: Optional[Dict] = {},
     indexer_resources: Optional[Dict] = {},
 ) -> Dict:
@@ -118,6 +125,7 @@ def common_setup(
         user_input=user_input,
         tags=tags,
         deployment_type=user_input.deployment_type,
+        data_class=data_class,
     )
     app_instance.set_flow_yaml(dataset_len=len(dataset))
     return env_dict
@@ -151,22 +159,11 @@ def get_indexer_config(
     :return: dict with indexer and its resource config
     """
 
-    if elastic and deployment_type == 'local':
-        config = {
-            'indexer_uses': f'{name_to_id_map.get("NOWElasticIndexer")}/{NOW_ELASTIC_INDEXER_VERSION}',
-            'hosts': setup_elastic_service(kubectl_path),
-        }
-    elif elastic and deployment_type == 'remote':
-        raise ValueError(
-            'NOWElasticIndexer is currently not supported for remote deployment. Please use local deployment.'
-        )
-    else:
-        config = {
-            'indexer_uses': f'{name_to_id_map.get("NOWQdrantIndexer16")}/{NOW_QDRANT_INDEXER_VERSION}'
-        }
-
-    config['indexer_resources'] = {'INDEXER_CPU': 0.5, 'INDEXER_MEM': '4G'}
-
+    config = {
+        'indexer_uses': f'{name_to_id_map.get("NOWElasticIndexer")}/{NOW_ELASTIC_INDEXER_VERSION}',
+        # 'hosts': setup_elastic_service(kubectl_path),
+        'indexer_resources': {'INDEXER_CPU': 0.5, 'INDEXER_MEM': '8G'},
+    }
     return config
 
 

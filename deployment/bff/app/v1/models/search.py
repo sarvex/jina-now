@@ -2,8 +2,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, Field
 
-from deployment.bff.app.v1.models.helper import BaseRequestModel
-from deployment.bff.app.v1.models.modality import ModalityModel
+from deployment.bff.app.v1.models.shared import BaseRequestModel, ModalityModel
 
 _ProtoValueType = Optional[Union[bool, float, str, list, dict]]
 _StructValueType = Union[
@@ -31,9 +30,10 @@ class SearchRequestModel(BaseRequestModel):
     )
     query: Dict[str, ModalityModel] = Field(
         default={},
-        description='Dictionary which maps the field name to its value. Currently only supports one field. '
-        'Use as key query_text, query_image, or query_video, for a query with text, image, or'
-        'video.',
+        description='Nested dictionary where key can be only one of the following: ``query_text``, ``query_image``, '
+        'or ``query_video`` for a query with text, image, or video respectively, and the value is a '
+        'dictionary with either uri, blob, or text as key. '
+        'E.g., ``{"query_image": {"uri": "https://example.com/image.jpg"}``',
     )
 
 

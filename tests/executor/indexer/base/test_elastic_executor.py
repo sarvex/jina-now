@@ -3,7 +3,7 @@ import random
 import numpy as np
 import pytest
 from docarray import dataclass
-from docarray.typing import Image, Text
+from docarray.typing import Text
 from jina import Document, DocumentArray, Executor, Flow, requests
 
 from now.constants import TAG_INDEXER_DOC_HAS_TEXT, TAG_OCR_DETECTOR_TEXT_IN_DOC
@@ -21,10 +21,27 @@ class DummyEncoder1(Executor):
         pass
 
 
-class DummyEncoder2(Executor):
-    @requests
-    def foo(self, docs: DocumentArray, **kwargs):
-        pass
+DOCUMENT_MAPPINGS = ['dummy_encoder1', DIM, 'title']
+
+
+@pytest.fixture
+def flow(random_index_name, metas):
+    f = (
+        Flow()
+        .add(uses=DummyEncoder1, name='dummy_encoder1')
+        .add(
+            uses=NOWElasticIndexer,
+            uses_with={
+                'hosts': 'http://localhost:9200',
+                'index_name': random_index_name,
+                'document_mappings': DOCUMENT_MAPPINGS,
+            },
+            uses_metas=metas,
+            needs=['dummy_encoder1'],
+            no_reduce=True,
+        )
+    )
+    return f
 
 
 class TestBaseIndexerElastic:
@@ -73,64 +90,26 @@ class TestBaseIndexerElastic:
     def metas(self, tmpdir):
         return {'workspace': str(tmpdir)}
 
-    def test_index(self, metas, setup_service_running, random_index_name, request):
+    def test_index(self, metas, setup_service_running, flow):
         """Test indexing does not return anything"""
         docs = self.get_docs(NUMBER_OF_DOCS)
-        f = (
-            Flow()
-            .add(uses=DummyEncoder1, name='dummy_encoder1')
-            .add(uses=DummyEncoder2, name='dummy_encoder2')
-            .add(
-                uses=NOWElasticIndexer,
-                uses_with={
-                    'hosts': 'http://localhost:9200',
-                    'index_name': random_index_name,
-                    'document_mappings': [
-                        ('dummy_encoder1', DIM, ['title']),
-                        ('dummy_encoder2', DIM, ['title']),
-                    ],
-                },
-                uses_metas=metas,
-                needs=['dummy_encoder1', 'dummy_encoder2'],
-                no_reduce=True,
-            )
-        )
-        with f:
-            result = f.post(on='/index', inputs=docs, return_results=True)
+        with flow:
+            result = flow.post(on='/index', inputs=docs, return_results=True)
             assert len(result) == 0
 
     @pytest.mark.parametrize(
         'offset, limit', [(0, 10), (10, 0), (0, 0), (10, 10), (None, None)]
     )
-    def test_list(self, metas, offset, limit, setup_service_running, random_index_name):
+    def test_list(self, metas, offset, limit, setup_service_running, flow):
         """Test list returns all indexed docs"""
         docs = self.get_docs(NUMBER_OF_DOCS)
-        f = (
-            Flow()
-            .add(uses=DummyEncoder1, name='dummy_encoder1')
-            .add(uses=DummyEncoder2, name='dummy_encoder2')
-            .add(
-                uses=NOWElasticIndexer,
-                uses_with={
-                    'hosts': 'http://localhost:9200',
-                    'index_name': random_index_name,
-                    'document_mappings': [
-                        ('dummy_encoder1', DIM, ['title']),
-                        ('dummy_encoder2', DIM, ['title']),
-                    ],
-                },
-                uses_metas=metas,
-                needs=['dummy_encoder1', 'dummy_encoder2'],
-                no_reduce=True,
-            )
-        )
-        with f:
+        with flow:
             parameters = {}
             if offset is not None:
                 parameters.update({'offset': offset, 'limit': limit})
 
-            f.post(on='/index', inputs=docs, parameters=parameters)
-            list_res = f.post(on='/list', parameters=parameters, return_results=True)
+            flow.post(on='/index', inputs=docs, parameters=parameters)
+            list_res = flow.post(on='/list', parameters=parameters, return_results=True)
             if offset is None:
                 l = NUMBER_OF_DOCS
             else:
@@ -142,32 +121,13 @@ class TestBaseIndexerElastic:
                 assert len(set([d.id for d in list_res])) == l
                 assert [d.tags['parent_tag'] for d in list_res] == ['value'] * l
 
-    def test_search(self, metas, setup_service_running, random_index_name):
+    def test_search(self, metas, setup_service_running, flow):
         docs = self.get_docs(NUMBER_OF_DOCS)
         docs_query = self.get_query()
-        f = (
-            Flow()
-            .add(uses=DummyEncoder1, name='dummy_encoder1')
-            .add(uses=DummyEncoder2, name='dummy_encoder2')
-            .add(
-                uses=NOWElasticIndexer,
-                uses_with={
-                    'hosts': 'http://localhost:9200',
-                    'index_name': random_index_name,
-                    'document_mappings': [
-                        ('dummy_encoder1', DIM, ['title']),
-                        ('dummy_encoder2', DIM, ['title']),
-                    ],
-                },
-                uses_metas=metas,
-                needs=['dummy_encoder1', 'dummy_encoder2'],
-                no_reduce=True,
-            )
-        )
-        with f:
-            f.post(on='/index', inputs=docs)
+        with flow:
+            flow.post(on='/index', inputs=docs)
 
-            query_res = f.post(on='/search', inputs=docs_query, return_results=True)
+            query_res = flow.post(on='/search', inputs=docs_query, return_results=True)
             assert len(query_res) == 1
 
             for i in range(len(query_res[0].matches) - 1):
@@ -176,32 +136,13 @@ class TestBaseIndexerElastic:
                     >= query_res[0].matches[i + 1].scores['cosine'].value
                 )
 
-    def test_search_match(self, metas, setup_service_running, random_index_name):
+    def test_search_match(self, metas, setup_service_running, flow):
         docs = self.get_docs(NUMBER_OF_DOCS)
         docs_query = self.get_query()
-        f = (
-            Flow()
-            .add(uses=DummyEncoder1, name='dummy_encoder1')
-            .add(uses=DummyEncoder2, name='dummy_encoder2')
-            .add(
-                uses=NOWElasticIndexer,
-                uses_with={
-                    'hosts': 'http://localhost:9200',
-                    'index_name': random_index_name,
-                    'document_mappings': [
-                        ('dummy_encoder1', DIM, ['title']),
-                        ('dummy_encoder2', DIM, ['title']),
-                    ],
-                },
-                uses_metas=metas,
-                needs=['dummy_encoder1', 'dummy_encoder2'],
-                no_reduce=True,
-            )
-        )
-        with f:
-            f.post(on='/index', inputs=docs)
+        with flow:
+            flow.post(on='/index', inputs=docs)
 
-            query_res = f.post(
+            query_res = flow.post(
                 on='/search',
                 inputs=docs_query,
                 parameters={'limit': 15},
@@ -218,142 +159,62 @@ class TestBaseIndexerElastic:
                     >= c.matches[i + 1].scores['cosine'].value
                 )
 
-    def test_search_with_filtering(
-        self, metas, setup_service_running, random_index_name
-    ):
+    def test_search_with_filtering(self, metas, setup_service_running, flow):
         docs = self.get_docs(NUMBER_OF_DOCS)
         docs_query = self.get_query()
-
-        f = (
-            Flow()
-            .add(uses=DummyEncoder1, name='dummy_encoder1')
-            .add(uses=DummyEncoder2, name='dummy_encoder2')
-            .add(
-                uses=NOWElasticIndexer,
-                uses_with={
-                    'hosts': 'http://localhost:9200',
-                    'index_name': random_index_name,
-                    'document_mappings': [
-                        ('dummy_encoder1', DIM, ['title']),
-                        ('dummy_encoder2', DIM, ['title']),
-                    ],
-                },
-                uses_metas=metas,
-                needs=['dummy_encoder1', 'dummy_encoder2'],
-                no_reduce=True,
-            )
-        )
-
-        with f:
-            f.index(inputs=docs)
-            query_res = f.search(
+        with flow:
+            flow.index(inputs=docs)
+            query_res = flow.search(
                 inputs=docs_query,
                 return_results=True,
                 parameters={'filter': {'tags__price': {'$lt': 50.0}}},
             )
             assert all([m.tags['price'] < 50 for m in query_res[0].matches])
 
-    def test_delete(self, metas, setup_service_running, random_index_name):
+    def test_delete(self, metas, setup_service_running, random_index_name, flow):
         docs = self.get_docs(NUMBER_OF_DOCS)
-        f = (
-            Flow()
-            .add(uses=DummyEncoder1, name='dummy_encoder1')
-            .add(uses=DummyEncoder2, name='dummy_encoder2')
-            .add(
-                uses=NOWElasticIndexer,
-                uses_with={
-                    'hosts': 'http://localhost:9200',
-                    'index_name': random_index_name,
-                    'document_mappings': [
-                        ('dummy_encoder1', DIM, ['title']),
-                        ('dummy_encoder2', DIM, ['title']),
-                    ],
-                },
-                uses_metas=metas,
-                needs=['dummy_encoder1', 'dummy_encoder2'],
-                no_reduce=True,
-            )
-        )
-        with f:
+        with flow:
             docs[0].tags['parent_tag'] = 'different_value'
-            f.post(on='/index', inputs=docs)
-            listed_docs = f.post(on='/list', return_results=True)
+            flow.post(on='/index', inputs=docs)
+            listed_docs = flow.post(on='/list', return_results=True)
             assert len(listed_docs) == NUMBER_OF_DOCS
-            f.post(
+            flow.post(
                 on='/delete',
                 parameters={'filter': {'tags__parent_tag': {'$eq': 'different_value'}}},
             )
-            listed_docs = f.post(on='/list', return_results=True)
+            listed_docs = flow.post(on='/list', return_results=True)
             assert len(listed_docs) == NUMBER_OF_DOCS - 1
             docs_query = self.get_query()
-            f.post(on='/search', inputs=docs_query, return_results=True)
+            flow.post(on='/search', inputs=docs_query, return_results=True)
 
-    def test_get_tags(self, metas, setup_service_running, random_index_name):
+    def test_get_tags(self, metas, setup_service_running, flow):
         docs = self.get_docs(NUMBER_OF_DOCS)
-        f = (
-            Flow()
-            .add(uses=DummyEncoder1, name='dummy_encoder1')
-            .add(uses=DummyEncoder2, name='dummy_encoder2')
-            .add(
-                uses=NOWElasticIndexer,
-                uses_with={
-                    'hosts': 'http://localhost:9200',
-                    'index_name': random_index_name,
-                    'document_mappings': [
-                        ('dummy_encoder1', DIM, ['title']),
-                        ('dummy_encoder2', DIM, ['title']),
-                    ],
-                },
-                uses_metas=metas,
-                needs=['dummy_encoder1', 'dummy_encoder2'],
-                no_reduce=True,
-            )
-        )
-        with f:
-            f.post(on='/index', inputs=docs)
-            response = f.post(on='/tags')
+        with flow:
+            flow.post(on='/index', inputs=docs)
+            response = flow.post(on='/tags')
             assert response[0].text == 'tags'
             assert 'tags' in response[0].tags
             assert 'color' in response[0].tags['tags']
             assert sorted(response[0].tags['tags']['color']) == sorted(['red', 'blue'])
 
-    def test_delete_tags(self, metas, setup_service_running, random_index_name):
+    def test_delete_tags(self, metas, setup_service_running, flow):
         docs = self.get_docs(NUMBER_OF_DOCS)
-        f = (
-            Flow()
-            .add(uses=DummyEncoder1, name='dummy_encoder1')
-            .add(uses=DummyEncoder2, name='dummy_encoder2')
-            .add(
-                uses=NOWElasticIndexer,
-                uses_with={
-                    'hosts': 'http://localhost:9200',
-                    'index_name': random_index_name,
-                    'document_mappings': [
-                        ('dummy_encoder1', DIM, ['title']),
-                        ('dummy_encoder2', DIM, ['title']),
-                    ],
-                },
-                uses_metas=metas,
-                needs=['dummy_encoder1', 'dummy_encoder2'],
-                no_reduce=True,
-            )
-        )
-        with f:
-            f.post(on='/index', inputs=docs)
-            f.post(
+        with flow:
+            flow.post(on='/index', inputs=docs)
+            flow.post(
                 on='/delete',
                 parameters={'filter': {'tags__color': {'$eq': 'blue'}}},
             )
-            response = f.post(on='/tags')
+            response = flow.post(on='/tags')
             assert response[0].text == 'tags'
             assert 'tags' in response[0].tags
             assert 'color' in response[0].tags['tags']
             assert 'blue' not in response[0].tags['tags']['color']
-            f.post(
+            flow.post(
                 on='/delete',
                 parameters={'filter': {'tags__greeting': {'$eq': 'hello'}}},
             )
-            response = f.post(on='/tags')
+            response = flow.post(on='/tags')
             assert 'hello' not in response[0].tags['tags']['greeting']
 
     @pytest.fixture()
@@ -489,83 +350,13 @@ class TestBaseIndexerElastic:
                 if d.uri:
                     assert d.blob == b'', f'got blob {d.blob} for {d.id}'
 
-    def test_no_blob_or_tensor_on_matches(
-        self, metas, setup_service_running, random_index_name
-    ):
-        @dataclass
-        class Pic:
-            pic: Image
-
-        mdoc = Pic(pic='https://jina.ai/assets/images/text-to-image-output.png')
-        doc_with_tensor = Document(mdoc)
-        doc_with_blob = Document(mdoc)
-        doc_with_blob.pic.load_uri_to_blob()
-        docs = DocumentArray([doc_with_tensor, doc_with_blob])
-        docs = NOWPreprocessor().preprocess(docs, {})
-        docs[0].pic.chunks[0].embedding = np.random.random([DIM])
-        docs[1].pic.chunks[0].embedding = np.random.random([DIM])
-        f = (
-            Flow()
-            .add(uses=DummyEncoder1, name='dummy_encoder1')
-            .add(uses=DummyEncoder2, name='dummy_encoder2')
-            .add(
-                uses=NOWElasticIndexer,
-                uses_with={
-                    'hosts': 'http://localhost:9200',
-                    'index_name': random_index_name,
-                    'document_mappings': [
-                        ('dummy_encoder1', DIM, ['pic']),
-                        ('dummy_encoder2', DIM, ['pic']),
-                    ],
-                },
-                uses_metas=metas,
-                needs=['dummy_encoder1', 'dummy_encoder2'],
-                no_reduce=True,
-            )
-        )
-        with f:
-            f.post(on='/index', inputs=docs)
-            query_doc = Document(
-                Pic(pic='https://jina.ai/assets/images/text-to-image-output.png')
-            )
-            query_doc = NOWPreprocessor().preprocess(DocumentArray(query_doc), {})[0]
-            query_doc.pic.chunks[0].embedding = np.random.random([DIM])
-            response = f.post(
-                on='/search',
-                inputs=DocumentArray([query_doc]),
-                return_results=True,
-            )
-            matches = response[0].matches
-            assert matches[0].pic.blob == b''
-            assert matches[1].pic.blob == b''
-            assert matches[1].pic.tensor is None
-            assert matches[0].pic.tensor is None
-
-    def test_curate_endpoint(self, metas, setup_service_running, random_index_name):
+    def test_curate_endpoint(self, metas, setup_service_running, flow):
         """Test indexing does not return anything"""
         docs = self.get_docs(NUMBER_OF_DOCS)
-        f = (
-            Flow()
-            .add(uses=DummyEncoder1, name='dummy_encoder1')
-            .add(uses=DummyEncoder2, name='dummy_encoder2')
-            .add(
-                uses=NOWElasticIndexer,
-                uses_with={
-                    'hosts': 'http://localhost:9200',
-                    'index_name': random_index_name,
-                    'document_mappings': [
-                        ('dummy_encoder1', DIM, ['title']),
-                        ('dummy_encoder2', DIM, ['title']),
-                    ],
-                },
-                uses_metas=metas,
-                needs=['dummy_encoder1', 'dummy_encoder2'],
-                no_reduce=True,
-            )
-        )
-        with f:
-            f.index(docs)
-            f.post(
+
+        with flow:
+            flow.index(docs)
+            flow.post(
                 on='/curate',
                 parameters={
                     'query_to_filter': {
@@ -580,7 +371,7 @@ class TestBaseIndexerElastic:
                 },
             )
             query_doc = self.get_query()
-            result = f.search(
+            result = flow.search(
                 inputs=query_doc,
                 return_results=True,
             )
@@ -595,33 +386,14 @@ class TestBaseIndexerElastic:
             # not crashing in case of curated list + non-curated query
             non_curated_query = self.get_query()
             non_curated_query[0].query_text.text = 'parent_x'
-            f.search(inputs=non_curated_query)
+            flow.search(inputs=non_curated_query)
 
     def test_curate_endpoint_incorrect(
-        self, metas, setup_service_running, random_index_name
+        self, metas, setup_service_running, random_index_name, flow
     ):
-        f = (
-            Flow()
-            .add(uses=DummyEncoder1, name='dummy_encoder1')
-            .add(uses=DummyEncoder2, name='dummy_encoder2')
-            .add(
-                uses=NOWElasticIndexer,
-                uses_with={
-                    'hosts': 'http://localhost:9200',
-                    'index_name': random_index_name,
-                    'document_mappings': [
-                        ('dummy_encoder1', DIM, ['title']),
-                        ('dummy_encoder2', DIM, ['title']),
-                    ],
-                },
-                uses_metas=metas,
-                needs=['dummy_encoder1', 'dummy_encoder2'],
-                no_reduce=True,
-            )
-        )
-        with f:
+        with flow:
             with pytest.raises(Exception):
-                f.post(
+                flow.post(
                     on='/curate',
                     parameters={'queryfilter': {}},
                 )

@@ -13,6 +13,7 @@ from starlette.routing import Mount
 import deployment.bff.app.settings as api_settings
 from deployment.bff.app.decorators import api_method, timed
 from deployment.bff.app.v1.routers import admin, cloud_temp_link, search
+from now import __version__
 
 logging.config.dictConfig(api_settings.DEFAULT_LOGGING_CONFIG)
 logger = logging.getLogger('bff.app')
@@ -22,7 +23,6 @@ TITLE = 'Jina NOW'
 DESCRIPTION = 'The Jina NOW service API'
 AUTHOR = 'Jina AI'
 EMAIL = 'hello@jina.ai'
-__version__ = 'latest'
 
 
 def get_app_instance():
@@ -63,7 +63,7 @@ def get_app_instance():
         return (
             f'{TITLE} v{__version__} 🚀 {DESCRIPTION} ✨ '
             f'author: {AUTHOR} email: {EMAIL} 📄  '
-            'Check out /docs or /redoc for the API documentation!'
+            'Check out /docs or /redoc for the full API documentation!'
         )
 
     @app.on_event('startup')

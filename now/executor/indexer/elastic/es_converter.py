@@ -67,8 +67,6 @@ def convert_doc_map_to_es(
                 _doc = DocumentArray(Document(doc, copy=True))
                 # remove embeddings from serialized doc
                 _doc[..., 'embedding'] = None
-                _doc[..., 'tensor'] = None
-                _doc[..., 'blob'] = None
                 es_docs[doc.id]['serialized_doc'] = _doc[0].to_base64()
             es_doc = es_docs[doc.id]
             for encoded_field in encoder_to_fields[executor_name]:
@@ -92,6 +90,7 @@ def get_base_es_doc(doc: Document, index_name: str) -> Dict:
     es_doc['_op_type'] = 'index'
     es_doc['_index'] = index_name
     es_doc['_id'] = doc.id
+    # TODO remove side effect - should not be part of this function
     doc.tags['embeddings'] = {}
     return es_doc
 
@@ -121,8 +120,6 @@ def convert_es_results_to_matches(
         if get_score_breakdown:
             d = calculate_score_breakdown(query_doc, d, semantic_scores, metric)
         d.embedding = None
-        d.tensor = None
-        d.blob = b''
         matches.append(d)
     return matches
 

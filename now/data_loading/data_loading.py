@@ -7,10 +7,10 @@ from docarray import Document, DocumentArray
 from docarray.dataclasses import is_multimodal
 
 from now.common.detect_schema import (
+    get_first_file_in_folder_structure_s3,
     get_s3_bucket_and_folder_prefix,
-    identify_folder_structure,
 )
-from now.constants import DatasetTypes
+from now.constants import DatasetTypes, Modalities
 from now.data_loading.elasticsearch import ElasticsearchExtractor
 from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
@@ -35,10 +35,11 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
     elif user_input.dataset_type == DatasetTypes.S3_BUCKET:
         da = _list_files_from_s3_bucket(user_input=user_input, data_class=data_class)
     elif user_input.dataset_type == DatasetTypes.ELASTICSEARCH:
-        da = _extract_es_data(user_input)
+        da = _extract_es_data(user_input=user_input, data_class=data_class)
     elif user_input.dataset_type == DatasetTypes.DEMO:
         print('⬇  Download DocumentArray dataset')
         da = DocumentArray.pull(name=user_input.dataset_name, show_progress=True)
+    da = set_modality_da(da)
     if da is None:
         raise ValueError(
             f'Could not load DocumentArray dataset. Please check your configuration: {user_input}.'
@@ -64,7 +65,7 @@ def _pull_docarray(dataset_name: str):
         )
 
 
-def _extract_es_data(user_input: UserInput) -> DocumentArray:
+def _extract_es_data(user_input: UserInput, data_class: Type) -> DocumentArray:
     query = {
         'query': {'match_all': {}},
         '_source': True,
@@ -72,9 +73,11 @@ def _extract_es_data(user_input: UserInput) -> DocumentArray:
     es_extractor = ElasticsearchExtractor(
         query=query,
         index=user_input.es_index_name,
+        user_input=user_input,
+        data_class=data_class,
         connection_str=user_input.es_host_name,
     )
-    extracted_docs = es_extractor.extract(index_fields=user_input.index_fields)
+    extracted_docs = es_extractor.extract()
     return extracted_docs
 
 
@@ -140,7 +143,9 @@ def from_files_local(
         file_paths.extend(
             [os.path.join(root, file) for file in files if not file.startswith('.')]
         )
-    folder_structure = identify_folder_structure(file_paths, os.sep)
+    folder_generator = os.walk(path, topdown=True)
+    current_level = folder_generator.__next__()
+    folder_structure = 'sub_folders' if len(current_level[1]) > 0 else 'single_folder'
     if folder_structure == 'sub_folders':
         docs = create_docs_from_subdirectories(
             file_paths, fields, files_to_dataclass_fields, data_class
@@ -253,7 +258,9 @@ def _list_files_from_s3_bucket(
     :return: The DocumentArray with the documents.
     """
     bucket, folder_prefix = get_s3_bucket_and_folder_prefix(user_input)
-
+    first_file = get_first_file_in_folder_structure_s3(
+        bucket, folder_prefix, user_input.dataset_path
+    )
     objects = list(bucket.objects.filter(Prefix=folder_prefix))
     file_paths = [
         obj.key
@@ -261,7 +268,10 @@ def _list_files_from_s3_bucket(
         if not obj.key.endswith('/') and not obj.key.split('/')[-1].startswith('.')
     ]
 
-    folder_structure = identify_folder_structure(file_paths, '/')
+    structure_identifier = first_file[len(folder_prefix) :].split('/')
+    folder_structure = (
+        'sub_folders' if len(structure_identifier) > 1 else 'single_folder'
+    )
 
     with yaspin_extended(
         sigmap=sigmap, text="Listing files from S3 bucket ...", color="green"
@@ -305,3 +315,29 @@ def _extract_file_and_full_file_path(file_path, path=None, is_s3_dataset=False):
         file_full_path = file_path
         file = file_path.split(os.sep)[-1]
     return file, file_full_path
+
+
+def _get_modality(document: Document):
+    """
+    Detect document's modality based on its `modality` or `mime_type` attributes.
+
+    :param document: The document to detect the modality for.
+    """
+    for modality in Modalities():
+        if modality in document.modality or modality in document.mime_type:
+            return modality
+    return None
+
+
+def set_modality_da(documents: DocumentArray):
+    """
+    Set document's modality based on its `modality` or `mime_type` attributes.
+
+    :param documents: The DocumentArray to set the modality for.
+
+    :return: The DocumentArray with the modality set.
+    """
+    for doc in documents:
+        for chunk in doc.chunks:
+            chunk.modality = chunk.modality or _get_modality(chunk)
+    return documents

@@ -35,6 +35,7 @@
 
 
 
+
 <a name=release-note-0-0-7></a>
 ## Release Note (`0.0.7`)
 
@@ -1217,4 +1218,53 @@
 
  - [[```c3c2a141```](https://github.com/jina-ai/now/commit/c3c2a14116522d81ce6dc708fe93adbff2053763)] __-__ Refactor remove text to video (#788) (*Florian Hönicke*)
  - [[```789189ae```](https://github.com/jina-ai/now/commit/789189ae6e3b76197a8c3f1cadebf76a3161b678)] __-__ __version__: the next version will be 0.0.42 (*Jina Dev Bot*)
+
+<a name=release-note-0-0-43></a>
+## Release Note (`0.0.43`)
+
+> Release time: 2023-01-04 09:47:01
+
+
+
+🙇 We'd like to thank all contributors for this new release! In particular,
+ Mohammad Kalim Akram,  Florian Hönicke,  Saba Sturua,  Joschka Braun,  Aziz Belaweid,  Isabelle Mohr,  IyadhKhalfallah,  Jina Dev Bot,  🙇
+
+
+### 🆕 New Features
+
+ - [[```391ab1da```](https://github.com/jina-ai/now/commit/391ab1da5ee40c39466348a09fac88941ec967be)] __-__ integrate elastic (#851) (*Florian Hönicke*)
+ - [[```07f24435```](https://github.com/jina-ai/now/commit/07f244356351ce4acfae137480dd238336657aeb)] __-__ use data class in data loading (#768) (*Aziz Belaweid*)
+
+### 🐞 Bug fixes
+
+ - [[```c1e59788```](https://github.com/jina-ai/now/commit/c1e59788f08b5905b49f2fb194149a0a56f42c55)] __-__ update the documenta (#857) (*Mohammad Kalim Akram*)
+ - [[```38b2e702```](https://github.com/jina-ai/now/commit/38b2e7021589086170b0cfdb0b83e34350e0b3a0)] __-__ types as strings for some python versions (#836) (*Saba Sturua*)
+ - [[```b3c1e315```](https://github.com/jina-ai/now/commit/b3c1e315184d0694c4ba451ccbb14c7bd28abbe3)] __-__ small updates in elastic indexer (#846) (*Aziz Belaweid*)
+ - [[```bbe075ce```](https://github.com/jina-ai/now/commit/bbe075ce9f77467ba2b48dd7dee8700199258bc6)] __-__ guess file ending from blob to load it correctly (#843) (*Joschka Braun*)
+ - [[```035b2935```](https://github.com/jina-ai/now/commit/035b29350c3764d32f249c7f00747ef19c07399a)] __-__ fix git sha in cd workflow and preprocessor building (#839) (*Joschka Braun*)
+ - [[```d78cde2d```](https://github.com/jina-ai/now/commit/d78cde2de399de1267ebaf132972177d02bd4862)] __-__ removed output modality from playground (#823) (*IyadhKhalfallah*)
+ - [[```f27dd00e```](https://github.com/jina-ai/now/commit/f27dd00efa2335b64bb256ea5017dda912c78174)] __-__ ignore hidden files for local folder and S3 (#815) (*Saba Sturua*)
+ - [[```f00441ea```](https://github.com/jina-ai/now/commit/f00441ea2be423ba6b8042ab08a6681537d9405f)] __-__ detect if flow is ready in testing mode (#819) (*IyadhKhalfallah*)
+
+### 🧼 Code Refactoring
+
+ - [[```b103ef1e```](https://github.com/jina-ai/now/commit/b103ef1e37cc501d4e20d40aa469d56b3f6cf658)] __-__ distribute tests (#865) (*Florian Hönicke*)
+ - [[```42d7667f```](https://github.com/jina-ai/now/commit/42d7667f98f89fbd457ffe2519cb3c2f1826b414)] __-__ change all fields mentions to index_fields and query_fields (#834) (*Isabelle Mohr*)
+ - [[```cde31d9c```](https://github.com/jina-ai/now/commit/cde31d9c4fc2efe163bd80645b8a9e7a4876eb55)] __-__ save flow details before assertions (#842) (*Saba Sturua*)
+ - [[```8c90e52f```](https://github.com/jina-ai/now/commit/8c90e52f9e5e5ce0d77411b9def3b5953729ce52)] __-__ conftest (#817) (*Florian Hönicke*)
+ - [[```cf92a5bb```](https://github.com/jina-ai/now/commit/cf92a5bb4485e5dcad77fbf65b69290b781787e6)] __-__ remove finetuning (#812) (*Florian Hönicke*)
+
+### 📗 Documentation
+
+ - [[```b91d7201```](https://github.com/jina-ai/now/commit/b91d720127a9c0250a3efc8861a433b0dbdadbdb)] __-__ add info about multi-modal documents (#810) (*Isabelle Mohr*)
+
+### 🏁 Unit Test and CICD
+
+ - [[```51d2f8ed```](https://github.com/jina-ai/now/commit/51d2f8ed28edcf59a02b3707a5f563ad6164e4d1)] __-__ activate test for curation elastic (#831) (*Isabelle Mohr*)
+ - [[```18ac6472```](https://github.com/jina-ai/now/commit/18ac6472b85c45c7d870e0afec07cf7e3c7e3056)] __-__ fast local end to end (#816) (*Florian Hönicke*)
+
+### 🍹 Other Improvements
+
+ - [[```c8a8a994```](https://github.com/jina-ai/now/commit/c8a8a9943b474eaf2d00774dc02e6f8ee66f6b94)] __-__ Fix pg bff blob (#858) (*Joschka Braun*)
+ - [[```1084e9dd```](https://github.com/jina-ai/now/commit/1084e9dd69e7b90b297c6b9c1dce05229b6ebe4e)] __-__ __version__: the next version will be 0.0.43 (*Jina Dev Bot*)
 

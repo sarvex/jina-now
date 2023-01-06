@@ -14,6 +14,7 @@ from hubble import AuthenticationRequiredError
 from kubernetes import client, config
 
 from now.common.detect_schema import (
+    set_field_names_elasticsearch,
     set_field_names_from_docarray,
     set_field_names_from_local_folder,
     set_field_names_from_s3_bucket,
@@ -24,6 +25,7 @@ from now.deployment.deployment import cmd
 from now.log import yaspin_extended
 from now.now_dataclasses import DialogOptions, UserInput
 from now.utils import (
+    RetryException,
     _get_context_names,
     get_info_hubble,
     jina_auth_login,
@@ -40,10 +42,6 @@ AVAILABLE_SOON = 'will be available in upcoming versions'
 
 
 def _create_app_from_user_input(user_input: UserInput, **kwargs):
-    if len(user_input.index_fields) != 1:
-        raise ValueError(
-            'Currently only one index field is supported. Please choose one field.'
-        )
     if user_input.index_fields[0] not in user_input.index_fields_modalities.keys():
         raise ValueError(
             f'Index field specified is not among the candidate fields. Please '
@@ -68,7 +66,7 @@ def clean_flow_name(user_input: UserInput):
     Clean the flow name to make it valid, removing special characters and spaces.
     """
     user_input.flow_name = ''.join(
-        [c for c in user_input.flow_name if c.isalnum() or c == '-']
+        [c for c in user_input.flow_name or '' if c.isalnum() or c == '-']
     ).lower()
 
 
@@ -92,7 +90,6 @@ DATASET_TYPE = DialogOptions(
         {
             'name': 'Elasticsearch',
             'value': DatasetTypes.ELASTICSEARCH,
-            'disabled': AVAILABLE_SOON,
         },
     ],
     prompt_type='list',
@@ -251,6 +248,7 @@ ES_ADDITIONAL_ARGS = DialogOptions(
     depends_on=DATASET_TYPE,
     conditional_check=lambda user_input: user_input.dataset_type
     == DatasetTypes.ELASTICSEARCH,
+    post_func=lambda user_input, **kwargs: set_field_names_elasticsearch(user_input),
 )
 
 # --------------------------------------------- #
@@ -357,6 +355,8 @@ def _set_value_to_none(user_input: UserInput):
 
 
 def _add_additional_users(user_input: UserInput, **kwargs):
+    if not kwargs.get('user_emails', None):
+        raise RetryException('Please provide at least one email address')
     user_input.user_emails = (
         [email.strip() for email in kwargs['user_emails'].split(',')]
         if kwargs['user_emails']

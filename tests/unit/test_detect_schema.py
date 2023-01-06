@@ -5,6 +5,7 @@ from docarray.typing import Image, Text
 
 from now.common.detect_schema import (
     _create_candidate_index_filter_fields,
+    set_field_names_elasticsearch,
     set_field_names_from_docarray,
     set_field_names_from_local_folder,
     set_field_names_from_s3_bucket,
@@ -16,7 +17,11 @@ from now.now_dataclasses import UserInput
 @pytest.mark.parametrize(
     'dataset_path, index_field_names, filter_field_names',
     [
-        ('gif_resource_path', {'file.txt', 'file.gif'}, {'file.txt', 'a1', 'a2'}),
+        (
+            'gif_resource_path',
+            {'file.txt', 'file.gif', 'a1', 'a2'},
+            {'file.txt', 'a1', 'a2'},
+        ),
         ('image_resource_path', {'.jpg'}, set()),
     ],
 )
@@ -38,12 +43,32 @@ def test_set_fields_names_from_local_folder(
         (
             '',
             {
+                'id',
                 'image.png',
+                'link',
+                'tags__colors__name',
+                'tags__colors__slug',
+                'tags__custom__name',
+                'tags__custom__slug',
+                'tags__ml__name',
+                'tags__ml__slug',
                 'test.txt',
+                'title',
             },
-            {'test.txt', 'tags', 'id', 'link', 'title'},
+            {
+                'id',
+                'tags__ml__slug',
+                'title',
+                'tags__colors__name',
+                'tags__custom__name',
+                'tags__colors__slug',
+                'tags__ml__name',
+                'link',
+                'test.txt',
+                'tags__custom__slug',
+            },
         ),
-        ('folder1/', {'.png', '.txt'}, {'.txt', '.json'}),
+        ('folder1/', {'.png', '.txt', '.json'}, {'.txt', '.json'}),
     ],
 )
 def test_set_field_names_from_s3_bucket(
@@ -79,6 +104,33 @@ def test_set_field_names_from_docarray():
     }
 
 
+def test_set_field_names_elasticsearch(setup_online_shop_db, es_connection_params):
+    _, index_name = setup_online_shop_db
+    connection_str, _ = es_connection_params
+    user_input = UserInput()
+    user_input.dataset_type = DatasetTypes.ELASTICSEARCH
+    user_input.es_index_name = index_name
+    user_input.es_host_name = connection_str
+
+    set_field_names_elasticsearch(user_input)
+    assert len(user_input.index_fields_modalities.keys()) == 5
+    assert user_input.index_fields_modalities == {
+        'title': Text,
+        'text': Text,
+        'url': Text,
+        'product_id': Text,
+        'id': Text,
+    }
+    assert len(user_input.filter_fields_modalities.keys()) == 5
+    assert user_input.filter_fields_modalities == {
+        'title': str,
+        'text': str,
+        'url': str,
+        'product_id': str,
+        'id': str,
+    }
+
+
 def test_failed_uni_modal_docarray():
     user_input = UserInput()
     user_input.dataset_type = DatasetTypes.DOCARRAY
@@ -90,8 +142,8 @@ def test_failed_uni_modal_docarray():
 
 def test_create_candidate_index_fields():
     fields_to_modalities = {
-        'image.png': Image,
-        'test.txt': Text,
+        'image.png': 'image.png',
+        'test.txt': 'test.txt',
         'tags': str,
         'id': str,
         'link': str,
@@ -102,7 +154,7 @@ def test_create_candidate_index_fields():
         filter_fields_modalities,
     ) = _create_candidate_index_filter_fields(fields_to_modalities)
 
-    assert len(index_fields_modalities.keys()) == 2
+    assert len(index_fields_modalities.keys()) == 6
     assert index_fields_modalities['image.png'] == Image
     assert index_fields_modalities['test.txt'] == Text
 
