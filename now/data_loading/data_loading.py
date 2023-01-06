@@ -1,18 +1,21 @@
+import itertools
 import json
 import os
 from collections import defaultdict
+from copy import deepcopy
+from tempfile import TemporaryDirectory
 from typing import Dict, List, Type
 
+import filetype
 from docarray import Document, DocumentArray
 from docarray.dataclasses import is_multimodal
 
-from deployment.bff.app.v1.routers.helper import field_dict_to_mm_doc
 from now.app.base.transform_docarray import get_modality
 from now.common.detect_schema import (
     get_first_file_in_folder_structure_s3,
     get_s3_bucket_and_folder_prefix,
 )
-from now.constants import DatasetTypes
+from now.constants import SUPPORTED_FILE_TYPES, DatasetTypes
 from now.data_loading.create_dataclass import (
     create_dataclass,
     create_dataclass_fields_file_mappings,
@@ -23,7 +26,7 @@ from now.now_dataclasses import UserInput
 from now.utils import sigmap
 
 
-def get_multi_modal_format(document: Document) -> Document:
+def _get_multi_modal_format(document: Document) -> Document:
     """
     Create a multimodal docarray structure from a unimodal `Document`.
     """
@@ -42,6 +45,72 @@ def get_multi_modal_format(document: Document) -> Document:
     return {modality: modality_value}
 
 
+def _field_dict_to_mm_doc(
+    field_dict: dict, data_class: type, field_names_to_dataclass_fields={}
+) -> Document:
+    """Converts a dictionary of field names to their values to a document.
+
+    :param field_dict: key-value pairs of field names and their values
+    :param data_class: @docarray.dataclass class which encapsulates the fields of the multimodal document
+    :param field_names_to_dataclass_fields: mapping of field names to data class fields (e.g. {'title': 'text_0'})
+    :return: multi-modal document
+    """
+    if len(field_dict) != 1:
+        raise ValueError(
+            f"Multi-modal document isn't supported yet. "
+            f"Can only set one value but have {list(field_dict.keys())}"
+        )
+
+    with TemporaryDirectory() as tmp_dir:
+        try:
+            if field_names_to_dataclass_fields:
+                field_dict_orig = deepcopy(field_dict)
+                field_dict = {
+                    field_name_data_class: field_dict_orig[file_name]
+                    for file_name, field_name_data_class in field_names_to_dataclass_fields.items()
+                }
+            data_class_kwargs = {}
+            for field_name_data_class, field_value in field_dict.items():
+                # save blob into a temporary file such that it can be loaded by the multimodal class
+                if field_value.blob:
+                    file_ending = filetype.guess(field_value.blob)
+                    if file_ending is None:
+                        raise ValueError(
+                            f'Could not guess file type of blob {field_value.blob}. '
+                            f'Please provide a valid file type.'
+                        )
+                    file_ending = file_ending.extension
+                    if file_ending not in itertools.chain(
+                        *SUPPORTED_FILE_TYPES.values()
+                    ):
+                        raise ValueError(
+                            f'File type {file_ending} is not supported. '
+                            f'Please provide a valid file type.'
+                        )
+                    file_path = os.path.join(
+                        tmp_dir, field_name_data_class + '.' + file_ending
+                    )
+                    with open(file_path, 'wb') as f:
+                        f.write(field_value.blob)
+                    field_value.uri = file_path
+                    data_class_kwargs[field_name_data_class] = field_value.uri
+
+                elif field_value.uri:
+                    data_class_kwargs[field_name_data_class] = field_value.uri
+                elif field_value.text:
+                    data_class_kwargs[field_name_data_class] = field_value.text
+                elif field_value.tensor:
+                    data_class_kwargs[field_name_data_class] = field_value.tensor
+
+            doc = Document(data_class(**data_class_kwargs))
+        except BaseException as e:
+            raise Exception(
+                f'Not a correctly encoded request. Please see the error stack for more information. \n{e}'
+            )
+
+    return doc
+
+
 def get_da_with_index_fields(da: DocumentArray, user_input: UserInput):
     dataclass = create_dataclass(user_input)
     clean_da = []
@@ -56,16 +125,14 @@ def get_da_with_index_fields(da: DocumentArray, user_input: UserInput):
         )
         for field in non_index_fields:
             non_index_field_doc = getattr(d, field)
-            dict_non_index_fields.update(get_multi_modal_format(non_index_field_doc))
+            dict_non_index_fields.update(_get_multi_modal_format(non_index_field_doc))
         for field in user_input.index_fields:
             _index_field_doc = getattr(d, field)
             dict_index_fields[field] = _index_field_doc
-        mm_doc = field_dict_to_mm_doc(dict_index_fields, dataclass, dataclass_mappings)
+        mm_doc = _field_dict_to_mm_doc(dict_index_fields, dataclass, dataclass_mappings)
         mm_doc.tags.update(dict_non_index_fields)
         clean_da.append(mm_doc)
     clean_da = DocumentArray(clean_da)
-    for d in clean_da:
-        d.image_0.convert_image_tensor_to_blob()
     return clean_da
 
 

@@ -14,27 +14,6 @@ from now.constants import SUPPORTED_FILE_TYPES
 from now.now_dataclasses import UserInput
 
 
-def blob_to_url(tmp_dir, field_value, field_name_data_class):
-    base64_decoded = base64.b64decode(field_value.blob.encode('utf-8'))
-    file_ending = filetype.guess(base64_decoded)
-    if file_ending is None:
-        raise ValueError(
-            f'Could not guess file type of blob {field_value.blob}. '
-            f'Please provide a valid file type.'
-        )
-    file_ending = file_ending.extension
-    if file_ending not in itertools.chain(*SUPPORTED_FILE_TYPES.values()):
-        raise ValueError(
-            f'File type {file_ending} is not supported. '
-            f'Please provide a valid file type.'
-        )
-    file_path = os.path.join(tmp_dir, field_name_data_class + '.' + file_ending)
-    with open(file_path, 'wb') as f:
-        f.write(base64_decoded)
-    field_value.blob = None
-    field_value.uri = file_path
-
-
 def field_dict_to_mm_doc(
     field_dict: dict, data_class: type, field_names_to_dataclass_fields={}
 ) -> Document:
@@ -63,11 +42,11 @@ def field_dict_to_mm_doc(
             for field_name_data_class, field_value in field_dict.items():
                 # save blob into a temporary file such that it can be loaded by the multimodal class
                 if field_value.blob:
-                    # base64_decoded = base64.b64decode(field_value.blob.encode('utf-8'))
-                    file_ending = filetype.guess(field_value.blob)
+                    base64_decoded = base64.b64decode(field_value.blob.encode('utf-8'))
+                    file_ending = filetype.guess(base64_decoded)
                     if file_ending is None:
                         raise ValueError(
-                            f'Could not guess file type of blob {field_value.blob}. '
+                            f'Could not guess file type of blob {base64_decoded}. '
                             f'Please provide a valid file type.'
                         )
                     file_ending = file_ending.extension
@@ -86,12 +65,12 @@ def field_dict_to_mm_doc(
                     field_value.blob = None
                     field_value.uri = file_path
                     data_class_kwargs[field_name_data_class] = field_value.uri
-                # if field_value.content is not None:
-                #     data_class_kwargs[field_name_data_class] = field_value.content
-                # else:
-                #     raise ValueError(
-                #         f'Content of field {field_name_data_class} is None. '
-                #     )
+                if field_value.content is not None:
+                    data_class_kwargs[field_name_data_class] = field_value.content
+                else:
+                    raise ValueError(
+                        f'Content of field {field_name_data_class} is None. '
+                    )
             doc = Document(data_class(**data_class_kwargs))
         except BaseException as e:
             raise HTTPException(
