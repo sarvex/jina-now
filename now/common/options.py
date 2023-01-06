@@ -41,7 +41,10 @@ AVAILABLE_SOON = 'will be available in upcoming versions'
 
 
 def _check_index_field(user_input: UserInput, **kwargs):
-    if user_input.index_fields[0] not in user_input.index_fields_modalities.keys():
+    if (
+        user_input.index_fields[0]
+        not in user_input.index_field_candidates_to_modalities.keys()
+    ):
         raise ValueError(
             f'Index field specified is not among the index candidate fields. Please '
             f'choose one of the following: {user_input.index_field_candidates_to_modalities.keys()}'

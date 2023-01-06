@@ -120,16 +120,16 @@ def test_set_field_names_elasticsearch(setup_online_shop_db, es_connection_param
     user_input.es_host_name = connection_str
 
     set_field_names_elasticsearch(user_input)
-    assert len(user_input.index_fields_modalities.keys()) == 5
-    assert user_input.index_fields_modalities == {
+    assert len(user_input.index_field_candidates_to_modalities.keys()) == 5
+    assert user_input.index_field_candidates_to_modalities == {
         'title': Text,
         'text': Text,
         'url': Text,
         'product_id': Text,
         'id': Text,
     }
-    assert len(user_input.filter_fields_modalities.keys()) == 5
-    assert user_input.filter_fields_modalities == {
+    assert len(user_input.filter_fields_candidates_to_modalities.keys()) == 5
+    assert user_input.filter_fields_candidates_to_modalities == {
         'title': str,
         'text': str,
         'url': str,
