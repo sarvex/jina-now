@@ -16,7 +16,6 @@ from now.executor.indexer.elastic.es_converter import (
     convert_es_to_da,
 )
 from now.executor.indexer.elastic.es_query_building import (
-    SemanticScore,
     build_es_queries,
     generate_semantic_scores,
     process_filter,
@@ -43,7 +42,6 @@ class NOWElasticIndexer(Executor):
         document_mappings: Union[
             List[List], str
         ],  # cannot take FieldEmbedding (not serializable) also can be provided as string since list of list is not possible with the current k8s implementation of the core
-        default_semantic_scores: Optional[List[SemanticScore]] = None,
         es_mapping: Dict = None,
         hosts: Union[
             str, List[Union[str, Mapping[str, Union[str, int]]]], None
@@ -58,8 +56,6 @@ class NOWElasticIndexer(Executor):
         """
         Initialize/construct function for the NOWElasticIndexer.
 
-        :param default_semantic_scores: list of SemanticScore tuples that define how
-            to combine the scores of different fields and encoders.
         :param document_mappings: list of FieldEmbedding tuples that define which encoder
             encodes which fields, and the embedding size of the encoder.
         :param hosts: host configuration of the Elasticsearch node or cluster
@@ -83,16 +79,13 @@ class NOWElasticIndexer(Executor):
 
         # hack is needed to work with the current bug in the core where list of list is not possible to pass
         # at the moment document_mappings arrives as ['clip', 512, 'product_image', 'product_description']
-        if document_mappings and isinstance(document_mappings[0], str):
-            document_mappings[2] = document_mappings[2].split(',')
-            document_mappings = [document_mappings]
 
-        # punctuation needs to be removed for the field names
-        for document_mapping in document_mappings:
-            pass
+        encoder_name = document_mappings[0]
+        embedding_size = document_mappings[1]
+        fields = document_mappings[2:]
+        document_mappings = [encoder_name, embedding_size, fields]
 
-        self.document_mappings = [FieldEmbedding(*dm) for dm in document_mappings]
-        self.default_semantic_scores = default_semantic_scores or None
+        self.document_mappings = [FieldEmbedding(*document_mappings)]
         self.encoder_to_fields = {
             document_mapping.encoder: document_mapping.fields
             for document_mapping in self.document_mappings
@@ -165,6 +158,7 @@ class NOWElasticIndexer(Executor):
         """
         if not docs_map:
             return DocumentArray()
+
         aggregate_embeddings(docs_map)
         es_docs = convert_doc_map_to_es(
             docs_map, self.index_name, self.encoder_to_fields
@@ -210,6 +204,7 @@ class NOWElasticIndexer(Executor):
         """
         if not docs_map:
             return DocumentArray()
+
         aggregate_embeddings(docs_map)
 
         # search_filter = parameters.get('filter', None)
@@ -217,17 +212,15 @@ class NOWElasticIndexer(Executor):
         get_score_breakdown = parameters.get('get_score_breakdown', False)
         custom_bm25_query = parameters.get('custom_bm25_query', None)
         apply_default_bm25 = parameters.get('apply_default_bm25', False)
-        semantic_scores = parameters.get('default_semantic_scores', None)
+        semantic_scores = parameters.get(
+            'default_semantic_scores', None
+        ) or generate_semantic_scores(docs_map, self.encoder_to_fields)
         filter = parameters.get('filter', {})
-        if not self.default_semantic_scores:
-            self.default_semantic_scores = semantic_scores or generate_semantic_scores(
-                docs_map, self.encoder_to_fields
-            )
         es_queries = build_es_queries(
             docs_map=docs_map,
             apply_default_bm25=apply_default_bm25,
             get_score_breakdown=get_score_breakdown,
-            semantic_scores=self.default_semantic_scores,
+            semantic_scores=semantic_scores,
             custom_bm25_query=custom_bm25_query,
             metric=self.metric,
             filter=filter,
@@ -245,10 +238,11 @@ class NOWElasticIndexer(Executor):
                 es_results=result,
                 get_score_breakdown=get_score_breakdown,
                 metric=self.metric,
-                semantic_scores=self.default_semantic_scores,
+                semantic_scores=semantic_scores,
             )
             doc.tags.pop('embeddings')
-        return DocumentArray(list(zip(*es_queries))[0])
+        results = DocumentArray(list(zip(*es_queries))[0])
+        return results
 
     @secure_request(on='/update', level=SecurityLevel.USER)
     def update(self, docs: DocumentArray, **kwargs) -> DocumentArray:

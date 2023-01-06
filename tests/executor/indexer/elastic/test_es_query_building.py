@@ -19,15 +19,10 @@ def test_generate_semantic_scores(es_inputs):
         document_mappings,
         default_semantic_scores,
     ) = es_inputs
-    encoder_to_fields = {
-        document_mapping[0]: document_mapping[2]
-        for document_mapping in document_mappings
-    }
+    encoder_to_fields = {document_mappings[0]: document_mappings[2:]}
     default_semantic_scores = [
         SemanticScore('query_text', 'title', 'clip', 1),
         SemanticScore('query_text', 'gif', 'clip', 1),
-        SemanticScore('query_text', 'title', 'sbert', 1),
-        SemanticScore('query_text', 'excerpt', 'sbert', 1),
     ]
     semantic_scores = generate_semantic_scores(query_docs_map, encoder_to_fields)
     assert semantic_scores == default_semantic_scores
@@ -65,12 +60,9 @@ def test_build_es_queries(es_inputs):
                 }
             },
             'script': {
-                'source': "1.0 + _score / (_score + 10.0) + 1.0*cosineSimilarity(params.query_query_text_clip, 'title-clip.embedding') + 1.0*cosineSimilarity(params.query_query_text_clip, 'gif-clip.embedding') + 1.0*cosineSimilarity(params.query_query_text_sbert, 'title-sbert.embedding') + 3.0*cosineSimilarity(params.query_query_text_sbert, 'excerpt-sbert.embedding')",
+                'source': "1.0 + _score / (_score + 10.0) + 1.0*cosineSimilarity(params.query_query_text_clip, 'title-clip.embedding') + 1.0*cosineSimilarity(params.query_query_text_clip, 'gif-clip.embedding')",
                 'params': {
                     'query_query_text_clip': query_docs_map['clip'][
-                        0
-                    ].query_text.embedding,
-                    'query_query_text_sbert': query_docs_map['sbert'][
                         0
                     ].query_text.embedding,
                 },

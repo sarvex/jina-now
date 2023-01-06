@@ -183,16 +183,11 @@ def es_inputs(gif_resource_path) -> namedtuple:
     class MMQuery:
         query_text: Text
 
-    document_mappings = [
-        ('clip', 8, ['title', 'gif']),
-        ('sbert', 5, ['title', 'excerpt']),
-    ]
+    document_mappings = ['clip', 8, 'title', 'gif']
 
     default_semantic_scores = [
         SemanticScore('query_text', 'title', 'clip', 1),
         SemanticScore('query_text', 'gif', 'clip', 1),
-        SemanticScore('query_text', 'title', 'sbert', 1),
-        SemanticScore('query_text', 'excerpt', 'sbert', 3),
         SemanticScore('query_text', 'my_bm25_query', 'bm25', 1),
     ]
     docs = [
@@ -208,7 +203,6 @@ def es_inputs(gif_resource_path) -> namedtuple:
         ),
     ]
     clip_docs = DocumentArray()
-    sbert_docs = DocumentArray()
     # encode our documents
     for i, doc in enumerate(docs):
         prep_doc = Document(doc)
@@ -218,20 +212,14 @@ def es_inputs(gif_resource_path) -> namedtuple:
         prep_doc.id = str(i)
         clip_doc = Document(prep_doc, copy=True)
         clip_doc.id = prep_doc.id
-        sbert_doc = Document(prep_doc, copy=True)
-        sbert_doc.id = prep_doc.id
 
         clip_doc.title.chunks[0].embedding = np.random.random(8)
         clip_doc.gif.chunks[0].embedding = np.random.random(8)
-        sbert_doc.title.chunks[0].embedding = np.random.random(5)
-        sbert_doc.excerpt.chunks[0].embedding = np.random.random(5)
 
         clip_docs.append(clip_doc)
-        sbert_docs.append(sbert_doc)
 
     index_docs_map = {
         'clip': clip_docs,
-        'sbert': sbert_docs,
     }
 
     query = MMQuery(query_text='cat')
@@ -239,19 +227,14 @@ def es_inputs(gif_resource_path) -> namedtuple:
     query_doc = Document(query)
     clip_doc = Document(query_doc, copy=True)
     clip_doc.id = query_doc.id
-    sbert_doc = Document(query_doc, copy=True)
-    sbert_doc.id = query_doc.id
 
     preprocessor = NOWPreprocessor()
     da_clip = preprocessor.preprocess(DocumentArray([clip_doc]), {})
-    da_sbert = preprocessor.preprocess(DocumentArray([sbert_doc]), {})
 
     clip_doc.query_text.chunks[0].embedding = np.random.random(8)
-    sbert_doc.query_text.chunks[0].embedding = np.random.random(5)
 
     query_docs_map = {
         'clip': da_clip,
-        'sbert': da_sbert,
     }
     EsInputs = namedtuple(
         'EsInputs',
