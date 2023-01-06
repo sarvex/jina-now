@@ -7,6 +7,7 @@ from docarray import Document, DocumentArray
 from docarray.dataclasses import is_multimodal
 
 from deployment.bff.app.v1.routers.helper import field_dict_to_mm_doc
+from now.app.base.transform_docarray import get_modality
 from now.common.detect_schema import (
     get_first_file_in_folder_structure_s3,
     get_s3_bucket_and_folder_prefix,
@@ -20,6 +21,52 @@ from now.data_loading.elasticsearch import ElasticsearchExtractor
 from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
 from now.utils import sigmap
+
+
+def get_multi_modal_format(document: Document) -> Document:
+    """
+    Create a multimodal docarray structure from a unimodal `Document`.
+    """
+    modality = get_modality(document)
+    if document.blob:
+        modality_value = document.blob
+    elif document.uri:
+        modality_value = document.uri
+    elif document.text:
+        modality_value = document.text
+    elif document.tensor:
+        modality_value = document.tensor
+    else:
+        document.summary()
+        raise Exception(f'Document {document} cannot be transformed.')
+    return {modality: modality_value}
+
+
+def get_da_with_index_fields(da: DocumentArray, user_input: UserInput):
+    dataclass = create_dataclass(user_input)
+    clean_da = []
+    non_index_fields = list(
+        set(user_input.index_fields_modalities.keys()) - set(user_input.index_fields)
+    )
+    for d in da:
+        dict_index_fields = {}
+        dict_non_index_fields = {}
+        dataclass_mappings = create_dataclass_fields_file_mappings(
+            user_input.index_fields, user_input.index_fields_modalities
+        )
+        for field in non_index_fields:
+            non_index_field_doc = getattr(d, field)
+            dict_non_index_fields.update(get_multi_modal_format(non_index_field_doc))
+        for field in user_input.index_fields:
+            _index_field_doc = getattr(d, field)
+            dict_index_fields[field] = _index_field_doc
+        mm_doc = field_dict_to_mm_doc(dict_index_fields, dataclass, dataclass_mappings)
+        mm_doc.tags.update(dict_non_index_fields)
+        clean_da.append(mm_doc)
+    clean_da = DocumentArray(clean_da)
+    for d in clean_da:
+        d.image_0.convert_image_tensor_to_blob()
+    return clean_da
 
 
 def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
@@ -52,19 +99,7 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
         da = da[:10]
 
     da = da[:10]
-    dataclass = create_dataclass(user_input)
-    clean_da = []
-    for d in da:
-        dict_index_fields = {}
-        dataclass_mappings = create_dataclass_fields_file_mappings(
-            user_input.index_fields, user_input.index_fields_modalities
-        )
-        for field in user_input.index_fields:
-            _index_field_doc = getattr(d, field)
-            dict_index_fields[field] = _index_field_doc
-        mm_doc = field_dict_to_mm_doc(dict_index_fields, dataclass, dataclass_mappings)
-        clean_da.append(mm_doc)
-    clean_da = DocumentArray(clean_da)
+    clean_da = get_da_with_index_fields(da)
     return clean_da
 
 

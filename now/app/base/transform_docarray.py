@@ -6,7 +6,7 @@ from docarray import Document, DocumentArray
 from now.constants import FILETYPE_TO_MODALITY, Modalities
 
 
-def _get_modality(document: Document):
+def get_modality(document: Document):
     """Detect document's modality based on its `modality` or `mime_type` attributes."""
     if document.modality:
         return document.modality
@@ -20,7 +20,7 @@ def _get_multi_modal_format(document: Document) -> Document:
     """
     Create a multimodal docarray structure from a unimodal `Document`.
     """
-    modality = _get_modality(document)
+    modality = get_modality(document)
     if document.blob:
         new_doc = Document(chunks=[Document(blob=document.blob)])
     elif document.uri:
@@ -86,7 +86,7 @@ def transform_multi_modal_data(
         new_chunks = []
         for position, chunk in enumerate(document.chunks):
             field_name = field_names[position]
-            modality = chunk.modality or _get_modality(chunk)
+            modality = chunk.modality or get_modality(chunk)
             if field_name in index_fields:
                 new_chunks.append(
                     Document(
@@ -122,5 +122,5 @@ def transform_docarray(
     else:
         for doc in documents:
             for chunk in doc.chunks:
-                chunk.modality = chunk.modality or _get_modality(chunk)
+                chunk.modality = chunk.modality or get_modality(chunk)
     return documents
