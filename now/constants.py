@@ -6,7 +6,7 @@ from now.utils import BetterEnum
 
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.142-refactor-remove-bff-index-6'
 NOW_PREPROCESSOR_VERSION = '0.0.119-refactor-remove-bff-index-6'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.141-refactor-remove-tags-yaml-2'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.141-refactor-remove-tags-yaml-3'
 NOW_AUTOCOMPLETE_VERSION = '0.0.8-feat-integrate-elastic-33'
 
 
