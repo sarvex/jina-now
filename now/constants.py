@@ -4,10 +4,10 @@ from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.142-refactor-bump-jina-version-to-latest-4'
-NOW_PREPROCESSOR_VERSION = '0.0.119-refactor-bump-jina-version-to-latest-4'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.141-refactor-bump-jina-version-to-latest-4'
-NOW_AUTOCOMPLETE_VERSION = '0.0.8-feat-refactor-bump-jina-version-to-latest-4'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.142-refactor-bump-jina-version-to-latest-5'
+NOW_PREPROCESSOR_VERSION = '0.0.119-refactor-bump-jina-version-to-latest-5'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.141-refactor-bump-jina-version-to-latest-5'
+NOW_AUTOCOMPLETE_VERSION = '0.0.8-feat-refactor-bump-jina-version-to-latest-5'
 
 
 class Modalities(BetterEnum):
