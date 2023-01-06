@@ -6,7 +6,7 @@ from jina import Client
 from jina.helper import random_port
 
 from now.app.base.app import JinaNOWApp
-from now.app.search_app.indexer_utils import _extract_tags_for_indexer
+from now.app.search_app.indexer_utils import check_if_ocr_needed
 from now.constants import (
     ACCESS_PATHS,
     EXECUTOR_PREFIX,
@@ -137,7 +137,6 @@ class SearchApp(JinaNOWApp):
         :param user_input: User input
         :param encoder2dim: maps encoder name to its output dimension
         """
-        tags = _extract_tags_for_indexer(user_input)
         if len(encoder2dim) != 1:
             raise ValueError(
                 f'Indexer can only be created for one encoder but have encoders: {encoder2dim}'
@@ -152,7 +151,7 @@ class SearchApp(JinaNOWApp):
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'uses_with': {
                 'dim': dim,
-                'columns': tags,
+                'ocr_is_needed': check_if_ocr_needed(user_input),
                 'document_mappings': [
                     [
                         encoder_name,
