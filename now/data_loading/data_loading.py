@@ -16,6 +16,7 @@ from now.common.detect_schema import (
 )
 from now.constants import (
     AVAILABLE_MODALITIES_FOR_SEARCH,
+    FILETYPE_TO_MODALITY,
     SUPPORTED_FILE_TYPES,
     DatasetTypes,
 )
@@ -128,10 +129,18 @@ def get_da_with_index_fields(da: DocumentArray, user_input: UserInput):
             user_input.index_fields, user_input.index_field_candidates_to_modalities
         )
         for field in non_index_fields:
-            non_index_field_doc = getattr(d, field)
+            non_index_field_doc = getattr(d, field, lambda: None)
+            if not non_index_field_doc:
+                non_index_field_doc = getattr(
+                    d, FILETYPE_TO_MODALITY[field.split('.')[-1]], lambda: None
+                )
             dict_non_index_fields.update(_get_multi_modal_format(non_index_field_doc))
         for field in user_input.index_fields:
-            _index_field_doc = getattr(d, field)
+            _index_field_doc = getattr(d, field, lambda: None)
+            if not _index_field_doc:
+                _index_field_doc = getattr(
+                    d, FILETYPE_TO_MODALITY[field.split('.')[-1]], lambda: None
+                )
             dict_index_fields[field] = _index_field_doc
         mm_doc = _field_dict_to_mm_doc(dict_index_fields, dataclass, dataclass_mappings)
         mm_doc.tags.update(dict_non_index_fields)
