@@ -142,7 +142,7 @@ demo dataset:
 ```commandline
 ? How do you want to provide input? (format: https://docarray.jina.ai/)  Demo dataset
 ? What demo dataset do you want to use?  🦆 birds (≈12K docs)
-? Please select the search fields:  (<up>, <down> to move, <space> to select, <a> to toggle, <i> to invert)
+? Please select the index fields:  (<up>, <down> to move, <space> to select, <a> to toggle, <i> to invert)
  ○ label
 ❯○ image
 ? Please select the filter fields  (<up>, <down> to move, <space> to select, <a> to toggle, <i> to invert)

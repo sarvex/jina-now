@@ -16,8 +16,6 @@ def test_app_attributes():
         if app_instance.is_enabled:
             assert app_instance.app_name
             assert app_instance.description
-            assert app_instance.input_modality
-            assert app_instance.output_modality
 
 
 def test_split_text_preprocessing():
@@ -51,7 +49,9 @@ def test_disable_telemetry(disable):
         [Document(chunks=[Document(text='test. test', modality='text')])]
     )
 
-    app.setup(dataset=da, user_input=user_input, kubectl_path='kube_path')
+    app.setup(
+        dataset=da, user_input=user_input, kubectl_path='kube_path', data_class=None
+    )
 
     assert app.flow_yaml['with']['env'].get('JINA_OPTOUT_TELEMETRY') == expected_value
     for executor in app.flow_yaml['executors']:

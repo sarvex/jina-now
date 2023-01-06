@@ -6,10 +6,13 @@ import numpy as np
 from docarray import Document, DocumentArray, dataclass
 from docarray.typing import Image, Text
 
+from deployment.bff.app.v1.models.search import SearchRequestModel
 from deployment.bff.app.v1.routers import helper
+from deployment.bff.app.v1.routers.search import search
 from now.executor.autocomplete import NOWAutoCompleteExecutor2
 from now.executor.indexer.elastic import NOWElasticIndexer
 from now.executor.preprocessor import NOWPreprocessor
+from now.now_dataclasses import UserInput
 
 
 def test_offline_flow(monkeypatch, setup_service_running, base64_image_string):
@@ -21,6 +24,9 @@ def test_offline_flow(monkeypatch, setup_service_running, base64_image_string):
     offline_flow = OfflineFlow()
     offline_client = get_client(offline_flow)
     monkeypatch.setattr(helper, 'get_jina_client', lambda **kwargs: offline_client)
+
+    user_input = UserInput()
+    user_input.index_fields = ['product_title', 'product_description', 'product_image']
 
     @dataclass
     class Product:
@@ -41,45 +47,21 @@ def test_offline_flow(monkeypatch, setup_service_running, base64_image_string):
     index_result = offline_flow.post(
         '/index',
         inputs=DocumentArray(Document(product)),
-        parameters={'access_paths': '@cc'},
+        parameters={
+            'access_paths': '@cc',
+            'user_input': user_input.__dict__,
+        },
     )
-    print('index_result', index_result)
 
-    # TODO once bff supports multi-modal format, the bff can be included into the test by using the following lines instead:
-    # index_result = index(
-    #     IndexRequestModel(
-    #         data=[({'product_title': {'text': 'test'}, 'product_image': {'blob': base64_image_string}}, {'price': '4.50'})],
-    #     )
-    # )
-    # print(index_result)
-
-    @dataclass
-    class Query:
-        query: Text
-
-    query = Query(
-        query='search query',
+    assert index_result == DocumentArray()
+    search_result = search(
+        SearchRequestModel(
+            query={'query_text': {'text': 'girl on motorbike'}},
+        )
     )
-    search_result = offline_flow.post(
-        '/search',
-        inputs=DocumentArray(Document(query)),
-        parameters={'access_paths': '@cc'},
-    )
-    # TODO once bff supports multi-modal format, the bff can be included into the test by using the following lines instead:
-    # search_result = search(
-    #     SearchRequestModel(
-    #         query={'query': {'text': 'girl on motorbike'}},
-    #     )
-    # )
-    assert (
-        '_ocr_detector_text_in_doc'
-        in search_result[0].matches[0].product_image.chunks[0].tags
-    )
-    assert search_result[0].matches[0].product_title.chunks[0].content == 'fancy title'
-    assert (
-        search_result[0].matches[0].product_description.chunks[0].content
-        == 'this is a product'
-    )
+    assert search_result[0].fields['product_title'].text == 'fancy title'
+    assert search_result[0].fields['product_image'].blob != b''
+    assert search_result[0].fields['product_description'].text == 'this is a product'
 
 
 class OfflineFlow:
@@ -89,12 +71,14 @@ class OfflineFlow:
         self.preprocessor = NOWPreprocessor()
         self.encoder = MockedEncoder()
         document_mappings = [
-            ('clip', 5, ['product_title', 'product_image', 'product_description']),
+            'clip',
+            5,
+            'product_title',
+            'product_image',
+            'product_description',
         ]
         self.indexer = NOWElasticIndexer(
             document_mappings=document_mappings,
-            # es_config={'api_key': os.environ['ELASTIC_API_KEY']},
-            # hosts='https://5280f8303ccc410295d02bbb1f3726f7.eu-central-1.aws.cloud.es.io:443',
             hosts='http://localhost:9200',
             index_name=f"test-index-{random.randint(0, 10000)}",
         )
@@ -132,7 +116,3 @@ class MockedEncoder:
         for doc in docs_encode:
             doc.embedding = np.array([1, 2, 3, 4, 5])
         return docs
-
-
-def get_mock_fn(offline_flow):
-    return mocked_get_jina_client

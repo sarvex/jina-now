@@ -7,12 +7,12 @@ from now.constants import FILETYPE_TO_MODALITY, Modalities
 
 
 def _get_modality(document: Document):
-    """
-    Detect document's modality based on its `modality` or `mime_type` attributes.
-    """
-    for modality in Modalities():
-        if modality in document.modality or modality in document.mime_type:
-            return modality
+    """Detect document's modality based on its `modality` or `mime_type` attributes."""
+    if document.modality:
+        return document.modality
+    elif document.mime_type:
+        file_from_mime_type = document.mime_type.split('/')[-1]
+        return FILETYPE_TO_MODALITY[file_from_mime_type]
     return None
 
 
@@ -30,7 +30,10 @@ def _get_multi_modal_format(document: Document) -> Document:
     elif document.text:
         new_doc = Document(chunks=[Document(text=document.text)])
         modality = Modalities.TEXT
+    elif document.tensor:
+        new_doc = Document(chunks=[Document(tensor=document.tensor)])
     else:
+        document.summary()
         raise Exception(f'Document {document} cannot be transformed.')
     if modality:
         new_doc.chunks[0].modality = modality
@@ -63,7 +66,7 @@ def transform_uni_modal_data(documents: DocumentArray) -> DocumentArray:
 
 
 def transform_multi_modal_data(
-    documents: DocumentArray, field_names: Dict[int, str], search_fields: List[str]
+    documents: DocumentArray, field_names: Dict[int, str], index_fields: List[str]
 ):
     """
     Transforms multimodal data into standardized format, which looks like this:
@@ -84,7 +87,7 @@ def transform_multi_modal_data(
         for position, chunk in enumerate(document.chunks):
             field_name = field_names[position]
             modality = chunk.modality or _get_modality(chunk)
-            if field_name in search_fields:
+            if field_name in index_fields:
                 new_chunks.append(
                     Document(
                         content=chunk.content,
@@ -95,7 +98,8 @@ def transform_multi_modal_data(
                     )
                 )
             else:
-                document.tags[field_name] = chunk.content
+                if chunk.text:
+                    document.tags[field_name] = chunk.content
         document.chunks = new_chunks
         for chunk in document.chunks:
             chunk.tags.update(document.tags)
@@ -105,14 +109,18 @@ def transform_multi_modal_data(
 
 def transform_docarray(
     documents: Union[Document, DocumentArray],
-    search_fields: List[str],
+    index_fields: List[str],
 ) -> DocumentArray:
     """
     Gets either multimodal or unimodal data and turns it into standardized format.
 
     :param documents: Data to be transformed.
-    :param search_fields: Field names for neural search. Only required if multimodal data is given.
+    :param index_fields: Field names for neural search. Only required if multimodal data is given.
     """
     if not (documents and documents[0].chunks):
         documents = transform_uni_modal_data(documents=documents)
+    else:
+        for doc in documents:
+            for chunk in doc.chunks:
+                chunk.modality = chunk.modality or _get_modality(chunk)
     return documents

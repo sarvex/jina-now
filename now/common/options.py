@@ -24,6 +24,7 @@ from now.deployment.deployment import cmd
 from now.log import yaspin_extended
 from now.now_dataclasses import DialogOptions, UserInput
 from now.utils import (
+    RetryException,
     _get_context_names,
     get_info_hubble,
     jina_auth_login,
@@ -40,20 +41,13 @@ AVAILABLE_SOON = 'will be available in upcoming versions'
 
 
 def _create_app_from_user_input(user_input: UserInput, **kwargs):
-    if len(user_input.search_fields) != 1:
+    if user_input.index_fields[0] not in user_input.index_fields_modalities.keys():
         raise ValueError(
-            'Currently only one search field is supported. Please choose one field.'
+            f'Index field specified is not among the candidate fields. Please '
+            f'choose one of the following: {user_input.index_fields_modalities.keys()}'
         )
-    if user_input.search_fields[0] not in user_input.search_fields_modalities.keys():
-        raise ValueError(
-            f'Search field specified is not among the search candidate fields. Please '
-            f'choose one of the following: {user_input.search_fields_modalities.keys()}'
-        )
-    _search_modality = user_input.search_fields_modalities[user_input.search_fields[0]]
-    if _search_modality in ['image', 'text', 'video']:
-        app_name = Apps.SEARCH_APP
-    else:
-        raise ValueError(f'Invalid search modality: {_search_modality}')
+    _search_modality = user_input.index_fields_modalities[user_input.index_fields[0]]
+    app_name = Apps.SEARCH_APP
     user_input.app_instance = construct_app(app_name)
 
 
@@ -71,7 +65,7 @@ def clean_flow_name(user_input: UserInput):
     Clean the flow name to make it valid, removing special characters and spaces.
     """
     user_input.flow_name = ''.join(
-        [c for c in user_input.flow_name if c.isalnum() or c == '-']
+        [c for c in user_input.flow_name or '' if c.isalnum() or c == '-']
     ).lower()
 
 
@@ -135,7 +129,6 @@ DEMO_DATA = DialogOptions(
     post_func=lambda user_input, **kwargs: set_field_names_from_docarray(user_input),
 )
 
-
 DOCARRAY_NAME = DialogOptions(
     name='dataset_name',
     prompt_message='Please enter your DocumentArray name:',
@@ -198,39 +191,37 @@ AWS_REGION_NAME = DialogOptions(
 # --------------------------------------------- #
 
 
-SEARCH_FIELDS = DialogOptions(
-    name='search_fields',
+INDEX_FIELDS = DialogOptions(
+    name='index_fields',
     choices=lambda user_input, **kwargs: [
         {'name': field, 'value': field}
-        for field in user_input.search_fields_modalities.keys()
+        for field in user_input.index_fields_modalities.keys()
     ],
     prompt_message='Please select the index fields:',
     prompt_type='checkbox',
     is_terminal_command=True,
     post_func=_create_app_from_user_input,
     argparse_kwargs={
-        'type': lambda s: s.split(',') if s else UserInput().search_fields
+        'type': lambda fields: fields.split(',') if fields else UserInput().index_fields
     },
 )
-
 
 FILTER_FIELDS = DialogOptions(
     name='filter_fields',
     choices=lambda user_input, **kwargs: [
         {'name': field, 'value': field}
         for field in user_input.filter_fields_modalities.keys()
-        if field not in user_input.search_fields
+        if field not in user_input.index_fields
     ],
     prompt_message='Please select the filter fields',
     prompt_type='checkbox',
     depends_on=DATASET_TYPE,
     conditional_check=lambda user_input: user_input.filter_fields_modalities is not None
     and len(
-        set(user_input.filter_fields_modalities.keys()) - set(user_input.search_fields)
+        set(user_input.filter_fields_modalities.keys()) - set(user_input.index_fields)
     )
     > 0,
 )
-
 
 ES_INDEX_NAME = DialogOptions(
     name='es_index_name',
@@ -240,7 +231,6 @@ ES_INDEX_NAME = DialogOptions(
     conditional_check=lambda user_input: user_input.dataset_type
     == DatasetTypes.ELASTICSEARCH,
 )
-
 
 ES_HOST_NAME = DialogOptions(
     name='es_host_name',
@@ -364,6 +354,8 @@ def _set_value_to_none(user_input: UserInput):
 
 
 def _add_additional_users(user_input: UserInput, **kwargs):
+    if not kwargs.get('user_emails', None):
+        raise RetryException('Please provide at least one email address')
     user_input.user_emails = (
         [email.strip() for email in kwargs['user_emails'].split(',')]
         if kwargs['user_emails']
@@ -426,7 +418,7 @@ def _cluster_running(cluster):
 
 app_config = [APP_NAME]
 data_type = [DATASET_TYPE]
-data_fields = [SEARCH_FIELDS, FILTER_FIELDS]
+data_fields = [INDEX_FIELDS, FILTER_FIELDS]
 data_demo = [DEMO_DATA]
 data_da = [DOCARRAY_NAME, DATASET_PATH]
 data_s3 = [DATASET_PATH_S3, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION_NAME]

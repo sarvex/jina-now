@@ -2,7 +2,6 @@
 import base64
 import os
 import random
-import time
 from collections import namedtuple
 
 import hubble
@@ -13,6 +12,7 @@ from docarray.typing import Image, Text
 from elasticsearch import Elasticsearch
 
 from now.deployment.deployment import cmd
+from now.executor.indexer.elastic.elastic_indexer import wait_until_cluster_is_up
 from now.executor.indexer.elastic.es_query_building import SemanticScore
 from now.executor.preprocessor import NOWPreprocessor
 
@@ -29,9 +29,7 @@ def tests_folder_path() -> str:
 
 @pytest.fixture
 def base64_image_string(resources_folder_path: str) -> str:
-    with open(
-        os.path.join(resources_folder_path, 'image', '5109112832.jpg'), 'rb'
-    ) as f:
+    with open(os.path.join(resources_folder_path, 'image', 'a.jpg'), 'rb') as f:
         binary = f.read()
         img_string = base64.b64encode(binary).decode('utf-8')
     return img_string
@@ -39,26 +37,10 @@ def base64_image_string(resources_folder_path: str) -> str:
 
 @pytest.fixture
 def base64_image_string(resources_folder_path: str) -> str:
-    with open(
-        os.path.join(resources_folder_path, 'image', '5109112832.jpg'), 'rb'
-    ) as f:
+    with open(os.path.join(resources_folder_path, 'image', 'a.jpg'), 'rb') as f:
         binary = f.read()
         img_string = base64.b64encode(binary).decode('utf-8')
     return img_string
-
-
-@pytest.fixture()
-def setup_qdrant(tests_folder_path):
-    docker_file_path = os.path.join(
-        tests_folder_path, 'executor/indexer/base/docker-compose.yml'
-    )
-    cmd(
-        f"docker-compose -f {docker_file_path} --project-directory . up  --build -d --remove-orphans"
-    )
-    yield
-    cmd(
-        f"docker-compose -f {docker_file_path} --project-directory . down --remove-orphans"
-    )
 
 
 @pytest.fixture(scope='session')
@@ -152,9 +134,6 @@ def mock_hubble_admin_email(monkeypatch, admin_email):
     # hubble.Client = MockedClient
 
 
-MAX_RETRIES = 20
-
-
 @pytest.fixture(scope="session")
 def es_connection_params():
     connection_str = 'http://localhost:9200'
@@ -170,21 +149,19 @@ def setup_service_running(es_connection_params) -> None:
     )
     cmd(f'docker-compose -f {docker_compose_file} up -d')
     hosts, _ = es_connection_params
-    retries = 0
-    while retries < MAX_RETRIES:
-        try:
-            es = Elasticsearch(hosts=hosts)
-            if es.ping():
-                break
-            else:
-                retries += 1
-                time.sleep(5)
-        except Exception:
-            print('Elasticsearch is not running')
-    if retries >= MAX_RETRIES:
-        raise RuntimeError('Elasticsearch is not running')
+    wait_until_cluster_is_up(es=Elasticsearch(hosts=hosts), hosts=hosts)
     yield
     cmd('docker-compose -f tests/resources/elastic/docker-compose.yml down')
+
+
+@pytest.fixture
+def get_aws_info():
+    dataset_path = os.environ.get('S3_SCHEMA_FOLDER_PATH')
+    aws_access_key_id = os.environ.get('AWS_ACCESS_KEY_ID')
+    aws_secret_access_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
+    region = 'eu-west-1'
+
+    return dataset_path, aws_access_key_id, aws_secret_access_key, region
 
 
 @pytest.fixture
@@ -206,16 +183,11 @@ def es_inputs(gif_resource_path) -> namedtuple:
     class MMQuery:
         query_text: Text
 
-    document_mappings = [
-        ('clip', 8, ['title', 'gif']),
-        ('sbert', 5, ['title', 'excerpt']),
-    ]
+    document_mappings = ['clip', 8, 'title', 'gif']
 
     default_semantic_scores = [
         SemanticScore('query_text', 'title', 'clip', 1),
         SemanticScore('query_text', 'gif', 'clip', 1),
-        SemanticScore('query_text', 'title', 'sbert', 1),
-        SemanticScore('query_text', 'excerpt', 'sbert', 3),
         SemanticScore('query_text', 'my_bm25_query', 'bm25', 1),
     ]
     docs = [
@@ -231,7 +203,6 @@ def es_inputs(gif_resource_path) -> namedtuple:
         ),
     ]
     clip_docs = DocumentArray()
-    sbert_docs = DocumentArray()
     # encode our documents
     for i, doc in enumerate(docs):
         prep_doc = Document(doc)
@@ -241,20 +212,14 @@ def es_inputs(gif_resource_path) -> namedtuple:
         prep_doc.id = str(i)
         clip_doc = Document(prep_doc, copy=True)
         clip_doc.id = prep_doc.id
-        sbert_doc = Document(prep_doc, copy=True)
-        sbert_doc.id = prep_doc.id
 
         clip_doc.title.chunks[0].embedding = np.random.random(8)
         clip_doc.gif.chunks[0].embedding = np.random.random(8)
-        sbert_doc.title.chunks[0].embedding = np.random.random(5)
-        sbert_doc.excerpt.chunks[0].embedding = np.random.random(5)
 
         clip_docs.append(clip_doc)
-        sbert_docs.append(sbert_doc)
 
     index_docs_map = {
         'clip': clip_docs,
-        'sbert': sbert_docs,
     }
 
     query = MMQuery(query_text='cat')
@@ -262,19 +227,14 @@ def es_inputs(gif_resource_path) -> namedtuple:
     query_doc = Document(query)
     clip_doc = Document(query_doc, copy=True)
     clip_doc.id = query_doc.id
-    sbert_doc = Document(query_doc, copy=True)
-    sbert_doc.id = query_doc.id
 
     preprocessor = NOWPreprocessor()
     da_clip = preprocessor.preprocess(DocumentArray([clip_doc]), {})
-    da_sbert = preprocessor.preprocess(DocumentArray([sbert_doc]), {})
 
     clip_doc.query_text.chunks[0].embedding = np.random.random(8)
-    sbert_doc.query_text.chunks[0].embedding = np.random.random(5)
 
     query_docs_map = {
         'clip': da_clip,
-        'sbert': da_sbert,
     }
     EsInputs = namedtuple(
         'EsInputs',
