@@ -167,7 +167,8 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
         )
     if 'NOW_CI_RUN' in os.environ:
         da = da[:50]
-    return da
+    clean_da = get_da_with_index_fields(da)
+    return clean_da
 
 
 def _pull_docarray(dataset_name: str):
