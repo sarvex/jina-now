@@ -167,7 +167,7 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
         )
     if 'NOW_CI_RUN' in os.environ:
         da = da[:50]
-    clean_da = get_da_with_index_fields(da)
+    clean_da = get_da_with_index_fields(da, user_input)
     return clean_da
 
 
