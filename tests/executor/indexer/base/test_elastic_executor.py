@@ -325,6 +325,7 @@ class TestBaseIndexerElastic:
             uses=NOWElasticIndexer,
             uses_with={
                 "dim": len(embedding),
+                "ocr_is_needed": True,
             },
             uses_metas=metas,
         ) as f:
