@@ -53,6 +53,11 @@ class NOWPreprocessor(Executor):
     def _set_user_input(self, parameters: Dict):
         """Sets user_input attribute and deletes used attributes from dictionary"""
         if 'user_input' in parameters.keys():
+            print(
+                'user_input creation: ',
+                parameters['user_input'] if 'user_input' in parameters else None,
+            )
+
             self.user_input = UserInput()
             for attr_name, prev_value in self.user_input.__dict__.items():
                 setattr(
@@ -151,6 +156,10 @@ class NOWPreprocessor(Executor):
         :return: preprocessed documents which are ready to be encoded and indexed
         """
         # TODO remove set user input. Should be only set once in constructor use api key instead of user token
+        print(
+            'user_input pre-process: ',
+            parameters['user_input'] if 'user_input' in parameters else None,
+        )
         self._set_user_input(parameters=parameters)
         return self._preprocess_maybe_cloud_download(docs=docs)
 
@@ -164,6 +173,10 @@ class NOWPreprocessor(Executor):
         :param parameters: user input, used to construct UserInput object
         :return: files as temporary available link in URI attribute
         """
+        print(
+            'user_input: ',
+            parameters['user_input'] if 'user_input' in parameters else None,
+        )
         if docs is None or len(docs) == 0:
             return
         self._set_user_input(parameters=parameters)
