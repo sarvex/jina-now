@@ -11,7 +11,7 @@ def get_request_body():
     return request_body
 
 
-def test_search_filters(start_bff, tmpdir):
+def test_search_filters(start_bff, setup_service_running, tmpdir):
     f = get_flow(tmpdir=tmpdir)
     with f:
         index_data(f)

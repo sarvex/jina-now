@@ -157,7 +157,6 @@ class NOWElasticIndexer(Executor):
             docs_map = self._handle_no_docs_map(docs)
             if len(docs_map) == 0:
                 return DocumentArray()
-
         aggregate_embeddings(docs_map)
         es_docs = convert_doc_map_to_es(
             docs_map, self.index_name, self.encoder_to_fields

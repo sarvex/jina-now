@@ -24,7 +24,7 @@ def get_request_body():
     return request_body
 
 
-def test_add_key(start_bff, tmpdir):
+def test_add_key(start_bff, setup_service_running, tmpdir):
     client = hubble.Client(
         token=get_request_body()['jwt']['token'], max_retries=None, jsonify=True
     )

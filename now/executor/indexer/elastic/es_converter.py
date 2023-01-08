@@ -69,6 +69,9 @@ def convert_doc_map_to_es(
                 _doc[..., 'embedding'] = None
                 es_docs[doc.id]['serialized_doc'] = _doc[0].to_base64()
             es_doc = es_docs[doc.id]
+            if 'tags' in es_doc:
+                es_doc.update(es_doc['tags'])
+                del es_doc['tags']
             for encoded_field in encoder_to_fields[executor_name]:
                 field_doc = getattr(doc, encoded_field)
                 es_doc[
