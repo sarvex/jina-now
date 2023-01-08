@@ -220,6 +220,7 @@ class JinaNOWApp:
         for doc in docs:
             for chunk in doc.chunks:
                 try:
+                    print('modality is ', chunk.modality)
                     if chunk.modality == 'text':
                         preprocess_text(chunk)
                     elif chunk.modality == 'image':
