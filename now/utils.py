@@ -195,7 +195,7 @@ def get_local_path(tmpdir, path_s3):
     return os.path.join(
         str(tmpdir),
         base64.b64encode(bytes(path_s3, "utf-8")).decode("utf-8")
-        + f'{path_s3.split(".")[-1] if "." in path_s3 else ""}',  # preserve file ending
+        + f'.{path_s3.split(".")[-1] if "." in path_s3 else ""}',  # preserve file ending
     )
 
 
