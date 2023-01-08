@@ -158,8 +158,12 @@ class NOWElasticIndexer(Executor):
             if len(docs_map) == 0:
                 return DocumentArray()
 
+        print('indexing docs before aggregate_embeddings')
+        for encoder, docs in docs_map.items():
+            docs.summary()
+            docs[0].summary()
         aggregate_embeddings(docs_map)
-        print('indexing docs')
+        print('indexing docs after aggregate_embeddings')
         for encoder, docs in docs_map.items():
             docs.summary()
             docs[0].summary()
@@ -432,7 +436,9 @@ def aggregate_embeddings(docs_map: Dict[str, DocumentArray]):
             for c in doc.chunks:
                 if c.chunks.embeddings is not None:
                     c.embedding = c.chunks.embeddings.mean(axis=0)
-                    c.content = c.chunks[0].content
+                    if c.chunks[0].text or not c.uri:
+                        c.content = c.chunks[0].content
+                    c.chunks = DocumentArray()
 
 
 def wait_until_cluster_is_up(es, hosts):
