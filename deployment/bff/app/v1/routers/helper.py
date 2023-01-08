@@ -69,7 +69,7 @@ def field_dict_to_mm_doc(
                     raise ValueError(
                         f'Content of field {field_name_data_class} is None. '
                     )
-            doc = data_class(**data_class_kwargs).to_document()
+            doc = Document(data_class(**data_class_kwargs))
         except BaseException as e:
             raise HTTPException(
                 status_code=500,

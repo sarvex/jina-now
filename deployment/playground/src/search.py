@@ -150,15 +150,17 @@ def call_flow(url_host, data, domain, endpoint):
 
     st.session_state.error_msg = None
 
+    print('cloud stuff')
     # update URI to temporary URI for any cloud bucket resources
     for doc in docs:
         docs_cloud = doc.chunks.find({'uri': {'$regex': r"\As3://"}})
         print('cloud docs')
-        docs_cloud.summary()
-        docs_cloud[0].summary()
         if len(docs_cloud) > 0:
-            del data['query']
-            del data['limit']
+            print('data', data)
+            if 'query' in data:
+                del data['query']
+            if 'limit' in data:
+                del data['limit']
             data['ids'] = docs_cloud[:, 'id']
             data['uris'] = docs_cloud[:, 'uri']
 
@@ -170,7 +172,7 @@ def call_flow(url_host, data, domain, endpoint):
             print(response_temp_links.text)
             docs_temp_links = DocumentArray.from_json(response_temp_links.content)
             for _id, _uri in zip(*docs_temp_links[:, ['id', 'uri']]):
-                docs[_id].uri = _uri
+                docs_cloud[_id].uri = _uri
     return docs
 
 

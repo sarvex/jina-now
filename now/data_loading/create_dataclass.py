@@ -67,21 +67,7 @@ def create_dataclass(user_input: UserInput):
     setattr(mm_doc, '__annotations__', all_annotations)
     mm_doc = dataclass(mm_doc)
 
-    mm_doc.to_document = get_document_converter(user_input.index_fields)
     return mm_doc
-
-
-def get_document_converter(field_names):
-    def document_converter(self):
-        doc = Document(self)
-        for chunk, name in zip(doc.chunks, field_names):
-            chunk.tags = {
-                'field_name': name,
-            }
-        self.self = doc
-        return doc
-
-    return document_converter
 
 
 def create_annotations_and_class_attributes(

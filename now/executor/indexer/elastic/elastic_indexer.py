@@ -254,6 +254,8 @@ class NOWElasticIndexer(Executor):
                 semantic_scores=semantic_scores,
             )
             doc.tags.pop('embeddings')
+            for c in doc.chunks:
+                c.embedding = None
         results = DocumentArray(list(zip(*es_queries))[0])
         print('serach results docs')
         results.summary()
