@@ -290,6 +290,13 @@ def flatten_dict(d, parent_key='', sep='__'):
     return dict(items)
 
 
+def get_dict_value_for_flattened_key(d, keys):
+    if len(keys) == 0:
+        return d
+    else:
+        return get_dict_value_for_flattened_key(d[keys[0]], keys[1:])
+
+
 def _get_context_names(contexts, active_context=None):
     names = [c for c in contexts] if contexts is not None else []
     if active_context is not None:

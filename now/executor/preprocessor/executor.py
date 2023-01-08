@@ -144,7 +144,8 @@ class NOWPreprocessor(Executor):
                         move_uri(c)
         print(' end of preprocess')
         docs.summary()
-        docs[0].summary()
+        if docs:
+            docs[0].summary()
         return docs
 
     @secure_request(on=None, level=SecurityLevel.USER)

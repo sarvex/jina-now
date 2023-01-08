@@ -5,6 +5,8 @@ import numpy as np
 from docarray import Document
 from PIL import Image
 
+from now.utils import get_dict_value_for_flattened_key
+
 NUM_FRAMES_SAMPLED = 3
 
 
@@ -38,7 +40,8 @@ def preprocess_text(
         if d.uri.endswith('.json'):
             print('ends with json')
             json_dict = json.loads(d.text)
-            d.text = json_dict[d.tags['field_name']]
+            field_name = d.tags['field_name']
+            d.text = get_dict_value_for_flattened_key(json_dict, field_name.split('__'))
     d.chunks = [
         Document(
             mime_type='text',
