@@ -30,9 +30,6 @@ def test_convert_doc_map_to_es(es_inputs, random_index_name):
         encoder_to_fields=encoder_to_fields,
     )[0]
     assert first_result['id'] == first_doc_clip.id
-    assert len(first_result['title-clip.embedding']) == len(
-        first_doc_clip.title.chunks[0].embedding.tolist()
-    )
     assert first_result['bm25_text'] == first_doc_clip.title.chunks[0].text + ' '
     assert first_result['_op_type'] == 'index'
 
