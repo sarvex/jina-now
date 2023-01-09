@@ -3,21 +3,17 @@ import time
 
 from docarray.typing import Image, Video
 
-from now.constants import TAG_INDEXER_DOC_HAS_TEXT
 from now.deployment.deployment import cmd
 from now.now_dataclasses import UserInput
 
 
-def _extract_tags_for_indexer(user_input: UserInput):
-    final_tags = []
-    for tag in user_input.filter_fields:
-        final_tags.append([tag, user_input.filter_field_candidates_to_modalities[tag]])
+def check_if_ocr_needed(user_input: UserInput):
     if any(
         user_input.index_field_candidates_to_modalities[index_field] in [Image, Video]
         for index_field in user_input.index_fields
     ):
-        final_tags.append([TAG_INDEXER_DOC_HAS_TEXT, str(bool.__name__)])
-    return final_tags
+        return True
+    return False
 
 
 def setup_elastic_service(

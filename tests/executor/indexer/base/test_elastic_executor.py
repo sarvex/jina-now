@@ -6,7 +6,7 @@ from docarray import dataclass
 from docarray.typing import Text
 from jina import Document, DocumentArray, Executor, Flow, requests
 
-from now.constants import TAG_INDEXER_DOC_HAS_TEXT, TAG_OCR_DETECTOR_TEXT_IN_DOC
+from now.constants import TAG_OCR_DETECTOR_TEXT_IN_DOC
 from now.executor.indexer.elastic import NOWElasticIndexer
 from now.executor.preprocessor import NOWPreprocessor
 
@@ -325,7 +325,7 @@ class TestBaseIndexerElastic:
             uses=NOWElasticIndexer,
             uses_with={
                 "dim": len(embedding),
-                'columns': [['title', 'str'], [TAG_INDEXER_DOC_HAS_TEXT, 'bool']],
+                "ocr_is_needed": True,
             },
             uses_metas=metas,
         ) as f:

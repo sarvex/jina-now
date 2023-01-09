@@ -29,7 +29,7 @@ class NOWBaseIndexer(Executor):
     def __init__(
         self,
         dim: int = None,
-        columns: Optional[List] = [],
+        ocr_is_needed: Optional[bool] = False,
         metric: str = 'cosine',
         limit: int = 10,
         max_values_per_tag: int = 10,
@@ -38,8 +38,8 @@ class NOWBaseIndexer(Executor):
     ):
         """
         :param dim: Dimensionality of vectors to index.
-        :param columns: List of tuples of the form (column_name, str_type). Here str_type must be a string that can be
-        parsed as a valid Python type.
+        :param ocr_is_needed: Boolean variable indicating whether we need to use OCR or no
+        based on the modality
         :param metric: Distance metric type. Can be 'euclidean', 'inner_product', or 'cosine'
         :param limit: Number of results to get for each query document in search
         :param max_values_per_tag: Maximum number of values per tag
@@ -47,7 +47,6 @@ class NOWBaseIndexer(Executor):
         """
 
         super().__init__(*args, **kwargs)
-        self.columns = self.parse_columns(columns)
         self.dim = dim
         self.metric = metric
         self.limit = limit
@@ -64,6 +63,7 @@ class NOWBaseIndexer(Executor):
         self.query_to_curated_matches = self.open_query_to_curated_matches(
             self.query_to_curated_matches_path
         )
+        self.ocr_is_needed = ocr_is_needed
 
     def open_query_to_curated_matches(self, path):
         if path and os.path.exists(path):
@@ -196,15 +196,9 @@ class NOWBaseIndexer(Executor):
         retrieval_limit = limit * 3
 
         # if OCR detector was used to check if documents contain text in indexed image modality adjust retrieval step
-        if self.columns and TAG_INDEXER_DOC_HAS_TEXT in [
-            col[0] for col in self.columns
-        ]:
+        if self.ocr_is_needed:
             # enhance filter for one word queries to include the title
-            if (
-                len(docs[0].text.split()) == 1
-                and not search_filter_raw
-                and 'title' in [col[0] for col in self.columns]
-            ):
+            if len(docs[0].text.split()) == 1 and not search_filter_raw:
                 search_filter_raw = {'title': {'$regex': docs[0].text.lower()}}
             # search for documents which don't contain text
             search_filter_raw[TAG_INDEXER_DOC_HAS_TEXT] = {'$eq': False}
@@ -408,26 +402,6 @@ class NOWBaseIndexer(Executor):
             _clean_response(doc)
             for match in doc.matches:
                 _clean_response(match)
-
-    @staticmethod
-    def parse_columns(columns):
-        """Parse the columns to index"""
-        valid_input_columns = ['str', 'float', 'int', 'bool']
-        corrected_columns = []
-        for column_name, column_type in columns:
-            if column_type in ['text', 'stringValue']:
-                column_type = 'str'
-            elif column_type in ['numberValue']:
-                column_type = 'float'
-            elif column_type in ['booleanValue']:
-                column_type = 'bool'
-            if column_type not in valid_input_columns:
-                raise ValueError(
-                    f'Invalid column type {column_type} for column {column_name}. '
-                    f'Valid column types are {valid_input_columns}'
-                )
-            corrected_columns.append((column_name, column_type))
-        return corrected_columns
 
     def load_document_list(self):
         """is needed for the list endpoint"""

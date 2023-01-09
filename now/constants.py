@@ -4,10 +4,10 @@ from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.143-refactor-bump-jina-version-to-latest-8'
-NOW_PREPROCESSOR_VERSION = '0.0.119-refactor-bump-jina-version-to-latest-8'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.141-refactor-bump-jina-version-to-latest-8'
-NOW_AUTOCOMPLETE_VERSION = '0.0.8-refactor-bump-jina-version-to-latest-8'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.143-refactor-bump-jina-version-to-latest-9'
+NOW_PREPROCESSOR_VERSION = '0.0.119-refactor-bump-jina-version-to-latest-9'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.141-refactor-bump-jina-version-to-latest-9'
+NOW_AUTOCOMPLETE_VERSION = '0.0.8-refactor-bump-jina-version-to-latest-9'
 
 
 class Apps(BetterEnum):
@@ -27,6 +27,7 @@ SUPPORTED_FILE_TYPES = {
     Image: ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'tif'],
     Video: ['gif'],
 }
+
 FILETYPE_TO_MODALITY = {
     filetype: modality
     for modality, filetypes in SUPPORTED_FILE_TYPES.items()
