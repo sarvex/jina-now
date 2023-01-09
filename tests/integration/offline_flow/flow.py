@@ -13,8 +13,8 @@ from now.executor.preprocessor import NOWPreprocessor
 class OfflineFlow:
     def __init__(self, monkeypatch, user_input_dict):
         # definition of executors:
-        self.autocomplete = NOWAutoCompleteExecutor2(user_input=user_input_dict)
-        self.preprocessor = NOWPreprocessor(user_input=user_input_dict)
+        self.autocomplete = NOWAutoCompleteExecutor2(user_input_dict=user_input_dict)
+        self.preprocessor = NOWPreprocessor(user_input_dict=user_input_dict)
         self.encoder = MockedEncoder()
         document_mappings = [
             [
@@ -28,7 +28,7 @@ class OfflineFlow:
             ]
         ]
         self.indexer = NOWElasticIndexer(
-            user_input=user_input_dict,
+            user_input_dict=user_input_dict,
             document_mappings=document_mappings,
             hosts='http://localhost:9200',
             index_name=f"test-index-{random.randint(0, 10000)}",

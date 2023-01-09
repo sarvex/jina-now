@@ -1,7 +1,7 @@
 import json
 import os
 from functools import lru_cache
-from typing import Dict, List, Union
+from typing import Dict, List
 
 import hubble
 from docarray import DocumentArray
@@ -102,7 +102,7 @@ def get_auth_executor_class():
 
         def __init__(
             self,
-            user_input: Union[Dict, str] = {},
+            user_input_dict: Dict = {},
             admin_emails: List[str] = [],
             user_emails: List[str] = [],
             api_keys: List[str] = [],
@@ -110,6 +110,7 @@ def get_auth_executor_class():
             **kwargs,
         ):
             """
+            :param user_input_dict: kwargs to construct UserInput
             :param admin_email: ID of the user deploying this flow. ID is obtained from Hubble
             :param user_emails: Comma separated Email IDs of the allowed users with access to this flow.
                 The Email ID from the incoming request to this flow will be verified against this.
@@ -144,13 +145,8 @@ def get_auth_executor_class():
 
             if self.user_input_path and os.path.exists(self.user_input_path):
                 with open(self.user_input_path, 'r') as fp:
-                    user_input_kwargs = json.load(fp)
-            else:
-                if isinstance(user_input, str):
-                    user_input_kwargs = json.loads(user_input)
-                else:
-                    user_input_kwargs = user_input
-            self._update_user_input(user_input_kwargs)
+                    user_input_dict = json.load(fp)
+            self._update_user_input(user_input_dict)
             if self.api_keys_path and os.path.exists(self.api_keys_path):
                 with open(self.api_keys_path, 'r') as fp:
                     self.api_keys = json.load(fp)

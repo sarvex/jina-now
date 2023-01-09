@@ -205,7 +205,7 @@ class JinaNOWApp:
                 if not executor.get('external', False):
                     if not executor.get('uses_with', None):
                         executor['uses_with'] = {}
-                    executor['uses_with']['user_input'] = user_input_dict
+                    executor['uses_with']['user_input_dict'] = user_input_dict
                     if user_input.deployment_type == 'remote':
                         executor['uses_with']['api_keys'] = '${{ ENV.API_KEY }}'
                         executor['uses_with']['user_emails'] = '${{ ENV.USER_EMAILS }}'

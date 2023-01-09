@@ -23,10 +23,6 @@ Executor = get_auth_executor_class()
 class NOWPreprocessor(Executor):
     """Applies preprocessing to documents for encoding, indexing and searching as defined by app.
     If necessary, downloads files for that from cloud bucket.
-
-    Also, provides an endpoint to download data from S3 bucket without requiring credentials for that.
-
-    To update user_input, set the 'user_input' key in parameters dictionary.
     """
 
     def __init__(self, max_workers: int = 15, *args, **kwargs):
