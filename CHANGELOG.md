@@ -37,6 +37,7 @@
 
 
 
+
 <a name=release-note-0-0-7></a>
 ## Release Note (`0.0.7`)
 
@@ -1308,4 +1309,27 @@
 
  - [[```0e3c082f```](https://github.com/jina-ai/now/commit/0e3c082fad6aca279b18092bef29f443116fae7a)] __-__ Fix enable multi modal support (#875) (*Florian Hönicke*)
  - [[```1621b226```](https://github.com/jina-ai/now/commit/1621b226cf8e00a3a93390c3abc88513c1e3f960)] __-__ __version__: the next version will be 0.0.44 (*Jina Dev Bot*)
+
+<a name=release-note-0-0-45></a>
+## Release Note (`0.0.45`)
+
+> Release time: 2023-01-09 15:47:48
+
+
+
+🙇 We'd like to thank all contributors for this new release! In particular,
+ Florian Hönicke,  Saba Sturua,  Jina Dev Bot,  🙇
+
+
+### 🐞 Bug fixes
+
+ - [[```fc51625a```](https://github.com/jina-ai/now/commit/fc51625af9d7bdf7ebf47111d292ce3e9cbee128)] __-__ bucket url json (#889) (*Florian Hönicke*)
+
+### 🧼 Code Refactoring
+
+ - [[```5b515f4d```](https://github.com/jina-ai/now/commit/5b515f4d029b107ab37375ecee22cca7a5cd0ace)] __-__ remove base indexer (#890) (*Saba Sturua*)
+
+### 🍹 Other Improvements
+
+ - [[```dda6fde9```](https://github.com/jina-ai/now/commit/dda6fde914fe956db0470bc0432a47aeebbb9f1d)] __-__ __version__: the next version will be 0.0.45 (*Jina Dev Bot*)
 
