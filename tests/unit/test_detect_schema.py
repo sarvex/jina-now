@@ -142,6 +142,7 @@ def test_failed_uni_modal_docarray():
     user_input = UserInput()
     user_input.dataset_type = DatasetTypes.DOCARRAY
     user_input.dataset_name = 'test_lj'
+    user_input.user_name = 'team_now'
     user_input.jwt = {'token': os.environ['WOLF_TOKEN']}
     with pytest.raises(RuntimeError):
         set_field_names_from_docarray(user_input)

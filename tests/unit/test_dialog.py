@@ -41,6 +41,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
         {
             'app': Apps.SEARCH_APP,
             'flow_name': DEFAULT_FLOW_NAME,
+            'user_name': 'team-now',
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': DemoDatasetNames.TLL,
             'index_field_candidates_to_modalities': {'label': Text, 'image': Image},
@@ -57,6 +58,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'app': Apps.SEARCH_APP,
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DEMO,
+            'user_name': 'team-now',
             'dataset_name': DemoDatasetNames.NIH_CHEST_XRAYS,
             'index_field_candidates_to_modalities': {'label': Text, 'image': Image},
             'index_fields': ['image'],
@@ -71,6 +73,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
         {
             'app': Apps.SEARCH_APP,
             'flow_name': DEFAULT_FLOW_NAME,
+            'user_name': 'team-now',
             'dataset_type': DatasetTypes.PATH,
             'dataset_path': os.path.join(
                 os.path.dirname(__file__), '..', 'resources', 'image'
@@ -88,6 +91,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': DemoDatasetNames.DEEP_FASHION,
             'index_fields': ['image'],
+            'user_name': 'team-now',
             'index_field_candidates_to_modalities': {'label': Text, 'image': Image},
             'filter_fields': [],
             'filter_field_candidates_to_modalities': {'label': 'text'},
@@ -103,6 +107,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'flow_name': 'testapp',
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': DemoDatasetNames.RAP_LYRICS,
+            'user_name': 'team-now',
             'index_fields': ['lyrics'],
             'index_field_candidates_to_modalities': {'lyrics': Text, 'title': Text},
             'filter_fields': ['title'],
@@ -121,6 +126,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'flow_name': 'testapp',
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': DemoDatasetNames.TUMBLR_GIFS_10K,
+            'user_name': 'team-now',
             'index_fields': ['video'],
             'index_field_candidates_to_modalities': {
                 'video': Video,
@@ -138,6 +144,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'flow_name': 'test this name *',
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': DemoDatasetNames.DEEP_FASHION,
+            'user_name': 'team-now',
             'index_fields': ['image'],
             'index_field_candidates_to_modalities': {'label': Text, 'image': Image},
             'filter_fields': [],
