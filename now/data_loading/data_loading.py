@@ -16,7 +16,6 @@ from now.common.detect_schema import (
 )
 from now.constants import (
     AVAILABLE_MODALITIES_FOR_SEARCH,
-    FILETYPE_TO_MODALITY,
     SUPPORTED_FILE_TYPES,
     DatasetTypes,
 )
@@ -101,7 +100,7 @@ def _field_dict_to_mm_doc(
                     data_class_kwargs[field_name_data_class] = field_value.tensor
 
             doc = Document(data_class(**data_class_kwargs))
-        except BaseException as e:
+        except Exception as e:
             raise Exception(
                 f'Not a correctly encoded request. Please see the error stack for more information. \n{e}'
             )
@@ -124,17 +123,9 @@ def get_da_with_index_fields(da: DocumentArray, user_input: UserInput):
         )
         for field in non_index_fields:
             non_index_field_doc = getattr(d, field, None)
-            if not non_index_field_doc:
-                non_index_field_doc = getattr(
-                    d, FILETYPE_TO_MODALITY[field.split('.')[-1]].__name__.lower(), None
-                )
             dict_non_index_fields.update(_get_multi_modal_format(non_index_field_doc))
         for field in user_input.index_fields:
             _index_field_doc = getattr(d, field, None)
-            if not _index_field_doc:
-                _index_field_doc = getattr(
-                    d, FILETYPE_TO_MODALITY[field.split('.')[-1]].__name__.lower(), None
-                )
             dict_index_fields[field] = _index_field_doc
         mm_doc = _field_dict_to_mm_doc(dict_index_fields, dataclass, dataclass_mappings)
         mm_doc.tags.update(dict_non_index_fields)
