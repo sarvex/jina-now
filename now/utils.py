@@ -222,13 +222,14 @@ def convert_fn(
     d.tags['uri'] = d.uri
 
     d.uri = download_from_bucket(tmpdir, d.uri, bucket)
-    if 'tag_uri' in d.tags:
-        local_tag_uri = download_from_bucket(tmpdir, d.tags['tag_uri'], bucket)
-        with open(local_tag_uri, 'r') as fp:
-            tags = json.load(fp)
-            tags = flatten_dict(tags)
-            d.tags.update(tags)
-        del d.tags['tag_uri']
+    if d.uri.endswith('.json'):
+        json_dict = json.loads(d.text)
+        field_name = d._metadata['field_name']
+        field_value = get_dict_value_for_flattened_key(
+            json_dict, field_name.split('__')
+        )
+        with open(d.uri, 'w') as fp:
+            fp.write(field_value)
     return d
 
 
