@@ -29,11 +29,10 @@ from now.now_dataclasses import UserInput
 from now.utils import docarray_typing_to_modality_string, sigmap
 
 
-def _get_multi_modal_format(document: Document) -> Document:
+def _get_multi_modal_format(document: Document, field) -> Document:
     """
     Create a multimodal docarray structure from a unimodal `Document`.
     """
-    modality = _get_modality(document)
     if document.blob:
         modality_value = document.blob
     elif document.uri:
@@ -45,7 +44,7 @@ def _get_multi_modal_format(document: Document) -> Document:
     else:
         document.summary()
         raise Exception(f'Document {document} cannot be transformed.')
-    return {modality: modality_value}
+    return {field: modality_value}
 
 
 def _field_dict_to_mm_doc(
@@ -123,7 +122,9 @@ def get_da_with_index_fields(da: DocumentArray, user_input: UserInput):
         )
         for field in non_index_fields:
             non_index_field_doc = getattr(d, field, None)
-            dict_non_index_fields.update(_get_multi_modal_format(non_index_field_doc))
+            dict_non_index_fields.update(
+                _get_multi_modal_format(non_index_field_doc, field)
+            )
         for field in user_input.index_fields:
             _index_field_doc = getattr(d, field, None)
             dict_index_fields[field] = _index_field_doc
