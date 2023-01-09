@@ -170,8 +170,12 @@ class NOWPreprocessor(Executor):
     def patch_docarray(self, docs: DocumentArray):
         """This function modifies the documents to make sure they support features that we are missing at the moment"""
         # 1. each attribute of the multi-modal document should know it's name
-        user_input = self.user_input.field_names_to_dataclass_fields
-        dataclass_fields_to_field_names = {v: k for k, v in user_input.items()}
+        field_names_to_dataclass_fields = (
+            self.user_input.field_names_to_dataclass_fields or {}
+        )
+        dataclass_fields_to_field_names = {
+            v: k for k, v in field_names_to_dataclass_fields.items()
+        }
 
         for doc in docs:
             for dataclass_field in doc._metadata['multi_modal_schema']:
