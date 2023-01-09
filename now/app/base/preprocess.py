@@ -29,7 +29,7 @@ def preprocess_text(
 
     if not d.text and d.uri:
         d.load_uri_to_text(timeout=10)
-        d.tags['additional_info'] = d.uri
+        # In case it is a json file, we need to get the right field
     d.chunks = [
         Document(
             mime_type='text',

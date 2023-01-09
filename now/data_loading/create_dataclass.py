@@ -2,7 +2,7 @@ import typing
 from collections import defaultdict
 from typing import Dict, List
 
-from docarray import dataclass, field
+from docarray import Document, dataclass, field
 
 from now.constants import AVAILABLE_MODALITIES_FOR_SEARCH, DatasetTypes
 from now.now_dataclasses import UserInput
@@ -66,6 +66,7 @@ def create_dataclass(user_input: UserInput):
     mm_doc = type("MMDoc", (object,), all_class_attributes)
     setattr(mm_doc, '__annotations__', all_annotations)
     mm_doc = dataclass(mm_doc)
+
     return mm_doc
 
 
