@@ -123,17 +123,17 @@ def get_da_with_index_fields(da: DocumentArray, user_input: UserInput):
             user_input.index_fields, user_input.index_field_candidates_to_modalities
         )
         for field in non_index_fields:
-            non_index_field_doc = getattr(d, field, lambda: None)
+            non_index_field_doc = getattr(d, field, None)
             if not non_index_field_doc:
                 non_index_field_doc = getattr(
-                    d, FILETYPE_TO_MODALITY[field.split('.')[-1]], lambda: None
+                    d, FILETYPE_TO_MODALITY[field.split('.')[-1]].__name__.lower(), None
                 )
             dict_non_index_fields.update(_get_multi_modal_format(non_index_field_doc))
         for field in user_input.index_fields:
-            _index_field_doc = getattr(d, field, lambda: None)
+            _index_field_doc = getattr(d, field, None)
             if not _index_field_doc:
                 _index_field_doc = getattr(
-                    d, FILETYPE_TO_MODALITY[field.split('.')[-1]], lambda: None
+                    d, FILETYPE_TO_MODALITY[field.split('.')[-1]].__name__.lower(), None
                 )
             dict_index_fields[field] = _index_field_doc
         mm_doc = _field_dict_to_mm_doc(dict_index_fields, dataclass, dataclass_mappings)
@@ -154,6 +154,7 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
     if user_input.dataset_type == DatasetTypes.DOCARRAY:
         print('⬇  Pull DocumentArray dataset')
         da = _pull_docarray(user_input.dataset_name)
+        da = get_da_with_index_fields(da, user_input)
     elif user_input.dataset_type == DatasetTypes.PATH:
         print('💿  Loading files from disk')
         da = _load_from_disk(user_input=user_input, data_class=data_class)
@@ -164,6 +165,7 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
     elif user_input.dataset_type == DatasetTypes.DEMO:
         print('⬇  Download DocumentArray dataset')
         da = DocumentArray.pull(name=user_input.dataset_name, show_progress=True)
+        da = get_da_with_index_fields(da, user_input)
     da = set_modality_da(da)
     if da is None:
         raise ValueError(
@@ -171,8 +173,7 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
         )
     if 'NOW_CI_RUN' in os.environ:
         da = da[:50]
-    clean_da = get_da_with_index_fields(da, user_input)
-    return clean_da
+    return da
 
 
 def _pull_docarray(dataset_name: str):
