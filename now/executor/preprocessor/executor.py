@@ -1,11 +1,9 @@
 import io
-import json
 import os
 import random
 import string
 import tempfile
 import urllib
-from typing import Dict, Optional
 
 import boto3
 from jina import Document, DocumentArray
@@ -18,7 +16,6 @@ from now.executor.abstract.auth import (
     get_auth_executor_class,
     secure_request,
 )
-from now.now_dataclasses import UserInput
 from now.utils import maybe_download_from_s3
 
 Executor = get_auth_executor_class()
@@ -39,30 +36,6 @@ class NOWPreprocessor(Executor):
         self.app: JinaNOWApp = JinaNOWApp()
         self.max_workers = max_workers
         self.paddle_ocr = PaddleOCR(use_angle_cls=True, lang='en', show_log=False)
-
-        self.user_input_path = (
-            os.path.join(self.workspace, 'user_input.json') if self.workspace else None
-        )
-        if self.user_input_path and os.path.exists(self.user_input_path):
-            with open(self.user_input_path, 'r') as fp:
-                user_input = json.load(fp)
-            self._set_user_input({'user_input': {**user_input}})
-        else:
-            self.user_input = None
-
-    def _set_user_input(self, parameters: Dict):
-        """Sets user_input attribute and deletes used attributes from dictionary"""
-        if 'user_input' in parameters.keys():
-            self.user_input = UserInput()
-            for attr_name, prev_value in self.user_input.__dict__.items():
-                setattr(
-                    self.user_input,
-                    attr_name,
-                    parameters['user_input'].pop(attr_name, prev_value),
-                )
-            if self.user_input_path:
-                with open(self.user_input_path, 'w') as fp:
-                    json.dump(self.user_input.__dict__, fp)
 
     def _ocr_detect_text(self, docs: DocumentArray):
         """Iterates over all documents, detects text in images and saves it into the tags of the document."""
@@ -141,33 +114,23 @@ class NOWPreprocessor(Executor):
         return docs
 
     @secure_request(on=None, level=SecurityLevel.USER)
-    def preprocess(
-        self, docs: DocumentArray, parameters: Optional[Dict] = None, *args, **kwargs
-    ) -> DocumentArray:
+    def preprocess(self, docs: DocumentArray, *args, **kwargs) -> DocumentArray:
         """If necessary downloads data from cloud bucket. Applies preprocessing to documents as defined by apps.
 
         :param docs: loaded data but not preprocessed
-        :param parameters: user input, used to construct UserInput object
         :return: preprocessed documents which are ready to be encoded and indexed
         """
-        # TODO remove set user input. Should be only set once in constructor use api key instead of user token
-        self._set_user_input(parameters=parameters)
         return self._preprocess_maybe_cloud_download(docs=docs)
 
     @secure_request(on='/temp_link_cloud_bucket', level=SecurityLevel.USER)
     def temporary_link_from_cloud_bucket(
-        self, docs: DocumentArray, parameters: Optional[Dict] = None, *args, **kwargs
+        self, docs: DocumentArray, *args, **kwargs
     ) -> DocumentArray:
         """Downloads files from cloud bucket and loads them as temporary link into the URI.
 
         :param docs: documents which contain URIs to the documents which shall be downloaded
-        :param parameters: user input, used to construct UserInput object
         :return: files as temporary available link in URI attribute
         """
-        if docs is None or len(docs) == 0:
-            return
-        self._set_user_input(parameters=parameters)
-
         if self.user_input and self.user_input.dataset_type == DatasetTypes.S3_BUCKET:
 
             def convert_fn(d: Document) -> Document:

@@ -137,10 +137,7 @@ def index_docs(user_input, dataset, client):
     Index the data right away
     """
     print(f"▶ indexing {len(dataset)} documents in batches")
-    params = {
-        'user_input': user_input.__dict__,
-        'access_paths': ACCESS_PATHS,
-    }
+    params = {'access_paths': ACCESS_PATHS}
     if user_input.secured:
         params['jwt'] = user_input.jwt
     call_flow(
@@ -163,11 +160,6 @@ def call_flow(
     return_results: Optional[bool] = False,
 ):
     request_size = estimate_request_size(dataset, max_request_size)
-
-    # Pop app_instance from parameters to be passed to the flow
-    parameters['user_input'].pop('app_instance', None)
-    parameters['user_input'].pop('index_field_candidates_to_modalities', None)
-    parameters['user_input'].pop('filter_field_candidates_to_modalities', None)
 
     # this is a hack for the current core/ wolf issue
     # since we get errors while indexing, we retry
