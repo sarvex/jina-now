@@ -8,8 +8,11 @@ from docarray import Document, DocumentArray
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 
-from now.executor.abstract.auth import SecurityLevel, secure_request
-from now.executor.abstract.base_indexer import NOWBaseIndexer as Executor
+from now.executor.abstract.auth import (
+    SecurityLevel,
+    secure_request,
+    get_auth_executor_class,
+)
 from now.executor.indexer.elastic.es_converter import (
     convert_doc_map_to_es,
     convert_es_results_to_matches,
@@ -26,6 +29,8 @@ FieldEmbedding = namedtuple(
     ['encoder', 'embedding_size', 'fields'],
 )
 
+Executor = get_auth_executor_class()
+
 
 class NOWElasticIndexer(Executor):
     """
@@ -35,45 +40,49 @@ class NOWElasticIndexer(Executor):
     allowing multi-modal documents to be indexed and searched with multi-modal queries.
     """
 
-    # override
-
-    def construct(
+    def __init__(
         self,
         document_mappings: List[Tuple[str, int, List[str]]],
+        dim: int = None,
+        ocr_is_needed: Optional[bool] = False,
+        metric: str = 'cosine',
+        limit: int = 10,
+        max_values_per_tag: int = 10,
         es_mapping: Dict = None,
         hosts: Union[
             str, List[Union[str, Mapping[str, Union[str, int]]]], None
         ] = 'http://localhost:9200',
         es_config: Optional[Dict[str, Any]] = None,
-        metric: str = 'cosine',
         index_name: str = 'now-index',
-        traversal_paths: str = '@r',
-        limit: int = 20,
+        *args,
         **kwargs,
     ):
         """
-        Initialize/construct function for the NOWElasticIndexer.
-
         :param document_mappings: list of FieldEmbedding tuples that define which encoder
             encodes which fields, and the embedding size of the encoder.
-        :param hosts: host configuration of the Elasticsearch node or cluster
-        :param es_config: Elasticsearch cluster configuration object
-        :param metric: The distance metric used for the vector index and vector search
-        :param index_name: ElasticSearch Index name used for the storage
+        :param dim: Dimensionality of vectors to index.
+        :param ocr_is_needed: Boolean variable indicating whether we need to use OCR or no
+            based on the modality
+        :param metric: Distance metric type. Can be 'euclidean', 'inner_product', or 'cosine'
+        :param limit: Number of results to get for each query document in search
+        :param max_values_per_tag: Maximum number of values per tag
         :param es_mapping: Mapping for new index. If none is specified, this will be
             generated from `document_mappings` and `metric`.
-        :param traversal_paths: Default traversal paths on docs
-            generated from metric and dims. Embeddings from chunk documents will
-            always be stored in fields `embedding_x` where x iterates over the number
-            of embedding fields (length of `dims`) to be created in the index.
-                (used for indexing, delete and update), e.g. '@r', '@c', '@r,c'.
-        :param limit: Default limit on the number of docs to be retrieved
+        :param hosts: host configuration of the Elasticsearch node or cluster
+        :param es_config: Elasticsearch cluster configuration object
+        :param index_name: ElasticSearch Index name used for the storage
         """
-        self.hosts = hosts
+
+        super().__init__(*args, **kwargs)
+        self.dim = dim
         self.metric = metric
-        self.index_name = index_name
-        self.traversal_paths = traversal_paths
         self.limit = limit
+        self.max_values_per_tag = max_values_per_tag
+        self.hosts = hosts
+        self.index_name = index_name
+        self.query_to_curated_ids = {}
+        self.doc_id_tags = {}
+        self.ocr_is_needed = ocr_is_needed
 
         self.document_mappings = [FieldEmbedding(*dm) for dm in document_mappings]
         self.encoder_to_fields = {
@@ -90,7 +99,6 @@ class NOWElasticIndexer(Executor):
 
         if not self.es.indices.exists(index=self.index_name):
             self.es.indices.create(index=self.index_name, mappings=self.es_mapping)
-        self.query_to_curated_ids = {}
 
     def setup_elastic_server(self):
         # volume is not persisted at the moment
@@ -157,7 +165,6 @@ class NOWElasticIndexer(Executor):
             docs_map = self._handle_no_docs_map(docs)
             if len(docs_map) == 0:
                 return DocumentArray()
-
         aggregate_embeddings(docs_map)
         es_docs = convert_doc_map_to_es(
             docs_map, self.index_name, self.encoder_to_fields
@@ -209,7 +216,6 @@ class NOWElasticIndexer(Executor):
 
         aggregate_embeddings(docs_map)
 
-        # search_filter = parameters.get('filter', None)
         limit = parameters.get('limit', self.limit)
         get_score_breakdown = parameters.get('get_score_breakdown', False)
         custom_bm25_query = parameters.get('custom_bm25_query', None)
@@ -405,11 +411,6 @@ class NOWElasticIndexer(Executor):
             self.doc_id_tags = updated_tags
         except Exception:
             self.logger.info(traceback.format_exc())
-
-    # override
-    def batch_iterator(self):
-        """Unnecessary for ElasticIndexer, but need to override BaseIndexer."""
-        yield []
 
 
 def aggregate_embeddings(docs_map: Dict[str, DocumentArray]):
