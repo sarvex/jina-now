@@ -243,6 +243,30 @@ def test_custom_mapping_and_custom_bm25_search(
 
 def test_search_with_filter(setup_service_running, es_inputs, random_index_name):
     """
-    TODO: fill
+    This test tests the search endpoint of the NOWElasticIndexer using filters.
     """
-    pass
+    (
+        index_docs_map,
+        query_docs_map,
+        document_mappings,
+        default_semantic_scores,
+    ) = es_inputs
+    index_name = random_index_name
+    es_indexer = NOWElasticIndexer(
+        document_mappings=document_mappings,
+        hosts='http://localhost:9200',
+        index_name=index_name,
+    )
+    es_indexer.index(index_docs_map)
+
+    res = es_indexer.search(
+        query_docs_map,
+        parameters={
+            'get_score_breakdown': True,
+            'apply_default_bm25': True,
+            'default_semantic_scores': default_semantic_scores,
+            'filter': {'price': {'$lte': 1}}
+        },
+    )
+    assert len(res[0].matches) == 1
+    assert res[0].matches[0].tags['price'] < 1
