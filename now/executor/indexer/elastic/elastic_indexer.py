@@ -1,6 +1,9 @@
+import json
+import os
 import subprocess
 import traceback
-from collections import namedtuple
+from collections import namedtuple, defaultdict
+from copy import deepcopy
 from time import sleep
 from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
 
@@ -8,8 +11,12 @@ from docarray import Document, DocumentArray
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 
-from now.executor.abstract.auth import SecurityLevel, secure_request
-from now.executor.abstract.base_indexer import NOWBaseIndexer as Executor
+from now.constants import TAG_INDEXER_DOC_HAS_TEXT, TAG_OCR_DETECTOR_TEXT_IN_DOC
+from now.executor.abstract.auth import (
+    SecurityLevel,
+    secure_request,
+    get_auth_executor_class,
+)
 from now.executor.indexer.elastic.es_converter import (
     convert_doc_map_to_es,
     convert_es_results_to_matches,
@@ -26,6 +33,8 @@ FieldEmbedding = namedtuple(
     ['encoder', 'embedding_size', 'fields'],
 )
 
+Executor = get_auth_executor_class()
+
 
 class NOWElasticIndexer(Executor):
     """
@@ -35,25 +44,32 @@ class NOWElasticIndexer(Executor):
     allowing multi-modal documents to be indexed and searched with multi-modal queries.
     """
 
-    # override
-
-    def construct(
+    def __init__(
         self,
         document_mappings: List[Tuple[str, int, List[str]]],
+        dim: int = None,
+        ocr_is_needed: Optional[bool] = False,
+        metric: str = 'cosine',
+        limit: int = 10,
+        max_values_per_tag: int = 10,
         es_mapping: Dict = None,
         hosts: Union[
             str, List[Union[str, Mapping[str, Union[str, int]]]], None
         ] = 'http://localhost:9200',
         es_config: Optional[Dict[str, Any]] = None,
-        metric: str = 'cosine',
         index_name: str = 'now-index',
         traversal_paths: str = '@r',
-        limit: int = 20,
+        *args,
         **kwargs,
     ):
         """
-        Initialize/construct function for the NOWElasticIndexer.
-
+        :param dim: Dimensionality of vectors to index.
+        :param ocr_is_needed: Boolean variable indicating whether we need to use OCR or no
+            based on the modality
+        :param metric: Distance metric type. Can be 'euclidean', 'inner_product', or 'cosine'
+        :param limit: Number of results to get for each query document in search
+        :param max_values_per_tag: Maximum number of values per tag
+            (used for search), e.g. '@r', '@c', '@r,c'
         :param document_mappings: list of FieldEmbedding tuples that define which encoder
             encodes which fields, and the embedding size of the encoder.
         :param hosts: host configuration of the Elasticsearch node or cluster
@@ -68,12 +84,17 @@ class NOWElasticIndexer(Executor):
             of embedding fields (length of `dims`) to be created in the index.
                 (used for indexing, delete and update), e.g. '@r', '@c', '@r,c'.
         :param limit: Default limit on the number of docs to be retrieved
+
         """
-        self.hosts = hosts
+
+        super().__init__(*args, **kwargs)
+        self.dim = dim
         self.metric = metric
+        self.limit = limit
+        self.max_values_per_tag = max_values_per_tag
+        self.hosts = hosts
         self.index_name = index_name
         self.traversal_paths = traversal_paths
-        self.limit = limit
 
         self.document_mappings = [FieldEmbedding(*dm) for dm in document_mappings]
         self.encoder_to_fields = {
@@ -91,6 +112,45 @@ class NOWElasticIndexer(Executor):
         if not self.es.indices.exists(index=self.index_name):
             self.es.indices.create(index=self.index_name, mappings=self.es_mapping)
         self.query_to_curated_ids = {}
+
+        self.doc_id_tags = {}
+        self.document_list = DocumentArray()
+        self.load_document_list()
+        self.query_to_curated_matches_path = (
+            os.path.join(self.workspace, 'query_to_curated_matches.json')
+            if self.workspace
+            else None
+        )
+        self.query_to_curated_matches = self.open_query_to_curated_matches(
+            self.query_to_curated_matches_path
+        )
+        self.ocr_is_needed = ocr_is_needed
+
+    def open_query_to_curated_matches(self, path):
+        if path and os.path.exists(path):
+            with open(path, 'r') as f:
+                return json.load(f)
+        return defaultdict(list)
+
+    def load_document_list(self):
+        """is needed for the list endpoint"""
+        document_list = DocumentArray()
+        for batch in self.batch_iterator():
+            self.extend_inmemory_docs_and_tags(batch)
+        self.document_list = DocumentArray(
+            sorted([d for d in document_list], key=lambda x: x.id)
+        )
+
+    def extend_inmemory_docs_and_tags(self, batch):
+        """Extend the in-memory DocumentArray with new documents"""
+        for d in batch:
+            tags = deepcopy(d.tags)
+            for _tag in [TAG_INDEXER_DOC_HAS_TEXT, TAG_OCR_DETECTOR_TEXT_IN_DOC]:
+                tags.pop(_tag, None)
+            self.document_list.append(
+                Document(id=d.id, uri=d.uri, tags=tags, parent_id=d.parent_id)
+            )
+            self.doc_id_tags[d.id] = tags
 
     def setup_elastic_server(self):
         # volume is not persisted at the moment
