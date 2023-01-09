@@ -68,9 +68,10 @@ class NOWPreprocessor(Executor):
         """Iterates over all documents, detects text in images and saves it into the tags of the document."""
         for doc in docs[ACCESS_PATHS]:
             if doc.modality == 'image':
-                ocr_result = self.paddle_ocr.ocr(doc.blob)
-                text_list = [text for _, (text, _) in ocr_result[0]]
-                doc.tags[TAG_OCR_DETECTOR_TEXT_IN_DOC] = ' '.join(text_list)
+                # ocr_result = self.paddle_ocr.ocr(doc.blob)
+                # text_list = [text for _, (text, _) in ocr_result[0]]
+                # doc.tags[TAG_OCR_DETECTOR_TEXT_IN_DOC] = ' '.join(text_list)
+                doc.tags[TAG_OCR_DETECTOR_TEXT_IN_DOC] = ''
 
     @staticmethod
     def _save_uri_to_tmp_file(uri, tmpdir) -> str:
