@@ -36,6 +36,7 @@
 
 
 
+
 <a name=release-note-0-0-7></a>
 ## Release Note (`0.0.7`)
 
@@ -1267,4 +1268,44 @@
 
  - [[```c8a8a994```](https://github.com/jina-ai/now/commit/c8a8a9943b474eaf2d00774dc02e6f8ee66f6b94)] __-__ Fix pg bff blob (#858) (*Joschka Braun*)
  - [[```1084e9dd```](https://github.com/jina-ai/now/commit/1084e9dd69e7b90b297c6b9c1dce05229b6ebe4e)] __-__ __version__: the next version will be 0.0.43 (*Jina Dev Bot*)
+
+<a name=release-note-0-0-44></a>
+## Release Note (`0.0.44`)
+
+> Release time: 2023-01-09 09:44:04
+
+
+
+🙇 We'd like to thank all contributors for this new release! In particular,
+ Aziz Belaweid,  Mohammad Kalim Akram,  Florian Hönicke,  Joschka Braun,  IyadhKhalfallah,  Jina Dev Bot,  🙇
+
+
+### 🆕 New Features
+
+ - [[```8c0695ab```](https://github.com/jina-ai/now/commit/8c0695ab122893c5142eeb988ce6171a7470389e)] __-__ mmdocs in playground results (#883) (*Florian Hönicke*)
+ - [[```bee92157```](https://github.com/jina-ai/now/commit/bee92157cb8ef88f854f6b0e9469a0d1fab09b8a)] __-__ use data class in es extractor (#856) (*Aziz Belaweid*)
+
+### 🐞 Bug fixes
+
+ - [[```f5b7e4ab```](https://github.com/jina-ai/now/commit/f5b7e4ab3f4ce90278b01e35c5dc3d61fcd54fdc)] __-__ recreate default semantic scores for every query (#878) (*Joschka Braun*)
+ - [[```c9458a86```](https://github.com/jina-ai/now/commit/c9458a8693a504777be470006ab026500f4e0b01)] __-__ show all fields for indexing (#866) (*Florian Hönicke*)
+ - [[```1320b6e1```](https://github.com/jina-ai/now/commit/1320b6e135bb910b7c157041f74b58fd4f0169b1)] __-__ optinal flow name (#871) (*Florian Hönicke*)
+ - [[```43abcd8a```](https://github.com/jina-ai/now/commit/43abcd8aed466314a4161d19359dfaf47be0dec8)] __-__ enable retry (#868) (*Mohammad Kalim Akram*)
+
+### 🧼 Code Refactoring
+
+ - [[```af6eecac```](https://github.com/jina-ai/now/commit/af6eecac48ef02bb6bd9adec65be64118f376146)] __-__ remove tags from yaml (#887) (*Aziz Belaweid*)
+ - [[```44a70d6d```](https://github.com/jina-ai/now/commit/44a70d6da9674594b5cb0200feffc404f2d63eb9)] __-__ single app with dynamic flow (#795) (*Mohammad Kalim Akram*)
+ - [[```2cdc6714```](https://github.com/jina-ai/now/commit/2cdc671457dcdb01c1ee4e53a154b7bfcdcb9325)] __-__ remove bff index (#876) (*Florian Hönicke*)
+ - [[```eabf3f7d```](https://github.com/jina-ai/now/commit/eabf3f7d613f183d23d903b7ed495ad5c48c13cb)] __-__ delete unused code (#882) (*Florian Hönicke*)
+ - [[```3fb34080```](https://github.com/jina-ai/now/commit/3fb34080cc3f328efbb664217ac95503ae6afc8b)] __-__ schema detection takes up to a minute (#835) (*IyadhKhalfallah*)
+
+### 🏁 Unit Test and CICD
+
+ - [[```7dc82225```](https://github.com/jina-ai/now/commit/7dc822251663a5cfe136d3bae01de27abffa100d)] __-__ no high performance flow (#881) (*Florian Hönicke*)
+
+### 🍹 Other Improvements
+
+ - [[```0e3c082f```](https://github.com/jina-ai/now/commit/0e3c082fad6aca279b18092bef29f443116fae7a)] __-__ Fix enable multi modal support (#875) (*Florian Hönicke*)
+ - [[```1621b226```](https://github.com/jina-ai/now/commit/1621b226cf8e00a3a93390c3abc88513c1e3f960)] __-__ __version__: the next version will be 0.0.44 (*Jina Dev Bot*)
 
