@@ -117,9 +117,9 @@ def test_end_to_end_remote(
         (
             Apps.SEARCH_APP,
             'image',
-            ['title'],
-            [],
-            DemoDatasetNames.POP_LYRICS,
+            ['image'],
+            ['label'],
+            DemoDatasetNames.BIRD_SPECIES,
             'local',
         ),
         (
@@ -133,9 +133,9 @@ def test_end_to_end_remote(
         (
             Apps.SEARCH_APP,
             'text',
-            ['title', 'lyrics'],
+            ['video', 'description'],
             [],
-            DemoDatasetNames.POP_LYRICS,
+            DemoDatasetNames.TUMBLR_GIFS_10K,
             'local',
         ),
     ],
