@@ -201,6 +201,7 @@ class JinaNOWApp:
             # append user_input and api_keys to all executors except the remote executors
             user_input_dict = deepcopy(user_input.__dict__)
             user_input_dict.pop('app_instance', None)
+            user_input_dict.pop('index_field_candidates_to_modalities', None)
             for executor in flow_yaml_content['executors']:
                 if not executor.get('external', False):
                     if not executor.get('uses_with', None):

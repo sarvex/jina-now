@@ -45,7 +45,7 @@ def test_ocr_with_bucket(file_path, modality, num_chunks, ocr_text):
         ]
     )
     preprocessor = NOWPreprocessor(
-        user_input={
+        user_input_dict={
             'dataset_type': DatasetTypes.S3_BUCKET,
             'index_fields': [],
             'aws_region_name': 'test',
