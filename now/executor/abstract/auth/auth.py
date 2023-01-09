@@ -117,7 +117,7 @@ def get_auth_executor_class():
             """
             super().__init__(*args, **kwargs)
             self.logger = JinaLogger(self.__class__.__name__)
-            self.user_input = UserInput(**user_input)
+            self.user_input = UserInput()
             self.admin_emails = admin_emails
             self.user_emails = user_emails
             self.api_keys = api_keys
@@ -145,7 +145,9 @@ def get_auth_executor_class():
             if self.user_input_path and os.path.exists(self.user_input_path):
                 with open(self.user_input_path, 'r') as fp:
                     user_input_kwargs = json.load(fp)
-                self._update_user_input(user_input_kwargs)
+            else:
+                user_input_kwargs = user_input
+            self._update_user_input(user_input_kwargs)
             if self.api_keys_path and os.path.exists(self.api_keys_path):
                 with open(self.api_keys_path, 'r') as fp:
                     self.api_keys = json.load(fp)
