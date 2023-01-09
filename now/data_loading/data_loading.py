@@ -38,7 +38,15 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
         da = _extract_es_data(user_input=user_input, data_class=data_class)
     elif user_input.dataset_type == DatasetTypes.DEMO:
         print('⬇  Download DocumentArray dataset')
-        da = DocumentArray.pull(name=user_input.dataset_name, show_progress=True)
+        if 'NOW_CI_RUN' in os.environ and user_input.dataset_type == DatasetTypes.DEMO:
+            dataset_name = 'team-now/' + user_input.dataset_name
+        else:
+            dataset_name = (
+                f'{user_input.admin_name}/{user_input.dataset_name}'
+                if '/' not in user_input.dataset_name
+                else user_input.dataset_name
+            )
+        da = DocumentArray.pull(name=dataset_name, show_progress=True)
     da = set_modality_da(da)
     if da is None:
         raise ValueError(
@@ -51,8 +59,6 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
 
 def _pull_docarray(dataset_name: str, admin_name: str) -> DocumentArray:
     try:
-        if '/' not in dataset_name:
-            dataset_name = f'{admin_name}/{dataset_name}'
         docs = DocumentArray.pull(name=dataset_name, show_progress=True)
         if is_multimodal(docs[0]):
             return docs
