@@ -163,12 +163,9 @@ class JinaNOWApp:
         :return: dict used to replace variables in flow yaml and to clean up resources after the flow is terminated
         """
         # Get the common env variables
-        user_input_dict = deepcopy(user_input.__dict__)
-        user_input_dict.pop('app_instance', None)
         common_env_dict = {
             'JINA_VERSION': jina_version,
             'PREFETCH': PREFETCH_NR,
-            'USER_INPUT': user_input_dict,
             'ADMIN_EMAILS': user_input.admin_emails or [] if user_input.secured else [],
             'USER_EMAILS': user_input.user_emails or [] if user_input.secured else [],
             'API_KEY': [user_input.api_key]
@@ -201,12 +198,14 @@ class JinaNOWApp:
             flow_yaml_content['executors'] = self.get_executor_stubs(
                 dataset, user_input
             )
-            # append api_keys to all executors except the remote executors
+            # append user_input and api_keys to all executors except the remote executors
+            user_input_dict = deepcopy(user_input.__dict__)
+            user_input_dict.pop('app_instance', None)
             for executor in flow_yaml_content['executors']:
                 if not executor.get('external', False):
                     if not executor.get('uses_with', None):
                         executor['uses_with'] = {}
-                    executor['uses_with']['user_input'] = '${{ ENV.USER_INPUT }}'
+                    executor['uses_with']['user_input'] = user_input_dict
                     if user_input.deployment_type == 'remote':
                         executor['uses_with']['api_keys'] = '${{ ENV.API_KEY }}'
                         executor['uses_with']['user_emails'] = '${{ ENV.USER_EMAILS }}'
