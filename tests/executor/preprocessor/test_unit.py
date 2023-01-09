@@ -47,7 +47,13 @@ def test_ocr_with_bucket(file_path, modality, num_chunks, ocr_text):
             for _ in range(1)  # changing range here from 2 to 1 to fix threading issues
         ]
     )
-    preprocessor = NOWPreprocessor()
+    preprocessor = NOWPreprocessor(
+        user_input={
+            'dataset_type': DatasetTypes.S3_BUCKET,
+            'index_fields': [],
+            'aws_region_name': 'test',
+        }
+    )
 
     bucket_mock = Mock()
     bucket_mock.download_file = download_mock

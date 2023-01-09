@@ -5,14 +5,12 @@ import pytest
 from docarray import Document, DocumentArray
 from jina import Flow
 
-from now.constants import TAG_OCR_DETECTOR_TEXT_IN_DOC, Apps
+from now.constants import TAG_OCR_DETECTOR_TEXT_IN_DOC
 from now.executor.preprocessor import NOWPreprocessor
-from now.now_dataclasses import UserInput
 
 
 def test_executor_persistence(tmpdir, resources_folder_path):
     e = NOWPreprocessor(metas={'workspace': tmpdir})
-    user_input = UserInput()
     text_docs = DocumentArray(
         [
             Document(chunks=[Document(text='test')]),
@@ -24,10 +22,7 @@ def test_executor_persistence(tmpdir, resources_folder_path):
         ]
     )
 
-    e.preprocess(
-        docs=text_docs,
-        parameters={'user_input': user_input.__dict__, 'is_indexing': False},
-    )
+    e.preprocess(docs=text_docs)
     with open(e.user_input_path, 'r') as fp:
         json.load(fp)
 
@@ -35,8 +30,6 @@ def test_executor_persistence(tmpdir, resources_folder_path):
 @pytest.mark.parametrize('endpoint', ['index', 'search'])
 def test_search_app(resources_folder_path, endpoint, tmpdir):
     metas = {'workspace': str(tmpdir)}
-    app = Apps.SEARCH_APP
-    user_input = UserInput()
     text_docs = DocumentArray(
         [
             Document(chunks=[Document(text='test', modality='text')]),
@@ -55,7 +48,6 @@ def test_search_app(resources_folder_path, endpoint, tmpdir):
         result = f.post(
             on=f'/{endpoint}',
             inputs=text_docs,
-            parameters={'user_input': user_input.__dict__},
             show_progress=True,
         )
         result = DocumentArray.from_json(result.to_json())

@@ -21,12 +21,12 @@ def test_offline_flow(monkeypatch, setup_service_running, base64_image_string):
     The Clip Encoder is mocked because it is an external executor.
     Also, the network call for the bff is monkey patched.
     """
-    offline_flow = OfflineFlow()
-    offline_client = get_client(offline_flow)
-    monkeypatch.setattr(helper, 'get_jina_client', lambda **kwargs: offline_client)
-
     user_input = UserInput()
     user_input.index_fields = ['product_title', 'product_description', 'product_image']
+
+    offline_flow = OfflineFlow(user_input=user_input)
+    offline_client = get_client(offline_flow)
+    monkeypatch.setattr(helper, 'get_jina_client', lambda **kwargs: offline_client)
 
     @dataclass
     class Product:
@@ -49,7 +49,6 @@ def test_offline_flow(monkeypatch, setup_service_running, base64_image_string):
         inputs=DocumentArray(Document(product)),
         parameters={
             'access_paths': '@cc',
-            'user_input': user_input.__dict__,
         },
     )
 
@@ -65,10 +64,10 @@ def test_offline_flow(monkeypatch, setup_service_running, base64_image_string):
 
 
 class OfflineFlow:
-    def __init__(self):
+    def __init__(self, user_input: UserInput):
         # definition of executors:
-        self.autocomplete = NOWAutoCompleteExecutor2()
-        self.preprocessor = NOWPreprocessor()
+        self.autocomplete = NOWAutoCompleteExecutor2(user_input=user_input.__dict__)
+        self.preprocessor = NOWPreprocessor(user_input=user_input.__dict__)
         self.encoder = MockedEncoder()
         document_mappings = [
             [
@@ -85,6 +84,7 @@ class OfflineFlow:
             document_mappings=document_mappings,
             hosts='http://localhost:9200',
             index_name=f"test-index-{random.randint(0, 10000)}",
+            user_input=user_input.__dict__,
         )
 
     def post(self, endpoint, inputs, parameters: Dict[str, str], *args, **kwargs):

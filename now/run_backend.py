@@ -108,13 +108,9 @@ def trigger_scheduler(user_input, host):
         ):  # increase the probability that all replicas get the new key
             update_api_keys(user_input.deployment_type, user_input.api_key, host)
 
-    user_input_dict = user_input.__dict__
-    user_input_dict.pop('app_instance')  # Not needed
-
     scheduler_params = {
         'flow_id': get_flow_id(host),
         'api_key': user_input.api_key,
-        'user_input': user_input_dict,
     }
     cookies = {'st': user_input.jwt['token']}
     try:

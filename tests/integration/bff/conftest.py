@@ -8,7 +8,6 @@ from deployment.bff.app.app import run_server
 from now.constants import ACCESS_PATHS, EXTERNAL_CLIP_HOST
 from now.executor.indexer.in_memory import InMemoryIndexer
 from now.executor.preprocessor import NOWPreprocessor
-from now.now_dataclasses import UserInput
 
 BASE_URL = 'http://localhost:8080/api/v1'
 SEARCH_URL = f'{BASE_URL}/search-app/search'
@@ -42,7 +41,6 @@ def index_data(f, **kwargs):
     f.index(
         docs,
         parameters={
-            'user_input': UserInput().__dict__,
             'access_paths': ACCESS_PATHS,
             **kwargs,
         },
