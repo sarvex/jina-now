@@ -89,6 +89,7 @@ def search(
         data[attribute_name] = attribute_value
     elif endpoint == 'search':
         data['query'] = {f'query_{field_name}': {attribute_name: attribute_value}}
+        data['create_temp_link'] = True
     # in case the jwt is none, no jwt will be sent. This is the case when no authentication is used for that flow
     if jwt is not None:
         data['jwt'] = jwt
@@ -150,22 +151,6 @@ def call_flow(url_host, data, domain, endpoint):
 
     st.session_state.error_msg = None
 
-    # update URI to temporary URI for any cloud bucket resources
-    docs_cloud = docs.find({'uri': {'$regex': r"\As3://"}})
-    if len(docs_cloud) > 0:
-        del data['query']
-        del data['limit']
-        data['ids'] = docs_cloud[:, 'id']
-        data['uris'] = docs_cloud[:, 'uri']
-
-        response_temp_links = requests.post(
-            f"{domain}/api/v1/cloud-bucket-utils/temp_link",
-            json=data,
-            headers={"Content-Type": "application/json; charset=utf-8"},
-        )
-        docs_temp_links = DocumentArray.from_json(response_temp_links.content)
-        for _id, _uri in zip(*docs_temp_links[:, ['id', 'uri']]):
-            docs[_id].uri = _uri
     return docs
 
 

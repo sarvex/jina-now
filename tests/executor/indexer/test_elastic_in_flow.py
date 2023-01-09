@@ -13,22 +13,28 @@ from now.executor.preprocessor import NOWPreprocessor
 NUMBER_OF_DOCS = 10
 DIM = 128
 MAX_RETRIES = 20
+ENCODER_NAME = 'encoder'
+DOCUMENT_MAPPINGS = [[ENCODER_NAME, DIM, ['title']]]
 
 
-class DummyEncoder1(Executor):
+class DummyEncoder(Executor):
     @requests
     def foo(self, docs: DocumentArray, **kwargs):
-        pass
-
-
-DOCUMENT_MAPPINGS = [['dummy_encoder1', DIM, ['title']]]
+        embeddings = np.random.random((len(docs), DIM)).astype(np.float32)
+        for index, doc in enumerate(docs):
+            doc.chunks[0].chunks[0].embedding = embeddings[index]
+        return docs
 
 
 @pytest.fixture
 def flow(random_index_name, metas):
     f = (
         Flow()
-        .add(uses=DummyEncoder1, name='dummy_encoder1')
+        .add(
+            uses=NOWPreprocessor,
+            uses_metas=metas,
+        )
+        .add(uses=DummyEncoder, name=ENCODER_NAME)
         .add(
             uses=NOWElasticIndexer,
             uses_with={
@@ -37,14 +43,13 @@ def flow(random_index_name, metas):
                 'document_mappings': DOCUMENT_MAPPINGS,
             },
             uses_metas=metas,
-            needs=['dummy_encoder1'],
             no_reduce=True,
         )
     )
     return f
 
 
-class TestBaseIndexerElastic:
+class TestElasticIndexer:
     def get_docs(self, num):
         prices = [10.0, 25.0, 50.0, 100.0]
         colors = ['blue', 'red']
@@ -55,15 +60,12 @@ class TestBaseIndexerElastic:
         class MMDoc:
             title: Text
 
-        k = np.random.random((num, DIM)).astype(np.float32)
         for i in range(num):
             doc = Document(
                 MMDoc(
                     title=f'parent_{i}',
                 )
             )
-            doc = NOWPreprocessor().preprocess(DocumentArray(doc))[0]
-            doc.title.chunks[0].embedding = k[i]
             doc.id = str(i)
             doc.tags['parent_tag'] = 'value'
             doc.tags['price'] = random.choice(prices)
@@ -77,10 +79,7 @@ class TestBaseIndexerElastic:
         class MMQuery:
             query_text: Text
 
-        q = Document(MMQuery(query_text='query_1'))
-        da = NOWPreprocessor().preprocess(DocumentArray([q]))
-        da[0].query_text.chunks[0].embedding = np.random.random(DIM)
-        return da
+        return Document(MMQuery(query_text='query_1'))
 
     @pytest.fixture
     def random_index_name(self):
@@ -385,7 +384,7 @@ class TestBaseIndexerElastic:
 
             # not crashing in case of curated list + non-curated query
             non_curated_query = self.get_query()
-            non_curated_query[0].query_text.text = 'parent_x'
+            non_curated_query.query_text.text = 'parent_x'
             flow.search(inputs=non_curated_query)
 
     def test_curate_endpoint_incorrect(

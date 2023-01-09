@@ -35,6 +35,11 @@ class SearchRequestModel(BaseRequestModel):
         'dictionary with either uri, blob, or text as key. '
         'E.g., ``{"query_image": {"uri": "https://example.com/image.jpg"}``',
     )
+    create_temp_link: bool = Field(
+        default=False,
+        description='If true, a temporary link to the file is created. '
+        'This is useful if the file is stored in a cloud bucket.',
+    )
 
 
 class SearchResponseModel(BaseModel):

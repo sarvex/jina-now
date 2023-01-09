@@ -1,7 +1,7 @@
 import json
 import os
 from functools import lru_cache
-from typing import Dict, List
+from typing import Dict, List, Union
 
 import hubble
 from docarray import DocumentArray
@@ -102,7 +102,7 @@ def get_auth_executor_class():
 
         def __init__(
             self,
-            user_input: Dict = {},
+            user_input: Union[Dict, str] = {},
             admin_emails: List[str] = [],
             user_emails: List[str] = [],
             api_keys: List[str] = [],
@@ -146,7 +146,10 @@ def get_auth_executor_class():
                 with open(self.user_input_path, 'r') as fp:
                     user_input_kwargs = json.load(fp)
             else:
-                user_input_kwargs = user_input
+                if isinstance(user_input, str):
+                    user_input_kwargs = json.loads(user_input)
+                else:
+                    user_input_kwargs = user_input
             self._update_user_input(user_input_kwargs)
             if self.api_keys_path and os.path.exists(self.api_keys_path):
                 with open(self.api_keys_path, 'r') as fp:

@@ -285,8 +285,7 @@ jobs:
         timeout-minutes: 15
         run: |
           pytest --suppress-no-test-exit-code --cov=now --cov-append -v -s tests/executor/auth
-          pytest --suppress-no-test-exit-code --cov=now --cov-append -v -s tests/executor/indexer/base
-          pytest --suppress-no-test-exit-code --cov=now --cov-append -v -s tests/executor/indexer/elastic
+          pytest --suppress-no-test-exit-code --cov=now --cov-append -v -s tests/executor/indexer
           pytest --suppress-no-test-exit-code --cov=now --cov-append -v -s tests/executor/preprocessor
           pytest --suppress-no-test-exit-code --cov=now --cov-append -v -s tests/executor/autocomplete
       #      - name: Setup tmate session for debugging

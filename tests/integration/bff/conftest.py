@@ -1,12 +1,13 @@
 from multiprocessing import Process
 
 import pytest
-from docarray import Document
+from docarray import Document, DocumentArray, dataclass
+from docarray.typing import Text
 from jina import Flow
 
 from deployment.bff.app.app import run_server
 from now.constants import ACCESS_PATHS, EXTERNAL_CLIP_HOST
-from now.executor.indexer.in_memory import InMemoryIndexer
+from now.executor.indexer.elastic import NOWElasticIndexer
 from now.executor.preprocessor import NOWPreprocessor
 
 BASE_URL = 'http://localhost:8080/api/v1'
@@ -25,19 +26,14 @@ def start_bff():
 
 
 def index_data(f, **kwargs):
-    docs = [
-        Document(
-            chunks=[Document(text='test', tags={'color': 'red'}, modality='text')],
-            tags={'color': 'red'},
-        )
-        for _ in range(9)
-    ]
-    docs.append(
-        Document(
-            chunks=[Document(text='test', tags={'color': 'blue'}, modality='text')],
-            tags={'color': 'blue'},
-        )
-    )
+    @dataclass
+    class Doc:
+        title: Text
+
+    docs = DocumentArray([Document(Doc(title='test')) for _ in range(10)])
+    for index, doc in enumerate(docs):
+        doc.tags['color'] = 'blue' if index == 0 else 'red'
+
     f.index(
         docs,
         parameters={
@@ -71,9 +67,14 @@ def get_flow(preprocessor_args=None, indexer_args=None, tmpdir=None):
             external=True,
         )
         .add(
-            uses=InMemoryIndexer,
-            uses_with={'dim': 512, **indexer_args},
+            uses=NOWElasticIndexer,
+            uses_with={
+                'hosts': 'http://localhost:9200',
+                'document_mappings': [['encoderclip', 512, ['title']]],
+                **indexer_args,
+            },
             uses_metas=metas,
+            no_reduce=True,
         )
     )
     return f
