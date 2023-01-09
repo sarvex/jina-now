@@ -30,7 +30,10 @@ def search(data: SearchRequestModel):
 
     query_doc = field_dict_to_mm_doc(data.query, data_class=MMQueryDoc)
 
-    query_filter = {key: {'$eq': value} for key, value in data.filters.items()}
+    query_filter = {}
+    for key, value in data.filters.items():
+        key = 'tags__' + key if not key.startswith('tags__') else key
+        query_filter[key] = {'$eq': value}
 
     docs = jina_client_post(
         endpoint='/search',
