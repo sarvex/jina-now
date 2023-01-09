@@ -28,7 +28,7 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
     da = None
     if user_input.dataset_type == DatasetTypes.DOCARRAY:
         print('⬇  Pull DocumentArray dataset')
-        da = _pull_docarray(user_input.dataset_name, user_input.user_name)
+        da = _pull_docarray(user_input.dataset_name, user_input.admin_name)
     elif user_input.dataset_type == DatasetTypes.PATH:
         print('💿  Loading files from disk')
         da = _load_from_disk(user_input=user_input, data_class=data_class)
@@ -49,10 +49,10 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
     return da
 
 
-def _pull_docarray(dataset_name: str, user_name: str) -> DocumentArray:
+def _pull_docarray(dataset_name: str, admin_name: str) -> DocumentArray:
     try:
         if '/' not in dataset_name:
-            dataset_name = f'{user_name}/{dataset_name}'
+            dataset_name = f'{admin_name}/{dataset_name}'
         docs = DocumentArray.pull(name=dataset_name, show_progress=True)
         if is_multimodal(docs[0]):
             return docs

@@ -44,7 +44,7 @@ def mock_download(mocker: MockerFixture, da: DocumentArray):
 
 @pytest.fixture(autouse=True)
 def mock_pull(mocker: MockerFixture, da: DocumentArray):
-    def fake_pull(secret: str, user_name: str) -> DocumentArray:
+    def fake_pull(secret: str, admin_name: str) -> DocumentArray:
         return da
 
     mocker.patch('now.data_loading.data_loading._pull_docarray', fake_pull)
