@@ -234,6 +234,7 @@ class JinaNOWApp:
                     else:
                         raise ValueError(f'Unsupported modality {chunk.modality}')
                 except Exception as e:
+                    chunk.summary()
                     print(e)
         return docs
 

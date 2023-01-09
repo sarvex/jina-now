@@ -37,9 +37,6 @@ def test_ocr_with_bucket(file_path, modality, num_chunks, ocr_text):
                 chunks=[
                     Document(
                         uri=uri,
-                        tags={
-                            'tag_uri': 's3://bucket_name/resources/gif/folder1/meta.json'
-                        },
                         modality=modality,
                     )
                 ]
@@ -63,7 +60,7 @@ def test_ocr_with_bucket(file_path, modality, num_chunks, ocr_text):
         da_index,
         return_results=True,
     )
-    assert len(res_index) == 1  # change wrt to range above (line 40)
+    assert len(res_index) == 1
     for d in res_index:
         c = d.chunks[0]
         cc = c.chunks[0]
@@ -71,9 +68,6 @@ def test_ocr_with_bucket(file_path, modality, num_chunks, ocr_text):
         assert cc.uri == uri
         assert c.uri == uri
         assert len(c.chunks) == num_chunks
-        tags = cc.tags
-        assert tags['a1'] == 'v1'
-        assert tags['a2'] == 'v2'
         assert cc.tags[TAG_OCR_DETECTOR_TEXT_IN_DOC] == ocr_text
 
 

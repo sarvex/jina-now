@@ -5,7 +5,6 @@ import string
 import tempfile
 import urllib
 
-import boto3
 from jina import Document, DocumentArray
 from paddleocr import PaddleOCR
 
@@ -110,7 +109,6 @@ class NOWPreprocessor(Executor):
                     for c in d.chunks:
                         # TODO please fix this hack - uri should not be in tags
                         move_uri(c)
-
         return docs
 
     @secure_request(on=None, level=SecurityLevel.USER)
@@ -120,38 +118,32 @@ class NOWPreprocessor(Executor):
         :param docs: loaded data but not preprocessed
         :return: preprocessed documents which are ready to be encoded and indexed
         """
+        self.patch_docarray(docs)
         return self._preprocess_maybe_cloud_download(docs=docs)
 
-    @secure_request(on='/temp_link_cloud_bucket', level=SecurityLevel.USER)
-    def temporary_link_from_cloud_bucket(
-        self, docs: DocumentArray, *args, **kwargs
-    ) -> DocumentArray:
-        """Downloads files from cloud bucket and loads them as temporary link into the URI.
+    def patch_docarray(self, docs: DocumentArray):
+        """This function modifies the documents to make sure they support features that we are missing at the moment"""
+        # 1. each attribute of the multi-modal document should know it's name
+        field_names_to_dataclass_fields = (
+            self.user_input.field_names_to_dataclass_fields
+            if self.user_input and self.user_input.field_names_to_dataclass_fields
+            else {}
+        )
+        dataclass_fields_to_field_names = {
+            v: k for k, v in field_names_to_dataclass_fields.items()
+        }
 
-        :param docs: documents which contain URIs to the documents which shall be downloaded
-        :return: files as temporary available link in URI attribute
-        """
-        if self.user_input and self.user_input.dataset_type == DatasetTypes.S3_BUCKET:
-
-            def convert_fn(d: Document) -> Document:
-                if isinstance(d.uri, str) and d.uri.startswith('s3://'):
-                    session = boto3.session.Session(
-                        aws_access_key_id=self.user_input.aws_access_key_id,
-                        aws_secret_access_key=self.user_input.aws_secret_access_key,
-                        region_name=self.user_input.aws_region_name,
-                    )
-                    s3_client = session.client('s3')
-                    bucket_name = d.uri.split('/')[2]
-                    path_s3 = '/'.join(d.uri.split('/')[3:])
-                    temp_url = s3_client.generate_presigned_url(
-                        'get_object',
-                        Params={'Bucket': bucket_name, 'Key': path_s3},
-                        ExpiresIn=300,
-                    )
-                    d.uri = temp_url
-                return d
-
-        for d in docs:
-            convert_fn(d)
+        for doc in docs:
+            # we have some singe-modal documents in our tests.
+            # Therefore, they have no 'multi_modal_schema' and we have to do this if condition.
+            # it can be removed once we adjusted the tests in this ticket:
+            # https://github.com/jina-ai/now/issues/893
+            for dataclass_field in (
+                doc._metadata['multi_modal_schema']
+                if 'multi_modal_schema' in doc._metadata
+                else []
+            ):
+                field_name = dataclass_fields_to_field_names.get(dataclass_field, None)
+                getattr(doc, dataclass_field).tags['field_name'] = field_name
 
         return docs
