@@ -25,6 +25,7 @@ class DummyEncoder(Executor):
             doc.chunks[0].chunks[0].embedding = embeddings[index]
         return docs
 
+
 @pytest.fixture
 def flow(random_index_name, metas):
     f = (

@@ -265,7 +265,7 @@ def test_search_with_filter(setup_service_running, es_inputs, random_index_name)
             'get_score_breakdown': True,
             'apply_default_bm25': True,
             'default_semantic_scores': default_semantic_scores,
-            'filter': {'price': {'$lte': 1}}
+            'filter': {'price': {'$lte': 1}},
         },
     )
     assert len(res[0].matches) == 1
