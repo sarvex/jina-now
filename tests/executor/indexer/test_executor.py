@@ -106,7 +106,6 @@ def test_list_endpoint(setup_service_running, es_inputs, random_index_name):
         default_semantic_scores,
     ) = es_inputs
     es_indexer = NOWElasticIndexer(
-        traversal_paths='c',
         document_mappings=document_mappings,
         hosts='http://localhost:9200',
         index_name=random_index_name,
@@ -212,7 +211,6 @@ def test_custom_mapping_and_custom_bm25_search(
         }
     }
     es_indexer = NOWElasticIndexer(
-        traversal_paths='c',
         document_mappings=document_mappings,
         es_mapping=es_mapping,
         hosts='http://localhost:9200',

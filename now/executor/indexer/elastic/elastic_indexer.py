@@ -66,7 +66,6 @@ class NOWElasticIndexer(Executor):
         :param metric: Distance metric type. Can be 'euclidean', 'inner_product', or 'cosine'
         :param limit: Number of results to get for each query document in search
         :param max_values_per_tag: Maximum number of values per tag
-            (used for search), e.g. '@r', '@c', '@r,c'
         :param es_mapping: Mapping for new index. If none is specified, this will be
             generated from `document_mappings` and `metric`.
         :param hosts: host configuration of the Elasticsearch node or cluster
