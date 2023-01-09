@@ -384,7 +384,7 @@ class TestElasticIndexer:
 
             # not crashing in case of curated list + non-curated query
             non_curated_query = self.get_query()
-            non_curated_query[0].query_text.text = 'parent_x'
+            non_curated_query.query_text.text = 'parent_x'
             flow.search(inputs=non_curated_query)
 
     def test_curate_endpoint_incorrect(

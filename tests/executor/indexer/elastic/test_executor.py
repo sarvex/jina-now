@@ -166,7 +166,7 @@ def test_delete_by_filter(setup_service_running, es_inputs, random_index_name):
     es_indexer.index(index_docs_map)
 
     # delete by filter
-    es_indexer.delete(parameters={'filter': {'price': {'$gte': 0}}})
+    es_indexer.delete(parameters={'filter': {'tags__price': {'$gte': 0}}})
 
     es = es_indexer.es
     res = es.search(index=index_name, size=100, query={'match_all': {}})
@@ -265,7 +265,7 @@ def test_search_with_filter(setup_service_running, es_inputs, random_index_name)
             'get_score_breakdown': True,
             'apply_default_bm25': True,
             'default_semantic_scores': default_semantic_scores,
-            'filter': {'price': {'$lte': 1}},
+            'filter': {'tags__price': {'$lte': 1}},
         },
     )
     assert len(res[0].matches) == 1

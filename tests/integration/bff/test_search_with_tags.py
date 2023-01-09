@@ -17,7 +17,7 @@ def test_search_filters(start_bff, setup_service_running, random_index_name, tmp
         index_data(f)
         request_body = get_request_body()
         request_body['query'] = {'query_text': {'text': 'test'}}
-        request_body['filters'] = {'color': 'blue'}
+        request_body['filters'] = {'tags__color': 'blue'}
         response = requests.post(
             SEARCH_URL,
             json=request_body,
