@@ -376,9 +376,9 @@ class TestElasticIndexer:
             )
 
             assert len(result) == 1
-            assert result[0].matches[0].title.chunks[0].text == 'parent_1'
+            assert result[0].matches[0].title.text == 'parent_1'
             assert (
-                result[0].matches[1].title.chunks[0].text != 'parent_1'
+                result[0].matches[1].title.text != 'parent_1'
             )  # no duplicated results
             assert result[0].matches[1].tags['color'] == 'red'
 
