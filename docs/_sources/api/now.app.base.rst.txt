@@ -9,7 +9,6 @@ Submodules
 
    now.app.base.app
    now.app.base.preprocess
-   now.app.base.transform_docarray
 
 Module contents
 ---------------

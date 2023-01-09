@@ -6,7 +6,7 @@
 <meta property="og:title" content="now.utils module" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://now.jina.ai/api/now.utils/" />
-<meta property="og:site_name" content="NOW 0.0.43 Documentation" />
+<meta property="og:site_name" content="NOW 0.0.44 Documentation" />
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@JinaAI_">
 <meta name="twitter:creator" content="@JinaAI_">
@@ -29,7 +29,7 @@
         <link rel="canonical" href="https://now.jina.ai/api/now.utils.html" />
 
     <link rel="shortcut icon" href="../../_static/favicon.png"/><!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
-        <title>now.utils module - NOW 0.0.43 documentation</title>
+        <title>now.utils module - NOW 0.0.44 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
@@ -162,7 +162,7 @@
         </div>
         <div class="header-center">
             <a href="../../">
-                <div class="brand">NOW 0.0.43 documentation</div>
+                <div class="brand">NOW 0.0.44 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -439,8 +439,13 @@ document to local path in-place.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="now.utils.flatten_dict">
-<span class="sig-prename descclassname"><span class="pre">now.utils.</span></span><span class="sig-name descname"><span class="pre">flatten_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'_'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/now/utils/#flatten_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#now.utils.flatten_dict" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
+<span class="sig-prename descclassname"><span class="pre">now.utils.</span></span><span class="sig-name descname"><span class="pre">flatten_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'__'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/now/utils/#flatten_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#now.utils.flatten_dict" title="Permalink to this definition">#</a></dt>
+<dd><p>This function converts a nested dictionary into a dictionary of attirbutes using ‘__’ as a separator.
+Example:</p>
+<blockquote>
+<div><p>{‘a’: {‘b’: {‘c’: 1, ‘d’: 2}}} -&gt; {‘a__b__c’: 1, ‘a__b__c’: 2}</p>
+</div></blockquote>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="now.utils.get_flow_id">
@@ -456,6 +461,39 @@ document to local path in-place.</p>
 <span class="sig-name descname"><span class="pre">increase_indent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">flow</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/now/utils/#Dumper.increase_indent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#now.utils.Dumper.increase_indent" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="now.utils.get_email">
+<span class="sig-prename descclassname"><span class="pre">now.utils.</span></span><span class="sig-name descname"><span class="pre">get_email</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/now/utils/#get_email"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#now.utils.get_email" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="now.utils.docarray_typing_to_modality_string">
+<span class="sig-prename descclassname"><span class="pre">now.utils.</span></span><span class="sig-name descname"><span class="pre">docarray_typing_to_modality_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/now/utils/#docarray_typing_to_modality_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#now.utils.docarray_typing_to_modality_string" title="Permalink to this definition">#</a></dt>
+<dd><p>E.g. docarray.typing.Image -&gt; image</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="now.utils.modality_string_to_docarray_typing">
+<span class="sig-prename descclassname"><span class="pre">now.utils.</span></span><span class="sig-name descname"><span class="pre">modality_string_to_docarray_typing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/now/utils/#modality_string_to_docarray_typing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#now.utils.modality_string_to_docarray_typing" title="Permalink to this definition">#</a></dt>
+<dd><p>E.g. image -&gt; docarray.typing.Image</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="now.utils.RetryException">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">now.utils.</span></span><span class="sig-name descname"><span class="pre">RetryException</span></span><a class="reference internal" href="../../_modules/now/utils/#RetryException"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#now.utils.RetryException" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
 </dd></dl>
 
 </section>
@@ -476,7 +514,7 @@ document to local path in-place.</p>
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Jan 04, 2023.
+                            Last updated on Jan 09, 2023.
                         </div>
                     </div>
                     <div class="right-details">
@@ -536,6 +574,10 @@ document to local path in-place.</p>
 <li><a class="reference internal" href="#now.utils.Dumper.increase_indent"><code class="docutils literal notranslate"><span class="pre">Dumper.increase_indent()</span></code></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#now.utils.get_email"><code class="docutils literal notranslate"><span class="pre">get_email()</span></code></a></li>
+<li><a class="reference internal" href="#now.utils.docarray_typing_to_modality_string"><code class="docutils literal notranslate"><span class="pre">docarray_typing_to_modality_string()</span></code></a></li>
+<li><a class="reference internal" href="#now.utils.modality_string_to_docarray_typing"><code class="docutils literal notranslate"><span class="pre">modality_string_to_docarray_typing()</span></code></a></li>
+<li><a class="reference internal" href="#now.utils.RetryException"><code class="docutils literal notranslate"><span class="pre">RetryException</span></code></a></li>
 </ul>
 </li>
 </ul>

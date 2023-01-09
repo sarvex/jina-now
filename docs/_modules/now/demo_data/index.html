@@ -6,7 +6,7 @@
         <link rel="canonical" href="https://now.jina.ai/_modules/now/demo_data.html" />
 
     <link rel="shortcut icon" href="../../../_static/favicon.png"/><!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
-        <title>now.demo_data - NOW 0.0.43 documentation</title>
+        <title>now.demo_data - NOW 0.0.44 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../">
-                <div class="brand">NOW 0.0.43 documentation</div>
+                <div class="brand">NOW 0.0.44 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -279,7 +279,6 @@
 <span class="kn">from</span> <span class="nn">docarray.typing</span> <span class="kn">import</span> <span class="n">Image</span><span class="p">,</span> <span class="n">Text</span><span class="p">,</span> <span class="n">Video</span>
 <span class="kn">from</span> <span class="nn">pydantic</span> <span class="kn">import</span> <span class="n">BaseModel</span>
 
-<span class="kn">from</span> <span class="nn">now.constants</span> <span class="kn">import</span> <span class="n">Modalities</span>
 <span class="kn">from</span> <span class="nn">now.utils</span> <span class="kn">import</span> <span class="n">BetterEnum</span>
 
 
@@ -305,7 +304,6 @@
 <div class="viewcode-block" id="DemoDataset"><a class="viewcode-back" href="../../../api/now.demo_data/#now.demo_data.DemoDataset">[docs]</a><span class="k">class</span> <span class="nc">DemoDataset</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">display_name</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">display_modality</span><span class="p">:</span> <span class="nb">str</span>
 
 <div class="viewcode-block" id="DemoDataset.get_data"><a class="viewcode-back" href="../../../api/now.demo_data/#now.demo_data.DemoDataset.get_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DocumentArray</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">DocumentArray</span><span class="o">.</span><span class="n">pull</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div></div>
@@ -315,81 +313,66 @@
     <span class="n">Image</span><span class="p">:</span> <span class="p">[</span>
         <span class="n">DemoDataset</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="n">DemoDatasetNames</span><span class="o">.</span><span class="n">BEST_ARTWORKS</span><span class="p">,</span>
-            <span class="n">display_modality</span><span class="o">=</span><span class="n">Modalities</span><span class="o">.</span><span class="n">IMAGE</span><span class="p">,</span>
             <span class="n">display_name</span><span class="o">=</span><span class="s1">&#39;🖼 artworks (≈8K docs)&#39;</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="n">DemoDataset</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="n">DemoDatasetNames</span><span class="o">.</span><span class="n">NFT_MONKEY</span><span class="p">,</span>
-            <span class="n">display_modality</span><span class="o">=</span><span class="n">Modalities</span><span class="o">.</span><span class="n">IMAGE</span><span class="p">,</span>
             <span class="n">display_name</span><span class="o">=</span><span class="s1">&#39;💰 nft - bored apes (10K docs)&#39;</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="n">DemoDataset</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="n">DemoDatasetNames</span><span class="o">.</span><span class="n">TLL</span><span class="p">,</span>
-            <span class="n">display_modality</span><span class="o">=</span><span class="n">Modalities</span><span class="o">.</span><span class="n">IMAGE</span><span class="p">,</span>
             <span class="n">display_name</span><span class="o">=</span><span class="s1">&#39;👬 totally looks like (≈12K docs)&#39;</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="n">DemoDataset</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="n">DemoDatasetNames</span><span class="o">.</span><span class="n">BIRD_SPECIES</span><span class="p">,</span>
-            <span class="n">display_modality</span><span class="o">=</span><span class="n">Modalities</span><span class="o">.</span><span class="n">IMAGE</span><span class="p">,</span>
             <span class="n">display_name</span><span class="o">=</span><span class="s1">&#39;🦆 birds (≈12K docs)&#39;</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="n">DemoDataset</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="n">DemoDatasetNames</span><span class="o">.</span><span class="n">STANFORD_CARS</span><span class="p">,</span>
-            <span class="n">display_modality</span><span class="o">=</span><span class="n">Modalities</span><span class="o">.</span><span class="n">IMAGE</span><span class="p">,</span>
             <span class="n">display_name</span><span class="o">=</span><span class="s1">&#39;🚗 cars (≈16K docs)&#39;</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="n">DemoDataset</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="n">DemoDatasetNames</span><span class="o">.</span><span class="n">GEOLOCATION_GEOGUESSR</span><span class="p">,</span>
-            <span class="n">display_modality</span><span class="o">=</span><span class="n">Modalities</span><span class="o">.</span><span class="n">IMAGE</span><span class="p">,</span>
             <span class="n">display_name</span><span class="o">=</span><span class="s1">&#39;🌍 geolocation (≈50K docs)&#39;</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="n">DemoDataset</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="n">DemoDatasetNames</span><span class="o">.</span><span class="n">DEEP_FASHION</span><span class="p">,</span>
-            <span class="n">display_modality</span><span class="o">=</span><span class="n">Modalities</span><span class="o">.</span><span class="n">IMAGE</span><span class="p">,</span>
             <span class="n">display_name</span><span class="o">=</span><span class="s1">&#39;👕 fashion (≈53K docs)&#39;</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="n">DemoDataset</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="n">DemoDatasetNames</span><span class="o">.</span><span class="n">NIH_CHEST_XRAYS</span><span class="p">,</span>
-            <span class="n">display_modality</span><span class="o">=</span><span class="n">Modalities</span><span class="o">.</span><span class="n">IMAGE</span><span class="p">,</span>
             <span class="n">display_name</span><span class="o">=</span><span class="s1">&#39;☢ chest x-rays (≈100K docs)&#39;</span><span class="p">,</span>
         <span class="p">),</span>
     <span class="p">],</span>
     <span class="n">Text</span><span class="p">:</span> <span class="p">[</span>
         <span class="n">DemoDataset</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="n">DemoDatasetNames</span><span class="o">.</span><span class="n">ROCK_LYRICS</span><span class="p">,</span>
-            <span class="n">display_modality</span><span class="o">=</span><span class="n">Modalities</span><span class="o">.</span><span class="n">TEXT</span><span class="p">,</span>
             <span class="n">display_name</span><span class="o">=</span><span class="s1">&#39;🎤 rock lyrics (200K docs)&#39;</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="n">DemoDataset</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="n">DemoDatasetNames</span><span class="o">.</span><span class="n">POP_LYRICS</span><span class="p">,</span>
-            <span class="n">display_modality</span><span class="o">=</span><span class="n">Modalities</span><span class="o">.</span><span class="n">TEXT</span><span class="p">,</span>
             <span class="n">display_name</span><span class="o">=</span><span class="s1">&#39;🎤 pop lyrics (200K docs)&#39;</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="n">DemoDataset</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="n">DemoDatasetNames</span><span class="o">.</span><span class="n">RAP_LYRICS</span><span class="p">,</span>
-            <span class="n">display_modality</span><span class="o">=</span><span class="n">Modalities</span><span class="o">.</span><span class="n">TEXT</span><span class="p">,</span>
             <span class="n">display_name</span><span class="o">=</span><span class="s1">&#39;🎤 rap lyrics (200K docs)&#39;</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="n">DemoDataset</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="n">DemoDatasetNames</span><span class="o">.</span><span class="n">INDIE_LYRICS</span><span class="p">,</span>
-            <span class="n">display_modality</span><span class="o">=</span><span class="n">Modalities</span><span class="o">.</span><span class="n">TEXT</span><span class="p">,</span>
             <span class="n">display_name</span><span class="o">=</span><span class="s1">&#39;🎤 indie lyrics (200K docs)&#39;</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="n">DemoDataset</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="n">DemoDatasetNames</span><span class="o">.</span><span class="n">METAL_LYRICS</span><span class="p">,</span>
-            <span class="n">display_modality</span><span class="o">=</span><span class="n">Modalities</span><span class="o">.</span><span class="n">TEXT</span><span class="p">,</span>
             <span class="n">display_name</span><span class="o">=</span><span class="s1">&#39;🎤 metal lyrics (200K docs)&#39;</span><span class="p">,</span>
         <span class="p">),</span>
     <span class="p">],</span>
     <span class="n">Video</span><span class="p">:</span> <span class="p">[</span>
         <span class="n">DemoDataset</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="n">DemoDatasetNames</span><span class="o">.</span><span class="n">TUMBLR_GIFS</span><span class="p">,</span>
-            <span class="n">display_modality</span><span class="o">=</span><span class="n">Modalities</span><span class="o">.</span><span class="n">VIDEO</span><span class="p">,</span>
             <span class="n">display_name</span><span class="o">=</span><span class="s1">&#39;🎦 tumblr gifs (100K gifs)&#39;</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="n">DemoDataset</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="n">DemoDatasetNames</span><span class="o">.</span><span class="n">TUMBLR_GIFS_10K</span><span class="p">,</span>
-            <span class="n">display_modality</span><span class="o">=</span><span class="n">Modalities</span><span class="o">.</span><span class="n">VIDEO</span><span class="p">,</span>
             <span class="n">display_name</span><span class="o">=</span><span class="s1">&#39;🎦 tumblr gifs subset (10K gifs)&#39;</span><span class="p">,</span>
         <span class="p">),</span>
     <span class="p">],</span>
@@ -412,7 +395,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Jan 04, 2023.
+                            Last updated on Jan 09, 2023.
                         </div>
                     </div>
                     <div class="right-details">

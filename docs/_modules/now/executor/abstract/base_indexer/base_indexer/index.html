@@ -6,7 +6,7 @@
         <link rel="canonical" href="https://now.jina.ai/_modules/now/executor/abstract/base_indexer/base_indexer.html" />
 
     <link rel="shortcut icon" href="../../../../../../_static/favicon.png"/><!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
-        <title>now.executor.abstract.base_indexer.base_indexer - NOW 0.0.43 documentation</title>
+        <title>now.executor.abstract.base_indexer.base_indexer - NOW 0.0.44 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
     <link rel="stylesheet" type="text/css" href="../../../../../../_static/copybutton.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../../../../">
-                <div class="brand">NOW 0.0.43 documentation</div>
+                <div class="brand">NOW 0.0.44 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -304,7 +304,7 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">columns</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ocr_is_needed</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">metric</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;cosine&#39;</span><span class="p">,</span>
         <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
         <span class="n">max_values_per_tag</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
@@ -313,8 +313,8 @@
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param dim: Dimensionality of vectors to index.</span>
-<span class="sd">        :param columns: List of tuples of the form (column_name, str_type). Here str_type must be a string that can be</span>
-<span class="sd">        parsed as a valid Python type.</span>
+<span class="sd">        :param ocr_is_needed: Boolean variable indicating whether we need to use OCR or no</span>
+<span class="sd">        based on the modality</span>
 <span class="sd">        :param metric: Distance metric type. Can be &#39;euclidean&#39;, &#39;inner_product&#39;, or &#39;cosine&#39;</span>
 <span class="sd">        :param limit: Number of results to get for each query document in search</span>
 <span class="sd">        :param max_values_per_tag: Maximum number of values per tag</span>
@@ -322,7 +322,6 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_columns</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">=</span> <span class="n">dim</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">metric</span> <span class="o">=</span> <span class="n">metric</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">limit</span> <span class="o">=</span> <span class="n">limit</span>
@@ -339,6 +338,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">query_to_curated_matches</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">open_query_to_curated_matches</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">query_to_curated_matches_path</span>
         <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ocr_is_needed</span> <span class="o">=</span> <span class="n">ocr_is_needed</span>
 
 <div class="viewcode-block" id="NOWBaseIndexer.open_query_to_curated_matches"><a class="viewcode-back" href="../../../../../../api/now.executor.abstract.base_indexer.base_indexer/#now.executor.abstract.base_indexer.base_indexer.NOWBaseIndexer.open_query_to_curated_matches">[docs]</a>    <span class="k">def</span> <span class="nf">open_query_to_curated_matches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">path</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
@@ -471,15 +471,9 @@
         <span class="n">retrieval_limit</span> <span class="o">=</span> <span class="n">limit</span> <span class="o">*</span> <span class="mi">3</span>
 
         <span class="c1"># if OCR detector was used to check if documents contain text in indexed image modality adjust retrieval step</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns</span> <span class="ow">and</span> <span class="n">TAG_INDEXER_DOC_HAS_TEXT</span> <span class="ow">in</span> <span class="p">[</span>
-            <span class="n">col</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns</span>
-        <span class="p">]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ocr_is_needed</span><span class="p">:</span>
             <span class="c1"># enhance filter for one word queries to include the title</span>
-            <span class="k">if</span> <span class="p">(</span>
-                <span class="nb">len</span><span class="p">(</span><span class="n">docs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">())</span> <span class="o">==</span> <span class="mi">1</span>
-                <span class="ow">and</span> <span class="ow">not</span> <span class="n">search_filter_raw</span>
-                <span class="ow">and</span> <span class="s1">&#39;title&#39;</span> <span class="ow">in</span> <span class="p">[</span><span class="n">col</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
-            <span class="p">):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">docs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">())</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">search_filter_raw</span><span class="p">:</span>
                 <span class="n">search_filter_raw</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;$regex&#39;</span><span class="p">:</span> <span class="n">docs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">lower</span><span class="p">()}}</span>
             <span class="c1"># search for documents which don&#39;t contain text</span>
             <span class="n">search_filter_raw</span><span class="p">[</span><span class="n">TAG_INDEXER_DOC_HAS_TEXT</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;$eq&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
@@ -684,28 +678,6 @@
             <span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">doc</span><span class="o">.</span><span class="n">matches</span><span class="p">:</span>
                 <span class="n">_clean_response</span><span class="p">(</span><span class="n">match</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="NOWBaseIndexer.parse_columns"><a class="viewcode-back" href="../../../../../../api/now.executor.abstract.base_indexer.base_indexer/#now.executor.abstract.base_indexer.base_indexer.NOWBaseIndexer.parse_columns">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">parse_columns</span><span class="p">(</span><span class="n">columns</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse the columns to index&quot;&quot;&quot;</span>
-        <span class="n">valid_input_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;str&#39;</span><span class="p">,</span> <span class="s1">&#39;float&#39;</span><span class="p">,</span> <span class="s1">&#39;int&#39;</span><span class="p">,</span> <span class="s1">&#39;bool&#39;</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">columns</span><span class="p">:</span>
-            <span class="n">corrected_list</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">columns</span><span class="p">),</span> <span class="mi">2</span><span class="p">):</span>
-                <span class="c1"># This conversion is needed for MMDocs</span>
-                <span class="k">if</span> <span class="n">columns</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;text&#39;</span><span class="p">,</span> <span class="s1">&#39;stringValue&#39;</span><span class="p">]:</span>
-                    <span class="n">columns</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;str&#39;</span>
-                <span class="k">elif</span> <span class="n">columns</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;numberValue&#39;</span><span class="p">]:</span>
-                    <span class="n">columns</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;float&#39;</span>
-                <span class="k">elif</span> <span class="n">columns</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;boolValue&#39;</span><span class="p">]:</span>
-                    <span class="n">columns</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;bool&#39;</span>
-                <span class="n">corrected_list</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">columns</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">columns</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]))</span>
-            <span class="n">columns</span> <span class="o">=</span> <span class="n">corrected_list</span>
-            <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">:</span>
-                <span class="k">assert</span> <span class="p">(</span>
-                    <span class="n">t</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">valid_input_columns</span>
-                <span class="p">),</span> <span class="sa">f</span><span class="s1">&#39;column of type=</span><span class="si">{</span><span class="n">t</span><span class="si">}</span><span class="s1"> is not supported. Supported types are </span><span class="si">{</span><span class="n">valid_input_columns</span><span class="si">}</span><span class="s1">&#39;</span>
-        <span class="k">return</span> <span class="n">columns</span></div>
-
 <div class="viewcode-block" id="NOWBaseIndexer.load_document_list"><a class="viewcode-back" href="../../../../../../api/now.executor.abstract.base_indexer.base_indexer/#now.executor.abstract.base_indexer.base_indexer.NOWBaseIndexer.load_document_list">[docs]</a>    <span class="k">def</span> <span class="nf">load_document_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;is needed for the list endpoint&quot;&quot;&quot;</span>
         <span class="n">document_list</span> <span class="o">=</span> <span class="n">DocumentArray</span><span class="p">()</span>
@@ -784,7 +756,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Jan 04, 2023.
+                            Last updated on Jan 09, 2023.
                         </div>
                     </div>
                     <div class="right-details">
