@@ -4,7 +4,7 @@ from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.144-fix-bucket-uri-json-field-24'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.145-refactor-deployment-of-bff-1'
 NOW_PREPROCESSOR_VERSION = '0.0.120-fix-patching-docs-5'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.142-fix-bucket-uri-json-field-24'
 NOW_AUTOCOMPLETE_VERSION = '0.0.8-feat-one-search-dynamic-flow-66'
