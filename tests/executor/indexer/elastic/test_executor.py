@@ -133,7 +133,6 @@ def test_delete_by_id(setup_service_running, es_inputs, random_index_name):
         default_semantic_scores,
     ) = es_inputs
     es_indexer = NOWElasticIndexer(
-        traversal_paths='c',
         document_mappings=document_mappings,
         hosts='http://localhost:9200',
         index_name=random_index_name,
@@ -148,22 +147,30 @@ def test_delete_by_id(setup_service_running, es_inputs, random_index_name):
     assert len(res['hits']['hits']) == 0
 
 
-def test_delete_by_filter():
+def test_delete_by_filter(setup_service_running, es_inputs, random_index_name):
     """
     This test tests the delete endpoint of the NOWElasticIndexer, by deleting a filter.
     """
-    # es_indexer = NOWElasticIndexer(
-    #     traversal_paths='c',
-    #     hosts='http://localhost:9200',
-    #     index_name='test_index',
-    # )
-    # # delete by filter
-    # es_indexer.delete(parameters={'filters': {'modality': 'image'}})
-    #
-    # es = es_indexer.es
-    # res = es.search(index='test_index', size=100, query={'match_all': {}})
-    # assert len(res['hits']['hits']) == 0
-    pass
+    (
+        index_docs_map,
+        query_docs_map,
+        document_mappings,
+        default_semantic_scores,
+    ) = es_inputs
+    index_name = random_index_name
+    es_indexer = NOWElasticIndexer(
+        document_mappings=document_mappings,
+        hosts='http://localhost:9200',
+        index_name=index_name,
+    )
+    es_indexer.index(index_docs_map)
+
+    # delete by filter
+    es_indexer.delete(parameters={'filter': {'price': {'$gte': 0}}})
+
+    es = es_indexer.es
+    res = es.search(index=index_name, size=100, query={'match_all': {}})
+    assert len(res['hits']['hits']) == 0
 
 
 def test_custom_mapping_and_custom_bm25_search(

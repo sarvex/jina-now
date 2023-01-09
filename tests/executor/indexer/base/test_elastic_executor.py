@@ -44,7 +44,7 @@ def flow(random_index_name, metas):
     return f
 
 
-class TestBaseIndexerElastic:
+class TestElasticIndexer:
     def get_docs(self, num):
         prices = [10.0, 25.0, 50.0, 100.0]
         colors = ['blue', 'red']

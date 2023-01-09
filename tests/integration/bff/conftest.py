@@ -12,7 +12,6 @@ from now.constants import ACCESS_PATHS, EXTERNAL_CLIP_HOST
 from now.executor.indexer.elastic import NOWElasticIndexer
 from now.executor.preprocessor import NOWPreprocessor
 from now.now_dataclasses import UserInput
-from tests.conftest import random_index_name
 
 BASE_URL = 'http://localhost:8080/api/v1'
 SEARCH_URL = f'{BASE_URL}/search-app/search'
@@ -75,7 +74,6 @@ def get_flow(preprocessor_args=None, indexer_args=None, tmpdir=None):
             uses=NOWElasticIndexer,
             uses_with={
                 'hosts': 'http://localhost:9200',
-                'index_name': 'random_index_name111',
                 'document_mappings': [['encoderclip', 512, ['title']]],
                 **indexer_args,
             },

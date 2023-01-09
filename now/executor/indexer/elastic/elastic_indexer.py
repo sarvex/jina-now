@@ -1,9 +1,6 @@
-import json
-import os
 import subprocess
 import traceback
-from collections import namedtuple, defaultdict
-from copy import deepcopy
+from collections import namedtuple
 from time import sleep
 from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
 
@@ -11,7 +8,6 @@ from docarray import Document, DocumentArray
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 
-from now.constants import TAG_INDEXER_DOC_HAS_TEXT, TAG_OCR_DETECTOR_TEXT_IN_DOC
 from now.executor.abstract.auth import (
     SecurityLevel,
     secure_request,
@@ -58,11 +54,12 @@ class NOWElasticIndexer(Executor):
         ] = 'http://localhost:9200',
         es_config: Optional[Dict[str, Any]] = None,
         index_name: str = 'now-index',
-        traversal_paths: str = '@r',
         *args,
         **kwargs,
     ):
         """
+        :param document_mappings: list of FieldEmbedding tuples that define which encoder
+            encodes which fields, and the embedding size of the encoder.
         :param dim: Dimensionality of vectors to index.
         :param ocr_is_needed: Boolean variable indicating whether we need to use OCR or no
             based on the modality
@@ -70,21 +67,11 @@ class NOWElasticIndexer(Executor):
         :param limit: Number of results to get for each query document in search
         :param max_values_per_tag: Maximum number of values per tag
             (used for search), e.g. '@r', '@c', '@r,c'
-        :param document_mappings: list of FieldEmbedding tuples that define which encoder
-            encodes which fields, and the embedding size of the encoder.
-        :param hosts: host configuration of the Elasticsearch node or cluster
-        :param es_config: Elasticsearch cluster configuration object
-        :param metric: The distance metric used for the vector index and vector search
-        :param index_name: ElasticSearch Index name used for the storage
         :param es_mapping: Mapping for new index. If none is specified, this will be
             generated from `document_mappings` and `metric`.
-        :param traversal_paths: Default traversal paths on docs
-            generated from metric and dims. Embeddings from chunk documents will
-            always be stored in fields `embedding_x` where x iterates over the number
-            of embedding fields (length of `dims`) to be created in the index.
-                (used for indexing, delete and update), e.g. '@r', '@c', '@r,c'.
-        :param limit: Default limit on the number of docs to be retrieved
-
+        :param hosts: host configuration of the Elasticsearch node or cluster
+        :param es_config: Elasticsearch cluster configuration object
+        :param index_name: ElasticSearch Index name used for the storage
         """
 
         super().__init__(*args, **kwargs)
@@ -94,7 +81,9 @@ class NOWElasticIndexer(Executor):
         self.max_values_per_tag = max_values_per_tag
         self.hosts = hosts
         self.index_name = index_name
-        self.traversal_paths = traversal_paths
+        self.query_to_curated_ids = {}
+        self.doc_id_tags = {}
+        self.ocr_is_needed = ocr_is_needed
 
         self.document_mappings = [FieldEmbedding(*dm) for dm in document_mappings]
         self.encoder_to_fields = {
@@ -111,46 +100,6 @@ class NOWElasticIndexer(Executor):
 
         if not self.es.indices.exists(index=self.index_name):
             self.es.indices.create(index=self.index_name, mappings=self.es_mapping)
-        self.query_to_curated_ids = {}
-
-        self.doc_id_tags = {}
-        self.document_list = DocumentArray()
-        self.load_document_list()
-        self.query_to_curated_matches_path = (
-            os.path.join(self.workspace, 'query_to_curated_matches.json')
-            if self.workspace
-            else None
-        )
-        self.query_to_curated_matches = self.open_query_to_curated_matches(
-            self.query_to_curated_matches_path
-        )
-        self.ocr_is_needed = ocr_is_needed
-
-    def open_query_to_curated_matches(self, path):
-        if path and os.path.exists(path):
-            with open(path, 'r') as f:
-                return json.load(f)
-        return defaultdict(list)
-
-    def load_document_list(self):
-        """is needed for the list endpoint"""
-        document_list = DocumentArray()
-        for batch in self.batch_iterator():
-            self.extend_inmemory_docs_and_tags(batch)
-        self.document_list = DocumentArray(
-            sorted([d for d in document_list], key=lambda x: x.id)
-        )
-
-    def extend_inmemory_docs_and_tags(self, batch):
-        """Extend the in-memory DocumentArray with new documents"""
-        for d in batch:
-            tags = deepcopy(d.tags)
-            for _tag in [TAG_INDEXER_DOC_HAS_TEXT, TAG_OCR_DETECTOR_TEXT_IN_DOC]:
-                tags.pop(_tag, None)
-            self.document_list.append(
-                Document(id=d.id, uri=d.uri, tags=tags, parent_id=d.parent_id)
-            )
-            self.doc_id_tags[d.id] = tags
 
     def setup_elastic_server(self):
         # volume is not persisted at the moment
@@ -268,7 +217,6 @@ class NOWElasticIndexer(Executor):
 
         aggregate_embeddings(docs_map)
 
-        # search_filter = parameters.get('filter', None)
         limit = parameters.get('limit', self.limit)
         get_score_breakdown = parameters.get('get_score_breakdown', False)
         custom_bm25_query = parameters.get('custom_bm25_query', None)
@@ -464,11 +412,6 @@ class NOWElasticIndexer(Executor):
             self.doc_id_tags = updated_tags
         except Exception:
             self.logger.info(traceback.format_exc())
-
-    # override
-    def batch_iterator(self):
-        """Unnecessary for ElasticIndexer, but need to override BaseIndexer."""
-        yield []
 
 
 def aggregate_embeddings(docs_map: Dict[str, DocumentArray]):
