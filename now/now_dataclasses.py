@@ -71,3 +71,8 @@ class DialogOptions:
     depends_on: Optional['DialogOptions', StrictBool] = None
     conditional_check: Callable[[Any], bool] = None
     post_func: Callable[[Any], None] = None
+
+
+from now.app.base.app import JinaNOWApp
+
+UserInput.update_forward_refs()
