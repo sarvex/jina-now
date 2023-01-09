@@ -142,10 +142,6 @@ class NOWPreprocessor(Executor):
                     for c in d.chunks:
                         # TODO please fix this hack - uri should not be in tags
                         move_uri(c)
-        print(' end of preprocess')
-        docs.summary()
-        if docs:
-            docs[0].summary()
         return docs
 
     @secure_request(on=None, level=SecurityLevel.USER)

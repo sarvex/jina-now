@@ -158,15 +158,7 @@ class NOWElasticIndexer(Executor):
             if len(docs_map) == 0:
                 return DocumentArray()
 
-        print('indexing docs before aggregate_embeddings')
-        for encoder, docs in docs_map.items():
-            docs.summary()
-            docs[0].summary()
         aggregate_embeddings(docs_map)
-        print('indexing docs after aggregate_embeddings')
-        for encoder, docs in docs_map.items():
-            docs.summary()
-            docs[0].summary()
         es_docs = convert_doc_map_to_es(
             docs_map, self.index_name, self.encoder_to_fields
         )
@@ -216,10 +208,6 @@ class NOWElasticIndexer(Executor):
                 return DocumentArray()
 
         aggregate_embeddings(docs_map)
-        print('search docs')
-        for encoder, docs in docs_map.items():
-            docs.summary()
-            docs[0].summary()
         # search_filter = parameters.get('filter', None)
         limit = parameters.get('limit', self.limit)
         get_score_breakdown = parameters.get('get_score_breakdown', False)
@@ -257,9 +245,6 @@ class NOWElasticIndexer(Executor):
             for c in doc.chunks:
                 c.embedding = None
         results = DocumentArray(list(zip(*es_queries))[0])
-        print('serach results docs')
-        results.summary()
-        results[0].summary()
         return results
 
     @secure_request(on='/update', level=SecurityLevel.USER)

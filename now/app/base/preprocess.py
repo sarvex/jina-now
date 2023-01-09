@@ -22,8 +22,6 @@ def preprocess_text(
     After
     Document(chunks=[Document(text=None, chunks=[Document('s1'), Document('s2')..])])
     """
-    print('preprocess text')
-    d.summary()
     import nltk
 
     nltk.download('punkt', quiet=True)
@@ -32,13 +30,10 @@ def preprocess_text(
     # TODO HACK (needs to be provided as general feature
     d.text = 'loading' if d.text.lower() == 'loader' else d.text
 
-    print(f'if condition d.text {d.text} and d.uri {d.uri}')
     if not d.text and d.uri:
-        print('load uri to text')
         d.load_uri_to_text(timeout=10)
         # In case it is a json file, we need to get the right field
         if d.uri.endswith('.json'):
-            print('ends with json')
             json_dict = json.loads(d.text)
             field_name = d.tags['field_name']
             d.text = get_dict_value_for_flattened_key(json_dict, field_name.split('__'))
@@ -53,8 +48,6 @@ def preprocess_text(
         if sentence
     ]
     d.text = None
-    print('preprocessed text')
-    d.summary()
     return d
 
 
