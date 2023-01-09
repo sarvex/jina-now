@@ -1,5 +1,4 @@
 import os
-from copy import deepcopy
 from typing import Dict, List, Optional, Tuple, TypeVar
 
 import docker
@@ -163,12 +162,12 @@ class JinaNOWApp:
         :return: dict used to replace variables in flow yaml and to clean up resources after the flow is terminated
         """
         # Get the common env variables
-        user_input_json_serializable = deepcopy(user_input)
-        user_input_json_serializable.pop('app_instance', None)
+        user_input_dict = user_input.__dict__
+        user_input_dict.pop('app_instance', None)
         common_env_dict = {
             'JINA_VERSION': jina_version,
             'PREFETCH': PREFETCH_NR,
-            'USER_INPUT': user_input_json_serializable.__dict__,
+            'USER_INPUT': user_input_dict,
             'ADMIN_EMAILS': user_input.admin_emails or [] if user_input.secured else [],
             'USER_EMAILS': user_input.user_emails or [] if user_input.secured else [],
             'API_KEY': [user_input.api_key]

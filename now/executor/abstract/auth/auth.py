@@ -145,7 +145,7 @@ def get_auth_executor_class():
             if self.user_input_path and os.path.exists(self.user_input_path):
                 with open(self.user_input_path, 'r') as fp:
                     user_input_kwargs = json.load(fp)
-                self._update_user_input(**user_input_kwargs)
+                self._update_user_input(user_input_kwargs)
             if self.api_keys_path and os.path.exists(self.api_keys_path):
                 with open(self.api_keys_path, 'r') as fp:
                     self.api_keys = json.load(fp)
