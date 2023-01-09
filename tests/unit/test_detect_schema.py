@@ -103,6 +103,7 @@ def test_set_field_names_from_docarray():
     user_input.dataset_type = DatasetTypes.DOCARRAY
     # subset_laion dataset is not multi-modal
     user_input.dataset_name = 'best-artworks'
+    user_input.user_name = 'team-now'
     user_input.jwt = {'token': os.environ['WOLF_TOKEN']}
 
     set_field_names_from_docarray(user_input)

@@ -73,7 +73,6 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
         {
             'app': Apps.SEARCH_APP,
             'flow_name': DEFAULT_FLOW_NAME,
-            'user_name': 'team-now',
             'dataset_type': DatasetTypes.PATH,
             'dataset_path': os.path.join(
                 os.path.dirname(__file__), '..', 'resources', 'image'
