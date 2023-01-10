@@ -283,7 +283,7 @@ class NOWElasticIndexer(Executor):
                     d.uri = temp_url
                 return d
 
-            for d in docs['@cc']:
+            for d in docs['@mc,mcc']:
                 _create_temp_link(d)
 
         return results
