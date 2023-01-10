@@ -12,7 +12,7 @@ from starlette.routing import Mount
 
 import deployment.bff.app.settings as api_settings
 from deployment.bff.app.decorators import api_method, timed
-from deployment.bff.app.v1.routers import admin, cloud_temp_link, search
+from deployment.bff.app.v1.routers import admin, search
 from now import __version__
 
 logging.config.dictConfig(api_settings.DEFAULT_LOGGING_CONFIG)
@@ -88,13 +88,6 @@ def get_app_instance():
 
 
 def build_app():
-    # cloud temporary link router
-    cloud_temp_link_mount = '/api/v1/cloud-bucket-utils'
-    cloud_temp_link_app = get_app_instance()
-    cloud_temp_link_app.include_router(
-        cloud_temp_link.router, tags=['Temporary-Link-Cloud']
-    )
-
     # search app router
     search_app_mount = '/api/v1/search-app'
     search_app_app = get_app_instance()
@@ -108,7 +101,6 @@ def build_app():
     # Mount them - for other modalities just add an app instance
     app = Starlette(
         routes=[
-            Mount(cloud_temp_link_mount, cloud_temp_link_app),
             Mount(search_app_mount, search_app_app),
             Mount(admin_mount, admin_app),
         ]

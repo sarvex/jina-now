@@ -16,18 +16,15 @@ def test_docarray(monkeypatch, setup_service_running, multi_modal_data):
     The Clip Encoder is mocked because it is an external executor.
     Also, the network call for the bff is monkey patched.
     """
-    offline_flow = OfflineFlow(monkeypatch)
-
     user_input = UserInput()
     user_input.index_fields = ['product_title', 'product_description', 'product_image']
+
+    offline_flow = OfflineFlow(monkeypatch, user_input_dict=user_input.__dict__)
 
     index_result = offline_flow.post(
         '/index',
         inputs=multi_modal_data,
-        parameters={
-            'access_paths': '@cc',
-            'user_input': user_input.__dict__,
-        },
+        parameters={'access_paths': '@cc'},
     )
 
     assert index_result == DocumentArray()

@@ -130,7 +130,7 @@ DEMO_DATA = DialogOptions(
 
 DOCARRAY_NAME = DialogOptions(
     name='dataset_name',
-    prompt_message='Please enter your DocumentArray name:',
+    prompt_message='Please enter your DocArray name:',
     prompt_type='input',
     depends_on=DATASET_TYPE,
     conditional_check=lambda user_input: user_input.dataset_type

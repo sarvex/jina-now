@@ -7,7 +7,7 @@ the dialog won't ask for the value.
 from __future__ import annotations, print_function, unicode_literals
 
 import dataclasses
-from typing import Any, Callable, Dict, List, Optional, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, TypeVar, Union
 
 from pydantic import BaseModel, StrictBool
 
@@ -45,6 +45,7 @@ class UserInput(BaseModel):
     deployment_type: Optional[str] = None
     secured: Optional[StrictBool] = None
     jwt: Optional[Dict[str, str]] = None
+    admin_name: Optional[str] = None
     admin_emails: Optional[List[str]] = None
     user_emails: Optional[List[str]] = None
     additional_user: Optional[StrictBool] = None
@@ -71,3 +72,9 @@ class DialogOptions:
     depends_on: Optional['DialogOptions', StrictBool] = None
     conditional_check: Callable[[Any], bool] = None
     post_func: Callable[[Any], None] = None
+
+
+if TYPE_CHECKING:
+    from now.app.base.app import JinaNOWApp
+
+    UserInput.update_forward_refs()

@@ -153,8 +153,14 @@ def set_field_names_from_docarray(user_input: UserInput, **kwargs):
         'st': user_input.jwt['token'],
     }
 
+    dataset_name = (
+        user_input.admin_name + '/' + user_input.dataset_name
+        if '/' not in user_input.dataset_name
+        else user_input.dataset_name,
+    )
+
     json_data = {
-        'name': user_input.dataset_name,
+        'name': dataset_name,
     }
     response = requests.post(
         'https://api.hubble.jina.ai/v2/rpc/docarray.getFirstDocuments',
@@ -167,7 +173,11 @@ def set_field_names_from_docarray(user_input: UserInput, **kwargs):
             user_input.filter_field_candidates_to_modalities,
         ) = _extract_field_candidates_docarray(response)
     else:
-        raise ValueError('DocumentArray does not exist or you do not have access to it')
+        raise ValueError(
+            'DocumentArray does not exist or you do not have access to it. '
+            'Make sure to add user name as a prefix. Check documentation here. '
+            'https://docarray.jina.ai/fundamentals/cloud-support/data-management/'
+        )
 
 
 def _extract_field_names_single_folder(

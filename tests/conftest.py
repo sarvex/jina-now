@@ -206,7 +206,7 @@ def es_inputs(gif_resource_path) -> namedtuple:
     # encode our documents
     for i, doc in enumerate(docs):
         prep_doc = Document(doc)
-        prep_doc = NOWPreprocessor().preprocess(DocumentArray(prep_doc), {})[0]
+        prep_doc = NOWPreprocessor().preprocess(DocumentArray(prep_doc))[0]
         prep_doc.tags['color'] = random.choice(['red', 'blue', 'green'])
         prep_doc.tags['price'] = i + 0.5
         prep_doc.id = str(i)

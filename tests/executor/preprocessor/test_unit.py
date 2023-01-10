@@ -44,7 +44,13 @@ def test_ocr_with_bucket(file_path, modality, num_chunks, ocr_text):
             for _ in range(1)  # changing range here from 2 to 1 to fix threading issues
         ]
     )
-    preprocessor = NOWPreprocessor()
+    preprocessor = NOWPreprocessor(
+        user_input_dict={
+            'dataset_type': DatasetTypes.S3_BUCKET,
+            'index_fields': [],
+            'aws_region_name': 'test',
+        },
+    )
 
     bucket_mock = Mock()
     bucket_mock.download_file = download_mock
@@ -52,13 +58,6 @@ def test_ocr_with_bucket(file_path, modality, num_chunks, ocr_text):
 
     res_index = preprocessor.preprocess(
         da_index,
-        parameters={
-            'user_input': {
-                'dataset_type': DatasetTypes.S3_BUCKET,
-                'index_fields': [],
-                'aws_region_name': 'test',
-            }
-        },
         return_results=True,
     )
     assert len(res_index) == 1
@@ -86,7 +85,7 @@ def test_text():
         ]
     )
     preprocessor = NOWPreprocessor()
-    res_search = preprocessor.preprocess(da_search, parameters={})
+    res_search = preprocessor.preprocess(da_search)
     assert len(res_search) == 1
     assert len(res_search[0].chunks) == 1
     result_strings = res_search[0].chunks[0].chunks.texts
