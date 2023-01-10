@@ -82,6 +82,9 @@ def add_metadata_to_da(da, user_input):
 
 
 def _pull_docarray(dataset_name: str, admin_name: str) -> DocumentArray:
+    dataset_name = (
+        admin_name + '/' + dataset_name if '/' not in dataset_name else dataset_name
+    )
     try:
         docs = DocumentArray.pull(
             name=admin_name + '/' + dataset_name, show_progress=True
@@ -90,7 +93,7 @@ def _pull_docarray(dataset_name: str, admin_name: str) -> DocumentArray:
             return docs
         else:
             raise ValueError(
-                f'The dataset {dataset_name} does not contain a multimodal DocumentArray.'
+                f'The dataset {dataset_name} does not contain a multimodal DocumentArray. '
                 f'Please check documentation https://docarray.jina.ai/fundamentals/dataclass/construct/'
             )
     except Exception:
