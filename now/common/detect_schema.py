@@ -11,7 +11,6 @@ from now.constants import (
     FILETYPE_TO_MODALITY,
     NOT_AVAILABLE_MODALITIES_FOR_FILTER,
     SUPPORTED_FILE_TYPES,
-    DatasetTypes,
 )
 from now.data_loading.elasticsearch import ElasticsearchConnector
 from now.now_dataclasses import UserInput
@@ -154,14 +153,14 @@ def set_field_names_from_docarray(user_input: UserInput, **kwargs):
         'st': user_input.jwt['token'],
     }
 
-    if 'LOCAL_TESTING' in os.environ and user_input.dataset_type == DatasetTypes.DEMO:
-        dataset_name = 'team-now/' + user_input.dataset_name
-    else:
-        dataset_name = (
-            user_input.admin_name + '/' + user_input.dataset_name
-            if '/' not in user_input.dataset_name
-            else user_input.dataset_name,
-        )
+    # if get_email().split('@')[-1] == 'jina.ai' and user_input.dataset_type == DatasetTypes.DEMO:
+    #    dataset_name = 'team-now/' + user_input.dataset_name
+    # else:
+    dataset_name = (
+        user_input.admin_name + '/' + user_input.dataset_name
+        if '/' not in user_input.dataset_name
+        else user_input.dataset_name,
+    )
 
     json_data = {
         'name': dataset_name,
