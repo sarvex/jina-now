@@ -6,7 +6,7 @@
         <link rel="canonical" href="https://now.jina.ai/_modules/now/common/options.html" />
 
     <link rel="shortcut icon" href="../../../../_static/favicon.png"/><!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
-        <title>now.common.options - NOW 0.0.45 documentation</title>
+        <title>now.common.options - NOW 0.0.46 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../../">
-                <div class="brand">NOW 0.0.45 documentation</div>
+                <div class="brand">NOW 0.0.46 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -385,7 +385,7 @@
     <span class="k">for</span> <span class="n">demo_datasets</span> <span class="ow">in</span> <span class="n">user_input</span><span class="o">.</span><span class="n">app_instance</span><span class="o">.</span><span class="n">demo_datasets</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
         <span class="n">all_demo_datasets</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">demo_datasets</span><span class="p">)</span>
     <span class="k">return</span> <span class="p">[</span>
-        <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">demo_data</span><span class="o">.</span><span class="n">display_name</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">demo_data</span><span class="o">.</span><span class="n">name</span><span class="p">}</span>
+        <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">demo_data</span><span class="o">.</span><span class="n">display_name</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="s1">&#39;team-now/&#39;</span> <span class="o">+</span> <span class="n">demo_data</span><span class="o">.</span><span class="n">name</span><span class="p">}</span>
         <span class="k">for</span> <span class="n">demo_data</span> <span class="ow">in</span> <span class="n">all_demo_datasets</span>
     <span class="p">]</span>
 
@@ -405,7 +405,7 @@
 
 <span class="n">DOCARRAY_NAME</span> <span class="o">=</span> <span class="n">DialogOptions</span><span class="p">(</span>
     <span class="n">name</span><span class="o">=</span><span class="s1">&#39;dataset_name&#39;</span><span class="p">,</span>
-    <span class="n">prompt_message</span><span class="o">=</span><span class="s1">&#39;Please enter your DocumentArray name:&#39;</span><span class="p">,</span>
+    <span class="n">prompt_message</span><span class="o">=</span><span class="s1">&#39;Please enter your DocArray name:&#39;</span><span class="p">,</span>
     <span class="n">prompt_type</span><span class="o">=</span><span class="s1">&#39;input&#39;</span><span class="p">,</span>
     <span class="n">depends_on</span><span class="o">=</span><span class="n">DATASET_TYPE</span><span class="p">,</span>
     <span class="n">conditional_check</span><span class="o">=</span><span class="k">lambda</span> <span class="n">user_input</span><span class="p">:</span> <span class="n">user_input</span><span class="o">.</span><span class="n">dataset_type</span>
@@ -735,7 +735,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Jan 09, 2023.
+                            Last updated on Jan 10, 2023.
                         </div>
                     </div>
                     <div class="right-details">

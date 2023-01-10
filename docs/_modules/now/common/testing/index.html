@@ -6,7 +6,7 @@
         <link rel="canonical" href="https://now.jina.ai/_modules/now/common/testing.html" />
 
     <link rel="shortcut icon" href="../../../../_static/favicon.png"/><!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
-        <title>now.common.testing - NOW 0.0.45 documentation</title>
+        <title>now.common.testing - NOW 0.0.46 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../../">
-                <div class="brand">NOW 0.0.45 documentation</div>
+                <div class="brand">NOW 0.0.46 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -281,7 +281,7 @@
 <div class="viewcode-block" id="handle_test_mode"><a class="viewcode-back" href="../../../../api/now.common.testing/#now.common.testing.handle_test_mode">[docs]</a><span class="k">def</span> <span class="nf">handle_test_mode</span><span class="p">(</span><span class="n">config</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;NOW_TESTING&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
         <span class="kn">from</span> <span class="nn">now.executor.autocomplete</span> <span class="kn">import</span> <span class="n">NOWAutoCompleteExecutor2</span>
-        <span class="kn">from</span> <span class="nn">now.executor.indexer</span> <span class="kn">import</span> <span class="n">NOWElasticIndexer</span>
+        <span class="kn">from</span> <span class="nn">now.executor.indexer.elastic</span> <span class="kn">import</span> <span class="n">NOWElasticIndexer</span>
         <span class="kn">from</span> <span class="nn">now.executor.preprocessor</span> <span class="kn">import</span> <span class="n">NOWPreprocessor</span>
 
         <span class="c1"># this is a hack to make sure the import is not removed</span>
@@ -317,7 +317,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Jan 09, 2023.
+                            Last updated on Jan 10, 2023.
                         </div>
                     </div>
                     <div class="right-details">
