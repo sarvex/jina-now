@@ -125,21 +125,21 @@ def jina_client_post(
             **kwargs,
         )
     except (BadServer, BadServerFlow) as e:
-        handle_exception(e)
+        raise handle_exception(e)
     return result
 
 
 def handle_exception(e):
     if isinstance(e, BadServer):
         if 'not a valid user' in e.args[0].status.description.lower():
-            raise HTTPException(
+            return HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail='You are not authorised to use this flow',
             )
         else:
-            raise e
+            return e
     elif isinstance(e, BadServerFlow):
         if 'no route matched' in e.args[0].lower():
-            raise Exception('Your flow is down')
+            return Exception('Your flow is down')
         else:
-            raise e
+            return e
