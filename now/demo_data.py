@@ -8,22 +8,22 @@ from now.utils import BetterEnum
 
 
 class DemoDatasetNames(BetterEnum):
-    BEST_ARTWORKS = 'best-artworks'
-    NFT_MONKEY = 'nft-monkey'
-    TLL = 'totally-looks-like'
-    BIRD_SPECIES = 'bird-species'
-    STANFORD_CARS = 'stanford-cars'
-    DEEP_FASHION = 'deepfashion'
-    NIH_CHEST_XRAYS = 'nih-chest-xrays'
-    GEOLOCATION_GEOGUESSR = 'geolocation-geoguessr'
-    ROCK_LYRICS = 'rock-lyrics'
-    POP_LYRICS = 'pop-lyrics'
-    RAP_LYRICS = 'rap-lyrics'
-    INDIE_LYRICS = 'indie-lyrics'
-    METAL_LYRICS = 'metal-lyrics'
-    TUMBLR_GIFS = 'tumblr-gifs'
-    TUMBLR_GIFS_10K = 'tumblr-gifs-10k'
-    ES_ONLINE_SHOP_50 = 'extracted-data-online-shop-50-flat'
+    BEST_ARTWORKS = 'team-now/best-artworks'
+    NFT_MONKEY = 'team-now/nft-monkey'
+    TLL = 'team-now/totally-looks-like'
+    BIRD_SPECIES = 'team-now/bird-species'
+    STANFORD_CARS = 'team-now/stanford-cars'
+    DEEP_FASHION = 'team-now/deepfashion'
+    NIH_CHEST_XRAYS = 'team-now/nih-chest-xrays'
+    GEOLOCATION_GEOGUESSR = 'team-now/geolocation-geoguessr'
+    ROCK_LYRICS = 'team-now/rock-lyrics'
+    POP_LYRICS = 'team-now/pop-lyrics'
+    RAP_LYRICS = 'team-now/rap-lyrics'
+    INDIE_LYRICS = 'team-now/indie-lyrics'
+    METAL_LYRICS = 'team-now/metal-lyrics'
+    TUMBLR_GIFS = 'team-now/tumblr-gifs'
+    TUMBLR_GIFS_10K = 'team-now/tumblr-gifs-10k'
+    ES_ONLINE_SHOP_50 = 'team-now/extracted-data-online-shop-50-flat'
 
 
 class DemoDataset(BaseModel):
