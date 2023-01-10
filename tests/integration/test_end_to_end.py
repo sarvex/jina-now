@@ -179,6 +179,7 @@ def run_end_to_end(
         'now': 'start',
         'flow_name': 'nowapi',
         'dataset_type': DatasetTypes.DEMO,
+        'admin_name': 'team-now',
         'index_fields': index_fields,
         'filter_fields': filter_fields,
         'dataset_name': dataset,
