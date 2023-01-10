@@ -52,12 +52,7 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
         da = _extract_es_data(user_input=user_input, data_class=data_class)
     elif user_input.dataset_type == DatasetTypes.DEMO:
         print('⬇  Download DocumentArray dataset')
-        dataset_name = (
-            f'{user_input.admin_name}/{user_input.dataset_name}'
-            if '/' not in user_input.dataset_name
-            else user_input.dataset_name
-        )
-        da = DocumentArray.pull(name=dataset_name, show_progress=True)
+        da = _pull_docarray(user_input.dataset_name, user_input.admin_name)
     da = set_modality_da(da)
     da = _add_tags_to_da(da, user_input)
     add_metadata_to_da(da, user_input)
@@ -86,9 +81,7 @@ def _pull_docarray(dataset_name: str, admin_name: str) -> DocumentArray:
         admin_name + '/' + dataset_name if '/' not in dataset_name else dataset_name
     )
     try:
-        docs = DocumentArray.pull(
-            name=admin_name + '/' + dataset_name, show_progress=True
-        )
+        docs = DocumentArray.pull(name=dataset_name, show_progress=True)
         if is_multimodal(docs[0]):
             return docs
         else:
