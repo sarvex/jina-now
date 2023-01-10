@@ -40,7 +40,10 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
     :return: The loaded DocumentArray.
     """
     da = None
-    if user_input.dataset_type == DatasetTypes.DOCARRAY:
+    if (
+        user_input.dataset_type == DatasetTypes.DOCARRAY
+        or user_input.dataset_type == DatasetTypes.DEMO
+    ):
         print('⬇  Pull DocumentArray dataset')
         da = _pull_docarray(user_input.dataset_name, user_input.admin_name)
     elif user_input.dataset_type == DatasetTypes.PATH:
@@ -50,9 +53,6 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
         da = _list_files_from_s3_bucket(user_input=user_input, data_class=data_class)
     elif user_input.dataset_type == DatasetTypes.ELASTICSEARCH:
         da = _extract_es_data(user_input=user_input, data_class=data_class)
-    elif user_input.dataset_type == DatasetTypes.DEMO:
-        print('⬇  Download DocumentArray dataset')
-        da = _pull_docarray(user_input.dataset_name, user_input.admin_name)
     da = set_modality_da(da)
     da = _add_tags_to_da(da, user_input)
     add_metadata_to_da(da, user_input)
