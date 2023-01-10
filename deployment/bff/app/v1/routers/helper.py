@@ -8,9 +8,10 @@ import filetype
 from docarray import Document, DocumentArray
 from fastapi import HTTPException, status
 from jina import Client
-from jina.excepts import BadServer
+from jina.excepts import BadServer, BadServerFlow
 
 from now.constants import SUPPORTED_FILE_TYPES
+from now.utils import get_flow_id
 
 
 def field_dict_to_mm_doc(
@@ -124,12 +125,23 @@ def jina_client_post(
             *args,
             **kwargs,
         )
-    except BadServer as e:
-        if 'Not a valid user' in e.args[0].status.description:
-            raise HTTPException(
+    except (BadServer, BadServerFlow) as e:
+        flow_id = get_flow_id(request_model.host)
+        raise handle_exception(e, flow_id)
+    return result
+
+
+def handle_exception(e, flow_id):
+    if isinstance(e, BadServer):
+        if 'not a valid user' in e.args[0].status.description.lower():
+            return HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail='You are not authorised to use this flow',
             )
         else:
-            raise e
-    return result
+            return e
+    elif isinstance(e, BadServerFlow):
+        if 'no route matched' in e.args[0].lower():
+            return Exception(f'Flow with ID {flow_id} can not be found')
+        else:
+            return e
