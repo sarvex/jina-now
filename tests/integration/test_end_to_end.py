@@ -44,16 +44,16 @@ def cleanup(deployment_type, dataset, app):
                 flow_id = get_flow_id(host)
                 terminate_wolf(flow_id)
             else:
-                print('\nDeleting local cluster')
-                kwargs = {
-                    'app': app,
-                    'deployment_type': deployment_type,
-                    'now': 'stop',
-                    'cluster': 'kind-jina-now',
-                    'delete-cluster': True,
-                }
-                kwargs = Namespace(**kwargs)
-                cli(args=kwargs)
+                print('\nnot Deleting local cluster')
+                # kwargs = {
+                #     'app': app,
+                #     'deployment_type': deployment_type,
+                #     'now': 'stop',
+                #     'cluster': 'kind-jina-now',
+                #     'delete-cluster': True,
+                # }
+                # kwargs = Namespace(**kwargs)
+                # cli(args=kwargs)
         except Exception as e:
             print('no clean up')
             print(e)
