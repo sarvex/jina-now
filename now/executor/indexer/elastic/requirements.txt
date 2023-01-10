@@ -1,2 +1,2 @@
 elasticsearch==8.4.1
-boto3
+boto3==1.26.43

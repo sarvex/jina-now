@@ -118,20 +118,22 @@ def get_auth_executor_class():
             """
             super().__init__(*args, **kwargs)
             self.logger = JinaLogger(self.__class__.__name__)
-            self.user_input = UserInput()
             self.admin_emails = admin_emails
             self.user_emails = user_emails
             self.api_keys = api_keys
             self._user = None
 
+            self.user_input = UserInput()
+            for attr_name, prev_value in self.user_input.__dict__.items():
+                setattr(
+                    self.user_input,
+                    attr_name,
+                    user_input_dict.get(attr_name, prev_value),
+                )
+
             # TODO admin email must be persisted as well
             # TODO also, please remove duplicate code
 
-            self.user_input_path = (
-                os.path.join(self.workspace, 'user_input.json')
-                if self.workspace
-                else None
-            )
             self.api_keys_path = (
                 os.path.join(self.workspace, 'api_keys.json')
                 if self.workspace
@@ -143,33 +145,12 @@ def get_auth_executor_class():
                 else None
             )
 
-            if self.user_input_path and os.path.exists(self.user_input_path):
-                with open(self.user_input_path, 'r') as fp:
-                    user_input_dict = json.load(fp)
-            self._update_user_input(user_input_dict)
             if self.api_keys_path and os.path.exists(self.api_keys_path):
                 with open(self.api_keys_path, 'r') as fp:
                     self.api_keys = json.load(fp)
             if self.user_emails_path and os.path.exists(self.user_emails_path):
                 with open(self.user_emails_path, 'r') as fp:
                     self.user_emails = json.load(fp)
-
-        def _update_user_input(self, user_input_kwargs: Dict):
-            """Sets user_input attribute from dictionary"""
-            for attr_name, prev_value in self.user_input.__dict__.items():
-                setattr(
-                    self.user_input,
-                    attr_name,
-                    user_input_kwargs.get(attr_name, prev_value),
-                )
-            if self.user_input_path:
-                with open(self.user_input_path, 'w') as fp:
-                    json.dump(self.user_input.__dict__, fp)
-
-        @secure_request(on='/admin/updateUserInput', level=SecurityLevel.ADMIN)
-        def update_user_input(self, parameters: Dict, *args, **kwargs):
-            """Updates UserInput attribute from dictionary if key 'user_input' is in parameters"""
-            self._update_user_input(parameters.get('user_input', {}))
 
         @secure_request(on='/admin/updateUserEmails', level=SecurityLevel.ADMIN)
         def update_user_emails(self, parameters: Dict = None, **kwargs):

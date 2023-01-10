@@ -259,34 +259,38 @@ class NOWElasticIndexer(Executor):
             parameters.get('create_temp_link', False)
             and self.user_input.dataset_type == DatasetTypes.S3_BUCKET
         ):
-
-            def _create_temp_link(d: Document) -> Document:
-                if (
-                    not d.text
-                    and not d.blob
-                    and isinstance(d.uri, str)
-                    and d.uri.startswith('s3://')
-                ):
-                    session = boto3.session.Session(
-                        aws_access_key_id=self.user_input.aws_access_key_id,
-                        aws_secret_access_key=self.user_input.aws_secret_access_key,
-                        region_name=self.user_input.aws_region_name,
-                    )
-                    s3_client = session.client('s3')
-                    bucket_name = d.uri.split('/')[2]
-                    path_s3 = '/'.join(d.uri.split('/')[3:])
-                    temp_url = s3_client.generate_presigned_url(
-                        'get_object',
-                        Params={'Bucket': bucket_name, 'Key': path_s3},
-                        ExpiresIn=300,
-                    )
-                    d.uri = temp_url
-                return d
-
-            for d in docs['@mc,mcc']:
-                _create_temp_link(d)
+            self._create_temporary_links(results)
 
         return results
+
+    def _create_temporary_links(self, docs: DocumentArray):
+        """For every match, it replaces the URI with a temporary link such that no credentials are needed for access."""
+
+        def _create_temp_link(d: Document) -> Document:
+            if (
+                not d.text
+                and not d.blob
+                and isinstance(d.uri, str)
+                and d.uri.startswith('s3://')
+            ):
+                session = boto3.session.Session(
+                    aws_access_key_id=self.user_input.aws_access_key_id,
+                    aws_secret_access_key=self.user_input.aws_secret_access_key,
+                    region_name=self.user_input.aws_region_name,
+                )
+                s3_client = session.client('s3')
+                bucket_name = d.uri.split('/')[2]
+                path_s3 = '/'.join(d.uri.split('/')[3:])
+                temp_url = s3_client.generate_presigned_url(
+                    'get_object',
+                    Params={'Bucket': bucket_name, 'Key': path_s3},
+                    ExpiresIn=300,
+                )
+                d.uri = temp_url
+            return d
+
+        for d in docs['@mc,mcc']:
+            _create_temp_link(d)
 
     @secure_request(on='/update', level=SecurityLevel.USER)
     def update(self, docs: DocumentArray, **kwargs) -> DocumentArray:

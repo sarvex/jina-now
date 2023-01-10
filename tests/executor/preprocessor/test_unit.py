@@ -1,6 +1,5 @@
 import os
 import shutil
-from tempfile import TemporaryDirectory
 from unittest.mock import MagicMock, Mock
 
 import pytest
@@ -45,34 +44,31 @@ def test_ocr_with_bucket(file_path, modality, num_chunks, ocr_text):
             for _ in range(1)  # changing range here from 2 to 1 to fix threading issues
         ]
     )
-    # create temporary directory
-    with TemporaryDirectory() as tmpdir:
-        preprocessor = NOWPreprocessor(
-            user_input_dict={
-                'dataset_type': DatasetTypes.S3_BUCKET,
-                'index_fields': [],
-                'aws_region_name': 'test',
-            },
-            workspace=str(tmpdir),
-        )
+    preprocessor = NOWPreprocessor(
+        user_input_dict={
+            'dataset_type': DatasetTypes.S3_BUCKET,
+            'index_fields': [],
+            'aws_region_name': 'test',
+        },
+    )
 
-        bucket_mock = Mock()
-        bucket_mock.download_file = download_mock
-        now.utils.get_bucket = MagicMock(return_value=bucket_mock)
+    bucket_mock = Mock()
+    bucket_mock.download_file = download_mock
+    now.utils.get_bucket = MagicMock(return_value=bucket_mock)
 
-        res_index = preprocessor.preprocess(
-            da_index,
-            return_results=True,
-        )
-        assert len(res_index) == 1
-        for d in res_index:
-            c = d.chunks[0]
-            cc = c.chunks[0]
-            assert len(cc.blob) > 0
-            assert cc.uri == uri
-            assert c.uri == uri
-            assert len(c.chunks) == num_chunks
-            assert cc.tags[TAG_OCR_DETECTOR_TEXT_IN_DOC] == ocr_text
+    res_index = preprocessor.preprocess(
+        da_index,
+        return_results=True,
+    )
+    assert len(res_index) == 1
+    for d in res_index:
+        c = d.chunks[0]
+        cc = c.chunks[0]
+        assert len(cc.blob) > 0
+        assert cc.uri == uri
+        assert c.uri == uri
+        assert len(c.chunks) == num_chunks
+        assert cc.tags[TAG_OCR_DETECTOR_TEXT_IN_DOC] == ocr_text
 
 
 def test_text():

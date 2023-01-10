@@ -56,7 +56,13 @@ class NOWPreprocessor(Executor):
                 f.write(binary_fn.read())
         return tmp_fn
 
-    def _preprocess_maybe_cloud_download(self, docs: DocumentArray) -> DocumentArray:
+    @secure_request(on=None, level=SecurityLevel.USER)
+    def preprocess(self, docs: DocumentArray, *args, **kwargs) -> DocumentArray:
+        """If necessary downloads data from cloud bucket. Applies preprocessing to documents as defined by apps.
+
+        :param docs: loaded data but not preprocessed
+        :return: preprocessed documents which are ready to be encoded and indexed
+        """
         if len(docs) > 0 and not docs[0].chunks:
             raise ValueError(
                 'Documents are not in multi modal format. Please check documentation'
@@ -101,16 +107,8 @@ class NOWPreprocessor(Executor):
                         d.chunks[:, 'uri'] = cloud_uri
                     return d
 
-                for c in docs['@c,cc']:
-                    # TODO please fix this hack - uri should not be in tags
-                    move_uri(c)
+                for d in docs:
+                    for c in d.chunks:
+                        # TODO please fix this hack - uri should not be in tags
+                        move_uri(c)
         return docs
-
-    @secure_request(on=None, level=SecurityLevel.USER)
-    def preprocess(self, docs: DocumentArray, *args, **kwargs) -> DocumentArray:
-        """If necessary downloads data from cloud bucket. Applies preprocessing to documents as defined by apps.
-
-        :param docs: loaded data but not preprocessed
-        :return: preprocessed documents which are ready to be encoded and indexed
-        """
-        return self._preprocess_maybe_cloud_download(docs=docs)
