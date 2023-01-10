@@ -29,8 +29,7 @@ def _construct_tags_field(document: Document, field) -> Document:
         modality_value = document.text
     elif document.tensor:
         modality_value = document.tensor
-    else:
-        document.summary()
+
         raise Exception(f'Document {document} cannot be transformed.')
     return {field: modality_value}
 
