@@ -42,7 +42,7 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
     da = None
     if user_input.dataset_type == DatasetTypes.DOCARRAY:
         print('⬇  Pull DocumentArray dataset')
-        da = _pull_docarray(user_input.dataset_name)
+        da = _pull_docarray(user_input.dataset_name, user_input.admin_name)
     elif user_input.dataset_type == DatasetTypes.PATH:
         print('💿  Loading files from disk')
         da = _load_from_disk(user_input=user_input, data_class=data_class)

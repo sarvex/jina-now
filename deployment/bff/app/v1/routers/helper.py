@@ -11,6 +11,7 @@ from jina import Client
 from jina.excepts import BadServer, BadServerFlow
 
 from now.constants import SUPPORTED_FILE_TYPES
+from now.utils import get_flow_id
 
 
 def field_dict_to_mm_doc(
@@ -125,11 +126,12 @@ def jina_client_post(
             **kwargs,
         )
     except (BadServer, BadServerFlow) as e:
-        raise handle_exception(e, request_model.host)
+        flow_id = get_flow_id(request_model.host)
+        raise handle_exception(e, flow_id)
     return result
 
 
-def handle_exception(e, host):
+def handle_exception(e, flow_id):
     if isinstance(e, BadServer):
         if 'not a valid user' in e.args[0].status.description.lower():
             return HTTPException(
@@ -140,6 +142,6 @@ def handle_exception(e, host):
             return e
     elif isinstance(e, BadServerFlow):
         if 'no route matched' in e.args[0].lower():
-            return Exception(f'Flow with host {host} can not be found')
+            return Exception(f'Flow with ID {flow_id} can not be found')
         else:
             return e
