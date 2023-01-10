@@ -38,6 +38,7 @@
 
 
 
+
 <a name=release-note-0-0-7></a>
 ## Release Note (`0.0.7`)
 
@@ -1332,4 +1333,31 @@
 ### 🍹 Other Improvements
 
  - [[```dda6fde9```](https://github.com/jina-ai/now/commit/dda6fde914fe956db0470bc0432a47aeebbb9f1d)] __-__ __version__: the next version will be 0.0.45 (*Jina Dev Bot*)
+
+<a name=release-note-0-0-46></a>
+## Release Note (`0.0.46`)
+
+> Release time: 2023-01-10 12:21:46
+
+
+
+🙇 We'd like to thank all contributors for this new release! In particular,
+ IyadhKhalfallah,  Saba Sturua,  Aziz Belaweid,  Florian Hönicke,  Jina Dev Bot,  🙇
+
+
+### 🐞 Bug fixes
+
+ - [[```8e8c55a2```](https://github.com/jina-ai/now/commit/8e8c55a212b390ea31737dd28ece64ac7e1f7460)] __-__ add tags to docarrays (#906) (*IyadhKhalfallah*)
+ - [[```1b05cc51```](https://github.com/jina-ai/now/commit/1b05cc5144e5f425eb543b16463900725a00f599)] __-__ filter construction in bff (#898) (*Saba Sturua*)
+ - [[```884b8ab1```](https://github.com/jina-ai/now/commit/884b8ab1fa9b6d7a7db3387bc26b6c3940aa5e44)] __-__ bug docarray pull (#896) (*Aziz Belaweid*)
+ - [[```8d1b9949```](https://github.com/jina-ai/now/commit/8d1b9949b93f5a42768986a481785ea948741c74)] __-__ cd (#903) (*Florian Hönicke*)
+ - [[```189f0895```](https://github.com/jina-ai/now/commit/189f089502bbf36d2d8dadeddda3cf011ac3f39a)] __-__ patching docs (#899) (*Florian Hönicke*)
+
+### 🧼 Code Refactoring
+
+ - [[```c18c8625```](https://github.com/jina-ai/now/commit/c18c8625ac4d50b3745f766f325099af48352601)] __-__ deployment of bff (#904) (*Florian Hönicke*)
+
+### 🍹 Other Improvements
+
+ - [[```2aa47c02```](https://github.com/jina-ai/now/commit/2aa47c026a7d7ed7574719581ea2c2205af4ed30)] __-__ __version__: the next version will be 0.0.46 (*Jina Dev Bot*)
 
