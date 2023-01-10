@@ -101,10 +101,9 @@ class NOWPreprocessor(Executor):
                         d.chunks[:, 'uri'] = cloud_uri
                     return d
 
-                for d in docs:
-                    for c in d.chunks:
-                        # TODO please fix this hack - uri should not be in tags
-                        move_uri(c)
+                for c in docs['@c,cc']:
+                    # TODO please fix this hack - uri should not be in tags
+                    move_uri(c)
         return docs
 
     @secure_request(on=None, level=SecurityLevel.USER)
