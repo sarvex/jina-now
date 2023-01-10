@@ -127,6 +127,7 @@ def get_auth_executor_class():
             # TODO admin email must be persisted as well
             # TODO also, please remove duplicate code
 
+            print(f"workspace: {self.workspace}")
             self.user_input_path = (
                 os.path.join(self.workspace, 'user_input.json')
                 if self.workspace
@@ -145,7 +146,9 @@ def get_auth_executor_class():
 
             if self.user_input_path and os.path.exists(self.user_input_path):
                 with open(self.user_input_path, 'r') as fp:
+                    print(f"updating user_input_dict from: {user_input_dict}")
                     user_input_dict = json.load(fp)
+                    print(f"updated user_input_dict to: {user_input_dict}")
             self._update_user_input(user_input_dict)
             if self.api_keys_path and os.path.exists(self.api_keys_path):
                 with open(self.api_keys_path, 'r') as fp:
