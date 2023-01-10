@@ -45,6 +45,7 @@ class UserInput(BaseModel):
     deployment_type: Optional[str] = None
     secured: Optional[StrictBool] = None
     jwt: Optional[Dict[str, str]] = None
+    admin_name: Optional[str] = None
     admin_emails: Optional[List[str]] = None
     user_emails: Optional[List[str]] = None
     additional_user: Optional[StrictBool] = None

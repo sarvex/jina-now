@@ -136,6 +136,7 @@ def get_info_hubble(user_input):
             'Your hubble account is not verified. Please verify your account to deploy your flow as admin.'
         )
     user_input.jwt = {'token': client.token}
+    user_input.admin_name = response['data']['name']
     return response['data'], client.token
 
 
@@ -213,6 +214,7 @@ def convert_fn(
     d: Document, tmpdir, aws_access_key_id, aws_secret_access_key, aws_region_name
 ) -> Document:
     """Downloads files and tags from S3 bucket and updates the content uri and the tags uri to the local path"""
+
     bucket = get_bucket(
         uri=d.uri,
         aws_access_key_id=aws_access_key_id,
@@ -223,13 +225,14 @@ def convert_fn(
 
     d.uri = download_from_bucket(tmpdir, d.uri, bucket)
     if d.uri.endswith('.json'):
+        d.load_uri_to_text()
         json_dict = json.loads(d.text)
         field_name = d._metadata['field_name']
         field_value = get_dict_value_for_flattened_key(
             json_dict, field_name.split('__')
         )
-        with open(d.uri, 'w') as fp:
-            fp.write(field_value)
+        d.text = field_value
+        d.uri = ''
     return d
 
 

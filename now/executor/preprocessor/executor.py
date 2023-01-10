@@ -114,32 +114,4 @@ class NOWPreprocessor(Executor):
         :param docs: loaded data but not preprocessed
         :return: preprocessed documents which are ready to be encoded and indexed
         """
-        self.patch_docarray(docs)
         return self._preprocess_maybe_cloud_download(docs=docs)
-
-    def patch_docarray(self, docs: DocumentArray):
-        """This function modifies the documents to make sure they support features that we are missing at the moment"""
-        # 1. each attribute of the multi-modal document should know it's name
-        field_names_to_dataclass_fields = (
-            self.user_input.field_names_to_dataclass_fields
-            if self.user_input and self.user_input.field_names_to_dataclass_fields
-            else {}
-        )
-        dataclass_fields_to_field_names = {
-            v: k for k, v in field_names_to_dataclass_fields.items()
-        }
-
-        for doc in docs:
-            # we have some singe-modal documents in our tests.
-            # Therefore, they have no 'multi_modal_schema' and we have to do this if condition.
-            # it can be removed once we adjusted the tests in this ticket:
-            # https://github.com/jina-ai/now/issues/893
-            for dataclass_field in (
-                doc._metadata['multi_modal_schema']
-                if 'multi_modal_schema' in doc._metadata
-                else []
-            ):
-                field_name = dataclass_fields_to_field_names.get(dataclass_field, None)
-                getattr(doc, dataclass_field).tags['field_name'] = field_name
-
-        return docs

@@ -21,7 +21,7 @@ router = APIRouter()
     summary='Search data via query',
 )
 def search(data: SearchRequestModel):
-    # temporary class until actual mm docs are created
+    # temporary class until actual mm docs are created.
     @dataclass
     class MMQueryDoc:
         query_text: Text = field(default=None)
