@@ -17,23 +17,6 @@ from now.now_dataclasses import UserInput
 from now.utils import sigmap
 
 
-def _construct_tags_field(document: Document, field) -> Document:
-    """
-    Create a multimodal docarray structure from a unimodal `Document`.
-    """
-    if document.blob:
-        modality_value = document.blob
-    elif document.uri:
-        modality_value = document.uri
-    elif document.text:
-        modality_value = document.text
-    elif document.tensor:
-        modality_value = document.tensor
-
-        raise Exception(f'Document {document} cannot be transformed.')
-    return {field: modality_value}
-
-
 def _add_tags_to_da(da: DocumentArray, user_input: UserInput):
     non_index_fields = list(
         set(user_input.index_field_candidates_to_modalities.keys())
@@ -42,7 +25,9 @@ def _add_tags_to_da(da: DocumentArray, user_input: UserInput):
     for d in da:
         for field in non_index_fields:
             non_index_field_doc = getattr(d, field, None)
-            d.tags.update(_construct_tags_field(non_index_field_doc, field))
+            d.tags.update(
+                {field: non_index_field_doc.content or non_index_field_doc.uri}
+            )
     return da
 
 
