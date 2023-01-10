@@ -49,7 +49,8 @@ def test_ocr_with_bucket(file_path, modality, num_chunks, ocr_text):
             'dataset_type': DatasetTypes.S3_BUCKET,
             'index_fields': [],
             'aws_region_name': 'test',
-        }
+        },
+        workspace=None,
     )
 
     bucket_mock = Mock()
@@ -60,18 +61,10 @@ def test_ocr_with_bucket(file_path, modality, num_chunks, ocr_text):
         da_index,
         return_results=True,
     )
-    print("res_index")
-    res_index.summary()
     assert len(res_index) == 1
     for d in res_index:
-        print("\n-----------\nd")
-        d.summary()
         c = d.chunks[0]
-        print("\n-----------\nc")
-        c.summary()
         cc = c.chunks[0]
-        print("\n-----------\ncc")
-        cc.summary()
         assert len(cc.blob) > 0
         assert cc.uri == uri
         assert c.uri == uri
