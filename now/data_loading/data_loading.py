@@ -52,12 +52,6 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
         da = _extract_es_data(user_input=user_input, data_class=data_class)
     elif user_input.dataset_type == DatasetTypes.DEMO:
         print('⬇  Download DocumentArray dataset')
-        # if (
-        #    get_email().split('@')[-1] == 'jina.ai'
-        #    and user_input.dataset_type == DatasetTypes.DEMO
-        # ):
-        #    dataset_name = 'team-now/' + user_input.dataset_name
-        # else:
         dataset_name = (
             f'{user_input.admin_name}/{user_input.dataset_name}'
             if '/' not in user_input.dataset_name
