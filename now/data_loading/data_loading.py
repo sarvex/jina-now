@@ -51,6 +51,7 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
             )
         da = DocumentArray.pull(name=dataset_name, show_progress=True)
     da = set_modality_da(da)
+    add_metadata_to_da(da, user_input)
     if da is None:
         raise ValueError(
             f'Could not load DocumentArray dataset. Please check your configuration: {user_input}.'
@@ -58,6 +59,17 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
     if 'NOW_CI_RUN' in os.environ:
         da = da[:50]
     return da
+
+
+def add_metadata_to_da(da, user_input):
+    dataclass_fields_to_field_names = {
+        v: k for k, v in user_input.field_names_to_dataclass_fields.items()
+    }
+    for doc in da:
+        for dataclass_field, meta_dict in doc._metadata['multi_modal_schema'].items():
+            field_name = dataclass_fields_to_field_names.get(dataclass_field, None)
+            if 'position' in meta_dict:
+                getattr(doc, dataclass_field)._metadata['field_name'] = field_name
 
 
 def _pull_docarray(dataset_name: str, admin_name: str) -> DocumentArray:
@@ -72,8 +84,8 @@ def _pull_docarray(dataset_name: str, admin_name: str) -> DocumentArray:
             )
     except Exception:
         raise ValueError(
-            'DocumentArray does not exist or you do not have access to it'
-            'Make sure to add user name as a prefix. Check documentation here.'
+            'DocumentArray does not exist or you do not have access to it. '
+            'Make sure to add user name as a prefix. Check documentation here. '
             'https://docarray.jina.ai/fundamentals/cloud-support/data-management/'
         )
 
