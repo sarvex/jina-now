@@ -10,11 +10,11 @@ from now.common.detect_schema import (
     get_first_file_in_folder_structure_s3,
     get_s3_bucket_and_folder_prefix,
 )
-from now.constants import AVAILABLE_MODALITIES_FOR_SEARCH, DatasetTypes
+from now.constants import DatasetTypes
 from now.data_loading.elasticsearch import ElasticsearchExtractor
 from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
-from now.utils import docarray_typing_to_modality_string, sigmap
+from now.utils import sigmap
 
 
 def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
@@ -40,6 +40,7 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
         print('⬇  Download DocumentArray dataset')
         da = DocumentArray.pull(name=user_input.dataset_name, show_progress=True)
     da = set_modality_da(da)
+    add_metadata_to_da(da, user_input)
     if da is None:
         raise ValueError(
             f'Could not load DocumentArray dataset. Please check your configuration: {user_input}.'
@@ -47,6 +48,17 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
     if 'NOW_CI_RUN' in os.environ:
         da = da[:50]
     return da
+
+
+def add_metadata_to_da(da, user_input):
+    dataclass_fields_to_field_names = {
+        v: k for k, v in user_input.field_names_to_dataclass_fields.items()
+    }
+    for doc in da:
+        for dataclass_field, meta_dict in doc._metadata['multi_modal_schema'].items():
+            field_name = dataclass_fields_to_field_names.get(dataclass_field, None)
+            if 'position' in meta_dict:
+                getattr(doc, dataclass_field)._metadata['field_name'] = field_name
 
 
 def _pull_docarray(dataset_name: str):
@@ -323,14 +335,17 @@ def _get_modality(document: Document):
 
     :param document: The document to detect the modality for.
     """
-    for modality in AVAILABLE_MODALITIES_FOR_SEARCH:
-        modality_string = docarray_typing_to_modality_string(modality)
-        if (
-            modality_string in document.modality
-            or modality_string in document.mime_type
-        ):
-            return modality_string
-    return None
+
+    modalities = ['text', 'image', 'video']
+    if document.modality:
+        return document.modality
+    mime_type_class = document.mime_type.split('/')[0]
+    if document.mime_type == 'application/json':
+        return 'text'
+    if mime_type_class in modalities:
+        return mime_type_class
+    document.summary()
+    raise ValueError(f'Unknown modality')
 
 
 def set_modality_da(documents: DocumentArray):

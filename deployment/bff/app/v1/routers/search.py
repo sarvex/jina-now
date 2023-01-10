@@ -21,7 +21,7 @@ router = APIRouter()
     summary='Search data via query',
 )
 def search(data: SearchRequestModel):
-    # temporary class until actual mm docs are created
+    # temporary class until actual mm docs are created.
     @dataclass
     class MMQueryDoc:
         query_text: Text = field(default=None)
@@ -56,12 +56,13 @@ def search(data: SearchRequestModel):
         results = {}
 
         for field_name, chunk in field_names_and_chunks:
-            if chunk.uri:
-                result = {'uri': chunk.uri}
-            elif chunk.blob:
+            if chunk.blob:
                 result = {'blob': base64.b64encode(chunk.blob).decode('utf-8')}
             elif chunk.text:
                 result = {'text': chunk.text}
+            elif chunk.uri:
+                # in case we have content and uri, the content is preferred
+                result = {'uri': chunk.uri}
             else:
                 raise Exception('Result without content', doc.id, doc.tags)
             results[field_name] = result
