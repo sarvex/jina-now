@@ -17,6 +17,20 @@ from now.now_dataclasses import UserInput
 from now.utils import sigmap
 
 
+def _add_tags_to_da(da: DocumentArray, user_input: UserInput):
+    non_index_fields = list(
+        set(user_input.index_field_candidates_to_modalities.keys())
+        - set(user_input.index_fields)
+    )
+    for d in da:
+        for field in non_index_fields:
+            non_index_field_doc = getattr(d, field, None)
+            d.tags.update(
+                {field: non_index_field_doc.content or non_index_field_doc.uri}
+            )
+    return da
+
+
 def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
     """Based on the user input, this function will pull the configured DocumentArray dataset ready for the preprocessing
     executor.
@@ -28,7 +42,7 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
     da = None
     if user_input.dataset_type == DatasetTypes.DOCARRAY:
         print('⬇  Pull DocumentArray dataset')
-        da = _pull_docarray(user_input.dataset_name)
+        da = _pull_docarray(user_input.dataset_name, user_input.admin_name)
     elif user_input.dataset_type == DatasetTypes.PATH:
         print('💿  Loading files from disk')
         da = _load_from_disk(user_input=user_input, data_class=data_class)
@@ -38,8 +52,22 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
         da = _extract_es_data(user_input=user_input, data_class=data_class)
     elif user_input.dataset_type == DatasetTypes.DEMO:
         print('⬇  Download DocumentArray dataset')
-        da = DocumentArray.pull(name=user_input.dataset_name, show_progress=True)
+        if (
+            'LOCAL_TESTING' in os.environ
+            and user_input.dataset_type == DatasetTypes.DEMO
+        ):
+            dataset_name = 'team-now/' + user_input.dataset_name
+        else:
+            dataset_name = (
+                f'{user_input.admin_name}/{user_input.dataset_name}'
+                if '/' not in user_input.dataset_name
+                else user_input.dataset_name
+            )
+        da = DocumentArray.pull(
+            name=dataset_name, show_progress=True, local_cache=False
+        )
     da = set_modality_da(da)
+    da = _add_tags_to_da(da, user_input)
     add_metadata_to_da(da, user_input)
     if da is None:
         raise ValueError(
@@ -61,7 +89,7 @@ def add_metadata_to_da(da, user_input):
                 getattr(doc, dataclass_field)._metadata['field_name'] = field_name
 
 
-def _pull_docarray(dataset_name: str):
+def _pull_docarray(dataset_name: str, admin_name: str) -> DocumentArray:
     try:
         docs = DocumentArray.pull(name=dataset_name, show_progress=True)
         if is_multimodal(docs[0]):
@@ -73,7 +101,9 @@ def _pull_docarray(dataset_name: str):
             )
     except Exception:
         raise ValueError(
-            '💔 oh no, the secret of your docarray is wrong, or it was deleted after 14 days'
+            'DocumentArray does not exist or you do not have access to it. '
+            'Make sure to add user name as a prefix. Check documentation here. '
+            'https://docarray.jina.ai/fundamentals/cloud-support/data-management/'
         )
 
 

@@ -110,7 +110,7 @@ def _get_demo_data_choices(user_input: UserInput, **kwargs):
     for demo_datasets in user_input.app_instance.demo_datasets.values():
         all_demo_datasets.extend(demo_datasets)
     return [
-        {'name': demo_data.display_name, 'value': demo_data.name}
+        {'name': demo_data.display_name, 'value': 'team-now/' + demo_data.name}
         for demo_data in all_demo_datasets
     ]
 
@@ -130,7 +130,7 @@ DEMO_DATA = DialogOptions(
 
 DOCARRAY_NAME = DialogOptions(
     name='dataset_name',
-    prompt_message='Please enter your DocumentArray name:',
+    prompt_message='Please enter your DocArray name:',
     prompt_type='input',
     depends_on=DATASET_TYPE,
     conditional_check=lambda user_input: user_input.dataset_type

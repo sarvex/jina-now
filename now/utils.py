@@ -136,6 +136,7 @@ def get_info_hubble(user_input):
             'Your hubble account is not verified. Please verify your account to deploy your flow as admin.'
         )
     user_input.jwt = {'token': client.token}
+    user_input.admin_name = response['data']['name']
     return response['data'], client.token
 
 
