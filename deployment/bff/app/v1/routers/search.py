@@ -38,7 +38,11 @@ def search(data: SearchRequestModel):
     docs = jina_client_post(
         endpoint='/search',
         inputs=query_doc,
-        parameters={'limit': data.limit, 'filter': query_filter},
+        parameters={
+            'limit': data.limit,
+            'filter': query_filter,
+            'create_temp_link': data.create_temp_link,
+        },
         request_model=data,
     )
     matches = []
