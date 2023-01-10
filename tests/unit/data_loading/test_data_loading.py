@@ -44,7 +44,7 @@ def mock_download(mocker: MockerFixture, da: DocumentArray):
 
 @pytest.fixture(autouse=True)
 def mock_pull(mocker: MockerFixture, da: DocumentArray):
-    def fake_pull(secret: str) -> DocumentArray:
+    def fake_pull(secret: str, admin_name: str) -> DocumentArray:
         return da
 
     mocker.patch('now.data_loading.data_loading._pull_docarray', fake_pull)
@@ -112,6 +112,9 @@ def test_da_custom_ds(da: DocumentArray):
     user_input.dataset_name = 'team-now/' + DemoDatasetNames.DEEP_FASHION
     user_input.index_fields = ['image']
     user_input.index_field_candidates_to_modalities = {'image': Image, 'label': Text}
+    user_input.dataset_name = DemoDatasetNames.DEEP_FASHION
+    user_input.admin_name = 'team-now'
+
     loaded_da = load_data(user_input)
 
     assert len(loaded_da) > 0

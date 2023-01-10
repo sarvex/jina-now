@@ -14,11 +14,7 @@ from now.common.detect_schema import (
     get_first_file_in_folder_structure_s3,
     get_s3_bucket_and_folder_prefix,
 )
-from now.constants import (
-    AVAILABLE_MODALITIES_FOR_SEARCH,
-    SUPPORTED_FILE_TYPES,
-    DatasetTypes,
-)
+from now.constants import SUPPORTED_FILE_TYPES, DatasetTypes
 from now.data_loading.create_dataclass import (
     create_dataclass,
     create_dataclass_fields_file_mappings,
@@ -26,25 +22,7 @@ from now.data_loading.create_dataclass import (
 from now.data_loading.elasticsearch import ElasticsearchExtractor
 from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
-from now.utils import docarray_typing_to_modality_string, sigmap
-
-
-def _construct_tags(document: Document, field) -> Document:
-    """
-    Create a multimodal docarray structure from a unimodal `Document`.
-    """
-    if document.blob:
-        modality_value = document.blob
-    elif document.uri:
-        modality_value = document.uri
-    elif document.text:
-        modality_value = document.text
-    elif document.tensor:
-        modality_value = document.tensor
-    else:
-        document.summary()
-        raise Exception(f'Document {document} cannot be transformed.')
-    return {field: modality_value}
+from now.utils import sigmap
 
 
 def _field_dict_to_mm_doc(
@@ -110,32 +88,38 @@ def _field_dict_to_mm_doc(
 def get_da_with_index_fields(da: DocumentArray, user_input: UserInput):
     dataclass = create_dataclass(user_input)
     clean_da = []
-    non_index_fields = list(
-        set(user_input.index_field_candidates_to_modalities.keys())
-        - set(user_input.index_fields)
-    )
     for d in da:
         dict_index_fields = {}
-        dict_non_index_fields = {}
         dataclass_mappings = create_dataclass_fields_file_mappings(
             user_input.index_fields, user_input.index_field_candidates_to_modalities
         )
-        for field in non_index_fields:
-            non_index_field_doc = getattr(d, field, None)
-            dict_non_index_fields.update(_construct_tags(non_index_field_doc, field))
         for field in user_input.index_fields:
             _index_field_doc = getattr(d, field, None)
             dict_index_fields[field] = _index_field_doc
         mm_doc = _field_dict_to_mm_doc(dict_index_fields, dataclass, dataclass_mappings)
-        mm_doc.tags.update(dict_non_index_fields)
         clean_da.append(mm_doc)
     clean_da = DocumentArray(clean_da)
     return clean_da
 
 
+def _add_tags_to_da(da: DocumentArray, user_input: UserInput):
+    non_index_fields = list(
+        set(user_input.index_field_candidates_to_modalities.keys())
+        - set(user_input.index_fields)
+    )
+    for d in da:
+        for field in non_index_fields:
+            non_index_field_doc = getattr(d, field, None)
+            d.tags.update(
+                {field: non_index_field_doc.content or non_index_field_doc.uri}
+            )
+    return da
+
+
 def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
     """Based on the user input, this function will pull the configured DocumentArray dataset ready for the preprocessing
     executor.
+
     :param user_input: The configured user object. Result from the Jina Now cli dialog.
     :param data_class: The dataclass that should be used for the DocumentArray.
     :return: The loaded DocumentArray.
@@ -143,7 +127,7 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
     da = None
     if user_input.dataset_type == DatasetTypes.DOCARRAY:
         print('⬇  Pull DocumentArray dataset')
-        da = _pull_docarray(user_input.dataset_name)
+        da = _pull_docarray(user_input.dataset_name, user_input.admin_name)
         da = get_da_with_index_fields(da, user_input)
     elif user_input.dataset_type == DatasetTypes.PATH:
         print('💿  Loading files from disk')
@@ -154,9 +138,23 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
         da = _extract_es_data(user_input=user_input, data_class=data_class)
     elif user_input.dataset_type == DatasetTypes.DEMO:
         print('⬇  Download DocumentArray dataset')
-        da = DocumentArray.pull(name=user_input.dataset_name, show_progress=True)
+        if (
+            'LOCAL_TESTING' in os.environ
+            and user_input.dataset_type == DatasetTypes.DEMO
+        ):
+            dataset_name = 'team-now/' + user_input.dataset_name
+        else:
+            dataset_name = (
+                f'{user_input.admin_name}/{user_input.dataset_name}'
+                if '/' not in user_input.dataset_name
+                else user_input.dataset_name
+            )
+        da = DocumentArray.pull(
+            name=dataset_name, show_progress=True, local_cache=False
+        )
         da = get_da_with_index_fields(da, user_input)
     da = set_modality_da(da)
+    da = _add_tags_to_da(da, user_input)
     add_metadata_to_da(da, user_input)
     if da is None:
         raise ValueError(
@@ -178,7 +176,7 @@ def add_metadata_to_da(da, user_input):
                 getattr(doc, dataclass_field)._metadata['field_name'] = field_name
 
 
-def _pull_docarray(dataset_name: str):
+def _pull_docarray(dataset_name: str, admin_name: str) -> DocumentArray:
     try:
         docs = DocumentArray.pull(name=dataset_name, show_progress=True)
         if is_multimodal(docs[0]):
@@ -190,7 +188,9 @@ def _pull_docarray(dataset_name: str):
             )
     except Exception:
         raise ValueError(
-            '💔 oh no, the secret of your docarray is wrong, or it was deleted after 14 days'
+            'DocumentArray does not exist or you do not have access to it. '
+            'Make sure to add user name as a prefix. Check documentation here. '
+            'https://docarray.jina.ai/fundamentals/cloud-support/data-management/'
         )
 
 
@@ -213,6 +213,7 @@ def _extract_es_data(user_input: UserInput, data_class: Type) -> DocumentArray:
 def _load_from_disk(user_input: UserInput, data_class: Type) -> DocumentArray:
     """
     Loads the data from disk into multimodal documents.
+
     :param user_input: The user input object.
     :param data_class: The dataclass to use for the DocumentArray.
     """
@@ -257,10 +258,12 @@ def from_files_local(
     data_class: Type,
 ) -> DocumentArray:
     """Creates a Multi Modal documentarray over a list of file path or the content of the files.
+
     :param path: The path to the directory
     :param fields: The fields to search for in the directory
     :param field_names_to_dataclass_fields: The mapping of the field names to the dataclass fields
     :param data_class: The dataclass to use for the document
+
     :return: A DocumentArray with the documents
     """
 
@@ -293,12 +296,14 @@ def create_docs_from_subdirectories(
 ) -> List[Document]:
     """
     Creates a Multi Modal documentarray over a list of subdirectories.
+
     :param file_paths: The list of file paths
     :param fields: The fields to search for in the directory
     :param field_names_to_dataclass_fields: The mapping of the field names to the dataclass fields
     :param data_class: The dataclass to use for the document
     :param path: The path to the directory
     :param is_s3_dataset: Whether the dataset is stored on s3
+
     :return: The list of documents
     """
 
@@ -345,12 +350,14 @@ def create_docs_from_files(
 ) -> List[Document]:
     """
     Creates a Multi Modal documentarray over a list of files.
+
     :param file_paths: List of file paths
     :param fields: The fields to search for in the directory
     :param field_names_to_dataclass_fields: The mapping of the files to the dataclass fields
     :param data_class: The dataclass to use for the document
     :param path: The path to the directory
     :param is_s3_dataset: Whether the dataset is stored on s3
+
     :return: A list of documents
     """
     docs = []
@@ -373,8 +380,10 @@ def _list_files_from_s3_bucket(
 ) -> DocumentArray:
     """
     Loads the data from s3 into multimodal documents.
+
     :param user_input: The user input object.
     :param data_class: The dataclass to use for the DocumentArray.
+
     :return: The DocumentArray with the documents.
     """
     bucket, folder_prefix = get_s3_bucket_and_folder_prefix(user_input)
@@ -421,9 +430,11 @@ def _list_files_from_s3_bucket(
 def _extract_file_and_full_file_path(file_path, path=None, is_s3_dataset=False):
     """
     Extracts the file name and the full file path from s3 object.
+
     :param file_path: The file path
     :param path: The path to the directory
     :param is_s3_dataset: Whether the dataset is stored on s3
+
     :return: The file name and the full file path
     """
     if is_s3_dataset:
@@ -438,22 +449,28 @@ def _extract_file_and_full_file_path(file_path, path=None, is_s3_dataset=False):
 def _get_modality(document: Document):
     """
     Detect document's modality based on its `modality` or `mime_type` attributes.
+
     :param document: The document to detect the modality for.
     """
-    for modality in AVAILABLE_MODALITIES_FOR_SEARCH:
-        modality_string = docarray_typing_to_modality_string(modality)
-        if (
-            modality_string in document.modality
-            or modality_string in document.mime_type
-        ):
-            return modality_string
-    return None
+
+    modalities = ['text', 'image', 'video']
+    if document.modality:
+        return document.modality
+    mime_type_class = document.mime_type.split('/')[0]
+    if document.mime_type == 'application/json':
+        return 'text'
+    if mime_type_class in modalities:
+        return mime_type_class
+    document.summary()
+    raise ValueError(f'Unknown modality')
 
 
 def set_modality_da(documents: DocumentArray):
     """
     Set document's modality based on its `modality` or `mime_type` attributes.
+
     :param documents: The DocumentArray to set the modality for.
+
     :return: The DocumentArray with the modality set.
     """
     for doc in documents:
