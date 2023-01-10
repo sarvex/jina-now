@@ -4,10 +4,10 @@ from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.146-fix-webcam-not-working-1'
-NOW_PREPROCESSOR_VERSION = '0.0.120-fix-tag-filters-2'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.142-fix-tag-filters-2'
-NOW_AUTOCOMPLETE_VERSION = '0.0.8-feat-fix-tag-filters-2'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.146-fix-webcam-not-working-2'
+NOW_PREPROCESSOR_VERSION = '0.0.120-fix-pull-docarray-4'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.142-fix-pull-docarray-4'
+NOW_AUTOCOMPLETE_VERSION = '0.0.8-fix-pull-docarray-4'
 
 
 class Apps(BetterEnum):
