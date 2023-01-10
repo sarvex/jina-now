@@ -412,7 +412,6 @@ def test_backend_custom_data(
         f'http://localhost:30090/api/v1/search-app/search',
         json=request_body,
     )
-
     assert (
         response.status_code == 200
     ), f"Received code {response.status_code} with text: {response.json()['message']}"
@@ -421,6 +420,24 @@ def test_backend_custom_data(
     for doc in response_json:
         field = list(doc['fields'].values())[0]
         assert field['uri'].startswith('s3://'), f"received: {doc}"
+        assert (
+            'blob' not in field.keys() or field['blob'] is None or field['blob'] == ''
+        )
+
+    # test getting temporary links
+    request_body['create_temp_link'] = True
+    response = requests.post(
+        f'http://localhost:30090/api/v1/search-app/search',
+        json=request_body,
+    )
+    assert (
+        response.status_code == 200
+    ), f"Received code {response.status_code} with text: {response.json()['message']}"
+    response_json = response.json()
+    assert len(response_json) == 2
+    for doc in response_json:
+        field = list(doc['fields'].values())[0]
+        assert not field['uri'].startswith('s3://'), f"received: {doc}"
         assert (
             'blob' not in field.keys() or field['blob'] is None or field['blob'] == ''
         )
