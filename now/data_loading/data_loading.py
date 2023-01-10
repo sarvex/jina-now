@@ -49,7 +49,9 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
                 if '/' not in user_input.dataset_name
                 else user_input.dataset_name
             )
-        da = DocumentArray.pull(name=dataset_name, show_progress=True)
+        da = DocumentArray.pull(
+            name=dataset_name, show_progress=True, local_cache=False
+        )
     da = set_modality_da(da)
     add_metadata_to_da(da, user_input)
     if da is None:
