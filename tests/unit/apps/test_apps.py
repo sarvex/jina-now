@@ -2,8 +2,10 @@ import os
 
 import pytest
 from docarray import Document, DocumentArray
+from docarray.typing import Text
 
 from now.app.search_app import SearchApp
+from now.app.search_app.app import SearchApp
 from now.common.options import construct_app
 from now.constants import Apps
 from now.now_dataclasses import UserInput
@@ -43,6 +45,8 @@ def test_disable_telemetry(disable):
     app = SearchApp()
     user_input = UserInput()
     user_input.flow_name = 'flow'
+    user_input.index_field_candidates_to_modalities = {'text': Text}
+    user_input.index_fields = ['text']
     user_input.deployment_type = 'local'
     user_input.app_instance = app
     da = DocumentArray(

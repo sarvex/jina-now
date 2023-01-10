@@ -21,7 +21,6 @@ def update_emails(deployment_type, emails, remote_host=None):
         f'{url}/admin/updateUserEmails',
         json=request_body,
     )
-    print()
 
 
 if __name__ == '__main__':

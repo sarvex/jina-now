@@ -11,7 +11,6 @@ from jina import Client
 from jina.excepts import BadServer, BadServerFlow
 
 from now.constants import SUPPORTED_FILE_TYPES
-from now.now_dataclasses import UserInput
 
 
 def field_dict_to_mm_doc(
@@ -146,28 +145,3 @@ def handle_exception(e):
             raise e
 
 
-def fetch_user_input(request_model) -> UserInput:
-    """Fetches the user input from the preprocessor.
-
-    :param request_model: contains the request model of the flow
-    :return: user input
-    """
-    client = get_jina_client(host=request_model.host, port=request_model.port)
-    auth_dict = {}
-    if request_model.api_key is not None:
-        auth_dict['api_key'] = request_model.api_key
-    if request_model.jwt is not None:
-        auth_dict['jwt'] = request_model.jwt
-    user_input_flow_response = client.post(
-        '/get_user_input',
-        inputs=DocumentArray(),
-        parameters=auth_dict,
-        target_executor=r'\Apreprocessor\Z',
-        return_responses=True,
-    )[0].parameters
-    user_input_dict = list(user_input_flow_response['__results__'].values())[0][
-        'user_input'
-    ]
-    user_input = UserInput(**user_input_dict)
-
-    return user_input

@@ -75,9 +75,9 @@ jobs:
         timeout-minutes: 15
         run: |
           pytest --suppress-no-test-exit-code -v -s tests/executor/auth
-          pytest --suppress-no-test-exit-code -v -s tests/executor/indexer/base
-          pytest --suppress-no-test-exit-code -v -s tests/executor/indexer/elastic
+          pytest --suppress-no-test-exit-code -v -s tests/executor/indexer
           pytest --suppress-no-test-exit-code -v -s tests/executor/preprocessor
+          pytest --suppress-no-test-exit-code -v -s tests/executor/autocomplete
 #      - name: Setup tmate session for debugging
 #        if: ${{ failure() || (github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled) }}
 #        uses: mxschmitt/action-tmate@v3

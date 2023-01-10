@@ -35,10 +35,12 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
     elif user_input.dataset_type == DatasetTypes.S3_BUCKET:
         da = _list_files_from_s3_bucket(user_input=user_input, data_class=data_class)
     elif user_input.dataset_type == DatasetTypes.ELASTICSEARCH:
-        da = _extract_es_data(user_input)
+        da = _extract_es_data(user_input=user_input, data_class=data_class)
     elif user_input.dataset_type == DatasetTypes.DEMO:
         print('⬇  Download DocumentArray dataset')
         da = DocumentArray.pull(name=user_input.dataset_name, show_progress=True)
+    da = set_modality_da(da)
+    add_metadata_to_da(da, user_input)
     if da is None:
         raise ValueError(
             f'Could not load DocumentArray dataset. Please check your configuration: {user_input}.'
@@ -46,6 +48,17 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
     if 'NOW_CI_RUN' in os.environ:
         da = da[:50]
     return da
+
+
+def add_metadata_to_da(da, user_input):
+    dataclass_fields_to_field_names = {
+        v: k for k, v in user_input.field_names_to_dataclass_fields.items()
+    }
+    for doc in da:
+        for dataclass_field, meta_dict in doc._metadata['multi_modal_schema'].items():
+            field_name = dataclass_fields_to_field_names.get(dataclass_field, None)
+            if 'position' in meta_dict:
+                getattr(doc, dataclass_field)._metadata['field_name'] = field_name
 
 
 def _pull_docarray(dataset_name: str):
@@ -64,7 +77,7 @@ def _pull_docarray(dataset_name: str):
         )
 
 
-def _extract_es_data(user_input: UserInput) -> DocumentArray:
+def _extract_es_data(user_input: UserInput, data_class: Type) -> DocumentArray:
     query = {
         'query': {'match_all': {}},
         '_source': True,
@@ -72,9 +85,11 @@ def _extract_es_data(user_input: UserInput) -> DocumentArray:
     es_extractor = ElasticsearchExtractor(
         query=query,
         index=user_input.es_index_name,
+        user_input=user_input,
+        data_class=data_class,
         connection_str=user_input.es_host_name,
     )
-    extracted_docs = es_extractor.extract(index_fields=user_input.index_fields)
+    extracted_docs = es_extractor.extract()
     return extracted_docs
 
 
@@ -108,7 +123,7 @@ def _load_from_disk(user_input: UserInput, data_class: Type) -> DocumentArray:
             docs = from_files_local(
                 dataset_path,
                 user_input.index_fields + user_input.filter_fields,
-                user_input.files_to_dataclass_fields,
+                user_input.field_names_to_dataclass_fields,
                 data_class,
             )
             return docs
@@ -122,14 +137,14 @@ def _load_from_disk(user_input: UserInput, data_class: Type) -> DocumentArray:
 def from_files_local(
     path: str,
     fields: List[str],
-    files_to_dataclass_fields: Dict,
+    field_names_to_dataclass_fields: Dict,
     data_class: Type,
 ) -> DocumentArray:
     """Creates a Multi Modal documentarray over a list of file path or the content of the files.
 
     :param path: The path to the directory
     :param fields: The fields to search for in the directory
-    :param files_to_dataclass_fields: The mapping of the files to the dataclass fields
+    :param field_names_to_dataclass_fields: The mapping of the field names to the dataclass fields
     :param data_class: The dataclass to use for the document
 
     :return: A DocumentArray with the documents
@@ -145,11 +160,11 @@ def from_files_local(
     folder_structure = 'sub_folders' if len(current_level[1]) > 0 else 'single_folder'
     if folder_structure == 'sub_folders':
         docs = create_docs_from_subdirectories(
-            file_paths, fields, files_to_dataclass_fields, data_class
+            file_paths, fields, field_names_to_dataclass_fields, data_class
         )
     else:
         docs = create_docs_from_files(
-            file_paths, fields, files_to_dataclass_fields, data_class
+            file_paths, fields, field_names_to_dataclass_fields, data_class
         )
     return DocumentArray(docs)
 
@@ -157,7 +172,7 @@ def from_files_local(
 def create_docs_from_subdirectories(
     file_paths: List,
     fields: List[str],
-    files_to_dataclass_fields: Dict,
+    field_names_to_dataclass_fields: Dict,
     data_class: Type,
     path: str = None,
     is_s3_dataset: bool = False,
@@ -167,7 +182,7 @@ def create_docs_from_subdirectories(
 
     :param file_paths: The list of file paths
     :param fields: The fields to search for in the directory
-    :param files_to_dataclass_fields: The mapping of the files to the dataclass fields
+    :param field_names_to_dataclass_fields: The mapping of the field names to the dataclass fields
     :param data_class: The dataclass to use for the document
     :param path: The path to the directory
     :param is_s3_dataset: Whether the dataset is stored on s3
@@ -191,7 +206,7 @@ def create_docs_from_subdirectories(
                 file, path, is_s3_dataset
             )
             if file in fields:
-                kwargs[files_to_dataclass_fields[file]] = file_full_path
+                kwargs[field_names_to_dataclass_fields[file]] = file_full_path
                 continue
             if file.endswith('.json'):
                 if is_s3_dataset:
@@ -202,8 +217,8 @@ def create_docs_from_subdirectories(
                     with open(file_full_path) as f:
                         data = json.load(f)
                     for el, value in data.items():
-                        if el in files_to_dataclass_fields.keys():
-                            kwargs[files_to_dataclass_fields[el]] = value
+                        if el in field_names_to_dataclass_fields.keys():
+                            kwargs[field_names_to_dataclass_fields[el]] = value
         docs.append(Document(data_class(**kwargs)))
     return docs
 
@@ -211,7 +226,7 @@ def create_docs_from_subdirectories(
 def create_docs_from_files(
     file_paths: List,
     fields: List[str],
-    files_to_dataclass_fields: Dict,
+    field_names_to_dataclass_fields: Dict,
     data_class: Type,
     path: str = None,
     is_s3_dataset: bool = False,
@@ -221,7 +236,7 @@ def create_docs_from_files(
 
     :param file_paths: List of file paths
     :param fields: The fields to search for in the directory
-    :param files_to_dataclass_fields: The mapping of the files to the dataclass fields
+    :param field_names_to_dataclass_fields: The mapping of the files to the dataclass fields
     :param data_class: The dataclass to use for the document
     :param path: The path to the directory
     :param is_s3_dataset: Whether the dataset is stored on s3
@@ -238,7 +253,7 @@ def create_docs_from_files(
         if (
             file_extension == fields[0].split('.')[-1]
         ):  # fields should have only one index field in case of files only
-            kwargs[files_to_dataclass_fields[fields[0]]] = file_full_path
+            kwargs[field_names_to_dataclass_fields[fields[0]]] = file_full_path
             docs.append(Document(data_class(**kwargs)))
     return docs
 
@@ -278,7 +293,7 @@ def _list_files_from_s3_bucket(
             docs = create_docs_from_subdirectories(
                 file_paths,
                 user_input.index_fields + user_input.filter_fields,
-                user_input.files_to_dataclass_fields,
+                user_input.field_names_to_dataclass_fields,
                 data_class,
                 user_input.dataset_path,
                 is_s3_dataset=True,
@@ -287,7 +302,7 @@ def _list_files_from_s3_bucket(
             docs = create_docs_from_files(
                 file_paths,
                 user_input.index_fields + user_input.filter_fields,
-                user_input.files_to_dataclass_fields,
+                user_input.field_names_to_dataclass_fields,
                 data_class,
                 user_input.dataset_path,
                 is_s3_dataset=True,
@@ -312,3 +327,36 @@ def _extract_file_and_full_file_path(file_path, path=None, is_s3_dataset=False):
         file_full_path = file_path
         file = file_path.split(os.sep)[-1]
     return file, file_full_path
+
+
+def _get_modality(document: Document):
+    """
+    Detect document's modality based on its `modality` or `mime_type` attributes.
+
+    :param document: The document to detect the modality for.
+    """
+
+    modalities = ['text', 'image', 'video']
+    if document.modality:
+        return document.modality
+    mime_type_class = document.mime_type.split('/')[0]
+    if document.mime_type == 'application/json':
+        return 'text'
+    if mime_type_class in modalities:
+        return mime_type_class
+    document.summary()
+    raise ValueError(f'Unknown modality')
+
+
+def set_modality_da(documents: DocumentArray):
+    """
+    Set document's modality based on its `modality` or `mime_type` attributes.
+
+    :param documents: The DocumentArray to set the modality for.
+
+    :return: The DocumentArray with the modality set.
+    """
+    for doc in documents:
+        for chunk in doc.chunks:
+            chunk.modality = chunk.modality or _get_modality(chunk)
+    return documents

@@ -9,9 +9,11 @@ import sys
 import tempfile
 from collections.abc import MutableMapping
 from concurrent.futures import ThreadPoolExecutor
-from typing import Dict, List, Optional, Union
+from os.path import expanduser as user
+from typing import Dict, List, Optional, TypeVar, Union
 
 import boto3
+import docarray
 import hubble
 import yaml
 from docarray import Document, DocumentArray
@@ -188,9 +190,12 @@ def prompt_value(
 
 
 def get_local_path(tmpdir, path_s3):
+    # todo check if this method of creatign the path is creating too much overhead
+    # also, the number of files is growing and will never be cleaned up
     return os.path.join(
         str(tmpdir),
-        base64.b64encode(bytes(path_s3, "utf-8")).decode("utf-8"),
+        base64.b64encode(bytes(path_s3, "utf-8")).decode("utf-8")
+        + f'.{path_s3.split(".")[-1] if "." in path_s3 else ""}',  # preserve file ending
     )
 
 
@@ -208,6 +213,7 @@ def convert_fn(
     d: Document, tmpdir, aws_access_key_id, aws_secret_access_key, aws_region_name
 ) -> Document:
     """Downloads files and tags from S3 bucket and updates the content uri and the tags uri to the local path"""
+
     bucket = get_bucket(
         uri=d.uri,
         aws_access_key_id=aws_access_key_id,
@@ -217,13 +223,15 @@ def convert_fn(
     d.tags['uri'] = d.uri
 
     d.uri = download_from_bucket(tmpdir, d.uri, bucket)
-    if 'tag_uri' in d.tags:
-        local_tag_uri = download_from_bucket(tmpdir, d.tags['tag_uri'], bucket)
-        with open(local_tag_uri, 'r') as fp:
-            tags = json.load(fp)
-            tags = flatten_dict(tags)
-            d.tags.update(tags)
-        del d.tags['tag_uri']
+    if d.uri.endswith('.json'):
+        d.load_uri_to_text()
+        json_dict = json.loads(d.text)
+        field_name = d._metadata['field_name']
+        field_value = get_dict_value_for_flattened_key(
+            json_dict, field_name.split('__')
+        )
+        d.text = field_value
+        d.uri = ''
     return d
 
 
@@ -285,6 +293,13 @@ def flatten_dict(d, parent_key='', sep='__'):
     return dict(items)
 
 
+def get_dict_value_for_flattened_key(d, keys):
+    if len(keys) == 0:
+        return d
+    else:
+        return get_dict_value_for_flattened_key(d[keys[0]], keys[1:])
+
+
 def _get_context_names(contexts, active_context=None):
     names = [c for c in contexts] if contexts is not None else []
     if active_context is not None:
@@ -300,6 +315,30 @@ def get_flow_id(host):
 class Dumper(yaml.Dumper):
     def increase_indent(self, flow=False, *args, **kwargs):
         return super().increase_indent(flow=flow, indentless=False)
+
+
+def get_email():
+    try:
+        with open(user('~/.jina/config.json')) as fp:
+            config_val = json.load(fp)
+            user_token = config_val['auth_token']
+            client = hubble.Client(token=user_token, max_retries=None, jsonify=True)
+            response = client.get_user_info()
+        if 'email' in response['data']:
+            return response['data']['email']
+        return ''
+    except FileNotFoundError:
+        return ''
+
+
+def docarray_typing_to_modality_string(T: TypeVar) -> str:
+    """E.g. docarray.typing.Image -> image"""
+    return T.__name__.lower()
+
+
+def modality_string_to_docarray_typing(s: str) -> TypeVar:
+    """E.g. image -> docarray.typing.Image"""
+    return getattr(docarray.typing, s.capitalize())
 
 
 # Add a custom retry exception

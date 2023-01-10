@@ -118,16 +118,21 @@ def call_flow(url_host, data, domain, endpoint):
         elif endpoint == 'search':
             docs = DocumentArray()
             # todo: use multimodal doc in the future
+
             for response_json in response.json():
-                content = list(response_json['fields'].values())[0]
+                chunks = []
+                for name, type_to_content in sorted(response_json['fields'].items()):
+                    chunk = Document(**type_to_content)
+                    if chunk.blob:
+                        base64_bytes = chunk.blob.encode('utf-8')
+                        chunk.blob = base64.decodebytes(base64_bytes)
+
+                    chunks.append(chunk)
                 doc = Document(
                     id=response_json['id'],
                     tags=response_json['tags'],
-                    **content,
+                    chunks=chunks,
                 )
-                if doc.blob:
-                    base64_bytes = doc.blob.encode('utf-8')
-                    doc.blob = base64.decodebytes(base64_bytes)
                 for metric, value in response_json['scores'].items():
                     doc.scores[metric] = NamedScore(value=value['value'])
                 docs.append(doc)
@@ -146,21 +151,24 @@ def call_flow(url_host, data, domain, endpoint):
     st.session_state.error_msg = None
 
     # update URI to temporary URI for any cloud bucket resources
-    docs_cloud = docs.find({'uri': {'$regex': r"\As3://"}})
-    if len(docs_cloud) > 0:
-        del data['query']
-        del data['limit']
-        data['ids'] = docs_cloud[:, 'id']
-        data['uris'] = docs_cloud[:, 'uri']
+    for doc in docs:
+        docs_cloud = doc.chunks.find({'uri': {'$regex': r"\As3://"}})
+        if len(docs_cloud) > 0:
+            if 'query' in data:
+                del data['query']
+            if 'limit' in data:
+                del data['limit']
+            data['ids'] = docs_cloud[:, 'id']
+            data['uris'] = docs_cloud[:, 'uri']
 
-        response_temp_links = requests.post(
-            f"{domain}/api/v1/cloud-bucket-utils/temp_link",
-            json=data,
-            headers={"Content-Type": "application/json; charset=utf-8"},
-        )
-        docs_temp_links = DocumentArray.from_json(response_temp_links.content)
-        for _id, _uri in zip(*docs_temp_links[:, ['id', 'uri']]):
-            docs[_id].uri = _uri
+            response_temp_links = requests.post(
+                f"{domain}/api/v1/cloud-bucket-utils/temp_link",
+                json=data,
+                headers={"Content-Type": "application/json; charset=utf-8"},
+            )
+            docs_temp_links = DocumentArray.from_json(response_temp_links.content)
+            for _id, _uri in zip(*docs_temp_links[:, ['id', 'uri']]):
+                docs_cloud[_id].uri = _uri
     return docs
 
 

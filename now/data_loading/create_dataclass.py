@@ -2,10 +2,11 @@ import typing
 from collections import defaultdict
 from typing import Dict, List
 
-from docarray import dataclass, field
+from docarray import Document, dataclass, field
 
-from now.constants import MODALITIES_MAPPING, DatasetTypes
+from now.constants import AVAILABLE_MODALITIES_FOR_SEARCH, DatasetTypes
 from now.now_dataclasses import UserInput
+from now.utils import docarray_typing_to_modality_string
 
 
 def update_dict_with_no_overwrite(dict1: Dict, dict2: Dict):
@@ -45,14 +46,16 @@ def create_dataclass(user_input: UserInput):
     :return: dataclass object
     """
     all_modalities = {}
-    all_modalities.update(user_input.index_fields_modalities)
-    update_dict_with_no_overwrite(all_modalities, user_input.filter_fields_modalities)
+    all_modalities.update(user_input.index_field_candidates_to_modalities)
+    update_dict_with_no_overwrite(
+        all_modalities, user_input.filter_field_candidates_to_modalities
+    )
 
     file_mapping_to_dataclass_fields = create_dataclass_fields_file_mappings(
         user_input.index_fields + user_input.filter_fields,
         all_modalities,
     )
-    user_input.files_to_dataclass_fields = file_mapping_to_dataclass_fields
+    user_input.field_names_to_dataclass_fields = file_mapping_to_dataclass_fields
     (all_annotations, all_class_attributes,) = create_annotations_and_class_attributes(
         user_input.index_fields + user_input.filter_fields,
         all_modalities,
@@ -63,13 +66,14 @@ def create_dataclass(user_input: UserInput):
     mm_doc = type("MMDoc", (object,), all_class_attributes)
     setattr(mm_doc, '__annotations__', all_annotations)
     mm_doc = dataclass(mm_doc)
+
     return mm_doc
 
 
 def create_annotations_and_class_attributes(
     fields: List,
     fields_modalities: Dict,
-    files_to_dataclass_fields: Dict,
+    field_names_to_dataclass_fields: Dict,
     dataset_type: DatasetTypes,
 ):
     """
@@ -79,7 +83,7 @@ def create_annotations_and_class_attributes(
 
     :param fields: list of fields
     :param fields_modalities: dict of fields and their modalities
-    :param files_to_dataclass_fields: dict of files and their corresponding fields
+    :param field_names_to_dataclass_fields: dict of selected field names and their corresponding fields in dataclass
     :param dataset_type: dataset type
     """
     annotations = {}
@@ -90,13 +94,13 @@ def create_annotations_and_class_attributes(
         if not isinstance(f, typing.Hashable):
             continue
         if dataset_type == DatasetTypes.S3_BUCKET:
-            annotations[files_to_dataclass_fields[f]] = S3Object
-            class_attributes[files_to_dataclass_fields[f]] = field(
+            annotations[field_names_to_dataclass_fields[f]] = S3Object
+            class_attributes[field_names_to_dataclass_fields[f]] = field(
                 setter=my_setter, getter=my_getter, default=''
             )
         else:
-            annotations[files_to_dataclass_fields[f]] = fields_modalities[f]
-            class_attributes[files_to_dataclass_fields[f]] = None
+            annotations[field_names_to_dataclass_fields[f]] = fields_modalities[f]
+            class_attributes[field_names_to_dataclass_fields[f]] = None
     return annotations, class_attributes
 
 
@@ -137,14 +141,13 @@ def create_dataclass_fields_file_mappings(fields: List, fields_modalities: Dict)
     for f in fields:
         if not isinstance(f, typing.Hashable):
             continue
-        for modality_name, modality_type in MODALITIES_MAPPING.items():
-            if fields_modalities[f] == modality_type:
-                dataclass_fields_to_file_mapping[
-                    f'{modality_name}_{modalities_count[modality_name]}'
-                ] = f
-                modalities_count[modality_name] += 1
-                break
-        if f not in dataclass_fields_to_file_mapping.values():
+        field_modality = fields_modalities[f]
+        if field_modality in AVAILABLE_MODALITIES_FOR_SEARCH:
+            dataclass_fields_to_file_mapping[
+                f'{docarray_typing_to_modality_string(field_modality)}_{modalities_count[field_modality]}'
+            ] = f
+            modalities_count[fields_modalities[f]] += 1
+        else:
             dataclass_fields_to_file_mapping[f'filter_{filter_count}'] = f
             filter_count += 1
     file_mapping_to_dataclass_fields = {

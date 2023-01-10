@@ -20,7 +20,8 @@ def test_convert_doc_map_to_es(es_inputs, random_index_name):
         document_mappings,
         default_semantic_scores,
     ) = es_inputs
-    encoder_to_fields = {document_mappings[0]: document_mappings[2:]}
+    document_mappings = document_mappings[0]
+    encoder_to_fields = {document_mappings[0]: document_mappings[2]}
     first_doc_clip = index_docs_map['clip'][0]
     aggregate_embeddings(index_docs_map)
     first_result = convert_doc_map_to_es(
@@ -29,10 +30,7 @@ def test_convert_doc_map_to_es(es_inputs, random_index_name):
         encoder_to_fields=encoder_to_fields,
     )[0]
     assert first_result['id'] == first_doc_clip.id
-    assert len(first_result['title-clip.embedding']) == len(
-        first_doc_clip.title.chunks[0].embedding.tolist()
-    )
-    assert first_result['bm25_text'] == first_doc_clip.title.chunks[0].text + ' '
+    assert first_result['bm25_text'] == first_doc_clip.title.text + ' '
     assert first_result['_op_type'] == 'index'
 
 

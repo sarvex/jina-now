@@ -9,12 +9,16 @@ from now.constants import (
     AVAILABLE_MODALITIES_FOR_FILTER,
     AVAILABLE_MODALITIES_FOR_SEARCH,
     FILETYPE_TO_MODALITY,
-    MODALITIES_MAPPING,
     NOT_AVAILABLE_MODALITIES_FOR_FILTER,
     SUPPORTED_FILE_TYPES,
 )
+from now.data_loading.elasticsearch import ElasticsearchConnector
 from now.now_dataclasses import UserInput
-from now.utils import flatten_dict
+from now.utils import (
+    docarray_typing_to_modality_string,
+    flatten_dict,
+    modality_string_to_docarray_typing,
+)
 
 
 def get_field_type(field_value):
@@ -36,8 +40,8 @@ def _create_candidate_index_filter_fields(field_name_to_value):
 
     :param field_name_to_value: dictionary
     """
-    index_fields_modalities = {}
-    filter_field_modalities = {}
+    index_field_candidates_to_modalities = {}
+    filter_field_candidates_to_modalities = {}
     not_available_file_types_for_filter = list(
         itertools.chain(
             *[
@@ -49,21 +53,22 @@ def _create_candidate_index_filter_fields(field_name_to_value):
     for field_name, field_value in field_name_to_value.items():
         # we determine search modality
         file_type = get_field_type(field_value)
-        modality = FILETYPE_TO_MODALITY[file_type]
-        index_fields_modalities[field_name] = MODALITIES_MAPPING[modality]
+        index_field_candidates_to_modalities[field_name] = FILETYPE_TO_MODALITY[
+            file_type
+        ]
 
         # we determine if it's a filter field
         if (
             field_name == 'uri'
             and field_value.split('.')[-1] not in not_available_file_types_for_filter
         ) or field_name.split('.')[-1] not in not_available_file_types_for_filter:
-            filter_field_modalities[field_name] = field_value.__class__
+            filter_field_candidates_to_modalities[field_name] = field_value.__class__
 
-    if len(index_fields_modalities.keys()) == 0:
+    if len(index_field_candidates_to_modalities.keys()) == 0:
         raise ValueError(
             'No searchable fields found, please check documentation https://now.jina.ai'
         )
-    return index_fields_modalities, filter_field_modalities
+    return index_field_candidates_to_modalities, filter_field_candidates_to_modalities
 
 
 def get_first_file_in_folder_structure_s3(bucket, folder_prefix, dataset_path):
@@ -112,17 +117,16 @@ def _extract_field_candidates_docarray(response):
                 f' to add modalities to your documents https://docarray.jina.ai/datatypes/multimodal/'
             )
         modality = doc['chunks'][field_pos]['modality'].lower()
-        if modality not in AVAILABLE_MODALITIES_FOR_SEARCH:
+        docarray_type = modality_string_to_docarray_typing(modality)
+        if docarray_type in AVAILABLE_MODALITIES_FOR_SEARCH:
+            search_modalities[field_name] = docarray_type
+        else:
             raise ValueError(
-                f'The modality {modality} is not supported for search. Please use '
-                f'one of the following modalities: {AVAILABLE_MODALITIES_FOR_SEARCH}'
+                f'The modality {modality} is not supported for search. Please use one of the following modalities: '
+                f'{map(docarray_typing_to_modality_string, AVAILABLE_MODALITIES_FOR_SEARCH)}'
             )
-        # only the available modalities for filter are added to the filter modalities
-        if modality in AVAILABLE_MODALITIES_FOR_FILTER:
+        if docarray_type in AVAILABLE_MODALITIES_FOR_FILTER:
             filter_modalities[field_name] = modality
-        # only the available modalities for search are added to search modalities
-        if modality in AVAILABLE_MODALITIES_FOR_SEARCH:
-            search_modalities[field_name] = MODALITIES_MAPPING[modality]
 
     if doc.get('tags', None):
         for el, value in doc['tags']['fields'].items():
@@ -159,8 +163,8 @@ def set_field_names_from_docarray(user_input: UserInput, **kwargs):
     )
     if response.json()['code'] == 200:
         (
-            user_input.index_fields_modalities,
-            user_input.filter_fields_modalities,
+            user_input.index_field_candidates_to_modalities,
+            user_input.filter_field_candidates_to_modalities,
         ) = _extract_field_candidates_docarray(response)
     else:
         raise ValueError('DocumentArray does not exist or you do not have access to it')
@@ -194,7 +198,7 @@ def _extract_field_names_sub_folders(
     :param s3_bucket: s3 bucket object, only needed if interacting with s3 bucket
     :return: list of file endings
     """
-    field_names = {}
+    fields_dict = {}
     for path in file_paths:
         if path.endswith('.json'):
             if s3_bucket:
@@ -202,12 +206,14 @@ def _extract_field_names_sub_folders(
             else:
                 with open(path) as f:
                     data = json.load(f)
+            for el, value in data.items():
+                fields_dict[el] = value
             flattened_dict = flatten_dict(data)
-            field_names.update(flattened_dict)
+            fields_dict.update(flattened_dict)
         else:
             file_name = path.split(separator)[-1]
-            field_names[file_name] = file_name
-    return field_names
+            fields_dict[file_name] = file_name
+    return fields_dict
 
 
 def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
@@ -217,7 +223,7 @@ def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
     :param user_input: UserInput object
 
     checks if the bucket exists and the format of the folder structure is correct,
-    if yes then downloads the first folder and sets its content as field_names in user_input
+    if yes then downloads the first folder and sets its content as fields_dict in user_input
     """
     bucket, folder_prefix = get_s3_bucket_and_folder_prefix(user_input)
     # user has to provide the folder where folder structure begins
@@ -235,7 +241,7 @@ def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
             for obj in objects
             if not obj.key.endswith('/') and not obj.key.split('/')[-1].startswith('.')
         ]
-        field_names = _extract_field_names_single_folder(file_paths, '/')
+        fields_dict = _extract_field_names_single_folder(file_paths, '/')
     elif folder_structure == 'sub_folders':
         first_folder = '/'.join(first_file.split('/')[:-1])
         first_folder_objects = [
@@ -243,13 +249,18 @@ def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
             for obj in bucket.objects.filter(Prefix=first_folder)
             if not obj.key.endswith('/') and not obj.key.split('/')[-1].startswith('.')
         ]
-        field_names = _extract_field_names_sub_folders(
+        fields_dict = _extract_field_names_sub_folders(
             first_folder_objects, '/', bucket
         )
+    fields_dict_cleaned = {
+        field_key: field_value
+        for field_key, field_value in fields_dict.items()
+        if not isinstance(field_value, list) and not isinstance(field_value, dict)
+    }
     (
-        user_input.index_fields_modalities,
-        user_input.filter_fields_modalities,
-    ) = _create_candidate_index_filter_fields(field_names)
+        user_input.index_field_candidates_to_modalities,
+        user_input.filter_field_candidates_to_modalities,
+    ) = _create_candidate_index_filter_fields(fields_dict_cleaned)
 
 
 def set_field_names_from_local_folder(user_input: UserInput, **kwargs):
@@ -280,7 +291,7 @@ def set_field_names_from_local_folder(user_input: UserInput, **kwargs):
                 if not file.startswith('.')
             ]
         )
-        field_names = _extract_field_names_single_folder(file_paths, os.sep)
+        fields_dict = _extract_field_names_single_folder(file_paths, os.sep)
     elif folder_structure == 'sub_folders':
         # depth-first search of the first nested folder containing files
         while len(current_level[1]) > 0:
@@ -292,11 +303,51 @@ def set_field_names_from_local_folder(user_input: UserInput, **kwargs):
             if os.path.isfile(os.path.join(first_folder, file))
             and not file.startswith('.')
         ]
-        field_names = _extract_field_names_sub_folders(first_folder_files, os.sep)
+        fields_dict = _extract_field_names_sub_folders(first_folder_files, os.sep)
+    fields_dict_cleaned = {
+        field_key: field_value
+        for field_key, field_value in fields_dict.items()
+        if not isinstance(field_value, list) and not isinstance(field_value, dict)
+    }
     (
-        user_input.index_fields_modalities,
-        user_input.filter_fields_modalities,
-    ) = _create_candidate_index_filter_fields(field_names)
+        user_input.index_field_candidates_to_modalities,
+        user_input.filter_field_candidates_to_modalities,
+    ) = _create_candidate_index_filter_fields(fields_dict_cleaned)
+
+
+def set_field_names_elasticsearch(user_input: UserInput, **kwargs):
+    """
+    Get the schema from an Elasticsearch instance
+
+    :param user_input: UserInput object
+
+    checks if the Elasticsearch instance exists and grabs the first document from the index,
+    the first document is then used to create modalities dicts for index and filter fields
+    """
+    with ElasticsearchConnector(
+        connection_str=user_input.es_host_name,
+    ) as es_connector:
+        query = {
+            'query': {'match_all': {}},
+            '_source': True,
+        }
+        first_docs = list(
+            es_connector.get_documents_by_query(
+                query=query, index_name=user_input.es_index_name, page_size=1
+            )
+        )[
+            0
+        ]  # get one document
+    fields_dict = first_docs[0]
+    fields_dict_cleaned = {
+        field_key: field_value
+        for field_key, field_value in fields_dict.items()
+        if not isinstance(field_value, list) and not isinstance(field_value, dict)
+    }
+    (
+        user_input.index_field_candidates_to_modalities,
+        user_input.filter_field_candidates_to_modalities,
+    ) = _create_candidate_index_filter_fields(fields_dict_cleaned)
 
 
 def get_s3_bucket_and_folder_prefix(user_input: UserInput):

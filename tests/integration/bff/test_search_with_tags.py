@@ -11,13 +11,13 @@ def get_request_body():
     return request_body
 
 
-def test_search_filters(start_bff, tmpdir):
-    f = get_flow(indexer_args={'columns': ['color', 'str']}, tmpdir=tmpdir)
+def test_search_filters(start_bff, setup_service_running, random_index_name, tmpdir):
+    f = get_flow(tmpdir=tmpdir, indexer_args={'index_name': random_index_name})
     with f:
         index_data(f)
         request_body = get_request_body()
         request_body['query'] = {'query_text': {'text': 'test'}}
-        request_body['filters'] = {'color': 'blue'}
+        request_body['filters'] = {'tags__color': 'blue'}
         response = requests.post(
             SEARCH_URL,
             json=request_body,

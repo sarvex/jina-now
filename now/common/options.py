@@ -14,12 +14,12 @@ from hubble import AuthenticationRequiredError
 from kubernetes import client, config
 
 from now.common.detect_schema import (
+    set_field_names_elasticsearch,
     set_field_names_from_docarray,
     set_field_names_from_local_folder,
     set_field_names_from_s3_bucket,
 )
-from now.constants import Apps, DatasetTypes
-from now.demo_data import AVAILABLE_DATASETS
+from now.constants import DatasetTypes
 from now.deployment.deployment import cmd
 from now.log import yaspin_extended
 from now.now_dataclasses import DialogOptions, UserInput
@@ -40,15 +40,15 @@ AVAILABLE_SOON = 'will be available in upcoming versions'
 # than the parent should be called first before the dependant can called.
 
 
-def _create_app_from_user_input(user_input: UserInput, **kwargs):
-    if user_input.index_fields[0] not in user_input.index_fields_modalities.keys():
+def _check_index_field(user_input: UserInput, **kwargs):
+    if (
+        user_input.index_fields[0]
+        not in user_input.index_field_candidates_to_modalities.keys()
+    ):
         raise ValueError(
-            f'Index field specified is not among the candidate fields. Please '
-            f'choose one of the following: {user_input.index_fields_modalities.keys()}'
+            f'Index field specified is not among the index candidate fields. Please '
+            f'choose one of the following: {user_input.index_field_candidates_to_modalities.keys()}'
         )
-    _search_modality = user_input.index_fields_modalities[user_input.index_fields[0]]
-    app_name = Apps.SEARCH_APP
-    user_input.app_instance = construct_app(app_name)
 
 
 APP_NAME = DialogOptions(
@@ -89,7 +89,6 @@ DATASET_TYPE = DialogOptions(
         {
             'name': 'Elasticsearch',
             'value': DatasetTypes.ELASTICSEARCH,
-            'disabled': AVAILABLE_SOON,
         },
     ],
     prompt_type='list',
@@ -108,7 +107,7 @@ def check_login_dataset(user_input: UserInput):
 
 def _get_demo_data_choices(user_input: UserInput, **kwargs):
     all_demo_datasets = []
-    for demo_datasets in AVAILABLE_DATASETS.values():
+    for demo_datasets in user_input.app_instance.demo_datasets.values():
         all_demo_datasets.extend(demo_datasets)
     return [
         {'name': demo_data.display_name, 'value': demo_data.name}
@@ -195,12 +194,12 @@ INDEX_FIELDS = DialogOptions(
     name='index_fields',
     choices=lambda user_input, **kwargs: [
         {'name': field, 'value': field}
-        for field in user_input.index_fields_modalities.keys()
+        for field in user_input.index_field_candidates_to_modalities.keys()
     ],
     prompt_message='Please select the index fields:',
     prompt_type='checkbox',
     is_terminal_command=True,
-    post_func=_create_app_from_user_input,
+    post_func=_check_index_field,
     argparse_kwargs={
         'type': lambda fields: fields.split(',') if fields else UserInput().index_fields
     },
@@ -210,15 +209,17 @@ FILTER_FIELDS = DialogOptions(
     name='filter_fields',
     choices=lambda user_input, **kwargs: [
         {'name': field, 'value': field}
-        for field in user_input.filter_fields_modalities.keys()
+        for field in user_input.filter_field_candidates_to_modalities.keys()
         if field not in user_input.index_fields
     ],
     prompt_message='Please select the filter fields',
     prompt_type='checkbox',
     depends_on=DATASET_TYPE,
-    conditional_check=lambda user_input: user_input.filter_fields_modalities is not None
+    conditional_check=lambda user_input: user_input.filter_field_candidates_to_modalities
+    is not None
     and len(
-        set(user_input.filter_fields_modalities.keys()) - set(user_input.index_fields)
+        set(user_input.filter_field_candidates_to_modalities.keys())
+        - set(user_input.index_fields)
     )
     > 0,
 )
@@ -248,6 +249,7 @@ ES_ADDITIONAL_ARGS = DialogOptions(
     depends_on=DATASET_TYPE,
     conditional_check=lambda user_input: user_input.dataset_type
     == DatasetTypes.ELASTICSEARCH,
+    post_func=lambda user_input, **kwargs: set_field_names_elasticsearch(user_input),
 )
 
 # --------------------------------------------- #
@@ -267,8 +269,8 @@ DEPLOYMENT_TYPE = DialogOptions(
         },
     ],
     is_terminal_command=True,
-    description='Options are `local` or `remote`. Select `local` if you want your search engine to be deployed on a local '
-    'cluster. Select `remote` to deploy it on Jina Cloud',
+    description='Options are `local` or `remote`. Select `local` if you want your search engine '
+    'to be deployed on a local cluster. Select `remote` to deploy it on Jina Cloud',
     post_func=lambda user_input, **kwargs: check_login_deployment(user_input),
 )
 

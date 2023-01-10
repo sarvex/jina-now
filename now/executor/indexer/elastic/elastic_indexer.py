@@ -2,14 +2,17 @@ import subprocess
 import traceback
 from collections import namedtuple
 from time import sleep
-from typing import Any, Dict, List, Mapping, Optional, Union
+from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
 
 from docarray import Document, DocumentArray
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 
-from now.executor.abstract.auth import SecurityLevel, secure_request
-from now.executor.abstract.base_indexer import NOWBaseIndexer as Executor
+from now.executor.abstract.auth import (
+    SecurityLevel,
+    get_auth_executor_class,
+    secure_request,
+)
 from now.executor.indexer.elastic.es_converter import (
     convert_doc_map_to_es,
     convert_es_results_to_matches,
@@ -26,6 +29,8 @@ FieldEmbedding = namedtuple(
     ['encoder', 'embedding_size', 'fields'],
 )
 
+Executor = get_auth_executor_class()
+
 
 class NOWElasticIndexer(Executor):
     """
@@ -35,57 +40,51 @@ class NOWElasticIndexer(Executor):
     allowing multi-modal documents to be indexed and searched with multi-modal queries.
     """
 
-    # override
-
-    def construct(
+    def __init__(
         self,
-        document_mappings: Union[
-            List[List], str
-        ],  # cannot take FieldEmbedding (not serializable) also can be provided as string since list of list is not possible with the current k8s implementation of the core
+        document_mappings: List[Tuple[str, int, List[str]]],
+        dim: int = None,
+        ocr_is_needed: Optional[bool] = False,
+        metric: str = 'cosine',
+        limit: int = 10,
+        max_values_per_tag: int = 10,
         es_mapping: Dict = None,
         hosts: Union[
             str, List[Union[str, Mapping[str, Union[str, int]]]], None
         ] = 'http://localhost:9200',
         es_config: Optional[Dict[str, Any]] = None,
-        metric: str = 'cosine',
         index_name: str = 'now-index',
-        traversal_paths: str = '@r',
-        limit: int = 20,
+        *args,
         **kwargs,
     ):
         """
-        Initialize/construct function for the NOWElasticIndexer.
-
         :param document_mappings: list of FieldEmbedding tuples that define which encoder
             encodes which fields, and the embedding size of the encoder.
-        :param hosts: host configuration of the Elasticsearch node or cluster
-        :param es_config: Elasticsearch cluster configuration object
-        :param metric: The distance metric used for the vector index and vector search
-        :param index_name: ElasticSearch Index name used for the storage
+        :param dim: Dimensionality of vectors to index.
+        :param ocr_is_needed: Boolean variable indicating whether we need to use OCR or no
+            based on the modality
+        :param metric: Distance metric type. Can be 'euclidean', 'inner_product', or 'cosine'
+        :param limit: Number of results to get for each query document in search
+        :param max_values_per_tag: Maximum number of values per tag
         :param es_mapping: Mapping for new index. If none is specified, this will be
             generated from `document_mappings` and `metric`.
-        :param traversal_paths: Default traversal paths on docs
-            generated from metric and dims. Embeddings from chunk documents will
-            always be stored in fields `embedding_x` where x iterates over the number
-            of embedding fields (length of `dims`) to be created in the index.
-                (used for indexing, delete and update), e.g. '@r', '@c', '@r,c'.
-        :param limit: Default limit on the number of docs to be retrieved
+        :param hosts: host configuration of the Elasticsearch node or cluster
+        :param es_config: Elasticsearch cluster configuration object
+        :param index_name: ElasticSearch Index name used for the storage
         """
-        self.hosts = hosts
+
+        super().__init__(*args, **kwargs)
+        self.dim = dim
         self.metric = metric
-        self.index_name = index_name
-        self.traversal_paths = traversal_paths
         self.limit = limit
+        self.max_values_per_tag = max_values_per_tag
+        self.hosts = hosts
+        self.index_name = index_name
+        self.query_to_curated_ids = {}
+        self.doc_id_tags = {}
+        self.ocr_is_needed = ocr_is_needed
 
-        # hack is needed to work with the current bug in the core where list of list is not possible to pass
-        # at the moment document_mappings arrives as ['clip', 512, 'product_image', 'product_description']
-
-        encoder_name = document_mappings[0]
-        embedding_size = document_mappings[1]
-        fields = document_mappings[2:]
-        document_mappings = [encoder_name, embedding_size, fields]
-
-        self.document_mappings = [FieldEmbedding(*document_mappings)]
+        self.document_mappings = [FieldEmbedding(*dm) for dm in document_mappings]
         self.encoder_to_fields = {
             document_mapping.encoder: document_mapping.fields
             for document_mapping in self.document_mappings
@@ -100,7 +99,6 @@ class NOWElasticIndexer(Executor):
 
         if not self.es.indices.exists(index=self.index_name):
             self.es.indices.create(index=self.index_name, mappings=self.es_mapping)
-        self.query_to_curated_ids = {}
 
     def setup_elastic_server(self):
         # volume is not persisted at the moment
@@ -142,11 +140,18 @@ class NOWElasticIndexer(Executor):
                 }
         return es_mapping
 
+    def _handle_no_docs_map(self, docs: DocumentArray):
+        if docs and len(self.encoder_to_fields) == 1:
+            return {list(self.encoder_to_fields.keys())[0]: docs}
+        else:
+            return {}
+
     @secure_request(on='/index', level=SecurityLevel.USER)
     def index(
         self,
-        docs_map: Dict[str, DocumentArray],  # encoder to docarray
+        docs_map: Dict[str, DocumentArray] = None,  # encoder to docarray
         parameters: dict = {},
+        docs: Optional[DocumentArray] = None,
         **kwargs,
     ) -> DocumentArray:
         """
@@ -156,9 +161,10 @@ class NOWElasticIndexer(Executor):
         :param parameters: dictionary with options for indexing.
         :return: empty `DocumentArray`.
         """
-        if not docs_map:
-            return DocumentArray()
-
+        if docs_map is None:
+            docs_map = self._handle_no_docs_map(docs)
+            if len(docs_map) == 0:
+                return DocumentArray()
         aggregate_embeddings(docs_map)
         es_docs = convert_doc_map_to_es(
             docs_map, self.index_name, self.encoder_to_fields
@@ -177,6 +183,7 @@ class NOWElasticIndexer(Executor):
         self,
         docs_map: Dict[str, DocumentArray] = None,  # encoder to docarray
         parameters: dict = {},
+        docs: Optional[DocumentArray] = None,
         **kwargs,
     ):
         """Perform traditional bm25 + vector search. By convention, BM25 will search on
@@ -202,12 +209,13 @@ class NOWElasticIndexer(Executor):
                 - 'custom_bm25_query' (dict): Custom query to use for BM25. Note: this query can only be
                     passed if also passing `es_mapping`. Otherwise, only default bm25 scoring is enabled.
         """
-        if not docs_map:
-            return DocumentArray()
+        if docs_map is None:
+            docs_map = self._handle_no_docs_map(docs)
+            if len(docs_map) == 0:
+                return DocumentArray()
 
         aggregate_embeddings(docs_map)
 
-        # search_filter = parameters.get('filter', None)
         limit = parameters.get('limit', self.limit)
         get_score_breakdown = parameters.get('get_score_breakdown', False)
         custom_bm25_query = parameters.get('custom_bm25_query', None)
@@ -241,6 +249,8 @@ class NOWElasticIndexer(Executor):
                 semantic_scores=semantic_scores,
             )
             doc.tags.pop('embeddings')
+            for c in doc.chunks:
+                c.embedding = None
         results = DocumentArray(list(zip(*es_queries))[0])
         return results
 
@@ -404,11 +414,6 @@ class NOWElasticIndexer(Executor):
         except Exception:
             self.logger.info(traceback.format_exc())
 
-    # override
-    def batch_iterator(self):
-        """Unnecessary for ElasticIndexer, but need to override BaseIndexer."""
-        yield []
-
 
 def aggregate_embeddings(docs_map: Dict[str, DocumentArray]):
     """Aggregate embeddings of cc level to c level.
@@ -420,7 +425,9 @@ def aggregate_embeddings(docs_map: Dict[str, DocumentArray]):
             for c in doc.chunks:
                 if c.chunks.embeddings is not None:
                     c.embedding = c.chunks.embeddings.mean(axis=0)
-                    c.content = c.chunks[0].content
+                    if c.chunks[0].text or not c.uri:
+                        c.content = c.chunks[0].content
+                    c.chunks = DocumentArray()
 
 
 def wait_until_cluster_is_up(es, hosts):

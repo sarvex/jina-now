@@ -4,23 +4,10 @@ from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.141-flow-down-message4'
-NOW_PREPROCESSOR_VERSION = '0.0.118-feat-integrate-elastic-33'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.141-fix-enable-multi-modal-support-13'
-NOW_AUTOCOMPLETE_VERSION = '0.0.8-feat-integrate-elastic-33'
-
-
-class Modalities(BetterEnum):
-    TEXT = 'text'
-    IMAGE = 'image'
-    VIDEO = 'video'
-
-
-MODALITIES_MAPPING = {
-    Modalities.TEXT: Text,
-    Modalities.IMAGE: Image,
-    Modalities.VIDEO: Video,
-}
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.145-flow-down-message'
+NOW_PREPROCESSOR_VERSION = '0.0.120-fix-patching-docs-5'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.142-fix-bucket-uri-json-field-24'
+NOW_AUTOCOMPLETE_VERSION = '0.0.8-feat-one-search-dynamic-flow-66'
 
 
 class Apps(BetterEnum):
@@ -35,21 +22,10 @@ class DatasetTypes(BetterEnum):
     ELASTICSEARCH = 'elasticsearch'
 
 
-class ModelNames(BetterEnum):
-    MLP = 'mlp'
-    SBERT = 'sentence-transformers/msmarco-distilbert-base-v3'
-    CLIP = 'openai/clip-vit-base-patch32'
-
-
-class ModelDimensions(BetterEnum):
-    SBERT = 768
-    CLIP = 512
-
-
 SUPPORTED_FILE_TYPES = {
-    Modalities.TEXT: ['txt', 'md'],
-    Modalities.IMAGE: ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'tif'],
-    Modalities.VIDEO: ['gif'],
+    Text: ['txt', 'md'],
+    Image: ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'tif'],
+    Video: ['gif'],
 }
 
 FILETYPE_TO_MODALITY = {
@@ -57,21 +33,13 @@ FILETYPE_TO_MODALITY = {
     for modality, filetypes in SUPPORTED_FILE_TYPES.items()
     for filetype in filetypes
 }
-AVAILABLE_MODALITIES_FOR_SEARCH = [Modalities.TEXT, Modalities.IMAGE, Modalities.VIDEO]
-AVAILABLE_MODALITIES_FOR_FILTER = [Modalities.TEXT]
-NOT_AVAILABLE_MODALITIES_FOR_FILTER = [
-    Modalities.IMAGE,
-    Modalities.VIDEO,
-]
+AVAILABLE_MODALITIES_FOR_SEARCH = [Text, Image, Video]
+AVAILABLE_MODALITIES_FOR_FILTER = [Text]
+NOT_AVAILABLE_MODALITIES_FOR_FILTER = [Image, Video]
 
 BASE_STORAGE_URL = (
     'https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets'
 )
-
-CLIP_USES = {
-    'local': ('CLIPOnnxEncoder/0.8.1', 'ViT-B-32::openai', ModelDimensions.CLIP),
-    'remote': ('CLIPOnnxEncoder/0.8.1-gpu', 'ViT-B-32::openai', ModelDimensions.CLIP),
-}
 
 EXTERNAL_CLIP_HOST = 'encoderclip-pretty-javelin-3aceb7f2cd.wolf.jina.ai'
 
