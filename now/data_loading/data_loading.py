@@ -29,7 +29,7 @@ from now.now_dataclasses import UserInput
 from now.utils import docarray_typing_to_modality_string, sigmap
 
 
-def _get_multi_modal_format(document: Document, field) -> Document:
+def _construct_tags(document: Document, field) -> Document:
     """
     Create a multimodal docarray structure from a unimodal `Document`.
     """
@@ -122,9 +122,7 @@ def get_da_with_index_fields(da: DocumentArray, user_input: UserInput):
         )
         for field in non_index_fields:
             non_index_field_doc = getattr(d, field, None)
-            dict_non_index_fields.update(
-                _get_multi_modal_format(non_index_field_doc, field)
-            )
+            dict_non_index_fields.update(_construct_tags(non_index_field_doc, field))
         for field in user_input.index_fields:
             _index_field_doc = getattr(d, field, None)
             dict_index_fields[field] = _index_field_doc
