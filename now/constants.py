@@ -41,7 +41,9 @@ BASE_STORAGE_URL = (
     'https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets'
 )
 
-EXTERNAL_CLIP_HOST = 'encoderclip-pretty-javelin-3aceb7f2cd.wolf.jina.ai'
+EXTERNAL_CLIP_HOST = (
+    'encoderclip-externalclipvitl14laion2bs32bb82k-81ddabe4b8.wolf.jina.ai'
+)
 
 DEFAULT_FLOW_NAME = 'nowapi'
 PREFETCH_NR = 10
