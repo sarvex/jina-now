@@ -46,9 +46,7 @@ def run(
         user_input.field_names_to_dataclass_fields = {
             field: field for field in user_input.index_fields
         }
-        data_class = None
-    else:
-        data_class = create_dataclass(user_input)
+    data_class = create_dataclass(user_input)
     dataset = load_data(user_input, data_class)
 
     # Set up the app specific flow and also get the environment variables and its values
@@ -108,13 +106,9 @@ def trigger_scheduler(user_input, host):
         ):  # increase the probability that all replicas get the new key
             update_api_keys(user_input.deployment_type, user_input.api_key, host)
 
-    user_input_dict = user_input.__dict__
-    user_input_dict.pop('app_instance')  # Not needed
-
     scheduler_params = {
         'flow_id': get_flow_id(host),
         'api_key': user_input.api_key,
-        'user_input': user_input_dict,
     }
     cookies = {'st': user_input.jwt['token']}
     try:
@@ -137,10 +131,7 @@ def index_docs(user_input, dataset, client):
     Index the data right away
     """
     print(f"▶ indexing {len(dataset)} documents in batches")
-    params = {
-        'user_input': user_input.__dict__,
-        'access_paths': ACCESS_PATHS,
-    }
+    params = {'access_paths': ACCESS_PATHS}
     if user_input.secured:
         params['jwt'] = user_input.jwt
     call_flow(
@@ -163,11 +154,6 @@ def call_flow(
     return_results: Optional[bool] = False,
 ):
     request_size = estimate_request_size(dataset, max_request_size)
-
-    # Pop app_instance from parameters to be passed to the flow
-    parameters['user_input'].pop('app_instance', None)
-    parameters['user_input'].pop('index_field_candidates_to_modalities', None)
-    parameters['user_input'].pop('filter_field_candidates_to_modalities', None)
 
     # this is a hack for the current core/ wolf issue
     # since we get errors while indexing, we retry

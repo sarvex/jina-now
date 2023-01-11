@@ -39,6 +39,8 @@
 
 
 
+
+
 <a name=release-note-0-0-7></a>
 ## Release Note (`0.0.7`)
 
@@ -1360,4 +1362,40 @@
 ### 🍹 Other Improvements
 
  - [[```2aa47c02```](https://github.com/jina-ai/now/commit/2aa47c026a7d7ed7574719581ea2c2205af4ed30)] __-__ __version__: the next version will be 0.0.46 (*Jina Dev Bot*)
+
+<a name=release-note-0-0-47></a>
+## Release Note (`0.0.47`)
+
+> Release time: 2023-01-11 09:07:29
+
+
+
+🙇 We'd like to thank all contributors for this new release! In particular,
+ Joschka Braun,  Aziz Belaweid,  Saba Sturua,  Jina Dev Bot,  🙇
+
+
+### 🐞 Bug fixes
+
+ - [[```f93b1ba4```](https://github.com/jina-ai/now/commit/f93b1ba446470a701a9f0153be4ce1b679905103)] __-__ docarray pull (#909) (*Aziz Belaweid*)
+ - [[```138a85c8```](https://github.com/jina-ai/now/commit/138a85c80f664e13009f74f91dceca6a4e739818)] __-__ add a message when flow is down (#809) (*Saba Sturua*)
+
+### 🍹 Other Improvements
+
+ - [[```9f80f3f1```](https://github.com/jina-ai/now/commit/9f80f3f1d55e9a52617a0cb3392bca6b7992db3b)] __-__ Refactor user input in args (#894) (*Joschka Braun*)
+ - [[```550dd35e```](https://github.com/jina-ai/now/commit/550dd35e6c776457822b8ac730fb5fed40163ac4)] __-__ __version__: the next version will be 0.0.47 (*Jina Dev Bot*)
+
+<a name=release-note-0-0-48></a>
+## Release Note (`0.0.48`)
+
+> Release time: 2023-01-11 09:19:32
+
+
+
+🙇 We'd like to thank all contributors for this new release! In particular,
+ Jina Dev Bot,  🙇
+
+
+### 🍹 Other Improvements
+
+ - [[```e1b1bbf1```](https://github.com/jina-ai/now/commit/e1b1bbf157a50427c2afee50dcc8c3148de8bed6)] __-__ __version__: the next version will be 0.0.48 (*Jina Dev Bot*)
 

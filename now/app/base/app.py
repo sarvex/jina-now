@@ -1,4 +1,5 @@
 import os
+from copy import deepcopy
 from typing import Dict, List, Optional, Tuple, TypeVar
 
 import docker
@@ -197,17 +198,21 @@ class JinaNOWApp:
             flow_yaml_content['executors'] = self.get_executor_stubs(
                 dataset, user_input
             )
-            # append api_keys to all executors except the remote executors
+            # append user_input and api_keys to all executors except the remote executors
+            user_input_dict = deepcopy(user_input.__dict__)
+            user_input_dict.pop('app_instance', None)
+            user_input_dict.pop('index_field_candidates_to_modalities', None)
             for executor in flow_yaml_content['executors']:
-                if (
-                    not executor.get('external', False)
-                    and user_input.deployment_type == 'remote'
-                ):
+                if not executor.get('external', False):
                     if not executor.get('uses_with', None):
                         executor['uses_with'] = {}
-                    executor['uses_with']['api_keys'] = '${{ ENV.API_KEY }}'
-                    executor['uses_with']['user_emails'] = '${{ ENV.USER_EMAILS }}'
-                    executor['uses_with']['admin_emails'] = '${{ ENV.ADMIN_EMAILS }}'
+                    executor['uses_with']['user_input_dict'] = user_input_dict
+                    if user_input.deployment_type == 'remote':
+                        executor['uses_with']['api_keys'] = '${{ ENV.API_KEY }}'
+                        executor['uses_with']['user_emails'] = '${{ ENV.USER_EMAILS }}'
+                        executor['uses_with'][
+                            'admin_emails'
+                        ] = '${{ ENV.ADMIN_EMAILS }}'
             self.flow_yaml = self.add_telemetry_env(flow_yaml_content)
 
         return common_env_dict

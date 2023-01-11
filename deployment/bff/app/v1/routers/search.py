@@ -10,7 +10,8 @@ from deployment.bff.app.v1.models.search import (
     SearchResponseModel,
     SuggestionRequestModel,
 )
-from deployment.bff.app.v1.routers.helper import field_dict_to_mm_doc, jina_client_post
+from deployment.bff.app.v1.routers.helper import jina_client_post
+from now.utils import field_dict_to_mm_doc
 
 router = APIRouter()
 
@@ -28,7 +29,7 @@ def search(data: SearchRequestModel):
         query_image: Image = field(default=None)
         query_video: Video = field(default=None)
 
-    query_doc = field_dict_to_mm_doc(data.query, data_class=MMQueryDoc)
+    query_doc = field_dict_to_mm_doc(data.query, data_class=MMQueryDoc, bff_use=True)
 
     query_filter = {}
     for key, value in data.filters.items():
@@ -38,7 +39,11 @@ def search(data: SearchRequestModel):
     docs = jina_client_post(
         endpoint='/search',
         inputs=query_doc,
-        parameters={'limit': data.limit, 'filter': query_filter},
+        parameters={
+            'limit': data.limit,
+            'filter': query_filter,
+            'create_temp_link': data.create_temp_link,
+        },
         request_model=data,
     )
     matches = []

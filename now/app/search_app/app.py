@@ -156,7 +156,7 @@ class SearchApp(JinaNOWApp):
                     [
                         encoder_name,
                         dim,
-                        user_input.index_fields,
+                        list(user_input.field_names_to_dataclass_fields.values()),
                     ]
                 ],
             },

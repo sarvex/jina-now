@@ -11,7 +11,6 @@ from now.constants import (
     FILETYPE_TO_MODALITY,
     NOT_AVAILABLE_MODALITIES_FOR_FILTER,
     SUPPORTED_FILE_TYPES,
-    DatasetTypes,
 )
 from now.data_loading.elasticsearch import ElasticsearchConnector
 from now.now_dataclasses import UserInput
@@ -63,7 +62,9 @@ def _create_candidate_index_filter_fields(field_name_to_value):
             field_name == 'uri'
             and field_value.split('.')[-1] not in not_available_file_types_for_filter
         ) or field_name.split('.')[-1] not in not_available_file_types_for_filter:
-            filter_field_candidates_to_modalities[field_name] = field_value.__class__
+            filter_field_candidates_to_modalities[
+                field_name
+            ] = field_value.__class__.__name__
 
     if len(index_field_candidates_to_modalities.keys()) == 0:
         raise ValueError(
@@ -154,14 +155,11 @@ def set_field_names_from_docarray(user_input: UserInput, **kwargs):
         'st': user_input.jwt['token'],
     }
 
-    if 'LOCAL_TESTING' in os.environ and user_input.dataset_type == DatasetTypes.DEMO:
-        dataset_name = 'team-now/' + user_input.dataset_name
-    else:
-        dataset_name = (
-            user_input.admin_name + '/' + user_input.dataset_name
-            if '/' not in user_input.dataset_name
-            else user_input.dataset_name,
-        )
+    dataset_name = (
+        user_input.admin_name + '/' + user_input.dataset_name
+        if '/' not in user_input.dataset_name
+        else user_input.dataset_name,
+    )
 
     json_data = {
         'name': dataset_name,
@@ -178,8 +176,8 @@ def set_field_names_from_docarray(user_input: UserInput, **kwargs):
         ) = _extract_field_candidates_docarray(response)
     else:
         raise ValueError(
-            'DocumentArray does not exist or you do not have access to it'
-            'Make sure to add user name as a prefix. Check documentation here.'
+            'DocumentArray does not exist or you do not have access to it. '
+            'Make sure to add user name as a prefix. Check documentation here. '
             'https://docarray.jina.ai/fundamentals/cloud-support/data-management/'
         )
 

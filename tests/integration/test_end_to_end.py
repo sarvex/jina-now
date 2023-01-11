@@ -396,17 +396,25 @@ def test_backend_custom_data(
     kwargs = Namespace(**kwargs)
     response = cli(args=kwargs)
 
-    assert_deployment_response(deployment_type, response)
-
-    request_body = {'query': {'query_text': {'text': 'test'}}, 'limit': 9}
-
-    print(f"Getting gateway from response")
-    request_body['host'] = response['host']
     # Dump the flow details from response host to a tmp file for post cleanup
     if deployment_type == 'remote':
         flow_details = {'host': response['host']}
         with open(f'{cleanup}/flow_details.json', 'w') as f:
             json.dump(flow_details, f)
+
+    assert_deployment_response(deployment_type, response)
+
+    assert_search_custom_s3(host=response['host'], create_temp_link=False)
+    assert_search_custom_s3(host=response['host'], create_temp_link=True)
+
+
+def assert_search_custom_s3(host, create_temp_link=False):
+    request_body = {
+        'query': {'query_text': {'text': 'test'}},
+        'limit': 9,
+        'host': host,
+        'create_temp_link': create_temp_link,
+    }
 
     response = requests.post(
         f'http://localhost:30090/api/v1/search-app/search',
@@ -416,11 +424,15 @@ def test_backend_custom_data(
     assert (
         response.status_code == 200
     ), f"Received code {response.status_code} with text: {response.json()['message']}"
+
     response_json = response.json()
     assert len(response_json) == 2
     for doc in response_json:
         field = list(doc['fields'].values())[0]
-        assert field['uri'].startswith('s3://'), f"received: {doc}"
+        if create_temp_link:
+            assert not field['uri'].startswith('s3://'), f"received: {doc}"
+        else:
+            assert field['uri'].startswith('s3://'), f"received: {doc}"
         assert (
             'blob' not in field.keys() or field['blob'] is None or field['blob'] == ''
         )

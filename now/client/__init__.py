@@ -10,8 +10,9 @@ from deployment.bff.app.v1.models.search import (
     SearchRequestModel,
     SearchResponseModel,
 )
-from deployment.bff.app.v1.routers.helper import field_dict_to_mm_doc, jina_client_post
+from deployment.bff.app.v1.routers.helper import jina_client_post
 from now.common.options import construct_app
+from now.utils import field_dict_to_mm_doc
 
 
 class Client:
@@ -45,7 +46,7 @@ class Client:
 
         if 'text' in kwargs:
             query_doc = field_dict_to_mm_doc(
-                {'query_text': {'text': kwargs.pop('text')}}
+                field_dict={'query_text': {'text': kwargs.pop('text')}}, bff_use=True
             )
 
         app_request = SearchRequestModel(

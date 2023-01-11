@@ -1,12 +1,8 @@
-import itertools
 import json
 import os
 from collections import defaultdict
-from copy import deepcopy
-from tempfile import TemporaryDirectory
 from typing import Dict, List, Type
 
-import filetype
 from docarray import Document, DocumentArray
 from docarray.dataclasses import is_multimodal
 
@@ -14,7 +10,7 @@ from now.common.detect_schema import (
     get_first_file_in_folder_structure_s3,
     get_s3_bucket_and_folder_prefix,
 )
-from now.constants import SUPPORTED_FILE_TYPES, DatasetTypes
+from now.constants import DatasetTypes
 from now.data_loading.create_dataclass import (
     create_dataclass,
     create_dataclass_fields_file_mappings,
@@ -22,98 +18,7 @@ from now.data_loading.create_dataclass import (
 from now.data_loading.elasticsearch import ElasticsearchExtractor
 from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
-from now.utils import sigmap
-
-
-def _field_dict_to_mm_doc(
-    field_dict: dict, data_class: type, field_names_to_dataclass_fields={}
-) -> Document:
-    """Converts a dictionary of field names to their values to a document.
-
-    :param field_dict: key-value pairs of field names and their values
-    :param data_class: @docarray.dataclass class which encapsulates the fields of the multimodal document
-    :param field_names_to_dataclass_fields: mapping of field names to data class fields (e.g. {'title': 'text_0'})
-    :return: multi-modal document
-    """
-    with TemporaryDirectory() as tmp_dir:
-        try:
-            if field_names_to_dataclass_fields:
-                field_dict_orig = deepcopy(field_dict)
-                field_dict = {
-                    field_name_data_class: field_dict_orig[file_name]
-                    for file_name, field_name_data_class in field_names_to_dataclass_fields.items()
-                }
-            data_class_kwargs = {}
-            for field_name_data_class, field_value in field_dict.items():
-                # save blob into a temporary file such that it can be loaded by the multimodal class
-                if field_value.blob:
-                    file_ending = filetype.guess(field_value.blob)
-                    if file_ending is None:
-                        raise ValueError(
-                            f'Could not guess file type of blob {field_value.blob}. '
-                            f'Please provide a valid file type.'
-                        )
-                    file_ending = file_ending.extension
-                    if file_ending not in itertools.chain(
-                        *SUPPORTED_FILE_TYPES.values()
-                    ):
-                        raise ValueError(
-                            f'File type {file_ending} is not supported. '
-                            f'Please provide a valid file type.'
-                        )
-                    file_path = os.path.join(
-                        tmp_dir, field_name_data_class + '.' + file_ending
-                    )
-                    with open(file_path, 'wb') as f:
-                        f.write(field_value.blob)
-                    field_value.uri = file_path
-                    data_class_kwargs[field_name_data_class] = field_value.uri
-
-                elif field_value.uri:
-                    data_class_kwargs[field_name_data_class] = field_value.uri
-                elif field_value.text:
-                    data_class_kwargs[field_name_data_class] = field_value.text
-                elif field_value.tensor:
-                    data_class_kwargs[field_name_data_class] = field_value.tensor
-
-            doc = Document(data_class(**data_class_kwargs))
-        except Exception as e:
-            raise Exception(
-                f'Not a correctly encoded request. Please see the error stack for more information. \n{e}'
-            )
-
-    return doc
-
-
-def get_da_with_index_fields(da: DocumentArray, user_input: UserInput):
-    dataclass = create_dataclass(user_input)
-    clean_da = []
-    for d in da:
-        dict_index_fields = {}
-        dataclass_mappings = create_dataclass_fields_file_mappings(
-            user_input.index_fields, user_input.index_field_candidates_to_modalities
-        )
-        for field in user_input.index_fields:
-            _index_field_doc = getattr(d, field, None)
-            dict_index_fields[field] = _index_field_doc
-        mm_doc = _field_dict_to_mm_doc(dict_index_fields, dataclass, dataclass_mappings)
-        clean_da.append(mm_doc)
-    clean_da = DocumentArray(clean_da)
-    return clean_da
-
-
-def _add_tags_to_da(da: DocumentArray, user_input: UserInput):
-    non_index_fields = list(
-        set(user_input.index_field_candidates_to_modalities.keys())
-        - set(user_input.index_fields)
-    )
-    for d in da:
-        for field in non_index_fields:
-            non_index_field_doc = getattr(d, field, None)
-            d.tags.update(
-                {field: non_index_field_doc.content or non_index_field_doc.uri}
-            )
-    return da
+from now.utils import field_dict_to_mm_doc, sigmap
 
 
 def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
@@ -125,10 +30,11 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
     :return: The loaded DocumentArray.
     """
     da = None
-    if user_input.dataset_type == DatasetTypes.DOCARRAY:
+    if user_input.dataset_type in [DatasetTypes.DOCARRAY, DatasetTypes.DEMO]:
         print('⬇  Pull DocumentArray dataset')
         da = _pull_docarray(user_input.dataset_name, user_input.admin_name)
         da = get_da_with_index_fields(da, user_input)
+        da = _add_tags_to_da(da, user_input)
     elif user_input.dataset_type == DatasetTypes.PATH:
         print('💿  Loading files from disk')
         da = _load_from_disk(user_input=user_input, data_class=data_class)
@@ -154,7 +60,6 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
         )
         da = get_da_with_index_fields(da, user_input)
     da = set_modality_da(da)
-    da = _add_tags_to_da(da, user_input)
     add_metadata_to_da(da, user_input)
     if da is None:
         raise ValueError(
@@ -163,6 +68,23 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
     if 'NOW_CI_RUN' in os.environ:
         da = da[:50]
     return da
+
+
+def get_da_with_index_fields(da: DocumentArray, user_input: UserInput):
+    dataclass = create_dataclass(user_input)
+    clean_da = []
+    for d in da:
+        dict_index_fields = {}
+        dataclass_mappings = create_dataclass_fields_file_mappings(
+            user_input.index_fields, user_input.index_field_candidates_to_modalities
+        )
+        for field in user_input.index_fields:
+            _index_field_doc = getattr(d, field, None)
+            dict_index_fields[field] = _index_field_doc
+        mm_doc = field_dict_to_mm_doc(dict_index_fields, dataclass, dataclass_mappings)
+        clean_da.append(mm_doc)
+    clean_da = DocumentArray(clean_da)
+    return clean_da
 
 
 def add_metadata_to_da(da, user_input):
@@ -176,14 +98,33 @@ def add_metadata_to_da(da, user_input):
                 getattr(doc, dataclass_field)._metadata['field_name'] = field_name
 
 
+def _add_tags_to_da(da: DocumentArray, user_input: UserInput):
+    if not da:
+        return da
+
+    non_index_fields = list(
+        set(da[0]._metadata['multi_modal_schema'].keys()) - set(user_input.index_fields)
+    )
+    for d in da:
+        for field in non_index_fields:
+            non_index_field_doc = getattr(d, field, None)
+            d.tags.update(
+                {field: non_index_field_doc.content or non_index_field_doc.uri}
+            )
+    return da
+
+
 def _pull_docarray(dataset_name: str, admin_name: str) -> DocumentArray:
+    dataset_name = (
+        admin_name + '/' + dataset_name if '/' not in dataset_name else dataset_name
+    )
     try:
         docs = DocumentArray.pull(name=dataset_name, show_progress=True)
         if is_multimodal(docs[0]):
             return docs
         else:
             raise ValueError(
-                f'The dataset {dataset_name} does not contain a multimodal DocumentArray.'
+                f'The dataset {dataset_name} does not contain a multimodal DocumentArray. '
                 f'Please check documentation https://docarray.jina.ai/fundamentals/dataclass/construct/'
             )
     except Exception:

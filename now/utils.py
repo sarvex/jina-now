@@ -1,6 +1,7 @@
 from __future__ import annotations, print_function, unicode_literals
 
 import base64
+import itertools
 import json
 import os
 import shutil
@@ -9,17 +10,22 @@ import sys
 import tempfile
 from collections.abc import MutableMapping
 from concurrent.futures import ThreadPoolExecutor
+from copy import deepcopy
 from os.path import expanduser as user
+from tempfile import TemporaryDirectory
 from typing import Dict, List, Optional, TypeVar, Union
 
 import boto3
 import docarray
+import filetype
 import hubble
 import yaml
 from docarray import Document, DocumentArray
+from fastapi import HTTPException
 from jina.jaml import JAML
 from pyfiglet import Figlet
 
+from now.constants import SUPPORTED_FILE_TYPES
 from now.thirdparty.PyInquirer.prompt import prompt
 
 
@@ -138,6 +144,74 @@ def get_info_hubble(user_input):
     user_input.jwt = {'token': client.token}
     user_input.admin_name = response['data']['name']
     return response['data'], client.token
+
+
+def get_blob_format(blob_value):
+    file_ending = filetype.guess(blob_value)
+    if file_ending is None:
+        raise ValueError(
+            f'Could not guess file type of blob {blob_value}. '
+            f'Please provide a valid file type.'
+        )
+    file_ending = file_ending.extension
+    if file_ending not in itertools.chain(*SUPPORTED_FILE_TYPES.values()):
+        raise ValueError(
+            f'File type {file_ending} is not supported. '
+            f'Please provide a valid file type.'
+        )
+    return file_ending
+
+
+def field_dict_to_mm_doc(
+    field_dict: dict,
+    data_class: type,
+    field_names_to_dataclass_fields={},
+    bff_use=False,
+) -> Document:
+    with TemporaryDirectory() as tmp_dir:
+        try:
+            if field_names_to_dataclass_fields:
+                field_dict_orig = deepcopy(field_dict)
+                field_dict = {
+                    field_name_data_class: field_dict_orig[file_name]
+                    for file_name, field_name_data_class in field_names_to_dataclass_fields.items()
+                }
+            data_class_kwargs = {}
+            for field_name_data_class, field_value in field_dict.items():
+                # save blob into a temporary file such that it can be loaded by the multimodal class
+                if field_value.blob:
+                    base64_decoded = (
+                        base64.b64decode(field_value.blob.encode('utf-8'))
+                        if bff_use
+                        else field_value.blob
+                    )
+                    file_ending = get_blob_format(base64_decoded)
+                    file_path = os.path.join(
+                        tmp_dir, field_name_data_class + '.' + file_ending
+                    )
+                    with open(file_path, 'wb') as f:
+                        f.write(base64_decoded)
+                    field_value.blob = None
+                    field_value.uri = file_path
+                if field_value.content is not None:
+                    data_class_kwargs[field_name_data_class] = field_value.content
+                else:
+                    raise ValueError(
+                        f'Content of field {field_name_data_class} is None. '
+                    )
+            doc = Document(data_class(**data_class_kwargs))
+        except Exception as e:
+            if bff_use:
+                raise HTTPException(
+                    status_code=500,
+                    detail=f'Not a correctly encoded request. Please see the error stack for more information. \n{e}',
+                )
+            else:
+                raise Exception(
+                    f'Cannot convert the given field dict to an mmdoc. \n{e}'
+                )
+
+    return doc
 
 
 def print_headline():
