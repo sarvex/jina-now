@@ -112,7 +112,10 @@ class SearchApp(JinaNOWApp):
             'port': 443 if is_remote else random_port(),
             'tls': is_remote,
             'external': is_remote,
-            'uses_with': {'access_paths': ACCESS_PATHS, 'name': 'ViT-B-32::openai'},
+            'uses_with': {
+                'access_paths': ACCESS_PATHS,
+                'name': 'ViT-L-14::laion2b-s32b-b82k',
+            },
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'needs': 'preprocessor',
         }, 768
