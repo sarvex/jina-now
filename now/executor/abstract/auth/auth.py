@@ -9,6 +9,8 @@ from hubble.excepts import AuthenticationRequiredError
 from jina import Executor, requests
 from jina.logging.logger import JinaLogger
 
+from now.now_dataclasses import UserInput
+
 
 class SecurityLevel:
     ADMIN = 1
@@ -100,6 +102,7 @@ def get_auth_executor_class():
 
         def __init__(
             self,
+            user_input_dict: Dict = {},
             admin_emails: List[str] = [],
             user_emails: List[str] = [],
             api_keys: List[str] = [],
@@ -107,6 +110,7 @@ def get_auth_executor_class():
             **kwargs,
         ):
             """
+            :param user_input_dict: kwargs to construct UserInput
             :param admin_email: ID of the user deploying this flow. ID is obtained from Hubble
             :param user_emails: Comma separated Email IDs of the allowed users with access to this flow.
                 The Email ID from the incoming request to this flow will be verified against this.
@@ -118,6 +122,14 @@ def get_auth_executor_class():
             self.user_emails = user_emails
             self.api_keys = api_keys
             self._user = None
+
+            self.user_input = UserInput()
+            for attr_name, prev_value in self.user_input.__dict__.items():
+                setattr(
+                    self.user_input,
+                    attr_name,
+                    user_input_dict.get(attr_name, prev_value),
+                )
 
             # TODO admin email must be persisted as well
             # TODO also, please remove duplicate code
