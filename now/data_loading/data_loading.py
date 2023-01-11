@@ -25,9 +25,14 @@ def _add_tags_to_da(da: DocumentArray, user_input: UserInput):
     for d in da:
         for field in non_index_fields:
             non_index_field_doc = getattr(d, field, None)
-            d.tags.update(
-                {field: non_index_field_doc.content or non_index_field_doc.uri}
-            )
+            if non_index_field_doc:
+                d.tags.update(
+                    {
+                        field: (non_index_field_doc.content or non_index_field_doc.uri)
+                        if isinstance(non_index_field_doc, Document)
+                        else None
+                    }
+                )
     return da
 
 
@@ -39,7 +44,6 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
     :param data_class: The dataclass that should be used for the DocumentArray.
     :return: The loaded DocumentArray.
     """
-    da = None
     if (
         user_input.dataset_type == DatasetTypes.DOCARRAY
         or user_input.dataset_type == DatasetTypes.DEMO
@@ -53,6 +57,8 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
         da = _list_files_from_s3_bucket(user_input=user_input, data_class=data_class)
     elif user_input.dataset_type == DatasetTypes.ELASTICSEARCH:
         da = _extract_es_data(user_input=user_input, data_class=data_class)
+    else:
+        raise ValueError(f'Unknown dataset type {user_input.dataset_type}')
     da = set_modality_da(da)
     da = _add_tags_to_da(da, user_input)
     add_metadata_to_da(da, user_input)
