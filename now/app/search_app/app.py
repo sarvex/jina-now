@@ -115,7 +115,7 @@ class SearchApp(JinaNOWApp):
             'uses_with': {'access_paths': ACCESS_PATHS, 'name': 'ViT-B-32::openai'},
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'needs': 'preprocessor',
-        }, 512
+        }, 768
 
     @staticmethod
     def sbert_encoder_stub() -> Tuple[Dict, int]:

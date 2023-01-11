@@ -70,7 +70,7 @@ def get_flow(preprocessor_args=None, indexer_args=None, tmpdir=None):
             uses=NOWElasticIndexer,
             uses_with={
                 'hosts': 'http://localhost:9200',
-                'document_mappings': [['encoderclip', 512, ['title']]],
+                'document_mappings': [['encoderclip', 768, ['title']]],
                 **indexer_args,
             },
             uses_metas=metas,
