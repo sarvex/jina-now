@@ -85,16 +85,13 @@ class NOWElasticIndexer(Executor):
         self.query_to_curated_ids = {}
         self.doc_id_tags = {}
         self.ocr_is_needed = ocr_is_needed
-
         self.document_mappings = [FieldEmbedding(*dm) for dm in document_mappings]
         self.encoder_to_fields = {
             document_mapping.encoder: document_mapping.fields
             for document_mapping in self.document_mappings
         }
         self.es_config = es_config or {'verify_certs': False}
-        self.es_mapping = es_mapping or self.generate_es_mapping(
-            self.document_mappings, self.metric
-        )
+        self.es_mapping = es_mapping or self.generate_es_mapping()
         self.setup_elastic_server()
         self.es = Elasticsearch(hosts=self.hosts, **self.es_config, ssl_show_warn=False)
         wait_until_cluster_is_up(self.es, self.hosts)
@@ -112,15 +109,8 @@ class NOWElasticIndexer(Executor):
                 'Elastic started outside of docker, assume cluster started already.'
             )
 
-    @staticmethod
-    def generate_es_mapping(
-        document_mappings: List[FieldEmbedding], metric: str
-    ) -> Dict:
-        """Creates Elasticsearch mapping for the defined document fields.
-
-        :param document_mappings: field descriptions of the to-be-queryable vector representations
-        :param metric: The distance metric used for the vector index and vector search
-        """
+    def generate_es_mapping(self) -> Dict:
+        """Creates Elasticsearch mapping for the defined document fields."""
         es_mapping = {
             'properties': {
                 'id': {'type': 'keyword'},
@@ -128,14 +118,21 @@ class NOWElasticIndexer(Executor):
             }
         }
 
-        for encoder, embedding_size, fields in document_mappings:
+        if self.user_input.filter_fields:
+            es_mapping['properties']['tags'] = {'type': 'object', 'properties': {}}
+            for field in self.user_input.filter_fields:
+                es_mapping['properties']['tags']['properties'][field] = {
+                    'type': 'keyword'
+                }
+
+        for encoder, embedding_size, fields in self.document_mappings:
             for field in fields:
                 es_mapping['properties'][f'{field}-{encoder}'] = {
                     'properties': {
                         f'embedding': {
                             'type': 'dense_vector',
                             'dims': str(embedding_size),
-                            'similarity': metric,
+                            'similarity': self.metric,
                             'index': 'true',
                         }
                     }
