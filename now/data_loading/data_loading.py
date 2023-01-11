@@ -42,23 +42,6 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
         da = _list_files_from_s3_bucket(user_input=user_input, data_class=data_class)
     elif user_input.dataset_type == DatasetTypes.ELASTICSEARCH:
         da = _extract_es_data(user_input=user_input, data_class=data_class)
-    elif user_input.dataset_type == DatasetTypes.DEMO:
-        print('⬇  Download DocumentArray dataset')
-        if (
-            'LOCAL_TESTING' in os.environ
-            and user_input.dataset_type == DatasetTypes.DEMO
-        ):
-            dataset_name = 'team-now/' + user_input.dataset_name
-        else:
-            dataset_name = (
-                f'{user_input.admin_name}/{user_input.dataset_name}'
-                if '/' not in user_input.dataset_name
-                else user_input.dataset_name
-            )
-        da = DocumentArray.pull(
-            name=dataset_name, show_progress=True, local_cache=False
-        )
-        da = get_da_with_index_fields(da, user_input)
     da = set_modality_da(da)
     add_metadata_to_da(da, user_input)
     if da is None:
