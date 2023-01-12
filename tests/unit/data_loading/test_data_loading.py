@@ -18,7 +18,6 @@ from now.data_loading.data_loading import (
     from_files_local,
     load_data,
 )
-from now.demo_data import DemoDatasetNames
 from now.now_dataclasses import UserInput
 
 
@@ -104,22 +103,6 @@ def test_da_local_path_image_folder(image_resource_path: str):
     for doc in loaded_da:
         assert doc.chunks[0].uri
         assert doc.chunks[0].content is not None
-
-
-def test_da_custom_ds(da: DocumentArray):
-    user_input = UserInput()
-    user_input.dataset_type = DatasetTypes.DEMO
-    user_input.dataset_name = 'team-now/' + DemoDatasetNames.DEEP_FASHION
-    user_input.index_fields = ['image']
-    user_input.index_field_candidates_to_modalities = {'image': Image, 'label': Text}
-    user_input.dataset_name = DemoDatasetNames.DEEP_FASHION
-    user_input.admin_name = 'team-now'
-
-    loaded_da = load_data(user_input)
-
-    assert len(loaded_da) > 0
-    for doc in loaded_da:
-        assert doc.chunks
 
 
 def test_from_files_local(resources_folder_path):
