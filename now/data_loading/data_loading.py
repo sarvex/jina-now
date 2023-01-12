@@ -34,7 +34,7 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
         print('⬇  Pull DocumentArray dataset')
         da = _pull_docarray(user_input.dataset_name, user_input.admin_name)
         da = get_da_with_index_fields(da, user_input)
-        da = _add_tags_to_da(da, user_input)
+        # da = _add_tags_to_da(da, user_input)
     elif user_input.dataset_type == DatasetTypes.PATH:
         print('💿  Loading files from disk')
         da = _load_from_disk(user_input=user_input, data_class=data_class)
