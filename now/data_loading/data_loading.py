@@ -92,7 +92,11 @@ def _add_tags_to_da(da: DocumentArray, user_input: UserInput):
         for field in non_index_fields:
             non_index_field_doc = getattr(d, field, None)
             d.tags.update(
-                {field: non_index_field_doc.content or non_index_field_doc.uri}
+                {
+                    field: non_index_field_doc.content
+                    if non_index_field_doc.content
+                    else non_index_field_doc.uri
+                }
             )
     return da
 
