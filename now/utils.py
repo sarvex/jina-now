@@ -9,9 +9,11 @@ import sys
 import tempfile
 from collections.abc import MutableMapping
 from concurrent.futures import ThreadPoolExecutor
-from typing import Dict, List, Optional, Union
+from os.path import expanduser as user
+from typing import Dict, List, Optional, TypeVar, Union
 
 import boto3
+import docarray
 import hubble
 import yaml
 from docarray import Document, DocumentArray
@@ -134,6 +136,7 @@ def get_info_hubble(user_input):
             'Your hubble account is not verified. Please verify your account to deploy your flow as admin.'
         )
     user_input.jwt = {'token': client.token}
+    user_input.admin_name = response['data']['name']
     return response['data'], client.token
 
 
@@ -184,14 +187,16 @@ def prompt_value(
 
     if choices is not None:
         qs['choices'] = choices
-        # qs['type'] = 'list'
     return maybe_prompt_user(qs, name, **kwargs)
 
 
 def get_local_path(tmpdir, path_s3):
+    # todo check if this method of creatign the path is creating too much overhead
+    # also, the number of files is growing and will never be cleaned up
     return os.path.join(
         str(tmpdir),
-        base64.b64encode(bytes(path_s3, "utf-8")).decode("utf-8"),
+        base64.b64encode(bytes(path_s3, "utf-8")).decode("utf-8")
+        + f'.{path_s3.split(".")[-1] if "." in path_s3 else ""}',  # preserve file ending
     )
 
 
@@ -209,6 +214,7 @@ def convert_fn(
     d: Document, tmpdir, aws_access_key_id, aws_secret_access_key, aws_region_name
 ) -> Document:
     """Downloads files and tags from S3 bucket and updates the content uri and the tags uri to the local path"""
+
     bucket = get_bucket(
         uri=d.uri,
         aws_access_key_id=aws_access_key_id,
@@ -218,13 +224,15 @@ def convert_fn(
     d.tags['uri'] = d.uri
 
     d.uri = download_from_bucket(tmpdir, d.uri, bucket)
-    if 'tag_uri' in d.tags:
-        local_tag_uri = download_from_bucket(tmpdir, d.tags['tag_uri'], bucket)
-        with open(local_tag_uri, 'r') as fp:
-            tags = json.load(fp)
-            tags = flatten_dict(tags)
-            d.tags.update(tags)
-        del d.tags['tag_uri']
+    if d.uri.endswith('.json'):
+        d.load_uri_to_text()
+        json_dict = json.loads(d.text)
+        field_name = d._metadata['field_name']
+        field_value = get_dict_value_for_flattened_key(
+            json_dict, field_name.split('__')
+        )
+        d.text = field_value
+        d.uri = ''
     return d
 
 
@@ -269,15 +277,28 @@ def maybe_download_from_s3(
             f.result()
 
 
-def flatten_dict(d, parent_key='', sep='_'):
+def flatten_dict(d, parent_key='', sep='__'):
+    """
+    This function converts a nested dictionary into a dictionary of attirbutes using '__' as a separator.
+    Example:
+        {'a': {'b': {'c': 1, 'd': 2}}} -> {'a__b__c': 1, 'a__b__c': 2}
+    """
     items = []
     for k, v in d.items():
         new_key = parent_key + sep + k if parent_key else k
         if isinstance(v, MutableMapping):
             items.extend(flatten_dict(v, new_key, sep=sep).items())
         else:
-            items.append((new_key, v))
+            # TODO for now, we just have string values, str(v) should be removed once we support numeric values
+            items.append((new_key, str(v)))
     return dict(items)
+
+
+def get_dict_value_for_flattened_key(d, keys):
+    if len(keys) == 0:
+        return d
+    else:
+        return get_dict_value_for_flattened_key(d[keys[0]], keys[1:])
 
 
 def _get_context_names(contexts, active_context=None):
@@ -295,3 +316,32 @@ def get_flow_id(host):
 class Dumper(yaml.Dumper):
     def increase_indent(self, flow=False, *args, **kwargs):
         return super().increase_indent(flow=flow, indentless=False)
+
+
+def get_email():
+    try:
+        with open(user('~/.jina/config.json')) as fp:
+            config_val = json.load(fp)
+            user_token = config_val['auth_token']
+            client = hubble.Client(token=user_token, max_retries=None, jsonify=True)
+            response = client.get_user_info()
+        if 'email' in response['data']:
+            return response['data']['email']
+        return ''
+    except FileNotFoundError:
+        return ''
+
+
+def docarray_typing_to_modality_string(T: TypeVar) -> str:
+    """E.g. docarray.typing.Image -> image"""
+    return T.__name__.lower()
+
+
+def modality_string_to_docarray_typing(s: str) -> TypeVar:
+    """E.g. image -> docarray.typing.Image"""
+    return getattr(docarray.typing, s.capitalize())
+
+
+# Add a custom retry exception
+class RetryException(Exception):
+    pass

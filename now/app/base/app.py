@@ -1,15 +1,15 @@
-import abc
 import os
-from typing import Dict, List, Optional, Tuple
+from copy import deepcopy
+from typing import Dict, List, Optional, Tuple, TypeVar
 
 import docker
 from docarray import DocumentArray
-from jina import Client
+from jina import __version__ as jina_version
 from jina.jaml import JAML
 
 from now.app.base.preprocess import preprocess_image, preprocess_text, preprocess_video
-from now.constants import DEFAULT_FLOW_NAME, SUPPORTED_FILE_TYPES, Modalities
-from now.demo_data import AVAILABLE_DATASETS, DEFAULT_EXAMPLE_HOSTED, DemoDataset
+from now.constants import DEFAULT_FLOW_NAME, PREFETCH_NR
+from now.demo_data import DEFAULT_EXAMPLE_HOSTED, DemoDataset
 from now.now_dataclasses import DialogOptions, UserInput
 
 
@@ -23,7 +23,8 @@ class JinaNOWApp:
     """
 
     def __init__(self):
-        self.flow_yaml = ''
+        flow_dir = os.path.abspath(os.path.join(__file__, '..'))
+        self.flow_yaml = os.path.join(flow_dir, 'flow.yml')
 
     @property
     def app_name(self) -> str:
@@ -45,32 +46,6 @@ class JinaNOWApp:
         Short description of the app.
         """
         return 'Jina NOW app'
-
-    @property
-    @abc.abstractmethod
-    def input_modality(self) -> List[Modalities]:
-        """
-        Modality used for running search queries
-        """
-        raise NotImplementedError()
-
-    @property
-    @abc.abstractmethod
-    def output_modality(self) -> List[Modalities]:
-        """
-        Modality used for indexing data
-        """
-        raise NotImplementedError()
-
-    def set_flow_yaml(self, **kwargs):
-        """Used to configure the flow yaml in the Jina NOW app.
-        The interface is as follows:
-        - if kwargs['finetuning']=True, choose finetuning flow
-        - if kwargs['encode']=True, choose encoding flow (to get embeddings for finetuning)
-        - temporarily introduced kwargs['dataset_len'], if app optimizes different flows to it
-        """
-        flow_dir = os.path.abspath(os.path.join(__file__, '..'))
-        self.flow_yaml = os.path.join(flow_dir, 'flow.yml')
 
     @property
     def bff(self) -> Optional[str]:
@@ -103,18 +78,9 @@ class JinaNOWApp:
         return []
 
     @property
-    def supported_file_types(self) -> List[str]:
-        """Used to filter files in local structure or an S3 bucket."""
-        sup_file = [SUPPORTED_FILE_TYPES[modality] for modality in self.output_modality]
-        return [item for sublist in sup_file for item in sublist]
-
-    @property
-    def demo_datasets(self) -> Dict[str, List[DemoDataset]]:
+    def demo_datasets(self) -> Dict[TypeVar, List[DemoDataset]]:
         """Get a list of example datasets for the app."""
-        available_datasets = {}
-        for output_modality in self.output_modality:
-            available_datasets[output_modality] = AVAILABLE_DATASETS[output_modality]
-        return available_datasets
+        raise NotImplementedError()
 
     @property
     def required_docker_memory_in_gb(self) -> int:
@@ -178,11 +144,13 @@ class JinaNOWApp:
             mem_check = self._check_docker_mem_limit()
         return req_check and mem_check
 
-    # TODO Remove kubectl_path. At the moment, the setup function needs kubectl because of finetuning a custom
-    #  dataset with local deployment. In that case, inference is done on the k8s cluster.
-    def setup(
-        self, dataset: DocumentArray, user_input: UserInput, kubectl_path: str
-    ) -> Dict:
+    def get_executor_stubs(self, dataset, user_input, **kwargs) -> Dict:
+        """
+        Returns the stubs for the executors in the flow.
+        """
+        raise NotImplementedError()
+
+    def setup(self, dataset: DocumentArray, user_input: UserInput, **kwargs) -> Dict:
         """
         Runs before the flow is deployed.
         Common use cases:
@@ -194,6 +162,29 @@ class JinaNOWApp:
         :param user_input: user configuration based on the given options
         :return: dict used to replace variables in flow yaml and to clean up resources after the flow is terminated
         """
+        # Get the common env variables
+        common_env_dict = {
+            'JINA_VERSION': jina_version,
+            'PREFETCH': PREFETCH_NR,
+            'ADMIN_EMAILS': user_input.admin_emails or [] if user_input.secured else [],
+            'USER_EMAILS': user_input.user_emails or [] if user_input.secured else [],
+            'API_KEY': [user_input.api_key]
+            if user_input.secured and user_input.api_key
+            else [],
+            'CUSTOM_DNS': '',
+        }
+        if 'NOW_EXAMPLES' in os.environ:
+            valid_app = DEFAULT_EXAMPLE_HOSTED.get(user_input.app_instance.app_name, {})
+            is_demo_ds = user_input.dataset_name in valid_app
+            if is_demo_ds:
+                common_env_dict[
+                    'CUSTOM_DNS'
+                ] = f'now-example-{user_input.app_instance.app_name}-{user_input.dataset_name}.dev.jina.ai'.replace(
+                    '_', '-'
+                )
+        # Read the flow and add generic configuration such as labels in the flow
+        # Keep this function as simple as possible. It should only be used to add generic configuration needed
+        # for all apps. App specific configuration should be added in the app specific setup function.
         with open(self.flow_yaml) as input_f:
             flow_yaml_content = JAML.load(input_f.read())
             flow_yaml_content['jcloud']['labels'] = {'team': 'now'}
@@ -203,34 +194,28 @@ class JinaNOWApp:
                 and user_input.flow_name != DEFAULT_FLOW_NAME
                 else DEFAULT_FLOW_NAME
             )
-
-            # append api_keys to the executor with name 'preprocessor' and 'indexer'
+            # Call the executor stubs function to get the executors for the flow
+            flow_yaml_content['executors'] = self.get_executor_stubs(
+                dataset, user_input
+            )
+            # append user_input and api_keys to all executors except the remote executors
+            user_input_dict = deepcopy(user_input.__dict__)
+            user_input_dict.pop('app_instance', None)
+            user_input_dict.pop('index_field_candidates_to_modalities', None)
             for executor in flow_yaml_content['executors']:
-                if executor['name'] == 'preprocessor' or executor['name'] == 'indexer':
-                    executor['uses_with']['api_keys'] = '${{ ENV.API_KEY }}'
+                if not executor.get('external', False):
+                    if not executor.get('uses_with', None):
+                        executor['uses_with'] = {}
+                    executor['uses_with']['user_input_dict'] = user_input_dict
+                    if user_input.deployment_type == 'remote':
+                        executor['uses_with']['api_keys'] = '${{ ENV.API_KEY }}'
+                        executor['uses_with']['user_emails'] = '${{ ENV.USER_EMAILS }}'
+                        executor['uses_with'][
+                            'admin_emails'
+                        ] = '${{ ENV.ADMIN_EMAILS }}'
+            self.flow_yaml = self.add_telemetry_env(flow_yaml_content)
 
-            if Modalities.TEXT in self.input_modality:
-                if not any(
-                    exec_dict['name'] == 'autocomplete_executor'
-                    for exec_dict in flow_yaml_content['executors']
-                ):
-                    flow_yaml_content['executors'].insert(
-                        0,
-                        {
-                            'name': 'autocomplete_executor',
-                            'uses': '${{ ENV.AUTOCOMPLETE_EXECUTOR_NAME }}',
-                            'needs': 'gateway',
-                            'env': {'JINA_LOG_LEVEL': 'DEBUG'},
-                            'uses_with': {
-                                'api_keys': '${{ ENV.API_KEY }}',
-                                'user_emails': '${{ ENV.USER_EMAILS }}',
-                                'admin_emails': '${{ ENV.ADMIN_EMAILS }}',
-                            },
-                        },
-                    )
-            self.add_environment_variables(flow_yaml_content)
-            self.flow_yaml = flow_yaml_content
-        return {}
+        return common_env_dict
 
     def preprocess(
         self,
@@ -249,36 +234,20 @@ class JinaNOWApp:
                     else:
                         raise ValueError(f'Unsupported modality {chunk.modality}')
                 except Exception as e:
+                    chunk.summary()
                     print(e)
         return docs
 
     def is_demo_available(self, user_input) -> bool:
-        hosted_ds = DEFAULT_EXAMPLE_HOSTED.get(self.app_name, {})
-        if (
-            hosted_ds
-            and user_input.dataset_name in hosted_ds
-            and user_input.deployment_type == 'remote'
-            and 'NOW_EXAMPLES' not in os.environ
-            and 'NOW_CI_RUN' not in os.environ
-        ):
-            client = Client(
-                host=f'grpcs://now-example-{self.app_name}-{user_input.dataset_name}.dev.jina.ai'.replace(
-                    '_', '-'
-                )
-            )
-            try:
-                client.post('/dry_run', timeout=2)
-            except Exception:
-                return False
-            return True
-        return False
+        raise NotImplementedError()
 
     @property
     def max_request_size(self) -> int:
         """Max number of documents in one request"""
         return 32
 
-    def add_environment_variables(self, flow_yaml_content):
+    @staticmethod
+    def add_telemetry_env(flow_yaml_content):
         if 'JINA_OPTOUT_TELEMETRY' in os.environ:
             flow_yaml_content['with']['env']['JINA_OPTOUT_TELEMETRY'] = os.environ[
                 'JINA_OPTOUT_TELEMETRY'
@@ -287,3 +256,4 @@ class JinaNOWApp:
                 executor['env']['JINA_OPTOUT_TELEMETRY'] = os.environ[
                     'JINA_OPTOUT_TELEMETRY'
                 ]
+        return flow_yaml_content

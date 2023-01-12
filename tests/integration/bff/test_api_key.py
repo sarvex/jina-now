@@ -1,16 +1,16 @@
 import hubble
 import requests
-from tests.integration.test_end_to_end import assert_search
-
-from now.admin.utils import get_default_request_body
 from tests.integration.bff.conftest import (
+    BASE_URL,
     HOST,
     PORT,
     SEARCH_URL,
-    BASE_URL,
-    index_data,
     get_flow,
+    index_data,
 )
+from tests.integration.test_end_to_end import assert_search
+
+from now.admin.utils import get_default_request_body
 
 API_KEY = 'my_key'
 update_api_keys_url = f'{BASE_URL}/admin/updateApiKeys'
@@ -24,7 +24,7 @@ def get_request_body():
     return request_body
 
 
-def test_add_key(start_bff):
+def test_add_key(start_bff, setup_service_running, random_index_name, tmpdir):
     client = hubble.Client(
         token=get_request_body()['jwt']['token'], max_retries=None, jsonify=True
     )
@@ -32,7 +32,8 @@ def test_add_key(start_bff):
 
     f = get_flow(
         preprocessor_args={'admin_emails': [admin_email]},
-        indexer_args={'admin_emails': [admin_email]},
+        indexer_args={'admin_emails': [admin_email], 'index_name': random_index_name},
+        tmpdir=tmpdir,
     )
     with f:
         index_data(f, jwt=get_request_body()['jwt'])
@@ -49,7 +50,7 @@ def test_add_key(start_bff):
         print('# test api keys')
         print('# search with invalid api key')
         request_body = get_request_body()
-        request_body['query'] = {'text_field': {'text': 'girl on motorbike'}}
+        request_body['query'] = {'query_text': {'text': 'girl on motorbike'}}
         del request_body['jwt']
         request_body['api_key'] = API_KEY
         request_body['limit'] = 9

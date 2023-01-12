@@ -33,6 +33,7 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 
 # HEADER
 st.set_page_config(page_title='NOW', page_icon='https://jina.ai/favicon.ico')
+profanity.load_censor_words()
 
 
 def convert_file_to_document(query):
@@ -100,13 +101,8 @@ def deploy_streamlit():
     if redirect_to and st.session_state.login:
         nav_to(redirect_to)
     else:
-        da_img, da_txt = load_example_queries(params.data, params.output_modality)
+        da_img, da_txt = load_example_queries(params.data)
 
-        if params.output_modality == 'text':
-            # censor words in text incl. in custom data
-            from better_profanity import profanity
-
-            profanity.load_censor_words()
         setup_design()
 
         if params.host and st.session_state.filters == 'notags':
@@ -144,13 +140,7 @@ def deploy_streamlit():
                 values.insert(0, 'All')
                 filter_selection[tag] = st.sidebar.selectbox(tag, values)
 
-        st_ratio_options = []
-        if params.input_modality:
-            for input_modality in params.input_modality.split('-or-'):
-                if input_modality == 'text':
-                    st_ratio_options.extend(['Text'])
-                elif input_modality == 'image':
-                    st_ratio_options.extend(['Image', 'Webcam'])
+        st_ratio_options = ['Text', 'Image', 'Webcam']
 
         media_type = st.radio(
             '',
@@ -167,7 +157,7 @@ def deploy_streamlit():
         elif media_type == 'Webcam':
             render_webcam(deepcopy(filter_selection))
 
-        render_matches(params.output_modality)
+        render_matches()
 
         add_social_share_buttons()
 
@@ -211,8 +201,6 @@ def _do_login(params):
     # Whether it is fail or success, clear the query param
     query_params_var = {
         'host': unquote(params.host),
-        'input_modality': params.input_modality,
-        'output_modality': params.output_modality,
         'data': params.data,
     }
     if params.secured:
@@ -221,10 +209,7 @@ def _do_login(params):
         query_params_var['top_k'] = params.top_k
     st.experimental_set_query_params(**query_params_var)
 
-    redirect_uri = (
-        f'https://nowrun.jina.ai/?host={params.host}&input_modality={params.input_modality}'
-        f'&output_modality={params.output_modality}&data={params.data}'
-    )
+    redirect_uri = f'https://nowrun.jina.ai/?host={params.host}' f'&data={params.data}'
     if params.secured:
         redirect_uri += f'&secured={params.secured}'
     if 'top_k' in st.experimental_get_query_params():
@@ -255,7 +240,7 @@ def _do_logout():
     )
 
 
-def load_example_queries(data, output_modality):
+def load_example_queries(data):
     da_img = None
     da_txt = None
     if data in ds_set:
@@ -366,7 +351,7 @@ def render_text(da_txt, filter_selection):
                     )
 
 
-def render_matches(OUTPUT_MODALITY):
+def render_matches():
     # TODO function is too large. Split up.
     if st.session_state.matches and not st.session_state.error_msg:
         if st.session_state.search_count > 2:
@@ -378,19 +363,10 @@ def render_matches(OUTPUT_MODALITY):
         for m in matches:
             m.scores['cosine'].value = 1 - m.scores['cosine'].value
         sorted(matches, key=lambda m: m.scores['cosine'].value, reverse=True)
-
-        # filter based on threshold and then group them for pagination
-        matches = DocumentArray(
-            [
-                m
-                for m in matches
-                if m.scores['cosine'].value > st.session_state.min_confidence
-            ]
-        )
         list_matches = [matches[i : i + 9] for i in range(0, len(matches), 9)]
 
         # render the current page or the last page if filtered documents are less
-        if len(list_matches) > 0:
+        if list_matches:
             st.session_state.page_number = min(
                 st.session_state.page_number, len(list_matches) - 1
             )
@@ -400,23 +376,8 @@ def render_matches(OUTPUT_MODALITY):
             c4, c5, c6 = st.columns(3)
             c7, c8, c9 = st.columns(3)
             all_cs = [c1, c2, c3, c4, c5, c6, c7, c8, c9]
-
             for c, match in zip(all_cs, list_matches[st.session_state.page_number]):
-                match.mime_type = OUTPUT_MODALITY
-
-                if OUTPUT_MODALITY == 'text':
-                    render_text_result(match, c)
-
-                elif OUTPUT_MODALITY == 'video':
-                    render_graphic_result(match, c)
-
-                elif OUTPUT_MODALITY == 'text-or-image-or-video':
-                    try:
-                        render_graphic_result(match, c)
-                    except:
-                        render_text_result(match, c)
-                else:
-                    raise ValueError(f'{OUTPUT_MODALITY} not handled')
+                render_multi_modal_result(match, c)
 
         if len(list_matches) > 1:
             # disable prev button or not
@@ -442,15 +403,6 @@ def render_matches(OUTPUT_MODALITY):
                 on_click=decrement_page,
             )
 
-        st.markdown("""---""")
-        st.session_state.min_confidence = st.slider(
-            'Confidence threshold',
-            0.0,
-            1.0,
-            key='slider',
-            on_change=update_conf,
-        )
-
     if st.session_state.error_msg:
         with st.expander(
             'Received error response from the server. Expand this to see the full error message'
@@ -458,44 +410,37 @@ def render_matches(OUTPUT_MODALITY):
             st.text(st.session_state.error_msg)
 
 
-def render_graphic_result(match, c):
-    if match.blob != b'':
-        match.convert_blob_to_datauri()
-    elif match.tensor is not None:
-        match.convert_image_tensor_to_uri()
+def render_multi_modal_result(match, c):
+    for chunk in match.chunks:
+        render_graphic_result(chunk, c)
+        render_text_result(chunk, c)
 
-    if match.uri != '':
+
+# I'm not so happy about these two functions, let's refactor them
+def render_graphic_result(match, c):
+    try:
+        match.mime_type = 'text-or-image-or-video'
+        if match.blob:
+            match.convert_blob_to_datauri()
+        elif match.tensor is not None:
+            match.convert_image_tensor_to_uri()
         c.image(match.uri)
+    except:
+        pass
 
 
 def render_text_result(match, c):
-    if match.text == '' and match.uri != '':
-        match.load_uri_to_text(timeout=10)
-    display_text = profanity.censor(match.text).replace('\n', ' ')
-    body = f"<!DOCTYPE html><html><body><blockquote>{display_text}</blockquote>"
-    if match.tags.get('additional_info'):
-        additional_info = match.tags.get('additional_info')
-        if type(additional_info) == str:
-            additional_info_text = additional_info
-        elif type(additional_info) == list:
-            if len(additional_info) == 1:
-                # assumes just one line containing information on text name and creator, etc.
-                additional_info_text = additional_info
-            elif len(additional_info) == 2:
-                # assumes first element is text name and second element is creator name
-                additional_info_text = (
-                    f"<em>{additional_info[0]}</em> "
-                    f"<small>by {additional_info[1]}</small>"
-                )
-
-            else:
-                additional_info_text = " ".join(additional_info)
-        body += f"<figcaption>{additional_info_text}</figcaption>"
-    body += "</body></html>"
-    c.markdown(
-        body=body,
-        unsafe_allow_html=True,
-    )
+    try:
+        if match.text == '' and match.uri != '':
+            match.load_uri_to_text(timeout=10)
+        display_text = profanity.censor(match.text).replace('\n', ' ')
+        body = f"<!DOCTYPE html><html><body>{display_text}</body></html>"
+        c.markdown(
+            body=body,
+            unsafe_allow_html=True,
+        )
+    except:
+        pass
 
 
 def render_webcam(filter_selection):
@@ -579,16 +524,11 @@ def decrement_page():
     st.session_state.page_number -= 1
 
 
-def update_conf():
-    st.session_state.min_confidence = st.session_state.slider
-
-
 def clear_match():
     st.session_state.matches = (
         None  # TODO move this to when we choose a suggestion or search button
     )
     st.session_state.slider = 0.0
-    st.session_state.min_confidence = 0.0
     st.session_state.snap = None
     st.session_state.error_msg = None
     st.session_state.page_number = 0
@@ -680,9 +620,6 @@ def get_logout_button(url):
 def setup_session_state():
     if 'matches' not in st.session_state:
         st.session_state.matches = None
-
-    if 'min_confidence' not in st.session_state:
-        st.session_state.min_confidence = 0.0
 
     if 'im' not in st.session_state:
         st.session_state.im = None

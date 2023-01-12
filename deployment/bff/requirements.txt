@@ -2,5 +2,6 @@ fastapi
 uvicorn
 uvloop
 pydantic
-jina[perf]==3.8.2
-docarray==0.16.4
+jina[perf]==3.13.2
+docarray==0.19.1
+filetype

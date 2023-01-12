@@ -4,8 +4,7 @@ from streamlit_webrtc import RTCConfiguration
 class Parameters:
     host: str = None
     port: str = None
-    input_modality: str = None
-    output_modality: str = None
+    index_fields: str = None  # concatenated string of fields for indexing
     data: str = None
     code: str = None
     state: str = None

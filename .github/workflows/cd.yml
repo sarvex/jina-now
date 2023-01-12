@@ -83,6 +83,10 @@ jobs:
           filters: |
             has_deployment_changed:
             - 'deployment/**'
+      - name: replace now commit hash in Dockerfile
+        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
+        shell: bash
+        run: sed -i 's/JINA_NOW_COMMIT_SHA/${{ github.sha }}/g' deployment/bff/Dockerfile
       - name: Zip deployment
         if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
         run: zip -r deploy.zip deployment docker-compose.yml

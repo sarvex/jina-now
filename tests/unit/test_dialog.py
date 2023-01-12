@@ -7,12 +7,25 @@ import os
 from typing import Dict
 
 import pytest
+from docarray.typing import Image, Text, Video
 from pytest_mock import MockerFixture
 
 from now.constants import DEFAULT_FLOW_NAME, Apps, DatasetTypes
 from now.demo_data import DemoDatasetNames
 from now.dialog import configure_user_input
 from now.now_dataclasses import UserInput
+
+index_field_CANDIDATES_TO_MODALITIES = {'text': Text, 'uri': Image}
+FILTER_FIELD_CANDIDATES_TO_MODALITIES = {
+    'uri': 'str',
+    'text': 'str',
+    'original_height': 'dict',
+    'similarity': 'dict',
+    'NSFW': 'dict',
+    'height': 'dict',
+    'original_width': 'dict',
+    'width': 'dict',
+}
 
 
 class CmdPromptMock:
@@ -28,12 +41,13 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
         {
             'app': Apps.SEARCH_APP,
             'flow_name': DEFAULT_FLOW_NAME,
+            'admin_name': 'team-now',
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': DemoDatasetNames.TLL,
-            'search_fields_modalities': {'label': 'text', 'image': 'image'},
-            'search_fields': ['label'],
+            'index_field_candidates_to_modalities': {'label': Text, 'image': Image},
+            'index_fields': ['label'],
             'filter_fields': [],
-            'filter_fields_modalities': {'label': 'text'},
+            'filter_field_candidates_to_modalities': {'label': 'text'},
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -44,11 +58,12 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'app': Apps.SEARCH_APP,
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DEMO,
+            'admin_name': 'team-now',
             'dataset_name': DemoDatasetNames.NIH_CHEST_XRAYS,
-            'search_fields_modalities': {'label': 'text', 'image': 'image'},
-            'search_fields': ['image'],
+            'index_field_candidates_to_modalities': {'label': Text, 'image': Image},
+            'index_fields': ['image'],
             'filter_fields': [],
-            'filter_fields_modalities': {'label': 'text'},
+            'filter_field_candidates_to_modalities': {'label': 'text'},
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -62,8 +77,8 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'dataset_path': os.path.join(
                 os.path.dirname(__file__), '..', 'resources', 'image'
             ),
-            'search_fields': ['.jpg'],
-            'search_fields_modalities': {'.jpg': 'image'},
+            'index_fields': ['.jpg'],
+            'index_field_candidates_to_modalities': {'.jpg': Image},
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -74,10 +89,11 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': DemoDatasetNames.DEEP_FASHION,
-            'search_fields': ['image'],
-            'search_fields_modalities': {'label': 'text', 'image': 'image'},
+            'index_fields': ['image'],
+            'admin_name': 'team-now',
+            'index_field_candidates_to_modalities': {'label': Text, 'image': Image},
             'filter_fields': [],
-            'filter_fields_modalities': {'label': 'text'},
+            'filter_field_candidates_to_modalities': {'label': 'text'},
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -90,10 +106,14 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'flow_name': 'testapp',
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': DemoDatasetNames.RAP_LYRICS,
-            'search_fields': ['lyrics'],
-            'search_fields_modalities': {'lyrics': 'text', 'title': 'text'},
+            'admin_name': 'team-now',
+            'index_fields': ['lyrics'],
+            'index_field_candidates_to_modalities': {'lyrics': Text, 'title': Text},
             'filter_fields': ['title'],
-            'filter_fields_modalities': {'lyrics': 'text', 'title': 'text'},
+            'filter_field_candidates_to_modalities': {
+                'lyrics': 'text',
+                'title': 'text',
+            },
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -105,10 +125,14 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'flow_name': 'testapp',
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': DemoDatasetNames.TUMBLR_GIFS_10K,
-            'search_fields': ['video'],
-            'search_fields_modalities': {'video': 'video', 'description': 'text'},
+            'admin_name': 'team-now',
+            'index_fields': ['video'],
+            'index_field_candidates_to_modalities': {
+                'video': Video,
+                'description': Text,
+            },
             'filter_fields': ['title'],
-            'filter_fields_modalities': {'description': 'text'},
+            'filter_field_candidates_to_modalities': {'description': 'text'},
             'cluster': 'new',
             'deployment_type': 'local',
         },
@@ -119,10 +143,11 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'flow_name': 'test this name *',
             'dataset_type': DatasetTypes.DEMO,
             'dataset_name': DemoDatasetNames.DEEP_FASHION,
-            'search_fields': ['image'],
-            'search_fields_modalities': {'label': 'text', 'image': 'image'},
+            'admin_name': 'team-now',
+            'index_fields': ['image'],
+            'index_field_candidates_to_modalities': {'label': Text, 'image': Image},
             'filter_fields': [],
-            'filter_fields_modalities': {'label': 'text'},
+            'filter_field_candidates_to_modalities': {'label': 'text'},
             'cluster': 'new',
             'deployment_type': 'local',
         },

@@ -48,7 +48,7 @@ class NOWAutoCompleteExecutor2(Executor):
     def search_update(
         self, docs: Optional[DocumentArray] = None, parameters: dict = {}, **kwargs
     ):
-        for doc in docs:
+        for doc in docs['@c']:
             if doc.text and not profanity.contains_profanity(doc.text):
                 search_words = doc.text.split(' ')
                 # prevent users from misusing API

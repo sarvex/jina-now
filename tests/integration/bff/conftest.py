@@ -1,15 +1,14 @@
 from multiprocessing import Process
 
 import pytest
-from docarray import Document
+from docarray import Document, DocumentArray, dataclass
+from docarray.typing import Text
 from jina import Flow
 
 from deployment.bff.app.app import run_server
-from now.constants import ACCESS_PATHS, EXTERNAL_CLIP_HOST, NOW_QDRANT_INDEXER_VERSION
-from now.executor.indexer.in_memory import InMemoryIndexer
-from now.executor.name_to_id_map import name_to_id_map
+from now.constants import ACCESS_PATHS, EXTERNAL_CLIP_HOST
+from now.executor.indexer.elastic import NOWElasticIndexer
 from now.executor.preprocessor import NOWPreprocessor
-from now.now_dataclasses import UserInput
 
 BASE_URL = 'http://localhost:8080/api/v1'
 SEARCH_URL = f'{BASE_URL}/search-app/search'
@@ -27,21 +26,26 @@ def start_bff():
 
 
 def index_data(f, **kwargs):
-    docs = [Document(text='test', tags={'color': 'red'}) for _ in range(9)]
-    docs.append(Document(text='test', tags={'color': 'blue'}))
+    @dataclass
+    class Doc:
+        title: Text
+
+    docs = DocumentArray([Document(Doc(title='test')) for _ in range(10)])
+    for index, doc in enumerate(docs):
+        doc.tags['color'] = 'Blue Color' if index == 0 else 'Red Color'
+        doc.tags['price'] = 0.5 + index
+
     f.index(
         docs,
         parameters={
-            'user_input': UserInput().__dict__,
             'access_paths': ACCESS_PATHS,
             **kwargs,
         },
     )
 
 
-def get_flow(use_qdrant=True, preprocessor_args=None, indexer_args=None):
+def get_flow(preprocessor_args=None, indexer_args=None, tmpdir=None):
     """
-    :param use_qdrant: if True, uses the NOWQdrantIndexer16 indexer, otherwise InMemoryIndexer.
     :param preprocessor_args: additional arguments for the preprocessor,
         e.g. {'admin_emails': [admin_email]}
     :param indexer_args: additional arguments for the indexer,
@@ -49,11 +53,13 @@ def get_flow(use_qdrant=True, preprocessor_args=None, indexer_args=None):
     """
     preprocessor_args = preprocessor_args or {}
     indexer_args = indexer_args or {}
+    metas = {'workspace': str(tmpdir)}
     f = (
         Flow(port_expose=9089)
         .add(
             uses=NOWPreprocessor,
-            uses_with={'app': 'search_app', **preprocessor_args},
+            uses_with=preprocessor_args,
+            uses_metas=metas,
         )
         .add(
             host=EXTERNAL_CLIP_HOST,
@@ -62,10 +68,14 @@ def get_flow(use_qdrant=True, preprocessor_args=None, indexer_args=None):
             external=True,
         )
         .add(
-            uses=f'jinahub+docker://{name_to_id_map.get("NOWQdrantIndexer16")}/{NOW_QDRANT_INDEXER_VERSION}'
-            if use_qdrant
-            else InMemoryIndexer,
-            uses_with={'dim': 512, **indexer_args},
+            uses=NOWElasticIndexer,
+            uses_with={
+                'hosts': 'http://localhost:9200',
+                'document_mappings': [['encoderclip', 512, ['title']]],
+                **indexer_args,
+            },
+            uses_metas=metas,
+            no_reduce=True,
         )
     )
     return f

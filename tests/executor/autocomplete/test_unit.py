@@ -55,12 +55,12 @@ def test_search_update(tmpdir):
 
     da = DocumentArray(
         [
-            Document(text='background'),
-            Document(text='background'),
-            Document(text='bang'),
-            Document(text='loading'),
-            Document(text='loading'),
-            Document(text='laugh'),
+            Document(chunks=[Document(text='background')]),
+            Document(chunks=[Document(text='background')]),
+            Document(chunks=[Document(text='bang')]),
+            Document(chunks=[Document(text='loading')]),
+            Document(chunks=[Document(text='loading')]),
+            Document(chunks=[Document(text='laugh')]),
         ]
     )
 
@@ -75,14 +75,14 @@ def test_search_update_profanity(tmpdir):
 
     da = DocumentArray(
         [
-            Document(text='background'),
-            Document(text='background'),
-            Document(text='shit'),
-            Document(text='loading'),
-            Document(text='fuck'),
-            Document(text='f*ck'),
-            Document(text='laugh'),
-            Document(text='fuck shit somethings'),
+            Document(chunks=[Document(text='background')]),
+            Document(chunks=[Document(text='background')]),
+            Document(chunks=[Document(text='shit')]),
+            Document(chunks=[Document(text='loading')]),
+            Document(chunks=[Document(text='fuck')]),
+            Document(chunks=[Document(text='f*ck')]),
+            Document(chunks=[Document(text='laugh')]),
+            Document(chunks=[Document(text='fuck shit somethings')]),
         ]
     )
 
@@ -98,12 +98,12 @@ def test_get_suggestion(tmpdir):
 
     da = DocumentArray(
         [
-            Document(text='background'),
-            Document(text='background'),
-            Document(text='bang'),
-            Document(text='loading'),
-            Document(text='loading'),
-            Document(text='laugh'),
+            Document(chunks=[Document(text='background')]),
+            Document(chunks=[Document(text='background')]),
+            Document(chunks=[Document(text='bang')]),
+            Document(chunks=[Document(text='loading')]),
+            Document(chunks=[Document(text='loading')]),
+            Document(chunks=[Document(text='laugh')]),
         ]
     )
 
@@ -125,12 +125,12 @@ def test_get_suggestion_bitrigrams(tmpdir):
 
     da = DocumentArray(
         [
-            Document(text='aziz'),
-            Document(text='test'),
-            Document(text='aziz test'),
-            Document(text='red'),
-            Document(text='red dress'),
-            Document(text='red long dress'),
+            Document(chunks=[Document(text='aziz')]),
+            Document(chunks=[Document(text='test')]),
+            Document(chunks=[Document(text='aziz test')]),
+            Document(chunks=[Document(text='red')]),
+            Document(chunks=[Document(text='red dress')]),
+            Document(chunks=[Document(text='red long dress')]),
         ]
     )
 

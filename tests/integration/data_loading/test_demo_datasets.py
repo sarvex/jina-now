@@ -8,17 +8,19 @@ import os
 import pytest
 import requests
 
-from now.constants import Modalities
 from now.demo_data import AVAILABLE_DATASETS
 
 
 @pytest.mark.parametrize(
-    'modality, ds_name',
-    [(m, d.name) for m, ds in AVAILABLE_DATASETS.items() for d in ds],
+    'ds_name',
+    [
+        ds.name
+        for _, demo_datasets in AVAILABLE_DATASETS.items()
+        for ds in demo_datasets
+    ],
 )
 def test_dataset_is_available(
     ds_name: str,
-    modality: Modalities,
 ):
     token = os.environ['WOLF_TOKEN']
     cookies = {'st': token}

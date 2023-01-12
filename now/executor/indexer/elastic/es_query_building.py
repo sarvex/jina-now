@@ -36,7 +36,7 @@ def generate_semantic_scores(
             document_fields = encoder_to_fields[executor_name]
         except KeyError as e:
             raise KeyError(
-                'Documents are not encoded with same encoder as query.'
+                f'Documents are not encoded with same encoder as query. executor_name: {executor_name}, encoder_to_fields: {encoder_to_fields}'
             ) from e
         for field_name in field_names:
             for document_field in document_fields:
@@ -76,9 +76,11 @@ def build_es_queries(
     :param get_score_breakdown: whether to return the score breakdown for matches.
         For this function, this parameter determines whether to return the embeddings
         of a query document.
+    :param semantic_scores: list of semantic scores to use for query.
     :param custom_bm25_query: custom query to use for BM25.
     :param metric: metric to use for vector search.
     :param filter: dictionary of filters to apply to the search.
+    :param query_to_curated_ids: dictionary mapping query text to list of curated ids.
     :return: a dictionary containing query and filter.
     """
     queries = {}
