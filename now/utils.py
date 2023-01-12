@@ -174,6 +174,12 @@ def field_dict_to_mm_doc(
     field_names_to_dataclass_fields={},
     bff_use=False,
 ) -> Document:
+
+    if bff_use and len(field_dict) != 1:
+        raise ValueError(
+            f"Multi-modal document isn't supported yet. "
+            f"Can only set one value but have {list(field_dict.keys())}"
+        )
     with TemporaryDirectory() as tmp_dir:
         try:
             if field_names_to_dataclass_fields:
