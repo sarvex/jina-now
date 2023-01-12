@@ -81,24 +81,24 @@ def add_metadata_to_da(da, user_input):
                 getattr(doc, dataclass_field)._metadata['field_name'] = field_name
 
 
-def _add_tags_to_da(da: DocumentArray, user_input: UserInput):
-    if not da:
-        return da
-
-    non_index_fields = list(
-        set(da[0]._metadata['multi_modal_schema'].keys()) - set(user_input.index_fields)
-    )
-    for d in da:
-        for field in non_index_fields:
-            non_index_field_doc = getattr(d, field, None)
-            d.tags.update(
-                {
-                    field: non_index_field_doc.content
-                    if non_index_field_doc.content
-                    else non_index_field_doc.uri
-                }
-            )
-    return da
+# def _add_tags_to_da(da: DocumentArray, user_input: UserInput):
+#     if not da:
+#         return da
+#
+#     non_index_fields = list(
+#         set(da[0]._metadata['multi_modal_schema'].keys()) - set(user_input.index_fields)
+#     )
+#     for d in da:
+#         for field in non_index_fields:
+#             non_index_field_doc = getattr(d, field, None)
+#             d.tags.update(
+#                 {
+#                     field: non_index_field_doc.content
+#                     if non_index_field_doc.content
+#                     else non_index_field_doc.uri
+#                 }
+#             )
+#     return da
 
 
 def _pull_docarray(dataset_name: str, admin_name: str) -> DocumentArray:
