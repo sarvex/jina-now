@@ -201,6 +201,12 @@ def field_dict_to_mm_doc(
                     field_value.uri = file_path
                 if field_value.content is not None:
                     data_class_kwargs[field_name_data_class] = field_value.content
+                elif field_value.uri is not None:
+                    data_class_kwargs[field_name_data_class] = field_value.uri
+                elif field_value.text is not None:
+                    data_class_kwargs[field_name_data_class] = field_value.text
+                elif field_value.tensor is not None:
+                    data_class_kwargs[field_name_data_class] = field_value.tensor
                 else:
                     raise ValueError(
                         f'Content of field {field_name_data_class} is None. '
