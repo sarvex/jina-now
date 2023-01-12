@@ -315,6 +315,7 @@ class NOWElasticIndexer(Executor):
                 index=self.index_name, size=limit, from_=offset, query={'match_all': {}}
             )['hits']['hits']
         except Exception:
+            result = None
             self.logger.info(traceback.format_exc())
         if result:
             return convert_es_to_da(result, get_score_breakdown=False)
