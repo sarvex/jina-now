@@ -137,11 +137,9 @@ def deploy_streamlit():
                 values.insert(0, 'All')
                 filter_selection[tag] = st.sidebar.selectbox(tag, values)
 
-        st_ratio_options = ['Text', 'Image']
-
         media_type = st.radio(
             '',
-            st_ratio_options,
+            ['Text', 'Image'],
             on_change=clear_match,
         )
 

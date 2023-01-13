@@ -1,6 +1,3 @@
-from streamlit_webrtc import RTCConfiguration
-
-
 class Parameters:
     host: str = None
     port: str = None
