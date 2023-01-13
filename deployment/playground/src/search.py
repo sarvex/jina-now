@@ -67,6 +67,7 @@ def search(
     top_k=None,
     filter_dict=None,
     endpoint='search',
+    field_name=None,
 ):
     print(f'Searching by {attribute_name}')
     params = get_query_params()
@@ -87,14 +88,15 @@ def search(
     if endpoint == 'suggestion':
         data[attribute_name] = attribute_value
     elif endpoint == 'search':
-        data['query'] = {f'query_{attribute_name}': {attribute_name: attribute_value}}
+        data['query'] = {f'query_{field_name}': {attribute_name: attribute_value}}
+        data['create_temp_link'] = True
     # in case the jwt is none, no jwt will be sent. This is the case when no authentication is used for that flow
     if jwt is not None:
         data['jwt'] = jwt
     if params.port:
         data['port'] = params.port
 
-    return call_flow(URL_HOST, data, attribute_name, domain, endpoint)
+    return call_flow(URL_HOST, data, domain, endpoint)
 
 
 def get_suggestion(text, jwt):
@@ -103,7 +105,7 @@ def get_suggestion(text, jwt):
 
 @deep_freeze_args
 @functools.lru_cache(maxsize=10, typed=False)
-def call_flow(url_host, data, attribute_name, domain, endpoint):
+def call_flow(url_host, data, domain, endpoint):
     st.session_state.search_count += 1
     data = unfreeze_param(data)
 
@@ -117,16 +119,21 @@ def call_flow(url_host, data, attribute_name, domain, endpoint):
         elif endpoint == 'search':
             docs = DocumentArray()
             # todo: use multimodal doc in the future
+
             for response_json in response.json():
-                content = list(response_json['fields'].values())[0]
+                chunks = []
+                for name, type_to_content in sorted(response_json['fields'].items()):
+                    chunk = Document(**type_to_content)
+                    if chunk.blob:
+                        base64_bytes = chunk.blob.encode('utf-8')
+                        chunk.blob = base64.decodebytes(base64_bytes)
+
+                    chunks.append(chunk)
                 doc = Document(
                     id=response_json['id'],
                     tags=response_json['tags'],
-                    **content,
+                    chunks=chunks,
                 )
-                if doc.blob:
-                    base64_bytes = doc.blob.encode('utf-8')
-                    doc.blob = base64.decodebytes(base64_bytes)
                 for metric, value in response_json['scores'].items():
                     doc.scores[metric] = NamedScore(value=value['value'])
                 docs.append(doc)
@@ -144,27 +151,13 @@ def call_flow(url_host, data, attribute_name, domain, endpoint):
 
     st.session_state.error_msg = None
 
-    # update URI to temporary URI for any cloud bucket resources
-    docs_cloud = docs.find({'uri': {'$regex': r"\As3://"}})
-    if len(docs_cloud) > 0:
-        del data['query']
-        del data['limit']
-        data['ids'] = docs_cloud[:, 'id']
-        data['uris'] = docs_cloud[:, 'uri']
-
-        response_temp_links = requests.post(
-            f"{domain}/api/v1/cloud-bucket-utils/temp_link",
-            json=data,
-            headers={"Content-Type": "application/json; charset=utf-8"},
-        )
-        docs_temp_links = DocumentArray.from_json(response_temp_links.content)
-        for _id, _uri in zip(*docs_temp_links[:, ['id', 'uri']]):
-            docs[_id].uri = _uri
     return docs
 
 
 def search_by_text(search_text, jwt, filter_selection) -> DocumentArray:
-    return search('text', search_text, jwt, filter_dict=filter_selection)
+    return search(
+        'text', search_text, jwt, filter_dict=filter_selection, field_name='text'
+    )
 
 
 def search_by_image(document: Document, jwt, filter_selection) -> DocumentArray:
@@ -183,4 +176,5 @@ def search_by_image(document: Document, jwt, filter_selection) -> DocumentArray:
         base64.b64encode(query_doc.blob).decode('utf-8'),
         jwt,
         filter_dict=filter_selection,
+        field_name='image',
     )

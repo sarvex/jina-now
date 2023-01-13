@@ -64,7 +64,8 @@ def check_pods_health(ns):
 def wait_for_flow(client, ns):
     wait_time = 0
     while not client.is_flow_ready() and wait_time <= MAX_WAIT_TIME:
-        check_pods_health(ns)
+        if 'NOW_TESTING' not in os.environ:
+            check_pods_health(ns)
         wait_time += 1
         sleep(1)
     if not client.is_flow_ready():

@@ -4,24 +4,10 @@ from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.139-refactor-rename-fields-19'
-NOW_PREPROCESSOR_VERSION = '0.0.117-refactor-rename-fields-19'
-NOW_QDRANT_INDEXER_VERSION = '0.0.138-refactor-remove-finetuning-6'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.139-test-local-end-to-end-17'
-NOW_AUTOCOMPLETE_VERSION = '0.0.7-create-mm-docs-in-bff-18'
-
-
-class Modalities(BetterEnum):
-    TEXT = 'text'
-    IMAGE = 'image'
-    VIDEO = 'video'
-
-
-MODALITIES_MAPPING = {
-    Modalities.TEXT: Text,
-    Modalities.IMAGE: Image,
-    Modalities.VIDEO: Video,
-}
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.146-refactor-remove-webcam-2'
+NOW_PREPROCESSOR_VERSION = '0.0.120-refactor-bump-jina-version-to-latest-17'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.142-refactor-bump-jina-version-to-latest-17'
+NOW_AUTOCOMPLETE_VERSION = '0.0.8-refactor-bump-jina-version-to-latest-17'
 
 
 class Apps(BetterEnum):
@@ -36,21 +22,10 @@ class DatasetTypes(BetterEnum):
     ELASTICSEARCH = 'elasticsearch'
 
 
-class ModelNames(BetterEnum):
-    MLP = 'mlp'
-    SBERT = 'sentence-transformers/msmarco-distilbert-base-v3'
-    CLIP = 'openai/clip-vit-base-patch32'
-
-
-class ModelDimensions(BetterEnum):
-    SBERT = 768
-    CLIP = 512
-
-
 SUPPORTED_FILE_TYPES = {
-    Modalities.TEXT: ['txt', 'md'],
-    Modalities.IMAGE: ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'tif'],
-    Modalities.VIDEO: ['gif'],
+    Text: ['txt', 'md'],
+    Image: ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'tif'],
+    Video: ['gif'],
 }
 
 FILETYPE_TO_MODALITY = {
@@ -58,21 +33,13 @@ FILETYPE_TO_MODALITY = {
     for modality, filetypes in SUPPORTED_FILE_TYPES.items()
     for filetype in filetypes
 }
-AVAILABLE_MODALITIES_FOR_SEARCH = [Modalities.TEXT, Modalities.IMAGE, Modalities.VIDEO]
-AVAILABLE_MODALITIES_FOR_FILTER = [Modalities.TEXT]
-NOT_AVAILABLE_MODALITIES_FOR_FILTER = [
-    Modalities.IMAGE,
-    Modalities.VIDEO,
-]
+AVAILABLE_MODALITIES_FOR_SEARCH = [Text, Image, Video]
+AVAILABLE_MODALITIES_FOR_FILTER = [Text]
+NOT_AVAILABLE_MODALITIES_FOR_FILTER = [Image, Video]
 
 BASE_STORAGE_URL = (
     'https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets'
 )
-
-CLIP_USES = {
-    'local': ('CLIPOnnxEncoder/0.8.1', 'ViT-B-32::openai', ModelDimensions.CLIP),
-    'remote': ('CLIPOnnxEncoder/0.8.1-gpu', 'ViT-B-32::openai', ModelDimensions.CLIP),
-}
 
 EXTERNAL_CLIP_HOST = 'encoderclip-pretty-javelin-3aceb7f2cd.wolf.jina.ai'
 

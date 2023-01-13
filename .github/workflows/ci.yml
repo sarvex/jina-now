@@ -101,23 +101,6 @@ jobs:
           executor_id: 2hgojz3z
           jina_auth_token: ${{ secrets.NOW_PREPROCESSOR_JCLOUD_TOKEN }}
 
-  update-qdrant:
-    runs-on: ubuntu-latest
-    needs: [lint-flake-8, check-black, commit-lint]
-    steps:
-      - uses: actions/checkout@v2
-      - uses: ./.github/actions/push-executor
-        with:
-          executor_version_name: NOW_QDRANT_INDEXER_VERSION
-          executor_name: NOWQdrantIndexer16
-          executor_path: now/executor/indexer/qdrant
-          # for some reason, the first filter condition needs a different indentation
-          has_changed_filter: |
-            - now/executor/abstract/**
-              - now/executor/indexer/qdrant/**
-          executor_id: 11yxatzh
-          jina_auth_token: ${{ secrets.NOW_STAGING_FLORIAN }}
-
   update-elastic:
     runs-on: ubuntu-latest
     needs: [lint-flake-8, check-black, commit-lint]
@@ -225,7 +208,6 @@ jobs:
     needs:
       [
         update-preprocessor,
-        update-qdrant,
         update-elastic,
         update-autocomplete,
         update-bff-playground,
@@ -266,10 +248,10 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           S3_CUSTOM_DATA_PATH: ${{ secrets.S3_CUSTOM_DATA_PATH }}
-      # - name: Setup tmate session for debugging
-      #   if: ${{ failure() || (github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled) }}
-      #   uses: mxschmitt/action-tmate@v3
-      #   timeout-minutes: 60
+#      - name: Setup tmate session for debugging
+#        if: ${{ failure() || (github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled) }}
+#        uses: mxschmitt/action-tmate@v3
+#        timeout-minutes: 60
       - name: Upload coverage
         uses: actions/upload-artifact@v2
         with:
@@ -281,7 +263,6 @@ jobs:
     needs:
       [
         update-preprocessor,
-        update-qdrant,
         update-elastic,
         update-autocomplete,
         update-bff-playground,
@@ -302,14 +283,13 @@ jobs:
         timeout-minutes: 15
         run: |
           pytest --suppress-no-test-exit-code --cov=now --cov-append -v -s tests/executor/auth
-          pytest --suppress-no-test-exit-code --cov=now --cov-append -v -s tests/executor/indexer/base
-          pytest --suppress-no-test-exit-code --cov=now --cov-append -v -s tests/executor/indexer/elastic
+          pytest --suppress-no-test-exit-code --cov=now --cov-append -v -s tests/executor/indexer
           pytest --suppress-no-test-exit-code --cov=now --cov-append -v -s tests/executor/preprocessor
           pytest --suppress-no-test-exit-code --cov=now --cov-append -v -s tests/executor/autocomplete
-      #      - name: Setup tmate session for debugging
-      #        if: ${{ failure() || (github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled) }}
-      #        uses: mxschmitt/action-tmate@v3
-      #        timeout-minutes: 60
+#      - name: Setup tmate session for debugging
+#        if: ${{ failure() || (github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled) }}
+#        uses: mxschmitt/action-tmate@v3
+#        timeout-minutes: 60
       - name: Upload coverage
         uses: actions/upload-artifact@v2
         with:

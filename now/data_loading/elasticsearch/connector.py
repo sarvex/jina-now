@@ -33,32 +33,6 @@ class ElasticsearchConnector:
     def __exit__(self, type, value, traceback) -> None:
         self.close()
 
-    def get_documents(
-        self, index_name: str, page_size: Optional[int] = 10
-    ) -> List[Dict]:
-        """
-        Returns all documents stored in a specific index
-        :param index_name: Name of the index in the Elasticsearch database
-        :param page_size: To retrieve a large number of documents, multiple request are
-            executed, where each request returns a spefic number of documents
-            (max. 10,000). The `page_size` refers to this number.
-        :return: Documents in the form of a list of dictionaries
-        """
-        query = {"match_all": {}}
-        resp = self.es.search(
-            index=index_name, query=query, scroll='2m', size=page_size
-        )
-        documents = resp['hits']['hits']
-        scroll_id = resp['_scroll_id']
-        scroll_size = len(documents)
-        while scroll_size > 0:
-            resp = self.es.scroll(scroll_id=scroll_id, scroll='2m')
-            scroll_id = resp['_scroll_id']
-            new_documents = resp['hits']['hits']
-            scroll_size = len(new_documents)
-            documents.extend(new_documents)
-        return documents
-
     def get_documents_by_query(
         self, query: Dict, index_name: str, page_size: Optional[int] = 10
     ) -> Generator[List[Dict], None, None]:
@@ -71,7 +45,11 @@ class ElasticsearchConnector:
         :return: Generator which yields one page of documents on each call.
         """
         resp = self.es.search(
-            **query, index=index_name, scroll='2m', size=page_size, source=False
+            **query,
+            index=index_name,
+            scroll='2m',
+            size=page_size,
+            source=False,
         )
         documents = [
             {**doc['_source'], **{'id': doc['_id']}} for doc in resp['hits']['hits']

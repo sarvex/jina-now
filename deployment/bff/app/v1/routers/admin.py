@@ -5,7 +5,7 @@ from deployment.bff.app.v1.models.admin import (
     UpdateApiKeysRequestModel,
     UpdateEmailsRequestModel,
 )
-from deployment.bff.app.v1.models.helper import BaseRequestModel
+from deployment.bff.app.v1.models.shared import BaseRequestModel
 from deployment.bff.app.v1.routers.helper import jina_client_post
 
 router = APIRouter()

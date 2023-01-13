@@ -11,7 +11,10 @@ import pathlib
 
 import now.utils
 from now.common import options
+from now.common.options import construct_app
+from now.constants import Apps
 from now.now_dataclasses import DialogOptions, UserInput
+from now.utils import RetryException
 
 cur_dir = pathlib.Path(__file__).parent.resolve()
 
@@ -19,6 +22,9 @@ cur_dir = pathlib.Path(__file__).parent.resolve()
 def configure_user_input(**kwargs) -> UserInput:
     user_input = UserInput()
     now.utils.print_headline()
+    # Create the search app.
+    # TODO: refactor this when more apps are added
+    user_input.app_instance = construct_app(Apps.SEARCH_APP)
     # Ask the base/common options
     for option in options.base_options:
         configure_option(option, user_input, **kwargs)
@@ -30,9 +36,6 @@ def configure_user_input(**kwargs) -> UserInput:
 
 
 def configure_option(option: DialogOptions, user_input: UserInput, **kwargs):
-    # If there is any pre function then invoke that - commonly used to fill choices if needed
-    # if inspect.isfunction(option.pre_func):
-    #     option.post_func(user_input, option, **kwargs)
     # Check if it is dependent on some other dialog options
     if option.depends_on and not option.conditional_check(user_input):
         return
@@ -41,16 +44,23 @@ def configure_option(option: DialogOptions, user_input: UserInput, **kwargs):
     if option.choices and inspect.isfunction(option.choices):
         option.choices = option.choices(user_input, **kwargs)
 
-    val = now.utils.prompt_value(
-        **option.__dict__,
-        **kwargs,
-    )
-    if hasattr(user_input, option.name):
-        setattr(user_input, option.name, val)
+    while True:
+        val = now.utils.prompt_value(
+            **option.__dict__,
+            **kwargs,
+        )
 
-    # If there is any post function then invoke that
-    kwargs[option.name] = val
-    if inspect.isfunction(option.post_func):
-        option.post_func(user_input, **kwargs)
+        if val and hasattr(user_input, option.name):
+            setattr(user_input, option.name, val)
+            kwargs[option.name] = val
+
+        try:
+            # If there is any post function then invoke that
+            if inspect.isfunction(option.post_func):
+                option.post_func(user_input, **kwargs)
+        except RetryException as e:
+            print(e)
+            continue
+        break
 
     return val

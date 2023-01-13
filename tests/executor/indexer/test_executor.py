@@ -11,8 +11,8 @@ def test_generate_es_mappings(setup_service_running):
     """
     document_mappings = [
         FieldEmbedding('clip', 8, ['title']),
-        FieldEmbedding('sbert', 5, ['title', 'excerpt']),
     ]
+    es_indexer = NOWElasticIndexer(document_mappings=document_mappings)
     expected_mapping = {
         'properties': {
             'id': {'type': 'keyword'},
@@ -27,31 +27,9 @@ def test_generate_es_mappings(setup_service_running):
                     }
                 }
             },
-            'title-sbert': {
-                'properties': {
-                    'embedding': {
-                        'type': 'dense_vector',
-                        'dims': '5',
-                        'similarity': 'cosine',
-                        'index': 'true',
-                    },
-                }
-            },
-            'excerpt-sbert': {
-                'properties': {
-                    'embedding': {
-                        'type': 'dense_vector',
-                        'dims': '5',
-                        'similarity': 'cosine',
-                        'index': 'true',
-                    }
-                }
-            },
         }
     }
-    result = NOWElasticIndexer.generate_es_mapping(
-        document_mappings=document_mappings, metric='cosine'
-    )
+    result = es_indexer.generate_es_mapping()
     assert result == expected_mapping
 
 
@@ -70,7 +48,6 @@ def test_index_and_search_with_multimodal_docs(
 
     indexer = NOWElasticIndexer(
         document_mappings=document_mappings,
-        default_semantic_scores=default_semantic_scores,
         # es_config={'api_key': os.environ['ELASTIC_API_KEY']},
         # hosts='https://5280f8303ccc410295d02bbb1f3726f7.eu-central-1.aws.cloud.es.io:443',
         hosts='http://localhost:9200',
@@ -84,7 +61,11 @@ def test_index_and_search_with_multimodal_docs(
     assert len(res['hits']['hits']) == len(index_docs_map['clip'])
     results = indexer.search(
         query_docs_map,
-        parameters={'get_score_breakdown': True, 'apply_default_bm25': True},
+        parameters={
+            'get_score_breakdown': True,
+            'apply_default_bm25': True,
+            'default_semantic_scores': default_semantic_scores,
+        },
     )
     # asserts about matches
     for (
@@ -124,9 +105,7 @@ def test_list_endpoint(setup_service_running, es_inputs, random_index_name):
         default_semantic_scores,
     ) = es_inputs
     es_indexer = NOWElasticIndexer(
-        traversal_paths='c',
         document_mappings=document_mappings,
-        default_semantic_scores=default_semantic_scores,
         hosts='http://localhost:9200',
         index_name=random_index_name,
     )
@@ -152,9 +131,7 @@ def test_delete_by_id(setup_service_running, es_inputs, random_index_name):
         default_semantic_scores,
     ) = es_inputs
     es_indexer = NOWElasticIndexer(
-        traversal_paths='c',
         document_mappings=document_mappings,
-        default_semantic_scores=default_semantic_scores,
         hosts='http://localhost:9200',
         index_name=random_index_name,
     )
@@ -168,22 +145,30 @@ def test_delete_by_id(setup_service_running, es_inputs, random_index_name):
     assert len(res['hits']['hits']) == 0
 
 
-def test_delete_by_filter():
+def test_delete_by_filter(setup_service_running, es_inputs, random_index_name):
     """
     This test tests the delete endpoint of the NOWElasticIndexer, by deleting a filter.
     """
-    # es_indexer = NOWElasticIndexer(
-    #     traversal_paths='c',
-    #     hosts='http://localhost:9200',
-    #     index_name='test_index',
-    # )
-    # # delete by filter
-    # es_indexer.delete(parameters={'filters': {'modality': 'image'}})
-    #
-    # es = es_indexer.es
-    # res = es.search(index='test_index', size=100, query={'match_all': {}})
-    # assert len(res['hits']['hits']) == 0
-    pass
+    (
+        index_docs_map,
+        query_docs_map,
+        document_mappings,
+        default_semantic_scores,
+    ) = es_inputs
+    index_name = random_index_name
+    es_indexer = NOWElasticIndexer(
+        document_mappings=document_mappings,
+        hosts='http://localhost:9200',
+        index_name=index_name,
+    )
+    es_indexer.index(index_docs_map)
+
+    # delete by filter
+    es_indexer.delete(parameters={'filter': {'tags__price': {'$gte': 0}}})
+
+    es = es_indexer.es
+    res = es.search(index=index_name, size=100, query={'match_all': {}})
+    assert len(res['hits']['hits']) == 0
 
 
 def test_custom_mapping_and_custom_bm25_search(
@@ -212,16 +197,6 @@ def test_custom_mapping_and_custom_bm25_search(
                     }
                 }
             },
-            'title-sbert': {
-                'properties': {
-                    'embedding': {
-                        'type': 'dense_vector',
-                        'dims': '5',
-                        'similarity': 'cosine',
-                        'index': 'true',
-                    }
-                }
-            },
             'gif-clip': {
                 'properties': {
                     'embedding': {
@@ -232,22 +207,10 @@ def test_custom_mapping_and_custom_bm25_search(
                     }
                 }
             },
-            'excerpt-sbert': {
-                'properties': {
-                    'embedding': {
-                        'type': 'dense_vector',
-                        'dims': '5',
-                        'similarity': 'cosine',
-                        'index': 'true',
-                    }
-                }
-            },
         }
     }
     es_indexer = NOWElasticIndexer(
-        traversal_paths='c',
         document_mappings=document_mappings,
-        default_semantic_scores=default_semantic_scores,
         es_mapping=es_mapping,
         hosts='http://localhost:9200',
         index_name=random_index_name,
@@ -267,6 +230,7 @@ def test_custom_mapping_and_custom_bm25_search(
         parameters={
             'get_score_breakdown': True,
             'custom_bm25_query': custom_bm25_query,
+            'default_semantic_scores': default_semantic_scores,
         },
     )
     assert len(results[0].matches) == 2
@@ -276,6 +240,30 @@ def test_custom_mapping_and_custom_bm25_search(
 
 def test_search_with_filter(setup_service_running, es_inputs, random_index_name):
     """
-    TODO: fill
+    This test tests the search endpoint of the NOWElasticIndexer using filters.
     """
-    pass
+    (
+        index_docs_map,
+        query_docs_map,
+        document_mappings,
+        default_semantic_scores,
+    ) = es_inputs
+    index_name = random_index_name
+    es_indexer = NOWElasticIndexer(
+        document_mappings=document_mappings,
+        hosts='http://localhost:9200',
+        index_name=index_name,
+    )
+    es_indexer.index(index_docs_map)
+
+    res = es_indexer.search(
+        query_docs_map,
+        parameters={
+            'get_score_breakdown': True,
+            'apply_default_bm25': True,
+            'default_semantic_scores': default_semantic_scores,
+            'filter': {'tags__price': {'$lte': 1}},
+        },
+    )
+    assert len(res[0].matches) == 1
+    assert res[0].matches[0].tags['price'] < 1

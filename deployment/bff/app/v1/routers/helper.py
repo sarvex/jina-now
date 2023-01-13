@@ -1,4 +1,5 @@
 import base64
+import itertools
 import os
 from copy import deepcopy
 from tempfile import TemporaryDirectory
@@ -7,9 +8,10 @@ import filetype
 from docarray import Document, DocumentArray
 from fastapi import HTTPException, status
 from jina import Client
-from jina.excepts import BadServer
+from jina.excepts import BadServer, BadServerFlow
 
-from now.now_dataclasses import UserInput
+from now.constants import SUPPORTED_FILE_TYPES
+from now.utils import get_flow_id
 
 
 def field_dict_to_mm_doc(
@@ -41,7 +43,20 @@ def field_dict_to_mm_doc(
                 # save blob into a temporary file such that it can be loaded by the multimodal class
                 if field_value.blob:
                     base64_decoded = base64.b64decode(field_value.blob.encode('utf-8'))
-                    file_ending = filetype.guess(base64_decoded).extension
+                    file_ending = filetype.guess(base64_decoded)
+                    if file_ending is None:
+                        raise ValueError(
+                            f'Could not guess file type of blob {field_value.blob}. '
+                            f'Please provide a valid file type.'
+                        )
+                    file_ending = file_ending.extension
+                    if file_ending not in itertools.chain(
+                        *SUPPORTED_FILE_TYPES.values()
+                    ):
+                        raise ValueError(
+                            f'File type {file_ending} is not supported. '
+                            f'Please provide a valid file type.'
+                        )
                     file_path = os.path.join(
                         tmp_dir, field_name_data_class + '.' + file_ending
                     )
@@ -49,7 +64,12 @@ def field_dict_to_mm_doc(
                         f.write(base64_decoded)
                     field_value.blob = None
                     field_value.uri = file_path
-                data_class_kwargs[field_name_data_class] = field_value.content
+                if field_value.content is not None:
+                    data_class_kwargs[field_name_data_class] = field_value.content
+                else:
+                    raise ValueError(
+                        f'Content of field {field_name_data_class} is None. '
+                    )
             doc = Document(data_class(**data_class_kwargs))
         except BaseException as e:
             raise HTTPException(
@@ -70,7 +90,7 @@ def get_jina_client(host: str, port: int) -> Client:
 def jina_client_post(
     request_model,
     endpoint: str,
-    inputs: DocumentArray,
+    inputs: Document,
     parameters=None,
     *args,
     **kwargs,
@@ -105,39 +125,23 @@ def jina_client_post(
             *args,
             **kwargs,
         )
-    except BadServer as e:
-        if 'Not a valid user' in e.args[0].status.description:
-            raise HTTPException(
+    except (BadServer, BadServerFlow) as e:
+        flow_id = get_flow_id(request_model.host)
+        raise handle_exception(e, flow_id)
+    return result
+
+
+def handle_exception(e, flow_id):
+    if isinstance(e, BadServer):
+        if 'not a valid user' in e.args[0].status.description.lower():
+            return HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail='You are not authorised to use this flow',
             )
         else:
-            raise e
-    return result
-
-
-def fetch_user_input(request_model) -> UserInput:
-    """Fetches the user input from the preprocessor.
-
-    :param request_model: contains the request model of the flow
-    :return: user input
-    """
-    client = get_jina_client(host=request_model.host, port=request_model.port)
-    auth_dict = {}
-    if request_model.api_key is not None:
-        auth_dict['api_key'] = request_model.api_key
-    if request_model.jwt is not None:
-        auth_dict['jwt'] = request_model.jwt
-    user_input_flow_response = client.post(
-        '/get_user_input',
-        inputs=DocumentArray(),
-        parameters=auth_dict,
-        target_executor=r'\Apreprocessor\Z',
-        return_responses=True,
-    )[0].parameters
-    user_input_dict = list(user_input_flow_response['__results__'].values())[0][
-        'user_input'
-    ]
-    user_input = UserInput(**user_input_dict)
-
-    return user_input
+            return e
+    elif isinstance(e, BadServerFlow):
+        if 'no route matched' in e.args[0].lower():
+            return Exception(f'Flow with ID {flow_id} can not be found')
+        else:
+            return e
