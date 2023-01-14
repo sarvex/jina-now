@@ -11,10 +11,7 @@ from now.common.detect_schema import (
     get_s3_bucket_and_folder_prefix,
 )
 from now.constants import DatasetTypes
-from now.data_loading.create_dataclass import (
-    create_dataclass,
-    create_dataclass_fields_file_mappings,
-)
+from now.data_loading.create_dataclass import create_dataclass_fields_file_mappings
 from now.data_loading.elasticsearch import ElasticsearchExtractor
 from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
@@ -33,8 +30,8 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
     if user_input.dataset_type in [DatasetTypes.DOCARRAY, DatasetTypes.DEMO]:
         print('⬇  Pull DocumentArray dataset')
         da = _pull_docarray(user_input.dataset_name, user_input.admin_name)
-        da = get_da_with_index_fields(da, user_input)
-        # da = _add_tags_to_da(da, user_input)
+        da = get_da_with_index_fields(da, user_input, data_class)
+        da = _add_tags_to_da(da, user_input)
     elif user_input.dataset_type == DatasetTypes.PATH:
         print('💿  Loading files from disk')
         da = _load_from_disk(user_input=user_input, data_class=data_class)
@@ -53,8 +50,7 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
     return da
 
 
-def get_da_with_index_fields(da: DocumentArray, user_input: UserInput):
-    dataclass = create_dataclass(user_input)
+def get_da_with_index_fields(da: DocumentArray, user_input: UserInput, data_class):
     clean_da = []
     for d in da:
         dict_index_fields = {}
@@ -64,7 +60,7 @@ def get_da_with_index_fields(da: DocumentArray, user_input: UserInput):
         for field in user_input.index_fields:
             _index_field_doc = getattr(d, field, None)
             dict_index_fields[field] = _index_field_doc
-        mm_doc = field_dict_to_mm_doc(dict_index_fields, dataclass, dataclass_mappings)
+        mm_doc = field_dict_to_mm_doc(dict_index_fields, data_class, dataclass_mappings)
         clean_da.append(mm_doc)
     clean_da = DocumentArray(clean_da)
     return clean_da
@@ -81,24 +77,24 @@ def add_metadata_to_da(da, user_input):
                 getattr(doc, dataclass_field)._metadata['field_name'] = field_name
 
 
-# def _add_tags_to_da(da: DocumentArray, user_input: UserInput):
-#     if not da:
-#         return da
-#
-#     non_index_fields = list(
-#         set(da[0]._metadata['multi_modal_schema'].keys()) - set(user_input.index_fields)
-#     )
-#     for d in da:
-#         for field in non_index_fields:
-#             non_index_field_doc = getattr(d, field, None)
-#             d.tags.update(
-#                 {
-#                     field: non_index_field_doc.content
-#                     if non_index_field_doc.content
-#                     else non_index_field_doc.uri
-#                 }
-#             )
-#     return da
+def _add_tags_to_da(da: DocumentArray, user_input: UserInput):
+    if not da:
+        return da
+
+    non_index_fields = list(
+        set(da[0]._metadata['multi_modal_schema'].keys()) - set(user_input.index_fields)
+    )
+    for d in da:
+        for field in non_index_fields:
+            non_index_field_doc = getattr(d, field, None)
+            d.tags.update(
+                {
+                    field: non_index_field_doc.content
+                    if non_index_field_doc.content is not None
+                    else non_index_field_doc.uri
+                }
+            )
+    return da
 
 
 def _pull_docarray(dataset_name: str, admin_name: str) -> DocumentArray:

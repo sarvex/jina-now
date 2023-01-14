@@ -13,7 +13,7 @@ from tqdm import tqdm
 from now.admin.update_api_keys import update_api_keys
 from now.app.base.app import JinaNOWApp
 from now.common.testing import handle_test_mode
-from now.constants import ACCESS_PATHS, DatasetTypes
+from now.constants import ACCESS_PATHS
 from now.data_loading.create_dataclass import create_dataclass
 from now.data_loading.data_loading import load_data
 from now.deployment.flow import deploy_flow
@@ -42,10 +42,6 @@ def run(
     :return:
     """
 
-    if user_input.dataset_type in [DatasetTypes.DEMO, DatasetTypes.DOCARRAY]:
-        user_input.field_names_to_dataclass_fields = {
-            field: field for field in user_input.index_fields
-        }
     data_class = create_dataclass(user_input)
     dataset = load_data(user_input, data_class)
 

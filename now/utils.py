@@ -152,7 +152,7 @@ def get_info_hubble(user_input):
     return response['data'], client.token
 
 
-def get_blob_format(blob_value):
+def extract_supported_file_type_from_blob(blob_value):
     file_ending = filetype.guess(blob_value)
     if file_ending is None:
         raise ValueError(
@@ -174,7 +174,12 @@ def field_dict_to_mm_doc(
     field_names_to_dataclass_fields={},
     bff_use=False,
 ) -> Document:
-
+    """Converts a dictionary of field names to their values to a document.
+    :param field_dict: key-value pairs of field names and their values
+    :param data_class: @docarray.dataclass class which encapsulates the fields of the multimodal document
+    :param field_names_to_dataclass_fields: mapping of field names to data class fields (e.g. {'title': 'text_0'})
+    :return: multi-modal document
+    """
     if bff_use and len(field_dict) != 1:
         raise ValueError(
             f"Multi-modal document isn't supported yet. "
@@ -197,7 +202,7 @@ def field_dict_to_mm_doc(
                         if bff_use
                         else field_value.blob
                     )
-                    file_ending = get_blob_format(base64_decoded)
+                    file_ending = extract_supported_file_type_from_blob(base64_decoded)
                     file_path = os.path.join(
                         tmp_dir, field_name_data_class + '.' + file_ending
                     )
