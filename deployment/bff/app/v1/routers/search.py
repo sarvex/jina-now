@@ -1,8 +1,7 @@
 import base64
 from typing import List
 
-from docarray import Document, dataclass, field
-from docarray.typing import Image, Text, Video
+from docarray import Document
 from fastapi import APIRouter
 
 from deployment.bff.app.v1.models.search import (
@@ -22,16 +21,10 @@ router = APIRouter()
     summary='Search data via query',
 )
 def search(data: SearchRequestModel):
-    # temporary class until actual mm docs are created.
-    @dataclass
-    class MMQueryDoc:
-        query_text: Text = field(default=None)
-        query_image: Image = field(default=None)
-        query_video: Video = field(default=None)
 
     fields_modalities_mapping = {}
     fields_values_mapping = {}
-    for field_name, (field_value, field_modality) in data.query.items():
+    for field_name, field_value, field_modality in data.query.items():
         fields_modalities_mapping[field_name] = field_modality
         fields_values_mapping[field_name] = field_value
 
