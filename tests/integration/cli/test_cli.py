@@ -22,7 +22,7 @@ def test_start_with_parameters(cleanup, deployment_type, dataset):
     )
     python_file = os.path.join(os.path.dirname(__file__), '..', '..', '..', 'main.py')
     bash_command = (
-        f"python {python_file} start --app {Apps.SEARCH_APP} --index_fields .jpg --dataset_path "
+        f"python {python_file} start --index_fields .jpg --dataset_path "
         f"{dataset_path} --dataset_type path --deployment_type {deployment_type} "
         f"--flow_name test --secured false --cluster new"
     )

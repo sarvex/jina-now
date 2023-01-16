@@ -8,7 +8,6 @@ from argparse import Namespace
 import pytest
 from pytest_mock import MockerFixture
 
-from now.constants import Apps
 from now.utils import get_flow_id
 from now.deployment.deployment import terminate_wolf
 from now.cli import cli
@@ -63,7 +62,6 @@ def cleanup(deployment_type, dataset):
             else:
                 print('\nDeleting local cluster')
                 kwargs = {
-                    'app': Apps.SEARCH_APP,
                     'deployment_type': deployment_type,
                     'now': 'stop',
                     'cluster': 'kind-jina-now',

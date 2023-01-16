@@ -11,7 +11,7 @@ from now.admin.utils import get_default_request_body
 from now.cli import _get_kind_path, _get_kubectl_path, cli
 from now.cloud_manager import create_local_cluster
 from now.common.options import NEW_CLUSTER
-from now.constants import Apps, DatasetTypes
+from now.constants import DatasetTypes
 from now.demo_data import DemoDatasetNames
 from now.deployment.deployment import cmd, list_all_wolf
 
@@ -317,7 +317,6 @@ def test_backend_custom_data(
 ):
     kwargs = {
         'now': 'start',
-        'app': Apps.SEARCH_APP,
         'flow_name': 'nowapi',
         'dataset_type': DatasetTypes.S3_BUCKET,
         'dataset_path': os.environ.get('S3_CUSTOM_DATA_PATH'),
