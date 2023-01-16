@@ -55,7 +55,7 @@ def _check_index_field(user_input: UserInput, **kwargs):
 
 
 def _fill_filter_field_if_selected_all(user_input: UserInput, **kwargs):
-    if 'all' in user_input.filter_fields:
+    if '__all__' in user_input.filter_fields:
         user_input.filter_fields = list(
             user_input.filter_field_candidates_to_modalities.keys()
         )
@@ -68,7 +68,7 @@ def _append_all_option_to_filter(user_input: UserInput):
         if field not in user_input.index_fields
     ]
     if len(choices) > 1:
-        choices.append({'name': 'All of the above', 'value': 'all'})
+        choices.append({'name': 'All of the above', 'value': '__all__'})
     return choices
 
 
