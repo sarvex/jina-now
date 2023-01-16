@@ -8,6 +8,7 @@ from now.data_loading.create_dataclass import (
     create_dataclass,
     create_dataclass_fields_file_mappings,
     create_s3_type,
+    update_dict_with_no_overwrite,
 )
 from now.now_dataclasses import UserInput
 
@@ -153,7 +154,16 @@ def test_create_dataclass(
     user_input.filter_field_candidates_to_modalities = (
         filter_field_candidates_to_modalities
     )
-    mm_doc = create_dataclass(user_input)
+    all_modalities = {}
+    all_modalities.update(user_input.index_field_candidates_to_modalities)
+    update_dict_with_no_overwrite(
+        all_modalities, user_input.filter_field_candidates_to_modalities
+    )
+    mm_doc, _ = create_dataclass(
+        user_input.index_fields + user_input.filter_fields,
+        all_modalities,
+        user_input.dataset_type,
+    )
     assert str(mm_doc) == "<class 'now.data_loading.create_dataclass.MMDoc'>"
 
     for key, value in mm_doc.__annotations__.items():

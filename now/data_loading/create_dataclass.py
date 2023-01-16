@@ -5,7 +5,6 @@ from typing import Dict, List
 from docarray import Document, dataclass, field
 
 from now.constants import AVAILABLE_MODALITIES_FOR_SEARCH, DatasetTypes
-from now.now_dataclasses import UserInput
 from now.utils import docarray_typing_to_modality_string
 
 
@@ -21,7 +20,9 @@ def update_dict_with_no_overwrite(dict1: Dict, dict2: Dict):
             dict1[key] = value
 
 
-def create_dataclass(user_input: UserInput):
+def create_dataclass(
+    fields: List, fields_modalities: Dict, dataset_type: DatasetTypes = None
+):
     """
     Create a dataclass from the user input using the selected index and filter fields
     and their corresponding modalities
@@ -41,40 +42,37 @@ def create_dataclass(user_input: UserInput):
         price: float
         description: str
 
-    :param user_input: user input
+    :param fields: list of fields
+    :param fields_modalities: dict of fields and their modalities
+    :param dataset_type: dataset type
 
     :return: dataclass object
     """
-    all_modalities = {}
-    all_modalities.update(user_input.index_field_candidates_to_modalities)
-    update_dict_with_no_overwrite(
-        all_modalities, user_input.filter_field_candidates_to_modalities
-    )
 
     file_mapping_to_dataclass_fields = create_dataclass_fields_file_mappings(
-        user_input.index_fields + user_input.filter_fields,
-        all_modalities,
+        fields,
+        fields_modalities,
     )
-    user_input.field_names_to_dataclass_fields = file_mapping_to_dataclass_fields
+    field_names_to_dataclass_fields = file_mapping_to_dataclass_fields
     (all_annotations, all_class_attributes,) = create_annotations_and_class_attributes(
-        user_input.index_fields + user_input.filter_fields,
-        all_modalities,
+        fields,
+        fields_modalities,
         file_mapping_to_dataclass_fields,
-        user_input.dataset_type,
+        dataset_type,
     )
 
     mm_doc = type("MMDoc", (object,), all_class_attributes)
     setattr(mm_doc, '__annotations__', all_annotations)
     mm_doc = dataclass(mm_doc)
 
-    return mm_doc
+    return mm_doc, field_names_to_dataclass_fields
 
 
 def create_annotations_and_class_attributes(
     fields: List,
     fields_modalities: Dict,
     field_names_to_dataclass_fields: Dict,
-    dataset_type: DatasetTypes,
+    dataset_type: DatasetTypes = None,
 ):
     """
     Create annotations and class attributes for the dataclass

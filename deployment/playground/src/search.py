@@ -1,6 +1,7 @@
 import base64
 import functools
 from collections.abc import Collection, Hashable, Mapping
+from typing import Dict
 
 import requests
 import streamlit as st
@@ -178,3 +179,42 @@ def search_by_image(document: Document, jwt, filter_selection) -> DocumentArray:
         filter_dict=filter_selection,
         field_name='image',
     )
+
+
+def multimodal_search(
+    query_field_values_modalities: Dict,
+    jwt,
+    top_k=None,
+    filter_dict=None,
+    endpoint='search',
+):
+    params = get_query_params()
+    if params.host == 'gateway':  # need to call now-bff as we communicate between pods
+        domain = f"http://now-bff"
+    else:
+        domain = f"https://nowrun.jina.ai"
+    URL_HOST = f"{domain}/api/v1/search-app/{endpoint}"
+
+    updated_dict = {}
+    if filter_dict is not None:
+        updated_dict = {k: v for k, v in filter_dict.items() if v != 'All'}
+    data = {
+        'host': params.host,
+        'limit': top_k if top_k else params.top_k,
+        'filters': updated_dict,
+    }
+    if endpoint == 'search':
+        data['query'] = {}
+        for field_name, (
+            field_value,
+            field_modality,
+        ) in query_field_values_modalities.items():
+            data['query'][field_name] = (field_value, field_modality)
+        data['create_temp_link'] = True
+        # in case the jwt is none, no jwt will be sent. This is the case when no authentication is used for that flow
+    if jwt is not None:
+        data['jwt'] = jwt
+    if params.port:
+        data['port'] = params.port
+
+    return call_flow(URL_HOST, data, domain, endpoint)

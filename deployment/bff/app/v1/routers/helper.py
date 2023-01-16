@@ -3,6 +3,7 @@ import itertools
 import os
 from copy import deepcopy
 from tempfile import TemporaryDirectory
+from typing import Dict, Type
 
 import filetype
 from docarray import Document, DocumentArray
@@ -15,7 +16,7 @@ from now.utils import get_flow_id
 
 
 def field_dict_to_mm_doc(
-    field_dict: dict, data_class: type, field_names_to_dataclass_fields={}
+    field_dict: Dict, data_class: Type, field_names_to_dataclass_fields={}
 ) -> Document:
     """Converts a dictionary of field names to their values to a document.
 
@@ -24,11 +25,6 @@ def field_dict_to_mm_doc(
     :param field_names_to_dataclass_fields: mapping of field names to data class fields (e.g. {'title': 'text_0'})
     :return: multi-modal document
     """
-    if len(field_dict) != 1:
-        raise ValueError(
-            f"Multi-modal document isn't supported yet. "
-            f"Can only set one value but have {list(field_dict.keys())}"
-        )
 
     with TemporaryDirectory() as tmp_dir:
         try:

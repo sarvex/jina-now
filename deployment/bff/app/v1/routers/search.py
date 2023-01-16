@@ -11,6 +11,7 @@ from deployment.bff.app.v1.models.search import (
     SuggestionRequestModel,
 )
 from deployment.bff.app.v1.routers.helper import field_dict_to_mm_doc, jina_client_post
+from now.data_loading.create_dataclass import create_dataclass
 
 router = APIRouter()
 
@@ -28,7 +29,21 @@ def search(data: SearchRequestModel):
         query_image: Image = field(default=None)
         query_video: Video = field(default=None)
 
-    query_doc = field_dict_to_mm_doc(data.query, data_class=MMQueryDoc)
+    fields_modalities_mapping = {}
+    fields_values_mapping = {}
+    for field_name, (field_value, field_modality) in data.query.items():
+        fields_modalities_mapping[field_name] = field_modality
+        fields_values_mapping[field_name] = field_value
+
+    data_class, field_names_to_dataclass_fields = create_dataclass(
+        fields_modalities_mapping.keys(),
+        fields_modalities_mapping,
+    )
+    query_doc = field_dict_to_mm_doc(
+        fields_values_mapping,
+        data_class=data_class,
+        field_names_to_dataclass_fields=field_names_to_dataclass_fields,
+    )
 
     query_filter = {}
     for key, value in data.filters.items():
