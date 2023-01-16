@@ -2,6 +2,7 @@ import base64
 from typing import List
 
 from docarray import Document
+from docarray.typing import Image, Text
 from fastapi import APIRouter
 
 from deployment.bff.app.v1.models.search import (
@@ -13,6 +14,10 @@ from deployment.bff.app.v1.routers.helper import field_dict_to_mm_doc, jina_clie
 from now.data_loading.create_dataclass import create_dataclass
 
 router = APIRouter()
+modalities_mapping = {
+    'text': Text,
+    'image': Image,
+}
 
 
 @router.post(
@@ -21,12 +26,11 @@ router = APIRouter()
     summary='Search data via query',
 )
 def search(data: SearchRequestModel):
-
     fields_modalities_mapping = {}
     fields_values_mapping = {}
-    for field_name, (field_value, field_modality) in data.query.items():
-        fields_modalities_mapping[field_name] = field_modality
-        fields_values_mapping[field_name] = field_value
+    for field_name, value_modality in data.query.items():
+        fields_modalities_mapping[field_name] = modalities_mapping[value_modality[1]]
+        fields_values_mapping[field_name] = value_modality[0]
 
     data_class, field_names_to_dataclass_fields = create_dataclass(
         fields_modalities_mapping.keys(),

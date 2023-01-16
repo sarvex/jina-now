@@ -28,7 +28,7 @@ class SearchRequestModel(BaseRequestModel):
         default={},
         description='dictionary with filters for search results  {"tag_name" : "tag_value"}',
     )
-    query: Dict[str, ModalityModel] = Field(
+    query: Dict[str, Tuple[ModalityModel, str]] = Field(
         default={},
         description='Nested dictionary where key can be only one of the following: ``query_text``, ``query_image``, '
         'or ``query_video`` for a query with text, image, or video respectively, and the value is a '
