@@ -1,8 +1,6 @@
 import base64
 import json
 import os
-import tempfile
-import time
 from argparse import Namespace
 
 import pytest
@@ -15,8 +13,7 @@ from now.cloud_manager import create_local_cluster
 from now.common.options import NEW_CLUSTER
 from now.constants import Apps, DatasetTypes
 from now.demo_data import DemoDatasetNames
-from now.deployment.deployment import cmd, list_all_wolf, terminate_wolf
-from now.utils import get_flow_id
+from now.deployment.deployment import cmd, list_all_wolf
 
 
 @pytest.fixture
@@ -25,48 +22,6 @@ def test_search_image(resources_folder_path: str):
         binary = f.read()
         img_query = base64.b64encode(binary).decode('utf-8')
     return img_query
-
-
-@pytest.fixture()
-def cleanup(deployment_type, dataset, app):
-    with tempfile.TemporaryDirectory() as tmpdir:
-        start = time.time()
-        yield tmpdir
-        print('start cleanup')
-        try:
-            if deployment_type == 'remote':
-                with open(f'{tmpdir}/flow_details.json', 'r') as f:
-                    flow_details = json.load(f)
-                if 'host' not in flow_details:
-                    print('nothing to clean up')
-                    return
-                host = flow_details['host']
-                flow_id = get_flow_id(host)
-                terminate_wolf(flow_id)
-            else:
-                print('\nDeleting local cluster')
-                kwargs = {
-                    'app': app,
-                    'deployment_type': deployment_type,
-                    'now': 'stop',
-                    'cluster': 'kind-jina-now',
-                    'delete-cluster': True,
-                }
-                kwargs = Namespace(**kwargs)
-                cli(args=kwargs)
-        except Exception as e:
-            print('no clean up')
-            print(e)
-            return
-        print('cleaned up')
-        now = time.time() - start
-        mins = int(now / 60)
-        secs = int(now % 60)
-        print(50 * '#')
-        print(
-            f'Time taken to execute `{deployment_type}` deployment with dataset `{dataset}`: {mins}m {secs}s'
-        )
-        print(50 * '#')
 
 
 def test_token_exists():
