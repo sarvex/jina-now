@@ -7,6 +7,8 @@ import json
 from argparse import Namespace
 import pytest
 from pytest_mock import MockerFixture
+
+from now.constants import Apps
 from now.utils import get_flow_id
 from now.deployment.deployment import terminate_wolf
 from now.cli import cli
@@ -43,7 +45,7 @@ def with_hubble_login_patch(mocker: MockerFixture) -> None:
 
 
 @pytest.fixture()
-def cleanup(deployment_type, dataset, app):
+def cleanup(deployment_type, dataset):
     with tempfile.TemporaryDirectory() as tmpdir:
         start = time.time()
         yield tmpdir
@@ -61,7 +63,7 @@ def cleanup(deployment_type, dataset, app):
             else:
                 print('\nDeleting local cluster')
                 kwargs = {
-                    'app': app,
+                    'app': Apps.SEARCH_APP,
                     'deployment_type': deployment_type,
                     'now': 'stop',
                     'cluster': 'kind-jina-now',

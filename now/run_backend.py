@@ -41,6 +41,7 @@ def run(
     :param kwargs: Additional arguments
     :return:
     """
+
     if user_input.dataset_type in [DatasetTypes.DEMO, DatasetTypes.DOCARRAY]:
         user_input.field_names_to_dataclass_fields = {
             field: field for field in user_input.index_fields

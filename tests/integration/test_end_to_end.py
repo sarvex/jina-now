@@ -30,10 +30,9 @@ def test_token_exists():
 
 @pytest.mark.remote
 @pytest.mark.parametrize(
-    'app, query_fields, index_fields, filter_fields, dataset, deployment_type',
+    'query_fields, index_fields, filter_fields, dataset, deployment_type',
     [
         (
-            Apps.SEARCH_APP,
             'text',
             ['image'],
             ['label'],
@@ -44,7 +43,6 @@ def test_token_exists():
 )
 @pytest.mark.timeout(60 * 10)
 def test_end_to_end_remote(
-    app: str,
     dataset: str,
     deployment_type: str,
     test_search_image,
@@ -55,7 +53,6 @@ def test_end_to_end_remote(
     with_hubble_login_patch,
 ):
     run_end_to_end(
-        app,
         cleanup,
         dataset,
         deployment_type,
@@ -67,10 +64,9 @@ def test_end_to_end_remote(
 
 
 @pytest.mark.parametrize(
-    'app, query_fields, index_fields, filter_fields, dataset, deployment_type',
+    'query_fields, index_fields, filter_fields, dataset, deployment_type',
     [
         (
-            Apps.SEARCH_APP,
             'image',
             ['image'],
             ['label'],
@@ -78,7 +74,6 @@ def test_end_to_end_remote(
             'local',
         ),
         (
-            Apps.SEARCH_APP,
             'text',
             ['lyrics'],
             [],
@@ -86,7 +81,6 @@ def test_end_to_end_remote(
             'local',
         ),
         (
-            Apps.SEARCH_APP,
             'text',
             ['video', 'description'],
             [],
@@ -97,7 +91,6 @@ def test_end_to_end_remote(
 )
 @pytest.mark.timeout(60 * 10)
 def test_end_to_end_local(
-    app: str,
     dataset: str,
     deployment_type: str,
     test_search_image,
@@ -108,7 +101,6 @@ def test_end_to_end_local(
     with_hubble_login_patch,
 ):
     run_end_to_end(
-        app,
         cleanup,
         dataset,
         deployment_type,
@@ -120,7 +112,6 @@ def test_end_to_end_local(
 
 
 def run_end_to_end(
-    app,
     cleanup,
     dataset,
     deployment_type,
@@ -316,10 +307,8 @@ def assert_deployment_response(deployment_type, response):
 
 @pytest.mark.parametrize('deployment_type', ['remote'])
 @pytest.mark.parametrize('dataset', ['custom_s3_bucket'])
-@pytest.mark.parametrize('app', [Apps.SEARCH_APP])
 @pytest.mark.parametrize('query_fields', ['image'])
 def test_backend_custom_data(
-    app,
     deployment_type: str,
     dataset: str,
     query_fields: str,
@@ -328,7 +317,7 @@ def test_backend_custom_data(
 ):
     kwargs = {
         'now': 'start',
-        'app': app,
+        'app': Apps.SEARCH_APP,
         'flow_name': 'nowapi',
         'dataset_type': DatasetTypes.S3_BUCKET,
         'dataset_path': os.environ.get('S3_CUSTOM_DATA_PATH'),
