@@ -15,13 +15,9 @@ from now.constants import (
     NOW_ELASTIC_INDEXER_VERSION,
     NOW_PREPROCESSOR_VERSION,
     Apps,
+    DatasetTypes,
 )
-from now.demo_data import (
-    AVAILABLE_DATASETS,
-    DEFAULT_EXAMPLE_HOSTED,
-    DemoDataset,
-    DemoDatasetNames,
-)
+from now.demo_data import AVAILABLE_DATASETS, DemoDataset, DemoDatasetNames
 from now.executor.name_to_id_map import name_to_id_map
 from now.now_dataclasses import UserInput
 from now.utils import get_email
@@ -57,8 +53,7 @@ class SearchApp(JinaNOWApp):
 
     def is_demo_available(self, user_input) -> bool:
         if (
-            DEFAULT_EXAMPLE_HOSTED
-            and user_input.dataset_name in DEFAULT_EXAMPLE_HOSTED
+            user_input.dataset_type == DatasetTypes.DEMO
             and user_input.deployment_type == 'remote'
             and 'NOW_EXAMPLES' not in os.environ
             and 'NOW_CI_RUN' not in os.environ
@@ -70,7 +65,7 @@ class SearchApp(JinaNOWApp):
             )
             try:
                 client.post('/dry_run', timeout=2)
-            except Exception:
+            except Exception:  # noqa E722
                 return False
             return True
         return False
