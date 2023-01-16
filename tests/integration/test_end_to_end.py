@@ -87,7 +87,7 @@ def test_token_exists():
         ),
     ],
 )
-@pytest.mark.timeout(60 * 30)
+@pytest.mark.timeout(60 * 10)
 def test_end_to_end_remote(
     app: str,
     dataset: str,
@@ -140,7 +140,7 @@ def test_end_to_end_remote(
         ),
     ],
 )
-@pytest.mark.timeout(60 * 30)
+@pytest.mark.timeout(60 * 10)
 def test_end_to_end_local(
     app: str,
     dataset: str,
