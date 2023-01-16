@@ -7,6 +7,7 @@ import requests
 import streamlit as st
 from docarray import Document, DocumentArray
 from docarray.score import NamedScore
+from docarray.typing import Image, Text
 from frozendict import frozendict
 
 from .constants import Parameters
@@ -101,7 +102,11 @@ def search(
 
 
 def get_suggestion(text, jwt):
-    return search('text', text, jwt, endpoint='suggestion')
+    return multimodal_search(
+        {'text': (text, Text)},
+        jwt,
+        endpoint='suggestion',
+    )
 
 
 @deep_freeze_args
@@ -156,8 +161,8 @@ def call_flow(url_host, data, domain, endpoint):
 
 
 def search_by_text(search_text, jwt, filter_selection) -> DocumentArray:
-    return search(
-        'text', search_text, jwt, filter_dict=filter_selection, field_name='text'
+    return multimodal_search(
+        {'text': (search_text, Text)}, jwt, filter_selection=filter_selection
     )
 
 
@@ -172,12 +177,10 @@ def search_by_image(document: Document, jwt, filter_selection) -> DocumentArray:
         elif (query_doc.uri is not None) and query_doc.uri != '':
             query_doc.load_uri_to_blob(timeout=10)
 
-    return search(
-        'blob',
-        base64.b64encode(query_doc.blob).decode('utf-8'),
+    return multimodal_search(
+        {'blob': (base64.b64encode(query_doc.blob).decode('utf-8'), Image)},
         jwt,
         filter_dict=filter_selection,
-        field_name='image',
     )
 
 
@@ -203,7 +206,9 @@ def multimodal_search(
         'limit': top_k if top_k else params.top_k,
         'filters': updated_dict,
     }
-    if endpoint == 'search':
+    if endpoint == 'suggestion':
+        data['text'] = query_field_values_modalities['text'][0]
+    elif endpoint == 'search':
         data['query'] = {}
         for field_name, (
             field_value,

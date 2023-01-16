@@ -24,7 +24,7 @@ def search(data: SearchRequestModel):
 
     fields_modalities_mapping = {}
     fields_values_mapping = {}
-    for field_name, field_value, field_modality in data.query.items():
+    for field_name, (field_value, field_modality) in data.query.items():
         fields_modalities_mapping[field_name] = field_modality
         fields_values_mapping[field_name] = field_value
 
