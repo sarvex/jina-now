@@ -42,7 +42,7 @@ def test_text_search_fails_with_incorrect_query(client):
         )
 
 
-def test_text_search_fails_with_emtpy_query(client: requests.Session):
+def test_text_search_fails_with_empty_query(client: requests.Session):
     with pytest.raises(ValueError):
         client.post(
             f'/api/v1/search-app/search',

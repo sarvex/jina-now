@@ -28,10 +28,13 @@ modalities_mapping = {
 def search(data: SearchRequestModel):
     fields_modalities_mapping = {}
     fields_values_mapping = {}
+
+    if len(data.query) == 0:
+        raise ValueError('Query cannot be empty')
+
     for field in data.query:
         fields_modalities_mapping[field['name']] = modalities_mapping[field['modality']]
         fields_values_mapping[field['name']] = field['value']
-
     data_class, field_names_to_dataclass_fields = create_dataclass(
         fields_modalities_mapping.keys(),
         fields_modalities_mapping,
