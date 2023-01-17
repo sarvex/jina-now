@@ -14,13 +14,7 @@ import streamlit.components.v1 as components
 from better_profanity import profanity
 from docarray import Document, DocumentArray
 from jina import Client
-from src.constants import (
-    BUTTONS,
-    S3_DEMO_PATH,
-    SSO_COOKIE,
-    SURVEY_LINK,
-    ds_set,
-)
+from src.constants import BUTTONS, S3_DEMO_PATH, SSO_COOKIE, SURVEY_LINK, ds_set
 from src.search import get_query_params, search_by_image, search_by_text
 from streamlit.scriptrunner import add_script_run_ctx
 from streamlit.server.server import Server
@@ -86,6 +80,9 @@ def deploy_streamlit():
     # Retrieve query params
     params = get_query_params()
     redirect_to = render_auth_components(params)
+
+    if "len_text_choices" not in st.session_state:
+        st.session_state["len_text_choices"] = 0
 
     _, mid, _ = st.columns([0.8, 1, 1])
     with open(os.path.join(dir_path, 'logo.svg'), 'r') as f:
@@ -315,7 +312,10 @@ def render_image(da_img, filter_selection):
 
 
 def render_text(da_txt, filter_selection):
-    query = st.text_input('', key='text_search_box', on_change=clear_match)
+    if st.button("Add Choice"):
+        st.session_state["len_text_choices"] += 1
+    for x in range(st.session_state["len_text_choices"]):
+        query = st.text_input('', key=f'{x}', on_change=clear_match)
     if query:
         st.session_state.matches = search_by_text(
             search_text=query,
