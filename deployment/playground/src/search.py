@@ -1,5 +1,5 @@
 import base64
-from typing import Dict
+from typing import Dict, List
 
 import requests
 import streamlit as st
@@ -24,7 +24,7 @@ def get_query_params() -> Parameters:
 
 def get_suggestion(text, jwt):
     return multimodal_search(
-        {'text': (text, 'text')},
+        [{'name': 'text', 'value': text, 'modality': 'text'}],
         jwt,
         endpoint='suggestion',
     )
@@ -79,7 +79,11 @@ def call_flow(url_host, data, domain, endpoint):
 
 def search_by_text(search_text, jwt, filter_selection) -> DocumentArray:
     return multimodal_search(
-        {'text': (search_text, 'text')}, jwt, filter_dict=filter_selection
+        [
+            {'name': 'text', 'value': search_text, 'modality': 'text'},
+        ],
+        jwt,
+        filter_dict=filter_selection,
     )
 
 
@@ -95,14 +99,20 @@ def search_by_image(document: Document, jwt, filter_selection) -> DocumentArray:
             query_doc.load_uri_to_blob(timeout=10)
 
     return multimodal_search(
-        {'blob': (base64.b64encode(query_doc.blob).decode('utf-8'), 'image')},
+        [
+            {
+                'name': 'blob',
+                'value': base64.b64encode(query_doc.blob).decode('utf-8'),
+                'modality': 'image',
+            },
+        ],
         jwt,
         filter_dict=filter_selection,
     )
 
 
 def multimodal_search(
-    query_field_values_modalities: Dict,
+    query_field_values_modalities: List[Dict],
     jwt,
     top_k=None,
     filter_dict=None,
@@ -124,14 +134,9 @@ def multimodal_search(
         'filters': updated_dict,
     }
     if endpoint == 'suggestion':
-        data['text'] = query_field_values_modalities['text'][0]
+        data['text'] = query_field_values_modalities[0]['value']
     elif endpoint == 'search':
-        data['query'] = {}
-        for field_name, (
-            field_value,
-            field_modality,
-        ) in query_field_values_modalities.items():
-            data['query'][field_name] = [{field_modality: field_value}, field_modality]
+        data['query'] = query_field_values_modalities
         data['create_temp_link'] = True
         # in case the jwt is none, no jwt will be sent. This is the case when no authentication is used for that flow
     if jwt is not None:

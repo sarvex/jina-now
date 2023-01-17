@@ -28,9 +28,9 @@ modalities_mapping = {
 def search(data: SearchRequestModel):
     fields_modalities_mapping = {}
     fields_values_mapping = {}
-    for field_name, value_modality in data.query.items():
-        fields_modalities_mapping[field_name] = modalities_mapping[value_modality[1]]
-        fields_values_mapping[field_name] = value_modality[0]
+    for field in data.query:
+        fields_modalities_mapping[field['name']] = modalities_mapping[field['modality']]
+        fields_values_mapping[field['name']] = field['value']
 
     data_class, field_names_to_dataclass_fields = create_dataclass(
         fields_modalities_mapping.keys(),

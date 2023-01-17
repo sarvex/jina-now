@@ -50,7 +50,9 @@ def test_add_key(start_bff, setup_service_running, random_index_name, tmpdir):
         print('# test api keys')
         print('# search with invalid api key')
         request_body = get_request_body()
-        request_body['query'] = {'query_text': {'text': 'girl on motorbike'}}
+        request_body['query'] = [
+            {'name': 'text', 'value': 'girl on motorbike', 'modality': 'text'}
+        ]
         del request_body['jwt']
         request_body['api_key'] = API_KEY
         request_body['limit'] = 9

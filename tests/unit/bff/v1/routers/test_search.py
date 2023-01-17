@@ -12,7 +12,11 @@ def test_text_search_fails_with_no_flow_running(
     with pytest.raises(ConnectionError):
         client.post(
             f'/api/v1/search-app/search',
-            json={'query': {'query_image': {'blob': base64_image_string}}},
+            json={
+                'query': [
+                    {'name': 'blob', 'value': base64_image_string, 'modality': 'image'},
+                ]
+            },
         )
 
 
@@ -24,8 +28,14 @@ def test_text_search_fails_with_incorrect_query(client):
                 'data': [
                     (
                         {
-                            'query_text': {'text': 'Hello'},
-                            'query_image': {'uri': 'example.png'},
+                            [{'name': 'text', 'value': 'Hello', 'modality': 'text'}],
+                            [
+                                {
+                                    'name': 'uri',
+                                    'value': 'example.png',
+                                    'modality': 'image',
+                                }
+                            ],
                         },
                         {},
                     )
@@ -49,7 +59,11 @@ def test_text_search_calls_flow(
 ):
     response = client_with_mocked_jina_client(sample_search_response_text).post(
         '/api/v1/search-app/search',
-        json={'query': {'query_image': {'blob': base64_image_string}}},
+        json={
+            'query': [
+                {'name': 'blob', 'value': base64_image_string, 'modality': 'image'},
+            ]
+        },
     )
 
     assert response.status_code == status.HTTP_200_OK
@@ -66,7 +80,11 @@ def test_text_search_parse_response(
 ):
     response_raw = client_with_mocked_jina_client(sample_search_response_text).post(
         '/api/v1/search-app/search',
-        json={'query': {'query_image': {'blob': base64_image_string}}},
+        json={
+            'query': [
+                {'name': 'blob', 'value': base64_image_string, 'modality': 'image'},
+            ]
+        },
     )
 
     assert response_raw.status_code == status.HTTP_200_OK

@@ -342,9 +342,13 @@ def get_search_request_body(
             search_text = 'laser eyes'
         else:
             search_text = 'test'
-        request_body['query'] = {'query_text': {'text': search_text}}
+        request_body['query'] = (
+            [{'name': 'text', 'value': search_text, 'modality': 'text'}],
+        )
     elif search_modality == 'image':
-        request_body['query'] = {'query_image': {'blob': test_search_image}}
+        request_body['query'] = (
+            [{'name': 'blob', 'value': test_search_image, 'modality': 'image'}],
+        )
     return request_body
 
 
