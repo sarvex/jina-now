@@ -198,6 +198,16 @@ def _extract_field_names_single_folder(
     return {file_ending: file_ending for file_ending in file_endings}
 
 
+def read_tags_from_json(data):
+    fields_dict = {}
+    for el, value in data.items():
+        if isinstance(value, dict):
+            fields_dict.update(flatten_dict({el: value}))
+        else:
+            fields_dict[el] = str(value)
+    return fields_dict
+
+
 def _extract_field_names_sub_folders(
     file_paths: List[str], separator: str, s3_bucket=None
 ) -> Dict[str, str]:
@@ -218,10 +228,7 @@ def _extract_field_names_sub_folders(
             else:
                 with open(path) as f:
                     data = json.load(f)
-            for el, value in data.items():
-                fields_dict[el] = value
-            flattened_dict = flatten_dict(data)
-            fields_dict.update(flattened_dict)
+            fields_dict.update(read_tags_from_json(data))
         else:
             file_name = path.split(separator)[-1]
             fields_dict[file_name] = file_name

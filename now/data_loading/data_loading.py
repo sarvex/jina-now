@@ -9,6 +9,7 @@ from docarray.dataclasses import is_multimodal
 from now.common.detect_schema import (
     get_first_file_in_folder_structure_s3,
     get_s3_bucket_and_folder_prefix,
+    read_tags_from_json,
 )
 from now.constants import DatasetTypes
 from now.data_loading.elasticsearch import ElasticsearchExtractor
@@ -57,6 +58,12 @@ def add_metadata_to_da(da, user_input):
             field_name = dataclass_fields_to_field_names.get(dataclass_field, None)
             if 'position' in meta_dict:
                 getattr(doc, dataclass_field)._metadata['field_name'] = field_name
+        for filter in user_input.filter_fields:
+            if filter in user_input.field_names_to_dataclass_fields:
+                doc.tags[filter] = doc.tags[
+                    user_input.field_names_to_dataclass_fields[filter]
+                ]
+                del doc.tags[user_input.field_names_to_dataclass_fields[filter]]
 
 
 def _add_tags_to_da(da: DocumentArray, user_input: UserInput):
@@ -235,7 +242,8 @@ def create_docs_from_subdirectories(
                 else:
                     with open(file_full_path) as f:
                         data = json.load(f)
-                    for el, value in data.items():
+                    tags = read_tags_from_json(data)
+                    for el, value in tags.items():
                         if el in field_names_to_dataclass_fields.keys():
                             kwargs[field_names_to_dataclass_fields[el]] = value
         docs.append(Document(data_class(**kwargs)))
