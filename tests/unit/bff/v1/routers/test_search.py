@@ -27,17 +27,15 @@ def test_text_search_fails_with_incorrect_query(client):
             json={
                 'data': [
                     (
-                        {
-                            [{'name': 'text', 'value': 'Hello', 'modality': 'text'}],
-                            [
-                                {
-                                    'name': 'uri',
-                                    'value': 'example.png',
-                                    'modality': 'image',
-                                }
-                            ],
-                        },
-                        {},
+                        [{'name': 'text', 'value': 'Hello', 'modality': 'text'}],
+                        [
+                            {
+                                'name': 'uri',
+                                'value': 'example.png',
+                                'modality': 'image',
+                            }
+                        ],
+                        [],
                     )
                 ]
             },

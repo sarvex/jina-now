@@ -342,13 +342,13 @@ def get_search_request_body(
             search_text = 'laser eyes'
         else:
             search_text = 'test'
-        request_body['query'] = (
-            [{'name': 'text', 'value': search_text, 'modality': 'text'}],
-        )
+        request_body['query'] = [
+            {'name': 'text', 'value': search_text, 'modality': 'text'}
+        ]
     elif search_modality == 'image':
-        request_body['query'] = (
-            [{'name': 'blob', 'value': test_search_image, 'modality': 'image'}],
-        )
+        request_body['query'] = [
+            {'name': 'blob', 'value': test_search_image, 'modality': 'image'}
+        ]
     return request_body
 
 
@@ -414,7 +414,7 @@ def test_backend_custom_data(
 
 def assert_search_custom_s3(host, create_temp_link=False):
     request_body = {
-        'query': {'query_text': {'text': 'test'}},
+        'query': [{'name': 'text', 'value': 'Hello', 'modality': 'text'}],
         'limit': 9,
         'host': host,
         'create_temp_link': create_temp_link,
