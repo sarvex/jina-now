@@ -17,7 +17,6 @@ def deploy():
         'aws_secret_access_key': '',
         'aws_region_name': '',
         'deployment_type': 'remote',
-        'proceed': True,
         'secured': True,
         'additional_user': True,
         'user_emails': [],

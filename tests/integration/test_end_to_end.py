@@ -134,7 +134,6 @@ def run_end_to_end(
         'api_key': None,
         'additional_user': False,
         'deployment_type': deployment_type,
-        'proceed': True,
     }
     # need to create local cluster and namespace to deploy playground and bff for WOLF deployment
     if deployment_type == 'remote':
@@ -327,7 +326,6 @@ def test_backend_custom_data(
         'filter_fields': [],
         'cluster': NEW_CLUSTER['value'],
         'deployment_type': deployment_type,
-        'proceed': True,
         'secured': False,
     }
 

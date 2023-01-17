@@ -2,7 +2,6 @@ import json
 import pathlib
 import warnings
 
-import cowsay
 import docker
 from kubernetes import client, config
 
@@ -10,7 +9,7 @@ from now.common.options import NEW_CLUSTER
 from now.deployment.deployment import cmd
 from now.log import time_profiler, yaspin_extended
 from now.now_dataclasses import UserInput
-from now.utils import maybe_prompt_user, sigmap
+from now.utils import sigmap
 
 cur_dir = pathlib.Path(__file__).parent.resolve()
 warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -23,28 +22,12 @@ def create_local_cluster(kind_path, **kwargs):
         exit()
     cluster_name = 'jina-now'
     if cluster_name in out.decode('utf-8'):
-        questions = [
-            {
-                'type': 'list',
-                'name': 'proceed',
-                'message': 'The local cluster is running already. '
-                'Should it be recreated?',
-                'choices': [
-                    {'name': '⛔ no', 'value': False},
-                    {'name': '✅ yes', 'value': True},
-                ],
-            },
-        ]
-        recreate = maybe_prompt_user(questions, 'proceed', **kwargs)
-        if recreate:
-            with yaspin_extended(
-                sigmap=sigmap, text="Remove local cluster", color="green"
-            ) as spinner:
-                cmd(f'{kind_path} delete clusters {cluster_name}')
-                spinner.ok('💀')
-        else:
-            cowsay.cow('see you soon 👋')
-            exit(0)
+        with yaspin_extended(
+            sigmap=sigmap, text="Remove local cluster", color="green"
+        ) as spinner:
+            cmd(f'{kind_path} delete clusters {cluster_name}')
+            spinner.ok('💀')
+
     with yaspin_extended(
         sigmap=sigmap, text="Setting up local cluster. ", color="green"
     ) as spinner:
