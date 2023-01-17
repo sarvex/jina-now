@@ -299,24 +299,6 @@ def check_login_deployment(user_input: UserInput):
         _jina_auth_login(user_input)
 
 
-LOCAL_CLUSTER = DialogOptions(
-    name='cluster',
-    prompt_message='On which cluster do you want to deploy your search engine?',
-    prompt_type='list',
-    choices=lambda user_input, **kwargs: _construct_local_cluster_choices(
-        user_input, **kwargs
-    ),
-    depends_on=DEPLOYMENT_TYPE,
-    is_terminal_command=True,
-    description='Reference an existing `local` cluster or select `new` to create a new one. '
-    'Use this only when the `--deployment-type=local`',
-    conditional_check=lambda user_inp: user_inp.deployment_type == 'local',
-    post_func=lambda user_input, **kwargs: user_input.app_instance.run_checks(
-        user_input
-    ),
-)
-
-
 SECURED = DialogOptions(
     name='secured',
     prompt_message='Do you want to secure the Flow?',
@@ -448,7 +430,6 @@ data_es = [
     ES_INDEX_NAME,
     ES_ADDITIONAL_ARGS,
 ]
-cluster = [DEPLOYMENT_TYPE, LOCAL_CLUSTER]
 remote_cluster = [SECURED, API_KEY, ADDITIONAL_USERS, USER_EMAILS]
 
 base_options = (
@@ -459,6 +440,5 @@ base_options = (
     + data_es
     + data_fields
     + app_config
-    + cluster
     + remote_cluster
 )
