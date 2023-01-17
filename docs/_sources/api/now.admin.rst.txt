@@ -7,7 +7,6 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
-   now.admin.add_curation
    now.admin.benchmark_flow
    now.admin.build_datasets
    now.admin.deploy_text_to_video
