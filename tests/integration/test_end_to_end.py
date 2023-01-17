@@ -242,8 +242,7 @@ def assert_search(search_url, request_body, expected_status_code=200):
 
 def assert_suggest(suggest_url, request_body):
     old_request_text = request_body.pop('query')
-    old_request_text = list(old_request_text.values())[0]['text']
-    request_body['text'] = old_request_text[0]
+    request_body['text'] = old_request_text[0]['value']
     response = requests.post(
         suggest_url,
         json=request_body,
