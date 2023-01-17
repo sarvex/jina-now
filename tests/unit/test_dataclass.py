@@ -115,7 +115,7 @@ def test_create_annotations_and_class_attributes(
             {
                 'image_0': Image,
                 'text_0': Text,
-                'filter_0': float,
+                'filter_0': str,
                 'filter_1': str,
             },
         ),
