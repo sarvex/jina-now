@@ -2,9 +2,12 @@ import json
 
 import pytest
 from docarray import Document
-from transformers.testing_utils import USER
 
-from now.executor.abstract.auth.auth import get_auth_executor_class, secure_request
+from now.executor.abstract.auth.auth import (
+    SecurityLevel,
+    get_auth_executor_class,
+    secure_request,
+)
 
 
 @pytest.fixture
@@ -12,7 +15,7 @@ def executor_class():
     AuthExecutor = get_auth_executor_class()
 
     class E(AuthExecutor):
-        @secure_request(level=USER, on='/index')
+        @secure_request(level=SecurityLevel.USER, on='/index')
         def index(self, *args, **kwargs):
             print('do something')
 
