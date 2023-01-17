@@ -39,6 +39,7 @@ def search(data: SearchRequestModel):
     query_doc = field_dict_to_mm_doc(
         fields_values_mapping,
         data_class=data_class,
+        modalities_dict=fields_modalities_mapping,
         field_names_to_dataclass_fields=field_names_to_dataclass_fields,
     )
 
