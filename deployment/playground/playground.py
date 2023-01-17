@@ -76,15 +76,20 @@ def deploy_streamlit():
     # Start with setting up the vars default values then proceed to placing UI components
     # Set up session state vars if not already set
     setup_session_state()
-
+    query = []
     # Retrieve query params
     params = get_query_params()
     redirect_to = render_auth_components(params)
 
     if "len_text_choices" not in st.session_state:
-        st.session_state["len_text_choices"] = 0
+        st.session_state["len_text_choices"] = 1
+    if "len_image_choices" not in st.session_state:
+        st.session_state["len_image_choices"] = 1
+    if "len_video_choices" not in st.session_state:
+        st.session_state["len_video_choices"] = 1
 
     _, mid, _ = st.columns([0.8, 1, 1])
+    # with st.container():
     with open(os.path.join(dir_path, 'logo.svg'), 'r') as f:
         svg = f.read()
     with mid:
@@ -133,18 +138,28 @@ def deploy_streamlit():
             for tag, values in st.session_state.filters.items():
                 values.insert(0, 'All')
                 filter_selection[tag] = st.sidebar.selectbox(tag, values)
-
-        media_type = st.radio(
-            '',
-            ['Text', 'Image'],
-            on_change=clear_match,
-        )
-
-        if media_type == 'Image':
-            render_image(da_img, deepcopy(filter_selection))
-
-        elif media_type == 'Text':
-            render_text(da_txt, deepcopy(filter_selection))
+        l, m, r = st.columns(3)
+        # media_type = None
+        with l:
+            st.header('Text')
+            render_text(da_txt, deepcopy(filter_selection), query, 'text')
+        with m:
+            st.header('Image')
+            render_text(da_txt, deepcopy(filter_selection), query, 'image')
+        with r:
+            st.header('Video')
+            render_text(da_txt, deepcopy(filter_selection), query, 'video')
+        # media_type = st.radio(
+        #     '',
+        #     ['Text', 'Image'],
+        #     on_change=clear_match,
+        # )
+        #
+        # if media_type == 'Image':
+        #     render_image(da_img, deepcopy(filter_selection))
+        #
+        # elif media_type == 'Text':
+        #     render_text(da_txt, deepcopy(filter_selection), query)
 
         render_matches()
 
@@ -311,36 +326,67 @@ def render_image(da_img, filter_selection):
                     )
 
 
-def render_text(da_txt, filter_selection):
-    if st.button("Add Choice"):
-        st.session_state["len_text_choices"] += 1
-    for x in range(st.session_state["len_text_choices"]):
-        query = st.text_input('', key=f'{x}', on_change=clear_match)
-    if query:
-        st.session_state.matches = search_by_text(
-            search_text=query,
-            jwt=st.session_state.jwt_val,
-            filter_selection=filter_selection,
-        )
-    if st.button('Search', key='text_search', on_click=clear_match):
-        st.session_state.matches = search_by_text(
-            search_text=query,
-            jwt=st.session_state.jwt_val,
-            filter_selection=filter_selection,
-        )
+def render_text(da, filter_selection, query, modality):
+    if st.button("Add Choice", key=f'{modality}'):
+        st.session_state[f"len_{modality}_choices"] += 1
+    if modality == 'text':
+        for x in range(st.session_state[f"len_{modality}_choices"]):
+            query.append(
+                st.text_input('', key=f'{modality}_{x}', on_change=clear_match)
+            )
+        if query:
+            st.session_state.matches = search_by_text(
+                search_text=query[0],
+                jwt=st.session_state.jwt_val,
+                filter_selection=filter_selection,
+            )
+        # if st.button('Search', key='text_search', on_click=clear_match):
+        #     st.session_state.matches = search_by_text(
+        #         search_text=query[0],
+        #         jwt=st.session_state.jwt_val,
+        #         filter_selection=filter_selection,
+        #     )
 
-    if da_txt is not None:
-        st.subheader('samples:')
-        c1, c2, c3 = st.columns(3)
-        c4, c5, c6 = st.columns(3)
-        for doc, col in zip(da_txt, [c1, c2, c3, c4, c5, c6]):
-            with col:
-                if st.button(doc.content, key=doc.id, on_click=clear_text):
-                    st.session_state.matches = search_by_text(
-                        search_text=doc.content,
-                        jwt=st.session_state.jwt_val,
-                        filter_selection=filter_selection,
-                    )
+        if da is not None:
+            st.subheader('samples:')
+            c1, c2, c3 = st.columns(3)
+            c4, c5, c6 = st.columns(3)
+            for doc, col in zip(da, [c1, c2, c3, c4, c5, c6]):
+                with col:
+                    if st.button(doc.content, key=doc.id, on_click=clear_text):
+                        st.session_state.matches = search_by_text(
+                            search_text=doc.content,
+                            jwt=st.session_state.jwt_val,
+                            filter_selection=filter_selection,
+                        )
+    else:
+        for x in range(st.session_state[f"len_{modality}_choices"]):
+            upload_c, preview_c = st.columns([12, 1])
+            query = upload_c.file_uploader(
+                "", key=f'{modality}_{x}', on_change=clear_match
+            )
+        if query:
+            doc = convert_file_to_document(query)
+            st.image(doc.blob, width=160)
+            st.session_state.matches = search_by_image(
+                document=doc,
+                jwt=st.session_state.jwt_val,
+                filter_selection=filter_selection,
+            )
+        if da is not None:
+            st.subheader('samples:')
+            img_cs = st.columns(5)
+            txt_cs = st.columns(5)
+            for doc, c, txt in zip(da, img_cs, txt_cs):
+                with c:
+                    st.image(doc.blob if doc.blob else doc.tensor, width=100)
+                with txt:
+                    if st.button('Search', key=doc.id, on_click=clear_match):
+                        st.session_state.matches = search_by_image(
+                            document=doc,
+                            jwt=st.session_state.jwt_val,
+                            filter_selection=filter_selection,
+                        )
 
 
 def render_matches():
