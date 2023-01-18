@@ -138,29 +138,21 @@ def deploy_streamlit():
             for tag, values in st.session_state.filters.items():
                 values.insert(0, 'All')
                 filter_selection[tag] = st.sidebar.selectbox(tag, values)
-        l, m, r = st.columns(3)
+        l, r = st.columns([5, 5])
         # media_type = None
         with l:
             st.header('Text')
             render_text(da_txt, deepcopy(filter_selection), query, 'text')
-        with m:
+        with r:
             st.header('Image')
             render_text(da_txt, deepcopy(filter_selection), query, 'image')
-        with r:
-            st.header('Video')
-            render_text(da_txt, deepcopy(filter_selection), query, 'video')
-        # media_type = st.radio(
-        #     '',
-        #     ['Text', 'Image'],
-        #     on_change=clear_match,
-        # )
-        #
-        # if media_type == 'Image':
-        #     render_image(da_img, deepcopy(filter_selection))
-        #
-        # elif media_type == 'Text':
-        #     render_text(da_txt, deepcopy(filter_selection), query)
 
+        if st.button('Search', key='text_search', on_click=clear_match):
+            st.session_state.matches = search_by_text(
+                search_text=query[0],
+                jwt=st.session_state.jwt_val,
+                filter_selection=filter_selection,
+            )
         render_matches()
 
         add_social_share_buttons()
@@ -327,12 +319,17 @@ def render_image(da_img, filter_selection):
 
 
 def render_text(da, filter_selection, query, modality):
-    if st.button("Add Choice", key=f'{modality}'):
+    if st.button("Add Field", key=f'{modality}'):
         st.session_state[f"len_{modality}_choices"] += 1
     if modality == 'text':
         for x in range(st.session_state[f"len_{modality}_choices"]):
             query.append(
-                st.text_input('', key=f'{modality}_{x}', on_change=clear_match)
+                st.text_input(
+                    '',
+                    key=f'{modality}_{x}',
+                    on_change=clear_match,
+                    placeholder=f'Write your text query #{x + 1}',
+                )
             )
         if query:
             st.session_state.matches = search_by_text(
@@ -340,12 +337,6 @@ def render_text(da, filter_selection, query, modality):
                 jwt=st.session_state.jwt_val,
                 filter_selection=filter_selection,
             )
-        # if st.button('Search', key='text_search', on_click=clear_match):
-        #     st.session_state.matches = search_by_text(
-        #         search_text=query[0],
-        #         jwt=st.session_state.jwt_val,
-        #         filter_selection=filter_selection,
-        #     )
 
         if da is not None:
             st.subheader('samples:')
@@ -361,12 +352,10 @@ def render_text(da, filter_selection, query, modality):
                         )
     else:
         for x in range(st.session_state[f"len_{modality}_choices"]):
-            upload_c, preview_c = st.columns([12, 1])
-            query = upload_c.file_uploader(
-                "", key=f'{modality}_{x}', on_change=clear_match
-            )
-        if query:
-            doc = convert_file_to_document(query)
+            q = st.file_uploader("", key=f'{modality}_{x}', on_change=clear_match)
+        if q:
+            doc = convert_file_to_document(q)
+            query.append(q)
             st.image(doc.blob, width=160)
             st.session_state.matches = search_by_image(
                 document=doc,
