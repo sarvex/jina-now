@@ -85,7 +85,7 @@ if __name__ == '__main__':
         for ds in ds_list:
             dataset_list.append(ds)
 
-    if index > len(dataset_list):
+    if index >= len(dataset_list):
         print(f'Index {index} is out of range. Max index is {len(dataset_list)}')
         exit(0)
     to_deploy = dataset_list[index]
