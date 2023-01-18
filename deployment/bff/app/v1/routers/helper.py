@@ -49,30 +49,30 @@ def field_dict_to_mm_doc(
                 # save blob into a temporary file such that it can be loaded by the multimodal class
                 if modalities_dict[field_name_data_class] != Text:
                     if isinstance(field_value, str):
-                        if field_value.startswith('http'):
-                            data_class_kwargs[field_name_data_class] = field_value
-                            continue
-                        base64_decoded = base64.b64decode(field_value.encode('utf-8'))
-                        file_ending = filetype.guess(base64_decoded)
-                        if not file_ending:
-                            raise ValueError(
-                                f'Could not guess file type of blob {field_value}. '
-                                f'Please provide a valid file type.'
+                        if not field_value.startswith('http'):
+                            base64_decoded = base64.b64decode(
+                                field_value.encode('utf-8')
                             )
-                        file_ending = file_ending.extension
-                        if file_ending not in itertools.chain(
-                            *SUPPORTED_FILE_TYPES.values()
-                        ):
-                            raise ValueError(
-                                f'File type {file_ending} is not supported. '
-                                f'Please provide a valid file type.'
+                            file_ending = filetype.guess(base64_decoded)
+                            if not file_ending:
+                                raise ValueError(
+                                    f'Could not guess file type of blob {field_value}. '
+                                    f'Please provide a valid file type.'
+                                )
+                            file_ending = file_ending.extension
+                            if file_ending not in itertools.chain(
+                                *SUPPORTED_FILE_TYPES.values()
+                            ):
+                                raise ValueError(
+                                    f'File type {file_ending} is not supported. '
+                                    f'Please provide a valid file type.'
+                                )
+                            file_path = os.path.join(
+                                tmp_dir, field_name_data_class + '.' + file_ending
                             )
-                        file_path = os.path.join(
-                            tmp_dir, field_name_data_class + '.' + file_ending
-                        )
-                        with open(file_path, 'wb') as f:
-                            f.write(base64_decoded)
-                        field_value = file_path
+                            with open(file_path, 'wb') as f:
+                                f.write(base64_decoded)
+                            field_value = file_path
                 if field_value:
                     data_class_kwargs[field_name_data_class] = field_value
                 else:
