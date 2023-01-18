@@ -8,7 +8,6 @@ import requests
 from now.cli import cli
 from now.constants import DEMO_NS, DatasetTypes
 from now.demo_data import AVAILABLE_DATASETS
-from now.deployment.deployment import list_all_wolf, terminate_wolf
 
 
 def upsert_cname_record(source, target):
@@ -95,8 +94,8 @@ if __name__ == '__main__':
 
     if deployment_type == 'all':
         # List all deployments and delete them
-        flow = list_all_wolf(namespace=to_deploy.name.split("/")[-1])
-        terminate_wolf(flow['id'])
+        # flow = list_all_wolf(namespace=to_deploy.name.split("/")[-1])
+        # terminate_wolf(flow['id'])
         print(f'{to_deploy} successfully deleted!!')
     else:
         # check if deployment is already running else add to the queue

@@ -60,7 +60,7 @@ class SearchApp(JinaNOWApp):
             and 'NOW_CI_RUN' not in os.environ
         ):
             client = Client(
-                host=f'grpcs://{DEMO_NS.format(user_input.dataset_name)}.dev.jina.ai'
+                host=f'grpcs://{DEMO_NS.format(user_input.dataset_name.split("/")[-1])}.dev.jina.ai'
             )
             try:
                 client.post('/dry_run', timeout=2)

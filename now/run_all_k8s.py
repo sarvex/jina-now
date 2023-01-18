@@ -99,9 +99,7 @@ def start_now(**kwargs):
     # Should not be triggered for CI tests
     if app_instance.is_demo_available(user_input):
         gateway_host = 'remote'
-        gateway_host_internal = (
-            f'grpcs://{DEMO_NS.format(user_input.dataset_name)}.dev.jina.ai'
-        )
+        gateway_host_internal = f'grpcs://{DEMO_NS.format(user_input.dataset_name.split("/")[-1])}.dev.jina.ai'
         gateway_port_internal = None
     else:
         if not os.environ.get('NOW_TESTING', False):

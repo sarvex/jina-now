@@ -176,7 +176,7 @@ class JinaNOWApp:
         if 'NOW_EXAMPLES' in os.environ:
             common_env_dict[
                 'CUSTOM_DNS'
-            ] = f'{DEMO_NS.format(user_input.dataset_name)}.dev.jina.ai'
+            ] = f'{DEMO_NS.format(user_input.dataset_name.split("/")[-1])}.dev.jina.ai'
         # Read the flow and add generic configuration such as labels in the flow
         # Keep this function as simple as possible. It should only be used to add generic configuration needed
         # for all apps. App specific configuration should be added in the app specific setup function.
