@@ -71,6 +71,28 @@ def test_text_search_calls_flow(
     assert results[0].tags['parameters']['limit'] == 10
 
 
+def test_multimodal_search_calls_flow(
+    client_with_mocked_jina_client: Callable[[DocumentArray], requests.Session],
+    sample_search_response_text: DocumentArray,
+    base64_image_string: str,
+):
+    response = client_with_mocked_jina_client(sample_search_response_text).post(
+        '/api/v1/search-app/search',
+        json={
+            'query': [
+                {'name': 'blob', 'value': base64_image_string, 'modality': 'image'},
+                {'name': 'text', 'value': 'Hello', 'modality': 'text'},
+            ]
+        },
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+    results = DocumentArray.from_json(response.content)
+    # the mock writes the call args into the response tags
+    assert results[0].tags['url'] == '/search'
+    assert results[0].tags['parameters']['limit'] == 10
+
+
 def test_text_search_parse_response(
     client_with_mocked_jina_client: Callable[[DocumentArray], requests.Session],
     sample_search_response_text: DocumentArray,
