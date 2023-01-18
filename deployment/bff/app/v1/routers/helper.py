@@ -7,7 +7,7 @@ from typing import Dict, Type
 
 import filetype
 from docarray import Document, DocumentArray
-from docarray.typing import Image
+from docarray.typing import Text
 from fastapi import HTTPException, status
 from jina import Client
 from jina.excepts import BadServer, BadServerFlow
@@ -47,34 +47,32 @@ def field_dict_to_mm_doc(
             data_class_kwargs = {}
             for field_name_data_class, field_value in field_dict.items():
                 # save blob into a temporary file such that it can be loaded by the multimodal class
-                if modalities_dict[field_name_data_class] == Image:
+                if modalities_dict[field_name_data_class] != Text:
                     if isinstance(field_value, str):
                         if field_value.startswith('http'):
                             data_class_kwargs[field_name_data_class] = field_value
-                        else:
-                            base64_decoded = base64.b64decode(
-                                field_value.encode('utf-8')
+                            continue
+                        base64_decoded = base64.b64decode(field_value.encode('utf-8'))
+                        file_ending = filetype.guess(base64_decoded)
+                        if not file_ending:
+                            raise ValueError(
+                                f'Could not guess file type of blob {field_value}. '
+                                f'Please provide a valid file type.'
                             )
-                            file_ending = filetype.guess(base64_decoded)
-                            if file_ending:
-                                raise ValueError(
-                                    f'Could not guess file type of blob {field_value}. '
-                                    f'Please provide a valid file type.'
-                                )
-                            file_ending = file_ending.extension
-                            if file_ending not in itertools.chain(
-                                *SUPPORTED_FILE_TYPES.values()
-                            ):
-                                raise ValueError(
-                                    f'File type {file_ending} is not supported. '
-                                    f'Please provide a valid file type.'
-                                )
-                            file_path = os.path.join(
-                                tmp_dir, field_name_data_class + '.' + file_ending
+                        file_ending = file_ending.extension
+                        if file_ending not in itertools.chain(
+                            *SUPPORTED_FILE_TYPES.values()
+                        ):
+                            raise ValueError(
+                                f'File type {file_ending} is not supported. '
+                                f'Please provide a valid file type.'
                             )
-                            with open(file_path, 'wb') as f:
-                                f.write(base64_decoded)
-                            field_value = file_path
+                        file_path = os.path.join(
+                            tmp_dir, field_name_data_class + '.' + file_ending
+                        )
+                        with open(file_path, 'wb') as f:
+                            f.write(base64_decoded)
+                        field_value = file_path
                 if field_value:
                     data_class_kwargs[field_name_data_class] = field_value
                 else:
