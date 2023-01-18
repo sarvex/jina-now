@@ -34,8 +34,8 @@ def search(data: SearchRequestModel):
         )
         fields_values_mapping[field['name']] = field['value']
     data_class, field_names_to_dataclass_fields = create_dataclass(
-        fields_modalities_mapping.keys(),
-        fields_modalities_mapping,
+        fields=list(fields_modalities_mapping.keys()),
+        fields_modalities=fields_modalities_mapping,
     )
     query_doc = field_dict_to_mm_doc(
         fields_values_mapping,

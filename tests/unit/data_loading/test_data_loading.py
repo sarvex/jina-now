@@ -96,9 +96,7 @@ def test_da_local_path_image_folder(image_resource_path: str):
     user_input.index_fields = ['a.jpg']
     user_input.index_field_candidates_to_modalities = {'a.jpg': Image}
     data_class, user_input.field_names_to_dataclass_fields = create_dataclass(
-        user_input.index_fields,
-        user_input.index_field_candidates_to_modalities,
-        user_input.dataset_type,
+        user_input=user_input
     )
     loaded_da = load_data(user_input, data_class)
 
@@ -138,9 +136,7 @@ def test_from_files_local(resources_folder_path):
     )
 
     data_class, user_input.field_names_to_dataclass_fields = create_dataclass(
-        user_input.index_fields,
-        user_input.index_field_candidates_to_modalities,
-        user_input.dataset_type,
+        user_input=user_input
     )
     loaded_da = from_files_local(
         user_input.dataset_path,
@@ -181,9 +177,7 @@ def test_from_subfolders_s3(get_aws_info):
         all_modalities, user_input.filter_field_candidates_to_modalities
     )
     data_class, user_input.field_names_to_dataclass_fields = create_dataclass(
-        user_input.index_fields + user_input.filter_fields,
-        all_modalities,
-        user_input.dataset_type,
+        user_input=user_input
     )
 
     loaded_da = _list_files_from_s3_bucket(user_input, data_class)

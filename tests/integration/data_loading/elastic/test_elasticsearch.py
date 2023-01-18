@@ -2,10 +2,7 @@ from docarray import Document
 from docarray.typing import Text
 
 from now.constants import DatasetTypes
-from now.data_loading.create_dataclass import (
-    create_dataclass,
-    update_dict_with_no_overwrite,
-)
+from now.data_loading.create_dataclass import create_dataclass
 from now.data_loading.data_loading import load_data
 from now.now_dataclasses import UserInput
 
@@ -20,15 +17,8 @@ def test_elasticsearch_data_loading(setup_online_shop_db, es_connection_params):
     user_input.filter_fields = ['text']
     user_input.index_field_candidates_to_modalities = {'title': Text}
     user_input.filter_field_candidates_to_modalities = {'text': str}
-    all_modalities = {}
-    all_modalities.update(user_input.index_field_candidates_to_modalities)
-    update_dict_with_no_overwrite(
-        all_modalities, user_input.filter_field_candidates_to_modalities
-    )
     data_class, user_input.field_names_to_dataclass_fields = create_dataclass(
-        user_input.index_fields + user_input.filter_fields,
-        all_modalities,
-        user_input.dataset_type,
+        user_input=user_input
     )
     user_input.es_host_name = connection_str
 

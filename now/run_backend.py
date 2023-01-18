@@ -14,10 +14,7 @@ from now.admin.update_api_keys import update_api_keys
 from now.app.base.app import JinaNOWApp
 from now.common.testing import handle_test_mode
 from now.constants import ACCESS_PATHS, DatasetTypes
-from now.data_loading.create_dataclass import (
-    create_dataclass,
-    update_dict_with_no_overwrite,
-)
+from now.data_loading.create_dataclass import create_dataclass
 from now.data_loading.data_loading import load_data
 from now.deployment.flow import deploy_flow
 from now.log import time_profiler
@@ -51,15 +48,8 @@ def run(
         }
         data_class = None
     else:
-        all_modalities = {}
-        all_modalities.update(user_input.index_field_candidates_to_modalities)
-        update_dict_with_no_overwrite(
-            all_modalities, user_input.filter_field_candidates_to_modalities
-        )
         data_class, user_input.field_names_to_dataclass_fields = create_dataclass(
-            user_input.index_fields + user_input.filter_fields,
-            all_modalities,
-            user_input.dataset_type,
+            user_input=user_input
         )
     dataset = load_data(user_input, data_class)
 

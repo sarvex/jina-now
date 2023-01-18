@@ -5,6 +5,7 @@ from typing import Dict, List
 from docarray import Document, dataclass, field
 
 from now.constants import AVAILABLE_MODALITIES_FOR_SEARCH, DatasetTypes
+from now.now_dataclasses import UserInput
 from now.utils import docarray_typing_to_modality_string
 
 
@@ -21,7 +22,10 @@ def update_dict_with_no_overwrite(dict1: Dict, dict2: Dict):
 
 
 def create_dataclass(
-    fields: List, fields_modalities: Dict, dataset_type: DatasetTypes = None
+    fields: List = None,
+    fields_modalities: Dict = None,
+    dataset_type: DatasetTypes = None,
+    user_input: UserInput = None,
 ):
     """
     Create a dataclass from the user input using the selected index and filter fields
@@ -45,9 +49,19 @@ def create_dataclass(
     :param fields: list of fields
     :param fields_modalities: dict of fields and their modalities
     :param dataset_type: dataset type
+    :param user_input: user inputs
 
     :return: dataclass object
     """
+
+    if user_input:
+        fields_modalities = {}
+        fields_modalities.update(user_input.index_field_candidates_to_modalities)
+        update_dict_with_no_overwrite(
+            fields_modalities, user_input.filter_field_candidates_to_modalities
+        )
+        fields = user_input.fields
+        dataset_type = user_input.dataset_type
 
     file_mapping_to_dataclass_fields = create_dataclass_fields_file_mappings(
         fields,
