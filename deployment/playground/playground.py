@@ -121,7 +121,7 @@ def deploy_streamlit():
 
         filter_selection = {}
         if st.session_state.filters != 'notags':
-            st.sidebar.title('Filters'),
+            st.sidebar.title('Filters')
             if not st.session_state.filters_set:
                 for tag, values in st.session_state.filters.items():
                     values.insert(0, 'All')
