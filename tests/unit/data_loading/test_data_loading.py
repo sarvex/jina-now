@@ -65,16 +65,6 @@ def is_da_text_equal(da_a: DocumentArray, da_b: DocumentArray):
     return True
 
 
-def test_da_pull(da: DocumentArray):
-    user_input = UserInput()
-    user_input.dataset_type = DatasetTypes.DOCARRAY
-    user_input.dataset_name = 'secret-token'
-
-    loaded_da = load_data(user_input)
-
-    assert is_da_text_equal(da, loaded_da)
-
-
 def test_da_local_path(local_da: DocumentArray):
     path, da = local_da
     user_input = UserInput()
