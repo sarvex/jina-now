@@ -13,7 +13,7 @@ def get_query_params() -> Parameters:
     query_parameters = st.experimental_get_query_params()
     parameters = Parameters()
     for key, val in query_parameters.items():
-        if val is not None:
+        if val:
             setattr(
                 parameters,
                 key,
@@ -126,7 +126,7 @@ def multimodal_search(
     URL_HOST = f"{domain}/api/v1/search-app/{endpoint}"
 
     updated_dict = {}
-    if filter_dict is not None:
+    if filter_dict:
         updated_dict = {k: v for k, v in filter_dict.items() if v != 'All'}
     data = {
         'host': params.host,
@@ -139,7 +139,7 @@ def multimodal_search(
         data['query'] = query_field_values_modalities
         data['create_temp_link'] = True
         # in case the jwt is none, no jwt will be sent. This is the case when no authentication is used for that flow
-    if jwt is not None:
+    if jwt:
         data['jwt'] = jwt
     if params.port:
         data['port'] = params.port

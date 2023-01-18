@@ -56,7 +56,7 @@ def field_dict_to_mm_doc(
                                 field_value.encode('utf-8')
                             )
                             file_ending = filetype.guess(base64_decoded)
-                            if file_ending is None:
+                            if file_ending:
                                 raise ValueError(
                                     f'Could not guess file type of blob {field_value}. '
                                     f'Please provide a valid file type.'
@@ -75,7 +75,7 @@ def field_dict_to_mm_doc(
                             with open(file_path, 'wb') as f:
                                 f.write(base64_decoded)
                             field_value = file_path
-                if field_value is not None:
+                if field_value:
                     data_class_kwargs[field_name_data_class] = field_value
                 else:
                     raise ValueError(

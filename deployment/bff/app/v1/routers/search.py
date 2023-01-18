@@ -2,7 +2,6 @@ import base64
 from typing import List
 
 from docarray import Document
-from docarray.typing import Image, Text
 from fastapi import APIRouter
 
 from deployment.bff.app.v1.models.search import (
@@ -12,12 +11,9 @@ from deployment.bff.app.v1.models.search import (
 )
 from deployment.bff.app.v1.routers.helper import field_dict_to_mm_doc, jina_client_post
 from now.data_loading.create_dataclass import create_dataclass
+from now.utils import modality_string_to_docarray_typing
 
 router = APIRouter()
-modalities_mapping = {
-    'text': Text,
-    'image': Image,
-}
 
 
 @router.post(
@@ -33,7 +29,9 @@ def search(data: SearchRequestModel):
         raise ValueError('Query cannot be empty')
 
     for field in data.query:
-        fields_modalities_mapping[field['name']] = modalities_mapping[field['modality']]
+        fields_modalities_mapping[field['name']] = modality_string_to_docarray_typing(
+            field['modality']
+        )
         fields_values_mapping[field['name']] = field['value']
     data_class, field_names_to_dataclass_fields = create_dataclass(
         fields_modalities_mapping.keys(),
