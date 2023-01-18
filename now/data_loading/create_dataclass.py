@@ -60,7 +60,7 @@ def create_dataclass(
         update_dict_with_no_overwrite(
             fields_modalities, user_input.filter_field_candidates_to_modalities
         )
-        fields = user_input.fields
+        fields = user_input.index_fields + user_input.filter_fields
         dataset_type = user_input.dataset_type
 
     file_mapping_to_dataclass_fields = create_dataclass_fields_file_mappings(
