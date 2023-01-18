@@ -36,12 +36,13 @@ FILETYPE_TO_MODALITY = {
 AVAILABLE_MODALITIES_FOR_SEARCH = [Text, Image, Video]
 AVAILABLE_MODALITIES_FOR_FILTER = [Text]
 NOT_AVAILABLE_MODALITIES_FOR_FILTER = [Image, Video]
+DEMO_NS = 'now-example-{}'
 
 BASE_STORAGE_URL = (
     'https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets'
 )
 
-EXTERNAL_CLIP_HOST = 'encoderclip-pretty-javelin-3aceb7f2cd.wolf.jina.ai'
+EXTERNAL_CLIP_HOST = 'encoderclip-trusting-alien-c01fde9d31.wolf.jina.ai'
 
 DEFAULT_FLOW_NAME = 'nowapi'
 PREFETCH_NR = 10

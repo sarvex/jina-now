@@ -9,7 +9,7 @@ from rich.table import Column, Table
 
 from now import run_backend, run_bff_playground
 from now.cloud_manager import setup_cluster
-from now.constants import DOCKER_BFF_PLAYGROUND_TAG, FLOW_STATUS, DatasetTypes
+from now.constants import DEMO_NS, DOCKER_BFF_PLAYGROUND_TAG, FLOW_STATUS, DatasetTypes
 from now.deployment.deployment import cmd, list_all_wolf, status_wolf, terminate_wolf
 from now.dialog import configure_user_input
 from now.log import yaspin_extended
@@ -99,8 +99,8 @@ def start_now(**kwargs):
     # Should not be triggered for CI tests
     if app_instance.is_demo_available(user_input):
         gateway_host = 'remote'
-        gateway_host_internal = f'grpcs://now-example-{app_instance.app_name}-{user_input.dataset_name}.dev.jina.ai'.replace(
-            '_', '-'
+        gateway_host_internal = (
+            f'grpcs://{DEMO_NS.format(user_input.dataset_name)}.dev.jina.ai'
         )
         gateway_port_internal = None
     else:

@@ -9,6 +9,7 @@ from now.app.base.app import JinaNOWApp
 from now.app.search_app.indexer_utils import check_if_ocr_needed
 from now.constants import (
     ACCESS_PATHS,
+    DEMO_NS,
     EXECUTOR_PREFIX,
     EXTERNAL_CLIP_HOST,
     NOW_AUTOCOMPLETE_VERSION,
@@ -59,9 +60,7 @@ class SearchApp(JinaNOWApp):
             and 'NOW_CI_RUN' not in os.environ
         ):
             client = Client(
-                host=f'grpcs://now-example-{self.app_name}-{user_input.dataset_name}.dev.jina.ai'.replace(
-                    '_', '-'
-                )
+                host=f'grpcs://{DEMO_NS.format(user_input.dataset_name)}.dev.jina.ai'
             )
             try:
                 client.post('/dry_run', timeout=2)
