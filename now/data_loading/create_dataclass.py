@@ -47,18 +47,17 @@ def create_dataclass(user_input: UserInput):
     """
     all_modalities = {}
     all_modalities.update(user_input.index_field_candidates_to_modalities)
-    update_dict_filter_field_types(all_modalities, user_input.filter_fields)
     update_dict_with_no_overwrite(
         all_modalities, user_input.filter_field_candidates_to_modalities
     )
 
     file_mapping_to_dataclass_fields = create_dataclass_fields_file_mappings(
-        user_input.index_fields + user_input.filter_fields,
+        user_input.index_fields,
         all_modalities,
     )
     user_input.field_names_to_dataclass_fields = file_mapping_to_dataclass_fields
     (all_annotations, all_class_attributes,) = create_annotations_and_class_attributes(
-        user_input.index_fields + user_input.filter_fields,
+        user_input.index_fields,
         all_modalities,
         file_mapping_to_dataclass_fields,
         user_input.dataset_type,
@@ -152,14 +151,3 @@ def create_dataclass_fields_file_mappings(fields: List, fields_modalities: Dict)
             file_mapping_to_dataclass_fields[f] = f'filter_{filter_count}'
             filter_count += 1
     return file_mapping_to_dataclass_fields
-
-
-def update_dict_filter_field_types(dict_fields: Dict, filter_fields: List):
-    """
-    Update dict types to python types if it is a filter field
-
-    :param dict_fields: dict to be updated
-    :param filter_fields: provided filter fields
-    """
-    for key in filter_fields:
-        dict_fields[key] = str
