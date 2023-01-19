@@ -76,6 +76,7 @@ def deploy_streamlit():
     # Start with setting up the vars default values then proceed to placing UI components
     # Set up session state vars if not already set
     setup_session_state()
+
     # Retrieve query params
     params = get_query_params()
     redirect_to = render_auth_components(params)
@@ -87,7 +88,6 @@ def deploy_streamlit():
     if "query" not in st.session_state:
         st.session_state['query'] = dict()
     _, mid, _ = st.columns([0.8, 1, 1])
-    # with st.container():
     with open(os.path.join(dir_path, 'logo.svg'), 'r') as f:
         svg = f.read()
     with mid:
@@ -300,7 +300,7 @@ def render_image(da_img, filter_selection):
             jwt=st.session_state.jwt_val,
             filter_selection=filter_selection,
         )
-    if da_img is not None:
+    if da_img:
         st.subheader('samples:')
         img_cs = st.columns(5)
         txt_cs = st.columns(5)
