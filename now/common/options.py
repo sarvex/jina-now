@@ -32,7 +32,6 @@ from now.utils import (
     to_camel_case,
 )
 
-NEW_CLUSTER = {'name': '🐣 create new', 'value': 'new'}
 AVAILABLE_SOON = 'will be available in upcoming versions'
 
 
@@ -369,32 +368,6 @@ def _jina_auth_login(user_input: UserInput, **kwargs):
 
     get_info_hubble(user_input)
     os.environ['JCLOUD_NO_SURVEY'] = '1'
-
-
-def _construct_local_cluster_choices(user_input: UserInput, **kwargs):
-    active_context = kwargs.get('active_context')
-    contexts = kwargs.get('contexts')
-    context_names = _get_context_names(contexts, active_context)
-    choices = [NEW_CLUSTER]
-    # filter contexts with `gke`
-    if len(context_names) > 0 and len(context_names[0]) > 0:
-        context_names = [
-            context
-            for context in context_names
-            if 'gke' not in context and _cluster_running(context)
-        ]
-        choices = context_names + choices
-    return choices
-
-
-def _cluster_running(cluster):
-    config.load_kube_config(context=cluster)
-    v1 = client.CoreV1Api()
-    try:
-        v1.list_namespace()
-    except Exception as e:
-        return False
-    return True
 
 
 app_config = [APP_NAME]

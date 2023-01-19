@@ -9,7 +9,6 @@ from docarray import DocumentArray
 
 from now.admin.utils import get_default_request_body
 from now.cli import cli
-from now.common.options import NEW_CLUSTER
 from now.constants import DatasetTypes
 from now.demo_data import DemoDatasetNames
 from now.deployment.deployment import list_all_wolf
@@ -65,7 +64,6 @@ def test_end_to_end(
     dataset,
     test_search_image,
 ):
-    cluster = NEW_CLUSTER['value']
     kwargs = {
         'now': 'start',
         'flow_name': 'nowapi',
@@ -74,7 +72,6 @@ def test_end_to_end(
         'index_fields': index_fields,
         'filter_fields': filter_fields,
         'dataset_name': dataset,
-        'cluster': cluster,
         'secured': True,
         'api_key': None,
         'additional_user': False,
@@ -247,7 +244,6 @@ def test_backend_custom_data(
         'aws_region_name': 'eu-west-1',
         'index_fields': ['.jpeg'],
         'filter_fields': [],
-        'cluster': NEW_CLUSTER['value'],
         'proceed': True,
         'secured': False,
     }
