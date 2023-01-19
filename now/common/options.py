@@ -11,8 +11,6 @@ import os
 import uuid
 
 from hubble import AuthenticationRequiredError
-from kubernetes import client, config
-
 from now.common.detect_schema import (
     set_field_names_elasticsearch,
     set_field_names_from_docarray,
@@ -25,7 +23,6 @@ from now.log import yaspin_extended
 from now.now_dataclasses import DialogOptions, UserInput
 from now.utils import (
     RetryException,
-    _get_context_names,
     get_info_hubble,
     jina_auth_login,
     sigmap,
@@ -341,12 +338,6 @@ def _add_additional_users(user_input: UserInput, **kwargs):
         if kwargs['user_emails']
         else []
     )
-
-
-def _check_if_namespace_exist():
-    config.load_kube_config()
-    v1 = client.CoreV1Api()
-    return 'nowapi' in [item.metadata.name for item in v1.list_namespace().items]
 
 
 def construct_app(app_name: str):

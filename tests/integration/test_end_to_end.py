@@ -29,24 +29,24 @@ def test_token_exists():
 @pytest.mark.parametrize(
     'query_fields, index_fields, filter_fields, dataset',
     [
-        # (
-        #     'image',
-        #     ['image'],
-        #     ['label'],
-        #     DemoDatasetNames.BIRD_SPECIES,
-        # ),
-        # (
-        #     'text',
-        #     ['lyrics'],
-        #     [],
-        #     DemoDatasetNames.POP_LYRICS,
-        # ),
-        # (
-        #     'text',
-        #     ['video', 'description'],
-        #     [],
-        #     DemoDatasetNames.TUMBLR_GIFS_10K,
-        # ),
+        (
+            'image',
+            ['image'],
+            ['label'],
+            DemoDatasetNames.BIRD_SPECIES,
+        ),
+        (
+            'text',
+            ['lyrics'],
+            [],
+            DemoDatasetNames.POP_LYRICS,
+        ),
+        (
+            'text',
+            ['video', 'description'],
+            [],
+            DemoDatasetNames.TUMBLR_GIFS_10K,
+        ),
         (
             'text',
             ['image'],
