@@ -21,10 +21,10 @@ from tornado.httputil import parse_cookie
 # TODO remove this in the custom gateway
 if __name__ == '__main__':
     from src.constants import BUTTONS, S3_DEMO_PATH, SSO_COOKIE, SURVEY_LINK, ds_set
-    from src.search import get_query_params
+    from src.search import get_query_params, multimodal_search
 else:
     from .src.constants import BUTTONS, S3_DEMO_PATH, SSO_COOKIE, SURVEY_LINK, ds_set
-    from .src.search import get_query_params
+    from .src.search import get_query_params, multimodal_search
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
