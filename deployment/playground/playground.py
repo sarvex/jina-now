@@ -302,7 +302,7 @@ def render_image(da_img, filter_selection):
             jwt=st.session_state.jwt_val,
             filter_selection=filter_selection,
         )
-    if da_img is not None:
+    if da_img:
         st.subheader('samples:')
         img_cs = st.columns(5)
         txt_cs = st.columns(5)
@@ -333,7 +333,7 @@ def render_text(da_txt, filter_selection):
             filter_selection=filter_selection,
         )
 
-    if da_txt is not None:
+    if da_txt:
         st.subheader('samples:')
         c1, c2, c3 = st.columns(3)
         c4, c5, c6 = st.columns(3)
