@@ -21,7 +21,11 @@ from deployment.playground.src.constants import (
     SURVEY_LINK,
     ds_set,
 )
-from deployment.playground.src.search import get_query_params, search_by_image, search_by_text
+from deployment.playground.src.search import (
+    get_query_params,
+    search_by_image,
+    search_by_text,
+)
 from streamlit.scriptrunner import add_script_run_ctx
 from streamlit.server.server import Server
 from tornado.httputil import parse_cookie
