@@ -141,7 +141,7 @@ def start_now(**kwargs):
             f'/?host='
             + (gateway_host_internal if gateway_host != 'localhost' else 'gateway')
             + (
-                f'&data={user_input.dataset_name if user_input.dataset_type == DatasetTypes.DEMO else "custom"}'
+                f'&data={user_input.dataset_name.split("/")[-1] if user_input.dataset_type == DatasetTypes.DEMO else "custom"}'
             )
             + (f'&secured={user_input.secured}' if user_input.secured else '')
         )
