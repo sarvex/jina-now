@@ -3,7 +3,7 @@ import subprocess
 from time import sleep
 
 import yaml
-from jina import DocumentArray
+from jina import DocumentArray, requests
 
 from now.executor.abstract.base_indexer import NOWBaseIndexer as Executor
 
@@ -31,6 +31,10 @@ class NOWQdrantIndexer16(Executor):
             },
         )
         self.range_operators = ['$gt', '$lt', '$get', '$let']
+
+    @requests(on='/backup')
+    def backup(self, *args, **kwargs):
+        pass
 
     # override
     def batch_iterator(self):
