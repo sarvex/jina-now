@@ -98,6 +98,8 @@ def deploy_streamlit():
     if redirect_to and st.session_state.login:
         nav_to(redirect_to)
     else:
+        da_img, da_txt = load_example_queries(params.data)
+
         setup_design()
 
         if params.host and st.session_state.filters == 'notags':
