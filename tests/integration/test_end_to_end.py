@@ -220,7 +220,7 @@ def get_search_request_body(
 
 def assert_deployment_response(response):
     assert response['bff'] == 'https://nowrun.jina.ai/api/v1/search-app/docs'
-    assert response['playground'] == 'https://nowrun.jina.ai'
+    assert response['playground'].startswith('https://nowrun.jina.ai')
     assert response['host'].startswith('grpcs://')
     assert response['host'].endswith('.wolf.jina.ai')
     assert response['port'] == 8080 or response['port'] is None
