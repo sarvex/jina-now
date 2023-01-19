@@ -1,19 +1,12 @@
 import os
 import pathlib
-import platform
 import sys
 import warnings
 from argparse import Namespace
-from os.path import expanduser as user
-
-import cpuinfo
-
 from now import __version__
 from now import __version__ as version
 from now.constants import SURVEY_LINK
-from now.deployment.deployment import cmd
 from now.run_all_k8s import start_now, stop_now
-from now.system_information import get_system_state
 
 warnings.filterwarnings("ignore")
 
@@ -92,9 +85,7 @@ def cli(args=None):
         print(__version__)
         exit(0)
     if task == 'start':
-        return start_now(
-            **kwargs,
-        )
+        return start_now(**kwargs)
     elif task == 'stop':
         return stop_now(**kwargs)
     elif task == 'survey':

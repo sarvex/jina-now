@@ -44,31 +44,20 @@ def with_hubble_login_patch(mocker: MockerFixture) -> None:
 
 
 @pytest.fixture()
-def cleanup(deployment_type, dataset):
+def cleanup(dataset):
     with tempfile.TemporaryDirectory() as tmpdir:
         start = time.time()
         yield tmpdir
         print('start cleanup')
         try:
-            if deployment_type == 'remote':
-                with open(f'{tmpdir}/flow_details.json', 'r') as f:
-                    flow_details = json.load(f)
-                if 'host' not in flow_details:
-                    print('nothing to clean up')
-                    return
-                host = flow_details['host']
-                flow_id = get_flow_id(host)
-                terminate_wolf(flow_id)
-            else:
-                print('\nDeleting local cluster')
-                kwargs = {
-                    'deployment_type': deployment_type,
-                    'now': 'stop',
-                    'cluster': 'kind-jina-now',
-                    'delete-cluster': True,
-                }
-                kwargs = Namespace(**kwargs)
-                cli(args=kwargs)
+            with open(f'{tmpdir}/flow_details.json', 'r') as f:
+                flow_details = json.load(f)
+            if 'host' not in flow_details:
+                print('nothing to clean up')
+                return
+            host = flow_details['host']
+            flow_id = get_flow_id(host)
+            terminate_wolf(flow_id)
         except Exception as e:
             print('no clean up')
             print(e)
@@ -79,6 +68,6 @@ def cleanup(deployment_type, dataset):
         secs = int(now % 60)
         print(50 * '#')
         print(
-            f'Time taken to execute `{deployment_type}` deployment with dataset `{dataset}`: {mins}m {secs}s'
+            f'Time taken to execute deployment with dataset `{dataset}`: {mins}m {secs}s'
         )
         print(50 * '#')

@@ -7,9 +7,8 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Column, Table
 
-from now import run_backend, run_bff_playground
-from now.cloud_manager import setup_cluster
-from now.constants import DOCKER_BFF_PLAYGROUND_TAG, FLOW_STATUS, DatasetTypes
+from now import run_backend
+from now.constants import FLOW_STATUS, DatasetTypes
 from now.deployment.deployment import list_all_wolf, status_wolf, terminate_wolf
 from now.dialog import configure_user_input
 from now.utils import maybe_prompt_user
@@ -58,56 +57,34 @@ def start_now(**kwargs):
     # Only if the deployment is remote and the demo examples is available for the selected app
     # Should not be triggered for CI tests
     if app_instance.is_demo_available(user_input):
-        gateway_host = 'remote'
         gateway_host_internal = f'grpcs://now-example-{app_instance.app_name}-{user_input.dataset_name}.dev.jina.ai'.replace(
             '_', '-'
         )
-        gateway_port_internal = None
     else:
-        if not os.environ.get('NOW_TESTING', False):
-            setup_cluster(user_input, **kwargs)
         (
-            gateway_host,
             gateway_port,
             gateway_host_internal,
-            gateway_port_internal,
         ) = run_backend.run(app_instance, user_input, **kwargs)
-
     if os.environ.get('NOW_TESTING', False):
-        # start_bff(9090, daemon=True)
-        # sleep(10)
         bff_playground_host = 'http://localhost'
         bff_port = '9090'
-        playground_port = '80'
-    elif gateway_host == 'localhost' or 'NOW_CI_RUN' in os.environ:
-        # only deploy playground when running locally or when testing
-        bff_playground_host, bff_port, playground_port = run_bff_playground.run(
-            gateway_host=gateway_host,
-            docker_bff_playground_tag=DOCKER_BFF_PLAYGROUND_TAG,
-            kubectl_path=kwargs['kubectl_path'],
-        )
     else:
         bff_playground_host = 'https://nowrun.jina.ai'
         bff_port = '80'
-        playground_port = '80'
+    playground_port = '80'
     # TODO: add separate BFF endpoints in print output
     bff_url = (
         bff_playground_host
         + ('' if str(bff_port) == '80' else f':{bff_port}')
         + f'/api/v1/search-app/docs'
     )
-    playground_url = (
-        bff_playground_host
-        + ('' if str(playground_port) == '80' else f':{playground_port}')
+    playground_url = bff_playground_host + (
+        f'/?host='
+        + gateway_host_internal
         + (
-            f'/?host='
-            + (gateway_host_internal if gateway_host != 'localhost' else 'gateway')
-            + (
-                f'&data={user_input.dataset_name if user_input.dataset_type == DatasetTypes.DEMO else "custom"}'
-            )
-            + (f'&secured={user_input.secured}' if user_input.secured else '')
+            f'&data={user_input.dataset_name if user_input.dataset_type == DatasetTypes.DEMO else "custom"}'
         )
-        + (f'&port={gateway_port_internal}' if gateway_port_internal else '')
+        + (f'&secured={user_input.secured}' if user_input.secured else '')
     )
     print()
     my_table = Table(
@@ -136,6 +113,5 @@ def start_now(**kwargs):
         'bff_port': bff_port,
         'playground_port': playground_port,
         'host': gateway_host_internal,
-        'port': gateway_port_internal,
         'secured': user_input.secured,
     }

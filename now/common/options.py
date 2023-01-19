@@ -272,33 +272,6 @@ ES_ADDITIONAL_ARGS = DialogOptions(
 )
 
 # --------------------------------------------- #
-
-DEPLOYMENT_TYPE = DialogOptions(
-    name='deployment_type',
-    prompt_message='Where do you want to deploy your search engine?',
-    prompt_type='list',
-    choices=[
-        {
-            'name': '⛅️ Jina Cloud',
-            'value': 'remote',
-        },
-        {
-            'name': '📍 Local',
-            'value': 'local',
-        },
-    ],
-    is_terminal_command=True,
-    description='Options are `local` or `remote`. Select `local` if you want your search engine '
-    'to be deployed on a local cluster. Select `remote` to deploy it on Jina Cloud',
-    post_func=lambda user_input, **kwargs: check_login_deployment(user_input),
-)
-
-
-def check_login_deployment(user_input: UserInput):
-    if user_input.deployment_type == 'remote' and user_input.jwt is None:
-        _jina_auth_login(user_input)
-
-
 SECURED = DialogOptions(
     name='secured',
     prompt_message='Do you want to secure the Flow?',
@@ -307,10 +280,15 @@ SECURED = DialogOptions(
         {'name': '⛔ no', 'value': False},
         {'name': '✅ yes', 'value': True},
     ],
-    depends_on=DEPLOYMENT_TYPE,
     is_terminal_command=True,
-    conditional_check=lambda user_inp: user_inp.deployment_type == 'remote',
+    post_func=lambda user_input, **kwargs: check_login_deployment(user_input),
 )
+
+
+def check_login_deployment(user_input: UserInput):
+    if user_input.jwt is None:
+        _jina_auth_login(user_input)
+
 
 API_KEY = DialogOptions(
     name='api_key',
