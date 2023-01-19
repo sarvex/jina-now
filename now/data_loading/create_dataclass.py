@@ -2,7 +2,7 @@ import typing
 from collections import defaultdict
 from typing import Dict, List
 
-from docarray import Document, dataclass, field
+from docarray import dataclass, field
 
 from now.constants import AVAILABLE_MODALITIES_FOR_SEARCH, DatasetTypes
 from now.now_dataclasses import UserInput
@@ -28,8 +28,9 @@ def create_dataclass(
     user_input: UserInput = None,
 ):
     """
-    Create a dataclass from the user input using the selected index and filter fields
-    and their corresponding modalities
+    Create a dataclass from the selected index and filter fields
+    and their corresponding modalities or directly from the user input which should
+    contain that information. If both are provided, the user input will be used.
 
     for example:
     the index fields modalities can be:
