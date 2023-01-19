@@ -163,9 +163,7 @@ def assert_deployment_queries(
 
     if kwargs.secured:
         # test add email
-        request_body = get_default_request_body(
-            secured=kwargs.secured, host=host
-        )
+        request_body = get_default_request_body(secured=kwargs.secured, host=host)
         request_body['user_emails'] = ['florian.hoenicke@jina.ai']
         response = requests.post(
             f'{url}/admin/updateUserEmails',
