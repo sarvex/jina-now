@@ -220,6 +220,7 @@ def create_docs_from_subdirectories(
         folder_files[path_to_last_folder].append(file)
     for folder, files in folder_files.items():
         kwargs = {}
+        dict_tags = {}
         for file in files:
             file, file_full_path = _extract_file_and_full_file_path(
                 file, path, is_s3_dataset
@@ -236,9 +237,10 @@ def create_docs_from_subdirectories(
                     with open(file_full_path) as f:
                         data = json.load(f)
                     for el, value in data.items():
-                        if el in field_names_to_dataclass_fields.keys():
-                            kwargs[field_names_to_dataclass_fields[el]] = value
-        docs.append(Document(data_class(**kwargs)))
+                        dict_tags[el] = value
+        doc = Document(data_class(**kwargs))
+        doc.tags.update(dict_tags)
+        docs.append(doc)
     return docs
 
 
