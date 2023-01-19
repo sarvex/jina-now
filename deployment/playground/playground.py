@@ -144,7 +144,6 @@ def deploy_streamlit():
             st.header('Image')
             render_mm_query(st.session_state['query'], 'image')
 
-        # TODO: Replace this with the multimodal_search in BFF
         if st.button('Search', key='mm_search', on_click=clear_match):
             st.session_state.matches = multimodal_search(
                 query_field_values_modalities=list(
