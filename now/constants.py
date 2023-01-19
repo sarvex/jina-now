@@ -5,7 +5,7 @@ from docarray.typing import Image, Text, Video
 from now.utils import BetterEnum
 
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.146-refactor-remove-webcam-2'
-NOW_PREPROCESSOR_VERSION = '0.0.120-demo-examples-1'
+NOW_PREPROCESSOR_VERSION = '0.0.120-demo-examples-2'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.142-fix-list-endpoint-4'
 NOW_AUTOCOMPLETE_VERSION = '0.0.8-refactor-bump-jina-version-to-latest-17'
 
@@ -42,7 +42,7 @@ BASE_STORAGE_URL = (
     'https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets'
 )
 
-EXTERNAL_CLIP_HOST = 'encoderclip-trusting-alien-c01fde9d31.wolf.jina.ai'  # new remote clip with jina 3.13.2
+EXTERNAL_CLIP_HOST = 'encoderclip-pretty-javelin-3aceb7f2cd.wolf.jina.ai'
 
 DEFAULT_FLOW_NAME = 'nowapi'
 PREFETCH_NR = 10
