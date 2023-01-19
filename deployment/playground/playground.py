@@ -15,7 +15,7 @@ from better_profanity import profanity
 from docarray import Document, DocumentArray
 from jina import Client
 from src.constants import BUTTONS, S3_DEMO_PATH, SSO_COOKIE, SURVEY_LINK, ds_set
-from src.search import get_query_params, multimodal_search, search_by_image
+from src.search import get_query_params, multimodal_search
 from streamlit.scriptrunner import add_script_run_ctx
 from streamlit.server.server import Server
 from tornado.httputil import parse_cookie
@@ -98,8 +98,6 @@ def deploy_streamlit():
     if redirect_to and st.session_state.login:
         nav_to(redirect_to)
     else:
-        da_img, da_txt = load_example_queries(params.data)
-
         setup_design()
 
         if params.host and st.session_state.filters == 'notags':
@@ -289,33 +287,6 @@ def setup_design():
         '<style>div.st-bf{flex-direction:column;} div.st-ag{font-weight:bold;padding-right:50px;}</style>',
         unsafe_allow_html=True,
     )
-
-
-def render_image(da_img, filter_selection):
-    upload_c, preview_c = st.columns([12, 1])
-    query = upload_c.file_uploader("", on_change=clear_match)
-    if query:
-        doc = convert_file_to_document(query)
-        st.image(doc.blob, width=160)
-        st.session_state.matches = search_by_image(
-            document=doc,
-            jwt=st.session_state.jwt_val,
-            filter_selection=filter_selection,
-        )
-    if da_img:
-        st.subheader('samples:')
-        img_cs = st.columns(5)
-        txt_cs = st.columns(5)
-        for doc, c, txt in zip(da_img, img_cs, txt_cs):
-            with c:
-                st.image(doc.blob if doc.blob else doc.tensor, width=100)
-            with txt:
-                if st.button('Search', key=doc.id, on_click=clear_match):
-                    st.session_state.matches = search_by_image(
-                        document=doc,
-                        jwt=st.session_state.jwt_val,
-                        filter_selection=filter_selection,
-                    )
 
 
 def render_mm_query(query, modality):
