@@ -4,10 +4,10 @@ from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.146-refactor-remove-webcam-2'
-NOW_PREPROCESSOR_VERSION = '0.0.120-refactor-bump-jina-version-to-latest-17'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.142-fix-list-endpoint-4'
-NOW_AUTOCOMPLETE_VERSION = '0.0.8-refactor-bump-jina-version-to-latest-17'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.147-fix-playground-import-2'
+NOW_PREPROCESSOR_VERSION = '0.0.121-refactor-remove-ocr-4'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.144-test-optimize-tests-4'
+NOW_AUTOCOMPLETE_VERSION = '0.0.8-refactor-remove-k8s-9'
 
 
 class Apps(BetterEnum):
@@ -48,7 +48,7 @@ PREFETCH_NR = 10
 
 SURVEY_LINK = 'https://10sw1tcpld4.typeform.com/to/VTAyYRpR?utm_source=cli'
 
-TAG_OCR_DETECTOR_TEXT_IN_DOC = '_ocr_detector_text_in_doc'
 TAG_INDEXER_DOC_HAS_TEXT = '_indexer_doc_has_text'
 EXECUTOR_PREFIX = 'jinahub+docker://'
 ACCESS_PATHS = '@cc'
+FLOW_STATUS = 'Serving'
