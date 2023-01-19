@@ -14,14 +14,18 @@ import streamlit.components.v1 as components
 from better_profanity import profanity
 from docarray import Document, DocumentArray
 from jina import Client
-from src.constants import (
+from deployment.playground.src.constants import (
     BUTTONS,
     S3_DEMO_PATH,
     SSO_COOKIE,
     SURVEY_LINK,
     ds_set,
 )
-from src.search import get_query_params, search_by_image, search_by_text
+from deployment.playground.src.search import (
+    get_query_params,
+    search_by_image,
+    search_by_text,
+)
 from streamlit.scriptrunner import add_script_run_ctx
 from streamlit.server.server import Server
 from tornado.httputil import parse_cookie
@@ -298,7 +302,7 @@ def render_image(da_img, filter_selection):
             jwt=st.session_state.jwt_val,
             filter_selection=filter_selection,
         )
-    if da_img is not None:
+    if da_img:
         st.subheader('samples:')
         img_cs = st.columns(5)
         txt_cs = st.columns(5)
@@ -329,7 +333,7 @@ def render_text(da_txt, filter_selection):
             filter_selection=filter_selection,
         )
 
-    if da_txt is not None:
+    if da_txt:
         st.subheader('samples:')
         c1, c2, c3 = st.columns(3)
         c4, c5, c6 = st.columns(3)
