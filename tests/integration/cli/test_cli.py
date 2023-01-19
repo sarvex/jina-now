@@ -15,8 +15,7 @@ def test_start_with_parameters(cleanup, dataset):
     python_file = os.path.join(os.path.dirname(__file__), '..', '..', '..', 'main.py')
     bash_command = (
         f"python {python_file} start --index_fields .jpg --dataset_path "
-        f"{dataset_path} --dataset_type path "
-        f"--flow_name test --secured false --cluster new"
+        f"{dataset_path} --dataset_type path --flow_name test --secured false"
     )
     with pytest.raises(subprocess.TimeoutExpired):
         # timeout means that the parsing was successful and the process is running
