@@ -143,5 +143,4 @@ def multimodal_search(
         data['jwt'] = jwt
     if params.port:
         data['port'] = params.port
-    print(data)
     return call_flow(URL_HOST, data, domain, endpoint)
