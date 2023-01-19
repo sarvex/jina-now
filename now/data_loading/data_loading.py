@@ -90,7 +90,7 @@ def _add_tags_to_da(da: DocumentArray, user_input: UserInput):
             d.tags.update(
                 {
                     field: non_index_field_doc.content
-                    if non_index_field_doc.content is not None
+                    if isinstance(non_index_field_doc.content, str)
                     else non_index_field_doc.uri
                 }
             )
