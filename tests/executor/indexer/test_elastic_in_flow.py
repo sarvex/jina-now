@@ -6,7 +6,6 @@ from docarray import dataclass
 from docarray.typing import Text
 from jina import Document, DocumentArray, Executor, Flow, requests
 
-from now.constants import TAG_OCR_DETECTOR_TEXT_IN_DOC
 from now.executor.indexer.elastic import NOWElasticIndexer
 from now.executor.preprocessor import NOWPreprocessor
 
@@ -239,7 +238,6 @@ class TestElasticIndexer:
                             embedding=np.array([0.1, 0.1]),
                             tags={
                                 'title': 'that is rEd for sure',
-                                TAG_OCR_DETECTOR_TEXT_IN_DOC: "r t",
                             },
                             uri=uri,
                         ),
@@ -249,7 +247,6 @@ class TestElasticIndexer:
                             embedding=np.array([0.2, 0.1]),
                             tags={
                                 'title': 'really bluE',
-                                TAG_OCR_DETECTOR_TEXT_IN_DOC: "r t",
                             },
                             uri=uri,
                         ),
@@ -268,7 +265,6 @@ class TestElasticIndexer:
                             embedding=np.array([0.3, 0.1]),
                             tags={
                                 'title': 'my red shirt',
-                                TAG_OCR_DETECTOR_TEXT_IN_DOC: "red shirt",
                             },
                             uri=uri,
                         ),
@@ -278,7 +274,6 @@ class TestElasticIndexer:
                             embedding=np.array([0.4, 0.1]),
                             tags={
                                 'title': 'red is nice',
-                                TAG_OCR_DETECTOR_TEXT_IN_DOC: "red shirt",
                             },
                             uri=uri,
                         ),
@@ -297,7 +292,6 @@ class TestElasticIndexer:
                             embedding=np.array([0.5, 0.1]),
                             tags={
                                 'title': 'blue red',
-                                TAG_OCR_DETECTOR_TEXT_IN_DOC: "i iz ret",
                             },
                             uri=uri,
                         ),
