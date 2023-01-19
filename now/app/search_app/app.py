@@ -54,7 +54,6 @@ class SearchApp(JinaNOWApp):
     def is_demo_available(self, user_input) -> bool:
         if (
             user_input.dataset_type == DatasetTypes.DEMO
-            and user_input.deployment_type == 'remote'
             and 'NOW_EXAMPLES' not in os.environ
             and 'NOW_CI_RUN' not in os.environ
         ):

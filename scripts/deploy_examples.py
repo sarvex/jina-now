@@ -46,7 +46,6 @@ def deploy(demo_ds):
         'now': 'start',
         'dataset_type': DatasetTypes.DEMO,
         'dataset_name': demo_ds.name,
-        'deployment_type': 'remote',
         'proceed': True,
         'secured': False,
         'ns': NAMESPACE,
