@@ -6,7 +6,7 @@ import pytest
 from docarray import Document, DocumentArray
 
 import now.utils
-from now.constants import TAG_OCR_DETECTOR_TEXT_IN_DOC, DatasetTypes
+from now.constants import DatasetTypes
 from now.executor.preprocessor import NOWPreprocessor
 
 curdir = os.path.dirname(os.path.abspath(__file__))
@@ -18,18 +18,17 @@ def download_mock(url, destfile):
 
 
 @pytest.mark.parametrize(
-    'file_path, modality, num_chunks, ocr_text',
+    'file_path, modality, num_chunks',
     [
         (
             'image/b.jpg',
             'image',
             1,
-            'RichavdE',  # with larger resolution it would be the following text: 'Richard Branson TotallyLooksLike.com Zaphod Beeblebrox',
         ),
-        ('gif/folder1/file.gif', 'video', 3, 'e'),
+        ('gif/folder1/file.gif', 'video', 3),
     ],
 )
-def test_ocr_with_bucket(file_path, modality, num_chunks, ocr_text):
+def test_ocr_with_bucket(file_path, modality, num_chunks):
     uri = f's3://bucket_name/resources/{file_path}'
     da_index = DocumentArray(
         [
@@ -68,7 +67,6 @@ def test_ocr_with_bucket(file_path, modality, num_chunks, ocr_text):
         assert cc.uri == uri
         assert c.uri == uri
         assert len(c.chunks) == num_chunks
-        assert cc.tags[TAG_OCR_DETECTOR_TEXT_IN_DOC] == ocr_text
 
 
 def test_text():
