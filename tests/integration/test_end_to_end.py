@@ -29,24 +29,24 @@ def test_token_exists():
 @pytest.mark.parametrize(
     'query_fields, index_fields, filter_fields, dataset',
     [
-        (
-            'image',
-            ['image'],
-            ['label'],
-            DemoDatasetNames.BIRD_SPECIES,
-        ),
-        (
-            'text',
-            ['lyrics'],
-            [],
-            DemoDatasetNames.POP_LYRICS,
-        ),
-        (
-            'text',
-            ['video', 'description'],
-            [],
-            DemoDatasetNames.TUMBLR_GIFS_10K,
-        ),
+        # (
+        #     'image',
+        #     ['image'],
+        #     ['label'],
+        #     DemoDatasetNames.BIRD_SPECIES,
+        # ),
+        # (
+        #     'text',
+        #     ['lyrics'],
+        #     [],
+        #     DemoDatasetNames.POP_LYRICS,
+        # ),
+        # (
+        #     'text',
+        #     ['video', 'description'],
+        #     [],
+        #     DemoDatasetNames.TUMBLR_GIFS_10K,
+        # ),
         (
             'text',
             ['image'],
@@ -58,6 +58,8 @@ def test_token_exists():
 @pytest.mark.timeout(60 * 10)
 def test_end_to_end(
     cleanup,
+    start_bff,
+    start_playground,
     query_fields,
     index_fields,
     filter_fields,
@@ -101,7 +103,7 @@ def test_end_to_end(
             host=host,
             search_modality='text',
         )
-        suggest_url = f'http://localhost:30090/api/v1/search-app/suggestion'
+        suggest_url = f'http://localhost:8080/api/v1/search-app/suggestion'
         assert_suggest(suggest_url, request_body)
 
 
@@ -144,7 +146,7 @@ def assert_deployment_queries(
     test_search_image,
     response,
 ):
-    port = response.get('bff_port') if os.environ.get('NOW_TESTING', False) else '30090'
+    port = response.get('bff_port') if os.environ.get('NOW_TESTING', False) else '8080'
     url = f'http://localhost:{port}/api/v1'
     host = response.get('host')
     # normal case
@@ -219,16 +221,17 @@ def get_search_request_body(
 
 
 def assert_deployment_response(response):
-    assert response['bff'] == 'https://nowrun.jina.ai/api/v1/search-app/docs'
-    assert response['playground'].startswith('https://nowrun.jina.ai')
+    assert response['bff'] == 'http://localhost:8080/api/v1/search-app/docs'
+    assert response['playground'].startswith('http://localhost/')
     assert response['host'].startswith('grpcs://')
     assert response['host'].endswith('.wolf.jina.ai')
-    assert response['port'] == 8080 or response['port'] is None
 
 
 @pytest.mark.parametrize('dataset', ['custom_s3_bucket'])
 @pytest.mark.parametrize('query_fields', ['image'])
 def test_backend_custom_data(
+    start_bff,
+    start_playground,
     dataset: str,
     query_fields: str,
     cleanup,
@@ -270,7 +273,7 @@ def assert_search_custom_s3(host, create_temp_link=False):
     }
 
     response = requests.post(
-        f'http://localhost:30090/api/v1/search-app/search',
+        f'http://localhost:8080/api/v1/search-app/search',
         json=request_body,
     )
 

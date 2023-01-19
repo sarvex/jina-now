@@ -68,10 +68,15 @@ def start_now(**kwargs):
     if os.environ.get('NOW_TESTING', False):
         bff_playground_host = 'http://localhost'
         bff_port = '9090'
+        playground_port = '80'
+    elif 'NOW_CI_RUN' in os.environ:
+        bff_playground_host = 'http://localhost'
+        bff_port = '8080'
+        playground_port = '30080'
     else:
         bff_playground_host = 'https://nowrun.jina.ai'
         bff_port = '80'
-    playground_port = '80'
+        playground_port = '80'
     # TODO: add separate BFF endpoints in print output
     bff_url = (
         bff_playground_host
