@@ -15,7 +15,7 @@ from better_profanity import profanity
 from docarray import Document, DocumentArray
 from jina import Client
 from src.constants import BUTTONS, S3_DEMO_PATH, SSO_COOKIE, SURVEY_LINK, ds_set
-from src.search import get_query_params, search_by_image, search_by_text
+from src.search import get_query_params, multimodal_search, search_by_image
 from streamlit.scriptrunner import add_script_run_ctx
 from streamlit.server.server import Server
 from tornado.httputil import parse_cookie
@@ -146,10 +146,14 @@ def deploy_streamlit():
 
         # TODO: Replace this with the multimodal_search in BFF
         if st.button('Search', key='mm_search', on_click=clear_match):
-            st.session_state.matches = search_by_text(
-                search_text=st.session_state['query'][0],
+            st.session_state.matches = multimodal_search(
+                query_field_values_modalities=list(
+                    filter(
+                        lambda x: x['value'], list(st.session_state['query'].values())
+                    )
+                ),
                 jwt=st.session_state.jwt_val,
-                filter_selection=filter_selection,
+                filter_dict=filter_selection,
             )
         render_matches()
 
@@ -219,7 +223,6 @@ def _do_login(params):
 
 
 def _do_logout():
-
     headers = {
         'Content-Type': 'application/json; charset=utf-8',
         'Authorization': 'Token ' + st.session_state.token_val,
@@ -322,12 +325,16 @@ def render_mm_query(query, modality):
     if modality == 'text':
         for x in range(st.session_state[f"len_{modality}_choices"]):
             key = f'{modality}_{x}'
-            query[key] = st.text_input(
-                '',
-                key=key,
-                on_change=clear_match,
-                placeholder=f'Write your text query #{x + 1}',
-            )
+            query[key] = {
+                'name': 'text',
+                'value': st.text_input(
+                    '',
+                    key=key,
+                    on_change=clear_match,
+                    placeholder=f'Write your text query #{x + 1}',
+                ),
+                'modality': 'text',
+            }
 
     else:
         for x in range(st.session_state[f"len_{modality}_choices"]):
@@ -335,7 +342,17 @@ def render_mm_query(query, modality):
             q = st.file_uploader("", key=key, on_change=clear_match)
             if q:
                 doc = convert_file_to_document(q)
-                query[key] = doc
+                query_doc = doc
+                if query_doc.blob == b'':
+                    if query_doc.tensor is not None:
+                        query_doc.convert_image_tensor_to_blob()
+                    elif (query_doc.uri is not None) and query_doc.uri != '':
+                        query_doc.load_uri_to_blob(timeout=10)
+                query[key] = {
+                    'name': 'blob',
+                    'value': base64.b64encode(query_doc.blob).decode('utf-8'),
+                    'modality': 'image',
+                }
 
 
 def render_matches():
