@@ -362,7 +362,7 @@ class NOWElasticIndexer(Executor):
         return DocumentArray()
 
     @secure_request(on='/tags', level=SecurityLevel.USER)
-    def get_tags_and_values(self, **kwargs):
+    def tags(self, **kwargs):
         """
         Endpoint to get all tags and their possible values in the index.
         """

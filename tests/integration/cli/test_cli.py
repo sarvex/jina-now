@@ -1,5 +1,3 @@
-from now.constants import Apps
-
 import os
 import subprocess
 

@@ -20,6 +20,14 @@ from streamlit.scriptrunner import add_script_run_ctx
 from streamlit.server.server import Server
 from tornado.httputil import parse_cookie
 
+# TODO remove this in the custom gateway
+if __name__ == '__main__':
+    from src.constants import BUTTONS, S3_DEMO_PATH, SSO_COOKIE, SURVEY_LINK, ds_set
+    from src.search import get_query_params, multimodal_search
+else:
+    from .src.constants import BUTTONS, S3_DEMO_PATH, SSO_COOKIE, SURVEY_LINK, ds_set
+    from .src.search import get_query_params, multimodal_search
+
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
 # HEADER
@@ -98,8 +106,6 @@ def deploy_streamlit():
     if redirect_to and st.session_state.login:
         nav_to(redirect_to)
     else:
-        da_img, da_txt = load_example_queries(params.data)
-
         setup_design()
 
         if params.host and st.session_state.filters == 'notags':
