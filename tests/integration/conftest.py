@@ -1,9 +1,18 @@
 import logging
 import os
+import tempfile
+import time
+from multiprocessing import Process
 
 import hubble
+import json
 import pytest
 from pytest_mock import MockerFixture
+
+from deployment.bff.app.app import run_server
+from deployment.playground.playground import deploy_streamlit
+from now.utils import get_flow_id
+from now.deployment.deployment import terminate_wolf
 
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__name__)
@@ -34,3 +43,51 @@ def with_hubble_login_patch(mocker: MockerFixture) -> None:
     if 'WOLF_TOKEN' not in os.environ:
         hubble.login()
         os.environ['WOLF_TOKEN'] = hubble.Auth.get_auth_token()
+
+
+@pytest.fixture()
+def cleanup(dataset):
+    with tempfile.TemporaryDirectory() as tmpdir:
+        start = time.time()
+        yield tmpdir
+        print('start cleanup')
+        try:
+            with open(f'{tmpdir}/flow_details.json', 'r') as f:
+                flow_details = json.load(f)
+            if 'host' not in flow_details:
+                print('nothing to clean up')
+                return
+            host = flow_details['host']
+            flow_id = get_flow_id(host)
+            terminate_wolf(flow_id)
+        except Exception as e:
+            print('no clean up')
+            print(e)
+            return
+        print('cleaned up')
+        now = time.time() - start
+        mins = int(now / 60)
+        secs = int(now % 60)
+        print(50 * '#')
+        print(
+            f'Time taken to execute deployment with dataset `{dataset}`: {mins}m {secs}s'
+        )
+        print(50 * '#')
+
+
+@pytest.fixture()
+def start_bff():
+    p1 = Process(target=run_server, args=(8080,))
+    p1.daemon = True
+    p1.start()
+    yield
+    p1.terminate()
+
+
+@pytest.fixture()
+def start_playground():
+    p1 = Process(target=deploy_streamlit)
+    p1.daemon = True
+    p1.start()
+    yield
+    p1.terminate()

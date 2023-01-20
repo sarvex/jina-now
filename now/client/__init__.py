@@ -1,17 +1,9 @@
-import json
-import re
-
 import requests
-from jina.serve.runtimes.gateway.http.models import JinaResponseModel
-from pydantic import BaseModel, parse_obj_as
+from docarray import dataclass
+from docarray.typing import Text
 
-from deployment.bff.app.v1.models.search import (
-    IndexRequestModel,
-    SearchRequestModel,
-    SearchResponseModel,
-)
+from deployment.bff.app.v1.models.search import SearchRequestModel
 from deployment.bff.app.v1.routers.helper import field_dict_to_mm_doc, jina_client_post
-from now.common.options import construct_app
 
 
 class Client:
@@ -43,9 +35,16 @@ class Client:
         if endpoint != 'search':
             raise NotImplementedError('Only search endpoint is supported for now')
 
+        @dataclass
+        class DataClass:
+            text_0: Text
+
         if 'text' in kwargs:
             query_doc = field_dict_to_mm_doc(
-                {'query_text': {'text': kwargs.pop('text')}}
+                {'text': kwargs.pop('text')},
+                data_class=DataClass,
+                modalities_dict={'text': Text},
+                field_names_to_dataclass_fields={'text': 'text_0'},
             )
 
         app_request = SearchRequestModel(

@@ -29,13 +29,15 @@ def get_or_create_eventloop():
 
 
 def list_all_wolf(status='Serving', namespace='nowapi'):
+    flows = []
     loop = get_or_create_eventloop()
-    flows = loop.run_until_complete(CloudFlow().list_all(phase=status))
-    if flows is None:
-        return []
+    jflows = loop.run_until_complete(CloudFlow().list_all(phase=status))['flows']
+    # Transform the JCloud flow response to a much simpler list of dicts
+    for flow in jflows:
+        flows.append({'id': flow['id'], 'name': flow['status']['endpoints']['gateway']})
     # filter by namespace - if the namespace is contained in the flow name
     if namespace:
-        return [f for f in flows if namespace in f]
+        return [f for f in flows if namespace in f['id']]
     return flows
 
 
@@ -55,14 +57,3 @@ def cmd(command, std_output=False, wait=True):
 
 def which(executable: str) -> bool:
     return bool(cmd('which ' + executable)[0])
-
-
-def apply_replace(f_in, replace_dict, kubectl_path):
-    with open(f_in, "r") as fin:
-        with tempfile.NamedTemporaryFile(mode='w') as fout:
-            for line in fin.readlines():
-                for key, val in replace_dict.items():
-                    line = line.replace('{' + key + '}', str(val))
-                fout.write(line)
-            fout.flush()
-            cmd(f'{kubectl_path} apply -f {fout.name}')

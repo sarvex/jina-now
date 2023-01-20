@@ -7,7 +7,6 @@ from urllib.error import HTTPError
 from urllib.parse import quote, unquote
 from urllib.request import urlopen
 
-import av
 import extra_streamlit_components as stx
 import requests
 import streamlit as st
@@ -15,19 +14,17 @@ import streamlit.components.v1 as components
 from better_profanity import profanity
 from docarray import Document, DocumentArray
 from jina import Client
-from src.constants import (
-    BUTTONS,
-    RTC_CONFIGURATION,
-    S3_DEMO_PATH,
-    SSO_COOKIE,
-    SURVEY_LINK,
-    ds_set,
-)
-from src.search import get_query_params, search_by_image, search_by_text
 from streamlit.scriptrunner import add_script_run_ctx
 from streamlit.server.server import Server
-from streamlit_webrtc import WebRtcMode, webrtc_streamer
 from tornado.httputil import parse_cookie
+
+# TODO remove this in the custom gateway
+if __name__ == '__main__':
+    from src.constants import BUTTONS, S3_DEMO_PATH, SSO_COOKIE, SURVEY_LINK, ds_set
+    from src.search import get_query_params, search_by_image, search_by_text
+else:
+    from .src.constants import BUTTONS, S3_DEMO_PATH, SSO_COOKIE, SURVEY_LINK, ds_set
+    from .src.search import get_query_params, search_by_image, search_by_text
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -140,11 +137,9 @@ def deploy_streamlit():
                 values.insert(0, 'All')
                 filter_selection[tag] = st.sidebar.selectbox(tag, values)
 
-        st_ratio_options = ['Text', 'Image', 'Webcam']
-
         media_type = st.radio(
             '',
-            st_ratio_options,
+            ['Text', 'Image'],
             on_change=clear_match,
         )
 
@@ -153,9 +148,6 @@ def deploy_streamlit():
 
         elif media_type == 'Text':
             render_text(da_txt, deepcopy(filter_selection))
-
-        elif media_type == 'Webcam':
-            render_webcam(deepcopy(filter_selection))
 
         render_matches()
 
@@ -306,7 +298,7 @@ def render_image(da_img, filter_selection):
             jwt=st.session_state.jwt_val,
             filter_selection=filter_selection,
         )
-    if da_img is not None:
+    if da_img:
         st.subheader('samples:')
         img_cs = st.columns(5)
         txt_cs = st.columns(5)
@@ -337,7 +329,7 @@ def render_text(da_txt, filter_selection):
             filter_selection=filter_selection,
         )
 
-    if da_txt is not None:
+    if da_txt:
         st.subheader('samples:')
         c1, c2, c3 = st.columns(3)
         c4, c5, c6 = st.columns(3)
@@ -441,43 +433,6 @@ def render_text_result(match, c):
         )
     except:
         pass
-
-
-def render_webcam(filter_selection):
-    snapshot = st.button('Snapshot', on_click=clear_match)
-
-    class VideoProcessor:
-        def __init__(self) -> None:
-            self.img = None
-
-        def recv(self, frame):
-            self.img = frame.to_ndarray(format='rgb24')
-
-            return av.VideoFrame.from_ndarray(self.img, format='rgb24')
-
-    ctx = webrtc_streamer(
-        key='jina-now',
-        mode=WebRtcMode.SENDRECV,
-        rtc_configuration=RTC_CONFIGURATION,
-        media_stream_constraints={'video': True, 'audio': False},
-        video_processor_factory=VideoProcessor,
-    )
-    if ctx.state.playing:
-        if snapshot:
-            query = ctx.video_processor.img
-            st.image(query, width=160)
-            st.session_state.snap = query
-            doc = Document(tensor=query)
-            doc.convert_image_tensor_to_blob()
-            st.session_state.matches = search_by_image(
-                document=doc,
-                jwt=st.session_state.jwt_val,
-                filter_selection=filter_selection,
-            )
-        elif st.session_state.snap is not None:
-            st.image(st.session_state.snap, width=160)
-    else:
-        clear_match()
 
 
 def add_social_share_buttons():
