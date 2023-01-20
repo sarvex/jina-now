@@ -331,6 +331,13 @@ def render_mm_query(query, modality):
                     'value': base64.b64encode(query_doc.blob).decode('utf-8'),
                     'modality': 'image',
                 }
+    if st.session_state[f"len_{modality}_choices"] >= 1:
+        st.button(
+            "-",
+            key=f'{modality}',
+            on_click=decrement_inputs,
+            kwargs=dict(modality=modality),
+        )
 
 
 def render_matches():
@@ -467,6 +474,10 @@ def increment_page():
 
 def decrement_page():
     st.session_state.page_number -= 1
+
+
+def decrement_inputs(modality):
+    st.session_state[f"len_{modality}_choices"] -= 1
 
 
 def clear_match():
