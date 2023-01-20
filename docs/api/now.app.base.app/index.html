@@ -6,7 +6,7 @@
 <meta property="og:title" content="now.app.base.app module" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://now.jina.ai/api/now.app.base.app/" />
-<meta property="og:site_name" content="NOW 0.0.49 Documentation" />
+<meta property="og:site_name" content="NOW 0.0.50 Documentation" />
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@JinaAI_">
 <meta name="twitter:creator" content="@JinaAI_">
@@ -29,7 +29,7 @@
         <link rel="canonical" href="https://now.jina.ai/api/now.app.base.app.html" />
 
     <link rel="shortcut icon" href="../../_static/favicon.png"/><!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
-        <title>now.app.base.app module - NOW 0.0.49 documentation</title>
+        <title>now.app.base.app module - NOW 0.0.50 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
@@ -162,7 +162,7 @@
         </div>
         <div class="header-center">
             <a href="../../">
-                <div class="brand">NOW 0.0.49 documentation</div>
+                <div class="brand">NOW 0.0.50 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -385,17 +385,6 @@ Example:
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="now.app.base.app.JinaNOWApp.required_docker_memory_in_gb">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">required_docker_memory_in_gb</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#now.app.base.app.JinaNOWApp.required_docker_memory_in_gb" title="Permalink to this definition">#</a></dt>
-<dd><p>Recommended memory limit for the docker client to run this app.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
 <dt class="sig sig-object py" id="now.app.base.app.JinaNOWApp.finetune_datasets">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">finetune_datasets</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#now.app.base.app.JinaNOWApp.finetune_datasets" title="Permalink to this definition">#</a></dt>
 <dd><p>Defines the list of demo datasets which are fine-tunable.</p>
@@ -414,16 +403,6 @@ to form the command line arguments for app</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="now.app.base.app.JinaNOWApp.run_checks">
-<span class="sig-name descname"><span class="pre">run_checks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">user_input</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/now/app/base/app/#JinaNOWApp.run_checks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#now.app.base.app.JinaNOWApp.run_checks" title="Permalink to this definition">#</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -525,7 +504,7 @@ Common use cases:</p>
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Jan 17, 2023.
+                            Last updated on Jan 20, 2023.
                         </div>
                     </div>
                     <div class="right-details">
@@ -567,10 +546,8 @@ Common use cases:</p>
 <li><a class="reference internal" href="#now.app.base.app.JinaNOWApp.playground"><code class="docutils literal notranslate"><span class="pre">JinaNOWApp.playground</span></code></a></li>
 <li><a class="reference internal" href="#now.app.base.app.JinaNOWApp.options"><code class="docutils literal notranslate"><span class="pre">JinaNOWApp.options</span></code></a></li>
 <li><a class="reference internal" href="#now.app.base.app.JinaNOWApp.demo_datasets"><code class="docutils literal notranslate"><span class="pre">JinaNOWApp.demo_datasets</span></code></a></li>
-<li><a class="reference internal" href="#now.app.base.app.JinaNOWApp.required_docker_memory_in_gb"><code class="docutils literal notranslate"><span class="pre">JinaNOWApp.required_docker_memory_in_gb</span></code></a></li>
 <li><a class="reference internal" href="#now.app.base.app.JinaNOWApp.finetune_datasets"><code class="docutils literal notranslate"><span class="pre">JinaNOWApp.finetune_datasets</span></code></a></li>
 <li><a class="reference internal" href="#now.app.base.app.JinaNOWApp.set_app_parser"><code class="docutils literal notranslate"><span class="pre">JinaNOWApp.set_app_parser()</span></code></a></li>
-<li><a class="reference internal" href="#now.app.base.app.JinaNOWApp.run_checks"><code class="docutils literal notranslate"><span class="pre">JinaNOWApp.run_checks()</span></code></a></li>
 <li><a class="reference internal" href="#now.app.base.app.JinaNOWApp.get_executor_stubs"><code class="docutils literal notranslate"><span class="pre">JinaNOWApp.get_executor_stubs()</span></code></a></li>
 <li><a class="reference internal" href="#now.app.base.app.JinaNOWApp.setup"><code class="docutils literal notranslate"><span class="pre">JinaNOWApp.setup()</span></code></a></li>
 <li><a class="reference internal" href="#now.app.base.app.JinaNOWApp.preprocess"><code class="docutils literal notranslate"><span class="pre">JinaNOWApp.preprocess()</span></code></a></li>

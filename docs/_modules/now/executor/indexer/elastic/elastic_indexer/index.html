@@ -6,7 +6,7 @@
         <link rel="canonical" href="https://now.jina.ai/_modules/now/executor/indexer/elastic/elastic_indexer.html" />
 
     <link rel="shortcut icon" href="../../../../../../_static/favicon.png"/><!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
-        <title>now.executor.indexer.elastic.elastic_indexer - NOW 0.0.49 documentation</title>
+        <title>now.executor.indexer.elastic.elastic_indexer - NOW 0.0.50 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
     <link rel="stylesheet" type="text/css" href="../../../../../../_static/copybutton.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../../../../">
-                <div class="brand">NOW 0.0.49 documentation</div>
+                <div class="brand">NOW 0.0.50 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -321,7 +321,6 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">document_mappings</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]],</span>
         <span class="n">dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">ocr_is_needed</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">metric</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;cosine&#39;</span><span class="p">,</span>
         <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
         <span class="n">max_values_per_tag</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
@@ -338,8 +337,6 @@
 <span class="sd">        :param document_mappings: list of FieldEmbedding tuples that define which encoder</span>
 <span class="sd">            encodes which fields, and the embedding size of the encoder.</span>
 <span class="sd">        :param dim: Dimensionality of vectors to index.</span>
-<span class="sd">        :param ocr_is_needed: Boolean variable indicating whether we need to use OCR or no</span>
-<span class="sd">            based on the modality</span>
 <span class="sd">        :param metric: Distance metric type. Can be &#39;euclidean&#39;, &#39;inner_product&#39;, or &#39;cosine&#39;</span>
 <span class="sd">        :param limit: Number of results to get for each query document in search</span>
 <span class="sd">        :param max_values_per_tag: Maximum number of values per tag</span>
@@ -359,7 +356,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">index_name</span> <span class="o">=</span> <span class="n">index_name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">query_to_curated_ids</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">doc_id_tags</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ocr_is_needed</span> <span class="o">=</span> <span class="n">ocr_is_needed</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">document_mappings</span> <span class="o">=</span> <span class="p">[</span><span class="n">FieldEmbedding</span><span class="p">(</span><span class="o">*</span><span class="n">dm</span><span class="p">)</span> <span class="k">for</span> <span class="n">dm</span> <span class="ow">in</span> <span class="n">document_mappings</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">encoder_to_fields</span> <span class="o">=</span> <span class="p">{</span>
             <span class="n">document_mapping</span><span class="o">.</span><span class="n">encoder</span><span class="p">:</span> <span class="n">document_mapping</span><span class="o">.</span><span class="n">fields</span>
@@ -375,7 +371,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">es</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">index_name</span><span class="p">,</span> <span class="n">mappings</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">es_mapping</span><span class="p">)</span>
 
 <div class="viewcode-block" id="NOWElasticIndexer.setup_elastic_server"><a class="viewcode-back" href="../../../../../../api/now.executor.indexer.elastic.elastic_indexer/#now.executor.indexer.elastic.elastic_indexer.NOWElasticIndexer.setup_elastic_server">[docs]</a>    <span class="k">def</span> <span class="nf">setup_elastic_server</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c1"># volume is not persisted at the moment</span>
+        <span class="c1"># volume is not persisted at the moment.</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">([</span><span class="s1">&#39;./start-elastic-search-cluster.sh&#39;</span><span class="p">])</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;elastic server started&#39;</span><span class="p">)</span>
@@ -433,6 +429,7 @@
 
 <span class="sd">        :param docs_map: map of encoder to DocumentArray</span>
 <span class="sd">        :param parameters: dictionary with options for indexing.</span>
+<span class="sd">        :param docs: DocumentArray to index</span>
 <span class="sd">        :return: empty `DocumentArray`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">docs_map</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -482,6 +479,7 @@
 <span class="sd">                    be ignored if &#39;custom_bm25_query&#39; is specified.</span>
 <span class="sd">                - &#39;custom_bm25_query&#39; (dict): Custom query to use for BM25. Note: this query can only be</span>
 <span class="sd">                    passed if also passing `es_mapping`. Otherwise, only default bm25 scoring is enabled.</span>
+<span class="sd">        :param docs: DocumentArray to search</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">docs_map</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">docs_map</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_no_docs_map</span><span class="p">(</span><span class="n">docs</span><span class="p">)</span>
@@ -639,7 +637,7 @@
         <span class="k">return</span> <span class="n">DocumentArray</span><span class="p">()</span>
 
     <span class="nd">@secure_request</span><span class="p">(</span><span class="n">on</span><span class="o">=</span><span class="s1">&#39;/tags&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">SecurityLevel</span><span class="o">.</span><span class="n">USER</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">get_tags_and_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">tags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Endpoint to get all tags and their possible values in the index.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -783,7 +781,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Jan 17, 2023.
+                            Last updated on Jan 20, 2023.
                         </div>
                     </div>
                     <div class="right-details">
