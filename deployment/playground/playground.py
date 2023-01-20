@@ -299,27 +299,27 @@ def render_mm_query(query, modality):
     if st.button("+", key=f'{modality}'):
         st.session_state[f"len_{modality}_choices"] += 1
     if modality == 'text':
-        for x in range(st.session_state[f"len_{modality}_choices"]):
-            key = f'{modality}_{x}'
+        for field_number in range(st.session_state[f"len_{modality}_choices"]):
+            key = f'{modality}_{field_number}'
             query[key] = {
                 'name': 'text',
                 'value': st.text_input(
-                    label=f'text #{x + 1}',
+                    label=f'text #{field_number + 1}',
                     key=key,
                     on_change=clear_match,
-                    placeholder=f'Write your text query #{x + 1}',
+                    placeholder=f'Write your text query #{field_number + 1}',
                 ),
                 'modality': 'text',
             }
 
     else:
-        for x in range(st.session_state[f"len_{modality}_choices"]):
-            key = f'{modality}_{x}'
-            q = st.file_uploader(
-                label=f'image #{x + 1}', key=key, on_change=clear_match
+        for field_number in range(st.session_state[f"len_{modality}_choices"]):
+            key = f'{modality}_{field_number}'
+            uploaded_image = st.file_uploader(
+                label=f'image #{field_number + 1}', key=key, on_change=clear_match
             )
-            if q:
-                doc = convert_file_to_document(q)
+            if uploaded_image:
+                doc = convert_file_to_document(uploaded_image)
                 query_doc = doc
                 if query_doc.blob == b'':
                     if query_doc.tensor is not None:
