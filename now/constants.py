@@ -52,3 +52,9 @@ TAG_INDEXER_DOC_HAS_TEXT = '_indexer_doc_has_text'
 EXECUTOR_PREFIX = 'jinahub+docker://'
 ACCESS_PATHS = '@cc'
 FLOW_STATUS = 'Serving'
+
+MODALITY_TO_MODELS = {
+    Text: ['clip', 'sbert'],
+    Image: ['clip'],
+    Video: ['clip'],
+}

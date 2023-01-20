@@ -34,6 +34,7 @@ class UserInput(BaseModel):
     filter_fields: Optional[List] = []
     filter_field_candidates_to_modalities: Optional[Dict[str, str]] = {}
     field_names_to_dataclass_fields: Optional[Dict] = {}
+    model_choices: Optional[Dict] = {}
 
     # ES related
     es_index_name: Optional[str] = None
