@@ -107,6 +107,6 @@ if __name__ == '__main__':
     flow = list_all_wolf(namespace=to_deploy.name.split("/")[-1])
     if flow:
         terminate_wolf(flow[0]['id'])
-    print(f'{flow["id"]} successfully deleted!!')
+        print(f'{flow[0]["id"]} successfully deleted!!')
     print('Deploying -> ', to_deploy)
     deploy(to_deploy)
