@@ -73,7 +73,7 @@ def run(
     #     trigger_scheduler(user_input, gateway_host_internal)
     # else:
     # index the data right away
-    index_docs(user_input, dataset, client)
+    index_docs(user_input, dataset, client, **kwargs)
 
     return (
         gateway_port,
@@ -115,7 +115,7 @@ def trigger_scheduler(user_input, host):
         print(f'Indexing will not be scheduled. Please contact Jina AI support.')
 
 
-def index_docs(user_input, dataset, client):
+def index_docs(user_input, dataset, client, **kwargs):
     """
     Index the data right away
     """
@@ -129,6 +129,7 @@ def index_docs(user_input, dataset, client):
         max_request_size=user_input.app_instance.max_request_size,
         parameters=deepcopy(params),
         return_results=False,
+        **kwargs,
     )
     print('⭐ Success - your data is indexed')
 
@@ -141,6 +142,7 @@ def call_flow(
     endpoint: str = '/index',
     parameters: Optional[Dict] = None,
     return_results: Optional[bool] = False,
+    **kwargs,
 ):
     request_size = estimate_request_size(dataset, max_request_size)
 
@@ -159,7 +161,17 @@ def call_flow(
                     parameters=parameters,
                     return_results=return_results,
                     continue_on_error=True,
+                    on_done=kwargs.get('on_done', None),
+                    on_error=kwargs.get('on_error', None),
+                    on_always=kwargs.get('on_always', None),
                 )
+                if kwargs.get('custom_callback', None):
+                    kwargs['custom_callback'](
+                        client_resp=response,
+                        batch_idx=len(batch),
+                        tot_idx=len(dataset),
+                        host=client.args.host,
+                    )
                 break
             except Exception as e:
                 if try_nr == 4:
