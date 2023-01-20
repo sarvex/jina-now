@@ -306,7 +306,7 @@ def render_mm_query(query, modality):
             query[key] = {
                 'name': 'text',
                 'value': st.text_input(
-                    '',
+                    label=f'text #{x + 1}',
                     key=key,
                     on_change=clear_match,
                     placeholder=f'Write your text query #{x + 1}',
@@ -317,7 +317,9 @@ def render_mm_query(query, modality):
     else:
         for x in range(st.session_state[f"len_{modality}_choices"]):
             key = f'{modality}_{x}'
-            q = st.file_uploader("", key=key, on_change=clear_match)
+            q = st.file_uploader(
+                label=f'image #{x + 1}', key=key, on_change=clear_match
+            )
             if q:
                 doc = convert_file_to_document(q)
                 query_doc = doc
