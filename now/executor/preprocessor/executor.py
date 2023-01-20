@@ -48,7 +48,7 @@ class NOWPreprocessor(Executor):
 
     @secure_request(on=None, level=SecurityLevel.USER)
     def preprocess(self, docs: DocumentArray, *args, **kwargs) -> DocumentArray:
-        """If necessary downloads data from cloud bucket. Applies preprocessing to documents as defined by apps.
+        """If necessary downloads data from cloud bucket. Applies preprocessing to document as defined by apps.
 
         :param docs: loaded data but not preprocessed
         :return: preprocessed documents which are ready to be encoded and indexed
