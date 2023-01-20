@@ -20,6 +20,12 @@ jobs:
           cat ~/.jina/config.json
         env:
           WOLF_TOKEN: ${{ secrets.WOLF_TOKEN }}
+      - name: Prepare environment
+        run: |
+          sudo apt update
+          python -m pip install --upgrade pip
+          python -m pip install wheel
+          pip install --no-cache-dir ".[full,test]"
       - name: create durations
         id: test
         run: |
