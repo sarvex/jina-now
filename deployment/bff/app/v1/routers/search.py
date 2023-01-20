@@ -61,7 +61,7 @@ def search(data: SearchRequestModel):
     )
     matches = []
     for doc in docs[0].matches:
-        # todo: use multimodal doc in the future
+        # todo: use multimodal doc in the future!
         scores = {}
         for score_name, named_score in doc.scores.items():
             scores[score_name] = named_score.to_dict()

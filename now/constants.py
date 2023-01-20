@@ -4,11 +4,10 @@ from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.148-refactor-remove-now-testing-2'
-NOW_PREPROCESSOR_VERSION = '0.0.121-refactor-remove-now-testing-2'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.144-refactor-remove-now-testing-2'
-NOW_AUTOCOMPLETE_VERSION = '0.0.8-refactor-remove-now-testing-2'
-
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.148-refactor-remove-now-testing-3'
+NOW_PREPROCESSOR_VERSION = '0.0.121-refactor-remove-now-testing-3'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.144-refactor-remove-now-testing-3'
+NOW_AUTOCOMPLETE_VERSION = '0.0.8-refactor-remove-now-testing-3'
 
 class Apps(BetterEnum):
     SEARCH_APP = 'search_app'
