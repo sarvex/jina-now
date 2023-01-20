@@ -11,11 +11,10 @@ from now.common.detect_schema import (
     get_s3_bucket_and_folder_prefix,
 )
 from now.constants import DatasetTypes
-from now.data_loading.create_dataclass import create_dataclass_fields_file_mappings
 from now.data_loading.elasticsearch import ElasticsearchExtractor
 from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
-from now.utils import field_dict_to_mm_doc, sigmap
+from now.utils import sigmap
 
 
 def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
@@ -30,7 +29,7 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
     if user_input.dataset_type in [DatasetTypes.DOCARRAY, DatasetTypes.DEMO]:
         print('⬇  Pull DocumentArray dataset')
         da = _pull_docarray(user_input.dataset_name, user_input.admin_name)
-        da = get_da_with_index_fields(da, user_input, data_class)
+        da = get_da_with_index_fields(da, user_input)
         da = _add_tags_to_da(da, user_input)
     elif user_input.dataset_type == DatasetTypes.PATH:
         print('💿  Loading files from disk')
@@ -50,20 +49,15 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
     return da
 
 
-def get_da_with_index_fields(da: DocumentArray, user_input: UserInput, data_class):
-    clean_da = []
+def get_da_with_index_fields(da: DocumentArray, user_input: UserInput):
     for d in da:
-        dict_index_fields = {}
-        dataclass_mappings = create_dataclass_fields_file_mappings(
-            user_input.index_fields, user_input.index_field_candidates_to_modalities
-        )
+        temp_da = []
         for field in user_input.index_fields:
             _index_field_doc = getattr(d, field, None)
-            dict_index_fields[field] = _index_field_doc
-        mm_doc = field_dict_to_mm_doc(dict_index_fields, data_class, dataclass_mappings)
-        clean_da.append(mm_doc)
-    clean_da = DocumentArray(clean_da)
-    return clean_da
+            temp_da.append(_index_field_doc)
+        temp_da = DocumentArray(temp_da)
+        d.chunks = temp_da
+    return da
 
 
 def add_metadata_to_da(da, user_input):
