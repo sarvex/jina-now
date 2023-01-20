@@ -1,6 +1,7 @@
 name: Update Durations
 on:
-  pull_request:
+  workflow_dispatch:
+
 jobs:
   update-durations:
     runs-on: ubuntu-latest
