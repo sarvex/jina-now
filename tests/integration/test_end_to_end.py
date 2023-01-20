@@ -77,7 +77,6 @@ def test_end_to_end(
         'secured': True,
         'api_key': None,
         'additional_user': False,
-        'proceed': True,
     }
     kwargs = Namespace(**kwargs)
     response = cli(args=kwargs)
@@ -249,7 +248,6 @@ def test_backend_custom_data(
         'aws_region_name': 'eu-west-1',
         'index_fields': ['.jpeg'],
         'filter_fields': [],
-        'proceed': True,
         'secured': False,
     }
     kwargs = Namespace(**kwargs)

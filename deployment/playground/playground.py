@@ -14,21 +14,17 @@ import streamlit.components.v1 as components
 from better_profanity import profanity
 from docarray import Document, DocumentArray
 from jina import Client
-from deployment.playground.src.constants import (
-    BUTTONS,
-    S3_DEMO_PATH,
-    SSO_COOKIE,
-    SURVEY_LINK,
-    ds_set,
-)
-from deployment.playground.src.search import (
-    get_query_params,
-    search_by_image,
-    search_by_text,
-)
 from streamlit.scriptrunner import add_script_run_ctx
 from streamlit.server.server import Server
 from tornado.httputil import parse_cookie
+
+# TODO remove this in the custom gateway
+if __name__ == '__main__':
+    from src.constants import BUTTONS, S3_DEMO_PATH, SSO_COOKIE, SURVEY_LINK, ds_set
+    from src.search import get_query_params, search_by_image, search_by_text
+else:
+    from .src.constants import BUTTONS, S3_DEMO_PATH, SSO_COOKIE, SURVEY_LINK, ds_set
+    from .src.search import get_query_params, search_by_image, search_by_text
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
