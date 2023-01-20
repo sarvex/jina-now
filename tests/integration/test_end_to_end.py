@@ -144,8 +144,7 @@ def assert_deployment_queries(
     test_search_image,
     response,
 ):
-    port = response.get('bff_port') if os.environ.get('NOW_TESTING', False) else '8080'
-    url = f'http://localhost:{port}/api/v1'
+    url = f'http://localhost:8080/api/v1'
     host = response.get('host')
     # normal case
     request_body = get_search_request_body(
