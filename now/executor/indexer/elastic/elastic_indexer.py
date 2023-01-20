@@ -96,7 +96,7 @@ class NOWElasticIndexer(Executor):
             self.es.indices.create(index=self.index_name, mappings=self.es_mapping)
 
     def setup_elastic_server(self):
-        # volume is not persisted at the moment
+        # volume is not persisted at the moment.
         try:
             subprocess.Popen(['./start-elastic-search-cluster.sh'])
             self.logger.info('elastic server started')

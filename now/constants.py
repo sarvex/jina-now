@@ -4,10 +4,10 @@ from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.149-bumping-version'
-NOW_PREPROCESSOR_VERSION = '0.0.122-bumping-version'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.145-bumping-version'
-NOW_AUTOCOMPLETE_VERSION = '0.0.9-bumping-version'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.149-bumping-version-0'
+NOW_PREPROCESSOR_VERSION = '0.0.122-bumping-version-0'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.145-bumping-version-0'
+NOW_AUTOCOMPLETE_VERSION = '0.0.9-bumping-version-0'
 
 
 class Apps(BetterEnum):
