@@ -1,11 +1,10 @@
-from now.constants import Apps
-
 import os
 import subprocess
 
 import pytest
 
 
+@pytest.mark.skip('deactivated since it starts an idle flow')
 @pytest.mark.parametrize('dataset', ['placeholder for cli test'])
 def test_start_with_parameters(cleanup, dataset):
     """Checks if now can be started from cli"""

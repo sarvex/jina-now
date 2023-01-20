@@ -5,7 +5,6 @@ from docarray.typing import Image, Text, Video
 from jina import Client
 
 from now.app.base.app import JinaNOWApp
-from now.app.search_app.indexer_utils import check_if_ocr_needed
 from now.constants import (
     ACCESS_PATHS,
     DEMO_NS,
@@ -141,7 +140,6 @@ class SearchApp(JinaNOWApp):
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'uses_with': {
                 'dim': dim,
-                'ocr_is_needed': check_if_ocr_needed(user_input),
                 'document_mappings': [
                     [
                         encoder_name,

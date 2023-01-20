@@ -4,9 +4,9 @@ from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.147-refactor-remove-k8s-9'
-NOW_PREPROCESSOR_VERSION = '0.0.120-demo-examples-5'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.142-refactor-remove-k8s-9'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.148-refactor-clean-up-1'
+NOW_PREPROCESSOR_VERSION = '0.0.122-demo-examples-1'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.144-test-optimize-tests-4'
 NOW_AUTOCOMPLETE_VERSION = '0.0.8-refactor-remove-k8s-9'
 
 
@@ -36,7 +36,6 @@ FILETYPE_TO_MODALITY = {
 AVAILABLE_MODALITIES_FOR_SEARCH = [Text, Image, Video]
 AVAILABLE_MODALITIES_FOR_FILTER = [Text]
 NOT_AVAILABLE_MODALITIES_FOR_FILTER = [Image, Video]
-DEMO_NS = 'now-example-{}'
 
 BASE_STORAGE_URL = (
     'https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets'
