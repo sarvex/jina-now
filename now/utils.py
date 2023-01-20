@@ -10,9 +10,7 @@ import sys
 import tempfile
 from collections.abc import MutableMapping
 from concurrent.futures import ThreadPoolExecutor
-from copy import deepcopy
 from os.path import expanduser as user
-from tempfile import TemporaryDirectory
 from typing import Dict, List, Optional, TypeVar, Union
 
 import boto3
@@ -22,7 +20,6 @@ import hubble
 import yaml
 from docarray import Document, DocumentArray
 from docarray.typing import Image, Text, Video
-from fastapi import HTTPException
 from jina.jaml import JAML
 from pyfiglet import Figlet
 
@@ -166,75 +163,6 @@ def extract_supported_file_type_from_blob(blob_value):
             f'Please provide a valid file type.'
         )
     return file_ending
-
-
-def field_dict_to_mm_doc(
-    field_dict: dict,
-    data_class: type,
-    field_names_to_dataclass_fields={},
-    bff_use=False,
-) -> Document:
-    """Converts a dictionary of field names to their values to a document.
-    :param field_dict: key-value pairs of field names and their values
-    :param data_class: @docarray.dataclass class which encapsulates the fields of the multimodal document
-    :param field_names_to_dataclass_fields: mapping of field names to data class fields (e.g. {'title': 'text_0'})
-    :return: multi-modal document
-    """
-    if bff_use and len(field_dict) != 1:
-        raise ValueError(
-            f"Multi-modal document isn't supported yet. "
-            f"Can only set one value but have {list(field_dict.keys())}"
-        )
-    with TemporaryDirectory() as tmp_dir:
-        try:
-            if field_names_to_dataclass_fields:
-                field_dict_orig = deepcopy(field_dict)
-                field_dict = {
-                    field_name_data_class: field_dict_orig[file_name]
-                    for file_name, field_name_data_class in field_names_to_dataclass_fields.items()
-                }
-            data_class_kwargs = {}
-            for field_name_data_class, field_value in field_dict.items():
-                # save blob into a temporary file such that it can be loaded by the multimodal class
-                if field_value.blob:
-                    base64_decoded = (
-                        base64.b64decode(field_value.blob.encode('utf-8'))
-                        if bff_use
-                        else field_value.blob
-                    )
-                    file_ending = extract_supported_file_type_from_blob(base64_decoded)
-                    file_path = os.path.join(
-                        tmp_dir, field_name_data_class + '.' + file_ending
-                    )
-                    with open(file_path, 'wb') as f:
-                        f.write(base64_decoded)
-                    field_value.blob = None
-                    field_value.uri = file_path
-                if field_value.content is not None:
-                    data_class_kwargs[field_name_data_class] = field_value.content
-                elif field_value.uri is not None:
-                    data_class_kwargs[field_name_data_class] = field_value.uri
-                elif field_value.text is not None:
-                    data_class_kwargs[field_name_data_class] = field_value.text
-                elif field_value.tensor is not None:
-                    data_class_kwargs[field_name_data_class] = field_value.tensor
-                else:
-                    raise ValueError(
-                        f'Content of field {field_name_data_class} is None. '
-                    )
-            doc = Document(data_class(**data_class_kwargs))
-        except Exception as e:
-            if bff_use:
-                raise HTTPException(
-                    status_code=500,
-                    detail=f'Not a correctly encoded request. Please see the error stack for more information. \n{e}',
-                )
-            else:
-                raise Exception(
-                    f'Cannot convert the given field dict to an mmdoc. \n{e}'
-                )
-
-    return doc
 
 
 def print_headline():

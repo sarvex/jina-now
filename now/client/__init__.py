@@ -1,18 +1,9 @@
-import json
-import re
-
 import requests
-from jina.serve.runtimes.gateway.http.models import JinaResponseModel
-from pydantic import BaseModel, parse_obj_as
+from docarray import dataclass
+from docarray.typing import Text
 
-from deployment.bff.app.v1.models.search import (
-    IndexRequestModel,
-    SearchRequestModel,
-    SearchResponseModel,
-)
-from deployment.bff.app.v1.routers.helper import jina_client_post
-from now.common.options import construct_app
-from now.utils import field_dict_to_mm_doc
+from deployment.bff.app.v1.models.search import SearchRequestModel
+from deployment.bff.app.v1.routers.helper import field_dict_to_mm_doc, jina_client_post
 
 
 class Client:
@@ -44,11 +35,19 @@ class Client:
         if endpoint != 'search':
             raise NotImplementedError('Only search endpoint is supported for now')
 
+        @dataclass
+        class DataClass:
+            text_0: Text
+
         if 'text' in kwargs:
             query_doc = field_dict_to_mm_doc(
-                field_dict={'query_text': {'text': kwargs.pop('text')}}, bff_use=True
+                {'text': kwargs.pop('text')},
+                data_class=DataClass,
+                modalities_dict={'text': Text},
+                field_names_to_dataclass_fields={'text': 'text_0'},
             )
-
+        else:
+            raise Exception('query doc is empty')
         app_request = SearchRequestModel(
             host=f'grpcs://nowapi-{self.jcloud_id}.wolf.jina.ai',
             api_key=self.api_key,

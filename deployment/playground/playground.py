@@ -14,17 +14,17 @@ import streamlit.components.v1 as components
 from better_profanity import profanity
 from docarray import Document, DocumentArray
 from jina import Client
-from src.constants import (
-    BUTTONS,
-    S3_DEMO_PATH,
-    SSO_COOKIE,
-    SURVEY_LINK,
-    ds_set,
-)
-from src.search import get_query_params, search_by_image, search_by_text
 from streamlit.scriptrunner import add_script_run_ctx
 from streamlit.server.server import Server
 from tornado.httputil import parse_cookie
+
+# TODO remove this in the custom gateway
+if __name__ == '__main__':
+    from src.constants import BUTTONS, S3_DEMO_PATH, SSO_COOKIE, SURVEY_LINK, ds_set
+    from src.search import get_query_params, multimodal_search
+else:
+    from .src.constants import BUTTONS, S3_DEMO_PATH, SSO_COOKIE, SURVEY_LINK, ds_set
+    from .src.search import get_query_params, multimodal_search
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -87,6 +87,12 @@ def deploy_streamlit():
     params = get_query_params()
     redirect_to = render_auth_components(params)
 
+    if "len_text_choices" not in st.session_state:
+        st.session_state["len_text_choices"] = 1
+    if "len_image_choices" not in st.session_state:
+        st.session_state["len_image_choices"] = 1
+    if "query" not in st.session_state:
+        st.session_state['query'] = dict()
     _, mid, _ = st.columns([0.8, 1, 1])
     with open(os.path.join(dir_path, 'logo.svg'), 'r') as f:
         svg = f.read()
@@ -98,8 +104,6 @@ def deploy_streamlit():
     if redirect_to and st.session_state.login:
         nav_to(redirect_to)
     else:
-        da_img, da_txt = load_example_queries(params.data)
-
         setup_design()
 
         if params.host and st.session_state.filters == 'notags':
@@ -136,19 +140,24 @@ def deploy_streamlit():
             for tag, values in st.session_state.filters.items():
                 values.insert(0, 'All')
                 filter_selection[tag] = st.sidebar.selectbox(tag, values)
+        l, r = st.columns([5, 5])
+        with l:
+            st.header('Text')
+            render_mm_query(st.session_state['query'], 'text')
+        with r:
+            st.header('Image')
+            render_mm_query(st.session_state['query'], 'image')
 
-        media_type = st.radio(
-            '',
-            ['Text', 'Image'],
-            on_change=clear_match,
-        )
-
-        if media_type == 'Image':
-            render_image(da_img, deepcopy(filter_selection))
-
-        elif media_type == 'Text':
-            render_text(da_txt, deepcopy(filter_selection))
-
+        if st.button('Search', key='mm_search', on_click=clear_match):
+            st.session_state.matches = multimodal_search(
+                query_field_values_modalities=list(
+                    filter(
+                        lambda x: x['value'], list(st.session_state['query'].values())
+                    )
+                ),
+                jwt=st.session_state.jwt_val,
+                filter_dict=filter_selection,
+            )
         render_matches()
 
         add_social_share_buttons()
@@ -217,7 +226,6 @@ def _do_login(params):
 
 
 def _do_logout():
-
     headers = {
         'Content-Type': 'application/json; charset=utf-8',
         'Authorization': 'Token ' + st.session_state.token_val,
@@ -287,60 +295,49 @@ def setup_design():
     )
 
 
-def render_image(da_img, filter_selection):
-    upload_c, preview_c = st.columns([12, 1])
-    query = upload_c.file_uploader("", on_change=clear_match)
-    if query:
-        doc = convert_file_to_document(query)
-        st.image(doc.blob, width=160)
-        st.session_state.matches = search_by_image(
-            document=doc,
-            jwt=st.session_state.jwt_val,
-            filter_selection=filter_selection,
-        )
-    if da_img is not None:
-        st.subheader('samples:')
-        img_cs = st.columns(5)
-        txt_cs = st.columns(5)
-        for doc, c, txt in zip(da_img, img_cs, txt_cs):
-            with c:
-                st.image(doc.blob if doc.blob else doc.tensor, width=100)
-            with txt:
-                if st.button('Search', key=doc.id, on_click=clear_match):
-                    st.session_state.matches = search_by_image(
-                        document=doc,
-                        jwt=st.session_state.jwt_val,
-                        filter_selection=filter_selection,
-                    )
+def render_mm_query(query, modality):
+    if st.button("+", key=f'{modality}'):
+        st.session_state[f"len_{modality}_choices"] += 1
+    if modality == 'text':
+        for field_number in range(st.session_state[f"len_{modality}_choices"]):
+            key = f'{modality}_{field_number}'
+            query[key] = {
+                'name': 'text',
+                'value': st.text_input(
+                    label=f'text #{field_number + 1}',
+                    key=key,
+                    on_change=clear_match,
+                    placeholder=f'Write your text query #{field_number + 1}',
+                ),
+                'modality': 'text',
+            }
 
-
-def render_text(da_txt, filter_selection):
-    query = st.text_input('', key='text_search_box', on_change=clear_match)
-    if query:
-        st.session_state.matches = search_by_text(
-            search_text=query,
-            jwt=st.session_state.jwt_val,
-            filter_selection=filter_selection,
+    else:
+        for field_number in range(st.session_state[f"len_{modality}_choices"]):
+            key = f'{modality}_{field_number}'
+            uploaded_image = st.file_uploader(
+                label=f'image #{field_number + 1}', key=key, on_change=clear_match
+            )
+            if uploaded_image:
+                doc = convert_file_to_document(uploaded_image)
+                query_doc = doc
+                if query_doc.blob == b'':
+                    if query_doc.tensor is not None:
+                        query_doc.convert_image_tensor_to_blob()
+                    elif (query_doc.uri is not None) and query_doc.uri != '':
+                        query_doc.load_uri_to_blob(timeout=10)
+                query[key] = {
+                    'name': 'blob',
+                    'value': base64.b64encode(query_doc.blob).decode('utf-8'),
+                    'modality': 'image',
+                }
+    if st.session_state[f"len_{modality}_choices"] >= 1:
+        st.button(
+            "-",
+            key=f'{modality}',
+            on_click=decrement_inputs,
+            kwargs=dict(modality=modality),
         )
-    if st.button('Search', key='text_search', on_click=clear_match):
-        st.session_state.matches = search_by_text(
-            search_text=query,
-            jwt=st.session_state.jwt_val,
-            filter_selection=filter_selection,
-        )
-
-    if da_txt is not None:
-        st.subheader('samples:')
-        c1, c2, c3 = st.columns(3)
-        c4, c5, c6 = st.columns(3)
-        for doc, col in zip(da_txt, [c1, c2, c3, c4, c5, c6]):
-            with col:
-                if st.button(doc.content, key=doc.id, on_click=clear_text):
-                    st.session_state.matches = search_by_text(
-                        search_text=doc.content,
-                        jwt=st.session_state.jwt_val,
-                        filter_selection=filter_selection,
-                    )
 
 
 def render_matches():
@@ -477,6 +474,10 @@ def increment_page():
 
 def decrement_page():
     st.session_state.page_number -= 1
+
+
+def decrement_inputs(modality):
+    st.session_state[f"len_{modality}_choices"] -= 1
 
 
 def clear_match():
