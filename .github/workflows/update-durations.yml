@@ -1,12 +1,5 @@
 name: Update Durations
 on:
-  workflow_dispatch:
-    inputs:
-      debug_enabled:
-        description: "Run the tests with tmate debugging enabled"
-        required: false
-        default: false
-
   pull_request:
 jobs:
   update-durations:
