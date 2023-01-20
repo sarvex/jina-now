@@ -59,7 +59,6 @@ def test_token_exists():
 def test_end_to_end(
     cleanup,
     start_bff,
-    start_playground,
     query_fields,
     index_fields,
     filter_fields,
@@ -232,7 +231,6 @@ def assert_deployment_response(response):
 @pytest.mark.parametrize('query_fields', ['image'])
 def test_backend_custom_data(
     start_bff,
-    start_playground,
     dataset: str,
     query_fields: str,
     cleanup,
