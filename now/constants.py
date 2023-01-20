@@ -54,7 +54,7 @@ ACCESS_PATHS = '@cc'
 FLOW_STATUS = 'Serving'
 
 MODALITY_TO_MODELS = {
-    Text: ['clip', 'sbert'],
-    Image: ['clip'],
-    Video: ['clip'],
+    Text: [{'name': 'Clip', 'value': 'clip'}, {'name': 'Sbert', 'value': 'sbert'}],
+    Image: [{'name': 'Clip', 'value': 'clip'}],
+    Video: [{'name': 'Clip', 'value': 'clip'}],
 }

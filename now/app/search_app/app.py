@@ -1,7 +1,6 @@
 import os
 from typing import Dict, List, Tuple, TypeVar
 
-from docarray.typing import Image, Text, Video
 from jina import Client
 
 from now.app.base.app import JinaNOWApp
@@ -132,27 +131,29 @@ class SearchApp(JinaNOWApp):
         :param user_input: User input
         :param encoder2dim: maps encoder name to its output dimension
         """
-        if len(encoder2dim) != 1:
-            raise ValueError(
-                f'Indexer can only be created for one encoder but have encoders: {encoder2dim}'
+        document_mappings_list = []
+
+        for encoder, dim in encoder2dim.items():
+            document_mappings_list.append(
+                [
+                    encoder,
+                    dim,
+                    [
+                        index_field
+                        for index_field, encoders in user_input.model_choices.items()
+                        if encoder in encoders
+                    ],
+                ]
             )
-        else:
-            encoder_name = list(encoder2dim.keys())[0]
-            dim = encoder2dim[encoder_name]
+
         return {
             'name': 'indexer',
-            'needs': encoder_name,
+            'needs': list(encoder2dim.keys()),
             'uses': f'{EXECUTOR_PREFIX}{name_to_id_map.get("NOWElasticIndexer")}/{NOW_ELASTIC_INDEXER_VERSION}',
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'uses_with': {
                 'dim': dim,
-                'document_mappings': [
-                    [
-                        encoder_name,
-                        dim,
-                        list(user_input.field_names_to_dataclass_fields.values()),
-                    ]
-                ],
+                'document_mappings': document_mappings_list,
             },
             'jcloud': {
                 'resources': {
@@ -163,7 +164,7 @@ class SearchApp(JinaNOWApp):
             },
         }
 
-    def get_executor_stubs(self, dataset, user_input: UserInput) -> Dict:
+    def get_executor_stubs(self, dataset, user_input: UserInput) -> List[Dict]:
         """Returns a dictionary of executors to be added in the flow
 
         :param dataset: DocumentArray of the dataset
@@ -181,17 +182,16 @@ class SearchApp(JinaNOWApp):
         ]
 
         encoder2dim = {}
-        # todo: comment out the following if-block to enable sbert for text index fields
-        # if any(
-        #     user_input.index_field_candidates_to_modalities[field] == Text
-        #     for field in user_input.index_fields
-        # ):
-        #     sbert_encoder, sbert_dim = self.sbert_encoder_stub()
-        #     encoder2dim[sbert_encoder['name']] = sbert_dim
-        #     flow_yaml_executors.append(sbert_encoder)
         if any(
-            user_input.index_field_candidates_to_modalities[field]
-            in [Image, Video, Text]
+            'sbert' in user_input.model_choices[f"{field}_model"]
+            for field in user_input.index_fields
+        ):
+            sbert_encoder, sbert_dim = self.sbert_encoder_stub()
+            encoder2dim[sbert_encoder['name']] = sbert_dim
+            flow_yaml_executors.append(sbert_encoder)
+
+        if any(
+            'clip' in user_input.model_choices[f"{field}_model"]
             for field in user_input.index_fields
         ):
             clip_encoder, clip_dim = self.clip_encoder_stub()

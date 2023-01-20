@@ -252,12 +252,12 @@ def get_models_dialog(user_input: UserInput, **kwargs):
             DialogOptions(
                 name=option_name,
                 prompt_message=f'Please select the model for {index_field}:',
-                prompt_type='list',
+                prompt_type='checkbox',
                 choices=MODALITY_TO_MODELS[
                     user_input.index_field_candidates_to_modalities[index_field]
                 ],
                 post_func=lambda user_input, option_name=option_name, **kwargs: update_model_choice(
-                    user_input, option_name
+                    user_input, option_name, **kwargs
                 ),
             )
         )
