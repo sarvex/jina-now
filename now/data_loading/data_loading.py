@@ -239,7 +239,8 @@ def create_docs_from_subdirectories(
                     for el, value in data.items():
                         dict_tags[el] = value
         doc = Document(data_class(**kwargs))
-        doc.tags.update(dict_tags)
+        if len(dict_tags) > 0:
+            doc.tags.update(dict_tags)
         docs.append(doc)
     return docs
 
