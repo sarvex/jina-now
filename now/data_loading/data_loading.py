@@ -53,10 +53,13 @@ def get_da_with_index_fields(da: DocumentArray, user_input: UserInput):
     for d in da:
         temp_da = []
         for field in user_input.index_fields:
-            _index_field_doc = getattr(d, field, None)
+            _index_field_doc = getattr(d, field)
             temp_da.append(_index_field_doc)
         temp_da = DocumentArray(temp_da)
         d.chunks = temp_da
+        d._metadata['multi_modal_schema'] = {
+            k: d._metadata['multi_modal_schema'][k] for k in user_input.index_fields
+        }
     return da
 
 
