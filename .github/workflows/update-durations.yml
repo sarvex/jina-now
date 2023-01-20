@@ -31,24 +31,24 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           S3_CUSTOM_DATA_PATH: ${{ secrets.S3_CUSTOM_DATA_PATH }}
 
-      - name: Commit and push new durations file
-        run: |
-        git config user.email "github-actions@github.com"
-        git config user.name "Github Actions"
-        git add durations.json
-        git commit -m "Update test durations"
-        git push origin HEAD
-        env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Create pull request
-        uses: peter-evans/create-pull-request@v2
-        with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        commit-message: "Update test durations"
-        title: "Update test durations"
-        head: "update-durations"
-        base: "main"
-        labels: "duration, tests"
-        env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#      - name: Commit and push new durations file
+#        run: |
+#        git config user.email "github-actions@github.com"
+#        git config user.name "Github Actions"
+#        git add durations.json
+#        git commit -m "Update test durations"
+#        git push origin HEAD
+#        env:
+#        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#
+#      - name: Create pull request
+#        uses: peter-evans/create-pull-request@v2
+#        with:
+#        token: ${{ secrets.GITHUB_TOKEN }}
+#        commit-message: "Update test durations"
+#        title: "Update test durations"
+#        head: "update-durations"
+#        base: "main"
+#        labels: "duration, tests"
+#        env:
+#        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
