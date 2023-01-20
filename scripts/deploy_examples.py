@@ -3,7 +3,7 @@ import sys
 from argparse import Namespace
 
 import boto3
-import requests
+from jina import Client
 
 from now.cli import cli
 from now.constants import DEMO_NS, DatasetTypes
@@ -91,22 +91,21 @@ if __name__ == '__main__':
 
     print(f'Deploying -> ({to_deploy}) with deployment type ``{deployment_type}``')
 
-    if deployment_type == 'all':
-        # List all deployments and delete them
-        flow = list_all_wolf(namespace=to_deploy.name.split("/")[-1])
-        terminate_wolf(flow['id'])
-        print(f'{to_deploy} successfully deleted!!')
-    else:
-        # check if deployment is already running else add to the queue
-        bff = 'https://nowrun.jina.ai/api/v1/admin/getStatus'
-        host = f'grpcs://{DEMO_NS.format(to_deploy.name.split("/")[-1])}.dev.jina.ai'
-        request_body = {
-            'host': host,
-            'jwt': {'token': os.environ['WOLF_TOKEN']},
-        }
-        resp = requests.post(bff, json=request_body)
-        if resp.status_code == 200:
-            print(f'{to_deploy} already deployed!!')
+    if deployment_type == 'partial':
+        # check if deployment is already running then return
+        client = Client(
+            host=f'grpcs://{DEMO_NS.format(to_deploy.name.split("/")[-1])}.dev.jina.ai'
+        )
+        try:
+            response = client.post('/dry_run', return_results=True)
+            print(f'Already {to_deploy} deployed')
             exit(0)
-        print('Deploying -> ', to_deploy)
+        except Exception as e:  # noqa E722
+            print('Not deployed yet')
+
+    # Maybe the flow is still alive, if it is, then it should be terminated and re-deploy the app
+    flow = list_all_wolf(namespace=to_deploy.name.split("/")[-1])
+    terminate_wolf(flow['id'])
+    print(f'{flow["id"]} successfully deleted!!')
+    print('Deploying -> ', to_deploy)
     deploy(to_deploy)
