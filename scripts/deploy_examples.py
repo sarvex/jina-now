@@ -105,7 +105,8 @@ if __name__ == '__main__':
 
     # Maybe the flow is still alive, if it is, then it should be terminated and re-deploy the app
     flow = list_all_wolf(namespace=to_deploy.name.split("/")[-1])
-    terminate_wolf(flow['id'])
+    if flow:
+        terminate_wolf(flow['id'])
     print(f'{flow["id"]} successfully deleted!!')
     print('Deploying -> ', to_deploy)
     deploy(to_deploy)
