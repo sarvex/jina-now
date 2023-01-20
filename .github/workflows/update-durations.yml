@@ -1,6 +1,7 @@
 name: Update Durations
 on:
-  workflow_dispatch:
+#  workflow_dispatch:
+  pull_request:
 
 jobs:
   update-durations:
