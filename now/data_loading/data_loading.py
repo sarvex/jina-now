@@ -60,6 +60,8 @@ def get_da_with_index_fields(da: DocumentArray, user_input: UserInput):
         d._metadata['multi_modal_schema'] = {
             k: d._metadata['multi_modal_schema'][k] for k in user_input.index_fields
         }
+        for i, k in enumerate(user_input.index_fields):
+            d._metadata['multi_modal_schema'][k]['position'] = float(i)
     return da
 
 
