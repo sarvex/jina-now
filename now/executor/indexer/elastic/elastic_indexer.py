@@ -217,9 +217,9 @@ class NOWElasticIndexer(Executor):
         get_score_breakdown = parameters.get('get_score_breakdown', False)
         custom_bm25_query = parameters.get('custom_bm25_query', None)
         apply_default_bm25 = parameters.get('apply_default_bm25', False)
-        semantic_scores = parameters.get(
-            'default_semantic_scores', None
-        ) or generate_semantic_scores(docs_map, self.encoder_to_fields)
+        semantic_scores = parameters.get('semantic_scores', None)
+        if not semantic_scores:
+            semantic_scores = generate_semantic_scores(docs_map, self.encoder_to_fields)
         filter = parameters.get('filter', {})
         es_queries = build_es_queries(
             docs_map=docs_map,
