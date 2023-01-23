@@ -55,6 +55,7 @@ def search(data: SearchRequestModel):
             'limit': data.limit,
             'filter': query_filter,
             'create_temp_link': data.create_temp_link,
+            'semantic_scores': data.semantic_scores,
         },
         request_model=data,
     )

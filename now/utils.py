@@ -19,17 +19,11 @@ import filetype
 import hubble
 import yaml
 from docarray import Document, DocumentArray
-from docarray.typing import Image, Text, Video
 from jina.jaml import JAML
 from pyfiglet import Figlet
 
+from now.constants import SUPPORTED_FILE_TYPES
 from now.thirdparty.PyInquirer.prompt import prompt
-
-SUPPORTED_FILE_TYPES = {
-    Text: ['txt', 'md'],
-    Image: ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'tif'],
-    Video: ['gif'],
-}
 
 
 def download_file(path, r_raw):

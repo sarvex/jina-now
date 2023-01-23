@@ -132,6 +132,9 @@ def multimodal_search(
         'host': params.host,
         'limit': top_k if top_k else params.top_k,
         'filters': updated_dict,
+        'semantic_scores': list(
+            st.session_state.semantic_scores.values()
+        ),  # list of lists containing semantic scores defined in playground
     }
     if endpoint == 'suggestion':
         data['text'] = query_field_values_modalities[0]['value']
