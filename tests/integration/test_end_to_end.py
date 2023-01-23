@@ -27,30 +27,34 @@ def test_token_exists():
 
 
 @pytest.mark.parametrize(
-    'query_fields, index_fields, filter_fields, dataset',
+    'query_fields, index_fields, filter_fields, model_selection, dataset',
     [
         (
             'image',
             ['image'],
             ['label'],
+            ['clip'],
             DemoDatasetNames.BIRD_SPECIES,
         ),
         (
             'text',
             ['lyrics'],
             [],
+            ['sbert'],
             DemoDatasetNames.POP_LYRICS,
         ),
         (
             'text',
             ['video', 'description'],
             [],
+            ['clip'],
             DemoDatasetNames.TUMBLR_GIFS_10K,
         ),
         (
             'text',
             ['image'],
             ['label'],
+            ['clip'],
             DemoDatasetNames.BEST_ARTWORKS,
         ),
     ],
@@ -63,6 +67,7 @@ def test_end_to_end(
     query_fields,
     index_fields,
     filter_fields,
+    model_selection,
     dataset,
     test_search_image,
 ):
@@ -78,6 +83,8 @@ def test_end_to_end(
         'api_key': None,
         'additional_user': False,
     }
+    for index_field in index_fields:
+        kwargs[f'{index_field}_model'] = model_selection
     kwargs = Namespace(**kwargs)
     response = cli(args=kwargs)
     # Dump the flow details from response host to a tmp file
@@ -248,6 +255,7 @@ def test_backend_custom_data(
         'aws_secret_access_key': os.environ.get('AWS_SECRET_ACCESS_KEY'),
         'aws_region_name': 'eu-west-1',
         'index_fields': ['.jpeg'],
+        '.jpeg_model': ['clip'],
         'filter_fields': [],
         'secured': False,
     }
