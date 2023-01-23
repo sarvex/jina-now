@@ -14,7 +14,7 @@ from now.constants import DatasetTypes
 from now.data_loading.elasticsearch import ElasticsearchExtractor
 from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
-from now.utils import sigmap
+from now.utils import flatten_dict, sigmap
 
 
 def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
@@ -235,7 +235,7 @@ def create_docs_from_subdirectories(
                             kwargs[field] = file_full_path
                 else:
                     with open(file_full_path) as f:
-                        data = json.load(f)
+                        data = flatten_dict(json.load(f))
                     for el, value in data.items():
                         dict_tags[el] = value
         doc = Document(data_class(**kwargs))
