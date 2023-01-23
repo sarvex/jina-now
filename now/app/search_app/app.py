@@ -23,7 +23,6 @@ from now.demo_data import (
 )
 from now.executor.name_to_id_map import name_to_id_map
 from now.now_dataclasses import UserInput
-from now.utils import get_email
 
 
 class SearchApp(JinaNOWApp):
@@ -165,10 +164,7 @@ class SearchApp(JinaNOWApp):
         """
         flow_yaml_executors = [
             self.autocomplete_stub(),
-            self.preprocessor_stub(
-                use_high_perf_flow=get_email().split('@')[-1] == 'jina.ai'
-                and 'NOW_CI_RUN' not in os.environ
-            ),
+            self.preprocessor_stub(),
         ]
 
         encoder2dim = {}
