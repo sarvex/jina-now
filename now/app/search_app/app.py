@@ -152,7 +152,6 @@ class SearchApp(JinaNOWApp):
             'uses': f'{EXECUTOR_PREFIX}{name_to_id_map.get("NOWElasticIndexer")}/{NOW_ELASTIC_INDEXER_VERSION}',
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'uses_with': {
-                'dim': dim,
                 'document_mappings': document_mappings_list,
             },
             'jcloud': {

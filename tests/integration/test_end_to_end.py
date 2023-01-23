@@ -40,7 +40,7 @@ def test_token_exists():
             'text',
             ['lyrics'],
             [],
-            ['sbert'],
+            ['sbert', 'clip'],
             DemoDatasetNames.POP_LYRICS,
         ),
         (

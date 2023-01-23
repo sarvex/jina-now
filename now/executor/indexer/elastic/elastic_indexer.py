@@ -73,7 +73,6 @@ class NOWElasticIndexer(Executor):
         """
 
         super().__init__(*args, **kwargs)
-        self.dim = dim
         self.metric = metric
         self.limit = limit
         self.max_values_per_tag = max_values_per_tag
