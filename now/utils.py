@@ -1,7 +1,6 @@
 from __future__ import annotations, print_function, unicode_literals
 
 import base64
-import itertools
 import json
 import os
 import shutil
@@ -15,14 +14,12 @@ from typing import Dict, List, Optional, TypeVar, Union
 
 import boto3
 import docarray
-import filetype
 import hubble
 import yaml
 from docarray import Document, DocumentArray
 from jina.jaml import JAML
 from pyfiglet import Figlet
 
-from now.constants import SUPPORTED_FILE_TYPES
 from now.thirdparty.PyInquirer.prompt import prompt
 
 
@@ -141,22 +138,6 @@ def get_info_hubble(user_input):
     user_input.jwt = {'token': client.token}
     user_input.admin_name = response['data']['name']
     return response['data'], client.token
-
-
-def extract_supported_file_type_from_blob(blob_value):
-    file_ending = filetype.guess(blob_value)
-    if file_ending is None:
-        raise ValueError(
-            f'Could not guess file type of blob {blob_value}. '
-            f'Please provide a valid file type.'
-        )
-    file_ending = file_ending.extension
-    if file_ending not in itertools.chain(*SUPPORTED_FILE_TYPES.values()):
-        raise ValueError(
-            f'File type {file_ending} is not supported. '
-            f'Please provide a valid file type.'
-        )
-    return file_ending
 
 
 def print_headline():
