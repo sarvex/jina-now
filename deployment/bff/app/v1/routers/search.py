@@ -56,12 +56,13 @@ def search(data: SearchRequestModel):
             'limit': data.limit,
             'filter': query_filter,
             'create_temp_link': data.create_temp_link,
+            'semantic_scores': data.semantic_scores,
         },
         request_model=data,
     )
     matches = []
     for doc in docs[0].matches:
-        # todo: use multimodal doc in the future
+        # todo: use multimodal doc in the future!
         scores = {}
         for score_name, named_score in doc.scores.items():
             scores[score_name] = named_score.to_dict()
