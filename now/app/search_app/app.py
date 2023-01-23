@@ -12,6 +12,7 @@ from now.constants import (
     NOW_AUTOCOMPLETE_VERSION,
     NOW_ELASTIC_INDEXER_VERSION,
     NOW_PREPROCESSOR_VERSION,
+    SERVERLESS_EXECUTOR_PREFIX,
     Apps,
 )
 from now.demo_data import (
@@ -86,16 +87,8 @@ class SearchApp(JinaNOWApp):
         return {
             'name': 'preprocessor',
             'needs': 'autocomplete_executor',
-            'replicas': 15 if use_high_perf_flow else 1,
-            'uses': f'{EXECUTOR_PREFIX}{name_to_id_map.get("NOWPreprocessor")}/{NOW_PREPROCESSOR_VERSION}',
+            'uses': f'{SERVERLESS_EXECUTOR_PREFIX}{name_to_id_map.get("NOWPreprocessor")}/{NOW_PREPROCESSOR_VERSION}',
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
-            'jcloud': {
-                'resources': {
-                    'memory': '1G',
-                    'cpu': '0.5',
-                    'capacity': 'on-demand',
-                }
-            },
         }
 
     @staticmethod
