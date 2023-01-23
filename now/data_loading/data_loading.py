@@ -68,7 +68,9 @@ def _add_tags_to_da(da: DocumentArray, user_input: UserInput):
     )
     for d in da:
         for field in non_index_fields:
-            non_index_field_doc = getattr(d, field, None)
+            non_index_field_doc = getattr(d, field)
+            if non_index_field_doc.blob or non_index_field_doc.tensor is not None:
+                continue
             d.tags.update(
                 {field: non_index_field_doc.content or non_index_field_doc.uri}
             )

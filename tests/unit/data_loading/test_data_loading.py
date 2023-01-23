@@ -28,6 +28,9 @@ def da() -> DocumentArray:
     @dataclass
     class MMDoc:
         description: Text = 'description'
+        image: Image = (
+            '/Users/florianhonicke/jina/now/tests/resources/gif/folder1/file.gif'
+        )
 
     return DocumentArray(
         [Document(MMDoc(description='foo')), Document(MMDoc(description='bar'))]
@@ -114,11 +117,13 @@ def test_da_custom_ds(da: DocumentArray):
     user_input.dataset_type = DatasetTypes.DEMO
     user_input.dataset_name = DemoDatasetNames.DEEP_FASHION
     user_input.admin_name = 'team-now'
+    user_input.index_fields = ['description']
 
     loaded_da = load_data(user_input)
 
     assert len(loaded_da) > 0
     for doc in loaded_da:
+        assert doc.tags == {}
         assert doc.chunks
 
 
