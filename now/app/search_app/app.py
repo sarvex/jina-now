@@ -83,7 +83,7 @@ class SearchApp(JinaNOWApp):
         }
 
     @staticmethod
-    def preprocessor_stub(use_high_perf_flow: bool) -> Dict:
+    def preprocessor_stub() -> Dict:
         return {
             'name': 'preprocessor',
             'needs': 'autocomplete_executor',

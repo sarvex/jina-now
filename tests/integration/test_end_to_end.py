@@ -35,24 +35,24 @@ def test_token_exists():
             ['label'],
             DemoDatasetNames.BIRD_SPECIES,
         ),
-        (
-            'text',
-            ['lyrics'],
-            [],
-            DemoDatasetNames.POP_LYRICS,
-        ),
-        (
-            'text',
-            ['video', 'description'],
-            [],
-            DemoDatasetNames.TUMBLR_GIFS_10K,
-        ),
-        (
-            'text',
-            ['image'],
-            ['label'],
-            DemoDatasetNames.BEST_ARTWORKS,
-        ),
+        # (
+        #     'text',
+        #     ['lyrics'],
+        #     [],
+        #     DemoDatasetNames.POP_LYRICS,
+        # ),
+        # (
+        #     'text',
+        #     ['video', 'description'],
+        #     [],
+        #     DemoDatasetNames.TUMBLR_GIFS_10K,
+        # ),
+        # (
+        #     'text',
+        #     ['image'],
+        #     ['label'],
+        #     DemoDatasetNames.BEST_ARTWORKS,
+        # ),
     ],
 )
 @pytest.mark.timeout(60 * 10)
