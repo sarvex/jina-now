@@ -11,6 +11,7 @@ import os
 import uuid
 
 from hubble import AuthenticationRequiredError
+
 from now.common.detect_schema import (
     set_field_names_elasticsearch,
     set_field_names_from_docarray,
@@ -40,7 +41,11 @@ def _check_index_field(user_input: UserInput, **kwargs):
     if not user_input.index_fields:
         raise RetryException('Please select at least one index field')
 
-    if (
+    if '__all__' in user_input.index_fields:
+        user_input.index_fields = list(
+            user_input.index_field_candidates_to_modalities.keys()
+        )
+    elif (
         user_input.index_fields[0]
         not in user_input.index_field_candidates_to_modalities.keys()
     ):
@@ -212,7 +217,12 @@ INDEX_FIELDS = DialogOptions(
     choices=lambda user_input, **kwargs: [
         {'name': field, 'value': field}
         for field in user_input.index_field_candidates_to_modalities.keys()
-    ],
+    ]
+    + (
+        [{'name': 'All of the above', 'value': '__all__'}]
+        if len(user_input.index_field_candidates_to_modalities) > 1
+        else []
+    ),
     prompt_message='Please select the index fields:',
     prompt_type='checkbox',
     is_terminal_command=True,

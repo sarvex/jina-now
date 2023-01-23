@@ -46,12 +46,12 @@ def deploy(demo_ds):
         'now': 'start',
         'dataset_type': DatasetTypes.DEMO,
         'dataset_name': demo_ds.name,
+        'index_fields': '__all__',
+        'filter_fields': '__all__',
         'proceed': True,
         'secured': False,
         'ns': NAMESPACE,
         'flow_name': NAMESPACE,
-        'index_fields': demo_ds.index_fields,
-        'filter_fields': '__all__',
     }
     kwargs = Namespace(**kwargs)
     try:
