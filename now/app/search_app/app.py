@@ -87,6 +87,13 @@ class SearchApp(JinaNOWApp):
             'name': 'preprocessor',
             'needs': 'autocomplete_executor',
             'uses': f'{SERVERLESS_EXECUTOR_PREFIX}{name_to_id_map.get("NOWPreprocessor")}/{NOW_PREPROCESSOR_VERSION}',
+            'jcloud': {
+                'resources': {
+                    'memory': '1G',
+                    'cpu': '0.5',
+                    'capacity': 'on-demand',
+                }
+            },
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
         }
 
