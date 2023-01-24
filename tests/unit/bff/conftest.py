@@ -13,7 +13,7 @@ data_url = 'https://storage.googleapis.com/jina-fashion-data/data/one-line/datas
 
 class MockedJinaClient:
     """
-    This class is used to override the JinaClient dependency in the local.
+    This class is used to override the JinaClient dependency in the bff.
     On each call, it returns a `DocumentArray` with the call args in the `Document` tags.
     """
 

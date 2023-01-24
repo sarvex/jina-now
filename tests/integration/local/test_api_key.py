@@ -9,6 +9,7 @@ from tests.integration.local.conftest import (
     get_request_body,
 )
 from tests.integration.remote.assertions import assert_search
+from tests.integration.local.data import simple_data
 
 API_KEY = 'my_key'
 update_api_keys_url = f'{BASE_URL}/admin/updateApiKeys'
