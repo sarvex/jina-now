@@ -13,6 +13,7 @@ from tests.integration.remote.assertions import (
 )
 
 
+@pytest.mark.remote
 @pytest.mark.parametrize(
     'query_fields, index_fields, filter_fields, dataset',
     [

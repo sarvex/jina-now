@@ -12,6 +12,7 @@ from tests.integration.remote.assertions import (
 )
 
 
+@pytest.mark.remote
 @pytest.mark.timeout(60 * 10)
 def test_end_to_end(
     cleanup,
