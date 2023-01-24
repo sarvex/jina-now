@@ -11,8 +11,8 @@ import pytest
 from docarray import Document, DocumentArray, dataclass
 from docarray.typing import Image, Text
 from elasticsearch import Elasticsearch
-from tests.integration.data_loading.elastic.example_dataset import ExampleDataset
-from tests.integration.data_loading.elastic.utils import delete_es_index
+from tests.unit.data_loading.elastic.example_dataset import ExampleDataset
+from tests.unit.data_loading.elastic.utils import delete_es_index
 from urllib3.exceptions import InsecureRequestWarning, SecurityWarning
 
 from now.data_loading.elasticsearch import ElasticsearchConnector
