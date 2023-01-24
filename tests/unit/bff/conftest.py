@@ -13,7 +13,7 @@ data_url = 'https://storage.googleapis.com/jina-fashion-data/data/one-line/datas
 
 class MockedJinaClient:
     """
-    This class is used to override the JinaClient dependency in the bff.
+    This class is used to override the JinaClient dependency in the local.
     On each call, it returns a `DocumentArray` with the call args in the `Document` tags.
     """
 
@@ -48,7 +48,7 @@ def client_with_mocked_jina_client(
             return MockedJinaClient(response)
 
         mocker.patch(
-            'deployment.bff.app.v1.routers.helper.get_jina_client', _get_jina_client
+            'deployment.local.app.v1.routers.helper.get_jina_client', _get_jina_client
         )
 
         return TestClient(build_app())

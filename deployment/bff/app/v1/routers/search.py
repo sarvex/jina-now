@@ -67,7 +67,13 @@ def search(data: SearchRequestModel):
             scores[score_name] = named_score.to_dict()
         # since multimodal doc is not supported, we take the first chunk
         if doc.chunks:
-            field_names = doc._metadata['multi_modal_schema'].keys()
+            # temporary fix for filtering out tags
+            field_names = [
+                field
+                for field in doc._metadata['multi_modal_schema'].keys()
+                if doc._metadata['multi_modal_schema'][field]['attribute_type']
+                != 'primitive'
+            ]
             field_names_and_chunks = [
                 [field_name, getattr(doc, field_name)] for field_name in field_names
             ]

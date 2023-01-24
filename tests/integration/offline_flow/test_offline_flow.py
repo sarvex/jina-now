@@ -12,9 +12,9 @@ from now.now_dataclasses import UserInput
 
 def test_docarray(monkeypatch, setup_service_running, multi_modal_data):
     """
-    Test all executors and bff together without creating a flow.
+    Test all executors and local together without creating a flow.
     The Clip Encoder is mocked because it is an external executor.
-    Also, the network call for the bff is monkey patched.
+    Also, the network call for the local is monkey patched.
     """
     user_input = UserInput()
     user_input.index_fields = ['product_title', 'product_description', 'product_image']
