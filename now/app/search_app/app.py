@@ -139,7 +139,7 @@ class SearchApp(JinaNOWApp):
                     encoder,
                     dim,
                     [
-                        index_field
+                        user_input.field_names_to_dataclass_fields[index_field]
                         for index_field, encoders in user_input.model_choices.items()
                         if encoder in encoders
                     ],
