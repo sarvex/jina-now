@@ -29,6 +29,7 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
     if user_input.dataset_type in [DatasetTypes.DOCARRAY, DatasetTypes.DEMO]:
         print('⬇  Pull DocumentArray dataset')
         da = _pull_docarray(user_input.dataset_name, user_input.admin_name)
+        da = get_da_with_index_fields(da, user_input)
         da = _add_tags_to_da(da, user_input)
     elif user_input.dataset_type == DatasetTypes.PATH:
         print('💿  Loading files from disk')
@@ -45,6 +46,19 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
         )
     if 'NOW_CI_RUN' in os.environ:
         da = da[:50]
+    return da
+
+
+def get_da_with_index_fields(da: DocumentArray, user_input: UserInput):
+    for d in da:
+        d.chunks = [getattr(d, field) for field in user_input.index_fields]
+        # keep only the index fields in metadata
+        d._metadata['multi_modal_schema'] = {
+            k: d._metadata['multi_modal_schema'][k] for k in user_input.index_fields
+        }
+        # Update the positions accordingly to access the chunks
+        for i, k in enumerate(user_input.index_fields):
+            d._metadata['multi_modal_schema'][k]['position'] = int(i)
     return da
 
 
@@ -70,7 +84,11 @@ def _add_tags_to_da(da: DocumentArray, user_input: UserInput):
         for field in non_index_fields:
             non_index_field_doc = getattr(d, field, None)
             d.tags.update(
-                {field: non_index_field_doc.content or non_index_field_doc.uri}
+                {
+                    field: non_index_field_doc.content
+                    if isinstance(non_index_field_doc.content, str)
+                    else non_index_field_doc.uri
+                }
             )
     return da
 
