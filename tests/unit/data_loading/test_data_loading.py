@@ -3,6 +3,7 @@ import os
 from typing import Tuple
 
 import pytest
+import requests
 from docarray import Document, DocumentArray, dataclass
 from docarray.typing import Image, Text
 from pytest_mock import MockerFixture
@@ -19,6 +20,7 @@ from now.data_loading.data_loading import (
     from_files_local,
     load_data,
 )
+from now.demo_data import DemoDatasetNames, AVAILABLE_DATASETS
 from now.now_dataclasses import UserInput
 
 
@@ -187,3 +189,25 @@ def get_data(gif_resource_path, files):
     return DocumentArray(
         Document(uri=os.path.join(gif_resource_path, file)) for file in files
     )
+
+
+@pytest.mark.parametrize(
+    'ds_name',
+    [
+        ds.name
+        for _, demo_datasets in AVAILABLE_DATASETS.items()
+        for ds in demo_datasets
+    ],
+)
+def test_dataset_is_available(
+    ds_name: str,
+):
+    token = os.environ['WOLF_TOKEN']
+    cookies = {'st': token}
+    json_data = {'name': ds_name}
+    response = requests.post(
+        'https://api.hubble.jina.ai/v2/rpc/docarray.getFirstDocuments',
+        cookies=cookies,
+        json=json_data,
+    )
+    assert response.json()['code'] == 200
