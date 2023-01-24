@@ -46,7 +46,7 @@ def with_hubble_login_patch(mocker: MockerFixture) -> None:
 
 
 @pytest.fixture()
-def cleanup(dataset):
+def cleanup():
     with tempfile.TemporaryDirectory() as tmpdir:
         start = time.time()
         yield tmpdir
@@ -69,9 +69,7 @@ def cleanup(dataset):
         mins = int(now / 60)
         secs = int(now % 60)
         print(50 * '#')
-        print(
-            f'Time taken to execute deployment with dataset `{dataset}`: {mins}m {secs}s'
-        )
+        print(f'Time taken to execute deployment: {mins}m {secs}s')
         print(50 * '#')
 
 
