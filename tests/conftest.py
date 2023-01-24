@@ -18,7 +18,6 @@ from urllib3.exceptions import InsecureRequestWarning, SecurityWarning
 from now.data_loading.elasticsearch import ElasticsearchConnector
 from now.deployment.deployment import cmd
 from now.executor.indexer.elastic.elastic_indexer import wait_until_cluster_is_up
-from now.executor.indexer.elastic.es_query_building import SemanticScore
 from now.executor.preprocessor import NOWPreprocessor
 
 
@@ -186,9 +185,9 @@ def es_inputs(gif_resource_path) -> namedtuple:
     document_mappings = [['clip', 8, ['title', 'gif']]]
 
     default_semantic_scores = [
-        SemanticScore('query_text', 'title', 'clip', 1),
-        SemanticScore('query_text', 'gif', 'clip', 1),
-        SemanticScore('query_text', 'my_bm25_query', 'bm25', 1),
+        ('query_text', 'title', 'clip', 1),
+        ('query_text', 'gif', 'clip', 1),
+        ('query_text', 'my_bm25_query', 'bm25', 1),
     ]
     docs = [
         MMDoc(
