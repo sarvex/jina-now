@@ -6,7 +6,7 @@ from now.utils import BetterEnum
 
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.146-feat-expose-sem-score-13'
 NOW_PREPROCESSOR_VERSION = '0.0.120-feat-expose-sem-score-13'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.142-feat-model-choices-dialog-1'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.142-feat-model-choices-dialog-2'
 NOW_AUTOCOMPLETE_VERSION = '0.0.8-refactor-bump-jina-version-to-latest-17'
 
 
@@ -54,7 +54,10 @@ ACCESS_PATHS = '@cc'
 FLOW_STATUS = 'Serving'
 
 MODALITY_TO_MODELS = {
-    Text: [{'name': 'Clip', 'value': 'clip'}, {'name': 'Sbert', 'value': 'sbert'}],
-    Image: [{'name': 'Clip', 'value': 'clip'}],
-    Video: [{'name': 'Clip', 'value': 'clip'}],
+    Text: [
+        {'name': 'Clip', 'value': 'encoderclip'},
+        {'name': 'Sbert', 'value': 'encodersbert'},
+    ],
+    Image: [{'name': 'Clip', 'value': 'encoderclip'}],
+    Video: [{'name': 'Clip', 'value': 'encoderclip'}],
 }
