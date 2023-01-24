@@ -2,14 +2,15 @@ import json
 from argparse import Namespace
 
 import pytest
+from tests.integration.remote.assertions import (
+    assert_deployment_queries,
+    assert_deployment_response,
+    assert_suggest,
+    get_search_request_body,
+)
+
 from now.cli import cli
 from now.constants import DatasetTypes
-from tests.integration.remote.assertions import (
-    assert_deployment_response,
-    assert_deployment_queries,
-    get_search_request_body,
-    assert_suggest,
-)
 
 
 @pytest.mark.remote
@@ -33,6 +34,7 @@ def test_end_to_end(
         'es_additional_args': None,
         'index_fields': ['title'],
         'filter_fields': ['product_id'],
+        'title_model': ['clip'],
         'secured': True,
         'api_key': None,
         'additional_user': False,

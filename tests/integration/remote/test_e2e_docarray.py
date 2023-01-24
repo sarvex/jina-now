@@ -2,43 +2,48 @@ import json
 from argparse import Namespace
 
 import pytest
+from tests.integration.remote.assertions import (
+    assert_deployment_queries,
+    assert_deployment_response,
+    assert_suggest,
+    get_search_request_body,
+)
+
 from now.cli import cli
 from now.constants import DatasetTypes
 from now.demo_data import DemoDatasetNames
-from tests.integration.remote.assertions import (
-    assert_deployment_response,
-    assert_deployment_queries,
-    get_search_request_body,
-    assert_suggest,
-)
 
 
 @pytest.mark.remote
 @pytest.mark.parametrize(
-    'query_fields, index_fields, filter_fields, dataset',
+    'query_fields, index_fields, filter_fields, model_selection, dataset',
     [
         (
             'image',
             ['image'],
             ['label'],
+            ['clip'],
             DemoDatasetNames.BIRD_SPECIES,
         ),
         (
             'text',
             ['lyrics'],
             [],
+            ['sbert'],
             DemoDatasetNames.POP_LYRICS,
         ),
         (
             'text',
             ['video', 'description'],
             [],
+            ['clip'],
             DemoDatasetNames.TUMBLR_GIFS_10K,
         ),
         (
             'text',
             ['image'],
             ['label'],
+            ['clip'],
             DemoDatasetNames.BEST_ARTWORKS,
         ),
     ],
@@ -51,6 +56,7 @@ def test_end_to_end(
     query_fields,
     index_fields,
     filter_fields,
+    model_selection,
     dataset,
 ):
     kwargs = {
@@ -65,6 +71,8 @@ def test_end_to_end(
         'api_key': None,
         'additional_user': False,
     }
+    for index_field in index_fields:
+        kwargs[f'{index_field}_model'] = model_selection
     kwargs = Namespace(**kwargs)
     response = cli(args=kwargs)
     # Dump the flow details from response host to a tmp file
