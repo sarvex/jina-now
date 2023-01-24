@@ -8,7 +8,7 @@ from tests.integration.local.conftest import (
     get_flow,
     get_request_body,
 )
-from tests.integration.remote.test_end_to_end import assert_search
+from tests.integration.remote.assertions import assert_search
 
 API_KEY = 'my_key'
 update_api_keys_url = f'{BASE_URL}/admin/updateApiKeys'
