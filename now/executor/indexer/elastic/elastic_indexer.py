@@ -209,7 +209,8 @@ class NOWElasticIndexer(Executor):
             docs_map = self._handle_no_docs_map(docs)
             if len(docs_map) == 0:
                 return DocumentArray()
-
+        print('Docs Maps Keys: ', docs_map.keys())
+        print('Docs Maps Values: ', docs_map.values())
         aggregate_embeddings(docs_map)
 
         limit = parameters.get('limit', self.limit)

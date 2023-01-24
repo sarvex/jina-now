@@ -6,7 +6,7 @@ from now.utils import BetterEnum
 
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.146-fix-filter-index-fields-20'
 NOW_PREPROCESSOR_VERSION = '0.0.120-fix-filter-index-fields-20'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.142-feat-model-choices-dialog-5'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.142-feat-model-choices-dialog-6'
 NOW_AUTOCOMPLETE_VERSION = '0.0.9-fix-filter-index-fields-20'
 
 
