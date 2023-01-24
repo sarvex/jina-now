@@ -51,16 +51,14 @@ def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
 
 def get_da_with_index_fields(da: DocumentArray, user_input: UserInput):
     for d in da:
-        temp_da = []
-        for field in user_input.index_fields:
-            _index_field_doc = getattr(d, field)
-            temp_da.append(_index_field_doc)
-        d.chunks = DocumentArray(temp_da)
+        d.chunks = [getattr(d, field) for field in user_input.index_fields]
+        # keep only the index fields in metadata
         d._metadata['multi_modal_schema'] = {
             k: d._metadata['multi_modal_schema'][k] for k in user_input.index_fields
         }
+        # Update the positions accordingly to access the chunks
         for i, k in enumerate(user_input.index_fields):
-            d._metadata['multi_modal_schema'][k]['position'] = float(i)
+            d._metadata['multi_modal_schema'][k]['position'] = int(i)
     return da
 
 

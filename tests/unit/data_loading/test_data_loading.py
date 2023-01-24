@@ -66,6 +66,18 @@ def is_da_text_equal(da_a: DocumentArray, da_b: DocumentArray):
     return True
 
 
+def test_filter_index_fields(da: DocumentArray):
+    user_input = UserInput()
+    user_input.dataset_type = DatasetTypes.DEMO
+    user_input.index_fields = []
+
+    loaded_da = load_data(user_input)
+
+    assert len(loaded_da) > 0
+    for doc in loaded_da:
+        assert len(doc.chunks) == 0
+
+
 def test_da_local_path(local_da: DocumentArray):
     path, da = local_da
     user_input = UserInput()
