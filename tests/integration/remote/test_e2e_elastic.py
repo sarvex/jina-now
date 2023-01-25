@@ -34,7 +34,7 @@ def test_end_to_end(
         'es_additional_args': None,
         'index_fields': ['title'],
         'filter_fields': ['product_id'],
-        'title_model': ['clip'],
+        'title_model': ['encoderclip'],
         'secured': True,
         'api_key': None,
         'additional_user': False,

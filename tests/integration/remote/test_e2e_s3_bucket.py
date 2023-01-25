@@ -32,7 +32,7 @@ def test_backend_custom_data(
         'aws_secret_access_key': os.environ.get('AWS_SECRET_ACCESS_KEY'),
         'aws_region_name': 'eu-west-1',
         'index_fields': ['.jpeg'],
-        '.jpeg_model': ['clip'],
+        '.jpeg_model': ['encoderclip'],
         'filter_fields': [],
         'secured': False,
     }
