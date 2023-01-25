@@ -139,7 +139,7 @@ def _check_if_demo_available(user_input: UserInput, **kwargs):
     # If the demo is available then do not continue with the dialog and break
     if user_input.app_instance.is_demo_available(user_input):
         raise DemoAvailableException(
-            'Demo is available. Not continuing with further dialog'
+            'Demo is available. Suspending the remaining dialog'
         )
     # We need login only if the deployment is needed else
     # for hosted example user should have access without login
