@@ -141,7 +141,10 @@ def _check_if_demo_available(user_input: UserInput, **kwargs):
         raise DemoAvailableException(
             'Demo is available. Not continuing with further dialog'
         )
-
+    # We need login only if the deployment is needed else
+    # for hosted example user should have access without login
+    if user_input.jwt is None:
+        _jina_auth_login(user_input)
     set_field_names_from_docarray(user_input)
 
 
