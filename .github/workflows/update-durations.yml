@@ -45,13 +45,11 @@ jobs:
           git config --local user.email "dev-bot@jina.ai"
           git config --local user.name "Jina Dev Bot"
           git checkout -b "update-durations-$(date +%s)"
-          echo "durations test2" > .test_durations2
-          git status
           git add .test_durations
           git status
           git commit -m "refactor: update durations"
           git push origin "update-durations-$(date +%s)"
-          gh pr create --title "refactor: update durations" --body "refactor: update durations" --base master --head "update-durations-$(date +%s)"
+          gh pr create --title "refactor: update durations" --body "refactor: update durations"
         env:
           GH_TOKEN: ${{ github.token }}
 #        - name: Create pull request
