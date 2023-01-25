@@ -247,7 +247,6 @@ class NOWElasticIndexer(Executor):
             for c in doc.chunks:
                 c.embedding = None
         results = DocumentArray(list(zip(*es_queries))[0])
-        print('Results: ', results)
         if (
             parameters.get('create_temp_link', False)
             and self.user_input.dataset_type == DatasetTypes.S3_BUCKET
