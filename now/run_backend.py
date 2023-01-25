@@ -50,7 +50,7 @@ def run(
         )
 
     dataset = load_data(user_input, data_class, status_callback)
-    status_callback('Data loaded. Setting up the flow...')
+    status_callback('Data loaded. Deploying the flow...')
 
     # Set up the app specific flow and also get the environment variables and its values
     env_dict = app_instance.setup(
@@ -60,7 +60,6 @@ def run(
     )
 
     add_env_variables_to_flow(app_instance, env_dict)
-    status_callback('Flow set up. Deploying the flow...')
     (client, gateway_port, gateway_host_internal,) = deploy_flow(
         flow_yaml=app_instance.flow_yaml,
         env_dict=env_dict,
