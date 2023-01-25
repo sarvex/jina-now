@@ -82,7 +82,9 @@ def _add_tags_to_da(da: DocumentArray, user_input: UserInput):
     )
     for d in da:
         for field in non_index_fields:
-            non_index_field_doc = getattr(d, field, None)
+            non_index_field_doc = getattr(d, field)
+            if non_index_field_doc.blob or non_index_field_doc.tensor is not None:
+                continue
             d.tags.update(
                 {
                     field: non_index_field_doc.content
@@ -141,9 +143,11 @@ def _load_from_disk(user_input: UserInput, data_class: Type) -> DocumentArray:
     dataset_path = os.path.expanduser(dataset_path)
     if os.path.isfile(dataset_path):
         try:
-            docs = DocumentArray.load_binary(dataset_path)
-            if is_multimodal(docs[0]):
-                return docs
+            da = DocumentArray.load_binary(dataset_path)
+            if is_multimodal(da[0]):
+                da = _add_tags_to_da(da, user_input)
+                da = _get_da_with_index_fields(da, user_input)
+                return da
             else:
                 raise ValueError(
                     f'The file {dataset_path} does not contain a multimodal DocumentArray.'
