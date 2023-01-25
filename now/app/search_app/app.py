@@ -1,7 +1,6 @@
 import os
 from typing import Dict, List, Tuple, TypeVar
 
-from docarray import Document, dataclass
 from docarray.typing import Image, Text, Video
 from jina import Client
 
@@ -61,20 +60,10 @@ class SearchApp(JinaNOWApp):
                 host=f'grpcs://{DEMO_NS.format(user_input.dataset_name.split("/")[-1])}.dev.jina.ai'
             )
             try:
-                # Invoke search endpoint - the safest bet that the demo is up and running and returns results
-                @dataclass
-                class MMQuery:
-                    query_text: Text
-
-                resp = client.post(
-                    '/',
-                    inputs=Document(MMQuery(query_text='test')),
-                    parameters={'access_paths': '@cc'},
-                )
-                if resp[0].matches and len(resp[0].matches) > 0:
-                    return True
+                client.post('/dry_run', timeout=2)
             except Exception as e:  # noqa E722
                 pass
+            return True
         return False
 
     @staticmethod
