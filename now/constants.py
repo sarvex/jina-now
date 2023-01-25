@@ -5,13 +5,19 @@ from docarray.typing import Image, Text, Video
 from now.utils import BetterEnum
 
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.146-fix-filter-index-fields-20'
-NOW_PREPROCESSOR_VERSION = '0.0.123-demo-examples-4'
+NOW_PREPROCESSOR_VERSION = '0.0.123-demo-examples-5'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.142-fix-filter-index-fields-20'
 NOW_AUTOCOMPLETE_VERSION = '0.0.9-fix-filter-index-fields-20'
 
 
 class Apps(BetterEnum):
     SEARCH_APP = 'search_app'
+
+
+class DialogStatus(BetterEnum):
+    CONTINUE = 'continue'
+    BREAK = 'break'
+    SKIP = 'skip'
 
 
 class DatasetTypes(BetterEnum):

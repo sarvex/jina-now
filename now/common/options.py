@@ -23,6 +23,7 @@ from now.deployment.deployment import cmd
 from now.log import yaspin_extended
 from now.now_dataclasses import DialogOptions, UserInput
 from now.utils import (
+    DemoAvailableException,
     RetryException,
     get_info_hubble,
     jina_auth_login,
@@ -120,10 +121,7 @@ DATASET_TYPE = DialogOptions(
 
 
 def check_login_dataset(user_input: UserInput):
-    if (
-        user_input.dataset_type in [DatasetTypes.DEMO, DatasetTypes.DOCARRAY]
-        and user_input.jwt is None
-    ):
+    if user_input.dataset_type == DatasetTypes.DOCARRAY and user_input.jwt is None:
         _jina_auth_login(user_input)
 
 
@@ -137,6 +135,16 @@ def _get_demo_data_choices(user_input: UserInput, **kwargs):
     ]
 
 
+def _check_if_demo_available(user_input: UserInput, **kwargs):
+    # If the demo is available then do not continue with the dialog and break
+    if user_input.app_instance.is_demo_available(user_input):
+        raise DemoAvailableException(
+            'Demo is available. Not continuing with further dialog'
+        )
+
+    set_field_names_from_docarray(user_input)
+
+
 DEMO_DATA = DialogOptions(
     name='dataset_name',
     prompt_message='What demo dataset do you want to use?',
@@ -147,7 +155,7 @@ DEMO_DATA = DialogOptions(
     description='Select one of the available demo datasets',
     conditional_check=lambda user_input, **kwargs: user_input.dataset_type
     == DatasetTypes.DEMO,
-    post_func=lambda user_input, **kwargs: set_field_names_from_docarray(user_input),
+    post_func=lambda user_input, **kwargs: _check_if_demo_available(user_input),
 )
 
 DOCARRAY_NAME = DialogOptions(
