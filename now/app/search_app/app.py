@@ -84,12 +84,9 @@ class SearchApp(JinaNOWApp):
         return {
             'name': 'preprocessor',
             'needs': 'autocomplete_executor',
-            'uses': f'jinahub+serverless://{name_to_id_map.get("NOWPreprocessor")}/{NOW_PREPROCESSOR_VERSION}',
+            'uses': f'jinahub+docker://{name_to_id_map.get("NOWPreprocessor")}/{NOW_PREPROCESSOR_VERSION}',
             'jcloud': {
-                'resources': {
-                    'memory': '1G',
-                    'cpu': '0.5',
-                }
+                'autoscale': {'min': 0, 'max': 5, 'metric': 'concurrency', 'target': 1}
             },
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
         }
