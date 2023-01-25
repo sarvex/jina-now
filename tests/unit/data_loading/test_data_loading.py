@@ -1,5 +1,6 @@
 """ This suite tests the data_loading.py module """
 import os
+import pathlib
 from typing import Tuple
 
 import pytest
@@ -25,12 +26,12 @@ from now.now_dataclasses import UserInput
 
 @pytest.fixture()
 def da() -> DocumentArray:
+    cur_dir = pathlib.Path(__file__).parent.resolve()
+
     @dataclass
     class MMDoc:
         description: Text = 'description'
-        image: Image = (
-            '/Users/florianhonicke/jina/now/tests/resources/gif/folder1/file.gif'
-        )
+        image: Image = os.path.join(cur_dir, '../../resources/gif/folder1/file.gif')
 
     return DocumentArray(
         [Document(MMDoc(description='foo')), Document(MMDoc(description='bar'))]
