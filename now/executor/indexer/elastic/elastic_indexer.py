@@ -239,7 +239,6 @@ class NOWElasticIndexer(Executor):
                 source=True,
                 size=limit,
             )['hits']['hits']
-            print('Result: ', result)
             doc.matches = convert_es_results_to_matches(
                 query_doc=doc,
                 es_results=result,
