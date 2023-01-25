@@ -25,12 +25,8 @@ def configure_user_input(**kwargs) -> UserInput:
     # Create the search app.
     # TODO: refactor this when more apps are added
     user_input.app_instance = construct_app(Apps.SEARCH_APP)
-    # Ask the base/common options
-    for option in options.base_options:
-        if configure_option(option, user_input, **kwargs) == DialogStatus.BREAK:
-            return user_input
-    # Ask app specific options
-    for option in user_input.app_instance.options:
+    # Ask the options
+    for option in options.base_options + user_input.app_instance.options:
         if configure_option(option, user_input, **kwargs) == DialogStatus.BREAK:
             break
 
