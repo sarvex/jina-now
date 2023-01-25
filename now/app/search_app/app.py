@@ -156,6 +156,7 @@ class SearchApp(JinaNOWApp):
             'uses_with': {
                 'document_mappings': document_mappings_list,
             },
+            'no_reduce': True,
             'jcloud': {
                 'resources': {
                     'memory': '8G',
