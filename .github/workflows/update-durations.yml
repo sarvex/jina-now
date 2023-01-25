@@ -30,7 +30,7 @@ jobs:
       - name: create durations
         id: test
         run: |
-          touch .test_durations
+          echo "durations test" > .test_durations
           #pytest --suppress-no-test-exit-code -v -s -m "not gpu" --store-durations tests/
         timeout-minutes: 100
         env:
@@ -45,7 +45,10 @@ jobs:
           git config --local user.email "dev-bot@jina.ai"
           git config --local user.name "Jina Dev Bot"
           git checkout -b "update-durations-$(date +%s)"
+          echo "durations test2" > .test_durations2
+          git status
           git add .test_durations
+          git status
           git commit -m "refactor: update durations"
           git push origin "update-durations-$(date +%s)"
           gh pr create --title "refactor: update durations" --body "refactor: update durations" --base master --head "update-durations-$(date +%s)"
