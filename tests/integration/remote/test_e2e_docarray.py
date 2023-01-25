@@ -2,15 +2,16 @@ import json
 from argparse import Namespace
 
 import pytest
+from tests.integration.remote.assertions import (
+    assert_deployment_queries,
+    assert_deployment_response,
+    assert_suggest,
+    get_search_request_body,
+)
+
 from now.cli import cli
 from now.constants import DatasetTypes
 from now.demo_data import DemoDatasetNames
-from tests.integration.remote.assertions import (
-    assert_deployment_response,
-    assert_deployment_queries,
-    get_search_request_body,
-    assert_suggest,
-)
 
 
 @pytest.mark.remote
@@ -47,7 +48,6 @@ from tests.integration.remote.assertions import (
 def test_end_to_end(
     cleanup,
     start_bff,
-    start_playground,
     query_fields,
     index_fields,
     filter_fields,
