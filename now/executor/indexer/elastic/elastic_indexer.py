@@ -445,7 +445,9 @@ class NOWElasticIndexer(Executor):
                 # aggs['aggs'][f'avg_{tag}'] = {'avg': {'field': f'tags.{tag}'}}
                 aggs['aggs'][tag] = {'terms': {'field': f'tags.{tag}', 'size': 100}}
         try:
+            print('aggs', aggs)
             result = self.es.search(index=self.index_name, body=aggs)
+            print('result', result)
             aggregations = result['aggregations']
             updated_tags = {}
             for tag, agg in aggregations.items():
