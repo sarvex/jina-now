@@ -52,7 +52,6 @@ from now.demo_data import DemoDatasetNames
 def test_end_to_end(
     cleanup,
     start_bff,
-    start_playground,
     query_fields,
     index_fields,
     filter_fields,

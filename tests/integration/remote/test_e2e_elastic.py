@@ -18,7 +18,6 @@ from now.constants import DatasetTypes
 def test_end_to_end(
     cleanup,
     start_bff,
-    start_playground,
     setup_online_shop_db,
     es_connection_params,
 ):
