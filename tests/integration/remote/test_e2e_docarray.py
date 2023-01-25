@@ -23,8 +23,8 @@ from now.demo_data import DemoDatasetNames
             ['image', 'label'],
             [],
             {
-                'model_image': ['encoderclip'],
-                'model_label': ['encoderclip', 'encodersbert'],
+                'image_model': ['encoderclip'],
+                'label_model': ['encoderclip', 'encodersbert'],
             },
             DemoDatasetNames.BIRD_SPECIES,
         ),
