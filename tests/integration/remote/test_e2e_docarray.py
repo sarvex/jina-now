@@ -42,7 +42,7 @@ from now.demo_data import DemoDatasetNames
             ['lyrics'],
             [],
             {
-                'text_model': ['encoderclip', 'encodersbert'],
+                'lyrics_model': ['encoderclip', 'encodersbert'],
             },
             DemoDatasetNames.POP_LYRICS,
         ),
