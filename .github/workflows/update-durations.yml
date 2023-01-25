@@ -51,14 +51,3 @@ jobs:
           gh pr create --title "refactor: update durations" --body "refactor: update durations"
         env:
           GH_TOKEN: ${{ github.token }}
-#        - name: Create pull request
-#          uses: peter-evans/create-pull-request@v2
-#          with:
-#          token: ${{ secrets.GITHUB_TOKEN }}
-#          commit-message: "Update test durations"
-#          title: "Update test durations"
-#          head: "update-durations"
-#          base: "main"
-#          labels: "duration, tests"
-#          env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
