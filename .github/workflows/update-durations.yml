@@ -23,6 +23,7 @@ jobs:
       - name: Prepare environment
         run: |
           sudo apt update
+          sudo apt install gh
           python -m pip install --upgrade pip
           python -m pip install wheel
           pip install --no-cache-dir ".[full,test]"
@@ -38,24 +39,24 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           S3_CUSTOM_DATA_PATH: ${{ secrets.S3_CUSTOM_DATA_PATH }}
 
-#      - name: Commit and push new durations file
-#        run: |
-#        git config user.email "github-actions@github.com"
-#        git config user.name "Github Actions"
-#        git add durations.json
-#        git commit -m "Update test durations"
-#        git push origin HEAD
-#        env:
-#        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#
-#      - name: Create pull request
-#        uses: peter-evans/create-pull-request@v2
-#        with:
-#        token: ${{ secrets.GITHUB_TOKEN }}
-#        commit-message: "Update test durations"
-#        title: "Update test durations"
-#        head: "update-durations"
-#        base: "main"
-#        labels: "duration, tests"
-#        env:
-#        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Commit and push new durations file
+        run: |
+          git config --local user.email "dev-bot@jina.ai"
+          git config --local user.name "Jina Dev Bot"
+          git checkout -b "update-durations-$(date +%s)"
+          git add .test_durations
+          git commit -m "refactor: update durations"
+          git push origin "update-durations-$(date +%s)"
+          gh pr create --title "refactor: update durations" --body "refactor: update durations" --base master --head "update-durations-$(date +%s)"
+
+#        - name: Create pull request
+#          uses: peter-evans/create-pull-request@v2
+#          with:
+#          token: ${{ secrets.GITHUB_TOKEN }}
+#          commit-message: "Update test durations"
+#          title: "Update test durations"
+#          head: "update-durations"
+#          base: "main"
+#          labels: "duration, tests"
+#          env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
