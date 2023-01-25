@@ -52,7 +52,8 @@ jobs:
           git commit -m "refactor: update durations"
           git push origin "update-durations-$(date +%s)"
           gh pr create --title "refactor: update durations" --body "refactor: update durations" --base master --head "update-durations-$(date +%s)"
-
+        env:
+          GH_TOKEN: ${{ github.token }}
 #        - name: Create pull request
 #          uses: peter-evans/create-pull-request@v2
 #          with:
