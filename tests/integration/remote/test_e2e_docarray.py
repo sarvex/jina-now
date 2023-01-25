@@ -32,28 +32,37 @@ from now.demo_data import DemoDatasetNames
             'image',
             ['image'],
             ['label'],
-            ['encoderclip'],
+            {
+                'image_model': ['encoderclip'],
+            },
             DemoDatasetNames.BIRD_SPECIES,
         ),
         (
             'text',
             ['lyrics'],
             [],
-            ['encodersbert', 'encoderclip'],
+            {
+                'label_model': ['encoderclip', 'encodersbert'],
+            },
             DemoDatasetNames.POP_LYRICS,
         ),
         (
             'text',
             ['video', 'description'],
             [],
-            ['encoderclip'],
+            {
+                'video_model': ['encoderclip'],
+                'description_model': ['encoderclip'],
+            },
             DemoDatasetNames.TUMBLR_GIFS_10K,
         ),
         (
             'text',
             ['image'],
             ['label'],
-            ['encoderclip'],
+            {
+                'image_model': ['encoderclip'],
+            },
             DemoDatasetNames.BEST_ARTWORKS,
         ),
     ],
@@ -80,11 +89,7 @@ def test_end_to_end(
         'api_key': None,
         'additional_user': False,
     }
-    if isinstance(model_selection, dict):
-        kwargs.update(model_selection)
-    else:
-        for index_field in index_fields:
-            kwargs[f'{index_field}_model'] = model_selection
+    kwargs.update(model_selection)
     kwargs = Namespace(**kwargs)
     response = cli(args=kwargs)
     # Dump the flow details from response host to a tmp file
