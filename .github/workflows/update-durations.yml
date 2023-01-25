@@ -30,8 +30,8 @@ jobs:
       - name: create durations
         id: test
         run: |
-          echo "durations test" > .test_durations
-          #pytest --suppress-no-test-exit-code -v -s -m "not gpu" --store-durations tests/
+          rm .test_durations
+          pytest --suppress-no-test-exit-code -v -s -m "not gpu" --store-durations tests/
         timeout-minutes: 100
         env:
           WOLF_TOKEN: ${{ secrets.WOLF_TOKEN }}
