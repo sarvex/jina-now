@@ -231,6 +231,7 @@ class NOWElasticIndexer(Executor):
             filter=filter,
             query_to_curated_ids=self.query_to_curated_ids,
         )
+        print('ES Queries: ', es_queries)
         for doc, query in es_queries:
             result = self.es.search(
                 index=self.index_name,
@@ -238,6 +239,7 @@ class NOWElasticIndexer(Executor):
                 source=True,
                 size=limit,
             )['hits']['hits']
+            print('Result: ', result)
             doc.matches = convert_es_results_to_matches(
                 query_doc=doc,
                 es_results=result,
@@ -249,7 +251,7 @@ class NOWElasticIndexer(Executor):
             for c in doc.chunks:
                 c.embedding = None
         results = DocumentArray(list(zip(*es_queries))[0])
-
+        print('Results: ', results)
         if (
             parameters.get('create_temp_link', False)
             and self.user_input.dataset_type == DatasetTypes.S3_BUCKET
@@ -447,9 +449,7 @@ class NOWElasticIndexer(Executor):
         try:
             if not aggs['aggs']:
                 return
-            print('aggs', aggs)
             result = self.es.search(index=self.index_name, body=aggs)
-            print('result', result)
             aggregations = result['aggregations']
             updated_tags = {}
             for tag, agg in aggregations.items():
