@@ -12,6 +12,7 @@ from now.constants import (
     NOW_ELASTIC_INDEXER_VERSION,
     NOW_PREPROCESSOR_VERSION,
     Apps,
+    Models,
 )
 from now.demo_data import (
     AVAILABLE_DATASETS,
@@ -100,7 +101,7 @@ class SearchApp(JinaNOWApp):
     @staticmethod
     def clip_encoder_stub() -> Tuple[Dict, int]:
         return {
-            'name': 'encoderclip',
+            'name': Models.CLIP_MODEL,
             'uses': f'{EXECUTOR_PREFIX}CLIPOnnxEncoder/0.8.1-gpu',
             'host': EXTERNAL_CLIP_HOST,
             'port': 443,
@@ -114,7 +115,7 @@ class SearchApp(JinaNOWApp):
     @staticmethod
     def sbert_encoder_stub() -> Tuple[Dict, int]:
         return {
-            'name': 'encodersbert',
+            'name': Models.SBERT_MODEL,
             'uses': f'{EXECUTOR_PREFIX}TransformerSentenceEncoder',
             'uses_with': {
                 'access_paths': ACCESS_PATHS,
@@ -183,7 +184,7 @@ class SearchApp(JinaNOWApp):
 
         encoder2dim = {}
         if any(
-            'encodersbert' in user_input.model_choices[f"{field}_model"]
+            Models.SBERT_MODEL in user_input.model_choices[f"{field}_model"]
             for field in user_input.index_fields
         ):
             sbert_encoder, sbert_dim = self.sbert_encoder_stub()
@@ -191,7 +192,7 @@ class SearchApp(JinaNOWApp):
             flow_yaml_executors.append(sbert_encoder)
 
         if any(
-            'encoderclip' in user_input.model_choices[f"{field}_model"]
+            Models.CLIP_MODEL in user_input.model_choices[f"{field}_model"]
             for field in user_input.index_fields
         ):
             clip_encoder, clip_dim = self.clip_encoder_stub()

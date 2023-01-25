@@ -9,7 +9,7 @@ from tests.integration.remote.assertions import (
 )
 
 from now.cli import cli
-from now.constants import DatasetTypes
+from now.constants import DatasetTypes, Models
 
 
 @pytest.mark.remote
@@ -31,7 +31,7 @@ def test_backend_custom_data(
         'aws_secret_access_key': os.environ.get('AWS_SECRET_ACCESS_KEY'),
         'aws_region_name': 'eu-west-1',
         'index_fields': ['.jpeg'],
-        '.jpeg_model': ['encoderclip'],
+        '.jpeg_model': [Models.CLIP_MODEL],
         'filter_fields': [],
         'secured': False,
     }

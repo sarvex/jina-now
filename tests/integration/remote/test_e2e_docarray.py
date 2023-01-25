@@ -10,7 +10,7 @@ from tests.integration.remote.assertions import (
 )
 
 from now.cli import cli
-from now.constants import DatasetTypes
+from now.constants import DatasetTypes, Models
 from now.demo_data import DemoDatasetNames
 
 
@@ -23,8 +23,8 @@ from now.demo_data import DemoDatasetNames
             ['image', 'label'],
             [],
             {
-                'image_model': ['encoderclip'],
-                'label_model': ['encoderclip', 'encodersbert'],
+                'image_model': [Models.CLIP_MODEL],
+                'label_model': [Models.CLIP_MODEL, Models.SBERT_MODEL],
             },
             DemoDatasetNames.BIRD_SPECIES,
         ),
@@ -33,7 +33,7 @@ from now.demo_data import DemoDatasetNames
             ['image'],
             ['label'],
             {
-                'image_model': ['encoderclip'],
+                'image_model': [Models.CLIP_MODEL],
             },
             DemoDatasetNames.BIRD_SPECIES,
         ),
@@ -41,9 +41,7 @@ from now.demo_data import DemoDatasetNames
             'text',
             ['lyrics'],
             [],
-            {
-                'lyrics_model': ['encoderclip', 'encodersbert'],
-            },
+            {'lyrics_model': [Models.CLIP_MODEL, Models.SBERT_MODEL]},
             DemoDatasetNames.POP_LYRICS,
         ),
         (
@@ -51,8 +49,8 @@ from now.demo_data import DemoDatasetNames
             ['video', 'description'],
             [],
             {
-                'video_model': ['encoderclip'],
-                'description_model': ['encoderclip'],
+                'video_model': [Models.CLIP_MODEL],
+                'description_model': [Models.CLIP_MODEL],
             },
             DemoDatasetNames.TUMBLR_GIFS_10K,
         ),
@@ -61,7 +59,7 @@ from now.demo_data import DemoDatasetNames
             ['image'],
             ['label'],
             {
-                'image_model': ['encoderclip'],
+                'image_model': [Models.CLIP_MODEL],
             },
             DemoDatasetNames.BEST_ARTWORKS,
         ),

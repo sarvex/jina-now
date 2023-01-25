@@ -6,7 +6,7 @@ from now.utils import BetterEnum
 
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.150-refactor-end-to-end-no-playground-3'
 NOW_PREPROCESSOR_VERSION = '0.0.120-fix-filter-index-fields-20'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.142-feat-model-choices-dialog-21'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.142-feat-model-choices-dialog-22'
 NOW_AUTOCOMPLETE_VERSION = '0.0.9-fix-filter-index-fields-20'
 
 
@@ -20,6 +20,11 @@ class DatasetTypes(BetterEnum):
     DOCARRAY = 'docarray'
     S3_BUCKET = 's3_bucket'
     ELASTICSEARCH = 'elasticsearch'
+
+
+class Models(BetterEnum):
+    CLIP_MODEL = 'encoderclip'
+    SBERT_MODEL = 'encodersbert'
 
 
 SUPPORTED_FILE_TYPES = {
@@ -55,9 +60,9 @@ FLOW_STATUS = 'Serving'
 
 MODALITY_TO_MODELS = {
     Text: [
-        {'name': 'Clip', 'value': 'encoderclip'},
-        {'name': 'Sbert', 'value': 'encodersbert'},
+        {'name': 'Clip', 'value': Models.CLIP_MODEL},
+        {'name': 'Sbert', 'value': Models.SBERT_MODEL},
     ],
-    Image: [{'name': 'Clip', 'value': 'encoderclip'}],
-    Video: [{'name': 'Clip', 'value': 'encoderclip'}],
+    Image: [{'name': 'Clip', 'value': Models.CLIP_MODEL}],
+    Video: [{'name': 'Clip', 'value': Models.CLIP_MODEL}],
 }

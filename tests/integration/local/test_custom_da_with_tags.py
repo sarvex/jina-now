@@ -1,7 +1,8 @@
 import requests
-from now.constants import ACCESS_PATHS
 from tests.integration.local.conftest import SEARCH_URL, get_flow, get_request_body
 from tests.integration.local.data import data_with_tags
+
+from now.constants import ACCESS_PATHS, Models
 
 
 def test_search_filters(
@@ -14,7 +15,7 @@ def test_search_filters(
             'user_input_dict': {
                 'filter_fields': ['color'],
             },
-            'document_mappings': [['encoderclip', 512, ['title']]],
+            'document_mappings': [[Models.CLIP_MODEL, 512, ['title']]],
         },
     )
     with f:
