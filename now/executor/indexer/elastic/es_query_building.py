@@ -34,6 +34,9 @@ def generate_semantic_scores(
                 f'Documents are not encoded with same encoder as query. executor_name: {executor_name}, encoder_to_fields: {encoder_to_fields}'
             ) from e
         for field_name in field_names:
+            chunk = getattr(first_doc, field_name)
+            if chunk.chunks.embeddings is None and chunk.embedding is None:
+                continue
             for document_field in document_fields:
                 semantic_scores.append(
                     (
