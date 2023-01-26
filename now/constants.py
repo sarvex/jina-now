@@ -4,10 +4,10 @@ from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.148-refactor-clean-up-1'
-NOW_PREPROCESSOR_VERSION = '0.0.121-refactor-remove-ocr-4'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.144-test-optimize-tests-4'
-NOW_AUTOCOMPLETE_VERSION = '0.0.8-refactor-remove-k8s-9'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.150-refactor-end-to-end-no-playground-3'
+NOW_PREPROCESSOR_VERSION = '0.0.120-fix-filter-index-fields-20'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.142-fix-filter-index-fields-20'
+NOW_AUTOCOMPLETE_VERSION = '0.0.9-fix-filter-index-fields-20'
 
 
 class Apps(BetterEnum):

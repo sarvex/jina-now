@@ -150,7 +150,11 @@ class SearchApp(JinaNOWApp):
                     [
                         encoder_name,
                         dim,
-                        list(user_input.field_names_to_dataclass_fields.values()),
+                        [
+                            v
+                            for k, v in user_input.field_names_to_dataclass_fields.items()
+                            if k in user_input.index_fields
+                        ],
                     ]
                 ],
             },
@@ -174,9 +178,7 @@ class SearchApp(JinaNOWApp):
             self.autocomplete_stub(),
             self.preprocessor_stub(
                 use_high_perf_flow=get_email().split('@')[-1] == 'jina.ai'
-                and not any(
-                    _var in os.environ for _var in ['NOW_CI_RUN', 'NOW_TESTING']
-                )
+                and 'NOW_CI_RUN' not in os.environ
             ),
         ]
 
