@@ -8,8 +8,8 @@ from warnings import catch_warnings, filterwarnings
 import hubble
 import numpy as np
 import pytest
-from docarray import Document, DocumentArray, dataclass
-from docarray.typing import Image, Text
+from docarray import Document, DocumentArray, dataclass, field
+from docarray.typing import Image, Text, Video
 from elasticsearch import Elasticsearch
 from tests.unit.data_loading.elastic.example_dataset import ExampleDataset
 from tests.unit.data_loading.elastic.utils import delete_es_index
@@ -19,6 +19,19 @@ from now.data_loading.elasticsearch import ElasticsearchConnector
 from now.deployment.deployment import cmd
 from now.executor.indexer.elastic.elastic_indexer import wait_until_cluster_is_up
 from now.executor.preprocessor import NOWPreprocessor
+
+
+@pytest.fixture()
+def mm_dataclass():
+    """Fixture for mmdocs data"""
+
+    @dataclass
+    class MMDoc:
+        text: Text = field(default=None)
+        image: Image = field(default=None)
+        video: Video = field(default=None)
+
+    return MMDoc
 
 
 @pytest.fixture()
