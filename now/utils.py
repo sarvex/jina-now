@@ -332,6 +332,29 @@ def get_email():
         return ''
 
 
+def list_s3_objects(bucket_name, prefix, user_input, max_keys=1000):
+    session = boto3.Session(
+        aws_access_key_id=user_input.aws_access_key_id,
+        aws_secret_access_key=user_input.aws_secret_access_key,
+    )
+
+    client = session.client('s3', region_name='eu-west-1')
+    response = client.list_objects_v2(
+        Bucket=bucket_name, Prefix=prefix, MaxKeys=max_keys
+    )
+    while response:
+        for content in response.get('Contents', []):
+            yield content['Key']
+        if not response.get('IsTruncated'):
+            break
+        response = client.list_objects_v2(
+            Bucket=bucket_name,
+            Prefix=prefix,
+            MaxKeys=max_keys,
+            ContinuationToken=response['NextContinuationToken'],
+        )
+
+
 def docarray_typing_to_modality_string(T: TypeVar) -> str:
     """E.g. docarray.typing.Image -> image"""
     return T.__name__.lower()

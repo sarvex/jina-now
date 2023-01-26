@@ -14,7 +14,7 @@ from now.constants import DatasetTypes
 from now.data_loading.elasticsearch import ElasticsearchExtractor
 from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
-from now.utils import sigmap
+from now.utils import list_s3_objects, sigmap
 
 
 def load_data(user_input: UserInput, data_class=None) -> DocumentArray:
@@ -314,11 +314,13 @@ def _list_files_from_s3_bucket(
     first_file = get_first_file_in_folder_structure_s3(
         bucket, folder_prefix, user_input.dataset_path
     )
-    objects = list(bucket.objects.filter(Prefix=folder_prefix))
+
+    objects = list(list_s3_objects(bucket.name, folder_prefix, user_input))
+
     file_paths = [
-        obj.key
+        obj
         for obj in objects
-        if not obj.key.endswith('/') and not obj.key.split('/')[-1].startswith('.')
+        if not obj.endswith('/') and not obj.split('/')[-1].startswith('.')
     ]
 
     structure_identifier = first_file[len(folder_prefix) :].split('/')
