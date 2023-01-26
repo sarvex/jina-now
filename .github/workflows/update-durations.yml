@@ -19,9 +19,17 @@ jobs:
           cat ~/.jina/config.json
         env:
           WOLF_TOKEN: ${{ secrets.WOLF_TOKEN }}
+      - name: Prepare environment
+        run: |
+          sudo apt update
+          sudo apt install gh
+          python -m pip install --upgrade pip
+          python -m pip install wheel
+          pip install --no-cache-dir ".[full,test]"
       - name: create durations
         id: test
         run: |
+          rm .test_durations
           pytest --suppress-no-test-exit-code -v -s -m "not gpu" --store-durations tests/
         timeout-minutes: 100
         env:
@@ -33,22 +41,14 @@ jobs:
 
       - name: Commit and push new durations file
         run: |
-        git config user.email "github-actions@github.com"
-        git config user.name "Github Actions"
-        git add durations.json
-        git commit -m "Update test durations"
-        git push origin HEAD
+          git config --local user.email "dev-bot@jina.ai"
+          git config --local user.name "Jina Dev Bot"
+          branch_name="update-durations-$(date +'%Y-%m-%d-%H-%M-%S')"
+          git checkout -b $branch_name
+          git add .test_durations
+          git status
+          git commit -m "refactor: update durations"
+          git push origin $branch_name
+          gh pr create --title "refactor: update durations" --body "refactor: update durations"
         env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Create pull request
-        uses: peter-evans/create-pull-request@v2
-        with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        commit-message: "Update test durations"
-        title: "Update test durations"
-        head: "update-durations"
-        base: "main"
-        labels: "duration, tests"
-        env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
