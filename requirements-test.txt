@@ -17,3 +17,4 @@ streamlit==1.11.1
 extra-streamlit-components==0.1.55
 click==8.0.0
 frozendict==2.3.4
+av==9.1.1

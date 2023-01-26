@@ -8,18 +8,16 @@ from now.executor.preprocessor import NOWPreprocessor
 
 
 @pytest.mark.parametrize('endpoint', ['index', 'search'])
-def test_search_app(resources_folder_path, endpoint, tmpdir):
+def test_search_app(resources_folder_path, endpoint, tmpdir, mm_dataclass):
+
     metas = {'workspace': str(tmpdir)}
     text_docs = DocumentArray(
         [
-            Document(chunks=[Document(text='test', modality='text')]),
+            Document(mm_dataclass(text='test')),
             Document(
-                chunks=[
-                    Document(
-                        uri=os.path.join(resources_folder_path, 'gif/folder1/file.gif'),
-                        modality='video',
-                    )
-                ]
+                mm_dataclass(
+                    video=os.path.join(resources_folder_path, 'gif/folder1/file.gif')
+                )
             ),
         ]
     )
