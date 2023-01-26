@@ -4,8 +4,8 @@ from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.151-demo-examples-3'
-NOW_PREPROCESSOR_VERSION = '0.0.121-demo-examples-3'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.151-demo-example-4'
+NOW_PREPROCESSOR_VERSION = '0.0.121-demo-example-4'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.142-feat-model-choices-dialog-26'
 NOW_AUTOCOMPLETE_VERSION = '0.0.9-fix-filter-index-fields-20'
 
