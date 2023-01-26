@@ -6,7 +6,6 @@ from jina import Client
 from now.app.base.app import JinaNOWApp
 from now.constants import (
     ACCESS_PATHS,
-    EXECUTOR_PREFIX,
     EXTERNAL_CLIP_HOST,
     NOW_AUTOCOMPLETE_VERSION,
     NOW_ELASTIC_INDEXER_VERSION,
@@ -22,7 +21,6 @@ from now.demo_data import (
 )
 from now.executor.name_to_id_map import name_to_id_map
 from now.now_dataclasses import UserInput
-from now.utils import get_email
 
 
 class SearchApp(JinaNOWApp):
@@ -76,33 +74,28 @@ class SearchApp(JinaNOWApp):
     def autocomplete_stub() -> Dict:
         return {
             'name': 'autocomplete_executor',
-            'uses': f'{EXECUTOR_PREFIX}{name_to_id_map.get("NOWAutoCompleteExecutor2")}/{NOW_AUTOCOMPLETE_VERSION}',
+            'uses': f'jinahub+docker://{name_to_id_map.get("NOWAutoCompleteExecutor2")}/{NOW_AUTOCOMPLETE_VERSION}',
             'needs': 'gateway',
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
         }
 
     @staticmethod
-    def preprocessor_stub(use_high_perf_flow: bool) -> Dict:
+    def preprocessor_stub() -> Dict:
         return {
             'name': 'preprocessor',
             'needs': 'autocomplete_executor',
-            'replicas': 15 if use_high_perf_flow else 1,
-            'uses': f'{EXECUTOR_PREFIX}{name_to_id_map.get("NOWPreprocessor")}/{NOW_PREPROCESSOR_VERSION}',
-            'env': {'JINA_LOG_LEVEL': 'DEBUG'},
+            'uses': f'jinahub+docker://{name_to_id_map.get("NOWPreprocessor")}/{NOW_PREPROCESSOR_VERSION}',
             'jcloud': {
-                'resources': {
-                    'memory': '1G',
-                    'cpu': '0.5',
-                    'capacity': 'on-demand',
-                }
+                'autoscale': {'min': 0, 'max': 5, 'metric': 'concurrency', 'target': 1}
             },
+            'env': {'JINA_LOG_LEVEL': 'DEBUG'},
         }
 
     @staticmethod
     def clip_encoder_stub() -> Tuple[Dict, int]:
         return {
             'name': Models.CLIP_MODEL,
-            'uses': f'{EXECUTOR_PREFIX}CLIPOnnxEncoder/0.8.1-gpu',
+            'uses': f'jinahub+docker://CLIPOnnxEncoder/0.8.1-gpu',
             'host': EXTERNAL_CLIP_HOST,
             'port': 443,
             'tls': True,
@@ -116,7 +109,7 @@ class SearchApp(JinaNOWApp):
     def sbert_encoder_stub() -> Tuple[Dict, int]:
         return {
             'name': Models.SBERT_MODEL,
-            'uses': f'{EXECUTOR_PREFIX}TransformerSentenceEncoder',
+            'uses': f'jinahub+docker://TransformerSentenceEncoder',
             'uses_with': {
                 'access_paths': ACCESS_PATHS,
                 'model_name': 'msmarco-distilbert-base-v3',
@@ -152,7 +145,7 @@ class SearchApp(JinaNOWApp):
         return {
             'name': 'indexer',
             'needs': list(encoder2dim.keys()),
-            'uses': f'{EXECUTOR_PREFIX}{name_to_id_map.get("NOWElasticIndexer")}/{NOW_ELASTIC_INDEXER_VERSION}',
+            'uses': f'jinahub+docker://{name_to_id_map.get("NOWElasticIndexer")}/{NOW_ELASTIC_INDEXER_VERSION}',
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'uses_with': {
                 'document_mappings': document_mappings_list,
@@ -176,10 +169,7 @@ class SearchApp(JinaNOWApp):
         """
         flow_yaml_executors = [
             self.autocomplete_stub(),
-            self.preprocessor_stub(
-                use_high_perf_flow=get_email().split('@')[-1] == 'jina.ai'
-                and 'NOW_CI_RUN' not in os.environ
-            ),
+            self.preprocessor_stub(),
         ]
 
         encoder2dim = {}
