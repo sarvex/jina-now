@@ -1,15 +1,15 @@
 import hubble
 import requests
-
-from now.constants import ACCESS_PATHS
 from tests.integration.local.conftest import (
     BASE_URL,
     SEARCH_URL,
     get_flow,
     get_request_body,
 )
-from tests.integration.remote.assertions import assert_search
 from tests.integration.local.data import simple_data
+from tests.integration.remote.assertions import assert_search
+
+from now.constants import ACCESS_PATHS, Models
 
 API_KEY = 'my_key'
 update_api_keys_url = f'{BASE_URL}/admin/updateApiKeys'
@@ -31,7 +31,7 @@ def test_add_key(
         indexer_args={
             'admin_emails': [admin_email],
             'index_name': random_index_name,
-            'document_mappings': [['encoderclip', 512, ['title']]],
+            'document_mappings': [[Models.CLIP_MODEL, 512, ['title']]],
         },
         tmpdir=tmpdir,
     )

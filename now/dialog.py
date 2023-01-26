@@ -27,8 +27,12 @@ def configure_user_input(**kwargs) -> UserInput:
     user_input.app_instance = construct_app(Apps.SEARCH_APP)
     # Ask the options
     for option in options.base_options + user_input.app_instance.options:
-        if configure_option(option, user_input, **kwargs) == DialogStatus.BREAK:
-            break
+        return_val = None
+        if inspect.isfunction(option):
+            for result in option(user_input, **kwargs):
+                configure_option(result, user_input, **kwargs)
+        else:
+            configure_option(option, user_input, **kwargs)
 
     return user_input
 
@@ -50,9 +54,10 @@ def configure_option(
             **kwargs,
         )
 
-        if val and hasattr(user_input, option.name):
-            setattr(user_input, option.name, val)
+        if val:
             kwargs[option.name] = val
+            if hasattr(user_input, option.name):
+                setattr(user_input, option.name, val)
 
         try:
             # If there is any post function then invoke that

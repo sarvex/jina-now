@@ -4,9 +4,9 @@ from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.151-demo-examples-2'
-NOW_PREPROCESSOR_VERSION = '0.0.121-demo-examples-2'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.142-fix-filter-index-fields-20'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.151-demo-examples-3'
+NOW_PREPROCESSOR_VERSION = '0.0.121-demo-examples-3'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.142-feat-model-choices-dialog-26'
 NOW_AUTOCOMPLETE_VERSION = '0.0.9-fix-filter-index-fields-20'
 
 
@@ -26,6 +26,11 @@ class DatasetTypes(BetterEnum):
     DOCARRAY = 'docarray'
     S3_BUCKET = 's3_bucket'
     ELASTICSEARCH = 'elasticsearch'
+
+
+class Models(BetterEnum):
+    CLIP_MODEL = 'encoderclip'
+    SBERT_MODEL = 'encodersbert'
 
 
 SUPPORTED_FILE_TYPES = {
@@ -59,3 +64,12 @@ EXECUTOR_PREFIX = 'jinahub+docker://'
 ACCESS_PATHS = '@cc'
 FLOW_STATUS = 'Serving'
 DEMO_NS = 'now-example-{}'
+
+MODALITY_TO_MODELS = {
+    Text: [
+        {'name': 'Clip', 'value': Models.CLIP_MODEL},
+        {'name': 'Sbert', 'value': Models.SBERT_MODEL},
+    ],
+    Image: [{'name': 'Clip', 'value': Models.CLIP_MODEL}],
+    Video: [{'name': 'Clip', 'value': Models.CLIP_MODEL}],
+}
