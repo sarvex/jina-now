@@ -20,7 +20,6 @@ from docarray import Document, DocumentArray
 from jina.jaml import JAML
 from pyfiglet import Figlet
 
-from now.now_dataclasses import UserInput
 from now.thirdparty.PyInquirer.prompt import prompt
 
 
@@ -333,9 +332,7 @@ def get_email():
         return ''
 
 
-def list_s3_objects(
-    bucket_name: str, prefix: str, user_input: UserInput, max_keys: int = 1000
-):
+def list_s3_objects(bucket_name: str, prefix: str, user_input, max_keys: int = 1000):
     session = boto3.Session(
         aws_access_key_id=user_input.aws_access_key_id,
         aws_secret_access_key=user_input.aws_secret_access_key,
