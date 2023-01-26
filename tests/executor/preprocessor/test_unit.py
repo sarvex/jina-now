@@ -91,7 +91,15 @@ def test_ocr_with_bucket(file_path, modality, num_chunks):
 
 
 def test_text():
-    da_search = DocumentArray([Document(MMTextDoc(text='This is the first Sentence.'))])
+    da_search = DocumentArray(
+        [
+            Document(
+                MMTextDoc(
+                    text='This is the first Sentence. This is the second Sentence.'
+                )
+            )
+        ]
+    )
     preprocessor = NOWPreprocessor()
     res_search = preprocessor.preprocess(da_search)
     assert len(res_search) == 1
