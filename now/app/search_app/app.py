@@ -150,11 +150,7 @@ class SearchApp(JinaNOWApp):
                     [
                         encoder_name,
                         dim,
-                        [
-                            v
-                            for k, v in user_input.field_names_to_dataclass_fields.items()
-                            if k in user_input.index_fields
-                        ],
+                        list(user_input.field_names_to_dataclass_fields.items()),
                     ]
                 ],
             },
