@@ -1,7 +1,8 @@
 import os
 
 import pytest
-from docarray import Document, DocumentArray
+from docarray import Document, DocumentArray, dataclass
+from docarray.typing import Text, Video
 from jina import Flow
 
 from now.executor.preprocessor import NOWPreprocessor
@@ -9,17 +10,22 @@ from now.executor.preprocessor import NOWPreprocessor
 
 @pytest.mark.parametrize('endpoint', ['index', 'search'])
 def test_search_app(resources_folder_path, endpoint, tmpdir):
+    @dataclass
+    class MMTextDoc:
+        text: Text
+
+    @dataclass
+    class MMVideoDoc:
+        uri: Video
+
     metas = {'workspace': str(tmpdir)}
     text_docs = DocumentArray(
         [
-            Document(chunks=[Document(text='test', modality='text')]),
+            Document(MMTextDoc(text='test')),
             Document(
-                chunks=[
-                    Document(
-                        uri=os.path.join(resources_folder_path, 'gif/folder1/file.gif'),
-                        modality='video',
-                    )
-                ]
+                MMVideoDoc(
+                    uri=os.path.join(resources_folder_path, 'gif/folder1/file.gif')
+                )
             ),
         ]
     )

@@ -1,17 +1,32 @@
 import os
 
 import pytest
-from docarray import Document, DocumentArray
+from docarray import Document, DocumentArray, dataclass
+from docarray.typing import Image, Text, Video
 
 from now.app.base.preprocess import preprocess_text
 from now.app.search_app import SearchApp
 
 
-def test_search_app_preprocessing_query():
+@pytest.fixture
+def mm_text_data():
+    """Fixture for text data"""
+
+    @dataclass
+    class MMDoc:
+        text: Text
+
+    return DocumentArray(
+        [
+            Document(MMDoc(text='test')),
+        ]
+    )
+
+
+def test_search_app_preprocessing_query(mm_text_data):
     """Test if the text to video preprocessing works for queries"""
     app = SearchApp()
-    da = DocumentArray([Document(chunks=[Document(text='test', modality='text')])])
-    da = app.preprocess(da)
+    da = app.preprocess(mm_text_data)
 
     assert len(da) == 1
     assert len(da[0].chunks) == 1
@@ -20,16 +35,18 @@ def test_search_app_preprocessing_query():
 
 def test_search_app_preprocessing_indexing(resources_folder_path):
     """Test if the text to video preprocessing works for indexing"""
+
+    @dataclass
+    class MMDoc:
+        video: Video
+
     app = SearchApp()
     da = DocumentArray(
         [
             Document(
-                chunks=[
-                    Document(
-                        uri=os.path.join(resources_folder_path, 'gif/folder1/file.gif'),
-                        modality='video',
-                    )
-                ]
+                MMDoc(
+                    video=os.path.join(resources_folder_path, 'gif/folder1/file.gif')
+                ),
             )
         ]
     )
@@ -46,11 +63,10 @@ def test_search_app_preprocessing_indexing(resources_folder_path):
         (SearchApp, True),
     ],
 )
-def test_text_preprocessing(app_cls, is_indexing):
+def test_text_preprocessing(app_cls, is_indexing, mm_text_data):
     """Test if the text to text preprocessing works for queries and indexing"""
     app = app_cls()
-    da = DocumentArray([Document(chunks=[Document(text='test', modality='text')])])
-    da = app.preprocess(da)
+    da = app.preprocess(mm_text_data)
     assert len(da) == 1
     assert len(da[0].chunks) == 1
     assert da[0].chunks[0].modality == 'text'
@@ -67,9 +83,14 @@ def test_text_preprocessing(app_cls, is_indexing):
 )
 def test_image_preprocessing(app_cls, is_indexing, resources_folder_path):
     """Test if the image to image preprocessing works for queries and indexing"""
+
+    @dataclass
+    class MMDoc:
+        image: Image
+
     app = app_cls()
     uri = os.path.join(resources_folder_path, 'image/a.jpg')
-    da = DocumentArray([Document(chunks=[Document(uri=uri, modality='image')])])
+    da = DocumentArray([Document(MMDoc(image=uri))])
     da = app.preprocess(da)
     assert len(da) == 1
     assert len(da[0].chunks) == 1
