@@ -263,10 +263,11 @@ FILTER_FIELDS = DialogOptions(
 def update_model_choice(user_input: UserInput, option_name, **kwargs):
     if not kwargs.get(option_name):
         raise RetryException('Please select at least one model')
+
     user_input.model_choices[option_name] = kwargs.get(option_name)
 
 
-def get_models_dialog(user_input: UserInput, **kwargs):
+def get_models_dialog(user_input: UserInput):
     models_dialog = []
     for index_field in user_input.index_fields:
         option_name = f'{index_field}_model'
@@ -278,14 +279,25 @@ def get_models_dialog(user_input: UserInput, **kwargs):
                 choices=MODALITY_TO_MODELS[
                     user_input.index_field_candidates_to_modalities[index_field]
                 ],
-                post_func=lambda user_input, option_name=option_name, **kwargs: update_model_choice(
-                    user_input, option_name, **kwargs
+                post_func=lambda user_inp, opt_name=option_name, **kw: update_model_choice(
+                    user_inp, opt_name, **kw
                 ),
             )
         )
 
     return models_dialog
 
+
+MODEL_SELECTION = DialogOptions(
+    name='model_selection',
+    prompt_message='This is a dynamic dialog which will spawn multiple dialog options',
+    prompt_type='list',
+    choices=[],
+    depends_on=INDEX_FIELDS,
+    conditional_check=lambda user_input: user_input.index_fields,
+    is_terminal_command=True,
+    dynamic_func=get_models_dialog,
+)
 
 ES_INDEX_NAME = DialogOptions(
     name='es_index_name',
@@ -412,7 +424,7 @@ def _jina_auth_login(user_input: UserInput, **kwargs):
 app_config = [APP_NAME]
 data_type = [DATASET_TYPE]
 data_fields = [INDEX_FIELDS, FILTER_FIELDS]
-get_models = [get_models_dialog]
+get_models = [MODEL_SELECTION]
 data_demo = [DEMO_DATA]
 data_da = [DOCARRAY_NAME, DATASET_PATH]
 data_s3 = [DATASET_PATH_S3, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION_NAME]

@@ -6,9 +6,11 @@ import boto3
 from jina import Client
 
 from now.cli import cli
-from now.constants import DEMO_NS, DatasetTypes
+from now.common.detect_schema import set_field_names_from_docarray
+from now.constants import DEMO_NS, MODALITY_TO_MODELS, DatasetTypes
 from now.demo_data import AVAILABLE_DATASETS
 from now.deployment.deployment import list_all_wolf, terminate_wolf
+from now.now_dataclasses import UserInput
 
 
 def upsert_cname_record(source, target):
@@ -42,6 +44,20 @@ def upsert_cname_record(source, target):
 def deploy(demo_ds):
     print(f'Deploying search app with data: {demo_ds.name}')
     NAMESPACE = DEMO_NS.format(demo_ds.name.split("/")[-1])
+    # Get the schema
+    user_input = UserInput()
+    user_input.dataset_name = demo_ds.name
+    user_input.dataset_type = DatasetTypes.DEMO
+    user_input.jwt = {'token': os.environ['JINA_AUTH_TOKEN']}
+    set_field_names_from_docarray(user_input)
+
+    # Get all model for each of the index fields
+    model_kwargs = {}
+    for field, modality in user_input.index_field_candidates_to_modalities.items():
+        model_kwargs[f'{field}_model'] = [
+            models['value'] for models in MODALITY_TO_MODELS[modality]
+        ]
+
     kwargs = {
         'now': 'start',
         'dataset_type': DatasetTypes.DEMO,
@@ -52,6 +68,7 @@ def deploy(demo_ds):
         'secured': False,
         'ns': NAMESPACE,
         'flow_name': NAMESPACE,
+        **model_kwargs,
     }
     kwargs = Namespace(**kwargs)
     try:
