@@ -6,7 +6,7 @@ from now.utils import BetterEnum
 
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.151-demo-example-4'
 NOW_PREPROCESSOR_VERSION = '0.0.121-demo-example-4'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.142-feat-model-choices-dialog-26'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.143-refactor-none-mmdoc-elastic-2'
 NOW_AUTOCOMPLETE_VERSION = '0.0.9-fix-filter-index-fields-20'
 
 
@@ -60,7 +60,6 @@ PREFETCH_NR = 10
 SURVEY_LINK = 'https://10sw1tcpld4.typeform.com/to/VTAyYRpR?utm_source=cli'
 
 TAG_INDEXER_DOC_HAS_TEXT = '_indexer_doc_has_text'
-EXECUTOR_PREFIX = 'jinahub+docker://'
 ACCESS_PATHS = '@cc'
 FLOW_STATUS = 'Serving'
 DEMO_NS = 'now-example-{}'
