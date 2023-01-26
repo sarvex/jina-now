@@ -1,26 +1,20 @@
 import pytest
-from docarray import Document, DocumentArray, dataclass
-from docarray.typing import Text
+from docarray import Document, DocumentArray
 
 from now.executor.autocomplete.executor import NOWAutoCompleteExecutor2
 
 
-@dataclass
-class MMDoc:
-    text: Text
-
-
 @pytest.fixture
-def mmdocs_with_text():
+def mmdocs_with_text(mm_dataclass):
 
     return DocumentArray(
         [
-            Document(MMDoc(text='background')),
-            Document(MMDoc(text='background')),
-            Document(MMDoc(text='bang')),
-            Document(MMDoc(text='loading')),
-            Document(MMDoc(text='loading')),
-            Document(MMDoc(text='laugh')),
+            Document(mm_dataclass(text='background')),
+            Document(mm_dataclass(text='background')),
+            Document(mm_dataclass(text='bang')),
+            Document(mm_dataclass(text='loading')),
+            Document(mm_dataclass(text='loading')),
+            Document(mm_dataclass(text='laugh')),
         ]
     )
 
@@ -81,19 +75,19 @@ def test_search_update(tmpdir, mmdocs_with_text):
     assert executor.words['bang']['count'] == 1
 
 
-def test_search_update_profanity(tmpdir):
+def test_search_update_profanity(tmpdir, mm_dataclass):
     executor = NOWAutoCompleteExecutor2(workspace=tmpdir)
 
     da = DocumentArray(
         [
-            Document(MMDoc(text='background')),
-            Document(MMDoc(text='background')),
-            Document(MMDoc(text='shit')),
-            Document(MMDoc(text='loading')),
-            Document(MMDoc(text='fuck')),
-            Document(MMDoc(text='f*ck')),
-            Document(MMDoc(text='laugh')),
-            Document(MMDoc(text='fuck shit somethings')),
+            Document(mm_dataclass(text='background')),
+            Document(mm_dataclass(text='background')),
+            Document(mm_dataclass(text='shit')),
+            Document(mm_dataclass(text='loading')),
+            Document(mm_dataclass(text='fuck')),
+            Document(mm_dataclass(text='f*ck')),
+            Document(mm_dataclass(text='laugh')),
+            Document(mm_dataclass(text='fuck shit somethings')),
         ]
     )
 
@@ -120,17 +114,17 @@ def test_get_suggestion(tmpdir, mmdocs_with_text):
     assert da_sugg_3[0].tags['suggestions'] == ['background']
 
 
-def test_get_suggestion_bitrigrams(tmpdir):
+def test_get_suggestion_bitrigrams(tmpdir, mm_dataclass):
     executor = NOWAutoCompleteExecutor2(workspace=tmpdir)
 
     da = DocumentArray(
         [
-            Document(MMDoc(text='aziz')),
-            Document(MMDoc(text='test')),
-            Document(MMDoc(text='aziz test')),
-            Document(MMDoc(text='red')),
-            Document(MMDoc(text='red dress')),
-            Document(MMDoc(text='red long dress')),
+            Document(mm_dataclass(text='aziz')),
+            Document(mm_dataclass(text='test')),
+            Document(mm_dataclass(text='aziz test')),
+            Document(mm_dataclass(text='red')),
+            Document(mm_dataclass(text='red dress')),
+            Document(mm_dataclass(text='red long dress')),
         ]
     )
 

@@ -1,28 +1,24 @@
-from docarray import Document, DocumentArray, dataclass
-from docarray.typing import Text
+from docarray import Document, DocumentArray
 from jina import Flow
 
 from now.executor.autocomplete.executor import NOWAutoCompleteExecutor2
 
 
-def test_autocomplete(tmpdir):
-    @dataclass
-    class MMDoc:
-        text: Text
+def test_autocomplete(tmpdir, mm_dataclass):
 
     with Flow().add(uses=NOWAutoCompleteExecutor2, workspace=tmpdir) as f:
         f.post(
             on='/search',
             inputs=DocumentArray(
                 [
-                    Document(MMDoc(text='background')),
-                    Document(MMDoc(text='background')),
-                    Document(MMDoc(text='bang')),
-                    Document(MMDoc(text='loading')),
-                    Document(MMDoc(text='loading')),
-                    Document(MMDoc(text='laugh')),
-                    Document(MMDoc(text='hello')),
-                    Document(MMDoc(text='red long dress')),
+                    Document(mm_dataclass(text='background')),
+                    Document(mm_dataclass(text='background')),
+                    Document(mm_dataclass(text='bang')),
+                    Document(mm_dataclass(text='loading')),
+                    Document(mm_dataclass(text='loading')),
+                    Document(mm_dataclass(text='laugh')),
+                    Document(mm_dataclass(text='hello')),
+                    Document(mm_dataclass(text='red long dress')),
                 ]
             ),
         )

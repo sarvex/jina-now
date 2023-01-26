@@ -1,30 +1,22 @@
 import os
 
 import pytest
-from docarray import Document, DocumentArray, dataclass
-from docarray.typing import Text, Video
+from docarray import Document, DocumentArray
 from jina import Flow
 
 from now.executor.preprocessor import NOWPreprocessor
 
 
 @pytest.mark.parametrize('endpoint', ['index', 'search'])
-def test_search_app(resources_folder_path, endpoint, tmpdir):
-    @dataclass
-    class MMTextDoc:
-        text: Text
-
-    @dataclass
-    class MMVideoDoc:
-        uri: Video
+def test_search_app(resources_folder_path, endpoint, tmpdir, mm_dataclass):
 
     metas = {'workspace': str(tmpdir)}
     text_docs = DocumentArray(
         [
-            Document(MMTextDoc(text='test')),
+            Document(mm_dataclass(text='test')),
             Document(
-                MMVideoDoc(
-                    uri=os.path.join(resources_folder_path, 'gif/folder1/file.gif')
+                mm_dataclass(
+                    video=os.path.join(resources_folder_path, 'gif/folder1/file.gif')
                 )
             ),
         ]

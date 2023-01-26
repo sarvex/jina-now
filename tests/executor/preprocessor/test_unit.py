@@ -1,8 +1,7 @@
 import os
 import shutil
 
-from docarray import Document, DocumentArray, dataclass
-from docarray.typing import Text
+from docarray import Document, DocumentArray
 
 from now.executor.preprocessor import NOWPreprocessor
 
@@ -14,16 +13,11 @@ def download_mock(url, destfile):
     shutil.copyfile(path, destfile)
 
 
-@dataclass
-class MMTextDoc:
-    text: Text
-
-
-def test_text():
+def test_text(mm_dataclass):
     da_search = DocumentArray(
         [
             Document(
-                MMTextDoc(
+                mm_dataclass(
                     text='This is the first Sentence. This is the second Sentence.'
                 )
             )
