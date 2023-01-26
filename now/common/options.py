@@ -261,6 +261,8 @@ FILTER_FIELDS = DialogOptions(
 
 
 def update_model_choice(user_input: UserInput, option_name, **kwargs):
+    if not kwargs.get(option_name):
+        raise RetryException('Please select at least one model')
     user_input.model_choices[option_name] = kwargs.get(option_name)
 
 

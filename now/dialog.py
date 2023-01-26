@@ -27,12 +27,14 @@ def configure_user_input(**kwargs) -> UserInput:
     user_input.app_instance = construct_app(Apps.SEARCH_APP)
     # Ask the options
     for option in options.base_options + user_input.app_instance.options:
-        return_val = None
-        if inspect.isfunction(option):
+        if inspect.isfunction(
+            option
+        ):  # currently only model dialog is a function because it is dynamic
             for result in option(user_input, **kwargs):
                 configure_option(result, user_input, **kwargs)
         else:
-            configure_option(option, user_input, **kwargs)
+            if configure_option(option, user_input, **kwargs) == DialogStatus.BREAK:
+                break
 
     return user_input
 
