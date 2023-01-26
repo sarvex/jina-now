@@ -95,7 +95,7 @@ class SearchApp(JinaNOWApp):
     def clip_encoder_stub() -> Tuple[Dict, int]:
         return {
             'name': Models.CLIP_MODEL,
-            'uses': f'{EXECUTOR_PREFIX}CLIPOnnxEncoder/0.8.1-gpu',
+            'uses': f'jinahub+docker://CLIPOnnxEncoder/0.8.1-gpu',
             'host': EXTERNAL_CLIP_HOST,
             'port': 443,
             'tls': True,
@@ -109,7 +109,7 @@ class SearchApp(JinaNOWApp):
     def sbert_encoder_stub() -> Tuple[Dict, int]:
         return {
             'name': Models.SBERT_MODEL,
-            'uses': f'{EXECUTOR_PREFIX}TransformerSentenceEncoder',
+            'uses': f'jinahub+docker://TransformerSentenceEncoder',
             'uses_with': {
                 'access_paths': ACCESS_PATHS,
                 'model_name': 'msmarco-distilbert-base-v3',
@@ -145,7 +145,7 @@ class SearchApp(JinaNOWApp):
         return {
             'name': 'indexer',
             'needs': list(encoder2dim.keys()),
-            'uses': f'{EXECUTOR_PREFIX}{name_to_id_map.get("NOWElasticIndexer")}/{NOW_ELASTIC_INDEXER_VERSION}',
+            'uses': f'jinahub+docker://{name_to_id_map.get("NOWElasticIndexer")}/{NOW_ELASTIC_INDEXER_VERSION}',
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'uses_with': {
                 'document_mappings': document_mappings_list,
