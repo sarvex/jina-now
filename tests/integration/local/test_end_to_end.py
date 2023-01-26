@@ -6,6 +6,7 @@ from tests.integration.local.conftest import SEARCH_URL, get_flow, get_request_b
 from now.constants import ACCESS_PATHS, Models
 from tests.integration.local.data import artworks_data, elastic_data, pop_lyrics_data
 
+
 @pytest.mark.parametrize(
     'data',
     [
