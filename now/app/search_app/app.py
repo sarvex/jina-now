@@ -1,7 +1,6 @@
 import os
 from typing import Dict, List, Tuple, TypeVar
 
-from docarray.typing import Image, Text, Video
 from jina import Client
 
 from now.app.base.app import JinaNOWApp
@@ -13,6 +12,7 @@ from now.constants import (
     NOW_ELASTIC_INDEXER_VERSION,
     NOW_PREPROCESSOR_VERSION,
     Apps,
+    Models,
 )
 from now.demo_data import (
     AVAILABLE_DATASETS,
@@ -101,7 +101,7 @@ class SearchApp(JinaNOWApp):
     @staticmethod
     def clip_encoder_stub() -> Tuple[Dict, int]:
         return {
-            'name': 'encoderclip',
+            'name': Models.CLIP_MODEL,
             'uses': f'{EXECUTOR_PREFIX}CLIPOnnxEncoder/0.8.1-gpu',
             'host': EXTERNAL_CLIP_HOST,
             'port': 443,
@@ -115,7 +115,7 @@ class SearchApp(JinaNOWApp):
     @staticmethod
     def sbert_encoder_stub() -> Tuple[Dict, int]:
         return {
-            'name': 'encodersbert',
+            'name': Models.SBERT_MODEL,
             'uses': f'{EXECUTOR_PREFIX}TransformerSentenceEncoder',
             'uses_with': {
                 'access_paths': ACCESS_PATHS,
@@ -132,32 +132,32 @@ class SearchApp(JinaNOWApp):
         :param user_input: User input
         :param encoder2dim: maps encoder name to its output dimension
         """
-        if len(encoder2dim) != 1:
-            raise ValueError(
-                f'Indexer can only be created for one encoder but have encoders: {encoder2dim}'
+        document_mappings_list = []
+
+        for encoder, dim in encoder2dim.items():
+            document_mappings_list.append(
+                [
+                    encoder,
+                    dim,
+                    [
+                        user_input.field_names_to_dataclass_fields[
+                            index_field.replace('_model', '')
+                        ]
+                        for index_field, encoders in user_input.model_choices.items()
+                        if encoder in encoders
+                    ],
+                ]
             )
-        else:
-            encoder_name = list(encoder2dim.keys())[0]
-            dim = encoder2dim[encoder_name]
+
         return {
             'name': 'indexer',
-            'needs': encoder_name,
+            'needs': list(encoder2dim.keys()),
             'uses': f'{EXECUTOR_PREFIX}{name_to_id_map.get("NOWElasticIndexer")}/{NOW_ELASTIC_INDEXER_VERSION}',
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'uses_with': {
-                'dim': dim,
-                'document_mappings': [
-                    [
-                        encoder_name,
-                        dim,
-                        [
-                            v
-                            for k, v in user_input.field_names_to_dataclass_fields.items()
-                            if k in user_input.index_fields
-                        ],
-                    ]
-                ],
+                'document_mappings': document_mappings_list,
             },
+            'no_reduce': True,
             'jcloud': {
                 'resources': {
                     'memory': '8G',
@@ -167,7 +167,7 @@ class SearchApp(JinaNOWApp):
             },
         }
 
-    def get_executor_stubs(self, dataset, user_input: UserInput) -> Dict:
+    def get_executor_stubs(self, dataset, user_input: UserInput) -> List[Dict]:
         """Returns a dictionary of executors to be added in the flow
 
         :param dataset: DocumentArray of the dataset
@@ -183,17 +183,16 @@ class SearchApp(JinaNOWApp):
         ]
 
         encoder2dim = {}
-        # todo: comment out the following if-block to enable sbert for text index fields
-        # if any(
-        #     user_input.index_field_candidates_to_modalities[field] == Text
-        #     for field in user_input.index_fields
-        # ):
-        #     sbert_encoder, sbert_dim = self.sbert_encoder_stub()
-        #     encoder2dim[sbert_encoder['name']] = sbert_dim
-        #     flow_yaml_executors.append(sbert_encoder)
         if any(
-            user_input.index_field_candidates_to_modalities[field]
-            in [Image, Video, Text]
+            Models.SBERT_MODEL in user_input.model_choices[f"{field}_model"]
+            for field in user_input.index_fields
+        ):
+            sbert_encoder, sbert_dim = self.sbert_encoder_stub()
+            encoder2dim[sbert_encoder['name']] = sbert_dim
+            flow_yaml_executors.append(sbert_encoder)
+
+        if any(
+            Models.CLIP_MODEL in user_input.model_choices[f"{field}_model"]
             for field in user_input.index_fields
         ):
             clip_encoder, clip_dim = self.clip_encoder_stub()
