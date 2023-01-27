@@ -1,0 +1,14 @@
+jtype: Flow
+executors:
+  - name: encoder
+    uses: jinahub+docker://CLIPOnnxEncoder/0.8.1
+    jcloud:
+      autoscale:
+        min: 0
+        max: 3
+        metric: concurrency
+        target: 1
+
+  - name: indexer
+    uses: jinahub+docker://CLIPOnnxEncoder/0.8.1
+
