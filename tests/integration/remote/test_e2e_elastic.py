@@ -10,7 +10,7 @@ from tests.integration.remote.assertions import (
 )
 
 from now.cli import cli
-from now.constants import DatasetTypes
+from now.constants import DatasetTypes, Models
 
 
 @pytest.mark.remote
@@ -33,6 +33,7 @@ def test_end_to_end(
         'es_additional_args': None,
         'index_fields': ['title'],
         'filter_fields': ['product_id'],
+        'title_model': [Models.CLIP_MODEL],
         'secured': True,
         'api_key': None,
         'additional_user': False,
