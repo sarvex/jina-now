@@ -64,7 +64,7 @@ def test_backend_custom_mm_data(
         'flow_name': 'nowapi',
         'dataset_type': DatasetTypes.S3_BUCKET,
         'dataset_path': 's3://jina-now/test folder/data/',
-        'aws_access_key_id': 'AKIATV7HWUCMKZQG7K7S',
+        'aws_access_key_id': 'AKIATV7HWUCMKZQG7K7F',
         'aws_secret_access_key': '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',
         'aws_region_name': 'eu-west-1',
         'index_fields': ['image.png'],
