@@ -206,10 +206,6 @@ class JinaNOWApp:
                     chunk.summary()
                     print(e)
             doc.tags.update(dict_tags)
-            print('=============')
-            print('DICT: ', print(dict_tags))
-            print('TAGS: ', doc.summary())
-            print('=============')
         return docs
 
     def is_demo_available(self, user_input) -> bool:
