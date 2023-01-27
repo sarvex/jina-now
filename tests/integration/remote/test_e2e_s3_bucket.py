@@ -63,7 +63,7 @@ def test_backend_custom_mm_data(
         'now': 'start',
         'flow_name': 'nowapi',
         'dataset_type': DatasetTypes.S3_BUCKET,
-        'dataset_path': os.environ.get('S3_CUSTOM_DATA_PATH'),
+        'dataset_path': os.environ.get('S3_CUSTOM_MM_DATA_PATH'),
         'aws_access_key_id': os.environ.get('AWS_ACCESS_KEY_ID'),
         'aws_secret_access_key': os.environ.get('AWS_SECRET_ACCESS_KEY'),
         'aws_region_name': 'eu-west-1',
