@@ -15,9 +15,10 @@ repos:
     hooks:
       - id: isort
         exclude: ^now/thirdparty/
-  - repo: https://github.com/hadialqattan/pycln
-    rev: "v1.2.5"
+  - repo: local
     hooks:
-      - id: pycln
-        args: [ --config=pyproject.toml ]
-        exclude: ^now/thirdparty/
+      - id: aws-crendentials-check
+        name: aws-crendentials-check
+        entry: .git/hooks/pre-credentials-check
+        language: script
+        pass_filenames: false
