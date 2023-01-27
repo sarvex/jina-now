@@ -1,7 +1,6 @@
-from docarray import dataclass, DocumentArray, Document
-
 import pytest
-from docarray.typing import Text, Image
+from docarray import Document, DocumentArray, dataclass
+from docarray.typing import Image, Text
 
 from now.constants import DatasetTypes
 from now.data_loading.create_dataclass import create_dataclass
