@@ -15,9 +15,9 @@ from tests.integration.local.data import (
 @pytest.mark.parametrize(
     'data',
     [
-        # 'artworks_data',
-        # 'pop_lyrics_data',
-        # 'elastic_data',
+        'artworks_data',
+        'pop_lyrics_data',
+        'elastic_data',
         'local_folder_data',
     ],
 )
