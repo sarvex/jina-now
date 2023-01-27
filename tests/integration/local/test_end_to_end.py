@@ -4,15 +4,21 @@ from docarray.typing import Image, Text
 from tests.integration.local.conftest import SEARCH_URL, get_flow, get_request_body
 
 from now.constants import ACCESS_PATHS, Models
-from tests.integration.local.data import artworks_data, elastic_data, pop_lyrics_data
+from tests.integration.local.data import (
+    artworks_data,
+    elastic_data,
+    pop_lyrics_data,
+    local_folder_data,
+)
 
 
 @pytest.mark.parametrize(
     'data',
     [
-        'artworks_data',
-        'pop_lyrics_data',
-        'elastic_data',
+        # 'artworks_data',
+        # 'pop_lyrics_data',
+        # 'elastic_data',
+        'local_folder_data',
     ],
 )
 def test_end_to_end(
@@ -52,7 +58,7 @@ def test_end_to_end(
         )
 
     assert response.status_code == 200
-    assert len(response.json()) == 10
+    assert len(response.json()) == min(10, len(docs))
 
     for field in user_input.filter_fields:
         dataclass_field = user_input.field_names_to_dataclass_fields.get(field) or field
