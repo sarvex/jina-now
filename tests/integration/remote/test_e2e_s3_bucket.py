@@ -68,6 +68,7 @@ def test_backend_custom_mm_data(
         'aws_secret_access_key': os.environ.get('AWS_SECRET_ACCESS_KEY'),
         'aws_region_name': 'eu-west-1',
         'index_fields': ['image.png'],
+        'image.png_model': [Models.CLIP_MODEL],
         'filter_fields': ['test.txt'],
         'secured': False,
     }
