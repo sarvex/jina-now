@@ -216,6 +216,7 @@ class NOWElasticIndexer(Executor):
         custom_bm25_query = parameters.get('custom_bm25_query', None)
         apply_default_bm25 = parameters.get('apply_default_bm25', False)
         semantic_scores = parameters.get('semantic_scores', None)
+        print('indexer received sem scores: ', semantic_scores)
         if not semantic_scores:
             semantic_scores = generate_semantic_scores(docs_map, self.encoder_to_fields)
         filter = parameters.get('filter', {})
