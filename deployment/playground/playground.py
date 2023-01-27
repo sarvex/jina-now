@@ -114,7 +114,7 @@ def deploy_streamlit():
                 index_fields_dict = get_info_from_endpoint(
                     client,
                     params,
-                    endpoint='/get_index_fields',
+                    endpoint='/get_encoder_to_fields',
                     info='index_fields_dict',
                 )
                 st.session_state.index_fields_dict = index_fields_dict
@@ -338,7 +338,11 @@ def customize_semantic_scores():
         )
     if 'text' in input_modalities and any(
         field_mod == 'text'
-        for field_mod in list(st.session_state.index_fields_dict.values())
+        for field_mod in [
+            st.session_state.index_fields_dict[encoder][field]
+            for encoder in st.session_state.index_field_dict.keys()
+            for field in st.session_state.index_field_dict[encoder].keys()
+        ]
     ):
         bm25.button('Add bm25 score', key='bm25', on_click=toggle_bm25_slider)
         if st.session_state.show_bm25_slider:
@@ -370,7 +374,12 @@ def customize_semantic_scores():
         )
         id_field = index_field.selectbox(
             label='index field',
-            options=st.session_state.index_fields_dict.keys(),
+            options=set(
+                [
+                    fields.keys()
+                    for fields in st.session_state.index_fields_dict.values()
+                ]
+            ),
             key='index_field_' + str(i),
         )
         enc = encoder.selectbox(

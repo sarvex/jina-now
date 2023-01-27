@@ -454,6 +454,42 @@ class NOWElasticIndexer(Executor):
         except Exception:
             self.logger.info(traceback.format_exc())
 
+    @secure_request(on='/get_encoder_to_fields', level=SecurityLevel.USER)
+    def get_encoder_to_fields(self, **kwargs) -> Dict[Dict]:
+        """
+        Returns a dictionary of encoder names to the fields they encode and their modality, e.g.:
+            encoder_to_fields_and_modalities = {
+                'encoderclip': {
+                    'title': 'text',
+                    'picture': 'image',
+                },
+                'encodersbert': {
+                    'title': 'text',
+                },
+            }
+        """
+        index_fields_dict = {
+            field: modality
+            for field, modality in self.user_input.index_field_candidates_to_modalities.items()
+            if field in self.user_input.index_fields
+        }  # should be a dict of selected index fields and their modalities
+        encoder_to_fields_and_modalities = {}
+        for encoder in self.encoder_to_fields.keys():
+            encoder_to_fields_and_modalities[encoder] = {
+                field: index_fields_dict[field]
+                for field in self.encoder_to_fields[encoder]
+            }
+        return DocumentArray(
+            [
+                Document(
+                    text='index_fields',
+                    tags={
+                        'index_fields_dict': encoder_to_fields_and_modalities,
+                    },
+                )
+            ]
+        )
+
 
 def aggregate_embeddings(docs_map: Dict[str, DocumentArray]):
     """Aggregate embeddings of cc level to c level.
