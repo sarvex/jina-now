@@ -24,7 +24,7 @@ from now.demo_data import DemoDatasetNames
             [],
             {
                 'image_model': [Models.CLIP_MODEL],
-                'label_model': [Models.CLIP_MODEL],
+                'label_model': [Models.CLIP_MODEL, Models.SBERT_MODEL],
             },
             DemoDatasetNames.BIRD_SPECIES,
         ),

@@ -58,7 +58,7 @@ def test_end_to_end(
         )
 
     assert response.status_code == 200
-    assert len(response.json()) == min(10, len(docs))
+    assert len(response.json()) == 10
 
     for field in user_input.filter_fields:
         dataclass_field = user_input.field_names_to_dataclass_fields.get(field) or field
