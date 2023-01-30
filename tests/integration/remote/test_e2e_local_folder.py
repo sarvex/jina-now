@@ -30,7 +30,7 @@ def test_end_to_end(
         'index_fields': ['a.jpg', 'test.txt'],
         'filter_fields': ['color'],
         'a.jpg_model': [Models.CLIP_MODEL],
-        'test.txt_model': [Models.CLIP_MODEL],
+        'test.txt_model': [Models.CLIP_MODEL, Models.SBERT_MODEL],
         'secured': True,
         'api_key': None,
         'additional_user': False,
