@@ -15,9 +15,4 @@ repos:
     hooks:
       - id: isort
         exclude: ^now/thirdparty/
-  - repo: https://github.com/hadialqattan/pycln
-    rev: "v1.2.5"
-    hooks:
-      - id: pycln
-        args: [ --config=pyproject.toml ]
-        exclude: ^now/thirdparty/
+
