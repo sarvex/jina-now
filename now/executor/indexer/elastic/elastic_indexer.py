@@ -1,3 +1,4 @@
+import os
 import subprocess
 import traceback
 from collections import namedtuple
@@ -95,14 +96,26 @@ class NOWElasticIndexer(Executor):
             self.es.indices.create(index=self.index_name, mappings=self.es_mapping)
 
     def setup_elastic_server(self):
-        # volume is not persisted at the moment.
         try:
+            self.configure_elastic(
+                self.workspace, '/usr/share/elasticsearch/config/elasticsearch.yml'
+            )
             subprocess.Popen(['./start-elastic-search-cluster.sh'])
             self.logger.info('elastic server started')
         except FileNotFoundError:
             self.logger.info(
                 'Elastic started outside of docker, assume cluster started already.'
             )
+
+    @staticmethod
+    def configure_elastic(workspace, destination_path):
+        config_path = os.path.join(os.path.dirname(__file__), 'elasticsearch.yml')
+        with open(config_path, 'r') as config_file_handler, open(
+            destination_path, 'w'
+        ) as destination_file_handler:
+            for line in config_file_handler.readlines():
+                line = line.replace("{workspace}", workspace)
+                destination_file_handler.write(line)
 
     def generate_es_mapping(self) -> Dict:
         """Creates Elasticsearch mapping for the defined document fields."""
