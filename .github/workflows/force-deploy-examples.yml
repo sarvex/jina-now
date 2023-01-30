@@ -12,7 +12,6 @@ on:
         required: false
         default: PARTIAL
 
-#  pull_request:
 
 jobs:
   python-script:
