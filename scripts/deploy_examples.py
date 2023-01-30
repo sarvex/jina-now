@@ -54,15 +54,20 @@ def deploy(demo_ds):
     # Get all model for each of the index fields
     model_kwargs = {}
     for field, modality in user_input.index_field_candidates_to_modalities.items():
-        model_kwargs[f'{field}_model'] = [
-            models['value'] for models in MODALITY_TO_MODELS[modality]
-        ]
+        if (
+            field == demo_ds.index_fields
+        ):  # TODO: remove this if check when __all__ is supported
+            model_kwargs[f'{field}_model'] = [
+                models['value'] for models in MODALITY_TO_MODELS[modality]
+            ]
 
     kwargs = {
         'now': 'start',
         'dataset_type': DatasetTypes.DEMO,
         'dataset_name': demo_ds.name,
-        'index_fields': '__all__',
+        'index_fields': [
+            demo_ds.index_fields
+        ],  # TODO: should be replaced with '__all__' when it is compatible
         'filter_fields': '__all__',
         'proceed': True,
         'secured': False,
@@ -107,6 +112,7 @@ if __name__ == '__main__':
     to_deploy = dataset_list[index]
 
     print(f'Deploying -> ({to_deploy}) with deployment type ``{deployment_type}``')
+    print('----------------------------------------')
 
     if deployment_type == 'partial':
         # check if deployment is already running then return
@@ -115,7 +121,7 @@ if __name__ == '__main__':
         )
         try:
             response = client.post('/dry_run', return_results=True)
-            print(f'Already {to_deploy} deployed')
+            print(f'Already {to_deploy.name} deployed')
             exit(0)
         except Exception as e:  # noqa E722
             print('Not deployed yet')
@@ -125,5 +131,6 @@ if __name__ == '__main__':
     if flow:
         terminate_wolf(flow[0]['id'])
         print(f'{flow[0]["id"]} successfully deleted!!')
-    print('Deploying -> ', to_deploy)
+    print('Deploying -> ', to_deploy.name)
     deploy(to_deploy)
+    print('------------------ Deployment Successful----------------------')
