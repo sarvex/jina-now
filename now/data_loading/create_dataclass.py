@@ -150,7 +150,6 @@ def create_dataclass_fields_file_mappings(fields: List, fields_modalities: Dict)
     modalities_count = defaultdict(int)
 
     file_mapping_to_dataclass_fields = {}
-    filter_count = 0
     for f in fields:
         if not isinstance(f, typing.Hashable):
             continue
@@ -160,7 +159,4 @@ def create_dataclass_fields_file_mappings(fields: List, fields_modalities: Dict)
                 f
             ] = f'{docarray_typing_to_modality_string(field_modality)}_{modalities_count[field_modality]}'
             modalities_count[fields_modalities[f]] += 1
-        else:
-            file_mapping_to_dataclass_fields[f] = f'filter_{filter_count}'
-            filter_count += 1
     return file_mapping_to_dataclass_fields
