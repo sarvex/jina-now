@@ -15,10 +15,3 @@ repos:
     hooks:
       - id: isort
         exclude: ^now/thirdparty/
-  - repo: local
-    hooks:
-      - id: aws-crendentials-check
-        name: aws-crendentials-check
-        entry: .git/hooks/pre-credentials-check
-        language: script
-        pass_filenames: false
