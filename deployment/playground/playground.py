@@ -241,7 +241,6 @@ def _do_login(params):
 
 
 def _do_logout():
-
     headers = {
         'Content-Type': 'application/json; charset=utf-8',
         'Authorization': 'Token ' + st.session_state.token_val,
@@ -340,8 +339,8 @@ def customize_semantic_scores():
         field_mod == 'text'
         for field_mod in [
             st.session_state.index_fields_dict[encoder][field]
-            for encoder in st.session_state.index_field_dict.keys()
-            for field in st.session_state.index_field_dict[encoder].keys()
+            for encoder in st.session_state.index_fields_dict.keys()
+            for field in st.session_state.index_fields_dict[encoder].keys()
         ]
     ):
         bm25.button('Add bm25 score', key='bm25', on_click=toggle_bm25_slider)
@@ -375,15 +374,25 @@ def customize_semantic_scores():
         id_field = index_field.selectbox(
             label='index field',
             options=set(
-                [
-                    fields.keys()
-                    for fields in st.session_state.index_fields_dict.values()
+                field
+                for fields in [
+                    fields_to_modality.keys()
+                    for fields_to_modality in list(
+                        st.session_state.index_fields_dict.values()
+                    )
                 ]
+                for field in fields
             ),
             key='index_field_' + str(i),
         )
         enc = encoder.selectbox(
-            label='encoder', options=['clip'], key='encoder_' + str(i)
+            label='encoder',
+            options=[
+                encoder
+                for encoder in st.session_state.index_fields_dict.keys()
+                if id_field in st.session_state.index_fields_dict[encoder].keys()
+            ],
+            key='encoder_' + str(i),
         )
         w = weight.slider(
             label='weight',
@@ -400,7 +409,7 @@ def render_mm_query(query, modality):
         st.session_state[f"len_{modality}_choices"] += 1
     if modality == 'text':
         for field_number in range(st.session_state[f"len_{modality}_choices"]):
-            key = f'{modality[0]}_{field_number+1}'
+            key = f'{modality[0]}_{field_number + 1}'
             query[key] = {
                 'name': 'text',
                 'value': st.text_input(
