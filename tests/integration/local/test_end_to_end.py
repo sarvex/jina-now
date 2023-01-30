@@ -4,12 +4,6 @@ from docarray.typing import Image, Text
 from tests.integration.local.conftest import SEARCH_URL, get_flow, get_request_body
 
 from now.constants import ACCESS_PATHS, Models
-from tests.integration.local.data import (
-    artworks_data,
-    elastic_data,
-    pop_lyrics_data,
-    local_folder_data,
-)
 
 
 @pytest.mark.parametrize(
