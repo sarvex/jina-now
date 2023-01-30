@@ -38,7 +38,7 @@ def run(
     :param kwargs: Additional arguments
     :return:
     """
-    status_callback = kwargs.get('status_callback', print)
+    print_callback = kwargs.get('print_callback', print)
     if user_input.dataset_type in [DatasetTypes.DEMO, DatasetTypes.DOCARRAY]:
         user_input.field_names_to_dataclass_fields = {
             field: field for field in user_input.index_fields
@@ -49,8 +49,8 @@ def run(
             user_input=user_input
         )
 
-    dataset = load_data(user_input, data_class, status_callback)
-    status_callback('Data loaded. Deploying the flow...')
+    dataset = load_data(user_input, data_class, print_callback)
+    print_callback('Data loaded. Deploying the flow...')
 
     # Set up the app specific flow and also get the environment variables and its values
     env_dict = app_instance.setup(
@@ -75,8 +75,8 @@ def run(
     #     trigger_scheduler(user_input, gateway_host_internal)
     # else:
     # index the data right away
-    status_callback('Flow deployed. Indexing the data...')
-    index_docs(user_input, dataset, client, status_callback, **kwargs)
+    print_callback('Flow deployed. Indexing the data...')
+    index_docs(user_input, dataset, client, print_callback, **kwargs)
 
     return (
         gateway_port,
@@ -118,11 +118,11 @@ def trigger_scheduler(user_input, host):
         print(f'Indexing will not be scheduled. Please contact Jina AI support.')
 
 
-def index_docs(user_input, dataset, client, status_callback, **kwargs):
+def index_docs(user_input, dataset, client, print_callback, **kwargs):
     """
     Index the data right away
     """
-    status_callback(f"▶ indexing {len(dataset)} documents in batches")
+    print_callback(f"▶ indexing {len(dataset)} documents in batches")
     params = {'access_paths': ACCESS_PATHS}
     if user_input.secured:
         params['jwt'] = user_input.jwt
@@ -134,7 +134,7 @@ def index_docs(user_input, dataset, client, status_callback, **kwargs):
         return_results=False,
         **kwargs,
     )
-    status_callback('⭐ Success - your data is indexed')
+    print_callback('⭐ Success - your data is indexed')
 
 
 @time_profiler
