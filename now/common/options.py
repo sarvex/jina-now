@@ -279,8 +279,8 @@ def get_models_dialog(user_input: UserInput):
                 choices=MODALITY_TO_MODELS[
                     user_input.index_field_candidates_to_modalities[index_field]
                 ],
-                post_func=lambda user_inp, opt_name=option_name, **kw: update_model_choice(
-                    user_inp, opt_name, **kw
+                post_func=lambda user_inp, opt_name=option_name, **kwargs: update_model_choice(
+                    user_inp, opt_name, **kwargs
                 ),
             )
         )
