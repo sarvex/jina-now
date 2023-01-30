@@ -4,20 +4,14 @@ from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.146-fix-filter-index-fields-20'
-NOW_PREPROCESSOR_VERSION = '0.0.123-demo-examples-5'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.143-fix-elastic-persistent-workspace-1'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.150-refactor-end-to-end-no-playground-3'
+NOW_PREPROCESSOR_VERSION = '0.0.120-fix-filter-index-fields-20'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.143-refactor-none-mmdoc-elastic-2'
 NOW_AUTOCOMPLETE_VERSION = '0.0.9-fix-filter-index-fields-20'
 
 
 class Apps(BetterEnum):
     SEARCH_APP = 'search_app'
-
-
-class DialogStatus(BetterEnum):
-    CONTINUE = 'continue'
-    BREAK = 'break'
-    SKIP = 'skip'
 
 
 class DatasetTypes(BetterEnum):
@@ -26,6 +20,11 @@ class DatasetTypes(BetterEnum):
     DOCARRAY = 'docarray'
     S3_BUCKET = 's3_bucket'
     ELASTICSEARCH = 'elasticsearch'
+
+
+class Models(BetterEnum):
+    CLIP_MODEL = 'encoderclip'
+    SBERT_MODEL = 'encodersbert'
 
 
 SUPPORTED_FILE_TYPES = {
@@ -55,7 +54,14 @@ PREFETCH_NR = 10
 SURVEY_LINK = 'https://10sw1tcpld4.typeform.com/to/VTAyYRpR?utm_source=cli'
 
 TAG_INDEXER_DOC_HAS_TEXT = '_indexer_doc_has_text'
-EXECUTOR_PREFIX = 'jinahub+docker://'
 ACCESS_PATHS = '@cc'
 FLOW_STATUS = 'Serving'
-DEMO_NS = 'now-example-{}'
+
+MODALITY_TO_MODELS = {
+    Text: [
+        {'name': 'Clip', 'value': Models.CLIP_MODEL},
+        {'name': 'Sbert', 'value': Models.SBERT_MODEL},
+    ],
+    Image: [{'name': 'Clip', 'value': Models.CLIP_MODEL}],
+    Video: [{'name': 'Clip', 'value': Models.CLIP_MODEL}],
+}

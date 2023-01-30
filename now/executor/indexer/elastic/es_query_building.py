@@ -24,14 +24,9 @@ def generate_semantic_scores(
         [('query_text', 'title', 'clip', 1.0)]
     """
     semantic_scores = []
-    # either take fields names from _metadata, if multimodal doc
-    # or take modality from tags of root doc
     for executor_name, da in docs_map.items():
         first_doc = da[0]
-        if first_doc._metadata:  # must be a multimodal doc
-            field_names = first_doc._metadata['multi_modal_schema'].keys()
-        else:  # must be a unimodal doc
-            field_names = [first_doc.tags['modality']]
+        field_names = first_doc._metadata['multi_modal_schema'].keys()
         try:
             document_fields = encoder_to_fields[executor_name]
         except KeyError as e:
@@ -39,6 +34,9 @@ def generate_semantic_scores(
                 f'Documents are not encoded with same encoder as query. executor_name: {executor_name}, encoder_to_fields: {encoder_to_fields}'
             ) from e
         for field_name in field_names:
+            chunk = getattr(first_doc, field_name)
+            if chunk.chunks.embeddings is None and chunk.embedding is None:
+                continue
             for document_field in document_fields:
                 semantic_scores.append(
                     (

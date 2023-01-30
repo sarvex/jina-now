@@ -3,12 +3,13 @@ import os
 from argparse import Namespace
 
 import pytest
-from now.cli import cli
-from now.constants import DatasetTypes
 from tests.integration.remote.assertions import (
     assert_deployment_response,
     assert_search_custom_s3,
 )
+
+from now.cli import cli
+from now.constants import DatasetTypes, Models
 
 
 @pytest.mark.remote
@@ -16,7 +17,6 @@ from tests.integration.remote.assertions import (
 @pytest.mark.parametrize('query_fields', ['image'])
 def test_backend_custom_data(
     start_bff,
-    start_playground,
     dataset: str,
     query_fields: str,
     cleanup,
@@ -31,6 +31,7 @@ def test_backend_custom_data(
         'aws_secret_access_key': os.environ.get('AWS_SECRET_ACCESS_KEY'),
         'aws_region_name': 'eu-west-1',
         'index_fields': ['.jpeg'],
+        '.jpeg_model': [Models.CLIP_MODEL],
         'filter_fields': [],
         'secured': False,
     }

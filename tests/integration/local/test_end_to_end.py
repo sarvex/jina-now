@@ -1,9 +1,9 @@
 import pytest
 import requests
-from docarray.typing import Text, Image
-
-from now.constants import ACCESS_PATHS
+from docarray.typing import Image, Text
 from tests.integration.local.conftest import SEARCH_URL, get_flow, get_request_body
+
+from now.constants import ACCESS_PATHS, Models
 from tests.integration.local.data import artworks_data, elastic_data, pop_lyrics_data
 
 
@@ -34,7 +34,7 @@ def test_end_to_end(
             'user_input_dict': {
                 'filter_fields': user_input.filter_fields,
             },
-            'document_mappings': [['encoderclip', 512, fields_for_mapping]],
+            'document_mappings': [[Models.CLIP_MODEL, 512, fields_for_mapping]],
         },
     )
     with f:

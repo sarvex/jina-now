@@ -1,5 +1,6 @@
 """ This suite tests the data_loading.py module """
 import os
+import pathlib
 from typing import Tuple
 
 import pytest
@@ -20,15 +21,18 @@ from now.data_loading.data_loading import (
     from_files_local,
     load_data,
 )
-from now.demo_data import DemoDatasetNames, AVAILABLE_DATASETS
+from now.demo_data import AVAILABLE_DATASETS, DemoDatasetNames
 from now.now_dataclasses import UserInput
 
 
 @pytest.fixture()
 def da() -> DocumentArray:
+    cur_dir = pathlib.Path(__file__).parent.resolve()
+
     @dataclass
     class MMDoc:
         description: Text = 'description'
+        image: Image = os.path.join(cur_dir, '../../resources/gif/folder1/file.gif')
 
     return DocumentArray(
         [Document(MMDoc(description='foo')), Document(MMDoc(description='bar'))]
@@ -68,27 +72,18 @@ def is_da_text_equal(da_a: DocumentArray, da_b: DocumentArray):
     return True
 
 
-def test_filter_index_fields(da: DocumentArray):
-    user_input = UserInput()
-    user_input.dataset_type = DatasetTypes.DEMO
-    user_input.index_fields = []
-
-    loaded_da = load_data(user_input)
-
-    assert len(loaded_da) > 0
-    for doc in loaded_da:
-        assert len(doc.chunks) == 0
-
-
-def test_da_local_path(local_da: DocumentArray):
+def test_da_local_path(local_da: Tuple[str, DocumentArray]):
     path, da = local_da
     user_input = UserInput()
     user_input.dataset_type = DatasetTypes.PATH
     user_input.dataset_path = path
+    user_input.index_fields = ['description']
 
     loaded_da = load_data(user_input)
-
-    assert is_da_text_equal(da, loaded_da)
+    assert loaded_da[0].tags == {}
+    assert loaded_da[0].description.content == da[0].description.content
+    assert len(loaded_da) == 2
+    assert len(loaded_da[0].chunks) == 1
 
 
 def test_da_local_path_image_folder(image_resource_path: str):
@@ -110,6 +105,21 @@ def test_da_local_path_image_folder(image_resource_path: str):
     for doc in loaded_da:
         assert doc.chunks[0].uri
         assert doc.chunks[0].content is not None
+
+
+def test_da_custom_ds(da: DocumentArray):
+    user_input = UserInput()
+    user_input.dataset_type = DatasetTypes.DEMO
+    user_input.dataset_name = DemoDatasetNames.DEEP_FASHION
+    user_input.admin_name = 'team-now'
+    user_input.index_fields = ['description']
+
+    loaded_da = load_data(user_input)
+
+    assert len(loaded_da) > 0
+    for doc in loaded_da:
+        assert doc.tags == {}
+        assert doc.chunks
 
 
 def test_from_files_local(resources_folder_path):

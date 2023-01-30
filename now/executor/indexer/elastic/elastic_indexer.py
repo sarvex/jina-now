@@ -74,7 +74,6 @@ class NOWElasticIndexer(Executor):
         """
 
         super().__init__(*args, **kwargs)
-        self.dim = dim
         self.metric = metric
         self.limit = limit
         self.max_values_per_tag = max_values_per_tag
@@ -223,7 +222,6 @@ class NOWElasticIndexer(Executor):
             docs_map = self._handle_no_docs_map(docs)
             if len(docs_map) == 0:
                 return DocumentArray()
-
         aggregate_embeddings(docs_map)
 
         limit = parameters.get('limit', self.limit)
@@ -262,7 +260,6 @@ class NOWElasticIndexer(Executor):
             for c in doc.chunks:
                 c.embedding = None
         results = DocumentArray(list(zip(*es_queries))[0])
-
         if (
             parameters.get('create_temp_link', False)
             and self.user_input.dataset_type == DatasetTypes.S3_BUCKET
@@ -458,6 +455,8 @@ class NOWElasticIndexer(Executor):
                 # aggs['aggs'][f'avg_{tag}'] = {'avg': {'field': f'tags.{tag}'}}
                 aggs['aggs'][tag] = {'terms': {'field': f'tags.{tag}', 'size': 100}}
         try:
+            if not aggs['aggs']:
+                return
             result = self.es.search(index=self.index_name, body=aggs)
             aggregations = result['aggregations']
             updated_tags = {}

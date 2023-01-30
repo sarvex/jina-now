@@ -12,9 +12,9 @@ import pathlib
 import now.utils
 from now.common import options
 from now.common.options import construct_app
-from now.constants import Apps, DialogStatus
+from now.constants import Apps
 from now.now_dataclasses import DialogOptions, UserInput
-from now.utils import DemoAvailableException, RetryException
+from now.utils import RetryException
 
 cur_dir = pathlib.Path(__file__).parent.resolve()
 
@@ -27,22 +27,22 @@ def configure_user_input(**kwargs) -> UserInput:
     user_input.app_instance = construct_app(Apps.SEARCH_APP)
     # Ask the base/common options
     for option in options.base_options:
-        if configure_option(option, user_input, **kwargs) == DialogStatus.BREAK:
-            return user_input
+        if inspect.isfunction(option):
+            for result in option(user_input, **kwargs):
+                configure_option(result, user_input, **kwargs)
+        else:
+            configure_option(option, user_input, **kwargs)
     # Ask app specific options
     for option in user_input.app_instance.options:
-        if configure_option(option, user_input, **kwargs) == DialogStatus.BREAK:
-            break
+        configure_option(option, user_input, **kwargs)
 
     return user_input
 
 
-def configure_option(
-    option: DialogOptions, user_input: UserInput, **kwargs
-) -> DialogStatus:
+def configure_option(option: DialogOptions, user_input: UserInput, **kwargs):
     # Check if it is dependent on some other dialog options
     if option.depends_on and not option.conditional_check(user_input):
-        return DialogStatus.SKIP
+        return
 
     # Populate choices if needed
     if option.choices and inspect.isfunction(option.choices):
@@ -54,9 +54,10 @@ def configure_option(
             **kwargs,
         )
 
-        if val and hasattr(user_input, option.name):
-            setattr(user_input, option.name, val)
+        if val:
             kwargs[option.name] = val
+            if hasattr(user_input, option.name):
+                setattr(user_input, option.name, val)
 
         try:
             # If there is any post function then invoke that
@@ -65,8 +66,6 @@ def configure_option(
         except RetryException as e:
             print(e)
             continue
-        except DemoAvailableException:
-            return DialogStatus.BREAK
         break
 
-    return DialogStatus.CONTINUE
+    return val
