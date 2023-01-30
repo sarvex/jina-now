@@ -188,11 +188,7 @@ class JinaNOWApp:
     ) -> DocumentArray:
         """Loads and preprocesses every document such that it is ready for indexing."""
         for doc in docs:
-            dict_tags = dict()
             for chunk in doc.chunks:
-                if chunk.tags:
-                    for key, value in chunk.tags.items():
-                        dict_tags.update({key: value})
                 try:
                     if chunk.modality == 'text':
                         preprocess_text(chunk)
@@ -205,7 +201,6 @@ class JinaNOWApp:
                 except Exception as e:
                     chunk.summary()
                     print(e)
-            doc.tags.update(dict_tags)
         return docs
 
     def is_demo_available(self, user_input) -> bool:

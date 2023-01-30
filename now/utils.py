@@ -246,6 +246,15 @@ def get_bucket(uri, aws_access_key_id, aws_secret_access_key, region_name):
     return bucket
 
 
+def update_tags(d):
+    dict_tags = dict()
+    for chunk in d.chunks:
+        if chunk.tags:
+            dict_tags.update(chunk.tags)
+    d.tags.update(dict_tags)
+    return d
+
+
 def maybe_download_from_s3(
     docs: DocumentArray, tmpdir: tempfile.TemporaryDirectory, user_input, max_workers
 ):
@@ -260,7 +269,6 @@ def maybe_download_from_s3(
 
     flat_docs = docs['@c']
     filtered_docs = [c for c in flat_docs if c.uri.startswith('s3://')]
-
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = []
         for c in filtered_docs:
@@ -271,6 +279,16 @@ def maybe_download_from_s3(
                 user_input.aws_access_key_id,
                 user_input.aws_secret_access_key,
                 user_input.aws_region_name,
+            )
+            futures.append(f)
+        for f in futures:
+            f.result()
+        # The execution of update_tags depends on the results of convert_fn
+        futures = []
+        for d in docs:
+            f = executor.submit(
+                update_tags,
+                d,
             )
             futures.append(f)
         for f in futures:

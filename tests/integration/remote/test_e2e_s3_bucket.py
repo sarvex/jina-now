@@ -15,13 +15,12 @@ from now.constants import DatasetTypes, Models
 @pytest.mark.remote
 @pytest.mark.parametrize('dataset', ['custom_s3_bucket'])
 @pytest.mark.parametrize(
-    'dataset_path,index_fields,model_key,filter_fields',
+    'dataset_path,index_fields,filter_fields',
     [
-        (os.environ.get('S3_CUSTOM_DATA_PATH'), ['.jpeg'], '.jpeg_model', []),
+        (os.environ.get('S3_CUSTOM_DATA_PATH'), ['.jpeg'], []),
         (
             os.environ.get('S3_CUSTOM_MM_DATA_PATH'),
             ['image.png'],
-            'image.png_model',
             ['test.txt'],
         ),
     ],
@@ -32,7 +31,6 @@ def test_backend_custom_data(
     dataset: str,
     dataset_path: str,
     index_fields: list,
-    model_key: str,
     filter_fields: list,
     query_fields: str,
     cleanup,
@@ -47,7 +45,7 @@ def test_backend_custom_data(
         'aws_secret_access_key': os.environ.get('AWS_SECRET_ACCESS_KEY'),
         'aws_region_name': 'eu-west-1',
         'index_fields': index_fields,
-        model_key: [Models.CLIP_MODEL],
+        f'{index_fields[0]}_model': [Models.CLIP_MODEL],
         'filter_fields': filter_fields,
         'secured': False,
     }
