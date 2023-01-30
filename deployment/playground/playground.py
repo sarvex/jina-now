@@ -3,6 +3,7 @@ import io
 import os
 from collections import OrderedDict
 from copy import deepcopy
+from typing import List
 from urllib.error import HTTPError
 from urllib.parse import quote, unquote
 from urllib.request import urlopen
@@ -322,10 +323,21 @@ def toggle_bm25_slider():
         st.session_state.show_bm25_slider = True
 
 
+def get_encoder_options(q_field: str, id_field: str) -> List[str]:
+    encoders_options = [
+        encoder
+        for encoder in st.session_state.index_fields_dict.keys()
+        if id_field in st.session_state.index_fields_dict[encoder].keys()
+    ]
+    if q_field.startswith('image'):
+        encoders_options.remove('encodersbert')
+    return encoders_options
+
+
 def customize_semantic_scores():
     input_modalities = [
         field['modality'] for field in list(st.session_state.query.values())
-    ]  # TODO: update this
+    ]
     add, delete, bm25 = st.columns([0.3, 0.3, 0.3])
     if add.button('Add semantic score', key='sem_score_button'):
         st.session_state['len_semantic_scores'] += 1
@@ -348,7 +360,11 @@ def customize_semantic_scores():
             query_field_selectbox, bm25_slider = st.columns([0.5, 0.5])
             q_field = query_field_selectbox.selectbox(
                 'Select query field for bm25 scoring',
-                options=[field for field in st.session_state.query.keys()],
+                options=[
+                    field
+                    for field in st.session_state.query.keys()
+                    if field.startswith('text')
+                ],
             )
             bm25_weight = bm25_slider.slider(
                 label='Adjust bm25 weight',
@@ -358,7 +374,7 @@ def customize_semantic_scores():
                 key='weight_bm25',
             )
             st.session_state.semantic_scores['bm25'] = [
-                'query_text',
+                q_field,
                 'bm25_text',
                 'bm25',
                 bm25_weight,
@@ -385,13 +401,10 @@ def customize_semantic_scores():
             ),
             key='index_field_' + str(i),
         )
+        encoder_options = get_encoder_options(q_field, id_field)
         enc = encoder.selectbox(
             label='encoder',
-            options=[
-                encoder
-                for encoder in st.session_state.index_fields_dict.keys()
-                if id_field in st.session_state.index_fields_dict[encoder].keys()
-            ],
+            options=encoder_options,
             key='encoder_' + str(i),
         )
         w = weight.slider(
@@ -409,23 +422,23 @@ def render_mm_query(query, modality):
         st.session_state[f"len_{modality}_choices"] += 1
     if modality == 'text':
         for field_number in range(st.session_state[f"len_{modality}_choices"]):
-            key = f'{modality[0]}_{field_number + 1}'
+            key = f'{modality}_{field_number}'
             query[key] = {
-                'name': 'text',
+                'name': key,
                 'value': st.text_input(
-                    label=f'text #{field_number + 1}',
+                    label=f'text #{field_number}',
                     key=key,
                     on_change=clear_match,
-                    placeholder=f'Write your text query #{field_number + 1}',
+                    placeholder=f'Write your text query #{field_number}',
                 ),
                 'modality': 'text',
             }
 
     else:
         for field_number in range(st.session_state[f"len_{modality}_choices"]):
-            key = f'{modality[0]}_{field_number}'
+            key = f'{modality}_{field_number}'
             uploaded_image = st.file_uploader(
-                label=f'image #{field_number + 1}', key=key, on_change=clear_match
+                label=f'image #{field_number}', key=key, on_change=clear_match
             )
             if uploaded_image:
                 doc = convert_file_to_document(uploaded_image)
@@ -436,7 +449,7 @@ def render_mm_query(query, modality):
                     elif (query_doc.uri is not None) and query_doc.uri != '':
                         query_doc.load_uri_to_blob(timeout=10)
                 query[key] = {
-                    'name': 'blob',
+                    'name': key,
                     'value': base64.b64encode(query_doc.blob).decode('utf-8'),
                     'modality': 'image',
                 }
