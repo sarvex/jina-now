@@ -1,3 +1,5 @@
+import os
+
 import pytest
 from docarray import dataclass, DocumentArray, Document
 from docarray.typing import Text, Image
