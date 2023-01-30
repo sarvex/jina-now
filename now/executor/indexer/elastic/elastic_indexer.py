@@ -455,7 +455,7 @@ class NOWElasticIndexer(Executor):
             self.logger.info(traceback.format_exc())
 
     @secure_request(on='/get_encoder_to_fields', level=SecurityLevel.USER)
-    def get_encoder_to_fields(self, **kwargs) -> Dict[Dict]:
+    def get_encoder_to_fields(self, **kwargs) -> Dict[str, Dict[str, str]]:
         """
         Returns a dictionary of encoder names to the fields they encode and their modality, e.g.:
             encoder_to_fields_and_modalities = {
