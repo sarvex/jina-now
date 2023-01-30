@@ -57,9 +57,20 @@ def create_dataclass(
 
     if user_input:
         fields_modalities = {}
-        fields_modalities.update(user_input.index_field_candidates_to_modalities)
+        fields_modalities.update(
+            {
+                field: modality
+                for field, modality in user_input.index_field_candidates_to_modalities.items()
+                if field in user_input.index_fields
+            }
+        )
         update_dict_with_no_overwrite(
-            fields_modalities, user_input.filter_field_candidates_to_modalities
+            fields_modalities,
+            {
+                field: str
+                for field, modality in user_input.filter_field_candidates_to_modalities.items()
+                if field in user_input.filter_fields
+            },
         )
         fields = user_input.index_fields + user_input.filter_fields
         dataset_type = user_input.dataset_type
