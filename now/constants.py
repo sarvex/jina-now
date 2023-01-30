@@ -4,14 +4,20 @@ from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.150-fix-sem-scores-4'
-NOW_PREPROCESSOR_VERSION = '0.0.120-fix-fix-sem-scores-4'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.143-fix-sem-scores-4'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.151-fix-sem-scores-5'
+NOW_PREPROCESSOR_VERSION = '0.0.121-fix-sem-scores-5'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.143-fix-sem-scores-5'
 NOW_AUTOCOMPLETE_VERSION = '0.0.9-fix-filter-index-fields-20'
 
 
 class Apps(BetterEnum):
     SEARCH_APP = 'search_app'
+
+
+class DialogStatus(BetterEnum):
+    CONTINUE = 'continue'
+    BREAK = 'break'
+    SKIP = 'skip'
 
 
 class DatasetTypes(BetterEnum):
@@ -56,6 +62,7 @@ SURVEY_LINK = 'https://10sw1tcpld4.typeform.com/to/VTAyYRpR?utm_source=cli'
 TAG_INDEXER_DOC_HAS_TEXT = '_indexer_doc_has_text'
 ACCESS_PATHS = '@cc'
 FLOW_STATUS = 'Serving'
+DEMO_NS = 'now-example-{}'
 
 MODALITY_TO_MODELS = {
     Text: [
