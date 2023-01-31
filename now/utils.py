@@ -249,7 +249,7 @@ def get_bucket(uri, aws_access_key_id, aws_secret_access_key, region_name):
 
 def update_tags(d, aws_access_key_id, aws_secret_access_key, region_name):
     bucket = get_bucket(
-        uri=d.uri,
+        uri=list(d._metadata['s3_tags'].values())[0],
         aws_access_key_id=aws_access_key_id,
         aws_secret_access_key=aws_secret_access_key,
         region_name=region_name,
