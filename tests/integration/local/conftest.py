@@ -1,5 +1,5 @@
 from jina import Flow
-
+import os
 from now.admin.utils import get_default_request_body
 from now.constants import EXTERNAL_CLIP_HOST
 from now.executor.indexer.elastic import NOWElasticIndexer
