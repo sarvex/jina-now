@@ -65,7 +65,6 @@ def search(data: SearchRequestModel):
         scores = {}
         for score_name, named_score in doc.scores.items():
             scores[score_name] = named_score.to_dict()
-        # since multimodal doc is not supported, we take the first chunk
         if doc.chunks:
             # temporary fix for filtering out tags
             field_names = [
@@ -74,9 +73,14 @@ def search(data: SearchRequestModel):
                 if doc._metadata['multi_modal_schema'][field]['attribute_type']
                 != 'primitive'
             ]
-            field_names_and_chunks = [
-                [field_name, getattr(doc, field_name)] for field_name in field_names
-            ]
+            field_names_and_chunks = []
+            for field_name in field_names:
+                chunk = getattr(doc, field_name)
+                if chunk.chunks:
+                    chunk = chunk.chunks[
+                        0
+                    ]  # take first chunk but should take all in case of gif video
+                field_names_and_chunks.append([field_name, chunk])
         else:
             # TODO remove else path. It is only used to support the inmemory indexer since that one is operating on chunks while elastic responds with root documents
             field_names_and_chunks = [['result_field', doc]]
