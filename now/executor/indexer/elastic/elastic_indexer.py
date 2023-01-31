@@ -164,6 +164,7 @@ class NOWElasticIndexer(Executor):
         es_docs = convert_doc_map_to_es(
             docs_map, self.index_name, self.encoder_to_fields
         )
+        print("ES DOCS", es_docs[0])
         success, _ = bulk(self.es, es_docs)
         self.es.indices.refresh(index=self.index_name)
         if success:
@@ -230,6 +231,7 @@ class NOWElasticIndexer(Executor):
             filter=filter,
             query_to_curated_ids=self.query_to_curated_ids,
         )
+        print("ES QUERIES: ", es_queries)
         for doc, query in es_queries:
             result = self.es.search(
                 index=self.index_name,
