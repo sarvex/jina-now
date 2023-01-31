@@ -262,7 +262,7 @@ def update_tags(d, aws_access_key_id, aws_secret_access_key, region_name):
         with open(local_file, 'r') as file:
             data = json.load(file)
 
-    d.tags.update(data)
+    d.tags.update(flatten_dict(data))
 
 
 def maybe_download_from_s3(
