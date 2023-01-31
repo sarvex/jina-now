@@ -8,7 +8,7 @@ from rich.panel import Panel
 from rich.table import Column, Table
 
 from now import run_backend
-from now.constants import FLOW_STATUS, DatasetTypes
+from now.constants import DEMO_NS, FLOW_STATUS, DatasetTypes
 from now.deployment.deployment import list_all_wolf, status_wolf, terminate_wolf
 from now.dialog import configure_user_input
 from now.utils import maybe_prompt_user
@@ -57,9 +57,7 @@ def start_now(**kwargs):
     # Only if the deployment is remote and the demo examples is available for the selected app
     # Should not be triggered for CI tests
     if app_instance.is_demo_available(user_input):
-        gateway_host_internal = f'grpcs://now-example-{app_instance.app_name}-{user_input.dataset_name}.dev.jina.ai'.replace(
-            '_', '-'
-        )
+        gateway_host_internal = f'grpcs://{DEMO_NS.format(user_input.dataset_name.split("/")[-1])}.dev.jina.ai'
     else:
         (
             gateway_port,
@@ -83,7 +81,7 @@ def start_now(**kwargs):
         f'/?host='
         + gateway_host_internal
         + (
-            f'&data={user_input.dataset_name if user_input.dataset_type == DatasetTypes.DEMO else "custom"}'
+            f'&data={user_input.dataset_name.split("/")[-1] if user_input.dataset_type == DatasetTypes.DEMO else "custom"}'
         )
         + (f'&secured={user_input.secured}' if user_input.secured else '')
     )

@@ -9,7 +9,9 @@ with:
     JINA_LOG_LEVEL: DEBUG
 jcloud:
   version: ${{ ENV.JINA_VERSION }}
-  custom_dns:
-    - ${{ ENV.CUSTOM_DNS }}
   labels:
     team: now
+gateway:
+  jcloud:
+    custom_dns:
+      - ${{ ENV.CUSTOM_DNS }}

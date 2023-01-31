@@ -372,3 +372,7 @@ def modality_string_to_docarray_typing(s: str) -> TypeVar:
 # Add a custom retry exception
 class RetryException(Exception):
     pass
+
+
+class DemoAvailableException(Exception):
+    pass
