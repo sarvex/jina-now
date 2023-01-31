@@ -136,7 +136,7 @@ def assert_suggest(suggest_url, request_body):
     )
 
 
-def assert_search_custom_s3(host, create_temp_link=False):
+def assert_search_custom_s3(host, mm_type, create_temp_link=False):
     request_body = {
         'query': [{'name': 'text', 'value': 'Hello', 'modality': 'text'}],
         'limit': 9,
@@ -155,12 +155,15 @@ def assert_search_custom_s3(host, create_temp_link=False):
 
     response_json = response.json()
     assert len(response_json) == 2
-    for doc in response_json:
-        field = list(doc['fields'].values())[1]
-        if create_temp_link:
-            assert not field['uri'].startswith('s3://'), f"received: {doc}"
-        else:
-            assert field['uri'].startswith('s3://'), f"received: {doc}"
-        assert (
-            'blob' not in field.keys() or field['blob'] is None or field['blob'] == ''
-        )
+    if not mm_type:
+        for doc in response_json:
+            field = list(doc['fields'].values())[0]
+            if create_temp_link:
+                assert not field['uri'].startswith('s3://'), f"received: {doc}"
+            else:
+                assert field['uri'].startswith('s3://'), f"received: {doc}"
+            assert (
+                'blob' not in field.keys()
+                or field['blob'] is None
+                or field['blob'] == ''
+            )

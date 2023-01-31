@@ -15,13 +15,14 @@ from now.constants import DatasetTypes, Models
 @pytest.mark.remote
 @pytest.mark.parametrize('dataset', ['custom_s3_bucket'])
 @pytest.mark.parametrize(
-    'dataset_path,index_fields,filter_fields',
+    'dataset_path,index_fields,filter_fields,mm_type',
     [
-        (os.environ.get('S3_CUSTOM_DATA_PATH'), ['.jpeg'], []),
+        (os.environ.get('S3_CUSTOM_DATA_PATH'), ['.jpeg'], [], False),
         (
             os.environ.get('S3_CUSTOM_MM_DATA_PATH'),
             ['image.png'],
             ['title'],
+            True,
         ),
     ],
 )
@@ -32,6 +33,7 @@ def test_backend_custom_data(
     dataset_path: str,
     index_fields: list,
     filter_fields: list,
+    mm_type: bool,
     query_fields: str,
     cleanup,
     with_hubble_login_patch,
@@ -59,5 +61,11 @@ def test_backend_custom_data(
 
     assert_deployment_response(response)
 
-    assert_search_custom_s3(host=response['host'], create_temp_link=False)
-    assert_search_custom_s3(host=response['host'], create_temp_link=True)
+    assert_search_custom_s3(
+        host=response['host'],
+        mm_type=mm_type,
+        create_temp_link=False,
+    )
+    assert_search_custom_s3(
+        host=response['host'], mm_type=mm_type, create_temp_link=True
+    )
