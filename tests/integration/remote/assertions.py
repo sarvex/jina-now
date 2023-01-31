@@ -155,18 +155,19 @@ def assert_search_custom_s3(host, mm_type, create_temp_link=False):
 
     response_json = response.json()
     assert len(response_json) == 2
-    if not mm_type:
-        for doc in response_json:
-            field = list(doc['fields'].values())[0]
-            if create_temp_link:
-                assert not field['uri'].startswith('s3://'), f"received: {doc}"
-            else:
-                assert field['uri'].startswith('s3://'), f"received: {doc}"
+    for doc in response_json:
+        fields = list(doc['fields'].values())
+        for field in fields:
+            if field['uri']:
+                if create_temp_link:
+                    assert not field['uri'].startswith('s3://'), f"received: {doc}"
+                else:
+                    assert field['uri'].startswith('s3://'), f"received: {doc}"
             assert (
                 'blob' not in field.keys()
                 or field['blob'] is None
                 or field['blob'] == ''
             )
-    else:
+    if mm_type:
         for doc in response_json:
             assert len(doc['tags']) > 0
