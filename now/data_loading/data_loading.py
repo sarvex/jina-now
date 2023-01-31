@@ -257,7 +257,10 @@ def create_docs_from_subdirectories(
                 continue
             if file.endswith('.json'):
                 if is_s3_dataset:
-                    dict_tags['tags_uri'] = file_full_path
+                    for field in data_class.__annotations__.keys():
+                        if field not in kwargs.keys():
+                            kwargs[field] = file_full_path
+                            dict_tags['tags_uri'] = file_full_path
                 else:
                     with open(file_full_path) as f:
                         dict_tags.update(flatten_dict(json.load(f)))
