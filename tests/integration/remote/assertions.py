@@ -167,3 +167,6 @@ def assert_search_custom_s3(host, mm_type, create_temp_link=False):
                 or field['blob'] is None
                 or field['blob'] == ''
             )
+    else:
+        for doc in response_json:
+            assert len(doc['tags']) > 0
