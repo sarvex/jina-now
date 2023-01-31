@@ -291,10 +291,6 @@ def maybe_download_from_s3(
                 user_input.aws_region_name,
             )
             futures.append(f)
-        for f in futures:
-            f.result()
-        # The execution of update_tags depends on the results of convert_fn
-        futures = []
         for d in docs:
             f = executor.submit(
                 update_tags,
