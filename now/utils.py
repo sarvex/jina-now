@@ -248,6 +248,13 @@ def get_bucket(uri, aws_access_key_id, aws_secret_access_key, region_name):
 
 
 def update_tags(d, aws_access_key_id, aws_secret_access_key, region_name):
+    # bucket = get_bucket(
+    #     uri=d.uri,
+    #     aws_access_key_id=aws_access_key_id,
+    #     aws_secret_access_key=aws_secret_access_key,
+    #     region_name=region_name,
+    # )
+    # with tempfile.TemporaryDirectory() as tmpdir:
     session = boto3.session.Session(
         aws_access_key_id=aws_access_key_id,
         aws_secret_access_key=aws_secret_access_key,
@@ -299,6 +306,9 @@ def maybe_download_from_s3(
             f = executor.submit(
                 update_tags,
                 d,
+                user_input.aws_access_key_id,
+                user_input.aws_secret_access_key,
+                user_input.aws_region_name,
             )
             futures.append(f)
         for f in futures:
