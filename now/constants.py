@@ -5,7 +5,7 @@ from docarray.typing import Image, Text, Video
 from now.utils import BetterEnum
 
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.152-bump-jcloud'
-NOW_PREPROCESSOR_VERSION = '0.0.120-fix-support-tags-for-folders-18'
+NOW_PREPROCESSOR_VERSION = '0.0.120-fix-support-tags-for-folders-19'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.144-bump-jcloud'
 NOW_AUTOCOMPLETE_VERSION = '0.0.10-bump-jcloud'
 
