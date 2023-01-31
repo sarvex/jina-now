@@ -476,9 +476,14 @@ class NOWElasticIndexer(Executor):
         }  # should be a dict of selected index fields and their modalities
         print(index_fields_dict)
         encoder_to_fields_and_modalities = {}
+        dataclass_fields_to_field_names = {
+            value: key for key, value in self.field_names_to_dataclass_fields.items()
+        }
         for encoder in self.encoder_to_fields.keys():
             encoder_to_fields_and_modalities[encoder] = {
-                field: index_fields_dict[field]
+                dataclass_fields_to_field_names[field]: index_fields_dict[
+                    dataclass_fields_to_field_names[field]
+                ]
                 for field in self.encoder_to_fields[encoder]
             }
         print(encoder_to_fields_and_modalities)
