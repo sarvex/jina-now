@@ -261,6 +261,7 @@ def update_tags(d, aws_access_key_id, aws_secret_access_key, region_name):
     file_content = response['Body'].read().decode('utf-8')
 
     json_content = json.loads(file_content)
+    print('JSON CONTENT: ', json_content)
     d.tags.update(json_content)
 
 
