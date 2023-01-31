@@ -248,28 +248,21 @@ def get_bucket(uri, aws_access_key_id, aws_secret_access_key, region_name):
 
 
 def update_tags(d, aws_access_key_id, aws_secret_access_key, region_name):
-    # bucket = get_bucket(
-    #     uri=d.uri,
-    #     aws_access_key_id=aws_access_key_id,
-    #     aws_secret_access_key=aws_secret_access_key,
-    #     region_name=region_name,
-    # )
-    # with tempfile.TemporaryDirectory() as tmpdir:
-    session = boto3.session.Session(
+    bucket = get_bucket(
+        uri=d.uri,
         aws_access_key_id=aws_access_key_id,
         aws_secret_access_key=aws_secret_access_key,
         region_name=region_name,
     )
-    print('DATA: ', d._metadata['s3_tags'])
-    response = session.resource('s3').get_object(
-        Bucket=list(d._metadata['s3_tags'].values())[0].split('/')[2],
-        Key='/'.join(list(d._metadata['s3_tags'].values())[0].split('/')[3:]),
-    )
-    file_content = response['Body'].read().decode('utf-8')
+    with tempfile.TemporaryDirectory() as tmpdir:
+        local_file = download_from_bucket(
+            tmpdir, list(d._metadata['s3_tags'].values())[0], bucket
+        )
 
-    json_content = json.loads(file_content)
-    print('JSON CONTENT: ', json_content)
-    d.tags.update(json_content)
+    with open(local_file, 'r') as file:
+        data = json.load(file)
+
+    d.tags.update(data)
 
 
 def maybe_download_from_s3(

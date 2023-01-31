@@ -83,7 +83,7 @@ class NOWPreprocessor(Executor):
 
             docs = self.app.preprocess(docs)
 
-            # as _maybe_download_from_s3 moves s3 URI to tags['uri'], need to move it back for post-processor & accurate
+            # as _maybe_download_from_s3 moves s3 uri to tags['uri'], need to move it back for post-processor & accurate
             # results.
             if (
                 self.user_input
