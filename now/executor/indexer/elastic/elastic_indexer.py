@@ -477,7 +477,8 @@ class NOWElasticIndexer(Executor):
         print(index_fields_dict)
         encoder_to_fields_and_modalities = {}
         dataclass_fields_to_field_names = {
-            value: key for key, value in self.field_names_to_dataclass_fields.items()
+            value: key
+            for key, value in self.user_input.field_names_to_dataclass_fields.items()
         }
         for encoder in self.encoder_to_fields.keys():
             encoder_to_fields_and_modalities[encoder] = {
