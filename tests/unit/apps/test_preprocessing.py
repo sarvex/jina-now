@@ -36,7 +36,9 @@ def test_search_app_preprocessing_indexing(resources_folder_path, mm_dataclass):
         [
             Document(
                 mm_dataclass(
-                    video_field=os.path.join(resources_folder_path, 'gif/folder1/file.gif')
+                    video_field=os.path.join(
+                        resources_folder_path, 'gif/folder1/file.gif'
+                    )
                 ),
             )
         ]
