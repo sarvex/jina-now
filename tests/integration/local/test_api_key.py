@@ -6,7 +6,6 @@ from tests.integration.local.conftest import (
     get_flow,
     get_request_body,
 )
-from tests.integration.local.data import simple_data
 from tests.integration.remote.assertions import assert_search
 
 from now.constants import ACCESS_PATHS, Models

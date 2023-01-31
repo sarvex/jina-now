@@ -1,6 +1,5 @@
 import requests
 from tests.integration.local.conftest import SEARCH_URL, get_flow, get_request_body
-from tests.integration.local.data import data_with_tags
 
 from now.constants import ACCESS_PATHS, Models
 
