@@ -127,3 +127,20 @@ def elastic_data(setup_online_shop_db, es_connection_params):
     user_input.es_host_name = connection_str
     docs = load_data(user_input=user_input, data_class=data_class)
     return docs, user_input
+
+
+@pytest.fixture
+def local_folder_data(resources_folder_path):
+    user_input = UserInput()
+    user_input.admin_name = 'team-now'
+    user_input.dataset_type = DatasetTypes.PATH
+    user_input.dataset_path = os.path.join(resources_folder_path, 'subdirectories')
+    user_input.index_fields = ['a.jpg', 'test.txt']
+    user_input.filter_fields = ['color']
+    user_input.index_field_candidates_to_modalities = {'a.jpg': Image, 'test.txt': Text}
+    user_input.filter_field_candidates_to_modalities = {'color': str}
+    data_class, user_input.field_names_to_dataclass_fields = create_dataclass(
+        user_input=user_input
+    )
+    docs = load_data(user_input, data_class=data_class)
+    return docs, user_input
