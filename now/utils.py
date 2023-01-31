@@ -259,8 +259,8 @@ def update_tags(d, aws_access_key_id, aws_secret_access_key, region_name):
             tmpdir, list(d._metadata['s3_tags'].values())[0], bucket
         )
 
-    with open(local_file, 'r') as file:
-        data = json.load(file)
+        with open(local_file, 'r') as file:
+            data = json.load(file)
 
     d.tags.update(data)
 

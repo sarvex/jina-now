@@ -113,7 +113,7 @@ class NOWPreprocessor(Executor):
             field: modality
             for field, modality in index_field_candidates_to_modalities.items()
             if field in index_fields
-        }  # Should be a dict of selected index fields and their modalities
+        }  # Should be a Dict of selected index fields and their modalities
         return DocumentArray(
             [
                 Document(
