@@ -248,21 +248,22 @@ def get_bucket(uri, aws_access_key_id, aws_secret_access_key, region_name):
 
 
 def update_tags(d, aws_access_key_id, aws_secret_access_key, region_name):
-    bucket = get_bucket(
-        uri=list(d._metadata['s3_tags'].values())[0],
-        aws_access_key_id=aws_access_key_id,
-        aws_secret_access_key=aws_secret_access_key,
-        region_name=region_name,
-    )
-    with tempfile.TemporaryDirectory() as tmpdir:
-        local_file = download_from_bucket(
-            tmpdir, list(d._metadata['s3_tags'].values())[0], bucket
+    if 's3_tags' in d._metadata:
+        bucket = get_bucket(
+            uri=list(d._metadata['s3_tags'].values())[0],
+            aws_access_key_id=aws_access_key_id,
+            aws_secret_access_key=aws_secret_access_key,
+            region_name=region_name,
         )
+        with tempfile.TemporaryDirectory() as tmpdir:
+            local_file = download_from_bucket(
+                tmpdir, list(d._metadata['s3_tags'].values())[0], bucket
+            )
 
-        with open(local_file, 'r') as file:
-            data = json.load(file)
+            with open(local_file, 'r') as file:
+                data = json.load(file)
 
-    d.tags.update(flatten_dict(data))
+        d.tags.update(flatten_dict(data))
 
 
 def maybe_download_from_s3(
