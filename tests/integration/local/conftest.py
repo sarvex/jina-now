@@ -1,9 +1,20 @@
+import os
+from docarray import dataclass, DocumentArray, Document
+
+import pytest
+from docarray.typing import Text, Image
+
 from jina import Flow
 
 from now.admin.utils import get_default_request_body
 from now.constants import EXTERNAL_CLIP_HOST
 from now.executor.indexer.elastic import NOWElasticIndexer
 from now.executor.preprocessor import NOWPreprocessor
+from now.constants import DatasetTypes
+from now.data_loading.create_dataclass import create_dataclass
+from now.data_loading.data_loading import load_data
+from now.demo_data import DemoDatasetNames
+from now.now_dataclasses import UserInput
 
 BASE_URL = 'http://localhost:8080/api/v1'
 SEARCH_URL = f'{BASE_URL}/search-app/search'
@@ -53,27 +64,9 @@ def get_flow(preprocessor_args=None, indexer_args=None, tmpdir=None):
     return f
 
 
-import os
-from docarray import dataclass, DocumentArray, Document
-
-import pytest
-from docarray.typing import Text, Image
-
-from now.constants import DatasetTypes
-from now.data_loading.create_dataclass import create_dataclass
-from now.data_loading.data_loading import load_data
-from now.demo_data import DemoDatasetNames
-from now.now_dataclasses import UserInput
-
-
-@dataclass
-class SimpleDoc:
-    title: Text
-
-
 @pytest.fixture
-def data_with_tags():
-    docs = DocumentArray([Document(SimpleDoc(title='test')) for _ in range(10)])
+def data_with_tags(mm_dataclass):
+    docs = DocumentArray([Document(mm_dataclass(text_field='test')) for _ in range(10)])
     for index, doc in enumerate(docs):
         doc.tags['color'] = 'Blue Color' if index == 0 else 'Red Color'
         doc.tags['price'] = 0.5 + index
@@ -82,8 +75,8 @@ def data_with_tags():
 
 
 @pytest.fixture
-def simple_data():
-    return DocumentArray([Document(SimpleDoc(title='test')) for _ in range(10)])
+def simple_data(mm_dataclass):
+    return DocumentArray([Document(mm_dataclass(text_field='test')) for _ in range(10)])
 
 
 @pytest.fixture

@@ -30,7 +30,7 @@ def test_add_key(
         indexer_args={
             'admin_emails': [admin_email],
             'index_name': random_index_name,
-            'document_mappings': [[Models.CLIP_MODEL, 512, ['title']]],
+            'document_mappings': [[Models.CLIP_MODEL, 512, ['text_field']]],
         },
         tmpdir=tmpdir,
     )
