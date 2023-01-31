@@ -56,7 +56,6 @@ def test_empty():
 
 def test_initialize():
     words, counts = word_list()
-
     new_words = {}
     for word, count in zip(words, counts):
         new_words[word] = {'count': count}
