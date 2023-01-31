@@ -14,7 +14,7 @@ from now.constants import DatasetTypes
 from now.data_loading.elasticsearch import ElasticsearchExtractor
 from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
-from now.utils import sigmap
+from now.utils import sigmap, flatten_dict
 
 
 def load_data(
@@ -247,6 +247,7 @@ def create_docs_from_subdirectories(
         folder_files[path_to_last_folder].append(file)
     for folder, files in folder_files.items():
         kwargs = {}
+        dict_tags = {}
         for file in files:
             file, file_full_path = _extract_file_and_full_file_path(
                 file, path, is_s3_dataset
@@ -261,11 +262,10 @@ def create_docs_from_subdirectories(
                             kwargs[field] = file_full_path
                 else:
                     with open(file_full_path) as f:
-                        data = json.load(f)
-                    for el, value in data.items():
-                        if el in field_names_to_dataclass_fields.keys():
-                            kwargs[field_names_to_dataclass_fields[el]] = value
-        docs.append(Document(data_class(**kwargs)))
+                        dict_tags.update(flatten_dict(json.load(f)))
+        doc = Document(data_class(**kwargs))
+        doc.tags.update(dict_tags)
+        docs.append(doc)
     return docs
 
 
