@@ -231,7 +231,6 @@ def convert_fn(
         field_value = get_dict_value_for_flattened_key(
             json_dict, field_name.split('__')
         )
-        d.tags.update({field_name: field_value})
         d.text = field_value
         d.uri = ''
     return d

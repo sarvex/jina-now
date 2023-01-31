@@ -17,7 +17,7 @@ from now.constants import DatasetTypes, Models
 @pytest.mark.parametrize(
     'dataset_path,index_fields,filter_fields',
     [
-        # (os.environ.get('S3_CUSTOM_DATA_PATH'), ['.jpeg'], []),
+        (os.environ.get('S3_CUSTOM_DATA_PATH'), ['.jpeg'], []),
         (
             os.environ.get('S3_CUSTOM_MM_DATA_PATH'),
             ['image.png'],
