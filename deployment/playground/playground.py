@@ -127,7 +127,7 @@ def deploy_streamlit():
                 st.session_state.index_fields_dict = index_fields_dict
                 st.session_state.field_names_to_dataclass_fields = (
                     field_names_to_dataclass_fields
-                )
+                )[0]
             except Exception as e:
                 print(
                     "Index fields couldn't be loaded from the endpoint properly. "
@@ -343,14 +343,6 @@ def get_encoder_options(q_field: str, id_field: str) -> List[str]:
     return encoders_options
 
 
-def process_id_field(id_field):
-    dataclass_fields_to_field_names = {
-        d_field: field_name
-        for field_name, d_field in st.session_state.field_names_to_dataclass_fields.items()
-    }
-    return dataclass_fields_to_field_names[id_field]
-
-
 def customize_semantic_scores():
     input_modalities = [
         field['modality'] for field in list(st.session_state.query.values())
@@ -409,7 +401,7 @@ def customize_semantic_scores():
             options=list(st.session_state.field_names_to_dataclass_fields.keys()),
             key='index_field_' + str(i),
         )
-        id_field = process_id_field(id_field)
+        id_field = st.session_state.field_names_to_dataclass_fields[id_field]
         encoder_options = get_encoder_options(q_field, id_field)
         enc = encoder.selectbox(
             label='encoder',
@@ -424,7 +416,6 @@ def customize_semantic_scores():
             key='weight_' + str(i),
         )
         st.session_state.semantic_scores[f'{i}'] = [q_field, id_field, enc, w]
-    print('st semantic scores: ', st.session_state.semantic_scores)
 
 
 def render_mm_query(query, modality):

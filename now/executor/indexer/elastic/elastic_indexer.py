@@ -164,7 +164,6 @@ class NOWElasticIndexer(Executor):
         es_docs = convert_doc_map_to_es(
             docs_map, self.index_name, self.encoder_to_fields
         )
-        print("ES DOCS", es_docs[0])
         success, _ = bulk(self.es, es_docs)
         self.es.indices.refresh(index=self.index_name)
         if success:
@@ -217,7 +216,6 @@ class NOWElasticIndexer(Executor):
         custom_bm25_query = parameters.get('custom_bm25_query', None)
         apply_default_bm25 = parameters.get('apply_default_bm25', False)
         semantic_scores = parameters.get('semantic_scores', None)
-        print('indexer received sem scores: ', semantic_scores)
         if not semantic_scores:
             semantic_scores = generate_semantic_scores(docs_map, self.encoder_to_fields)
         filter = parameters.get('filter', {})
@@ -231,7 +229,6 @@ class NOWElasticIndexer(Executor):
             filter=filter,
             query_to_curated_ids=self.query_to_curated_ids,
         )
-        print("ES QUERIES: ", es_queries)
         for doc, query in es_queries:
             result = self.es.search(
                 index=self.index_name,
@@ -474,22 +471,19 @@ class NOWElasticIndexer(Executor):
             dataclass_fields_to_field_names = {
                 'text_0': 'title',
                 'image_0': 'picture',
+            }
         """
-        print(self.encoder_to_fields)
         dataclass_fields_modalities_dict = {
             self.user_input.field_names_to_dataclass_fields[field]: modality
             for field, modality in self.user_input.index_field_candidates_to_modalities.items()
             if field in self.user_input.index_fields
         }  # should be a dict of selected index fields and their modalities
-        print(dataclass_fields_modalities_dict)
-
         encoder_to_fields_and_modalities = {}
         for encoder in self.encoder_to_fields.keys():
             encoder_to_fields_and_modalities[encoder] = {
                 field: dataclass_fields_modalities_dict[field]
                 for field in self.encoder_to_fields[encoder]
             }
-        print(encoder_to_fields_and_modalities)
         return DocumentArray(
             [
                 Document(

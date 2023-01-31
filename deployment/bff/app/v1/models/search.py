@@ -44,8 +44,8 @@ class SearchRequestModel(BaseRequestModel):
     )
     semantic_scores: List[List] = Field(
         default=None,
-        description='List of tuples where each tuple contains a query_field, index_field, encoder_name and weight. '
-        'This defines how scores should be calculated for documents.',
+        description='List of lists where each nested list contains a query_field, index_field, encoder_name and weight.'
+        ' This defines how scores should be calculated for documents.',
     )
 
 
