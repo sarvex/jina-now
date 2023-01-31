@@ -255,13 +255,14 @@ def create_docs_from_subdirectories(
                     for field in data_class.__annotations__.keys():
                         if field not in kwargs.keys():
                             kwargs[field] = file_full_path
+                            dict_tags[field] = file_full_path
                 else:
                     with open(file_full_path) as f:
                         data = flatten_dict(json.load(f))
                     for el, value in data.items():
                         dict_tags[el] = value
         doc = Document(data_class(**kwargs))
-        doc.tags.update(dict_tags)
+        doc._metadata['s3_tags'] = dict_tags
         docs.append(doc)
     return docs
 

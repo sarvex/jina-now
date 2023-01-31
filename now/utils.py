@@ -231,6 +231,7 @@ def convert_fn(
         field_value = get_dict_value_for_flattened_key(
             json_dict, field_name.split('__')
         )
+        d.tags.update({field_name: field_value})
         d.text = field_value
         d.uri = ''
     return d
@@ -246,13 +247,21 @@ def get_bucket(uri, aws_access_key_id, aws_secret_access_key, region_name):
     return bucket
 
 
-def update_tags(d):
-    dict_tags = dict()
-    for chunk in d.chunks:
-        if chunk.tags:
-            dict_tags.update(chunk.tags)
-    d.tags.update(dict_tags)
-    return d
+def update_tags(d, aws_access_key_id, aws_secret_access_key, region_name):
+    session = boto3.session.Session(
+        aws_access_key_id=aws_access_key_id,
+        aws_secret_access_key=aws_secret_access_key,
+        region_name=region_name,
+    )
+    print('DATA: ', d._metadata['s3_tags'])
+    response = session.resource('s3').get_object(
+        Bucket=list(d._metadata['s3_tags'].values())[0].split('/')[2],
+        Key='/'.join(list(d._metadata['s3_tags'].values())[0].split('/')[3:]),
+    )
+    file_content = response['Body'].read().decode('utf-8')
+
+    json_content = json.loads(file_content)
+    d.tags.update(json_content)
 
 
 def maybe_download_from_s3(
