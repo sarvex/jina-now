@@ -6,7 +6,6 @@ from tests.integration.local.conftest import (
     get_flow,
     get_request_body,
 )
-from tests.integration.local.data import simple_data
 from tests.integration.remote.assertions import assert_search
 
 from now.constants import ACCESS_PATHS, Models
@@ -31,7 +30,7 @@ def test_add_key(
         indexer_args={
             'admin_emails': [admin_email],
             'index_name': random_index_name,
-            'document_mappings': [[Models.CLIP_MODEL, 512, ['title']]],
+            'document_mappings': [[Models.CLIP_MODEL, 512, ['text_field']]],
         },
         tmpdir=tmpdir,
     )

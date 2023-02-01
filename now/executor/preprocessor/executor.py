@@ -14,7 +14,7 @@ from now.executor.abstract.auth import (
     get_auth_executor_class,
     secure_request,
 )
-from now.utils import maybe_download_from_s3
+from now.executor.preprocessor.s3_download import maybe_download_from_s3
 
 Executor = get_auth_executor_class()
 
@@ -82,7 +82,7 @@ class NOWPreprocessor(Executor):
 
             docs = self.app.preprocess(docs)
 
-            # as _maybe_download_from_s3 moves S3 URI to tags['uri'], need to move it back for post-processor & accurate
+            # As _maybe_download_from_s3 moves S3 URI to tags['uri'], need to move it back for post-processor & accurate
             # results.
             if (
                 self.user_input
