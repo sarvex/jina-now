@@ -91,10 +91,7 @@ class ElasticsearchExtractor:
         """
         kwargs = {}
         for field_name, field_value in es_document.items():
-            if (
-                field_name
-                in self._user_input.index_fields + self._user_input.filter_fields
-            ):
+            if field_name in self._user_input.index_fields:
                 kwargs[
                     self._user_input.field_names_to_dataclass_fields[field_name]
                 ] = field_value
