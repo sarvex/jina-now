@@ -127,7 +127,7 @@ def deploy_streamlit():
                 st.session_state.index_fields_dict = index_fields_dict
                 st.session_state.field_names_to_dataclass_fields = (
                     field_names_to_dataclass_fields
-                )[0]
+                )
             except Exception as e:
                 print(
                     "Index fields couldn't be loaded from the endpoint properly. "

@@ -468,9 +468,9 @@ class NOWElasticIndexer(Executor):
                 },
             }
          - dictionary of dataclass fields to their field names, e.g.:
-            dataclass_fields_to_field_names = {
-                'text_0': 'title',
-                'image_0': 'picture',
+            field_names_to_dataclass_fields = {
+                'title': 'text_0',
+                'picture': 'image_0',
             }
         """
         print(
