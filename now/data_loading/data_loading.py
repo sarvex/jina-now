@@ -49,8 +49,8 @@ def load_data(
         raise ValueError(
             f'Could not load DocumentArray dataset. Please check your configuration: {user_input}.'
         )
-    if 'NOW_CI_RUN' in os.environ:
-        da = da[:50]
+    # if 'NOW_CI_RUN' in os.environ:
+    da = da[:50]
     return da
 
 

@@ -28,15 +28,13 @@ def create_dataclass(
     user_input: UserInput = None,
 ):
     """
-    Create a dataclass from the selected index and filter fields
+    Create a dataclass from the selected index fields
     and their corresponding modalities or directly from the user input which should
     contain that information. If both are provided, the user input will be used.
 
     for example:
     the index fields modalities can be:
     {'test.txt': Text , 'image.png': Image}
-    the filter fields modalities can be:
-    {'price': float, 'description': str}
 
     the dataclass will be:
 
@@ -56,13 +54,9 @@ def create_dataclass(
     """
 
     if user_input:
-        fields_modalities = {}
-        fields_modalities.update(user_input.index_field_candidates_to_modalities)
-        update_dict_with_no_overwrite(
-            fields_modalities, user_input.filter_field_candidates_to_modalities
-        )
-        fields = user_input.index_fields + user_input.filter_fields
+        fields_modalities = user_input.index_field_candidates_to_modalities
         dataset_type = user_input.dataset_type
+        fields = user_input.index_fields
 
     file_mapping_to_dataclass_fields = create_dataclass_fields_file_mappings(
         fields,
@@ -150,7 +144,6 @@ def create_dataclass_fields_file_mappings(fields: List, fields_modalities: Dict)
     modalities_count = defaultdict(int)
 
     file_mapping_to_dataclass_fields = {}
-    filter_count = 0
     for f in fields:
         if not isinstance(f, typing.Hashable):
             continue
@@ -160,7 +153,4 @@ def create_dataclass_fields_file_mappings(fields: List, fields_modalities: Dict)
                 f
             ] = f'{docarray_typing_to_modality_string(field_modality)}_{modalities_count[field_modality]}'
             modalities_count[fields_modalities[f]] += 1
-        else:
-            file_mapping_to_dataclass_fields[f] = f'filter_{filter_count}'
-            filter_count += 1
     return file_mapping_to_dataclass_fields
