@@ -5,6 +5,7 @@ import random
 from collections import namedtuple
 from warnings import catch_warnings, filterwarnings
 
+import boto3
 import hubble
 import numpy as np
 import pytest
@@ -164,6 +165,27 @@ def setup_service_running(es_connection_params) -> None:
     wait_until_cluster_is_up(es=Elasticsearch(hosts=hosts), hosts=hosts)
     yield
     cmd('docker-compose -f tests/resources/elastic/docker-compose.yml down')
+
+
+def get_secret_value(secret_name, region_name):
+    session = boto3.session.Session()
+    client = session.client(service_name='secretsmanager', region_name=region_name)
+    response = client.get_secret_value(SecretId=secret_name)
+    if 'SecretString' in response:
+        return response['SecretString']
+    else:
+        return base64.b64decode(response['SecretBinary'])
+
+
+def set_environment_variables(secret_name, region_name):
+    secret_value = get_secret_value(secret_name, region_name)
+    os.environ['AWS_ACCESS_KEY_ID'] = secret_value['AWS_ACCESS_KEY_ID']
+    os.environ['AWS_SECRET_ACCESS_KEY'] = secret_value['AWS_SECRET_ACCESS_KEY']
+
+
+@pytest.fixture(scope="session", autouse=True)
+def set_aws_credentials():
+    set_environment_variables('SECRET_NAME_TO_CHANGE', 'eu-west-1')
 
 
 @pytest.fixture

@@ -38,15 +38,19 @@ jobs:
           echo ~/.jina/config.json
         env:
           WOLF_TOKEN: ${{ secrets.WOLF_TOKEN }}
+      - name: Install script requirements
+        run: pip install -r requirements.txt
+        working-directory: .github/values
+      - name: Get AWS credentials
+        run: python get_secret.py SECRET_NAME_TO_CHANGE --region=eu-west-1
+        working-directory: .github/values
       - name: Test
         id: test
         run: pytest --suppress-no-test-exit-code -v -s -m "not gpu" --splits 9 --group ${{ matrix.group }} --splitting-algorithm least_duration tests/
         timeout-minutes: 35
         env:
           WOLF_TOKEN: ${{ secrets.WOLF_TOKEN }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           S3_SCHEMA_FOLDER_PATH: ${{ secrets.S3_SCHEMA_FOLDER_PATH }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           S3_CUSTOM_DATA_PATH: ${{ secrets.S3_CUSTOM_DATA_PATH }}
 #      - name: Setup tmate session for debugging
 #        if: ${{ failure() }}
@@ -90,12 +94,18 @@ jobs:
       - name: Zip deployment
         if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
         run: zip -r deploy.zip deployment docker-compose.yml
+      - name: Install script requirements
+        run: pip install -r requirements.txt
+        working-directory: .github/values
+      - name: Get AWS credentials
+        run: python get_secret.py SECRET_NAME_TO_CHANGE --region=eu-west-1
+        working-directory: .github/values
       - name: Deploy to AWS Elastic Beanstalk
         if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
         uses: einaregilsson/beanstalk-deploy@v20
         with:
-          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_access_key: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ env.AWS_SECRET_ACCESS_KEY }}
           application_name: now-bff-playground
           environment_name: Nowbffplayground-env
           version_label: ${{ github.sha }}
