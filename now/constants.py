@@ -6,7 +6,7 @@ from now.utils import BetterEnum
 
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.152-bump-jcloud'
 NOW_PREPROCESSOR_VERSION = '0.0.122-update-preprocessor-4'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.144-test_elastic-indexer-2'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.144-test_elastic-indexer-3'
 NOW_AUTOCOMPLETE_VERSION = '0.0.10-bump-jcloud'
 
 
