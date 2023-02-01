@@ -48,6 +48,7 @@ jobs:
           S3_SCHEMA_FOLDER_PATH: ${{ secrets.S3_SCHEMA_FOLDER_PATH }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           S3_CUSTOM_DATA_PATH: ${{ secrets.S3_CUSTOM_DATA_PATH }}
+          S3_CUSTOM_MM_DATA_PATH: ${{ secrets.S3_CUSTOM_MM_DATA_PATH }}
 #      - name: Setup tmate session for debugging
 #        if: ${{ failure() }}
 #        uses: mxschmitt/action-tmate@v3

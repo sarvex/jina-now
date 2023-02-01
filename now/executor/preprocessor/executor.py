@@ -83,7 +83,7 @@ class NOWPreprocessor(Executor):
 
             docs = self.app.preprocess(docs)
 
-            # as _maybe_download_from_s3 moves S3 URI to tags['uri'], need to move it back for post-processor & accurate
+            # As _maybe_download_from_s3 moves S3 URI to tags['uri'], need to move it back for post-processor & accurate
             # results.
             if (
                 self.user_input
@@ -113,7 +113,7 @@ class NOWPreprocessor(Executor):
             field: modality
             for field, modality in index_field_candidates_to_modalities.items()
             if field in index_fields
-        }  # should be a dict of selected index fields and their modalities
+        }  # should be a dict of selected index_fields and their modalities.
         return DocumentArray(
             [
                 Document(

@@ -3,6 +3,7 @@ import pathlib
 import sys
 import warnings
 from argparse import Namespace
+
 from now import __version__
 from now import __version__ as version
 from now.constants import SURVEY_LINK
