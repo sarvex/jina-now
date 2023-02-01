@@ -6,7 +6,7 @@
         <link rel="canonical" href="https://now.jina.ai/_modules/now/common/detect_schema.html" />
 
     <link rel="shortcut icon" href="../../../../_static/favicon.png"/><!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
-        <title>now.common.detect_schema - NOW 0.0.50 documentation</title>
+        <title>now.common.detect_schema - NOW 0.0.51 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../../">
-                <div class="brand">NOW 0.0.50 documentation</div>
+                <div class="brand">NOW 0.0.51 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -290,6 +290,7 @@
 <span class="kn">from</span> <span class="nn">now.data_loading.elasticsearch</span> <span class="kn">import</span> <span class="n">ElasticsearchConnector</span>
 <span class="kn">from</span> <span class="nn">now.now_dataclasses</span> <span class="kn">import</span> <span class="n">UserInput</span>
 <span class="kn">from</span> <span class="nn">now.utils</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">RetryException</span><span class="p">,</span>
     <span class="n">docarray_typing_to_modality_string</span><span class="p">,</span>
     <span class="n">flatten_dict</span><span class="p">,</span>
     <span class="n">modality_string_to_docarray_typing</span><span class="p">,</span>
@@ -426,6 +427,9 @@
 <span class="sd">    Makes a request to hubble API and downloads the first 10 documents</span>
 <span class="sd">    from the document array and uses the first document to get the schema and sets field_names in user_input</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">user_input</span><span class="o">.</span><span class="n">dataset_name</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">RetryException</span><span class="p">(</span><span class="s1">&#39;Please retry&#39;</span><span class="p">)</span>
+
     <span class="n">cookies</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s1">&#39;st&#39;</span><span class="p">:</span> <span class="n">user_input</span><span class="o">.</span><span class="n">jwt</span><span class="p">[</span><span class="s1">&#39;token&#39;</span><span class="p">],</span>
     <span class="p">}</span>
@@ -680,7 +684,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Jan 20, 2023.
+                            Last updated on Feb 01, 2023.
                         </div>
                     </div>
                     <div class="right-details">

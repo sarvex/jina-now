@@ -6,7 +6,7 @@
         <link rel="canonical" href="https://now.jina.ai/_modules/now/app/search_app/app.html" />
 
     <link rel="shortcut icon" href="../../../../../_static/favicon.png"/><!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
-        <title>now.app.search_app.app - NOW 0.0.50 documentation</title>
+        <title>now.app.search_app.app - NOW 0.0.51 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css" />
@@ -139,7 +139,7 @@
         </div>
         <div class="header-center">
             <a href="../../../../../">
-                <div class="brand">NOW 0.0.50 documentation</div>
+                <div class="brand">NOW 0.0.51 documentation</div>
             </a>
         </div>
         <div class="header-right">
@@ -276,28 +276,23 @@
 <span></span><span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">TypeVar</span>
 
-<span class="kn">from</span> <span class="nn">docarray.typing</span> <span class="kn">import</span> <span class="n">Image</span><span class="p">,</span> <span class="n">Text</span><span class="p">,</span> <span class="n">Video</span>
 <span class="kn">from</span> <span class="nn">jina</span> <span class="kn">import</span> <span class="n">Client</span>
 
 <span class="kn">from</span> <span class="nn">now.app.base.app</span> <span class="kn">import</span> <span class="n">JinaNOWApp</span>
 <span class="kn">from</span> <span class="nn">now.constants</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">ACCESS_PATHS</span><span class="p">,</span>
-    <span class="n">EXECUTOR_PREFIX</span><span class="p">,</span>
+    <span class="n">DEMO_NS</span><span class="p">,</span>
     <span class="n">EXTERNAL_CLIP_HOST</span><span class="p">,</span>
     <span class="n">NOW_AUTOCOMPLETE_VERSION</span><span class="p">,</span>
     <span class="n">NOW_ELASTIC_INDEXER_VERSION</span><span class="p">,</span>
     <span class="n">NOW_PREPROCESSOR_VERSION</span><span class="p">,</span>
     <span class="n">Apps</span><span class="p">,</span>
+    <span class="n">DatasetTypes</span><span class="p">,</span>
+    <span class="n">Models</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">now.demo_data</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">AVAILABLE_DATASETS</span><span class="p">,</span>
-    <span class="n">DEFAULT_EXAMPLE_HOSTED</span><span class="p">,</span>
-    <span class="n">DemoDataset</span><span class="p">,</span>
-    <span class="n">DemoDatasetNames</span><span class="p">,</span>
-<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">now.demo_data</span> <span class="kn">import</span> <span class="n">AVAILABLE_DATASETS</span><span class="p">,</span> <span class="n">DemoDataset</span><span class="p">,</span> <span class="n">DemoDatasetNames</span>
 <span class="kn">from</span> <span class="nn">now.executor.name_to_id_map</span> <span class="kn">import</span> <span class="n">name_to_id_map</span>
 <span class="kn">from</span> <span class="nn">now.now_dataclasses</span> <span class="kn">import</span> <span class="n">UserInput</span>
-<span class="kn">from</span> <span class="nn">now.utils</span> <span class="kn">import</span> <span class="n">get_email</span>
 
 
 <div class="viewcode-block" id="SearchApp"><a class="viewcode-back" href="../../../../../api/now.app.search_app.app/#now.app.search_app.app.SearchApp">[docs]</a><span class="k">class</span> <span class="nc">SearchApp</span><span class="p">(</span><span class="n">JinaNOWApp</span><span class="p">):</span>
@@ -330,20 +325,17 @@
 
 <div class="viewcode-block" id="SearchApp.is_demo_available"><a class="viewcode-back" href="../../../../../api/now.app.search_app.app/#now.app.search_app.app.SearchApp.is_demo_available">[docs]</a>    <span class="k">def</span> <span class="nf">is_demo_available</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user_input</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="k">if</span> <span class="p">(</span>
-            <span class="n">DEFAULT_EXAMPLE_HOSTED</span>
-            <span class="ow">and</span> <span class="n">user_input</span><span class="o">.</span><span class="n">dataset_name</span> <span class="ow">in</span> <span class="n">DEFAULT_EXAMPLE_HOSTED</span>
+            <span class="n">user_input</span><span class="o">.</span><span class="n">dataset_type</span> <span class="o">==</span> <span class="n">DatasetTypes</span><span class="o">.</span><span class="n">DEMO</span>
             <span class="ow">and</span> <span class="s1">&#39;NOW_EXAMPLES&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span>
             <span class="ow">and</span> <span class="s1">&#39;NOW_CI_RUN&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span>
         <span class="p">):</span>
             <span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span>
-                <span class="n">host</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;grpcs://now-example-</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">app_name</span><span class="si">}</span><span class="s1">-</span><span class="si">{</span><span class="n">user_input</span><span class="o">.</span><span class="n">dataset_name</span><span class="si">}</span><span class="s1">.dev.jina.ai&#39;</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
-                    <span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="s1">&#39;-&#39;</span>
-                <span class="p">)</span>
+                <span class="n">host</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;grpcs://</span><span class="si">{</span><span class="n">DEMO_NS</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">user_input</span><span class="o">.</span><span class="n">dataset_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="si">}</span><span class="s1">.dev.jina.ai&#39;</span>
             <span class="p">)</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s1">&#39;/dry_run&#39;</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-                <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>  <span class="c1"># noqa E722</span>
+                <span class="k">pass</span>
             <span class="k">return</span> <span class="kc">True</span>
         <span class="k">return</span> <span class="kc">False</span></div>
 
@@ -351,33 +343,28 @@
     <span class="k">def</span> <span class="nf">autocomplete_stub</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">{</span>
             <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;autocomplete_executor&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;uses&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">EXECUTOR_PREFIX</span><span class="si">}{</span><span class="n">name_to_id_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;NOWAutoCompleteExecutor2&quot;</span><span class="p">)</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">NOW_AUTOCOMPLETE_VERSION</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;uses&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;jinahub+docker://</span><span class="si">{</span><span class="n">name_to_id_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;NOWAutoCompleteExecutor2&quot;</span><span class="p">)</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">NOW_AUTOCOMPLETE_VERSION</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
             <span class="s1">&#39;needs&#39;</span><span class="p">:</span> <span class="s1">&#39;gateway&#39;</span><span class="p">,</span>
             <span class="s1">&#39;env&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;JINA_LOG_LEVEL&#39;</span><span class="p">:</span> <span class="s1">&#39;DEBUG&#39;</span><span class="p">},</span>
         <span class="p">}</span></div>
 
 <div class="viewcode-block" id="SearchApp.preprocessor_stub"><a class="viewcode-back" href="../../../../../api/now.app.search_app.app/#now.app.search_app.app.SearchApp.preprocessor_stub">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">preprocessor_stub</span><span class="p">(</span><span class="n">use_high_perf_flow</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">preprocessor_stub</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">{</span>
             <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;preprocessor&#39;</span><span class="p">,</span>
             <span class="s1">&#39;needs&#39;</span><span class="p">:</span> <span class="s1">&#39;autocomplete_executor&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;replicas&#39;</span><span class="p">:</span> <span class="mi">15</span> <span class="k">if</span> <span class="n">use_high_perf_flow</span> <span class="k">else</span> <span class="mi">1</span><span class="p">,</span>
-            <span class="s1">&#39;uses&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">EXECUTOR_PREFIX</span><span class="si">}{</span><span class="n">name_to_id_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;NOWPreprocessor&quot;</span><span class="p">)</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">NOW_PREPROCESSOR_VERSION</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;env&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;JINA_LOG_LEVEL&#39;</span><span class="p">:</span> <span class="s1">&#39;DEBUG&#39;</span><span class="p">},</span>
+            <span class="s1">&#39;uses&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;jinahub+docker://</span><span class="si">{</span><span class="n">name_to_id_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;NOWPreprocessor&quot;</span><span class="p">)</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">NOW_PREPROCESSOR_VERSION</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
             <span class="s1">&#39;jcloud&#39;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s1">&#39;resources&#39;</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s1">&#39;memory&#39;</span><span class="p">:</span> <span class="s1">&#39;1G&#39;</span><span class="p">,</span>
-                    <span class="s1">&#39;cpu&#39;</span><span class="p">:</span> <span class="s1">&#39;0.5&#39;</span><span class="p">,</span>
-                    <span class="s1">&#39;capacity&#39;</span><span class="p">:</span> <span class="s1">&#39;on-demand&#39;</span><span class="p">,</span>
-                <span class="p">}</span>
+                <span class="s1">&#39;autoscale&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;min&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;max&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s1">&#39;metric&#39;</span><span class="p">:</span> <span class="s1">&#39;concurrency&#39;</span><span class="p">,</span> <span class="s1">&#39;target&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
             <span class="p">},</span>
+            <span class="s1">&#39;env&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;JINA_LOG_LEVEL&#39;</span><span class="p">:</span> <span class="s1">&#39;DEBUG&#39;</span><span class="p">},</span>
         <span class="p">}</span></div>
 
 <div class="viewcode-block" id="SearchApp.clip_encoder_stub"><a class="viewcode-back" href="../../../../../api/now.app.search_app.app/#now.app.search_app.app.SearchApp.clip_encoder_stub">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">clip_encoder_stub</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Dict</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
         <span class="k">return</span> <span class="p">{</span>
-            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;encoderclip&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;uses&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">EXECUTOR_PREFIX</span><span class="si">}</span><span class="s1">CLIPOnnxEncoder/0.8.1-gpu&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">Models</span><span class="o">.</span><span class="n">CLIP_MODEL</span><span class="p">,</span>
+            <span class="s1">&#39;uses&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;jinahub+docker://CLIPOnnxEncoder/0.8.1-gpu&#39;</span><span class="p">,</span>
             <span class="s1">&#39;host&#39;</span><span class="p">:</span> <span class="n">EXTERNAL_CLIP_HOST</span><span class="p">,</span>
             <span class="s1">&#39;port&#39;</span><span class="p">:</span> <span class="mi">443</span><span class="p">,</span>
             <span class="s1">&#39;tls&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
@@ -390,8 +377,8 @@
 <div class="viewcode-block" id="SearchApp.sbert_encoder_stub"><a class="viewcode-back" href="../../../../../api/now.app.search_app.app/#now.app.search_app.app.SearchApp.sbert_encoder_stub">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">sbert_encoder_stub</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Dict</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
         <span class="k">return</span> <span class="p">{</span>
-            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;encodersbert&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;uses&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">EXECUTOR_PREFIX</span><span class="si">}</span><span class="s1">TransformerSentenceEncoder&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">Models</span><span class="o">.</span><span class="n">SBERT_MODEL</span><span class="p">,</span>
+            <span class="s1">&#39;uses&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;jinahub+docker://TransformerSentenceEncoder&#39;</span><span class="p">,</span>
             <span class="s1">&#39;uses_with&#39;</span><span class="p">:</span> <span class="p">{</span>
                 <span class="s1">&#39;access_paths&#39;</span><span class="p">:</span> <span class="n">ACCESS_PATHS</span><span class="p">,</span>
                 <span class="s1">&#39;model_name&#39;</span><span class="p">:</span> <span class="s1">&#39;msmarco-distilbert-base-v3&#39;</span><span class="p">,</span>
@@ -407,28 +394,32 @@
 <span class="sd">        :param user_input: User input</span>
 <span class="sd">        :param encoder2dim: maps encoder name to its output dimension</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">encoder2dim</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s1">&#39;Indexer can only be created for one encoder but have encoders: </span><span class="si">{</span><span class="n">encoder2dim</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="n">document_mappings_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">encoder</span><span class="p">,</span> <span class="n">dim</span> <span class="ow">in</span> <span class="n">encoder2dim</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">document_mappings_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="n">encoder</span><span class="p">,</span>
+                    <span class="n">dim</span><span class="p">,</span>
+                    <span class="p">[</span>
+                        <span class="n">user_input</span><span class="o">.</span><span class="n">field_names_to_dataclass_fields</span><span class="p">[</span>
+                            <span class="n">index_field</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_model&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                        <span class="p">]</span>
+                        <span class="k">for</span> <span class="n">index_field</span><span class="p">,</span> <span class="n">encoders</span> <span class="ow">in</span> <span class="n">user_input</span><span class="o">.</span><span class="n">model_choices</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                        <span class="k">if</span> <span class="n">encoder</span> <span class="ow">in</span> <span class="n">encoders</span>
+                    <span class="p">],</span>
+                <span class="p">]</span>
             <span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">encoder_name</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">encoder2dim</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">dim</span> <span class="o">=</span> <span class="n">encoder2dim</span><span class="p">[</span><span class="n">encoder_name</span><span class="p">]</span>
+
         <span class="k">return</span> <span class="p">{</span>
             <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;indexer&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;needs&#39;</span><span class="p">:</span> <span class="n">encoder_name</span><span class="p">,</span>
-            <span class="s1">&#39;uses&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">EXECUTOR_PREFIX</span><span class="si">}{</span><span class="n">name_to_id_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;NOWElasticIndexer&quot;</span><span class="p">)</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">NOW_ELASTIC_INDEXER_VERSION</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;needs&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">encoder2dim</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
+            <span class="s1">&#39;uses&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;jinahub+docker://</span><span class="si">{</span><span class="n">name_to_id_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;NOWElasticIndexer&quot;</span><span class="p">)</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">NOW_ELASTIC_INDEXER_VERSION</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
             <span class="s1">&#39;env&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;JINA_LOG_LEVEL&#39;</span><span class="p">:</span> <span class="s1">&#39;DEBUG&#39;</span><span class="p">},</span>
             <span class="s1">&#39;uses_with&#39;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s1">&#39;dim&#39;</span><span class="p">:</span> <span class="n">dim</span><span class="p">,</span>
-                <span class="s1">&#39;document_mappings&#39;</span><span class="p">:</span> <span class="p">[</span>
-                    <span class="p">[</span>
-                        <span class="n">encoder_name</span><span class="p">,</span>
-                        <span class="n">dim</span><span class="p">,</span>
-                        <span class="nb">list</span><span class="p">(</span><span class="n">user_input</span><span class="o">.</span><span class="n">field_names_to_dataclass_fields</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span>
-                    <span class="p">]</span>
-                <span class="p">],</span>
+                <span class="s1">&#39;document_mappings&#39;</span><span class="p">:</span> <span class="n">document_mappings_list</span><span class="p">,</span>
             <span class="p">},</span>
+            <span class="s1">&#39;no_reduce&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
             <span class="s1">&#39;jcloud&#39;</span><span class="p">:</span> <span class="p">{</span>
                 <span class="s1">&#39;resources&#39;</span><span class="p">:</span> <span class="p">{</span>
                     <span class="s1">&#39;memory&#39;</span><span class="p">:</span> <span class="s1">&#39;8G&#39;</span><span class="p">,</span>
@@ -438,7 +429,7 @@
             <span class="p">},</span>
         <span class="p">}</span></div>
 
-<div class="viewcode-block" id="SearchApp.get_executor_stubs"><a class="viewcode-back" href="../../../../../api/now.app.search_app.app/#now.app.search_app.app.SearchApp.get_executor_stubs">[docs]</a>    <span class="k">def</span> <span class="nf">get_executor_stubs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">user_input</span><span class="p">:</span> <span class="n">UserInput</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<div class="viewcode-block" id="SearchApp.get_executor_stubs"><a class="viewcode-back" href="../../../../../api/now.app.search_app.app/#now.app.search_app.app.SearchApp.get_executor_stubs">[docs]</a>    <span class="k">def</span> <span class="nf">get_executor_stubs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">user_input</span><span class="p">:</span> <span class="n">UserInput</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a dictionary of executors to be added in the flow</span>
 
 <span class="sd">        :param dataset: DocumentArray of the dataset</span>
@@ -447,26 +438,20 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">flow_yaml_executors</span> <span class="o">=</span> <span class="p">[</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">autocomplete_stub</span><span class="p">(),</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">preprocessor_stub</span><span class="p">(</span>
-                <span class="n">use_high_perf_flow</span><span class="o">=</span><span class="n">get_email</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;@&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;jina.ai&#39;</span>
-                <span class="ow">and</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span>
-                    <span class="n">_var</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span> <span class="k">for</span> <span class="n">_var</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;NOW_CI_RUN&#39;</span><span class="p">,</span> <span class="s1">&#39;NOW_TESTING&#39;</span><span class="p">]</span>
-                <span class="p">)</span>
-            <span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">preprocessor_stub</span><span class="p">(),</span>
         <span class="p">]</span>
 
         <span class="n">encoder2dim</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="c1"># todo: comment out the following if-block to enable sbert for text index fields</span>
-        <span class="c1"># if any(</span>
-        <span class="c1">#     user_input.index_field_candidates_to_modalities[field] == Text</span>
-        <span class="c1">#     for field in user_input.index_fields</span>
-        <span class="c1"># ):</span>
-        <span class="c1">#     sbert_encoder, sbert_dim = self.sbert_encoder_stub()</span>
-        <span class="c1">#     encoder2dim[sbert_encoder[&#39;name&#39;]] = sbert_dim</span>
-        <span class="c1">#     flow_yaml_executors.append(sbert_encoder)</span>
         <span class="k">if</span> <span class="nb">any</span><span class="p">(</span>
-            <span class="n">user_input</span><span class="o">.</span><span class="n">index_field_candidates_to_modalities</span><span class="p">[</span><span class="n">field</span><span class="p">]</span>
-            <span class="ow">in</span> <span class="p">[</span><span class="n">Image</span><span class="p">,</span> <span class="n">Video</span><span class="p">,</span> <span class="n">Text</span><span class="p">]</span>
+            <span class="n">Models</span><span class="o">.</span><span class="n">SBERT_MODEL</span> <span class="ow">in</span> <span class="n">user_input</span><span class="o">.</span><span class="n">model_choices</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">field</span><span class="si">}</span><span class="s2">_model&quot;</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">user_input</span><span class="o">.</span><span class="n">index_fields</span>
+        <span class="p">):</span>
+            <span class="n">sbert_encoder</span><span class="p">,</span> <span class="n">sbert_dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sbert_encoder_stub</span><span class="p">()</span>
+            <span class="n">encoder2dim</span><span class="p">[</span><span class="n">sbert_encoder</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">sbert_dim</span>
+            <span class="n">flow_yaml_executors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sbert_encoder</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span>
+            <span class="n">Models</span><span class="o">.</span><span class="n">CLIP_MODEL</span> <span class="ow">in</span> <span class="n">user_input</span><span class="o">.</span><span class="n">model_choices</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">field</span><span class="si">}</span><span class="s2">_model&quot;</span><span class="p">]</span>
             <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">user_input</span><span class="o">.</span><span class="n">index_fields</span>
         <span class="p">):</span>
             <span class="n">clip_encoder</span><span class="p">,</span> <span class="n">clip_dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">clip_encoder_stub</span><span class="p">()</span>
@@ -500,7 +485,7 @@
                             <a href="https://jina.ai">Copyright &#169; Jina AI Limited. All rights reserved.</a>
                         </div>
                         <div class="last-updated">
-                            Last updated on Jan 20, 2023.
+                            Last updated on Feb 01, 2023.
                         </div>
                     </div>
                     <div class="right-details">
