@@ -168,7 +168,7 @@ def _load_from_disk(user_input: UserInput, data_class: Type) -> DocumentArray:
             spinner.ok('🏭')
             docs = from_files_local(
                 dataset_path,
-                user_input.index_fields + user_input.filter_fields,
+                user_input.index_fields,
                 user_input.field_names_to_dataclass_fields,
                 data_class,
             )
@@ -342,7 +342,7 @@ def _list_files_from_s3_bucket(
         if folder_structure == 'sub_folders':
             docs = create_docs_from_subdirectories(
                 file_paths,
-                user_input.index_fields + user_input.filter_fields,
+                user_input.index_fields,
                 user_input.field_names_to_dataclass_fields,
                 data_class,
                 user_input.dataset_path,
@@ -351,7 +351,7 @@ def _list_files_from_s3_bucket(
         else:
             docs = create_docs_from_files(
                 file_paths,
-                user_input.index_fields + user_input.filter_fields,
+                user_input.index_fields,
                 user_input.field_names_to_dataclass_fields,
                 data_class,
                 user_input.dataset_path,
