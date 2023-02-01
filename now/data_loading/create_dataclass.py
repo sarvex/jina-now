@@ -149,21 +149,18 @@ def create_dataclass_fields_file_mappings(fields: List, fields_modalities: Dict)
 
     modalities_count = defaultdict(int)
 
-    dataclass_fields_to_file_mapping = {}
+    file_mapping_to_dataclass_fields = {}
     filter_count = 0
     for f in fields:
         if not isinstance(f, typing.Hashable):
             continue
         field_modality = fields_modalities[f]
         if field_modality in AVAILABLE_MODALITIES_FOR_SEARCH:
-            dataclass_fields_to_file_mapping[
-                f'{docarray_typing_to_modality_string(field_modality)}_{modalities_count[field_modality]}'
-            ] = f
+            file_mapping_to_dataclass_fields[
+                f
+            ] = f'{docarray_typing_to_modality_string(field_modality)}_{modalities_count[field_modality]}'
             modalities_count[fields_modalities[f]] += 1
         else:
-            dataclass_fields_to_file_mapping[f'filter_{filter_count}'] = f
+            file_mapping_to_dataclass_fields[f] = f'filter_{filter_count}'
             filter_count += 1
-    file_mapping_to_dataclass_fields = {
-        v: k for k, v in dataclass_fields_to_file_mapping.items()
-    }
     return file_mapping_to_dataclass_fields

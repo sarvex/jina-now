@@ -9,6 +9,8 @@ from concurrent.futures import ThreadPoolExecutor
 import boto3
 from docarray import Document, DocumentArray
 
+from now.utils import flatten_dict
+
 
 def maybe_download_from_s3(
     docs: DocumentArray, tmpdir: tempfile.TemporaryDirectory, user_input, max_workers
@@ -32,6 +34,15 @@ def maybe_download_from_s3(
                 convert_fn,
                 c,
                 tmpdir,
+                user_input.aws_access_key_id,
+                user_input.aws_secret_access_key,
+                user_input.aws_region_name,
+            )
+            futures.append(f)
+        for d in docs:
+            f = executor.submit(
+                update_tags,
+                d,
                 user_input.aws_access_key_id,
                 user_input.aws_secret_access_key,
                 user_input.aws_region_name,
@@ -102,3 +113,22 @@ def get_local_path(tmpdir, path_s3):
         base64.b64encode(bytes(path_s3, "utf-8")).decode("utf-8")
         + f'.{path_s3.split(".")[-1] if "." in path_s3 else ""}',  # preserve file ending
     )
+
+
+def update_tags(d, aws_access_key_id, aws_secret_access_key, region_name):
+    if 's3_tags' in d._metadata:
+        bucket = get_bucket(
+            uri=list(d._metadata['s3_tags'].values())[0],
+            aws_access_key_id=aws_access_key_id,
+            aws_secret_access_key=aws_secret_access_key,
+            region_name=region_name,
+        )
+        with tempfile.TemporaryDirectory() as tmpdir:
+            local_file = download_from_bucket(
+                tmpdir, list(d._metadata['s3_tags'].values())[0], bucket
+            )
+
+            with open(local_file, 'r') as file:
+                data = json.load(file)
+
+        d.tags.update(flatten_dict(data))
