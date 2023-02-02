@@ -1,19 +1,17 @@
 import os
-from docarray import dataclass, DocumentArray, Document
 
 import pytest
-from docarray.typing import Text, Image
-
+from docarray import Document, DocumentArray
+from docarray.typing import Image, Text
 from jina import Flow
 
 from now.admin.utils import get_default_request_body
-from now.constants import EXTERNAL_CLIP_HOST
-from now.executor.indexer.elastic import NOWElasticIndexer
-from now.executor.preprocessor import NOWPreprocessor
-from now.constants import DatasetTypes
+from now.constants import EXTERNAL_CLIP_HOST, DatasetTypes
 from now.data_loading.create_dataclass import create_dataclass
 from now.data_loading.data_loading import load_data
 from now.demo_data import DemoDatasetNames
+from now.executor.indexer.elastic import NOWElasticIndexer
+from now.executor.preprocessor import NOWPreprocessor
 from now.now_dataclasses import UserInput
 
 BASE_URL = 'http://localhost:8080/api/v1'
@@ -104,7 +102,7 @@ def pop_lyrics_data():
     return docs, user_input
 
 
-@pytest.fixture
+@pytest.fixture(scope='package')
 def elastic_data(setup_online_shop_db, es_connection_params):
     _, index_name = setup_online_shop_db
     connection_str, _ = es_connection_params
