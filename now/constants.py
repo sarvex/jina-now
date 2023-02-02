@@ -4,8 +4,8 @@ from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.153-clean-dataclass-creation-4'
-NOW_PREPROCESSOR_VERSION = '0.0.120-clean-dataclass-creation-4'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.153-clean-dataclass-creation-5'
+NOW_PREPROCESSOR_VERSION = '0.0.120-clean-dataclass-creation-5'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.144-test_elastic-indexer-6'
 NOW_AUTOCOMPLETE_VERSION = '0.0.10-bump-jcloud'
 

@@ -262,8 +262,13 @@ def create_docs_from_subdirectories(
                     dict_tags['json_path'] = file_full_path
                 else:
                     with open(file_full_path) as f:
-                        dict_tags.update(flatten_dict(json.load(f)))
-            else:
+                        json_data = flatten_dict(json.load(f))
+                    for field, value in json_data.items():
+                        if field in fields:
+                            kwargs[field_names_to_dataclass_fields[field]] = value
+                        else:
+                            dict_tags[field] = value
+            elif file not in fields:
                 dict_tags[file] = file_full_path
         doc = Document(data_class(**kwargs))
         if is_s3_dataset:

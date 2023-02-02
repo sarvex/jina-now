@@ -11,6 +11,7 @@ from now.constants import ACCESS_PATHS, Models
         'artworks_data',
         'pop_lyrics_data',
         'elastic_data',
+        'local_folder_data',
     ],
 )
 def test_end_to_end(
