@@ -68,7 +68,8 @@ def search(data: SearchRequestModel):
         # since multimodal doc is not supported, we take the first chunk
         if doc.chunks:
             field_names_and_chunks = [
-                [field_name, getattr(doc, field_name)] for field_name in doc._metadata['multi_modal_schema'].keys()
+                [field_name, getattr(doc, field_name)]
+                for field_name in doc._metadata['multi_modal_schema'].keys()
             ]
         else:
             # TODO remove else path. It is only used to support the inmemory indexer since that one is operating on chunks while elastic responds with root documents
