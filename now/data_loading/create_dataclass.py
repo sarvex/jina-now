@@ -58,18 +58,16 @@ def create_dataclass(
         dataset_type = user_input.dataset_type
         fields = user_input.index_fields
 
-    file_mapping_to_dataclass_fields = create_dataclass_fields_file_mappings(
+    field_names_to_dataclass_fields = create_dataclass_fields_file_mappings(
         fields,
         fields_modalities,
     )
-    field_names_to_dataclass_fields = file_mapping_to_dataclass_fields
     (all_annotations, all_class_attributes,) = create_annotations_and_class_attributes(
         fields,
         fields_modalities,
-        file_mapping_to_dataclass_fields,
+        field_names_to_dataclass_fields,
         dataset_type,
     )
-
     mm_doc = type("MMDoc", (object,), all_class_attributes)
     setattr(mm_doc, '__annotations__', all_annotations)
     mm_doc = dataclass(mm_doc)

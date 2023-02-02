@@ -243,20 +243,26 @@ def create_docs_from_subdirectories(
         )
         folder_files[path_to_last_folder].append(file)
     for folder, files in folder_files.items():
-        kwargs = {}
-        dict_tags = {}
-        for file in files:
-            file, file_full_path = _extract_file_and_full_file_path(
-                file, path, is_s3_dataset
-            )
+        kwargs, dict_tags = {}, {}
+        file_info = [
+            _extract_file_and_full_file_path(file, path, is_s3_dataset)
+            for file in files
+        ]
+        # first store index fields given as files
+        for file, file_full_path in file_info:
+            if file in fields:
+                kwargs[field_names_to_dataclass_fields[file]] = file_full_path
+        # next check json files that can also contain index fields, and carry on data
+        for file, file_full_path in file_info:
             if file.endswith('.json'):
                 if is_s3_dataset:
-                    dict_tags['tags_uri'] = file_full_path
+                    for field in data_class.__annotations__.keys():
+                        if field not in kwargs.keys():
+                            kwargs[field] = file_full_path
+                    dict_tags['json_path'] = file_full_path
                 else:
                     with open(file_full_path) as f:
                         dict_tags.update(flatten_dict(json.load(f)))
-            elif file in fields:
-                kwargs[field_names_to_dataclass_fields[file]] = file_full_path
             else:
                 dict_tags[file] = file_full_path
         doc = Document(data_class(**kwargs))
