@@ -48,7 +48,7 @@ def search(data: SearchRequestModel):
         key = 'tags__' + key if not key.startswith('tags__') else key
         query_filter[key] = {'$eq': value}
 
-    if len(data.semantic_scores) > 0:
+    if data.semantic_scores:
         semantic_scores = [
             list(semantic_score) for semantic_score in data.semantic_scores
         ]
