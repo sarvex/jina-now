@@ -415,7 +415,7 @@ def customize_semantic_scores():
             value=0.5,
             key='weight_' + str(i),
         )
-        st.session_state.semantic_scores[f'{i}'] = [q_field, id_field, enc, w]
+        st.session_state.semantic_scores[f'{i}'] = (q_field, id_field, enc, w)
 
 
 def render_mm_query(query, modality):
