@@ -322,40 +322,42 @@ def _list_files_from_s3_bucket(
     :return: The DocumentArray with the documents.
     """
     bucket, folder_prefix = get_s3_bucket_and_folder_prefix(user_input)
+    first_file = get_first_file_in_folder_structure_s3(
+        bucket, folder_prefix, user_input.dataset_path
+    )
+    structure_identifier = first_file[len(folder_prefix) :].split('/')
+    folder_structure = (
+        'sub_folders' if len(structure_identifier) > 1 else 'single_folder'
+    )
 
     def list_objects(prefix):
         result = list(bucket.objects.filter(Prefix=prefix))
         return result
 
-    prefixes = [
-        obj['Prefix']
-        for obj in bucket.meta.client.list_objects(
-            Bucket=bucket.name, Prefix=folder_prefix, Delimiter='/'
-        )['CommonPrefixes']
-    ]
     objects = []
-    with ThreadPoolExecutor(max_workers=multiprocessing.cpu_count()) as executor:
-        futures = []
-        for prefix in prefixes:
-            pref = ''.join(prefix)
-            f = executor.submit(list_objects, f'{pref}')
-            futures.append(f)
-        for f in futures:
-            objects += f.result()
-    first_file = get_first_file_in_folder_structure_s3(
-        bucket, folder_prefix, user_input.dataset_path
-    )
+    if folder_structure == 'sub_folders':
+        prefixes = [
+            obj['Prefix']
+            for obj in bucket.meta.client.list_objects(
+                Bucket=bucket.name, Prefix=folder_prefix, Delimiter='/'
+            )['CommonPrefixes']
+        ]
+        with ThreadPoolExecutor(max_workers=multiprocessing.cpu_count()) as executor:
+            futures = []
+            for prefix in prefixes:
+                pref = ''.join(prefix)
+                f = executor.submit(list_objects, f'{pref}')
+                futures.append(f)
+            for f in futures:
+                objects += f.result()
+    else:
+        objects = list(bucket.objects.filter(Prefix=folder_prefix))
 
     file_paths = [
         obj.key
         for obj in objects
         if not obj.key.endswith('/') and not obj.key.split('/')[-1].startswith('.')
     ]
-
-    structure_identifier = first_file[len(folder_prefix) :].split('/')
-    folder_structure = (
-        'sub_folders' if len(structure_identifier) > 1 else 'single_folder'
-    )
 
     with yaspin_extended(
         sigmap=sigmap, text="Listing files from S3 bucket ...", color="green"
