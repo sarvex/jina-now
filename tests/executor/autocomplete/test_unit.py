@@ -80,14 +80,17 @@ def test_search_update_profanity(tmpdir, mm_dataclass):
 
     da = DocumentArray(
         [
-            Document(mm_dataclass(text_field='background')),
-            Document(mm_dataclass(text_field='background')),
-            Document(mm_dataclass(text_field='shit')),
-            Document(mm_dataclass(text_field='loading')),
-            Document(mm_dataclass(text_field='fuck')),
-            Document(mm_dataclass(text_field='f*ck')),
-            Document(mm_dataclass(text_field='laugh')),
-            Document(mm_dataclass(text_field='fuck shit somethings')),
+            Document(mm_dataclass(text_field=text))
+            for text in [
+                'background',
+                'background',
+                'shit',
+                'loading',
+                'fuck',
+                'f*ck',
+                'laugh',
+                'fuck shit somethings',
+            ]
         ]
     )
 

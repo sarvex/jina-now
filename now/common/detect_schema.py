@@ -252,31 +252,25 @@ def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
     )
     if folder_structure == 'single_folder':
         objects = list(bucket.objects.filter(Prefix=folder_prefix).limit(100))
-        file_paths = [
-            obj.key
-            for obj in objects
-            if not obj.key.endswith('/') and not obj.key.split('/')[-1].startswith('.')
-        ]
+        file_paths = get_s3_file_paths(objects)
         fields_dict = _extract_field_names_single_folder(file_paths, '/')
     elif folder_structure == 'sub_folders':
         first_folder = '/'.join(first_file.split('/')[:-1])
-        first_folder_objects = [
-            obj.key
-            for obj in bucket.objects.filter(Prefix=first_folder)
-            if not obj.key.endswith('/') and not obj.key.split('/')[-1].startswith('.')
-        ]
+        objects = bucket.objects.filter(Prefix=first_folder)
+        first_folder_objects = get_s3_file_paths(objects)
         fields_dict = _extract_field_names_sub_folders(
             first_folder_objects, '/', bucket
         )
-    fields_dict_cleaned = {
-        field_key: field_value
-        for field_key, field_value in fields_dict.items()
-        if not isinstance(field_value, list) and not isinstance(field_value, dict)
-    }
-    (
-        user_input.index_field_candidates_to_modalities,
-        user_input.filter_field_candidates_to_modalities,
-    ) = _create_candidate_index_filter_fields(fields_dict_cleaned)
+    set_cleaned_fields(fields_dict, user_input)
+
+
+def get_s3_file_paths(objects):
+    file_paths = [
+        obj.key
+        for obj in objects
+        if not obj.key.endswith('/') and not obj.key.split('/')[-1].startswith('.')
+    ]
+    return file_paths
 
 
 def set_field_names_from_local_folder(user_input: UserInput, **kwargs):
@@ -320,15 +314,7 @@ def set_field_names_from_local_folder(user_input: UserInput, **kwargs):
             and not file.startswith('.')
         ]
         fields_dict = _extract_field_names_sub_folders(first_folder_files, os.sep)
-    fields_dict_cleaned = {
-        field_key: field_value
-        for field_key, field_value in fields_dict.items()
-        if not isinstance(field_value, list) and not isinstance(field_value, dict)
-    }
-    (
-        user_input.index_field_candidates_to_modalities,
-        user_input.filter_field_candidates_to_modalities,
-    ) = _create_candidate_index_filter_fields(fields_dict_cleaned)
+    set_cleaned_fields(fields_dict, user_input)
 
 
 def set_field_names_elasticsearch(user_input: UserInput, **kwargs):
@@ -355,6 +341,10 @@ def set_field_names_elasticsearch(user_input: UserInput, **kwargs):
             0
         ]  # get one document
     fields_dict = first_docs[0]
+    set_cleaned_fields(fields_dict, user_input)
+
+
+def set_cleaned_fields(fields_dict, user_input):
     fields_dict_cleaned = {
         field_key: field_value
         for field_key, field_value in fields_dict.items()

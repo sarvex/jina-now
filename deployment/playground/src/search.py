@@ -91,24 +91,27 @@ def search_by_image(document: Document, jwt, filter_selection) -> DocumentArray:
     """
     Wrap file in Jina Document for searching, and do all necessary conversion to make similar to indexed Docs
     """
-    query_doc = document
-    if query_doc.blob == b'':
-        if query_doc.tensor is not None:
-            query_doc.convert_image_tensor_to_blob()
-        elif (query_doc.uri is not None) and query_doc.uri != '':
-            query_doc.load_uri_to_blob(timeout=10)
+    load_blob_if_needed(document)
 
     return multimodal_search(
         [
             {
                 'name': 'blob',
-                'value': base64.b64encode(query_doc.blob).decode('utf-8'),
+                'value': base64.b64encode(document.blob).decode('utf-8'),
                 'modality': 'image',
             },
         ],
         jwt,
         filter_dict=filter_selection,
     )
+
+
+def load_blob_if_needed(query_doc):
+    if query_doc.blob == b'':
+        if query_doc.tensor is not None:
+            query_doc.convert_image_tensor_to_blob()
+        elif (query_doc.uri is not None) and query_doc.uri != '':
+            query_doc.load_uri_to_blob(timeout=10)
 
 
 def multimodal_search(

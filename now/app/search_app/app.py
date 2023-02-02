@@ -167,21 +167,17 @@ class SearchApp(JinaNOWApp):
         ]
 
         encoder2dim = {}
-        if any(
-            Models.SBERT_MODEL in user_input.model_choices[f"{field}_model"]
-            for field in user_input.index_fields
-        ):
-            sbert_encoder, sbert_dim = self.sbert_encoder_stub()
-            encoder2dim[sbert_encoder['name']] = sbert_dim
-            flow_yaml_executors.append(sbert_encoder)
-
-        if any(
-            Models.CLIP_MODEL in user_input.model_choices[f"{field}_model"]
-            for field in user_input.index_fields
-        ):
-            clip_encoder, clip_dim = self.clip_encoder_stub()
-            encoder2dim[clip_encoder['name']] = clip_dim
-            flow_yaml_executors.append(clip_encoder)
+        for model, stub in [
+            [Models.SBERT_MODEL, self.sbert_encoder_stub],
+            [Models.CLIP_MODEL, self.clip_encoder_stub],
+        ]:
+            if any(
+                model in user_input.model_choices[f"{field}_model"]
+                for field in user_input.index_fields
+            ):
+                encoder, dim = stub()
+                encoder2dim[encoder['name']] = dim
+                flow_yaml_executors.append(encoder)
 
         flow_yaml_executors.append(
             self.indexer_stub(user_input, encoder2dim=encoder2dim)

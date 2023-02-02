@@ -15,7 +15,7 @@ from better_profanity import profanity
 from docarray import Document, DocumentArray
 from jina import Client
 from src.constants import BUTTONS, S3_DEMO_PATH, SSO_COOKIE, SURVEY_LINK, ds_set
-from src.search import get_query_params, multimodal_search
+from src.search import get_query_params, load_blob_if_needed, multimodal_search
 from streamlit.scriptrunner import add_script_run_ctx
 from streamlit.server.server import Server
 from tornado.httputil import parse_cookie
@@ -411,15 +411,10 @@ def render_mm_query(query, modality):
             )
             if uploaded_image:
                 doc = convert_file_to_document(uploaded_image)
-                query_doc = doc
-                if query_doc.blob == b'':
-                    if query_doc.tensor is not None:
-                        query_doc.convert_image_tensor_to_blob()
-                    elif (query_doc.uri is not None) and query_doc.uri != '':
-                        query_doc.load_uri_to_blob(timeout=10)
+                load_blob_if_needed(doc)
                 query[key] = {
                     'name': 'blob',
-                    'value': base64.b64encode(query_doc.blob).decode('utf-8'),
+                    'value': base64.b64encode(doc.blob).decode('utf-8'),
                     'modality': 'image',
                 }
     if st.session_state[f"len_{modality}_choices"] >= 1:

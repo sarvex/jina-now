@@ -9,6 +9,7 @@ from docarray.dataclasses import is_multimodal
 from now.common.detect_schema import (
     get_first_file_in_folder_structure_s3,
     get_s3_bucket_and_folder_prefix,
+    get_s3_file_paths,
 )
 from now.constants import DatasetTypes
 from now.data_loading.elasticsearch import ElasticsearchExtractor
@@ -324,11 +325,7 @@ def _list_files_from_s3_bucket(
         bucket, folder_prefix, user_input.dataset_path
     )
     objects = list(bucket.objects.filter(Prefix=folder_prefix))
-    file_paths = [
-        obj.key
-        for obj in objects
-        if not obj.key.endswith('/') and not obj.key.split('/')[-1].startswith('.')
-    ]
+    file_paths = get_s3_file_paths(objects)
 
     structure_identifier = first_file[len(folder_prefix) :].split('/')
     folder_structure = (
