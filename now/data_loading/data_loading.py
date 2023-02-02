@@ -1,6 +1,7 @@
 import json
 import os
 from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor
 from typing import Dict, List, Type
 
 from docarray import Document, DocumentArray
@@ -320,10 +321,30 @@ def _list_files_from_s3_bucket(
     :return: The DocumentArray with the documents.
     """
     bucket, folder_prefix = get_s3_bucket_and_folder_prefix(user_input)
+
+    def list_objects(prefix):
+        result = list(bucket.objects.filter(Prefix=prefix))
+        return result
+
+    prefixes = [
+        obj['Prefix']
+        for obj in bucket.meta.client.list_objects(Bucket=bucket.name, Delimiter='/')[
+            'CommonPrefixes'
+        ]
+    ]
+    objects = []
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        futures = []
+        for prefix in prefixes:
+            pref = ''.join(prefix)
+            f = executor.submit(list_objects, f'{pref}')
+            futures.append(f)
+        for f in futures:
+            objects += f.result()
     first_file = get_first_file_in_folder_structure_s3(
         bucket, folder_prefix, user_input.dataset_path
     )
-    objects = list(bucket.objects.filter(Prefix=folder_prefix))
+
     file_paths = [
         obj.key
         for obj in objects
