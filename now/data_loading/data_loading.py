@@ -1,4 +1,5 @@
 import json
+import multiprocessing
 import os
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
@@ -11,7 +12,7 @@ from now.common.detect_schema import (
     get_first_file_in_folder_structure_s3,
     get_s3_bucket_and_folder_prefix,
 )
-from now.constants import MAX_WORKERS_S3_THREADPOOL, DatasetTypes
+from now.constants import DatasetTypes
 from now.data_loading.elasticsearch import ElasticsearchExtractor
 from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
@@ -328,12 +329,12 @@ def _list_files_from_s3_bucket(
 
     prefixes = [
         obj['Prefix']
-        for obj in bucket.meta.client.list_objects(Bucket=bucket.name, Delimiter='/')[
-            'CommonPrefixes'
-        ]
+        for obj in bucket.meta.client.list_objects(
+            Bucket=bucket.name, Prefix=folder_prefix, Delimiter='/'
+        )['CommonPrefixes']
     ]
     objects = []
-    with ThreadPoolExecutor(max_workers=MAX_WORKERS_S3_THREADPOOL) as executor:
+    with ThreadPoolExecutor(max_workers=multiprocessing.cpu_count()) as executor:
         futures = []
         for prefix in prefixes:
             pref = ''.join(prefix)

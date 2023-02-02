@@ -56,7 +56,6 @@ EXTERNAL_CLIP_HOST = 'encoderclip-pretty-javelin-3aceb7f2cd.wolf.jina.ai'
 
 DEFAULT_FLOW_NAME = 'nowapi'
 PREFETCH_NR = 10
-MAX_WORKERS_S3_THREADPOOL = 15
 
 SURVEY_LINK = 'https://10sw1tcpld4.typeform.com/to/VTAyYRpR?utm_source=cli'
 
