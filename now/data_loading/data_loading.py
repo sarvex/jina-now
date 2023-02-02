@@ -11,7 +11,7 @@ from now.common.detect_schema import (
     get_first_file_in_folder_structure_s3,
     get_s3_bucket_and_folder_prefix,
 )
-from now.constants import DatasetTypes
+from now.constants import MAX_WORKERS_S3_THREADPOOL, DatasetTypes
 from now.data_loading.elasticsearch import ElasticsearchExtractor
 from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
@@ -333,7 +333,7 @@ def _list_files_from_s3_bucket(
         ]
     ]
     objects = []
-    with ThreadPoolExecutor(max_workers=10) as executor:
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS_S3_THREADPOOL) as executor:
         futures = []
         for prefix in prefixes:
             pref = ''.join(prefix)
