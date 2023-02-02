@@ -69,14 +69,14 @@ def _add_tags_to_da(da: DocumentArray, user_input: UserInput):
     if not da:
         return da
 
-    for d in da:
+    for doc in da:
         filtered_chunks = []
-        for field in d._metadata['multi_modal_schema'].keys():
-            field_doc = getattr(d, field)
+        for field in doc._metadata['multi_modal_schema'].keys():
+            field_doc = getattr(doc, field)
             if field not in user_input.index_fields:
                 if field_doc.blob or field_doc.tensor is not None:
                     continue
-                d.tags.update(
+                doc.tags.update(
                     {
                         field: field_doc.content
                         if isinstance(field_doc.content, str)
@@ -85,14 +85,15 @@ def _add_tags_to_da(da: DocumentArray, user_input: UserInput):
                 )
             else:
                 filtered_chunks.append(field_doc)
-        d.chunks = filtered_chunks
+        doc.chunks = filtered_chunks
         # keep only the index fields in metadata
-        d._metadata['multi_modal_schema'] = {
-            k: d._metadata['multi_modal_schema'][k] for k in user_input.index_fields
+        doc._metadata['multi_modal_schema'] = {
+            field: doc._metadata['multi_modal_schema'][field]
+            for field in user_input.index_fields
         }
         # Update the positions accordingly to access the chunks
-        for i, k in enumerate(user_input.index_fields):
-            d._metadata['multi_modal_schema'][k]['position'] = int(i)
+        for position, field in enumerate(user_input.index_fields):
+            doc._metadata['multi_modal_schema'][field]['position'] = int(position)
 
     return da
 
