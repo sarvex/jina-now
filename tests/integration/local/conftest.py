@@ -138,3 +138,23 @@ def local_folder_data(resources_folder_path):
     )
     docs = load_data(user_input, data_class=data_class)
     return docs, user_input
+
+
+@pytest.fixture
+def s3_bucket_data():
+    user_input = UserInput()
+    user_input.admin_name = 'team-now'
+    user_input.dataset_type = DatasetTypes.S3_BUCKET
+    user_input.dataset_path = os.environ.get('S3_CUSTOM_MM_DATA_PATH')
+    user_input.aws_access_key_id = os.environ.get('AWS_ACCESS_KEY_ID')
+    user_input.aws_secret_access_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
+    user_input.aws_region_name = 'eu-west-1'
+    user_input.index_fields = ['image.png']
+    user_input.filter_fields = ['title']
+    user_input.index_field_candidates_to_modalities = {'image.png': Image}
+    user_input.filter_field_candidates_to_modalities = {'title': str}
+    data_class, user_input.field_names_to_dataclass_fields = create_dataclass(
+        user_input=user_input
+    )
+    docs = load_data(user_input, data_class=data_class)
+    return docs, user_input
