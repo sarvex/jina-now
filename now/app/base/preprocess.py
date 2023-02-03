@@ -70,6 +70,9 @@ def preprocess_image(d: Document):
 
 
 def preprocess_video(d: Document):
+    print(d.blob)
+    print(d.uri)
+    print(d.tensor)
     if d.blob == b'':
         if d.uri:
             d.load_uri_to_blob(timeout=10)
