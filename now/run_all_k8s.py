@@ -9,7 +9,7 @@ from rich.table import Column, Table
 
 from now import run_backend
 from now.constants import DEMO_NS, FLOW_STATUS, DatasetTypes
-from now.deployment.deployment import list_all_wolf, status_wolf, terminate_wolf
+from now.deployment.deployment import cmd, list_all_wolf, status_wolf, terminate_wolf
 from now.dialog import configure_user_input
 from now.utils import maybe_prompt_user
 
@@ -114,3 +114,57 @@ def start_now(**kwargs):
         'host': gateway_host_internal,
         'secured': user_input.secured,
     }
+
+
+def fetch_logs_now(**kwargs):
+    choices = []
+    # Add all remote Flows that exists with the namespace `nowapi`
+    alive_flows = list_all_wolf(status=FLOW_STATUS)
+    for flow_details in alive_flows:
+        choices.append(flow_details['name'])
+    if len(choices) == 0:
+        cowsay.cow('nothing to log')
+        return
+    else:
+        questions = [
+            {
+                'type': 'list',
+                'name': 'cluster',
+                'message': 'Which cluster do you want to check logs for?',
+                'choices': choices,
+            }
+        ]
+        cluster = maybe_prompt_user(questions, 'cluster', **kwargs)
+
+    flow = [x for x in alive_flows if x['name'] == cluster][0]
+    flow_id = flow['id']
+    _result = status_wolf(flow_id)
+    if _result is None:
+        print(f'❎ Flow not found in JCloud. Likely, it has been deleted already')
+
+    if _result is not None and _result['status']['phase'] == FLOW_STATUS:
+        namespace = _result["spec"]["jcloud"]["namespace"]
+
+    stdout, stderr = cmd(f"kubectl get pods -n {namespace}")
+
+    pods = []
+    for i, line in enumerate(stdout.decode().split("\n")):
+        if i == 0:
+            continue
+        cols = line.split()
+        if len(cols) > 0:
+            pod_name = cols[0]
+            pods.append(pod_name)
+
+    questions = [
+        {
+            'type': 'list',
+            'name': 'pod',
+            'message': 'Which pod do you want to check logs for?',
+            'choices': pods,
+        }
+    ]
+    pod = maybe_prompt_user(questions, 'pod', **kwargs)
+
+    container = "gateway" if "gateway" in pod else "executor"
+    cmd(f"kubectl logs {pod} -n {namespace} -c {container}", std_output=True)

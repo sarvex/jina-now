@@ -268,8 +268,6 @@ def create_docs_from_subdirectories(
                             kwargs[field_names_to_dataclass_fields[field]] = value
                         else:
                             dict_tags[field] = value
-            elif file not in fields:
-                dict_tags[file] = file_full_path
         doc = Document(data_class(**kwargs))
         if is_s3_dataset:
             doc._metadata['s3_tags'] = dict_tags
