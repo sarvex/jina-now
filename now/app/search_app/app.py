@@ -103,13 +103,16 @@ class SearchApp(JinaNOWApp):
     def sbert_encoder_stub() -> Tuple[Dict, int]:
         return {
             'name': Models.SBERT_MODEL,
+            'needs': 'preprocessor',
             'uses': f'jinahub+docker://TransformerSentenceEncoder',
             'uses_with': {
                 'access_paths': ACCESS_PATHS,
                 'model_name': 'msmarco-distilbert-base-v3',
             },
+            'jcloud': {
+                'autoscale': {'min': 0, 'max': 5, 'metric': 'concurrency', 'target': 1}
+            },
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
-            'needs': 'preprocessor',
         }, 768
 
     @staticmethod
