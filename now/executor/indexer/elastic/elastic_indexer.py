@@ -99,12 +99,12 @@ class NOWElasticIndexer(Executor):
         try:
             if "K8S_NAMESPACE_NAME" in os.environ:
                 print('K8S_NAMESPACE_NAME', os.environ["K8S_NAMESPACE_NAME"])
-            self.configure_elastic(
-                f'/data/{os.environ["K8S_NAMESPACE_NAME"]}',
-                '/usr/share/elasticsearch/config/elasticsearch.yml',
-            )
-            subprocess.Popen(['./start-elastic-search-cluster.sh'])
-            self.logger.info('elastic server started')
+                self.configure_elastic(
+                    f'/data/{os.environ["K8S_NAMESPACE_NAME"]}',
+                    '/usr/share/elasticsearch/config/elasticsearch.yml',
+                )
+                subprocess.Popen(['./start-elastic-search-cluster.sh'])
+                self.logger.info('elastic server started')
         except FileNotFoundError:
             self.logger.info(
                 'Elastic started outside of docker, assume cluster started already.'
