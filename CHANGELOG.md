@@ -43,6 +43,7 @@
 
 
 
+
 <a name=release-note-0-0-7></a>
 ## Release Note (`0.0.7`)
 
@@ -1475,4 +1476,53 @@
 
  - [[```29c4329c```](https://github.com/jina-ai/now/commit/29c4329c9824272f97c9ad655889b69b8e20bc7d)] __-__ Fix playground import (#956) (*Florian Hönicke*)
  - [[```dbea6988```](https://github.com/jina-ai/now/commit/dbea69880d6a053da622dd8df75cba67fea1250b)] __-__ __version__: the next version will be 0.0.50 (*Jina Dev Bot*)
+
+<a name=release-note-0-0-51></a>
+## Release Note (`0.0.51`)
+
+> Release time: 2023-02-01 16:02:12
+
+
+
+🙇 We'd like to thank all contributors for this new release! In particular,
+ Aziz Belaweid,  IyadhKhalfallah,  Saba Sturua,  Mohammad Kalim Akram,  Florian Hönicke,  github-actions[bot],  Isabelle Mohr,  Jina Dev Bot,  🙇
+
+
+### 🆕 New Features
+
+ - [[```f23f73c4```](https://github.com/jina-ai/now/commit/f23f73c418e71bef41e1bcbebb8bf9016bf4c79c)] __-__ add script in precommit to prevent committing and pushing credentials (#988) (*IyadhKhalfallah*)
+ - [[```aba77113```](https://github.com/jina-ai/now/commit/aba771138fde4eb0916e63f9569dc9bc0baeabe3)] __-__ activate serverless in preprocessor (#966) (*IyadhKhalfallah*)
+ - [[```ba8069db```](https://github.com/jina-ai/now/commit/ba8069dbd7120b993bb82c63059857f643a4a662)] __-__ model choice dialog (#962) (*Aziz Belaweid*)
+ - [[```b0f4ab5b```](https://github.com/jina-ai/now/commit/b0f4ab5b7df8112d4054859610516828c5bad759)] __-__ expose semantic scores (#942) (*Isabelle Mohr*)
+
+### 🐞 Bug fixes
+
+ - [[```7d135bfc```](https://github.com/jina-ai/now/commit/7d135bfc9fc7b42cd8d63223f972a4995ca7f13f)] __-__ results with no content (#1002) (*Aziz Belaweid*)
+ - [[```dd1c2383```](https://github.com/jina-ai/now/commit/dd1c23837add41f1da1f87fa55ed0c5600d0e24f)] __-__ support tags for folder structure (#930) (*IyadhKhalfallah*)
+ - [[```9a156a9e```](https://github.com/jina-ai/now/commit/9a156a9e9de0a0519386a60c29545898adb24faf)] __-__ enable callbacks (#965) (*Mohammad Kalim Akram*)
+ - [[```67d2424f```](https://github.com/jina-ai/now/commit/67d2424f81dce5123d6d2e73873e9b2bd3af3b6e)] __-__ image in tags (#969) (*Florian Hönicke*)
+ - [[```7b9819fa```](https://github.com/jina-ai/now/commit/7b9819fadadbfdae998aaebadc6dfbeb1b8adf2c)] __-__ filter out index fields in docarray (#880) (*IyadhKhalfallah*)
+
+### 🧼 Code Refactoring
+
+ - [[```69a13e27```](https://github.com/jina-ai/now/commit/69a13e274c926f7581d4df5f9d48de688f12dbfb)] __-__ create preprocessor utils (#997) (*Saba Sturua*)
+ - [[```dcf59b08```](https://github.com/jina-ai/now/commit/dcf59b08ad00c7b15eb88784787e732fb52197ce)] __-__ use mm docs in tests (#981) (*Aziz Belaweid*)
+ - [[```10bc01a4```](https://github.com/jina-ai/now/commit/10bc01a4061f43c3391ff6308dd081f1292ed4e4)] __-__ no mmdoc (#982) (*Florian Hönicke*)
+ - [[```86ac3c71```](https://github.com/jina-ai/now/commit/86ac3c71f7756ad635ad0ded41f897a221d4f2ab)] __-__ update durations (#978) (*github-actions[bot]*)
+ - [[```107d87eb```](https://github.com/jina-ai/now/commit/107d87eb2d515e430361e687db22fbfb252e0c0f)] __-__ end to end no playground (#964) (*Florian Hönicke*)
+ - [[```ed55e682```](https://github.com/jina-ai/now/commit/ed55e68236121173c2aea69e9d9bed45bee6ec35)] __-__ integration tests (#960) (*Saba Sturua*)
+ - [[```97545fb7```](https://github.com/jina-ai/now/commit/97545fb7c80b77756edf7aa8d4f3d0415e08fb75)] __-__ remove now testing (#954) (*Saba Sturua*)
+
+### 🏁 Unit Test and CICD
+
+ - [[```378afbd4```](https://github.com/jina-ai/now/commit/378afbd47f1740fe889011b2ce58401882342f6f)] __-__ add local folder e2e tests (#1000) (*Saba Sturua*)
+ - [[```513eda9f```](https://github.com/jina-ai/now/commit/513eda9f3207f7cef1a1c11308b8df4c7538bec9)] __-__ fix durations (#963) (*Florian Hönicke*)
+ - [[```77f69f7c```](https://github.com/jina-ai/now/commit/77f69f7cf403e0be8fdfebad2369acd27be165a6)] __-__ update durations (#961) (*Florian Hönicke*)
+
+### 🍹 Other Improvements
+
+ - [[```be7d2a5a```](https://github.com/jina-ai/now/commit/be7d2a5af739a21f51f4dcb5035fdc325e1707c4)] __-__ bump jcloud (#1001) (*Saba Sturua*)
+ - [[```0b05a264```](https://github.com/jina-ai/now/commit/0b05a264ca629f9e107e4adba9f3b744000a3b2d)] __-__ Fix deploy examples (#680) (*Mohammad Kalim Akram*)
+ - [[```0718e590```](https://github.com/jina-ai/now/commit/0718e59013917830a4df6c115ff0692130ff857b)] __-__ update pr template with customer deployment check (#968) (*Isabelle Mohr*)
+ - [[```9ed1749a```](https://github.com/jina-ai/now/commit/9ed1749a7aaba6fafcdd7f828337a2ab612dd8e8)] __-__ __version__: the next version will be 0.0.51 (*Jina Dev Bot*)
 

@@ -10,9 +10,10 @@ docarray[common]==0.19.1
 requests==2.27.1
 pydub==0.25.1
 nltk==3.7
-jcloud==0.1.6
+jcloud==0.2.1
 python-dotenv
 boto3==1.26.43
 elasticsearch==8.4.1
 pydantic==1.9.2
 httpx==0.23.2
+av==9.1.1

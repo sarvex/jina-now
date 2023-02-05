@@ -67,15 +67,9 @@ def search(data: SearchRequestModel):
             scores[score_name] = named_score.to_dict()
         # since multimodal doc is not supported, we take the first chunk
         if doc.chunks:
-            # temporary fix for filtering out tags
-            field_names = [
-                field
-                for field in doc._metadata['multi_modal_schema'].keys()
-                if doc._metadata['multi_modal_schema'][field]['attribute_type']
-                != 'primitive'
-            ]
             field_names_and_chunks = [
-                [field_name, getattr(doc, field_name)] for field_name in field_names
+                [field_name, getattr(doc, field_name)]
+                for field_name in doc._metadata['multi_modal_schema'].keys()
             ]
         else:
             # TODO remove else path. It is only used to support the inmemory indexer since that one is operating on chunks while elastic responds with root documents
@@ -91,7 +85,10 @@ def search(data: SearchRequestModel):
                 # in case we have content and uri, the content is preferred
                 result = {'uri': chunk.uri}
             else:
-                raise Exception('Result without content', doc.id, doc.tags)
+                # We should not raise exception else it breaks the playground if a single chunk has no content
+                # irrespective of what other chunks hold. We should just log it and move on.
+                print('Result without content', doc.id, doc.tags)
+                result = {'text': ''}
             results[field_name] = result
         match = SearchResponseModel(
             id=doc.id,

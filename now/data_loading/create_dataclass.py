@@ -28,15 +28,13 @@ def create_dataclass(
     user_input: UserInput = None,
 ):
     """
-    Create a dataclass from the selected index and filter fields
+    Create a dataclass from the selected index fields
     and their corresponding modalities or directly from the user input which should
     contain that information. If both are provided, the user input will be used.
 
     for example:
     the index fields modalities can be:
     {'test.txt': Text , 'image.png': Image}
-    the filter fields modalities can be:
-    {'price': float, 'description': str}
 
     the dataclass will be:
 
@@ -56,26 +54,20 @@ def create_dataclass(
     """
 
     if user_input:
-        fields_modalities = {}
-        fields_modalities.update(user_input.index_field_candidates_to_modalities)
-        update_dict_with_no_overwrite(
-            fields_modalities, user_input.filter_field_candidates_to_modalities
-        )
-        fields = user_input.index_fields + user_input.filter_fields
+        fields_modalities = user_input.index_field_candidates_to_modalities
         dataset_type = user_input.dataset_type
+        fields = user_input.index_fields
 
-    file_mapping_to_dataclass_fields = create_dataclass_fields_file_mappings(
+    field_names_to_dataclass_fields = create_dataclass_fields_file_mappings(
         fields,
         fields_modalities,
     )
-    field_names_to_dataclass_fields = file_mapping_to_dataclass_fields
     (all_annotations, all_class_attributes,) = create_annotations_and_class_attributes(
         fields,
         fields_modalities,
-        file_mapping_to_dataclass_fields,
+        field_names_to_dataclass_fields,
         dataset_type,
     )
-
     mm_doc = type("MMDoc", (object,), all_class_attributes)
     setattr(mm_doc, '__annotations__', all_annotations)
     mm_doc = dataclass(mm_doc)
@@ -149,21 +141,14 @@ def create_dataclass_fields_file_mappings(fields: List, fields_modalities: Dict)
 
     modalities_count = defaultdict(int)
 
-    dataclass_fields_to_file_mapping = {}
-    filter_count = 0
+    file_mapping_to_dataclass_fields = {}
     for f in fields:
         if not isinstance(f, typing.Hashable):
             continue
         field_modality = fields_modalities[f]
         if field_modality in AVAILABLE_MODALITIES_FOR_SEARCH:
-            dataclass_fields_to_file_mapping[
-                f'{docarray_typing_to_modality_string(field_modality)}_{modalities_count[field_modality]}'
-            ] = f
+            file_mapping_to_dataclass_fields[
+                f
+            ] = f'{docarray_typing_to_modality_string(field_modality)}_{modalities_count[field_modality]}'
             modalities_count[fields_modalities[f]] += 1
-        else:
-            dataclass_fields_to_file_mapping[f'filter_{filter_count}'] = f
-            filter_count += 1
-    file_mapping_to_dataclass_fields = {
-        v: k for k, v in dataclass_fields_to_file_mapping.items()
-    }
     return file_mapping_to_dataclass_fields
