@@ -4,7 +4,6 @@ import random
 import string
 import tempfile
 import urllib
-from typing import Dict
 
 from jina import Document, DocumentArray
 
@@ -102,25 +101,3 @@ class NOWPreprocessor(Executor):
                         # TODO please fix this hack - uri should not be in tags
                         move_uri(c)
         return docs
-
-    @secure_request(on='/get_index_fields', level=SecurityLevel.USER)
-    def get_index_fields(self, **kwargs) -> Dict:
-        index_field_candidates_to_modalities = (
-            self.user_input.index_field_candidates_to_modalities
-        )
-        index_fields = self.user_input.index_fields
-        index_fields_dict = {
-            field: modality
-            for field, modality in index_field_candidates_to_modalities.items()
-            if field in index_fields
-        }  # should be a dict of selected index_fields and their modalities.
-        return DocumentArray(
-            [
-                Document(
-                    text='index_fields',
-                    tags={
-                        'index_fields_dict': index_fields_dict,
-                    },
-                )
-            ]
-        )
