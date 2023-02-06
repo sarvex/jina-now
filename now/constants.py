@@ -5,7 +5,7 @@ from docarray.typing import Image, Text, Video
 from now.utils import BetterEnum
 
 DOCKER_BFF_PLAYGROUND_TAG = '0.0.153-clean-dataclass-creation-7'
-NOW_PREPROCESSOR_VERSION = '0.0.121-clean-dataclass-creation-7'
+NOW_PREPROCESSOR_VERSION = '0.0.122-refactor-s3-data-loading'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.145-fix-av-requirements-2'
 NOW_AUTOCOMPLETE_VERSION = '0.0.11-fix-av-requirements-2'
 
