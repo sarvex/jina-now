@@ -14,12 +14,15 @@ import streamlit as st
 import streamlit.components.v1 as components
 from better_profanity import profanity
 from docarray import Document, DocumentArray
+from docarray.typing import Image, Text
 from jina import Client
 from src.constants import BUTTONS, S3_DEMO_PATH, SSO_COOKIE, SURVEY_LINK, ds_set
 from src.search import get_query_params, multimodal_search
 from streamlit.scriptrunner import add_script_run_ctx
 from streamlit.server.server import Server
 from tornado.httputil import parse_cookie
+
+from now.constants import MODALITY_TO_MODELS
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -102,9 +105,9 @@ def deploy_streamlit():
         if params.host:
             if st.session_state.filters == 'notags':
                 try:
-                    tags = get_info_from_endpoint(
-                        client, params, endpoint='/tags', info='tags'
-                    )
+                    tags = get_info_from_endpoint(client, params, endpoint='/tags')[
+                        'tags'
+                    ]
                     st.session_state.filters = tags
                 except Exception as e:
                     print("Filters couldn't be loaded from the endpoint properly.", e)
@@ -116,14 +119,12 @@ def deploy_streamlit():
                     client,
                     params,
                     endpoint='/get_encoder_to_fields',
-                    info='index_fields_dict',
-                )
+                )['index_fields_dict']
                 field_names_to_dataclass_fields = get_info_from_endpoint(
                     client,
                     params,
                     endpoint='/get_encoder_to_fields',
-                    info='field_names_to_dataclass_fields',
-                )
+                )['field_names_to_dataclass_fields']
                 st.session_state.index_fields_dict = index_fields_dict
                 st.session_state.field_names_to_dataclass_fields = (
                     field_names_to_dataclass_fields
@@ -177,7 +178,7 @@ def deploy_streamlit():
         add_social_share_buttons()
 
 
-def get_info_from_endpoint(client, params, endpoint, info) -> dict:
+def get_info_from_endpoint(client, params, endpoint) -> dict:
     if params.secured.lower() == 'true':
         response = client.post(
             on=endpoint,
@@ -185,7 +186,7 @@ def get_info_from_endpoint(client, params, endpoint, info) -> dict:
         )
     else:
         response = client.post(on=endpoint)
-    return OrderedDict(response[0].tags[info])
+    return OrderedDict(response[0].tags)
 
 
 def render_auth_components(params):
@@ -339,8 +340,12 @@ def get_encoder_options(q_field: str, id_field: str) -> List[str]:
         if id_field in st.session_state.index_fields_dict[encoder].keys()
     ]
     if q_field.startswith('image'):
-        encoders_options.remove('encodersbert')
-    return encoders_options
+        modality_models = [model['value'] for model in MODALITY_TO_MODELS[Image]]
+    elif q_field.startswith('text'):
+        modality_models = [model['value'] for model in MODALITY_TO_MODELS[Text]]
+    else:
+        raise ValueError(f'Unknown modality for field {q_field}')
+    return list(set(encoders_options) & set(modality_models))
 
 
 def customize_semantic_scores():
