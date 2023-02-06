@@ -23,24 +23,9 @@ S3Object, my_setter, my_getter = create_s3_type()
             {'image.png': 'image_0', 'description.txt': 'text_0'},
         ),
         (
-            ['image.png', 'description.txt', 'description', 'price'],
-            {
-                'image.png': Image,
-                'description.txt': Text,
-                'price': float,
-                'description': str,
-            },
-            {
-                'image.png': 'image_0',
-                'description.txt': 'text_0',
-                'price': 'filter_1',
-                'description': 'filter_0',
-            },
-        ),
-        (
-            ['price', 'description'],
-            {'price': float, 'description': str},
-            {'price': 'filter_0', 'description': 'filter_1'},
+            ['image1.png', 'image2.png'],
+            {'image1.png': Image, 'image2.png': Image},
+            {'image1.png': 'image_0', 'image2.png': 'image_1'},
         ),
     ],
 )
