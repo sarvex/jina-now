@@ -73,9 +73,9 @@ class SearchResponseModel(BaseModel):
             Dict[
                 str,
                 Union[
-                    Optional[Union[str, bool, float]],
-                    List[Optional[Union[str, bool, float]]],
-                    Dict[str, Optional[Union[str, bool, float]]],
+                    Optional[Union[str, bool, int, float]],
+                    List[Optional[Union[str, bool, int, float]]],
+                    Dict[str, Optional[Union[str, bool, int, float]]],
                 ],
             ]
         ],
@@ -91,14 +91,20 @@ class SearchResponseModel(BaseModel):
             for key, value in tags.items():
                 if isinstance(value, list):
                     for item in value:
-                        if not isinstance(item, (str, bool, float)):
-                            raise ValueError(f"Invalid tag value {item} for key {key}")
+                        if not isinstance(item, (str, bool, int, float)):
+                            raise ValueError(
+                                f"Invalid type '{type(item)}' of value '{item}' for key '{key}' in tags"
+                            )
                 elif isinstance(value, dict):
                     for item in value.values():
-                        if not isinstance(item, (str, bool, float)):
-                            raise ValueError(f"Invalid tag value {item} for key {key}")
-                elif not isinstance(value, (str, bool, float)):
-                    raise ValueError(f"Invalid tag value {value} for key {key}")
+                        if not isinstance(item, (str, bool, int, float)):
+                            raise ValueError(
+                                f"Invalid type '{type(item)}' of value '{item}' for key '{key}' in tags"
+                            )
+                elif not isinstance(value, (str, bool, int, float)):
+                    raise ValueError(
+                        f"Invalid type '{type(item)}' of value '{item}' for key '{key}' in tags"
+                    )
         return values
 
     class Config:
