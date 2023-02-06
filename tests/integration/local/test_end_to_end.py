@@ -17,6 +17,7 @@ def test_end_to_end(
     data, start_bff, setup_service_running, random_index_name, request, tmpdir
 ):
     docs, user_input = request.getfixturevalue(data)
+
     fields_for_mapping = (
         [
             user_input.field_names_to_dataclass_fields[field_name]

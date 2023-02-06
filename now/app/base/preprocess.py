@@ -70,16 +70,11 @@ def preprocess_image(d: Document):
 
 
 def preprocess_video(d: Document):
-    print(d.blob)
-    print(d.uri)
-    print(len(d.tensor))
     if d.blob == b'':
-        if d.tensor is not None:
-            print("converting tensor to blob")
-            d.convert_tensor_to_blob()
-            print(len(d.blob))
-        elif d.uri:
+        if d.uri:
             d.load_uri_to_blob(timeout=10)
+        elif d.tensor is not None:
+            d.convert_tensor_to_blob()
     _sample_video(d)
 
 

@@ -182,9 +182,7 @@ class JinaNOWApp:
         docs: DocumentArray,
     ) -> DocumentArray:
         """Loads and preprocesses every document such that it is ready for indexing."""
-        print("=====================================")
         for doc in docs:
-            doc.summary()
             for chunk in doc.chunks:
                 try:
                     if chunk.modality == 'text':

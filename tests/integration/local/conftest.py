@@ -1,6 +1,6 @@
 import pytest
 from docarray import Document, DocumentArray
-from docarray.typing import Image, Text
+from docarray.typing import Image, Text, Video
 from jina import Flow
 
 from now.admin.utils import get_default_request_body
@@ -127,7 +127,7 @@ def local_folder_data(resources_folder_path):
     user_input.dataset_path = "/Users/tanguy/Downloads/gif"
     user_input.index_fields = ['.gif']
     user_input.filter_fields = []
-    user_input.index_field_candidates_to_modalities = {'.gif': Image}
+    user_input.index_field_candidates_to_modalities = {'.gif': Video}
     user_input.filter_field_candidates_to_modalities = {}
     data_class, user_input.field_names_to_dataclass_fields = create_dataclass(
         user_input=user_input
