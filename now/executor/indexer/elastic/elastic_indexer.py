@@ -98,7 +98,6 @@ class NOWElasticIndexer(Executor):
     def setup_elastic_server(self):
         try:
             if "K8S_NAMESPACE_NAME" in os.environ:
-                print('K8S_NAMESPACE_NAME', os.environ["K8S_NAMESPACE_NAME"])
                 self.configure_elastic(
                     f'/data/{os.environ["K8S_NAMESPACE_NAME"]}',
                     '/usr/share/elasticsearch/config/elasticsearch.yml',
@@ -112,14 +111,12 @@ class NOWElasticIndexer(Executor):
 
     @staticmethod
     def configure_elastic(workspace, destination_path):
-        print('### configure_elastic', workspace, destination_path)
         config_path = os.path.join(os.path.dirname(__file__), 'elasticsearch.yml')
         with open(config_path, 'r') as config_file_handler, open(
             destination_path, 'w'
         ) as destination_file_handler:
             for line in config_file_handler.readlines():
                 line = line.replace("{workspace}", workspace)
-                print('#', line)
                 destination_file_handler.write(line)
 
     def generate_es_mapping(self) -> Dict:
