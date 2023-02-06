@@ -1,0 +1,13 @@
+streamlit==1.16.0
+extra-streamlit-components==0.1.55
+click==8.0.0
+better_profanity==0.7.0
+docarray==0.19.1
+pydantic==1.9.2
+jina==3.13.2.dev34
+fastapi==0.78.0
+uvicorn==0.17.6
+uvloop==0.16.0
+filetype==1.2.0
+aiostream==0.4.4
+prometheus_client==0.14.1

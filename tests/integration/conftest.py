@@ -3,13 +3,11 @@ import logging
 import os
 import tempfile
 import time
-from multiprocessing import Process
 
 import hubble
 import pytest
 from pytest_mock import MockerFixture
 
-from deployment.bff.app.app import run_server
 from now.data_loading.data_loading import _list_s3_file_paths
 from now.deployment.deployment import terminate_wolf
 from now.executor.preprocessor.s3_download import get_bucket
@@ -72,15 +70,6 @@ def cleanup():
         print(50 * '#')
         print(f'Time taken to execute deployment: {mins}m {secs}s')
         print(50 * '#')
-
-
-@pytest.fixture()
-def start_bff():
-    p1 = Process(target=run_server, args=(8080,))
-    p1.daemon = True
-    p1.start()
-    yield
-    p1.terminate()
 
 
 @pytest.fixture(scope='session')

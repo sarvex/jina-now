@@ -1,14 +1,20 @@
 import pytest
 import requests
 from docarray.typing import Image, Text
-
 from now.app.base.app import JinaNOWApp
-from tests.integration.local.conftest import SEARCH_URL, get_flow, get_request_body
-from now.constants import ACCESS_PATHS, Models
+from now.constants import Models
+from jina import Client
+from tests.integration.local.conftest import (  # noqa: F401
+    SEARCH_URL,
+    get_flow,
+    get_request_body,
+)
+
+from now.constants import ACCESS_PATHS
 
 
 @pytest.mark.parametrize(
-    'data',
+    'get_flow',
     [
         'artworks_data',
         'pop_lyrics_data',
@@ -16,42 +22,24 @@ from now.constants import ACCESS_PATHS, Models
         'local_folder_data',
         's3_bucket_data',
     ],
+    indirect=True,
 )
-def test_end_to_end(
-    data, start_bff, setup_service_running, random_index_name, request, tmpdir
-):
-    docs, user_input = request.getfixturevalue(data)
-    fields_for_mapping = (
-        [
-            user_input.field_names_to_dataclass_fields[field_name]
-            for field_name in user_input.index_fields
-        ]
-        if user_input.field_names_to_dataclass_fields
-        else user_input.index_fields
-    )
-    user_input_dict = JinaNOWApp._prepare_user_input_dict(user_input)
-    f = get_flow(
-        tmpdir=tmpdir,
-        indexer_args={
-            'index_name': random_index_name,
-            'user_input_dict': user_input_dict,
-            'document_mappings': [[Models.CLIP_MODEL, 512, fields_for_mapping]],
+def test_end_to_end(get_flow, setup_service_running, random_index_name):
+    docs, user_input = get_flow
+    client = Client(host='http://localhost:8081')
+
+    client.index(
+        docs,
+        parameters={
+            'access_paths': ACCESS_PATHS,
         },
-        preprocessor_args={'user_input_dict': user_input_dict},
     )
-    with f:
-        f.index(
-            docs,
-            parameters={
-                'access_paths': ACCESS_PATHS,
-            },
-        )
-        request_body = get_request_body(secured=False)
-        request_body['query'] = [{'name': 'text', 'value': 'test', 'modality': 'text'}]
-        response = requests.post(
-            SEARCH_URL,
-            json=request_body,
-        )
+    request_body = get_request_body(secured=False)
+    request_body['query'] = [{'name': 'text', 'value': 'test', 'modality': 'text'}]
+    response = requests.post(
+        SEARCH_URL,
+        json=request_body,
+    )
 
     assert response.status_code == 200
     assert len(response.json()) == min(len(docs), 10)

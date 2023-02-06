@@ -5,13 +5,15 @@ from docarray.typing import Image, Text
 from now.constants import DatasetTypes
 from now.data_loading.create_dataclass import (
     create_annotations_and_class_attributes,
+    create_blob_type,
     create_dataclass,
     create_dataclass_fields_file_mappings,
     create_s3_type,
 )
 from now.now_dataclasses import UserInput
 
-S3Object, my_setter, my_getter = create_s3_type()
+S3Object, s3_setter, s3_getter = create_s3_type()
+ImageType, image_setter, image_getter = create_blob_type('Image')
 
 
 @pytest.mark.parametrize(
@@ -48,7 +50,10 @@ def test_create_dataclass_fields_file_mappings(
             {'image.png': 'image_0', 'description.txt': 'text_0'},
             DatasetTypes.PATH,
             {'image_0': Image, 'text_0': Text},
-            {'image_0': None, 'text_0': None},
+            {
+                'image_0': field(setter=image_setter, getter=image_getter, default=''),
+                'text_0': None,
+            },
         ),
         (
             ['image.png', 'description.txt'],
@@ -57,8 +62,8 @@ def test_create_dataclass_fields_file_mappings(
             DatasetTypes.S3_BUCKET,
             {'image_0': S3Object, 'text_0': S3Object},
             {
-                'image_0': field(setter=my_setter, getter=my_getter, default=''),
-                'text_0': field(setter=my_setter, getter=my_getter, default=''),
+                'image_0': field(setter=s3_setter, getter=s3_getter, default=''),
+                'text_0': field(setter=s3_setter, getter=s3_getter, default=''),
             },
         ),
         (
