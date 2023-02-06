@@ -48,13 +48,6 @@ def search(data: SearchRequestModel):
         key = 'tags__' + key if not key.startswith('tags__') else key
         query_filter[key] = {'$eq': value}
 
-    if data.semantic_scores:
-        semantic_scores = [
-            list(semantic_score) for semantic_score in data.semantic_scores
-        ]
-    else:
-        semantic_scores = []
-
     docs = jina_client_post(
         endpoint='/search',
         inputs=query_doc,
@@ -62,7 +55,9 @@ def search(data: SearchRequestModel):
             'limit': data.limit,
             'filter': query_filter,
             'create_temp_link': data.create_temp_link,
-            'semantic_scores': semantic_scores,
+            'semantic_scores': [
+                list(semantic_score) for semantic_score in data.semantic_scores
+            ],
         },
         request_model=data,
     )
