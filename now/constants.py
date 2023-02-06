@@ -4,7 +4,7 @@ from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.153-fix-tags-in-bff-response-model-2'
+DOCKER_BFF_PLAYGROUND_TAG = '0.0.153-fix-tags-in-bff-response-model-3'
 NOW_PREPROCESSOR_VERSION = '0.0.120-fix-sem-scores-21'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.144-fix-sem-scores-21'
 NOW_AUTOCOMPLETE_VERSION = '0.0.11-fix-av-requirements-2'

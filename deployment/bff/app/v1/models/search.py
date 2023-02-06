@@ -89,7 +89,7 @@ class SearchResponseModel(BaseModel):
         for key, value in tags.items():
             if isinstance(value, list):
                 for item in value:
-                    self.validate_tags(item)
+                    self.validate_tags({'': item})
             elif isinstance(value, dict):
                 for _key, _value in value.items():
                     self.validate_tags({_key: _value})
