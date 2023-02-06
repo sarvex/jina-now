@@ -183,6 +183,12 @@ DATASET_PATH = DialogOptions(
     ),
 )
 
+
+def _fix_s3_uri(user_input: UserInput):
+    if not user_input.dataset_path.endswith('/'):
+        user_input.dataset_path += '/'
+
+
 DATASET_PATH_S3 = DialogOptions(
     name='dataset_path',
     prompt_message='Please enter the S3 URI to the folder:',
@@ -190,6 +196,7 @@ DATASET_PATH_S3 = DialogOptions(
     depends_on=DATASET_TYPE,
     conditional_check=lambda user_input: user_input.dataset_type
     == DatasetTypes.S3_BUCKET,
+    post_fun=lambda user_input, **kwargs: _fix_s3_uri(user_input),
 )
 
 AWS_ACCESS_KEY_ID = DialogOptions(
