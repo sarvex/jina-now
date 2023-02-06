@@ -1,13 +1,8 @@
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, root_validator
 
 from deployment.bff.app.v1.models.shared import BaseRequestModel, ModalityModel
-
-_ProtoValueType = Optional[Union[bool, float, str, list, dict]]
-_StructValueType = Union[
-    _ProtoValueType, List[_ProtoValueType], Dict[str, _ProtoValueType]
-]
 
 
 class _NamedScore(BaseModel):
@@ -56,12 +51,55 @@ class SearchResponseModel(BaseModel):
     scores: Optional[Dict[str, '_NamedScore']] = Field(
         description='Similarity score with respect to the query.'
     )
-    tags: Optional[Dict[str, '_StructValueType']] = Field(
-        description='Additional tags associated with the file.'
-    )
+    tags: Optional[
+        Dict[
+            str,
+            Union[
+                Optional[Union[str, bool, float]],
+                List[Optional[Union[str, bool, float]]],
+                Dict[str, Optional[Union[str, bool, float]]],
+            ],
+        ]
+    ] = Field(description='Additional tags associated with the file.')
     fields: Dict[str, ModalityModel] = Field(
         default={}, description='Dictionary which maps the field name to its value. '
     )
+
+    def __init__(
+        self,
+        id: str,
+        scores: Optional[Dict[str, '_NamedScore']],
+        tags: Optional[
+            Dict[
+                str,
+                Union[
+                    Optional[Union[str, bool, float]],
+                    List[Optional[Union[str, bool, float]]],
+                    Dict[str, Optional[Union[str, bool, float]]],
+                ],
+            ]
+        ],
+        fields: Dict[str, ModalityModel],
+    ) -> None:
+        super().__init__(id=id, scores=scores, fields=fields, tags=tags)
+        self.tags = tags
+
+    @root_validator(pre=True)
+    def validate_tags(cls, values):
+        tags = values.get('tags')
+        if tags:
+            for key, value in tags.items():
+                if isinstance(value, list):
+                    for item in value:
+                        if not isinstance(item, (str, bool, float)):
+                            raise ValueError(f"Invalid tag value {item} for key {key}")
+                elif isinstance(value, dict):
+                    for item in value.values():
+                        if not isinstance(item, (str, bool, float)):
+                            raise ValueError(f"Invalid tag value {item} for key {key}")
+                elif not isinstance(value, (str, bool, float)):
+                    raise ValueError(f"Invalid tag value {value} for key {key}")
+        return values
 
     class Config:
         case_sensitive = False

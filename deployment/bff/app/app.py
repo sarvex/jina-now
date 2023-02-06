@@ -125,7 +125,7 @@ def run_server(port=8080):
 
 if __name__ == '__main__':
     try:
-        run_server(9090)
+        run_server(8080)
     except Exception as exc:
         logger.critical(str(exc))
         logger.exception(exc)
