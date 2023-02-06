@@ -12,7 +12,7 @@ on:
 
 jobs:
   commit-lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: find the prev warning if exist
         uses: peter-evans/find-comment@v1
@@ -54,7 +54,7 @@ jobs:
           reaction-type: "eyes"
 
   lint-flake-8:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.7
@@ -70,7 +70,7 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --exclude .git,__pycache__,docs/source/conf.py,old,build,dist,tests/,jina/resources/,now/thirdparty
 
   check-black:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
         with:
@@ -87,7 +87,7 @@ jobs:
           CHANGED_FILES: ${{ steps.file_changes.outputs.added_modified }}
 
   update-preprocessor:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs: [lint-flake-8, check-black, commit-lint]
     steps:
       - uses: actions/checkout@v2
@@ -104,7 +104,7 @@ jobs:
           jina_auth_token: ${{ secrets.NOW_PREPROCESSOR_JCLOUD_TOKEN }}
 
   update-elastic:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs: [lint-flake-8, check-black, commit-lint]
     steps:
       - uses: actions/checkout@v2
@@ -121,7 +121,7 @@ jobs:
           jina_auth_token: ${{ secrets.NOW_STAGING_FLORIAN }}
 
   update-autocomplete:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs: [lint-flake-8, check-black, commit-lint]
     steps:
       - uses: actions/checkout@v2
@@ -137,7 +137,7 @@ jobs:
           jina_auth_token: ${{ secrets.NOW_STAGING_FLORIAN }}
 
   update-bff-playground:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs: [lint-flake-8, check-black, commit-lint]
     steps:
       - uses: actions/checkout@v2
@@ -206,7 +206,7 @@ jobs:
           tags: jinaai/now-playground:${{ env.BFF_PLAYGROUND_TAG }}
 
   core-test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs:
       [
         update-preprocessor,
@@ -263,7 +263,7 @@ jobs:
 
   # just for blocking the merge until all parallel core-test are successful
   success-all-test-coverage:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs: [core-test]
     if: always()
     steps:

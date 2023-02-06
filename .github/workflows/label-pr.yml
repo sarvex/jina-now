@@ -5,7 +5,7 @@ on:
 
 jobs:
   assign-label-to-pr:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     if: ${{ !github.event.pull_request.head.repo.fork }}
     steps:
       - uses: codelytv/pr-size-labeler@v1
@@ -26,7 +26,7 @@ jobs:
       docs: ${{ steps.docs_updated.outputs.docs }}
 
   deploy-to-netlify:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs: [assign-label-to-pr]
     if: ${{ needs.assign-label-to-pr.outputs.docs == 'true' }}
     steps:

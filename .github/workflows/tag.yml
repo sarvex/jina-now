@@ -12,7 +12,7 @@ on:
 
 jobs:
   update-doc:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: benc-uk/workflow-dispatch@v1
         with:
@@ -22,7 +22,7 @@ jobs:
 
   create-release:
     needs: update-doc
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v2

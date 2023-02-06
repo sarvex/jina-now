@@ -9,7 +9,7 @@ on:
 
 jobs:
   regular-release:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
         with:
@@ -40,7 +40,7 @@ jobs:
 
   trigger-now-private:
     name: Trigger dispatch to release now_api with latest Jina NOW
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs: [regular-release]
     steps:
       - name: Dispatch to now.private to package now_api

@@ -11,7 +11,7 @@ jobs:
       !startsWith(github.event.head_commit.message, 'chore') &&
       !startsWith(github.event.head_commit.message, 'build: hotfix') &&
       !endsWith(github.event.head_commit.message, 'reformatted by jina-dev-bot')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
       matrix:
@@ -56,7 +56,7 @@ jobs:
 
 
   prerelease:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs: [core-test]
     steps:
       - uses: actions/checkout@v2
@@ -73,7 +73,7 @@ jobs:
           JINA_SLACK_WEBHOOK: ${{ secrets.JINA_SLACK_WEBHOOK }}
 
   update-deployment-if-required:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs: [core-test]
     steps:
       - uses: actions/checkout@v2
