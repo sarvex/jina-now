@@ -1,5 +1,3 @@
-import os
-
 import cowsay
 import requests
 from rich import box
@@ -8,7 +6,7 @@ from rich.panel import Panel
 from rich.table import Column, Table
 
 from now import run_backend
-from now.constants import DEMO_NS, FLOW_STATUS, DatasetTypes
+from now.constants import DEMO_NS, FLOW_STATUS
 from now.deployment.deployment import cmd, list_all_wolf, status_wolf, terminate_wolf
 from now.dialog import configure_user_input
 from now.utils import maybe_prompt_user
@@ -63,28 +61,9 @@ def start_now(**kwargs):
             gateway_port,
             gateway_host_internal,
         ) = run_backend.run(app_instance, user_input, **kwargs)
-    if 'NOW_CI_RUN' in os.environ:
-        bff_playground_host = 'http://localhost'
-        bff_port = '8080'
-        playground_port = '30080'
-    else:
-        bff_playground_host = 'https://nowrun.jina.ai'
-        bff_port = '80'
-        playground_port = '80'
-    # TODO: add separate BFF endpoints in print output
-    bff_url = (
-        bff_playground_host
-        + ('' if str(bff_port) == '80' else f':{bff_port}')
-        + f'/api/v1/search-app/docs'
-    )
-    playground_url = bff_playground_host + (
-        f'/?host='
-        + gateway_host_internal
-        + (
-            f'&data={user_input.dataset_name.split("/")[-1] if user_input.dataset_type == DatasetTypes.DEMO else "custom"}'
-        )
-        + (f'&secured={user_input.secured}' if user_input.secured else '')
-    )
+    bff_url = f'{gateway_host_internal}/api/v1/search-app/docs'
+    playground_url = f'{gateway_host_internal}/playground'
+
     print()
     my_table = Table(
         'Attribute',
@@ -93,7 +72,7 @@ def start_now(**kwargs):
         box=box.SIMPLE,
         highlight=True,
     )
-    my_table.add_row('Api docs', bff_url)
+    my_table.add_row('API docs', bff_url)
     if user_input.secured and user_input.api_key:
         my_table.add_row('API Key', user_input.api_key)
     my_table.add_row('Playground', playground_url)
@@ -108,9 +87,6 @@ def start_now(**kwargs):
     return {
         'bff': bff_url,
         'playground': playground_url,
-        'bff_playground_host': bff_playground_host,
-        'bff_port': bff_port,
-        'playground_port': playground_port,
         'host': gateway_host_internal,
         'secured': user_input.secured,
     }

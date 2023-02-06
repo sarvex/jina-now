@@ -6,6 +6,8 @@ import streamlit as st
 from docarray import Document, DocumentArray
 from docarray.score import NamedScore
 
+from now.constants import NOWGATEWAY_BFF_PORT
+
 from .constants import Parameters
 
 
@@ -30,7 +32,7 @@ def get_suggestion(text, jwt):
     )
 
 
-def call_flow(url_host, data, domain, endpoint):
+def call_flow(url_host, data, endpoint):
     st.session_state.search_count += 1
     response = requests.post(
         url_host, json=data, headers={"Content-Type": "application/json; charset=utf-8"}
@@ -119,11 +121,7 @@ def multimodal_search(
     endpoint='search',
 ):
     params = get_query_params()
-    if params.host == 'gateway':  # need to call now-bff as we communicate between pods
-        domain = f"http://now-bff"
-    else:
-        domain = f"https://nowrun.jina.ai"
-    URL_HOST = f"{domain}/api/v1/search-app/{endpoint}"
+    url_host = f"http://localhost:{NOWGATEWAY_BFF_PORT}/api/v1/search-app/{endpoint}"
 
     updated_dict = {}
     if filter_dict:
@@ -146,4 +144,4 @@ def multimodal_search(
         data['jwt'] = jwt
     if params.port:
         data['port'] = params.port
-    return call_flow(URL_HOST, data, domain, endpoint)
+    return call_flow(url_host, data, endpoint)

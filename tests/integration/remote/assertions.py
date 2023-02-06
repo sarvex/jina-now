@@ -19,10 +19,11 @@ def test_search_image(resources_folder_path: str):
 
 
 def assert_deployment_response(response):
-    assert response['bff'] == 'http://localhost:8080/api/v1/search-app/docs'
-    assert response['playground'].startswith('http://localhost/')
-    assert response['host'].startswith('grpcs://')
-    assert response['host'].endswith('.wolf.jina.ai')
+    host = response['host']
+    assert host.startswith('https://')
+    assert host.endswith('.wolf.jina.ai')
+    assert response['bff'] == f'{host}/api/v1/search-app/docs'
+    assert response['playground'] == f'{host}/playground'
 
 
 def assert_deployment_queries(
@@ -31,12 +32,11 @@ def assert_deployment_queries(
     search_modality,
     dataset=None,
 ):
-    url = f'http://localhost:8080/api/v1'
     host = response.get('host')
+    url = f'{host}/api/v1'
     # normal case
     request_body = get_search_request_body(
         kwargs=kwargs,
-        host=host,
         search_modality=search_modality,
         dataset=dataset,
     )
@@ -45,7 +45,7 @@ def assert_deployment_queries(
 
     if kwargs.secured:
         # test add email
-        request_body = get_default_request_body(secured=kwargs.secured, host=host)
+        request_body = get_default_request_body(secured=kwargs.secured)
         request_body['user_emails'] = ['florian.hoenicke@jina.ai']
         response = requests.post(
             f'{url}/admin/updateUserEmails',
@@ -67,7 +67,6 @@ def assert_deployment_queries(
         # the same search should work now
         request_body = get_search_request_body(
             kwargs=kwargs,
-            host=host,
             search_modality=search_modality,
             dataset=dataset,
         )
@@ -81,11 +80,10 @@ def assert_deployment_queries(
 
 def get_search_request_body(
     kwargs,
-    host,
     search_modality,
     dataset=None,
 ):
-    request_body = get_default_request_body(host=host, secured=kwargs.secured)
+    request_body = get_default_request_body(secured=kwargs.secured)
     request_body['limit'] = 9
     # Perform end-to-end check via bff
     if search_modality == 'text':
@@ -140,12 +138,11 @@ def assert_search_custom_s3(host, mm_type, create_temp_link=False):
     request_body = {
         'query': [{'name': 'text', 'value': 'Hello', 'modality': 'text'}],
         'limit': 9,
-        'host': host,
         'create_temp_link': create_temp_link,
     }
 
     response = requests.post(
-        f'http://localhost:8080/api/v1/search-app/search',
+        f'{host}/api/v1/search-app/search',
         json=request_body,
     )
 

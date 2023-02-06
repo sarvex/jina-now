@@ -2,7 +2,8 @@ import typing
 from collections import defaultdict
 from typing import Dict, List
 
-from docarray import dataclass, field
+from docarray import Document, dataclass, field
+from docarray.typing import Image, Video
 
 from now.constants import AVAILABLE_MODALITIES_FOR_SEARCH, DatasetTypes
 from now.now_dataclasses import UserInput
@@ -93,7 +94,9 @@ def create_annotations_and_class_attributes(
     """
     annotations = {}
     class_attributes = {}
-    S3Object, my_setter, my_getter = create_s3_type()
+    S3Object, s3_setter, s3_getter = create_s3_type()
+    ImageType, image_setter, image_getter = create_blob_type('Image')
+    VideoType, video_setter, video_getter = create_blob_type('Video')
 
     for f in fields:
         if not isinstance(f, typing.Hashable):
@@ -101,11 +104,20 @@ def create_annotations_and_class_attributes(
         if dataset_type == DatasetTypes.S3_BUCKET:
             annotations[field_names_to_dataclass_fields[f]] = S3Object
             class_attributes[field_names_to_dataclass_fields[f]] = field(
-                setter=my_setter, getter=my_getter, default=''
+                setter=s3_setter, getter=s3_getter, default=''
             )
         else:
             annotations[field_names_to_dataclass_fields[f]] = fields_modalities[f]
-            class_attributes[field_names_to_dataclass_fields[f]] = None
+            if fields_modalities[f] == Image:
+                class_attributes[field_names_to_dataclass_fields[f]] = field(
+                    setter=image_setter, getter=image_getter, default=''
+                )
+            elif fields_modalities[f] == Video:
+                class_attributes[field_names_to_dataclass_fields[f]] = field(
+                    setter=video_setter, getter=video_getter, default=''
+                )
+            else:
+                class_attributes[field_names_to_dataclass_fields[f]] = None
     return annotations, class_attributes
 
 
@@ -129,6 +141,24 @@ def create_s3_type():
         return doc.uri
 
     return S3Object, my_setter, my_getter
+
+
+def create_blob_type(modality: str):
+    """Creates a new type which loads into blob instead of tensor"""
+    from typing import TypeVar
+
+    from docarray import Document
+
+    BlobObject = TypeVar(modality, bound=str)
+
+    def my_setter(value) -> 'Document':
+        """Custom setter for the BlobObject type that loads the content from the URI"""
+        return Document(uri=value).load_uri_to_blob(timeout=10)
+
+    def my_getter(doc: 'Document'):
+        return doc.uri
+
+    return BlobObject, my_setter, my_getter
 
 
 def create_dataclass_fields_file_mappings(fields: List, fields_modalities: Dict):

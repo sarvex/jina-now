@@ -86,11 +86,6 @@ class EnvironmentVariables:
             os.unsetenv(key)
 
 
-def add_env_variables_to_flow(app_instance, env_dict: Dict):
-    with EnvironmentVariables(env_dict):
-        app_instance.flow_yaml = JAML.expand_dict(app_instance.flow_yaml, env_dict)
-
-
 def write_env_file(env_file, config):
     config_string = '\n'.join([f'{key}={value}' for key, value in config.items()])
     with open(env_file, 'w+') as fp:
@@ -196,7 +191,7 @@ def flatten_dict(d, parent_key='', sep='__'):
 
 
 def get_flow_id(host):
-    return host.split('.wolf.jina.ai')[0].split('grpcs://')[-1]
+    return host[len('https://') : -len('-http.wolf.jina.ai')]
 
 
 class Dumper(yaml.Dumper):
