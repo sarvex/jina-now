@@ -68,7 +68,6 @@ from now.demo_data import DemoDatasetNames
 @pytest.mark.timeout(60 * 10)
 def test_end_to_end(
     cleanup,
-    start_bff,
     query_fields,
     index_fields,
     filter_fields,
@@ -103,12 +102,10 @@ def test_end_to_end(
         dataset=dataset,
     )
     if query_fields == 'text':
-        host = response.get('host')
         request_body = get_search_request_body(
             kwargs=kwargs,
-            host=host,
             search_modality='text',
             dataset=dataset,
         )
-        suggest_url = f'http://localhost:8080/api/v1/search-app/suggestion'
+        suggest_url = f'{response["host"]}/api/v1/search-app/suggestion'
         assert_suggest(suggest_url, request_body)
