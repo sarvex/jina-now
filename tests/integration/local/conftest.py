@@ -1,4 +1,5 @@
 import os
+
 from docarray import DocumentArray, Document
 
 import pytest
@@ -12,8 +13,9 @@ from now.executor.indexer.elastic import NOWElasticIndexer
 from now.executor.preprocessor import NOWPreprocessor
 from now.constants import DatasetTypes
 from now.data_loading.create_dataclass import create_dataclass
-from now.data_loading.data_loading import load_data
+from now.data_loading.data_loading import load_data, _list_s3_file_paths
 from now.demo_data import DemoDatasetNames
+from now.executor.preprocessor.s3_download import get_bucket
 from now.now_dataclasses import UserInput
 
 BASE_URL = 'http://localhost:8080/api/v1'
@@ -158,3 +160,20 @@ def s3_bucket_data():
     )
     docs = load_data(user_input, data_class=data_class)
     return docs, user_input
+
+
+def pull_local_folder_data(tmpdir):
+    bucket = get_bucket(
+        uri=os.environ.get('S3_CUSTOM_MM_DATA_PATH'),
+        aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
+        aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
+        region_name='eu-west-1',
+    )
+    folder_prefix = '/'.join(os.environ.get('S3_CUSTOM_MM_DATA_PATH').split('/')[3:])
+    file_paths = _list_s3_file_paths(bucket, folder_prefix)
+    for path in file_paths:
+        local_path = os.path.join(tmpdir, path)
+        if not os.path.exists(os.path.dirname(local_path)):
+            os.makedirs(os.path.dirname(local_path))
+        bucket.download_file(path, local_path)
+    return os.path.join(tmpdir, folder_prefix)
