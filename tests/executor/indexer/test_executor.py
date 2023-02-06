@@ -1,3 +1,5 @@
+import tempfile
+
 from now.executor.indexer.elastic.elastic_indexer import (
     FieldEmbedding,
     NOWElasticIndexer,
@@ -248,11 +250,9 @@ def test_search_with_filter(setup_service_running, es_inputs, random_index_name)
         document_mappings,
         default_semantic_scores,
     ) = es_inputs
-    index_name = random_index_name
     es_indexer = NOWElasticIndexer(
         document_mappings=document_mappings,
-        hosts='http://localhost:9200',
-        index_name=index_name,
+        index_name=random_index_name,
     )
     es_indexer.index(index_docs_map)
 
@@ -267,3 +267,24 @@ def test_search_with_filter(setup_service_running, es_inputs, random_index_name)
     )
     assert len(res[0].matches) == 1
     assert res[0].matches[0].tags['price'] < 1
+
+
+def test_configure_local_cluster(setup_service_running, es_inputs, random_index_name):
+    """
+    This test tests the configure_local_cluster function of the NOWElasticIndexer.
+    """
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp_elastic_search_conf_path = tmpdir + '/elasticsearch.yml'
+        NOWElasticIndexer.configure_elastic(tmpdir, tmp_elastic_search_conf_path)
+
+        with open(tmp_elastic_search_conf_path, 'r') as f:
+            content = [line for line in f.readlines()]
+        assert content == [
+            'cluster.name: "docker-cluster"\n',
+            'network.host: 0.0.0.0\n',
+            'xpack.security.enabled: false\n',
+            'discovery.type: single-node\n',
+            'path:\n',
+            f'  data: {tmpdir}/data\n',
+            f'  logs: {tmpdir}/logs',
+        ]

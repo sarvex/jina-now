@@ -4,13 +4,16 @@ from typing import List
 from docarray import Document
 from fastapi import APIRouter
 
-from deployment.bff.app.v1.models.search import (
+from now.data_loading.create_dataclass import create_dataclass
+from now.executor.gateway.bff.app.v1.models.search import (
     SearchRequestModel,
     SearchResponseModel,
     SuggestionRequestModel,
 )
-from deployment.bff.app.v1.routers.helper import field_dict_to_mm_doc, jina_client_post
-from now.data_loading.create_dataclass import create_dataclass
+from now.executor.gateway.bff.app.v1.routers.helper import (
+    field_dict_to_mm_doc,
+    jina_client_post,
+)
 from now.utils import modality_string_to_docarray_typing
 
 router = APIRouter()
@@ -21,7 +24,7 @@ router = APIRouter()
     response_model=List[SearchResponseModel],
     summary='Search data via query',
 )
-def search(data: SearchRequestModel):
+async def search(data: SearchRequestModel):
     fields_modalities_mapping = {}
     fields_values_mapping = {}
 
@@ -48,9 +51,9 @@ def search(data: SearchRequestModel):
         key = 'tags__' + key if not key.startswith('tags__') else key
         query_filter[key] = {'$eq': value}
 
-    docs = jina_client_post(
+    docs = await jina_client_post(
         endpoint='/search',
-        inputs=query_doc,
+        docs=query_doc,
         parameters={
             'limit': data.limit,
             'filter': query_filter,
@@ -77,7 +80,6 @@ def search(data: SearchRequestModel):
             # TODO remove else path. It is only used to support the inmemory indexer since that one is operating on chunks while elastic responds with root documents
             field_names_and_chunks = [['result_field', doc]]
         results = {}
-
         for field_name, chunk in field_names_and_chunks:
             if chunk.blob:
                 result = {'blob': base64.b64encode(chunk.blob).decode('utf-8')}
@@ -106,11 +108,11 @@ def search(data: SearchRequestModel):
     "/suggestion",
     summary='Get auto complete suggestion for query',
 )
-def suggestion(data: SuggestionRequestModel):
+async def suggestion(data: SuggestionRequestModel):
     suggest_doc = Document(text=data.text)
-    docs = jina_client_post(
+    docs = await jina_client_post(
         endpoint='/suggestion',
-        inputs=suggest_doc,
+        docs=suggest_doc,
         request_model=data,
         target_executor=r'\Aautocomplete_executor\Z',
     )

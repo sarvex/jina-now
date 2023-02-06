@@ -28,7 +28,6 @@ from now.constants import DatasetTypes, Models
 )
 @pytest.mark.parametrize('query_fields', ['image'])
 def test_backend_custom_data(
-    start_bff,
     dataset: str,
     dataset_path: str,
     index_fields: list,

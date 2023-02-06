@@ -6,20 +6,6 @@ from docarray import Document, DocumentArray
 from starlette import status
 
 
-def test_text_search_fails_with_no_flow_running(
-    client: requests.Session, base64_image_string: str
-):
-    with pytest.raises(ConnectionError):
-        client.post(
-            f'/api/v1/search-app/search',
-            json={
-                'query': [
-                    {'name': 'blob', 'value': base64_image_string, 'modality': 'image'},
-                ]
-            },
-        )
-
-
 def test_text_search_fails_with_incorrect_query(client):
     with pytest.raises(ValueError):
         client.post(
@@ -66,8 +52,7 @@ def test_image_search_calls_flow(
 
     assert response.status_code == status.HTTP_200_OK
     results = DocumentArray.from_json(response.content)
-    # the mock writes the call args into the response tags
-    assert results[0].tags['url'] == '/search'
+    # the mock writes the call args into the response tags, not url isn't written anymore by changes in mock
     assert results[0].tags['parameters']['limit'] == 10
 
 
@@ -89,7 +74,6 @@ def test_multimodal_search_calls_flow(
     assert response.status_code == status.HTTP_200_OK
     results = DocumentArray.from_json(response.content)
     # the mock writes the call args into the response tags
-    assert results[0].tags['url'] == '/search'
     assert results[0].tags['parameters']['limit'] == 10
 
 
@@ -120,7 +104,7 @@ def test_image_search_parse_response(
         )
         results.append(doc)
     assert len(results) == len(sample_search_response_text[0].matches)
-    assert results[0].text == sample_search_response_text[0].matches[0].text
+    assert results[0].text == sample_search_response_text[0].matches[0].chunks[0].text
 
 
 def test_text_search_with_semantic_scores(

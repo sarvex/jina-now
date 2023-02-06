@@ -1,3 +1,4 @@
+import argparse
 import base64
 import io
 import os
@@ -16,13 +17,22 @@ from better_profanity import profanity
 from docarray import Document, DocumentArray
 from docarray.typing import Image, Text
 from jina import Client
-from src.constants import BUTTONS, S3_DEMO_PATH, SSO_COOKIE, SURVEY_LINK, ds_set
-from src.search import get_query_params, multimodal_search
-from streamlit.scriptrunner import add_script_run_ctx
-from streamlit.server.server import Server
+from streamlit.runtime.scriptrunner import add_script_run_ctx
+from streamlit.web.server.server import Server
 from tornado.httputil import parse_cookie
 
 from now.constants import MODALITY_TO_MODELS
+from now.executor.gateway.playground.src.constants import (
+    BUTTONS,
+    S3_DEMO_PATH,
+    SSO_COOKIE,
+    SURVEY_LINK,
+    ds_set,
+)
+from now.executor.gateway.playground.src.search import (
+    get_query_params,
+    multimodal_search,
+)
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -71,7 +81,7 @@ def nav_to(url):
     st.write(nav_script, unsafe_allow_html=True)
 
 
-def deploy_streamlit():
+def deploy_streamlit(secured: bool):
     """
     We want to provide the end-to-end experience to the user.
     Please deploy a streamlit playground on k8s/local to access the api.
@@ -83,6 +93,7 @@ def deploy_streamlit():
 
     # Retrieve query params
     params = get_query_params()
+    setattr(params, 'secured', secured)
     redirect_to = render_auth_components(params)
 
     _, mid, _ = st.columns([0.8, 1, 1])
@@ -100,7 +111,7 @@ def deploy_streamlit():
 
         setup_design()
 
-        client = Client(host=params.host)
+        client = Client(host='localhost', port=8082, protocol='http')
 
         if params.host:
             if st.session_state.filters == 'notags':
@@ -179,7 +190,7 @@ def deploy_streamlit():
 
 
 def get_info_from_endpoint(client, params, endpoint) -> dict:
-    if params.secured.lower() == 'true':
+    if params.secured:
         response = client.post(
             on=endpoint,
             parameters={'jwt': {'token': st.session_state.jwt_val['token']}},
@@ -190,7 +201,7 @@ def get_info_from_endpoint(client, params, endpoint) -> dict:
 
 
 def render_auth_components(params):
-    if params.secured.lower() == 'true':
+    if params.secured:
         st_cookie = get_cookie_value(cookie_name=SSO_COOKIE)
         resp_jwt = requests.get(
             url=f'https://api.hubble.jina.ai/v2/rpc/user.identity.whoami',
@@ -236,11 +247,9 @@ def _do_login(params):
         query_params_var['top_k'] = params.top_k
     st.experimental_set_query_params(**query_params_var)
 
-    redirect_uri = f'https://nowrun.jina.ai/?host={params.host}' f'&data={params.data}'
-    if params.secured:
-        redirect_uri += f'&secured={params.secured}'
+    redirect_uri = f'{params.host}/playground'
     if 'top_k' in st.experimental_get_query_params():
-        redirect_uri += f'&top_k={params.top_k}'
+        redirect_uri += f'?top_k={params.top_k}'
 
     redirect_uri = quote(redirect_uri)
     redirect_uri = (
@@ -424,7 +433,7 @@ def customize_semantic_scores():
 
 
 def render_mm_query(query, modality):
-    if st.button("+", key=f'{modality}'):
+    if st.button("\+", key=f'add_{modality}_field'):  # noqa: W605
         st.session_state[f"len_{modality}_choices"] += 1
     if modality == 'text':
         for field_number in range(st.session_state[f"len_{modality}_choices"]):
@@ -461,8 +470,8 @@ def render_mm_query(query, modality):
                 }
     if st.session_state[f"len_{modality}_choices"] >= 1:
         st.button(
-            "-",
-            key=f'{modality}',
+            label=f'\-',  # noqa: W605
+            key=f'remove_{modality}_field',
             on_click=decrement_inputs,
             kwargs=dict(modality=modality),
         )
@@ -773,4 +782,15 @@ def setup_session_state():
 
 
 if __name__ == '__main__':
-    deploy_streamlit()
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--secured', action='store_true', help='Makes the flow secured')
+    try:
+        args = parser.parse_args()
+    except SystemExit as e:
+        # This exception will be raised if --help or invalid command line arguments
+        # are used. Currently streamlit prevents the program from exiting normally
+        # so we have to do a hard exit.
+        os._exit(e.code)
+
+    deploy_streamlit(secured=args.secured)
