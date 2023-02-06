@@ -157,14 +157,7 @@ class JinaNOWApp:
                 dataset, user_input
             )
             # append user_input and api_keys to all executors except the remote executors
-            user_input_dict = deepcopy(user_input.__dict__)
-            user_input_dict.pop('app_instance', None)
-            user_input_dict['index_field_candidates_to_modalities'] = {
-                field: docarray_typing_to_modality_string(modality)
-                for field, modality in user_input_dict[
-                    'index_field_candidates_to_modalities'
-                ].items()
-            }
+            user_input_dict = self._prepare_user_input_dict(user_input)
             for executor in flow_yaml_content['executors']:
                 if not executor.get('external', False):
                     if not executor.get('uses_with', None):
@@ -176,6 +169,18 @@ class JinaNOWApp:
             self.flow_yaml = self.add_telemetry_env(flow_yaml_content)
 
         return common_env_dict
+
+    @staticmethod
+    def _prepare_user_input_dict(user_input):
+        user_input_dict = deepcopy(user_input.__dict__)
+        user_input_dict.pop('app_instance', None)
+        user_input_dict['index_field_candidates_to_modalities'] = {
+            field: docarray_typing_to_modality_string(modality)
+            for field, modality in user_input_dict[
+                'index_field_candidates_to_modalities'
+            ].items()
+        }
+        return user_input_dict
 
     def preprocess(
         self,

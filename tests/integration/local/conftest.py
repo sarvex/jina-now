@@ -1,5 +1,5 @@
 import os
-from docarray import dataclass, DocumentArray, Document
+from docarray import DocumentArray, Document
 
 import pytest
 from docarray.typing import Text, Image
@@ -114,7 +114,7 @@ def elastic_data(setup_online_shop_db, es_connection_params):
     user_input.index_fields = ['title']
     user_input.filter_fields = ['product_id']
     user_input.index_field_candidates_to_modalities = {'title': Text}
-    user_input.filter_field_candidates_to_modalities = {'product_id': str}
+    user_input.filter_field_candidates_to_modalities = {'product_id': 'str'}
     data_class, user_input.field_names_to_dataclass_fields = create_dataclass(
         user_input=user_input
     )
@@ -132,7 +132,7 @@ def local_folder_data(resources_folder_path):
     user_input.index_fields = ['a.jpg', 'test.txt']
     user_input.filter_fields = ['color']
     user_input.index_field_candidates_to_modalities = {'a.jpg': Image, 'test.txt': Text}
-    user_input.filter_field_candidates_to_modalities = {'color': str}
+    user_input.filter_field_candidates_to_modalities = {'color': 'str'}
     data_class, user_input.field_names_to_dataclass_fields = create_dataclass(
         user_input=user_input
     )
@@ -152,7 +152,7 @@ def s3_bucket_data():
     user_input.index_fields = ['image.png']
     user_input.filter_fields = ['title']
     user_input.index_field_candidates_to_modalities = {'image.png': Image}
-    user_input.filter_field_candidates_to_modalities = {'title': str}
+    user_input.filter_field_candidates_to_modalities = {'title': 'str'}
     data_class, user_input.field_names_to_dataclass_fields = create_dataclass(
         user_input=user_input
     )
