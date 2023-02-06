@@ -8,6 +8,8 @@ WORKDIR /app
 COPY requirements.txt ./requirements.txt
 RUN pip3 install -r requirements.txt --no-cache
 
+RUN pip3 install git+https://github.com/jina-ai/now@JINA_NOW_COMMIT_SHA
+
 COPY . ./
 
 # needed to copy custom streamlit index.html file to add tracking
