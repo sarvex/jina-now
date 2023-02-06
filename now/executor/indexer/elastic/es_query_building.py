@@ -54,7 +54,7 @@ def build_es_queries(
     docs_map,
     apply_default_bm25: bool,
     get_score_breakdown: bool,
-    semantic_scores: List[Tuple],
+    semantic_scores: List[List],
     custom_bm25_query: Optional[dict] = None,
     metric: Optional[str] = 'cosine',
     filter: dict = {},
