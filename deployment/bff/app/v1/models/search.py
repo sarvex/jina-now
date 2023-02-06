@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from pydantic import BaseModel, Field, root_validator
+from pydantic import BaseModel, Field
 
 from deployment.bff.app.v1.models.shared import BaseRequestModel, ModalityModel
 
@@ -81,31 +81,22 @@ class SearchResponseModel(BaseModel):
         ],
         fields: Dict[str, ModalityModel],
     ) -> None:
-        super().__init__(id=id, scores=scores, fields=fields, tags=tags)
+        super().__init__(id=id, scores=scores, fields=fields)
+        self.validate_tags(tags)
         self.tags = tags
 
-    @root_validator(pre=True)
-    def validate_tags(cls, values):
-        tags = values.get('tags')
-        if tags:
-            for key, value in tags.items():
-                if isinstance(value, list):
-                    for item in value:
-                        if not isinstance(item, (str, bool, int, float)):
-                            raise ValueError(
-                                f"Invalid type '{type(item)}' of value '{item}' for key '{key}' in tags"
-                            )
-                elif isinstance(value, dict):
-                    for item in value.values():
-                        if not isinstance(item, (str, bool, int, float)):
-                            raise ValueError(
-                                f"Invalid type '{type(item)}' of value '{item}' for key '{key}' in tags"
-                            )
-                elif not isinstance(value, (str, bool, int, float)):
-                    raise ValueError(
-                        f"Invalid type '{type(item)}' of value '{item}' for key '{key}' in tags"
-                    )
-        return values
+    def validate_tags(self, tags):
+        for key, value in tags.items():
+            if isinstance(value, list):
+                for item in value:
+                    self.validate_tags(item)
+            elif isinstance(value, dict):
+                for _key, _value in value.items():
+                    self.validate_tags({_key: _value})
+            elif not isinstance(value, (str, bool, int, float)):
+                raise ValueError(
+                    f"Invalid type '{type(item)}' of value '{item}' for key '{key}' in tags"
+                )
 
     class Config:
         case_sensitive = False
