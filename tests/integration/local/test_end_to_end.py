@@ -37,7 +37,7 @@ def test_end_to_end(
             'user_input_dict': user_input_dict,
             'document_mappings': [[Models.CLIP_MODEL, 512, fields_for_mapping]],
         },
-        preprocessor_args={'user_input_dict': user_input_dict}
+        preprocessor_args={'user_input_dict': user_input_dict},
     )
     with f:
         f.index(
