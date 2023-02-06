@@ -430,17 +430,16 @@ class NOWElasticIndexer(Executor):
         }
         aggs = {'aggs': {}, 'size': 0}
         for tag, map in tag_categories.items():
-            if map['type'] == 'text':
-                aggs['aggs'][tag] = {
-                    'terms': {'field': f'tags.{tag}.keyword', 'size': 100}
-                }
-            elif map['type'] == 'keyword':
-                aggs['aggs'][tag] = {'terms': {'field': f'tags.{tag}', 'size': 100}}
-            elif map['type'] == 'float':
-                # aggs['aggs'][f'min_{tag}'] = {'min': {'field': f'tags.{tag}'}}
-                # aggs['aggs'][f'max_{tag}'] = {'max': {'field': f'tags.{tag}'}}
-                # aggs['aggs'][f'avg_{tag}'] = {'avg': {'field': f'tags.{tag}'}}
-                aggs['aggs'][tag] = {'terms': {'field': f'tags.{tag}', 'size': 100}}
+            for tag_type, extension in [
+                ['text', '.keyword'],
+                ['keyword', ''],
+                ['float', ''],
+            ]:
+                if map['type'] == tag_type:
+                    aggs['aggs'][tag] = {
+                        'terms': {'field': f'tags.{tag}{extension}', 'size': 100}
+                    }
+
         try:
             if not aggs['aggs']:
                 return
