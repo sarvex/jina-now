@@ -473,15 +473,6 @@ class NOWElasticIndexer(Executor):
                 'picture': 'image_0',
             }
         """
-        print(
-            'field_names_to_dataclass_fields: ',
-            self.user_input.field_names_to_dataclass_fields,
-        )
-        print('index_fields: ', self.user_input.index_fields)
-        print(
-            'index_field_candidates_to_modalities: ',
-            self.user_input.index_field_candidates_to_modalities,
-        )
         dataclass_fields_modalities_dict = {
             self.user_input.field_names_to_dataclass_fields[field]: modality
             for field, modality in self.user_input.index_field_candidates_to_modalities.items()
@@ -493,10 +484,6 @@ class NOWElasticIndexer(Executor):
                 field: dataclass_fields_modalities_dict[field]
                 for field in self.encoder_to_fields[encoder]
             }
-        print('Done with endpoint')
-        print(
-            'final encoder_to_fields_and_modalities: ', encoder_to_fields_and_modalities
-        )
         return DocumentArray(
             [
                 Document(
