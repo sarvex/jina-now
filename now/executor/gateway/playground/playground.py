@@ -80,12 +80,11 @@ def nav_to(url):
     st.write(nav_script, unsafe_allow_html=True)
 
 
-def show_score_breakdown():
+def toggle_score_breakdown():
     if st.checkbox('Show score breakdown', key='scores'):
-        if st.session_state.show_score_breakdown:
-            st.session_state.show_score_breakdown = False
-        else:
-            st.session_state.show_score_breakdown = True
+        st.session_state.show_score_breakdown = True
+    else:
+        st.session_state.show_score_breakdown = False
 
 
 def deploy_streamlit(secured: bool):
@@ -180,7 +179,7 @@ def deploy_streamlit(secured: bool):
             render_mm_query(st.session_state['query'], 'image')
 
         customize_semantic_scores()
-        show_score_breakdown()
+        toggle_score_breakdown()
 
         if st.button('Search', key='mm_search', on_click=clear_match):
             st.session_state.matches = multimodal_search(
@@ -492,10 +491,6 @@ def render_matches():
             st.write(
                 f'🔥 How did you like Jina NOW? [Please leave feedback]({SURVEY_LINK}) 🔥'
             )
-        for m in st.session_state.matches:
-            print(m.scores['cosine'].value)
-            print(m.scores)
-            print(m.tags)
         list_matches = [
             st.session_state.matches[i : i + 9]
             for i in range(0, len(st.session_state.matches), 9)
@@ -551,7 +546,13 @@ def render_multi_modal_result(match, c):
         render_graphic_result(chunk, c)
         render_text_result(chunk, c)
     if st.session_state.show_score_breakdown:
-        body = f"<!DOCTYPE html><html><body>{str(match.scores)}</body></html>"
+        match.scores.pop('cosine', None)
+        semantic_names = list(match.scores.keys())
+        values = [v for _, v in list(match.scores.values())]
+        display_scores = "<br>".join(
+            name + " : " + str(value) for name, value in zip(semantic_names, values)
+        )
+        body = f"<!DOCTYPE html><html><body>{display_scores}</body></html>"
         c.markdown(
             body=body,
             unsafe_allow_html=True,
