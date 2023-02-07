@@ -68,24 +68,24 @@ class SearchApp(JinaNOWApp):
         return False
 
     @staticmethod
-    def autocomplete_stub(local=False) -> Dict:
+    def autocomplete_stub(testing=False) -> Dict:
         return {
             'name': 'autocomplete_executor',
             'uses': f'jinahub+docker://{name_to_id_map.get("NOWAutoCompleteExecutor2")}/{NOW_AUTOCOMPLETE_VERSION}'
-            if not local
-            else NOWAutoCompleteExecutor2,
+            if not testing
+            else 'NOWAutoCompleteExecutor2',
             'needs': 'gateway',
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
         }
 
     @staticmethod
-    def preprocessor_stub(local=False) -> Dict:
+    def preprocessor_stub(testing=False) -> Dict:
         return {
             'name': 'preprocessor',
             'needs': 'autocomplete_executor',
             'uses': f'jinahub+docker://{name_to_id_map.get("NOWPreprocessor")}/{NOW_PREPROCESSOR_VERSION}'
-            if not local
-            else NOWPreprocessor,
+            if not testing
+            else 'NOWPreprocessor',
             'jcloud': {
                 'autoscale': {'min': 0, 'max': 5, 'metric': 'concurrency', 'target': 1}
             },
@@ -124,7 +124,7 @@ class SearchApp(JinaNOWApp):
 
     @staticmethod
     def indexer_stub(
-        user_input: UserInput, encoder2dim: Dict[str, int], local=False
+        user_input: UserInput, encoder2dim: Dict[str, int], testing=False
     ) -> Dict:
         """Creates indexer stub.
 
@@ -152,8 +152,8 @@ class SearchApp(JinaNOWApp):
             'name': 'indexer',
             'needs': list(encoder2dim.keys()),
             'uses': f'jinahub+docker://{name_to_id_map.get("NOWElasticIndexer")}/{NOW_ELASTIC_INDEXER_VERSION}'
-            if not local
-            else NOWElasticIndexer,
+            if not testing
+            else 'NOWElasticIndexer',
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'uses_with': {
                 'document_mappings': document_mappings_list,
@@ -169,18 +169,18 @@ class SearchApp(JinaNOWApp):
         }
 
     def get_executor_stubs(
-        self, dataset, user_input: UserInput, local=False, **kwargs
+        self, dataset, user_input: UserInput, testing=False, **kwargs
     ) -> List[Dict]:
         """Returns a dictionary of executors to be added in the flow
 
         :param dataset: DocumentArray of the dataset
         :param user_input: user input
-        :param local: use local executors if True
+        :param testing: use local executors if True
         :return: executors stubs with filled-in env vars
         """
         flow_yaml_executors = [
-            self.autocomplete_stub(local),
-            self.preprocessor_stub(local),
+            self.autocomplete_stub(testing),
+            self.preprocessor_stub(testing),
         ]
 
         encoder2dim = {}
@@ -201,7 +201,7 @@ class SearchApp(JinaNOWApp):
             flow_yaml_executors.append(clip_encoder)
 
         flow_yaml_executors.append(
-            self.indexer_stub(user_input, encoder2dim=encoder2dim, local=local)
+            self.indexer_stub(user_input, encoder2dim=encoder2dim, testing=testing)
         )
 
         return flow_yaml_executors

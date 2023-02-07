@@ -17,6 +17,7 @@ from now.executor.gateway import NOWGateway
 from now.executor.indexer.elastic import NOWElasticIndexer
 from now.executor.preprocessor import NOWPreprocessor
 from now.now_dataclasses import UserInput
+from now.utils import write_flow_file
 
 BASE_URL = 'http://localhost:8081/api/v1'
 SEARCH_URL = f'{BASE_URL}/search-app/search'
@@ -34,25 +35,9 @@ def get_flow(request, random_index_name, tmpdir):
         preprocessor_args, indexer_args = params
     elif isinstance(params, str):
         docs, user_input = request.getfixturevalue(params)
-        fields_for_mapping = (
-            [
-                user_input.field_names_to_dataclass_fields[field_name]
-                for field_name in user_input.index_fields
-            ]
-            if user_input.field_names_to_dataclass_fields
-            else user_input.index_fields
-        )
-        preprocessor_args = {
-            'user_input_dict': user_input.to_safe_dict(),
-        }
-        indexer_args = {
-            'user_input_dict': user_input.to_safe_dict(),
-            'document_mappings': [[Models.CLIP_MODEL, 512, fields_for_mapping]],
-        }
 
-    indexer_args['index_name'] = random_index_name
     event = multiprocessing.Event()
-    flow = FlowThread(event, docs, user_input, preprocessor_args, indexer_args, tmpdir)
+    flow = FlowThread(event, docs, user_input, tmpdir)
     flow.start()
     while not flow.is_flow_ready():
         sleep(1)
@@ -71,57 +56,15 @@ class FlowThread(multiprocessing.Process):
         event,
         docs,
         user_input,
-        preprocessor_args=None,
-        indexer_args=None,
         tmpdir=None,
     ):
         multiprocessing.Process.__init__(self)
 
         self.event = event
-
-        preprocessor_args = preprocessor_args or {}
-        indexer_args = indexer_args or {}
-        metas = {'workspace': str(tmpdir)}
-        # set secured to True if preprocessor_args or indexer_args contain 'admin_emails'
-        secured = 'admin_emails' in preprocessor_args or 'admin_emails' in indexer_args
-        user_input.app_instance.setup(dataset=docs, user_input=user_input, local=True)
-
-        self.flow = (
-            Flow()
-            .config_gateway(
-                uses=NOWGateway,
-                protocol=['http'],
-                port=[8081],
-                uses_with={
-                    'user_input_dict': {
-                        'secured': secured,
-                    },
-                    'with_playground': False,
-                },
-                env={'JINA_LOG_LEVEL': 'DEBUG'},
-            )
-            .add(
-                uses=NOWPreprocessor,
-                uses_with=preprocessor_args,
-                uses_metas=metas,
-            )
-            .add(
-                host=EXTERNAL_CLIP_HOST,
-                port=443,
-                tls=True,
-                external=True,
-            )
-            .add(
-                uses=NOWElasticIndexer,
-                uses_with={
-                    'hosts': 'http://localhost:9200',
-                    **indexer_args,
-                },
-                uses_metas=metas,
-                no_reduce=True,
-            )
-        )
-        print('blabli')
+        user_input.app_instance.setup(dataset=docs, user_input=user_input, testing=True)
+        flow_file = os.path.join(tmpdir, 'flow.yml')
+        write_flow_file(user_input.app_instance.flow_yaml, flow_file)
+        self.flow = Flow.load_config(flow_file)
 
     def is_flow_ready(self):
         return self.flow.is_flow_ready()
