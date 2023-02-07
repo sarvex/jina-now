@@ -76,7 +76,7 @@ def test_end_to_end(
 ):
     kwargs = {
         'now': 'start',
-        'flow_name': 'nowapi-remote',
+        'flow_name': 'nowapi',
         'dataset_type': DatasetTypes.DEMO,
         'admin_name': 'team-now',
         'index_fields': index_fields,
