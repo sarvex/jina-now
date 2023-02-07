@@ -53,7 +53,7 @@ class FlowThread(multiprocessing.Process):
         event,
         docs,
         user_input,
-        tmpdir=None,
+        tmpdir,
     ):
         multiprocessing.Process.__init__(self)
 

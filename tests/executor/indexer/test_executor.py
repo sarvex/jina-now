@@ -46,19 +46,19 @@ def test_index_and_search_with_multimodal_docs(setup_service_running, es_inputs)
         document_mappings,
         default_semantic_scores,
     ) = es_inputs
-
+    index_name = random_index_name()
     indexer = NOWElasticIndexer(
         document_mappings=document_mappings,
         # es_config={'api_key': os.environ['ELASTIC_API_KEY']},
         # hosts='https://5280f8303ccc410295d02bbb1f3726f7.eu-central-1.aws.cloud.es.io:443',
         hosts='http://localhost:9200',
-        index_name=random_index_name(),
+        index_name=index_name,
     )
 
     indexer.index(index_docs_map)
     # check if documents are indexed
     es = indexer.es
-    res = es.search(index=random_index_name(), size=100, query={'match_all': {}})
+    res = es.search(index=index_name, size=100, query={'match_all': {}})
     assert len(res['hits']['hits']) == len(index_docs_map['clip'])
     results = indexer.search(
         query_docs_map,
@@ -131,10 +131,11 @@ def test_delete_by_id(setup_service_running, es_inputs):
         document_mappings,
         default_semantic_scores,
     ) = es_inputs
+    index_name = random_index_name()
     es_indexer = NOWElasticIndexer(
         document_mappings=document_mappings,
         hosts='http://localhost:9200',
-        index_name=random_index_name(),
+        index_name=index_name,
     )
     es_indexer.index(index_docs_map)
     # delete by id
@@ -142,7 +143,7 @@ def test_delete_by_id(setup_service_running, es_inputs):
     es_indexer.delete(parameters={'ids': ids})
 
     es = es_indexer.es
-    res = es.search(index=random_index_name(), size=100, query={'match_all': {}})
+    res = es.search(index=index_name, size=100, query={'match_all': {}})
     assert len(res['hits']['hits']) == 0
 
 
