@@ -3,7 +3,6 @@ import base64
 import io
 import os
 from collections import OrderedDict
-from copy import deepcopy
 from typing import List
 from urllib.error import HTTPError
 from urllib.parse import quote, unquote
@@ -493,13 +492,14 @@ def render_matches():
             st.write(
                 f'🔥 How did you like Jina NOW? [Please leave feedback]({SURVEY_LINK}) 🔥'
             )
-        # make a copy and  sort them based on scores
-        matches: DocumentArray = deepcopy(st.session_state.matches)
-        for m in matches:
+        for m in st.session_state.matches:
             print(m.scores['cosine'].value)
             print(m.scores)
             print(m.tags)
-        list_matches = [matches[i : i + 9] for i in range(0, len(matches), 9)]
+        list_matches = [
+            st.session_state.matches[i : i + 9]
+            for i in range(0, len(st.session_state.matches), 9)
+        ]
 
         # render the current page or the last page if filtered documents are less
         if list_matches:
@@ -550,6 +550,12 @@ def render_multi_modal_result(match, c):
     for chunk in match.chunks:
         render_graphic_result(chunk, c)
         render_text_result(chunk, c)
+    if st.session_state.show_score_breakdown:
+        body = f"<!DOCTYPE html><html><body>{str(match.scores)}</body></html>"
+        c.markdown(
+            body=body,
+            unsafe_allow_html=True,
+        )
 
 
 # I'm not so happy about these two functions, let's refactor them
