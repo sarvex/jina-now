@@ -42,14 +42,20 @@ def configure_option(
             # Expand dynamic options from parent option, expect a dict (supports only model_selection)
             for user_selection in kwargs[option.name].split(","):
                 if ":" in user_selection:
-                    option_name, option_value = user_selection.split(":")
-                    kwargs[f"{option_name}_model"] = [
-                        model
-                        for model in MODALITY_TO_MODELS[
-                            user_input.index_field_candidates_to_modalities[option_name]
-                        ]
-                        if model["name"] == option_value
-                    ][0]["value"]
+                    option_name, option_values = user_selection.split(":")
+                    kwargs[f"{option_name}_model"] = []
+                    for option_value in option_values.split("+"):
+                        kwargs[f"{option_name}_model"].append(
+                            [
+                                model
+                                for model in MODALITY_TO_MODELS[
+                                    user_input.index_field_candidates_to_modalities[
+                                        option_name
+                                    ]
+                                ]
+                                if model["name"] == option_value
+                            ][0]["value"]
+                        )
 
         for result in option.dynamic_func(user_input):
             configure_option(result, user_input, **kwargs)
