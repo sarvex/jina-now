@@ -181,7 +181,7 @@ def test_from_subfolders_s3(get_aws_info):
     )
 
     loaded_da = _list_files_from_s3_bucket(user_input, data_class)
-    assert len(loaded_da) == 2
+    assert len(loaded_da) == 10
     for doc in loaded_da:
         assert doc.chunks[0].uri
         assert doc.chunks[1].uri

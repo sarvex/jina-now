@@ -151,7 +151,7 @@ def assert_search_custom_s3(host, mm_type, create_temp_link=False):
     ), f"Received code {response.status_code} with text: {response.json()['message']}"
 
     response_json = response.json()
-    assert len(response_json) == 2
+    assert len(response_json) == 10
     for doc in response_json:
         fields = list(doc['fields'].values())
         for field in fields:
