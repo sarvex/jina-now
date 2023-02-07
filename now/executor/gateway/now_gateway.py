@@ -72,9 +72,7 @@ class NOWGateway(CompositeGateway):
     - / -> HTTP gateway on port 8082
     """
 
-    def __init__(
-        self, user_input_dict: str = '', with_playground: bool = True, **kwargs
-    ):
+    def __init__(self, user_input_dict: str = '', playground: bool = True, **kwargs):
         # need to update port ot 8082, as nginx will listen on 8081
         kwargs['runtime_args']['port'] = [8082]
         super().__init__(**kwargs)
@@ -91,7 +89,7 @@ class NOWGateway(CompositeGateway):
 
         # note order is important
         self._add_gateway(BFFGateway, NOWGATEWAY_BFF_PORT, **kwargs)
-        if with_playground:
+        if playground:
             self._add_gateway(
                 PlaygroundGateway,
                 8501,
