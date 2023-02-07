@@ -26,6 +26,7 @@ from now.executor.indexer.elastic.es_query_building import (
     generate_semantic_scores,
     process_filter,
 )
+from now.utils import debug
 
 FieldEmbedding = namedtuple(
     'FieldEmbedding',
@@ -521,8 +522,9 @@ def aggregate_embeddings(docs_map: Dict[str, DocumentArray]):
             for c in doc.chunks:
                 if c.chunks.embeddings is not None:
                     c.embedding = c.chunks.embeddings.mean(axis=0)
-                if c.chunks[0].text or not c.uri:
-                    c.content = c.chunks[0].content
+                # if c.chunks[0].text or not c.uri:
+                #     c.content = c.chunks[0].content
+                debug(len(c.content))
                 c.chunks = DocumentArray()
 
 
