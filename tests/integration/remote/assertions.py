@@ -136,7 +136,7 @@ def assert_suggest(suggest_url, request_body):
     )
 
 
-def assert_search_custom_s3(host, mm_type, create_temp_link=False):
+def assert_search_custom_s3(host, mm_type, dataset_length, create_temp_link=False):
     request_body = {
         'query': [{'name': 'text', 'value': 'Hello', 'modality': 'text'}],
         'limit': 9,
@@ -154,7 +154,7 @@ def assert_search_custom_s3(host, mm_type, create_temp_link=False):
     ), f"Received code {response.status_code} with text: {response.json()['message']}"
 
     response_json = response.json()
-    assert len(response_json) == 2
+    assert len(response_json) == min(dataset_length, 9)
     for doc in response_json:
         fields = list(doc['fields'].values())
         for field in fields:
