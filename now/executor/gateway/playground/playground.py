@@ -81,6 +81,14 @@ def nav_to(url):
     st.write(nav_script, unsafe_allow_html=True)
 
 
+def show_score_breakdown():
+    if st.checkbox('Show score breakdown', key='scores'):
+        if st.session_state.show_score_breakdown:
+            st.session_state.show_score_breakdown = False
+        else:
+            st.session_state.show_score_breakdown = True
+
+
 def deploy_streamlit(secured: bool):
     """
     We want to provide the end-to-end experience to the user.
@@ -173,6 +181,7 @@ def deploy_streamlit(secured: bool):
             render_mm_query(st.session_state['query'], 'image')
 
         customize_semantic_scores()
+        show_score_breakdown()
 
         if st.button('Search', key='mm_search', on_click=clear_match):
             st.session_state.matches = multimodal_search(
@@ -487,8 +496,9 @@ def render_matches():
         # make a copy and  sort them based on scores
         matches: DocumentArray = deepcopy(st.session_state.matches)
         for m in matches:
-            m.scores['cosine'].value = 1 - m.scores['cosine'].value
-        sorted(matches, key=lambda m: m.scores['cosine'].value, reverse=True)
+            print(m.scores['cosine'].value)
+            print(m.scores)
+            print(m.tags)
         list_matches = [matches[i : i + 9] for i in range(0, len(matches), 9)]
 
         # render the current page or the last page if filtered documents are less
@@ -779,6 +789,9 @@ def setup_session_state():
 
     if 'show_bm25_slider' not in st.session_state:
         st.session_state.show_bm25_slider = False
+
+    if 'show_score_breakdown' not in st.session_state:
+        st.session_state.show_score_breakdown = False
 
 
 if __name__ == '__main__':

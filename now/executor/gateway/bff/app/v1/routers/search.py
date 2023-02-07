@@ -61,6 +61,7 @@ async def search(data: SearchRequestModel):
             'semantic_scores': [
                 list(semantic_score) for semantic_score in data.semantic_scores
             ],
+            'get_score_breakdown': data.get_score_breakdown,
         },
         request_model=data,
     )

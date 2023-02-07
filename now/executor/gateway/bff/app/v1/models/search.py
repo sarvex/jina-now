@@ -45,6 +45,11 @@ class SearchRequestModel(BaseRequestModel):
         description='List of tuples where each tuple contains a query_field, index_field, encoder_name and weight.'
         ' This defines how scores should be calculated for documents.',
     )
+    get_score_breakdown: bool = Field(
+        default=False,
+        description='If true, the score breakdown is returned in the response tags.',
+        example=True,
+    )
 
 
 class SearchResponseModel(BaseModel):

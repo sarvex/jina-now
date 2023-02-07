@@ -228,6 +228,7 @@ class NOWElasticIndexer(Executor):
 
         limit = parameters.get('limit', self.limit)
         get_score_breakdown = parameters.get('get_score_breakdown', False)
+        print('get_score_breakdown', get_score_breakdown)
         custom_bm25_query = parameters.get('custom_bm25_query', None)
         apply_default_bm25 = parameters.get('apply_default_bm25', False)
         semantic_scores = parameters.get('semantic_scores', None)
