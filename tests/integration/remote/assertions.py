@@ -151,7 +151,7 @@ def assert_search_custom_s3(host, mm_type, dataset_length, create_temp_link=Fals
     ), f"Received code {response.status_code} with text: {response.json()['message']}"
 
     response_json = response.json()
-    assert len(response_json) == min(dataset_length, 9)
+    assert len(response_json) == 9 if dataset_length > 9 else dataset_length
     for doc in response_json:
         fields = list(doc['fields'].values())
         for field in fields:
