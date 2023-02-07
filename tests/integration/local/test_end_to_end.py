@@ -18,6 +18,7 @@ from now.constants import ACCESS_PATHS
         'pop_lyrics_data',
         'elastic_data',
         'local_folder_data',
+        's3_bucket_data',
     ],
     indirect=True,
 )
@@ -39,7 +40,7 @@ def test_end_to_end(get_flow, setup_service_running, random_index_name):
     )
 
     assert response.status_code == 200
-    assert len(response.json()) == 10
+    assert len(response.json()) == min(len(docs), 10)
 
     for field in user_input.filter_fields:
         dataclass_field = user_input.field_names_to_dataclass_fields.get(field) or field

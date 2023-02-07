@@ -41,11 +41,11 @@ def get_flow(request, random_index_name, tmpdir):
             if user_input.field_names_to_dataclass_fields
             else user_input.index_fields
         )
-        preprocessor_args = {}
+        preprocessor_args = {
+            'user_input_dict': user_input.to_safe_dict(),
+        }
         indexer_args = {
-            'user_input_dict': {
-                'filter_fields': user_input.filter_fields,
-            },
+            'user_input_dict': user_input.to_safe_dict(),
             'document_mappings': [[Models.CLIP_MODEL, 512, fields_for_mapping]],
         }
 
@@ -171,7 +171,7 @@ def elastic_data(setup_online_shop_db, es_connection_params):
     user_input.index_fields = ['title']
     user_input.filter_fields = ['product_id']
     user_input.index_field_candidates_to_modalities = {'title': Text}
-    user_input.filter_field_candidates_to_modalities = {'product_id': str}
+    user_input.filter_field_candidates_to_modalities = {'product_id': 'str'}
     data_class, user_input.field_names_to_dataclass_fields = create_dataclass(
         user_input=user_input
     )
@@ -181,15 +181,38 @@ def elastic_data(setup_online_shop_db, es_connection_params):
 
 
 @pytest.fixture
-def local_folder_data(resources_folder_path):
+def local_folder_data(pulled_local_folder_data):
     user_input = UserInput()
     user_input.admin_name = 'team-now'
     user_input.dataset_type = DatasetTypes.PATH
-    user_input.dataset_path = os.path.join(resources_folder_path, 'subdirectories')
-    user_input.index_fields = ['a.jpg', 'test.txt']
-    user_input.filter_fields = ['color']
-    user_input.index_field_candidates_to_modalities = {'a.jpg': Image, 'test.txt': Text}
-    user_input.filter_field_candidates_to_modalities = {'color': str}
+    user_input.dataset_path = pulled_local_folder_data
+    user_input.index_fields = ['image.png', 'test.txt']
+    user_input.filter_fields = ['title']
+    user_input.index_field_candidates_to_modalities = {
+        'image.png': Image,
+        'test.txt': Text,
+    }
+    user_input.filter_field_candidates_to_modalities = {'title': 'str'}
+    data_class, user_input.field_names_to_dataclass_fields = create_dataclass(
+        user_input=user_input
+    )
+    docs = load_data(user_input, data_class=data_class)
+    return docs, user_input
+
+
+@pytest.fixture
+def s3_bucket_data():
+    user_input = UserInput()
+    user_input.admin_name = 'team-now'
+    user_input.dataset_type = DatasetTypes.S3_BUCKET
+    user_input.dataset_path = os.environ.get('S3_CUSTOM_MM_DATA_PATH')
+    user_input.aws_access_key_id = os.environ.get('AWS_ACCESS_KEY_ID')
+    user_input.aws_secret_access_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
+    user_input.aws_region_name = 'eu-west-1'
+    user_input.index_fields = ['image.png']
+    user_input.filter_fields = ['title']
+    user_input.index_field_candidates_to_modalities = {'image.png': Image}
+    user_input.filter_field_candidates_to_modalities = {'title': 'str'}
     data_class, user_input.field_names_to_dataclass_fields = create_dataclass(
         user_input=user_input
     )

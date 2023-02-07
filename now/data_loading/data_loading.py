@@ -314,6 +314,15 @@ def create_docs_from_files(
     return docs
 
 
+def _list_s3_file_paths(bucket, folder_prefix):
+    objects = list(bucket.objects.filter(Prefix=folder_prefix))
+    return [
+        obj.key
+        for obj in objects
+        if not obj.key.endswith('/') and not obj.key.split('/')[-1].startswith('.')
+    ]
+
+
 def _list_files_from_s3_bucket(
     user_input: UserInput, data_class: Type
 ) -> DocumentArray:
@@ -329,12 +338,7 @@ def _list_files_from_s3_bucket(
     first_file = get_first_file_in_folder_structure_s3(
         bucket, folder_prefix, user_input.dataset_path
     )
-    objects = list(bucket.objects.filter(Prefix=folder_prefix))
-    file_paths = [
-        obj.key
-        for obj in objects
-        if not obj.key.endswith('/') and not obj.key.split('/')[-1].startswith('.')
-    ]
+    file_paths = _list_s3_file_paths(bucket, folder_prefix)
 
     structure_identifier = first_file[len(folder_prefix) :].split('/')
     folder_structure = (
