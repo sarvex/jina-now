@@ -1,5 +1,4 @@
 import json
-import multiprocessing
 import os
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
@@ -12,7 +11,7 @@ from now.common.detect_schema import (
     get_first_file_in_folder_structure_s3,
     get_s3_bucket_and_folder_prefix,
 )
-from now.constants import DatasetTypes
+from now.constants import NUM_FOLDERS_THRESHOLD, DatasetTypes
 from now.data_loading.elasticsearch import ElasticsearchExtractor
 from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
@@ -330,19 +329,38 @@ def _list_files_from_s3_bucket(
         'sub_folders' if len(structure_identifier) > 1 else 'single_folder'
     )
 
+    def get_level_order_prefixes(folder_prefix, level=1):
+        level_prefixes = [
+            obj['Prefix']
+            for obj in bucket.meta.client.list_objects(
+                Bucket=bucket.name, Prefix=folder_prefix, Delimiter='/'
+            )['CommonPrefixes']
+        ]
+        if level == 1:
+            return level_prefixes
+        else:
+            prefix_list = []
+            for prefix in level_prefixes:
+                prefix_list += get_level_order_prefixes(prefix, level - 1)
+        return prefix_list
+
+    def get_prefixes(max_levels=len(structure_identifier)):
+        level = 1
+        list_prefixes = get_level_order_prefixes(folder_prefix, level)
+        while level <= max_levels and len(list_prefixes) < NUM_FOLDERS_THRESHOLD:
+            level += 1
+            list_prefixes = get_level_order_prefixes(folder_prefix, level)
+        return list_prefixes
+
     def list_objects(prefix):
         result = list(bucket.objects.filter(Prefix=prefix))
         return result
 
     objects = []
     if folder_structure == 'sub_folders':
-        prefixes = [
-            obj['Prefix']
-            for obj in bucket.meta.client.list_objects(
-                Bucket=bucket.name, Prefix=folder_prefix, Delimiter='/'
-            )['CommonPrefixes']
-        ]
-        with ThreadPoolExecutor(max_workers=multiprocessing.cpu_count()) as executor:
+        prefixes = get_prefixes()
+        # TODO: change cpu count to a fixed number
+        with ThreadPoolExecutor(max_workers=20) as executor:
             futures = []
             for prefix in prefixes:
                 pref = ''.join(prefix)
