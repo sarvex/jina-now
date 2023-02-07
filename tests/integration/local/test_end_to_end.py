@@ -1,8 +1,6 @@
 import pytest
 import requests
 from docarray.typing import Image, Text
-from now.app.base.app import JinaNOWApp
-from now.constants import Models
 from jina import Client
 from tests.integration.local.conftest import (  # noqa: F401
     SEARCH_URL,
