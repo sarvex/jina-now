@@ -8,6 +8,7 @@ from jina import __version__ as jina_version
 from now.app.base.preprocess import preprocess_image, preprocess_text, preprocess_video
 from now.constants import DEFAULT_FLOW_NAME, DEMO_NS, NOW_GATEWAY_VERSION, PREFETCH_NR
 from now.demo_data import DemoDataset
+from now.executor.gateway import NOWGateway
 from now.executor.name_to_id_map import name_to_id_map
 from now.now_dataclasses import DialogOptions, UserInput
 
@@ -105,10 +106,12 @@ class JinaNOWApp:
                         type=str,
                     )
 
-    def get_gateway_stub(self, user_input) -> Dict:
+    def get_gateway_stub(self, user_input, local=False) -> Dict:
         """Returns the stub for gateway in the flow."""
         gateway_stub = {
-            'uses': f'jinahub+docker://{name_to_id_map.get("NOWGateway")}/{NOW_GATEWAY_VERSION}',
+            'uses': f'jinahub+docker://{name_to_id_map.get("NOWGateway")}/{NOW_GATEWAY_VERSION}'
+            if not local
+            else NOWGateway,
             'protocol': ['http'],
             'port': [8081],
             'monitoring': True,
@@ -123,13 +126,13 @@ class JinaNOWApp:
             ] = f'{DEMO_NS.format(user_input.dataset_name.split("/")[-1])}.dev.jina.ai'
         return gateway_stub
 
-    def get_executor_stubs(self, dataset, user_input, **kwargs) -> Dict:
+    def get_executor_stubs(self, dataset, user_input, local=False, **kwargs) -> Dict:
         """
         Returns the stubs for the executors in the flow.
         """
         raise NotImplementedError()
 
-    def setup(self, dataset: DocumentArray, user_input: UserInput) -> Dict:
+    def setup(self, dataset: DocumentArray, user_input: UserInput, local=False) -> Dict:
         """Runs before the flow is deployed to setup the flow in self.flow_yaml.
         Common use cases:
             - create a database
@@ -156,8 +159,8 @@ class JinaNOWApp:
                 and user_input.flow_name != DEFAULT_FLOW_NAME
                 else DEFAULT_FLOW_NAME,
             },
-            'gateway': self.get_gateway_stub(user_input),
-            'executors': self.get_executor_stubs(dataset, user_input),
+            'gateway': self.get_gateway_stub(user_input, local),
+            'executors': self.get_executor_stubs(dataset, user_input, local),
         }
         # Call the gateway stub function to get the gateway for the flow
         # Call the executor stubs function to get the executors for the flow

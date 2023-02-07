@@ -8,7 +8,8 @@ from docarray.typing import Image, Text
 from jina import Flow
 
 from now.admin.utils import get_default_request_body
-from now.constants import EXTERNAL_CLIP_HOST, DatasetTypes, Models
+from now.common.options import construct_app
+from now.constants import EXTERNAL_CLIP_HOST, DatasetTypes, Models, Apps
 from now.data_loading.create_dataclass import create_dataclass
 from now.data_loading.data_loading import load_data
 from now.demo_data import DemoDatasetNames
@@ -51,7 +52,7 @@ def get_flow(request, random_index_name, tmpdir):
 
     indexer_args['index_name'] = random_index_name
     event = multiprocessing.Event()
-    flow = FlowThread(event, preprocessor_args, indexer_args, tmpdir)
+    flow = FlowThread(event, docs, user_input, preprocessor_args, indexer_args, tmpdir)
     flow.start()
     while not flow.is_flow_ready():
         sleep(1)
@@ -65,7 +66,15 @@ def get_flow(request, random_index_name, tmpdir):
 
 
 class FlowThread(multiprocessing.Process):
-    def __init__(self, event, preprocessor_args=None, indexer_args=None, tmpdir=None):
+    def __init__(
+        self,
+        event,
+        docs,
+        user_input,
+        preprocessor_args=None,
+        indexer_args=None,
+        tmpdir=None,
+    ):
         multiprocessing.Process.__init__(self)
 
         self.event = event
@@ -75,6 +84,8 @@ class FlowThread(multiprocessing.Process):
         metas = {'workspace': str(tmpdir)}
         # set secured to True if preprocessor_args or indexer_args contain 'admin_emails'
         secured = 'admin_emails' in preprocessor_args or 'admin_emails' in indexer_args
+        user_input.app_instance.setup(dataset=docs, user_input=user_input, local=True)
+
         self.flow = (
             Flow()
             .config_gateway(
@@ -110,6 +121,7 @@ class FlowThread(multiprocessing.Process):
                 no_reduce=True,
             )
         )
+        print('blabli')
 
     def is_flow_ready(self):
         return self.flow.is_flow_ready()
@@ -145,6 +157,11 @@ def artworks_data():
     user_input.index_fields = ['image']
     user_input.filter_fields = ['label']
     user_input.index_field_candidates_to_modalities = {'image': Image}
+    user_input.field_names_to_dataclass_fields = {'image': 'image'}
+    user_input.app_instance = construct_app(Apps.SEARCH_APP)
+    user_input.flow_name = 'nowapi-local'
+    user_input.model_choices = {'image_model': [Models.CLIP_MODEL]}
+
     docs = load_data(user_input)
     return docs, user_input
 

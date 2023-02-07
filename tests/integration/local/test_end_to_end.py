@@ -15,9 +15,9 @@ from now.constants import ACCESS_PATHS
     'get_flow',
     [
         'artworks_data',
-        'pop_lyrics_data',
-        'elastic_data',
-        'local_folder_data',
+        # 'pop_lyrics_data',
+        # 'elastic_data',
+        # 'local_folder_data',
     ],
     indirect=True,
 )
