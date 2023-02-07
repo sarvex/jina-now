@@ -70,7 +70,7 @@ def test_calculate_score_breakdown(es_inputs):
         'cosine': {'value': 5.0},
         'query_text-title-clip-1': {'value': 0.921791},
         'query_text-gif-clip-1': {'value': 0.921791},
-        'bm25_normalized': {'value': 3.156418},
+        'bm25_normalized': {'value': 2.156418},
         'bm25_raw': {'value': 21.56418},
     }
     for score, val in scores.items():
