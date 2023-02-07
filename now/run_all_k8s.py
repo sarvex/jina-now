@@ -62,7 +62,7 @@ def start_now(**kwargs):
             gateway_host_internal,
         ) = run_backend.run(app_instance, user_input, **kwargs)
     bff_url = f'{gateway_host_internal}/api/v1/search-app/docs'
-    playground_url = f'{gateway_host_internal}/playground'
+    playground_url = f'{gateway_host_internal}'
 
     print()
     my_table = Table(

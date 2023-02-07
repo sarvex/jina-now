@@ -247,7 +247,7 @@ def _do_login(params):
         query_params_var['top_k'] = params.top_k
     st.experimental_set_query_params(**query_params_var)
 
-    redirect_uri = f'{params.host}/playground'
+    redirect_uri = f'{params.host}'
     if 'top_k' in st.experimental_get_query_params():
         redirect_uri += f'?top_k={params.top_k}'
 

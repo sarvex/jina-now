@@ -31,7 +31,7 @@ class PlaygroundGateway(Gateway):
         streamlit.web.bootstrap._fix_pydeck_mapbox_api_warning()
         streamlit_cmd = (
             f'"python -m streamlit" run --browser.serverPort 12983 {self.streamlit_script} --server.address=0.0.0.0 '
-            f'--server.baseUrlPath /playground '
+            f'--server.baseUrlPath / '
         )
         if self.secured:
             streamlit_cmd += '-- --secured'

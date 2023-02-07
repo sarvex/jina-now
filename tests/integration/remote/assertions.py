@@ -23,7 +23,7 @@ def assert_deployment_response(response):
     assert host.startswith('https://')
     assert host.endswith('.wolf.jina.ai')
     assert response['bff'] == f'{host}/api/v1/search-app/docs'
-    assert response['playground'] == f'{host}/playground'
+    assert response['playground'] == f'{host}'
 
 
 def assert_deployment_queries(
