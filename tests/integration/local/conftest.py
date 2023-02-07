@@ -2,6 +2,7 @@ import multiprocessing
 import os
 from time import sleep
 
+import hubble
 import pytest
 from docarray import Document, DocumentArray
 from docarray.typing import Image, Text
@@ -31,11 +32,7 @@ def get_request_body(secured):
 @pytest.fixture
 def get_flow(request, tmpdir):
     params = request.param
-    if isinstance(params, tuple):
-        preprocessor_args, indexer_args = params
-    elif isinstance(params, str):
-        docs, user_input = request.getfixturevalue(params)
-
+    docs, user_input = request.getfixturevalue(params)
     event = multiprocessing.Event()
     flow = FlowThread(event, docs, user_input, tmpdir)
     flow.start()
@@ -62,6 +59,9 @@ class FlowThread(multiprocessing.Process):
 
         self.event = event
         user_input.app_instance.setup(dataset=docs, user_input=user_input, testing=True)
+        for executor in user_input.app_instance.flow_yaml['executors']:
+            if not executor.get('external'):
+                executor['uses_metas'] = {'workspace': str(tmpdir)}
         flow_file = os.path.join(tmpdir, 'flow.yml')
         write_flow_file(user_input.app_instance.flow_yaml, flow_file)
         self.flow = Flow.load_config(flow_file)
@@ -78,17 +78,48 @@ class FlowThread(multiprocessing.Process):
 
 @pytest.fixture
 def data_with_tags(mm_dataclass):
+    user_input = UserInput()
+    user_input.admin_name = 'team-now'
+    user_input.dataset_type = DatasetTypes.DOCARRAY
+    user_input.index_fields = ['text_field']
+    user_input.filter_fields = ['color']
+    user_input.index_field_candidates_to_modalities = {'text_field': Text}
+    user_input.field_names_to_dataclass_fields = {'text_field': 'text_field'}
+    user_input.app_instance = construct_app(Apps.SEARCH_APP)
+    user_input.flow_name = 'nowapi-local'
+    user_input.model_choices = {'text_field_model': [Models.CLIP_MODEL]}
+
     docs = DocumentArray([Document(mm_dataclass(text_field='test')) for _ in range(10)])
     for index, doc in enumerate(docs):
         doc.tags['color'] = 'Blue Color' if index == 0 else 'Red Color'
         doc.tags['price'] = 0.5 + index
 
-    return docs
+    return docs, user_input
 
 
 @pytest.fixture
-def simple_data(mm_dataclass):
-    return DocumentArray([Document(mm_dataclass(text_field='test')) for _ in range(10)])
+def api_key_data(mm_dataclass):
+    user_input = UserInput()
+    user_input.admin_name = 'team-now'
+    user_input.dataset_type = DatasetTypes.DOCARRAY
+    user_input.index_fields = ['text_field']
+    user_input.index_field_candidates_to_modalities = {'text_field': Text}
+    user_input.field_names_to_dataclass_fields = {'text_field': 'text_field'}
+    user_input.app_instance = construct_app(Apps.SEARCH_APP)
+    user_input.flow_name = 'nowapi-local'
+    user_input.model_choices = {'text_field_model': [Models.CLIP_MODEL]}
+    user_input.admin_emails = [
+        hubble.Client(
+            token=get_request_body(secured=True)['jwt']['token'],
+            max_retries=None,
+            jsonify=True,
+        )
+        .get_user_info()['data']
+        .get('email')
+    ]
+    user_input.secured = True
+    docs = DocumentArray([Document(mm_dataclass(text_field='test')) for _ in range(10)])
+    return docs, user_input
 
 
 @pytest.fixture
