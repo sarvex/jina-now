@@ -117,7 +117,7 @@ if __name__ == '__main__':
     if deployment_type == 'partial':
         # check if deployment is already running then return
         client = Client(
-            host=f'grpcs://{DEMO_NS.format(to_deploy.name.split("/")[-1])}.dev.jina.ai'
+            host=f'grpcs://{DEMO_NS.format(to_deploy.name.split("/")[-1])}.dev.jina.ai/flow'
         )
         try:
             response = client.post('/dry_run', return_results=True)
