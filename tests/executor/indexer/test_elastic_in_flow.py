@@ -8,6 +8,7 @@ from jina import Document, DocumentArray, Executor, Flow, requests
 
 from now.executor.gateway import NOWGateway
 from now.executor.indexer.elastic import NOWElasticIndexer
+from now.executor.indexer.elastic.elastic_indexer import random_index_name
 from now.executor.preprocessor import NOWPreprocessor
 
 NUMBER_OF_DOCS = 10
@@ -27,14 +28,14 @@ class DummyEncoder(Executor):
 
 
 @pytest.fixture
-def flow(random_index_name, metas):
+def flow(metas):
     class OfflineFlow:
         def __init__(self, *args, **kwargs):
             self.preprocessor = NOWPreprocessor()
             self.encoder = DummyEncoder()
             self.indexer = NOWElasticIndexer(
                 hosts='http://localhost:9200',
-                index_name=random_index_name,
+                index_name=random_index_name(),
                 document_mappings=DOCUMENT_MAPPINGS,
                 user_input_dict={
                     'filter_fields': ['color', 'greeting'],
@@ -82,10 +83,6 @@ class TestElasticIndexer:
             query_text: Text
 
         return DocumentArray(Document(MMQuery(query_text='query_1')))
-
-    @pytest.fixture
-    def random_index_name(self):
-        return f"test-index-{random.randint(0, 10000)}"
 
     @pytest.fixture(scope='function', autouse=True)
     def metas(self, tmpdir):
@@ -170,7 +167,7 @@ class TestElasticIndexer:
         )
         assert all([m.tags['price'] < 50 for m in query_res[0].matches])
 
-    def test_delete(self, metas, setup_service_running, random_index_name, flow):
+    def test_delete(self, metas, setup_service_running, flow):
         docs = self.get_docs(NUMBER_OF_DOCS)
         docs[0].tags['parent_tag'] = 'different_value'
         flow.post(on='/index', inputs=docs)
@@ -389,9 +386,7 @@ class TestElasticIndexer:
         non_curated_query[0].query_text.text = 'parent_x'
         flow.post(on='/search', inputs=non_curated_query)
 
-    def test_curate_endpoint_incorrect(
-        self, metas, setup_service_running, random_index_name, flow
-    ):
+    def test_curate_endpoint_incorrect(self, metas, setup_service_running, flow):
         with pytest.raises(Exception):
             flow.post(
                 on='/curate',

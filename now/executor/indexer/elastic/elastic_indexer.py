@@ -1,4 +1,5 @@
 import os
+import random
 import subprocess
 import traceback
 from collections import namedtuple
@@ -545,3 +546,7 @@ def wait_until_cluster_is_up(es, hosts):
         raise RuntimeError(
             f'Elasticsearch is not running after {MAX_RETRIES} retries ('
         )
+
+
+def random_index_name():
+    return f'test-index-{random.randint(0, 10000)}'

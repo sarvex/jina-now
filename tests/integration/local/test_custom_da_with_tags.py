@@ -25,9 +25,7 @@ from now.constants import ACCESS_PATHS, Models
     ],
     indirect=True,
 )
-def test_search_filters(
-    get_flow, data_with_tags, setup_service_running, random_index_name
-):
+def test_search_filters(get_flow, data_with_tags, setup_service_running):
     client = Client(host='http://localhost:8081')
     client.index(
         data_with_tags,

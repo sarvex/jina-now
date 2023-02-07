@@ -2,14 +2,17 @@ import numpy as np
 from docarray import Document
 from docarray.score import NamedScore
 
-from now.executor.indexer.elastic.elastic_indexer import aggregate_embeddings
+from now.executor.indexer.elastic.elastic_indexer import (
+    aggregate_embeddings,
+    random_index_name,
+)
 from now.executor.indexer.elastic.es_converter import (
     calculate_score_breakdown,
     convert_doc_map_to_es,
 )
 
 
-def test_convert_doc_map_to_es(es_inputs, random_index_name):
+def test_convert_doc_map_to_es(es_inputs):
     """
     This test should check whether the docs_map is correctly
     transformed to the expected format.
@@ -26,7 +29,7 @@ def test_convert_doc_map_to_es(es_inputs, random_index_name):
     aggregate_embeddings(index_docs_map)
     first_result = convert_doc_map_to_es(
         docs_map=index_docs_map,
-        index_name=random_index_name,
+        index_name=random_index_name(),
         encoder_to_fields=encoder_to_fields,
     )[0]
     assert first_result['id'] == first_doc_clip.id

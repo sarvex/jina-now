@@ -177,11 +177,6 @@ def get_aws_info():
 
 
 @pytest.fixture
-def random_index_name():
-    return f"test-index-{random.randint(0, 10000)}"
-
-
-@pytest.fixture
 def es_inputs(gif_resource_path) -> namedtuple:
     np.random.seed(42)
 

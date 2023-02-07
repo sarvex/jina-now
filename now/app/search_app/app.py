@@ -18,6 +18,7 @@ from now.constants import (
 from now.demo_data import AVAILABLE_DATASETS, DemoDataset, DemoDatasetNames
 from now.executor.autocomplete import NOWAutoCompleteExecutor2
 from now.executor.indexer.elastic import NOWElasticIndexer
+from now.executor.indexer.elastic.elastic_indexer import random_index_name
 from now.executor.name_to_id_map import name_to_id_map
 from now.executor.preprocessor import NOWPreprocessor
 from now.now_dataclasses import UserInput
@@ -157,6 +158,7 @@ class SearchApp(JinaNOWApp):
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'uses_with': {
                 'document_mappings': document_mappings_list,
+                'index_name': 'now_index' if not testing else random_index_name(),
             },
             'no_reduce': True,
             'jcloud': {
