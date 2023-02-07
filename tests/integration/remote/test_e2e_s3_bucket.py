@@ -60,6 +60,7 @@ def test_backend_custom_data(
         host=response['host'],
         mm_type=mm_type,
         create_temp_link=False,
+        dataset_length=dataset_length,
     )
     assert_search_custom_s3(
         host=response['host'],
