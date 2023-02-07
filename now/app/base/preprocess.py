@@ -94,15 +94,14 @@ def _sample_video(d):
         image_bytes = ndarray_to_jpeg_bytes(frame)
         d.chunks.append(
             Document(
-                uri=d.uri,
                 blob=image_bytes,
                 tags=d.tags,
                 modality='image',
                 mime_type='image/jpeg',
             )
         )
-    d.blob = None
-    d.uri = None
+    if d.uri:
+        d.blob = None
     d.tensor = None
 
 
