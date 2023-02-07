@@ -550,8 +550,10 @@ def render_multi_modal_result(match, c):
         semantic_names = list(match.scores.keys())
         values = list(match.scores.values())
         print(values)
+        print(type(values[0]))
         display_scores = "<br>".join(
-            name + ": " + str(value) for name, value in zip(semantic_names, values)
+            name + ": " + str(round(value['value'], 3))
+            for name, value in zip(semantic_names, values)
         )
         body = f"<!DOCTYPE html><html><body>{display_scores}</body></html>"
         c.markdown(
