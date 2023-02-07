@@ -4,9 +4,9 @@ from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-NOW_GATEWAY_VERSION = '0.0.1-refactor-s3-data-loading-9'
-NOW_PREPROCESSOR_VERSION = '0.0.123-test-use-setup-2'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.147-test-use-setup-2'
+NOW_GATEWAY_VERSION = '0.0.3-refactor-faster-gateway-builds-2'
+NOW_PREPROCESSOR_VERSION = '0.0.123-test-use-setup-3'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.147-test-use-setup-3'
 NOW_AUTOCOMPLETE_VERSION = '0.0.11-refactor-custom-gateway-103'
 
 
