@@ -549,11 +549,9 @@ def render_multi_modal_result(match, c):
         match.scores.pop('cosine', None)
         semantic_names = list(match.scores.keys())
         values = list(match.scores.values())
-        print(values)
-        print(type(values[0]))
         display_scores = "<br>".join(
-            name + ": " + str(round(value['value'], 3))
-            for name, value in zip(semantic_names, values)
+            name + ": " + str(round(v.value, 3))
+            for name, v in zip(semantic_names, values)
         )
         body = f"<!DOCTYPE html><html><body>{display_scores}</body></html>"
         c.markdown(
