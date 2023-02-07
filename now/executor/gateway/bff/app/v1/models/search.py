@@ -7,11 +7,6 @@ from now.executor.gateway.bff.app.v1.models.shared import (
     ModalityModel,
 )
 
-_ProtoValueType = Optional[Union[bool, float, str, list, dict]]
-_StructValueType = Union[
-    _ProtoValueType, List[_ProtoValueType], Dict[str, _ProtoValueType]
-]
-
 
 class _NamedScore(BaseModel):
     value: Optional[float] = None
@@ -59,12 +54,52 @@ class SearchResponseModel(BaseModel):
     scores: Optional[Dict[str, '_NamedScore']] = Field(
         description='Similarity score with respect to the query.'
     )
-    tags: Optional[Dict[str, '_StructValueType']] = Field(
-        description='Additional tags associated with the file.'
-    )
+    tags: Optional[
+        Dict[
+            str,
+            Union[
+                Optional[Union[str, bool, float]],
+                List[Optional[Union[str, bool, float]]],
+                Dict[str, Optional[Union[str, bool, float]]],
+            ],
+        ]
+    ] = Field(description='Additional tags associated with the file.')
     fields: Dict[str, ModalityModel] = Field(
         default={}, description='Dictionary which maps the field name to its value. '
     )
+
+    def __init__(
+        self,
+        id: str,
+        scores: Optional[Dict[str, '_NamedScore']],
+        tags: Optional[
+            Dict[
+                str,
+                Union[
+                    Optional[Union[str, bool, int, float]],
+                    List[Optional[Union[str, bool, int, float]]],
+                    Dict[str, Optional[Union[str, bool, int, float]]],
+                ],
+            ]
+        ],
+        fields: Dict[str, ModalityModel],
+    ) -> None:
+        super().__init__(id=id, scores=scores, fields=fields)
+        self.validate_tags(tags)
+        self.tags = tags
+
+    def validate_tags(self, tags):
+        for key, value in tags.items():
+            if isinstance(value, list):
+                for item in value:
+                    self.validate_tags({'': item})
+            elif isinstance(value, dict):
+                for _key, _value in value.items():
+                    self.validate_tags({_key: _value})
+            elif not isinstance(value, (str, bool, int, float)):
+                raise ValueError(
+                    f"Invalid type '{type(item)}' of value '{item}' for key '{key}' in tags"
+                )
 
     class Config:
         case_sensitive = False
