@@ -74,6 +74,9 @@ class NOWGateway(CompositeGateway):
 
     def __init__(self, user_input_dict: str = '', playground: bool = True, **kwargs):
         # need to update port ot 8082, as nginx will listen on 8081
+        print('kwaaargs', kwargs)
+        print('user inp', user_input_dict)
+        print('playgrounddd', playground)
         kwargs['runtime_args']['port'] = [8082]
         super().__init__(**kwargs)
 
