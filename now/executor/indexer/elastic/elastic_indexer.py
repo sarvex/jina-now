@@ -520,11 +520,12 @@ def aggregate_embeddings(docs_map: Dict[str, DocumentArray]):
     for docs in docs_map.values():
         for doc in docs:
             for c in doc.chunks:
+                c.summary()
                 if c.chunks.embeddings is not None:
                     c.embedding = c.chunks.embeddings.mean(axis=0)
                 # if c.chunks[0].text or not c.uri:
                 #     c.content = c.chunks[0].content
-                debug(len(c.content))
+                debug(c.content)
                 c.chunks = DocumentArray()
 
 
