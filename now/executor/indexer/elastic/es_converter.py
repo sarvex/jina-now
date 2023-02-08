@@ -30,11 +30,9 @@ def convert_es_to_da(
     for es_doc in result:
         doc = Document.from_base64(es_doc['_source']['serialized_doc'])
         for k, v in es_doc['_source'].items():
-            print(k, v)
             if (
                 k.startswith('embedding') or k.endswith('embedding')
             ) and get_score_breakdown:
-                print(f'adding embedding to tags for {k}')
                 if 'embeddings' not in doc.tags:
                     doc.tags['embeddings'] = {}
                 doc.tags['embeddings'][k] = v
@@ -120,7 +118,6 @@ def convert_es_results_to_matches(
         d = convert_es_to_da(result, get_score_breakdown)[0]
         d.scores[metric] = NamedScore(value=result['_score'])
         if get_score_breakdown:
-            print('calculating score breakdown')
             d = calculate_score_breakdown(query_doc, d, semantic_scores, metric)
         d.embedding = None
         matches.append(d)
@@ -190,7 +187,6 @@ def calculate_score_breakdown(
 
     # remove embeddings from document
     retrieved_doc.tags.pop('embeddings', None)
-    print('retrieved_doc.scores after calculation: ', retrieved_doc.scores)
     return retrieved_doc
 
 

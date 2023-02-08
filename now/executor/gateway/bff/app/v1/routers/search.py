@@ -32,6 +32,7 @@ search_examples = {
                 }
             ],
             'create_temp_link': False,
+            'get_score_breakdown': True,
         },
     },
     'working_text_image': {
@@ -54,6 +55,7 @@ search_examples = {
                 },
             ],
             'create_temp_link': False,
+            'get_score_breakdown': True,
         },
     },
     'dummy': {
