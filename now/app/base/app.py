@@ -118,7 +118,7 @@ class JinaNOWApp:
             'prefetch': PREFETCH_NR,
             'uses_with': {
                 'user_input_dict': json.dumps(user_input.to_safe_dict()),
-                # 'playground': not testing,
+                'with_playground': str(not testing),
             },
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
         }

@@ -73,7 +73,7 @@ class NOWGateway(CompositeGateway):
     """
 
     def __init__(
-        self, user_input_dict: str = '', with_playground: bool = True, **kwargs
+        self, user_input_dict: str = '', with_playground: str = 'True', **kwargs
     ):
         # need to update port ot 8082, as nginx will listen on 8081
         kwargs['runtime_args']['port'] = [8082]
@@ -81,6 +81,7 @@ class NOWGateway(CompositeGateway):
 
         self.user_input = UserInput()
         if not isinstance(user_input_dict, dict) and isinstance(user_input_dict, str):
+            print('print dict for testing', user_input_dict)
             user_input_dict = json.loads(user_input_dict) if user_input_dict else {}
         for attr_name, prev_value in self.user_input.__dict__.items():
             setattr(
@@ -91,7 +92,7 @@ class NOWGateway(CompositeGateway):
 
         # note order is important
         self._add_gateway(BFFGateway, NOWGATEWAY_BFF_PORT, **kwargs)
-        if with_playground:
+        if with_playground == 'True':
             self._add_gateway(
                 PlaygroundGateway,
                 8501,
