@@ -221,9 +221,12 @@ class AWSProfile:
 def get_aws_profile():
     session = boto3.Session()
     credentials = session.get_credentials()
-    aws_profile = AWSProfile(
-        credentials.access_key, credentials.secret_key, session.region_name
-    )
+    if credentials:
+        aws_profile = AWSProfile(
+            credentials.access_key, credentials.secret_key, session.region_name
+        )
+    else:
+        aws_profile = AWSProfile(None, None, None)
     return aws_profile
 
 
