@@ -546,14 +546,13 @@ def render_multi_modal_result(match, c):
         render_graphic_result(chunk, c)
         render_text_result(chunk, c)
     if st.session_state.show_score_breakdown:
-        total_score = match.scores.pop('cosine')
-        semantic_names = list(match.scores.keys()) + ['total score']
-        values = list(match.scores.values()) + [total_score]
+        semantic_names = list(match.scores.keys())
+        values = list(match.scores.values())
         display_scores_string = "<br>".join(
             name + ": " + str(round(v.value, 3))
             for name, v in zip(semantic_names, values)
         )
-        body = f'<!DOCTYPE html><html><body><p style = "font-size:9px;">{display_scores_string}</body></html>'
+        body = f'<!DOCTYPE html><html><body><p style = "font-size:10px;">{display_scores_string}</body></html>'
         c.markdown(
             body=body,
             unsafe_allow_html=True,

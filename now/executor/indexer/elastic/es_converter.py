@@ -142,6 +142,9 @@ def calculate_score_breakdown(
 
     :return: List of integers representing the score breakdown.
     """
+    retrieved_doc.scores['total'] = retrieved_doc.scores.pop(
+        metric
+    )  # save the final script score as total
     add_bm25 = False
     for (
         query_field,
@@ -175,11 +178,8 @@ def calculate_score_breakdown(
 
     if add_bm25:
         # calculate bm25 score
-        vector_total = sum(
-            [v.value for k, v in retrieved_doc.scores.items() if k != metric]
-        )
-        overall_score = retrieved_doc.scores[metric].value
-        bm25_normalized = overall_score - vector_total - 1
+        vector_total = sum([v.value for v in retrieved_doc.scores.values()])
+        bm25_normalized = retrieved_doc.scores['total'].value - vector_total - 1
         bm25_raw = bm25_normalized * 10
         retrieved_doc.scores['bm25_normalized'] = NamedScore(
             value=round(bm25_normalized, 6)
