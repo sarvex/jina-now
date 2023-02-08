@@ -315,15 +315,6 @@ def create_docs_from_files(
     return docs
 
 
-def _list_s3_file_paths(bucket, folder_prefix):
-    objects = list(bucket.objects.filter(Prefix=folder_prefix))
-    return [
-        obj.key
-        for obj in objects
-        if not obj.key.endswith('/') and not obj.key.split('/')[-1].startswith('.')
-    ]
-
-
 def _list_files_from_s3_bucket(
     user_input: UserInput, data_class: Type
 ) -> DocumentArray:
@@ -391,7 +382,6 @@ def _list_files_from_s3_bucket(
         for obj in objects
         if not obj.key.endswith('/') and not obj.key.split('/')[-1].startswith('.')
     ]
-    file_paths = _list_s3_file_paths(bucket, folder_prefix)
 
     with yaspin_extended(
         sigmap=sigmap, text="Listing files from S3 bucket ...", color="green"
