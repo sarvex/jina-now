@@ -1,5 +1,7 @@
 from __future__ import annotations, print_function, unicode_literals
 
+from typing import List
+
 from docarray import DocumentArray
 from docarray.typing import Image, Text, Video
 from pydantic import BaseModel
@@ -29,7 +31,7 @@ class DemoDatasetNames(BetterEnum):
 class DemoDataset(BaseModel):
     name: str
     display_name: str
-    index_fields: str  # To be removed once the app works with all index fields
+    index_fields: List[str]  # To be removed once the app works with all index fields
 
     def get_data(self, *args, **kwargs) -> DocumentArray:
         return DocumentArray.pull(self.name)
