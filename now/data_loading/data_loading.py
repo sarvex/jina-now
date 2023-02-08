@@ -315,21 +315,8 @@ def create_docs_from_files(
     return docs
 
 
-def _list_files_from_s3_bucket(
-    user_input: UserInput, data_class: Type
-) -> DocumentArray:
-    """
-    Loads the data from s3 into multimodal documents.
-
-    :param user_input: The user input object.
-    :param data_class: The dataclass to use for the DocumentArray.
-
-    :return: The DocumentArray with the documents.
-    """
-    bucket, folder_prefix = get_s3_bucket_and_folder_prefix(user_input)
-    first_file = get_first_file_in_folder_structure_s3(
-        bucket, folder_prefix, user_input.dataset_path
-    )
+def _list_s3_file_paths(bucket, folder_prefix):
+    first_file = get_first_file_in_folder_structure_s3(bucket, folder_prefix)
     structure_identifier = first_file[len(folder_prefix) :].split('/')
     folder_structure = (
         'sub_folders' if len(structure_identifier) > 1 else 'single_folder'
@@ -376,12 +363,32 @@ def _list_files_from_s3_bucket(
                 objects += f.result()
     else:
         objects = list(bucket.objects.filter(Prefix=folder_prefix))
-
-    file_paths = [
+    return [
         obj.key
         for obj in objects
         if not obj.key.endswith('/') and not obj.key.split('/')[-1].startswith('.')
     ]
+
+
+def _list_files_from_s3_bucket(
+    user_input: UserInput, data_class: Type
+) -> DocumentArray:
+    """
+    Loads the data from s3 into multimodal documents.
+
+    :param user_input: The user input object.
+    :param data_class: The dataclass to use for the DocumentArray.
+
+    :return: The DocumentArray with the documents.
+    """
+    bucket, folder_prefix = get_s3_bucket_and_folder_prefix(user_input)
+    first_file = get_first_file_in_folder_structure_s3(bucket, folder_prefix)
+    structure_identifier = first_file[len(folder_prefix) :].split('/')
+    folder_structure = (
+        'sub_folders' if len(structure_identifier) > 1 else 'single_folder'
+    )
+
+    file_paths = _list_s3_file_paths(bucket, folder_prefix)
 
     with yaspin_extended(
         sigmap=sigmap, text="Listing files from S3 bucket ...", color="green"
