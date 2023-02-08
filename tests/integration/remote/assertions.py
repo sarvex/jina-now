@@ -51,6 +51,7 @@ def assert_deployment_queries(
             f'{url}/admin/updateUserEmails',
             json=request_body,
         )
+        print('assertmsg', response.json()['message'])
         assert response.status_code == 200
 
         # add api key

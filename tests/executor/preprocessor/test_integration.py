@@ -28,7 +28,7 @@ def test_search_app(resources_folder_path, tmpdir, mm_dataclass):
         protocol=['http'],
         port=[8081],
         env={'JINA_LOG_LEVEL': 'DEBUG'},
-        uses_with={'with_playground': False},
+        uses_with={'with_playground': 'False'},
     ).add(uses=NOWPreprocessor, workspace=tmpdir, env={'JINA_LOG_LEVEL': 'DEBUG'}) as f:
         for endpoint in ['index', 'search']:
             result = f.post(
