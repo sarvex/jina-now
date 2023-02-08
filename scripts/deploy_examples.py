@@ -55,7 +55,7 @@ def deploy(demo_ds):
     model_kwargs = {}
     for field, modality in user_input.index_field_candidates_to_modalities.items():
         if (
-            field == demo_ds.index_fields
+            field in demo_ds.index_fields
         ):  # TODO: remove this if check when __all__ is supported
             model_kwargs[f'{field}_model'] = [
                 models['value'] for models in MODALITY_TO_MODELS[modality]
@@ -65,7 +65,7 @@ def deploy(demo_ds):
         'now': 'start',
         'dataset_type': DatasetTypes.DEMO,
         'dataset_name': demo_ds.name,
-        'index_fields': [demo_ds.index_fields],  # TODO: replace with '__all__'
+        'index_fields': demo_ds.index_fields,  # TODO: replace with '__all__'
         'filter_fields': '__all__',
         'proceed': True,
         'secured': False,
