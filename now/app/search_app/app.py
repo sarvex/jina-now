@@ -169,7 +169,7 @@ class SearchApp(JinaNOWApp):
             'jcloud': {
                 'labels': {
                     'app': 'indexer',
-                    'es-index-manager/jinaai.provision-index': True,
+                    'jinaai.provision-index': True,
                 },
                 'resources': {
                     'memory': '8G',
