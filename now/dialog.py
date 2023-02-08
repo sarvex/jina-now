@@ -45,17 +45,31 @@ def configure_option(
                     option_name, option_values = user_selection.split(":")
                     kwargs[f"{option_name}_model"] = []
                     for option_value in option_values.split("+"):
-                        kwargs[f"{option_name}_model"].append(
-                            [
-                                model
-                                for model in MODALITY_TO_MODELS[
-                                    user_input.index_field_candidates_to_modalities[
-                                        option_name
-                                    ]
+                        if (
+                            not option_name
+                            in user_input.index_field_candidates_to_modalities
+                        ):
+                            raise ValueError(
+                                f"Error with --{option.name}: {option_name} is not in an index."
+                            )
+                        model_selection = [
+                            model
+                            for model in MODALITY_TO_MODELS[
+                                user_input.index_field_candidates_to_modalities[
+                                    option_name
                                 ]
-                                if model["name"] == option_value
-                            ][0]["value"]
-                        )
+                            ]
+                            if model["name"] == option_value
+                        ]
+                        if model_selection:
+                            kwargs[f"{option_name}_model"].append(
+                                model_selection[0]["value"]
+                            )
+                        else:
+                            raise ValueError(
+                                f"Error with --{option.name}: {option_value} is not available. "
+                                f"for index {option_name}."
+                            )
 
         for result in option.dynamic_func(user_input):
             configure_option(result, user_input, **kwargs)
