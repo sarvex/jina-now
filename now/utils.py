@@ -218,6 +218,10 @@ def get_credentials_from_aws_session():
     return aws_access_key_id, aws_secret_access_key
 
 
+def hide_string_chars(s):
+    return ''.join(['*' for _ in range(len(s) - 5)]) + s[len(s) - 4 :] if s else None
+
+
 # Add a custom retry exception
 class RetryException(Exception):
     pass

@@ -25,14 +25,16 @@ from now.now_dataclasses import DialogOptions, UserInput
 from now.utils import (
     DemoAvailableException,
     RetryException,
+    get_credentials_from_aws_session,
     get_info_hubble,
+    hide_string_chars,
     jina_auth_login,
     sigmap,
     to_camel_case,
 )
 
 AVAILABLE_SOON = 'will be available in upcoming versions'
-
+aws_access_key_id, aws_secret_access_key = get_credentials_from_aws_session()
 
 # Make sure you add this dialog option to your app in order of dependency, i.e., if some dialog option depends on other
 # than the parent should be called first before the dependant can called.
@@ -201,7 +203,8 @@ DATASET_PATH_S3 = DialogOptions(
 
 AWS_ACCESS_KEY_ID = DialogOptions(
     name='aws_access_key_id',
-    prompt_message='Please enter the AWS access key ID:',
+    prompt_message=f'Please enter the AWS access key ID: [{hide_string_chars(aws_access_key_id)}]',
+    default=f'{aws_access_key_id}',
     prompt_type='input',
     depends_on=DATASET_TYPE,
     conditional_check=lambda user_input: user_input.dataset_type
@@ -210,7 +213,8 @@ AWS_ACCESS_KEY_ID = DialogOptions(
 
 AWS_SECRET_ACCESS_KEY = DialogOptions(
     name='aws_secret_access_key',
-    prompt_message='Please enter the AWS secret access key:',
+    prompt_message=f'Please enter the AWS secret access key: [{hide_string_chars(aws_secret_access_key)}]',
+    default=f'{aws_secret_access_key}',
     prompt_type='input',
     depends_on=DATASET_TYPE,
     conditional_check=lambda user_input: user_input.dataset_type
