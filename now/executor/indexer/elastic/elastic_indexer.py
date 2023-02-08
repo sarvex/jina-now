@@ -51,9 +51,6 @@ class NOWElasticIndexer(Executor):
         limit: int = 10,
         max_values_per_tag: int = 10,
         es_mapping: Dict = None,
-        hosts: str = 'http://localhost:9200',
-        api_key: str = None,
-        index_name: str = 'now_index',
         es_config: Optional[Dict[str, Any]] = None,
         *args,
         **kwargs,
@@ -76,11 +73,15 @@ class NOWElasticIndexer(Executor):
         self.metric = metric
         self.limit = limit
         self.max_values_per_tag = max_values_per_tag
-        print(f'hosts: {hosts}')
-        print(f'index_name: {index_name}')
-        self.hosts = hosts
-        self.api_key = api_key
-        self.index_name = index_name
+        if all(v in os.environ for v in ['ES_HOSTS', 'ES_INDEX_NAME', 'API_KEY']):
+            raise ValueError(
+                'Cannot find ES_HOSTS, ES_INDEX_NAME, API_KEY in environment variables'
+            )
+        self.hosts = os.environ['ES_HOSTS']
+        self.api_key = os.environ['API_KEY']
+        self.index_name = os.environ['ES_INDEX_NAME']
+        print(f'hosts: {self.hosts}')
+        print(f'index_name: {self.index_name}')
         self.query_to_curated_ids = {}
         self.doc_id_tags = {}
         self.document_mappings = [FieldEmbedding(*dm) for dm in document_mappings]

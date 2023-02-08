@@ -154,10 +154,6 @@ class SearchApp(JinaNOWApp):
                     ],
                 ]
             )
-        if any['ES_HOSTS', 'ES_INDEX_NAME', 'API_KEY'] not in os.environ:
-            raise ValueError(
-                'Cannot find ES_HOSTS, ES_INDEX_NAME, API_KEY in environment variables'
-            )
 
         return {
             'name': 'indexer',
@@ -167,9 +163,6 @@ class SearchApp(JinaNOWApp):
             else 'NOWElasticIndexer',
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'uses_with': {
-                'hosts': os.environ['ES_HOSTS'],
-                'index_name': os.environ['ES_INDEX_NAME'],
-                'api_key': os.environ['API_KEY'],
                 'document_mappings': document_mappings_list,
             },
             'no_reduce': True,
