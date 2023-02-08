@@ -18,7 +18,7 @@ from now.data_loading.data_loading import load_data
 from now.deployment.flow import deploy_flow
 from now.log import time_profiler
 from now.now_dataclasses import UserInput
-from now.utils import add_env_variables_to_flow, get_flow_id
+from now.utils import get_flow_id
 
 
 @time_profiler
@@ -52,17 +52,14 @@ def run(
     dataset = load_data(user_input, data_class, print_callback)
     print_callback('Data loaded. Deploying the flow...')
 
-    # Set up the app specific flow and also get the environment variables and its values
-    env_dict = app_instance.setup(
+    # Set up the app specific flow
+    app_instance.setup(
         dataset=dataset,
         user_input=user_input,
-        data_class=data_class,
     )
 
-    add_env_variables_to_flow(app_instance, env_dict)
     (client, gateway_port, gateway_host_internal,) = deploy_flow(
         flow_yaml=app_instance.flow_yaml,
-        env_dict=env_dict,
     )
 
     # TODO at the moment the scheduler is not working. So we index the data right away

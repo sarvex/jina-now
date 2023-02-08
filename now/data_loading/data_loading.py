@@ -243,7 +243,9 @@ def create_docs_from_subdirectories(
         )
         folder_files[path_to_last_folder].append(file)
     for folder, files in folder_files.items():
-        kwargs, dict_tags = {}, {}
+        kwargs = {}
+        tags_loaded_local = {}
+        _s3_uri_for_tags = ''
         file_info = [
             _extract_file_and_full_file_path(file, path, is_s3_dataset)
             for file in files
@@ -256,10 +258,10 @@ def create_docs_from_subdirectories(
         for file, file_full_path in file_info:
             if file.endswith('.json'):
                 if is_s3_dataset:
+                    _s3_uri_for_tags = file_full_path
                     for field in data_class.__annotations__.keys():
                         if field not in kwargs.keys():
                             kwargs[field] = file_full_path
-                    dict_tags['json_path'] = file_full_path
                 else:
                     with open(file_full_path) as f:
                         json_data = flatten_dict(json.load(f))
@@ -267,12 +269,12 @@ def create_docs_from_subdirectories(
                         if field in fields:
                             kwargs[field_names_to_dataclass_fields[field]] = value
                         else:
-                            dict_tags[field] = value
+                            tags_loaded_local[field] = value
         doc = Document(data_class(**kwargs))
-        if is_s3_dataset:
-            doc._metadata['s3_tags'] = dict_tags
-        else:
-            doc.tags.update(dict_tags)
+        if _s3_uri_for_tags:
+            doc._metadata['_s3_uri_for_tags'] = _s3_uri_for_tags
+        elif tags_loaded_local:
+            doc.tags.update(tags_loaded_local)
         docs.append(doc)
     return docs
 
@@ -312,6 +314,15 @@ def create_docs_from_files(
     return docs
 
 
+def _list_s3_file_paths(bucket, folder_prefix):
+    objects = list(bucket.objects.filter(Prefix=folder_prefix))
+    return [
+        obj.key
+        for obj in objects
+        if not obj.key.endswith('/') and not obj.key.split('/')[-1].startswith('.')
+    ]
+
+
 def _list_files_from_s3_bucket(
     user_input: UserInput, data_class: Type
 ) -> DocumentArray:
@@ -327,12 +338,7 @@ def _list_files_from_s3_bucket(
     first_file = get_first_file_in_folder_structure_s3(
         bucket, folder_prefix, user_input.dataset_path
     )
-    objects = list(bucket.objects.filter(Prefix=folder_prefix))
-    file_paths = [
-        obj.key
-        for obj in objects
-        if not obj.key.endswith('/') and not obj.key.split('/')[-1].startswith('.')
-    ]
+    file_paths = _list_s3_file_paths(bucket, folder_prefix)
 
     structure_identifier = first_file[len(folder_prefix) :].split('/')
     folder_structure = (

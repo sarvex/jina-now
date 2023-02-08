@@ -6,6 +6,7 @@ from docarray import dataclass
 from docarray.typing import Text
 from jina import Document, DocumentArray, Executor, Flow, requests
 
+from now.executor.gateway import NOWGateway
 from now.executor.indexer.elastic import NOWElasticIndexer
 from now.executor.preprocessor import NOWPreprocessor
 
@@ -314,7 +315,13 @@ class TestElasticIndexer:
         self, metas, documents, setup_service_running, query, embedding, res_ids
     ):
         documents = DocumentArray([Document(chunks=[doc]) for doc in documents])
-        with Flow().add(
+        with Flow().config_gateway(
+            uses=NOWGateway,
+            protocol=['http'],
+            port=[8081],
+            env={'JINA_LOG_LEVEL': 'DEBUG'},
+            uses_with={'with_playground': False},
+        ).add(
             uses=NOWElasticIndexer,
             uses_with={
                 "dim": len(embedding),

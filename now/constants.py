@@ -4,10 +4,10 @@ from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-DOCKER_BFF_PLAYGROUND_TAG = '0.0.153-clean-dataclass-creation-7'
-NOW_PREPROCESSOR_VERSION = '0.0.121-clean-dataclass-creation-7'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.146-refactor-elastic-update-tags-3'
-NOW_AUTOCOMPLETE_VERSION = '0.0.11-fix-av-requirements-2'
+NOW_GATEWAY_VERSION = '0.0.1-docs-api-12'
+NOW_PREPROCESSOR_VERSION = '0.0.122-refactor-custom-gateway-103'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.147-fix-elastic-persistent-workspace-9'
+NOW_AUTOCOMPLETE_VERSION = '0.0.11-refactor-custom-gateway-103'
 
 
 class Apps(BetterEnum):
@@ -72,3 +72,5 @@ MODALITY_TO_MODELS = {
     Image: [{'name': 'Clip', 'value': Models.CLIP_MODEL}],
     Video: [{'name': 'Clip', 'value': Models.CLIP_MODEL}],
 }
+
+NOWGATEWAY_BFF_PORT = 8080

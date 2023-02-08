@@ -116,16 +116,16 @@ def get_local_path(tmpdir, path_s3):
 
 
 def update_tags(d, aws_access_key_id, aws_secret_access_key, region_name):
-    if 's3_tags' in d._metadata:
+    if '_s3_uri_for_tags' in d._metadata:
         bucket = get_bucket(
-            uri=d._metadata['s3_tags']['json_path'],
+            uri=d._metadata['_s3_uri_for_tags'],
             aws_access_key_id=aws_access_key_id,
             aws_secret_access_key=aws_secret_access_key,
             region_name=region_name,
         )
         with tempfile.TemporaryDirectory() as tmpdir:
             local_file = download_from_bucket(
-                tmpdir, d._metadata['s3_tags']['json_path'], bucket
+                tmpdir, d._metadata['_s3_uri_for_tags'], bucket
             )
 
             with open(local_file, 'r') as file:

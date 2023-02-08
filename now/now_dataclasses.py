@@ -7,11 +7,13 @@ the dialog won't ask for the value.
 from __future__ import annotations, print_function, unicode_literals
 
 import dataclasses
+from copy import deepcopy
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, TypeVar, Union
 
 from pydantic import BaseModel, StrictBool
 
 from now.constants import DatasetTypes
+from now.utils import docarray_typing_to_modality_string
 
 
 class UserInput(BaseModel):
@@ -43,7 +45,7 @@ class UserInput(BaseModel):
 
     # cluster related
     cluster: Optional[str] = None
-    secured: Optional[StrictBool] = None
+    secured: Optional[StrictBool] = False
     jwt: Optional[Dict[str, str]] = None
     admin_name: Optional[str] = None
     admin_emails: Optional[List[str]] = None
@@ -53,6 +55,17 @@ class UserInput(BaseModel):
 
     class Config:
         arbitrary_types_allowed = True
+
+    def to_safe_dict(self) -> Dict[str, Any]:
+        user_input_dict = deepcopy(self.__dict__)
+        user_input_dict.pop('app_instance', None)
+        user_input_dict['index_field_candidates_to_modalities'] = {
+            field: docarray_typing_to_modality_string(modality)
+            for field, modality in user_input_dict[
+                'index_field_candidates_to_modalities'
+            ].items()
+        }
+        return user_input_dict
 
 
 @dataclasses.dataclass
