@@ -10,6 +10,7 @@ from tests.integration.remote.assertions import (
 
 from now.cli import cli
 from now.constants import DatasetTypes, Models
+from now.utils import get_credentials_from_aws_session
 
 
 @pytest.mark.remote
@@ -33,13 +34,14 @@ def test_backend_custom_data(
     cleanup,
     with_hubble_login_patch,
 ):
+    aws_access_key_id, aws_secret_access_key = get_credentials_from_aws_session()
     kwargs = {
         'now': 'start',
         'flow_name': 'nowapi',
         'dataset_type': DatasetTypes.S3_BUCKET,
         'dataset_path': dataset_path,
-        'aws_access_key_id': os.environ.get('AWS_ACCESS_KEY_ID'),
-        'aws_secret_access_key': os.environ.get('AWS_SECRET_ACCESS_KEY'),
+        'aws_access_key_id': aws_access_key_id,
+        'aws_secret_access_key': aws_secret_access_key,
         'aws_region_name': 'eu-west-1',
         'index_fields': index_fields,
         f'{index_fields[0]}_model': [Models.CLIP_MODEL],

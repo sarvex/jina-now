@@ -7,6 +7,7 @@ import sys
 from collections.abc import MutableMapping
 from typing import Dict, List, Optional, TypeVar, Union
 
+import boto3
 import docarray
 import hubble
 import yaml
@@ -207,6 +208,14 @@ def docarray_typing_to_modality_string(T: TypeVar) -> str:
 def modality_string_to_docarray_typing(s: str) -> TypeVar:
     """E.g. image -> docarray.typing.Image"""
     return getattr(docarray.typing, s.capitalize())
+
+
+def get_credentials_from_aws_session():
+    session = boto3.Session()
+    credentials = session.get_credentials()
+    aws_access_key_id = credentials.access_key
+    aws_secret_access_key = credentials.secret_key
+    return aws_access_key_id, aws_secret_access_key
 
 
 # Add a custom retry exception

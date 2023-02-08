@@ -16,6 +16,7 @@ from now.executor.gateway import NOWGateway
 from now.executor.indexer.elastic import NOWElasticIndexer
 from now.executor.preprocessor import NOWPreprocessor
 from now.now_dataclasses import UserInput
+from now.utils import get_credentials_from_aws_session
 
 BASE_URL = 'http://localhost:8081/api/v1'
 SEARCH_URL = f'{BASE_URL}/search-app/search'
@@ -202,12 +203,13 @@ def local_folder_data(pulled_local_folder_data):
 
 @pytest.fixture
 def s3_bucket_data():
+    aws_access_key_id, aws_secret_access_key = get_credentials_from_aws_session()
     user_input = UserInput()
     user_input.admin_name = 'team-now'
     user_input.dataset_type = DatasetTypes.S3_BUCKET
     user_input.dataset_path = os.environ.get('S3_CUSTOM_MM_DATA_PATH')
-    user_input.aws_access_key_id = os.environ.get('AWS_ACCESS_KEY_ID')
-    user_input.aws_secret_access_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
+    user_input.aws_access_key_id = aws_access_key_id
+    user_input.aws_secret_access_key = aws_secret_access_key
     user_input.aws_region_name = 'eu-west-1'
     user_input.index_fields = ['image.png']
     user_input.filter_fields = ['title']
