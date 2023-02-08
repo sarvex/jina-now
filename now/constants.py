@@ -5,8 +5,8 @@ from docarray.typing import Image, Text, Video
 from now.utils import BetterEnum
 
 NOW_GATEWAY_VERSION = '0.0.1-docs-api-12'
-NOW_PREPROCESSOR_VERSION = '0.0.123-test-use-setup-12'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.147-test-use-setup-12'
+NOW_PREPROCESSOR_VERSION = '0.0.123-test-use-setup-13'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.147-test-use-setup-13'
 NOW_AUTOCOMPLETE_VERSION = '0.0.11-refactor-custom-gateway-103'
 
 
