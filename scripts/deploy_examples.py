@@ -65,9 +65,7 @@ def deploy(demo_ds):
         'now': 'start',
         'dataset_type': DatasetTypes.DEMO,
         'dataset_name': demo_ds.name,
-        'index_fields': [
-            demo_ds.index_fields
-        ],  # TODO: should be replaced with '__all__' when it is compatible
+        'index_fields': demo_ds.index_fields,  # TODO: replace with '__all__'
         'filter_fields': '__all__',
         'proceed': True,
         'secured': False,
