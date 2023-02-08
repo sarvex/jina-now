@@ -8,7 +8,6 @@ from jina import __version__ as jina_version
 from now.app.base.preprocess import preprocess_image, preprocess_text, preprocess_video
 from now.constants import DEFAULT_FLOW_NAME, DEMO_NS, NOW_GATEWAY_VERSION, PREFETCH_NR
 from now.demo_data import DemoDataset
-from now.executor.gateway import NOWGateway
 from now.executor.name_to_id_map import name_to_id_map
 from now.now_dataclasses import DialogOptions, UserInput
 
@@ -119,7 +118,7 @@ class JinaNOWApp:
             'prefetch': PREFETCH_NR,
             'uses_with': {
                 'user_input_dict': json.dumps(user_input.to_safe_dict()),
-                'playground': not testing,
+                # 'playground': not testing,
             },
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
         }

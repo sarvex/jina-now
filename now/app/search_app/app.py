@@ -16,11 +16,8 @@ from now.constants import (
     Models,
 )
 from now.demo_data import AVAILABLE_DATASETS, DemoDataset, DemoDatasetNames
-from now.executor.autocomplete import NOWAutoCompleteExecutor2
-from now.executor.indexer.elastic import NOWElasticIndexer
 from now.executor.indexer.elastic.elastic_indexer import random_index_name
 from now.executor.name_to_id_map import name_to_id_map
-from now.executor.preprocessor import NOWPreprocessor
 from now.now_dataclasses import UserInput
 
 
