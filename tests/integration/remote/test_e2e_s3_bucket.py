@@ -34,7 +34,11 @@ def test_backend_custom_data(
     cleanup,
     with_hubble_login_patch,
 ):
-    aws_access_key_id, aws_secret_access_key = get_credentials_from_aws_session()
+    (
+        aws_access_key_id,
+        aws_secret_access_key,
+        region,
+    ) = get_credentials_from_aws_session()
     kwargs = {
         'now': 'start',
         'flow_name': 'nowapi',
@@ -42,7 +46,7 @@ def test_backend_custom_data(
         'dataset_path': dataset_path,
         'aws_access_key_id': aws_access_key_id,
         'aws_secret_access_key': aws_secret_access_key,
-        'aws_region_name': 'eu-west-1',
+        'aws_region_name': region,
         'index_fields': index_fields,
         f'{index_fields[0]}_model': [Models.CLIP_MODEL],
         'filter_fields': filter_fields,

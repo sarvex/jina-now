@@ -215,7 +215,8 @@ def get_credentials_from_aws_session():
     credentials = session.get_credentials()
     aws_access_key_id = credentials.access_key
     aws_secret_access_key = credentials.secret_key
-    return aws_access_key_id, aws_secret_access_key
+    region = session.region_name
+    return aws_access_key_id, aws_secret_access_key, region
 
 
 def hide_string_chars(s):

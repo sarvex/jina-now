@@ -74,12 +74,16 @@ def cleanup():
 
 @pytest.fixture(scope='session')
 def pulled_local_folder_data(tmpdir_factory):
-    aws_access_key_id, aws_secret_access_key = get_credentials_from_aws_session()
+    (
+        aws_access_key_id,
+        aws_secret_access_key,
+        region,
+    ) = get_credentials_from_aws_session()
     bucket = get_bucket(
         uri=os.environ.get('S3_CUSTOM_MM_DATA_PATH'),
         aws_access_key_id=aws_access_key_id,
         aws_secret_access_key=aws_secret_access_key,
-        region_name='eu-west-1',
+        region_name=region,
     )
     folder_prefix = '/'.join(os.environ.get('S3_CUSTOM_MM_DATA_PATH').split('/')[3:])
     file_paths = _list_s3_file_paths(bucket, folder_prefix)

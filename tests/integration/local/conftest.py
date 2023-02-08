@@ -203,14 +203,18 @@ def local_folder_data(pulled_local_folder_data):
 
 @pytest.fixture
 def s3_bucket_data():
-    aws_access_key_id, aws_secret_access_key = get_credentials_from_aws_session()
+    (
+        aws_access_key_id,
+        aws_secret_access_key,
+        region,
+    ) = get_credentials_from_aws_session()
     user_input = UserInput()
     user_input.admin_name = 'team-now'
     user_input.dataset_type = DatasetTypes.S3_BUCKET
     user_input.dataset_path = os.environ.get('S3_CUSTOM_MM_DATA_PATH')
     user_input.aws_access_key_id = aws_access_key_id
     user_input.aws_secret_access_key = aws_secret_access_key
-    user_input.aws_region_name = 'eu-west-1'
+    user_input.aws_region_name = region
     user_input.index_fields = ['image.png']
     user_input.filter_fields = ['title']
     user_input.index_field_candidates_to_modalities = {'image.png': Image}

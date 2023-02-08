@@ -34,7 +34,7 @@ from now.utils import (
 )
 
 AVAILABLE_SOON = 'will be available in upcoming versions'
-aws_access_key_id, aws_secret_access_key = get_credentials_from_aws_session()
+aws_access_key_id, aws_secret_access_key, region = get_credentials_from_aws_session()
 
 # Make sure you add this dialog option to your app in order of dependency, i.e., if some dialog option depends on other
 # than the parent should be called first before the dependant can called.
@@ -223,7 +223,8 @@ AWS_SECRET_ACCESS_KEY = DialogOptions(
 
 AWS_REGION_NAME = DialogOptions(
     name='aws_region_name',
-    prompt_message='Please enter the AWS region:',
+    prompt_message=f'Please enter the AWS region: [{region}]',
+    default=f'{region}',
     prompt_type='input',
     depends_on=DATASET_TYPE,
     conditional_check=lambda user_input: user_input.dataset_type
