@@ -5,6 +5,7 @@ import shutil
 import signal
 import sys
 from collections.abc import MutableMapping
+from dataclasses import dataclass
 from typing import Dict, List, Optional, TypeVar, Union
 
 import boto3
@@ -210,13 +211,20 @@ def modality_string_to_docarray_typing(s: str) -> TypeVar:
     return getattr(docarray.typing, s.capitalize())
 
 
-def get_credentials_from_aws_session():
+@dataclass
+class AWSProfile:
+    aws_access_key_id: str
+    aws_secret_access_key: str
+    region: str
+
+
+def get_aws_profile():
     session = boto3.Session()
     credentials = session.get_credentials()
-    aws_access_key_id = credentials.access_key
-    aws_secret_access_key = credentials.secret_key
-    region = session.region_name
-    return aws_access_key_id, aws_secret_access_key, region
+    aws_profile = AWSProfile(
+        credentials.access_key, credentials.secret_key, session.region_name
+    )
+    return aws_profile
 
 
 def hide_string_chars(s):

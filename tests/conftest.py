@@ -19,7 +19,7 @@ from now.data_loading.elasticsearch import ElasticsearchConnector
 from now.deployment.deployment import cmd
 from now.executor.indexer.elastic.elastic_indexer import wait_until_cluster_is_up
 from now.executor.preprocessor import NOWPreprocessor
-from now.utils import get_credentials_from_aws_session
+from now.utils import get_aws_profile
 
 
 @pytest.fixture()
@@ -170,14 +170,16 @@ def setup_service_running(es_connection_params) -> None:
 @pytest.fixture
 def get_aws_info():
     dataset_path = os.environ.get('S3_SCHEMA_FOLDER_PATH')
-    (
-        aws_access_key_id,
-        aws_secret_access_key,
-        region,
-    ) = get_credentials_from_aws_session()
+    aws_profile = get_aws_profile()
+    region = aws_profile.region
     if not region:
         region = 'eu-west-1'
-    return dataset_path, aws_access_key_id, aws_secret_access_key, region
+    return (
+        dataset_path,
+        aws_profile.aws_access_key_id,
+        aws_profile.aws_secret_access_key,
+        region,
+    )
 
 
 @pytest.fixture
