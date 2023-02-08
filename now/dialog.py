@@ -44,14 +44,14 @@ def configure_option(
                 if ":" in user_selection:
                     option_name, option_values = user_selection.split(":")
                     kwargs[f"{option_name}_model"] = []
+                    if (
+                        not option_name
+                        in user_input.index_field_candidates_to_modalities
+                    ):
+                        raise ValueError(
+                            f"Error with --{option.name}: `{option_name}` is not an index field."
+                        )
                     for option_value in option_values.split("+"):
-                        if (
-                            not option_name
-                            in user_input.index_field_candidates_to_modalities
-                        ):
-                            raise ValueError(
-                                f"Error with --{option.name}: {option_name} is not in an index."
-                            )
                         model_selection = [
                             model
                             for model in MODALITY_TO_MODELS[
@@ -75,8 +75,8 @@ def configure_option(
                                 ]
                             ]
                             raise ValueError(
-                                f"Error with --{option.name}: {option_value} is not available. "
-                                f"for index {option_name}. Choices are: {','.join(model_choices)}."
+                                f"Error with --{option.name}: `{option_value}` is not available. "
+                                f"for index field `{option_name}`. Choices are: {','. join(model_choices)}."
                             )
 
         for result in option.dynamic_func(user_input):
