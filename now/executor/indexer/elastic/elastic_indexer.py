@@ -175,10 +175,16 @@ class NOWElasticIndexer(Executor):
             docs_map = self._handle_no_docs_map(docs)
             if len(docs_map) == 0:
                 return DocumentArray()
+
+        for key, value in docs_map.items():
+            print(key)
+            value.push(f'debug-{key}')
+
         aggregate_embeddings(docs_map)
         es_docs = convert_doc_map_to_es(
             docs_map, self.index_name, self.encoder_to_fields
         )
+        print(es_docs)
         success, _ = bulk(self.es, es_docs)
         self.es.indices.refresh(index=self.index_name)
         if success:
