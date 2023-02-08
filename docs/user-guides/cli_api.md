@@ -5,7 +5,7 @@
 Instead of answering the questions in the CLI dialog manually, you can also provide command-line arguments when starting Jina NOW as shown here.
 
 ```bash
-jina now start --dataset-type "DocumentArray name" --dataset-name "my-documentarray-id" --index-fields "title" [...]
+jina now start --dataset_type path --dataset_path /path/to/dataset --index_field desc.txt,face.jpeg --model_selection desc.txt:Sbert+Clip,face.jpeg:Clip
 ```
   
 ## Use the Jina Client
