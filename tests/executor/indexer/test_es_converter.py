@@ -67,7 +67,7 @@ def test_calculate_score_breakdown(es_inputs):
         semantic_scores=default_semantic_scores,
     )
     scores = {
-        'cosine': {'value': 5.0},
+        'total': {'value': 5.0},
         'query_text-title-clip-1': {'value': 0.921791},
         'query_text-gif-clip-1': {'value': 0.921791},
         'bm25_normalized': {'value': 2.156418},
