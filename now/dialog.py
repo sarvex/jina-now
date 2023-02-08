@@ -66,9 +66,17 @@ def configure_option(
                                 model_selection[0]["value"]
                             )
                         else:
+                            model_choices = [
+                                model["name"]
+                                for model in MODALITY_TO_MODELS[
+                                    user_input.index_field_candidates_to_modalities[
+                                        option_name
+                                    ]
+                                ]
+                            ]
                             raise ValueError(
                                 f"Error with --{option.name}: {option_value} is not available. "
-                                f"for index {option_name}."
+                                f"for index {option_name}. Choices are: {','.join(model_choices)}."
                             )
 
         for result in option.dynamic_func(user_input):
