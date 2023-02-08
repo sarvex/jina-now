@@ -347,7 +347,7 @@ def _list_files_from_s3_bucket(
     def get_prefixes(max_levels=len(structure_identifier)):
         level = 1
         list_prefixes = get_level_order_prefixes(folder_prefix, level)
-        while level < max_levels - 1 and len(list_prefixes) < NUM_FOLDERS_THRESHOLD:
+        while level < max_levels - 2 and len(list_prefixes) < NUM_FOLDERS_THRESHOLD:
             level += 1
             list_prefixes = get_level_order_prefixes(folder_prefix, level)
         return list_prefixes
