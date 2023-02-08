@@ -96,7 +96,11 @@ if __name__ == '__main__':
     os.environ['JINA_AUTH_TOKEN'] = os.environ.get('WOLF_TOKEN')
     os.environ['NOW_EXAMPLES'] = 'True'
     os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
-    deployment_type = os.environ.get('DEPLOYMENT_TYPE', 'partial').lower()
+    deployment_type = os.environ.get('DEPLOYMENT_TYPE', None)
+    if not deployment_type:
+        deployment_type = 'partial'
+    deployment_type = deployment_type.lower()
+    print(f'Deployment type: {deployment_type}')
     index = int(sys.argv[-1])
     # get all the available demo datasets list
     dataset_list = []
