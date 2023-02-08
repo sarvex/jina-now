@@ -3,7 +3,7 @@ import subprocess
 import traceback
 from collections import namedtuple
 from time import sleep
-from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 
 import boto3
 from docarray import Document, DocumentArray
@@ -51,11 +51,10 @@ class NOWElasticIndexer(Executor):
         limit: int = 10,
         max_values_per_tag: int = 10,
         es_mapping: Dict = None,
-        hosts: Union[
-            str, List[Union[str, Mapping[str, Union[str, int]]]], None
-        ] = 'http://localhost:9200',
+        hosts: str = 'http://localhost:9200',
+        api_key: str = None,
+        index_name: str = 'now_index',
         es_config: Optional[Dict[str, Any]] = None,
-        index_name: str = 'now-index',
         *args,
         **kwargs,
     ):
@@ -77,7 +76,10 @@ class NOWElasticIndexer(Executor):
         self.metric = metric
         self.limit = limit
         self.max_values_per_tag = max_values_per_tag
+        print(f'hosts: {hosts}')
+        print(f'index_name: {index_name}')
         self.hosts = hosts
+        self.api_key = api_key
         self.index_name = index_name
         self.query_to_curated_ids = {}
         self.doc_id_tags = {}
@@ -88,12 +90,17 @@ class NOWElasticIndexer(Executor):
         }
         self.es_config = es_config or {'verify_certs': False}
         self.es_mapping = es_mapping or self.generate_es_mapping()
-        self.setup_elastic_server()
-        self.es = Elasticsearch(hosts=self.hosts, **self.es_config, ssl_show_warn=False)
-        wait_until_cluster_is_up(self.es, self.hosts)
-
+        self.es = Elasticsearch(
+            hosts=self.hosts,
+            api_key=self.api_key,
+            **self.es_config,
+            ssl_show_warn=False,
+        )
+        self.do_health_check(self.es)
         if not self.es.indices.exists(index=self.index_name):
             self.es.indices.create(index=self.index_name, mappings=self.es_mapping)
+        else:
+            self.es.indices.put_mapping(index=self.index_name, body=self.es_mapping)
 
     def setup_elastic_server(self):
         try:
@@ -110,6 +117,16 @@ class NOWElasticIndexer(Executor):
             self.logger.info(
                 'Elastic started outside of docker, assume cluster started already.'
             )
+
+    @staticmethod
+    def do_health_check(es):
+        """Checks that Elasticsearch is up and running"""
+        while True:
+            try:
+                es.cluster.health(wait_for_status='yellow')
+                break
+            except Exception:
+                sleep(1)
 
     @staticmethod
     def configure_elastic(workspace, destination_path):
