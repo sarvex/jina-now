@@ -11,13 +11,19 @@ from now.constants import DEMO_NS, MODALITY_TO_MODELS, DatasetTypes
 from now.demo_data import AVAILABLE_DATASETS
 from now.deployment.deployment import list_all_wolf, terminate_wolf
 from now.now_dataclasses import UserInput
+from now.utils import get_credentials_from_aws_session
 
 
 def upsert_cname_record(source, target):
+    (
+        aws_access_key_id,
+        aws_secret_access_key,
+        region,
+    ) = get_credentials_from_aws_session()
     aws_client = boto3.client(
         'route53',
-        aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
-        aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'],
+        aws_access_key_id=aws_access_key_id,
+        aws_secret_access_key=aws_secret_access_key,
     )
     try:
         aws_client.change_resource_record_sets(
