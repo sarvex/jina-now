@@ -1,3 +1,4 @@
+import os
 import subprocess
 import traceback
 from collections import namedtuple
@@ -95,14 +96,28 @@ class NOWElasticIndexer(Executor):
             self.es.indices.create(index=self.index_name, mappings=self.es_mapping)
 
     def setup_elastic_server(self):
-        # volume is not persisted at the moment.
         try:
-            subprocess.Popen(['./start-elastic-search-cluster.sh'])
-            self.logger.info('elastic server started')
+            if "K8S_NAMESPACE_NAME" in os.environ:
+                self.configure_elastic(
+                    f'/data/{os.environ["K8S_NAMESPACE_NAME"]}',
+                    '/usr/share/elasticsearch/config/elasticsearch.yml',
+                )
+                subprocess.Popen(['./start-elastic-search-cluster.sh'])
+                self.logger.info('elastic server started')
         except FileNotFoundError:
             self.logger.info(
                 'Elastic started outside of docker, assume cluster started already.'
             )
+
+    @staticmethod
+    def configure_elastic(workspace, destination_path):
+        config_path = os.path.join(os.path.dirname(__file__), 'elasticsearch.yml')
+        with open(config_path, 'r') as config_file_handler, open(
+            destination_path, 'w'
+        ) as destination_file_handler:
+            for line in config_file_handler.readlines():
+                line = line.replace("{workspace}", workspace)
+                destination_file_handler.write(line)
 
     def generate_es_mapping(self) -> Dict:
         """Creates Elasticsearch mapping for the defined document fields."""
@@ -430,17 +445,16 @@ class NOWElasticIndexer(Executor):
         }
         aggs = {'aggs': {}, 'size': 0}
         for tag, map in tag_categories.items():
-            if map['type'] == 'text':
-                aggs['aggs'][tag] = {
-                    'terms': {'field': f'tags.{tag}.keyword', 'size': 100}
-                }
-            elif map['type'] == 'keyword':
-                aggs['aggs'][tag] = {'terms': {'field': f'tags.{tag}', 'size': 100}}
-            elif map['type'] == 'float':
-                # aggs['aggs'][f'min_{tag}'] = {'min': {'field': f'tags.{tag}'}}
-                # aggs['aggs'][f'max_{tag}'] = {'max': {'field': f'tags.{tag}'}}
-                # aggs['aggs'][f'avg_{tag}'] = {'avg': {'field': f'tags.{tag}'}}
-                aggs['aggs'][tag] = {'terms': {'field': f'tags.{tag}', 'size': 100}}
+            for tag_type, extension in [
+                ['text', '.keyword'],
+                ['keyword', ''],
+                ['float', ''],
+            ]:
+                if map['type'] == tag_type:
+                    aggs['aggs'][tag] = {
+                        'terms': {'field': f'tags.{tag}{extension}', 'size': 100}
+                    }
+
         try:
             if not aggs['aggs']:
                 return
@@ -452,6 +466,49 @@ class NOWElasticIndexer(Executor):
             self.doc_id_tags = updated_tags
         except Exception:
             self.logger.info(traceback.format_exc())
+
+    @secure_request(on='/get_encoder_to_fields', level=SecurityLevel.USER)
+    def get_encoder_to_fields(self, **kwargs) -> DocumentArray:
+        """
+        Returns a DocumentArray with one Document, which has following dictionaries in its tags:
+         - dictionary of encoder names to the dataclass fields they encode and their modality, e.g.:
+            encoder_to_fields_and_modalities = {
+                'encoderclip': {
+                    'text_0': 'text',
+                    'image_0': 'image',
+                },
+                'encodersbert': {
+                    'image_0': 'text',
+                },
+            }
+         - dictionary of dataclass fields to their field names, e.g.:
+            field_names_to_dataclass_fields = {
+                'title': 'text_0',
+                'picture': 'image_0',
+            }
+        """
+        dataclass_fields_modalities_dict = {
+            self.user_input.field_names_to_dataclass_fields[field]: modality
+            for field, modality in self.user_input.index_field_candidates_to_modalities.items()
+            if field in self.user_input.index_fields
+        }  # should be a dict of selected index fields and their modalities
+        encoder_to_fields_and_modalities = {}
+        for encoder in self.encoder_to_fields.keys():
+            encoder_to_fields_and_modalities[encoder] = {
+                field: dataclass_fields_modalities_dict[field]
+                for field in self.encoder_to_fields[encoder]
+            }
+        return DocumentArray(
+            [
+                Document(
+                    text='index_fields',
+                    tags={
+                        'index_fields_dict': encoder_to_fields_and_modalities,
+                        'field_names_to_dataclass_fields': self.user_input.field_names_to_dataclass_fields,
+                    },
+                )
+            ]
+        )
 
 
 def aggregate_embeddings(docs_map: Dict[str, DocumentArray]):

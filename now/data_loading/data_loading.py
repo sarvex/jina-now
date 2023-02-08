@@ -34,7 +34,6 @@ def load_data(
         print_callback('⬇  Pull DocumentArray dataset')
         da = _pull_docarray(user_input.dataset_name, user_input.admin_name)
         da = _add_tags_to_da(da, user_input)
-        da = _get_da_with_index_fields(da, user_input)
     elif user_input.dataset_type == DatasetTypes.PATH:
         print_callback('💿  Loading files from disk')
         da = _load_from_disk(user_input=user_input, data_class=data_class)
@@ -45,7 +44,7 @@ def load_data(
         print_callback('🔍  Loading data from Elasticsearch')
         da = _extract_es_data(user_input=user_input, data_class=data_class)
     da = set_modality_da(da)
-    add_metadata_to_da(da, user_input)
+    _add_metadata_to_da(da, user_input)
     if da is None:
         raise ValueError(
             f'Could not load DocumentArray dataset. Please check your configuration: {user_input}.'
@@ -55,20 +54,7 @@ def load_data(
     return da
 
 
-def _get_da_with_index_fields(da: DocumentArray, user_input: UserInput):
-    for d in da:
-        d.chunks = [getattr(d, field) for field in user_input.index_fields]
-        # keep only the index fields in metadata
-        d._metadata['multi_modal_schema'] = {
-            k: d._metadata['multi_modal_schema'][k] for k in user_input.index_fields
-        }
-        # Update the positions accordingly to access the chunks
-        for i, k in enumerate(user_input.index_fields):
-            d._metadata['multi_modal_schema'][k]['position'] = int(i)
-    return da
-
-
-def add_metadata_to_da(da, user_input):
+def _add_metadata_to_da(da, user_input):
     dataclass_fields_to_field_names = {
         v: k for k, v in user_input.field_names_to_dataclass_fields.items()
     }
@@ -80,24 +66,36 @@ def add_metadata_to_da(da, user_input):
 
 
 def _add_tags_to_da(da: DocumentArray, user_input: UserInput):
+    """Add tags to da, remove non-index chunks, and update multi modal schema."""
     if not da:
         return da
 
-    non_index_fields = list(
-        set(da[0]._metadata['multi_modal_schema'].keys()) - set(user_input.index_fields)
-    )
-    for d in da:
-        for field in non_index_fields:
-            non_index_field_doc = getattr(d, field)
-            if non_index_field_doc.blob or non_index_field_doc.tensor is not None:
-                continue
-            d.tags.update(
-                {
-                    field: non_index_field_doc.content
-                    if isinstance(non_index_field_doc.content, str)
-                    else non_index_field_doc.uri
-                }
-            )
+    for doc in da:
+        filtered_chunks = []
+        for field in doc._metadata['multi_modal_schema'].keys():
+            field_doc = getattr(doc, field)
+            if field not in user_input.index_fields:
+                if field_doc.blob or field_doc.tensor is not None:
+                    continue
+                doc.tags.update(
+                    {
+                        field: field_doc.content
+                        if isinstance(field_doc.content, str)
+                        else field_doc.uri
+                    }
+                )
+            else:
+                filtered_chunks.append(field_doc)
+        doc.chunks = filtered_chunks
+        # keep only the index fields in metadata
+        doc._metadata['multi_modal_schema'] = {
+            field: doc._metadata['multi_modal_schema'][field]
+            for field in user_input.index_fields
+        }
+        # Update the positions accordingly to access the chunks
+        for position, field in enumerate(user_input.index_fields):
+            doc._metadata['multi_modal_schema'][field]['position'] = int(position)
+
     return da
 
 
@@ -152,7 +150,6 @@ def _load_from_disk(user_input: UserInput, data_class: Type) -> DocumentArray:
             da = DocumentArray.load_binary(dataset_path)
             if is_multimodal(da[0]):
                 da = _add_tags_to_da(da, user_input)
-                da = _get_da_with_index_fields(da, user_input)
                 return da
             else:
                 raise ValueError(
@@ -169,7 +166,7 @@ def _load_from_disk(user_input: UserInput, data_class: Type) -> DocumentArray:
             spinner.ok('🏭')
             docs = from_files_local(
                 dataset_path,
-                user_input.index_fields + user_input.filter_fields,
+                user_input.index_fields,
                 user_input.field_names_to_dataclass_fields,
                 data_class,
             )
@@ -248,28 +245,37 @@ def create_docs_from_subdirectories(
         folder_files[path_to_last_folder].append(file)
     for folder, files in folder_files.items():
         kwargs = {}
-        dict_tags = {}
-        for file in files:
-            file, file_full_path = _extract_file_and_full_file_path(
-                file, path, is_s3_dataset
-            )
+        tags_loaded_local = {}
+        _s3_uri_for_tags = ''
+        file_info = [
+            _extract_file_and_full_file_path(file, path, is_s3_dataset)
+            for file in files
+        ]
+        # first store index fields given as files
+        for file, file_full_path in file_info:
             if file in fields:
                 kwargs[field_names_to_dataclass_fields[file]] = file_full_path
-                continue
+        # next check json files that can also contain index fields, and carry on data
+        for file, file_full_path in file_info:
             if file.endswith('.json'):
                 if is_s3_dataset:
+                    _s3_uri_for_tags = file_full_path
                     for field in data_class.__annotations__.keys():
                         if field not in kwargs.keys():
                             kwargs[field] = file_full_path
-                            dict_tags['tags_uri'] = file_full_path
                 else:
                     with open(file_full_path) as f:
-                        dict_tags.update(flatten_dict(json.load(f)))
+                        json_data = flatten_dict(json.load(f))
+                    for field, value in json_data.items():
+                        if field in fields:
+                            kwargs[field_names_to_dataclass_fields[field]] = value
+                        else:
+                            tags_loaded_local[field] = value
         doc = Document(data_class(**kwargs))
-        if is_s3_dataset:
-            doc._metadata['s3_tags'] = dict_tags
-        else:
-            doc.tags.update(dict_tags)
+        if _s3_uri_for_tags:
+            doc._metadata['_s3_uri_for_tags'] = _s3_uri_for_tags
+        elif tags_loaded_local:
+            doc.tags.update(tags_loaded_local)
         docs.append(doc)
     return docs
 
@@ -307,6 +313,15 @@ def create_docs_from_files(
             kwargs[field_names_to_dataclass_fields[fields[0]]] = file_full_path
             docs.append(Document(data_class(**kwargs)))
     return docs
+
+
+def _list_s3_file_paths(bucket, folder_prefix):
+    objects = list(bucket.objects.filter(Prefix=folder_prefix))
+    return [
+        obj.key
+        for obj in objects
+        if not obj.key.endswith('/') and not obj.key.split('/')[-1].startswith('.')
+    ]
 
 
 def _list_files_from_s3_bucket(
@@ -376,6 +391,7 @@ def _list_files_from_s3_bucket(
         for obj in objects
         if not obj.key.endswith('/') and not obj.key.split('/')[-1].startswith('.')
     ]
+    file_paths = _list_s3_file_paths(bucket, folder_prefix)
 
     with yaspin_extended(
         sigmap=sigmap, text="Listing files from S3 bucket ...", color="green"
@@ -384,7 +400,7 @@ def _list_files_from_s3_bucket(
         if folder_structure == 'sub_folders':
             docs = create_docs_from_subdirectories(
                 file_paths,
-                user_input.index_fields + user_input.filter_fields,
+                user_input.index_fields,
                 user_input.field_names_to_dataclass_fields,
                 data_class,
                 user_input.dataset_path,
@@ -393,7 +409,7 @@ def _list_files_from_s3_bucket(
         else:
             docs = create_docs_from_files(
                 file_paths,
-                user_input.index_fields + user_input.filter_fields,
+                user_input.index_fields,
                 user_input.field_names_to_dataclass_fields,
                 data_class,
                 user_input.dataset_path,

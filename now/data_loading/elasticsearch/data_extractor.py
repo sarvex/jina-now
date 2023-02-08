@@ -89,15 +89,14 @@ class ElasticsearchExtractor:
 
         Creates a document using the dataclass specified in the user input.
         """
-        kwargs = {}
+        kwargs, tags = {}, {}
         for field_name, field_value in es_document.items():
-            if (
-                field_name
-                in self._user_input.index_fields + self._user_input.filter_fields
-            ):
+            if field_name in self._user_input.index_fields:
                 kwargs[
                     self._user_input.field_names_to_dataclass_fields[field_name]
                 ] = field_value
-                continue
-
-        return Document(self._data_class(**kwargs))
+            else:
+                tags[field_name] = field_value
+        doc = Document(self._data_class(**kwargs))
+        doc.tags = tags
+        return doc

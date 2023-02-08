@@ -1,5 +1,4 @@
 import json
-import os
 from argparse import Namespace
 
 import pytest
@@ -18,18 +17,17 @@ from now.constants import DatasetTypes, Models
 @pytest.mark.timeout(60 * 10)
 def test_end_to_end(
     cleanup,
-    start_bff,
-    resources_folder_path,
+    pulled_local_folder_data,
 ):
     kwargs = {
         'now': 'start',
         'flow_name': 'nowapi',
         'dataset_type': DatasetTypes.PATH,
         'admin_name': 'team-now',
-        'dataset_path': os.path.join(resources_folder_path, 'subdirectories'),
-        'index_fields': ['a.jpg', 'test.txt'],
-        'filter_fields': ['color'],
-        'a.jpg_model': [Models.CLIP_MODEL],
+        'dataset_path': pulled_local_folder_data,
+        'index_fields': ['image.png', 'test.txt'],
+        'filter_fields': ['title'],
+        'image.png_model': [Models.CLIP_MODEL],
         'test.txt_model': [Models.CLIP_MODEL, Models.SBERT_MODEL],
         'secured': True,
         'api_key': None,
@@ -48,11 +46,9 @@ def test_end_to_end(
         response=response,
         search_modality='text',
     )
-    host = response.get('host')
     request_body = get_search_request_body(
         kwargs=kwargs,
-        host=host,
         search_modality='text',
     )
-    suggest_url = f'http://localhost:8080/api/v1/search-app/suggestion'
+    suggest_url = f'{response["host"]}/api/v1/search-app/suggestion'
     assert_suggest(suggest_url, request_body)

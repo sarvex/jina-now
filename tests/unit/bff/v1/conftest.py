@@ -2,7 +2,8 @@ import base64
 import os
 
 import pytest
-from docarray import Document, DocumentArray
+from docarray import Document, DocumentArray, dataclass
+from docarray.typing import Text
 
 
 @pytest.fixture
@@ -24,14 +25,18 @@ def base64_image_string(resources_folder_path: str) -> str:
 @pytest.fixture
 def sample_search_response_image() -> DocumentArray:
     result = DocumentArray([Document()])
-    matches = DocumentArray([Document(uri='match')])
+    matches = DocumentArray([Document(text='match')])
     result[0].matches = matches
     return result
 
 
 @pytest.fixture
 def sample_search_response_text() -> DocumentArray:
+    @dataclass
+    class MMDoc:
+        title: Text
+
     result = DocumentArray([Document()])
-    matches = DocumentArray([Document(text='match')])
+    matches = DocumentArray([Document(MMDoc(title='match'))])
     result[0].matches = matches
     return result

@@ -2,7 +2,8 @@ import typing
 from collections import defaultdict
 from typing import Dict, List
 
-from docarray import dataclass, field
+from docarray import Document, dataclass, field
+from docarray.typing import Image, Video
 
 from now.constants import AVAILABLE_MODALITIES_FOR_SEARCH, DatasetTypes
 from now.now_dataclasses import UserInput
@@ -28,15 +29,13 @@ def create_dataclass(
     user_input: UserInput = None,
 ):
     """
-    Create a dataclass from the selected index and filter fields
+    Create a dataclass from the selected index fields
     and their corresponding modalities or directly from the user input which should
     contain that information. If both are provided, the user input will be used.
 
     for example:
     the index fields modalities can be:
     {'test.txt': Text , 'image.png': Image}
-    the filter fields modalities can be:
-    {'price': float, 'description': str}
 
     the dataclass will be:
 
@@ -56,26 +55,20 @@ def create_dataclass(
     """
 
     if user_input:
-        fields_modalities = {}
-        fields_modalities.update(user_input.index_field_candidates_to_modalities)
-        update_dict_with_no_overwrite(
-            fields_modalities, user_input.filter_field_candidates_to_modalities
-        )
-        fields = user_input.index_fields + user_input.filter_fields
+        fields_modalities = user_input.index_field_candidates_to_modalities
         dataset_type = user_input.dataset_type
+        fields = user_input.index_fields
 
-    file_mapping_to_dataclass_fields = create_dataclass_fields_file_mappings(
+    field_names_to_dataclass_fields = create_dataclass_fields_file_mappings(
         fields,
         fields_modalities,
     )
-    field_names_to_dataclass_fields = file_mapping_to_dataclass_fields
     (all_annotations, all_class_attributes,) = create_annotations_and_class_attributes(
         fields,
         fields_modalities,
-        file_mapping_to_dataclass_fields,
+        field_names_to_dataclass_fields,
         dataset_type,
     )
-
     mm_doc = type("MMDoc", (object,), all_class_attributes)
     setattr(mm_doc, '__annotations__', all_annotations)
     mm_doc = dataclass(mm_doc)
@@ -101,7 +94,9 @@ def create_annotations_and_class_attributes(
     """
     annotations = {}
     class_attributes = {}
-    S3Object, my_setter, my_getter = create_s3_type()
+    S3Object, s3_setter, s3_getter = create_s3_type()
+    ImageType, image_setter, image_getter = create_blob_type('Image')
+    VideoType, video_setter, video_getter = create_blob_type('Video')
 
     for f in fields:
         if not isinstance(f, typing.Hashable):
@@ -109,11 +104,20 @@ def create_annotations_and_class_attributes(
         if dataset_type == DatasetTypes.S3_BUCKET:
             annotations[field_names_to_dataclass_fields[f]] = S3Object
             class_attributes[field_names_to_dataclass_fields[f]] = field(
-                setter=my_setter, getter=my_getter, default=''
+                setter=s3_setter, getter=s3_getter, default=''
             )
         else:
             annotations[field_names_to_dataclass_fields[f]] = fields_modalities[f]
-            class_attributes[field_names_to_dataclass_fields[f]] = None
+            if fields_modalities[f] == Image:
+                class_attributes[field_names_to_dataclass_fields[f]] = field(
+                    setter=image_setter, getter=image_getter, default=''
+                )
+            elif fields_modalities[f] == Video:
+                class_attributes[field_names_to_dataclass_fields[f]] = field(
+                    setter=video_setter, getter=video_getter, default=''
+                )
+            else:
+                class_attributes[field_names_to_dataclass_fields[f]] = None
     return annotations, class_attributes
 
 
@@ -139,6 +143,24 @@ def create_s3_type():
     return S3Object, my_setter, my_getter
 
 
+def create_blob_type(modality: str):
+    """Creates a new type which loads into blob instead of tensor"""
+    from typing import TypeVar
+
+    from docarray import Document
+
+    BlobObject = TypeVar(modality, bound=str)
+
+    def my_setter(value) -> 'Document':
+        """Custom setter for the BlobObject type that loads the content from the URI"""
+        return Document(uri=value).load_uri_to_blob(timeout=10)
+
+    def my_getter(doc: 'Document'):
+        return doc.uri
+
+    return BlobObject, my_setter, my_getter
+
+
 def create_dataclass_fields_file_mappings(fields: List, fields_modalities: Dict):
     """
     Create a mapping between the dataclass fields and the file fields
@@ -150,7 +172,6 @@ def create_dataclass_fields_file_mappings(fields: List, fields_modalities: Dict)
     modalities_count = defaultdict(int)
 
     file_mapping_to_dataclass_fields = {}
-    filter_count = 0
     for f in fields:
         if not isinstance(f, typing.Hashable):
             continue
@@ -160,7 +181,4 @@ def create_dataclass_fields_file_mappings(fields: List, fields_modalities: Dict)
                 f
             ] = f'{docarray_typing_to_modality_string(field_modality)}_{modalities_count[field_modality]}'
             modalities_count[fields_modalities[f]] += 1
-        else:
-            file_mapping_to_dataclass_fields[f] = f'filter_{filter_count}'
-            filter_count += 1
     return file_mapping_to_dataclass_fields

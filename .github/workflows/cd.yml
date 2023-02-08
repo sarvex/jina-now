@@ -71,34 +71,3 @@ jobs:
           TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
           JINA_SLACK_WEBHOOK: ${{ secrets.JINA_SLACK_WEBHOOK }}
-
-  update-deployment-if-required:
-    runs-on: ubuntu-latest
-    needs: [core-test]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Check if deployment has changed
-        uses: dorny/paths-filter@v2
-        id: check_has_deployment_changed
-        with:
-          filters: |
-            has_deployment_changed:
-            - 'deployment/**'
-      - name: replace now commit hash in Dockerfile
-        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
-        shell: bash
-        run: sed -i 's/JINA_NOW_COMMIT_SHA/${{ github.sha }}/g' deployment/bff/Dockerfile
-      - name: Zip deployment
-        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
-        run: zip -r deploy.zip deployment docker-compose.yml
-      - name: Deploy to AWS Elastic Beanstalk
-        if: steps.check_has_deployment_changed.outputs.has_deployment_changed == 'true'
-        uses: einaregilsson/beanstalk-deploy@v20
-        with:
-          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          application_name: now-bff-playground
-          environment_name: Nowbffplayground-env
-          version_label: ${{ github.sha }}
-          region: "eu-west-1"
-          deployment_package: deploy.zip

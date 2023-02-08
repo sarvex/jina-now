@@ -3,14 +3,14 @@ import logging
 import os
 import tempfile
 import time
-from multiprocessing import Process
 
 import hubble
 import pytest
 from pytest_mock import MockerFixture
 
-from deployment.bff.app.app import run_server
+from now.data_loading.data_loading import _list_s3_file_paths
 from now.deployment.deployment import terminate_wolf
+from now.executor.preprocessor.s3_download import get_bucket
 from now.utils import get_flow_id
 
 logging.basicConfig(level=logging.DEBUG)
@@ -72,10 +72,20 @@ def cleanup():
         print(50 * '#')
 
 
-@pytest.fixture()
-def start_bff():
-    p1 = Process(target=run_server, args=(8080,))
-    p1.daemon = True
-    p1.start()
-    yield
-    p1.terminate()
+@pytest.fixture(scope='session')
+def pulled_local_folder_data(tmpdir_factory):
+    bucket = get_bucket(
+        uri=os.environ.get('S3_CUSTOM_MM_DATA_PATH'),
+        aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
+        aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
+        region_name='eu-west-1',
+    )
+    folder_prefix = '/'.join(os.environ.get('S3_CUSTOM_MM_DATA_PATH').split('/')[3:])
+    file_paths = _list_s3_file_paths(bucket, folder_prefix)
+    temp_dir = str(tmpdir_factory.mktemp('local_folder_data'))
+    for path in file_paths:
+        local_path = os.path.join(temp_dir, path)
+        if not os.path.exists(os.path.dirname(local_path)):
+            os.makedirs(os.path.dirname(local_path))
+        bucket.download_file(path, local_path)
+    return os.path.join(temp_dir, folder_prefix)

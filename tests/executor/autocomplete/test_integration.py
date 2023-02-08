@@ -2,11 +2,17 @@ from docarray import Document, DocumentArray
 from jina import Flow
 
 from now.executor.autocomplete.executor import NOWAutoCompleteExecutor2
+from now.executor.gateway import NOWGateway
 
 
 def test_autocomplete(tmpdir, mm_dataclass):
-
-    with Flow().add(uses=NOWAutoCompleteExecutor2, workspace=tmpdir) as f:
+    with Flow().config_gateway(
+        uses=NOWGateway,
+        protocol=['http'],
+        port=[8081],
+        env={'JINA_LOG_LEVEL': 'DEBUG'},
+        uses_with={'with_playground': False},
+    ).add(uses=NOWAutoCompleteExecutor2, workspace=tmpdir) as f:
         f.post(
             on='/search',
             inputs=DocumentArray(
