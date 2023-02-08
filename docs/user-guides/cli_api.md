@@ -89,7 +89,8 @@ curl -X "POST" \
               {'name': 'query_image', 'value': '<insert_image_uri>', 'modality': 'image'},
            ],
   'limit': '5',
-  'filters': {}
+  'filters': {},
+  'get_score_breakdown': true,
 }"
 ```
 
@@ -116,7 +117,11 @@ Optional parameters:
         for both fields, and the weight this score should have in the overall calculation, ranging between 0 and 1.
         You can also add a bm25 score, replacing the encoding model with the string `'bm25'` as shown in the example.
     - example: `[['query_text', 'title', 'encodersbert', 1.0], ['query_text', 'description', 'bm25', 0.5]]`
-  
+  - **get_score_breakdown**: boolean indicating whether to return the score breakdown for each result document. Scores 
+        are returned as a dictionary with the key being the name of the score 
+        (example: `'query_text-title-encodersbert-1.0'`) and the value being a `docarray.score.NamedScore`.
+    - example: `true`
+
 ## Cleanup
 
 ```bash
