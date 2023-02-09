@@ -39,6 +39,7 @@ def download_laion400m(dir_name, size=100):
     """
     Download and process specified amount of subsets of laion400m data.
     Processing involves transforming a regular document into a multimodal one.
+    We only store uris, otherwise data is too big.
     Not all subsets are available, that's why we check it first.
 
     :param dir_name: name of the directory where processed subsets will be stored.
@@ -105,7 +106,8 @@ if __name__ == "__main__":
     run: python prepare_laion_data.py
 
     Script is written in a way that in case of an interruption not everything is lost.
-    You can continue by running the script again.
+    You can continue by running the script again, or remove local 'laion_data' dir and
+    run the script again to startover.
     """
     dir_name = 'laion_data'
     if not os.path.exists(dir_name):
