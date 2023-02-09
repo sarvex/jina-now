@@ -139,6 +139,10 @@ def calculate_score_breakdown(
 
     :return: List of integers representing the score breakdown.
     """
+    retrieved_doc.scores['total'] = retrieved_doc.scores.pop(
+        metric
+    )  # save the final script score as total
+    add_bm25 = False
     for (
         query_field,
         document_field,
@@ -146,6 +150,7 @@ def calculate_score_breakdown(
         linear_weight,
     ) in semantic_scores:
         if encoder == 'bm25':
+            add_bm25 = True
             continue
         q_emb = query_doc.tags['embeddings'][f'{query_field}-{encoder}']
         d_emb = retrieved_doc.tags['embeddings'][
@@ -168,18 +173,17 @@ def calculate_score_breakdown(
             )
         ] = NamedScore(value=round(score, 6))
 
-    # calculate bm25 score
-    vector_total = sum(
-        [v.value for k, v in retrieved_doc.scores.items() if k != metric]
-    )
-    overall_score = retrieved_doc.scores[metric].value
-    bm25_normalized = overall_score - vector_total
-    bm25_raw = (bm25_normalized - 1) * 10
-
-    retrieved_doc.scores['bm25_normalized'] = NamedScore(
-        value=round(bm25_normalized, 6)
-    )
-    retrieved_doc.scores['bm25_raw'] = NamedScore(value=round(bm25_raw, 6))
+    if add_bm25:
+        # calculate bm25 score
+        vector_total = sum(
+            [v.value for k, v in retrieved_doc.scores.items() if k != 'total']
+        )
+        bm25_normalized = retrieved_doc.scores['total'].value - vector_total - 1
+        bm25_raw = bm25_normalized * 10
+        retrieved_doc.scores['bm25_normalized'] = NamedScore(
+            value=round(bm25_normalized, 6)
+        )
+        retrieved_doc.scores['bm25_raw'] = NamedScore(value=round(bm25_raw, 6))
 
     # remove embeddings from document
     retrieved_doc.tags.pop('embeddings', None)

@@ -6,7 +6,8 @@ import signal
 import sys
 from collections.abc import MutableMapping
 from dataclasses import dataclass
-from typing import Dict, List, Optional, TypeVar, Union
+from inspect import stack
+from typing import Any, Dict, List, Optional, TypeVar, Union
 
 import boto3
 import docarray
@@ -173,6 +174,15 @@ def prompt_value(
     if choices is not None:
         qs['choices'] = choices
     return maybe_prompt_user(qs, name, **kwargs)
+
+
+def debug(msg: Any):
+    """
+    Prints a message along with the details of the caller, ie filename and line number.
+    """
+    msg = str(msg) if msg is not None else ''
+    frameinfo = stack()[1]
+    print(f"{frameinfo.filename}:{frameinfo.lineno}: {msg}")
 
 
 def flatten_dict(d, parent_key='', sep='__'):
