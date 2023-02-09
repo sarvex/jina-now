@@ -133,6 +133,7 @@ def multimodal_search(
         'semantic_scores': list(
             st.session_state.semantic_scores.values()
         ),  # list of lists containing semantic scores defined in playground
+        'get_score_breakdown': st.session_state.show_score_breakdown,
     }
     if endpoint == 'suggestion':
         data['text'] = query_field_values_modalities[0]['value']
