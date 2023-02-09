@@ -15,6 +15,7 @@ from now.executor.abstract.auth import (
     secure_request,
 )
 from now.executor.preprocessor.s3_download import maybe_download_from_s3
+from now.utils import debug
 
 Executor = get_auth_executor_class()
 
@@ -80,7 +81,9 @@ class NOWPreprocessor(Executor):
                     max_workers=self.max_workers,
                 )
 
-            docs = self.app.preprocess(docs)
+            debug("Start monitoring")
+            with self.monitor('processing_seconds', 'Time preprocessing'):
+                docs = self.app.preprocess(docs)
 
             # As _maybe_download_from_s3 moves S3 URI to tags['uri'], need to move it back for post-processor & accurate
             # results.
