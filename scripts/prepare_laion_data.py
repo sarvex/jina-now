@@ -30,6 +30,7 @@ def process_docs(docs):
         new_doc = Document(chunks=Document(uri=doc.uri))
         new_doc._metadata = root_metadata
         new_doc.chunks[0]._metadata = chunk_metadata
+        new_doc.chunks[0].modality = 'image'
         processed_docs.append(new_doc)
     return processed_docs
 
