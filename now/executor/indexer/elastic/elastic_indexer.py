@@ -73,13 +73,14 @@ class NOWElasticIndexer(Executor):
         self.metric = metric
         self.limit = limit
         self.max_values_per_tag = max_values_per_tag
-        if all(v in os.environ for v in ['ES_HOSTS', 'ES_INDEX_NAME', 'API_KEY']):
-            raise ValueError(
-                'Cannot find ES_HOSTS, ES_INDEX_NAME, API_KEY in environment variables'
+        if not all(v in os.environ for v in ['ES_HOSTS', 'ES_INDEX_NAME', 'API_KEY']):
+            self.logger.info(
+                'es-index-manager not provisioning index, setting up own cluster'
             )
-        self.hosts = os.environ['ES_HOSTS']
-        self.api_key = os.environ['API_KEY']
-        self.index_name = os.environ['ES_INDEX_NAME']
+            self.setup_elastic_server()
+        self.hosts = os.getenv('ES_HOSTS', 'http://localhost:9200')
+        self.api_key = os.getenv('API_KEY', 'TestApiKey')
+        self.index_name = os.getenv('ES_INDEX_NAME', 'now-index')
         print(f'hosts: {self.hosts}')
         print(f'index_name: {self.index_name}')
         self.query_to_curated_ids = {}

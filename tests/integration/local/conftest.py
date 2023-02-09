@@ -31,7 +31,7 @@ def get_flow(request, random_index_name, tmpdir):
     params = request.param
     docs, user_input = request.getfixturevalue(params)
     event = multiprocessing.Event()
-    flow = FlowThread(event, user_input, random_index_name, tmpdir)
+    flow = FlowThread(event, user_input, tmpdir)
     flow.start()
     while not flow.is_flow_ready():
         sleep(1)

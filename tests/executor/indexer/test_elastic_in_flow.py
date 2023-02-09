@@ -34,7 +34,6 @@ def flow(random_index_name, metas):
             self.encoder = DummyEncoder()
             self.indexer = NOWElasticIndexer(
                 hosts='http://localhost:9200',
-                index_name=random_index_name,
                 document_mappings=DOCUMENT_MAPPINGS,
                 user_input_dict={
                     'filter_fields': ['color', 'greeting'],

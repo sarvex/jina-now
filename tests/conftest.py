@@ -162,6 +162,8 @@ def setup_service_running(es_connection_params) -> None:
     )
     cmd(f'docker-compose -f {docker_compose_file} up -d')
     hosts, _ = es_connection_params
+    os.environ['ES_HOSTS'] = hosts
+    os.environ['API_KEY'] = 'TestApiKey'
     wait_until_cluster_is_up(es=Elasticsearch(hosts=hosts), hosts=hosts)
     yield
     cmd('docker-compose -f tests/resources/elastic/docker-compose.yml down')
@@ -180,6 +182,11 @@ def get_aws_info():
         aws_profile.aws_secret_access_key,
         region,
     )
+
+
+@pytest.fixture
+def random_index_name():
+    os.environ['ES_INDEX_NAME'] = f"test-index-{random.randint(0, 10000)}"
 
 
 @pytest.fixture
@@ -321,8 +328,3 @@ def setup_online_shop_db(setup_elastic_db, es_connection_params, online_shop_res
 
     # delete index
     delete_es_index(connector=es_connector, name=index_name)
-
-
-@pytest.fixture
-def random_index_name():
-    return f'test-index-{random.randint(0, 10000)}'
