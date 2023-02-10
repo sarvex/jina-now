@@ -180,6 +180,7 @@ class NOWElasticIndexer(Executor):
         es_docs = convert_doc_map_to_es(
             docs_map, self.index_name, self.encoder_to_fields
         )
+        print(es_docs)
         try:
             success, errors = bulk(self.es, es_docs)
             print(
