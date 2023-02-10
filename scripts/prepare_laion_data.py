@@ -14,7 +14,7 @@ import shutil
 
 def check_docarray_exists(dataset_name):
     response = requests.post(
-        'https://api.hubble.jina.ai/v2/rpc/docarray.getModalityInfo',
+        'https://api.hubble.jina.ai/v2/rpc/artifact.getDetail',
         cookies={
             'st': hubble.get_token(),
         },
