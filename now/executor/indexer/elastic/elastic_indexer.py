@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
 import boto3
 from docarray import Document, DocumentArray
 from elasticsearch import Elasticsearch
-from elasticsearch.helpers import bulk
+from elasticsearch.helpers import BulkIndexError, bulk
 
 from now.constants import DatasetTypes
 from now.executor.abstract.auth import (
@@ -176,17 +176,17 @@ class NOWElasticIndexer(Executor):
             if len(docs_map) == 0:
                 return DocumentArray()
 
-        for key, value in docs_map.items():
-            value.summary()
-            value[0].summary()
-            print(value[0].content)
-
         aggregate_embeddings(docs_map)
         es_docs = convert_doc_map_to_es(
             docs_map, self.index_name, self.encoder_to_fields
         )
-        print(es_docs)
-        success, _ = bulk(self.es, es_docs)
+        try:
+            success, errors = bulk(self.es, es_docs)
+            print(
+                f'Inserted {success} documents into Elasticsearch index {self.index_name}'
+            )
+        except BulkIndexError:
+            print(errors)
         self.es.indices.refresh(index=self.index_name)
         if success:
             self.logger.info(
