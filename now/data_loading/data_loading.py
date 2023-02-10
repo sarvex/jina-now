@@ -316,6 +316,15 @@ def create_docs_from_files(
 
 
 def _list_s3_file_paths(bucket, folder_prefix):
+    """
+    Lists the s3 file paths in an optimized way by finding the best level to use concurrent calls on
+    in the file structure, using a threadpool.
+
+    :param bucket: The s3 bucket used
+    :param folder_prefix: The root folder prefix
+
+    :return: A list of all s3 paths
+    """
     first_file = get_first_file_in_folder_structure_s3(bucket, folder_prefix)
     structure_identifier = first_file[len(folder_prefix) :].split('/')
     folder_structure = (
@@ -323,6 +332,15 @@ def _list_s3_file_paths(bucket, folder_prefix):
     )
 
     def get_level_order_prefixes(folder_prefix, level=1):
+        """
+        Gets the list of prefixes in a specific level. Levels are defined by the folder structure as follows:
+        level_1/level_2/.../level_n/file.ext
+
+        :param folder_prefix: The current level prefix
+        :param level: The desired level we want to get to
+
+        :return: A list of prefixes
+        """
         level_prefixes = [
             obj['Prefix']
             for obj in bucket.meta.client.list_objects(
@@ -337,17 +355,23 @@ def _list_s3_file_paths(bucket, folder_prefix):
                 prefix_list += get_level_order_prefixes(prefix, level - 1)
         return prefix_list
 
-    def get_prefixes(max_levels=len(structure_identifier)):
+    def get_prefixes(max_levels=len(structure_identifier) - 2):
+        """
+        Finds the best level for the prefixes
+
+        :param max_levels: The maximum number of level we can get to
+        :return: A list of prefixes
+        """
         level = 1
         list_prefixes = get_level_order_prefixes(folder_prefix, level)
-        while level < max_levels - 2 and len(list_prefixes) < NUM_FOLDERS_THRESHOLD:
+        prefixes_states = [list_prefixes]
+        while level < max_levels and len(list_prefixes) < NUM_FOLDERS_THRESHOLD:
             level += 1
             list_prefixes = get_level_order_prefixes(folder_prefix, level)
+            prefixes_states.append(prefixes_states)
+        if len(list_prefixes) > NUM_FOLDERS_THRESHOLD and len(prefixes_states) > 1:
+            return prefixes_states[-2]
         return list_prefixes
-
-    def list_objects(prefix):
-        result = list(bucket.objects.filter(Prefix=prefix))
-        return result
 
     objects = []
     if folder_structure == 'sub_folders':
@@ -357,7 +381,9 @@ def _list_s3_file_paths(bucket, folder_prefix):
             futures = []
             for prefix in prefixes:
                 pref = ''.join(prefix)
-                f = executor.submit(list_objects, f'{pref}')
+                f = executor.submit(
+                    lambda: list(bucket.objects.filter(Prefix=f'{pref}'))
+                )
                 futures.append(f)
             for f in futures:
                 objects += f.result()
@@ -391,7 +417,7 @@ def _list_files_from_s3_bucket(
     file_paths = _list_s3_file_paths(bucket, folder_prefix)
 
     with yaspin_extended(
-        sigmap=sigmap, text="Listing files from S3 bucket ...", color="green"
+        sigmap=sigmap, text="Creating docarray from S3 bucket files ...", color="green"
     ) as spinner:
         spinner.ok('🏭')
         if folder_structure == 'sub_folders':
