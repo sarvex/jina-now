@@ -26,7 +26,6 @@ from now.executor.gateway.playground.src.constants import (
     BUTTONS,
     S3_DEMO_PATH,
     SSO_COOKIE,
-    SURVEY_LINK,
     ds_set,
 )
 from now.executor.gateway.playground.src.search import (
@@ -491,10 +490,6 @@ def render_mm_query(query, modality):
 def render_matches():
     # TODO function is too large. Split up.
     if st.session_state.matches and not st.session_state.error_msg:
-        if st.session_state.search_count > 2:
-            st.write(
-                f'🔥 How did you like Jina NOW? [Please leave feedback]({SURVEY_LINK}) 🔥'
-            )
         list_matches = [
             st.session_state.matches[i : i + 9]
             for i in range(0, len(st.session_state.matches), 9)
