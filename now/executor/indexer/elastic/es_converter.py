@@ -73,6 +73,11 @@ def convert_doc_map_to_es(
             es_doc = es_docs[doc.id]
             for encoded_field in encoder_to_fields[executor_name]:
                 field_doc = get_chunk_by_field_name(doc, encoded_field)
+                if not field_doc.embedding:
+                    print("NO EMBEDDING ON THIS FIELD")
+                    print(doc.id)
+                    print(encoded_field)
+                    field_doc.summary()
                 es_doc[
                     f'{encoded_field}-{executor_name}.embedding'
                 ] = field_doc.embedding
