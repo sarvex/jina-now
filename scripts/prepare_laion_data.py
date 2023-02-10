@@ -143,7 +143,7 @@ if __name__ == "__main__":
     if not os.path.exists(dir_name):
         os.makedirs(dir_name)
 
-    download_laion400m(dir_name=dir_name, size=3)
+    download_laion400m(dir_name=dir_name)
     file_name = aggregate_data(dir_name=dir_name)
     push_to_s3(file_name=file_name)
 
