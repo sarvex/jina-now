@@ -3,7 +3,6 @@ import base64
 import io
 import os
 from collections import OrderedDict
-from copy import deepcopy
 from typing import List
 from urllib.error import HTTPError
 from urllib.parse import quote, unquote
@@ -79,6 +78,13 @@ def nav_to(url):
         url
     )
     st.write(nav_script, unsafe_allow_html=True)
+
+
+def toggle_score_breakdown():
+    if st.checkbox('Show score breakdown', key='scores'):
+        st.session_state.show_score_breakdown = True
+    else:
+        st.session_state.show_score_breakdown = False
 
 
 def deploy_streamlit(secured: bool):
@@ -173,6 +179,7 @@ def deploy_streamlit(secured: bool):
             render_mm_query(st.session_state['query'], 'image')
 
         customize_semantic_scores()
+        toggle_score_breakdown()
 
         if st.button('Search', key='mm_search', on_click=clear_match):
             st.session_state.matches = multimodal_search(
@@ -484,12 +491,10 @@ def render_matches():
             st.write(
                 f'🔥 How did you like Jina NOW? [Please leave feedback]({SURVEY_LINK}) 🔥'
             )
-        # make a copy and  sort them based on scores
-        matches: DocumentArray = deepcopy(st.session_state.matches)
-        for m in matches:
-            m.scores['cosine'].value = 1 - m.scores['cosine'].value
-        sorted(matches, key=lambda m: m.scores['cosine'].value, reverse=True)
-        list_matches = [matches[i : i + 9] for i in range(0, len(matches), 9)]
+        list_matches = [
+            st.session_state.matches[i : i + 9]
+            for i in range(0, len(st.session_state.matches), 9)
+        ]
 
         # render the current page or the last page if filtered documents are less
         if list_matches:
@@ -540,6 +545,8 @@ def render_multi_modal_result(match, c):
     for chunk in match.chunks:
         render_graphic_result(chunk, c)
         render_text_result(chunk, c)
+    if st.session_state.show_score_breakdown:
+        render_score_breakdown(match, c)
 
 
 # I'm not so happy about these two functions, let's refactor them
@@ -567,6 +574,22 @@ def render_text_result(match, c):
         )
     except:
         pass
+
+
+def render_score_breakdown(match, c):
+    display_scores_string = "<br>".join(
+        sorted(
+            [
+                name + ": " + str(round(score.value, 3))
+                for name, score in match.scores.items()
+            ]
+        )
+    )
+    body = f'<!DOCTYPE html><html><body><p style = "font-size:10px;">{display_scores_string}</body></html>'
+    c.markdown(
+        body=body,
+        unsafe_allow_html=True,
+    )
 
 
 def add_social_share_buttons():
@@ -779,6 +802,9 @@ def setup_session_state():
 
     if 'show_bm25_slider' not in st.session_state:
         st.session_state.show_bm25_slider = False
+
+    if 'show_score_breakdown' not in st.session_state:
+        st.session_state.show_score_breakdown = False
 
 
 if __name__ == '__main__':

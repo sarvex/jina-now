@@ -11,7 +11,7 @@ from pytest_mock import MockerFixture
 from now.data_loading.data_loading import _list_s3_file_paths
 from now.deployment.deployment import terminate_wolf
 from now.executor.preprocessor.s3_download import get_bucket
-from now.utils import get_flow_id
+from now.utils import get_aws_profile, get_flow_id
 
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__name__)
@@ -74,11 +74,12 @@ def cleanup():
 
 @pytest.fixture(scope='session')
 def pulled_local_folder_data(tmpdir_factory):
+    aws_profile = get_aws_profile()
     bucket = get_bucket(
         uri=os.environ.get('S3_CUSTOM_MM_DATA_PATH'),
-        aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
-        aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
-        region_name='eu-west-1',
+        aws_access_key_id=aws_profile.aws_access_key_id,
+        aws_secret_access_key=aws_profile.aws_secret_access_key,
+        region_name=aws_profile.region,
     )
     folder_prefix = '/'.join(os.environ.get('S3_CUSTOM_MM_DATA_PATH').split('/')[3:])
     file_paths = _list_s3_file_paths(bucket, folder_prefix)

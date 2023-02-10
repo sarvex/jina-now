@@ -54,6 +54,11 @@ class SearchRequestModel(BaseRequestModel):
         ' This defines how scores should be calculated for documents.',
         example=[('query_text', 'title', 'encoderclip', 1.0)],
     )
+    get_score_breakdown: bool = Field(
+        default=False,
+        description='If true, the score breakdown is returned in the response tags.',
+        example=True,
+    )
 
 
 class SearchResponseModel(BaseModel):

@@ -5,8 +5,11 @@ import shutil
 import signal
 import sys
 from collections.abc import MutableMapping
-from typing import Dict, List, Optional, TypeVar, Union
+from dataclasses import dataclass
+from inspect import stack
+from typing import Any, Dict, List, Optional, TypeVar, Union
 
+import boto3
 import docarray
 import hubble
 import yaml
@@ -173,6 +176,15 @@ def prompt_value(
     return maybe_prompt_user(qs, name, **kwargs)
 
 
+def debug(msg: Any):
+    """
+    Prints a message along with the details of the caller, ie filename and line number.
+    """
+    msg = str(msg) if msg is not None else ''
+    frameinfo = stack()[1]
+    print(f"{frameinfo.filename}:{frameinfo.lineno}: {msg}")
+
+
 def flatten_dict(d, parent_key='', sep='__'):
     """
     This function converts a nested dictionary into a dictionary of attirbutes using '__' as a separator.
@@ -207,6 +219,28 @@ def docarray_typing_to_modality_string(T: TypeVar) -> str:
 def modality_string_to_docarray_typing(s: str) -> TypeVar:
     """E.g. image -> docarray.typing.Image"""
     return getattr(docarray.typing, s.capitalize())
+
+
+@dataclass
+class AWSProfile:
+    aws_access_key_id: str
+    aws_secret_access_key: str
+    region: str
+
+
+def get_aws_profile():
+    session = boto3.Session()
+    credentials = session.get_credentials()
+    aws_profile = (
+        AWSProfile(credentials.access_key, credentials.secret_key, session.region_name)
+        if credentials
+        else AWSProfile(None, None, session.region_name)
+    )
+    return aws_profile
+
+
+def hide_string_chars(s):
+    return ''.join(['*' for _ in range(len(s) - 5)]) + s[len(s) - 4 :] if s else None
 
 
 # Add a custom retry exception
