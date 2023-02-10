@@ -243,6 +243,11 @@ def hide_string_chars(s):
     return ''.join(['*' for _ in range(len(s) - 5)]) + s[len(s) - 4 :] if s else None
 
 
+def get_chunk_by_field_name(doc, field_name):
+    field_position = doc._metadata['multi_modal_schema'][field_name]['position']
+    return doc.chunks[field_position]
+
+
 # Add a custom retry exception
 class RetryException(Exception):
     pass
