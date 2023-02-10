@@ -359,7 +359,10 @@ def _list_s3_file_paths(bucket, folder_prefix):
         """
         Finds the best level for the prefixes
 
-        :param max_levels: The maximum number of level we can get to
+        :param max_levels: The maximum number of level we can get to, this defaults to len(structure_identifier) - 2
+        because the latest level (len(structure_identifier) - 1) will only have files, so it won't have any common
+        prefixes inside.
+
         :return: A list of prefixes
         """
         level = 1
@@ -368,7 +371,7 @@ def _list_s3_file_paths(bucket, folder_prefix):
         while level < max_levels and len(list_prefixes) < NUM_FOLDERS_THRESHOLD:
             level += 1
             list_prefixes = get_level_order_prefixes(folder_prefix, level)
-            prefixes_states.append(prefixes_states)
+            prefixes_states.append(list_prefixes)
         if len(list_prefixes) > NUM_FOLDERS_THRESHOLD and len(prefixes_states) > 1:
             return prefixes_states[-2]
         return list_prefixes
@@ -413,13 +416,16 @@ def _list_files_from_s3_bucket(
     folder_structure = (
         'sub_folders' if len(structure_identifier) > 1 else 'single_folder'
     )
-
-    file_paths = _list_s3_file_paths(bucket, folder_prefix)
+    with yaspin_extended(
+        sigmap=sigmap, text="Listing files from S3 bucket ...", color="green"
+    ) as spinner:
+        spinner.ok('🏭')
+        file_paths = _list_s3_file_paths(bucket, folder_prefix)
 
     with yaspin_extended(
         sigmap=sigmap, text="Creating docarray from S3 bucket files ...", color="green"
     ) as spinner:
-        spinner.ok('🏭')
+        spinner.ok('👝')
         if folder_structure == 'sub_folders':
             docs = create_docs_from_subdirectories(
                 file_paths,
