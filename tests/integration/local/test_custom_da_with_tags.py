@@ -28,7 +28,7 @@ from now.constants import ACCESS_PATHS, Models
 def test_search_filters(
     get_flow, data_with_tags, setup_service_running, random_index_name
 ):
-    client = Client(host='http://localhost:8081')
+    client = Client(host='grpc://localhost:8085')
     client.index(
         data_with_tags,
         parameters={

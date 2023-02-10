@@ -10,6 +10,7 @@ from tests.integration.remote.assertions import (
 
 from now.cli import cli
 from now.constants import DatasetTypes, Models
+from now.utils import get_aws_profile
 
 
 @pytest.mark.remote
@@ -33,14 +34,15 @@ def test_backend_custom_data(
     cleanup,
     with_hubble_login_patch,
 ):
+    aws_profile = get_aws_profile()
     kwargs = {
         'now': 'start',
         'flow_name': 'nowapi',
         'dataset_type': DatasetTypes.S3_BUCKET,
         'dataset_path': dataset_path,
-        'aws_access_key_id': os.environ.get('AWS_ACCESS_KEY_ID'),
-        'aws_secret_access_key': os.environ.get('AWS_SECRET_ACCESS_KEY'),
-        'aws_region_name': 'eu-west-1',
+        'aws_access_key_id': aws_profile.aws_access_key_id,
+        'aws_secret_access_key': aws_profile.aws_secret_access_key,
+        'aws_region_name': aws_profile.region,
         'index_fields': index_fields,
         f'{index_fields[0]}_model': [Models.CLIP_MODEL],
         'filter_fields': filter_fields,
@@ -50,20 +52,20 @@ def test_backend_custom_data(
     response = cli(args=kwargs)
 
     # Dump the flow details from response host to a tmp file for post cleanup
-    flow_details = {'host': response['host']}
+    flow_details = {'host': response['host_http']}
     with open(f'{cleanup}/flow_details.json', 'w') as f:
         json.dump(flow_details, f)
 
     assert_deployment_response(response)
 
     assert_search_custom_s3(
-        host=response['host'],
+        host=response['host_http'],
         mm_type=mm_type,
         create_temp_link=False,
         dataset_length=dataset_length,
     )
     assert_search_custom_s3(
-        host=response['host'],
+        host=response['host_http'],
         mm_type=mm_type,
         create_temp_link=True,
         dataset_length=dataset_length,
