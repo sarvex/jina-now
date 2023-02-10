@@ -177,9 +177,9 @@ class NOWElasticIndexer(Executor):
                 return DocumentArray()
 
         for key, value in docs_map.items():
-            key.summary()
-            key[0].summary()
-            print(key[0].content)
+            value.summary()
+            value[0].summary()
+            print(value[0].content)
 
         aggregate_embeddings(docs_map)
         es_docs = convert_doc_map_to_es(
