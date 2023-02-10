@@ -164,11 +164,11 @@ def deploy_streamlit(user_input: UserInput):
 
         customize_semantic_scores()
         toggle_score_breakdown()
-        search_values = list(st.session_state['query'].values())
-        if search_values:
+        search_mapping_list = list(st.session_state['query'].values())
+        if any([d['value'] for d in search_mapping_list]):
             st.session_state.matches = multimodal_search(
                 query_field_values_modalities=list(
-                    filter(lambda x: x['value'], search_values)
+                    filter(lambda x: x['value'], search_mapping_list)
                 ),
                 jwt=st.session_state.jwt_val,
                 filter_dict=filter_selection,
