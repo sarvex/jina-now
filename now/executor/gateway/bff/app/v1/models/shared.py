@@ -2,6 +2,8 @@ from typing import Any, Dict, Optional
 
 from pydantic import BaseModel, Field, root_validator
 
+from now.utils import get_chunk_by_field_name
+
 
 class BaseRequestModel(BaseModel):
     jwt: Optional[Dict[str, Any]] = Field(
@@ -44,6 +46,6 @@ class ModalityModel(BaseModel):
     @property
     def content(self):
         for field_name in self.__fields_set__:
-            field_value = getattr(self, field_name)
+            field_value = get_chunk_by_field_name(self, field_name)
             if field_value:
                 return field_value
