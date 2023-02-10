@@ -163,13 +163,11 @@ def deploy_streamlit(user_input: UserInput):
 
         customize_semantic_scores()
         toggle_score_breakdown()
-
-        if st.button('Search', key='mm_search', on_click=clear_match):
+        search_mapping_list = list(st.session_state['query'].values())
+        if any([d['value'] for d in search_mapping_list]):
             st.session_state.matches = multimodal_search(
                 query_field_values_modalities=list(
-                    filter(
-                        lambda x: x['value'], list(st.session_state['query'].values())
-                    )
+                    filter(lambda x: x['value'], search_mapping_list)
                 ),
                 jwt=st.session_state.jwt_val,
                 filter_dict=filter_selection,
@@ -812,6 +810,7 @@ if __name__ == '__main__':
     # read user_input from user_input.json in the home directory
     with open(os.path.join(os.path.expanduser('~'), 'user_input.json'), 'r') as f:
         user_input_dict = json.load(f)
+
     user_input = UserInput()
     for attr_name, prev_value in user_input.__dict__.items():
         setattr(
