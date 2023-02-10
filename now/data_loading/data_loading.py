@@ -14,7 +14,7 @@ from now.constants import DatasetTypes
 from now.data_loading.elasticsearch import ElasticsearchExtractor
 from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
-from now.utils import flatten_dict, sigmap
+from now.utils import flatten_dict, get_chunk_by_field_name, sigmap
 
 
 def load_data(
@@ -61,7 +61,9 @@ def _add_metadata_to_da(da, user_input):
         for dataclass_field, meta_dict in doc._metadata['multi_modal_schema'].items():
             field_name = dataclass_fields_to_field_names.get(dataclass_field, None)
             if 'position' in meta_dict:
-                getattr(doc, dataclass_field)._metadata['field_name'] = field_name
+                get_chunk_by_field_name(doc, dataclass_field)._metadata[
+                    'field_name'
+                ] = field_name
 
 
 def _add_tags_to_da(da: DocumentArray, user_input: UserInput):
@@ -72,7 +74,7 @@ def _add_tags_to_da(da: DocumentArray, user_input: UserInput):
     for doc in da:
         filtered_chunks = []
         for field in doc._metadata['multi_modal_schema'].keys():
-            field_doc = getattr(doc, field)
+            field_doc = get_chunk_by_field_name(doc, field)
             if field not in user_input.index_fields:
                 if field_doc.blob or field_doc.tensor is not None:
                     continue
