@@ -1,9 +1,28 @@
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import multiprocessing
+from math import floor
+import hubble
+import psutil
+import requests
 from docarray import DocumentArray, Document, dataclass
 import os
 from docarray.typing import Image
 import glob
 import boto3
 import shutil
+
+
+def check_docarray_exists(dataset_name):
+    response = requests.post(
+        'https://api.hubble.jina.ai/v2/rpc/docarray.getModalityInfo',
+        cookies={
+            'st': hubble.get_token(),
+        },
+        json={
+            'name': dataset_name,
+        },
+    )
+    return response.json()['code'] == 200
 
 
 def get_metadata(doc):
@@ -46,22 +65,33 @@ def download_laion400m(dir_name, size=100):
     :param size: number of subsets (each subset has 1m examples) to be downloaded.
     """
     print('starting pulling the data')
-    downloaded = 0
-    for i in range(400):
-        if os.path.exists(os.path.join(dir_name, f'laion_{i}.bin')):
-            downloaded += 1
-            continue
-        if downloaded == size:
-            return
-        try:
-            docs = DocumentArray.pull(f'jem-fu/laion400m_part_{i}', show_progress=True)
-            docs = process_docs(docs)
-            docs.save_binary(os.path.join(dir_name, f'laion_{i}.bin'))
-            downloaded += 1
-            print(f'part {i} successfully downloaded')
-        except:
-            print(f'could not find part {i}')
-    print('data has been pulled')
+    num_workers = min(
+        floor(psutil.virtual_memory().total / 1e9 / 2), multiprocessing.cpu_count()
+    )
+    with ThreadPoolExecutor(max_workers=num_workers) as executor:
+        collected = 0
+        futures = []
+        for i in range(400):
+            if os.path.exists(os.path.join(dir_name, f'laion_{i}.bin')):
+                collected += 1
+                continue
+            elif not check_docarray_exists(f'jem-fu/laion400m_part_{i}'):
+                continue
+
+            if collected == size:
+                break
+
+            futures.append(executor.submit(pull_and_process_subset, i))
+            collected += 1
+        for future in as_completed(futures):
+            future.result()
+
+
+def pull_and_process_subset(index):
+    docs = DocumentArray.pull(f'jem-fu/laion400m_part_{index}')
+    docs = process_docs(docs)
+    docs.save_binary(os.path.join(dir_name, f'laion_{index}.bin'))
+    print(f'part {index} successfully downloaded')
 
 
 def aggregate_data(dir_name):
@@ -113,7 +143,7 @@ if __name__ == "__main__":
     if not os.path.exists(dir_name):
         os.makedirs(dir_name)
 
-    download_laion400m(dir_name=dir_name)
+    download_laion400m(dir_name=dir_name, size=3)
     file_name = aggregate_data(dir_name=dir_name)
     push_to_s3(file_name=file_name)
 
