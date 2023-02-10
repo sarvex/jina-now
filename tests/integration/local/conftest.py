@@ -80,13 +80,12 @@ class FlowThread(multiprocessing.Process):
             Flow()
             .config_gateway(
                 uses=NOWGateway,
-                protocol=['http'],
-                port=[8081],
+                protocol=['http', 'grpc'],
+                port=[8081, 8085],
                 uses_with={
                     'user_input_dict': {
                         'secured': secured,
                     },
-                    'with_playground': False,
                 },
                 env={'JINA_LOG_LEVEL': 'DEBUG'},
             )

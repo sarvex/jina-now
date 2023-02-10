@@ -22,7 +22,7 @@ def deploy_flow(
             flow_yaml = flow_file
 
         flow = deploy_wolf(path=flow_yaml)
-        host = flow.endpoints['gateway (http)']
+        host = flow.endpoints['gateway (grpc)']
         client = Client(host=host)
 
         # host & port

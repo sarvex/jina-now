@@ -40,7 +40,7 @@ def test_end_to_end(
     kwargs = Namespace(**kwargs)
     response = cli(args=kwargs)
     # Dump the flow details from response host to a tmp file
-    flow_details = {'host': response['host']}
+    flow_details = {'host': response['host_http']}
     with open(f'{cleanup}/flow_details.json', 'w') as f:
         json.dump(flow_details, f)
 
@@ -54,5 +54,5 @@ def test_end_to_end(
         kwargs=kwargs,
         search_modality='text',
     )
-    suggest_url = f'{response["host"]}/api/v1/search-app/suggestion'
+    suggest_url = f'{response["host_http"]}/api/v1/search-app/suggestion'
     assert_suggest(suggest_url, request_body)

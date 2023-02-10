@@ -253,8 +253,13 @@ def get_chunk_by_field_name(doc, field_name):
 
     :return: Specific chunk by field.
     """
-    field_position = int(doc._metadata['multi_modal_schema'][field_name]['position'])
-    return doc.chunks[field_position]
+    try:
+        field_position = int(
+            doc._metadata['multi_modal_schema'][field_name]['position']
+        )
+        return doc.chunks[field_position]
+    except Exception as e:
+        print(f'An error occurred: {e}')
 
 
 # Add a custom retry exception

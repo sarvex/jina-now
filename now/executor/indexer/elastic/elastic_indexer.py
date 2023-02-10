@@ -467,49 +467,6 @@ class NOWElasticIndexer(Executor):
         except Exception:
             self.logger.info(traceback.format_exc())
 
-    @secure_request(on='/get_encoder_to_fields', level=SecurityLevel.USER)
-    def get_encoder_to_fields(self, **kwargs) -> DocumentArray:
-        """
-        Returns a DocumentArray with one Document, which has following dictionaries in its tags:
-         - dictionary of encoder names to the dataclass fields they encode and their modality, e.g.:
-            encoder_to_fields_and_modalities = {
-                'encoderclip': {
-                    'text_0': 'text',
-                    'image_0': 'image',
-                },
-                'encodersbert': {
-                    'image_0': 'text',
-                },
-            }
-         - dictionary of dataclass fields to their field names, e.g.:
-            field_names_to_dataclass_fields = {
-                'title': 'text_0',
-                'picture': 'image_0',
-            }
-        """
-        dataclass_fields_modalities_dict = {
-            self.user_input.field_names_to_dataclass_fields[field]: modality
-            for field, modality in self.user_input.index_field_candidates_to_modalities.items()
-            if field in self.user_input.index_fields
-        }  # should be a dict of selected index fields and their modalities
-        encoder_to_fields_and_modalities = {}
-        for encoder in self.encoder_to_fields.keys():
-            encoder_to_fields_and_modalities[encoder] = {
-                field: dataclass_fields_modalities_dict[field]
-                for field in self.encoder_to_fields[encoder]
-            }
-        return DocumentArray(
-            [
-                Document(
-                    text='index_fields',
-                    tags={
-                        'index_fields_dict': encoder_to_fields_and_modalities,
-                        'field_names_to_dataclass_fields': self.user_input.field_names_to_dataclass_fields,
-                    },
-                )
-            ]
-        )
-
 
 def aggregate_embeddings(docs_map: Dict[str, DocumentArray]):
     """Aggregate embeddings of cc level to c level.

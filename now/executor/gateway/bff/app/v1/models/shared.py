@@ -6,18 +6,6 @@ from now.utils import get_chunk_by_field_name
 
 
 class BaseRequestModel(BaseModel):
-    host: Optional[str] = Field(
-        default='localhost',
-        description='Host address of the flow returned after the app deployment. For remote deployment '
-        'the host address should be in this format: grpcs://*.wolf.jina.ai',
-        example='localhost',
-    )
-    port: Optional[int] = Field(
-        default=31080,
-        description='Port at which to connect. '
-        'Not needed when it is a remote deployment.',
-        example=31080,
-    )
     jwt: Optional[Dict[str, Any]] = Field(
         default=None,
         description="Dictionary with key 'token' which maps to Jina Cloud token value."
