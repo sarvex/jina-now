@@ -244,6 +244,15 @@ def hide_string_chars(s):
 
 
 def get_chunk_by_field_name(doc, field_name):
+    """
+    Gets a specific chunk by field name, using its position instead of getting the attribute directly.
+    This solves the getattr problem when there are conflicting attributes with Document.
+
+    :param doc: Document to get the chunk from.
+    :param field_name: Field needed to extract the position.
+
+    :return: Specific chunk by field.
+    """
     field_position = int(doc._metadata['multi_modal_schema'][field_name]['position'])
     return doc.chunks[field_position]
 
