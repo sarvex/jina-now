@@ -80,7 +80,7 @@ class SearchApp(JinaNOWApp):
             'needs': 'autocomplete_executor',
             'uses': f'jinahub+docker://{name_to_id_map.get("NOWPreprocessor")}/{NOW_PREPROCESSOR_VERSION}',
             'jcloud': {
-                'autoscale': {'min': 1, 'max': 5, 'metric': 'concurrency', 'target': 1}
+                'autoscale': {'min': 0, 'max': 5, 'metric': 'concurrency', 'target': 1}
             },
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
         }
@@ -110,7 +110,7 @@ class SearchApp(JinaNOWApp):
                 'model_name': 'msmarco-distilbert-base-v3',
             },
             'jcloud': {
-                'autoscale': {'min': 1, 'max': 5, 'metric': 'concurrency', 'target': 1}
+                'autoscale': {'min': 0, 'max': 5, 'metric': 'concurrency', 'target': 1}
             },
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
         }, 768
