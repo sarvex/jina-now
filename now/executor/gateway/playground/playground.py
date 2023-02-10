@@ -812,8 +812,8 @@ def setup_session_state():
 
 if __name__ == '__main__':
     # read user_input from user_input.json in the home directory
-    # with open(os.path.join(os.path.expanduser('~'), 'user_input.json'), 'r') as f:
-    #     user_input_dict = json.load(f)
+    with open(os.path.join(os.path.expanduser('~'), 'user_input.json'), 'r') as f:
+        user_input_dict = json.load(f)
 
     user_input = UserInput()
     for attr_name, prev_value in user_input.__dict__.items():
