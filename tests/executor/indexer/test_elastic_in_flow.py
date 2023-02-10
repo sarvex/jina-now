@@ -317,10 +317,9 @@ class TestElasticIndexer:
         documents = DocumentArray([Document(chunks=[doc]) for doc in documents])
         with Flow().config_gateway(
             uses=NOWGateway,
-            protocol=['http'],
-            port=[8081],
+            protocol=['http', 'grpc'],
+            port=[8081, 8085],
             env={'JINA_LOG_LEVEL': 'DEBUG'},
-            uses_with={'with_playground': False},
         ).add(
             uses=NOWElasticIndexer,
             uses_with={

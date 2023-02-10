@@ -44,7 +44,7 @@ update_emails_url = f'{BASE_URL}/admin/updateUserEmails'
     indirect=True,
 )
 def test_add_key(get_flow, simple_data, setup_service_running, random_index_name):
-    client = Client(host='http://localhost:8081')
+    client = Client(host='grpc://localhost:8085')
 
     client.index(
         simple_data,

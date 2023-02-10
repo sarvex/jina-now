@@ -8,10 +8,9 @@ from now.executor.gateway import NOWGateway
 def test_autocomplete(tmpdir, mm_dataclass):
     with Flow().config_gateway(
         uses=NOWGateway,
-        protocol=['http'],
-        port=[8081],
+        protocol=['http', 'grpc'],
+        port=[8081, 8085],
         env={'JINA_LOG_LEVEL': 'DEBUG'},
-        uses_with={'with_playground': False},
     ).add(uses=NOWAutoCompleteExecutor2, workspace=tmpdir) as f:
         f.post(
             on='/search',
