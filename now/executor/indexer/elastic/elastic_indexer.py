@@ -185,9 +185,9 @@ class NOWElasticIndexer(Executor):
             print(
                 f'Inserted {success} documents into Elasticsearch index {self.index_name}'
             )
-        except BulkIndexError:
-            if errors:
-                print(errors)
+            print(success, errors)
+        except BulkIndexError as e:
+            print(e)
         self.es.indices.refresh(index=self.index_name)
         if success:
             self.logger.info(
