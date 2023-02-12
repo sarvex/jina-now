@@ -74,6 +74,17 @@ class NOWElasticIndexer(Executor):
         """
 
         super().__init__(*args, **kwargs)
+        import psutil
+
+        volumes = psutil.disk_partitions()
+
+        for volume in volumes:
+            print("Device: ", volume.device)
+            print("Mount Point: ", volume.mountpoint)
+            print("File System Type: ", volume.fstype)
+            print("Opts: ", volume.opts)
+            print("---------------------------------")
+
         self.metric = metric
         self.limit = limit
         self.max_values_per_tag = max_values_per_tag
