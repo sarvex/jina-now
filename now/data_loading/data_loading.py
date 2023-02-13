@@ -1,6 +1,7 @@
 import json
 import os
 from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor
 from typing import Dict, List, Type
 
 from docarray import Document, DocumentArray
@@ -10,7 +11,7 @@ from now.common.detect_schema import (
     get_first_file_in_folder_structure_s3,
     get_s3_bucket_and_folder_prefix,
 )
-from now.constants import DatasetTypes
+from now.constants import NUM_FOLDERS_THRESHOLD, DatasetTypes
 from now.data_loading.elasticsearch import ElasticsearchExtractor
 from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
@@ -317,7 +318,82 @@ def create_docs_from_files(
 
 
 def _list_s3_file_paths(bucket, folder_prefix):
-    objects = list(bucket.objects.filter(Prefix=folder_prefix))
+    """
+    Lists the s3 file paths in an optimized way by finding the best level to use concurrent calls on
+    in the file structure, using a threadpool.
+
+    :param bucket: The s3 bucket used
+    :param folder_prefix: The root folder prefix
+
+    :return: A list of all s3 paths
+    """
+    first_file = get_first_file_in_folder_structure_s3(bucket, folder_prefix)
+    structure_identifier = first_file[len(folder_prefix) :].split('/')
+    folder_structure = (
+        'sub_folders' if len(structure_identifier) > 1 else 'single_folder'
+    )
+
+    def get_level_order_prefixes(folder_prefix, level=1):
+        """
+        Gets the list of prefixes in a specific level. Levels are defined by the folder structure as follows:
+        level_1/level_2/.../level_n/file.ext
+
+        :param folder_prefix: The current level prefix
+        :param level: The desired level we want to get to
+
+        :return: A list of prefixes
+        """
+        level_prefixes = [
+            obj['Prefix']
+            for obj in bucket.meta.client.list_objects(
+                Bucket=bucket.name, Prefix=folder_prefix, Delimiter='/'
+            )['CommonPrefixes']
+        ]
+        if level == 1:
+            return level_prefixes
+        else:
+            prefix_list = []
+            for prefix in level_prefixes:
+                prefix_list += get_level_order_prefixes(prefix, level - 1)
+        return prefix_list
+
+    def get_prefixes(max_levels=len(structure_identifier) - 2):
+        """
+        Finds the best level for the prefixes
+
+        :param max_levels: The maximum number of level we can get to, this defaults to len(structure_identifier) - 2
+        because the latest level (len(structure_identifier) - 1) will only have files, so it won't have any common
+        prefixes inside.
+
+        :return: A list of prefixes
+        """
+        level = 1
+        list_prefixes = get_level_order_prefixes(folder_prefix, level)
+        prefixes_states = [list_prefixes]
+        while level < max_levels and len(list_prefixes) < NUM_FOLDERS_THRESHOLD:
+            level += 1
+            list_prefixes = get_level_order_prefixes(folder_prefix, level)
+            prefixes_states.append(list_prefixes)
+        if len(list_prefixes) > NUM_FOLDERS_THRESHOLD and len(prefixes_states) > 1:
+            return prefixes_states[-2]
+        return list_prefixes
+
+    objects = []
+    if folder_structure == 'sub_folders':
+        prefixes = get_prefixes()
+        # TODO: change cpu count to a fixed number
+        with ThreadPoolExecutor(max_workers=20) as executor:
+            futures = []
+            for prefix in prefixes:
+                pref = ''.join(prefix)
+                f = executor.submit(
+                    lambda: list(bucket.objects.filter(Prefix=f'{pref}'))
+                )
+                futures.append(f)
+            for f in futures:
+                objects += f.result()
+    else:
+        objects = list(bucket.objects.filter(Prefix=folder_prefix))
     return [
         obj.key
         for obj in objects
@@ -337,20 +413,21 @@ def _list_files_from_s3_bucket(
     :return: The DocumentArray with the documents.
     """
     bucket, folder_prefix = get_s3_bucket_and_folder_prefix(user_input)
-    first_file = get_first_file_in_folder_structure_s3(
-        bucket, folder_prefix, user_input.dataset_path
-    )
-    file_paths = _list_s3_file_paths(bucket, folder_prefix)
-
+    first_file = get_first_file_in_folder_structure_s3(bucket, folder_prefix)
     structure_identifier = first_file[len(folder_prefix) :].split('/')
     folder_structure = (
         'sub_folders' if len(structure_identifier) > 1 else 'single_folder'
     )
-
     with yaspin_extended(
         sigmap=sigmap, text="Listing files from S3 bucket ...", color="green"
     ) as spinner:
         spinner.ok('🏭')
+        file_paths = _list_s3_file_paths(bucket, folder_prefix)
+
+    with yaspin_extended(
+        sigmap=sigmap, text="Creating docarray from S3 bucket files ...", color="green"
+    ) as spinner:
+        spinner.ok('👝')
         if folder_structure == 'sub_folders':
             docs = create_docs_from_subdirectories(
                 file_paths,
