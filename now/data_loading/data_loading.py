@@ -4,6 +4,7 @@ from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Dict, List, Type
 
+import psutil
 from docarray import Document, DocumentArray
 from docarray.dataclasses import is_multimodal
 
@@ -11,7 +12,7 @@ from now.common.detect_schema import (
     get_first_file_in_folder_structure_s3,
     get_s3_bucket_and_folder_prefix,
 )
-from now.constants import NUM_FOLDERS_THRESHOLD, DatasetTypes
+from now.constants import MEMORY_USAGE_PER_WORKER, NUM_FOLDERS_THRESHOLD, DatasetTypes
 from now.data_loading.elasticsearch import ElasticsearchExtractor
 from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
@@ -379,11 +380,16 @@ def _list_s3_file_paths(bucket, folder_prefix):
         return list_prefixes
 
     objects = []
-    max_retries = 3
     if folder_structure == 'sub_folders':
+        max_retries = 3
+        num_cpus = os.cpu_count()
+        total_ram = psutil.virtual_memory().total
+        max_workers = min(
+            num_cpus, int(total_ram / (MEMORY_USAGE_PER_WORKER * 1024**3)), 64
+        )
         prefixes = get_prefixes()
         # TODO: change cpu count to a fixed number
-        with ThreadPoolExecutor(max_workers=20) as executor:
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
             futures = []
             for prefix in prefixes:
                 pref = ''.join(prefix)

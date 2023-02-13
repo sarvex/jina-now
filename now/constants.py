@@ -57,6 +57,7 @@ EXTERNAL_CLIP_HOST = 'encoderclip-pretty-javelin-3aceb7f2cd.wolf.jina.ai'
 DEFAULT_FLOW_NAME = 'nowapi'
 PREFETCH_NR = 10
 NUM_FOLDERS_THRESHOLD = 100
+MEMORY_USAGE_PER_WORKER = 1  # 1 GB per worker
 SURVEY_LINK = 'https://10sw1tcpld4.typeform.com/to/VTAyYRpR?utm_source=cli'
 
 TAG_INDEXER_DOC_HAS_TEXT = '_indexer_doc_has_text'
