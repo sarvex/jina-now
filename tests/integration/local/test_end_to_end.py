@@ -24,7 +24,7 @@ from now.constants import ACCESS_PATHS
 )
 def test_end_to_end(get_flow, setup_service_running):
     docs, user_input = get_flow
-    client = Client(host='http://localhost:8081')
+    client = Client(host='grpc://localhost:8085')
 
     client.index(
         docs,

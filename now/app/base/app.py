@@ -1,12 +1,12 @@
-import json
 import os
 from typing import Dict, List, Optional, Tuple, TypeVar
 
 from docarray import DocumentArray
 from jina import __version__ as jina_version
 
+from now.app.base.create_jcloud_name import create_jcloud_name
 from now.app.base.preprocess import preprocess_image, preprocess_text, preprocess_video
-from now.constants import DEFAULT_FLOW_NAME, DEMO_NS, NOW_GATEWAY_VERSION, PREFETCH_NR
+from now.constants import DEMO_NS, NOW_GATEWAY_VERSION, PREFETCH_NR
 from now.demo_data import DemoDataset
 from now.executor.name_to_id_map import name_to_id_map
 from now.now_dataclasses import DialogOptions, UserInput
@@ -111,15 +111,12 @@ class JinaNOWApp:
             'uses': f'jinahub+docker://{name_to_id_map.get("NOWGateway")}/{NOW_GATEWAY_VERSION}'
             if not testing
             else 'NOWGateway',
-            'protocol': ['http'],
-            'port': [8081],
+            'protocol': ['http', 'grpc'],
+            'port': [8081, 8085],
             'monitoring': True,
             'cors': True,
             'prefetch': PREFETCH_NR,
-            'uses_with': {
-                'user_input_dict': json.dumps(user_input.to_safe_dict()),
-                'with_playground': str(not testing),
-            },
+            'uses_with': {'user_input_dict': user_input.to_safe_dict()},
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
         }
         if 'NOW_EXAMPLES' in os.environ:
@@ -158,10 +155,7 @@ class JinaNOWApp:
             'jcloud': {
                 'version': jina_version,
                 'labels': {'team': 'now'},
-                'name': user_input.flow_name + '-' + DEFAULT_FLOW_NAME
-                if user_input.flow_name != ''
-                and user_input.flow_name != DEFAULT_FLOW_NAME
-                else DEFAULT_FLOW_NAME,
+                'name': create_jcloud_name(user_input.flow_name),
             },
             'gateway': self.get_gateway_stub(user_input, testing),
             'executors': self.get_executor_stubs(dataset, user_input, testing),

@@ -1,11 +1,10 @@
-import hubble
 import pytest
 import requests
 from jina import Client
 from tests.integration.local.conftest import BASE_URL, SEARCH_URL, get_request_body
 from tests.integration.remote.assertions import assert_search
 
-from now.constants import ACCESS_PATHS, Models
+from now.constants import ACCESS_PATHS
 
 API_KEY = 'my_key'
 update_api_keys_url = f'{BASE_URL}/admin/updateApiKeys'
@@ -19,7 +18,7 @@ update_emails_url = f'{BASE_URL}/admin/updateUserEmails'
 )
 def test_add_key(get_flow, setup_service_running):
     docs, user_input = get_flow
-    client = Client(host='http://localhost:8081')
+    client = Client(host='grpc://localhost:8085')
     client.index(
         docs,
         parameters={

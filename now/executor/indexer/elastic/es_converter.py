@@ -5,6 +5,8 @@ from docarray.score import NamedScore
 from numpy import dot
 from numpy.linalg import norm
 
+from now.utils import get_chunk_by_field_name
+
 
 def get_bm25_fields(doc: Document) -> str:
     try:
@@ -70,7 +72,7 @@ def convert_doc_map_to_es(
                 es_docs[doc.id]['serialized_doc'] = _doc[0].to_base64()
             es_doc = es_docs[doc.id]
             for encoded_field in encoder_to_fields[executor_name]:
-                field_doc = getattr(doc, encoded_field)
+                field_doc = get_chunk_by_field_name(doc, encoded_field)
                 es_doc[
                     f'{encoded_field}-{executor_name}.embedding'
                 ] = field_doc.embedding
@@ -139,6 +141,10 @@ def calculate_score_breakdown(
 
     :return: List of integers representing the score breakdown.
     """
+    retrieved_doc.scores['total'] = retrieved_doc.scores.pop(
+        metric
+    )  # save the final script score as total
+    add_bm25 = False
     for (
         query_field,
         document_field,
@@ -146,6 +152,7 @@ def calculate_score_breakdown(
         linear_weight,
     ) in semantic_scores:
         if encoder == 'bm25':
+            add_bm25 = True
             continue
         q_emb = query_doc.tags['embeddings'][f'{query_field}-{encoder}']
         d_emb = retrieved_doc.tags['embeddings'][
@@ -168,18 +175,17 @@ def calculate_score_breakdown(
             )
         ] = NamedScore(value=round(score, 6))
 
-    # calculate bm25 score
-    vector_total = sum(
-        [v.value for k, v in retrieved_doc.scores.items() if k != metric]
-    )
-    overall_score = retrieved_doc.scores[metric].value
-    bm25_normalized = overall_score - vector_total
-    bm25_raw = (bm25_normalized - 1) * 10
-
-    retrieved_doc.scores['bm25_normalized'] = NamedScore(
-        value=round(bm25_normalized, 6)
-    )
-    retrieved_doc.scores['bm25_raw'] = NamedScore(value=round(bm25_raw, 6))
+    if add_bm25:
+        # calculate bm25 score
+        vector_total = sum(
+            [v.value for k, v in retrieved_doc.scores.items() if k != 'total']
+        )
+        bm25_normalized = retrieved_doc.scores['total'].value - vector_total - 1
+        bm25_raw = bm25_normalized * 10
+        retrieved_doc.scores['bm25_normalized'] = NamedScore(
+            value=round(bm25_normalized, 6)
+        )
+        retrieved_doc.scores['bm25_raw'] = NamedScore(value=round(bm25_raw, 6))
 
     # remove embeddings from document
     retrieved_doc.tags.pop('embeddings', None)
