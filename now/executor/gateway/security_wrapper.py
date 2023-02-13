@@ -1,5 +1,5 @@
 import uuid
-from typing import Callable, Dict, Optional, Tuple, Union
+from typing import Callable, Dict, Optional, Tuple
 
 from fastapi import Depends, Response, status
 from jina.clients.request import request_generator
@@ -9,13 +9,14 @@ from jina.serve.runtimes.gateway.http.models import (
     JinaEndpointRequestModel,
     JinaResponseModel,
 )
+from jina.serve.streamer import GatewayStreamer
 
 from .helper import current_time
 
 
 def get_security_app(
     streamer: 'GatewayStreamer',
-    logger: Union['JinaLogger', 'Logger'],
+    logger,
     internal_app_id: str = None,
     internal_product_id: str = None,
     usage_client_id: Optional[str] = None,
