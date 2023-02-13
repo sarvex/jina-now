@@ -4,6 +4,7 @@ import random
 import string
 import tempfile
 import urllib
+from timeit import default_timer
 
 from jina import Document, DocumentArray
 
@@ -81,9 +82,10 @@ class NOWPreprocessor(Executor):
                     max_workers=self.max_workers,
                 )
 
-            debug("Start monitoring")
-            with self.monitor('processing_seconds', 'Time preprocessing'):
-                docs = self.app.preprocess(docs)
+            time_start = default_timer()
+            docs = self.app.preprocess(docs)
+            duration = max(default_timer() - time_start, 0)
+            debug(f"Preprocessing finished in {duration}s")
 
             # As _maybe_download_from_s3 moves S3 URI to tags['uri'], need to move it back for post-processor & accurate
             # results.
