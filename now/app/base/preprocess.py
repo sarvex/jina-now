@@ -47,18 +47,18 @@ def preprocess_text(
 def preprocess_image(d: Document):
     """loads document into memory and creates thumbnail."""
     # TODO move logic of downloading data away from preprocessing them
-    if d.tensor is None:
-        if d.blob != b'':
-            d.convert_blob_to_image_tensor()
-        elif d.uri:
-            d.load_uri_to_image_tensor(timeout=10)
-    to_thumbnail_jpg(d)
+    # if d.tensor is None:
+    #     if d.blob != b'':
+    #         d.convert_blob_to_image_tensor()
+    #     elif d.uri:
+    #         d.load_uri_to_image_tensor(timeout=10)
+    # to_thumbnail_jpg(d)
 
-    # if 'uri' in d.tags:
-    #     d.uri = d.tags['uri']
-    # if d.blob is None:
-    #     if d.uri:
-    #         d.load_uri_to_blob()
+    if 'uri' in d.tags:
+        d.uri = d.tags['uri']
+    if d.blob is None:
+        if d.uri:
+            d.load_uri_to_blob()
 
     d.chunks.append(
         Document(
