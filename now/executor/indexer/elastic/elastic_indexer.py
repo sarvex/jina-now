@@ -175,6 +175,15 @@ class NOWElasticIndexer(Executor):
             docs_map = self._handle_no_docs_map(docs)
             if len(docs_map) == 0:
                 return DocumentArray()
+        if docs_map.get('encodersbert', None):
+            print("SEE DOCS FOR SBERT")
+            docs_map['encodersbert'].summary()
+            for doc in docs_map['encodersbert']:
+                doc.summary()
+                for c in doc.chunks:
+                    print(c.modality)
+                    print(c.content)
+                    print(c.embedding)
 
         aggregate_embeddings(docs_map)
         es_docs = convert_doc_map_to_es(
