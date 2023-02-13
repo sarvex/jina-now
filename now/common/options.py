@@ -48,13 +48,14 @@ def _check_index_field(user_input: UserInput, **kwargs):
         user_input.index_fields = list(
             user_input.index_field_candidates_to_modalities.keys()
         )
-    elif (
-        user_input.index_fields[0]
-        not in user_input.index_field_candidates_to_modalities.keys()
+    elif any(
+        idx_field
+        for idx_field in user_input.index_fields
+        if idx_field not in list(user_input.index_field_candidates_to_modalities.keys())
     ):
         raise ValueError(
-            f'Index field specified is not among the index candidate fields. Please '
-            f'choose one of the following: {user_input.index_field_candidates_to_modalities.keys()}'
+            f'Index field specified {user_input.index_fields} is not among the index candidate fields. Please '
+            f'choose one of the following: {list(user_input.index_field_candidates_to_modalities.keys())}'
         )
 
 
