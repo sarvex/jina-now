@@ -122,9 +122,7 @@ def fetch_logs_now(**kwargs):
         ]
         cluster = maybe_prompt_user(questions, 'cluster', **kwargs)
 
-    app_host = cluster.split("://")[1]
-    app_url = f"https://{app_host}"  # can be changed to grpc in the future
-    dummy_query(app_url)
+    dummy_query(cluster)
 
     flow = [x for x in alive_flows if x['name'] == cluster][0]
     flow_id = flow['id']
