@@ -11,6 +11,7 @@ from pytest_mock import MockerFixture
 from now.data_loading.data_loading import _list_s3_file_paths
 from now.deployment.deployment import terminate_wolf
 from now.executor.preprocessor.s3_download import get_bucket
+from now.now_dataclasses import UserInput
 from now.utils import get_aws_profile, get_flow_id
 
 logging.basicConfig(level=logging.DEBUG)
@@ -81,8 +82,12 @@ def pulled_local_folder_data(tmpdir_factory):
         aws_secret_access_key=aws_profile.aws_secret_access_key,
         region_name=aws_profile.region,
     )
+    user_input = UserInput()
+    user_input.dataset_path = os.environ.get('S3_CUSTOM_MM_DATA_PATH')
+    user_input.aws_access_key_id = aws_profile.aws_access_key_id
+    user_input.aws_secret_access_key = aws_profile.aws_secret_access_key
     folder_prefix = '/'.join(os.environ.get('S3_CUSTOM_MM_DATA_PATH').split('/')[3:])
-    file_paths = _list_s3_file_paths(bucket, folder_prefix)
+    file_paths = _list_s3_file_paths(bucket, folder_prefix, user_input)
     temp_dir = str(tmpdir_factory.mktemp('local_folder_data'))
     for path in file_paths:
         local_path = os.path.join(temp_dir, path)

@@ -43,7 +43,7 @@ def upsert_cname_record(source, target):
         print(e)
 
 
-def deploy(demo_ds):
+def deploy(demo_ds, old_flow=None):
     print(f'Deploying search app with data: {demo_ds.name}')
     NAMESPACE = DEMO_NS.format(demo_ds.name.split("/")[-1])
     # Get the schema
@@ -67,9 +67,7 @@ def deploy(demo_ds):
         'now': 'start',
         'dataset_type': DatasetTypes.DEMO,
         'dataset_name': demo_ds.name,
-        'index_fields': [
-            demo_ds.index_fields
-        ],  # TODO: should be replaced with '__all__' when it is compatible
+        'index_fields': [demo_ds.index_fields],  # TODO: replace with '__all__'
         'filter_fields': '__all__',
         'proceed': True,
         'secured': False,
@@ -80,6 +78,10 @@ def deploy(demo_ds):
     kwargs = Namespace(**kwargs)
     try:
         response_cli = cli(args=kwargs)
+        # If the above call is successful only then terminate the old flow
+        if old_flow:
+            terminate_wolf(flow[0]['id'])
+            print(f'Old flow with id `{old_flow[0]["id"]}` successfully deleted!!')
     except Exception as e:  # noqa E722
         raise e
     # parse the response
@@ -88,6 +90,7 @@ def deploy(demo_ds):
         host_target_ = host_target_.replace('grpcs://', '')
         host_source = f'{DEMO_NS.format(demo_ds.name.split("/")[-1])}.dev.jina.ai'
         # update the CNAME entry in the Route53 records
+        print(f'Updating CNAME record for `{host_source}` -> `{host_target_}`')
         upsert_cname_record(host_source, host_target_)
     else:
         print(
@@ -100,7 +103,11 @@ if __name__ == '__main__':
     os.environ['JINA_AUTH_TOKEN'] = os.environ.get('WOLF_TOKEN')
     os.environ['NOW_EXAMPLES'] = 'True'
     os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
-    deployment_type = os.environ.get('DEPLOYMENT_TYPE', 'partial').lower()
+    deployment_type = os.environ.get('DEPLOYMENT_TYPE', None)
+    if not deployment_type:
+        deployment_type = 'partial'
+    deployment_type = deployment_type.lower()
+    print(f'Deployment type: {deployment_type}')
     index = int(sys.argv[-1])
     # get all the available demo datasets list
     dataset_list = []
@@ -128,11 +135,8 @@ if __name__ == '__main__':
         except Exception as e:  # noqa E722
             print('Not deployed yet')
 
-    # Maybe the flow is still alive, if it is, then it should be terminated and re-deploy the app
+    # Maybe the flow is still alive, if it is, then extract it to be deleted later
     flow = list_all_wolf(namespace=to_deploy.name.split("/")[-1])
-    if flow:
-        terminate_wolf(flow[0]['id'])
-        print(f'{flow[0]["id"]} successfully deleted!!')
     print('Deploying -> ', to_deploy.name)
-    deploy(to_deploy)
+    deploy(to_deploy, flow)
     print('------------------ Deployment Successful----------------------')

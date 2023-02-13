@@ -318,7 +318,7 @@ def create_docs_from_files(
     return docs
 
 
-def _list_s3_file_paths(bucket, folder_prefix):
+def _list_s3_file_paths(bucket, folder_prefix, user_input):
     """
     Lists the s3 file paths in an optimized way by finding the best level to use concurrent calls on
     in the file structure, using a threadpool.
@@ -379,6 +379,10 @@ def _list_s3_file_paths(bucket, folder_prefix):
             return prefixes_states[-2]
         return list_prefixes
 
+    def list_objects(prefix):
+        s3_bucket, _ = get_s3_bucket_and_folder_prefix(user_input)
+        return list(s3_bucket.objects.filter(Prefix=prefix))
+
     objects = []
     if folder_structure == 'sub_folders':
         max_retries = 3
@@ -393,9 +397,7 @@ def _list_s3_file_paths(bucket, folder_prefix):
             futures = []
             for prefix in prefixes:
                 pref = ''.join(prefix)
-                f = executor.submit(
-                    lambda: list(bucket.objects.filter(Prefix=f'{pref}'))
-                )
+                f = executor.submit(list_objects, pref)
                 futures.append(f)
             for future in as_completed(futures):
                 retries = 0
@@ -441,13 +443,12 @@ def _list_files_from_s3_bucket(
     with yaspin_extended(
         sigmap=sigmap, text="Listing files from S3 bucket ...", color="green"
     ) as spinner:
+        file_paths = _list_s3_file_paths(bucket, folder_prefix, user_input)
         spinner.ok('🏭')
-        file_paths = _list_s3_file_paths(bucket, folder_prefix)
 
     with yaspin_extended(
         sigmap=sigmap, text="Creating docarray from S3 bucket files ...", color="green"
     ) as spinner:
-        spinner.ok('👝')
         if folder_structure == 'sub_folders':
             docs = create_docs_from_subdirectories(
                 file_paths,
@@ -466,6 +467,7 @@ def _list_files_from_s3_bucket(
                 user_input.dataset_path,
                 is_s3_dataset=True,
             )
+        spinner.ok('👝')
     return DocumentArray(docs)
 
 
