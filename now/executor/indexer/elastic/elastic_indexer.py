@@ -92,7 +92,7 @@ class NOWElasticIndexer(Executor):
         group = "elasticsearch"
         path = f'/data/{os.environ["K8S_NAMESPACE_NAME"]}'
 
-        subprocess.run(["sudo", "chown", "-R", f"777", path])
+        subprocess.run(["chmod", "-R", "0777", path])
 
         self.metric = metric
         self.limit = limit
