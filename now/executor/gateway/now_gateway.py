@@ -1,20 +1,23 @@
+import copy
 import json
 import os
 from time import sleep
-from typing import Dict, List, Tuple
+from typing import Any, Callable, Dict, List, Tuple, Union
 
+from fastapi import HTTPException, Request, status
 from jina.enums import GatewayProtocolType
-from jina.serve.runtimes.gateway import CompositeGateway
 
 from now.constants import NOWGATEWAY_BFF_PORT
 from now.deployment.deployment import cmd
 from now.executor.gateway import BFFGateway, PlaygroundGateway
+from now.executor.gateway.base_payment_gateway import BasePaymentGateway
+from now.executor.gateway.interceptor import PaymentInterceptor
 from now.now_dataclasses import UserInput
 
 cur_dir = os.path.dirname(__file__)
 
 
-class NOWGateway(CompositeGateway):
+class NOWGateway(BasePaymentGateway):
     """The NOWGateway assumes that the gateway has been started with http on port 8081 and grpc on port 8085.
     This is the port on which the nginx process listens. After nginx has been started,
     it will start the playground on port 8501 and the BFF on port 8080. The actual
@@ -26,7 +29,13 @@ class NOWGateway(CompositeGateway):
     No rerouting is done for the grpc gateway.
     """
 
-    def __init__(self, user_input_dict: Dict = {}, **kwargs):
+    def __init__(
+        self,
+        user_input_dict: Dict = {},
+        internal_app_id: str = 'search-api',  # todo: verify if this is correct
+        internal_product_id: str = 'pro',  # todo: verify if this is correct
+        **kwargs,
+    ):
         # need to update port ot 8082, as nginx will listen on 8081
         http_idx = kwargs['runtime_args']['protocol'].index(GatewayProtocolType.HTTP)
         http_port = kwargs['runtime_args']['port'][http_idx]
@@ -41,7 +50,11 @@ class NOWGateway(CompositeGateway):
                 f'Please, let grpc port ({grpc_port}) be different from 8080 (BFF), 8081 (ngix), 8082 (http) and 8501 (playground)'
             )
         kwargs['runtime_args']['port'][http_idx] = 8082
-        super().__init__(**kwargs)
+        super().__init__(
+            internal_app_id=internal_app_id,
+            internal_product_id=internal_product_id,
+            **kwargs,
+        )
 
         self.user_input = UserInput()
         for attr_name, prev_value in self.user_input.__dict__.items():
@@ -57,13 +70,12 @@ class NOWGateway(CompositeGateway):
         with open(os.path.join(os.path.expanduser('~'), 'user_input.json'), 'w') as f:
             json.dump(self.user_input.__dict__, f)
 
-        # note order is important
-        self._add_gateway(
+        self.bff_gateway = self._create_gateway(
             BFFGateway,
             NOWGATEWAY_BFF_PORT,
             **kwargs,
         )
-        self._add_gateway(
+        self.playground_gateway = self._create_gateway(
             PlaygroundGateway,
             8501,
             **kwargs,
@@ -72,7 +84,20 @@ class NOWGateway(CompositeGateway):
         self.setup_nginx()
         self.nginx_was_shutdown = False
 
+    async def setup_server(self):
+        # note order is important
+        await self.playground_gateway.setup_server()
+        await self.bff_gateway.setup_server()
+        await super().setup_server()
+
+    async def run_server(self):
+        await self.playground_gateway.run_server()
+        await self.bff_gateway.run_server()
+        await super().run_server()
+
     async def shutdown(self):
+        await self.playground_gateway.shutdown()
+        await self.bff_gateway.shutdown()
         await super().shutdown()
         if not self.nginx_was_shutdown:
             self.shutdown_nginx()
@@ -108,7 +133,7 @@ class NOWGateway(CompositeGateway):
         sleep(10)
         return output, error
 
-    def _add_gateway(self, gateway_cls, port, protocol='http', **kwargs):
+    def _create_gateway(self, gateway_cls, port, protocol='http', **kwargs):
         # ignore metrics_registry since it is not copyable
         runtime_args = self._deepcopy_with_ignore_attrs(
             self.runtime_args, ['metrics_registry']
@@ -119,4 +144,67 @@ class NOWGateway(CompositeGateway):
         gateway_kwargs['runtime_args'] = dict(vars(runtime_args))
         gateway = gateway_cls(**gateway_kwargs)
         gateway.streamer = self.streamer
-        self.gateways.insert(0, gateway)
+        return gateway
+
+    def extra_interceptors(self) -> List[PaymentInterceptor]:
+        return [
+            SearchPaymentInterceptor(
+                internal_app_id=self._internal_app_id,
+                internal_product_id=self._internal_product_id,
+                deployment_id=self._deployment_id,
+                usage_client_id=self._usage_client_id,
+                usage_client_secret=self._usage_client_secret,
+                logger=self.logger,
+            )
+        ]
+
+    def _get_report_usage(self) -> Callable:
+        # todo: report usage to hubble
+        def report_usage(
+            current_user: dict,
+            usage_client_id: str,
+            usage_client_secret: str,
+            usage_detail: dict,
+        ):
+            pass
+
+    def _get_request_authenticate(self):
+        def request_authenticate(request: Request):
+            try:
+                # todo: add authentication mechanism from now.executors.abstract.auth which is based
+                # on parameters in body
+                # parameters has been already extracted from the request body
+                parameters = request.json()['parameters']
+                return True, 'user_id'
+            except Exception as ex:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail=str(ex),
+                )
+
+        return request_authenticate
+
+    @staticmethod
+    def _deepcopy_with_ignore_attrs(obj: Any, ignore_attrs: List[str]) -> Any:
+        """Deep copy an object and ignore some attributes
+
+        :param obj: the object to copy
+        :param ignore_attrs: the attributes to ignore
+        :return: the copied object
+        """
+
+        memo = {}
+        for k in ignore_attrs:
+            if hasattr(obj, k):
+                memo[id(getattr(obj, k))] = None  # getattr(obj, k)
+
+        return copy.deepcopy(obj, memo)
+
+
+class SearchPaymentInterceptor(PaymentInterceptor):
+    def authenticate_and_authorize(
+        self, handler_call_details
+    ) -> Tuple[bool, Union[dict, str]]:
+        # todo: add authentication mechanism from now.executors.abstract.auth which is based
+        # on parameters in body
+        pass

@@ -11,7 +11,9 @@ logger = logging.getLogger(__name__)
 
 
 class PaymentInterceptor(grpc.aio.ServerInterceptor):
-    def __init__(self, logger, report_usage: Callable, **kwargs):
+    def __init__(
+        self, logger: Union['JinaLogger', 'Logger'], report_usage: Callable, **kwargs
+    ):
         self._internal_app_id = kwargs.get('internal_app_id')
         self._internal_product_id = kwargs.get('internal_product_id')
         self._deployment_id = kwargs.get('deployment_id', None)
