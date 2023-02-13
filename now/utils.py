@@ -254,10 +254,9 @@ def get_chunk_by_field_name(doc, field_name):
     :return: Specific chunk by field.
     """
     try:
-        field_position = int(
-            doc._metadata['multi_modal_schema'][field_name]['position']
-        )
-        return doc.chunks[field_position]
+        for chunk in doc:
+            if chunk._metadata['field_name'] == field_name:
+                return chunk
     except Exception as e:
         print(f'An error occurred: {e}')
 
