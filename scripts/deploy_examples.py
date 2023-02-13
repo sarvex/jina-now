@@ -1,6 +1,7 @@
 import os
 import sys
 from argparse import Namespace
+from dataclasses import dataclass
 
 import boto3
 from jina import Client
@@ -11,7 +12,25 @@ from now.constants import DEMO_NS, MODALITY_TO_MODELS, DatasetTypes
 from now.demo_data import AVAILABLE_DATASETS
 from now.deployment.deployment import list_all_wolf, terminate_wolf
 from now.now_dataclasses import UserInput
-from now.utils import get_aws_profile
+
+
+# TODO: Remove this once the Jina NOW version is bumped
+@dataclass
+class AWSProfile:
+    aws_access_key_id: str
+    aws_secret_access_key: str
+    region: str
+
+
+def get_aws_profile():
+    session = boto3.Session()
+    credentials = session.get_credentials()
+    aws_profile = (
+        AWSProfile(credentials.access_key, credentials.secret_key, session.region_name)
+        if credentials
+        else AWSProfile(None, None, session.region_name)
+    )
+    return aws_profile
 
 
 def upsert_cname_record(source, target):
@@ -39,7 +58,7 @@ def upsert_cname_record(source, target):
                 ],
             },
         )
-    except Exception as e:
+    except Exception as e:  # noqa
         print(e)
 
 
