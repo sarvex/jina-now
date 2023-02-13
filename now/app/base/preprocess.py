@@ -47,7 +47,7 @@ def preprocess_text(
 
 def preprocess_image(d: Document):
     """loads document into memory and creates thumbnail."""
-    strategy = 2
+    strategy = 1
     # TODO move logic of downloading data away from preprocessing them
     if strategy == 1:
         if d.tensor is None:
