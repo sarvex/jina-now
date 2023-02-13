@@ -1,7 +1,11 @@
 import asyncio
 import subprocess
 
+import hubble
+from docarray import dataclass
+from docarray.typing import Text
 from jcloud.flow import CloudFlow
+from jina import Client, Document
 
 
 def deploy_wolf(path: str):
@@ -59,3 +63,17 @@ def cmd(command, std_output=False, wait=True):
 
 def which(executable: str) -> bool:
     return bool(cmd('which ' + executable)[0])
+
+
+def dummy_query(host: str) -> None:
+    @dataclass
+    class MMQuery:
+        query_text: Text
+
+    print(host)
+    client = Client(host=host)
+    client.post(
+        on='/search',
+        inputs=Document(MMQuery(query_text="test")),
+        parameters={'jwt': {'token': hubble.get_token()}, 'access_paths': '@cc'},
+    )

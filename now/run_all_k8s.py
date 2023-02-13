@@ -7,7 +7,13 @@ from rich.table import Column, Table
 
 from now import run_backend
 from now.constants import DEMO_NS, FLOW_STATUS
-from now.deployment.deployment import cmd, list_all_wolf, status_wolf, terminate_wolf
+from now.deployment.deployment import (
+    cmd,
+    dummy_query,
+    list_all_wolf,
+    status_wolf,
+    terminate_wolf,
+)
 from now.dialog import configure_user_input
 from now.utils import maybe_prompt_user
 
@@ -115,6 +121,10 @@ def fetch_logs_now(**kwargs):
             }
         ]
         cluster = maybe_prompt_user(questions, 'cluster', **kwargs)
+
+    app_host = cluster.split("://")[1]
+    app_url = f"https://{app_host}"  # can be changed to grpc in the future
+    dummy_query(app_url)
 
     flow = [x for x in alive_flows if x['name'] == cluster][0]
     flow_id = flow['id']
