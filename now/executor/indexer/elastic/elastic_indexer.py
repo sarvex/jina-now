@@ -85,6 +85,15 @@ class NOWElasticIndexer(Executor):
             print("Opts: ", volume.opts)
             print("---------------------------------")
 
+        # run the following command on the file system sudo chmod -R 755 /data/jnamespace-a12a7f3db4
+        import subprocess
+
+        user = "elasticsearch"
+        group = "elasticsearch"
+        path = f'/data/{os.environ["K8S_NAMESPACE_NAME"]}'
+
+        subprocess.run(["sudo", "chown", "-R", f"777", path])
+
         self.metric = metric
         self.limit = limit
         self.max_values_per_tag = max_values_per_tag
