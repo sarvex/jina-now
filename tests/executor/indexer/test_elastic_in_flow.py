@@ -8,7 +8,6 @@ from jina import Document, DocumentArray, Executor, Flow, requests
 
 from now.executor.gateway import NOWGateway
 from now.executor.indexer.elastic import NOWElasticIndexer
-from now.executor.indexer.elastic.elastic_indexer import random_index_name
 from now.executor.preprocessor import NOWPreprocessor
 
 NUMBER_OF_DOCS = 10
@@ -28,14 +27,14 @@ class DummyEncoder(Executor):
 
 
 @pytest.fixture
-def flow(metas):
+def flow(random_index_name, metas):
     class OfflineFlow:
         def __init__(self, *args, **kwargs):
             self.preprocessor = NOWPreprocessor()
             self.encoder = DummyEncoder()
             self.indexer = NOWElasticIndexer(
                 hosts='http://localhost:9200',
-                index_name=random_index_name(),
+                index_name=random_index_name,
                 document_mappings=DOCUMENT_MAPPINGS,
                 user_input_dict={
                     'filter_fields': ['color', 'greeting'],

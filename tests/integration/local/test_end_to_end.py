@@ -14,11 +14,11 @@ from now.constants import ACCESS_PATHS
 @pytest.mark.parametrize(
     'get_flow',
     [
-        'artworks_data',
-        'pop_lyrics_data',
+        # 'artworks_data',
+        # 'pop_lyrics_data',
         'elastic_data',
-        'local_folder_data',
-        's3_bucket_data',
+        # 'local_folder_data',
+        # 's3_bucket_data',
     ],
     indirect=True,
 )

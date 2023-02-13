@@ -3,7 +3,6 @@ import tempfile
 from now.executor.indexer.elastic.elastic_indexer import (
     FieldEmbedding,
     NOWElasticIndexer,
-    random_index_name,
 )
 
 
@@ -36,7 +35,9 @@ def test_generate_es_mappings(setup_service_running):
     assert result == expected_mapping
 
 
-def test_index_and_search_with_multimodal_docs(setup_service_running, es_inputs):
+def test_index_and_search_with_multimodal_docs(
+    setup_service_running, es_inputs, random_index_name
+):
     """
     This test runs indexing with the NOWElasticIndexer using multimodal docs.
     """
@@ -46,7 +47,7 @@ def test_index_and_search_with_multimodal_docs(setup_service_running, es_inputs)
         document_mappings,
         default_semantic_scores,
     ) = es_inputs
-    index_name = random_index_name()
+    index_name = random_index_name
     indexer = NOWElasticIndexer(
         document_mappings=document_mappings,
         # es_config={'api_key': os.environ['ELASTIC_API_KEY']},
@@ -95,7 +96,7 @@ def test_index_and_search_with_multimodal_docs(setup_service_running, es_inputs)
             assert isinstance(results[0].matches[0].scores[score_string].value, float)
 
 
-def test_list_endpoint(setup_service_running, es_inputs):
+def test_list_endpoint(setup_service_running, es_inputs, random_index_name):
     """
     This test tests the list endpoint of the NOWElasticIndexer.
     """
@@ -108,7 +109,7 @@ def test_list_endpoint(setup_service_running, es_inputs):
     es_indexer = NOWElasticIndexer(
         document_mappings=document_mappings,
         hosts='http://localhost:9200',
-        index_name=random_index_name(),
+        index_name=random_index_name,
     )
     es_indexer.index(index_docs_map)
     result = es_indexer.list()
@@ -121,7 +122,7 @@ def test_list_endpoint(setup_service_running, es_inputs):
     assert len(result_with_offset) == len(index_docs_map['clip']) - offset
 
 
-def test_delete_by_id(setup_service_running, es_inputs):
+def test_delete_by_id(setup_service_running, es_inputs, random_index_name):
     """
     This test tests the delete endpoint of the NOWElasticIndexer, by deleting a list of IDs.
     """
@@ -131,7 +132,7 @@ def test_delete_by_id(setup_service_running, es_inputs):
         document_mappings,
         default_semantic_scores,
     ) = es_inputs
-    index_name = random_index_name()
+    index_name = random_index_name
     es_indexer = NOWElasticIndexer(
         document_mappings=document_mappings,
         hosts='http://localhost:9200',
@@ -147,7 +148,7 @@ def test_delete_by_id(setup_service_running, es_inputs):
     assert len(res['hits']['hits']) == 0
 
 
-def test_delete_by_filter(setup_service_running, es_inputs):
+def test_delete_by_filter(setup_service_running, es_inputs, random_index_name):
     """
     This test tests the delete endpoint of the NOWElasticIndexer, by deleting a filter.
     """
@@ -157,7 +158,7 @@ def test_delete_by_filter(setup_service_running, es_inputs):
         document_mappings,
         default_semantic_scores,
     ) = es_inputs
-    index_name = random_index_name()
+    index_name = random_index_name
     es_indexer = NOWElasticIndexer(
         document_mappings=document_mappings,
         hosts='http://localhost:9200',
@@ -173,7 +174,9 @@ def test_delete_by_filter(setup_service_running, es_inputs):
     assert len(res['hits']['hits']) == 0
 
 
-def test_custom_mapping_and_custom_bm25_search(setup_service_running, es_inputs):
+def test_custom_mapping_and_custom_bm25_search(
+    setup_service_running, es_inputs, random_index_name
+):
     """
     This test tests the custom mapping and bm25 functionality of the NOWElasticIndexer.
     """
@@ -213,7 +216,7 @@ def test_custom_mapping_and_custom_bm25_search(setup_service_running, es_inputs)
         document_mappings=document_mappings,
         es_mapping=es_mapping,
         hosts='http://localhost:9200',
-        index_name=random_index_name(),
+        index_name=random_index_name,
     )
     # do indexing
     es_indexer.index(index_docs_map)
@@ -238,7 +241,7 @@ def test_custom_mapping_and_custom_bm25_search(setup_service_running, es_inputs)
     assert results[0].matches[1].id == '1'
 
 
-def test_search_with_filter(setup_service_running, es_inputs):
+def test_search_with_filter(setup_service_running, es_inputs, random_index_name):
     """
     This test tests the search endpoint of the NOWElasticIndexer using filters.
     """
@@ -250,7 +253,7 @@ def test_search_with_filter(setup_service_running, es_inputs):
     ) = es_inputs
     es_indexer = NOWElasticIndexer(
         document_mappings=document_mappings,
-        index_name=random_index_name(),
+        index_name=random_index_name,
     )
     es_indexer.index(index_docs_map)
 

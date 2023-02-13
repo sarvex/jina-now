@@ -27,11 +27,11 @@ def get_request_body(secured):
 
 
 @pytest.fixture
-def get_flow(request, tmpdir):
+def get_flow(request, random_index_name, tmpdir):
     params = request.param
     docs, user_input = request.getfixturevalue(params)
     event = multiprocessing.Event()
-    flow = FlowThread(event, docs, user_input, tmpdir)
+    flow = FlowThread(event, user_input, random_index_name, tmpdir)
     flow.start()
     while not flow.is_flow_ready():
         sleep(1)
@@ -48,14 +48,16 @@ class FlowThread(multiprocessing.Process):
     def __init__(
         self,
         event,
-        docs,
         user_input,
+        random_index_name,
         tmpdir,
     ):
         multiprocessing.Process.__init__(self)
 
         self.event = event
-        user_input.app_instance.setup(dataset=docs, user_input=user_input, testing=True)
+        user_input.app_instance.setup(
+            user_input=user_input, testing=True, index_name=random_index_name
+        )
         for executor in user_input.app_instance.flow_yaml['executors']:
             if not executor.get('external'):
                 executor['uses_metas'] = {'workspace': str(tmpdir)}
