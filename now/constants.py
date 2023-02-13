@@ -6,7 +6,7 @@ from now.utils import BetterEnum
 
 NOW_GATEWAY_VERSION = '0.0.4-refactor-remove-survey-2'
 NOW_PREPROCESSOR_VERSION = '0.0.123-fix-example-deployment-6'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.148-test-experiment-volume-5'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.148-test-experiment-volume-6'
 NOW_AUTOCOMPLETE_VERSION = '0.0.11-refactor-custom-gateway-103'
 
 
