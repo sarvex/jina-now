@@ -58,7 +58,7 @@ def upsert_cname_record(source, target):
                 ],
             },
         )
-    except Exception as e:
+    except Exception as e:  # noqa
         print(e)
 
 
