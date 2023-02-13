@@ -58,7 +58,7 @@ class SearchApp(JinaNOWApp):
                 host=f'grpcs://{DEMO_NS.format(user_input.dataset_name.split("/")[-1])}.dev.jina.ai'
             )
             try:
-                client.post('/dry_run', timeout=2)
+                client.post('/dry_run')
             except Exception as e:  # noqa E722
                 pass
             return True
