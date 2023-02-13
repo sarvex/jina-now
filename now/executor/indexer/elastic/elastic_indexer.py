@@ -186,6 +186,16 @@ class NOWElasticIndexer(Executor):
                     print(c.embedding)
 
         aggregate_embeddings(docs_map)
+        if docs_map.get('encodersbert', None):
+            print("DOCS AFTER AGGREGATION")
+            docs_map['encodersbert'].summary()
+            for doc in docs_map['encodersbert']:
+                doc.summary()
+                for c in doc.chunks:
+                    print(c.modality)
+                    print(c.content)
+                    print(c.embedding)
+
         es_docs = convert_doc_map_to_es(
             docs_map, self.index_name, self.encoder_to_fields
         )
