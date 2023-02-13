@@ -1,4 +1,5 @@
 import io
+import math
 
 import numpy as np
 from docarray import Document
@@ -46,19 +47,24 @@ def preprocess_text(
 
 def preprocess_image(d: Document):
     """loads document into memory and creates thumbnail."""
+    strategy = 2
     # TODO move logic of downloading data away from preprocessing them
-    # if d.tensor is None:
-    #     if d.blob != b'':
-    #         d.convert_blob_to_image_tensor()
-    #     elif d.uri:
-    #         d.load_uri_to_image_tensor(timeout=10)
-    # to_thumbnail_jpg(d)
+    if strategy == 1:
+        if d.tensor is None:
+            if d.blob != b'':
+                d.convert_blob_to_image_tensor()
+            elif d.uri:
+                d.load_uri_to_image_tensor(timeout=10)
+        to_thumbnail_jpg(d)
 
-    if 'uri' in d.tags:
-        d.uri = d.tags['uri']
-    if d.blob is None:
-        if d.uri:
-            d.load_uri_to_blob()
+    elif strategy == 2:
+        if 'uri' in d.tags:
+            d.uri = d.tags['uri']
+        if d.blob is None:
+            if d.uri:
+                d.load_uri_to_blob()
+                downsample_image(d)
+            d.convert_tensor_to_blob()
 
     d.chunks.append(
         Document(
@@ -122,4 +128,30 @@ def ndarray_to_jpeg_bytes(arr) -> bytes:
 def to_thumbnail_jpg(doc: Document):
     if doc.tensor is not None:
         doc.blob = ndarray_to_jpeg_bytes(doc.tensor)
+    return doc
+
+
+def preserve_aspect_ratio(source_size, target_size):
+    def round_aspect(number, key):
+        return max(min(math.floor(number), math.ceil(number), key=key), 1)
+
+    width, height = source_size
+    x, y = target_size
+    if x >= width and y >= height:
+        return
+
+    aspect = width / height
+    if x / y >= aspect:
+        x = round_aspect(y * aspect, key=lambda n: abs(aspect - n / y))
+    else:
+        y = round_aspect(x / aspect, key=lambda n: 0 if n == 0 else abs(aspect - x / n))
+    return x, y
+
+
+def downsample_image(doc: Document):
+    if doc.tensor is not None:
+        width, height, _ = doc.tensor.shape
+        doc.tensor.set_image_tensor_shape(
+            shape=preserve_aspect_ratio((width, height), (224, 224))
+        )
     return doc
