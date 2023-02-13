@@ -52,9 +52,13 @@ def preprocess_image(d: Document):
             d.convert_blob_to_image_tensor()
         elif d.uri:
             d.load_uri_to_image_tensor(timeout=10)
-    if 'uri' in d.tags:
-        d.uri = d.tags['uri']
     to_thumbnail_jpg(d)
+
+    # if 'uri' in d.tags:
+    #     d.uri = d.tags['uri']
+    # if d.blob is None:
+    #     if d.uri:
+    #         d.load_uri_to_blob()
 
     d.chunks.append(
         Document(
