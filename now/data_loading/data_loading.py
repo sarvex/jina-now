@@ -1,7 +1,7 @@
 import json
 import os
 from collections import defaultdict
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Dict, List, Type
 
 from docarray import Document, DocumentArray
@@ -379,6 +379,7 @@ def _list_s3_file_paths(bucket, folder_prefix):
         return list_prefixes
 
     objects = []
+    max_retries = 3
     if folder_structure == 'sub_folders':
         prefixes = get_prefixes()
         # TODO: change cpu count to a fixed number
@@ -390,8 +391,21 @@ def _list_s3_file_paths(bucket, folder_prefix):
                     lambda: list(bucket.objects.filter(Prefix=f'{pref}'))
                 )
                 futures.append(f)
-            for f in futures:
-                objects += f.result()
+            for future in as_completed(futures):
+                retries = 0
+                while retries < max_retries:
+                    try:
+                        result = future.result()
+                        objects.extend(result)
+                        break
+                    except Exception as e:
+                        retries += 1
+                        if retries == max_retries:
+                            raise Exception(
+                                "Failed to list objects for prefix {} after {} retries: {}".format(
+                                    future.prefix, max_retries, str(e)
+                                )
+                            )
     else:
         objects = list(bucket.objects.filter(Prefix=folder_prefix))
     return [
