@@ -2,9 +2,7 @@ import numpy as np
 from docarray import Document
 from docarray.score import NamedScore
 
-from now.executor.indexer.elastic.elastic_indexer import (
-    aggregate_embeddings,
-)
+from now.executor.indexer.elastic.elastic_indexer import aggregate_embeddings
 from now.executor.indexer.elastic.es_converter import (
     calculate_score_breakdown,
     convert_doc_map_to_es,
