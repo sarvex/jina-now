@@ -29,41 +29,41 @@ from now.demo_data import DemoDatasetNames
             },
             DemoDatasetNames.BIRD_SPECIES,
         ),
-        # (
-        #     'image',
-        #     ['image'],
-        #     ['label'],
-        #     {
-        #         'image_model': [Models.CLIP_MODEL],
-        #     },
-        #     DemoDatasetNames.BIRD_SPECIES,
-        # ),
-        # (
-        #     'text',
-        #     ['lyrics'],
-        #     [],
-        #     {'lyrics_model': [Models.CLIP_MODEL, Models.SBERT_MODEL]},
-        #     DemoDatasetNames.POP_LYRICS,
-        # ),
-        # (
-        #     'text',
-        #     ['video', 'description'],
-        #     [],
-        #     {
-        #         'video_model': [Models.CLIP_MODEL],
-        #         'description_model': [Models.CLIP_MODEL],
-        #     },
-        #     DemoDatasetNames.TUMBLR_GIFS_10K,
-        # ),
-        # (
-        #     'text',
-        #     ['image'],
-        #     ['label'],
-        #     {
-        #         'image_model': [Models.CLIP_MODEL],
-        #     },
-        #     DemoDatasetNames.BEST_ARTWORKS,
-        # ),
+        (
+            'image',
+            ['image'],
+            ['label'],
+            {
+                'image_model': [Models.CLIP_MODEL],
+            },
+            DemoDatasetNames.BIRD_SPECIES,
+        ),
+        (
+            'text',
+            ['lyrics'],
+            [],
+            {'lyrics_model': [Models.CLIP_MODEL, Models.SBERT_MODEL]},
+            DemoDatasetNames.POP_LYRICS,
+        ),
+        (
+            'text',
+            ['video', 'description'],
+            [],
+            {
+                'video_model': [Models.CLIP_MODEL],
+                'description_model': [Models.CLIP_MODEL],
+            },
+            DemoDatasetNames.TUMBLR_GIFS_10K,
+        ),
+        (
+            'text',
+            ['image'],
+            ['label'],
+            {
+                'image_model': [Models.CLIP_MODEL],
+            },
+            DemoDatasetNames.BEST_ARTWORKS,
+        ),
     ],
 )
 @pytest.mark.timeout(60 * 10)
@@ -89,7 +89,6 @@ def test_end_to_end(
     }
     kwargs.update(model_selection)
     kwargs = Namespace(**kwargs)
-    print(kwargs)
     response = cli(args=kwargs)
     # Dump the flow details from response host to a tmp file
     flow_details = {'host': response['host_http']}
