@@ -70,10 +70,11 @@ def _add_tags_to_da(da: DocumentArray, user_input: UserInput):
     """Add tags to da, remove non-index chunks, and update multi modal schema."""
     if not da:
         return da
-
+    all_fields = da[0]._metadata['multi_modal_schema'].keys()
     for doc in da:
         filtered_chunks = []
-        for field in doc._metadata['multi_modal_schema'].keys():
+        filtered_chunk_names = []
+        for field in all_fields:
             field_doc = get_chunk_by_field_name(doc, field)
             if field not in user_input.index_fields:
                 if field_doc.blob or field_doc.tensor is not None:
@@ -87,14 +88,15 @@ def _add_tags_to_da(da: DocumentArray, user_input: UserInput):
                 )
             else:
                 filtered_chunks.append(field_doc)
+                filtered_chunk_names.append(field)
         doc.chunks = filtered_chunks
         # keep only the index fields in metadata
         doc._metadata['multi_modal_schema'] = {
             field: doc._metadata['multi_modal_schema'][field]
-            for field in user_input.index_fields
+            for field in filtered_chunk_names
         }
         # Update the positions accordingly to access the chunks
-        for position, field in enumerate(user_input.index_fields):
+        for position, field in enumerate(filtered_chunk_names):
             doc._metadata['multi_modal_schema'][field]['position'] = int(position)
 
     return da

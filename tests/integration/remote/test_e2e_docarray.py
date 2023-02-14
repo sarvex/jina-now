@@ -2,6 +2,7 @@ import json
 from argparse import Namespace
 
 import pytest
+from jina import Client
 from tests.integration.remote.assertions import (
     assert_deployment_queries,
     assert_deployment_response,
@@ -12,6 +13,13 @@ from tests.integration.remote.assertions import (
 from now.cli import cli
 from now.constants import DatasetTypes, Models
 from now.demo_data import DemoDatasetNames
+
+
+def assert_indexed_all_docs(flow_details):
+    response = Client(host=flow_details['host']).post(
+        on='/list', parameters={'limit': 50}
+    )
+    assert len(response) == 50
 
 
 @pytest.mark.remote
@@ -101,6 +109,7 @@ def test_end_to_end(
         search_modality='text',
         dataset=dataset,
     )
+    assert_indexed_all_docs(flow_details)
     if query_fields == 'text':
         request_body = get_search_request_body(
             kwargs=kwargs,
