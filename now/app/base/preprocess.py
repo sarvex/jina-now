@@ -48,7 +48,8 @@ def preprocess_text(
 def preprocess_image(d: Document):
     """loads document into memory and creates thumbnail."""
     strategy = 1
-    # TODO move logic of downloading data away from preprocessing them
+
+    # downsampling using PIL
     if strategy == 1:
         if d.tensor is None:
             if d.blob != b'':
@@ -58,13 +59,21 @@ def preprocess_image(d: Document):
         to_thumbnail_jpg(d)
 
     elif strategy == 2:
+        # no downsamnpling
         if 'uri' in d.tags:
             d.uri = d.tags['uri']
         if d.blob is None:
             if d.uri:
                 d.load_uri_to_blob()
-                downsample_image(d)
-            d.convert_tensor_to_blob()
+
+    elif strategy == 3:
+        # downsampling using DocArray
+        if 'uri' in d.tags:
+            d.uri = d.tags['uri']
+        if d.tensor is None:
+            d.load_uri_to_image_tensor()
+        downsample_image(d)
+        d.convert_tensor_to_blob()
 
     d.chunks.append(
         Document(
@@ -151,7 +160,7 @@ def preserve_aspect_ratio(source_size, target_size):
 def downsample_image(doc: Document):
     if doc.tensor is not None:
         width, height, _ = doc.tensor.shape
-        doc.tensor.set_image_tensor_shape(
+        doc.set_image_tensor_shape(
             shape=preserve_aspect_ratio((width, height), (224, 224))
         )
     return doc
