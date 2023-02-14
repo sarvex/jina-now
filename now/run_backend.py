@@ -54,7 +54,6 @@ def run(
 
     # Set up the app specific flow
     app_instance.setup(
-        dataset=dataset,
         user_input=user_input,
     )
 
