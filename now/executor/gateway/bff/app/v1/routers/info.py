@@ -36,7 +36,7 @@ async def get_count(data: BaseRequestModel, limit: int = 10) -> CountResponseMod
         target_executor=r'\Aindexer\Z',
         parameters={'limit': limit},
     )
-    return CountResponseModel(number_of_docs=response['count'])
+    return CountResponseModel(number_of_docs=response[0].tags['count'])
 
 
 @router.post('/field_names_to_dataclass_fields')
