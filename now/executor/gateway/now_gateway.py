@@ -13,9 +13,10 @@ logger = logging.getLogger(__file__)
 from now.constants import NOWGATEWAY_BFF_PORT
 from now.deployment.deployment import cmd
 from now.executor.abstract.auth.auth import check_user
-from now.executor.gateway import BFFGateway, PlaygroundGateway
 from now.executor.gateway.base_payment_gateway import BasePaymentGateway
+from now.executor.gateway.bff_gateway import BFFGateway
 from now.executor.gateway.interceptor import PaymentInterceptor
+from now.executor.gateway.playground_gateway import PlaygroundGateway
 from now.now_dataclasses import UserInput
 
 cur_dir = os.path.dirname(__file__)
@@ -193,7 +194,9 @@ class NOWGateway(BasePaymentGateway):
                 # on parameters in body
                 # parameters has been already extracted from the request body
                 parameters = request.json()['parameters']
-                return True, 'user_id'
+                check_user(parameters)
+                user = {'token': parameters['jwt']}
+                return True, user
             except Exception as ex:
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
@@ -230,3 +233,24 @@ class SearchPaymentInterceptor(PaymentInterceptor):
         check_user(**metadata)
         user = {'token': metadata['token']}
         return True, user
+
+
+def get_user_token(request: Request) -> str:
+    """Get current user from Hubble API based on token.
+
+    :param request: The request header sent along the request.
+    :return: The extracted user token from request header.
+    """
+    cookie = request.cookies
+    if cookie and 'st' in cookie:
+        token = cookie.get('st')
+    else:
+        token = request.headers.get('Authorization')
+
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail='Empty authentication credentials',
+        )
+    token = token.replace('token ', '')
+    return token  # noqa: E203

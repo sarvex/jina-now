@@ -15,8 +15,8 @@ from jina.serve.gateway import BaseGateway
 from jina.serve.runtimes.helper import _get_grpc_server_options
 from jina.types.request.status import StatusMessage
 
-from .fastapi import get_security_app
-from .interceptor import PaymentInterceptor
+from now.executor.gateway.fast_api import get_security_app
+from now.executor.gateway.interceptor import PaymentInterceptor
 
 
 class BasePaymentGateway(BaseGateway):
