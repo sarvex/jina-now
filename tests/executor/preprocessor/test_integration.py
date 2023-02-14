@@ -3,7 +3,7 @@ import os
 from docarray import Document, DocumentArray
 from jina import Flow
 
-from now.executor.gateway import NOWGateway
+from now.executor.gateway.now_gateway import NOWGateway
 from now.executor.preprocessor import NOWPreprocessor
 
 

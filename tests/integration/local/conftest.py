@@ -12,7 +12,7 @@ from now.constants import EXTERNAL_CLIP_HOST, DatasetTypes, Models
 from now.data_loading.create_dataclass import create_dataclass
 from now.data_loading.data_loading import load_data
 from now.demo_data import DemoDatasetNames
-from now.executor.gateway import NOWGateway
+from now.executor.gateway.now_gateway import NOWGateway
 from now.executor.indexer.elastic import NOWElasticIndexer
 from now.executor.preprocessor import NOWPreprocessor
 from now.now_dataclasses import UserInput

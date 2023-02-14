@@ -2,7 +2,7 @@ from docarray import Document, DocumentArray
 from jina import Flow
 
 from now.executor.autocomplete.executor import NOWAutoCompleteExecutor2
-from now.executor.gateway import NOWGateway
+from now.executor.gateway.now_gateway import NOWGateway
 
 
 def test_autocomplete(tmpdir, mm_dataclass):

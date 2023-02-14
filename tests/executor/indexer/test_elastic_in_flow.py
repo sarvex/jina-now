@@ -6,7 +6,7 @@ from docarray import dataclass
 from docarray.typing import Text
 from jina import Document, DocumentArray, Executor, Flow, requests
 
-from now.executor.gateway import NOWGateway
+from now.executor.gateway.now_gateway import NOWGateway
 from now.executor.indexer.elastic import NOWElasticIndexer
 from now.executor.preprocessor import NOWPreprocessor
 
