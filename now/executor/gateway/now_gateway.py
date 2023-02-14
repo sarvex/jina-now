@@ -5,7 +5,6 @@ import os
 from time import sleep
 from typing import Any, Callable, Dict, List, Tuple, Union
 
-import requests
 from fastapi import HTTPException, Request, status
 from jina.enums import GatewayProtocolType
 
@@ -37,7 +36,8 @@ class NOWGateway(BasePaymentGateway):
     def __init__(
         self,
         user_input_dict: Dict = {},
-        internal_app_id: str = 'search-api',  # todo: verify if this is correct
+        internal_app_id: str = 'search',
+        internal_product_id: str = 'free-plan',
         **kwargs,
     ):
         # need to update port ot 8082, as nginx will listen on 8081
@@ -56,6 +56,7 @@ class NOWGateway(BasePaymentGateway):
         kwargs['runtime_args']['port'][http_idx] = 8082
         super().__init__(
             internal_app_id=internal_app_id,
+            internal_product_id=internal_product_id,
             **kwargs,
         )
 
@@ -153,6 +154,7 @@ class NOWGateway(BasePaymentGateway):
         return [
             SearchPaymentInterceptor(
                 internal_app_id=self._internal_app_id,
+                internal_product_id=self._internal_product_id,
                 deployment_id=self._deployment_id,
                 usage_client_id=self._usage_client_id,
                 usage_client_secret=self._usage_client_secret,
@@ -172,13 +174,18 @@ class NOWGateway(BasePaymentGateway):
 
             try:
                 usage_detail['current_user'] = current_user
-                resp = requests.post(
-                    f'{self.backend_endpoint}/api/v1/reports/',
-                    auth=(usage_client_id, usage_client_secret),
-                    json=usage_detail,
+                from hubble.payment.client import PaymentClient
+
+                client = PaymentClient(
+                    m2m_token='MjdiOTQ4MWI0MTEyYWU2OWYyY2MxMGEyM2Q2YTNkY2I6NmYzMGMwOGJkNTc4OTQ2ZGFlZTY1NDY2YmNjNDM0YzNmZDY4OTIxODhlYmFiYmU4ZmM5NzIxOGMzMDYyNTQ1NQ=='
                 )
-                if resp.status_code != 200:
-                    resp.raise_for_status()
+                resp = client.report_usage(
+                    current_user['token'],
+                    self._internal_app_id,
+                    usage_detail['credits'],
+                )
+                if resp['code'] != 200:
+                    raise Exception('Failed to credit user')
 
             except Exception as ex:
                 # TODO: handle the exception
@@ -226,8 +233,6 @@ class SearchPaymentInterceptor(PaymentInterceptor):
     def authenticate_and_authorize(
         self, handler_call_details
     ) -> Tuple[bool, Union[dict, str]]:
-        # todo: add authentication mechanism from now.executors.abstract.auth which is based
-        # on parameters in body
         metadata = handler_call_details.invocation_metadata
         metadata = {m.key: m.value for m in metadata}
         check_user(**metadata)

@@ -28,6 +28,7 @@ def get_security_app(
     tracing: Optional[bool] = None,
     tracer_provider: Optional = None,
     internal_app_id: str = None,
+    internal_product_id: str = None,
     usage_client_id: Optional[str] = None,
     usage_client_secret: Optional[str] = None,
     request_authenticate: Optional[Callable] = None,
@@ -110,11 +111,11 @@ def get_security_app(
                 usage_client_id=usage_client_id,
                 usage_client_secret=usage_client_secret,
                 usage_detail={
-                    'token': current_user['access_token'],
+                    'token': current_user['token'],
                     'id': str(uuid.uuid4()),
-                    'rootId': str(uuid.uuid4()),
                     'credits': num_docs,
                     'internalAppId': internal_app_id,
+                    'internalProductId': internal_product_id,
                 },
             )
 

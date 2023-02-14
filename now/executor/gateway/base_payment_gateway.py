@@ -23,6 +23,7 @@ class BasePaymentGateway(BaseGateway):
     def __init__(
         self,
         internal_app_id: str,
+        internal_product_id: str,
         usage_client_id: str = None,
         usage_client_secret: str = None,
         grpc_server_options: Optional[dict] = None,
@@ -77,6 +78,7 @@ class BasePaymentGateway(BaseGateway):
 
         # metering options
         self._internal_app_id = internal_app_id
+        self._internal_product_id = internal_product_id
         self._usage_client_id = usage_client_id
         self._usage_client_secret = usage_client_secret
 
