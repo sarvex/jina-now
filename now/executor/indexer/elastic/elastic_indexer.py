@@ -367,7 +367,37 @@ class NOWElasticIndexer(Executor):
         :param parameters: dictionary with filter conditions or list of IDs to select
             documents for deletion.
         """
-        pass
+        search_filter = parameters.get('filter', None)
+        ids = parameters.get('ids', None)
+        if search_filter:
+            es_search_filter = {
+                'query': {'bool': {'filter': process_filter(search_filter)}}
+            }
+            try:
+                resp = self.es.delete_by_query(
+                    index=self.index_name, body=es_search_filter
+                )
+                self.es.indices.refresh(index=self.index_name)
+                self.update_tags()
+            except Exception:
+                self.logger.info(traceback.format_exc())
+                raise
+        elif ids:
+            resp = {'deleted': 0}
+            try:
+                for id in ids:
+                    r = self.es.delete(index=self.index_name, id=id)
+                    self.es.indices.refresh(index=self.index_name)
+                    resp['deleted'] += r['result'] == 'deleted'
+            except Exception as e:
+                self.logger.info(traceback.format_exc(), e)
+        else:
+            raise ValueError('No filter or IDs provided for deletion.')
+        if resp:
+            self.logger.info(
+                f"Deleted {resp['deleted']} documents in Elasticsearch index {self.index_name}"
+            )
+        return DocumentArray()
 
     @secure_request(on='/tags', level=SecurityLevel.USER)
     def tags(self, **kwargs):
