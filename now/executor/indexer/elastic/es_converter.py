@@ -5,6 +5,8 @@ from docarray.score import NamedScore
 from numpy import dot
 from numpy.linalg import norm
 
+from now.utils import get_chunk_by_field_name
+
 
 def get_bm25_fields(doc: Document) -> str:
     try:
@@ -70,11 +72,7 @@ def convert_doc_map_to_es(
                 es_docs[doc.id]['serialized_doc'] = _doc[0].to_base64()
             es_doc = es_docs[doc.id]
             for encoded_field in encoder_to_fields[executor_name]:
-                field_doc = [
-                    chunk
-                    for chunk in doc.chunks
-                    if chunk._metadata['field_name'] == encoded_field
-                ][0]
+                field_doc = get_chunk_by_field_name(doc, encoded_field)
                 es_doc[
                     f'{encoded_field}-{executor_name}.embedding'
                 ] = field_doc.embedding

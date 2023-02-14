@@ -180,11 +180,11 @@ class NOWElasticIndexer(Executor):
             docs_map, self.index_name, self.encoder_to_fields
         )
         success, _ = bulk(self.es, es_docs)
+        self.es.indices.refresh(index=self.index_name)
         if success:
             self.logger.info(
                 f'Inserted {success} documents into Elasticsearch index {self.index_name}'
             )
-        self.es.indices.refresh(index=self.index_name)
         self.update_tags()
         return DocumentArray([])
 
