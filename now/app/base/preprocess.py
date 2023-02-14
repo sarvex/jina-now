@@ -74,7 +74,7 @@ def preprocess_image(d: Document):
             elif d.uri:
                 d.load_uri_to_image_tensor(timeout=10)
         downsample_image(d)
-        d.convert_tensor_to_blob()
+        d.convert_image_tensor_to_blob()
 
     d.chunks.append(
         Document(
