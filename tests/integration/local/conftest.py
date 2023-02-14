@@ -63,6 +63,7 @@ class FlowThread(multiprocessing.Process):
                 executor['uses_metas'] = {'workspace': str(tmpdir)}
         flow_file = os.path.join(tmpdir, 'flow.yml')
         write_flow_file(user_input.app_instance.flow_yaml, flow_file)
+        print('flowww', user_input.app_instance.flow_yaml)
         self.flow = Flow.load_config(flow_file)
 
     def is_flow_ready(self):
