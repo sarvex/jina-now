@@ -175,10 +175,10 @@ def assert_search_custom_s3(host, mm_type, dataset_length, create_temp_link=Fals
             assert len(doc['tags']) > 0
 
 
-def assert_indexed_all_docs(flow_details, kwargs):
+def assert_indexed_all_docs(host, kwargs):
     request_body = get_default_request_body(secured=kwargs.secured)
     response = requests.post(
-        f"{flow_details['host']}/api/v1/search-app/count/?limit=50",
+        f"{host}/api/v1/info/count/?limit=50",
         json=request_body,
     )
     response_json = response.json()

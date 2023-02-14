@@ -354,9 +354,9 @@ class NOWElasticIndexer(Executor):
             result = None
             self.logger.info(traceback.format_exc())
         if result:
-            return len(result)
+            return {'count': len(result)}
         else:
-            return DocumentArray()
+            return {'count': 0}
 
     @secure_request(on='/delete', level=SecurityLevel.USER)
     def delete(self, parameters: dict = {}, **kwargs):
