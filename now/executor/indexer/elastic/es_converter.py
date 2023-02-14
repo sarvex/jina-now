@@ -70,18 +70,11 @@ def convert_doc_map_to_es(
                 es_docs[doc.id]['serialized_doc'] = _doc[0].to_base64()
             es_doc = es_docs[doc.id]
             for encoded_field in encoder_to_fields[executor_name]:
-                print("FROM INSIDE CONVERTER")
-                doc.summary()
                 field_doc = [
                     chunk
                     for chunk in doc.chunks
                     if chunk._metadata['field_name'] == encoded_field
                 ][0]
-                if field_doc.embedding is None:
-                    print("NO EMBEDDING ON THIS FIELD")
-                    print(doc.id)
-                    print(encoded_field)
-                    field_doc.summary()
                 es_doc[
                     f'{encoded_field}-{executor_name}.embedding'
                 ] = field_doc.embedding

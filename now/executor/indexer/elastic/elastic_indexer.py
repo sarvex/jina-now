@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
 import boto3
 from docarray import Document, DocumentArray
 from elasticsearch import Elasticsearch
-from elasticsearch.helpers import BulkIndexError, bulk
+from elasticsearch.helpers import bulk
 
 from now.constants import DatasetTypes
 from now.executor.abstract.auth import (
@@ -175,40 +175,15 @@ class NOWElasticIndexer(Executor):
             docs_map = self._handle_no_docs_map(docs)
             if len(docs_map) == 0:
                 return DocumentArray()
-        if docs_map.get('encodersbert', None):
-            print("SEE DOCS FOR SBERT")
-            docs_map['encodersbert'].summary()
-            for doc in docs_map['encodersbert']:
-                doc.summary()
-                for c in doc.chunks:
-                    print(c.modality)
-                    print(c.content)
-                    print(c.embedding)
-
         aggregate_embeddings(docs_map)
-        if docs_map.get('encodersbert', None):
-            print("DOCS AFTER AGGREGATION")
-            docs_map['encodersbert'].summary()
-            for doc in docs_map['encodersbert']:
-                doc.summary()
-                for c in doc.chunks:
-                    print(c.modality)
-                    print(c.content)
-                    print(c.embedding)
-
         es_docs = convert_doc_map_to_es(
             docs_map, self.index_name, self.encoder_to_fields
         )
-        print(es_docs)
-        try:
-            success, errors = bulk(self.es, es_docs)
-            print(
+        success, _ = bulk(self.es, es_docs)
+        if success:
+            self.logger.info(
                 f'Inserted {success} documents into Elasticsearch index {self.index_name}'
             )
-            print("SUCCESS: ", success)
-            print("ERRORS: ", errors)
-        except BulkIndexError as e:
-            print("EXCEPTION: ", e)
         self.es.indices.refresh(index=self.index_name)
         self.update_tags()
         return DocumentArray([])
