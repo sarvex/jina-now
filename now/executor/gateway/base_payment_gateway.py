@@ -15,12 +15,14 @@ from jina.serve.gateway import BaseGateway
 from jina.serve.runtimes.helper import _get_grpc_server_options
 from jina.types.request.status import StatusMessage
 
+from .fastapi import get_security_app
+from .interceptor import PaymentInterceptor
+
 
 class BasePaymentGateway(BaseGateway):
     def __init__(
         self,
         internal_app_id: str,
-        internal_product_id: str,
         usage_client_id: str = None,
         usage_client_secret: str = None,
         grpc_server_options: Optional[dict] = None,
@@ -75,7 +77,6 @@ class BasePaymentGateway(BaseGateway):
 
         # metering options
         self._internal_app_id = internal_app_id
-        self._internal_product_id = internal_product_id
         self._usage_client_id = usage_client_id
         self._usage_client_secret = usage_client_secret
 
@@ -84,7 +85,7 @@ class BasePaymentGateway(BaseGateway):
         self.logger.addHandler(logging.StreamHandler(sys.stdout))
 
     @abc.abstractmethod
-    def extra_interceptors(self) -> List:
+    def extra_interceptors(self) -> List[PaymentInterceptor]:
         raise NotImplementedError
 
     async def _setup_grpc_server(self):
@@ -147,6 +148,30 @@ class BasePaymentGateway(BaseGateway):
             self.grpc_server.add_insecure_port(bind_addr)
         self.logger.debug(f'start server bound to {bind_addr}')
         await self.grpc_server.start()
+
+    @property
+    def app(self):
+        from jina.helper import extend_rest_interface
+
+        return extend_rest_interface(
+            get_security_app(
+                streamer=self.streamer,
+                title=self.title,
+                description=self.description,
+                no_debug_endpoints=self.no_debug_endpoints,
+                no_crud_endpoints=self.no_crud_endpoints,
+                expose_endpoints=self.expose_endpoints,
+                expose_graphql_endpoint=self.expose_graphql_endpoint,
+                cors=self.cors,
+                logger=self.logger,
+                tracing=self.tracing,
+                tracer_provider=self.tracer_provider,
+                usage_client_id=self._usage_client_id,
+                usage_client_secret=self._usage_client_secret,
+                request_authenticate=self._get_request_authenticate(),
+                report_usage=self._get_report_usage(),
+            )
+        )
 
     @abc.abstractmethod
     def _get_request_authenticate(self) -> Callable:

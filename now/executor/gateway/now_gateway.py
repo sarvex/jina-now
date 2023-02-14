@@ -1,14 +1,18 @@
 import copy
 import json
+import logging
 import os
 from time import sleep
 from typing import Any, Callable, Dict, List, Tuple, Union
 
+import requests
 from fastapi import HTTPException, Request, status
 from jina.enums import GatewayProtocolType
 
+logger = logging.getLogger(__file__)
 from now.constants import NOWGATEWAY_BFF_PORT
 from now.deployment.deployment import cmd
+from now.executor.abstract.auth.auth import check_user
 from now.executor.gateway import BFFGateway, PlaygroundGateway
 from now.executor.gateway.base_payment_gateway import BasePaymentGateway
 from now.executor.gateway.interceptor import PaymentInterceptor
@@ -33,7 +37,6 @@ class NOWGateway(BasePaymentGateway):
         self,
         user_input_dict: Dict = {},
         internal_app_id: str = 'search-api',  # todo: verify if this is correct
-        internal_product_id: str = 'pro',  # todo: verify if this is correct
         **kwargs,
     ):
         # need to update port ot 8082, as nginx will listen on 8081
@@ -52,7 +55,6 @@ class NOWGateway(BasePaymentGateway):
         kwargs['runtime_args']['port'][http_idx] = 8082
         super().__init__(
             internal_app_id=internal_app_id,
-            internal_product_id=internal_product_id,
             **kwargs,
         )
 
@@ -150,7 +152,6 @@ class NOWGateway(BasePaymentGateway):
         return [
             SearchPaymentInterceptor(
                 internal_app_id=self._internal_app_id,
-                internal_product_id=self._internal_product_id,
                 deployment_id=self._deployment_id,
                 usage_client_id=self._usage_client_id,
                 usage_client_secret=self._usage_client_secret,
@@ -166,7 +167,24 @@ class NOWGateway(BasePaymentGateway):
             usage_client_secret: str,
             usage_detail: dict,
         ):
-            pass
+            """Report usage to the backend"""
+
+            try:
+                usage_detail['current_user'] = current_user
+                resp = requests.post(
+                    f'{self.backend_endpoint}/api/v1/reports/',
+                    auth=(usage_client_id, usage_client_secret),
+                    json=usage_detail,
+                )
+                if resp.status_code != 200:
+                    resp.raise_for_status()
+
+            except Exception as ex:
+                # TODO: handle the exception
+                # catch all exceptions to avoid breaking the inference
+                logger.error(f'Failed to report usage: {ex}')
+
+        return report_usage
 
     def _get_request_authenticate(self):
         def request_authenticate(request: Request):
@@ -207,4 +225,8 @@ class SearchPaymentInterceptor(PaymentInterceptor):
     ) -> Tuple[bool, Union[dict, str]]:
         # todo: add authentication mechanism from now.executors.abstract.auth which is based
         # on parameters in body
-        pass
+        metadata = handler_call_details.invocation_metadata
+        metadata = {m.key: m.value for m in metadata}
+        check_user(**metadata)
+        user = {'token': metadata['token']}
+        return True, user

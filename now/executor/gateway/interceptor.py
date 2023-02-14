@@ -13,7 +13,6 @@ logger = logging.getLogger(__name__)
 class PaymentInterceptor(grpc.aio.ServerInterceptor):
     def __init__(self, logger, report_usage: Callable, **kwargs):
         self._internal_app_id = kwargs.get('internal_app_id')
-        self._internal_product_id = kwargs.get('internal_product_id')
         self._deployment_id = kwargs.get('deployment_id', None)
         self._usage_client_id = kwargs.get('usage_client_id', None)
         self._usage_client_secret = kwargs.get('usage_client_secret', None)
@@ -51,12 +50,11 @@ class PaymentInterceptor(grpc.aio.ServerInterceptor):
                     usage_client_id=self._usage_client_id,
                     usage_client_secret=self._usage_client_secret,
                     usage_detail={
-                        'token': current_user['access_token'],
+                        'token': current_user['token'],
                         'id': str(uuid.uuid4()),
                         'rootId': str(uuid.uuid4()),
-                        'quantity': num_docs,
+                        'credits': num_docs,
                         'internalAppId': self._internal_app_id,
-                        'internalProductId': self._internal_product_id,
                     },
                 )
                 self._logger.info(
@@ -100,12 +98,11 @@ class PaymentInterceptor(grpc.aio.ServerInterceptor):
                         usage_client_id=self._usage_client_id,
                         usage_client_secret=self._usage_client_secret,
                         usage_detail={
-                            'token': current_user['access_token'],
+                            'token': current_user['token'],
                             'id': str(uuid.uuid4()),
                             'rootId': str(uuid.uuid4()),
-                            'quantity': num_docs,
+                            'credits': num_docs,
                             'internalAppId': self._internal_app_id,
-                            'internalProductId': self._internal_product_id,
                         },
                     )
                     self._logger.info(

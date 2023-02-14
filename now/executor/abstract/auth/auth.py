@@ -23,7 +23,7 @@ def secure_request(level: int, on: str = None):
     def decorator(func):
         @requests(on=on)
         def wrapper(*args, **kwargs):
-            _check_user(
+            check_user(
                 kwargs,
                 level,
                 args[0].user_emails,
@@ -37,7 +37,7 @@ def secure_request(level: int, on: str = None):
     return decorator
 
 
-def _check_user(kwargs, level, user_emails, admin_emails, api_keys):
+def check_user(kwargs, level, user_emails, admin_emails, api_keys):
     if user_emails == [] and admin_emails == [] and api_keys == []:
         return
 
