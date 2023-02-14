@@ -177,9 +177,9 @@ def assert_search_custom_s3(host, mm_type, dataset_length, create_temp_link=Fals
 
 def assert_indexed_all_docs(flow_details, kwargs):
     request_body = get_default_request_body(secured=kwargs.secured)
-    request_body['limit'] = 50  # NOW_CI_RUN determines 50 docs are loaded
     response = requests.post(
-        f"{flow_details['host']}/api/v1/search-app/search",
+        f"{flow_details['host']}/api/v1/search-app/count/?limit=50",
         json=request_body,
     )
-    assert len(response) == 50
+    response_json = response.json()
+    assert response_json['number_of_docs'] == 50

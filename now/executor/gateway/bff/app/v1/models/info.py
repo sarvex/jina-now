@@ -18,6 +18,14 @@ class TagsResponseModel(BaseModel):
     )
 
 
+class CountResponseModel(BaseModel):
+    number_of_docs: int = Field(
+        default=0,
+        description='Get the number of documents in the index',
+        example=100,
+    )
+
+
 class FieldNamesToDataclassFieldsResponseModel(BaseModel):
     field_names_to_dataclass_fields: Dict[str, str] = Field(
         default={},

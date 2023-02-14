@@ -332,6 +332,32 @@ class NOWElasticIndexer(Executor):
         else:
             return DocumentArray()
 
+    @secure_request(on='/count', level=SecurityLevel.USER)
+    def count(self, parameters: dict = {}, **kwargs):
+        """Count all indexed documents.
+
+        Note: this implementation is naive and does not
+        consider the default maximum documents in a page returned by `Elasticsearch`.
+        Should be addressed in future with `scroll`.
+
+        :param parameters: dictionary with limit and offset
+        - offset (int): number of documents to skip
+        - limit (int): number of retrieved documents
+        """
+        limit = int(parameters.get('limit', self.limit))
+        offset = int(parameters.get('offset', 0))
+        try:
+            result = self.es.search(
+                index=self.index_name, size=limit, from_=offset, query={'match_all': {}}
+            )['hits']['hits']
+        except Exception:
+            result = None
+            self.logger.info(traceback.format_exc())
+        if result:
+            return len(result)
+        else:
+            return DocumentArray()
+
     @secure_request(on='/delete', level=SecurityLevel.USER)
     def delete(self, parameters: dict = {}, **kwargs):
         """
@@ -341,37 +367,7 @@ class NOWElasticIndexer(Executor):
         :param parameters: dictionary with filter conditions or list of IDs to select
             documents for deletion.
         """
-        search_filter = parameters.get('filter', None)
-        ids = parameters.get('ids', None)
-        if search_filter:
-            es_search_filter = {
-                'query': {'bool': {'filter': process_filter(search_filter)}}
-            }
-            try:
-                resp = self.es.delete_by_query(
-                    index=self.index_name, body=es_search_filter
-                )
-                self.es.indices.refresh(index=self.index_name)
-                self.update_tags()
-            except Exception:
-                self.logger.info(traceback.format_exc())
-                raise
-        elif ids:
-            resp = {'deleted': 0}
-            try:
-                for id in ids:
-                    r = self.es.delete(index=self.index_name, id=id)
-                    self.es.indices.refresh(index=self.index_name)
-                    resp['deleted'] += r['result'] == 'deleted'
-            except Exception as e:
-                self.logger.info(traceback.format_exc(), e)
-        else:
-            raise ValueError('No filter or IDs provided for deletion.')
-        if resp:
-            self.logger.info(
-                f"Deleted {resp['deleted']} documents in Elasticsearch index {self.index_name}"
-            )
-        return DocumentArray()
+        pass
 
     @secure_request(on='/tags', level=SecurityLevel.USER)
     def tags(self, **kwargs):
