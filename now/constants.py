@@ -6,7 +6,7 @@ from now.utils import BetterEnum
 
 NOW_GATEWAY_VERSION = '0.0.4-fix-index-bulk-error-0'
 NOW_PREPROCESSOR_VERSION = '0.0.123-test-use-setup-25'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.147-fix-conflicting-name-3'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.147-fix-index-bulk-eror-1'
 NOW_AUTOCOMPLETE_VERSION = '0.0.11-refactor-custom-gateway-103'
 
 
