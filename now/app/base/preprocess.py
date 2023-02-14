@@ -47,7 +47,7 @@ def preprocess_text(
 
 def preprocess_image(d: Document):
     """loads document into memory and creates thumbnail."""
-    strategy = 1
+    strategy = 2
 
     # downsampling using PIL
     if strategy == 1:
