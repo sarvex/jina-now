@@ -68,10 +68,11 @@ def preprocess_image(d: Document):
 
     elif strategy == 3:
         # downsampling using DocArray
-        if 'uri' in d.tags:
-            d.uri = d.tags['uri']
         if d.tensor is None:
-            d.load_uri_to_image_tensor()
+            if d.blob != b'':
+                d.convert_blob_to_image_tensor()
+            elif d.uri:
+                d.load_uri_to_image_tensor(timeout=10)
         downsample_image(d)
         d.convert_tensor_to_blob()
 
