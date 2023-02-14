@@ -1,5 +1,6 @@
 import json
 import os
+import time
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Dict, List, Type
@@ -393,27 +394,37 @@ def _list_s3_file_paths(bucket, folder_prefix, user_input):
         )
         prefixes = get_prefixes()
         # TODO: change cpu count to a fixed number
-        with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            futures = []
-            for prefix in prefixes:
-                pref = ''.join(prefix)
-                f = executor.submit(list_objects, pref)
-                futures.append(f)
-            for future in as_completed(futures):
-                retries = 0
-                while retries < max_retries:
-                    try:
-                        result = future.result()
-                        objects.extend(result)
-                        break
-                    except Exception as e:
-                        retries += 1
-                        if retries == max_retries:
-                            raise Exception(
-                                "Failed to list objects for prefix {} after {} retries: {}".format(
-                                    future.prefix, max_retries, str(e)
+        while True:
+            start = time.time()
+            with ThreadPoolExecutor(max_workers=max_workers) as executor:
+                futures = []
+                for prefix in prefixes:
+                    pref = ''.join(prefix)
+                    f = executor.submit(list_objects, pref)
+                    futures.append(f)
+                for future in as_completed(futures):
+                    retries = 0
+                    while retries < max_retries:
+                        try:
+                            result = future.result()
+                            objects.extend(result)
+                            break
+                        except Exception as e:
+                            retries += 1
+                            if retries == max_retries:
+                                raise Exception(
+                                    "Failed to list objects for prefix {} after {} retries: {}".format(
+                                        future.prefix, max_retries, str(e)
+                                    )
                                 )
-                            )
+            end = time.time()
+
+            elapsed = end - start
+            if elapsed < 60:
+                max_workers = min(max_workers * 2, 64)
+            else:
+                max_workers = max(max_workers // 2, 1)
+            time.sleep(1)
     else:
         objects = list(bucket.objects.filter(Prefix=folder_prefix))
     return [
