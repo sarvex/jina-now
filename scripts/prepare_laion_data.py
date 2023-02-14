@@ -11,6 +11,9 @@ import glob
 import boto3
 import shutil
 
+from hubble.client.endpoints import EndpointsV2
+from hubble import Client as HubbleClient
+
 
 def check_docarray_exists(dataset_name):
     response = requests.post(
@@ -23,6 +26,44 @@ def check_docarray_exists(dataset_name):
         },
     )
     return response.json()['code'] == 200
+
+
+def download_da(dir_name, part_prefix):
+    import requests as py_requests
+
+    headers = {}
+    auth_token = hubble.get_token()
+
+    if auth_token:
+        headers['Authorization'] = f'token {auth_token}'
+
+    url = (
+        HubbleClient()._base_url
+        + EndpointsV2.download_artifact
+        + f'?name=jem-fu/{part_prefix}'
+    )
+    response = py_requests.get(url, headers=headers)
+
+    if response.ok:
+        url = response.json()['data']['download']
+    else:
+        response.raise_for_status()
+
+    local_filename = dir_name + f'/{part_prefix}.bin'
+    # NOTE the stream=True parameter below
+    with py_requests.get(url, stream=True) as r:
+        r.raise_for_status()
+        with open(local_filename, 'wb') as f:
+            for chunk in r.iter_content(chunk_size=8192):
+                # If you have chunk encoded response uncomment if
+                # and set chunk_size parameter to None.
+                # if chunk:
+                f.write(chunk)
+
+    docs = DocumentArray.load_binary(local_filename, protocol='protobuf', compress='gzip')
+    docs = process_docs(docs)
+    os.remove(local_filename)
+    docs.save_binary(local_filename)
 
 
 def get_metadata(doc):
@@ -68,7 +109,7 @@ def download_laion400m(dir_name, size=100):
     num_workers = min(
         floor(psutil.virtual_memory().total / 1e9 / 2), multiprocessing.cpu_count()
     )
-    with ThreadPoolExecutor(max_workers=num_workers) as executor:
+    with ThreadPoolExecutor(max_workers=2) as executor:
         collected = 0
         futures = []
         for i in range(400):
@@ -81,7 +122,7 @@ def download_laion400m(dir_name, size=100):
             if collected == size:
                 break
 
-            futures.append(executor.submit(pull_and_process_subset, i))
+            futures.append(executor.submit(download_da, dir_name, f'laion400m_part_{i}'))
             collected += 1
         for future in as_completed(futures):
             future.result()
@@ -143,7 +184,7 @@ if __name__ == "__main__":
     if not os.path.exists(dir_name):
         os.makedirs(dir_name)
 
-    download_laion400m(dir_name=dir_name)
+    download_laion400m(dir_name=dir_name, size=3)
     file_name = aggregate_data(dir_name=dir_name)
     push_to_s3(file_name=file_name)
 
