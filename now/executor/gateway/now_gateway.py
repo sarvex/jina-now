@@ -177,7 +177,7 @@ class NOWGateway(BasePaymentGateway):
                 from hubble.payment.client import PaymentClient
 
                 client = PaymentClient(
-                    m2m_token='MjdiOTQ4MWI0MTEyYWU2OWYyY2MxMGEyM2Q2YTNkY2I6NmYzMGMwOGJkNTc4OTQ2ZGFlZTY1NDY2YmNjNDM0YzNmZDY4OTIxODhlYmFiYmU4ZmM5NzIxOGMzMDYyNTQ1NQ=='
+                    m2m_token=os.environ['M2M_TOKEN'],
                 )
                 resp = client.report_usage(
                     current_user['token'],
