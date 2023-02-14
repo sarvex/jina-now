@@ -5,8 +5,6 @@ from docarray.score import NamedScore
 from numpy import dot
 from numpy.linalg import norm
 
-from now.utils import get_chunk_by_field_name
-
 
 def get_bm25_fields(doc: Document) -> str:
     try:
@@ -74,7 +72,11 @@ def convert_doc_map_to_es(
             for encoded_field in encoder_to_fields[executor_name]:
                 print("FROM INSIDE CONVERTER")
                 doc.summary()
-                field_doc = get_chunk_by_field_name(doc, encoded_field)
+                field_doc = [
+                    chunk
+                    for chunk in doc.chunks
+                    if chunk._metadata['field_name'] == encoded_field
+                ][0]
                 if field_doc.embedding is None:
                     print("NO EMBEDDING ON THIS FIELD")
                     print(doc.id)
