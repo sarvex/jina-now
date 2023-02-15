@@ -351,12 +351,9 @@ class NOWElasticIndexer(Executor):
                 index=self.index_name, size=limit, from_=offset, query={'match_all': {}}
             )['hits']['hits']
         except Exception:
-            result = None
+            result = []
             self.logger.info(traceback.format_exc())
-        if result:
-            return DocumentArray([Document(text='count', tags={'count': len(result)})])
-        else:
-            return DocumentArray()
+        return DocumentArray([Document(text='count', tags={'count': len(result)})])
 
     @secure_request(on='/delete', level=SecurityLevel.USER)
     def delete(self, parameters: dict = {}, **kwargs):
