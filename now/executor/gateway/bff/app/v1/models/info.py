@@ -2,6 +2,8 @@ from typing import Dict, List
 
 from pydantic import BaseModel, Field
 
+from now.executor.gateway.bff.app.v1.models.shared import BaseRequestModel
+
 
 class TagsResponseModel(BaseModel):
     tags: Dict[str, List] = Field(
@@ -15,6 +17,18 @@ class TagsResponseModel(BaseModel):
                 'green',
             ],
         },
+    )
+
+
+class CountRequestModel(BaseRequestModel):
+    limit: int = Field(default=10, description='Maximum count', example=10)
+
+
+class CountResponseModel(BaseModel):
+    number_of_docs: int = Field(
+        default=0,
+        description='Get the number of documents in the index',
+        example=100,
     )
 
 

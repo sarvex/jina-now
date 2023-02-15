@@ -183,11 +183,6 @@ def get_aws_info():
 
 
 @pytest.fixture
-def random_index_name():
-    return f"test-index-{random.randint(0, 10000)}"
-
-
-@pytest.fixture
 def es_inputs(gif_resource_path) -> namedtuple:
     np.random.seed(42)
 
@@ -326,3 +321,8 @@ def setup_online_shop_db(setup_elastic_db, es_connection_params, online_shop_res
 
     # delete index
     delete_es_index(connector=es_connector, name=index_name)
+
+
+@pytest.fixture
+def random_index_name():
+    return f'test-index-{random.randint(0, 10000)}'

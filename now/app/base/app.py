@@ -105,10 +105,12 @@ class JinaNOWApp:
                         type=str,
                     )
 
-    def get_gateway_stub(self, user_input) -> Dict:
+    def get_gateway_stub(self, user_input, testing=False) -> Dict:
         """Returns the stub for gateway in the flow."""
         gateway_stub = {
-            'uses': f'jinahub+docker://{name_to_id_map.get("NOWGateway")}/{NOW_GATEWAY_VERSION}',
+            'uses': f'jinahub+docker://{name_to_id_map.get("NOWGateway")}/{NOW_GATEWAY_VERSION}'
+            if not testing
+            else 'NOWGateway',
             'protocol': ['http', 'grpc'],
             'port': [8081, 8085],
             'monitoring': True,
@@ -118,26 +120,28 @@ class JinaNOWApp:
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
         }
         if 'NOW_EXAMPLES' in os.environ:
-            gateway_stub['jcloud'][
-                'custom_dns'
-            ] = f'{DEMO_NS.format(user_input.dataset_name.split("/")[-1])}.dev.jina.ai'
+            gateway_stub['jcloud'] = {
+                'custom_dns': [
+                    f'{DEMO_NS.format(user_input.dataset_name.split("/")[-1])}.dev.jina.ai'
+                ]
+            }
         return gateway_stub
 
-    def get_executor_stubs(self, dataset, user_input, **kwargs) -> Dict:
+    def get_executor_stubs(self, user_input, testing=False, **kwargs) -> Dict:
         """
         Returns the stubs for the executors in the flow.
         """
         raise NotImplementedError()
 
-    def setup(self, dataset: DocumentArray, user_input: UserInput) -> Dict:
+    def setup(self, user_input: UserInput, testing=False, **kwargs) -> Dict:
         """Runs before the flow is deployed to setup the flow in self.flow_yaml.
         Common use cases:
             - create a database
             - finetune a model + push the artifact
             - notify other services
             - check if starting the app is currently possible
-        :param dataset:
         :param user_input: user configuration based on the given options
+        :param testing: use local executors if True
         """
         # Creates generic configuration such as labels in the flow
         # Keep this function as simple as possible. It should only be used to add generic configuration needed
@@ -153,8 +157,8 @@ class JinaNOWApp:
                 'labels': {'team': 'now'},
                 'name': create_jcloud_name(user_input.flow_name),
             },
-            'gateway': self.get_gateway_stub(user_input),
-            'executors': self.get_executor_stubs(dataset, user_input),
+            'gateway': self.get_gateway_stub(user_input, testing),
+            'executors': self.get_executor_stubs(user_input, testing, **kwargs),
         }
         # Call the gateway stub function to get the gateway for the flow
         # Call the executor stubs function to get the executors for the flow

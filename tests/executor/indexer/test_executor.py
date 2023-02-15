@@ -47,19 +47,19 @@ def test_index_and_search_with_multimodal_docs(
         document_mappings,
         default_semantic_scores,
     ) = es_inputs
-
+    index_name = random_index_name
     indexer = NOWElasticIndexer(
         document_mappings=document_mappings,
         # es_config={'api_key': os.environ['ELASTIC_API_KEY']},
         # hosts='https://5280f8303ccc410295d02bbb1f3726f7.eu-central-1.aws.cloud.es.io:443',
         hosts='http://localhost:9200',
-        index_name=random_index_name,
+        index_name=index_name,
     )
 
     indexer.index(index_docs_map)
     # check if documents are indexed
     es = indexer.es
-    res = es.search(index=random_index_name, size=100, query={'match_all': {}})
+    res = es.search(index=index_name, size=100, query={'match_all': {}})
     assert len(res['hits']['hits']) == len(index_docs_map['clip'])
     results = indexer.search(
         query_docs_map,
@@ -122,9 +122,9 @@ def test_list_endpoint(setup_service_running, es_inputs, random_index_name):
     assert len(result_with_offset) == len(index_docs_map['clip']) - offset
 
 
-def test_delete_by_id(setup_service_running, es_inputs, random_index_name):
+def test_count_endpoint(setup_service_running, es_inputs, random_index_name):
     """
-    This test tests the delete endpoint of the NOWElasticIndexer, by deleting a list of IDs.
+    This test tests the count endpoint of the NOWElasticIndexer.
     """
     (
         index_docs_map,
@@ -138,12 +138,39 @@ def test_delete_by_id(setup_service_running, es_inputs, random_index_name):
         index_name=random_index_name,
     )
     es_indexer.index(index_docs_map)
+    result = es_indexer.count()
+    assert result[0].tags['count'] == len(index_docs_map['clip'])
+    limit = 1
+    result_with_limit = es_indexer.count(parameters={'limit': limit})
+    assert result_with_limit[0].tags['count'] == limit
+    offset = 1
+    result_with_offset = es_indexer.count(parameters={'offset': offset})
+    assert result_with_offset[0].tags['count'] == len(index_docs_map['clip']) - offset
+
+
+def test_delete_by_id(setup_service_running, es_inputs, random_index_name):
+    """
+    This test tests the delete endpoint of the NOWElasticIndexer, by deleting a list of IDs.
+    """
+    (
+        index_docs_map,
+        query_docs_map,
+        document_mappings,
+        default_semantic_scores,
+    ) = es_inputs
+    index_name = random_index_name
+    es_indexer = NOWElasticIndexer(
+        document_mappings=document_mappings,
+        hosts='http://localhost:9200',
+        index_name=index_name,
+    )
+    es_indexer.index(index_docs_map)
     # delete by id
     ids = [doc.id for doc in index_docs_map['clip']]
     es_indexer.delete(parameters={'ids': ids})
 
     es = es_indexer.es
-    res = es.search(index=random_index_name, size=100, query={'match_all': {}})
+    res = es.search(index=index_name, size=100, query={'match_all': {}})
     assert len(res['hits']['hits']) == 0
 
 
@@ -269,7 +296,7 @@ def test_search_with_filter(setup_service_running, es_inputs, random_index_name)
     assert res[0].matches[0].tags['price'] < 1
 
 
-def test_configure_local_cluster(setup_service_running, es_inputs, random_index_name):
+def test_configure_local_cluster(setup_service_running, es_inputs):
     """
     This test tests the configure_local_cluster function of the NOWElasticIndexer.
     """

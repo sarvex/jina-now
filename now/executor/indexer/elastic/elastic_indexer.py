@@ -98,8 +98,10 @@ class NOWElasticIndexer(Executor):
     def setup_elastic_server(self):
         try:
             if "K8S_NAMESPACE_NAME" in os.environ:
+                data_path = f'/data/{os.environ["K8S_NAMESPACE_NAME"]}'
+                subprocess.run(["chmod", "-R", "0777", data_path])
                 self.configure_elastic(
-                    f'/data/{os.environ["K8S_NAMESPACE_NAME"]}',
+                    data_path,
                     '/usr/share/elasticsearch/config/elasticsearch.yml',
                 )
                 subprocess.Popen(['./start-elastic-search-cluster.sh'])
@@ -331,6 +333,29 @@ class NOWElasticIndexer(Executor):
             return convert_es_to_da(result, get_score_breakdown=False)
         else:
             return DocumentArray()
+
+    @secure_request(on='/count', level=SecurityLevel.USER)
+    def count(self, parameters: dict = {}, **kwargs):
+        """Count all indexed documents.
+
+        Note: this implementation is naive and does not
+        consider the default maximum documents in a page returned by `Elasticsearch`.
+        Should be addressed in future with `scroll`.
+
+        :param parameters: dictionary with limit and offset
+        - offset (int): number of documents to skip
+        - limit (int): number of retrieved documents
+        """
+        limit = int(parameters.get('limit', self.limit))
+        offset = int(parameters.get('offset', 0))
+        try:
+            result = self.es.search(
+                index=self.index_name, size=limit, from_=offset, query={'match_all': {}}
+            )['hits']['hits']
+        except Exception:
+            result = []
+            self.logger.info(traceback.format_exc())
+        return DocumentArray([Document(text='count', tags={'count': len(result)})])
 
     @secure_request(on='/delete', level=SecurityLevel.USER)
     def delete(self, parameters: dict = {}, **kwargs):

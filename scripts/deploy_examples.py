@@ -1,6 +1,7 @@
 import os
 import sys
 from argparse import Namespace
+from dataclasses import dataclass
 
 import boto3
 from jina import Client
@@ -11,7 +12,25 @@ from now.constants import DEMO_NS, MODALITY_TO_MODELS, DatasetTypes
 from now.demo_data import AVAILABLE_DATASETS
 from now.deployment.deployment import list_all_wolf, terminate_wolf
 from now.now_dataclasses import UserInput
-from now.utils import get_aws_profile
+
+
+# TODO: Remove this once the Jina NOW version is bumped
+@dataclass
+class AWSProfile:
+    aws_access_key_id: str
+    aws_secret_access_key: str
+    region: str
+
+
+def get_aws_profile():
+    session = boto3.Session()
+    credentials = session.get_credentials()
+    aws_profile = (
+        AWSProfile(credentials.access_key, credentials.secret_key, session.region_name)
+        if credentials
+        else AWSProfile(None, None, session.region_name)
+    )
+    return aws_profile
 
 
 def upsert_cname_record(source, target):
@@ -39,7 +58,7 @@ def upsert_cname_record(source, target):
                 ],
             },
         )
-    except Exception as e:
+    except Exception as e:  # noqa
         print(e)
 
 
@@ -67,9 +86,7 @@ def deploy(demo_ds):
         'now': 'start',
         'dataset_type': DatasetTypes.DEMO,
         'dataset_name': demo_ds.name,
-        'index_fields': [
-            demo_ds.index_fields
-        ],  # TODO: should be replaced with '__all__' when it is compatible
+        'index_fields': [demo_ds.index_fields],  # TODO: replace with '__all__'
         'filter_fields': '__all__',
         'proceed': True,
         'secured': False,
@@ -88,6 +105,7 @@ def deploy(demo_ds):
         host_target_ = host_target_.replace('grpcs://', '')
         host_source = f'{DEMO_NS.format(demo_ds.name.split("/")[-1])}.dev.jina.ai'
         # update the CNAME entry in the Route53 records
+        print(f'Updating CNAME record for `{host_source}` -> `{host_target_}`')
         upsert_cname_record(host_source, host_target_)
     else:
         print(
@@ -100,7 +118,11 @@ if __name__ == '__main__':
     os.environ['JINA_AUTH_TOKEN'] = os.environ.get('WOLF_TOKEN')
     os.environ['NOW_EXAMPLES'] = 'True'
     os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
-    deployment_type = os.environ.get('DEPLOYMENT_TYPE', 'partial').lower()
+    deployment_type = os.environ.get('DEPLOYMENT_TYPE', None)
+    if not deployment_type:
+        deployment_type = 'partial'
+    deployment_type = deployment_type.lower()
+    print(f'Deployment type: {deployment_type}')
     index = int(sys.argv[-1])
     # get all the available demo datasets list
     dataset_list = []
