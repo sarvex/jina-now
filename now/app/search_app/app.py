@@ -76,7 +76,7 @@ class SearchApp(JinaNOWApp):
         }
 
     @staticmethod
-    def preprocessor_stub(testing=False) -> Dict:
+    def preprocessor_stub(max_replicas, testing=False) -> Dict:
         return {
             'name': 'preprocessor',
             'needs': 'autocomplete_executor',
@@ -84,7 +84,12 @@ class SearchApp(JinaNOWApp):
             if not testing
             else 'NOWPreprocessor',
             'jcloud': {
-                'autoscale': {'min': 0, 'max': 5, 'metric': 'concurrency', 'target': 1}
+                'autoscale': {
+                    'min': 0,
+                    'max': max_replicas,
+                    'metric': 'concurrency',
+                    'target': 1,
+                }
             },
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
         }
@@ -182,7 +187,9 @@ class SearchApp(JinaNOWApp):
         """
         flow_yaml_executors = [
             self.autocomplete_stub(testing),
-            self.preprocessor_stub(testing),
+            self.preprocessor_stub(
+                max_replicas=user_input.max_replicas, testing=testing
+            ),
         ]
 
         encoder2dim = {}
