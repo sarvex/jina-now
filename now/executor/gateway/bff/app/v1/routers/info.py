@@ -5,6 +5,7 @@ from fastapi import APIRouter
 
 from now.executor.gateway.bff.app.settings import user_input_in_bff
 from now.executor.gateway.bff.app.v1.models.info import (
+    CountRequestModel,
     CountResponseModel,
     EncoderToDataclassFieldsModsResponseModel,
     FieldNamesToDataclassFieldsResponseModel,
@@ -28,13 +29,13 @@ async def get_tags(data: BaseRequestModel) -> TagsResponseModel:
 
 
 @router.post('/count')
-async def get_count(data: BaseRequestModel, limit: int = 10) -> CountResponseModel:
+async def get_count(data: CountRequestModel) -> CountResponseModel:
     response = await jina_client_post(
         request_model=data,
         docs=Document(),
         endpoint='/count',
         target_executor=r'\Aindexer\Z',
-        parameters={'limit': limit},
+        parameters={'limit': data.limit},
     )
     return CountResponseModel(number_of_docs=response[0].tags['count'])
 

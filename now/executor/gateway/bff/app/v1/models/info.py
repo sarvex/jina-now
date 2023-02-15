@@ -2,6 +2,8 @@ from typing import Dict, List
 
 from pydantic import BaseModel, Field
 
+from now.executor.gateway.bff.app.v1.models.shared import BaseRequestModel
+
 
 class TagsResponseModel(BaseModel):
     tags: Dict[str, List] = Field(
@@ -16,6 +18,10 @@ class TagsResponseModel(BaseModel):
             ],
         },
     )
+
+
+class CountRequestModel(BaseRequestModel):
+    limit: int = Field(default=10, description='Maximum count', example=10)
 
 
 class CountResponseModel(BaseModel):
