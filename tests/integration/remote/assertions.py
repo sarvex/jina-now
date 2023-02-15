@@ -177,8 +177,9 @@ def assert_search_custom_s3(host, mm_type, dataset_length, create_temp_link=Fals
 
 def assert_indexed_all_docs(host, kwargs):
     request_body = get_default_request_body(secured=kwargs.secured)
+    request_body['limit'] = 50
     response = requests.post(
-        f"{host}/api/v1/info/count/?limit=50",
+        f"{host}/api/v1/info/count",
         json=request_body,
     )
     response_json = response.json()

@@ -102,7 +102,7 @@ def test_end_to_end(
         search_modality='text',
         dataset=dataset,
     )
-    assert_indexed_all_docs(flow_details, kwargs=kwargs)
+    assert_indexed_all_docs(flow_details['host'], kwargs=kwargs)
     if query_fields == 'text':
         request_body = get_search_request_body(
             kwargs=kwargs,
