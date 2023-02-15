@@ -74,26 +74,6 @@ class NOWElasticIndexer(Executor):
         """
 
         super().__init__(*args, **kwargs)
-        import psutil
-
-        volumes = psutil.disk_partitions()
-
-        for volume in volumes:
-            print("Device: ", volume.device)
-            print("Mount Point: ", volume.mountpoint)
-            print("File System Type: ", volume.fstype)
-            print("Opts: ", volume.opts)
-            print("---------------------------------")
-
-        # run the following command on the file system sudo chmod -R 755 /data/jnamespace-a12a7f3db4
-        import subprocess
-
-        user = "elasticsearch"
-        group = "elasticsearch"
-        path = f'/data/{os.environ["K8S_NAMESPACE_NAME"]}'
-
-        subprocess.run(["chmod", "-R", "0777", path])
-
         self.metric = metric
         self.limit = limit
         self.max_values_per_tag = max_values_per_tag
@@ -118,8 +98,10 @@ class NOWElasticIndexer(Executor):
     def setup_elastic_server(self):
         try:
             if "K8S_NAMESPACE_NAME" in os.environ:
+                data_path = f'/data/{os.environ["K8S_NAMESPACE_NAME"]}'
+                subprocess.run(["chmod", "-R", "0777", data_path])
                 self.configure_elastic(
-                    f'/data/{os.environ["K8S_NAMESPACE_NAME"]}',
+                    data_path,
                     '/usr/share/elasticsearch/config/elasticsearch.yml',
                 )
                 subprocess.Popen(['./start-elastic-search-cluster.sh'])
