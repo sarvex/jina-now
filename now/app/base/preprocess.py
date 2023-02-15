@@ -46,46 +46,28 @@ def preprocess_text(
 
 
 def preprocess_image(d: Document):
-    """loads document into memory and creates thumbnail."""
-    strategy = 3
+    """Preprocess an image document.
 
-    # downsampling using PIL
-    if strategy == 1:
-        if d.tensor is None:
-            if d.blob != b'':
-                d.convert_blob_to_image_tensor()
-            elif d.uri:
-                d.load_uri_to_image_tensor(timeout=10)
-        to_thumbnail_jpg(d)
+    If the document is already loaded (as a blob or tensor), it is downsampled.
+    If it only has an uri, it is not loaded into memory.
+    """
+    if d.blob:
+        d.convert_blob_to_image_tensor()
 
-    elif strategy == 2:
-        # no downsamnpling
-        if 'uri' in d.tags:
-            d.uri = d.tags['uri']
-        if d.blob is None:
-            if d.uri:
-                d.load_uri_to_blob()
-
-    elif strategy == 3:
-        # downsampling using DocArray
-        if d.tensor is None:
-            if d.blob != b'':
-                d.convert_blob_to_image_tensor()
-            elif d.uri:
-                d.load_uri_to_image_tensor(timeout=10)
-        downsample_image(d)
-        d.convert_image_tensor_to_blob()
+    if d.tensor is not None:
+        downsample_image_doc(d)
 
     d.chunks.append(
         Document(
             uri=d.uri,
-            blob=d.blob,
+            tensor=d.tensor,
             tags=d.tags,
             modality='image',
             mime_type='image/jpeg',
         )
     )
     d.blob = None
+    d.tensor = None
     d.uri = None
 
 
@@ -111,7 +93,7 @@ def _sample_video(d):
     for i in frame_indices:
         gif.seek(i)
         frame = np.array(gif.convert("RGB"))
-        image_bytes = ndarray_to_jpeg_bytes(frame)
+        image_bytes = downsample_image(frame)
         d.chunks.append(
             Document(
                 uri=d.uri,
@@ -126,21 +108,6 @@ def _sample_video(d):
     d.tensor = None
 
 
-def ndarray_to_jpeg_bytes(arr) -> bytes:
-    pil_img = Image.fromarray(arr)
-    pil_img.thumbnail((224, 224))
-    pil_img = pil_img.convert('RGB')
-    img_byte_arr = io.BytesIO()
-    pil_img.save(img_byte_arr, format="JPEG", quality=95)
-    return img_byte_arr.getvalue()
-
-
-def to_thumbnail_jpg(doc: Document):
-    if doc.tensor is not None:
-        doc.blob = ndarray_to_jpeg_bytes(doc.tensor)
-    return doc
-
-
 def preserve_aspect_ratio(source_size, target_size):
     def round_aspect(number, key):
         return max(min(math.floor(number), math.ceil(number), key=key), 1)
@@ -148,7 +115,7 @@ def preserve_aspect_ratio(source_size, target_size):
     width, height = source_size
     x, y = target_size
     if x >= width and y >= height:
-        return
+        return x, y
 
     aspect = width / height
     if x / y >= aspect:
@@ -158,10 +125,31 @@ def preserve_aspect_ratio(source_size, target_size):
     return x, y
 
 
-def downsample_image(doc: Document):
+def downsample_image_doc(doc: Document):
+    """
+    Downsample an image document.
+
+    This approach uses DocArray functions under the hood, which deal with the
+    existing tensor of the document. This one is reshaped inplace.
+    """
     if doc.tensor is not None:
         width, height, _ = doc.tensor.shape
         doc.set_image_tensor_shape(
             shape=preserve_aspect_ratio((width, height), (224, 224))
         )
     return doc
+
+
+def downsample_image(tensor: np.ndarray):
+    """
+    Downsample an image.
+
+    This approach uses PIL thumbail function under the hood. The tensor is
+    loaded as a PIL image, resized, then saved and returned as a blob.
+    """
+    pil_img = Image.fromarray(tensor)
+    pil_img.thumbnail((224, 224))
+    pil_img = pil_img.convert('RGB')
+    img_byte_arr = io.BytesIO()
+    pil_img.save(img_byte_arr, format="JPEG", quality=95)
+    return img_byte_arr.getvalue()
