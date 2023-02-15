@@ -1,6 +1,7 @@
 import json
 import os
 import shutil
+import threading
 from time import sleep
 from typing import Dict, List, Tuple
 
@@ -15,6 +16,7 @@ from streamlit.web.server import Server as StreamlitServer
 
 from now.constants import NOWGATEWAY_BFF_PORT
 from now.deployment.deployment import cmd
+from now.executor.gateway.hubble_report import report
 from now.now_dataclasses import UserInput
 
 cur_dir = os.path.dirname(__file__)
@@ -53,6 +55,16 @@ class PlaygroundGateway(Gateway):
 
 
 class BFFGateway(FastAPIBaseGateway):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        thread = threading.Thread(target=self.run)
+        thread.start()
+
+    def run(self):
+        while True:
+            sleep(60)
+            report(user_token=None, app_id='search', product_id='base_fee', quantity=60)
+
     @property
     def app(self):
         from now.executor.gateway.bff.app.app import application

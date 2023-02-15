@@ -14,6 +14,7 @@ from now.executor.gateway.bff.app.v1.routers.helper import (
     field_dict_to_mm_doc,
     jina_client_post,
 )
+from now.executor.gateway.hubble_report import report
 from now.utils import get_chunk_by_field_name, modality_string_to_docarray_typing
 
 search_examples = {
@@ -118,7 +119,6 @@ async def search(
 ):
     fields_modalities_mapping = {}
     fields_values_mapping = {}
-
     if len(data.query) == 0:
         raise ValueError('Query cannot be empty')
 
@@ -193,6 +193,8 @@ async def search(
             fields=results,
         )
         matches.append(match)
+    # reporting the usage at the end to make sure the request was successful
+    report(user_token=data.jwt, app_id='search', product_id='mm_query', quantity=1)
     return matches
 
 
