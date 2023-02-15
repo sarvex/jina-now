@@ -1,6 +1,6 @@
 pyfiglet==0.8.post1
 jina[perf]==3.13.2.dev34
-jina-hubble-sdk>=0.15.5
+jina-hubble-sdk>=0.33.1
 pyfiglet==0.8.post1
 cowsay==4.0
 yaspin==2.1.0
