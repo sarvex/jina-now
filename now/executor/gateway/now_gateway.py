@@ -236,7 +236,7 @@ class SearchPaymentInterceptor(PaymentInterceptor):
     ) -> Tuple[bool, Union[dict, str]]:
         metadata = handler_call_details.invocation_metadata
         metadata = {m.key: m.value for m in metadata}
-        print(metadata)
+        print('metadata is ', metadata)
         check_user(**metadata)
         user = {'token': metadata['token']}
         return True, user
