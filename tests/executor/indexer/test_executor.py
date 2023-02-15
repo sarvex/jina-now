@@ -139,13 +139,13 @@ def test_count_endpoint(setup_service_running, es_inputs, random_index_name):
     )
     es_indexer.index(index_docs_map)
     result = es_indexer.count()
-    assert result == len(index_docs_map['clip'])
+    assert result[0].tags['count'] == len(index_docs_map['clip'])
     limit = 1
     result_with_limit = es_indexer.count(parameters={'limit': limit})
-    assert result_with_limit == limit
+    assert result_with_limit[0].tags['count'] == limit
     offset = 1
     result_with_offset = es_indexer.count(parameters={'offset': offset})
-    assert result_with_offset == len(index_docs_map['clip']) - offset
+    assert result_with_offset[0].tags['count'] == len(index_docs_map['clip']) - offset
 
 
 def test_delete_by_id(setup_service_running, es_inputs, random_index_name):
