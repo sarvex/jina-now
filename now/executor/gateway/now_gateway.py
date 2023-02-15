@@ -201,6 +201,7 @@ class NOWGateway(BasePaymentGateway):
                 # on parameters in body
                 # parameters has been already extracted from the request body
                 parameters = request.json()['parameters']
+                print('parameters', parameters)
                 check_user(parameters)
                 user = {'token': parameters['jwt']}
                 return True, user
@@ -235,6 +236,7 @@ class SearchPaymentInterceptor(PaymentInterceptor):
     ) -> Tuple[bool, Union[dict, str]]:
         metadata = handler_call_details.invocation_metadata
         metadata = {m.key: m.value for m in metadata}
+        print(metadata)
         check_user(**metadata)
         user = {'token': metadata['token']}
         return True, user
