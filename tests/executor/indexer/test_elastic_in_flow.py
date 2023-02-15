@@ -83,10 +83,6 @@ class TestElasticIndexer:
 
         return DocumentArray(Document(MMQuery(query_text='query_1')))
 
-    @pytest.fixture
-    def random_index_name(self):
-        return f"test-index-{random.randint(0, 10000)}"
-
     @pytest.fixture(scope='function', autouse=True)
     def metas(self, tmpdir):
         return {'workspace': str(tmpdir)}
@@ -170,7 +166,7 @@ class TestElasticIndexer:
         )
         assert all([m.tags['price'] < 50 for m in query_res[0].matches])
 
-    def test_delete(self, metas, setup_service_running, random_index_name, flow):
+    def test_delete(self, metas, setup_service_running, flow):
         docs = self.get_docs(NUMBER_OF_DOCS)
         docs[0].tags['parent_tag'] = 'different_value'
         flow.post(on='/index', inputs=docs)
@@ -388,9 +384,7 @@ class TestElasticIndexer:
         non_curated_query[0].query_text.text = 'parent_x'
         flow.post(on='/search', inputs=non_curated_query)
 
-    def test_curate_endpoint_incorrect(
-        self, metas, setup_service_running, random_index_name, flow
-    ):
+    def test_curate_endpoint_incorrect(self, metas, setup_service_running, flow):
         with pytest.raises(Exception):
             flow.post(
                 on='/curate',

@@ -22,7 +22,7 @@ from now.constants import ACCESS_PATHS
     ],
     indirect=True,
 )
-def test_end_to_end(get_flow, setup_service_running, random_index_name):
+def test_end_to_end(get_flow, setup_service_running):
     docs, user_input = get_flow
     client = Client(host='grpc://localhost:8085')
 
@@ -32,6 +32,7 @@ def test_end_to_end(get_flow, setup_service_running, random_index_name):
             'access_paths': ACCESS_PATHS,
         },
     )
+
     request_body = get_request_body(secured=False)
     request_body['query'] = [{'name': 'text', 'value': 'test', 'modality': 'text'}]
     response = requests.post(

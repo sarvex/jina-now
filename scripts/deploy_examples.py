@@ -1,6 +1,7 @@
 import os
 import sys
 from argparse import Namespace
+from dataclasses import dataclass
 
 import boto3
 from jina import Client
@@ -11,7 +12,25 @@ from now.constants import DEMO_NS, MODALITY_TO_MODELS, DatasetTypes
 from now.demo_data import AVAILABLE_DATASETS
 from now.deployment.deployment import list_all_wolf, terminate_wolf
 from now.now_dataclasses import UserInput
-from now.utils import get_aws_profile
+
+
+# TODO: Remove this once the Jina NOW version is bumped
+@dataclass
+class AWSProfile:
+    aws_access_key_id: str
+    aws_secret_access_key: str
+    region: str
+
+
+def get_aws_profile():
+    session = boto3.Session()
+    credentials = session.get_credentials()
+    aws_profile = (
+        AWSProfile(credentials.access_key, credentials.secret_key, session.region_name)
+        if credentials
+        else AWSProfile(None, None, session.region_name)
+    )
+    return aws_profile
 
 
 def upsert_cname_record(source, target):
@@ -39,11 +58,11 @@ def upsert_cname_record(source, target):
                 ],
             },
         )
-    except Exception as e:
+    except Exception as e:  # noqa
         print(e)
 
 
-def deploy(demo_ds, old_flow=None):
+def deploy(demo_ds):
     print(f'Deploying search app with data: {demo_ds.name}')
     NAMESPACE = DEMO_NS.format(demo_ds.name.split("/")[-1])
     # Get the schema
@@ -78,10 +97,6 @@ def deploy(demo_ds, old_flow=None):
     kwargs = Namespace(**kwargs)
     try:
         response_cli = cli(args=kwargs)
-        # If the above call is successful only then terminate the old flow
-        if old_flow:
-            terminate_wolf(flow[0]['id'])
-            print(f'Old flow with id `{old_flow[0]["id"]}` successfully deleted!!')
     except Exception as e:  # noqa E722
         raise e
     # parse the response
@@ -135,8 +150,11 @@ if __name__ == '__main__':
         except Exception as e:  # noqa E722
             print('Not deployed yet')
 
-    # Maybe the flow is still alive, if it is, then extract it to be deleted later
+    # Maybe the flow is still alive, if it is, then it should be terminated and re-deploy the app
     flow = list_all_wolf(namespace=to_deploy.name.split("/")[-1])
+    if flow:
+        terminate_wolf(flow[0]['id'])
+        print(f'{flow[0]["id"]} successfully deleted!!')
     print('Deploying -> ', to_deploy.name)
-    deploy(to_deploy, flow)
+    deploy(to_deploy)
     print('------------------ Deployment Successful----------------------')
