@@ -10,7 +10,7 @@ from now.common.detect_schema import (
     get_first_file_in_folder_structure_s3,
     get_s3_bucket_and_folder_prefix,
 )
-from now.constants import DatasetTypes
+from now.constants import MAX_DOCS_FOR_TESTING, DatasetTypes
 from now.data_loading.elasticsearch import ElasticsearchExtractor
 from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
@@ -32,7 +32,7 @@ def load_data(
     if user_input.dataset_type in [DatasetTypes.DOCARRAY, DatasetTypes.DEMO]:
         print_callback('⬇  Pull DocumentArray dataset')
         da = _pull_docarray(user_input.dataset_name, user_input.admin_name)
-        da = _add_tags_to_da(da, user_input)
+        da = _update_fields_and_metadata(da, user_input)
     elif user_input.dataset_type == DatasetTypes.PATH:
         print_callback('💿  Loading files from disk')
         da = _load_from_disk(user_input=user_input, data_class=data_class)
@@ -43,17 +43,17 @@ def load_data(
         print_callback('🔍  Loading data from Elasticsearch')
         da = _extract_es_data(user_input=user_input, data_class=data_class)
     da = set_modality_da(da)
-    _add_metadata_to_da(da, user_input)
+    _add_metadata_to_chunks(da, user_input)
     if da is None:
         raise ValueError(
             f'Could not load DocumentArray dataset. Please check your configuration: {user_input}.'
         )
     if 'NOW_CI_RUN' in os.environ:
-        da = da[:50]
+        da = da[:MAX_DOCS_FOR_TESTING]
     return da
 
 
-def _add_metadata_to_da(da, user_input):
+def _add_metadata_to_chunks(da, user_input):
     dataclass_fields_to_field_names = {
         v: k for k, v in user_input.field_names_to_dataclass_fields.items()
     }
@@ -66,14 +66,18 @@ def _add_metadata_to_da(da, user_input):
                 ] = field_name
 
 
-def _add_tags_to_da(da: DocumentArray, user_input: UserInput):
-    """Add tags to da, remove non-index chunks, and update multi modal schema."""
+def _update_fields_and_metadata(
+    da: DocumentArray, user_input: UserInput
+) -> DocumentArray:
+    """Add selected index fields to da, add the tags, remove non-index chunks,
+    and update multi modal schema."""
     if not da:
         return da
-
+    all_fields = da[0]._metadata['multi_modal_schema'].keys()
     for doc in da:
         filtered_chunks = []
-        for field in doc._metadata['multi_modal_schema'].keys():
+        filtered_chunk_names = []
+        for field in all_fields:
             field_doc = get_chunk_by_field_name(doc, field)
             if field not in user_input.index_fields:
                 if field_doc.blob or field_doc.tensor is not None:
@@ -87,14 +91,15 @@ def _add_tags_to_da(da: DocumentArray, user_input: UserInput):
                 )
             else:
                 filtered_chunks.append(field_doc)
+                filtered_chunk_names.append(field)
         doc.chunks = filtered_chunks
         # keep only the index fields in metadata
         doc._metadata['multi_modal_schema'] = {
             field: doc._metadata['multi_modal_schema'][field]
-            for field in user_input.index_fields
+            for field in filtered_chunk_names
         }
         # Update the positions accordingly to access the chunks
-        for position, field in enumerate(user_input.index_fields):
+        for position, field in enumerate(filtered_chunk_names):
             doc._metadata['multi_modal_schema'][field]['position'] = int(position)
 
     return da
@@ -150,7 +155,7 @@ def _load_from_disk(user_input: UserInput, data_class: Type) -> DocumentArray:
         try:
             da = DocumentArray.load_binary(dataset_path)
             if is_multimodal(da[0]):
-                da = _add_tags_to_da(da, user_input)
+                da = _update_fields_and_metadata(da, user_input)
                 return da
             else:
                 raise ValueError(
