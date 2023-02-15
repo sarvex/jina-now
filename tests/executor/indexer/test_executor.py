@@ -122,6 +122,32 @@ def test_list_endpoint(setup_service_running, es_inputs, random_index_name):
     assert len(result_with_offset) == len(index_docs_map['clip']) - offset
 
 
+def test_count_endpoint(setup_service_running, es_inputs, random_index_name):
+    """
+    This test tests the count endpoint of the NOWElasticIndexer.
+    """
+    (
+        index_docs_map,
+        query_docs_map,
+        document_mappings,
+        default_semantic_scores,
+    ) = es_inputs
+    es_indexer = NOWElasticIndexer(
+        document_mappings=document_mappings,
+        hosts='http://localhost:9200',
+        index_name=random_index_name,
+    )
+    es_indexer.index(index_docs_map)
+    result = es_indexer.count()
+    assert result[0].tags['count'] == len(index_docs_map['clip'])
+    limit = 1
+    result_with_limit = es_indexer.count(parameters={'limit': limit})
+    assert result_with_limit[0].tags['count'] == limit
+    offset = 1
+    result_with_offset = es_indexer.count(parameters={'offset': offset})
+    assert result_with_offset[0].tags['count'] == len(index_docs_map['clip']) - offset
+
+
 def test_delete_by_id(setup_service_running, es_inputs, random_index_name):
     """
     This test tests the delete endpoint of the NOWElasticIndexer, by deleting a list of IDs.

@@ -3,6 +3,7 @@ import requests
 from docarray.typing import Image, Text
 from jina import Client
 from tests.integration.local.conftest import (  # noqa: F401
+    BASE_URL,
     SEARCH_URL,
     get_flow,
     get_request_body,
@@ -57,3 +58,8 @@ def test_end_to_end(get_flow, setup_service_running):
             assert response.json()[0]['fields'][dataclass_field]['text']
         elif user_input.index_field_candidates_to_modalities[field] == Image:
             assert response.json()[0]['fields'][dataclass_field]['blob'] != b''
+
+    count_url = f'{BASE_URL}/info/count'
+    request_body['limit'] = len(docs)
+    count_response = requests.post(count_url, json=request_body)
+    assert count_response.json()['number_of_docs'] == len(docs)

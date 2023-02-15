@@ -5,6 +5,7 @@ from argparse import Namespace
 import pytest
 from tests.integration.remote.assertions import (
     assert_deployment_response,
+    assert_indexed_all_docs,
     assert_search_custom_s3,
 )
 
@@ -70,3 +71,4 @@ def test_backend_custom_data(
         create_temp_link=True,
         dataset_length=dataset_length,
     )
+    assert_indexed_all_docs(flow_details['host'], kwargs=kwargs, limit=dataset_length)

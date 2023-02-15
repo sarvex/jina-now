@@ -173,3 +173,14 @@ def assert_search_custom_s3(host, mm_type, dataset_length, create_temp_link=Fals
     if mm_type:
         for doc in response_json:
             assert len(doc['tags']) > 0
+
+
+def assert_indexed_all_docs(host, kwargs, limit: int):
+    request_body = get_default_request_body(secured=kwargs.secured)
+    request_body['limit'] = limit
+    response = requests.post(
+        f"{host}/api/v1/info/count",
+        json=request_body,
+    )
+    response_json = response.json()
+    assert response_json['number_of_docs'] == limit
