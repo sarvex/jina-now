@@ -52,7 +52,6 @@ class UserInput(BaseModel):
     user_emails: Optional[List[str]] = None
     additional_user: Optional[StrictBool] = None
     api_key: Optional[str] = None
-    max_replicas: Optional[str] = 5
 
     class Config:
         arbitrary_types_allowed = True

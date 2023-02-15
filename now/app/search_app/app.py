@@ -6,6 +6,7 @@ from jina import Client
 from now.app.base.app import JinaNOWApp
 from now.constants import (
     ACCESS_PATHS,
+    BASIC_USER_PLAN_REPLICAS,
     DEMO_NS,
     EXTERNAL_CLIP_HOST,
     NOW_AUTOCOMPLETE_VERSION,
@@ -188,7 +189,8 @@ class SearchApp(JinaNOWApp):
         flow_yaml_executors = [
             self.autocomplete_stub(testing),
             self.preprocessor_stub(
-                max_replicas=user_input.max_replicas, testing=testing
+                max_replicas=kwargs.get('max_replicas') or BASIC_USER_PLAN_REPLICAS,
+                testing=testing,
             ),
         ]
 

@@ -12,7 +12,7 @@ from tqdm import tqdm
 
 from now.admin.update_api_keys import update_api_keys
 from now.app.base.app import JinaNOWApp
-from now.constants import ACCESS_PATHS, DatasetTypes
+from now.constants import ACCESS_PATHS, BASIC_USER_PLAN_REPLICAS, DatasetTypes
 from now.data_loading.create_dataclass import create_dataclass
 from now.data_loading.data_loading import load_data
 from now.deployment.flow import deploy_flow
@@ -53,9 +53,7 @@ def run(
     print_callback('Data loaded. Deploying the flow...')
 
     # Set up the app specific flow
-    app_instance.setup(
-        user_input=user_input,
-    )
+    app_instance.setup(user_input=user_input, max_replicas=BASIC_USER_PLAN_REPLICAS)
 
     (client, gateway_port, gateway_host_internal,) = deploy_flow(
         flow_yaml=app_instance.flow_yaml,
