@@ -4,10 +4,10 @@ from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-NOW_GATEWAY_VERSION = '0.0.4-feat-integrate-billing-9'
-NOW_PREPROCESSOR_VERSION = '0.0.123-feat-integrate-billing-5'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.147-feat-integrate-billing-5'
-NOW_AUTOCOMPLETE_VERSION = '0.0.11-feat-integrate-billing-5'
+NOW_GATEWAY_VERSION = '0.0.4-feat-integrate-billing-10'
+NOW_PREPROCESSOR_VERSION = '0.0.123-feat-integrate-billing-6'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.147-feat-integrate-billing-6'
+NOW_AUTOCOMPLETE_VERSION = '0.0.11-feat-integrate-billing-6'
 
 
 class Apps(BetterEnum):
@@ -73,4 +73,4 @@ MODALITY_TO_MODELS = {
     Video: [{'name': 'Clip', 'value': Models.CLIP_MODEL}],
 }
 
-NOWGATEWAY_BFF_PORT = 8089
+NOWGATEWAY_BFF_PORT = 8080
