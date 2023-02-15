@@ -155,10 +155,10 @@ class NOWGateway(BasePaymentGateway):
             SearchPaymentInterceptor(
                 internal_app_id=self._internal_app_id,
                 internal_product_id=self._internal_product_id,
-                deployment_id=self._deployment_id,
                 usage_client_id=self._usage_client_id,
                 usage_client_secret=self._usage_client_secret,
                 logger=self.logger,
+                report_usage=self._get_report_usage(),
             )
         ]
 

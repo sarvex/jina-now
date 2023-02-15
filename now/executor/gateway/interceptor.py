@@ -94,7 +94,7 @@ class PaymentInterceptor(grpc.aio.ServerInterceptor):
                     _tail_requests(request_or_iterator), context
                 ):
                     num_docs = len(response.data.docs)
-                    self.report_usage(
+                    self._report_usage(
                         current_user=current_user,
                         usage_client_id=self._usage_client_id,
                         usage_client_secret=self._usage_client_secret,
