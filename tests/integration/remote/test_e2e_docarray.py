@@ -11,7 +11,7 @@ from tests.integration.remote.assertions import (
 )
 
 from now.cli import cli
-from now.constants import DatasetTypes, Models
+from now.constants import MAX_DOCS_FOR_TESTING, DatasetTypes, Models
 from now.demo_data import DemoDatasetNames
 
 
@@ -102,7 +102,6 @@ def test_end_to_end(
         search_modality='text',
         dataset=dataset,
     )
-    assert_indexed_all_docs(flow_details['host'], kwargs=kwargs)
     if query_fields == 'text':
         request_body = get_search_request_body(
             kwargs=kwargs,
@@ -111,3 +110,6 @@ def test_end_to_end(
         )
         suggest_url = f'{response["host_http"]}/api/v1/search-app/suggestion'
         assert_suggest(suggest_url, request_body)
+    assert_indexed_all_docs(
+        flow_details['host'], kwargs=kwargs, limit=MAX_DOCS_FOR_TESTING
+    )

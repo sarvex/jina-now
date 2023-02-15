@@ -4,9 +4,9 @@ from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-NOW_GATEWAY_VERSION = '0.0.4-fix-index-bulk-error-8'
+NOW_GATEWAY_VERSION = '0.0.4-fix-index-bulk-error-9'
 NOW_PREPROCESSOR_VERSION = '0.0.123-test-use-setup-25'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.147-fix-index-bulk-eror-8'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.147-fix-index-bulk-eror-9'
 NOW_AUTOCOMPLETE_VERSION = '0.0.11-refactor-custom-gateway-103'
 
 
@@ -57,6 +57,7 @@ EXTERNAL_CLIP_HOST = 'encoderclip-pretty-javelin-3aceb7f2cd.wolf.jina.ai'
 DEFAULT_FLOW_NAME = 'nowapi'
 PREFETCH_NR = 10
 NUM_FOLDERS_THRESHOLD = 100
+MAX_DOCS_FOR_TESTING = 50
 SURVEY_LINK = 'https://10sw1tcpld4.typeform.com/to/VTAyYRpR?utm_source=cli'
 
 TAG_INDEXER_DOC_HAS_TEXT = '_indexer_doc_has_text'

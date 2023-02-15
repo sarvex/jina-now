@@ -10,7 +10,7 @@ from now.common.detect_schema import (
     get_first_file_in_folder_structure_s3,
     get_s3_bucket_and_folder_prefix,
 )
-from now.constants import DatasetTypes
+from now.constants import MAX_DOCS_FOR_TESTING, DatasetTypes
 from now.data_loading.elasticsearch import ElasticsearchExtractor
 from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
@@ -49,7 +49,7 @@ def load_data(
             f'Could not load DocumentArray dataset. Please check your configuration: {user_input}.'
         )
     if 'NOW_CI_RUN' in os.environ:
-        da = da[:50]
+        da = da[:MAX_DOCS_FOR_TESTING]
     return da
 
 
