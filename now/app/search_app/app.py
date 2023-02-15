@@ -74,13 +74,18 @@ class SearchApp(JinaNOWApp):
         }
 
     @staticmethod
-    def preprocessor_stub() -> Dict:
+    def preprocessor_stub(use_high_perf_flow: bool) -> Dict:
         return {
             'name': 'preprocessor',
             'needs': 'autocomplete_executor',
+            'replicas': 10 if use_high_perf_flow else 1,
             'uses': f'jinahub+docker://{name_to_id_map.get("NOWPreprocessor")}/{NOW_PREPROCESSOR_VERSION}',
             'jcloud': {
-                'autoscale': {'min': 0, 'max': 5, 'metric': 'concurrency', 'target': 1}
+                'resources': {
+                    'memory': '1G',
+                    'cpu': '0.5',
+                    'capacity': 'on-demand',
+                }
             },
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
         }
@@ -163,7 +168,7 @@ class SearchApp(JinaNOWApp):
         """
         flow_yaml_executors = [
             self.autocomplete_stub(),
-            self.preprocessor_stub(),
+            self.preprocessor_stub(use_high_perf_flow='NOW_CI_RUN' not in os.environ),
         ]
 
         encoder2dim = {}
