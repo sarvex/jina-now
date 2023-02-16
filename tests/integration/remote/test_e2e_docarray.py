@@ -7,7 +7,7 @@ from tests.integration.remote.assertions import (
     assert_deployment_response,
     assert_indexed_all_docs,
     assert_suggest,
-    get_search_request_body,
+    get_search_request_kwargs,
 )
 
 from now.cli import cli
@@ -103,13 +103,13 @@ def test_end_to_end(
         dataset=dataset,
     )
     if query_fields == 'text':
-        request_body = get_search_request_body(
+        request_headers, request_body = get_search_request_kwargs(
             kwargs=kwargs,
             search_modality='text',
             dataset=dataset,
         )
         suggest_url = f'{response["host_http"]}/api/v1/search-app/suggestion'
-        assert_suggest(suggest_url, request_body)
+        assert_suggest(suggest_url, request_headers, request_body)
     assert_indexed_all_docs(
         flow_details['host'], kwargs=kwargs, limit=MAX_DOCS_FOR_TESTING
     )

@@ -8,25 +8,22 @@ from docarray import Document, DocumentArray
 from docarray.typing import Image, Text
 from jina import Flow
 
-from now.admin.utils import get_default_request_body
+from now.admin.utils import get_default_request_kwargs
 from now.common.options import construct_app
-from now.constants import DatasetTypes, Models, Apps
+from now.constants import Apps, DatasetTypes, Models
 from now.data_loading.create_dataclass import create_dataclass
 from now.data_loading.data_loading import load_data
 from now.demo_data import DemoDatasetNames
-from now.executor.gateway.now_gateway import NOWGateway
-from now.executor.indexer.elastic import NOWElasticIndexer
-from now.executor.preprocessor import NOWPreprocessor
 from now.now_dataclasses import UserInput
-from now.utils import write_flow_file, get_aws_profile
+from now.utils import get_aws_profile, write_flow_file
 
 BASE_URL = 'http://localhost:8081/api/v1'
 SEARCH_URL = f'{BASE_URL}/search-app/search'
 
 
 def get_request_body(secured):
-    request_body = get_default_request_body(secured=secured)
-    return request_body
+    request_headers, request_body = get_default_request_kwargs(secured=secured)
+    return request_headers, request_body
 
 
 @pytest.fixture
@@ -112,7 +109,7 @@ def api_key_data(mm_dataclass):
     user_input.model_choices = {'text_field_model': [Models.CLIP_MODEL]}
     user_input.admin_emails = [
         hubble.Client(
-            token=get_request_body(secured=True)['jwt']['token'],
+            token=get_request_body(secured=True)[1]['jwt']['token'],
             max_retries=None,
             jsonify=True,
         )

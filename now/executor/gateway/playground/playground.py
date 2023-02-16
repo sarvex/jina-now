@@ -178,13 +178,11 @@ def deploy_streamlit(user_input: UserInput):
 
 
 def get_info_from_endpoint(params, endpoint) -> dict:
-    parameters = {}
-    if params.secured:
-        parameters['jwt'] = {'token': st.session_state.jwt_val['token']}
     response = call_flow(
         f'http://localhost:{NOWGATEWAY_BFF_PORT}/api/v1/info/{endpoint}',
-        parameters,
+        {},
         endpoint,
+        st.session_state.jwt_val['token'] if params.secured else None,
     )
     # return the first value of the response as it's a dict with one key
     return list(response.values())[0]

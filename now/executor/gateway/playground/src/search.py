@@ -24,11 +24,13 @@ def get_query_params() -> Parameters:
     return parameters
 
 
-def call_flow(url_host, data, endpoint):
+def call_flow(url_host, data, endpoint, jwt):
     st.session_state.search_count += 1
-    response = requests.post(
-        url_host, json=data, headers={"Content-Type": "application/json; charset=utf-8"}
-    )
+    headers = {"Content-Type": "application/json; charset=utf-8"}
+    if jwt:
+        data['jwt'] = {'token': jwt}
+        headers['Authorization'] = f'token {jwt}'
+    response = requests.post(url_host, json=data, headers=headers)
 
     try:
         if endpoint == 'suggestion':
@@ -103,4 +105,4 @@ def multimodal_search(
         # in case the jwt is none, no jwt will be sent. This is the case when no authentication is used for that flow
     if jwt:
         data['jwt'] = jwt
-    return call_flow(url_host, data, endpoint)
+    return call_flow(url_host, data, endpoint, jwt)

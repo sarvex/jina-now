@@ -34,10 +34,11 @@ def test_end_to_end(get_flow, setup_service_running):
         },
     )
 
-    request_body = get_request_body(secured=False)
+    request_headers, request_body = get_request_body(secured=False)
     request_body['query'] = [{'name': 'text', 'value': 'test', 'modality': 'text'}]
     response = requests.post(
         SEARCH_URL,
+        headers=request_headers,
         json=request_body,
     )
 
@@ -61,5 +62,7 @@ def test_end_to_end(get_flow, setup_service_running):
 
     count_url = f'{BASE_URL}/info/count'
     request_body['limit'] = len(docs)
-    count_response = requests.post(count_url, json=request_body)
+    count_response = requests.post(
+        count_url, headers=request_headers, json=request_body
+    )
     assert count_response.json()['number_of_docs'] == len(docs)

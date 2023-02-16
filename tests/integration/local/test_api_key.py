@@ -23,33 +23,35 @@ def test_add_key(get_flow, setup_service_running):
         docs,
         parameters={
             'access_paths': ACCESS_PATHS,
-            'jwt': get_request_body(secured=True)['jwt'],
+            'jwt': get_request_body(secured=True)[1]['jwt'],
         },
     )
-    request_body = get_request_body(secured=True)
+    request_headers, request_body = get_request_body(secured=True)
     # Test adding user email
     request_body['user_emails'] = ['florian.hoenicke@jina.ai']
     response = requests.post(
         update_emails_url,
+        headers=request_headers,
         json=request_body,
     )
     assert response.status_code == 200
     # test api keys
     # search with invalid api key
-    request_body = get_request_body(secured=True)
+    request_headers, request_body = get_request_body(secured=True)
     request_body['query'] = [
         {'name': 'text', 'value': 'girl on motorbike', 'modality': 'text'}
     ]
     del request_body['jwt']
     request_body['api_key'] = API_KEY
     request_body['limit'] = 9
-    assert_search(SEARCH_URL, request_body, expected_status_code=401)
+    assert_search(SEARCH_URL, request_headers, request_body, expected_status_code=401)
 
     print('# add api key')
-    request_body_update_keys = get_request_body(secured=True)
+    request_headers, request_body_update_keys = get_request_body(secured=True)
     request_body_update_keys['api_keys'] = [API_KEY]
     response = requests.post(
         update_api_keys_url,
+        headers=request_headers,
         json=request_body_update_keys,
     )
     if response.status_code != 200:
@@ -57,4 +59,4 @@ def test_add_key(get_flow, setup_service_running):
         print(response.json()['message'])
         raise Exception(f'Response status is {response.status_code}')
     print('# the same search should work now')
-    assert_search(SEARCH_URL, request_body)
+    assert_search(SEARCH_URL, request_headers, request_body)

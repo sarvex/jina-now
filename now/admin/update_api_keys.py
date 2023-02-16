@@ -2,7 +2,7 @@ import uuid
 
 import requests
 
-from now.admin.utils import get_default_request_body
+from now.admin.utils import get_default_request_kwargs
 
 #  TODO needs to be updated to work on cli / or even putting things like this into a new client package
 
@@ -13,13 +13,12 @@ def update_api_keys(api_keys, remote_host):
 
     url = f"https://nowrun.jina.ai/api/v1"  # remote
     # url = f'http://localhost:8080/api/v1'  # for local testing
-    request_body = get_default_request_body(secured=True)
+    request_headers, request_body = get_default_request_kwargs(secured=True)
     # request_body['host'] = f'grpc://0.0.0.0'  # for local testing
     # request_body['port'] = 9090  # for local testing
     request_body['api_keys'] = api_keys
     response = requests.post(
-        f'{url}/admin/updateApiKeys',
-        json=request_body,
+        f'{url}/admin/updateApiKeys', json=request_body, headers=request_headers
     )
 
 

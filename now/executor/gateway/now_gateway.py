@@ -18,6 +18,7 @@ from jina.enums import GatewayProtocolType
 
 from now.constants import NOWGATEWAY_BFF_PORT
 from now.deployment.deployment import cmd
+from now.executor.abstract.auth.auth import SecurityLevel, check_user
 from now.executor.gateway.base_payment_gateway import BasePaymentGateway
 from now.executor.gateway.bff_gateway import BFFGateway
 from now.executor.gateway.interceptor import PaymentInterceptor
@@ -38,6 +39,9 @@ ENTERPRISE_USERS = [
     'team-now@jina.ai',
 ]
 PROFESSIONAL_USERS = []
+
+
+user_input_now_gateway = UserInput()
 
 
 class NOWGateway(BasePaymentGateway):
@@ -86,6 +90,9 @@ class NOWGateway(BasePaymentGateway):
                 attr_name,
                 user_input_dict.get(attr_name, prev_value),
             )
+        global user_input_now_gateway
+        user_input_now_gateway = self.user_input
+
         # we need to write the user input to a file so that the playground can read it; this is a workaround
         # for the fact that we cannot pass arguments to streamlit (StreamlitServer doesn't respect it)
         # we also need to do this for the BFF
@@ -330,18 +337,36 @@ def get_user_token(request: Request) -> str:
     :param request: The request header sent along the request.
     :return: The extracted user token from request header.
     """
-    cookie = request.cookies
-    if cookie and 'st' in cookie:
-        token = cookie.get('st')
-    else:
-        token = request.headers.get('Authorization')
+    token = request.headers.get('Authorization')
 
-    if not token:
+    global user_input_now_gateway
+    if token.startswith('token '):
+        token = token.replace('token ', '')
+        check_user(
+            {'parameters': {'jwt': {'token': token}}},
+            SecurityLevel.USER,
+            user_input_now_gateway.user_emails,
+            user_input_now_gateway.admin_emails,
+            [user_input_now_gateway.api_key],
+        )
+    elif token.startswith('key '):
+        token = token.replace('key ', '')
+        check_user(
+            {'parameters': {'api_key': token}},
+            SecurityLevel.USER,
+            user_input_now_gateway.user_emails,
+            user_input_now_gateway.admin_emails,
+            [user_input_now_gateway.api_key],
+        )
+        token = payment_client.get_authorized_jwt(
+            user_token=user_input_now_gateway.jwt['token']
+        )['data']
+    else:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='Empty authentication credentials',
+            detail='Invalid authentication credentials',
         )
-    token = token.replace('token ', '')
+
     return token  # noqa: E203
 
 
