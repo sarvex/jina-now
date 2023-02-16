@@ -152,6 +152,7 @@ class SearchApp(JinaNOWApp):
                     ],
                 ]
             )
+        provision_index = 'yes' if not testing else 'no'
 
         return {
             'name': 'indexer',
@@ -167,7 +168,7 @@ class SearchApp(JinaNOWApp):
             'jcloud': {
                 'labels': {
                     'app': 'indexer',
-                    'provision-index': 'yes',
+                    'provision-index': provision_index,
                 },
                 'resources': {
                     'memory': '8G',

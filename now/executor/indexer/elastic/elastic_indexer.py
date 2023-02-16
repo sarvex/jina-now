@@ -1,5 +1,4 @@
 import os
-import subprocess
 import traceback
 from collections import namedtuple
 from time import sleep
@@ -74,10 +73,7 @@ class NOWElasticIndexer(Executor):
         self.limit = limit
         self.max_values_per_tag = max_values_per_tag
         if not all(v in os.environ for v in ['ES_HOSTS', 'ES_INDEX_NAME', 'API_KEY']):
-            self.logger.info(
-                'es-index-manager not provisioning index, setting up own cluster'
-            )
-            self.setup_elastic_server()
+            raise ValueError('es-index-manager not provisioning index')
         self.hosts = os.getenv('ES_HOSTS', 'http://localhost:9200')
         self.api_key = os.getenv('API_KEY', 'TestApiKey')
         self.index_name = os.getenv('ES_INDEX_NAME', 'now-index')
@@ -104,22 +100,6 @@ class NOWElasticIndexer(Executor):
         else:
             self.es.indices.put_mapping(index=self.index_name, body=self.es_mapping)
 
-    def setup_elastic_server(self):
-        try:
-            if "K8S_NAMESPACE_NAME" in os.environ:
-                data_path = f'/data/{os.environ["K8S_NAMESPACE_NAME"]}'
-                subprocess.run(["chmod", "-R", "0777", data_path])
-                self.configure_elastic(
-                    data_path,
-                    '/usr/share/elasticsearch/config/elasticsearch.yml',
-                )
-                subprocess.Popen(['./start-elastic-search-cluster.sh'])
-                self.logger.info('elastic server started')
-        except FileNotFoundError:
-            self.logger.info(
-                'Elastic started outside of docker, assume cluster started already.'
-            )
-
     @staticmethod
     def do_health_check(es):
         """Checks that Elasticsearch is up and running"""
@@ -129,16 +109,6 @@ class NOWElasticIndexer(Executor):
                 break
             except Exception:
                 sleep(1)
-
-    @staticmethod
-    def configure_elastic(workspace, destination_path):
-        config_path = os.path.join(os.path.dirname(__file__), 'elasticsearch.yml')
-        with open(config_path, 'r') as config_file_handler, open(
-            destination_path, 'w'
-        ) as destination_file_handler:
-            for line in config_file_handler.readlines():
-                line = line.replace("{workspace}", workspace)
-                destination_file_handler.write(line)
 
     def generate_es_mapping(self) -> Dict:
         """Creates Elasticsearch mapping for the defined document fields."""
@@ -180,7 +150,6 @@ class NOWElasticIndexer(Executor):
     def index(
         self,
         docs_map: Dict[str, DocumentArray] = None,  # encoder to docarray
-        parameters: dict = {},
         docs: Optional[DocumentArray] = None,
         **kwargs,
     ) -> DocumentArray:
@@ -188,7 +157,6 @@ class NOWElasticIndexer(Executor):
         Index new `Document`s by adding them to the Elasticsearch index.
 
         :param docs_map: map of encoder to DocumentArray
-        :param parameters: dictionary with options for indexing.
         :param docs: DocumentArray to index
         :return: empty `DocumentArray`.
         """
@@ -212,7 +180,7 @@ class NOWElasticIndexer(Executor):
     @secure_request(on='/search', level=SecurityLevel.USER)
     def search(
         self,
-        docs_map: Dict[str, DocumentArray] = None,  # encoder to docarray
+        docs_map: Dict[str, DocumentArray] = None,
         parameters: dict = {},
         docs: Optional[DocumentArray] = None,
         **kwargs,
