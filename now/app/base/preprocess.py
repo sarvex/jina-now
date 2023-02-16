@@ -5,6 +5,8 @@ import numpy as np
 from docarray import Document
 from PIL import Image
 
+from now.utils import debug
+
 NUM_FRAMES_SAMPLED = 3
 
 
@@ -51,6 +53,9 @@ def preprocess_image(d: Document):
     If the document is already loaded (as a blob or tensor), it is downsampled.
     If it only has an uri, it is not loaded into memory.
     """
+    debug(
+        f"Preprocessing image: [{bool(d.blob)}] [{len(d.tensor) if d.tensor is not None else 0}] [{d.uri}]"
+    )
     if d.blob:
         d.convert_blob_to_image_tensor()
 
