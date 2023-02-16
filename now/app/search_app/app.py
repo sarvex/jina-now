@@ -129,14 +129,12 @@ class SearchApp(JinaNOWApp):
         user_input: UserInput,
         encoder2dim: Dict[str, int],
         testing=False,
-        index_name=None,
     ) -> Dict:
         """Creates indexer stub.
 
         :param user_input: user input
         :param encoder2dim: maps encoder name to its output dimension
         :param testing: use local executors if True
-        :param index_name: name of the elasticsearch index
         """
         document_mappings_list = []
 
@@ -216,7 +214,6 @@ class SearchApp(JinaNOWApp):
                 user_input,
                 encoder2dim=encoder2dim,
                 testing=testing,
-                index_name=kwargs.get('index_name'),
             )
         )
 
