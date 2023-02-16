@@ -98,8 +98,10 @@ class NOWElasticIndexer(Executor):
     def setup_elastic_server(self):
         try:
             if "K8S_NAMESPACE_NAME" in os.environ:
+                data_path = f'/data/{os.environ["K8S_NAMESPACE_NAME"]}'
+                subprocess.run(["chmod", "-R", "0777", data_path])
                 self.configure_elastic(
-                    f'/data/{os.environ["K8S_NAMESPACE_NAME"]}',
+                    data_path,
                     '/usr/share/elasticsearch/config/elasticsearch.yml',
                 )
                 subprocess.Popen(['./start-elastic-search-cluster.sh'])

@@ -4,6 +4,7 @@ from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
+
 NOW_GATEWAY_VERSION = '0.0.4-feat-integrate-billing-13'
 NOW_PREPROCESSOR_VERSION = '0.0.123-feat-integrate-billing-9'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.147-feat-integrate-billing-9'

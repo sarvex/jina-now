@@ -167,6 +167,7 @@ class SearchApp(JinaNOWApp):
                     'memory': '8G',
                     'cpu': 0.5,
                     'capacity': 'on-demand',
+                    'storage': {'type': 'ebs', 'size': '10G'},
                 }
             },
         }
