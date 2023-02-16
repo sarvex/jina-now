@@ -28,7 +28,7 @@ from now.utils import BetterEnum
 
 cur_dir = os.path.dirname(__file__)
 payment_client = PaymentClient(
-    m2m_token='MjdiOTQ4MWI0MTEyYWU2OWYyY2MxMGEyM2Q2YTNkY2I6NmYzMGMwOGJkNTc4OTQ2ZGFlZTY1NDY2YmNjNDM0YzNmZDY4OTIxODhlYmFiYmU4ZmM5NzIxOGMzMDYyNTQ1NQ=='
+    m2m_token=os.environ['M2M_TOKEN'],
 )
 
 ENTERPRISE_USERS = [
@@ -183,14 +183,14 @@ class NOWGateway(BasePaymentGateway):
 
     def extra_interceptors(self) -> List[PaymentInterceptor]:
         return [
-            # SearchPaymentInterceptor(
-            #    internal_app_id=self._internal_app_id,
-            #    internal_product_id=self._internal_product_id,
-            #    usage_client_id=self._usage_client_id,
-            #    usage_client_secret=self._usage_client_secret,
-            #    logger=self.logger,
-            #    report_usage=self._get_report_usage(),
-            # )
+            SearchPaymentInterceptor(
+                internal_app_id=self._internal_app_id,
+                internal_product_id=self._internal_product_id,
+                usage_client_id=self._usage_client_id,
+                usage_client_secret=self._usage_client_secret,
+                logger=self.logger,
+                report_usage=self._get_report_usage(),
+            )
         ]
 
     def _get_report_usage(self) -> Callable:
@@ -295,12 +295,7 @@ class SearchPaymentInterceptor(PaymentInterceptor):
         remain_credits, has_payment_method = get_app_summary(current_user)
 
         if remain_credits <= 0 and not has_payment_method:
-            return JSONResponse(
-                status_code=status.HTTP_403_FORBIDDEN,
-                content={
-                    'message': 'User has reached quota limit, please upgrade subscription'
-                },
-            )
+            raise Exception('User has reached quota limit, please upgrade subscription')
         return True, current_user
 
 
