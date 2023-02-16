@@ -57,15 +57,18 @@ def preprocess_image(d: Document):
         f"Preprocessing image: [{bool(d.blob)}] [{len(d.tensor) if d.tensor is not None else 0}] [{d.uri}]"
     )
     if d.blob:
+        debug("  + Converting blob to tensor")
         d.convert_blob_to_image_tensor()
 
     if d.tensor is not None:
+        debug("  + Downsampling tensor")
         downsample_image_doc(d)
+        d.convert_image_tensor_to_blob()
 
     d.chunks.append(
         Document(
             uri=d.uri,
-            tensor=d.tensor,
+            blob=d.blob,
             tags=d.tags,
             modality='image',
             mime_type='image/jpeg',
