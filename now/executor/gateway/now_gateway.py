@@ -5,20 +5,51 @@ import os
 from time import sleep
 from typing import Any, Callable, Dict, List, Tuple, Union
 
+import hubble
 from fastapi import HTTPException, Request, status
+from fastapi.responses import JSONResponse
+from hubble.excepts import (
+    AuthenticationFailedError,
+    AuthenticationRequiredError,
+    RequestedEntityNotFoundError,
+)
+from hubble.payment.client import PaymentClient
 from jina.enums import GatewayProtocolType
 
 logger = logging.getLogger(__file__)
 from now.constants import NOWGATEWAY_BFF_PORT
 from now.deployment.deployment import cmd
-from now.executor.abstract.auth.auth import check_user
 from now.executor.gateway.base_payment_gateway import BasePaymentGateway
 from now.executor.gateway.bff_gateway import BFFGateway
 from now.executor.gateway.interceptor import PaymentInterceptor
 from now.executor.gateway.playground_gateway import PlaygroundGateway
 from now.now_dataclasses import UserInput
+from now.utils import BetterEnum
 
 cur_dir = os.path.dirname(__file__)
+payment_client = PaymentClient(
+    m2m_token='MjdiOTQ4MWI0MTEyYWU2OWYyY2MxMGEyM2Q2YTNkY2I6NmYzMGMwOGJkNTc4OTQ2ZGFlZTY1NDY2YmNjNDM0YzNmZDY4OTIxODhlYmFiYmU4ZmM5NzIxOGMzMDYyNTQ1NQ=='
+)
+
+ENTERPRISE_USERS = [
+    'aziz.belaweid@jina.ai',
+    'florian.hoenicke@jina.ai',
+    'kalim.akram@jina.ai',
+    'joschka.braun@jina.ai',
+    'team-now@jina.ai',
+]
+PROFESSIONAL_USERS = []
+
+
+class SubscriptionType(BetterEnum):
+    FREE = 0
+    SUBSCRIBED = 1
+    PROFESSIONAL = 2
+    ENTERPRISE = 3
+
+    # reserved for future use
+    EXPERIMENTAL = 100
+    PRIVATE = 101
 
 
 class NOWGateway(BasePaymentGateway):
@@ -152,14 +183,14 @@ class NOWGateway(BasePaymentGateway):
 
     def extra_interceptors(self) -> List[PaymentInterceptor]:
         return [
-            SearchPaymentInterceptor(
-                internal_app_id=self._internal_app_id,
-                internal_product_id=self._internal_product_id,
-                usage_client_id=self._usage_client_id,
-                usage_client_secret=self._usage_client_secret,
-                logger=self.logger,
-                report_usage=self._get_report_usage(),
-            )
+            # SearchPaymentInterceptor(
+            #    internal_app_id=self._internal_app_id,
+            #    internal_product_id=self._internal_product_id,
+            #    usage_client_id=self._usage_client_id,
+            #    usage_client_secret=self._usage_client_secret,
+            #    logger=self.logger,
+            #    report_usage=self._get_report_usage(),
+            # )
         ]
 
     def _get_report_usage(self) -> Callable:
@@ -200,11 +231,23 @@ class NOWGateway(BasePaymentGateway):
                 # todo: add authentication mechanism from now.executors.abstract.auth which is based
                 # on parameters in body
                 # parameters has been already extracted from the request body
-                parameters = request.json()['parameters']
-                print('parameters', parameters)
-                check_user(parameters)
-                user = {'token': parameters['jwt']}
-                return True, user
+                current_user = get_current_user(request)
+                if current_user is None:
+                    raise HTTPException(
+                        status_code=status.HTTP_401_UNAUTHORIZED,
+                        detail='User is not authenticated',
+                    )
+                remain_credits, has_payment_method = get_app_summary(current_user)
+
+                if remain_credits <= 0 and not has_payment_method:
+                    return JSONResponse(
+                        status_code=status.HTTP_403_FORBIDDEN,
+                        content={
+                            'message': 'User has reached quota limit, please upgrade subscription'
+                        },
+                    )
+
+                return True, current_user
             except Exception as ex:
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
@@ -236,10 +279,66 @@ class SearchPaymentInterceptor(PaymentInterceptor):
     ) -> Tuple[bool, Union[dict, str]]:
         metadata = handler_call_details.invocation_metadata
         metadata = {m.key: m.value for m in metadata}
-        print('metadata is ', metadata)
-        check_user(**metadata)
-        user = {'token': metadata['token']}
-        return True, user
+
+        # reject if no authorization header
+        if not metadata or 'authorization' not in metadata:
+            raise Exception('No authorization header')
+
+        access_token = metadata.get("authorization", "")
+        current_user = get_user_info(access_token)
+        current_user['token'] = access_token
+        if current_user is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail='User is not authenticated',
+            )
+        remain_credits, has_payment_method = get_app_summary(current_user)
+
+        if remain_credits <= 0 and not has_payment_method:
+            return JSONResponse(
+                status_code=status.HTTP_403_FORBIDDEN,
+                content={
+                    'message': 'User has reached quota limit, please upgrade subscription'
+                },
+            )
+        return True, current_user
+
+
+def get_user_info(token: str) -> dict:
+    """Get current user from Hubble API based on token.
+       Cache will be used here.
+    :param token: User token.
+    :return: If user exist, return user id, else return `None`.
+    """
+
+    try:
+        hubble_client = hubble.Client(token=token)
+        resp = hubble_client.get_user_info(variant='data')
+        return resp
+    except (AuthenticationFailedError, AuthenticationRequiredError) as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=e.message,
+        )
+    except Exception as exc:
+        logger.error(f'An error occurred while authenticating user: {str(exc)}')
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail='Unknown error on the server-side',
+        )
+
+
+def get_current_user(request: Request) -> dict:
+    """Get current user from Hubble API based on token.
+
+    :param request: The request header sent along the request.
+    :return: If user exist, return a dict which contains user info
+    """
+    token = get_user_token(request)
+    resp = get_user_info(token)
+
+    resp['token'] = token
+    return resp
 
 
 def get_user_token(request: Request) -> str:
@@ -261,3 +360,38 @@ def get_user_token(request: Request) -> str:
         )
     token = token.replace('token ', '')
     return token  # noqa: E203
+
+
+def get_app_summary(user: dict):
+    """Get the app summary of the user, including the subscription, usage, and the method to pay."""
+
+    # default values for unexpected errors
+    has_payment_method = False
+    remain_credits = 100
+
+    # hardcode the subscription type for now
+    email = user.get('email', '')
+    if email in ENTERPRISE_USERS + PROFESSIONAL_USERS:
+        return (
+            remain_credits,
+            has_payment_method,
+        )
+
+    try:
+        resp = payment_client.get_summary(token=user['token'], app_id='search-api')
+        has_payment_method = resp['data'].get('hasPaymentMethod', False)
+        remain_credits = resp['data'].get('credits', None)
+        if remain_credits is None:
+            remain_credits = 0.00001
+        else:
+            logger.error(f'Failed to get payment summary: {resp}')
+    except RequestedEntityNotFoundError as ex:
+        logger.warning(f'Failed to get app summary: {ex!r}')
+    except Exception as e:
+        logger.error(f'Failed to get app summary: {e!r}')
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail='Unknown error on the server-side',
+        )
+
+    return remain_credits, has_payment_method
