@@ -16,7 +16,6 @@ from hubble.excepts import (
 from hubble.payment.client import PaymentClient
 from jina.enums import GatewayProtocolType
 
-logger = logging.getLogger(__file__)
 from now.constants import NOWGATEWAY_BFF_PORT
 from now.deployment.deployment import cmd
 from now.executor.gateway.base_payment_gateway import BasePaymentGateway
@@ -24,8 +23,8 @@ from now.executor.gateway.bff_gateway import BFFGateway
 from now.executor.gateway.interceptor import PaymentInterceptor
 from now.executor.gateway.playground_gateway import PlaygroundGateway
 from now.now_dataclasses import UserInput
-from now.utils import BetterEnum
 
+logger = logging.getLogger(__file__)
 cur_dir = os.path.dirname(__file__)
 payment_client = PaymentClient(
     m2m_token=os.environ['M2M_TOKEN'],
@@ -39,17 +38,6 @@ ENTERPRISE_USERS = [
     'team-now@jina.ai',
 ]
 PROFESSIONAL_USERS = []
-
-
-class SubscriptionType(BetterEnum):
-    FREE = 0
-    SUBSCRIBED = 1
-    PROFESSIONAL = 2
-    ENTERPRISE = 3
-
-    # reserved for future use
-    EXPERIMENTAL = 100
-    PRIVATE = 101
 
 
 class NOWGateway(BasePaymentGateway):
