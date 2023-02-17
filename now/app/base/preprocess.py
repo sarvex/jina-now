@@ -56,10 +56,10 @@ def preprocess_image(d: Document):
         d.convert_blob_to_image_tensor()
 
     # image preprocessor environment flag: 1|2
-    image_preprocessor_flag = os.environ.get("IMAGE_PREPROCESSOR", 1)
+    image_preprocessor_flag = os.environ.get("IMAGE_PREPROCESSOR", "1")
 
     if d.tensor is not None:
-        if image_preprocessor_flag == 1:
+        if image_preprocessor_flag == "1":
             # approach 1
             # process the image tensor directly, slightly faster
             downsample_image_doc(d)
