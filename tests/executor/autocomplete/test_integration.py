@@ -1,3 +1,5 @@
+import os
+
 import hubble
 from docarray import Document, DocumentArray
 from jina import Flow
@@ -17,7 +19,10 @@ def test_autocomplete(tmpdir, mm_dataclass):
         protocol=['http', 'grpc'],
         port=[8081, 8085],
         env={'JINA_LOG_LEVEL': 'DEBUG'},
-        uses_with={'user_input_dict': user_input.__dict__},
+        uses_with={
+            'user_input_dict': user_input.__dict__,
+            'm2m_token': os.environ['M2M_TOKEN'],
+        },
     ).add(uses=NOWAutoCompleteExecutor2, workspace=tmpdir) as f:
         f.post(
             on='/search',

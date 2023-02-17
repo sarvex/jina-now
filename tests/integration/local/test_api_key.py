@@ -24,7 +24,7 @@ def test_add_key(get_flow, setup_service_running):
         parameters={
             'access_paths': ACCESS_PATHS,
         },
-        metadata=(('authorization', get_request_body(secured=True)[1]['jwt']),),
+        metadata=(('authorization', str(get_request_body(secured=True)[1]['jwt'])),),
     )
     request_headers, request_body = get_request_body(secured=True)
     # Test adding user email
