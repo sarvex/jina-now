@@ -55,7 +55,7 @@ def preprocess_image(d: Document):
         d.convert_blob_to_image_tensor()
 
     if d.tensor is not None:
-        if True:
+        if False:
             # approach 1
             d.chunks.append(
                 Document(
