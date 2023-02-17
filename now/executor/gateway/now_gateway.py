@@ -27,9 +27,6 @@ from now.now_dataclasses import UserInput
 
 logger = logging.getLogger(__file__)
 cur_dir = os.path.dirname(__file__)
-payment_client = PaymentClient(
-    m2m_token=os.environ['M2M_TOKEN'],
-)
 
 ENTERPRISE_USERS = [
     'aziz.belaweid@jina.ai',
@@ -61,6 +58,7 @@ class NOWGateway(BasePaymentGateway):
         user_input_dict: Dict,
         internal_app_id: str = 'search',
         internal_product_id: str = 'free-plan',
+        m2m_token: str = '',
         **kwargs,
     ):
         # need to update port ot 8082, as nginx will listen on 8081
@@ -83,6 +81,7 @@ class NOWGateway(BasePaymentGateway):
             **kwargs,
         )
 
+        self.m2m_token = m2m_token
         self.user_input = UserInput()
         for attr_name, prev_value in user_input_dict.items():
             setattr(
@@ -185,6 +184,7 @@ class NOWGateway(BasePaymentGateway):
                 usage_client_secret=self._usage_client_secret,
                 logger=self.logger,
                 report_usage=self._get_report_usage(),
+                m2m_token=self.m2m_token,
             )
         ]
 
@@ -203,7 +203,7 @@ class NOWGateway(BasePaymentGateway):
                 from hubble.payment.client import PaymentClient
 
                 client = PaymentClient(
-                    m2m_token=os.environ['M2M_TOKEN'],
+                    m2m_token=self.m2m_token,
                 )
                 resp = client.report_usage(
                     current_user['token'],
@@ -226,13 +226,18 @@ class NOWGateway(BasePaymentGateway):
                 # todo: add authentication mechanism from now.executors.abstract.auth which is based
                 # on parameters in body
                 # parameters has been already extracted from the request body
-                current_user = get_current_user(request)
+                client = PaymentClient(
+                    m2m_token=self.m2m_token,
+                )
+                current_user = get_current_user(request, client)
                 if current_user is None:
                     raise HTTPException(
                         status_code=status.HTTP_401_UNAUTHORIZED,
                         detail='User is not authenticated',
                     )
-                remain_credits, has_payment_method = get_app_summary(current_user)
+                remain_credits, has_payment_method = get_app_summary(
+                    current_user, client
+                )
 
                 if remain_credits <= 0 and not has_payment_method:
                     return JSONResponse(
@@ -287,7 +292,9 @@ class SearchPaymentInterceptor(PaymentInterceptor):
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail='User is not authenticated',
             )
-        remain_credits, has_payment_method = get_app_summary(current_user)
+        remain_credits, has_payment_method = get_app_summary(
+            current_user, self._m2m_token
+        )
 
         if remain_credits <= 0 and not has_payment_method:
             raise Exception('User has reached quota limit, please upgrade subscription')
@@ -318,27 +325,26 @@ def get_user_info(token: str) -> dict:
         )
 
 
-def get_current_user(request: Request) -> dict:
+def get_current_user(request: Request, payment_client) -> dict:
     """Get current user from Hubble API based on token.
 
     :param request: The request header sent along the request.
     :return: If user exist, return a dict which contains user info
     """
-    token = get_user_token(request)
+    token = get_user_token(request, payment_client)
     resp = get_user_info(token)
 
     resp['token'] = token
     return resp
 
 
-def get_user_token(request: Request) -> str:
+def get_user_token(request: Request, payment_client) -> str:
     """Get current user from Hubble API based on token.
 
     :param request: The request header sent along the request.
     :return: The extracted user token from request header.
     """
     token = request.headers.get('authorization')
-
     global user_input_now_gateway
     # put check and throw meaningful error here with an example of how to consume it
     if token.startswith('token '):
@@ -371,13 +377,12 @@ def get_user_token(request: Request) -> str:
     return token  # noqa: E203
 
 
-def get_app_summary(user: dict):
+def get_app_summary(user: dict, payment_client):
     """Get the app summary of the user, including the subscription, usage, and the method to pay."""
 
     # default values for unexpected errors
     has_payment_method = False
     remain_credits = 100
-
     # hardcode the subscription type for now
     email = user.get('email', '')
     if email in ENTERPRISE_USERS + PROFESSIONAL_USERS:

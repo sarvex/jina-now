@@ -14,6 +14,7 @@ class PaymentInterceptor(grpc.aio.ServerInterceptor):
     def __init__(self, logger, report_usage: Callable, **kwargs):
         self._internal_app_id = kwargs.get('internal_app_id')
         self._internal_product_id = kwargs.get('internal_product_id')
+        self._m2m_token = kwargs.get('m2m_token')
         self._deployment_id = kwargs.get('deployment_id', None)
         self._usage_client_id = kwargs.get('usage_client_id', None)
         self._usage_client_secret = kwargs.get('usage_client_secret', None)
