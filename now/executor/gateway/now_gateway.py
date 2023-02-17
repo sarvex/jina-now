@@ -58,7 +58,7 @@ class NOWGateway(BasePaymentGateway):
 
     def __init__(
         self,
-        user_input_dict: Dict = {},
+        user_input_dict: Dict,
         internal_app_id: str = 'search',
         internal_product_id: str = 'free-plan',
         **kwargs,
@@ -84,7 +84,7 @@ class NOWGateway(BasePaymentGateway):
         )
 
         self.user_input = UserInput()
-        for attr_name, prev_value in self.user_input.__dict__.items():
+        for attr_name, prev_value in user_input_dict.items():
             setattr(
                 self.user_input,
                 attr_name,
@@ -337,9 +337,10 @@ def get_user_token(request: Request) -> str:
     :param request: The request header sent along the request.
     :return: The extracted user token from request header.
     """
-    token = request.headers.get('Authorization')
+    token = request.headers.get('authorization')
 
     global user_input_now_gateway
+    # put check and throw meaningful error here with an example of how to consume it
     if token.startswith('token '):
         token = token.replace('token ', '')
         check_user(
