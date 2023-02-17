@@ -84,7 +84,12 @@ class SearchApp(JinaNOWApp):
             if not testing
             else 'NOWPreprocessor',
             'jcloud': {
-                'autoscale': {'min': 0, 'max': 5, 'metric': 'concurrency', 'target': 1}
+                'autoscale': {
+                    'min': 0,
+                    'max': 100,
+                    'metric': 'concurrency',
+                    'target': 1,
+                }
             },
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
         }
@@ -167,7 +172,7 @@ class SearchApp(JinaNOWApp):
                     'memory': '8G',
                     'cpu': 0.5,
                     'capacity': 'on-demand',
-                    'storage': {'type': 'ebs', 'size': '10G'},
+                    'storage': {'kind': 'ebs', 'size': '10G'},
                 }
             },
         }
