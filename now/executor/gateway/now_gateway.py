@@ -56,9 +56,9 @@ class NOWGateway(BasePaymentGateway):
     def __init__(
         self,
         user_input_dict: Dict,
+        m2m_token: str,
         internal_app_id: str = 'search',
         internal_product_id: str = 'free-plan',
-        m2m_token: str = '',
         **kwargs,
     ):
         # need to update port ot 8082, as nginx will listen on 8081

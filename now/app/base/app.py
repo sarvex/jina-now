@@ -116,7 +116,10 @@ class JinaNOWApp:
             'monitoring': True,
             'cors': True,
             'prefetch': PREFETCH_NR,
-            'uses_with': {'user_input_dict': user_input.to_safe_dict()},
+            'uses_with': {
+                'user_input_dict': user_input.to_safe_dict(),
+                'm2m_token': os.environ['M2M_TOKEN'],
+            },
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
         }
         if 'NOW_EXAMPLES' in os.environ:
