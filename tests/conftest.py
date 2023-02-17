@@ -163,7 +163,7 @@ def setup_service_running(es_connection_params) -> None:
     cmd(f'docker-compose -f {docker_compose_file} up -d')
     hosts, _ = es_connection_params
     os.environ['ES_HOSTS'] = hosts
-    os.environ['API_KEY'] = 'TestApiKey'
+    os.environ['ES_API_KEY'] = 'TestApiKey'
     wait_until_cluster_is_up(es=Elasticsearch(hosts=hosts), hosts=hosts)
     yield
     cmd('docker-compose -f tests/resources/elastic/docker-compose.yml down')
