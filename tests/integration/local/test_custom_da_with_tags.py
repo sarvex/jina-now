@@ -1,3 +1,4 @@
+import hubble
 import pytest
 import requests
 from jina import Client
@@ -23,6 +24,7 @@ def test_search_filters(get_flow, setup_service_running):
         parameters={
             'access_paths': ACCESS_PATHS,
         },
+        metadata=(('authorization', hubble.get_token()),),
     )
     _, request_body = get_request_body(secured=False)
     request_body['query'] = [{'name': 'text', 'value': 'test', 'modality': 'text'}]
@@ -30,6 +32,7 @@ def test_search_filters(get_flow, setup_service_running):
     response = requests.post(
         SEARCH_URL,
         json=request_body,
+        headers={'Authorization': f'token {hubble.get_token()}'},
     )
 
     assert response.status_code == 200
