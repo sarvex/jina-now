@@ -80,7 +80,7 @@ class SearchApp(JinaNOWApp):
         }
 
     @staticmethod
-    def preprocessor_stub(testing=False) -> Dict:
+    def preprocessor_stub(testing=False, env={}) -> Dict:
         return {
             'name': 'preprocessor',
             'needs': 'autocomplete_executor',
@@ -97,7 +97,7 @@ class SearchApp(JinaNOWApp):
                 'resources': {'instance': 'C4'},
                 'capacity': 'spot',
             },
-            'env': {'JINA_LOG_LEVEL': 'DEBUG'},
+            'env': {'JINA_LOG_LEVEL': 'DEBUG', **env},
         }
 
     @staticmethod
@@ -194,7 +194,10 @@ class SearchApp(JinaNOWApp):
         """
         flow_yaml_executors = [
             self.autocomplete_stub(testing),
-            self.preprocessor_stub(testing),
+            self.preprocessor_stub(
+                testing,
+                env={"IMAGE_PREPROCESSOR": os.environ.get("IMAGE_PREPROCESSOR", 1)},
+            ),
         ]
 
         encoder2dim = {}

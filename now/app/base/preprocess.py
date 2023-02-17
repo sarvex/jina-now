@@ -1,5 +1,6 @@
 import io
 import math
+import os
 
 import numpy as np
 from docarray import Document
@@ -54,13 +55,19 @@ def preprocess_image(d: Document):
     if d.blob:
         d.convert_blob_to_image_tensor()
 
+    # image preprocessor environment flag: 1|2
+    image_preprocessor_flag = os.environ.get("IMAGE_PREPROCESSOR", 1)
+
     if d.tensor is not None:
-        if False:
+        if image_preprocessor_flag == 1:
             # approach 1
+            # process the image tensor directly, slightly faster
+            downsample_image_doc(d)
+            d.convert_image_tensor_to_blob()
             d.chunks.append(
                 Document(
                     uri=d.uri,
-                    blob=downsample_image(d.tensor),
+                    blob=d.blob,
                     tags=d.tags,
                     modality='image',
                     mime_type='image/jpeg',
@@ -69,13 +76,11 @@ def preprocess_image(d: Document):
 
         else:
             # approach 2
-            downsample_image_doc(d)
-            d.convert_image_tensor_to_blob()
-
+            # process the image with PIL, including loading and saving
             d.chunks.append(
                 Document(
                     uri=d.uri,
-                    blob=d.blob,
+                    blob=downsample_image(d.tensor),
                     tags=d.tags,
                     modality='image',
                     mime_type='image/jpeg',
