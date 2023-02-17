@@ -1,3 +1,4 @@
+import hubble
 import pytest
 import requests
 from docarray.typing import Image, Text
@@ -32,6 +33,7 @@ def test_end_to_end(get_flow, setup_service_running):
         parameters={
             'access_paths': ACCESS_PATHS,
         },
+        metadata=(('authorization', hubble.get_token()),),
     )
 
     request_headers, request_body = get_request_body(secured=False)
