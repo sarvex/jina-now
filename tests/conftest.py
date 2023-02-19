@@ -154,7 +154,7 @@ def es_connection_params():
 
 
 @pytest.fixture(scope='session')
-def setup_service_running(es_connection_params) -> None:
+def setup_service_running(es_connection_params, random_index_name) -> None:
     docker_compose_file = os.path.join(
         os.path.dirname(os.path.realpath(__file__)),
         'resources/elastic/docker-compose.yml',
@@ -183,7 +183,7 @@ def get_aws_info():
     )
 
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def random_index_name():
     os.environ['ES_INDEX_NAME'] = f"test-index-{random.randint(0, 10000)}"
 
