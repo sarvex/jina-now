@@ -2,6 +2,7 @@
 import base64
 import os
 import random
+import time
 from collections import namedtuple
 from warnings import catch_warnings, filterwarnings
 
@@ -339,7 +340,7 @@ def wait_until_cluster_is_up(es, hosts):
                 break
             else:
                 retries += 1
-                sleep(SLEEP)
+                time.sleep(SLEEP)
         except Exception:
             print(
                 f'Elasticsearch is not running yet, are you connecting to the right hosts? {hosts}'
