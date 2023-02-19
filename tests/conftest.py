@@ -17,7 +17,6 @@ from urllib3.exceptions import InsecureRequestWarning, SecurityWarning
 
 from now.data_loading.elasticsearch import ElasticsearchConnector
 from now.deployment.deployment import cmd
-from now.executor.indexer.elastic.elastic_indexer import wait_until_cluster_is_up
 from now.executor.preprocessor import NOWPreprocessor
 from now.utils import get_aws_profile
 
@@ -328,3 +327,24 @@ def setup_online_shop_db(setup_elastic_db, es_connection_params, online_shop_res
 
     # delete index
     delete_es_index(connector=es_connector, name=index_name)
+
+
+def wait_until_cluster_is_up(es, hosts):
+    MAX_RETRIES = 300
+    SLEEP = 1
+    retries = 0
+    while retries < MAX_RETRIES:
+        try:
+            if es.ping():
+                break
+            else:
+                retries += 1
+                sleep(SLEEP)
+        except Exception:
+            print(
+                f'Elasticsearch is not running yet, are you connecting to the right hosts? {hosts}'
+            )
+    if retries >= MAX_RETRIES:
+        raise RuntimeError(
+            f'Elasticsearch is not running after {MAX_RETRIES} retries ('
+        )

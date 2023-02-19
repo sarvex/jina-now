@@ -45,7 +45,6 @@ class NOWElasticIndexer(Executor):
     def __init__(
         self,
         document_mappings: List[Tuple[str, int, List[str]]],
-        dim: int = None,
         metric: str = 'cosine',
         limit: int = 10,
         max_values_per_tag: int = 10,
@@ -57,7 +56,6 @@ class NOWElasticIndexer(Executor):
         """
         :param document_mappings: list of FieldEmbedding tuples that define which encoder
             encodes which fields, and the embedding size of the encoder.
-        :param dim: Dimensionality of vectors to index.
         :param metric: Distance metric type. Can be 'euclidean', 'inner_product', or 'cosine'
         :param limit: Number of results to get for each query document in search
         :param max_values_per_tag: Maximum number of values per tag
@@ -495,24 +493,3 @@ def aggregate_embeddings(docs_map: Dict[str, DocumentArray]):
                 if c.chunks[0].text or not c.uri:
                     c.content = c.chunks[0].content
                 c.chunks = DocumentArray()
-
-
-def wait_until_cluster_is_up(es, hosts):
-    MAX_RETRIES = 300
-    SLEEP = 1
-    retries = 0
-    while retries < MAX_RETRIES:
-        try:
-            if es.ping():
-                break
-            else:
-                retries += 1
-                sleep(SLEEP)
-        except Exception:
-            print(
-                f'Elasticsearch is not running yet, are you connecting to the right hosts? {hosts}'
-            )
-    if retries >= MAX_RETRIES:
-        raise RuntimeError(
-            f'Elasticsearch is not running after {MAX_RETRIES} retries ('
-        )
