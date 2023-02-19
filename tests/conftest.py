@@ -154,7 +154,7 @@ def es_connection_params():
 
 
 @pytest.fixture(scope='session')
-def setup_service_running(es_connection_params, random_index_name) -> None:
+def setup_service_running(es_connection_params) -> None:
     docker_compose_file = os.path.join(
         os.path.dirname(os.path.realpath(__file__)),
         'resources/elastic/docker-compose.yml',
@@ -183,7 +183,7 @@ def get_aws_info():
     )
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture
 def random_index_name():
     os.environ['ES_INDEX_NAME'] = f"test-index-{random.randint(0, 10000)}"
 
@@ -331,7 +331,7 @@ def setup_online_shop_db(setup_elastic_db, es_connection_params, online_shop_res
 
 def wait_until_cluster_is_up(es, hosts):
     MAX_RETRIES = 300
-    SLEEP = 1
+    SLEEP = 3
     retries = 0
     while retries < MAX_RETRIES:
         try:

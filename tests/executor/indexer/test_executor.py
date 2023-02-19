@@ -128,8 +128,6 @@ def test_count_endpoint(setup_service_running, es_inputs, random_index_name):
     ) = es_inputs
     es_indexer = NOWElasticIndexer(
         document_mappings=document_mappings,
-        hosts='http://localhost:9200',
-        index_name=random_index_name,
     )
     es_indexer.index(index_docs_map)
     result = es_indexer.count()

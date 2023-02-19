@@ -33,7 +33,6 @@ def flow(random_index_name, metas):
             self.preprocessor = NOWPreprocessor()
             self.encoder = DummyEncoder()
             self.indexer = NOWElasticIndexer(
-                hosts='http://localhost:9200',
                 document_mappings=DOCUMENT_MAPPINGS,
                 user_input_dict={
                     'filter_fields': ['color', 'greeting'],
