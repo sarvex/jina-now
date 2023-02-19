@@ -70,10 +70,11 @@ class NOWElasticIndexer(Executor):
         self.metric = metric
         self.limit = limit
         self.max_values_per_tag = max_values_per_tag
-        if not all(
+        while not all(
             v in os.environ for v in ['ES_HOSTS', 'ES_INDEX_NAME', 'ES_API_KEY']
         ):
-            raise ValueError('es-index-manager not provisioning index')
+            self.logger.info('Environment variables not set yet. Waiting...')
+            sleep(5)
         self.hosts = os.getenv('ES_HOSTS', 'http://localhost:9200')
         self.api_key = os.getenv('ES_API_KEY', 'TestApiKey')
         self.index_name = os.getenv('ES_INDEX_NAME', 'now-index')
