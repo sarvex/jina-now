@@ -99,7 +99,8 @@ class NOWGateway(BasePaymentGateway):
         with open(os.path.join(os.path.expanduser('~'), 'user_input.json'), 'w') as f:
             json.dump(self.user_input.__dict__, f)
 
-        print('kwargs', kwargs)
+        kwargs.pop('port', None)
+        kwargs.pop('protocol', None)
         self.bff_gateway = self._create_gateway(
             BFFGateway,
             NOWGATEWAY_BFF_PORT,
