@@ -99,8 +99,6 @@ class NOWGateway(BasePaymentGateway):
         with open(os.path.join(os.path.expanduser('~'), 'user_input.json'), 'w') as f:
             json.dump(self.user_input.__dict__, f)
 
-        kwargs.pop('port', None)
-        kwargs.pop('protocol', None)
         self.bff_gateway = self._create_gateway(
             BFFGateway,
             NOWGATEWAY_BFF_PORT,
@@ -164,12 +162,12 @@ class NOWGateway(BasePaymentGateway):
         sleep(10)
         return output, error
 
-    def _create_gateway(self, gateway_cls, port, protocol='http', **kwargs):
+    def _create_gateway(self, gateway_cls, app_port, protocol='http', **kwargs):
         # ignore metrics_registry since it is not copyable
         runtime_args = self._deepcopy_with_ignore_attrs(
             self.runtime_args, ['metrics_registry']
         )
-        runtime_args.port = [port]
+        runtime_args.port = [app_port]
         runtime_args.protocol = [protocol]
         gateway_kwargs = {k: v for k, v in kwargs.items() if k != 'runtime_args'}
         gateway_kwargs['runtime_args'] = dict(vars(runtime_args))
