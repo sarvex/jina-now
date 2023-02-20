@@ -9,7 +9,6 @@ import os
 from docarray.typing import Image
 import glob
 import boto3
-import shutil
 
 from hubble.client.endpoints import EndpointsV2
 from hubble import Client as HubbleClient
@@ -51,19 +50,32 @@ def download_da(dir_name, part_prefix):
 
     local_filename = dir_name + f'/{part_prefix}.bin'
     # NOTE the stream=True parameter below
-    with py_requests.get(url, stream=True) as r:
-        r.raise_for_status()
-        with open(local_filename, 'wb') as f:
-            for chunk in r.iter_content(chunk_size=8192):
-                # If you have chunk encoded response uncomment if
-                # and set chunk_size parameter to None.
-                # if chunk:
-                f.write(chunk)
-
-    docs = DocumentArray.load_binary(local_filename, protocol='protobuf', compress='gzip')
-    docs = process_docs(docs)
-    os.remove(local_filename)
-    docs.save_binary(local_filename)
+    try:
+        print(local_filename, 'being downloaded')
+        with py_requests.get(url, stream=True) as r:
+            r.raise_for_status()
+            with open(local_filename, 'wb') as f:
+                for chunk in r.iter_content(chunk_size=8192):
+                    # If you have chunk encoded response uncomment if
+                    # and set chunk_size parameter to None.
+                    # if chunk:
+                    f.write(chunk)
+            docs = DocumentArray.load_binary(
+                local_filename, protocol='protobuf', compress='gzip'
+            )
+        print(local_filename, 'being processed')
+        docs = process_docs(docs)
+        os.remove(local_filename)
+        docs.save_binary(local_filename)
+        print(local_filename, 'done')
+    except:
+        print(local_filename, 'downloading failed')
+        # remove the failed file if it exists
+        try:
+            os.remove(local_filename)
+            print(local_filename, 'removed')
+        except OSError:
+            pass
 
 
 def get_metadata(doc):
@@ -106,14 +118,15 @@ def download_laion400m(dir_name, size=100):
     :param size: number of subsets (each subset has 1m examples) to be downloaded.
     """
     print('starting pulling the data')
-    num_workers = min(
-        floor(psutil.virtual_memory().total / 1e9 / 2), multiprocessing.cpu_count()
+    num_workers = (
+        min(floor(psutil.virtual_memory().total / 1e9 / 2), multiprocessing.cpu_count())
+        - 3
     )
-    with ThreadPoolExecutor(max_workers=2) as executor:
+    with ThreadPoolExecutor(max_workers=num_workers) as executor:
         collected = 0
         futures = []
         for i in range(400):
-            if os.path.exists(os.path.join(dir_name, f'laion_{i}.bin')):
+            if os.path.exists(os.path.join(dir_name, f'laion400m_part_{i}.bin')):
                 collected += 1
                 continue
             elif not check_docarray_exists(f'jem-fu/laion400m_part_{i}'):
@@ -122,38 +135,49 @@ def download_laion400m(dir_name, size=100):
             if collected == size:
                 break
 
-            futures.append(executor.submit(download_da, dir_name, f'laion400m_part_{i}'))
+            futures.append(
+                executor.submit(download_da, dir_name, f'laion400m_part_{i}')
+            )
             collected += 1
         for future in as_completed(futures):
             future.result()
 
 
-def pull_and_process_subset(index):
-    docs = DocumentArray.pull(f'jem-fu/laion400m_part_{index}')
-    docs = process_docs(docs)
-    docs.save_binary(os.path.join(dir_name, f'laion_{index}.bin'))
-    print(f'part {index} successfully downloaded')
+def split(lst, size):
+    for i in range(0, len(lst), size):
+        yield lst[i : i + size]
 
 
-def aggregate_data(dir_name):
+def aggregate_data(dir_name, size):
     """
     Aggregate downloaded data into one and store it as a binary file.
+    :param dir_name: name of the directory where processed subsets will be stored.
+    :param size: size of the chunks (in millions) that will be used to split data.
     """
-    file_name = os.path.join(dir_name, 'laion_100m.bin')
+    file_name = os.path.join(dir_name, f'laion_{size}m.bin')
     if os.path.exists(file_name):
         return file_name
 
     print('starting to aggregate data into one binary file')
-    docs = DocumentArray()
-    for file in glob.glob(os.path.join(dir_name, '*')):
-        docs.extend(DocumentArray.load_binary(file))
-    docs.save_binary(file_name, protocol='protobuf', compress='lz4')
-    return file_name
+    for i, sublist in enumerate(split(glob.glob(os.path.join(dir_name, '*')), size)):
+        print('aggregating', sublist)
+        docs = DocumentArray()
+        for file in sublist:
+            docs_subset = DocumentArray.load_binary(file)
+            docs.extend(docs_subset)
+        print('saving', sublist)
+        docs.save_binary(file_name, protocol='protobuf', compress='lz4')
+        print('pushing', sublist)
+        push_to_s3(file_name, f'{size}ms/laion_{size}m_{i}.bin')
+        print('removing', sublist)
+        os.remove(file_name)
 
 
-def push_to_s3(file_name):
+def push_to_s3(local_file_name, s3_file_name):
     """
     Push aggregated data into the s3 bucket.
+    :param local_file_name: name of the file we want to upload
+    :param s3_file_name: under this name will be the file uploaded
     """
     print('pushing the file to the s3 bucket')
     session = boto3.session.Session(
@@ -164,14 +188,14 @@ def push_to_s3(file_name):
     bucket = session.resource('s3').Bucket(
         os.environ.get('S3_CUSTOM_MM_DATA_PATH').split('/')[2]
     )
-    bucket.upload_file(file_name, 'laion_data/laion_100m.bin')
+    bucket.upload_file(local_file_name, os.path.join('laion_data/', s3_file_name))
 
 
 if __name__ == "__main__":
     """
     Pull original laion400m data uploaded by Jie;
     Process each subset to match our multimodal docarray structure;
-    Aggregate each subset into one;
+    Aggregate subsets into chunk(s) of given size;
     Push the aggregated data into the s3 bucket;
 
     run: python prepare_laion_data.py
@@ -184,9 +208,10 @@ if __name__ == "__main__":
     if not os.path.exists(dir_name):
         os.makedirs(dir_name)
 
-    download_laion400m(dir_name=dir_name, size=3)
-    file_name = aggregate_data(dir_name=dir_name)
-    push_to_s3(file_name=file_name)
+    # download 100m data
+    download_laion400m(dir_name=dir_name, size=100)
+    # aggregate them as 10m chunks and push to s3
+    aggregate_data(dir_name=dir_name, size=10)
 
     # # remove local data files in the end
     # shutil.rmtree(dir_name)
