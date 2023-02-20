@@ -33,6 +33,8 @@ FieldEmbedding = namedtuple(
 
 Executor = get_auth_executor_class()
 
+TIMEOUT = 60
+
 
 class NOWElasticIndexer(Executor):
     """
@@ -70,11 +72,7 @@ class NOWElasticIndexer(Executor):
         self.metric = metric
         self.limit = limit
         self.max_values_per_tag = max_values_per_tag
-        while not all(
-            var in os.environ for var in ['ES_HOSTS', 'ES_INDEX_NAME', 'ES_API_KEY']
-        ):
-            self.logger.info('Environment variables not set yet. Waiting...')
-            sleep(5)
+        self._check_env_vars()
         self.hosts = os.getenv('ES_HOSTS', 'http://localhost:9200')
         self.api_key = os.getenv('ES_API_KEY', 'TestApiKey')
         self.index_name = os.getenv('ES_INDEX_NAME', 'now-index')
@@ -99,14 +97,30 @@ class NOWElasticIndexer(Executor):
         else:
             self.es.indices.put_mapping(index=self.index_name, body=self.es_mapping)
 
+    def _check_env_vars(self):
+        while not all(
+            var in os.environ for var in ['ES_HOSTS', 'ES_INDEX_NAME', 'ES_API_KEY']
+        ):
+            timeout_counter = 0
+            if timeout_counter < TIMEOUT:
+                timeout_counter += 5
+                self.logger.info('Environment variables not set yet. Waiting...')
+                sleep(5)
+            else:
+                self.logger.error(
+                    'Elasticsearch environment variables not set after 60 seconds. Exiting...'
+                )
+                raise Exception('Elasticsearch environment variables not set')
+
     def _do_health_check(self):
-        """Checks that Elasticsearch is up and running"""
+        """Checks that Elasticsearch is up and running with state 'yellow'. The default timeout
+        on the health check is 30 seconds."""
         while True:
             try:
                 self.es.cluster.health(wait_for_status='yellow')
                 break
             except Exception:
-                sleep(1)
+                self.logger.info(traceback.format_exc())
 
     def generate_es_mapping(self) -> Dict:
         """Creates Elasticsearch mapping for the defined document fields."""
