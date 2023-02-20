@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 from docarray import Document
 from docarray.score import NamedScore
@@ -24,9 +26,10 @@ def test_convert_doc_map_to_es(es_inputs, random_index_name):
     encoder_to_fields = {document_mappings[0]: document_mappings[2]}
     first_doc_clip = index_docs_map['clip'][0]
     aggregate_embeddings(index_docs_map)
+    index_name = os.getenv('ES_INDEX_NAME')
     first_result = convert_doc_map_to_es(
         docs_map=index_docs_map,
-        index_name=random_index_name,
+        index_name=index_name,
         encoder_to_fields=encoder_to_fields,
     )[0]
     assert first_result['id'] == first_doc_clip.id
