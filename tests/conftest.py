@@ -346,6 +346,4 @@ def wait_until_cluster_is_up(es, hosts):
                 f'Elasticsearch is not running yet, are you connecting to the right hosts? {hosts}'
             )
     if retries >= MAX_RETRIES:
-        raise RuntimeError(
-            f'Elasticsearch is not running after {MAX_RETRIES} retries ('
-        )
+        raise RuntimeError(f'Elasticsearch is not running after {MAX_RETRIES} retries.')

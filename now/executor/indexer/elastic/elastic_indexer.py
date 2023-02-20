@@ -71,15 +71,13 @@ class NOWElasticIndexer(Executor):
         self.limit = limit
         self.max_values_per_tag = max_values_per_tag
         while not all(
-            v in os.environ for v in ['ES_HOSTS', 'ES_INDEX_NAME', 'ES_API_KEY']
+            var in os.environ for var in ['ES_HOSTS', 'ES_INDEX_NAME', 'ES_API_KEY']
         ):
             self.logger.info('Environment variables not set yet. Waiting...')
             sleep(5)
         self.hosts = os.getenv('ES_HOSTS', 'http://localhost:9200')
         self.api_key = os.getenv('ES_API_KEY', 'TestApiKey')
         self.index_name = os.getenv('ES_INDEX_NAME', 'now-index')
-        print(f'hosts: {self.hosts}')
-        print(f'index_name: {self.index_name}')
         self.query_to_curated_ids = {}
         self.doc_id_tags = {}
         self.document_mappings = [FieldEmbedding(*dm) for dm in document_mappings]
@@ -95,18 +93,17 @@ class NOWElasticIndexer(Executor):
             **self.es_config,
             ssl_show_warn=False,
         )
-        self.do_health_check(self.es)
+        self._do_health_check()
         if not self.es.indices.exists(index=self.index_name):
             self.es.indices.create(index=self.index_name, mappings=self.es_mapping)
         else:
             self.es.indices.put_mapping(index=self.index_name, body=self.es_mapping)
 
-    @staticmethod
-    def do_health_check(es):
+    def _do_health_check(self):
         """Checks that Elasticsearch is up and running"""
         while True:
             try:
-                es.cluster.health(wait_for_status='yellow')
+                self.es.cluster.health(wait_for_status='yellow')
                 break
             except Exception:
                 sleep(1)
