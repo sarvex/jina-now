@@ -86,6 +86,15 @@ def preprocess_image(d: Document):
                     mime_type='image/jpeg',
                 )
             )
+    elif d.uri:
+        d.chunks.append(
+            Document(
+                uri=d.uri,
+                tags=d.tags,
+                modality='image',
+                mime_type='image/jpeg',
+            )
+        )
 
     d.blob = None
     d.tensor = None
