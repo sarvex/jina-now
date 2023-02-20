@@ -25,14 +25,16 @@ from now.now_dataclasses import DialogOptions, UserInput
 from now.utils import (
     DemoAvailableException,
     RetryException,
+    get_aws_profile,
     get_info_hubble,
+    hide_string_chars,
     jina_auth_login,
     sigmap,
     to_camel_case,
 )
 
 AVAILABLE_SOON = 'will be available in upcoming versions'
-
+aws_profile = get_aws_profile()
 
 # Make sure you add this dialog option to your app in order of dependency, i.e., if some dialog option depends on other
 # than the parent should be called first before the dependant can called.
@@ -46,13 +48,14 @@ def _check_index_field(user_input: UserInput, **kwargs):
         user_input.index_fields = list(
             user_input.index_field_candidates_to_modalities.keys()
         )
-    elif (
-        user_input.index_fields[0]
-        not in user_input.index_field_candidates_to_modalities.keys()
+    elif any(
+        idx_field
+        for idx_field in user_input.index_fields
+        if idx_field not in list(user_input.index_field_candidates_to_modalities.keys())
     ):
         raise ValueError(
-            f'Index field specified is not among the index candidate fields. Please '
-            f'choose one of the following: {user_input.index_field_candidates_to_modalities.keys()}'
+            f'Index field specified {user_input.index_fields} is not among the index candidate fields. Please '
+            f'choose one of the following: {list(user_input.index_field_candidates_to_modalities.keys())}'
         )
 
 
@@ -201,7 +204,8 @@ DATASET_PATH_S3 = DialogOptions(
 
 AWS_ACCESS_KEY_ID = DialogOptions(
     name='aws_access_key_id',
-    prompt_message='Please enter the AWS access key ID:',
+    prompt_message=f'Please enter the AWS access key ID: [{hide_string_chars(aws_profile.aws_access_key_id)}]',
+    default=f'{aws_profile.aws_access_key_id}',
     prompt_type='input',
     depends_on=DATASET_TYPE,
     conditional_check=lambda user_input: user_input.dataset_type
@@ -210,7 +214,8 @@ AWS_ACCESS_KEY_ID = DialogOptions(
 
 AWS_SECRET_ACCESS_KEY = DialogOptions(
     name='aws_secret_access_key',
-    prompt_message='Please enter the AWS secret access key:',
+    prompt_message=f'Please enter the AWS secret access key: [{hide_string_chars(aws_profile.aws_secret_access_key)}]',
+    default=f'{aws_profile.aws_secret_access_key}',
     prompt_type='input',
     depends_on=DATASET_TYPE,
     conditional_check=lambda user_input: user_input.dataset_type
@@ -219,7 +224,8 @@ AWS_SECRET_ACCESS_KEY = DialogOptions(
 
 AWS_REGION_NAME = DialogOptions(
     name='aws_region_name',
-    prompt_message='Please enter the AWS region:',
+    prompt_message=f'Please enter the AWS region: [{aws_profile.region}]',
+    default=f'{aws_profile.region}',
     prompt_type='input',
     depends_on=DATASET_TYPE,
     conditional_check=lambda user_input: user_input.dataset_type

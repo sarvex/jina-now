@@ -2,20 +2,20 @@ import multiprocessing
 import os
 from time import sleep
 
+import hubble
 import pytest
 from docarray import Document, DocumentArray
 from docarray.typing import Image, Text
 from jina import Flow
 
 from now.admin.utils import get_default_request_body
-from now.constants import EXTERNAL_CLIP_HOST, DatasetTypes, Models
+from now.common.options import construct_app
+from now.constants import DatasetTypes, Models, Apps
 from now.data_loading.create_dataclass import create_dataclass
 from now.data_loading.data_loading import load_data
 from now.demo_data import DemoDatasetNames
-from now.executor.gateway import NOWGateway
-from now.executor.indexer.elastic import NOWElasticIndexer
-from now.executor.preprocessor import NOWPreprocessor
 from now.now_dataclasses import UserInput
+from now.utils import write_flow_file, get_aws_profile
 
 BASE_URL = 'http://localhost:8081/api/v1'
 SEARCH_URL = f'{BASE_URL}/search-app/search'
@@ -29,29 +29,9 @@ def get_request_body(secured):
 @pytest.fixture
 def get_flow(request, random_index_name, tmpdir):
     params = request.param
-    if isinstance(params, tuple):
-        preprocessor_args, indexer_args = params
-    elif isinstance(params, str):
-        docs, user_input = request.getfixturevalue(params)
-        fields_for_mapping = (
-            [
-                user_input.field_names_to_dataclass_fields[field_name]
-                for field_name in user_input.index_fields
-            ]
-            if user_input.field_names_to_dataclass_fields
-            else user_input.index_fields
-        )
-        preprocessor_args = {
-            'user_input_dict': user_input.to_safe_dict(),
-        }
-        indexer_args = {
-            'user_input_dict': user_input.to_safe_dict(),
-            'document_mappings': [[Models.CLIP_MODEL, 512, fields_for_mapping]],
-        }
-
-    indexer_args['index_name'] = random_index_name
+    docs, user_input = request.getfixturevalue(params)
     event = multiprocessing.Event()
-    flow = FlowThread(event, preprocessor_args, indexer_args, tmpdir)
+    flow = FlowThread(event, user_input, random_index_name, tmpdir)
     flow.start()
     while not flow.is_flow_ready():
         sleep(1)
@@ -65,51 +45,25 @@ def get_flow(request, random_index_name, tmpdir):
 
 
 class FlowThread(multiprocessing.Process):
-    def __init__(self, event, preprocessor_args=None, indexer_args=None, tmpdir=None):
+    def __init__(
+        self,
+        event,
+        user_input,
+        random_index_name,
+        tmpdir,
+    ):
         multiprocessing.Process.__init__(self)
 
         self.event = event
-
-        preprocessor_args = preprocessor_args or {}
-        indexer_args = indexer_args or {}
-        metas = {'workspace': str(tmpdir)}
-        # set secured to True if preprocessor_args or indexer_args contain 'admin_emails'
-        secured = 'admin_emails' in preprocessor_args or 'admin_emails' in indexer_args
-        self.flow = (
-            Flow()
-            .config_gateway(
-                uses=NOWGateway,
-                protocol=['http'],
-                port=[8081],
-                uses_with={
-                    'user_input_dict': {
-                        'secured': secured,
-                    },
-                    'with_playground': False,
-                },
-                env={'JINA_LOG_LEVEL': 'DEBUG'},
-            )
-            .add(
-                uses=NOWPreprocessor,
-                uses_with=preprocessor_args,
-                uses_metas=metas,
-            )
-            .add(
-                host=EXTERNAL_CLIP_HOST,
-                port=443,
-                tls=True,
-                external=True,
-            )
-            .add(
-                uses=NOWElasticIndexer,
-                uses_with={
-                    'hosts': 'http://localhost:9200',
-                    **indexer_args,
-                },
-                uses_metas=metas,
-                no_reduce=True,
-            )
+        user_input.app_instance.setup(
+            user_input=user_input, testing=True, index_name=random_index_name
         )
+        for executor in user_input.app_instance.flow_yaml['executors']:
+            if not executor.get('external'):
+                executor['uses_metas'] = {'workspace': str(tmpdir)}
+        flow_file = os.path.join(tmpdir, 'flow.yml')
+        write_flow_file(user_input.app_instance.flow_yaml, flow_file)
+        self.flow = Flow.load_config(flow_file)
 
     def is_flow_ready(self):
         return self.flow.is_flow_ready()
@@ -123,17 +77,48 @@ class FlowThread(multiprocessing.Process):
 
 @pytest.fixture
 def data_with_tags(mm_dataclass):
+    user_input = UserInput()
+    user_input.admin_name = 'team-now'
+    user_input.dataset_type = DatasetTypes.DOCARRAY
+    user_input.index_fields = ['text_field']
+    user_input.filter_fields = ['color']
+    user_input.index_field_candidates_to_modalities = {'text_field': Text}
+    user_input.field_names_to_dataclass_fields = {'text_field': 'text_field'}
+    user_input.app_instance = construct_app(Apps.SEARCH_APP)
+    user_input.flow_name = 'nowapi-local'
+    user_input.model_choices = {'text_field_model': [Models.CLIP_MODEL]}
+
     docs = DocumentArray([Document(mm_dataclass(text_field='test')) for _ in range(10)])
     for index, doc in enumerate(docs):
         doc.tags['color'] = 'Blue Color' if index == 0 else 'Red Color'
         doc.tags['price'] = 0.5 + index
 
-    return docs
+    return docs, user_input
 
 
 @pytest.fixture
-def simple_data(mm_dataclass):
-    return DocumentArray([Document(mm_dataclass(text_field='test')) for _ in range(10)])
+def api_key_data(mm_dataclass):
+    user_input = UserInput()
+    user_input.admin_name = 'team-now'
+    user_input.dataset_type = DatasetTypes.DOCARRAY
+    user_input.index_fields = ['text_field']
+    user_input.index_field_candidates_to_modalities = {'text_field': Text}
+    user_input.field_names_to_dataclass_fields = {'text_field': 'text_field'}
+    user_input.app_instance = construct_app(Apps.SEARCH_APP)
+    user_input.flow_name = 'nowapi-local'
+    user_input.model_choices = {'text_field_model': [Models.CLIP_MODEL]}
+    user_input.admin_emails = [
+        hubble.Client(
+            token=get_request_body(secured=True)['jwt']['token'],
+            max_retries=None,
+            jsonify=True,
+        )
+        .get_user_info()['data']
+        .get('email')
+    ]
+    user_input.secured = True
+    docs = DocumentArray([Document(mm_dataclass(text_field='test')) for _ in range(10)])
+    return docs, user_input
 
 
 @pytest.fixture
@@ -145,6 +130,11 @@ def artworks_data():
     user_input.index_fields = ['image']
     user_input.filter_fields = ['label']
     user_input.index_field_candidates_to_modalities = {'image': Image}
+    user_input.field_names_to_dataclass_fields = {'image': 'image'}
+    user_input.app_instance = construct_app(Apps.SEARCH_APP)
+    user_input.flow_name = 'nowapi-local'
+    user_input.model_choices = {'image_model': [Models.CLIP_MODEL]}
+
     docs = load_data(user_input)
     return docs, user_input
 
@@ -157,6 +147,11 @@ def pop_lyrics_data():
     user_input.dataset_name = DemoDatasetNames.POP_LYRICS
     user_input.index_fields = ['lyrics']
     user_input.index_field_candidates_to_modalities = {'lyrics': Text}
+    user_input.field_names_to_dataclass_fields = {'lyrics': 'lyrics'}
+    user_input.app_instance = construct_app(Apps.SEARCH_APP)
+    user_input.flow_name = 'nowapi-local'
+    user_input.model_choices = {'lyrics_model': [Models.CLIP_MODEL]}
+
     docs = load_data(user_input)
     return docs, user_input
 
@@ -176,6 +171,9 @@ def elastic_data(setup_online_shop_db, es_connection_params):
         user_input=user_input
     )
     user_input.es_host_name = connection_str
+    user_input.app_instance = construct_app(Apps.SEARCH_APP)
+    user_input.flow_name = 'nowapi-local'
+    user_input.model_choices = {'title_model': [Models.CLIP_MODEL]}
     docs = load_data(user_input=user_input, data_class=data_class)
     return docs, user_input
 
@@ -196,19 +194,27 @@ def local_folder_data(pulled_local_folder_data):
     data_class, user_input.field_names_to_dataclass_fields = create_dataclass(
         user_input=user_input
     )
+    user_input.app_instance = construct_app(Apps.SEARCH_APP)
+    user_input.flow_name = 'nowapi-local'
+    user_input.model_choices = {
+        'test.txt_model': [Models.CLIP_MODEL],
+        'image.png_model': [Models.CLIP_MODEL],
+    }
+
     docs = load_data(user_input, data_class=data_class)
     return docs, user_input
 
 
 @pytest.fixture
 def s3_bucket_data():
+    aws_profile = get_aws_profile()
     user_input = UserInput()
     user_input.admin_name = 'team-now'
     user_input.dataset_type = DatasetTypes.S3_BUCKET
     user_input.dataset_path = os.environ.get('S3_CUSTOM_MM_DATA_PATH')
-    user_input.aws_access_key_id = os.environ.get('AWS_ACCESS_KEY_ID')
-    user_input.aws_secret_access_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
-    user_input.aws_region_name = 'eu-west-1'
+    user_input.aws_access_key_id = aws_profile.aws_access_key_id
+    user_input.aws_secret_access_key = aws_profile.aws_secret_access_key
+    user_input.aws_region_name = aws_profile.region
     user_input.index_fields = ['image.png']
     user_input.filter_fields = ['title']
     user_input.index_field_candidates_to_modalities = {'image.png': Image}
@@ -216,5 +222,9 @@ def s3_bucket_data():
     data_class, user_input.field_names_to_dataclass_fields = create_dataclass(
         user_input=user_input
     )
+    user_input.app_instance = construct_app(Apps.SEARCH_APP)
+    user_input.flow_name = 'nowapi-local'
+    user_input.model_choices = {'image.png_model': [Models.CLIP_MODEL]}
+
     docs = load_data(user_input, data_class=data_class)
     return docs, user_input

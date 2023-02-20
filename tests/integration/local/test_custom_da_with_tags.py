@@ -7,30 +7,19 @@ from tests.integration.local.conftest import (  # noqa
     get_request_body,
 )
 
-from now.constants import ACCESS_PATHS, Models
+from now.constants import ACCESS_PATHS
 
 
 @pytest.mark.parametrize(
     'get_flow',
-    [
-        (
-            {},
-            {
-                'user_input_dict': {
-                    'filter_fields': ['color'],
-                },
-                'document_mappings': [[Models.CLIP_MODEL, 512, ['text_field']]],
-            },
-        )
-    ],
+    ['data_with_tags'],
     indirect=True,
 )
-def test_search_filters(
-    get_flow, data_with_tags, setup_service_running, random_index_name
-):
-    client = Client(host='http://localhost:8081')
+def test_search_filters(get_flow, setup_service_running):
+    docs, _ = get_flow
+    client = Client(host='grpc://localhost:8085')
     client.index(
-        data_with_tags,
+        docs,
         parameters={
             'access_paths': ACCESS_PATHS,
         },

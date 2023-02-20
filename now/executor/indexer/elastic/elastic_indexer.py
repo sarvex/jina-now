@@ -98,8 +98,10 @@ class NOWElasticIndexer(Executor):
     def setup_elastic_server(self):
         try:
             if "K8S_NAMESPACE_NAME" in os.environ:
+                data_path = f'/data/{os.environ["K8S_NAMESPACE_NAME"]}'
+                subprocess.run(["chmod", "-R", "0777", data_path])
                 self.configure_elastic(
-                    f'/data/{os.environ["K8S_NAMESPACE_NAME"]}',
+                    data_path,
                     '/usr/share/elasticsearch/config/elasticsearch.yml',
                 )
                 subprocess.Popen(['./start-elastic-search-cluster.sh'])
@@ -332,6 +334,29 @@ class NOWElasticIndexer(Executor):
         else:
             return DocumentArray()
 
+    @secure_request(on='/count', level=SecurityLevel.USER)
+    def count(self, parameters: dict = {}, **kwargs):
+        """Count all indexed documents.
+
+        Note: this implementation is naive and does not
+        consider the default maximum documents in a page returned by `Elasticsearch`.
+        Should be addressed in future with `scroll`.
+
+        :param parameters: dictionary with limit and offset
+        - offset (int): number of documents to skip
+        - limit (int): number of retrieved documents
+        """
+        limit = int(parameters.get('limit', self.limit))
+        offset = int(parameters.get('offset', 0))
+        try:
+            result = self.es.search(
+                index=self.index_name, size=limit, from_=offset, query={'match_all': {}}
+            )['hits']['hits']
+        except Exception:
+            result = []
+            self.logger.info(traceback.format_exc())
+        return DocumentArray([Document(text='count', tags={'count': len(result)})])
+
     @secure_request(on='/delete', level=SecurityLevel.USER)
     def delete(self, parameters: dict = {}, **kwargs):
         """
@@ -466,49 +491,6 @@ class NOWElasticIndexer(Executor):
             self.doc_id_tags = updated_tags
         except Exception:
             self.logger.info(traceback.format_exc())
-
-    @secure_request(on='/get_encoder_to_fields', level=SecurityLevel.USER)
-    def get_encoder_to_fields(self, **kwargs) -> DocumentArray:
-        """
-        Returns a DocumentArray with one Document, which has following dictionaries in its tags:
-         - dictionary of encoder names to the dataclass fields they encode and their modality, e.g.:
-            encoder_to_fields_and_modalities = {
-                'encoderclip': {
-                    'text_0': 'text',
-                    'image_0': 'image',
-                },
-                'encodersbert': {
-                    'image_0': 'text',
-                },
-            }
-         - dictionary of dataclass fields to their field names, e.g.:
-            field_names_to_dataclass_fields = {
-                'title': 'text_0',
-                'picture': 'image_0',
-            }
-        """
-        dataclass_fields_modalities_dict = {
-            self.user_input.field_names_to_dataclass_fields[field]: modality
-            for field, modality in self.user_input.index_field_candidates_to_modalities.items()
-            if field in self.user_input.index_fields
-        }  # should be a dict of selected index fields and their modalities
-        encoder_to_fields_and_modalities = {}
-        for encoder in self.encoder_to_fields.keys():
-            encoder_to_fields_and_modalities[encoder] = {
-                field: dataclass_fields_modalities_dict[field]
-                for field in self.encoder_to_fields[encoder]
-            }
-        return DocumentArray(
-            [
-                Document(
-                    text='index_fields',
-                    tags={
-                        'index_fields_dict': encoder_to_fields_and_modalities,
-                        'field_names_to_dataclass_fields': self.user_input.field_names_to_dataclass_fields,
-                    },
-                )
-            ]
-        )
 
 
 def aggregate_embeddings(docs_map: Dict[str, DocumentArray]):

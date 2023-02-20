@@ -55,14 +55,15 @@ def start_now(**kwargs):
     # Only if the deployment is remote and the demo examples is available for the selected app
     # Should not be triggered for CI tests
     if app_instance.is_demo_available(user_input):
-        gateway_host_internal = f'grpcs://{DEMO_NS.format(user_input.dataset_name.split("/")[-1])}.dev.jina.ai'
+        gateway_host_grpc = f'grpcs://{DEMO_NS.format(user_input.dataset_name.split("/")[-1])}.dev.jina.ai'
     else:
         (
             gateway_port,
-            gateway_host_internal,
+            gateway_host_grpc,
         ) = run_backend.run(app_instance, user_input, **kwargs)
-    bff_url = f'{gateway_host_internal}/api/v1/search-app/docs'
-    playground_url = f'{gateway_host_internal}/playground'
+    gateway_host_http = gateway_host_grpc.replace('grpc', 'http')
+    bff_url = f'{gateway_host_http}/api/v1/search-app/docs'
+    playground_url = f'{gateway_host_http}/playground'
 
     print()
     my_table = Table(
@@ -72,6 +73,8 @@ def start_now(**kwargs):
         box=box.SIMPLE,
         highlight=True,
     )
+    my_table.add_row('Host (HTTPS)', gateway_host_http)
+    my_table.add_row('Host (GRPCS)', gateway_host_grpc)
     my_table.add_row('API docs', bff_url)
     if user_input.secured and user_input.api_key:
         my_table.add_row('API Key', user_input.api_key)
@@ -87,7 +90,8 @@ def start_now(**kwargs):
     return {
         'bff': bff_url,
         'playground': playground_url,
-        'host': gateway_host_internal,
+        'host_http': gateway_host_http,
+        'host_grpc': gateway_host_grpc,
         'secured': user_input.secured,
     }
 

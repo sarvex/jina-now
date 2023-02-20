@@ -24,14 +24,6 @@ def get_query_params() -> Parameters:
     return parameters
 
 
-def get_suggestion(text, jwt):
-    return multimodal_search(
-        [{'name': 'text', 'value': text, 'modality': 'text'}],
-        jwt,
-        endpoint='suggestion',
-    )
-
-
 def call_flow(url_host, data, endpoint):
     st.session_state.search_count += 1
     response = requests.post(
@@ -76,41 +68,10 @@ def call_flow(url_host, data, endpoint):
 
     st.session_state.error_msg = None
 
-    return docs
-
-
-def search_by_text(search_text, jwt, filter_selection) -> DocumentArray:
-    return multimodal_search(
-        [
-            {'name': 'text', 'value': search_text, 'modality': 'text'},
-        ],
-        jwt,
-        filter_dict=filter_selection,
-    )
-
-
-def search_by_image(document: Document, jwt, filter_selection) -> DocumentArray:
-    """
-    Wrap file in Jina Document for searching, and do all necessary conversion to make similar to indexed Docs
-    """
-    query_doc = document
-    if query_doc.blob == b'':
-        if query_doc.tensor is not None:
-            query_doc.convert_image_tensor_to_blob()
-        elif (query_doc.uri is not None) and query_doc.uri != '':
-            query_doc.load_uri_to_blob(timeout=10)
-
-    return multimodal_search(
-        [
-            {
-                'name': 'blob',
-                'value': base64.b64encode(query_doc.blob).decode('utf-8'),
-                'modality': 'image',
-            },
-        ],
-        jwt,
-        filter_dict=filter_selection,
-    )
+    if endpoint in ['search', 'suggestion']:
+        return docs
+    else:
+        return response.json()
 
 
 def multimodal_search(
@@ -127,7 +88,6 @@ def multimodal_search(
     if filter_dict:
         updated_dict = {k: v for k, v in filter_dict.items() if v != 'All'}
     data = {
-        'host': params.host,
         'limit': top_k if top_k else params.top_k,
         'filters': updated_dict,
         'semantic_scores': list(
@@ -143,6 +103,4 @@ def multimodal_search(
         # in case the jwt is none, no jwt will be sent. This is the case when no authentication is used for that flow
     if jwt:
         data['jwt'] = jwt
-    if params.port:
-        data['port'] = params.port
     return call_flow(url_host, data, endpoint)

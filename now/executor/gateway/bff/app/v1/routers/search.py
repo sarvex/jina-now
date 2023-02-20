@@ -14,7 +14,7 @@ from now.executor.gateway.bff.app.v1.routers.helper import (
     field_dict_to_mm_doc,
     jina_client_post,
 )
-from now.utils import modality_string_to_docarray_typing
+from now.utils import get_chunk_by_field_name, modality_string_to_docarray_typing
 
 search_examples = {
     'working_text': {
@@ -165,7 +165,7 @@ async def search(
         # since multimodal doc is not supported, we take the first chunk
         if doc.chunks:
             field_names_and_chunks = [
-                [field_name, getattr(doc, field_name)]
+                [field_name, get_chunk_by_field_name(doc, field_name)]
                 for field_name in doc._metadata['multi_modal_schema'].keys()
             ]
         else:

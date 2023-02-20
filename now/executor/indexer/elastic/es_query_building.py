@@ -3,6 +3,8 @@ from typing import Dict, List, Optional, Tuple, Union
 
 from docarray import Document, DocumentArray
 
+from now.utils import get_chunk_by_field_name
+
 metrics_mapping = {
     'cosine': 'cosineSimilarity',
     'l2_norm': 'l2norm',
@@ -34,7 +36,7 @@ def generate_semantic_scores(
                 f'Documents are not encoded with same encoder as query. executor_name: {executor_name}, encoder_to_fields: {encoder_to_fields}'
             ) from e
         for field_name in field_names:
-            chunk = getattr(first_doc, field_name)
+            chunk = get_chunk_by_field_name(first_doc, field_name)
             if chunk.chunks.embeddings is None and chunk.embedding is None:
                 continue
             for document_field in document_fields:
@@ -116,7 +118,7 @@ def build_es_queries(
                 encoder,
                 linear_weight,
             ) in get_scores(executor_name, semantic_scores):
-                field_doc = getattr(doc, query_field)
+                field_doc = get_chunk_by_field_name(doc, query_field)
                 if get_score_breakdown:
                     docs[doc.id].tags['embeddings'][
                         f'{query_field}-{encoder}'
@@ -178,7 +180,7 @@ def get_default_query(
             raise ValueError(
                 'No bm25 semantic scores found. Please specify this in the semantic_scores parameter.'
             )
-        text = getattr(doc, bm25_semantic_score[0]).text
+        text = get_chunk_by_field_name(doc, bm25_semantic_score[0]).text
         multi_match = {'multi_match': {'query': text, 'fields': ['bm25_text']}}
         query['bool']['should'].append(multi_match)
     elif custom_bm25_query:

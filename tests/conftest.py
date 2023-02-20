@@ -19,6 +19,7 @@ from now.data_loading.elasticsearch import ElasticsearchConnector
 from now.deployment.deployment import cmd
 from now.executor.indexer.elastic.elastic_indexer import wait_until_cluster_is_up
 from now.executor.preprocessor import NOWPreprocessor
+from now.utils import get_aws_profile
 
 
 @pytest.fixture()
@@ -169,16 +170,16 @@ def setup_service_running(es_connection_params) -> None:
 @pytest.fixture
 def get_aws_info():
     dataset_path = os.environ.get('S3_SCHEMA_FOLDER_PATH')
-    aws_access_key_id = os.environ.get('AWS_ACCESS_KEY_ID')
-    aws_secret_access_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
-    region = 'eu-west-1'
-
-    return dataset_path, aws_access_key_id, aws_secret_access_key, region
-
-
-@pytest.fixture
-def random_index_name():
-    return f"test-index-{random.randint(0, 10000)}"
+    aws_profile = get_aws_profile()
+    region = aws_profile.region
+    if not region:
+        region = 'eu-west-1'
+    return (
+        dataset_path,
+        aws_profile.aws_access_key_id,
+        aws_profile.aws_secret_access_key,
+        region,
+    )
 
 
 @pytest.fixture
@@ -320,3 +321,8 @@ def setup_online_shop_db(setup_elastic_db, es_connection_params, online_shop_res
 
     # delete index
     delete_es_index(connector=es_connector, name=index_name)
+
+
+@pytest.fixture
+def random_index_name():
+    return f'test-index-{random.randint(0, 10000)}'

@@ -1,12 +1,12 @@
-import json
 import os
 from typing import Dict, List, Optional, Tuple, TypeVar
 
 from docarray import DocumentArray
 from jina import __version__ as jina_version
 
+from now.app.base.create_jcloud_name import create_jcloud_name
 from now.app.base.preprocess import preprocess_image, preprocess_text, preprocess_video
-from now.constants import DEFAULT_FLOW_NAME, DEMO_NS, NOW_GATEWAY_VERSION, PREFETCH_NR
+from now.constants import DEMO_NS, NOW_GATEWAY_VERSION, PREFETCH_NR
 from now.demo_data import DemoDataset
 from now.executor.name_to_id_map import name_to_id_map
 from now.now_dataclasses import DialogOptions, UserInput
@@ -105,39 +105,43 @@ class JinaNOWApp:
                         type=str,
                     )
 
-    def get_gateway_stub(self, user_input) -> Dict:
+    def get_gateway_stub(self, user_input, testing=False) -> Dict:
         """Returns the stub for gateway in the flow."""
         gateway_stub = {
-            'uses': f'jinahub+docker://{name_to_id_map.get("NOWGateway")}/{NOW_GATEWAY_VERSION}',
-            'protocol': ['http'],
-            'port': [8081],
+            'uses': f'jinahub+docker://{name_to_id_map.get("NOWGateway")}/{NOW_GATEWAY_VERSION}'
+            if not testing
+            else 'NOWGateway',
+            'protocol': ['http', 'grpc'],
+            'port': [8081, 8085],
             'monitoring': True,
             'cors': True,
             'prefetch': PREFETCH_NR,
-            'uses_with': {'user_input_dict': json.dumps(user_input.to_safe_dict())},
+            'uses_with': {'user_input_dict': user_input.to_safe_dict()},
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
         }
         if 'NOW_EXAMPLES' in os.environ:
-            gateway_stub['jcloud'][
-                'custom_dns'
-            ] = f'{DEMO_NS.format(user_input.dataset_name.split("/")[-1])}.dev.jina.ai'
+            gateway_stub['jcloud'] = {
+                'custom_dns': [
+                    f'{DEMO_NS.format(user_input.dataset_name.split("/")[-1])}.dev.jina.ai'
+                ]
+            }
         return gateway_stub
 
-    def get_executor_stubs(self, dataset, user_input, **kwargs) -> Dict:
+    def get_executor_stubs(self, user_input, testing=False, **kwargs) -> Dict:
         """
         Returns the stubs for the executors in the flow.
         """
         raise NotImplementedError()
 
-    def setup(self, dataset: DocumentArray, user_input: UserInput) -> Dict:
+    def setup(self, user_input: UserInput, testing=False, **kwargs) -> Dict:
         """Runs before the flow is deployed to setup the flow in self.flow_yaml.
         Common use cases:
             - create a database
             - finetune a model + push the artifact
             - notify other services
             - check if starting the app is currently possible
-        :param dataset:
         :param user_input: user configuration based on the given options
+        :param testing: use local executors if True
         """
         # Creates generic configuration such as labels in the flow
         # Keep this function as simple as possible. It should only be used to add generic configuration needed
@@ -151,13 +155,10 @@ class JinaNOWApp:
             'jcloud': {
                 'version': jina_version,
                 'labels': {'team': 'now'},
-                'name': user_input.flow_name + '-' + DEFAULT_FLOW_NAME
-                if user_input.flow_name != ''
-                and user_input.flow_name != DEFAULT_FLOW_NAME
-                else DEFAULT_FLOW_NAME,
+                'name': create_jcloud_name(user_input.flow_name),
             },
-            'gateway': self.get_gateway_stub(user_input),
-            'executors': self.get_executor_stubs(dataset, user_input),
+            'gateway': self.get_gateway_stub(user_input, testing),
+            'executors': self.get_executor_stubs(user_input, testing, **kwargs),
         }
         # Call the gateway stub function to get the gateway for the flow
         # Call the executor stubs function to get the executors for the flow

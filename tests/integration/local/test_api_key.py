@@ -1,11 +1,10 @@
-import hubble
 import pytest
 import requests
 from jina import Client
 from tests.integration.local.conftest import BASE_URL, SEARCH_URL, get_request_body
 from tests.integration.remote.assertions import assert_search
 
-from now.constants import ACCESS_PATHS, Models
+from now.constants import ACCESS_PATHS
 
 API_KEY = 'my_key'
 update_api_keys_url = f'{BASE_URL}/admin/updateApiKeys'
@@ -14,40 +13,14 @@ update_emails_url = f'{BASE_URL}/admin/updateUserEmails'
 
 @pytest.mark.parametrize(
     'get_flow',
-    [
-        (
-            {
-                'admin_emails': [
-                    hubble.Client(
-                        token=get_request_body(secured=True)['jwt']['token'],
-                        max_retries=None,
-                        jsonify=True,
-                    )
-                    .get_user_info()['data']
-                    .get('email')
-                ]
-            },
-            {
-                'admin_emails': [
-                    hubble.Client(
-                        token=get_request_body(secured=True)['jwt']['token'],
-                        max_retries=None,
-                        jsonify=True,
-                    )
-                    .get_user_info()['data']
-                    .get('email')
-                ],
-                'document_mappings': [[Models.CLIP_MODEL, 512, ['text_field']]],
-            },
-        ),
-    ],
+    ['api_key_data'],
     indirect=True,
 )
-def test_add_key(get_flow, simple_data, setup_service_running, random_index_name):
-    client = Client(host='http://localhost:8081')
-
+def test_add_key(get_flow, setup_service_running):
+    docs, user_input = get_flow
+    client = Client(host='grpc://localhost:8085')
     client.index(
-        simple_data,
+        docs,
         parameters={
             'access_paths': ACCESS_PATHS,
             'jwt': get_request_body(secured=True)['jwt'],
@@ -61,7 +34,6 @@ def test_add_key(get_flow, simple_data, setup_service_running, random_index_name
         json=request_body,
     )
     assert response.status_code == 200
-
     # test api keys
     # search with invalid api key
     request_body = get_request_body(secured=True)

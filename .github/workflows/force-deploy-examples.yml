@@ -22,16 +22,21 @@ jobs:
         group: [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 ]
     steps:
       - uses: actions/checkout@v2
+      - name: Set AWS profile
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-1
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
           python-version: 3.7
       - name: Prepare environment
         run: |
-          sudo apt update && sudo apt install ffmpeg
           python -m pip install --upgrade pip
           python -m pip install wheel
-          pip install --no-cache-dir ".[full,test]"
+          pip install jina-now -U
       - name: Add JCloud auth token
         run: |
           mkdir -p ~/.jina
@@ -45,8 +50,6 @@ jobs:
         run: python deploy_examples.py ${{ matrix.group }}
         env:
           WOLF_TOKEN: ${{ secrets.WOLF_EXAMPLES_TOKEN }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_HOSTED_ZONE_ID: ${{ secrets.AWS_HOSTED_ZONE_ID }}
           DEPLOYMENT_TYPE: ${{ github.event.inputs.deployment_type }}
           JCLOUD_LOGLEVEL: DEBUG

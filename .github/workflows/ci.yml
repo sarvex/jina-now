@@ -168,13 +168,18 @@ jobs:
         group: [1, 2, 3, 4, 5, 6, 7, 8, 9] # set to the number of end-to-end tests + 1
     steps:
       - uses: actions/checkout@v2
+      - name: Set AWS profile
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-1
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
       - name: Prepare environment
         run: |
-          sudo apt update && sudo apt install ffmpeg
           python -m pip install --upgrade pip
           python -m pip install wheel
           pip install --no-cache-dir ".[full,test]"
@@ -194,8 +199,6 @@ jobs:
         env:
           WOLF_TOKEN: ${{ secrets.WOLF_TOKEN }}
           S3_SCHEMA_FOLDER_PATH: ${{ secrets.S3_SCHEMA_FOLDER_PATH }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           S3_CUSTOM_DATA_PATH: ${{ secrets.S3_CUSTOM_DATA_PATH }}
           S3_CUSTOM_MM_DATA_PATH: ${{ secrets.S3_CUSTOM_MM_DATA_PATH }}
 #      - name: Setup tmate session for debugging

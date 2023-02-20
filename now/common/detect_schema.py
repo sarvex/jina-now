@@ -74,7 +74,7 @@ def _create_candidate_index_filter_fields(field_name_to_value):
     return index_field_candidates_to_modalities, filter_field_candidates_to_modalities
 
 
-def get_first_file_in_folder_structure_s3(bucket, folder_prefix, dataset_path):
+def get_first_file_in_folder_structure_s3(bucket, folder_prefix):
     try:
         # gets the first file in an s3 bucket, index 0 is reserved for the root folder name
         first_file = list(bucket.objects.filter(Prefix=folder_prefix).limit(2))[1].key
@@ -85,7 +85,7 @@ def get_first_file_in_folder_structure_s3(bucket, folder_prefix, dataset_path):
             ].key
             i += 1
     except Exception as e:
-        raise Exception(f'Empty folder {dataset_path}, data is missing.')
+        raise Exception(f'Empty folder, data is missing.')
     return first_file
 
 
@@ -243,9 +243,7 @@ def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
     """
     bucket, folder_prefix = get_s3_bucket_and_folder_prefix(user_input)
     # user has to provide the folder where folder structure begins
-    first_file = get_first_file_in_folder_structure_s3(
-        bucket, folder_prefix, user_input.dataset_path
-    )
+    first_file = get_first_file_in_folder_structure_s3(bucket, folder_prefix)
     structure_identifier = first_file[len(folder_prefix) :].split('/')
     folder_structure = (
         'sub_folders' if len(structure_identifier) > 1 else 'single_folder'

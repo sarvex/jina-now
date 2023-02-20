@@ -58,29 +58,38 @@ class SearchApp(JinaNOWApp):
                 host=f'grpcs://{DEMO_NS.format(user_input.dataset_name.split("/")[-1])}.dev.jina.ai'
             )
             try:
-                client.post('/dry_run', timeout=2)
+                client.post('/dry_run')
             except Exception as e:  # noqa E722
                 pass
             return True
         return False
 
     @staticmethod
-    def autocomplete_stub() -> Dict:
+    def autocomplete_stub(testing=False) -> Dict:
         return {
             'name': 'autocomplete_executor',
-            'uses': f'jinahub+docker://{name_to_id_map.get("NOWAutoCompleteExecutor2")}/{NOW_AUTOCOMPLETE_VERSION}',
+            'uses': f'jinahub+docker://{name_to_id_map.get("NOWAutoCompleteExecutor2")}/{NOW_AUTOCOMPLETE_VERSION}'
+            if not testing
+            else 'NOWAutoCompleteExecutor2',
             'needs': 'gateway',
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
         }
 
     @staticmethod
-    def preprocessor_stub() -> Dict:
+    def preprocessor_stub(testing=False) -> Dict:
         return {
             'name': 'preprocessor',
             'needs': 'autocomplete_executor',
-            'uses': f'jinahub+docker://{name_to_id_map.get("NOWPreprocessor")}/{NOW_PREPROCESSOR_VERSION}',
+            'uses': f'jinahub+docker://{name_to_id_map.get("NOWPreprocessor")}/{NOW_PREPROCESSOR_VERSION}'
+            if not testing
+            else 'NOWPreprocessor',
             'jcloud': {
-                'autoscale': {'min': 0, 'max': 5, 'metric': 'concurrency', 'target': 1}
+                'autoscale': {
+                    'min': 0,
+                    'max': 100,
+                    'metric': 'concurrency',
+                    'target': 1,
+                }
             },
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
         }
@@ -116,11 +125,18 @@ class SearchApp(JinaNOWApp):
         }, 768
 
     @staticmethod
-    def indexer_stub(user_input: UserInput, encoder2dim: Dict[str, int]) -> Dict:
+    def indexer_stub(
+        user_input: UserInput,
+        encoder2dim: Dict[str, int],
+        testing=False,
+        index_name=None,
+    ) -> Dict:
         """Creates indexer stub.
 
-        :param user_input: User input
+        :param user_input: user input
         :param encoder2dim: maps encoder name to its output dimension
+        :param testing: use local executors if True
+        :param index_name: name of the elasticsearch index
         """
         document_mappings_list = []
 
@@ -142,10 +158,13 @@ class SearchApp(JinaNOWApp):
         return {
             'name': 'indexer',
             'needs': list(encoder2dim.keys()),
-            'uses': f'jinahub+docker://{name_to_id_map.get("NOWElasticIndexer")}/{NOW_ELASTIC_INDEXER_VERSION}',
+            'uses': f'jinahub+docker://{name_to_id_map.get("NOWElasticIndexer")}/{NOW_ELASTIC_INDEXER_VERSION}'
+            if not testing
+            else 'NOWElasticIndexer',
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'uses_with': {
                 'document_mappings': document_mappings_list,
+                'index_name': 'now_index' if not index_name else index_name,
             },
             'no_reduce': True,
             'jcloud': {
@@ -153,20 +172,23 @@ class SearchApp(JinaNOWApp):
                     'memory': '8G',
                     'cpu': 0.5,
                     'capacity': 'on-demand',
+                    'storage': {'kind': 'ebs', 'size': '10G'},
                 }
             },
         }
 
-    def get_executor_stubs(self, dataset, user_input: UserInput) -> List[Dict]:
+    def get_executor_stubs(
+        self, user_input: UserInput, testing=False, **kwargs
+    ) -> List[Dict]:
         """Returns a dictionary of executors to be added in the flow
 
-        :param dataset: DocumentArray of the dataset
         :param user_input: user input
+        :param testing: use local executors if True
         :return: executors stubs with filled-in env vars
         """
         flow_yaml_executors = [
-            self.autocomplete_stub(),
-            self.preprocessor_stub(),
+            self.autocomplete_stub(testing),
+            self.preprocessor_stub(testing),
         ]
 
         encoder2dim = {}
@@ -187,7 +209,12 @@ class SearchApp(JinaNOWApp):
             flow_yaml_executors.append(clip_encoder)
 
         flow_yaml_executors.append(
-            self.indexer_stub(user_input, encoder2dim=encoder2dim)
+            self.indexer_stub(
+                user_input,
+                encoder2dim=encoder2dim,
+                testing=testing,
+                index_name=kwargs.get('index_name'),
+            )
         )
 
         return flow_yaml_executors

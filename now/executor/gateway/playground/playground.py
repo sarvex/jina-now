@@ -1,11 +1,11 @@
-import argparse
 import base64
+import gc
 import io
+import json
 import os
-from collections import OrderedDict
 from typing import List
 from urllib.error import HTTPError
-from urllib.parse import quote, unquote
+from urllib.parse import quote
 from urllib.request import urlopen
 
 import extra_streamlit_components as stx
@@ -15,23 +15,25 @@ import streamlit.components.v1 as components
 from better_profanity import profanity
 from docarray import Document, DocumentArray
 from docarray.typing import Image, Text
-from jina import Client
+from streamlit.runtime import Runtime
 from streamlit.runtime.scriptrunner import add_script_run_ctx
 from streamlit.web.server.server import Server
 from tornado.httputil import parse_cookie
 
-from now.constants import MODALITY_TO_MODELS
+from now.app.base.create_jcloud_name import create_jcloud_name
+from now.constants import MODALITY_TO_MODELS, NOWGATEWAY_BFF_PORT
 from now.executor.gateway.playground.src.constants import (
     BUTTONS,
     S3_DEMO_PATH,
     SSO_COOKIE,
-    SURVEY_LINK,
     ds_set,
 )
 from now.executor.gateway.playground.src.search import (
+    call_flow,
     get_query_params,
     multimodal_search,
 )
+from now.now_dataclasses import UserInput
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -87,7 +89,7 @@ def toggle_score_breakdown():
         st.session_state.show_score_breakdown = False
 
 
-def deploy_streamlit(secured: bool):
+def deploy_streamlit(user_input: UserInput):
     """
     We want to provide the end-to-end experience to the user.
     Please deploy a streamlit playground on k8s/local to access the api.
@@ -99,7 +101,9 @@ def deploy_streamlit(secured: bool):
 
     # Retrieve query params
     params = get_query_params()
-    setattr(params, 'secured', secured)
+    # update query params with user input
+    for key, val in user_input.dict().items():
+        setattr(params, key, val)
     redirect_to = render_auth_components(params)
 
     _, mid, _ = st.columns([0.8, 1, 1])
@@ -117,41 +121,20 @@ def deploy_streamlit(secured: bool):
 
         setup_design()
 
-        client = Client(host='localhost', port=8082, protocol='http')
-
-        if params.host:
-            if st.session_state.filters == 'notags':
-                try:
-                    tags = get_info_from_endpoint(client, params, endpoint='/tags')[
-                        'tags'
-                    ]
-                    st.session_state.filters = tags
-                except Exception as e:
-                    print("Filters couldn't be loaded from the endpoint properly.", e)
-                    st.session_state.filters = 'notags'
-        if not st.session_state.index_fields_dict:
-            # get index fields from user input
+        if st.session_state.filters == 'notags':
             try:
-                index_fields_dict = get_info_from_endpoint(
-                    client,
-                    params,
-                    endpoint='/get_encoder_to_fields',
-                )['index_fields_dict']
-                field_names_to_dataclass_fields = get_info_from_endpoint(
-                    client,
-                    params,
-                    endpoint='/get_encoder_to_fields',
-                )['field_names_to_dataclass_fields']
-                st.session_state.index_fields_dict = index_fields_dict
-                st.session_state.field_names_to_dataclass_fields = (
-                    field_names_to_dataclass_fields
-                )
+                tags = get_info_from_endpoint(params, endpoint='tags')
+                st.session_state.filters = tags
             except Exception as e:
-                print(
-                    "Index fields couldn't be loaded from the endpoint properly. "
-                    "Semantic scores will be automatically defined.",
-                    e,
-                )
+                print("Filters couldn't be loaded from the endpoint properly.", e)
+                st.session_state.filters = 'notags'
+        if not st.session_state.index_fields_dict:
+            st.session_state.index_fields_dict = get_info_from_endpoint(
+                params, 'encoder_to_dataclass_fields_mods'
+            )
+            st.session_state.field_names_to_dataclass_fields = (
+                user_input.field_names_to_dataclass_fields
+            )
 
         filter_selection = {}
         if st.session_state.filters != 'notags':
@@ -180,13 +163,11 @@ def deploy_streamlit(secured: bool):
 
         customize_semantic_scores()
         toggle_score_breakdown()
-
-        if st.button('Search', key='mm_search', on_click=clear_match):
+        search_mapping_list = list(st.session_state['query'].values())
+        if any([d['value'] for d in search_mapping_list]):
             st.session_state.matches = multimodal_search(
                 query_field_values_modalities=list(
-                    filter(
-                        lambda x: x['value'], list(st.session_state['query'].values())
-                    )
+                    filter(lambda x: x['value'], search_mapping_list)
                 ),
                 jwt=st.session_state.jwt_val,
                 filter_dict=filter_selection,
@@ -196,20 +177,51 @@ def deploy_streamlit(secured: bool):
         add_social_share_buttons()
 
 
-def get_info_from_endpoint(client, params, endpoint) -> dict:
+def get_info_from_endpoint(params, endpoint) -> dict:
+    parameters = {}
     if params.secured:
-        response = client.post(
-            on=endpoint,
-            parameters={'jwt': {'token': st.session_state.jwt_val['token']}},
-        )
-    else:
-        response = client.post(on=endpoint)
-    return OrderedDict(response[0].tags)
+        parameters['jwt'] = {'token': st.session_state.jwt_val['token']}
+    response = call_flow(
+        f'http://localhost:{NOWGATEWAY_BFF_PORT}/api/v1/info/{endpoint}',
+        parameters,
+        endpoint,
+    )
+    # return the first value of the response as it's a dict with one key
+    return list(response.values())[0]
+
+
+# hack to access cookies in streamlit: https://github.com/streamlit/streamlit/issues/5166#issuecomment-1259901215
+# can also use https://gist.github.com/asehmi/85c293df44d32957fb31a7cd332c3398 but this one is shorter
+def st_runtime():
+
+    global _st_runtime
+
+    if _st_runtime:
+        return _st_runtime
+
+    for obj in gc.get_objects():
+        if type(obj) is Runtime:
+            _st_runtime = obj
+            return _st_runtime
+
+
+_st_runtime = None
+runtime = st_runtime()
+
+
+def get_cookie(cookie_name):
+    session_id = add_script_run_ctx().streamlit_script_run_ctx.session_id
+    session_info = runtime._get_session_info(session_id)
+    header = session_info.client.request.headers
+    cookie_strings = [header_str for k, header_str in header.get_all() if k == 'Cookie']
+    parsed_cookies = {k: v for c in cookie_strings for k, v in parse_cookie(c).items()}
+
+    return parsed_cookies.get(cookie_name, '')
 
 
 def render_auth_components(params):
     if params.secured:
-        st_cookie = get_cookie_value(cookie_name=SSO_COOKIE)
+        st_cookie = get_cookie(SSO_COOKIE)
         resp_jwt = requests.get(
             url=f'https://api.hubble.jina.ai/v2/rpc/user.identity.whoami',
             cookies={SSO_COOKIE: st_cookie},
@@ -217,7 +229,6 @@ def render_auth_components(params):
         redirect_to = None
         if resp_jwt['code'] != 200:
             redirect_to = _do_login(params)
-
         else:
             st.session_state.login = False
             if not st.session_state.jwt_val:
@@ -243,18 +254,10 @@ def render_auth_components(params):
 
 
 def _do_login(params):
-    # Whether it is fail or success, clear the query param
-    query_params_var = {
-        'host': unquote(params.host),
-        'data': params.data,
-    }
-    if params.secured:
-        query_params_var['secured'] = params.secured
-    if 'top_k' in st.experimental_get_query_params():
-        query_params_var['top_k'] = params.top_k
-    st.experimental_set_query_params(**query_params_var)
-
-    redirect_uri = f'{params.host}/playground'
+    flow_namespace = os.environ.get("K8S_NAMESPACE_NAME", "").split('-')[1]
+    jcloud_name = create_jcloud_name(params.flow_name) + '-' + flow_namespace
+    host = f'https://{jcloud_name}-http.wolf.jina.ai/playground'
+    redirect_uri = f'{host}/playground/'
     if 'top_k' in st.experimental_get_query_params():
         redirect_uri += f'?top_k={params.top_k}'
 
@@ -487,10 +490,6 @@ def render_mm_query(query, modality):
 def render_matches():
     # TODO function is too large. Split up.
     if st.session_state.matches and not st.session_state.error_msg:
-        if st.session_state.search_count > 2:
-            st.write(
-                f'🔥 How did you like Jina NOW? [Please leave feedback]({SURVEY_LINK}) 🔥'
-            )
         list_matches = [
             st.session_state.matches[i : i + 9]
             for i in range(0, len(st.session_state.matches), 9)
@@ -808,15 +807,16 @@ def setup_session_state():
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
+    # read user_input from user_input.json in the home directory
+    with open(os.path.join(os.path.expanduser('~'), 'user_input.json'), 'r') as f:
+        user_input_dict = json.load(f)
 
-    parser.add_argument('--secured', action='store_true', help='Makes the flow secured')
-    try:
-        args = parser.parse_args()
-    except SystemExit as e:
-        # This exception will be raised if --help or invalid command line arguments
-        # are used. Currently streamlit prevents the program from exiting normally
-        # so we have to do a hard exit.
-        os._exit(e.code)
+    user_input = UserInput()
+    for attr_name, prev_value in user_input.__dict__.items():
+        setattr(
+            user_input,
+            attr_name,
+            user_input_dict.get(attr_name, prev_value),
+        )
 
-    deploy_streamlit(secured=args.secured)
+    deploy_streamlit(user_input=user_input)

@@ -19,11 +19,14 @@ def test_search_image(resources_folder_path: str):
 
 
 def assert_deployment_response(response):
-    host = response['host']
-    assert host.startswith('https://')
-    assert host.endswith('.wolf.jina.ai')
-    assert response['bff'] == f'{host}/api/v1/search-app/docs'
-    assert response['playground'] == f'{host}/playground'
+    host_grpc = response['host_grpc']
+    assert host_grpc.startswith('grpcs://')
+    assert host_grpc.endswith('.wolf.jina.ai')
+    host_http = response['host_http']
+    assert host_http.startswith('https://')
+    assert host_http.endswith('.wolf.jina.ai')
+    assert response['bff'] == f'{host_http}/api/v1/search-app/docs'
+    assert response['playground'] == f'{host_http}/playground'
 
 
 def assert_deployment_queries(
@@ -32,7 +35,7 @@ def assert_deployment_queries(
     search_modality,
     dataset=None,
 ):
-    host = response.get('host')
+    host = response.get('host_http')
     url = f'{host}/api/v1'
     # normal case
     request_body = get_search_request_body(
@@ -51,7 +54,9 @@ def assert_deployment_queries(
             f'{url}/admin/updateUserEmails',
             json=request_body,
         )
-        assert response.status_code == 200
+        assert (
+            response.status_code == 200
+        ), f"text: {json.dumps(response.json(), indent=2)}"
 
         # add api key
         del request_body['user_emails']
@@ -168,3 +173,14 @@ def assert_search_custom_s3(host, mm_type, dataset_length, create_temp_link=Fals
     if mm_type:
         for doc in response_json:
             assert len(doc['tags']) > 0
+
+
+def assert_indexed_all_docs(host, kwargs, limit: int):
+    request_body = get_default_request_body(secured=kwargs.secured)
+    request_body['limit'] = limit
+    response = requests.post(
+        f"{host}/api/v1/info/count",
+        json=request_body,
+    )
+    response_json = response.json()
+    assert response_json['number_of_docs'] == limit
