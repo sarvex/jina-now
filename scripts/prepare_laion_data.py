@@ -4,7 +4,7 @@ from math import floor
 import hubble
 import psutil
 import requests
-from docarray import DocumentArray, Document, dataclass
+from docarray import DocumentArray, Document, dataclass, field
 import os
 from docarray.typing import Image
 import glob
@@ -78,33 +78,25 @@ def download_da(dir_name, part_prefix):
             pass
 
 
-def get_metadata(doc):
-    """
-    create a proper multimodal document to get how metadata looks
-    which will be used to create other documents manually
-    """
-
-    @dataclass
-    class MockDock:
-        image: Image
-
-    multimodal_doc = Document(MockDock(image=doc.uri))
-    return multimodal_doc._metadata, multimodal_doc.chunks[0]._metadata
-
-
 def process_docs(docs):
     """
     Transform regular documents into multimodal format
     """
-    root_metadata, chunk_metadata = get_metadata(docs[0])
-    processed_docs = DocumentArray()
-    for doc in docs:
-        new_doc = Document(chunks=Document(uri=doc.uri))
-        new_doc._metadata = root_metadata
-        new_doc.chunks[0]._metadata = chunk_metadata
-        new_doc.chunks[0].modality = 'image'
-        processed_docs.append(new_doc)
-    return processed_docs
+    from typing import TypeVar
+
+    LaionImage = TypeVar('LaionImage', bound=str)
+
+    def my_setter(value) -> Document:
+        return Document(uri=value)
+
+    def my_getter(doc: Document):
+        return doc.uri
+
+    @dataclass
+    class LaionDoc:
+        image: LaionImage = field(setter=my_setter, getter=my_getter)
+
+    return DocumentArray([Document(LaionDoc(image=doc.uri)) for doc in docs])
 
 
 def download_laion400m(dir_name, size=100):
