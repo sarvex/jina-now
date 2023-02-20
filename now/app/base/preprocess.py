@@ -58,6 +58,8 @@ def preprocess_image(d: Document):
     # image preprocessor environment flag: 1|2
     image_preprocessor_flag = os.environ.get("IMAGE_PREPROCESSOR", "1")
 
+    print(d.sumary())
+
     if d.tensor is not None:
         if image_preprocessor_flag == "1":
             # approach 1
@@ -86,6 +88,7 @@ def preprocess_image(d: Document):
                     mime_type='image/jpeg',
                 )
             )
+
     elif d.uri:
         d.chunks.append(
             Document(
