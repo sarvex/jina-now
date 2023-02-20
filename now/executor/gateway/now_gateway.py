@@ -99,6 +99,7 @@ class NOWGateway(BasePaymentGateway):
         with open(os.path.join(os.path.expanduser('~'), 'user_input.json'), 'w') as f:
             json.dump(self.user_input.__dict__, f)
 
+        print('kwargs', kwargs)
         self.bff_gateway = self._create_gateway(
             BFFGateway,
             NOWGATEWAY_BFF_PORT,
@@ -208,6 +209,7 @@ class NOWGateway(BasePaymentGateway):
                 resp = client.report_usage(
                     current_user['token'],
                     self._internal_app_id,
+                    self._internal_product_id,
                     usage_detail['credits'],
                 )
                 if resp['code'] != 200:
