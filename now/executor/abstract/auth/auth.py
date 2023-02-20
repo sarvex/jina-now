@@ -57,6 +57,10 @@ def check_user(kwargs, level, user_emails, admin_emails, api_keys):
         jwt = kwargs['parameters']['jwt']
 
     user_info = _get_user_info(jwt['token'])
+    if not isinstance(admin_emails, list) or not isinstance(user_emails, list):
+        raise TypeError(
+            f'`admin_emails` and `user_emails` need to be of type `List[str]`'
+        )
     for email in admin_emails + user_emails + ['jina.ai']:
         if _valid_user(user_info.get('email'), email):
             if level == SecurityLevel.ADMIN and email not in admin_emails:
