@@ -129,14 +129,12 @@ class SearchApp(JinaNOWApp):
         user_input: UserInput,
         encoder2dim: Dict[str, int],
         testing=False,
-        index_name=None,
     ) -> Dict:
         """Creates indexer stub.
 
         :param user_input: user input
         :param encoder2dim: maps encoder name to its output dimension
         :param testing: use local executors if True
-        :param index_name: name of the elasticsearch index
         """
         document_mappings_list = []
 
@@ -154,6 +152,7 @@ class SearchApp(JinaNOWApp):
                     ],
                 ]
             )
+        provision_index = 'yes' if not testing else 'no'
 
         return {
             'name': 'indexer',
@@ -164,16 +163,18 @@ class SearchApp(JinaNOWApp):
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'uses_with': {
                 'document_mappings': document_mappings_list,
-                'index_name': 'now_index' if not index_name else index_name,
             },
             'no_reduce': True,
             'jcloud': {
+                'labels': {
+                    'app': 'indexer',
+                    'provision-index': provision_index,
+                },
                 'resources': {
                     'memory': '8G',
                     'cpu': 0.5,
                     'capacity': 'on-demand',
-                    'storage': {'kind': 'ebs', 'size': '10G'},
-                }
+                },
             },
         }
 
@@ -213,7 +214,6 @@ class SearchApp(JinaNOWApp):
                 user_input,
                 encoder2dim=encoder2dim,
                 testing=testing,
-                index_name=kwargs.get('index_name'),
             )
         )
 

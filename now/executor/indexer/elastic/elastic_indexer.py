@@ -1,9 +1,8 @@
 import os
-import subprocess
 import traceback
 from collections import namedtuple
 from time import sleep
-from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 
 import boto3
 from docarray import Document, DocumentArray
@@ -34,6 +33,8 @@ FieldEmbedding = namedtuple(
 
 Executor = get_auth_executor_class()
 
+TIMEOUT = 60
+
 
 class NOWElasticIndexer(Executor):
     """
@@ -46,23 +47,17 @@ class NOWElasticIndexer(Executor):
     def __init__(
         self,
         document_mappings: List[Tuple[str, int, List[str]]],
-        dim: int = None,
         metric: str = 'cosine',
         limit: int = 10,
         max_values_per_tag: int = 10,
         es_mapping: Dict = None,
-        hosts: Union[
-            str, List[Union[str, Mapping[str, Union[str, int]]]], None
-        ] = 'http://localhost:9200',
         es_config: Optional[Dict[str, Any]] = None,
-        index_name: str = 'now-index',
         *args,
         **kwargs,
     ):
         """
         :param document_mappings: list of FieldEmbedding tuples that define which encoder
             encodes which fields, and the embedding size of the encoder.
-        :param dim: Dimensionality of vectors to index.
         :param metric: Distance metric type. Can be 'euclidean', 'inner_product', or 'cosine'
         :param limit: Number of results to get for each query document in search
         :param max_values_per_tag: Maximum number of values per tag
@@ -77,8 +72,10 @@ class NOWElasticIndexer(Executor):
         self.metric = metric
         self.limit = limit
         self.max_values_per_tag = max_values_per_tag
-        self.hosts = hosts
-        self.index_name = index_name
+        self._check_env_vars()
+        self.hosts = os.getenv('ES_HOSTS', 'http://localhost:9200')
+        self.api_key = os.getenv('ES_API_KEY', 'TestApiKey')
+        self.index_name = os.getenv('ES_INDEX_NAME', 'now-index')
         self.query_to_curated_ids = {}
         self.doc_id_tags = {}
         self.document_mappings = [FieldEmbedding(*dm) for dm in document_mappings]
@@ -88,38 +85,42 @@ class NOWElasticIndexer(Executor):
         }
         self.es_config = es_config or {'verify_certs': False}
         self.es_mapping = es_mapping or self.generate_es_mapping()
-        self.setup_elastic_server()
-        self.es = Elasticsearch(hosts=self.hosts, **self.es_config, ssl_show_warn=False)
-        wait_until_cluster_is_up(self.es, self.hosts)
-
+        self.es = Elasticsearch(
+            hosts=self.hosts,
+            api_key=self.api_key,
+            **self.es_config,
+            ssl_show_warn=False,
+        )
+        self._do_health_check()
         if not self.es.indices.exists(index=self.index_name):
             self.es.indices.create(index=self.index_name, mappings=self.es_mapping)
+        else:
+            self.es.indices.put_mapping(index=self.index_name, body=self.es_mapping)
 
-    def setup_elastic_server(self):
-        try:
-            if "K8S_NAMESPACE_NAME" in os.environ:
-                data_path = f'/data/{os.environ["K8S_NAMESPACE_NAME"]}'
-                subprocess.run(["chmod", "-R", "0777", data_path])
-                self.configure_elastic(
-                    data_path,
-                    '/usr/share/elasticsearch/config/elasticsearch.yml',
+    def _check_env_vars(self):
+        while not all(
+            var in os.environ for var in ['ES_HOSTS', 'ES_INDEX_NAME', 'ES_API_KEY']
+        ):
+            timeout_counter = 0
+            if timeout_counter < TIMEOUT:
+                timeout_counter += 5
+                self.logger.info('Environment variables not set yet. Waiting...')
+                sleep(5)
+            else:
+                self.logger.error(
+                    'Elasticsearch environment variables not set after 60 seconds. Exiting...'
                 )
-                subprocess.Popen(['./start-elastic-search-cluster.sh'])
-                self.logger.info('elastic server started')
-        except FileNotFoundError:
-            self.logger.info(
-                'Elastic started outside of docker, assume cluster started already.'
-            )
+                raise Exception('Elasticsearch environment variables not set')
 
-    @staticmethod
-    def configure_elastic(workspace, destination_path):
-        config_path = os.path.join(os.path.dirname(__file__), 'elasticsearch.yml')
-        with open(config_path, 'r') as config_file_handler, open(
-            destination_path, 'w'
-        ) as destination_file_handler:
-            for line in config_file_handler.readlines():
-                line = line.replace("{workspace}", workspace)
-                destination_file_handler.write(line)
+    def _do_health_check(self):
+        """Checks that Elasticsearch is up and running with state 'yellow'. The default timeout
+        on the health check is 30 seconds."""
+        while True:
+            try:
+                self.es.cluster.health(wait_for_status='yellow')
+                break
+            except Exception:
+                self.logger.info(traceback.format_exc())
 
     def generate_es_mapping(self) -> Dict:
         """Creates Elasticsearch mapping for the defined document fields."""
@@ -161,7 +162,6 @@ class NOWElasticIndexer(Executor):
     def index(
         self,
         docs_map: Dict[str, DocumentArray] = None,  # encoder to docarray
-        parameters: dict = {},
         docs: Optional[DocumentArray] = None,
         **kwargs,
     ) -> DocumentArray:
@@ -169,7 +169,6 @@ class NOWElasticIndexer(Executor):
         Index new `Document`s by adding them to the Elasticsearch index.
 
         :param docs_map: map of encoder to DocumentArray
-        :param parameters: dictionary with options for indexing.
         :param docs: DocumentArray to index
         :return: empty `DocumentArray`.
         """
@@ -193,7 +192,7 @@ class NOWElasticIndexer(Executor):
     @secure_request(on='/search', level=SecurityLevel.USER)
     def search(
         self,
-        docs_map: Dict[str, DocumentArray] = None,  # encoder to docarray
+        docs_map: Dict[str, DocumentArray] = None,
         parameters: dict = {},
         docs: Optional[DocumentArray] = None,
         **kwargs,
@@ -506,24 +505,3 @@ def aggregate_embeddings(docs_map: Dict[str, DocumentArray]):
                 if c.chunks[0].text or not c.uri:
                     c.content = c.chunks[0].content
                 c.chunks = DocumentArray()
-
-
-def wait_until_cluster_is_up(es, hosts):
-    MAX_RETRIES = 300
-    SLEEP = 1
-    retries = 0
-    while retries < MAX_RETRIES:
-        try:
-            if es.ping():
-                break
-            else:
-                retries += 1
-                sleep(SLEEP)
-        except Exception:
-            print(
-                f'Elasticsearch is not running yet, are you connecting to the right hosts? {hosts}'
-            )
-    if retries >= MAX_RETRIES:
-        raise RuntimeError(
-            f'Elasticsearch is not running after {MAX_RETRIES} retries ('
-        )

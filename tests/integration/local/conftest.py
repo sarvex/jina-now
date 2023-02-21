@@ -10,12 +10,12 @@ from jina import Flow
 
 from now.admin.utils import get_default_request_body
 from now.common.options import construct_app
-from now.constants import DatasetTypes, Models, Apps
+from now.constants import Apps, DatasetTypes, Models
 from now.data_loading.create_dataclass import create_dataclass
 from now.data_loading.data_loading import load_data
 from now.demo_data import DemoDatasetNames
 from now.now_dataclasses import UserInput
-from now.utils import write_flow_file, get_aws_profile
+from now.utils import get_aws_profile, write_flow_file
 
 BASE_URL = 'http://localhost:8081/api/v1'
 SEARCH_URL = f'{BASE_URL}/search-app/search'
@@ -31,7 +31,7 @@ def get_flow(request, random_index_name, tmpdir):
     params = request.param
     docs, user_input = request.getfixturevalue(params)
     event = multiprocessing.Event()
-    flow = FlowThread(event, user_input, random_index_name, tmpdir)
+    flow = FlowThread(event, user_input, tmpdir)
     flow.start()
     while not flow.is_flow_ready():
         sleep(1)
@@ -49,15 +49,12 @@ class FlowThread(multiprocessing.Process):
         self,
         event,
         user_input,
-        random_index_name,
         tmpdir,
     ):
         multiprocessing.Process.__init__(self)
 
         self.event = event
-        user_input.app_instance.setup(
-            user_input=user_input, testing=True, index_name=random_index_name
-        )
+        user_input.app_instance.setup(user_input=user_input, testing=True)
         for executor in user_input.app_instance.flow_yaml['executors']:
             if not executor.get('external'):
                 executor['uses_metas'] = {'workspace': str(tmpdir)}
