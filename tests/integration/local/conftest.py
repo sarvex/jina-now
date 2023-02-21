@@ -31,7 +31,7 @@ def get_flow(request, random_index_name, tmpdir):
     params = request.param
     docs, user_input = request.getfixturevalue(params)
     event = multiprocessing.Event()
-    flow = FlowThread(event, user_input, random_index_name, tmpdir)
+    flow = FlowThread(event, user_input, tmpdir)
     flow.start()
     while not flow.is_flow_ready():
         sleep(1)
@@ -49,15 +49,12 @@ class FlowThread(multiprocessing.Process):
         self,
         event,
         user_input,
-        random_index_name,
         tmpdir,
     ):
         multiprocessing.Process.__init__(self)
 
         self.event = event
-        user_input.app_instance.setup(
-            user_input=user_input, testing=True, index_name=random_index_name
-        )
+        user_input.app_instance.setup(user_input=user_input, testing=True)
         for executor in user_input.app_instance.flow_yaml['executors']:
             if not executor.get('external'):
                 executor['uses_metas'] = {'workspace': str(tmpdir)}

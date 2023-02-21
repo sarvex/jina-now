@@ -1,4 +1,3 @@
-import random
 from typing import Dict
 
 import numpy as np
@@ -31,8 +30,6 @@ class OfflineFlow:
         self.indexer = NOWElasticIndexer(
             user_input_dict=user_input_dict,
             document_mappings=document_mappings,
-            hosts='http://localhost:9200',
-            index_name=f"test-index-{random.randint(0, 10000)}",
         )
         self.mock_client(monkeypatch)
 
