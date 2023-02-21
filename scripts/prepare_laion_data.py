@@ -96,7 +96,10 @@ def process_docs(docs):
     class LaionDoc:
         image: LaionImage = field(setter=my_setter, getter=my_getter)
 
-    return DocumentArray([Document(LaionDoc(image=doc.uri)) for doc in docs])
+    laion_docs = DocumentArray([Document(LaionDoc(image=doc.uri)) for doc in docs])
+    for doc in laion_docs:
+        doc.image.modality = 'image'
+    return laion_docs
 
 
 def download_laion400m(dir_name, size=100):
