@@ -72,7 +72,8 @@ class NOWGateway(BasePaymentGateway):
             )
         if grpc_port in [8080, 8081, 8082, 8501]:
             raise ValueError(
-                f'Please, let grpc port ({grpc_port}) be different from 8080 (BFF), 8081 (ngix), 8082 (http) and 8501 (playground)'
+                f'Please, let grpc port ({grpc_port}) be different from 8080 (BFF), 8081 (nginx), 8082 (http) and '
+                f'8501 (playground)'
             )
         kwargs['runtime_args']['port'][http_idx] = 8082
         super().__init__(

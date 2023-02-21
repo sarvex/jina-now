@@ -14,6 +14,7 @@ from jina.proto import jina_pb2, jina_pb2_grpc
 from jina.serve.gateway import BaseGateway
 from jina.serve.runtimes.helper import _get_grpc_server_options
 from jina.types.request.status import StatusMessage
+from starlette.responses import PlainTextResponse
 
 from now.executor.gateway.fast_api import get_security_app
 from now.executor.gateway.interceptor import PaymentInterceptor
@@ -155,25 +156,32 @@ class BasePaymentGateway(BaseGateway):
     def app(self):
         from jina.helper import extend_rest_interface
 
-        return extend_rest_interface(
-            get_security_app(
-                streamer=self.streamer,
-                title=self.title,
-                description=self.description,
-                no_debug_endpoints=self.no_debug_endpoints,
-                no_crud_endpoints=self.no_crud_endpoints,
-                expose_endpoints=self.expose_endpoints,
-                expose_graphql_endpoint=self.expose_graphql_endpoint,
-                cors=self.cors,
-                logger=self.logger,
-                tracing=self.tracing,
-                tracer_provider=self.tracer_provider,
-                usage_client_id=self._usage_client_id,
-                usage_client_secret=self._usage_client_secret,
-                request_authenticate=self._get_request_authenticate(),
-                report_usage=self._get_report_usage(),
-            )
+        app = get_security_app(
+            streamer=self.streamer,
+            title=self.title,
+            description=self.description,
+            no_debug_endpoints=self.no_debug_endpoints,
+            no_crud_endpoints=self.no_crud_endpoints,
+            expose_endpoints=self.expose_endpoints,
+            expose_graphql_endpoint=self.expose_graphql_endpoint,
+            cors=self.cors,
+            logger=self.logger,
+            tracing=self.tracing,
+            tracer_provider=self.tracer_provider,
+            usage_client_id=self._usage_client_id,
+            usage_client_secret=self._usage_client_secret,
+            request_authenticate=self._get_request_authenticate(),
+            report_usage=self._get_report_usage(),
         )
+
+        @app.get('/', response_class=PlainTextResponse)
+        def read_root() -> str:
+            """
+            Root path welcome message.
+            """
+            return f'Works! ✨ '
+
+        return extend_rest_interface(app)
 
     @abc.abstractmethod
     def _get_request_authenticate(self) -> Callable:
