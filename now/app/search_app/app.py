@@ -7,7 +7,6 @@ from now.app.base.app import JinaNOWApp
 from now.constants import (
     ACCESS_PATHS,
     DEMO_NS,
-    EXTERNAL_CLIP_HOST,
     NOW_AUTOCOMPLETE_VERSION,
     NOW_ELASTIC_INDEXER_VERSION,
     NOW_PREPROCESSOR_VERSION,
@@ -105,10 +104,10 @@ class SearchApp(JinaNOWApp):
         return {
             'name': Models.CLIP_MODEL,
             'uses': f'jinahub+docker://CLIPOnnxEncoder/0.8.1-gpu',
-            'host': EXTERNAL_CLIP_HOST,
+            #'host': EXTERNAL_CLIP_HOST,
             'port': 443,
             'tls': True,
-            'external': True,
+            #'external': True,
             'uses_with': {'access_paths': ACCESS_PATHS, 'name': 'ViT-B-32::openai'},
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'needs': 'preprocessor',

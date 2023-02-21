@@ -58,7 +58,7 @@ def preprocess_image(d: Document):
     # image preprocessor environment flag: 1|2
     image_preprocessor_flag = os.environ.get('IMAGE_PREPROCESSOR', '1')
 
-    print(d.summary())
+    # d.summary()
 
     if 'uri' in d.tags and not d.uri:
         d.uri = d.tags['uri']
@@ -101,6 +101,9 @@ def preprocess_image(d: Document):
                 mime_type='image/jpeg',
             )
         )
+
+    for c in d.chunks:
+        c.summary()
 
     d.blob = None
     d.tensor = None
