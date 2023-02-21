@@ -302,9 +302,10 @@ class SearchPaymentInterceptor(PaymentInterceptor):
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail='User is not authenticated',
             )
-        remain_credits, has_payment_method = get_app_summary(
-            current_user, self._m2m_token
+        client = PaymentClient(
+            m2m_token=self._m2m_token,
         )
+        remain_credits, has_payment_method = get_app_summary(current_user, client)
 
         if remain_credits <= 0 and not has_payment_method:
             raise Exception('User has reached quota limit, please upgrade subscription')

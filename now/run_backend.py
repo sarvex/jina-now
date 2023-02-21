@@ -5,6 +5,7 @@ from copy import deepcopy
 from time import sleep
 from typing import Dict, Optional
 
+import hubble
 import requests
 from docarray import DocumentArray
 from jina.clients import Client
@@ -119,7 +120,7 @@ def index_docs(user_input, dataset, client, print_callback, **kwargs):
     Index the data right away
     """
     print_callback(f"▶ indexing {len(dataset)} documents in batches")
-    params = {'access_paths': ACCESS_PATHS}
+    params = {'access_paths': ACCESS_PATHS, 'headers': {}}
     if user_input.secured:
         params['jwt'] = user_input.jwt
     call_flow(
@@ -163,6 +164,7 @@ def call_flow(
                     on_done=kwargs.get('on_done', None),
                     on_error=kwargs.get('on_error', None),
                     on_always=kwargs.get('on_always', None),
+                    metadata=(('authorization', hubble.get_token()),),
                 )
                 if kwargs.get('custom_callback', None):
                     kwargs['custom_callback'](
