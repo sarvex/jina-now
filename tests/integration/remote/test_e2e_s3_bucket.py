@@ -47,6 +47,8 @@ def test_backend_custom_data(
         'index_fields': index_fields,
         f'{index_fields[0]}_model': [Models.CLIP_MODEL],
         'filter_fields': filter_fields,
+        'admin_name': 'team-now@jina.ai',
+        'admin_emails': ['team-now@jina.ai'],
         'secured': False,
     }
     kwargs = Namespace(**kwargs)
