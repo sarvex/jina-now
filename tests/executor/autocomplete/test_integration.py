@@ -40,21 +40,41 @@ def test_autocomplete(tmpdir, mm_dataclass):
             ),
             headers={'authorization': f'token {hubble.get_token()}'},
         )
-        response = f.post(on='/suggestion', inputs=DocumentArray([Document(text='b')]))
+        response = f.post(
+            on='/suggestion',
+            inputs=DocumentArray([Document(text='b')]),
+            headers={'authorization': f'token {hubble.get_token()}'},
+        )
         assert response[0].tags['suggestions'] == ['background', 'bang']
-        response = f.post(on='/suggestion', inputs=DocumentArray([Document(text='l')]))
+        response = f.post(
+            on='/suggestion',
+            inputs=DocumentArray([Document(text='l')]),
+            headers={'authorization': f'token {hubble.get_token()}'},
+        )
         assert response[0].tags['suggestions'] == ['loading', 'long', 'laugh']
         response = f.post(
-            on='/suggestion', inputs=DocumentArray([Document(text='bac')])
+            on='/suggestion',
+            inputs=DocumentArray(
+                [Document(text='bac')],
+            ),
+            headers={'authorization': f'token {hubble.get_token()}'},
         )
         assert response[0].tags['suggestions'] == ['background']
         response = f.post(
-            on='/suggestion', inputs=DocumentArray([Document(text='fuc')])
+            on='/suggestion',
+            inputs=DocumentArray([Document(text='fuc')]),
+            headers={'authorization': f'token {hubble.get_token()}'},
         )
         assert response[0].tags['suggestions'] == []
         response = f.post(
-            on='/suggestion', inputs=DocumentArray([Document(text='red')])
+            on='/suggestion',
+            inputs=DocumentArray([Document(text='red')]),
+            headers={'authorization': f'token {hubble.get_token()}'},
         )
         assert response[0].tags['suggestions'] == ['red', 'red long dress']
-        response = f.post(on='/suggestion', inputs=DocumentArray([Document(text='d')]))
+        response = f.post(
+            on='/suggestion',
+            inputs=DocumentArray([Document(text='d')]),
+            headers={'authorization': f'token {hubble.get_token()}'},
+        )
         assert response[0].tags['suggestions'] == ['dress']
