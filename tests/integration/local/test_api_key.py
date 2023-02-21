@@ -24,6 +24,7 @@ def test_add_key(get_flow, setup_service_running):
         docs,
         parameters={
             'access_paths': ACCESS_PATHS,
+            'jwt': {'token': hubble.get_token()},
         },
         metadata=(('authorization', hubble.get_token()),),
     )
