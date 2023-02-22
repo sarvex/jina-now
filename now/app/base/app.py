@@ -118,7 +118,7 @@ class JinaNOWApp:
             'prefetch': PREFETCH_NR,
             'uses_with': {
                 'user_input_dict': user_input.to_safe_dict(),
-                'm2m_token': 'MjdiOTQ4MWI0MTEyYWU2OWYyY2MxMGEyM2Q2YTNkY2I6NmYzMGMwOGJkNTc4OTQ2ZGFlZTY1NDY2YmNjNDM0YzNmZDY4OTIxODhlYmFiYmU4ZmM5NzIxOGMzMDYyNTQ1NQ==',  # os.environ['M2M_TOKEN'],
+                'm2m_token': os.environ['M2M_TOKEN'],
             },
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
         }
