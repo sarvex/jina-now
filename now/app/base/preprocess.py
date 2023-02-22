@@ -76,17 +76,17 @@ def preprocess_image(d: Document):
             d.blob = downsample_image(d.tensor)
 
     else:
-        if d.tensor is None:
-            if d.blob != b'':
-                d.convert_blob_to_image_tensor()
+        if not d.blob:
+            if d.tensor is not None:
+                d.convert_image_tensor_to_blob()
             elif d.uri:
-                d.load_uri_to_image_tensor(timeout=10)
+                d.load_uri_to_blob(timeout=10)
 
     d.chunks.append(
         Document(
             uri=d.uri,
-            tags=d.tags,
             blob=d.blob,
+            tags=d.tags,
             modality='image',
             mime_type='image/jpeg',
         )
