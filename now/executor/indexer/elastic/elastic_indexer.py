@@ -114,7 +114,11 @@ class NOWElasticIndexer(Executor):
             )
 
     def get_workspace(self):
-        return f'/data/{os.environ["K8S_NAMESPACE_NAME"]}'
+        if 'K8S_NAMESPACE_NAME' in os.environ:
+            workspace = f'/data/{os.environ["K8S_NAMESPACE_NAME"]}'
+        else:
+            workspace = self.workspace
+        return workspace
 
     def get_curated_file_path(self):
         return f'{self.get_workspace()}/curated.bin'
@@ -452,7 +456,9 @@ class NOWElasticIndexer(Executor):
                 es_query = {'query': {'bool': {'filter': process_filter(filter)}}}
                 resp = self.es.search(index=self.index_name, body=es_query, size=100)
                 ids = [r['_id'] for r in resp['hits']['hits']]
-                self.query_to_curated_ids[query] += set(ids)
+                self.query_to_curated_ids[query] = self.query_to_curated_ids[
+                    query
+                ].union(set(ids))
         self.save_curated(self.query_to_curated_ids)
 
     def save_curated(self, query_to_curated_ids):
