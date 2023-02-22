@@ -58,8 +58,6 @@ def preprocess_image(d: Document):
     # image preprocessor environment flag: 1|2
     image_preprocessor_flag = os.environ.get('IMAGE_PREPROCESSOR', '1')
 
-    # d.summary()
-
     if 'uri' in d.tags and not d.uri:
         d.uri = d.tags['uri']
 
