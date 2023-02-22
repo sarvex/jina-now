@@ -212,17 +212,17 @@ class NOWGateway(BasePaymentGateway):
                     m2m_token=self.m2m_token,
                 )
                 resp = client.report_usage(
-                    current_user['token'],
-                    self._internal_app_id,
-                    self._internal_product_id,
-                    usage_detail['credits'],
+                    token=current_user['token'],
+                    app_id=self._internal_app_id,
+                    product_id=self._internal_product_id,
+                    credits=usage_detail['credits'],
                 )
                 if resp['code'] != 200:
                     raise Exception('Failed to credit user')
 
             except Exception as ex:
                 # TODO: handle the exception
-                # catch all exceptions to avoid breaking the inference
+                # catch all exceptions to avoid breaking the app
                 logger.error(f'Failed to report usage: {ex}')
 
         return report_usage
@@ -310,7 +310,9 @@ class SearchPaymentInterceptor(PaymentInterceptor):
         remain_credits, has_payment_method = get_app_summary(current_user, client)
 
         if remain_credits <= 0 and not has_payment_method:
-            raise Exception('User has reached quota limit, please upgrade subscription')
+            raise ValueError(
+                'User has reached quota limit, please upgrade subscription'
+            )
         return True, current_user
 
 
