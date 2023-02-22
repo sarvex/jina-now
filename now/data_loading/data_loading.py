@@ -242,6 +242,10 @@ def create_docs_from_subdirectories(
 
     docs = []
     folder_files = defaultdict(list)
+
+    with open('uri2caption.json') as f:
+        uri2caption = json.load(f)
+
     for file in file_paths:
         path_to_last_folder = (
             '/'.join(file.split('/')[:-1])
@@ -261,6 +265,9 @@ def create_docs_from_subdirectories(
         for file, file_full_path in file_info:
             if file in fields:
                 kwargs[field_names_to_dataclass_fields[file]] = file_full_path
+                # match file_full_path to entries in uri2caption.json
+                if file_full_path in uri2caption:
+                    kwargs['blip2_text'] = uri2caption[file_full_path]
         # next check json files that can also contain index fields, and carry on data
         for file, file_full_path in file_info:
             if file.endswith('.json'):
@@ -277,6 +284,7 @@ def create_docs_from_subdirectories(
                             kwargs[field_names_to_dataclass_fields[field]] = value
                         else:
                             tags_loaded_local[field] = value
+        assert 'blip2_text' in kwargs, f'No blip2_text found for {kwargs}'
         doc = Document(data_class(**kwargs))
         if _s3_uri_for_tags:
             doc._metadata['_s3_uri_for_tags'] = _s3_uri_for_tags

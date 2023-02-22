@@ -3,7 +3,7 @@ from collections import defaultdict
 from typing import Dict, List
 
 from docarray import Document, dataclass, field
-from docarray.typing import Image, Video
+from docarray.typing import Image, Text, Video
 
 from now.constants import AVAILABLE_MODALITIES_FOR_SEARCH, DatasetTypes
 from now.now_dataclasses import UserInput
@@ -69,6 +69,11 @@ def create_dataclass(
         field_names_to_dataclass_fields,
         dataset_type,
     )
+    # for blip_text this is extra
+    all_annotations['blip2_text'] = Text
+    all_class_attributes['blip2_text'] = None
+    field_names_to_dataclass_fields['blip2_text'] = 'blip2_text'
+
     mm_doc = type("MMDoc", (object,), all_class_attributes)
     setattr(mm_doc, '__annotations__', all_annotations)
     mm_doc = dataclass(mm_doc)
