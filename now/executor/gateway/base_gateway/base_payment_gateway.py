@@ -16,8 +16,8 @@ from jina.serve.runtimes.helper import _get_grpc_server_options
 from jina.types.request.status import StatusMessage
 from starlette.responses import PlainTextResponse
 
-from now.executor.gateway.fast_api import get_security_app
-from now.executor.gateway.interceptor import PaymentInterceptor
+from now.executor.gateway.base_gateway.fast_api import get_security_app
+from now.executor.gateway.base_gateway.interceptor import PaymentInterceptor
 
 
 class BasePaymentGateway(BaseGateway):
@@ -80,8 +80,6 @@ class BasePaymentGateway(BaseGateway):
         # metering options
         self._internal_app_id = internal_app_id
         self._internal_product_id = internal_product_id
-        self._usage_client_id = usage_client_id
-        self._usage_client_secret = usage_client_secret
 
         self.logger = logging.getLogger(self.__class__.__name__)
         self.logger.setLevel(logging.INFO)
@@ -168,8 +166,6 @@ class BasePaymentGateway(BaseGateway):
             logger=self.logger,
             tracing=self.tracing,
             tracer_provider=self.tracer_provider,
-            usage_client_id=self._usage_client_id,
-            usage_client_secret=self._usage_client_secret,
             request_authenticate=self._get_request_authenticate(),
             report_usage=self._get_report_usage(),
         )

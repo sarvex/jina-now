@@ -12,7 +12,7 @@ from jina.serve.runtimes.gateway.http.models import (
 )
 from jina.serve.streamer import GatewayStreamer
 
-from .helper import current_time
+from now.executor.gateway.base_gateway.helper import current_time
 
 
 def get_security_app(
@@ -29,8 +29,6 @@ def get_security_app(
     tracer_provider: Optional = None,
     internal_app_id: str = None,
     internal_product_id: str = None,
-    usage_client_id: Optional[str] = None,
-    usage_client_secret: Optional[str] = None,
     request_authenticate: Optional[Callable] = None,
     report_usage: Optional[Callable] = None,
 ):
@@ -108,8 +106,6 @@ def get_security_app(
             num_docs = len(result['data'])
             report_usage(
                 current_user=current_user,
-                usage_client_id=usage_client_id,
-                usage_client_secret=usage_client_secret,
                 usage_detail={
                     'token': current_user['token'],
                     'id': str(uuid.uuid4()),

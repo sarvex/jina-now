@@ -5,7 +5,7 @@ from typing import Callable, Tuple, Union
 
 import grpc
 
-from .helper import current_time, wrap_rpc_behavior
+from now.executor.gateway.base_gateway.helper import current_time, wrap_rpc_behavior
 
 logger = logging.getLogger(__name__)
 
@@ -15,9 +15,6 @@ class PaymentInterceptor(grpc.aio.ServerInterceptor):
         self._internal_app_id = kwargs.get('internal_app_id')
         self._internal_product_id = kwargs.get('internal_product_id')
         self._m2m_token = kwargs.get('m2m_token')
-        self._deployment_id = kwargs.get('deployment_id', None)
-        self._usage_client_id = kwargs.get('usage_client_id', None)
-        self._usage_client_secret = kwargs.get('usage_client_secret', None)
         self._logger = logger
         self._report_usage = report_usage
 
@@ -49,8 +46,6 @@ class PaymentInterceptor(grpc.aio.ServerInterceptor):
                 num_docs = len(response.data.docs)
                 self._report_usage(
                     current_user=current_user,
-                    usage_client_id=self._usage_client_id,
-                    usage_client_secret=self._usage_client_secret,
                     usage_detail={
                         'token': current_user['token'],
                         'id': str(uuid.uuid4()),
@@ -97,8 +92,6 @@ class PaymentInterceptor(grpc.aio.ServerInterceptor):
                     num_docs = len(response.data.docs)
                     self._report_usage(
                         current_user=current_user,
-                        usage_client_id=self._usage_client_id,
-                        usage_client_secret=self._usage_client_secret,
                         usage_detail={
                             'token': current_user['token'],
                             'id': str(uuid.uuid4()),

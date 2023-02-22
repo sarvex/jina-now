@@ -43,7 +43,7 @@ runs:
     - name: Pip install jina
       if: steps.check_has_executor_changed.outputs.has_executor_changed == 'true'
       shell: bash
-      run: pip install --pre jina
+      run: pip install "jina[perf]==3.14.0"
     - name: Check that tag isn't used already for executor
       if: steps.check_has_executor_changed.outputs.has_executor_changed == 'true'
       env:

@@ -12,7 +12,7 @@ from now.now_dataclasses import UserInput
 def test_autocomplete(tmpdir, mm_dataclass):
     user_input = UserInput()
     user_input.user_emails = ['team-now@jina.ai']
-    user_input.admin_emails = []
+    user_input.admin_emails = ['team-now@jina.ai']
     user_input.api_key = []
     with Flow().config_gateway(
         uses=NOWGateway,

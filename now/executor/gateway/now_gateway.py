@@ -19,9 +19,9 @@ from jina.enums import GatewayProtocolType
 from now.constants import NOWGATEWAY_BFF_PORT
 from now.deployment.deployment import cmd
 from now.executor.abstract.auth.auth import SecurityLevel, check_user
-from now.executor.gateway.base_payment_gateway import BasePaymentGateway
+from now.executor.gateway.base_gateway.base_payment_gateway import BasePaymentGateway
+from now.executor.gateway.base_gateway.interceptor import PaymentInterceptor
 from now.executor.gateway.bff_gateway import BFFGateway
-from now.executor.gateway.interceptor import PaymentInterceptor
 from now.executor.gateway.playground_gateway import PlaygroundGateway
 from now.now_dataclasses import UserInput
 
@@ -171,12 +171,12 @@ class NOWGateway(BasePaymentGateway):
         sleep(10)
         return output, error
 
-    def _create_gateway(self, gateway_cls, app_port, protocol='http', **kwargs):
+    def _create_gateway(self, gateway_cls, port, protocol='http', **kwargs):
         # ignore metrics_registry since it is not copyable
         runtime_args = self._deepcopy_with_ignore_attrs(
             self.runtime_args, ['metrics_registry']
         )
-        runtime_args.port = [app_port]
+        runtime_args.port = [port]
         runtime_args.protocol = [protocol]
         gateway_kwargs = {k: v for k, v in kwargs.items() if k != 'runtime_args'}
         gateway_kwargs['runtime_args'] = dict(vars(runtime_args))
@@ -189,8 +189,6 @@ class NOWGateway(BasePaymentGateway):
             SearchPaymentInterceptor(
                 internal_app_id=self._internal_app_id,
                 internal_product_id=self._internal_product_id,
-                usage_client_id=self._usage_client_id,
-                usage_client_secret=self._usage_client_secret,
                 logger=self.logger,
                 report_usage=self._get_report_usage(),
                 m2m_token=self.m2m_token,
@@ -292,7 +290,10 @@ class SearchPaymentInterceptor(PaymentInterceptor):
 
         # reject if no authorization header
         if not metadata or 'authorization' not in metadata:
-            raise Exception('No authorization header')
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail='User is not authenticated',
+            )
 
         access_token = metadata.get("authorization", "")
         current_user = get_user_info(access_token)
@@ -393,7 +394,7 @@ def get_app_summary(user: dict, payment_client):
 
     # default values for unexpected errors
     has_payment_method = False
-    remain_credits = 100
+    remain_credits = 0
     # hardcode the subscription type for now
     email = user.get('email', '')
     if email in ENTERPRISE_USERS + PROFESSIONAL_USERS:
