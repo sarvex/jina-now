@@ -243,7 +243,9 @@ def create_docs_from_subdirectories(
     docs = []
     folder_files = defaultdict(list)
 
-    with open('uri2caption.json') as f:
+    with open(
+        '/Users/joschkabraun/dev/now/blip2_uri2captions/uri2caption_beam_search.json'
+    ) as f:
         uri2caption = json.load(f)
 
     for file in file_paths:
