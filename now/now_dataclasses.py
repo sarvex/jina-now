@@ -48,8 +48,8 @@ class UserInput(BaseModel):
     secured: Optional[StrictBool] = False
     jwt: Optional[Dict[str, str]] = None
     admin_name: Optional[str] = None
-    admin_emails: Optional[List[str]] = None
-    user_emails: Optional[List[str]] = None
+    admin_emails: Optional[List[str]] = []
+    user_emails: Optional[List[str]] = []
     additional_user: Optional[StrictBool] = None
     api_key: Optional[str] = None
 

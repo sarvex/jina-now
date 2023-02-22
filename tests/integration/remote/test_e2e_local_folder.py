@@ -24,7 +24,7 @@ def test_end_to_end(
         'now': 'start',
         'flow_name': 'nowapi',
         'dataset_type': DatasetTypes.PATH,
-        'admin_name': 'team-now',
+        'admin_name': 'team-now@jina.ai',
         'dataset_path': pulled_local_folder_data,
         'index_fields': ['image.png', 'test.txt'],
         'filter_fields': ['title'],

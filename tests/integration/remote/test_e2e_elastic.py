@@ -27,7 +27,7 @@ def test_end_to_end(
         'now': 'start',
         'flow_name': 'nowapi',
         'dataset_type': DatasetTypes.ELASTICSEARCH,
-        'admin_name': 'team-now',
+        'admin_name': 'team-now@jina.ai',
         'es_host_name': connection_str,
         'es_index_name': index_name,
         'es_additional_args': None,
