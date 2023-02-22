@@ -361,16 +361,8 @@ def authenticate_user(token, payment_client) -> str:
     """
     global user_input_now_gateway
     # put check and throw meaningful error here with an example of how to consume it
-    if token.startswith('token '):
-        token = token.replace('token ', '')
-        check_user(
-            {'parameters': {'jwt': {'token': token}}},
-            SecurityLevel.USER,
-            user_input_now_gateway.user_emails,
-            user_input_now_gateway.admin_emails,
-            [user_input_now_gateway.api_key],
-        )
-    elif token.startswith('key '):
+
+    if token.startswith('key '):
         token = token.replace('key ', '')
         check_user(
             {'parameters': {'api_key': token}},
@@ -383,9 +375,14 @@ def authenticate_user(token, payment_client) -> str:
             user_token=user_input_now_gateway.jwt['token']
         )['data']
     else:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='Invalid authentication credentials',
+        if token.startswith('token '):
+            token = token.replace('token ', '')
+        check_user(
+            {'parameters': {'jwt': {'token': token}}},
+            SecurityLevel.USER,
+            user_input_now_gateway.user_emails,
+            user_input_now_gateway.admin_emails,
+            [user_input_now_gateway.api_key],
         )
 
     return token  # noqa: E203
