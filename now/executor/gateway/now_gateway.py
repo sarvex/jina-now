@@ -93,6 +93,7 @@ class NOWGateway(BasePaymentGateway):
                 attr_name,
                 user_input_dict.get(attr_name, prev_value),
             )
+        print(f'User input: {self.user_input.__dict__}')
         global user_input_now_gateway
         user_input_now_gateway = self.user_input
 
