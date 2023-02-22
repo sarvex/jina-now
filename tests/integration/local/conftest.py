@@ -106,7 +106,7 @@ def api_key_data(mm_dataclass):
     user_input.model_choices = {'text_field_model': [Models.CLIP_MODEL]}
     user_input.admin_emails = [
         hubble.Client(
-            token=get_request_body(secured=True)[1]['jwt']['token'],
+            token=hubble.get_token(),
             max_retries=None,
             jsonify=True,
         )

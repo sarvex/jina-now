@@ -87,13 +87,12 @@ class NOWGateway(BasePaymentGateway):
 
         self.m2m_token = m2m_token
         self.user_input = UserInput()
-        for attr_name, prev_value in user_input_dict.items():
+        for attr_name, prev_value in self.user_input.__dict__.items():
             setattr(
                 self.user_input,
                 attr_name,
                 user_input_dict.get(attr_name, prev_value),
             )
-        print(f'User input: {self.user_input.__dict__}')
         global user_input_now_gateway
         user_input_now_gateway = self.user_input
 
@@ -197,7 +196,6 @@ class NOWGateway(BasePaymentGateway):
         ]
 
     def _get_report_usage(self) -> Callable:
-        # todo: report usage to hubble
         def report_usage(
             current_user: dict,
             usage_detail: dict,
@@ -230,9 +228,6 @@ class NOWGateway(BasePaymentGateway):
     def _get_request_authenticate(self):
         def request_authenticate(request: Request):
             try:
-                # todo: add authentication mechanism from now.executors.abstract.auth which is based
-                # on parameters in body
-                # parameters has been already extracted from the request body
                 client = PaymentClient(
                     m2m_token=self.m2m_token,
                 )
