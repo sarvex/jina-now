@@ -25,8 +25,6 @@ class BasePaymentGateway(BaseGateway):
         self,
         internal_app_id: str,
         internal_product_id: str,
-        usage_client_id: str = None,
-        usage_client_secret: str = None,
         grpc_server_options: Optional[dict] = None,
         ssl_keyfile: Optional[str] = None,
         ssl_certfile: Optional[str] = None,
