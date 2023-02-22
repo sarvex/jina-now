@@ -50,11 +50,11 @@ def get_security_app(
 
     # patch the app to overwrite the /post endpoint
     for i, r in enumerate(app.router.routes):
-        if r.path_format == '/post':
+        if r.path_format == '/search':
             del app.router.routes[i]
 
     @app.post(
-        path='/post',
+        path='/search',
         summary='Post a data request to some endpoint',
         response_model=JinaResponseModel,
         tags=['Debug']
