@@ -394,7 +394,7 @@ def get_app_summary(user: dict, payment_client):
 
     # default values for unexpected errors
     has_payment_method = False
-    remain_credits = 0
+    remain_credits = 100
     # hardcode the subscription type for now
     email = user.get('email', '')
     if email in ENTERPRISE_USERS + PROFESSIONAL_USERS:
