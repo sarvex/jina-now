@@ -69,41 +69,28 @@ def preprocess_image(d: Document):
             # process the image tensor directly, slightly faster
             downsample_image_doc(d)
             d.convert_image_tensor_to_blob()
-            d.chunks.append(
-                Document(
-                    uri=d.uri,
-                    blob=d.blob,
-                    tags=d.tags,
-                    modality='image',
-                    mime_type='image/jpeg',
-                )
-            )
 
         else:
             # approach 2
             # process the image with PIL, including loading and saving
-            d.chunks.append(
-                Document(
-                    uri=d.uri,
-                    blob=downsample_image(d.tensor),
-                    tags=d.tags,
-                    modality='image',
-                    mime_type='image/jpeg',
-                )
-            )
+            d.blob = downsample_image(d.tensor)
 
-    elif d.uri:
-        d.chunks.append(
-            Document(
-                uri=d.uri,
-                tags=d.tags,
-                modality='image',
-                mime_type='image/jpeg',
-            )
+    else:
+        if d.tensor is None:
+            if d.blob != b'':
+                d.convert_blob_to_image_tensor()
+            elif d.uri:
+                d.load_uri_to_image_tensor(timeout=10)
+
+    d.chunks.append(
+        Document(
+            uri=d.uri,
+            tags=d.tags,
+            blob=d.blob,
+            modality='image',
+            mime_type='image/jpeg',
         )
-
-    for c in d.chunks:
-        c.summary()
+    )
 
     d.blob = None
     d.tensor = None
