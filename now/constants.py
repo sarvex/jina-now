@@ -4,10 +4,10 @@ from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-NOW_GATEWAY_VERSION = '0.0.4-feat-change-auth-http-28'
-NOW_PREPROCESSOR_VERSION = '0.0.123-feat-integrate-billing-38'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.147-feat-integrate-billing-38'
-NOW_AUTOCOMPLETE_VERSION = '0.0.11-feat-integrate-billing-38'
+NOW_GATEWAY_VERSION = '0.0.4-feat-change-auth-http-29'
+NOW_PREPROCESSOR_VERSION = '0.0.123-feat-integrate-billing-39'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.147-feat-integrate-billing-39'
+NOW_AUTOCOMPLETE_VERSION = '0.0.11-feat-integrate-billing-39'
 
 
 class Apps(BetterEnum):

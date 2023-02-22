@@ -37,6 +37,7 @@ ENTERPRISE_USERS = [
     'isabelle.mohr@jina.ai',
     'saba.saturua@jina.ai',
     'iyadh.khalfallah@jina.ai',
+    'tanguy.abel@jina.ai',
 ]
 PROFESSIONAL_USERS = []
 
