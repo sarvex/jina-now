@@ -49,8 +49,13 @@ def get_security_app(
 
     # patch the app to overwrite the /post endpoint
     for i, r in enumerate(app.router.routes):
+        print('path formats before deletion: ', r.path_format, r)
         if r.path_format == '/post':
+            print('deleting /post route: ', id(app.router.routes[i]))
             del app.router.routes[i]
+
+    for i, r in enumerate(app.router.routes):
+        print('path formats after deletion: ', r.path_format, r)
 
     @app.post(
         path='/post',
@@ -158,7 +163,7 @@ def get_security_app(
 
     # patch the app to overwrite the /post endpoint
     for i, r in enumerate(app.router.routes):
-        print('path format: ', r.path_format)
+        print('path formats after adding: ', r.path_format, r)
 
     def _generate_exception_header(error: InternalNetworkError):
         import traceback
