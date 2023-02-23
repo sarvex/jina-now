@@ -89,7 +89,10 @@ class SearchApp(JinaNOWApp):
                     'max': 100,
                     'metric': 'concurrency',
                     'target': 1,
-                }
+                },
+                'resources': {
+                    'instance': 'C2',
+                },
             },
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
         }
@@ -119,7 +122,10 @@ class SearchApp(JinaNOWApp):
                 'model_name': 'msmarco-distilbert-base-v3',
             },
             'jcloud': {
-                'autoscale': {'min': 0, 'max': 5, 'metric': 'concurrency', 'target': 1}
+                'autoscale': {'min': 0, 'max': 5, 'metric': 'concurrency', 'target': 1},
+                'resources': {
+                    'instance': 'C6',
+                },
             },
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
         }, 768
@@ -171,9 +177,7 @@ class SearchApp(JinaNOWApp):
                     'provision-index': provision_index,
                 },
                 'resources': {
-                    'memory': '8G',
-                    'cpu': 0.5,
-                    'capacity': 'on-demand',
+                    'instance': 'C6',
                 },
             },
         }
