@@ -117,6 +117,7 @@ def get_security_app(
 
             logger.info(
                 {
+                    'type': 'HTTP',
                     'timestamp': current_time(),
                     'num_docs': num_docs,
                     'exec_endpoint': result['header']['exec_endpoint'],

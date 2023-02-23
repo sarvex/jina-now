@@ -102,6 +102,7 @@ class PaymentInterceptor(grpc.aio.ServerInterceptor):
                     )
                     self._logger.info(
                         {
+                            'type': 'GRPC',
                             'timestamp': current_time(),
                             'num_docs': num_docs,
                             'exec_endpoint': response.header.exec_endpoint,
