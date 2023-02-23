@@ -160,7 +160,7 @@ def call_flow(
                     show_progress=True,
                     parameters=parameters,
                     return_results=return_results,
-                    continue_on_error=True,
+                    continue_on_error=False,
                     on_done=kwargs.get('on_done', None),
                     on_error=kwargs.get('on_error', None),
                     on_always=kwargs.get('on_always', None),
