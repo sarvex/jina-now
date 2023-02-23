@@ -148,6 +148,7 @@ def call_flow(
     # this is a hack for the current core/ wolf issue
     # since we get errors while indexing, we retry
     # TODO: remove this once the issue is fixed
+    docs = DocumentArray()
     batches = list(dataset.batch(request_size * 100))
     for current_batch_nr, batch in enumerate(tqdm(batches)):
         for try_nr in range(5):
@@ -172,6 +173,7 @@ def call_flow(
                         host=client.args.host,
                     )
                 response.save_binary(f'preprocessed-batch-{current_batch_nr}.bin')
+                docs.extend(response)
                 break
             except Exception as e:
                 if try_nr == 4:
@@ -181,6 +183,7 @@ def call_flow(
                 sleep(5 * (try_nr + 1))  # sleep for 5, 10, 15, 20 seconds
                 continue
 
+    docs.save_binary('preprocessed.bin')
     if return_results and response:
         return DocumentArray.from_json(response.to_json())
 
