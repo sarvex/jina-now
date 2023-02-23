@@ -171,6 +171,7 @@ def call_flow(
                         tot_idx=len(dataset),
                         host=client.args.host,
                     )
+                response.save_binary(f'preprocessed-batch-{current_batch_nr}.bin')
                 break
             except Exception as e:
                 if try_nr == 4:
