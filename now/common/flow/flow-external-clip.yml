@@ -20,5 +20,4 @@ executors:
     jcloud:
       expose: true
       resources:
-        memory: 5G
-        gpu: '1'
+        instance: G1
