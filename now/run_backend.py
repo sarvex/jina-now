@@ -7,12 +7,13 @@ from typing import Dict, Optional
 
 import requests
 from docarray import DocumentArray
+from docarray.typing import Text
 from jina.clients import Client
 from tqdm import tqdm
 
 from now.admin.update_api_keys import update_api_keys
 from now.app.base.app import JinaNOWApp
-from now.constants import ACCESS_PATHS, DatasetTypes
+from now.constants import ACCESS_PATHS, DatasetTypes, Models
 from now.data_loading.create_dataclass import create_dataclass
 from now.data_loading.data_loading import load_data
 from now.deployment.flow import deploy_flow
@@ -38,6 +39,13 @@ def run(
     :param kwargs: Additional arguments
     :return:
     """
+    # todo: temporary fix to dummy update the user_input
+    user_input.index_field_candidates_to_modalities.update({'blip2_text': Text})
+    user_input.index_fields.append('blip2_text')
+    user_input.model_choices.update(
+        {'blip2_text': [Models.CLIP_MODEL, Models.SBERT_MODEL]}
+    )
+
     print_callback = kwargs.get('print_callback', print)
     if user_input.dataset_type in [DatasetTypes.DEMO, DatasetTypes.DOCARRAY]:
         user_input.field_names_to_dataclass_fields = {

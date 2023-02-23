@@ -71,7 +71,7 @@ def create_dataclass(
     )
     # for blip_text this is extra
     all_annotations['blip2_text'] = Text
-    all_class_attributes['blip2_text'] = None
+    all_class_attributes['blip2_text'] = field(default='')
     field_names_to_dataclass_fields['blip2_text'] = 'blip2_text'
 
     mm_doc = type("MMDoc", (object,), all_class_attributes)
