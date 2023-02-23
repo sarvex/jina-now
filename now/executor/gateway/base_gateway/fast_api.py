@@ -10,7 +10,6 @@ from jina.serve.runtimes.gateway.http.models import (
     JinaEndpointRequestModel,
     JinaResponseModel,
 )
-from jina.serve.streamer import GatewayStreamer
 
 from now.executor.gateway.base_gateway.helper import current_time
 
@@ -50,12 +49,11 @@ def get_security_app(
 
     # patch the app to overwrite the /post endpoint
     for i, r in enumerate(app.router.routes):
-        print('path format: ', r.path_format)
-        if r.path_format == '/search':
+        if r.path_format == '/post':
             del app.router.routes[i]
 
     @app.post(
-        path='/search',
+        path='/post',
         summary='Post a data request to some endpoint',
         response_model=JinaResponseModel,
         tags=['Debug']
@@ -80,10 +78,12 @@ def get_security_app(
         # The above comment is written in Markdown for better rendering in FastAPI
         from jina.enums import DataInputType
 
+        print('body', body)
         authorized, current_user = authorized
         if not authorized:
             from jina.proto.serializer import DataRequest
 
+            print('Unauthorized, please provide a valid token')
             response.status_code = status.HTTP_401_UNAUTHORIZED
             return {
                 'header': {
@@ -93,7 +93,7 @@ def get_security_app(
                     }
                 }
             }
-
+        print('current_user', current_user)
         bd = body.dict()  # type: Dict
         req_generator_input = bd
         req_generator_input['data_type'] = DataInputType.DICT
@@ -104,6 +104,7 @@ def get_security_app(
             result = await _get_singleton_result(
                 request_generator(**req_generator_input)
             )
+            print('result', result)
             num_docs = len(result['data'])
             report_usage(
                 current_user=current_user,
@@ -185,7 +186,7 @@ def get_security_app(
         :param request_iterator: request iterator, with length of 1
         :return: the first result from the request iterator
         """
-        async for k in streamer.stream(request_iterator=request_iterator):
+        async for k in streamer.rpc_stream(request_iterator=request_iterator):
             request_dict = k.to_dict()
             return request_dict
 
