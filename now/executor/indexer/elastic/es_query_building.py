@@ -94,6 +94,8 @@ def build_es_queries(
                 docs[doc.id] = doc
                 docs[doc.id].tags['embeddings'] = {}
 
+            print('# doc.id', doc.id)
+            print('# queries', queries)
             if doc.id not in queries:
                 queries[doc.id] = get_default_query(
                     doc,
@@ -102,10 +104,14 @@ def build_es_queries(
                     custom_bm25_query,
                     filter,
                 )
+                print(
+                    f'# create pinned queries for {doc.id}, {doc}, {query_to_curated_ids}'
+                )
                 pinned_queries[doc.id] = get_pinned_query(
                     doc,
                     query_to_curated_ids,
                 )
+                print(f'# pinned_queries[{doc.id}]', pinned_queries[doc.id])
 
                 if apply_default_bm25 or custom_bm25_query:
                     sources[doc.id] = '1.0 + _score / (_score + 10.0)'
@@ -198,8 +204,15 @@ def get_pinned_query(doc: Document, query_to_curated_ids: Dict[str, list] = {}) 
     curated_ids = []
     for c in doc.chunks:
         curated_ids += query_to_curated_ids.get(c.text, [])
-    curated_ids = list(dict.fromkeys(curated_ids))  # remove duplicates
-    return {'pinned': {'ids': curated_ids}}
+    curated_ids = remove_duplicates(curated_ids)
+    if curated_ids:
+        return {'pinned': {'ids': curated_ids}}
+    else:
+        return {}
+
+
+def remove_duplicates(l):
+    return list(dict.fromkeys(l))
 
 
 def process_filter(filter) -> dict:

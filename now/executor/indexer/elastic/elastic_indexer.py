@@ -26,6 +26,7 @@ from now.executor.indexer.elastic.es_query_building import (
     build_es_queries,
     generate_semantic_scores,
     process_filter,
+    remove_duplicates,
 )
 
 FieldEmbedding = namedtuple(
@@ -456,9 +457,10 @@ class NOWElasticIndexer(Executor):
                 es_query = {'query': {'bool': {'filter': process_filter(filter)}}}
                 resp = self.es.search(index=self.index_name, body=es_query, size=100)
                 ids = [r['_id'] for r in resp['hits']['hits']]
-                self.query_to_curated_ids[query] = (
+                self.query_to_curated_ids[query] = remove_duplicates(
                     self.query_to_curated_ids.get(query, []) + ids
                 )
+
         self.save_curated(self.query_to_curated_ids)
 
     def save_curated(self, query_to_curated_ids):
