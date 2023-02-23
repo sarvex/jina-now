@@ -15,7 +15,7 @@ from now.executor.gateway.base_gateway.helper import current_time
 
 
 def get_security_app(
-    streamer: 'GatewayStreamer',
+    streamer: 'GatewayStreamer',  # type: ignore
     title: str,
     description: str,
     no_debug_endpoints: bool,
