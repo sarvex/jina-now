@@ -60,7 +60,7 @@ def build_es_queries(
     custom_bm25_query: Optional[dict] = None,
     metric: Optional[str] = 'cosine',
     filter: dict = {},
-    query_to_curated_ids: Dict[str, set] = {},
+    query_to_curated_ids: Dict[str, list] = {},
 ) -> Dict:
     """
     Build script-score query used in Elasticsearch. To do this, we extract
@@ -194,13 +194,12 @@ def get_default_query(
     return query
 
 
-def get_pinned_query(doc: Document, query_to_curated_ids: Dict[str, set] = {}) -> Dict:
-    pinned_query = {}
-    if getattr(doc, 'query_text', None):
-        query_text = doc.query_text.text
-        if query_text in query_to_curated_ids.keys():
-            pinned_query = {'pinned': {'ids': list(query_to_curated_ids[query_text])}}
-    return pinned_query
+def get_pinned_query(doc: Document, query_to_curated_ids: Dict[str, list] = {}) -> Dict:
+    curated_ids = []
+    for c in doc.chunks:
+        curated_ids += query_to_curated_ids.get(c.text, [])
+    curated_ids = list(dict.fromkeys(curated_ids))  # remove duplicates
+    return {'pinned': {'ids': curated_ids}}
 
 
 def process_filter(filter) -> dict:

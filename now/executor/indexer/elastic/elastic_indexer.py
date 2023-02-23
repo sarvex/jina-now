@@ -1,8 +1,8 @@
+import json
 import os
-import pickle
 import subprocess
 import traceback
-from collections import defaultdict, namedtuple
+from collections import namedtuple
 from time import sleep
 from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
 
@@ -121,7 +121,7 @@ class NOWElasticIndexer(Executor):
         return workspace
 
     def get_curated_file_path(self):
-        return f'{self.get_workspace()}/curated.bin'
+        return f'{self.get_workspace()}/curated.json'
 
     @staticmethod
     def configure_elastic(workspace, destination_path):
@@ -450,27 +450,28 @@ class NOWElasticIndexer(Executor):
             raise ValueError('No filter provided for curating.')
 
     def update_curated_ids(self, search_filter):
-        self.query_to_curated_ids = defaultdict(set)
+        self.query_to_curated_ids = {}
         for query, filters in search_filter.items():
             for filter in filters:
                 es_query = {'query': {'bool': {'filter': process_filter(filter)}}}
                 resp = self.es.search(index=self.index_name, body=es_query, size=100)
                 ids = [r['_id'] for r in resp['hits']['hits']]
-                self.query_to_curated_ids[query] = self.query_to_curated_ids[
-                    query
-                ].union(set(ids))
+                self.query_to_curated_ids[query] = (
+                    self.query_to_curated_ids.get(query, []) + ids
+                )
         self.save_curated(self.query_to_curated_ids)
 
     def save_curated(self, query_to_curated_ids):
-        with open(self.get_curated_file_path(), 'wb') as f:
-            pickle.dump(query_to_curated_ids, f)
+        with open(self.get_curated_file_path(), 'w') as f:
+            json.dump(query_to_curated_ids, f)
 
     def load_curated(self):
-        try:
-            with open(self.get_curated_file_path(), 'rb') as f:
-                query_to_curated_ids = pickle.load(f)
-        except FileNotFoundError:
-            query_to_curated_ids = defaultdict(set)
+        file_path = self.get_curated_file_path()
+        if os.path.exists(file_path):
+            with open(file_path, 'r') as f:
+                query_to_curated_ids = json.load(f)
+        else:
+            query_to_curated_ids = {}
         return query_to_curated_ids
 
     def update_tags(self):
