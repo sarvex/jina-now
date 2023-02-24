@@ -126,15 +126,19 @@ class NOWGateway(BasePaymentGateway):
         thread.start()
 
     def run(self):
+        from hubble.payment.client import PaymentClient
+
+        client = PaymentClient(
+            m2m_token=self.m2m_token,
+        )
+        authorized_jwt = client.get_authorized_jwt(
+            user_token=self.user_input.jwt['token'], expiration_seconds=15 * 60 * 10000
+        )['data']
         while True:
             sleep(60)
-            from hubble.payment.client import PaymentClient
 
-            client = PaymentClient(
-                m2m_token=self.m2m_token,
-            )
             resp = client.report_usage(
-                token=self.user_input.jwt,
+                token=authorized_jwt,
                 app_id=self._internal_app_id,
                 product_id=self._internal_product_id,
                 credits=1,
