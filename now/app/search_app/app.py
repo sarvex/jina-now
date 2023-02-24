@@ -99,7 +99,7 @@ class SearchApp(JinaNOWApp):
                     'instance': 'C3',
                 },
             },
-            'replicas': 20,
+            'replicas': 1,
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
         }
 
