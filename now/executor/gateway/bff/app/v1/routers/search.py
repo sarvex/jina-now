@@ -137,6 +137,13 @@ async def search(
         modalities_dict=fields_modalities_mapping,
         field_names_to_dataclass_fields=field_names_to_dataclass_fields,
     )
+    # update semantic scores query field to mirror dataclass fields of query
+    semantic_scores = []
+    for sem_score in data.semantic_scores:
+        sem_score = list(sem_score)
+        sem_score[0] = field_names_to_dataclass_fields[sem_score[0]]
+        semantic_scores.append(sem_score)
+
     query_filter = {}
     for key, value in data.filters.items():
         key = 'tags__' + key if not key.startswith('tags__') else key
@@ -149,9 +156,7 @@ async def search(
             'limit': data.limit,
             'filter': query_filter,
             'create_temp_link': data.create_temp_link,
-            'semantic_scores': [
-                list(semantic_score) for semantic_score in data.semantic_scores
-            ],
+            'semantic_scores': semantic_scores,
             'get_score_breakdown': data.get_score_breakdown,
         },
         request_model=data,
