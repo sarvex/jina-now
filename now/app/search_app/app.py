@@ -72,6 +72,11 @@ class SearchApp(JinaNOWApp):
             if not testing
             else 'NOWAutoCompleteExecutor2',
             'needs': 'gateway',
+            'jcloud': {
+                'resources': {
+                    'instance': 'C2',
+                },
+            },
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
         }
 
@@ -91,10 +96,10 @@ class SearchApp(JinaNOWApp):
                 #     'target': 1,
                 # },
                 'resources': {
-                    'instance': 'C2',
+                    'instance': 'C3',
                 },
             },
-            'replicas': 40,
+            'replicas': 20,
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
         }
 
@@ -178,7 +183,7 @@ class SearchApp(JinaNOWApp):
                     'provision-index': provision_index,
                 },
                 'resources': {
-                    'instance': 'C6',
+                    'instance': 'C5',
                     'storage': {'kind': 'ebs', 'size': '10G'},
                 },
             },

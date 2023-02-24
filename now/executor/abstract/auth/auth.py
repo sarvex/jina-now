@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 from functools import lru_cache
 from typing import Dict, List
@@ -17,12 +18,16 @@ class SecurityLevel:
     USER = 2
 
 
+logger = logging.getLogger(__name__)
+
+
 def secure_request(level: int, on: str = None):
     """decorator to check the authorization of the incoming request"""
 
     def decorator(func):
         @requests(on=on)
         def wrapper(*args, **kwargs):
+            log()
             _check_user(
                 kwargs,
                 level,
@@ -35,6 +40,17 @@ def secure_request(level: int, on: str = None):
         return wrapper
 
     return decorator
+
+
+def log(*args, **kwargs):
+    if 'docs' in kwargs:
+        docs = kwargs['docs']
+        length = len(docs)
+        logger.info(f'search {length} results')
+        if length > 0:
+            logger.info(f'first document:\n{docs[0]._plot_recursion()}')
+    if 'parameters' in kwargs:
+        logger.info(f'parameters:\n{json.dumps(kwargs["parameters"], indent=2)}')
 
 
 def _check_user(kwargs, level, user_emails, admin_emails, api_keys):

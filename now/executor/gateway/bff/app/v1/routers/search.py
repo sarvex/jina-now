@@ -1,4 +1,5 @@
 import base64
+import logging
 from typing import List
 
 from docarray import Document
@@ -16,6 +17,7 @@ from now.executor.gateway.bff.app.v1.routers.helper import (
 )
 from now.utils import get_chunk_by_field_name, modality_string_to_docarray_typing
 
+logger = logging.getLogger(__name__)
 search_examples = {
     'working_text': {
         'summary': 'A working example: search with text',
@@ -116,6 +118,7 @@ router = APIRouter()
 async def search(
     data: SearchRequestModel = Body(examples=search_examples),
 ):
+    logger.info(f'searching with data: {data}')
     fields_modalities_mapping = {}
     fields_values_mapping = {}
 
@@ -137,6 +140,7 @@ async def search(
         modalities_dict=fields_modalities_mapping,
         field_names_to_dataclass_fields=field_names_to_dataclass_fields,
     )
+    logger.info(f'query doc:\n{query_doc._plot_recursion()}')
     query_filter = {}
     for key, value in data.filters.items():
         key = 'tags__' + key if not key.startswith('tags__') else key
@@ -156,6 +160,7 @@ async def search(
         },
         request_model=data,
     )
+    logger.info(f'Return {len(docs[0].matches)} results')
     matches = []
     for doc in docs[0].matches:
         # todo: use multimodal doc in the future!
