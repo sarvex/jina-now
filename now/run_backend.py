@@ -161,6 +161,7 @@ def call_flow(
                     parameters=parameters,
                     return_results=return_results,
                     continue_on_error=True,
+                    prefetch=100,
                     on_done=kwargs.get('on_done', None),
                     on_error=kwargs.get('on_error', None),
                     on_always=kwargs.get('on_always', None),
