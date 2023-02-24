@@ -2,6 +2,7 @@ import copy
 import json
 import logging
 import os
+import threading
 from time import sleep
 from typing import Any, Callable, Dict, List, Tuple, Union
 
@@ -40,7 +41,6 @@ ENTERPRISE_USERS = [
     'tanguy.abel@jina.ai',
 ]
 PROFESSIONAL_USERS = []
-
 
 user_input_now_gateway = UserInput()
 
@@ -122,6 +122,25 @@ class NOWGateway(BasePaymentGateway):
 
         self.setup_nginx()
         self.nginx_was_shutdown = False
+        thread = threading.Thread(target=self.run)
+        thread.start()
+
+    def run(self):
+        while True:
+            sleep(60)
+            from hubble.payment.client import PaymentClient
+
+            client = PaymentClient(
+                m2m_token=self.m2m_token,
+            )
+            resp = client.report_usage(
+                token=self.user_input.jwt,
+                app_id=self._internal_app_id,
+                product_id=self._internal_product_id,
+                credits=1,
+            )
+            if resp['code'] != 200:
+                raise Exception('Failed to credit user')
 
     async def setup_server(self):
         # note order is important
