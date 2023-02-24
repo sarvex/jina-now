@@ -2,13 +2,11 @@ import random
 import sys
 import uuid
 from copy import deepcopy
-from time import sleep
 from typing import Dict, Optional
 
 import requests
 from docarray import DocumentArray
 from jina.clients import Client
-from tqdm import tqdm
 
 from now.admin.update_api_keys import update_api_keys
 from now.app.base.app import JinaNOWApp
@@ -148,45 +146,44 @@ def call_flow(
     # this is a hack for the current core/ wolf issue
     # since we get errors while indexing, we retry
     # TODO: remove this once the issue is fixed
-    docs = DocumentArray()
-    batches = list(dataset.batch(request_size * 100))
-    for current_batch_nr, batch in enumerate(tqdm(batches)):
-        for try_nr in range(5):
-            try:
-                response = client.post(
-                    on=endpoint,
-                    request_size=request_size,
-                    inputs=dataset,
-                    show_progress=True,
-                    parameters=parameters,
-                    return_results=return_results,
-                    continue_on_error=True,
-                    prefetch=100,
-                    on_done=kwargs.get('on_done', None),
-                    on_error=kwargs.get('on_error', None),
-                    on_always=kwargs.get('on_always', None),
-                    # target_executor=r'\Apreprocessor\Z',
-                )
-                if kwargs.get('custom_callback', None):
-                    kwargs['custom_callback'](
-                        client_resp=response,
-                        batch_idx=len(batch),
-                        tot_idx=len(dataset),
-                        host=client.args.host,
-                    )
-                response.save_binary(f'preprocessed-batch-{current_batch_nr}.bin')
-                docs.extend(response)
-                break
-            except Exception as e:
-                if try_nr == 4:
-                    # if we tried 5 times and still failed, raise the error
-                    raise e
-                print(f'batch {current_batch_nr}, try {try_nr}', e)
-                sleep(5 * (try_nr + 1))  # sleep for 5, 10, 15, 20 seconds
-                continue
+    # docs = DocumentArray()
+    # batches = list(dataset.batch(request_size * 100))
+    # for current_batch_nr, batch in enumerate(tqdm(batches)):
+    #     for try_nr in range(5):
+    #         try:
+    response = client.post(
+        on=endpoint,
+        request_size=request_size,
+        inputs=dataset,
+        show_progress=True,
+        parameters=parameters,
+        return_results=return_results,
+        continue_on_error=True,
+        prefetch=100,
+        on_done=kwargs.get('on_done', None),
+        on_error=kwargs.get('on_error', None),
+        on_always=kwargs.get('on_always', None),
+    )
+    # if kwargs.get('custom_callback', None):
+    #     kwargs['custom_callback'](
+    #         client_resp=response,
+    #         batch_idx=len(batch),
+    #         tot_idx=len(dataset),
+    #         host=client.args.host,
+    #     )
+    # response.save_binary(f'preprocessed-batch-{current_batch_nr}.bin')
+    # docs.extend(response)
+    # break
+    # except Exception as e:
+    #     if try_nr == 4:
+    #         # if we tried 5 times and still failed, raise the error
+    #         raise e
+    #     print(f'batch {current_batch_nr}, try {try_nr}', e)
+    #     sleep(5 * (try_nr + 1))  # sleep for 5, 10, 15, 20 seconds
+    #     continue
 
-    # response.save_binary('preprocessed.bin')
-    docs.save_binary('preprocessed.bin')
+    response.save_binary('preprocessed.bin')
+    # docs.save_binary('preprocessed.bin')
 
     if return_results and response:
         return DocumentArray.from_json(response.to_json())

@@ -73,6 +73,12 @@ class SearchApp(JinaNOWApp):
             else 'NOWAutoCompleteExecutor2',
             'needs': 'gateway',
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
+            'jcloud': {
+                'resources': {
+                    'instance': 'C3',
+                },
+            },
+            'replicas': 2,
         }
 
     @staticmethod
@@ -91,10 +97,10 @@ class SearchApp(JinaNOWApp):
                 #     'target': 1,
                 # },
                 'resources': {
-                    'instance': 'C2',
+                    'instance': 'C4',
                 },
             },
-            'replicas': 40,
+            'replicas': 80,
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
         }
 

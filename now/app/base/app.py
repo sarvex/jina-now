@@ -119,7 +119,7 @@ class JinaNOWApp:
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'jcloud': {
                 'resources': {
-                    'instance': 'C3',
+                    'instance': 'C4',
                 },
             },
         }
