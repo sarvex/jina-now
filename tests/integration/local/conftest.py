@@ -17,7 +17,7 @@ from now.demo_data import DemoDatasetNames
 
 # special imports to make executors visible for flow yaml construction
 from now.executor.autocomplete import NOWAutoCompleteExecutor2  # noqa: F401
-from now.executor.gateway import NOWGateway  # noqa: F401
+from now.executor.gateway.now_gateway import NOWGateway  # noqa: F401
 from now.executor.indexer.elastic import NOWElasticIndexer  # noqa: F401
 from now.now_dataclasses import UserInput
 from now.utils import get_aws_profile, write_flow_file
