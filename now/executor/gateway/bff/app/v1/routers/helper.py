@@ -9,7 +9,7 @@ import filetype
 from docarray import Document, DocumentArray
 from docarray.typing import Text
 from fastapi import HTTPException, status
-from jina.serve.streamer import GatewayStreamer
+from jina import Client
 
 from now.constants import SUPPORTED_FILE_TYPES
 
@@ -103,7 +103,6 @@ async def jina_client_post(
     """
     if not isinstance(docs, DocumentArray):
         docs = DocumentArray([docs])
-    streamer = GatewayStreamer.get_streamer()
     if parameters is None:
         parameters = {}
     auth_dict = {}
@@ -112,9 +111,11 @@ async def jina_client_post(
     if request_model.jwt is not None:
         auth_dict['jwt'] = request_model.jwt
 
-    async for response in streamer.stream_docs(
-        exec_endpoint=endpoint,
-        docs=docs,
+    client = Client(host='localhost:8081')
+
+    response = client.post(
+        on=endpoint,
+        inputs=docs,
         parameters={
             **auth_dict,
             **parameters,
@@ -123,14 +124,15 @@ async def jina_client_post(
         return_results=True,
         *args,
         **kwargs,
-    ):
-        if response.header.status.code == 1:
-            raise_exception(
-                name=response.header.status.exception.name,
-                stacktrace=response.header.status.exception.stacks,
-            )
-        else:
-            return response.docs
+    )
+
+    if response.header.status.code == 1:
+        raise_exception(
+            name=response.header.status.exception.name,
+            stacktrace=response.header.status.exception.stacks,
+        )
+    else:
+        return response.docs
 
 
 def raise_exception(
