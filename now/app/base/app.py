@@ -118,6 +118,11 @@ class JinaNOWApp:
             'prefetch': PREFETCH_NR,
             'uses_with': {'user_input_dict': user_input.to_safe_dict()},
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
+            'jcloud': {
+                'resources': {
+                    'instance': 'C2',
+                },
+            },
         }
         if 'NOW_EXAMPLES' in os.environ:
             gateway_stub['jcloud'] = {
