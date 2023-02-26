@@ -49,7 +49,9 @@ def log(*args, **kwargs):
         length = len(docs)
         logger.info(f'search {length} results')
         if length > 0:
-            logger.info(f'first document:\n{docs[0]._plot_recursion()}')
+            info = f'first document:\n{docs[0]._plot_recursion()}'
+            print(info)
+            logger.info(info)
     if 'parameters' in kwargs:
         logger.info(f'parameters:\n{json.dumps(kwargs["parameters"], indent=2)}')
 
@@ -134,6 +136,7 @@ def get_auth_executor_class():
             :param pats: List of PATs of the allowed users with access to this flow.
             """
             super().__init__(*args, **kwargs)
+            print(self.update_user_emails(parameters={}))
             self.logger = JinaLogger(self.__class__.__name__)
             self.admin_emails = admin_emails
             self.user_emails = user_emails

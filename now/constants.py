@@ -1,13 +1,15 @@
 from __future__ import annotations, print_function, unicode_literals
 
+import logging
+
 from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-NOW_GATEWAY_VERSION = '0.0.5-test-curation-12'
-NOW_PREPROCESSOR_VERSION = '0.0.124-test-curation-12'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.149-test-curation-12'
-NOW_AUTOCOMPLETE_VERSION = '0.0.12-test-curation-12'
+NOW_GATEWAY_VERSION = '0.0.5-test-curation-13'
+NOW_PREPROCESSOR_VERSION = '0.0.124-test-curation-13'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.149-test-curation-13'
+NOW_AUTOCOMPLETE_VERSION = '0.0.12-test-curation-13'
 
 
 class Apps(BetterEnum):
@@ -75,3 +77,5 @@ MODALITY_TO_MODELS = {
 }
 
 NOWGATEWAY_BFF_PORT = 8080
+
+logging.getLogger().setLevel(logging.INFO)
