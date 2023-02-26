@@ -136,7 +136,6 @@ def get_auth_executor_class():
             :param pats: List of PATs of the allowed users with access to this flow.
             """
             super().__init__(*args, **kwargs)
-            print(self.update_user_emails(parameters={}))
             self.logger = JinaLogger(self.__class__.__name__)
             self.admin_emails = admin_emails
             self.user_emails = user_emails
