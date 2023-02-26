@@ -11,7 +11,9 @@ from now.now_dataclasses import UserInput
 
 
 @pytest.mark.asyncio
-async def test_docarray(monkeypatch, setup_service_running, multi_modal_data):
+async def test_docarray(
+    monkeypatch, setup_service_running, multi_modal_data, base64_image_string
+):
     """
     Test all executors and bff together without creating a flow.
     The Clip Encoder is mocked because it is an external executor.
@@ -31,7 +33,10 @@ async def test_docarray(monkeypatch, setup_service_running, multi_modal_data):
     assert index_result == DocumentArray()
     search_result = await search(
         SearchRequestModel(
-            query=[{'name': 'text', 'value': 'girl on motorbike', 'modality': 'text'}],
+            query=[
+                {'name': 'text', 'value': 'girl on motorbike', 'modality': 'text'},
+                {'name': 'img', 'value': base64_image_string, 'modality': 'image'},
+            ],
         )
     )
     assert search_result[0].fields['product_title'].text == 'fancy title'
