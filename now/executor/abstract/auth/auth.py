@@ -49,9 +49,11 @@ def log(*args, **kwargs):
         length = len(docs)
         logger.info(f'search {length} results')
         if length > 0:
-            info = f'first document:\n{docs[0]._plot_recursion()}'
-            print(info)
-            logger.info(info)
+            # info = f'first document:\n{docs[0]._plot_recursion()}'
+            print('first document')
+            docs[0].summary()
+            # print(info)
+            # logger.info(info)
     if 'parameters' in kwargs:
         logger.info(f'parameters:\n{json.dumps(kwargs["parameters"], indent=2)}')
 
