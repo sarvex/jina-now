@@ -43,6 +43,7 @@ def secure_request(level: int, on: str = None):
 
 
 def log(*args, **kwargs):
+    print('args:', args, kwargs)
     if 'docs' in kwargs:
         docs = kwargs['docs']
         length = len(docs)
