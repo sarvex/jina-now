@@ -21,10 +21,11 @@ executors:
       JINA_LOG_LEVEL: DEBUG
     jcloud:
       expose: true
-      resources:
+      autoscale:
         min: 0
         max: 15
         metric: concurrency
         target: 1
+      resources:
         instance: C6
       capacity: spot
