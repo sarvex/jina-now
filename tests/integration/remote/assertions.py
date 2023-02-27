@@ -149,6 +149,23 @@ def assert_suggest(suggest_url, request_headers, request_body):
     )
 
 
+def assert_info_endpoints(info_url, request_body):
+    info_uris = [
+        'tags',
+        'count',
+        'field_names_to_dataclass_fields',
+        'encoder_to_dataclass_fields_mods',
+    ]
+    for uri in info_uris:
+        response = requests.post(
+            info_url + uri,
+            json=request_body,
+        )
+        assert (
+            response.status_code == 200
+        ), f"Received code {response.status_code} with text: {response.json()['message']}"
+
+
 def assert_search_custom_s3(host, mm_type, dataset_length, create_temp_link=False):
     request_body = {
         'query': [{'name': 'text', 'value': 'Hello', 'modality': 'text'}],

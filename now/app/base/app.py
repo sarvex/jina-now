@@ -6,7 +6,7 @@ from jina import __version__ as jina_version
 
 from now.app.base.create_jcloud_name import create_jcloud_name
 from now.app.base.preprocess import preprocess_image, preprocess_text, preprocess_video
-from now.constants import DEMO_NS, NOW_GATEWAY_VERSION, PREFETCH_NR
+from now.constants import DEMO_NS, NOW_GATEWAY_VERSION
 from now.demo_data import DemoDataset
 from now.executor.name_to_id_map import name_to_id_map
 from now.now_dataclasses import DialogOptions, UserInput
