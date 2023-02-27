@@ -28,7 +28,7 @@ def test_add_key(get_flow, setup_service_running):
         },
         metadata=(('authorization', hubble.get_token()),),
     )
-    request_headers, request_body = get_request_body(secured=True)
+    request_headers, request_body = get_request_body()
     # Test adding user email
     request_body['user_emails'] = ['florian.hoenicke@jina.ai']
     response = requests.post(
@@ -39,7 +39,7 @@ def test_add_key(get_flow, setup_service_running):
     assert response.status_code == 200
     # test api keys
     # search with invalid api key
-    request_headers, request_body = get_request_body(secured=True)
+    request_headers, request_body = get_request_body()
     request_body['query'] = [
         {'name': 'text', 'value': 'girl on motorbike', 'modality': 'text'}
     ]
@@ -49,7 +49,7 @@ def test_add_key(get_flow, setup_service_running):
     assert_search(SEARCH_URL, request_headers, request_body, expected_status_code=401)
 
     print('# add api key')
-    request_headers, request_body_update_keys = get_request_body(secured=True)
+    request_headers, request_body_update_keys = get_request_body()
     request_body_update_keys['api_keys'] = [API_KEY]
     response = requests.post(
         update_api_keys_url,

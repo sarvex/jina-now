@@ -8,7 +8,7 @@ from now.admin.utils import get_default_request_kwargs
 def update_emails(emails, remote_host):
     url = f"https://nowrun.jina.ai/api/v1"  # remote
     # url = f'http://localhost:8080/api/v1'  # for local testing
-    request_headers, request_body = get_default_request_kwargs(secured=True)
+    request_headers, request_body = get_default_request_kwargs()
     # request_body['host'] = f'grpc://0.0.0.0'  # for local testing
     # request_body['port'] = 9090  # for local testing
     request_body['user_emails'] = emails

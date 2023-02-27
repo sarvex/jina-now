@@ -1,8 +1,10 @@
 import base64
 
+import hubble
 import pytest
 from docarray import Document, DocumentArray, dataclass
 from docarray.typing import Image, Text
+from fastapi import Request
 from tests.integration.offline_flow.flow import OfflineFlow
 
 from now.executor.gateway.bff.app.v1.models.search import SearchRequestModel
@@ -31,10 +33,13 @@ async def test_docarray(
     )
 
     assert index_result == DocumentArray()
-    search_result = await search(
+    search_result = search(
+        Request(
+            scope={'Authorization': f'token {hubble.get_token()}'},
+        ),
         SearchRequestModel(
             query=[{'name': 'text', 'value': 'girl on motorbike', 'modality': 'text'}],
-        )
+        ),
     )
     assert search_result[0].fields['product_title'].text == 'fancy title'
     assert search_result[0].fields['product_image'].blob != b''

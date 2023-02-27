@@ -48,9 +48,7 @@ def assert_deployment_queries(
 
     if kwargs.secured:
         # test add email
-        request_headers, request_body = get_default_request_kwargs(
-            secured=kwargs.secured
-        )
+        request_headers, request_body = get_default_request_kwargs()
         request_body['user_emails'] = ['florian.hoenicke@jina.ai']
         response = requests.post(
             f'{url}/admin/updateUserEmails',
@@ -96,7 +94,7 @@ def get_search_request_kwargs(
     search_modality,
     dataset=None,
 ):
-    request_headers, request_body = get_default_request_kwargs(secured=kwargs.secured)
+    request_headers, request_body = get_default_request_kwargs()
     request_body['limit'] = 9
     # Perform end-to-end check via bff
     if search_modality == 'text':
@@ -203,7 +201,7 @@ def assert_search_custom_s3(host, mm_type, dataset_length, create_temp_link=Fals
 
 
 def assert_indexed_all_docs(host, kwargs, limit: int):
-    request_headers, request_body = get_default_request_kwargs(secured=kwargs.secured)
+    request_headers, request_body = get_default_request_kwargs()
     request_body['limit'] = limit
     response = requests.post(
         f"{host}/api/v1/info/count",

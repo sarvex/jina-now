@@ -26,8 +26,8 @@ BASE_URL = 'http://localhost:8081/api/v1'
 SEARCH_URL = f'{BASE_URL}/search-app/search'
 
 
-def get_request_body(secured):
-    request_headers, request_body = get_default_request_kwargs(secured=secured)
+def get_request_body():
+    request_headers, request_body = get_default_request_kwargs()
     return request_headers, request_body
 
 

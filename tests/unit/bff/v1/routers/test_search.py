@@ -94,6 +94,7 @@ def test_image_search_parse_response(
                 {'name': 'blob', 'value': base64_image_string, 'modality': 'image'},
             ]
         },
+        headers={'Authorization': f'token {hubble.get_token()}'},
     )
 
     assert response_raw.status_code == status.HTTP_200_OK
@@ -128,6 +129,7 @@ def test_text_search_with_semantic_scores(
             ],
             'semantic_scores': [['text', 'text', 'clip', 1]],
         },
+        headers={'Authorization': f'token {hubble.get_token()}'},
     )
 
     assert response.status_code == status.HTTP_200_OK

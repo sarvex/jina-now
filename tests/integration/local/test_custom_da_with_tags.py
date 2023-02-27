@@ -26,7 +26,7 @@ def test_search_filters(get_flow, setup_service_running):
         },
         metadata=(('authorization', hubble.get_token()),),
     )
-    _, request_body = get_request_body(secured=False)
+    _, request_body = get_request_body()
     request_body['query'] = [{'name': 'text', 'value': 'test', 'modality': 'text'}]
     request_body['filters'] = {'color': 'Blue Color'}
     response = requests.post(
