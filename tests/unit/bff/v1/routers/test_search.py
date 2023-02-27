@@ -1,5 +1,6 @@
 from typing import Callable
 
+import hubble
 import pytest
 import requests
 from docarray import Document, DocumentArray
@@ -25,6 +26,7 @@ def test_text_search_fails_with_incorrect_query(client):
                     )
                 ]
             },
+            headers={'Authorization': f'token {hubble.get_token()}'},
         )
 
 
@@ -33,6 +35,7 @@ def test_text_search_fails_with_empty_query(client: requests.Session):
         client.post(
             f'/api/v1/search-app/search',
             json={},
+            headers={'Authorization': f'token {hubble.get_token()}'},
         )
 
 
@@ -48,6 +51,7 @@ def test_image_search_calls_flow(
                 {'name': 'blob', 'value': base64_image_string, 'modality': 'image'},
             ]
         },
+        headers={'Authorization': f'token {hubble.get_token()}'},
     )
 
     assert response.status_code == status.HTTP_200_OK
@@ -69,6 +73,7 @@ def test_multimodal_search_calls_flow(
                 {'name': 'text', 'value': 'Hello', 'modality': 'text'},
             ]
         },
+        headers={'Authorization': f'token {hubble.get_token()}'},
     )
 
     assert response.status_code == status.HTTP_200_OK

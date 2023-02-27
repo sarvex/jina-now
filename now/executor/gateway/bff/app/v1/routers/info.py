@@ -33,7 +33,11 @@ def get_tags(request: Request, data: BaseRequestModel) -> TagsResponseModel:
 
 
 @router.post('/count')
-def get_count(data: CountRequestModel) -> CountResponseModel:
+def get_count(request: Request, data: CountRequestModel) -> CountResponseModel:
+    auth_token = request.headers.get('Authorization').replace('token ', '')
+    # if jwt not set in data, use the one from header
+    if not data.jwt and auth_token:
+        data.jwt['token'] = auth_token
     response = jina_client_post(
         request_model=data,
         docs=Document(),
