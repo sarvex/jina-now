@@ -59,7 +59,7 @@ def test_end_to_end(
     suggest_url = f'{response["host_http"]}/api/v1/search-app/suggestion'
     info_url = f'{response["host_http"]}/api/v1/info/'
     assert_info_endpoints(info_url, request_body)
-    assert_suggest(suggest_url, request_body)
+    assert_suggest(suggest_url, request_headers, request_body)
     assert_indexed_all_docs(
         flow_details['host'], kwargs=kwargs, limit=MAX_DOCS_FOR_TESTING
     )

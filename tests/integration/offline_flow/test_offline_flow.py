@@ -35,7 +35,7 @@ async def test_docarray(
     assert index_result == DocumentArray()
     search_result = search(
         Request(
-            scope={'Authorization': f'token {hubble.get_token()}'},
+            scope={'Authorization': f'token {hubble.get_token()}', 'type': 'http'},
         ),
         SearchRequestModel(
             query=[{'name': 'text', 'value': 'girl on motorbike', 'modality': 'text'}],
