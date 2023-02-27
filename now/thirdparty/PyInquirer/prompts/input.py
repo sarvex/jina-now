@@ -6,7 +6,7 @@ import inspect
 
 from prompt_toolkit.lexers import SimpleLexer
 from prompt_toolkit.shortcuts import prompt
-from prompt_toolkit.validation import ValidationError, Validator
+from prompt_toolkit.validation import Validator, ValidationError
 
 from .common import default_style
 
@@ -32,7 +32,6 @@ def question(message, **kwargs):
                         )
 
             kwargs['validator'] = _InputValidator()
-
     # TODO style defaults on detail level
     kwargs['style'] = kwargs.pop('style', default_style)
     qmark = kwargs.pop('qmark', '?')
