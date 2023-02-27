@@ -4,7 +4,7 @@ from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-NOW_GATEWAY_VERSION = '0.0.4-fix-custom-gateway-remote-4'
+NOW_GATEWAY_VERSION = '0.0.5-refactor-remove-redundant-code-1'
 NOW_PREPROCESSOR_VERSION = '0.0.124-refactor-no-batchwise-indexing-2'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.147-feat-integrate-elastic-manager-17'
 NOW_AUTOCOMPLETE_VERSION = '0.0.11-refactor-custom-gateway-103'
