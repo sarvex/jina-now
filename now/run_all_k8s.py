@@ -7,36 +7,13 @@ from rich.table import Column, Table
 
 from now import run_backend
 from now.constants import DEMO_NS, FLOW_STATUS
-from now.deployment.deployment import cmd, list_all_wolf, status_wolf, terminate_wolf
+from now.deployment.deployment import cmd, terminate_wolf
 from now.dialog import configure_user_input
-from now.utils import maybe_prompt_user
+from now.utils import get_flow_status, maybe_prompt_user
 
 
 def stop_now(**kwargs):
-    choices = []
-    # Add all remote Flows that exists with the namespace `nowapi`
-    alive_flows = list_all_wolf(status=FLOW_STATUS)
-    for flow_details in alive_flows:
-        choices.append(flow_details['name'])
-    if len(choices) == 0:
-        cowsay.cow('nothing to stop')
-        return
-    else:
-        questions = [
-            {
-                'type': 'list',
-                'name': 'cluster',
-                'message': 'Which cluster do you want to delete?',
-                'choices': choices,
-            }
-        ]
-        cluster = maybe_prompt_user(questions, 'cluster', **kwargs)
-
-    flow = [x for x in alive_flows if x['name'] == cluster][0]
-    flow_id = flow['id']
-    _result = status_wolf(flow_id)
-    if _result is None:
-        print(f'❎ Flow not found in JCloud. Likely, it has been deleted already')
+    _result, flow_id, cluster = get_flow_status(action='delete', **kwargs)
     if _result is not None and _result['status']['phase'] == FLOW_STATUS:
         terminate_wolf(flow_id)
         from hubble import Client
@@ -97,30 +74,7 @@ def start_now(**kwargs):
 
 
 def fetch_logs_now(**kwargs):
-    choices = []
-    # Add all remote Flows that exists with the namespace `nowapi`
-    alive_flows = list_all_wolf(status=FLOW_STATUS)
-    for flow_details in alive_flows:
-        choices.append(flow_details['name'])
-    if len(choices) == 0:
-        cowsay.cow('nothing to log')
-        return
-    else:
-        questions = [
-            {
-                'type': 'list',
-                'name': 'cluster',
-                'message': 'Which cluster do you want to check logs for?',
-                'choices': choices,
-            }
-        ]
-        cluster = maybe_prompt_user(questions, 'cluster', **kwargs)
-
-    flow = [x for x in alive_flows if x['name'] == cluster][0]
-    flow_id = flow['id']
-    _result = status_wolf(flow_id)
-    if _result is None:
-        print(f'❎ Flow not found in JCloud. Likely, it has been deleted already')
+    _result, flow_id, cluster = get_flow_status(action='log', **kwargs)
 
     if _result is not None and _result['status']['phase'] == FLOW_STATUS:
         namespace = _result["spec"]["jcloud"]["namespace"]

@@ -8,7 +8,8 @@ import sys
 
 from prompt_toolkit.lexers import SimpleLexer
 from prompt_toolkit.shortcuts import PromptSession
-from prompt_toolkit.validation import ValidationError, Validator
+from prompt_toolkit.validation import Validator, ValidationError
+
 
 from .common import default_style
 
@@ -147,7 +148,6 @@ def question(message, **kwargs):
 
             class _InputValidator(Validator):
                 def validate(self, document):
-                    # print(document)
                     verdict = validate_prompt(document.text)
                     if not verdict == True:
                         if verdict == False:
@@ -157,7 +157,6 @@ def question(message, **kwargs):
                         )
 
             kwargs['validator'] = _InputValidator()
-
     for k, v in eargs.items():
         if v == "" or v == " ":
             raise EditorArgumentsError("Args '{}' value should not be empty".format(k))
