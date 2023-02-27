@@ -2,6 +2,7 @@ import base64
 import json
 import os
 
+import hubble
 import pytest
 import requests
 from docarray import DocumentArray
@@ -158,6 +159,7 @@ def assert_info_endpoints(info_url, request_body):
         response = requests.post(
             info_url + uri,
             json=request_body,
+            headers={'Authorization': f'token {hubble.get_token()}'},
         )
         assert (
             response.status_code == 200
@@ -174,6 +176,7 @@ def assert_search_custom_s3(host, mm_type, dataset_length, create_temp_link=Fals
     response = requests.post(
         f'{host}/api/v1/search-app/search',
         json=request_body,
+        headers={'Authorization': f'token {hubble.get_token()}'},
     )
 
     assert (
