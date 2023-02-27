@@ -70,6 +70,7 @@ from now.demo_data import DemoDatasetNames
 @pytest.mark.timeout(60 * 10)
 def test_end_to_end(
     cleanup,
+    random_flow_name,
     query_fields,
     index_fields,
     filter_fields,
@@ -78,7 +79,7 @@ def test_end_to_end(
 ):
     kwargs = {
         'now': 'start',
-        'flow_name': 'nowapi',
+        'flow_name': random_flow_name,
         'dataset_type': DatasetTypes.DEMO,
         'admin_name': 'team-now',
         'index_fields': index_fields,

@@ -16,7 +16,7 @@ from now.data_loading.data_loading import load_data
 from now.deployment.flow import deploy_flow
 from now.log import time_profiler
 from now.now_dataclasses import UserInput
-from now.utils import get_flow_id
+from now.utils import extract_flow_id
 
 
 @time_profiler
@@ -91,7 +91,7 @@ def trigger_scheduler(user_input, host):
             update_api_keys(user_input.api_key, host)
 
     scheduler_params = {
-        'flow_id': get_flow_id(host),
+        'flow_id': extract_flow_id(host),
         'api_key': user_input.api_key,
     }
     cookies = {'st': user_input.jwt['token']}

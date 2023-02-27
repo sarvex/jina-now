@@ -19,11 +19,12 @@ from now.constants import DatasetTypes, Models
 @pytest.mark.timeout(60 * 10)
 def test_end_to_end(
     cleanup,
+    random_flow_name,
     pulled_local_folder_data,
 ):
     kwargs = {
         'now': 'start',
-        'flow_name': 'nowapi',
+        'flow_name': random_flow_name,
         'dataset_type': DatasetTypes.PATH,
         'admin_name': 'team-now',
         'dataset_path': pulled_local_folder_data,

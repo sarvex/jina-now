@@ -33,12 +33,13 @@ def test_backend_custom_data(
     dataset_length: int,
     query_fields: str,
     cleanup,
+    random_flow_name,
     with_hubble_login_patch,
 ):
     aws_profile = get_aws_profile()
     kwargs = {
         'now': 'start',
-        'flow_name': 'nowapi',
+        'flow_name': random_flow_name,
         'dataset_type': DatasetTypes.S3_BUCKET,
         'dataset_path': dataset_path,
         'aws_access_key_id': aws_profile.aws_access_key_id,
