@@ -15,7 +15,7 @@ from now.constants import MAX_DOCS_FOR_TESTING, DatasetTypes, Models
 
 
 @pytest.mark.remote
-@pytest.mark.timeout(20)
+@pytest.mark.timeout(60 * 10)
 def test_end_to_end(
     cleanup,
     random_flow_name,

@@ -78,7 +78,7 @@ def random_flow_name():
     will be used to delete the flow.
     The name involves branch name to help us link the failed/not-deleted flow to the PR.
     """
-    branch_name = Repository('.').head.shorthand
+    branch_name = Repository('.').head.shorthand.lower()
     return f'{branch_name}-{random.randint(0, 10000)}'
 
 
