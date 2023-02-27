@@ -88,12 +88,12 @@ class SearchApp(JinaNOWApp):
             if not testing
             else 'NOWPreprocessor',
             'jcloud': {
-                'autoscale': {
-                    'min': 0,
-                    'max': 100,
-                    'metric': 'concurrency',
-                    'target': 1,
-                },
+                # 'autoscale': {
+                #     'min': 0,
+                #     'max': 100,
+                #     'metric': 'concurrency',
+                #     'target': 1,
+                # },
                 'resources': {'instance': 'C4'},
                 'capacity': 'spot',
             },
@@ -125,7 +125,7 @@ class SearchApp(JinaNOWApp):
                 'model_name': 'msmarco-distilbert-base-v3',
             },
             'jcloud': {
-                'autoscale': {'min': 0, 'max': 5, 'metric': 'concurrency', 'target': 1},
+                # 'autoscale': {'min': 0, 'max': 5, 'metric': 'concurrency', 'target': 1},
                 'resources': {'instance': 'C6'},
                 'capacity': 'spot',
             },
@@ -193,8 +193,8 @@ class SearchApp(JinaNOWApp):
         :return: executors stubs with filled-in env vars
         """
         flow_yaml_executors = [
-            self.autocomplete_stub(testing),
-            self.preprocessor_stub(testing),
+            # self.autocomplete_stub(testing),
+            # self.preprocessor_stub(testing),
         ]
 
         encoder2dim = {}
