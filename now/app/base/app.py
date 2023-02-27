@@ -125,7 +125,8 @@ class JinaNOWApp:
         if 'NOW_EXAMPLES' in os.environ:
             gateway_stub['jcloud'] = {
                 'custom_dns': [
-                    f'{DEMO_NS.format(user_input.dataset_name.split("/")[-1])}.dev.jina.ai'
+                    f'{DEMO_NS.format(user_input.dataset_name.split("/")[-1])}-http.dev.jina.ai'
+                    f'{DEMO_NS.format(user_input.dataset_name.split("/")[-1])}-grpc.dev.jina.ai'
                 ]
             }
         return gateway_stub

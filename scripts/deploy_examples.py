@@ -100,16 +100,16 @@ def deploy(demo_ds):
     except Exception as e:  # noqa E722
         raise e
     # parse the response
-    host_target_ = response_cli.get('host')
-    if host_target_ and host_target_.startswith('grpcs://'):
-        host_target_ = host_target_.replace('grpcs://', '')
-        host_source = f'{DEMO_NS.format(demo_ds.name.split("/")[-1])}.dev.jina.ai'
+    host_target_http = response_cli.get('host_http')
+    if host_target_http:
+        host_target = host_target_http.replace('https://', '')
+        host_source = f'{DEMO_NS.format(demo_ds.name.split("/")[-1])}-http.dev.jina.ai'
         # update the CNAME entry in the Route53 records
-        print(f'Updating CNAME record for `{host_source}` -> `{host_target_}`')
-        upsert_cname_record(host_source, host_target_)
+        print(f'Updating CNAME record for `{host_source}` -> `{host_target}`')
+        upsert_cname_record(host_source, host_target)
     else:
         print(
-            'No host returned starting with "grpcs://". Make sure Jina NOW returns host'
+            'No host returned starting with "https://". Make sure Jina NOW returns host'
         )
     return response_cli
 
