@@ -73,11 +73,21 @@ def cleanup(random_flow_name):
 
 @pytest.fixture
 def random_flow_name():
+    """
+    Creates a random flow name for remote e2e tests, which then
+    will be used to delete the flow.
+    The name involves branch name to help us link the failed/not-deleted flow to the PR.
+    """
     branch_name = Repository('.').head.shorthand
     return f'{branch_name}-{random.randint(0, 10000)}'
 
 
 def get_flow_id_from_name(flow_name):
+    """
+    Get the flow ID by its name.
+    Flow ID is constructed by name + suffix,
+    so we look for the correct ID by checking if the ID contains the name.
+    """
     loop = get_or_create_eventloop()
     jflows = loop.run_until_complete(CloudFlow().list_all())['flows']
     for flow in jflows:
