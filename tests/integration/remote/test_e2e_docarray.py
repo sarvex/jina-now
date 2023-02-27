@@ -1,4 +1,3 @@
-import json
 from argparse import Namespace
 
 import pytest
@@ -70,6 +69,7 @@ from now.demo_data import DemoDatasetNames
 @pytest.mark.timeout(60 * 10)
 def test_end_to_end(
     cleanup,
+    random_flow_name,
     query_fields,
     index_fields,
     filter_fields,
@@ -78,7 +78,7 @@ def test_end_to_end(
 ):
     kwargs = {
         'now': 'start',
-        'flow_name': 'nowapi',
+        'flow_name': random_flow_name,
         'dataset_type': DatasetTypes.DEMO,
         'admin_name': 'team-now@jina.ai',
         'admin_emails': ['team-now@jina.ai'],
@@ -92,10 +92,6 @@ def test_end_to_end(
     kwargs.update(model_selection)
     kwargs = Namespace(**kwargs)
     response = cli(args=kwargs)
-    # Dump the flow details from response host to a tmp file
-    flow_details = {'host': response['host_http']}
-    with open(f'{cleanup}/flow_details.json', 'w') as f:
-        json.dump(flow_details, f)
 
     assert_deployment_response(response)
     assert_deployment_queries(
@@ -115,5 +111,5 @@ def test_end_to_end(
         assert_info_endpoints(info_url, request_body)
         assert_suggest(suggest_url, request_headers, request_body)
     assert_indexed_all_docs(
-        flow_details['host'], kwargs=kwargs, limit=MAX_DOCS_FOR_TESTING
+        response['host_http'], kwargs=kwargs, limit=MAX_DOCS_FOR_TESTING
     )
