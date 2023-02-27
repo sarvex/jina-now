@@ -163,7 +163,6 @@ class SearchApp(JinaNOWApp):
         provision_index = 'yes' if not testing else 'no'
         provision_shards = os.getenv('PROVISION_SHARDS', '1')
         provision_replicas = os.getenv('PROVISION_REPLICAS', '0')
-        # multi-cluster deployments? Allow to specify cluster name.
 
         return {
             'name': 'indexer',
