@@ -13,7 +13,6 @@ from jina import Client
 from jina.excepts import BadServer, BadServerFlow
 
 from now.constants import SUPPORTED_FILE_TYPES
-from now.utils import get_flow_id
 
 
 def field_dict_to_mm_doc(
@@ -132,30 +131,27 @@ def jina_client_post(
                 'access_paths': '@cc',
             },
             return_results=True,
+            headers={"Authorization": f"token {request_model.jwt['token']}"},
             *args,
             **kwargs,
         )
     except (BadServer, BadServerFlow) as e:
-        flow_id = get_flow_id(request_model.host)
-        raise handle_exception(e, flow_id)
+        raise handle_exception(e)
 
     return result
 
 
-def handle_exception(e, flow_id):
-    if isinstance(e, BadServer):
-        if 'not a valid user' in e.args[0].status.description.lower():
-            return HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail='You are not authorised to use this flow',
-            )
-        else:
-            return e
-    elif isinstance(e, BadServerFlow):
-        if 'no route matched' in e.args[0].lower():
-            return Exception(f'Flow with ID {flow_id} can not be found')
-        else:
-            return e
+def handle_exception(e):
+    if 'PermissionError' == e.args[0].status.exception.name:
+        return HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f'You are not authorised to use this flow, {e}',
+        )
+    else:
+        raise HTTPException(
+            status_code=500,
+            detail=f'Request failed. Please see the error stack for more information. \n{e.args[0].status.exception.stacks}',
+        )
 
 
 def raise_exception(

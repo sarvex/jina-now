@@ -2,7 +2,7 @@ import base64
 from typing import List
 
 from docarray import Document
-from fastapi import APIRouter, Body
+from fastapi import APIRouter, Body, Request
 
 from now.data_loading.create_dataclass import create_dataclass
 from now.executor.gateway.bff.app.v1.models.search import (
@@ -113,9 +113,14 @@ router = APIRouter()
     response_model=List[SearchResponseModel],
     summary='Search data via query',
 )
-async def search(
+def search(
+    request: Request,
     data: SearchRequestModel = Body(examples=search_examples),
 ):
+    auth_token = request.headers.get('Authorization').replace('token ', '')
+    # if jwt not set in data, use the one from header
+    if not data.jwt and auth_token:
+        data.jwt['token'] = auth_token
     fields_modalities_mapping = {}
     fields_values_mapping = {}
 
@@ -200,7 +205,7 @@ async def search(
     '/suggestion',
     summary='Get auto complete suggestion for query',
 )
-async def suggestion(data: SuggestionRequestModel = Body(examples=suggestion_examples)):
+def suggestion(data: SuggestionRequestModel = Body(examples=suggestion_examples)):
     suggest_doc = Document(text=data.text)
     docs = jina_client_post(
         endpoint='/suggestion',

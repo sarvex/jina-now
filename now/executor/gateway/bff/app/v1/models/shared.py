@@ -7,7 +7,7 @@ from now.utils import get_chunk_by_field_name
 
 class BaseRequestModel(BaseModel):
     jwt: Optional[Dict[str, Any]] = Field(
-        default=None,
+        default={},
         description="Dictionary with key 'token' which maps to Jina Cloud token value."
         " To be passed when the flow is secure",
         example={'token': '<your jina cloud token>'},
