@@ -637,6 +637,9 @@ def decrement_page():
 
 def decrement_inputs(modality):
     st.session_state[f"len_{modality}_choices"] -= 1
+    st.session_state['query'].pop(
+        f'{modality}_{st.session_state[f"len_{modality}_choices"]}', None
+    )
 
 
 def clear_match():
