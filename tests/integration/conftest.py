@@ -1,8 +1,6 @@
-import json
 import logging
 import os
 import random
-import tempfile
 import time
 
 import hubble
@@ -74,9 +72,8 @@ def cleanup(random_flow_name):
 @pytest.fixture
 def random_flow_name():
     """
-    Creates a random flow name for remote e2e tests, which then
-    will be used to delete the flow.
-    The name involves branch name to help us link the failed/not-deleted flow to the PR.
+    Creates a random flow name for remote e2e tests, which then will be used to delete the flow.
+    The name contains branch name to help us link the failed/not-deleted flow to the PR.
     """
     branch_name = Repository('.').head.shorthand.lower()
     return f'{branch_name}-{random.randint(0, 10000)}'
