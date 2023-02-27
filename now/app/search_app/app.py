@@ -73,6 +73,10 @@ class SearchApp(JinaNOWApp):
             else 'NOWAutoCompleteExecutor2',
             'needs': 'gateway',
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
+            'jcloud': {
+                'resources': {'instance': 'C1'},
+                'capacity': 'spot',
+            },
         }
 
     @staticmethod
@@ -89,7 +93,9 @@ class SearchApp(JinaNOWApp):
                     'max': 100,
                     'metric': 'concurrency',
                     'target': 1,
-                }
+                },
+                'resources': {'instance': 'C2'},
+                'capacity': 'spot',
             },
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
         }
@@ -119,7 +125,9 @@ class SearchApp(JinaNOWApp):
                 'model_name': 'msmarco-distilbert-base-v3',
             },
             'jcloud': {
-                'autoscale': {'min': 0, 'max': 5, 'metric': 'concurrency', 'target': 1}
+                'autoscale': {'min': 0, 'max': 5, 'metric': 'concurrency', 'target': 1},
+                'resources': {'instance': 'C6'},
+                'capacity': 'spot',
             },
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
         }, 768
@@ -129,14 +137,12 @@ class SearchApp(JinaNOWApp):
         user_input: UserInput,
         encoder2dim: Dict[str, int],
         testing=False,
-        index_name=None,
     ) -> Dict:
         """Creates indexer stub.
 
         :param user_input: user input
         :param encoder2dim: maps encoder name to its output dimension
         :param testing: use local executors if True
-        :param index_name: name of the elasticsearch index
         """
         document_mappings_list = []
 
@@ -154,6 +160,7 @@ class SearchApp(JinaNOWApp):
                     ],
                 ]
             )
+        provision_index = 'yes' if not testing else 'no'
 
         return {
             'name': 'indexer',
@@ -164,16 +171,15 @@ class SearchApp(JinaNOWApp):
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'uses_with': {
                 'document_mappings': document_mappings_list,
-                'index_name': 'now_index' if not index_name else index_name,
             },
             'no_reduce': True,
             'jcloud': {
-                'resources': {
-                    'memory': '8G',
-                    'cpu': 0.5,
-                    'capacity': 'on-demand',
-                    'storage': {'type': 'ebs', 'size': '10G'},
-                }
+                'labels': {
+                    'app': 'indexer',
+                    'provision-index': provision_index,
+                },
+                'resources': {'instance': 'C6'},
+                'capacity': 'spot',
             },
         }
 
@@ -213,7 +219,6 @@ class SearchApp(JinaNOWApp):
                 user_input,
                 encoder2dim=encoder2dim,
                 testing=testing,
-                index_name=kwargs.get('index_name'),
             )
         )
 

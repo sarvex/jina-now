@@ -11,7 +11,9 @@ from now.now_dataclasses import UserInput
 
 
 @pytest.mark.asyncio
-async def test_docarray(monkeypatch, setup_service_running, multi_modal_data):
+async def test_docarray(
+    monkeypatch, setup_service_running, random_index_name, multi_modal_data
+):
     """
     Test all executors and bff together without creating a flow.
     The Clip Encoder is mocked because it is an external executor.
