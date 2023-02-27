@@ -2,13 +2,11 @@ import random
 import sys
 import uuid
 from copy import deepcopy
-from time import sleep
 from typing import Dict, Optional
 
 import requests
 from docarray import DocumentArray
 from jina.clients import Client
-from tqdm import tqdm
 
 from now.admin.update_api_keys import update_api_keys
 from now.app.base.app import JinaNOWApp
@@ -53,12 +51,10 @@ def run(
     print_callback('Data loaded. Deploying the flow...')
 
     # Set up the app specific flow
-    app_instance.setup(
-        user_input=user_input,
-    )
+    app_instance.setup(user_input=user_input)
 
-    (client, gateway_port, gateway_host_internal,) = deploy_flow(
-        flow_yaml=app_instance.flow_yaml,
+    client, gateway_port, gateway_host_internal = deploy_flow(
+        flow_yaml=app_instance.flow_yaml
     )
 
     # TODO at the moment the scheduler is not working. So we index the data right away
@@ -118,7 +114,7 @@ def index_docs(user_input, dataset, client, print_callback, **kwargs):
     """
     Index the data right away
     """
-    print_callback(f"▶ indexing {len(dataset)} documents in batches")
+    print_callback(f"▶ indexing {len(dataset)} documents")
     params = {'access_paths': ACCESS_PATHS}
     if user_input.secured:
         params['jwt'] = user_input.jwt
@@ -145,43 +141,21 @@ def call_flow(
 ):
     request_size = estimate_request_size(dataset, max_request_size)
 
-    # this is a hack for the current core/ wolf issue
-    # since we get errors while indexing, we retry
-    # TODO: remove this once the issue is fixed
-    batches = list(dataset.batch(request_size * 100))
-    for current_batch_nr, batch in enumerate(tqdm(batches)):
-        for try_nr in range(5):
-            try:
-                response = client.post(
-                    on=endpoint,
-                    request_size=request_size,
-                    inputs=batch,
-                    show_progress=True,
-                    parameters=parameters,
-                    return_results=return_results,
-                    continue_on_error=True,
-                    on_done=kwargs.get('on_done', None),
-                    on_error=kwargs.get('on_error', None),
-                    on_always=kwargs.get('on_always', None),
-                )
-                if kwargs.get('custom_callback', None):
-                    kwargs['custom_callback'](
-                        client_resp=response,
-                        batch_idx=len(batch),
-                        tot_idx=len(dataset),
-                        host=client.args.host,
-                    )
-                break
-            except Exception as e:
-                if try_nr == 4:
-                    # if we tried 5 times and still failed, raise the error
-                    raise e
-                print(f'batch {current_batch_nr}, try {try_nr}', e)
-                sleep(5 * (try_nr + 1))  # sleep for 5, 10, 15, 20 seconds
-                continue
+    response = client.post(
+        on=endpoint,
+        request_size=request_size,
+        inputs=dataset,
+        show_progress=True,
+        parameters=parameters,
+        continue_on_error=True,
+        prefetch=100,
+        on_done=kwargs.get('on_done', None),
+        on_error=kwargs.get('on_error', None),
+        on_always=kwargs.get('on_always', None),
+    )
 
-    if return_results and response:
-        return DocumentArray.from_json(response.to_json())
+    if return_results:
+        return response
 
 
 def estimate_request_size(index, max_request_size):

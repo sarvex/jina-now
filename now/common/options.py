@@ -210,6 +210,7 @@ AWS_ACCESS_KEY_ID = DialogOptions(
     depends_on=DATASET_TYPE,
     conditional_check=lambda user_input: user_input.dataset_type
     == DatasetTypes.S3_BUCKET,
+    is_terminal_command=True,
 )
 
 AWS_SECRET_ACCESS_KEY = DialogOptions(
@@ -220,6 +221,7 @@ AWS_SECRET_ACCESS_KEY = DialogOptions(
     depends_on=DATASET_TYPE,
     conditional_check=lambda user_input: user_input.dataset_type
     == DatasetTypes.S3_BUCKET,
+    is_terminal_command=True,
 )
 
 AWS_REGION_NAME = DialogOptions(
@@ -231,6 +233,7 @@ AWS_REGION_NAME = DialogOptions(
     conditional_check=lambda user_input: user_input.dataset_type
     == DatasetTypes.S3_BUCKET,
     post_func=lambda user_input, **kwargs: set_field_names_from_s3_bucket(user_input),
+    is_terminal_command=True,
 )
 
 # --------------------------------------------- #
