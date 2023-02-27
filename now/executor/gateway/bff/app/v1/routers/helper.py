@@ -10,8 +10,10 @@ from docarray import Document, DocumentArray
 from docarray.typing import Text
 from fastapi import HTTPException, status
 from jina import Client
+from jina.excepts import BadServer, BadServerFlow
 
 from now.constants import SUPPORTED_FILE_TYPES
+from now.utils import get_flow_id
 
 
 def field_dict_to_mm_doc(
@@ -84,6 +86,13 @@ def field_dict_to_mm_doc(
     return doc
 
 
+def get_jina_client(host: str, port: int) -> Client:
+    if 'wolf.jina.ai' in host or 'dev.jina.ai' in host:
+        return Client(host=host)
+    else:
+        return Client(host=host, port=port)
+
+
 async def jina_client_post(
     request_model,
     endpoint: str,
@@ -111,28 +120,42 @@ async def jina_client_post(
     if request_model.jwt is not None:
         auth_dict['jwt'] = request_model.jwt
 
-    client = Client(host='localhost:8081')
+    client = get_jina_client(host='localhost', port=8081)
 
-    response = client.post(
-        on=endpoint,
-        inputs=docs,
-        parameters={
-            **auth_dict,
-            **parameters,
-            'access_paths': '@cc',
-        },
-        return_results=True,
-        *args,
-        **kwargs,
-    )
-
-    if response.header.status.code == 1:
-        raise_exception(
-            name=response.header.status.exception.name,
-            stacktrace=response.header.status.exception.stacks,
+    try:
+        result = client.post(
+            on=endpoint,
+            inputs=docs,
+            parameters={
+                **auth_dict,
+                **parameters,
+                'access_paths': '@cc',
+            },
+            return_results=True,
+            *args,
+            **kwargs,
         )
-    else:
-        return response.docs
+    except (BadServer, BadServerFlow) as e:
+        flow_id = get_flow_id(request_model.host)
+        raise handle_exception(e, flow_id)
+
+    return result
+
+
+def handle_exception(e, flow_id):
+    if isinstance(e, BadServer):
+        if 'not a valid user' in e.args[0].status.description.lower():
+            return HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail='You are not authorised to use this flow',
+            )
+        else:
+            return e
+    elif isinstance(e, BadServerFlow):
+        if 'no route matched' in e.args[0].lower():
+            return Exception(f'Flow with ID {flow_id} can not be found')
+        else:
+            return e
 
 
 def raise_exception(

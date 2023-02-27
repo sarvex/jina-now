@@ -1,8 +1,8 @@
-from typing import Callable, Dict, Generator, Optional
+from typing import Callable, Dict, Generator, Optional, Union
 
 import pytest
 import requests
-from docarray import DocumentArray
+from docarray import Document, DocumentArray
 from fastapi.testclient import TestClient
 from pytest_mock import MockerFixture
 
@@ -37,12 +37,16 @@ class MockedJinaClient:
     def __init__(self, response: DocumentArray):
         self.response = response
 
-    async def stream_docs(
-        self, docs: DocumentArray, parameters: Optional[Dict] = None, *args, **kwargs
+    def post(
+        self,
+        inputs: Union[Document, DocumentArray],
+        parameters: Optional[Dict] = None,
+        *args,
+        **kwargs
     ) -> DocumentArray:
         for doc in self.response.flatten():
             doc.tags['parameters'] = parameters
-        yield MockJinaDataRequest(self.response)
+        return self.response
 
 
 @pytest.fixture
@@ -56,12 +60,12 @@ def client_with_mocked_jina_client(
     mocker: MockerFixture,
 ) -> Callable[[DocumentArray], requests.Session]:
     def _fixture(response: DocumentArray) -> requests.Session:
-        def _get_jina_streamer():
+        def _get_jina_client(host, port):
             return MockedJinaClient(response)
 
         mocker.patch(
-            'now.executor.gateway.bff.app.v1.routers.helper.GatewayStreamer.get_streamer',
-            _get_jina_streamer,
+            'now.executor.gateway.bff.app.v1.routers.helper.get_jina_client',
+            _get_jina_client,
         )
 
         return TestClient(build_app())
