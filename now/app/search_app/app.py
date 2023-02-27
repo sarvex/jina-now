@@ -88,15 +88,16 @@ class SearchApp(JinaNOWApp):
             if not testing
             else 'NOWPreprocessor',
             'jcloud': {
-                'autoscale': {
-                    'min': 0,
-                    'max': 100,
-                    'metric': 'concurrency',
-                    'target': 1,
-                },
+                # 'autoscale': {
+                #     'min': 0,
+                #     'max': 100,
+                #     'metric': 'concurrency',
+                #     'target': 1,
+                # },
                 'resources': {'instance': 'C4'},
                 'capacity': 'spot',
             },
+            'replicas': 10,
             'env': {'JINA_LOG_LEVEL': 'DEBUG', **env},
         }
 

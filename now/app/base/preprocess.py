@@ -52,16 +52,17 @@ def preprocess_image(d: Document):
     If the document is already loaded (as a blob or tensor), it is downsampled.
     If it only has an uri, it is not loaded into memory.
     """
-    if d.blob:
-        d.convert_blob_to_image_tensor()
+    if d.tensor is None:
+        if d.blob:
+            d.convert_blob_to_image_tensor()
+        elif d.uri:
+            d.load_uri_to_image_tensor(timeout=10)
+
+    if 'uri' in d.tags:
+        d.uri = d.tags['uri']
 
     # image preprocessor environment flag: 1|2
     image_preprocessor_flag = os.environ.get('IMAGE_PREPROCESSOR', '1')
-
-    (d.summary())
-
-    if 'uri' in d.tags and not d.uri:
-        d.uri = d.tags['uri']
 
     if d.tensor is not None:
         if image_preprocessor_flag == '1':
@@ -74,13 +75,6 @@ def preprocess_image(d: Document):
             # approach 2
             # process the image with PIL, including loading and saving
             d.blob = downsample_image(d.tensor)
-
-    else:
-        if not d.blob:
-            if d.tensor is not None:
-                d.convert_image_tensor_to_blob()
-            elif d.uri:
-                d.load_uri_to_blob(timeout=10)
 
     d.chunks.append(
         Document(
