@@ -94,7 +94,7 @@ class SearchApp(JinaNOWApp):
                     'metric': 'concurrency',
                     'target': 1,
                 },
-                'resources': {'instance': 'C2'},
+                'resources': {'instance': 'C4'},
                 'capacity': 'spot',
             },
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
