@@ -6,11 +6,10 @@ import time
 import hubble
 import pytest
 from jcloud.flow import CloudFlow
-from pygit2 import Repository
 from pytest_mock import MockerFixture
 
 from now.data_loading.data_loading import _list_s3_file_paths
-from now.deployment.deployment import terminate_wolf, get_or_create_eventloop
+from now.deployment.deployment import get_or_create_eventloop, terminate_wolf
 from now.executor.preprocessor.s3_download import get_bucket
 from now.utils import get_aws_profile
 
@@ -75,8 +74,7 @@ def random_flow_name():
     Creates a random flow name for remote e2e tests, which then will be used to delete the flow.
     The name contains branch name to help us link the failed/not-deleted flow to the PR.
     """
-    branch_name = Repository('.').head.shorthand.lower()
-    return f'{branch_name}-{random.randint(0, 10000)}'
+    return f'{random.randint(0, 10000)}'
 
 
 def get_flow_id_from_name(flow_name):

@@ -204,7 +204,7 @@ def flatten_dict(d, parent_key='', sep='__'):
     return dict(items)
 
 
-def extract_flow_id(host):
+def get_flow_id(host):
     return host[len('https://') : -len('-http.wolf.jina.ai')]
 
 
