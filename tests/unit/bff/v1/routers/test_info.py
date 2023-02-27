@@ -1,6 +1,7 @@
 import json
 from typing import Callable
 
+import hubble
 import requests
 from docarray import DocumentArray
 from starlette import status
@@ -19,6 +20,7 @@ def test_tags_response(
                 {'name': 'text', 'value': 'Hello', 'modality': 'text'},
             ]
         },
+        headers={'Authorization': f'token {hubble.get_token()}'},
     )
 
     assert response.status_code == status.HTTP_200_OK
@@ -38,6 +40,7 @@ def test_count_response(
                 {'name': 'text', 'value': 'Hello', 'modality': 'text'},
             ]
         },
+        headers={'Authorization': f'token {hubble.get_token()}'},
     )
 
     assert response.status_code == status.HTTP_200_OK
@@ -57,6 +60,7 @@ def test_field_names_to_dataclass_fields_response(
                 {'name': 'text', 'value': 'Hello', 'modality': 'text'},
             ]
         },
+        headers={'Authorization': f'token {hubble.get_token()}'},
     )
 
     assert response.status_code == status.HTTP_200_OK
@@ -76,6 +80,7 @@ def test_encoder_to_dataclass_fields_mods_response(
                 {'name': 'text', 'value': 'Hello', 'modality': 'text'},
             ]
         },
+        headers={'Authorization': f'token {hubble.get_token()}'},
     )
 
     assert response.status_code == status.HTTP_200_OK

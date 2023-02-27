@@ -136,6 +136,7 @@ def artworks_data():
     user_input.app_instance = construct_app(Apps.SEARCH_APP)
     user_input.flow_name = 'nowapi-local'
     user_input.model_choices = {'image_model': [Models.CLIP_MODEL]}
+    user_input.jwt = {'token': hubble.get_token()}
 
     docs = load_data(user_input)
     return docs, user_input
@@ -153,6 +154,7 @@ def pop_lyrics_data():
     user_input.app_instance = construct_app(Apps.SEARCH_APP)
     user_input.flow_name = 'nowapi-local'
     user_input.model_choices = {'lyrics_model': [Models.CLIP_MODEL]}
+    user_input.jwt = {'token': hubble.get_token()}
 
     docs = load_data(user_input)
     return docs, user_input
@@ -169,6 +171,7 @@ def elastic_data(setup_online_shop_db, es_connection_params):
     user_input.filter_fields = ['product_id']
     user_input.index_field_candidates_to_modalities = {'title': Text}
     user_input.filter_field_candidates_to_modalities = {'product_id': 'str'}
+    user_input.jwt = {'token': hubble.get_token()}
     data_class, user_input.field_names_to_dataclass_fields = create_dataclass(
         user_input=user_input
     )
@@ -202,6 +205,7 @@ def local_folder_data(pulled_local_folder_data):
         'test.txt_model': [Models.CLIP_MODEL],
         'image.png_model': [Models.CLIP_MODEL],
     }
+    user_input.jwt = {'token': hubble.get_token()}
 
     docs = load_data(user_input, data_class=data_class)
     return docs, user_input
@@ -227,6 +231,7 @@ def s3_bucket_data():
     user_input.app_instance = construct_app(Apps.SEARCH_APP)
     user_input.flow_name = 'nowapi-local'
     user_input.model_choices = {'image.png_model': [Models.CLIP_MODEL]}
+    user_input.jwt = {'token': hubble.get_token()}
 
     docs = load_data(user_input, data_class=data_class)
     return docs, user_input

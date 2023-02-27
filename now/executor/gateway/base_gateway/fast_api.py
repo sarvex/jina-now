@@ -49,13 +49,8 @@ def get_security_app(
 
     # patch the app to overwrite the /post endpoint
     for i, r in enumerate(app.router.routes):
-        print('path formats before deletion: ', r.path_format, r)
         if r.path_format == '/post':
-            print('deleting /post route: ', id(app.router.routes[i]))
             del app.router.routes[i]
-
-    for i, r in enumerate(app.router.routes):
-        print('path formats after deletion: ', r.path_format, r)
 
     @app.post(
         path='/post',
@@ -83,7 +78,6 @@ def get_security_app(
         # The above comment is written in Markdown for better rendering in FastAPI
         from jina.enums import DataInputType
 
-        print('body', body)
         authorized, current_user = authorized
         if not authorized:
             from jina.proto.serializer import DataRequest
@@ -109,7 +103,6 @@ def get_security_app(
             result = await _get_singleton_result(
                 request_generator(**req_generator_input)
             )
-            print('result', result)
             num_docs = len(result['data'])
             report_usage(
                 current_user=current_user,
@@ -160,10 +153,6 @@ def get_security_app(
             }
 
         return result
-
-    # patch the app to overwrite the /post endpoint
-    for i, r in enumerate(app.router.routes):
-        print('path formats after adding: ', r.path_format, r)
 
     def _generate_exception_header(error: InternalNetworkError):
         import traceback

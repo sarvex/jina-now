@@ -1,7 +1,7 @@
 from collections import defaultdict
 
 from docarray import Document
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 
 from now.executor.gateway.bff.app.settings import user_input_in_bff
 from now.executor.gateway.bff.app.v1.models.info import (
@@ -18,7 +18,11 @@ router = APIRouter()
 
 
 @router.post('/tags')
-def get_tags(data: BaseRequestModel) -> TagsResponseModel:
+def get_tags(request: Request, data: BaseRequestModel) -> TagsResponseModel:
+    auth_token = request.headers.get('Authorization').replace('token ', '')
+    # if jwt not set in data, use the one from header
+    if not data.jwt and auth_token:
+        data.jwt['token'] = auth_token
     response = jina_client_post(
         request_model=data,
         docs=Document(),

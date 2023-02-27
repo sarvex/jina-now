@@ -120,7 +120,7 @@ def jina_client_post(
         auth_dict['jwt'] = request_model.jwt
 
     client = get_jina_client(host='http://localhost', port=8081)
-
+    print('request model', request_model)
     try:
         result = client.post(
             on=endpoint,
