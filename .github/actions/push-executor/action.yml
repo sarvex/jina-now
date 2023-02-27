@@ -25,6 +25,7 @@ runs:
       with:
         filters: |
           has_executor_changed:
+            - now/app/base/**
             - now/executor/abstract/auth/**
             - requirements.txt
             ${{ inputs.has_changed_filter }}

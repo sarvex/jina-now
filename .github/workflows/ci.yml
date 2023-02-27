@@ -98,8 +98,7 @@ jobs:
           executor_path: now/executor/preprocessor
           # for some reason, the first filter condition needs a different indentation
           has_changed_filter: |
-            - now/app/base/**
-              - now/executor/preprocessor/**
+            - now/executor/preprocessor/**
           executor_id: 2hgojz3z
           jina_auth_token: ${{ secrets.NOW_PREPROCESSOR_JCLOUD_TOKEN }}
 
