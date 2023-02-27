@@ -121,6 +121,10 @@ class JinaNOWApp:
                 'm2m_token': os.environ['M2M_TOKEN'],
             },
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
+            'jcloud': {
+                'resources': {'instance': 'C5'},
+                'capacity': 'spot',
+            },
         }
         if 'NOW_EXAMPLES' in os.environ:
             gateway_stub['jcloud'] = {
