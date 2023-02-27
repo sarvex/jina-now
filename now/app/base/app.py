@@ -218,6 +218,8 @@ class JinaNOWApp:
                 'JINA_OPTOUT_TELEMETRY'
             ]
             for executor in flow_yaml_content['executors']:
+                if not 'env' in executor:
+                    executor['env'] = {}
                 executor['env']['JINA_OPTOUT_TELEMETRY'] = os.environ[
                     'JINA_OPTOUT_TELEMETRY'
                 ]
