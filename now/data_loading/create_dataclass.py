@@ -1,6 +1,5 @@
-import typing
 from collections import defaultdict
-from typing import Dict, List
+from typing import Dict, Hashable, List, TypeVar
 
 from docarray import Document, dataclass, field
 from docarray.typing import Image, Text, Video
@@ -83,7 +82,7 @@ def create_dataclass(
 
 def create_annotations_and_class_attributes(
     fields: List,
-    fields_modalities: Dict,
+    fields_modalities: Dict[str, TypeVar],
     field_names_to_dataclass_fields: Dict,
     dataset_type: DatasetTypes = None,
 ):
@@ -99,15 +98,15 @@ def create_annotations_and_class_attributes(
     """
     annotations = {}
     class_attributes = {}
-    S3Object, s3_setter, s3_getter = create_s3_type()
     ImageType, image_setter, image_getter = create_blob_type('Image')
     VideoType, video_setter, video_getter = create_blob_type('Video')
 
     for f in fields:
-        if not isinstance(f, typing.Hashable):
+        if not isinstance(f, Hashable):
             continue
         if dataset_type == DatasetTypes.S3_BUCKET:
-            annotations[field_names_to_dataclass_fields[f]] = S3Object
+            S3Type, s3_setter, s3_getter = create_s3_type(str(fields_modalities[f])[1:])
+            annotations[field_names_to_dataclass_fields[f]] = S3Type
             class_attributes[field_names_to_dataclass_fields[f]] = field(
                 setter=s3_setter, getter=s3_getter, default=''
             )
@@ -126,21 +125,17 @@ def create_annotations_and_class_attributes(
     return annotations, class_attributes
 
 
-def create_s3_type():
-    """
-    Create a new type for S3 bucket
-    """
-    from typing import TypeVar
-
-    from docarray import Document
-
+def create_s3_type(modality: str):
+    """Create a new type for S3 bucket which sets the right modality"""
     S3Object = TypeVar('S3Object', bound=str)
 
     def my_setter(value) -> 'Document':
         """
         Custom setter for the S3Object type that doesn't load the content from the URI
         """
-        return Document(uri=value)
+        doc = Document(uri=value)
+        doc.modality = modality.lower()
+        return doc
 
     def my_getter(doc: 'Document'):
         return doc.uri
@@ -150,15 +145,13 @@ def create_s3_type():
 
 def create_blob_type(modality: str):
     """Creates a new type which loads into blob instead of tensor"""
-    from typing import TypeVar
-
-    from docarray import Document
-
     BlobObject = TypeVar(modality, bound=str)
 
     def my_setter(value) -> 'Document':
         """Custom setter for the BlobObject type that loads the content from the URI"""
-        return Document(uri=value).load_uri_to_blob(timeout=10)
+        doc = Document(uri=value).load_uri_to_blob(timeout=10)
+        doc.modality = modality.lower()
+        return doc
 
     def my_getter(doc: 'Document'):
         return doc.uri
@@ -178,7 +171,7 @@ def create_dataclass_fields_file_mappings(fields: List, fields_modalities: Dict)
 
     file_mapping_to_dataclass_fields = {}
     for f in fields:
-        if not isinstance(f, typing.Hashable):
+        if not isinstance(f, Hashable):
             continue
         field_modality = fields_modalities[f]
         if field_modality in AVAILABLE_MODALITIES_FOR_SEARCH:

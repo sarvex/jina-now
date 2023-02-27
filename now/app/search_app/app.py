@@ -73,6 +73,10 @@ class SearchApp(JinaNOWApp):
             else 'NOWAutoCompleteExecutor2',
             'needs': 'gateway',
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
+            'jcloud': {
+                'resources': {'instance': 'C1'},
+                'capacity': 'spot',
+            },
         }
 
     @staticmethod
@@ -89,7 +93,9 @@ class SearchApp(JinaNOWApp):
                     'max': 100,
                     'metric': 'concurrency',
                     'target': 1,
-                }
+                },
+                'resources': {'instance': 'C4'},
+                'capacity': 'spot',
             },
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
         }
@@ -119,7 +125,9 @@ class SearchApp(JinaNOWApp):
                 'model_name': 'msmarco-distilbert-base-v3',
             },
             'jcloud': {
-                'autoscale': {'min': 0, 'max': 5, 'metric': 'concurrency', 'target': 1}
+                'autoscale': {'min': 0, 'max': 5, 'metric': 'concurrency', 'target': 1},
+                'resources': {'instance': 'C6'},
+                'capacity': 'spot',
             },
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
         }, 768
@@ -170,11 +178,8 @@ class SearchApp(JinaNOWApp):
                     'app': 'indexer',
                     'provision-index': provision_index,
                 },
-                'resources': {
-                    'memory': '8G',
-                    'cpu': 0.5,
-                    'capacity': 'on-demand',
-                },
+                'resources': {'instance': 'C6'},
+                'capacity': 'spot',
             },
         }
 
