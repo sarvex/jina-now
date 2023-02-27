@@ -35,9 +35,7 @@ class OfflineFlow:
 
     def mock_client(self, monkeypatch):
         offline_client = get_client(self)
-        monkeypatch.setattr(
-            helper.get_jina_client, 'get_jina_client', lambda **kwargs: offline_client
-        )
+        monkeypatch.setattr(helper, 'get_jina_client', lambda **kwargs: offline_client)
 
     def post(self, endpoint, inputs, parameters: Dict[str, str], *args, **kwargs):
         # call executors:
