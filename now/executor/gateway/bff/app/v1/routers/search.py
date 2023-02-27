@@ -142,7 +142,7 @@ async def search(
         key = 'tags__' + key if not key.startswith('tags__') else key
         query_filter[key] = {'$eq': value}
 
-    docs = await jina_client_post(
+    docs = jina_client_post(
         endpoint='/search',
         docs=query_doc,
         parameters={
@@ -202,7 +202,7 @@ async def search(
 )
 async def suggestion(data: SuggestionRequestModel = Body(examples=suggestion_examples)):
     suggest_doc = Document(text=data.text)
-    docs = await jina_client_post(
+    docs = jina_client_post(
         endpoint='/suggestion',
         docs=suggest_doc,
         request_model=data,

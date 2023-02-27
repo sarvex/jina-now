@@ -18,8 +18,8 @@ router = APIRouter()
 
 
 @router.post('/tags')
-async def get_tags(data: BaseRequestModel) -> TagsResponseModel:
-    response = await jina_client_post(
+def get_tags(data: BaseRequestModel) -> TagsResponseModel:
+    response = jina_client_post(
         request_model=data,
         docs=Document(),
         endpoint='/tags',
@@ -29,8 +29,8 @@ async def get_tags(data: BaseRequestModel) -> TagsResponseModel:
 
 
 @router.post('/count')
-async def get_count(data: CountRequestModel) -> CountResponseModel:
-    response = await jina_client_post(
+def get_count(data: CountRequestModel) -> CountResponseModel:
+    response = jina_client_post(
         request_model=data,
         docs=Document(),
         endpoint='/count',
@@ -41,14 +41,14 @@ async def get_count(data: CountRequestModel) -> CountResponseModel:
 
 
 @router.post('/field_names_to_dataclass_fields')
-async def get_field_names_to_dataclass_fields() -> FieldNamesToDataclassFieldsResponseModel:
+def get_field_names_to_dataclass_fields() -> FieldNamesToDataclassFieldsResponseModel:
     return FieldNamesToDataclassFieldsResponseModel(
         field_names_to_dataclass_fields=user_input_in_bff.field_names_to_dataclass_fields
     )
 
 
 @router.post('/encoder_to_dataclass_fields_mods')
-async def get_index_fields_dict() -> EncoderToDataclassFieldsModsResponseModel:
+def get_index_fields_dict() -> EncoderToDataclassFieldsModsResponseModel:
     index_fields_dict = defaultdict(dict)
     for index_field_raw, encoders in user_input_in_bff.model_choices.items():
         index_field = index_field_raw.replace('_model', '')

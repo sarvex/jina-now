@@ -93,7 +93,7 @@ def get_jina_client(host: str, port: int) -> Client:
         return Client(host=host, port=port)
 
 
-async def jina_client_post(
+def jina_client_post(
     request_model,
     endpoint: str,
     docs: Union[Document, DocumentArray],
@@ -120,7 +120,7 @@ async def jina_client_post(
     if request_model.jwt is not None:
         auth_dict['jwt'] = request_model.jwt
 
-    client = get_jina_client(host='localhost', port=8081)
+    client = get_jina_client(host='http://localhost', port=8081)
 
     try:
         result = client.post(

@@ -44,16 +44,21 @@ class PaymentInterceptor(grpc.aio.ServerInterceptor):
             try:
                 response = await behavior(request_or_iterator, context)
                 num_docs = len(response.data.docs)
-                self._report_usage(
-                    current_user=current_user,
-                    usage_detail={
-                        'token': current_user['token'],
-                        'id': str(uuid.uuid4()),
-                        'credits': num_docs,
-                        'internalAppId': self._internal_app_id,
-                        'internalProductId': self._internal_product_id,
-                    },
-                )
+                if num_docs > 0:
+                    self._report_usage(
+                        current_user=current_user,
+                        usage_detail={
+                            'token': current_user['token'],
+                            'id': str(uuid.uuid4()),
+                            'credits': num_docs,
+                            'internalAppId': self._internal_app_id,
+                            'internalProductId': self._internal_product_id,
+                        },
+                    )
+                else:
+                    self._logger.info(
+                        'Billing report not submitted as number of docs is 0'
+                    )
                 self._logger.info(
                     {
                         'timestamp': current_time(),

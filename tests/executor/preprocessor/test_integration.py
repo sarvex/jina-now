@@ -28,6 +28,7 @@ def test_search_app(resources_folder_path, tmpdir, mm_dataclass):
     user_input.user_emails = ['team-now@jina.ai']
     user_input.admin_emails = []
     user_input.api_key = []
+    user_input.jwt = {'token': hubble.get_token()}
 
     with Flow().config_gateway(
         uses=NOWGateway,
