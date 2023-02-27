@@ -12,6 +12,8 @@ on:
         required: false
         default: PARTIAL
 
+  pull_request:
+
 jobs:
   python-script:
     runs-on: ubuntu-latest
@@ -36,7 +38,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install wheel
-          pip install jina-now -U
+          pip install git+https://github.com/jina-ai/now.git@jac_release_latest
       - name: Add JCloud auth token
         run: |
           mkdir -p ~/.jina
