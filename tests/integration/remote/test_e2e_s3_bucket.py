@@ -53,11 +53,6 @@ def test_backend_custom_data(
     kwargs = Namespace(**kwargs)
     response = cli(args=kwargs)
 
-    # Dump the flow details from response host to a tmp file for post cleanup
-    flow_details = {'host': response['host_http']}
-    with open(f'{cleanup}/flow_details.json', 'w') as f:
-        json.dump(flow_details, f)
-
     assert_deployment_response(response)
 
     assert_search_custom_s3(
@@ -72,4 +67,4 @@ def test_backend_custom_data(
         create_temp_link=True,
         dataset_length=dataset_length,
     )
-    assert_indexed_all_docs(flow_details['host'], kwargs=kwargs, limit=dataset_length)
+    assert_indexed_all_docs(response['host_http'], kwargs=kwargs, limit=dataset_length)

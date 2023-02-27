@@ -42,10 +42,6 @@ def test_end_to_end(
     }
     kwargs = Namespace(**kwargs)
     response = cli(args=kwargs)
-    # Dump the flow details from response host to a tmp file
-    # flow_details = {'host': response['host_http']}
-    # with open(f'{cleanup}/flow_details.json', 'w') as f:
-    #     json.dump(flow_details, f)
 
     assert_deployment_response(response)
     assert_deployment_queries(
@@ -62,5 +58,5 @@ def test_end_to_end(
     assert_info_endpoints(info_url, request_body)
     assert_suggest(suggest_url, request_body)
     assert_indexed_all_docs(
-        flow_details['host'], kwargs=kwargs, limit=MAX_DOCS_FOR_TESTING
+        response['host_http'], kwargs=kwargs, limit=MAX_DOCS_FOR_TESTING
     )
