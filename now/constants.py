@@ -6,7 +6,7 @@ from now.utils import BetterEnum
 
 NOW_GATEWAY_VERSION = '0.0.5-refactor-external-clip-4'
 NOW_PREPROCESSOR_VERSION = '0.0.125-refactor-external-clip-4'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.148-refactor-external-clip-4'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.149-refactor-external-clip-4'
 NOW_AUTOCOMPLETE_VERSION = '0.0.12-refactor-external-clip-4'
 
 
