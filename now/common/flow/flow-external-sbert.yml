@@ -21,6 +21,7 @@ executors:
       JINA_LOG_LEVEL: DEBUG
     jcloud:
       expose: true
+# needs to be reactivated once wolf supports it
 #      autoscale:
 #        min: 1
 #        max: 15
