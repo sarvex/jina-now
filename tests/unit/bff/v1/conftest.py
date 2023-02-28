@@ -39,4 +39,6 @@ def sample_search_response_text() -> DocumentArray:
     result = DocumentArray([Document()])
     matches = DocumentArray([Document(MMDoc(title='match'))])
     result[0].matches = matches
+    result[0].tags['tags'] = {'color': ['blue']}
+    result[0].tags['count'] = 1
     return result

@@ -1,3 +1,4 @@
+from math import ceil, sqrt
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, Field
@@ -97,7 +98,7 @@ class SearchResponseModel(BaseModel):
     def __init__(
         self,
         id: str,
-        scores: Optional[Dict[str, '_NamedScore']],
+        scores: Optional[Dict[str, '_NamedScore']] = {},
         tags: Optional[
             Dict[
                 str,
@@ -107,8 +108,8 @@ class SearchResponseModel(BaseModel):
                     Dict[str, Optional[Union[str, bool, int, float]]],
                 ],
             ]
-        ],
-        fields: Dict[str, ModalityModel],
+        ] = {},
+        fields: Dict[str, ModalityModel] = {},
     ) -> None:
         super().__init__(id=id, scores=scores, fields=fields)
         self.validate_tags(tags)
@@ -126,6 +127,43 @@ class SearchResponseModel(BaseModel):
                 raise ValueError(
                     f"Invalid type '{type(item)}' of value '{item}' for key '{key}' in tags"
                 )
+
+    def to_html(self, disable_to_datauri: bool = False) -> str:
+        """Converts the SearchResponseModel to HTML. This is used to display the a single multi-modal result as HTML.
+
+        :param disable_to_datauri: If True, the image is not converted to datauri.
+        """
+        # sort dictionary by keys, to have the same order in displaying elements
+        single_fields_in_html = [
+            mm.to_html(title, disable_to_datauri)
+            for title, mm in dict(sorted(self.fields.items())).items()
+        ]
+        mm_in_html = ''.join(single_fields_in_html)
+        return mm_in_html
+
+    @classmethod
+    def responses_to_html(
+        cls, responses: List['SearchResponseModel'], disable_to_datauri: bool = False
+    ) -> str:
+        """Converts a list of SearchResponseModel to HTML. This is used to display the multi-modal results as HTML."""
+        html_list = [r.to_html(disable_to_datauri) for r in responses]
+
+        num_html = len(html_list)
+        side_length = ceil(sqrt(num_html))
+        output_html = "<div style='display: grid; grid-template-columns: repeat({0}, 1fr); grid-gap: 10px;'>".format(
+            side_length
+        )
+
+        for i in range(num_html):
+            output_html += (
+                "<div style='border: 1px solid black; padding: 5px;'>{0}</div>".format(
+                    html_list[i]
+                )
+            )
+
+        output_html += "</div>"
+
+        return output_html
 
     class Config:
         case_sensitive = False

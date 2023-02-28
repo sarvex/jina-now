@@ -10,12 +10,14 @@ from inspect import stack
 from typing import Any, Dict, List, Optional, TypeVar, Union
 
 import boto3
+import cowsay
 import docarray
 import hubble
 import yaml
 from jina.jaml import JAML
 from pyfiglet import Figlet
 
+from now.deployment.deployment import list_all_wolf, status_wolf
 from now.thirdparty.PyInquirer.prompt import prompt
 
 
@@ -260,6 +262,34 @@ def get_chunk_by_field_name(doc, field_name):
         return doc.chunks[field_position]
     except Exception as e:
         print(f'An error occurred: {e}')
+
+
+def get_flow_status(action, **kwargs):
+    choices = []
+    # Add all remote Flows that exists with the namespace `nowapi`
+    alive_flows = list_all_wolf(status='Serving')
+    for flow_details in alive_flows:
+        choices.append(flow_details['name'])
+    if len(choices) == 0:
+        cowsay.cow(f'nothing to {action}')
+        return
+    else:
+        questions = [
+            {
+                'type': 'list',
+                'name': 'cluster',
+                'message': f'Which cluster do you want to {action}?',
+                'choices': choices,
+            }
+        ]
+        cluster = maybe_prompt_user(questions, 'cluster', **kwargs)
+
+    flow = [x for x in alive_flows if x['name'] == cluster][0]
+    flow_id = flow['id']
+    _result = status_wolf(flow_id)
+    if _result is None:
+        print(f'❎ Flow not found in JCloud. Likely, it has been deleted already')
+    return _result, flow_id, cluster
 
 
 # Add a custom retry exception
