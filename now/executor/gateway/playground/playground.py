@@ -182,7 +182,7 @@ def get_info_from_endpoint(params, endpoint) -> dict:
         f'http://localhost:{NOWGATEWAY_BFF_PORT}/api/v1/info/{endpoint}',
         {},
         endpoint,
-        st.session_state.jwt_val['token'] if params.secured else None,
+        st.session_state.jwt_val['token'],
     )
     # return the first value of the response as it's a dict with one key
     return list(response.values())[0]
