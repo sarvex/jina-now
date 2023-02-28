@@ -7,6 +7,7 @@ from argparse import Namespace
 from now import __version__
 from now import __version__ as version
 from now.constants import SURVEY_LINK
+from now.log import logger
 from now.run_all_k8s import compare_flows, fetch_logs_now, start_now, stop_now
 
 warnings.filterwarnings("ignore")

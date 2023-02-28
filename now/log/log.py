@@ -4,6 +4,7 @@ import sys
 import time
 from functools import wraps
 
+from jina.logging.logger import JinaLogger
 from yaspin.core import Yaspin
 
 
@@ -67,3 +68,6 @@ def time_profiler(fun):
         return result
 
     return profiled_fun
+
+
+logger = JinaLogger("app")

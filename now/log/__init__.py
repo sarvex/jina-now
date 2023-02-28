@@ -1,1 +1,1 @@
-from .log import time_profiler, yaspin_extended
+from .log import logger, time_profiler, yaspin_extended
