@@ -2,7 +2,6 @@ from typing import Dict
 
 import numpy as np
 from docarray import DocumentArray
-from tests.unit.bff.conftest import MockJinaDataRequest
 
 from now.executor.autocomplete import NOWAutoCompleteExecutor2
 from now.executor.gateway.bff.app.v1.routers import helper
@@ -56,9 +55,10 @@ class OfflineFlow:
 
 def get_client(offline_flow):
     class Client:
-        async def stream_docs(self, exec_endpoint, docs, parameters, *args, **kwargs):
-            docs = offline_flow.post(exec_endpoint, docs, parameters, *args, **kwargs)
-            yield MockJinaDataRequest(docs)
+        def post(self, on, inputs, parameters, *args, **kwargs):
+            # definition of executors:
+            docs = offline_flow.post(on, inputs, parameters, *args, **kwargs)
+            return docs
 
     return Client()
 

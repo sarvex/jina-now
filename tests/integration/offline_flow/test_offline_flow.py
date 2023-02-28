@@ -12,8 +12,7 @@ from now.executor.gateway.bff.app.v1.routers.search import search
 from now.now_dataclasses import UserInput
 
 
-@pytest.mark.asyncio
-async def test_docarray(
+def test_docarray(
     monkeypatch, setup_service_running, random_index_name, multi_modal_data
 ):
     """
