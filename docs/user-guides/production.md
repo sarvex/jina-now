@@ -75,5 +75,5 @@ export PROVISION_SHARDS=2
 export PROVISION_REPLICAS=1
 ```
 
-This will set the index to have 2 shards and 1 replica. The default values are 1 shard and 0 replicas when these
+This will configure the index to have 2 shards and 1 replica. The default values are 1 shard and 0 replicas when these
 environment variables are not set.
