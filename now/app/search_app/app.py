@@ -5,6 +5,7 @@ from jina import Client
 
 from now.app.base.app import JinaNOWApp
 from now.constants import (
+    ACCESS_PATHS,
     DEMO_NS,
     EXTERNAL_CLIP_HOST,
     EXTERNAL_SBERT_HOST,
@@ -104,10 +105,13 @@ class SearchApp(JinaNOWApp):
     def clip_encoder_stub() -> Tuple[Dict, int]:
         return {
             'name': Models.CLIP_MODEL,
+            'uses': f'jinahub+docker://CLIPOnnxEncoder/0.8.1-gpu',
             'host': EXTERNAL_CLIP_HOST,
             'port': 443,
             'tls': True,
             'external': True,
+            'uses_with': {'access_paths': ACCESS_PATHS, 'name': 'ViT-B-32::openai'},
+            'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'needs': 'preprocessor',
         }, 512
 
@@ -115,10 +119,16 @@ class SearchApp(JinaNOWApp):
     def sbert_encoder_stub() -> Tuple[Dict, int]:
         return {
             'name': Models.SBERT_MODEL,
+            'uses': f'jinahub+docker://TransformerSentenceEncoder',
+            'uses_with': {
+                'access_paths': ACCESS_PATHS,
+                'model_name': 'msmarco-distilbert-base-v3',
+            },
             'host': EXTERNAL_SBERT_HOST,
             'port': 443,
             'tls': True,
             'external': True,
+            'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'needs': 'preprocessor',
         }, 768
 
