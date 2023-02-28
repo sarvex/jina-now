@@ -5,6 +5,7 @@ from docarray import Document
 from fastapi import APIRouter, Body
 
 from now.data_loading.create_dataclass import create_dataclass
+from now.executor.gateway.bff.app.settings import user_input_in_bff
 from now.executor.gateway.bff.app.v1.models.search import (
     SearchRequestModel,
     SearchResponseModel,
@@ -142,6 +143,14 @@ async def search(
     for sem_score in data.semantic_scores:
         sem_score = list(sem_score)
         sem_score[0] = field_names_to_dataclass_fields[sem_score[0]]
+        try:
+            sem_score[1] = user_input_in_bff.field_names_to_dataclass_fields[
+                sem_score[1]
+            ]
+        except:
+            raise ValueError(
+                f'Field {sem_score[1]} not found in dataclass. Please select possible values: {user_input_in_bff.field_names_to_dataclass_fields.keys()}'
+            )
         semantic_scores.append(sem_score)
 
     query_filter = {}
