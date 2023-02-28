@@ -10,7 +10,7 @@ import requests
 from docarray import Document, DocumentArray
 from tqdm import tqdm
 
-from now.admin.utils import get_default_request_body
+from now.admin.utils import get_default_request_kwargs
 from now.executor.gateway.bff.app.v1.models.search import SearchResponseModel
 from now.utils import get_chunk_by_field_name
 
@@ -128,7 +128,7 @@ def _evaluate_query(
     }
 
     for flow_name, http_host, semantic_scores in flow_ids_http_semantic_scores:
-        request_body = get_default_request_body(secured=True)
+        request_headers, request_body = get_default_request_kwargs()
         request_body['limit'] = limit
         request_body['query'] = query_dict_search_request
         request_body['create_temp_link'] = True
@@ -136,7 +136,9 @@ def _evaluate_query(
         for _ in range(5):
             try:
                 response = requests.post(
-                    f'{http_host}/api/v1/search-app/search', json=request_body
+                    f'{http_host}/api/v1/search-app/search',
+                    json=request_body,
+                    headers=request_headers,
                 )
                 if response.status_code == 200:
                     break
