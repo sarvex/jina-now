@@ -36,12 +36,13 @@ async def test_docarray(
     search_result = search(
         Request(
             scope={
-                'headers': {'Authorization': f'token {hubble.get_token()}'},
                 'type': 'http',
-            },
+                'headers': [],
+            }
         ),
         SearchRequestModel(
             query=[{'name': 'text', 'value': 'girl on motorbike', 'modality': 'text'}],
+            jwt=hubble.get_token(),
         ),
     )
     assert search_result[0].fields['product_title'].text == 'fancy title'
