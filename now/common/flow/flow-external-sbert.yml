@@ -26,7 +26,7 @@ executors:
 #        max: 15
 #        metric: concurrency
 #        target: 1
-      replicas: 2
       resources:
         instance: C6
       capacity: spot
+    replicas: 2
