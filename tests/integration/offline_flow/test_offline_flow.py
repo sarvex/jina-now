@@ -21,6 +21,11 @@ async def test_docarray(
     """
     user_input = UserInput()
     user_input.index_fields = ['product_title', 'product_description', 'product_image']
+    user_input.field_names_to_dataclass_fields = {
+        'product_title': 'product_title',
+        'product_description': 'product_description',
+        'product_image': 'product_image',
+    }
 
     offline_flow = OfflineFlow(monkeypatch, user_input_dict=user_input.__dict__)
 
