@@ -19,7 +19,9 @@ router = APIRouter()
 
 @router.post('/tags')
 def get_tags(request: Request, data: BaseRequestModel) -> TagsResponseModel:
-    auth_token = request.headers.get('Authorization').replace('token ', '')
+    auth_token = None
+    if request.headers.get('Authorization'):
+        auth_token = request.headers.get('Authorization').replace('token ', '')
     # if jwt not set in data, use the one from header
     if not data.jwt and auth_token:
         data.jwt['token'] = auth_token
@@ -34,7 +36,9 @@ def get_tags(request: Request, data: BaseRequestModel) -> TagsResponseModel:
 
 @router.post('/count')
 def get_count(request: Request, data: CountRequestModel) -> CountResponseModel:
-    auth_token = request.headers.get('Authorization').replace('token ', '')
+    auth_token = None
+    if request.headers.get('Authorization'):
+        auth_token = request.headers.get('Authorization').replace('token ', '')
     # if jwt not set in data, use the one from header
     if not data.jwt and auth_token:
         data.jwt['token'] = auth_token
