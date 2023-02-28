@@ -151,6 +151,8 @@ class SearchApp(JinaNOWApp):
                 ]
             )
         provision_index = 'yes' if not testing else 'no'
+        provision_shards = os.getenv('PROVISION_SHARDS', '1')
+        provision_replicas = os.getenv('PROVISION_REPLICAS', '0')
 
         return {
             'name': 'indexer',
@@ -167,6 +169,8 @@ class SearchApp(JinaNOWApp):
                 'labels': {
                     'app': 'indexer',
                     'provision-index': provision_index,
+                    'provision-shards': provision_shards,
+                    'provision-replicas': provision_replicas,
                 },
                 'resources': {'instance': 'C6'},
                 'capacity': 'spot',
