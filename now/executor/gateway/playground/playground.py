@@ -218,37 +218,34 @@ def get_cookie(cookie_name):
 
 
 def render_auth_components(params):
-    if params.secured:
-        st_cookie = get_cookie(SSO_COOKIE)
-        resp_jwt = requests.get(
-            url=f'https://api.hubble.jina.ai/v2/rpc/user.identity.whoami',
-            cookies={SSO_COOKIE: st_cookie},
-        ).json()
-        redirect_to = None
-        if resp_jwt['code'] != 200:
-            redirect_to = _do_login(params)
-        else:
-            st.session_state.login = False
-            if not st.session_state.jwt_val:
-                new_resp = {'token': st_cookie, 'user': resp_jwt['data']}
-                st.session_state.jwt_val = new_resp
-            if not st.session_state.avatar_val:
-                st.session_state.avatar_val = resp_jwt['data']['avatarUrl']
-            if not st.session_state.token_val:
-                st.session_state.token_val = st_cookie
-
-        if not st.session_state.jwt_val:
-            redirect_to = _do_login(params)
-        _, logout, avatar = st.columns([0.7, 0.12, 0.12])
-        if not st.session_state.login:
-            with avatar:
-                if st.session_state.avatar_val:
-                    st.image(st.session_state.avatar_val, width=30)
-            with logout:
-                st.button('Logout', on_click=_do_logout)
-        return redirect_to
+    st_cookie = get_cookie(SSO_COOKIE)
+    resp_jwt = requests.get(
+        url=f'https://api.hubble.jina.ai/v2/rpc/user.identity.whoami',
+        cookies={SSO_COOKIE: st_cookie},
+    ).json()
+    redirect_to = None
+    if resp_jwt['code'] != 200:
+        redirect_to = _do_login(params)
     else:
-        return None
+        st.session_state.login = False
+        if not st.session_state.jwt_val:
+            new_resp = {'token': st_cookie, 'user': resp_jwt['data']}
+            st.session_state.jwt_val = new_resp
+        if not st.session_state.avatar_val:
+            st.session_state.avatar_val = resp_jwt['data']['avatarUrl']
+        if not st.session_state.token_val:
+            st.session_state.token_val = st_cookie
+
+    if not st.session_state.jwt_val:
+        redirect_to = _do_login(params)
+    _, logout, avatar = st.columns([0.7, 0.12, 0.12])
+    if not st.session_state.login:
+        with avatar:
+            if st.session_state.avatar_val:
+                st.image(st.session_state.avatar_val, width=30)
+        with logout:
+            st.button('Logout', on_click=_do_logout)
+    return redirect_to
 
 
 def _do_login(params):
