@@ -42,7 +42,7 @@ async def test_docarray(
         ),
         SearchRequestModel(
             query=[{'name': 'text', 'value': 'girl on motorbike', 'modality': 'text'}],
-            jwt=hubble.get_token(),
+            jwt={'token': hubble.get_token()},
         ),
     )
     assert search_result[0].fields['product_title'].text == 'fancy title'
