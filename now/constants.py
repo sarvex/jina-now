@@ -10,6 +10,7 @@ NOW_ELASTIC_INDEXER_VERSION = '0.0.147-feat-integrate-billing-68'
 NOW_AUTOCOMPLETE_VERSION = '0.0.11-feat-integrate-billing-68'
 
 
+
 class Apps(BetterEnum):
     SEARCH_APP = 'search_app'
 

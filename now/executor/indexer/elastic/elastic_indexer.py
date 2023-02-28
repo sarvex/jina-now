@@ -292,7 +292,7 @@ class NOWElasticIndexer(Executor):
                 temp_url = s3_client.generate_presigned_url(
                     'get_object',
                     Params={'Bucket': bucket_name, 'Key': path_s3},
-                    ExpiresIn=300,
+                    ExpiresIn=3600,
                 )
                 d.uri = temp_url
             return d

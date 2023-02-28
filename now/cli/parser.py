@@ -138,6 +138,54 @@ def set_logs_parser(sp):
     )
 
 
+def set_compare_parser(sp):
+    parser = sp.add_parser(
+        'compare',
+        help='Compare the performance of different flows.',
+        description='Compare the performance of different flows.',
+        formatter_class=_chf,
+    )
+
+    parser.add_argument(
+        '--path_semantic_scores',
+        help='Path to json file mapping flow IDs to a list of semantic scores configurations',
+        type=str,
+    )
+
+    parser.add_argument(
+        '--flow_ids',
+        help='Flow IDs to compare',
+        type=str,
+    )
+
+    parser.add_argument(
+        '--dataset',
+        help='Path to local or name of pushed DocArray with the queries in multi-modal format',
+        type=str,
+    )
+
+    parser.add_argument(
+        '--limit',
+        help='Number of results to return',
+        type=int,
+        default=9,
+    )
+
+    parser.add_argument(
+        '--disable_to_datauri',
+        help='Disable converting images to datauri; makes the files smaller but also not self-contained',
+        action='store_true',
+        default=False,
+    )
+
+    parser.add_argument(
+        '--results_per_table',
+        help='Number of results shown per table (default is 20)',
+        type=int,
+        default=20,
+    )
+
+
 def get_main_parser():
     """The main parser for Jina NOW
     :return: the parser
@@ -154,6 +202,7 @@ def get_main_parser():
     set_stop_parser(sp)
     set_survey_parser(sp)
     set_logs_parser(sp)
+    set_compare_parser(sp)
 
     return parser
 
