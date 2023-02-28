@@ -20,25 +20,6 @@ from now.demo_data import DemoDatasetNames
     'query_fields, index_fields, filter_fields, model_selection, dataset',
     [
         (
-            'image',
-            ['image', 'label'],
-            [],
-            {
-                'image_model': [Models.CLIP_MODEL],
-                'label_model': [Models.CLIP_MODEL, Models.SBERT_MODEL],
-            },
-            DemoDatasetNames.BIRD_SPECIES,
-        ),
-        (
-            'image',
-            ['image'],
-            ['label'],
-            {
-                'image_model': [Models.CLIP_MODEL],
-            },
-            DemoDatasetNames.BIRD_SPECIES,
-        ),
-        (
             'text',
             ['lyrics'],
             [],
@@ -54,15 +35,6 @@ from now.demo_data import DemoDatasetNames
                 'description_model': [Models.CLIP_MODEL],
             },
             DemoDatasetNames.TUMBLR_GIFS_10K,
-        ),
-        (
-            'text',
-            ['image'],
-            ['label'],
-            {
-                'image_model': [Models.CLIP_MODEL],
-            },
-            DemoDatasetNames.BEST_ARTWORKS,
         ),
     ],
 )
