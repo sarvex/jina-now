@@ -44,7 +44,7 @@ from now.demo_data import DemoDatasetNames
 )
 @pytest.mark.timeout(60 * 10)
 def test_end_to_end(
-    # cleanup,
+    cleanup,
     random_flow_name,
     query_fields,
     index_fields,
