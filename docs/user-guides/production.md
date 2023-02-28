@@ -63,3 +63,17 @@ To update your API keys use this simple script:
 ```bash
 python now/admin/update_api_keys.py
 ```
+
+## Elasticsearch Index Configuration
+
+NOW uses [Elastic Cloud](https://www.elastic.co/cloud/) as storage backend. Each new app deployment will be provisioned an index, secured with an api key,
+only accessible to the indexer within  the search app. You can configure the index settings such as `shards` and `replicas` by
+setting these as environment variables before deploying your app, for example:
+
+```bash
+export PROVISION_SHARDS=2
+export PROVISION_REPLICAS=1
+```
+
+This will set the index to have 2 shards and 1 replica. The default values are 1 shard and 0 replicas when these
+environment variables are not set.
