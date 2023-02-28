@@ -129,3 +129,6 @@ def test_text_search_with_semantic_scores(
     results = DocumentArray.from_json(response.content)
     # the mock writes the call args into the response tags
     assert results[0].tags['parameters']['semantic_scores']
+    assert results[0].tags['parameters']['semantic_scores'] == [
+        ['text_0', 'text', 'clip', 1]
+    ]
