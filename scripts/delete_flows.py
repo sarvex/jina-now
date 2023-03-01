@@ -1,7 +1,13 @@
+import asyncio
+import os
+
 from jcloud.flow import CloudFlow
 
-from now.deployment.deployment import get_or_create_eventloop, terminate_wolf
-from tests.integration.conftest import get_branch_name_for_flows
+
+def create_eventloop():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    return asyncio.get_event_loop()
 
 
 def delete_ci_flows():
@@ -13,12 +19,12 @@ def delete_ci_flows():
     and look for those who have the current branch name inside their name, and delete only those.
     """
     print('Deleting the flows that were created during this CI run')
-    branch_name = get_branch_name_for_flows()
-    loop = get_or_create_eventloop()
+    branch_name = os.environ.get('GITHUB_HEAD_REF', 'local_setup').lower()[:15]
+    loop = create_eventloop()
     jflows = loop.run_until_complete(CloudFlow().list_all())['flows']
     for flow in jflows:
         if flow['status']['phase'] != 'Deleted' and branch_name in flow['id']:
-            terminate_wolf(flow['id'])
+            CloudFlow(flow_id=flow['id']).__exit__()
             print(f"flow {flow['id']} is successfully terminated")
     print('Idle flows are cleaned up')
 
