@@ -245,3 +245,17 @@ jobs:
       - name: Success
         if: ${{ success() }}
         run: echo "All Done"
+
+  # Clean up flows created during the current CI run if there are any left
+  cleanup-flows:
+    runs-on: ubuntu-latest
+    needs: [core-test]
+    if: always()
+    steps:
+      - uses: actions/checkout@v2
+      - name: Delete Flows
+        run: |
+          python ./scripts/delete_flows.py
+      - name: Success
+        if: ${{ success() }}
+        run: echo "All Done"
