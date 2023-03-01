@@ -353,6 +353,7 @@ def toggle_bm25_slider():
 
 
 def get_encoder_options(q_field: str, id_field: str) -> List[str]:
+    id_field = st.session_state.field_names_to_dataclass_fields[id_field]
     encoders_options = [
         encoder
         for encoder in st.session_state.index_fields_dict.keys()
