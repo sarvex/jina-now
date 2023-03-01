@@ -7,7 +7,7 @@ from now.utils import BetterEnum
 NOW_GATEWAY_VERSION = '0.0.4-fix-use-spot-0'
 NOW_PREPROCESSOR_VERSION = '0.0.124-fix-use-spot-0'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.148-fix-use-spot-0'
-NOW_AUTOCOMPLETE_VERSION = '0.0.11-feat-add-storage-to-autocomplete-3'
+NOW_AUTOCOMPLETE_VERSION = '0.0.11-feat-add-storage-to-autocomplete-4'
 
 
 class Apps(BetterEnum):

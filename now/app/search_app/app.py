@@ -84,7 +84,7 @@ class SearchApp(JinaNOWApp):
                 'resources': {
                     'instance': 'C1',
                     'capacity': 'spot',
-                    'storage': {'kind': 'efs', 'size': '1G', 'retain': 'true'},
+                    'storage': {'kind': 'efs', 'size': '1G', 'retain': True},
                 },
             },
         }
