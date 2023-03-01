@@ -9,7 +9,6 @@ from tests.integration.remote.assertions import (
     assert_suggest,
     get_search_request_body,
 )
-
 from now.cli import cli
 from now.constants import DatasetTypes, Models
 
