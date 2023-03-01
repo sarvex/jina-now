@@ -243,9 +243,7 @@ jobs:
       - name: Download all coverage artifacts
         uses: actions/download-artifact@v2
       - name: Run coverage
-        run: |
-          coverage combine coverage*/.coverage*
-          coverage xml
+        run: coverage xml
       - name: Upload coverage from test to Codecov
         uses: codecov/codecov-action@v2
         with:
