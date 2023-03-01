@@ -29,5 +29,5 @@ executors:
 #        target: 1
       resources:
         instance: C6
-      capacity: spot
+        capacity: spot
     replicas: 2
