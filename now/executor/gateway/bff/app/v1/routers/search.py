@@ -147,10 +147,11 @@ async def search(
             sem_score[1] = user_input_in_bff.field_names_to_dataclass_fields[
                 sem_score[1]
             ]
-        except:
-            raise ValueError(
-                f'Field {sem_score[1]} not found in dataclass. Please select possible values: {user_input_in_bff.field_names_to_dataclass_fields.keys()}'
-            )
+        except KeyError:
+            if sem_score[1] != 'bm25_text':
+                raise KeyError(
+                    f'Field {sem_score[1]} not found in dataclass. Please select possible values: {user_input_in_bff.field_names_to_dataclass_fields.keys()}'
+                )
         semantic_scores.append(sem_score)
 
     query_filter = {}

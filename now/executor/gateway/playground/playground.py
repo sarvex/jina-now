@@ -425,7 +425,6 @@ def customize_semantic_scores():
             options=list(st.session_state.field_names_to_dataclass_fields.keys()),
             key='index_field_' + str(i),
         )
-        id_field = st.session_state.field_names_to_dataclass_fields[id_field]
         encoder_options = get_encoder_options(q_field, id_field)
         enc = encoder.selectbox(
             label='encoder',

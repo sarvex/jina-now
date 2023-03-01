@@ -132,7 +132,10 @@ def test_text_search_with_semantic_scores(
             'query': [
                 {'name': 'text', 'value': 'this crazy text', 'modality': 'text'},
             ],
-            'semantic_scores': [['text', 'image.png', 'clip', 1]],
+            'semantic_scores': [
+                ['text', 'image.png', 'clip', 1],
+                ['text', 'bm25_text', 'bm25', 1],
+            ],
         },
     )
 
