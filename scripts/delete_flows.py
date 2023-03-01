@@ -28,7 +28,9 @@ def delete_ci_flows():
             if flow['status']['phase'] != 'Deleted' and branch_name in flow['id']:
                 CloudFlow(flow_id=flow['id']).__exit__()
                 print(f"flow {flow['id']} is successfully terminated")
-    print('Flows are cleaned up')
+        print('Flows are cleaned up')
+    else:
+        print('This function is supposed to be called only by a CI job')
 
 
 if __name__ == "__main__":
