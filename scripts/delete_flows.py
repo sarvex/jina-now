@@ -6,10 +6,10 @@ from tests.integration.conftest import get_branch_name_for_flows
 
 def delete_ci_flows():
     """
-    Cleans up all flows that were created during a CI run and were not deleted
+    Removes all flows that were created during a CI run and were not deleted
     for some reason (e.g. because the workflow was canceled).
 
-    Since we name flows based on branch name, we just iterate over all flows
+    Since flow names include the branch name, we just iterate over all flows
     and look for those who have the current branch name inside their name, and delete only those.
     """
     print('Deleting the flows that were created during this CI run')
