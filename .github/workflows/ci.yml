@@ -229,7 +229,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Setup JCloud
         run: |
-          pip install jcloud
+          pip install jcloud==0.2.1
           mkdir -p ~/.jina
           touch ~/.jina/config.json
           echo "{\"auth_token\": \"${WOLF_TOKEN}\"}" > ~/.jina/config.json

@@ -78,8 +78,12 @@ def random_flow_name():
 
 
 def get_branch_name_for_flows():
-    # IMPORTANT! if you modify this function, make sure `delete_flows.py` is adjusted.
-    # lower and shorten the branch name because of the limitations on the wolf side
+    """
+    Returns current branch name which is lowered and shortened because of the
+    limitations on the wolf side.
+    In case of a local run, returns 'local_setup'.
+    """
+    # !IMPORTANT! if you modify this function, make sure `delete_flows.py` is adjusted.
     return os.environ.get('GITHUB_HEAD_REF', 'local_setup').lower()[:15]
 
 
