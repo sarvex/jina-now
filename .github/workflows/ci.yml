@@ -195,7 +195,8 @@ jobs:
         id: test
         run: |
           pytest --suppress-no-test-exit-code --cov=now --cov-report=xml -v -s -m "not gpu" --splits 9 --group ${{ matrix.group }} --splitting-algorithm least_duration tests/
-          echo "::set-output name=codecov_flag::now"
+          echo "codecov_flag=now" >> $GITHUB_OUTPUT
+
         timeout-minutes: 20
         env:
           WOLF_TOKEN: ${{ secrets.WOLF_TOKEN }}
@@ -206,11 +207,19 @@ jobs:
 #        if: ${{ failure() || (github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled) }}
 #        uses: mxschmitt/action-tmate@v3
 #        timeout-minutes: 60
-      - name: Upload coverage
-        uses: actions/upload-artifact@v2
+      - name: Check codecov file
+        id: check_files
+        uses: andstor/file-existence-action@v1
         with:
-          name: coverage${{ matrix.group }}
-          path: .coverage
+          files: "coverage.xml"
+      - name: Upload coverage from test to Codecov
+        uses: codecov/codecov-action@v3.1.1
+        if: steps.check_files.outputs.files_exists == 'true'
+        with:
+          file: coverage.xml
+          name: ${{ matrix.group }}-codecov
+          flags: ${{ steps.test.outputs.codecov_flag }}
+          fail_ci_if_error: false
 
   # just for blocking the merge until all parallel core-test are successful
   success-all-test-coverage:
