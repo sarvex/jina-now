@@ -229,6 +229,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Add JCloud auth token
         run: |
+          pip install jcloud
           mkdir -p ~/.jina
           touch ~/.jina/config.json
           echo "{\"auth_token\": \"${WOLF_TOKEN}\"}" > ~/.jina/config.json
