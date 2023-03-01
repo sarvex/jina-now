@@ -5,6 +5,9 @@ from jcloud.flow import CloudFlow
 
 
 def deploy_wolf(path: str):
+    # print file content from the path
+    with open(path) as f:
+        print(f'deploy yaml on wolf:\n{f.read()}')
     return CloudFlow(path=path).__enter__()
 
 
