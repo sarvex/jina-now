@@ -6,19 +6,10 @@ from docarray.typing import Image, Text
 from tests.integration.offline_flow.flow import OfflineFlow
 
 from now.executor.gateway.bff.app.v1.models.search import SearchRequestModel
-from now.executor.gateway.bff.app.v1.routers.search import search
 from now.now_dataclasses import UserInput
 
 
-@pytest.mark.asyncio
-async def test_docarray(
-    monkeypatch, setup_service_running, random_index_name, multi_modal_data
-):
-    """
-    Test all executors and bff together without creating a flow.
-    The Clip Encoder is mocked because it is an external executor.
-    Also, the network call for the bff is monkey patched.
-    """
+def get_user_input():
     user_input = UserInput()
     user_input.index_fields = ['product_title', 'product_description', 'product_image']
     user_input.field_names_to_dataclass_fields = {
@@ -26,8 +17,26 @@ async def test_docarray(
         'product_description': 'product_description',
         'product_image': 'product_image',
     }
+    return user_input
 
-    offline_flow = OfflineFlow(monkeypatch, user_input_dict=user_input.__dict__)
+
+@pytest.mark.parametrize('dump_user_input', [get_user_input], indirect=True)
+@pytest.mark.asyncio
+async def test_docarray(
+    dump_user_input,
+    monkeypatch,
+    setup_service_running,
+    random_index_name,
+    multi_modal_data,
+):
+    """
+    Test all executors and bff together without creating a flow.
+    The Clip Encoder is mocked because it is an external executor.
+    Also, the network call for the bff is monkey patched.
+    """
+    from now.executor.gateway.bff.app.v1.routers.search import search
+
+    offline_flow = OfflineFlow(monkeypatch, user_input_dict=get_user_input().__dict__)
 
     index_result = offline_flow.post(
         '/index',
