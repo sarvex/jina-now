@@ -194,7 +194,7 @@ jobs:
       - name: Test
         id: test
         run: |
-          pytest --suppress-no-test-exit-code --cov=now -v -s -m "not gpu" --splits 9 --group ${{ matrix.group }} --splitting-algorithm least_duration tests/
+          pytest --suppress-no-test-exit-code --cov=now --cov-report=xml -v -s -m "not gpu" --splits 9 --group ${{ matrix.group }} --splitting-algorithm least_duration tests/
           echo "::set-output name=codecov_flag::now"
         timeout-minutes: 20
         env:
