@@ -80,10 +80,7 @@ class SearchApp(JinaNOWApp):
                     'metric': 'concurrency',
                     'target': 1,
                 },
-                'resources': {
-                    'instance': 'C1',
-                    'storage': {'kind': 'efs', 'size': '1G', 'retain': 'true'},
-                },
+                'resources': {'instance': 'C1'},
                 'capacity': 'spot',
             },
         }
