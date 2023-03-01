@@ -5,9 +5,9 @@ from docarray.typing import Image, Text, Video
 from now.utils import BetterEnum
 
 NOW_GATEWAY_VERSION = '0.0.4-fix-sem-scores-query-field-11'
-NOW_PREPROCESSOR_VERSION = '0.0.124-refactor-no-batchwise-indexing-1'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.148-feat-compare-flows-27'
-NOW_AUTOCOMPLETE_VERSION = '0.0.11-refactor-custom-gateway-103'
+NOW_PREPROCESSOR_VERSION = '0.0.124-fix-use-spot-0'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.148-fix-use-spot-0'
+NOW_AUTOCOMPLETE_VERSION = '0.0.11-fix-use-spot-0'
 
 
 class Apps(BetterEnum):
@@ -53,6 +53,7 @@ BASE_STORAGE_URL = (
 )
 
 EXTERNAL_CLIP_HOST = 'encoderclip-pretty-javelin-3aceb7f2cd.wolf.jina.ai'
+EXTERNAL_SBERT_HOST = 'encodersbert-flow-external-sbert-5cc8f2c38e.wolf.jina.ai'
 
 DEFAULT_FLOW_NAME = 'nowapi'
 PREFETCH_NR = 10
