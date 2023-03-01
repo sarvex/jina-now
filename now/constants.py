@@ -7,7 +7,7 @@ from now.utils import BetterEnum
 NOW_GATEWAY_VERSION = '0.0.4-feat-compare-flows-27'
 NOW_PREPROCESSOR_VERSION = '0.0.124-refactor-no-batchwise-indexing-1'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.148-feat-compare-flows-27'
-NOW_AUTOCOMPLETE_VERSION = '0.0.11-feat-add-storage-to-autocomplete-1'
+NOW_AUTOCOMPLETE_VERSION = '0.0.11-feat-add-storage-to-autocomplete-2'
 
 
 class Apps(BetterEnum):
