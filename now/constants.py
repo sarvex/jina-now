@@ -4,10 +4,11 @@ from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-NOW_GATEWAY_VERSION = '0.0.4-feat-change-auth-http-62'
-NOW_PREPROCESSOR_VERSION = '0.0.123-feat-integrate-billing-72'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.147-feat-integrate-billing-72'
-NOW_AUTOCOMPLETE_VERSION = '0.0.11-feat-integrate-billing-72'
+
+NOW_GATEWAY_VERSION = '0.0.4-feat-change-auth-http-63'
+NOW_PREPROCESSOR_VERSION = '0.0.123-feat-integrate-billing-73'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.147-feat-integrate-billing-73'
+NOW_AUTOCOMPLETE_VERSION = '0.0.11-feat-integrate-billing-73'
 
 
 class Apps(BetterEnum):
@@ -53,6 +54,7 @@ BASE_STORAGE_URL = (
 )
 
 EXTERNAL_CLIP_HOST = 'encoderclip-pretty-javelin-3aceb7f2cd.wolf.jina.ai'
+EXTERNAL_SBERT_HOST = 'encodersbert-flow-external-sbert-5cc8f2c38e.wolf.jina.ai'
 
 DEFAULT_FLOW_NAME = 'nowapi'
 PREFETCH_NR = 10
