@@ -10,6 +10,10 @@ on:
 
   pull_request:
 
+concurrency:
+  group: ${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: true
+
 jobs:
   commit-lint:
     runs-on: ubuntu-latest
