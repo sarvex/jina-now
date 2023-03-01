@@ -38,10 +38,10 @@ def run(
     :return:
     """
     # todo: temporary fix to dummy update the user_input
-    user_input.index_field_candidates_to_modalities.update({'blip2_text': Text})
-    user_input.index_fields.append('blip2_text')
+    user_input.index_field_candidates_to_modalities.update({'blip2_caption': Text})
+    user_input.index_fields.append('blip2_caption')
     user_input.model_choices.update(
-        {'blip2_text': [Models.CLIP_MODEL, Models.SBERT_MODEL]}
+        {'blip2_caption': [Models.CLIP_MODEL, Models.SBERT_MODEL]}
     )
 
     print_callback = kwargs.get('print_callback', print)
@@ -155,7 +155,7 @@ def call_flow(
         inputs=dataset,
         show_progress=True,
         parameters=parameters,
-        continue_on_error=True,
+        continue_on_error=False,
         prefetch=100,
         on_done=kwargs.get('on_done', None),
         on_error=kwargs.get('on_error', None),

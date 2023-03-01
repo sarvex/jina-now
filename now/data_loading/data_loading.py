@@ -270,14 +270,14 @@ def create_docs_from_subdirectories(
                 kwargs[field_names_to_dataclass_fields[file]] = file_full_path
                 # match file_full_path to entries in uri2caption.json
                 if file_full_path in uri2caption:
-                    kwargs['blip2_text'] = uri2caption[file_full_path]
+                    kwargs['blip2_caption'] = uri2caption[file_full_path]
         # next check json files that can also contain index fields, and carry on data
         for file, file_full_path in file_info:
             if file.endswith('.json'):
                 if is_s3_dataset:
                     _s3_uri_for_tags = file_full_path
                     for field in data_class.__annotations__.keys():
-                        if field not in kwargs.keys() and field != 'blip2_text':
+                        if field not in kwargs.keys() and field != 'blip2_caption':
                             kwargs[field] = file_full_path
                 else:
                     with open(file_full_path) as f:
@@ -287,10 +287,10 @@ def create_docs_from_subdirectories(
                             kwargs[field_names_to_dataclass_fields[field]] = value
                         else:
                             tags_loaded_local[field] = value
-        # assert 'blip2_text' in kwargs, f'No blip2_text found for {kwargs}'
-        if 'blip2_text' not in kwargs:
+        # assert 'blip2_caption' in kwargs, f'No blip2_caption found for {kwargs}'
+        if 'blip2_caption' not in kwargs:
             uris_no_caption += 1
-            kwargs['blip2_text'] = ''
+            kwargs['blip2_caption'] = ''
         doc = Document(data_class(**kwargs))
         if _s3_uri_for_tags:
             doc._metadata['_s3_uri_for_tags'] = _s3_uri_for_tags

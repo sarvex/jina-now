@@ -193,8 +193,8 @@ class SearchApp(JinaNOWApp):
         :return: executors stubs with filled-in env vars
         """
         flow_yaml_executors = [
-            # self.autocomplete_stub(testing),
-            # self.preprocessor_stub(testing),
+            self.autocomplete_stub(testing),
+            self.preprocessor_stub(testing),
         ]
 
         encoder2dim = {}
