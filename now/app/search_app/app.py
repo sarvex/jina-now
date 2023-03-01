@@ -83,7 +83,7 @@ class SearchApp(JinaNOWApp):
                 },
                 'resources': {
                     'instance': 'C1',
-                    'storage': {'kind': 'efs', 'size': '1G'},
+                    'storage': {'kind': 'efs', 'size': '1G', 'retain': 'true'},
                 },
                 'capacity': 'spot',
             },
