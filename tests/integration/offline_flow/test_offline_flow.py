@@ -20,7 +20,7 @@ def get_user_input():
     return user_input
 
 
-@pytest.mark.parametrize('dump_user_input', [get_user_input], indirect=True)
+@pytest.mark.parametrize('dump_user_input', [get_user_input()], indirect=True)
 @pytest.mark.asyncio
 async def test_docarray(
     dump_user_input,
