@@ -75,8 +75,17 @@ class SearchApp(JinaNOWApp):
             'needs': 'gateway',
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'jcloud': {
-                'resources': {'instance': 'C1'},
-                'capacity': 'spot',
+                'autoscale': {
+                    'min': 0,
+                    'max': 1,
+                    'metric': 'concurrency',
+                    'target': 1,
+                },
+                'resources': {
+                    'instance': 'C1',
+                    'capacity': 'spot',
+                    'storage': {'kind': 'efs', 'size': '1M'},
+                },
             },
         }
 
@@ -95,8 +104,7 @@ class SearchApp(JinaNOWApp):
                     'metric': 'concurrency',
                     'target': 1,
                 },
-                'resources': {'instance': 'C4'},
-                'capacity': 'spot',
+                'resources': {'instance': 'C4', 'capacity': 'spot'},
             },
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
         }
@@ -182,8 +190,7 @@ class SearchApp(JinaNOWApp):
                     'provision-shards': provision_shards,
                     'provision-replicas': provision_replicas,
                 },
-                'resources': {'instance': 'C6'},
-                'capacity': 'spot',
+                'resources': {'instance': 'C6', 'capacity': 'spot'},
             },
         }
 
