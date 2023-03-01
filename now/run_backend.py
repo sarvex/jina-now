@@ -117,10 +117,6 @@ def index_docs(user_input, dataset, client, print_callback, **kwargs):
     Index the data right away
     """
     print_callback(f"▶ indexing {len(dataset)} documents in batches")
-    for d in dataset:
-        for c in d.chunks:
-            if c.modality == 'image':
-                c.modality = 'video'
     params = {'access_paths': ACCESS_PATHS}
     if user_input.secured:
         params['jwt'] = user_input.jwt

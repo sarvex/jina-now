@@ -8,7 +8,6 @@ import hubble
 from docarray import DocumentArray
 from hubble.excepts import AuthenticationRequiredError
 from jina import Executor, requests
-from jina.logging.logger import JinaLogger
 
 from now.now_dataclasses import UserInput
 
@@ -27,7 +26,6 @@ def secure_request(level: int, on: str = None):
     def decorator(func):
         @requests(on=on)
         def wrapper(*args, **kwargs):
-            log(*args, **kwargs)
             _check_user(
                 kwargs,
                 level,
@@ -40,22 +38,6 @@ def secure_request(level: int, on: str = None):
         return wrapper
 
     return decorator
-
-
-def log(*args, **kwargs):
-    print('args:', args, kwargs)
-    if 'docs' in kwargs:
-        docs = kwargs['docs']
-        length = len(docs)
-        logger.info(f'search {length} results')
-        if length > 0:
-            # info = f'first document:\n{docs[0]._plot_recursion()}'
-            print('first document')
-            docs[0].summary()
-            # print(info)
-            # logger.info(info)
-    if 'parameters' in kwargs:
-        logger.info(f'parameters:\n{json.dumps(kwargs["parameters"], indent=2)}')
 
 
 def _check_user(kwargs, level, user_emails, admin_emails, api_keys):
@@ -138,7 +120,6 @@ def get_auth_executor_class():
             :param pats: List of PATs of the allowed users with access to this flow.
             """
             super().__init__(*args, **kwargs)
-            self.logger = JinaLogger(self.__class__.__name__)
             self.admin_emails = admin_emails
             self.user_emails = user_emails
             self.api_keys = api_keys

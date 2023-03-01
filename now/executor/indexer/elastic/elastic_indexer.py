@@ -90,7 +90,6 @@ class NOWElasticIndexer(Executor):
         }
         self.es_config = es_config or {'verify_certs': False}
         self.es_mapping = es_mapping or self.generate_es_mapping()
-        print('# self.es_mapping', self.es_mapping)
         self.setup_elastic_server()
         self.es = Elasticsearch(hosts=self.hosts, **self.es_config, ssl_show_warn=False)
         wait_until_cluster_is_up(self.es, self.hosts)
@@ -194,7 +193,6 @@ class NOWElasticIndexer(Executor):
         es_docs = convert_doc_map_to_es(
             docs_map, self.index_name, self.encoder_to_fields
         )
-        print('# indexing', 'es_docs', es_docs)
         success, _ = bulk(self.es, es_docs)
         self.es.indices.refresh(index=self.index_name)
         if success:
@@ -260,7 +258,6 @@ class NOWElasticIndexer(Executor):
             filter=filter,
             query_to_curated_ids=self.query_to_curated_ids,
         )
-        print('# es_queries', es_queries)
         for doc, query in es_queries:
             result = self.es.search(
                 index=self.index_name,
@@ -441,12 +438,9 @@ class NOWElasticIndexer(Executor):
             }
         }
         """
-        print('# parameters', parameters)
         search_filter = parameters.get('query_to_filter', None)
-        print('# search_filter', search_filter)
         if search_filter:
             self.update_curated_ids(search_filter)
-            print('# self.query_to_curated_ids', self.query_to_curated_ids)
         else:
             raise ValueError('No filter provided for curating.')
 

@@ -164,11 +164,6 @@ def deploy_streamlit(user_input: UserInput):
         customize_semantic_scores()
         toggle_score_breakdown()
         search_mapping_list = list(st.session_state['query'].values())
-        print('# search_mapping_list: ', search_mapping_list)
-        print(
-            '# list(st.session_state["query"].keys()): ',
-            list(st.session_state['query'].keys()),
-        )
         if any([d['value'] for d in search_mapping_list]):
             st.session_state.matches = multimodal_search(
                 query_field_values_modalities=list(
