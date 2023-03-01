@@ -30,7 +30,7 @@ def delete_ci_flows():
                 print(f"flow {flow['id']} is successfully terminated")
         print('Flows are cleaned up')
     else:
-        print('This function is supposed to be called only by a CI job.')
+        print('This function is supposed to be called only by a CI job')
 
 
 if __name__ == "__main__":
