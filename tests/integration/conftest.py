@@ -74,7 +74,8 @@ def random_flow_name():
     Creates a random flow name for remote e2e tests, which then will be used to delete the flow.
     The name contains branch name to help us link the failed/not-deleted flow to the PR.
     """
-    branch_name = os.environ.get('GITHUB_HEAD_REF', 'local_setup')
+    # lower and shorten the branch name because of the limitations on wolf side
+    branch_name = os.environ.get('GITHUB_HEAD_REF', 'local_setup').lower()[:15]
     return f'{branch_name}-{random.randint(0, 10000)}'
 
 
