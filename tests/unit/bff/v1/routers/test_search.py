@@ -144,6 +144,6 @@ def test_text_search_with_semantic_scores(
     # the mock writes the call args into the response tags
     assert results[0].tags['parameters']['semantic_scores']
     assert results[0].tags['parameters']['semantic_scores'] == [
-        ['text_0', 'image_0', 'clip', 1],
+        ['text_0', 'product_image', 'clip', 1],
         ['text_0', 'bm25_text', 'bm25', 1],
     ]
