@@ -83,9 +83,9 @@ class SearchApp(JinaNOWApp):
                 },
                 'resources': {
                     'instance': 'C1',
+                    'capacity': 'spot',
                     'storage': {'kind': 'efs', 'size': '1G', 'retain': 'true'},
                 },
-                'capacity': 'spot',
             },
         }
 
@@ -104,8 +104,7 @@ class SearchApp(JinaNOWApp):
                     'metric': 'concurrency',
                     'target': 1,
                 },
-                'resources': {'instance': 'C4'},
-                'capacity': 'spot',
+                'resources': {'instance': 'C4', 'capacity': 'spot'},
             },
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
         }
@@ -191,8 +190,7 @@ class SearchApp(JinaNOWApp):
                     'provision-shards': provision_shards,
                     'provision-replicas': provision_replicas,
                 },
-                'resources': {'instance': 'C6'},
-                'capacity': 'spot',
+                'resources': {'instance': 'C6', 'capacity': 'spot'},
             },
         }
 
