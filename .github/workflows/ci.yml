@@ -239,6 +239,9 @@ jobs:
           coverage xml
       - name: Upload coverage from test to Codecov
         uses: codecov/codecov-action@v2
+      - name: Setup tmate session for debugging
+        uses: mxschmitt/action-tmate@v3
+        timeout-minutes: 60
       - name: Success
         if: ${{ success() }}
         run: echo "All Done"
