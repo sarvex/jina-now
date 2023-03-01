@@ -61,7 +61,7 @@ jobs:
         with:
           files: "coverage.xml"
       - name: Upload coverage from test to Codecov
-        uses: codecov/codecov-action@v3.1.1
+        uses: codecov/codecov-action@v2
         if: steps.check_files.outputs.files_exists == 'true'
         with:
           file: coverage.xml
