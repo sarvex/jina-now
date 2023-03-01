@@ -19,7 +19,7 @@ Executor = get_auth_executor_class()
 class NOWAutoCompleteExecutor2(Executor):
     def __init__(self, words=None, *args, **kwargs):
         self.words = words if words else {}
-        self.auto_complete = None
+        self.autocomplete = None
         self.char_threshold = 100
 
         super().__init__(*args, **kwargs)
@@ -30,7 +30,7 @@ class NOWAutoCompleteExecutor2(Executor):
         if self.words_path and os.path.exists(self.words_path):
             with open(self.words_path, 'r') as fp:
                 self.words = json.load(fp)
-                self.auto_complete = AutoComplete(words=self.words)
+                self.autocomplete = AutoComplete(words=self.words)
 
     def update_save_words(self, word):
         """
