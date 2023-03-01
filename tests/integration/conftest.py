@@ -74,7 +74,8 @@ def random_flow_name():
     Creates a random flow name for remote e2e tests, which then will be used to delete the flow.
     The name contains branch name to help us link the failed/not-deleted flow to the PR.
     """
-    return f'{random.randint(0, 10000)}'
+    branch_name = os.environ.get('GITHUB_HEAD_REF', 'local_setup')
+    return f'{branch_name}-{random.randint(0, 10000)}'
 
 
 def get_flow_id_from_name(flow_name):
