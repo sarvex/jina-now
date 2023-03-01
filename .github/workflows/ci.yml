@@ -227,7 +227,7 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Add JCloud auth token
+      - name: Setup JCloud
         run: |
           pip install jcloud
           mkdir -p ~/.jina
