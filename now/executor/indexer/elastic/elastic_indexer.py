@@ -6,7 +6,6 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import boto3
 from docarray import Document, DocumentArray
-from docarray.typing import Text
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 
@@ -132,9 +131,9 @@ class NOWElasticIndexer(Executor):
         }
 
         for field in self.user_input.index_fields:
-            if self.user_input.index_field_candidates_to_modalities[field] == Text:
+            if self.user_input.index_field_candidates_to_modalities[field] == 'text':
                 es_mapping['properties'][
-                    f"{self.user_input.field_names_to_dataclass_fields[field]}-text"
+                    f"{self.user_input.field_names_to_dataclass_fields[field]}"
                 ] = {'type': 'text', 'analyzer': 'standard'}
 
         if self.user_input.filter_fields:

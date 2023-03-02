@@ -71,7 +71,7 @@ search_examples = {
                 }
             ],
             'create_temp_link': False,
-            'semantic_scores': [('query_text_0', 'title', 'encoderclip', 1.0)],
+            'score_calculation': [('query_text_0', 'title', 'encoderclip', 1.0)],
         },
     },
 }
@@ -139,7 +139,7 @@ async def search(
             'limit': data.limit,
             'filter': query_filter,
             'create_temp_link': data.create_temp_link,
-            'semantic_scores': [
+            'score_calculation': [
                 list(semantic_score) for semantic_score in data.semantic_scores
             ],
             'get_score_breakdown': data.get_score_breakdown,

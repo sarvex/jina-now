@@ -17,6 +17,7 @@ def test_generate_semantic_scores(es_inputs):
         query_docs_map,
         document_mappings,
         default_semantic_scores,
+        _,
     ) = es_inputs
     document_mappings = document_mappings[0]
     encoder_to_fields = {document_mappings[0]: document_mappings[2]}
@@ -39,6 +40,7 @@ def test_build_es_queries(es_inputs):
         query_docs_map,
         document_mappings,
         default_semantic_scores,
+        _,
     ) = es_inputs
     aggregate_embeddings(query_docs_map)
     _, es_query = build_es_queries(

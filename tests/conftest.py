@@ -19,6 +19,7 @@ from urllib3.exceptions import InsecureRequestWarning, SecurityWarning
 from now.data_loading.elasticsearch import ElasticsearchConnector
 from now.deployment.deployment import cmd
 from now.executor.preprocessor import NOWPreprocessor
+from now.now_dataclasses import UserInput
 from now.utils import get_aws_profile
 
 
@@ -193,6 +194,19 @@ def random_index_name():
 def es_inputs(gif_resource_path) -> namedtuple:
     np.random.seed(42)
 
+    user_input = UserInput()
+    user_input.index_fields = ['title', 'excerpt', 'gif']
+    user_input.index_field_candidates_to_modalities = {
+        'title': Text,
+        'excerpt': Text,
+        'gif': Video,
+    }
+    user_input.field_names_to_dataclass_fields = {
+        'title': 'title',
+        'excerpt': 'excerpt',
+        'gif': 'gif',
+    }
+
     @dataclass
     class MMDoc:
         title: Text
@@ -205,10 +219,10 @@ def es_inputs(gif_resource_path) -> namedtuple:
 
     document_mappings = [['clip', 8, ['title', 'gif']]]
 
-    default_semantic_scores = [
+    default_score_calculation = [
         ('query_text', 'title', 'clip', 1),
         ('query_text', 'gif', 'clip', 1),
-        ('query_text', 'my_bm25_query', 'bm25', 1),
+        ('query_text', 'title', 'bm25', 10),
     ]
     docs = [
         MMDoc(
@@ -262,14 +276,16 @@ def es_inputs(gif_resource_path) -> namedtuple:
             'index_docs_map',
             'query_docs_map',
             'document_mappings',
-            'default_semantic_scores',
+            'default_score_calculation',
+            'user_input',
         ],
     )
     return EsInputs(
         index_docs_map,
         query_docs_map,
         document_mappings,
-        default_semantic_scores,
+        default_score_calculation,
+        user_input,
     )
 
 

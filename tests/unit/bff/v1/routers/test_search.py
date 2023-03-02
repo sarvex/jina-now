@@ -121,11 +121,11 @@ def test_text_search_with_semantic_scores(
             'query': [
                 {'name': 'text', 'value': 'this crazy text', 'modality': 'text'},
             ],
-            'semantic_scores': [['text', 'text', 'clip', 1]],
+            'score_calculation': [['text', 'text', 'clip', 1]],
         },
     )
 
     assert response.status_code == status.HTTP_200_OK
     results = DocumentArray.from_json(response.content)
     # the mock writes the call args into the response tags
-    assert results[0].tags['parameters']['semantic_scores']
+    assert results[0].tags['parameters']['score_calculation']

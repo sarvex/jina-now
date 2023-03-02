@@ -21,6 +21,7 @@ def test_convert_doc_map_to_es(es_inputs, random_index_name):
         query_docs_map,
         document_mappings,
         default_semantic_scores,
+        _,
     ) = es_inputs
     document_mappings = document_mappings[0]
     encoder_to_fields = {document_mappings[0]: document_mappings[2]}

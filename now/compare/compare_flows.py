@@ -132,7 +132,7 @@ def _evaluate_query(
         request_body['limit'] = limit
         request_body['query'] = query_dict_search_request
         request_body['create_temp_link'] = True
-        request_body['semantic_scores'] = semantic_scores
+        request_body['score_calculation'] = semantic_scores
         for _ in range(5):
             try:
                 response = requests.post(
