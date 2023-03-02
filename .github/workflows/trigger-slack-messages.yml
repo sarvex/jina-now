@@ -27,6 +27,7 @@ jobs:
 
       - name: Schedule cron job
         run: |
+          ls ${GITHUB_WORKSPACE}
           chmod +x ${GITHUB_WORKSPACE}/scripts/active-flow-emails.sh
           python ${GITHUB_WORKSPACE}/scripts/alert_slack_with_flows.py
 #          # Write cron job to file
