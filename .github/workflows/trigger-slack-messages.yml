@@ -22,7 +22,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -r requirements.txt
+          pip install -r ${GITHUB_WORKSPACE}/scripts/requirements.txt
 
       - name: Schedule cron job
         run: |
