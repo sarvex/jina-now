@@ -85,8 +85,8 @@ def get_branch_name_for_flows():
     """
     # !IMPORTANT! if you modify this function, make sure `delete_flows.py` is adjusted.
     if 'GITHUB_HEAD_REF' in os.environ:
-        return os.environ['GITHUB_HEAD_REF'].lower()[:15] or 'cd_flow'
-    return 'local_setup'
+        return os.environ['GITHUB_HEAD_REF'].lower()[:15] or 'cd-flow'
+    return 'local-setup'
 
 
 def get_flow_id_from_name(flow_name):
