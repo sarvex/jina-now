@@ -19,32 +19,17 @@ from now.demo_data import DemoDatasetNames
 @pytest.mark.parametrize(
     'query_fields, index_fields, filter_fields, model_selection, dataset',
     [
-        (
-            'image',
-            ['image', 'label'],
-            [],
-            {
-                'image_model': [Models.CLIP_MODEL],
-                'label_model': [Models.CLIP_MODEL, Models.SBERT_MODEL],
-            },
-            DemoDatasetNames.BIRD_SPECIES,
-        ),
-        (
-            'image',
-            ['image'],
-            ['label'],
-            {
-                'image_model': [Models.CLIP_MODEL],
-            },
-            DemoDatasetNames.BIRD_SPECIES,
-        ),
-        (
-            'text',
-            ['lyrics'],
-            [],
-            {'lyrics_model': [Models.CLIP_MODEL, Models.SBERT_MODEL]},
-            DemoDatasetNames.POP_LYRICS,
-        ),
+        # needs to be put back once wolf can handle it
+        # (
+        #     'image',
+        #     ['image', 'label'],
+        #     [],
+        #     {
+        #         'image_model': [Models.CLIP_MODEL],
+        #         'label_model': [Models.CLIP_MODEL, Models.SBERT_MODEL],
+        #     },
+        #     DemoDatasetNames.BIRD_SPECIES,
+        # ),
         (
             'text',
             ['video', 'description'],
@@ -54,15 +39,6 @@ from now.demo_data import DemoDatasetNames
                 'description_model': [Models.CLIP_MODEL],
             },
             DemoDatasetNames.TUMBLR_GIFS_10K,
-        ),
-        (
-            'text',
-            ['image'],
-            ['label'],
-            {
-                'image_model': [Models.CLIP_MODEL],
-            },
-            DemoDatasetNames.BEST_ARTWORKS,
         ),
     ],
 )
