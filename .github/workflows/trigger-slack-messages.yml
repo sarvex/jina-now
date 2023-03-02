@@ -20,16 +20,14 @@ jobs:
         with:
           python-version: 3.7
 
-#      - name: Install dependencies
-#        run: |
-#          pip install -r ${GITHUB_WORKSPACE}/scripts/requirements.txt
-      - name: Install slack_sdk
-        run: pip install slack_sdk
+      - name: Install dependencies
+        run: |
+          pip install -r ${GITHUB_WORKSPACE}/scripts/requirements.txt
 
       - name: Schedule cron job
         run: |
           chmod +x ${GITHUB_WORKSPACE}/scripts/active-flow-emails.sh
-          /usr/bin/python3 ${GITHUB_WORKSPACE}/scripts/alert_slack_with_flows.py
+          python ${GITHUB_WORKSPACE}/scripts/alert_slack_with_flows.py
 #          # Write cron job to file
 #          echo "0 17 * * * /usr/bin/python3 ${GITHUB_WORKSPACE}/scripts/alert_slack_with_flows.py" > ${HOME}/mycron
 #
