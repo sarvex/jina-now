@@ -11,7 +11,7 @@ from now.utils import docarray_typing_to_modality_string
 
 def update_dict_with_no_overwrite(dict1: Dict, dict2: Dict):
     """
-    Update dict1 with dict2, but only if the key does not exist in dict1
+    Update dict1 with dict2, but only if the key does not exist in dict1.
 
     :param dict1: dict to be updated
     :param dict2: dict to be used for updating
