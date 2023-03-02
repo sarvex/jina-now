@@ -20,9 +20,11 @@ jobs:
         with:
           python-version: 3.7
 
-      - name: Install dependencies
-        run: |
-          pip install -r ${GITHUB_WORKSPACE}/scripts/requirements.txt
+#      - name: Install dependencies
+#        run: |
+#          pip install -r ${GITHUB_WORKSPACE}/scripts/requirements.txt
+      - name: Install slack_sdk
+        run: pip install slack_sdk
 
       - name: Schedule cron job
         run: |
