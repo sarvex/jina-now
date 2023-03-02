@@ -118,12 +118,13 @@ class JinaNOWApp:
             'uses_with': {'user_input_dict': user_input.to_safe_dict()},
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'jcloud': {
-                'autoscale': {
-                    'min': 0,
-                    'max': 1,
-                    'metric': 'concurrency',
-                    'target': 1,
-                },
+                # Commented, until wolf fixes multiprotocol gateway + autoscale
+                # 'autoscale': {
+                #     'min': 0,
+                #     'max': 1,
+                #     'metric': 'concurrency',
+                #     'target': 1,
+                # },
                 'resources': {'instance': 'C5', 'capacity': 'spot'},
             },
         }
