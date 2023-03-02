@@ -124,6 +124,8 @@ def search(
     if not data.jwt and auth_token:
         data.jwt['token'] = auth_token
     print(f'search bff level token: {data.jwt}')
+    if isinstance(data.jwt['token'], dict):
+        data.jwt['token'] = data.jwt['token']['token']
     fields_modalities_mapping = {}
     fields_values_mapping = {}
 
