@@ -6,6 +6,8 @@ from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 
 client = WebClient(token=os.environ.get('SLACK_API_TOKEN'))
+print('=================================')
+print(f"./{os.environ.get('FILE_PATH')}/scripts/active-flow-emails.sh")
 script_output = subprocess.check_output(
     [
         f"./{os.environ.get('FILE_PATH')}/scripts/active-flow-emails.sh",
