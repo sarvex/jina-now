@@ -1,0 +1,38 @@
+name: Daily Python Script
+
+on:
+  push:
+    branches:
+      - feat-get-flow-emails
+
+jobs:
+  run_script:
+    runs-on: ubuntu-latest
+    env:
+      SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
+      M2M_TOKEN: ${{ secrets.M2M_TOKEN }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Schedule cron job
+        run: |
+          chmod +x ${GITHUB_WORKSPACE}/scripts/active-flow-emails.sh
+          /usr/bin/python3 ${GITHUB_WORKSPACE}/scripts/alert_slack_with_flows.py
+#          # Write cron job to file
+#          echo "0 17 * * * /usr/bin/python3 ${GITHUB_WORKSPACE}/scripts/alert_slack_with_flows.py" > ${HOME}/mycron
+#
+#          # Install cron job from file
+#          crontab ${HOME}/mycron
+#
+#          # Restart cron service
+#          sudo service cron restart

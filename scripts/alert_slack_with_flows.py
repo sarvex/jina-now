@@ -1,26 +1,29 @@
+import os
 import subprocess
 from collections import defaultdict
 
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 
-client = WebClient(token="TOKEN")
+client = WebClient(token=os.environ.get('SLACK_API_TOKEN'))
+script_output = subprocess.check_output(
+    ["./active-flow-emails.sh", os.environ.get('M2M_TOKEN')], universal_newlines=True
+)
 
-output = subprocess.check_output(["./active-flow-emails.sh"], universal_newlines=True)
+lines = list(filter(None, script_output.split('\n')))
+rows = ""
 
-lines = list(filter(None, output.split('\n')))
-users = ""
-dct_executors = defaultdict(int)
-dct_ids = defaultdict(list)
+dict_executors = defaultdict(int)
+dict_ids = defaultdict(list)
 for line in lines:
     email, num_executors, flow_id = line.split(', ')
-    dct_executors[email] += int(num_executors)
-    dct_ids[email].append(flow_id)
+    dict_executors[email] += int(num_executors)
+    dict_ids[email].append(flow_id)
 
 for email, executor_count in sorted(
-    dct_executors.items(), key=lambda kv: kv[1], reverse=True
+    dict_executors.items(), key=lambda kv: kv[1], reverse=True
 ):
-    users += f"- {email} has {executor_count} active executors in the flow IDs {', '.join(dct_ids[email])}\n"
+    rows += f"- {email} has {executor_count} active executors in the flow IDs {', '.join(dict_ids[email])}\n"
 
 message = {
     "channel": "#slack-function-test",
@@ -33,7 +36,7 @@ message = {
             },
         },
         {"type": "divider"},
-        {"type": "section", "fields": [{"type": "mrkdwn", "text": users}]},
+        {"type": "section", "fields": [{"type": "mrkdwn", "text": rows}]},
     ],
 }
 
