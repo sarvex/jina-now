@@ -8,7 +8,7 @@ from slack_sdk.errors import SlackApiError
 client = WebClient(token=os.environ.get('SLACK_API_TOKEN'))
 script_output = subprocess.check_output(
     [
-        f".{os.environ.get('FILE_PATH')}/scripts/active-flow-emails.sh",
+        f"sh {os.environ.get('FILE_PATH')}/scripts/active-flow-emails.sh",
         os.environ.get('M2M_TOKEN'),
     ],
     universal_newlines=True,
