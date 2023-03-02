@@ -134,7 +134,6 @@ def get_auth_executor_class():
                     attr_name,
                     user_input_dict.get(attr_name, prev_value),
                 )
-            print('jwt: ', self.user_input.jwt)
             # TODO admin email must be persisted as well
             # TODO also, please remove duplicate code
 

@@ -1,5 +1,6 @@
 """ Module holds reusable fixtures """
 import base64
+import multiprocessing
 import os
 import random
 import time
@@ -12,6 +13,7 @@ import pytest
 from docarray import Document, DocumentArray, dataclass, field
 from docarray.typing import Image, Text, Video
 from elasticsearch import Elasticsearch
+from jina import Flow
 from tests.unit.data_loading.elastic.example_dataset import ExampleDataset
 from tests.unit.data_loading.elastic.utils import delete_es_index
 from urllib3.exceptions import InsecureRequestWarning, SecurityWarning
@@ -19,7 +21,53 @@ from urllib3.exceptions import InsecureRequestWarning, SecurityWarning
 from now.data_loading.elasticsearch import ElasticsearchConnector
 from now.deployment.deployment import cmd
 from now.executor.preprocessor import NOWPreprocessor
-from now.utils import get_aws_profile
+from now.utils import get_aws_profile, write_flow_file
+
+
+@pytest.fixture
+def get_flow(request, random_index_name, tmpdir):
+    params = request.param
+    docs, user_input = request.getfixturevalue(params)
+    event = multiprocessing.Event()
+    flow = FlowThread(event, user_input, tmpdir)
+    flow.start()
+    while not flow.is_flow_ready():
+        time.sleep(1)
+    if isinstance(params, tuple):
+        yield
+    elif isinstance(params, str):
+        yield docs, user_input
+    event.set()
+    time.sleep(1)
+    flow.terminate()
+
+
+class FlowThread(multiprocessing.Process):
+    def __init__(
+        self,
+        event,
+        user_input,
+        tmpdir,
+    ):
+        multiprocessing.Process.__init__(self)
+
+        self.event = event
+        user_input.app_instance.setup(user_input=user_input, testing=True)
+        for executor in user_input.app_instance.flow_yaml['executors']:
+            if not executor.get('external'):
+                executor['uses_metas'] = {'workspace': str(tmpdir)}
+        flow_file = os.path.join(tmpdir, 'flow.yml')
+        write_flow_file(user_input.app_instance.flow_yaml, flow_file)
+        self.flow = Flow.load_config(flow_file)
+
+    def is_flow_ready(self):
+        return self.flow.is_flow_ready()
+
+    def run(self):
+        with self.flow:
+            while True:
+                if self.event.is_set():
+                    break
 
 
 @pytest.fixture()

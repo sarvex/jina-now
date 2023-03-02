@@ -37,7 +37,6 @@ def test_end_to_end(get_flow, setup_service_running, random_index_name):
     )
 
     request_headers, request_body = get_request_body()
-    print('REQUEST HEADERS: ', request_headers)
     request_body['query'] = [{'name': 'text', 'value': 'test', 'modality': 'text'}]
     response = requests.post(
         SEARCH_URL,
