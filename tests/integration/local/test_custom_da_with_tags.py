@@ -2,11 +2,7 @@ import hubble
 import pytest
 import requests
 from jina import Client
-from tests.integration.local.conftest import (  # noqa
-    SEARCH_URL,
-    get_flow,
-    get_request_body,
-)
+from tests.integration.local.conftest import SEARCH_URL, get_request_body  # noqa
 
 from now.constants import ACCESS_PATHS
 
