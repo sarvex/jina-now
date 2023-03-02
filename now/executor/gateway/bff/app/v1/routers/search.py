@@ -123,6 +123,7 @@ def search(
     # if jwt not set in data, use the one from header
     if not data.jwt and auth_token:
         data.jwt['token'] = auth_token
+    print(f'search bff level token: {data.jwt}')
     fields_modalities_mapping = {}
     fields_values_mapping = {}
 

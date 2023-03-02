@@ -92,7 +92,13 @@ def get_security_app(
                     }
                 }
             }
-        print('current_user', current_user)
+        logger.info(
+            {
+                'type': 'HTTP',
+                'timestamp': current_time(),
+                **current_user,
+            }
+        )
         bd = body.dict()  # type: Dict
         req_generator_input = bd
         req_generator_input['data_type'] = DataInputType.DICT
