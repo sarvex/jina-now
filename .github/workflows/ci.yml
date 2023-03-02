@@ -10,6 +10,10 @@ on:
 
   pull_request:
 
+concurrency:
+  group: ${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: true
+
 jobs:
   commit-lint:
     runs-on: ubuntu-latest
@@ -220,10 +224,38 @@ jobs:
           flags: ${{ steps.test.outputs.codecov_flag }}
           fail_ci_if_error: false
 
+
+  # Clean up flows created during the current CI run if there are any left
+  cleanup-flows:
+    runs-on: ubuntu-latest
+    needs: [core-test]
+    if: always()
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Setup JCloud
+        run: |
+          pip install jcloud==0.2.1
+          mkdir -p ~/.jina
+          touch ~/.jina/config.json
+          echo "{\"auth_token\": \"${WOLF_TOKEN}\"}" > ~/.jina/config.json
+          cat ~/.jina/config.json
+        env:
+          WOLF_TOKEN: ${{ secrets.WOLF_TOKEN }}
+      - name: Delete Flows
+        run: |
+          python ./scripts/delete_flows.py
+      - name: Success
+        if: ${{ success() }}
+        run: echo "All Done"
+
   # just for blocking the merge until all parallel core-test are successful
   success-all-test:
     runs-on: ubuntu-latest
-    needs: [core-test]
+    needs: [core-test, cleanup-flows]
     if: always()
     steps:
       - uses: actions/checkout@v2
