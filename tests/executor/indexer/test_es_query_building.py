@@ -1,7 +1,7 @@
 from now.executor.indexer.elastic.elastic_indexer import aggregate_embeddings
 from now.executor.indexer.elastic.es_query_building import (
     build_es_queries,
-    generate_semantic_scores,
+    generate_score_calculation,
 )
 
 
@@ -23,7 +23,7 @@ def test_generate_semantic_scores(es_inputs):
     default_semantic_scores = default_semantic_scores[
         :-1
     ]  # omit the last semantic score, contains bm25
-    semantic_scores = generate_semantic_scores(query_docs_map, encoder_to_fields)
+    semantic_scores = generate_score_calculation(query_docs_map, encoder_to_fields)
     assert semantic_scores == default_semantic_scores
 
 
@@ -45,7 +45,7 @@ def test_build_es_queries(es_inputs):
         docs_map=query_docs_map,
         apply_default_bm25=True,
         get_score_breakdown=False,
-        semantic_scores=default_semantic_scores,
+        score_calculation=default_semantic_scores,
     )[0]
     print(es_query)
     assert es_query == {

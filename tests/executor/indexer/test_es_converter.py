@@ -67,7 +67,7 @@ def test_calculate_score_breakdown(es_inputs):
         query_doc=query_doc,
         retrieved_doc=retrieved_doc,
         metric=metric,
-        semantic_scores=default_semantic_scores,
+        score_calculation=default_semantic_scores,
     )
     scores = {
         'total': {'value': 5.0},

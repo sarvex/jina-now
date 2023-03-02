@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import boto3
 from docarray import Document, DocumentArray
+from docarray.typing import Text
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 
@@ -22,7 +23,7 @@ from now.executor.indexer.elastic.es_converter import (
 )
 from now.executor.indexer.elastic.es_query_building import (
     build_es_queries,
-    generate_semantic_scores,
+    generate_score_calculation,
     process_filter,
 )
 
@@ -40,7 +41,7 @@ class NOWElasticIndexer(Executor):
     """
     NOWElasticIndexer indexes Documents into an Elasticsearch instance. To do this,
     it uses helper functions from es_converter, converting documents to and from the accepted Elasticsearch
-    format. It also uses the semantic scores to combine the scores of different fields/encoders,
+    format. It also uses the score calculation to combine the scores of different fields/encoders,
     allowing multi-modal documents to be indexed and searched with multi-modal queries.
     """
 
@@ -127,9 +128,14 @@ class NOWElasticIndexer(Executor):
         es_mapping = {
             'properties': {
                 'id': {'type': 'keyword'},
-                'bm25_text': {'type': 'text', 'analyzer': 'standard'},
             }
         }
+
+        for field in self.user_input.index_fields:
+            if self.user_input.index_field_candidates_to_modalities[field] == Text:
+                es_mapping['properties'][
+                    f"{self.user_input.field_names_to_dataclass_fields[field]}-text"
+                ] = {'type': 'text', 'analyzer': 'standard'}
 
         if self.user_input.filter_fields:
             es_mapping['properties']['tags'] = {'type': 'object', 'properties': {}}
@@ -215,10 +221,9 @@ class NOWElasticIndexer(Executor):
                 - 'limit' (int): Number of matches to get per Document, default 100.
                 - 'get_score_breakdown' (bool): Wether to return the score breakdown, i.e. the scores of each
                     field+encoder combination/comparison.
-                - 'apply_default_bm25' (bool): Whether to apply the default bm25 scoring. Default is False. Will
-                    be ignored if 'custom_bm25_query' is specified.
-                - 'custom_bm25_query' (dict): Custom query to use for BM25. Note: this query can only be
-                    passed if also passing `es_mapping`. Otherwise, only default bm25 scoring is enabled.
+                - 'score_calculation' (List[Tuple]): list of tuples of (query_field, document_field, matching_method,
+                    linear_weight) to show how to calculate the score. Note, that the matching_method is the name of the
+                    encoder or `bm25`.
         :param docs: DocumentArray to search
         """
         if docs_map is None:
@@ -227,20 +232,19 @@ class NOWElasticIndexer(Executor):
                 return DocumentArray()
         aggregate_embeddings(docs_map)
 
+        filter = parameters.get('filter', {})
         limit = parameters.get('limit', self.limit)
         get_score_breakdown = parameters.get('get_score_breakdown', False)
-        custom_bm25_query = parameters.get('custom_bm25_query', None)
-        apply_default_bm25 = parameters.get('apply_default_bm25', False)
-        semantic_scores = parameters.get('semantic_scores', None)
-        if not semantic_scores:
-            semantic_scores = generate_semantic_scores(docs_map, self.encoder_to_fields)
-        filter = parameters.get('filter', {})
+        score_calculation = parameters.get('score_calculation', None)
+        if not score_calculation:
+            score_calculation = generate_score_calculation(
+                docs_map, self.encoder_to_fields
+            )
+
         es_queries = build_es_queries(
             docs_map=docs_map,
-            apply_default_bm25=apply_default_bm25,
             get_score_breakdown=get_score_breakdown,
-            semantic_scores=semantic_scores,
-            custom_bm25_query=custom_bm25_query,
+            score_calculation=score_calculation,
             metric=self.metric,
             filter=filter,
             query_to_curated_ids=self.query_to_curated_ids,
@@ -257,12 +261,13 @@ class NOWElasticIndexer(Executor):
                 es_results=result,
                 get_score_breakdown=get_score_breakdown,
                 metric=self.metric,
-                semantic_scores=semantic_scores,
+                score_calculation=score_calculation,
             )
             doc.tags.pop('embeddings')
             for c in doc.chunks:
                 c.embedding = None
         results = DocumentArray(list(zip(*es_queries))[0])
+
         if (
             parameters.get('create_temp_link', False)
             and self.user_input.dataset_type == DatasetTypes.S3_BUCKET

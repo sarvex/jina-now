@@ -77,8 +77,7 @@ def convert_doc_map_to_es(
                     f'{encoded_field}-{executor_name}.embedding'
                 ] = field_doc.embedding
                 if hasattr(field_doc, 'text') and field_doc.text:
-                    es_doc['bm25_text'] += field_doc.text + ' '
-                    es_doc['text'] = field_doc.text
+                    es_doc[f'{encoded_field}-text'] = field_doc.text
                 if hasattr(field_doc, 'uri') and field_doc.uri:
                     es_doc['uri'] = field_doc.uri
     return list(es_docs.values())
@@ -88,7 +87,6 @@ def get_base_es_doc(doc: Document, index_name: str) -> Dict:
     es_doc = {k: v for k, v in doc.to_dict().items() if v}
     es_doc.pop('chunks', None)
     es_doc.pop('_metadata', None)
-    es_doc['bm25_text'] = get_bm25_fields(doc)
     es_doc['_op_type'] = 'index'
     es_doc['_index'] = index_name
     es_doc['_id'] = doc.id
@@ -102,7 +100,7 @@ def convert_es_results_to_matches(
     es_results: List[Dict],
     get_score_breakdown: bool,
     metric: str,
-    semantic_scores,
+    score_calculation,
 ) -> DocumentArray:
     """
     Transform a list of results from Elasticsearch into a matches in the form of a `DocumentArray`.
@@ -111,7 +109,7 @@ def convert_es_results_to_matches(
     :param es_results: List of dictionaries containing results from Elasticsearch querying.
     :param get_score_breakdown: whether to calculate the score breakdown for matches.
     :param metric: the metric used to calculate the score.
-    :param semantic_scores: the semantic scores for each match.
+    :param score_calculation: the score calculation for each match.
 
     :return: `DocumentArray` that holds all matches in the form of `Document`s.
     """
@@ -120,23 +118,23 @@ def convert_es_results_to_matches(
         d = convert_es_to_da(result, get_score_breakdown)[0]
         d.scores[metric] = NamedScore(value=result['_score'])
         if get_score_breakdown:
-            d = calculate_score_breakdown(query_doc, d, semantic_scores, metric)
+            d = calculate_score_breakdown(query_doc, d, score_calculation, metric)
         d.embedding = None
         matches.append(d)
     return matches
 
 
 def calculate_score_breakdown(
-    query_doc: Document, retrieved_doc: Document, semantic_scores, metric
+    query_doc: Document, retrieved_doc: Document, score_calculation, metric
 ) -> Document:
     """
-    Calculate the score breakdown for a given retrieved document. Each semantic score in the indexer's
-    `semantic_scores` should have a corresponding value, returned inside a list of scores in the documents
+    Calculate the score breakdown for a given retrieved document. Each score calculation in the indexer's
+    `score_calculation` should have a corresponding value, returned inside a list of scores in the documents
     tags under `score_breakdown`.
 
-    :param query_doc: The query document. Contains embeddings for the semantic score calculation at tag level.
+    :param query_doc: The query document. Contains embeddings for the score calculation at tag level.
     :param retrieved_doc: The Elasticsearch results, containing embeddings inside the `_source` field.
-    :param semantic_scores: The semantic scores to be used for the score breakdown.
+    :param score_calculation: The score calculation used for the score breakdown.
     :param metric: The metric to be used for the score breakdown.
 
     :return: List of integers representing the score breakdown.
@@ -150,7 +148,7 @@ def calculate_score_breakdown(
         document_field,
         encoder,
         linear_weight,
-    ) in semantic_scores:
+    ) in score_calculation:
         if encoder == 'bm25':
             add_bm25 = True
             continue
