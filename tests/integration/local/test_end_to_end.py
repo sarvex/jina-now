@@ -6,7 +6,6 @@ from jina import Client
 from tests.integration.local.conftest import (  # noqa: F401
     BASE_URL,
     SEARCH_URL,
-    get_flow,
     get_request_body,
 )
 
