@@ -345,13 +345,6 @@ def delete_score_calculation():
     st.session_state.score_calculation = {}
 
 
-# def toggle_bm25_slider():
-#     if st.session_state.show_bm25_slider:
-#         st.session_state.show_bm25_slider = False
-#     else:
-#         st.session_state.show_bm25_slider = True
-
-
 def get_encoder_options(q_field: str, id_field: str) -> List[str]:
     id_field = st.session_state.field_names_to_dataclass_fields[id_field]
     encoders_options = [
@@ -372,7 +365,6 @@ def customize_score_calculation():
     input_modalities = [
         field['modality'] for field in list(st.session_state.query.values())
     ]
-    # add, delete, bm25 = st.columns([0.3, 0.3, 0.3])
     add, delete = st.columns([0.3, 0.3])
     if add.button('Add score calculation', key='sem_score_button'):
         st.session_state['len_score_calculation'] += 1
@@ -382,38 +374,6 @@ def customize_score_calculation():
             key='delete',
             on_click=delete_score_calculation,
         )
-    # if 'text' in input_modalities and any(
-    #     field_mod == 'text'
-    #     for field_mod in [
-    #         st.session_state.index_fields_dict[encoder][field]
-    #         for encoder in st.session_state.index_fields_dict.keys()
-    #         for field in st.session_state.index_fields_dict[encoder].keys()
-    #     ]
-    # ):
-    #     bm25.button('Add bm25 score', key='bm25', on_click=toggle_bm25_slider)
-    #     if st.session_state.show_bm25_slider:
-    #         query_field_selectbox, bm25_slider = st.columns([0.5, 0.5])
-    #         q_field = query_field_selectbox.selectbox(
-    #             'Select query field for bm25 scoring',
-    #             options=[
-    #                 field
-    #                 for field in st.session_state.query.keys()
-    #                 if field.startswith('text')
-    #             ],
-    #         )
-    #         bm25_weight = bm25_slider.slider(
-    #             label='Adjust bm25 weight',
-    #             min_value=0.0,
-    #             max_value=1.0,
-    #             value=0.5,
-    #             key='weight_bm25',
-    #         )
-    #         st.session_state.score_calculation['bm25'] = [
-    #             q_field,
-    #             'bm25_text',
-    #             'bm25',
-    #             bm25_weight,
-    #         ]
 
     for i in range(st.session_state['len_score_calculation']):
         query_field, index_field, encoder, weight = st.columns([0.25, 0.25, 0.25, 0.25])
@@ -799,9 +759,6 @@ def setup_session_state():
 
     if 'score_calculation' not in st.session_state:
         st.session_state.score_calculation = {}
-
-    # if 'show_bm25_slider' not in st.session_state:
-    #     st.session_state.show_bm25_slider = False
 
     if 'show_score_breakdown' not in st.session_state:
         st.session_state.show_score_breakdown = False

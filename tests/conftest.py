@@ -163,7 +163,7 @@ def dump_user_input(request) -> None:
         os.remove(os.path.join(os.path.expanduser('~'), 'user_input.json'))
     # Now dump the user input
     with open(os.path.join(os.path.expanduser('~'), 'user_input.json'), 'w') as f:
-        json.dump(request.param.__dict__, f)
+        json.dump(request.param.to_safe_dict(), f)
     yield
     os.remove(os.path.join(os.path.expanduser('~'), 'user_input.json'))
 

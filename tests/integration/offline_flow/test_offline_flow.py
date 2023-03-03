@@ -17,6 +17,11 @@ def get_user_input():
         'product_description': 'product_description',
         'product_image': 'product_image',
     }
+    user_input.index_field_candidates_to_modalities = {
+        'product_title': Text,
+        'product_description': Text,
+        'product_image': Image,
+    }
     return user_input
 
 
@@ -36,7 +41,9 @@ async def test_docarray(
     """
     from now.executor.gateway.bff.app.v1.routers.search import search
 
-    offline_flow = OfflineFlow(monkeypatch, user_input_dict=get_user_input().__dict__)
+    offline_flow = OfflineFlow(
+        monkeypatch, user_input_dict=get_user_input().to_safe_dict()
+    )
 
     index_result = offline_flow.post(
         '/index',
