@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
-      M2M_TOKEN: ${{ secrets.HUBBLE_M2M_TOKEN }}
+      HUBBLE_M2M_TOKEN: ${{ secrets.HUBBLE_M2M_TOKEN }}
       FILE_PATH: ${{ github.workspace }}
     steps:
       - name: Checkout code
