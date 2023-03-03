@@ -2,7 +2,7 @@
 
 
 token="$1"
-kubectl get pods -A | grep jnamespace | awk '{print $1}' | uniq -c | sort -nr | head -n 5 | while read name; do
+kubectl get pods -A | grep jnamespace | awk '{print $1}' | uniq -c | sort -nr | while read name; do
   num_executors=$(echo "$name" | cut -d' ' -f1)
   namespace=$(echo "$name" | cut -d' ' -f2)
   flow_id=$(echo "$name" | cut -d- -f2-2)
