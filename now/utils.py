@@ -43,25 +43,6 @@ def to_camel_case(text):
 sigmap = {signal.SIGINT: my_handler, signal.SIGTERM: my_handler}
 
 
-class EnvironmentVariables:
-    def __init__(self, envs: Dict):
-        self._env_keys_added: Dict = envs
-
-    def __enter__(self):
-        for key, val in self._env_keys_added.items():
-            os.environ[key] = str(val)
-
-    def __exit__(self, *args, **kwargs):
-        for key in self._env_keys_added.keys():
-            os.unsetenv(key)
-
-
-def write_env_file(env_file, config):
-    config_string = '\n'.join([f'{key}={value}' for key, value in config.items()])
-    with open(env_file, 'w+') as fp:
-        fp.write(config_string)
-
-
 def write_flow_file(flow_yaml_content, new_yaml_file_path):
     with open(new_yaml_file_path, 'w') as f:
         JAML.dump(
