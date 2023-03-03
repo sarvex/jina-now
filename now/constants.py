@@ -4,7 +4,7 @@ from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-NOW_GATEWAY_VERSION = '0.0.4-fix-sem-scores-query-field-15'
+NOW_GATEWAY_VERSION = '0.0.5-remove-host-port-docs-bff-3'
 NOW_PREPROCESSOR_VERSION = '0.0.125-bump-jcloud'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.149-bump-jcloud'
 NOW_AUTOCOMPLETE_VERSION = '0.0.12-bump-jcloud'

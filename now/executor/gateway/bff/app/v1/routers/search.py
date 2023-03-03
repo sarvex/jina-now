@@ -22,8 +22,6 @@ search_examples = {
         'summary': 'A working example: search with text',
         'description': 'A working example which can be tried out. Search with text on the best artworks dataset.',
         'value': {
-            'host': 'grpcs://now-example-best-artworks.dev.jina.ai',
-            'port': 443,
             'limit': 10,
             'query': [
                 {
@@ -40,8 +38,6 @@ search_examples = {
         'summary': 'A working example: search with text and image',
         'description': 'A working example which can be tried out. Search with text and image on the best artworks dataset.',
         'value': {
-            'host': 'grpcs://now-example-best-artworks.dev.jina.ai',
-            'port': 443,
             'limit': 10,
             'query': [
                 {
@@ -63,8 +59,6 @@ search_examples = {
         'summary': 'A dummy example',
         'description': 'A dummy example,  do not run. For parameter reference only.',
         'value': {
-            'host': 'localhost',
-            'port': 31080,
             'limit': 10,
             'filters': {
                 'tags__color': {'$eq': 'blue'},
@@ -88,8 +82,6 @@ suggestion_examples = {
         'summary': 'A working example: get suggestions for a text query',
         'description': 'A working example which can be tried out. Get autocomplete suggestions for a text query.',
         'value': {
-            'host': 'grpcs://now-example-best-artworks.dev.jina.ai',
-            'port': 443,
             'text': 'cute ca',
         },
     },
@@ -97,8 +89,6 @@ suggestion_examples = {
         'summary': 'A dummy example',
         'description': 'A dummy example,  do not run. For parameter reference only.',
         'value': {
-            'host': 'localhost',
-            'port': 31080,
             'jwt': {'token': '<your token>'},
             'api_key': '<your api key>',
             'text': 'cute cats',
