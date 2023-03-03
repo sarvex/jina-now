@@ -15,6 +15,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+      - name: Set AWS profile
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-1
 
       - name: Install Python
         uses: actions/setup-python@v2
@@ -27,7 +33,7 @@ jobs:
 
       - name: Schedule cron job
         run: |
-          ls ${GITHUB_WORKSPACE}/scripts
+          aws eks update-kubeconfig --region us-east-1 --name jcloud-prod-eks-kcjpa
           echo ${GITHUB_WORKSPACE}
           chmod +x ${GITHUB_WORKSPACE}/scripts/active-flow-emails.sh
           python ${GITHUB_WORKSPACE}/scripts/alert_slack_with_flows.py
