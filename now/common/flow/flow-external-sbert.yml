@@ -1,0 +1,33 @@
+jtype: Flow
+with:
+  monitoring: true
+  env:
+    JINA_LOG_LEVEL: DEBUG
+jcloud:
+  name: flow-external-sbert
+  version: '3.13.2'
+  labels:
+    team: now
+gateway:
+  jcloud:
+    expose: false
+executors:
+  - name: encodersbert
+    uses: jinahub+docker://TransformerSentenceEncoder/
+    uses_with:
+      access_paths: '@cc'
+      model_name: msmarco-distilbert-base-v3
+    env:
+      JINA_LOG_LEVEL: DEBUG
+    jcloud:
+      expose: true
+# needs to be reactivated once wolf supports it
+#      autoscale:
+#        min: 1
+#        max: 15
+#        metric: concurrency
+#        target: 1
+      resources:
+        instance: C6
+        capacity: spot
+    replicas: 2
