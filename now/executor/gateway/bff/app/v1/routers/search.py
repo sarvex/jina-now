@@ -36,7 +36,8 @@ search_examples = {
     },
     'working_text_image': {
         'summary': 'A working example: search with text and image',
-        'description': 'A working example which can be tried out. Search with text and image on the best artworks dataset.',
+        'description': 'A working example which can be tried out. Search with text and image on the best artworks '
+        'dataset.',
         'value': {
             'limit': 10,
             'query': [
@@ -114,7 +115,6 @@ def search(
     # if jwt not set in data, use the one from header
     if not data.jwt and auth_token:
         data.jwt['token'] = auth_token
-    print(f'search bff level token: {data.jwt}')
     if isinstance(data.jwt['token'], dict):
         data.jwt['token'] = data.jwt['token']['token']
     fields_modalities_mapping = {}
@@ -170,7 +170,8 @@ def search(
                 for field_name in doc._metadata['multi_modal_schema'].keys()
             ]
         else:
-            # TODO remove else path. It is only used to support the inmemory indexer since that one is operating on chunks while elastic responds with root documents
+            # TODO remove else path. It is only used to support the inmemory indexer since that one is operating on
+            #  chunks while elastic responds with root documents
             field_names_and_chunks = [['result_field', doc]]
         results = {}
         for field_name, chunk in field_names_and_chunks:
