@@ -49,9 +49,9 @@ class SearchRequestModel(BaseRequestModel):
         'This is useful if the file is stored in a cloud bucket.',
         example=False,
     )
-    semantic_scores: List[Tuple] = Field(
+    score_calculation: List[Tuple] = Field(
         default=[],
-        description='List of tuples where each tuple contains a query_field, index_field, encoder_name and weight.'
+        description='List of tuples where each tuple contains a query_field, index_field, matching_method and weight.'
         ' This defines how scores should be calculated for documents.',
         example=[('query_text', 'title', 'encoderclip', 1.0)],
     )

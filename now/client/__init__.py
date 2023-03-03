@@ -63,7 +63,7 @@ class Client:
             parameters={
                 'limit': app_request.limit,
                 'filter': app_request.filters,
-                'score_calculation': app_request.semantic_scores,
+                'score_calculation': app_request.score_calculation,
             },
         )
         return response

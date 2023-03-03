@@ -202,9 +202,7 @@ class NOWElasticIndexer(Executor):
         docs: Optional[DocumentArray] = None,
         **kwargs,
     ):
-        """Perform traditional bm25 + vector search. By convention, BM25 will search on
-        the 'bm25_text' field of the index. For now, this field contains a concatenation of
-        all text chunks of the documents.
+        """Perform traditional bm25 + vector search.
 
         Search can be performed with candidate filtering. Filters are a triplet (column,operator,value).
         More than a filter can be applied during search. Therefore, conditions for a filter are specified as a list triplets.

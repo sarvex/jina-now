@@ -20,9 +20,9 @@ def generate_score_calculation(
 
     :param docs_map: dictionary mapping encoder to DocumentArray.
     :param encoder_to_fields: dictionary mapping encoder to fields.
-    :return: a list of semantic scores, each of which is a tuple of
+    :return: a list of score calculation, each of which is a tuple of
         (query_field, document_field, encoder, linear_weight).
-        Semantic scores would then be for example:
+        score calculation would then be for example:
         [('query_text', 'title', 'clip', 1.0)]
     """
     score_calculation = []
@@ -151,6 +151,7 @@ def build_es_queries(
         else:
             query_json = script_score
         es_queries.append((docs[doc_id], query_json))
+        print(f'-------\nID: {doc_id}, Query: {query_json}-------\n')
     return es_queries
 
 

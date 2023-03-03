@@ -112,7 +112,7 @@ Optional parameters:
     - example: `5`
   - **filters**: a dictionary of filters, with filter name as key and target as value
     - example: `{'tags__color': {'$eq': 'blue'}, 'tags__price': {'$gt': 100}}`
-  - **semantic_scores**: list of semantic scores defining how fields should be compared and weighted. Each semantic score
+  - **score_calculation**: list of score calculation defining how fields should be compared and weighted. Each score calculation
         must contain 4 items, the query field and index field, the encoding model used to create representations
         for both fields, and the weight this score should have in the overall calculation, ranging between 0 and 1.
         You can also add a bm25 score, replacing the encoding model with the string `'bm25'` as shown in the example.

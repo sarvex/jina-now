@@ -128,7 +128,7 @@ async def search(
         modalities_dict=fields_modalities_mapping,
         field_names_to_dataclass_fields=field_names_to_dataclass_fields,
     )
-    score_calculation = get_semantic_scores(data, field_names_to_dataclass_fields)
+    score_calculation = get_score_calculation(data, field_names_to_dataclass_fields)
 
     query_filter = {}
     for key, value in data.filters.items():
@@ -187,35 +187,30 @@ async def search(
     return matches
 
 
-def get_semantic_scores(
+def get_score_calculation(
     data: SearchRequestModel, field_names_to_dataclass_fields: Dict[str, str]
 ) -> List[List[Any]]:
     """
-    Extract and process the semantic scores from the request model to the format expected by the indexer.
+    Extract and process the score calculation from the request model to the format expected by the indexer.
     This includes converting the field names to the dataclass field names, for the query and for the index fields.
-    Because `bm25_text` is not a field in the dataclass, it is not converted. It is a special field created by the
-    indexer for the bm25 score.
 
     :param data: the request model
     :param field_names_to_dataclass_fields: a mapping from the field names in the request model to the field names in the dataclass
-    :return: the semantic scores in the format expected by the indexer. Example:
-        [['query_text', 'my_product_image', 'encoderclip', 1], ['query_text', 'bm25_text', 'bm25', 1]]
+    :return: the score calculation in the format expected by the indexer. Example:
+        [['query_text', 'my_product_image', 'encoderclip', 1], ['query_text', 'my_product_text', 'bm25', 1]]
     """
-    semantic_scores = []
-    for sem_score in data.semantic_scores:
-        sem_score = list(sem_score)
-        sem_score[0] = field_names_to_dataclass_fields[sem_score[0]]
+    score_calculation = []
+    for scr_calc in data.score_calculation:
+        scr_calc = list(scr_calc)
+        scr_calc[0] = field_names_to_dataclass_fields[scr_calc[0]]
         try:
-            sem_score[1] = user_input_in_bff.field_names_to_dataclass_fields[
-                sem_score[1]
-            ]
+            scr_calc[1] = user_input_in_bff.field_names_to_dataclass_fields[scr_calc[1]]
         except KeyError:
-            if sem_score[1] != 'bm25_text':
-                raise KeyError(
-                    f'Field {sem_score[1]} not found in dataclass. Please select possible values: {user_input_in_bff.field_names_to_dataclass_fields.keys()}'
-                )
-        semantic_scores.append(sem_score)
-    return semantic_scores
+            raise KeyError(
+                f'Field {scr_calc[1]} not found in dataclass. Please select possible values: {user_input_in_bff.field_names_to_dataclass_fields.keys()}'
+            )
+        score_calculation.append(scr_calc)
+    return score_calculation
 
 
 @router.post(

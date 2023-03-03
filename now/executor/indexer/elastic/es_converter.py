@@ -8,13 +8,6 @@ from numpy.linalg import norm
 from now.utils import get_chunk_by_field_name
 
 
-def get_bm25_fields(doc: Document) -> str:
-    try:
-        return doc.bm25_text.text
-    except AttributeError:
-        return ''
-
-
 def convert_es_to_da(
     result: Union[Dict, List[Dict]], get_score_breakdown: bool
 ) -> DocumentArray:

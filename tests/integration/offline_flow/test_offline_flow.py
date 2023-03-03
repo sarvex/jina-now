@@ -48,7 +48,7 @@ async def test_docarray(
     search_result = await search(
         SearchRequestModel(
             query=[{'name': 'text', 'value': 'girl on motorbike', 'modality': 'text'}],
-            semantic_scores=[('text', 'product_title', 'encoderclip', 1.0)],
+            score_calculation=[('text', 'product_title', 'encoderclip', 1.0)],
         )
     )
     assert search_result[0].fields['product_title'].text == 'fancy title'
