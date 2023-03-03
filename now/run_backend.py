@@ -39,9 +39,7 @@ def run(
     # todo: temporary fix to dummy update the user_input
     user_input.index_field_candidates_to_modalities.update({'blip2_caption': Text})
     user_input.index_fields.append('blip2_caption')
-    user_input.model_choices.update(
-        {'blip2_caption': [Models.CLIP_MODEL, Models.SBERT_MODEL]}
-    )
+    user_input.model_choices.update({'blip2_caption': [Models.CLIP_MODEL]})
 
     print_callback = kwargs.get('print_callback', print)
     if user_input.dataset_type in [DatasetTypes.DEMO, DatasetTypes.DOCARRAY]:
