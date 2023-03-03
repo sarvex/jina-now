@@ -6,8 +6,6 @@ from docarray import DocumentArray
 from fastapi.testclient import TestClient
 from pytest_mock import MockerFixture
 
-from now.executor.gateway.bff.app.app import build_app
-
 data_url = 'https://storage.googleapis.com/jina-fashion-data/data/one-line/datasets/jpeg/best-artworks.img10.bin'
 
 
@@ -47,6 +45,8 @@ class MockedJinaClient:
 
 @pytest.fixture
 def client() -> Generator[requests.Session, None, None]:
+    from now.executor.gateway.bff.app.app import build_app
+
     with TestClient(build_app()) as client:
         yield client
 
@@ -56,6 +56,8 @@ def client_with_mocked_jina_client(
     mocker: MockerFixture,
 ) -> Callable[[DocumentArray], requests.Session]:
     def _fixture(response: DocumentArray) -> requests.Session:
+        from now.executor.gateway.bff.app.app import build_app
+
         def _get_jina_streamer():
             return MockedJinaClient(response)
 

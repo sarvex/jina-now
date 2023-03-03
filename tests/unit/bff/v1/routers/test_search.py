@@ -5,6 +5,8 @@ import requests
 from docarray import Document, DocumentArray
 from starlette import status
 
+from now.now_dataclasses import UserInput
+
 
 def test_text_search_fails_with_incorrect_query(client):
     with pytest.raises(ValueError):
@@ -107,7 +109,16 @@ def test_image_search_parse_response(
     assert results[0].text == sample_search_response_text[0].matches[0].chunks[0].text
 
 
+def get_user_input() -> UserInput:
+    user_input = UserInput()
+    user_input.index_fields = ['text']
+    user_input.field_names_to_dataclass_fields = {'text': 'text'}
+    return user_input
+
+
+@pytest.mark.parametrize('dump_user_input', [get_user_input()], indirect=True)
 def test_text_search_with_semantic_scores(
+    dump_user_input,
     client_with_mocked_jina_client: Callable[[DocumentArray], requests.Session],
     sample_search_response_text: DocumentArray,
     base64_image_string: str,
@@ -121,7 +132,10 @@ def test_text_search_with_semantic_scores(
             'query': [
                 {'name': 'text', 'value': 'this crazy text', 'modality': 'text'},
             ],
-            'score_calculation': [['text', 'text', 'clip', 1]],
+            'score_calculation': [
+                ['text', 'product_image', 'clip', 1],
+                ['text', 'bm25_text', 'bm25', 1],
+            ],
         },
     )
 
@@ -129,3 +143,7 @@ def test_text_search_with_semantic_scores(
     results = DocumentArray.from_json(response.content)
     # the mock writes the call args into the response tags
     assert results[0].tags['parameters']['score_calculation']
+    assert results[0].tags['parameters']['score_calculation'] == [
+        ['text_0', 'product_image', 'clip', 1],
+        ['text_0', 'bm25_text', 'bm25', 1],
+    ]

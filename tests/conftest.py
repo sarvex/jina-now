@@ -1,5 +1,6 @@
 """ Module holds reusable fixtures """
 import base64
+import json
 import os
 import random
 import time
@@ -153,6 +154,18 @@ def es_connection_params():
     connection_str = 'http://localhost:9200'
     connection_args = {'verify_certs': False}
     return connection_str, connection_args
+
+
+@pytest.fixture(scope="function")
+def dump_user_input(request) -> None:
+    # If user_input.json exists, then remove it
+    if os.path.exists(os.path.join(os.path.expanduser('~'), 'user_input.json')):
+        os.remove(os.path.join(os.path.expanduser('~'), 'user_input.json'))
+    # Now dump the user input
+    with open(os.path.join(os.path.expanduser('~'), 'user_input.json'), 'w') as f:
+        json.dump(request.param.__dict__, f)
+    yield
+    os.remove(os.path.join(os.path.expanduser('~'), 'user_input.json'))
 
 
 @pytest.fixture(scope='session')

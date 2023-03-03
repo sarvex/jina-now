@@ -4,10 +4,10 @@ from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-NOW_GATEWAY_VERSION = '0.0.5-remove-host-port-docs-bff-1'
-NOW_PREPROCESSOR_VERSION = '0.0.125-bump-jcloud'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.149-bump-jcloud'
-NOW_AUTOCOMPLETE_VERSION = '0.0.12-bump-jcloud'
+NOW_GATEWAY_VERSION = '0.0.4-refactor-score-calculation-0'
+NOW_PREPROCESSOR_VERSION = '0.0.124-feat-get-flow-emails-0'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.148-refactor-score-calculation-0'
+NOW_AUTOCOMPLETE_VERSION = '0.0.11-feat-get-flow-emails-0'
 
 
 class Apps(BetterEnum):
