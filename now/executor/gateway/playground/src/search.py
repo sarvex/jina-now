@@ -90,9 +90,7 @@ def multimodal_search(
     data = {
         'limit': top_k if top_k else params.top_k,
         'filters': updated_dict,
-        'semantic_scores': list(
-            st.session_state.semantic_scores.values()
-        ),  # list of lists containing semantic scores defined in playground
+        'score_calculation': list(st.session_state.score_calculation.values()),
         'get_score_breakdown': st.session_state.show_score_breakdown,
     }
     if endpoint == 'suggestion':

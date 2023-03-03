@@ -11,7 +11,7 @@ from now.utils import docarray_typing_to_modality_string
 
 def update_dict_with_no_overwrite(dict1: Dict, dict2: Dict):
     """
-    Update dict1 with dict2, but only if the key does not exist in dict1
+    Update dict1 with dict2, but only if the key does not exist in dict1.
 
     :param dict1: dict to be updated
     :param dict2: dict to be used for updating
@@ -100,6 +100,7 @@ def create_annotations_and_class_attributes(
     class_attributes = {}
     ImageType, image_setter, image_getter = create_blob_type('Image')
     VideoType, video_setter, video_getter = create_blob_type('Video')
+    LocalTextType, local_text_setter, local_text_getter = create_local_text_type()
 
     for f in fields:
         if not isinstance(f, Hashable):
@@ -119,6 +120,10 @@ def create_annotations_and_class_attributes(
             elif fields_modalities[f] == Video:
                 class_attributes[field_names_to_dataclass_fields[f]] = field(
                     setter=video_setter, getter=video_getter, default=''
+                )
+            elif fields_modalities[f] == Text and dataset_type == DatasetTypes.PATH:
+                class_attributes[field_names_to_dataclass_fields[f]] = field(
+                    setter=local_text_setter, getter=local_text_getter, default=''
                 )
             else:
                 class_attributes[field_names_to_dataclass_fields[f]] = None
@@ -141,6 +146,25 @@ def create_s3_type(modality: str):
         return doc.uri
 
     return S3Object, my_setter, my_getter
+
+
+def create_local_text_type():
+    """Create a new type for local text which sets the right modality and loads from URI"""
+    TextObject = TypeVar('Text', bound=str)
+
+    def my_setter(value) -> 'Document':
+        """
+        Custom setter for the TextObject type that loads the content from the URI
+        """
+        doc = Document(uri=value)
+        doc.modality = 'text'
+        doc.load_uri_to_text()
+        return doc
+
+    def my_getter(doc: 'Document'):
+        return doc.uri
+
+    return TextObject, my_setter, my_getter
 
 
 def create_blob_type(modality: str):

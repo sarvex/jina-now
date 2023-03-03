@@ -161,7 +161,7 @@ def deploy_streamlit(user_input: UserInput):
             st.header('Image')
             render_mm_query(st.session_state['query'], 'image')
 
-        customize_semantic_scores()
+        customize_score_calculation()
         toggle_score_breakdown()
         search_mapping_list = list(st.session_state['query'].values())
         if any([d['value'] for d in search_mapping_list]):
@@ -340,19 +340,13 @@ def setup_design():
     )
 
 
-def delete_semantic_scores():
-    st.session_state['len_semantic_scores'] = 0
-    st.session_state.semantic_scores = {}
-
-
-def toggle_bm25_slider():
-    if st.session_state.show_bm25_slider:
-        st.session_state.show_bm25_slider = False
-    else:
-        st.session_state.show_bm25_slider = True
+def delete_score_calculation():
+    st.session_state['len_score_calculation'] = 0
+    st.session_state.score_calculation = {}
 
 
 def get_encoder_options(q_field: str, id_field: str) -> List[str]:
+    id_field = st.session_state.field_names_to_dataclass_fields[id_field]
     encoders_options = [
         encoder
         for encoder in st.session_state.index_fields_dict.keys()
@@ -367,53 +361,21 @@ def get_encoder_options(q_field: str, id_field: str) -> List[str]:
     return list(set(encoders_options) & set(modality_models))
 
 
-def customize_semantic_scores():
+def customize_score_calculation():
     input_modalities = [
         field['modality'] for field in list(st.session_state.query.values())
     ]
-    add, delete, bm25 = st.columns([0.3, 0.3, 0.3])
-    if add.button('Add semantic score', key='sem_score_button'):
-        st.session_state['len_semantic_scores'] += 1
-    if st.session_state.len_semantic_scores > 0:
+    add, delete = st.columns([0.3, 0.3])
+    if add.button('Add score calculation', key='sem_score_button'):
+        st.session_state['len_score_calculation'] += 1
+    if st.session_state.len_score_calculation > 0:
         delete.button(
-            label='Delete all semantic scores',
+            label='Delete all score calculation',
             key='delete',
-            on_click=delete_semantic_scores,
+            on_click=delete_score_calculation,
         )
-    if 'text' in input_modalities and any(
-        field_mod == 'text'
-        for field_mod in [
-            st.session_state.index_fields_dict[encoder][field]
-            for encoder in st.session_state.index_fields_dict.keys()
-            for field in st.session_state.index_fields_dict[encoder].keys()
-        ]
-    ):
-        bm25.button('Add bm25 score', key='bm25', on_click=toggle_bm25_slider)
-        if st.session_state.show_bm25_slider:
-            query_field_selectbox, bm25_slider = st.columns([0.5, 0.5])
-            q_field = query_field_selectbox.selectbox(
-                'Select query field for bm25 scoring',
-                options=[
-                    field
-                    for field in st.session_state.query.keys()
-                    if field.startswith('text')
-                ],
-            )
-            bm25_weight = bm25_slider.slider(
-                label='Adjust bm25 weight',
-                min_value=0.0,
-                max_value=1.0,
-                value=0.5,
-                key='weight_bm25',
-            )
-            st.session_state.semantic_scores['bm25'] = [
-                q_field,
-                'bm25_text',
-                'bm25',
-                bm25_weight,
-            ]
 
-    for i in range(st.session_state['len_semantic_scores']):
+    for i in range(st.session_state['len_score_calculation']):
         query_field, index_field, encoder, weight = st.columns([0.25, 0.25, 0.25, 0.25])
         q_field = query_field.selectbox(
             label='query field',
@@ -425,11 +387,10 @@ def customize_semantic_scores():
             options=list(st.session_state.field_names_to_dataclass_fields.keys()),
             key='index_field_' + str(i),
         )
-        id_field = st.session_state.field_names_to_dataclass_fields[id_field]
         encoder_options = get_encoder_options(q_field, id_field)
         enc = encoder.selectbox(
-            label='encoder',
-            options=encoder_options,
+            label='matching method',
+            options=encoder_options + ['bm25'],
             key='encoder_' + str(i),
         )
         w = weight.slider(
@@ -439,7 +400,7 @@ def customize_semantic_scores():
             value=0.5,
             key='weight_' + str(i),
         )
-        st.session_state.semantic_scores[f'{i}'] = (q_field, id_field, enc, w)
+        st.session_state.score_calculation[f'{i}'] = (q_field, id_field, enc, w)
 
 
 def render_mm_query(query, modality):
@@ -784,8 +745,8 @@ def setup_session_state():
     if "query" not in st.session_state:
         st.session_state['query'] = dict()
 
-    if 'len_semantic_scores' not in st.session_state:
-        st.session_state['len_semantic_scores'] = 0
+    if 'len_score_calculation' not in st.session_state:
+        st.session_state['len_score_calculation'] = 0
 
     if 'index_fields_dict' not in st.session_state:
         st.session_state.index_fields_dict = {}
@@ -796,11 +757,8 @@ def setup_session_state():
     if 'encoder' not in st.session_state:
         st.session_state.encoder = 'clip'
 
-    if 'semantic_scores' not in st.session_state:
-        st.session_state.semantic_scores = {}
-
-    if 'show_bm25_slider' not in st.session_state:
-        st.session_state.show_bm25_slider = False
+    if 'score_calculation' not in st.session_state:
+        st.session_state.score_calculation = {}
 
     if 'show_score_breakdown' not in st.session_state:
         st.session_state.show_score_breakdown = False

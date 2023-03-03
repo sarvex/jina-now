@@ -30,6 +30,7 @@ def assert_deployment_response(response):
 
 
 def assert_deployment_queries(
+    index_fields,
     kwargs,
     response,
     search_modality,
@@ -44,6 +45,11 @@ def assert_deployment_queries(
         dataset=dataset,
     )
     search_url = f'{url}/search-app/search'
+    assert_search(search_url, request_body)
+    # add score calculation to the request body, assert search still works
+    request_body['score_calculation'] = [
+        [request_body['query'][0]['name'], index_fields[0], 'encoderclip', 0.8]
+    ]
     assert_search(search_url, request_body)
 
     if kwargs.secured:

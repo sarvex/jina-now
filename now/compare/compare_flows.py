@@ -17,7 +17,7 @@ from now.utils import get_chunk_by_field_name
 
 def compare_flows_for_queries(
     da: DocumentArray,
-    flow_ids_http_semantic_scores: List[Tuple],
+    flow_ids_http_score_calculation: List[Tuple],
     limit: int,
     results_per_table: int = 20,
     disable_to_datauri: bool = False,
@@ -27,19 +27,19 @@ def compare_flows_for_queries(
     the created HTML into multiple files if there are a lot of queries.
 
     :param da: DocumentArray of queries defined as multi-modal documents
-    :param flow_ids_http_semantic_scores: a list consisting of tuples which are (flow ID, host of HTTP gateway,
-    semantic scores)
+    :param flow_ids_http_score_calculation: a list consisting of tuples which are (flow ID, host of HTTP gateway,
+    score calculation)
     :param limit: the number of results to retrieve
     :param results_per_table: number of queries which should be put into the same table
     :param disable_to_datauri: if True, the images are not converted to DataURI
     """
-    # call flow/api/v1/search-app/search for all queries and all flow_ids_http_semantic_scores
+    # call flow/api/v1/search-app/search for all queries and all flow_ids_http_score_calculation
     print(f'Comparing {len(da)} queries')
     now = datetime.now()
     folder = str(
         os.path.abspath(
             f'compare'
-            f'-{"-".join(set([cihs[0] for cihs in flow_ids_http_semantic_scores]))}'
+            f'-{"-".join(set([cihs[0] for cihs in flow_ids_http_score_calculation]))}'
             f'-limit_{limit}'
             f'-{now.strftime("%Y%m%d")}-{now.strftime("%H%M")}'
         )
@@ -53,7 +53,7 @@ def compare_flows_for_queries(
                 ex.submit(
                     _evaluate_query,
                     query,
-                    flow_ids_http_semantic_scores,
+                    flow_ids_http_score_calculation,
                     limit,
                     disable_to_datauri,
                 )
@@ -87,7 +87,7 @@ def compare_flows_for_queries(
 
 def _evaluate_query(
     query: Document,
-    flow_ids_http_semantic_scores: List[Tuple],
+    flow_ids_http_score_calculation: List[Tuple],
     limit: int,
     disable_to_datauri: bool,
 ) -> Dict[str, str]:
@@ -95,8 +95,8 @@ def _evaluate_query(
     scores to HTML of the results.
 
     :param query: query defined as multi-modal document
-    :param flow_ids_http_semantic_scores: a list consisting of tuples which are (flow ID, host of HTTP gateway,
-    semantic scores)
+    :param flow_ids_http_score_calculation: a list consisting of tuples which are (flow ID, host of HTTP gateway,
+    score calculation)
     :param limit: the number of results to retrieve
     :param disable_to_datauri: if True, the images are not converted to DataURI
     """
@@ -127,12 +127,12 @@ def _evaluate_query(
         )
     }
 
-    for flow_name, http_host, semantic_scores in flow_ids_http_semantic_scores:
+    for flow_name, http_host, score_calculation in flow_ids_http_score_calculation:
         request_body = get_default_request_body(secured=True)
         request_body['limit'] = limit
         request_body['query'] = query_dict_search_request
         request_body['create_temp_link'] = True
-        request_body['semantic_scores'] = semantic_scores
+        request_body['score_calculation'] = score_calculation
         for _ in range(5):
             try:
                 response = requests.post(
@@ -144,7 +144,7 @@ def _evaluate_query(
                 sleep(1)
                 continue
         row[
-            f'{flow_name} - {json.dumps(semantic_scores)}'
+            f'{flow_name} - {json.dumps(score_calculation)}'
         ] = SearchResponseModel.responses_to_html(
             [SearchResponseModel(**r) for r in response.json()], disable_to_datauri
         )
