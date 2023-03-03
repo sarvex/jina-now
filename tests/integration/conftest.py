@@ -8,6 +8,7 @@ import pytest
 from jcloud.flow import CloudFlow
 from pytest_mock import MockerFixture
 
+from now.constants import S3_CUSTOM_MM_DATA_PATH
 from now.data_loading.data_loading import _list_s3_file_paths
 from now.deployment.deployment import get_or_create_eventloop, terminate_wolf
 from now.executor.preprocessor.s3_download import get_bucket
@@ -84,7 +85,9 @@ def get_branch_name_for_flows():
     In case of a local run, returns 'local_setup'.
     """
     # !IMPORTANT! if you modify this function, make sure `delete_flows.py` is adjusted.
-    return os.environ.get('GITHUB_HEAD_REF', 'local_setup').lower()[:15]
+    if 'GITHUB_HEAD_REF' in os.environ:
+        return os.environ['GITHUB_HEAD_REF'].lower()[:15] or 'cd-flow'
+    return 'local-setup'
 
 
 def get_flow_id_from_name(flow_name):
@@ -105,12 +108,12 @@ def get_flow_id_from_name(flow_name):
 def pulled_local_folder_data(tmpdir_factory):
     aws_profile = get_aws_profile()
     bucket = get_bucket(
-        uri=os.environ.get('S3_CUSTOM_MM_DATA_PATH'),
+        uri=S3_CUSTOM_MM_DATA_PATH,
         aws_access_key_id=aws_profile.aws_access_key_id,
         aws_secret_access_key=aws_profile.aws_secret_access_key,
         region_name=aws_profile.region,
     )
-    folder_prefix = '/'.join(os.environ.get('S3_CUSTOM_MM_DATA_PATH').split('/')[3:])
+    folder_prefix = '/'.join(S3_CUSTOM_MM_DATA_PATH.split('/')[3:])
     file_paths = _list_s3_file_paths(bucket, folder_prefix)
     temp_dir = str(tmpdir_factory.mktemp('local_folder_data'))
     for path in file_paths:

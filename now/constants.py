@@ -4,10 +4,11 @@ from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-NOW_GATEWAY_VERSION = '0.0.4-feat-autoscale-executors-1'
-NOW_PREPROCESSOR_VERSION = '0.0.124-feat-autoscale-executors-1'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.148-feat-autoscale-executors-1'
-NOW_AUTOCOMPLETE_VERSION = '0.0.11-feat-autoscale-executors-1'
+
+NOW_GATEWAY_VERSION = '0.0.4-feat-autoscale-executors-2'
+NOW_PREPROCESSOR_VERSION = '0.0.124-feat-autoscale-executors-2'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.148-feat-autoscale-executors-2'
+NOW_AUTOCOMPLETE_VERSION = '0.0.11-feat-autoscale-executors-2'
 
 
 class Apps(BetterEnum):
@@ -76,3 +77,7 @@ MODALITY_TO_MODELS = {
 }
 
 NOWGATEWAY_BFF_PORT = 8080
+
+# S3 dataset paths
+S3_CUSTOM_DATA_PATH = 's3://jina-now/test folder/end_to_end_data/'
+S3_CUSTOM_MM_DATA_PATH = 's3://jina-now/test folder/data/'
