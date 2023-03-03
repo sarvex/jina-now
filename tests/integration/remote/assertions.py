@@ -31,6 +31,7 @@ def assert_deployment_response(response):
 
 
 def assert_deployment_queries(
+    index_fields,
     kwargs,
     response,
     search_modality,
@@ -46,6 +47,12 @@ def assert_deployment_queries(
     )
     search_url = f'{url}/search-app/search'
     assert_search(search_url, request_headers, request_body)
+    assert_search(search_url, request_body)
+    # add semantic scores to the request body, assert search still works
+    request_body['semantic_scores'] = [
+        [request_body['query'][0]['name'], index_fields[0], 'encoderclip', 0.8]
+    ]
+    assert_search(search_url, request_body)
 
     if kwargs.secured:
         # test add email

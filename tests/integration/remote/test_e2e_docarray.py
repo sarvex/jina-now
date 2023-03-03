@@ -71,6 +71,7 @@ def test_end_to_end(
 
     assert_deployment_response(response)
     assert_deployment_queries(
+        index_fields=index_fields,
         kwargs=kwargs,
         response=response,
         search_modality='text',
