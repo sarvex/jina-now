@@ -76,9 +76,12 @@ def field_dict_to_mm_doc(
                     )
             doc = Document(data_class(**data_class_kwargs))
         except BaseException as e:
+            import traceback
+
+            traceback.format_exc()
             raise HTTPException(
                 status_code=500,
-                detail=f'Not a correctly encoded request. Please see the error stack for more information. \n{e}',
+                detail=f'Not a correctly encoded request. Please see the error stack for more information. \n{traceback.format_exc()}',
             )
 
     return doc
