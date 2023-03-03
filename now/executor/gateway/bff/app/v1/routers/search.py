@@ -1,10 +1,11 @@
 import base64
-from typing import List
+from typing import Any, Dict, List
 
 from docarray import Document
 from fastapi import APIRouter, Body
 
 from now.data_loading.create_dataclass import create_dataclass
+from now.executor.gateway.bff.app.settings import user_input_in_bff
 from now.executor.gateway.bff.app.v1.models.search import (
     SearchRequestModel,
     SearchResponseModel,
@@ -21,8 +22,6 @@ search_examples = {
         'summary': 'A working example: search with text',
         'description': 'A working example which can be tried out. Search with text on the best artworks dataset.',
         'value': {
-            'host': 'grpcs://now-example-best-artworks.dev.jina.ai',
-            'port': 443,
             'limit': 10,
             'query': [
                 {
@@ -39,8 +38,6 @@ search_examples = {
         'summary': 'A working example: search with text and image',
         'description': 'A working example which can be tried out. Search with text and image on the best artworks dataset.',
         'value': {
-            'host': 'grpcs://now-example-best-artworks.dev.jina.ai',
-            'port': 443,
             'limit': 10,
             'query': [
                 {
@@ -62,8 +59,6 @@ search_examples = {
         'summary': 'A dummy example',
         'description': 'A dummy example,  do not run. For parameter reference only.',
         'value': {
-            'host': 'localhost',
-            'port': 31080,
             'limit': 10,
             'filters': {
                 'tags__color': {'$eq': 'blue'},
@@ -87,8 +82,6 @@ suggestion_examples = {
         'summary': 'A working example: get suggestions for a text query',
         'description': 'A working example which can be tried out. Get autocomplete suggestions for a text query.',
         'value': {
-            'host': 'grpcs://now-example-best-artworks.dev.jina.ai',
-            'port': 443,
             'text': 'cute ca',
         },
     },
@@ -96,8 +89,6 @@ suggestion_examples = {
         'summary': 'A dummy example',
         'description': 'A dummy example,  do not run. For parameter reference only.',
         'value': {
-            'host': 'localhost',
-            'port': 31080,
             'jwt': {'token': '<your token>'},
             'api_key': '<your api key>',
             'text': 'cute cats',
@@ -137,6 +128,8 @@ async def search(
         modalities_dict=fields_modalities_mapping,
         field_names_to_dataclass_fields=field_names_to_dataclass_fields,
     )
+    semantic_scores = get_semantic_scores(data, field_names_to_dataclass_fields)
+
     query_filter = {}
     for key, value in data.filters.items():
         key = 'tags__' + key if not key.startswith('tags__') else key
@@ -149,9 +142,7 @@ async def search(
             'limit': data.limit,
             'filter': query_filter,
             'create_temp_link': data.create_temp_link,
-            'semantic_scores': [
-                list(semantic_score) for semantic_score in data.semantic_scores
-            ],
+            'semantic_scores': semantic_scores,
             'get_score_breakdown': data.get_score_breakdown,
         },
         request_model=data,
@@ -194,6 +185,37 @@ async def search(
         )
         matches.append(match)
     return matches
+
+
+def get_semantic_scores(
+    data: SearchRequestModel, field_names_to_dataclass_fields: Dict[str, str]
+) -> List[List[Any]]:
+    """
+    Extract and process the semantic scores from the request model to the format expected by the indexer.
+    This includes converting the field names to the dataclass field names, for the query and for the index fields.
+    Because `bm25_text` is not a field in the dataclass, it is not converted. It is a special field created by the
+    indexer for the bm25 score.
+
+    :param data: the request model
+    :param field_names_to_dataclass_fields: a mapping from the field names in the request model to the field names in the dataclass
+    :return: the semantic scores in the format expected by the indexer. Example:
+        [['query_text', 'my_product_image', 'encoderclip', 1], ['query_text', 'bm25_text', 'bm25', 1]]
+    """
+    semantic_scores = []
+    for sem_score in data.semantic_scores:
+        sem_score = list(sem_score)
+        sem_score[0] = field_names_to_dataclass_fields[sem_score[0]]
+        try:
+            sem_score[1] = user_input_in_bff.field_names_to_dataclass_fields[
+                sem_score[1]
+            ]
+        except KeyError:
+            if sem_score[1] != 'bm25_text':
+                raise KeyError(
+                    f'Field {sem_score[1]} not found in dataclass. Please select possible values: {user_input_in_bff.field_names_to_dataclass_fields.keys()}'
+                )
+        semantic_scores.append(sem_score)
+    return semantic_scores
 
 
 @router.post(
