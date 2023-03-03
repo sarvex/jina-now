@@ -77,7 +77,7 @@ def convert_doc_map_to_es(
                     f'{encoded_field}-{executor_name}.embedding'
                 ] = field_doc.embedding
                 if hasattr(field_doc, 'text') and field_doc.text:
-                    es_doc[f'{encoded_field}-text'] = field_doc.text
+                    es_doc[f'{encoded_field}'] = field_doc.text
                 if hasattr(field_doc, 'uri') and field_doc.uri:
                     es_doc['uri'] = field_doc.uri
     return list(es_docs.values())

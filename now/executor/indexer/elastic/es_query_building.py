@@ -168,11 +168,16 @@ def get_default_query(
     }
 
     # build bm25 part
-    for (query_field, index_field, matching_method, _) in score_calculation:
+    for (query_field, index_field, matching_method, linear_weight) in score_calculation:
         if matching_method == 'bm25':
             text = get_chunk_by_field_name(doc, query_field).text
             query['bool']['should'].append(
-                {'multi_match': {'query': text, 'fields': [index_field]}}
+                {
+                    'multi_match': {
+                        'query': text,
+                        'fields': [f"{index_field}^{linear_weight}"],
+                    }
+                }
             )
 
     # add filter

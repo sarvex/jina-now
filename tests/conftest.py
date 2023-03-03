@@ -256,9 +256,7 @@ def es_inputs(gif_resource_path) -> namedtuple:
         'clip': clip_docs,
     }
 
-    query = MMQuery(query_text='cat')
-
-    query_doc = Document(query)
+    query_doc = Document(MMQuery(query_text='cat'))
     clip_doc = Document(query_doc, copy=True)
     clip_doc.id = query_doc.id
 

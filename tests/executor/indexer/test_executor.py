@@ -205,9 +205,7 @@ def test_delete_by_filter(setup_service_running, es_inputs, random_index_name):
     assert len(res['hits']['hits']) == 0
 
 
-def test_custom_mapping_and_custom_bm25_search(
-    setup_service_running, es_inputs, random_index_name
-):
+def test_custom_mapping_and_search(setup_service_running, es_inputs, random_index_name):
     """
     This test tests the custom mapping and bm25 functionality of the NOWElasticIndexer.
     """
@@ -222,6 +220,7 @@ def test_custom_mapping_and_custom_bm25_search(
         'properties': {
             'id': {'type': 'keyword'},
             'title': {'type': 'text', 'analyzer': 'standard'},
+            'excerpt': {'type': 'text', 'analyzer': 'standard'},
             'title-clip': {
                 'properties': {
                     'embedding': {
@@ -251,20 +250,11 @@ def test_custom_mapping_and_custom_bm25_search(
     )
     # do indexing
     es_indexer.index(index_docs_map)
-    # # search with custom bm25 query with field boosting
-    # custom_bm25_query = {
-    #     'multi_match': {
-    #         'query': 'this cat is cute',
-    #         'fields': ['title^7'],
-    #         'tie_breaker': 0.3,
-    #     }
-    # }
 
     results = es_indexer.search(
         query_docs_map,
         parameters={
             'get_score_breakdown': True,
-            # 'custom_bm25_query': custom_bm25_query,
             'score_calculation': default_score_calculation,
         },
     )
