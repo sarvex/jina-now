@@ -30,7 +30,6 @@ jobs:
           ls ${GITHUB_WORKSPACE}/scripts
           echo ${GITHUB_WORKSPACE}
           chmod +x ${GITHUB_WORKSPACE}/scripts/active-flow-emails.sh
-          sh ${GITHUB_WORKSPACE}/scripts/active-flow-emails.sh
           python ${GITHUB_WORKSPACE}/scripts/alert_slack_with_flows.py
 #          # Write cron job to file
 #          echo "0 17 * * * /usr/bin/python3 ${GITHUB_WORKSPACE}/scripts/alert_slack_with_flows.py" > ${HOME}/mycron

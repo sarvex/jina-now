@@ -12,7 +12,5 @@ kubectl get pods -A | grep jnamespace | awk '{print $1}' | uniq -c | sort -nr | 
     -H "Authorization: $token" \
     -d '{"ids": ["'${user_id}'"]}' "https://api.hubble.jina.ai/v2/rpc/user.m2m.listUserInfo" \
     | jq -r '.data[0].email')
-    result="$user_email has $num_executors active executors in the flow ID $flow_id"
     echo "$user_email, $num_executors, $flow_id"
-    results+=("$result")
 done
