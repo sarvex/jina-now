@@ -39,13 +39,13 @@ def da() -> DocumentArray:
     )
 
 
-@pytest.fixture(autouse=True)
-def mock_download(mocker: MockerFixture, da: DocumentArray):
-    def fake_download(url: str, filename: str) -> str:
-        da.save_binary(filename)
-        return filename
-
-    mocker.patch('now.utils.download', fake_download)
+# @pytest.fixture(autouse=True)
+# def mock_download(mocker: MockerFixture, da: DocumentArray):
+#     def fake_download(url: str, filename: str) -> str:
+#         da.save_binary(filename)
+#         return filename
+#
+#     mocker.patch('now.utils.download', fake_download)
 
 
 @pytest.fixture(autouse=True)
