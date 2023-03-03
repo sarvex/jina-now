@@ -44,6 +44,7 @@ message = {
     ],
 }
 
+print(message)
 try:
     response = client.chat_postMessage(**message)
     print("Message sent: ", response["ts"])
