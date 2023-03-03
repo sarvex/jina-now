@@ -72,7 +72,6 @@ def test_index_and_search_with_multimodal_docs(
         query_docs_map,
         parameters={
             'get_score_breakdown': True,
-            'apply_default_bm25': True,
             'score_calculation': default_score_calculation,
         },
     )
@@ -284,7 +283,6 @@ def test_search_with_filter(setup_service_running, es_inputs, random_index_name)
         query_docs_map,
         parameters={
             'get_score_breakdown': True,
-            'apply_default_bm25': True,
             'score_calculation': default_score_calculation,
             'filter': {'tags__price': {'$lte': 1}},
         },

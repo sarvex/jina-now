@@ -45,7 +45,6 @@ def test_build_es_queries(es_inputs):
     aggregate_embeddings(query_docs_map)
     _, es_query = build_es_queries(
         docs_map=query_docs_map,
-        apply_default_bm25=True,
         get_score_breakdown=False,
         score_calculation=default_score_calculation,
     )[0]
@@ -56,7 +55,7 @@ def test_build_es_queries(es_inputs):
                 'bool': {
                     'should': [
                         {'match_all': {}},
-                        {'multi_match': {'query': 'cat', 'fields': ['bm25_text']}},
+                        {'multi_match': {'query': 'cat', 'fields': ['title^10']}},
                     ]
                 }
             },

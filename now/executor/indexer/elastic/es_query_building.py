@@ -151,7 +151,6 @@ def build_es_queries(
         else:
             query_json = script_score
         es_queries.append((docs[doc_id], query_json))
-        print(f'-------\nID: {doc_id}, Query: {query_json}-------\n')
     return es_queries
 
 

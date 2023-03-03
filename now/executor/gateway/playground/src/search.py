@@ -93,7 +93,6 @@ def multimodal_search(
         'score_calculation': list(st.session_state.score_calculation.values()),
         'get_score_breakdown': st.session_state.show_score_breakdown,
     }
-    print(f'-------\nscore_calculation: {data["score_calculation"]}-------\n')
     if endpoint == 'suggestion':
         data['text'] = query_field_values_modalities[0]['value']
     elif endpoint == 'search':

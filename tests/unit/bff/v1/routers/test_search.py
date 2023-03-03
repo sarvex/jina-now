@@ -134,7 +134,7 @@ def test_text_search_with_score_calculation(
             ],
             'score_calculation': [
                 ['text', 'product_image', 'clip', 1],
-                ['text', 'product_text', 'bm25', 1],
+                ['text', 'product_description', 'bm25', 1],
             ],
         },
     )
@@ -145,5 +145,5 @@ def test_text_search_with_score_calculation(
     assert results[0].tags['parameters']['score_calculation']
     assert results[0].tags['parameters']['score_calculation'] == [
         ['text_0', 'product_image', 'clip', 1],
-        ['text_0', 'product_text', 'bm25', 1],
+        ['text_0', 'product_description', 'bm25', 1],
     ]
