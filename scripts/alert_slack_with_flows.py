@@ -14,6 +14,7 @@ script_output = subprocess.check_output(
     universal_newlines=True,
 )
 
+print('SCRIPT OUT: ', script_output)
 lines = list(filter(None, script_output.split('\n')))
 rows = ""
 
