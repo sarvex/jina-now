@@ -13,6 +13,8 @@ import boto3
 from hubble.client.endpoints import EndpointsV2
 from hubble import Client as HubbleClient
 
+from now.constants import S3_CUSTOM_MM_DATA_PATH
+
 
 def check_docarray_exists(dataset_name):
     response = requests.post(
@@ -180,9 +182,7 @@ def push_to_s3(local_file_name, s3_file_name):
         aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
         region_name='eu-west-1',
     )
-    bucket = session.resource('s3').Bucket(
-        os.environ.get('S3_CUSTOM_MM_DATA_PATH').split('/')[2]
-    )
+    bucket = session.resource('s3').Bucket(S3_CUSTOM_MM_DATA_PATH.split('/')[2])
     bucket.upload_file(local_file_name, os.path.join('laion_data/', s3_file_name))
 
 
