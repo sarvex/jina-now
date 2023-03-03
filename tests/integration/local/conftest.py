@@ -7,7 +7,7 @@ from docarray.typing import Image, Text
 
 from now.admin.utils import get_default_request_kwargs
 from now.common.options import construct_app
-from now.constants import Apps, DatasetTypes, Models
+from now.constants import Apps, DatasetTypes, Models, S3_CUSTOM_MM_DATA_PATH
 from now.data_loading.create_dataclass import create_dataclass
 from now.data_loading.data_loading import load_data
 from now.demo_data import DemoDatasetNames
@@ -168,7 +168,7 @@ def s3_bucket_data():
     user_input = UserInput()
     user_input.admin_name = 'team-now'
     user_input.dataset_type = DatasetTypes.S3_BUCKET
-    user_input.dataset_path = os.environ.get('S3_CUSTOM_MM_DATA_PATH')
+    user_input.dataset_path = S3_CUSTOM_MM_DATA_PATH
     user_input.aws_access_key_id = aws_profile.aws_access_key_id
     user_input.aws_secret_access_key = aws_profile.aws_secret_access_key
     user_input.aws_region_name = aws_profile.region

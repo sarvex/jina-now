@@ -9,7 +9,12 @@ from tests.integration.remote.assertions import (
 )
 
 from now.cli import cli
-from now.constants import DatasetTypes, Models
+from now.constants import (
+    DatasetTypes,
+    Models,
+    S3_CUSTOM_DATA_PATH,
+    S3_CUSTOM_MM_DATA_PATH,
+)
 from now.utils import get_aws_profile
 
 
@@ -18,8 +23,8 @@ from now.utils import get_aws_profile
 @pytest.mark.parametrize(
     'dataset_path,index_fields,filter_fields,mm_type,dataset_length',
     [
-        (os.environ.get('S3_CUSTOM_DATA_PATH'), ['.jpeg'], [], False, 2),
-        (os.environ.get('S3_CUSTOM_MM_DATA_PATH'), ['image.png'], ['title'], True, 10),
+        (S3_CUSTOM_DATA_PATH, ['.jpeg'], [], False, 2),
+        (S3_CUSTOM_MM_DATA_PATH, ['image.png'], ['title'], True, 10),
     ],
 )
 @pytest.mark.parametrize('query_fields', ['image'])
