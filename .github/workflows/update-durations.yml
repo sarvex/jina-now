@@ -41,8 +41,6 @@ jobs:
         env:
           WOLF_TOKEN: ${{ secrets.WOLF_TOKEN }}
           S3_SCHEMA_FOLDER_PATH: ${{ secrets.S3_SCHEMA_FOLDER_PATH }}
-          S3_CUSTOM_DATA_PATH: ${{ secrets.S3_CUSTOM_DATA_PATH }}
-          S3_CUSTOM_MM_DATA_PATH: ${{ secrets.S3_CUSTOM_MM_DATA_PATH }}
 
       - name: Commit and push new durations file
         run: |
