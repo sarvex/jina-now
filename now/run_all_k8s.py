@@ -13,8 +13,7 @@ from now import run_backend
 from now.compare.compare_flows import compare_flows_for_queries
 from now.constants import DEMO_NS, FLOW_STATUS
 from now.deployment.deployment import cmd, terminate_wolf, status_wolf, list_all_wolf
-from now.dialog import configure_user_input
-from now.thirdparty.PyInquirer.prompt import prompt
+from now.dialog import configure_user_input, maybe_prompt_user
 
 
 def stop_now(**kwargs):
@@ -248,21 +247,3 @@ def get_flow_status(action, **kwargs):
     if _result is None:
         print(f'❎ Flow not found in JCloud. Likely, it has been deleted already')
     return _result, flow_id, cluster
-
-
-def maybe_prompt_user(questions, attribute, **kwargs):
-    """
-    Checks the `kwargs` for the `attribute` name. If present, the value is returned directly.
-    If not, the user is prompted via the cmd-line using the `questions` argument.
-
-    :param questions: A dictionary that is passed to `PyInquirer.prompt`
-        See docs: https://github.com/CITGuru/PyInquirer#documentation
-    :param attribute: Name of the value to get. Make sure this matches the name in `kwargs`
-
-    :return: A single value of either from `kwargs` or the user cli input.
-    """
-    if kwargs and attribute in kwargs:
-        return kwargs[attribute]
-    else:
-        answer = prompt(questions)
-        return answer[attribute]

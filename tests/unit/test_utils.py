@@ -32,3 +32,6 @@ def test_flow_id():
 def test_conflicting_doc_fields():
     doc = Document(ConflictingDoc(label='test_label', id='test_id'))
     assert get_chunk_by_field_name(doc, 'id').text == 'test_id'
+
+
+# def test_get_chunk_by_field_name(mm_dataclass):
