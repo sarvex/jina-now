@@ -8,12 +8,14 @@ from __future__ import annotations, print_function, unicode_literals
 
 import inspect
 import pathlib
+from typing import Optional, List, Union, Dict
 
 import now.utils
 from now.common import options
 from now.common.options import construct_app
 from now.constants import MODALITY_TO_MODELS, Apps, DialogStatus
 from now.now_dataclasses import DialogOptions, UserInput
+from now.run_all_k8s import maybe_prompt_user
 from now.utils import DemoAvailableException, RetryException
 
 cur_dir = pathlib.Path(__file__).parent.resolve()
@@ -114,3 +116,17 @@ def configure_option(
         break
 
     return DialogStatus.CONTINUE
+
+
+def prompt_value(
+    name: str,
+    prompt_message: str,
+    prompt_type: str = 'input',
+    choices: Optional[List[Union[Dict, str]]] = None,
+    **kwargs: Dict,
+):
+    qs = {'name': name, 'type': prompt_type, 'message': prompt_message}
+
+    if choices is not None:
+        qs['choices'] = choices
+    return maybe_prompt_user(qs, name, **kwargs)

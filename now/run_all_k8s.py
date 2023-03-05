@@ -12,9 +12,9 @@ from rich.table import Column, Table
 from now import run_backend
 from now.compare.compare_flows import compare_flows_for_queries
 from now.constants import DEMO_NS, FLOW_STATUS
-from now.deployment.deployment import cmd, terminate_wolf
+from now.deployment.deployment import cmd, terminate_wolf, status_wolf, list_all_wolf
 from now.dialog import configure_user_input
-from now.utils import get_flow_status, maybe_prompt_user
+from now.thirdparty.PyInquirer.prompt import prompt
 
 
 def stop_now(**kwargs):
@@ -220,3 +220,49 @@ def compare_flows(**kwargs):
         results_per_table=results_per_table,
         disable_to_datauri=disable_to_datauri,
     )
+
+
+def get_flow_status(action, **kwargs):
+    choices = []
+    # Add all remote Flows that exists with the namespace `nowapi`
+    alive_flows = list_all_wolf(status='Serving')
+    for flow_details in alive_flows:
+        choices.append(flow_details['name'])
+    if len(choices) == 0:
+        cowsay.cow(f'nothing to {action}')
+        return
+    else:
+        questions = [
+            {
+                'type': 'list',
+                'name': 'cluster',
+                'message': f'Which cluster do you want to {action}?',
+                'choices': choices,
+            }
+        ]
+        cluster = maybe_prompt_user(questions, 'cluster', **kwargs)
+
+    flow = [x for x in alive_flows if x['name'] == cluster][0]
+    flow_id = flow['id']
+    _result = status_wolf(flow_id)
+    if _result is None:
+        print(f'❎ Flow not found in JCloud. Likely, it has been deleted already')
+    return _result, flow_id, cluster
+
+
+def maybe_prompt_user(questions, attribute, **kwargs):
+    """
+    Checks the `kwargs` for the `attribute` name. If present, the value is returned directly.
+    If not, the user is prompted via the cmd-line using the `questions` argument.
+
+    :param questions: A dictionary that is passed to `PyInquirer.prompt`
+        See docs: https://github.com/CITGuru/PyInquirer#documentation
+    :param attribute: Name of the value to get. Make sure this matches the name in `kwargs`
+
+    :return: A single value of either from `kwargs` or the user cli input.
+    """
+    if kwargs and attribute in kwargs:
+        return kwargs[attribute]
+    else:
+        answer = prompt(questions)
+        return answer[attribute]
