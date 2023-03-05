@@ -150,7 +150,7 @@ def get_aws_profile():
 
 
 def hide_string_chars(s):
-    return ''.join(['*' for _ in range(len(s) - 5)]) + s[len(s) - 4 :] if s else None
+    return ''.join(['*' for _ in range(len(s) - 4)]) + s[len(s) - 4 :] if s else None
 
 
 def get_chunk_by_field_name(doc, field_name):
@@ -169,7 +169,7 @@ def get_chunk_by_field_name(doc, field_name):
         )
         return doc.chunks[field_position]
     except Exception as e:
-        print(f'An error occurred: {e}')
+        raise e
 
 
 # Add a custom retry exception

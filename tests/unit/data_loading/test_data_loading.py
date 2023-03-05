@@ -95,13 +95,13 @@ def test_da_custom_ds(da: DocumentArray):
     user_input.dataset_type = DatasetTypes.DEMO
     user_input.dataset_name = DemoDatasetNames.DEEP_FASHION
     user_input.admin_name = 'team-now'
-    user_input.index_fields = ['description']
+    user_input.index_fields = ['image']
 
     loaded_da = load_data(user_input)
 
     assert len(loaded_da) > 0
     for doc in loaded_da:
-        assert doc.tags == {}
+        assert 'label' in doc.tags
         assert doc.chunks
 
 
