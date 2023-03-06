@@ -1,5 +1,3 @@
-import os
-
 import hubble
 import pytest
 from docarray import Document, DocumentArray
@@ -7,7 +5,7 @@ from docarray.typing import Image, Text
 
 from now.admin.utils import get_default_request_kwargs
 from now.common.options import construct_app
-from now.constants import Apps, DatasetTypes, Models, S3_CUSTOM_MM_DATA_PATH
+from now.constants import S3_CUSTOM_MM_DATA_PATH, Apps, DatasetTypes, Models
 from now.data_loading.create_dataclass import create_dataclass
 from now.data_loading.data_loading import load_data
 from now.demo_data import DemoDatasetNames
@@ -38,6 +36,7 @@ def data_with_tags(mm_dataclass):
     user_input.index_field_candidates_to_modalities = {'text_field': Text}
     user_input.field_names_to_dataclass_fields = {'text_field': 'text_field'}
     user_input.app_instance = construct_app(Apps.SEARCH_APP)
+    user_input.jwt = {'token': hubble.get_token()}
     user_input.flow_name = 'nowapi-local'
     user_input.model_choices = {'text_field_model': [Models.CLIP_MODEL]}
 
@@ -69,6 +68,7 @@ def api_key_data(mm_dataclass):
         .get_user_info()['data']
         .get('email')
     ]
+    user_input.jwt = {'token': hubble.get_token()}
     user_input.secured = True
     docs = DocumentArray([Document(mm_dataclass(text_field='test')) for _ in range(10)])
     return docs, user_input
