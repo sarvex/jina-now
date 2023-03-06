@@ -138,13 +138,20 @@ class NOWGateway(BasePaymentGateway):
         )['data']
         while True:
             sleep(60)
-            current_user = get_user_info(authorized_jwt)
-            current_user['token'] = authorized_jwt
-            if current_user is None:
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail='User is not authenticated',
-                )
+            try:
+                current_user = get_user_info(authorized_jwt)
+                current_user['token'] = authorized_jwt
+                if current_user is None:
+                    raise HTTPException(
+                        status_code=status.HTTP_401_UNAUTHORIZED,
+                        detail='User is not authenticated',
+                    )
+            except Exception as e:
+                import traceback
+
+                traceback.print_tb(e.__traceback__)
+                traceback.print_exc()
+                logger.error(f'Failed to get user info: {e}')
             remain_credits, has_payment_method = get_app_summary(current_user, client)
             if remain_credits <= 0 and not has_payment_method:
                 return JSONResponse(
