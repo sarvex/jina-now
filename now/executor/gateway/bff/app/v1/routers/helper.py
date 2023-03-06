@@ -8,11 +8,12 @@ from typing import Dict, Type, Union
 import filetype
 from docarray import Document, DocumentArray
 from docarray.typing import Text
-from fastapi import HTTPException, status
+from fastapi import HTTPException, Request, status
 from jina import Client
 from jina.excepts import BadServer, BadServerFlow
 
 from now.constants import SUPPORTED_FILE_TYPES
+from now.executor.gateway.bff.app.v1.models.shared import BaseRequestModel
 
 
 def field_dict_to_mm_doc(
@@ -167,3 +168,12 @@ def raise_exception(
             status_code=500,
             detail=f'Request failed. Please see the error stack for more information. \n{stacktrace}',
         )
+
+
+def add_auth_to_data_model(request: Request, data: BaseRequestModel):
+    auth_token = None
+    if request.headers.get('Authorization'):
+        auth_token = request.headers.get('Authorization').replace('token ', '')
+    # if jwt not set in data, use the one from header
+    if not data.jwt and auth_token:
+        data.jwt['token'] = auth_token

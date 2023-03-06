@@ -12,6 +12,7 @@ from now.executor.gateway.bff.app.v1.models.search import (
     SuggestionRequestModel,
 )
 from now.executor.gateway.bff.app.v1.routers.helper import (
+    add_auth_to_data_model,
     field_dict_to_mm_doc,
     jina_client_post,
 )
@@ -109,12 +110,7 @@ def search(
     request: Request,
     data: SearchRequestModel = Body(examples=search_examples),
 ):
-    auth_token = None
-    if request.headers.get('Authorization'):
-        auth_token = request.headers.get('Authorization').replace('token ', '')
-    # if jwt not set in data, use the one from header
-    if not data.jwt and auth_token:
-        data.jwt['token'] = auth_token
+    add_auth_to_data_model(request, data)
     if isinstance(data.jwt['token'], dict):
         data.jwt['token'] = data.jwt['token']['token']
     fields_modalities_mapping = {}

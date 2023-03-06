@@ -122,10 +122,12 @@ class NOWGateway(BasePaymentGateway):
 
         self.setup_nginx()
         self.nginx_was_shutdown = False
-        thread = threading.Thread(target=self.run)
-        thread.start()
+        self.continuous_billing_thread = threading.Thread(
+            target=self.report_flow_alive_usage
+        )
+        self.continuous_billing_thread.start()
 
-    def run(self):
+    def report_flow_alive_usage(self):
         from hubble.payment.client import PaymentClient
 
         client = PaymentClient(
@@ -161,6 +163,7 @@ class NOWGateway(BasePaymentGateway):
         await self.playground_gateway.shutdown()
         await self.bff_gateway.shutdown()
         await super().shutdown()
+        self.continuous_billing_thread.stop()
         if not self.nginx_was_shutdown:
             self.shutdown_nginx()
             self.nginx_was_shutdown = True

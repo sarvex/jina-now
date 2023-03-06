@@ -12,19 +12,17 @@ from now.executor.gateway.bff.app.v1.models.info import (
     TagsResponseModel,
 )
 from now.executor.gateway.bff.app.v1.models.shared import BaseRequestModel
-from now.executor.gateway.bff.app.v1.routers.helper import jina_client_post
+from now.executor.gateway.bff.app.v1.routers.helper import (
+    add_auth_to_data_model,
+    jina_client_post,
+)
 
 router = APIRouter()
 
 
 @router.post('/tags')
 def get_tags(request: Request, data: BaseRequestModel) -> TagsResponseModel:
-    auth_token = None
-    if request.headers.get('Authorization'):
-        auth_token = request.headers.get('Authorization').replace('token ', '')
-    # if jwt not set in data, use the one from header
-    if not data.jwt and auth_token:
-        data.jwt['token'] = auth_token
+    add_auth_to_data_model(request, data)
     response = jina_client_post(
         request_model=data,
         docs=Document(),
@@ -36,12 +34,7 @@ def get_tags(request: Request, data: BaseRequestModel) -> TagsResponseModel:
 
 @router.post('/count')
 def get_count(request: Request, data: CountRequestModel) -> CountResponseModel:
-    auth_token = None
-    if request.headers.get('Authorization'):
-        auth_token = request.headers.get('Authorization').replace('token ', '')
-    # if jwt not set in data, use the one from header
-    if not data.jwt and auth_token:
-        data.jwt['token'] = auth_token
+    add_auth_to_data_model(request, data)
     response = jina_client_post(
         request_model=data,
         docs=Document(),
