@@ -96,7 +96,7 @@ for email, executor_count in sorted(
 
 
 message = {
-    "channel": "#slack-function-test",
+    "channel": "#team-search",
     "blocks": [
         {
             "type": "section",
