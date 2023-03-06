@@ -2,7 +2,7 @@ name: Get emails of persons with running flows
 
 on:
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "0 16 * * *"
 
 jobs:
   run_script:
