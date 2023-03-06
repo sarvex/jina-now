@@ -3,7 +3,7 @@ from collections import defaultdict
 from docarray import Document
 from fastapi import APIRouter
 
-from now.executor.gateway.bff.app.settings import user_input_in_bff
+from now.executor.gateway.bff.app.settings import get_user_input_in_bff
 from now.executor.gateway.bff.app.v1.models.info import (
     CountRequestModel,
     CountResponseModel,
@@ -43,13 +43,14 @@ async def get_count(data: CountRequestModel) -> CountResponseModel:
 @router.post('/field_names_to_dataclass_fields')
 async def get_field_names_to_dataclass_fields() -> FieldNamesToDataclassFieldsResponseModel:
     return FieldNamesToDataclassFieldsResponseModel(
-        field_names_to_dataclass_fields=user_input_in_bff.field_names_to_dataclass_fields
+        field_names_to_dataclass_fields=get_user_input_in_bff().field_names_to_dataclass_fields
     )
 
 
 @router.post('/encoder_to_dataclass_fields_mods')
 async def get_index_fields_dict() -> EncoderToDataclassFieldsModsResponseModel:
     index_fields_dict = defaultdict(dict)
+    user_input_in_bff = get_user_input_in_bff()
     for index_field_raw, encoders in user_input_in_bff.model_choices.items():
         index_field = index_field_raw.replace('_model', '')
         dataclass_field = user_input_in_bff.field_names_to_dataclass_fields[index_field]
