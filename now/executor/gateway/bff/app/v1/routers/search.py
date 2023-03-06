@@ -5,7 +5,7 @@ from docarray import Document
 from fastapi import APIRouter, Body
 
 from now.data_loading.create_dataclass import create_dataclass
-from now.executor.gateway.bff.app.settings import user_input_in_bff
+from now.executor.gateway.bff.app.settings import get_user_input_in_bff
 from now.executor.gateway.bff.app.v1.models.search import (
     SearchRequestModel,
     SearchResponseModel,
@@ -202,6 +202,7 @@ def get_semantic_scores(
         [['query_text', 'my_product_image', 'encoderclip', 1], ['query_text', 'bm25_text', 'bm25', 1]]
     """
     semantic_scores = []
+    user_input_in_bff = get_user_input_in_bff()
     for sem_score in data.semantic_scores:
         sem_score = list(sem_score)
         sem_score[0] = field_names_to_dataclass_fields[sem_score[0]]
