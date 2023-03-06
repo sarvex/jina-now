@@ -184,10 +184,11 @@ class NOWGateway(BasePaymentGateway):
         await self.playground_gateway.shutdown()
         await self.bff_gateway.shutdown()
         await super().shutdown()
-        self.continuous_billing_thread.join()
         if not self.nginx_was_shutdown:
             self.shutdown_nginx()
             self.nginx_was_shutdown = True
+        if not self.continuous_billing_thread.is_alive():
+            self.continuous_billing_thread.join()
 
     def setup_nginx(self):
         command = [
