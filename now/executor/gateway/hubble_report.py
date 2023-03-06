@@ -1,16 +1,32 @@
+import json
 import logging
 import os
 
 from fastapi import status
-
-logger = logging.getLogger(__file__)
 from fastapi.responses import JSONResponse
 
+logger = logging.getLogger(__file__)
 client = None
 authorized_jwt = None
 
 
-def report(user_token, app_id, product_id, quantity):
+def credits_path():
+    ws = f'/data/{os.environ["K8S_NAMESPACE_NAME"]}'
+    return os.path.join(ws, 'free_credits.json')
+
+
+def get_free_credits():
+    with open(credits_path(), 'r') as f:
+        free_credits = json.load(f)['free_credits']
+    return free_credits
+
+
+def set_free_credits(value):
+    with open(credits_path(), 'w') as f:
+        json.dump({'free_credits': value}, f)
+
+
+def report(user_token, app_id, product_id, quantity, use_free_credits=False):
     try:
         global payment_client
         global authorized_jwt
@@ -22,6 +38,11 @@ def report(user_token, app_id, product_id, quantity):
             authorized_jwt = payment_client.get_authorized_jwt(user_token=user_token)[
                 'data'
             ]
+        if use_free_credits:
+            free_credits = get_free_credits()
+            if free_credits > 0:
+                set_free_credits(free_credits - quantity)
+                return
         if can_charge(authorized_jwt):
             payment_client.report_usage(authorized_jwt, app_id, product_id, quantity)
         else:

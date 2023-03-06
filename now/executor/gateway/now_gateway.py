@@ -14,9 +14,14 @@ from jina.serve.runtimes.gateway.http.models import JinaHealthModel
 from streamlit.file_util import get_streamlit_file_path
 from streamlit.web.server import Server as StreamlitServer
 
-from now.constants import NOWGATEWAY_BFF_PORT
+from now.constants import (
+    NOWGATEWAY_BASE_FEE_QUANTITY,
+    NOWGATEWAY_BASE_FEE_SLEEP_INTERVAL,
+    NOWGATEWAY_BFF_PORT,
+    NOWGATEWAY_FREE_CREDITS,
+)
 from now.deployment.deployment import cmd
-from now.executor.gateway.hubble_report import report
+from now.executor.gateway.hubble_report import report, set_free_credits
 from now.now_dataclasses import UserInput
 
 cur_dir = os.path.dirname(__file__)
@@ -133,25 +138,16 @@ class NOWGateway(CompositeGateway):
         thread.start()
 
     def base_fee_thread(self):
-        self.free_credits = 100
-
+        set_free_credits(NOWGATEWAY_FREE_CREDITS)
         while True:
-            sleep(60)
+            sleep(NOWGATEWAY_BASE_FEE_SLEEP_INTERVAL)
             report(
                 user_token=self.user_input.jwt['token'],
                 app_id='search',
                 product_id='free-plan',
-                quantity=1,
+                quantity=NOWGATEWAY_BASE_FEE_QUANTITY,
+                use_free_credits=False,
             )
-
-    @property
-    def free_credits(self):
-        return self._free_credits
-
-    @free_credits.setter
-    def free_credits(self, value):
-
-        self._free_credits = value
 
     async def shutdown(self):
         await super().shutdown()

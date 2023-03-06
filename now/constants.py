@@ -4,7 +4,7 @@ from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-NOW_GATEWAY_VERSION = '0.0.5-feat-alternative-hubble-report-2'
+NOW_GATEWAY_VERSION = '0.0.5-feat-alternative-hubble-report-3'
 NOW_PREPROCESSOR_VERSION = '0.0.124-fix-pandas-req-2'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.148-fix-pandas-req-2'
 NOW_AUTOCOMPLETE_VERSION = '0.0.11-fix-pandas-req-2'
@@ -80,3 +80,7 @@ NOWGATEWAY_BFF_PORT = 8080
 # S3 dataset paths
 S3_CUSTOM_DATA_PATH = 's3://jina-now/test folder/end_to_end_data/'
 S3_CUSTOM_MM_DATA_PATH = 's3://jina-now/test folder/data/'
+
+NOWGATEWAY_FREE_CREDITS = 100
+NOWGATEWAY_BASE_FEE_QUANTITY = 1
+NOWGATEWAY_BASE_FEE_SLEEP_INTERVAL = 288

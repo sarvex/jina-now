@@ -185,7 +185,13 @@ async def search(
         )
         matches.append(match)
     # reporting the usage at the end to make sure the request was successful
-    report(user_token=data.jwt, app_id='search', product_id='mm_query', quantity=1)
+    report(
+        user_token=data.jwt,
+        app_id='search',
+        product_id='mm_query',
+        quantity=1,
+        use_free_credits=True,
+    )
     return matches
 
 
