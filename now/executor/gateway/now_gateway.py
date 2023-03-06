@@ -138,7 +138,21 @@ class NOWGateway(BasePaymentGateway):
         )['data']
         while True:
             sleep(60)
-
+            current_user = get_user_info(authorized_jwt)
+            current_user['token'] = authorized_jwt
+            if current_user is None:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail='User is not authenticated',
+                )
+            remain_credits, has_payment_method = get_app_summary(current_user, client)
+            if remain_credits <= 0 and not has_payment_method:
+                return JSONResponse(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    content={
+                        'message': 'User has reached quota limit, please upgrade subscription'
+                    },
+                )
             resp = client.report_usage(
                 token=authorized_jwt,
                 app_id=self._internal_app_id,
@@ -420,12 +434,12 @@ def get_app_summary(user: dict, payment_client):
     has_payment_method = False
     remain_credits = 100
     # hardcode the subscription type for now
-    # email = user.get('email', '')
-    # if email in ENTERPRISE_USERS + PROFESSIONAL_USERS:
-    #    return (
-    #        remain_credits,
-    #        has_payment_method,
-    #    )
+    email = user.get('email', '')
+    if email in ENTERPRISE_USERS + PROFESSIONAL_USERS:
+        return (
+            remain_credits,
+            has_payment_method,
+        )
 
     try:
         resp = payment_client.get_summary(token=user['token'], app_id='search-api')
