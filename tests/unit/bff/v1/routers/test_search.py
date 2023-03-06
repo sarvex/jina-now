@@ -111,14 +111,17 @@ def test_image_search_parse_response(
 
 def get_user_input() -> UserInput:
     user_input = UserInput()
-    user_input.index_fields = ['text']
-    user_input.field_names_to_dataclass_fields = {'text': 'text'}
+    user_input.index_fields = ['product_image', 'bm25_text']
+    user_input.field_names_to_dataclass_fields = {
+        'product_image': 'product_image',
+        'bm25_text': 'bm25_text',
+    }
     return user_input
 
 
-@pytest.mark.parametrize('dump_user_input', [get_user_input()], indirect=True)
+@pytest.mark.parametrize('mock_bff_user_input', [get_user_input()], indirect=True)
 def test_text_search_with_semantic_scores(
-    dump_user_input,
+    mock_bff_user_input,
     client_with_mocked_jina_client: Callable[[DocumentArray], requests.Session],
     sample_search_response_text: DocumentArray,
     base64_image_string: str,
