@@ -4,10 +4,10 @@ from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-NOW_GATEWAY_VERSION = '0.0.5-feat-alternative-hubble-report-5'
-NOW_PREPROCESSOR_VERSION = '0.0.125-feat-alternative-hubble-report-5'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.149-feat-alternative-hubble-report-5'
-NOW_AUTOCOMPLETE_VERSION = '0.0.12-feat-alternative-hubble-report-5'
+NOW_GATEWAY_VERSION = '0.0.5-feat-alternative-hubble-report-6'
+NOW_PREPROCESSOR_VERSION = '0.0.125-feat-alternative-hubble-report-6'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.149-feat-alternative-hubble-report-6'
+NOW_AUTOCOMPLETE_VERSION = '0.0.12-feat-alternative-hubble-report-6'
 
 
 class Apps(BetterEnum):
@@ -81,6 +81,7 @@ NOWGATEWAY_BFF_PORT = 8080
 S3_CUSTOM_DATA_PATH = 's3://jina-now/test folder/end_to_end_data/'
 S3_CUSTOM_MM_DATA_PATH = 's3://jina-now/test folder/data/'
 
-NOWGATEWAY_FREE_CREDITS = 100
+NOWGATEWAY_FREE_CREDITS = 1000
 NOWGATEWAY_BASE_FEE_QUANTITY = 1
+NOWGATEWAY_SEARCH_FEE_QUANTITY = 1
 NOWGATEWAY_BASE_FEE_SLEEP_INTERVAL = 288

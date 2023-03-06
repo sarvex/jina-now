@@ -4,6 +4,7 @@ from typing import Any, Dict, List
 from docarray import Document
 from fastapi import APIRouter, Body
 
+from now.constants import NOWGATEWAY_SEARCH_FEE_QUANTITY
 from now.data_loading.create_dataclass import create_dataclass
 from now.executor.gateway.bff.app.settings import get_user_input_in_bff
 from now.executor.gateway.bff.app.v1.models.search import (
@@ -187,9 +188,7 @@ async def search(
     # reporting the usage at the end to make sure the request was successful
     report(
         user_token=data.jwt,
-        app_id='search',
-        product_id='mm_query',
-        quantity=1,
+        quantity=NOWGATEWAY_SEARCH_FEE_QUANTITY,
         use_free_credits=True,
     )
     return matches

@@ -1,7 +1,6 @@
 import json
 import os
 import shutil
-import threading
 from time import sleep
 from typing import Dict, List, Tuple
 
@@ -14,14 +13,9 @@ from jina.serve.runtimes.gateway.http.models import JinaHealthModel
 from streamlit.file_util import get_streamlit_file_path
 from streamlit.web.server import Server as StreamlitServer
 
-from now.constants import (
-    NOWGATEWAY_BASE_FEE_QUANTITY,
-    NOWGATEWAY_BASE_FEE_SLEEP_INTERVAL,
-    NOWGATEWAY_BFF_PORT,
-    NOWGATEWAY_FREE_CREDITS,
-)
+from now.constants import NOWGATEWAY_BFF_PORT
 from now.deployment.deployment import cmd
-from now.executor.gateway.hubble_report import report, set_free_credits_if_needed
+from now.executor.gateway.hubble_report import start_base_fee_thread
 from now.now_dataclasses import UserInput
 
 cur_dir = os.path.dirname(__file__)
@@ -133,21 +127,7 @@ class NOWGateway(CompositeGateway):
 
         self.setup_nginx()
         self.nginx_was_shutdown = False
-
-        thread = threading.Thread(target=self.base_fee_thread)
-        thread.start()
-
-    def base_fee_thread(self):
-        set_free_credits_if_needed(NOWGATEWAY_FREE_CREDITS, is_initial=True)
-        while True:
-            sleep(NOWGATEWAY_BASE_FEE_SLEEP_INTERVAL)
-            report(
-                user_token=self.user_input.jwt['token'],
-                app_id='search',
-                product_id='free-plan',
-                quantity=NOWGATEWAY_BASE_FEE_QUANTITY,
-                use_free_credits=False,
-            )
+        start_base_fee_thread(self.user_input.jwt['token'])
 
     async def shutdown(self):
         await super().shutdown()
