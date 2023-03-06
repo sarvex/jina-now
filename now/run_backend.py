@@ -42,7 +42,7 @@ def run(
     user_input.field_names_to_dataclass_fields.update(
         {'blip2_caption': 'blip2_caption'}
     )
-    user_input.model_choices.update({'blip2_caption': [Models.CLIP_MODEL]})
+    user_input.model_choices.update({'blip2_caption_model': [Models.CLIP_MODEL]})
 
     print_callback = kwargs.get('print_callback', print)
     if user_input.dataset_type in [DatasetTypes.DEMO, DatasetTypes.DOCARRAY]:
@@ -58,7 +58,7 @@ def run(
     dataset = DocumentArray.load_binary(
         '/Users/joschkabraun/dev/now/blip2_uri2captions/ltf-preproc-with-caption-beam_search_02_25_2023.bin'
     )
-    dataset = dataset[:50]
+    # dataset = dataset[:50]
 
     # dataset = load_data(user_input, data_class, print_callback)
     print_callback('Data loaded. Deploying the flow...')
