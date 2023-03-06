@@ -5,14 +5,11 @@ import shutil
 import signal
 import sys
 from collections.abc import MutableMapping
-from dataclasses import dataclass
 from inspect import stack
 from typing import Any, Dict, List, Optional, TypeVar, Union
 
-import boto3
 import cowsay
 import docarray
-import hubble
 import yaml
 from jina.jaml import JAML
 from pyfiglet import Figlet
@@ -108,26 +105,6 @@ def write_flow_file(flow_yaml_content, new_yaml_file_path):
         )
 
 
-@hubble.login_required
-def jina_auth_login():
-    pass
-
-
-def get_info_hubble(user_input):
-    client = hubble.Client(max_retries=None, jsonify=True)
-    response = client.get_user_info()
-    user_input.admin_emails = (
-        [response['data']['email']] if 'email' in response['data'] else []
-    )
-    if not user_input.admin_emails:
-        print(
-            'Your hubble account is not verified. Please verify your account to deploy your flow as admin.'
-        )
-    user_input.jwt = {'token': client.token}
-    user_input.admin_name = response['data']['name']
-    return response['data'], client.token
-
-
 def print_headline():
     f = Figlet(font='slant')
     print('Welcome to:')
@@ -221,24 +198,6 @@ def docarray_typing_to_modality_string(T: TypeVar) -> str:
 def modality_string_to_docarray_typing(s: str) -> TypeVar:
     """E.g. image -> docarray.typing.Image"""
     return getattr(docarray.typing, s.capitalize())
-
-
-@dataclass
-class AWSProfile:
-    aws_access_key_id: str
-    aws_secret_access_key: str
-    region: str
-
-
-def get_aws_profile():
-    session = boto3.Session()
-    credentials = session.get_credentials()
-    aws_profile = (
-        AWSProfile(credentials.access_key, credentials.secret_key, session.region_name)
-        if credentials
-        else AWSProfile(None, None, session.region_name)
-    )
-    return aws_profile
 
 
 def hide_string_chars(s):
