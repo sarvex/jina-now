@@ -25,10 +25,17 @@ for line in lines:
     dict_executors[email] += int(num_executors)
     dict_ids[email].append(flow_id)
 
+# This variable is used to revert the latest changes in "rows"
+rows_mem = ""
 for email, executor_count in sorted(
     dict_executors.items(), key=lambda kv: kv[1], reverse=True
 ):
-    rows += f"- {email} has {executor_count} active executors in the flow IDs {', '.join(dict_ids[email])}\n"
+    rows_mem = rows
+    rows += f"- {email} | {executor_count} executors | flow IDs {', '.join(dict_ids[email])}\n"
+    if len(rows) > 2001:
+        rows = rows_mem
+        break
+
 
 message = {
     "channel": "#slack-function-test",
@@ -45,7 +52,6 @@ message = {
     ],
 }
 
-print(message)
 try:
     response = client.chat_postMessage(**message)
     print("Message sent: ", response["ts"])

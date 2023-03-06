@@ -76,3 +76,7 @@ MODALITY_TO_MODELS = {
 }
 
 NOWGATEWAY_BFF_PORT = 8080
+
+# S3 dataset paths
+S3_CUSTOM_DATA_PATH = 's3://jina-now/test folder/end_to_end_data/'
+S3_CUSTOM_MM_DATA_PATH = 's3://jina-now/test folder/data/'
