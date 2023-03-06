@@ -204,10 +204,10 @@ jobs:
         env:
           WOLF_TOKEN: ${{ secrets.WOLF_TOKEN }}
           S3_SCHEMA_FOLDER_PATH: ${{ secrets.S3_SCHEMA_FOLDER_PATH }}
-      - name: Setup tmate session for debugging
-        if: ${{ failure() || (github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled) }}
-        uses: mxschmitt/action-tmate@v3
-        timeout-minutes: 60
+#      - name: Setup tmate session for debugging
+#        if: ${{ failure() || (github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled) }}
+#        uses: mxschmitt/action-tmate@v3
+#        timeout-minutes: 60
       - name: Check codecov file
         id: check_files
         uses: andstor/file-existence-action@v1
