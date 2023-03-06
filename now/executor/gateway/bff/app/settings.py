@@ -38,7 +38,6 @@ DEFAULT_LOGGING_CONFIG = {
     'root': {'level': 'DEBUG', 'handlers': ['console']},
 }
 
-
 user_input_in_bff = UserInput()
 try:
     with open(os.path.join(os.path.expanduser('~'), 'user_input.json'), 'r') as f:
