@@ -111,8 +111,11 @@ def test_image_search_parse_response(
 
 def get_user_input() -> UserInput:
     user_input = UserInput()
-    user_input.index_fields = ['text']
-    user_input.field_names_to_dataclass_fields = {'text': 'text'}
+    user_input.index_fields = ['product_image', 'bm25_text']
+    user_input.field_names_to_dataclass_fields = {
+        'product_image': 'product_image',
+        'bm25_text': 'bm25_text',
+    }
     return user_input
 
 
