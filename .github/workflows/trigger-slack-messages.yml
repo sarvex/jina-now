@@ -1,0 +1,38 @@
+name: Get emails of persons with running flows
+
+on:
+  schedule:
+    - cron: "0 16 * * *"
+
+jobs:
+  run_script:
+    runs-on: ubuntu-latest
+    env:
+      SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
+      HUBBLE_M2M_TOKEN: ${{ secrets.HUBBLE_M2M_TOKEN }}
+      FILE_PATH: ${{ github.workspace }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set AWS profile
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-1
+
+      - name: Install Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+
+      - name: Install dependencies
+        run: |
+          pip install -r ${GITHUB_WORKSPACE}/scripts/requirements.txt
+
+      - name: Run script
+        run: |
+          aws eks update-kubeconfig --region us-east-1 --name jcloud-prod-eks-kcjpa
+          chmod +x ${GITHUB_WORKSPACE}/scripts/active-flow-emails.sh
+          python ${GITHUB_WORKSPACE}/scripts/alert_slack_with_flows.py

@@ -36,7 +36,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install wheel
-          pip install jina-now -U
+          pip install git+https://github.com/jina-ai/now.git@demo-datasets-release
       - name: Add JCloud auth token
         run: |
           mkdir -p ~/.jina

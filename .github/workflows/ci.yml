@@ -204,8 +204,6 @@ jobs:
         env:
           WOLF_TOKEN: ${{ secrets.WOLF_TOKEN }}
           S3_SCHEMA_FOLDER_PATH: ${{ secrets.S3_SCHEMA_FOLDER_PATH }}
-          S3_CUSTOM_DATA_PATH: ${{ secrets.S3_CUSTOM_DATA_PATH }}
-          S3_CUSTOM_MM_DATA_PATH: ${{ secrets.S3_CUSTOM_MM_DATA_PATH }}
 #      - name: Setup tmate session for debugging
 #        if: ${{ failure() || (github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled) }}
 #        uses: mxschmitt/action-tmate@v3
@@ -238,7 +236,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Setup JCloud
         run: |
-          pip install jcloud==0.2.1
+          pip install jcloud==0.2.3
           mkdir -p ~/.jina
           touch ~/.jina/config.json
           echo "{\"auth_token\": \"${WOLF_TOKEN}\"}" > ~/.jina/config.json
