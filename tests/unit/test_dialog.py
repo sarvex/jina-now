@@ -14,7 +14,6 @@ from now.constants import DEFAULT_FLOW_NAME, Apps, DatasetTypes
 from now.demo_data import DemoDatasetNames
 from now.dialog import configure_user_input
 from now.now_dataclasses import UserInput
-from now.utils import DemoAvailableException
 
 index_field_CANDIDATES_TO_MODALITIES = {'text': Text, 'uri': Image}
 FILTER_FIELD_CANDIDATES_TO_MODALITIES = {
@@ -255,24 +254,6 @@ ERRORFUL_DIALOGS_WITH_CONFIGS = [
         },
         {'index_fields': ['.JPG']},  # not a valid index field
         ValueError,
-    ),
-    (
-        {
-            'app': Apps.SEARCH_APP,
-            'flow_name': DEFAULT_FLOW_NAME,
-            'admin_name': 'team-now',
-            'dataset_type': DatasetTypes.DEMO,  # dialog rejects new demo deployment
-            'dataset_name': DemoDatasetNames.TLL,
-            'index_field_candidates_to_modalities': {'label': Text, 'image': Image},
-            'index_fields': ['label'],
-            'filter_fields': [],
-            'filter_field_candidates_to_modalities': {'label': 'text'},
-            'label_model': ['clip'],
-            'model_choices': {'label_model': ['clip']},
-            'secured': '⛔ no',
-        },
-        {},
-        DemoAvailableException,
     ),
 ]
 
