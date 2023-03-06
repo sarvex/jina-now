@@ -21,7 +21,9 @@ def get_free_credits():
     return free_credits
 
 
-def set_free_credits(value):
+def set_free_credits_if_needed(value, is_initial=False):
+    if is_initial and os.path.exists(credits_path()):
+        return
     with open(credits_path(), 'w') as f:
         json.dump({'free_credits': value}, f)
 
@@ -41,7 +43,7 @@ def report(user_token, app_id, product_id, quantity, use_free_credits=False):
         if use_free_credits:
             free_credits = get_free_credits()
             if free_credits > 0:
-                set_free_credits(free_credits - quantity)
+                set_free_credits_if_needed(free_credits - quantity)
                 return
         if can_charge(authorized_jwt):
             payment_client.report_usage(authorized_jwt, app_id, product_id, quantity)

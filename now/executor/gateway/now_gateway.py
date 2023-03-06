@@ -21,7 +21,7 @@ from now.constants import (
     NOWGATEWAY_FREE_CREDITS,
 )
 from now.deployment.deployment import cmd
-from now.executor.gateway.hubble_report import report, set_free_credits
+from now.executor.gateway.hubble_report import report, set_free_credits_if_needed
 from now.now_dataclasses import UserInput
 
 cur_dir = os.path.dirname(__file__)
@@ -138,7 +138,7 @@ class NOWGateway(CompositeGateway):
         thread.start()
 
     def base_fee_thread(self):
-        set_free_credits(NOWGATEWAY_FREE_CREDITS)
+        set_free_credits_if_needed(NOWGATEWAY_FREE_CREDITS, is_initial=True)
         while True:
             sleep(NOWGATEWAY_BASE_FEE_SLEEP_INTERVAL)
             report(
