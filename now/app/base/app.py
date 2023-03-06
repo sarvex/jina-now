@@ -118,7 +118,11 @@ class JinaNOWApp:
             'uses_with': {'user_input_dict': user_input.to_safe_dict()},
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'jcloud': {
-                'resources': {'instance': 'C5', 'capacity': 'spot'},
+                'resources': {
+                    'instance': 'C5',
+                    'capacity': 'spot',
+                    'storage': {'kind': 'ebs', 'size': '10G'},
+                },
             },
         }
         if 'NOW_EXAMPLES' in os.environ:

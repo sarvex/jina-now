@@ -55,16 +55,6 @@ class PlaygroundGateway(Gateway):
 
 
 class BFFGateway(FastAPIBaseGateway):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        thread = threading.Thread(target=self.run)
-        thread.start()
-
-    def run(self):
-        while True:
-            sleep(60)
-            report(user_token=None, app_id='search', product_id='base_fee', quantity=60)
-
     @property
     def app(self):
         from now.executor.gateway.bff.app.app import application
@@ -138,6 +128,30 @@ class NOWGateway(CompositeGateway):
 
         self.setup_nginx()
         self.nginx_was_shutdown = False
+
+        thread = threading.Thread(target=self.base_fee_thread)
+        thread.start()
+
+    def base_fee_thread(self):
+        self.free_credits = 100
+
+        while True:
+            sleep(60)
+            report(
+                user_token=self.user_input.jwt['token'],
+                app_id='search',
+                product_id='free-plan',
+                quantity=1,
+            )
+
+    @property
+    def free_credits(self):
+        return self._free_credits
+
+    @free_credits.setter
+    def free_credits(self, value):
+
+        self._free_credits = value
 
     async def shutdown(self):
         await super().shutdown()
