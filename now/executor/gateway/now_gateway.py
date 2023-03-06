@@ -163,7 +163,7 @@ class NOWGateway(BasePaymentGateway):
         await self.playground_gateway.shutdown()
         await self.bff_gateway.shutdown()
         await super().shutdown()
-        self.continuous_billing_thread.stop()
+        self.continuous_billing_thread.join()
         if not self.nginx_was_shutdown:
             self.shutdown_nginx()
             self.nginx_was_shutdown = True
@@ -420,12 +420,12 @@ def get_app_summary(user: dict, payment_client):
     has_payment_method = False
     remain_credits = 100
     # hardcode the subscription type for now
-    email = user.get('email', '')
-    if email in ENTERPRISE_USERS + PROFESSIONAL_USERS:
-        return (
-            remain_credits,
-            has_payment_method,
-        )
+    # email = user.get('email', '')
+    # if email in ENTERPRISE_USERS + PROFESSIONAL_USERS:
+    #    return (
+    #        remain_credits,
+    #        has_payment_method,
+    #    )
 
     try:
         resp = payment_client.get_summary(token=user['token'], app_id='search-api')
