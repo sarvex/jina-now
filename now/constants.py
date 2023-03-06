@@ -4,10 +4,10 @@ from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-NOW_GATEWAY_VERSION = '0.0.5-feat-alternative-hubble-report-1'
-NOW_PREPROCESSOR_VERSION = '0.0.123-test-use-setup-25'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.148-test-experiment-volume-8'
-NOW_AUTOCOMPLETE_VERSION = '0.0.11-refactor-custom-gateway-103'
+NOW_GATEWAY_VERSION = '0.0.5-feat-alternative-hubble-report-2'
+NOW_PREPROCESSOR_VERSION = '0.0.124-fix-pandas-req-2'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.148-fix-pandas-req-2'
+NOW_AUTOCOMPLETE_VERSION = '0.0.11-fix-pandas-req-2'
 
 
 class Apps(BetterEnum):
@@ -53,6 +53,7 @@ BASE_STORAGE_URL = (
 )
 
 EXTERNAL_CLIP_HOST = 'encoderclip-pretty-javelin-3aceb7f2cd.wolf.jina.ai'
+EXTERNAL_SBERT_HOST = 'encodersbert-flow-external-sbert-5cc8f2c38e.wolf.jina.ai'
 
 DEFAULT_FLOW_NAME = 'nowapi'
 PREFETCH_NR = 10
@@ -75,3 +76,7 @@ MODALITY_TO_MODELS = {
 }
 
 NOWGATEWAY_BFF_PORT = 8080
+
+# S3 dataset paths
+S3_CUSTOM_DATA_PATH = 's3://jina-now/test folder/end_to_end_data/'
+S3_CUSTOM_MM_DATA_PATH = 's3://jina-now/test folder/data/'

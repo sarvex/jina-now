@@ -45,13 +45,27 @@ jobs:
           WOLF_TOKEN: ${{ secrets.WOLF_TOKEN }}
       - name: Test
         id: test
-        run: pytest --suppress-no-test-exit-code -v -s -m "not gpu" --splits 9 --group ${{ matrix.group }} --splitting-algorithm least_duration tests/
+        run: |
+          pytest --suppress-no-test-exit-code --cov=now --cov-report=xml \
+            -v -s -m "not gpu" --splits 9 --group ${{ matrix.group }} --splitting-algorithm least_duration tests/
+          echo "codecov_flag=now" >> $GITHUB_OUTPUT
         timeout-minutes: 35
         env:
           WOLF_TOKEN: ${{ secrets.WOLF_TOKEN }}
           S3_SCHEMA_FOLDER_PATH: ${{ secrets.S3_SCHEMA_FOLDER_PATH }}
-          S3_CUSTOM_DATA_PATH: ${{ secrets.S3_CUSTOM_DATA_PATH }}
-          S3_CUSTOM_MM_DATA_PATH: ${{ secrets.S3_CUSTOM_MM_DATA_PATH }}
+      - name: Check codecov file
+        id: check_files
+        uses: andstor/file-existence-action@v1
+        with:
+          files: "coverage.xml"
+      - name: Upload coverage from test to Codecov
+        uses: codecov/codecov-action@v2
+        if: steps.check_files.outputs.files_exists == 'true'
+        with:
+          file: coverage.xml
+          name: ${{ matrix.group }}-codecov
+          flags: ${{ steps.test.outputs.codecov_flag }}
+          fail_ci_if_error: false
 #      - name: Setup tmate session for debugging
 #        if: ${{ failure() }}
 #        uses: mxschmitt/action-tmate@v3

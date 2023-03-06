@@ -1,17 +1,18 @@
-import json
 import logging
 import os
-import tempfile
+import random
 import time
 
 import hubble
 import pytest
+from jcloud.flow import CloudFlow
 from pytest_mock import MockerFixture
 
+from now.constants import S3_CUSTOM_MM_DATA_PATH
 from now.data_loading.data_loading import _list_s3_file_paths
-from now.deployment.deployment import terminate_wolf
+from now.deployment.deployment import get_or_create_eventloop, terminate_wolf
 from now.executor.preprocessor.s3_download import get_bucket
-from now.utils import get_aws_profile, get_flow_id
+from now.utils import get_aws_profile
 
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__name__)
@@ -45,43 +46,74 @@ def with_hubble_login_patch(mocker: MockerFixture) -> None:
 
 
 @pytest.fixture()
-def cleanup():
-    with tempfile.TemporaryDirectory() as tmpdir:
-        start = time.time()
-        yield tmpdir
-        print('start cleanup')
-        try:
-            with open(f'{tmpdir}/flow_details.json', 'r') as f:
-                flow_details = json.load(f)
-            if 'host' not in flow_details:
-                print('nothing to clean up')
-                return
-            host = flow_details['host']
-            flow_id = get_flow_id(host)
+def cleanup(random_flow_name):
+    start = time.time()
+    yield
+    print('start cleanup')
+    try:
+        flow_id = get_flow_id_from_name(random_flow_name)
+        if flow_id:
             terminate_wolf(flow_id)
-        except Exception as e:
-            print('no clean up')
-            print(e)
-            return
-        print('cleaned up')
-        now = time.time() - start
-        mins = int(now / 60)
-        secs = int(now % 60)
-        print(50 * '#')
-        print(f'Time taken to execute deployment: {mins}m {secs}s')
-        print(50 * '#')
+        else:
+            print(f'there is no flow with name {random_flow_name} to be terminated')
+    except Exception as e:
+        print('no clean up')
+        print(e)
+        return
+    print('cleaned up')
+    now = time.time() - start
+    mins = int(now / 60)
+    secs = int(now % 60)
+    print(50 * '#')
+    print(f'Time taken to execute deployment: {mins}m {secs}s')
+    print(50 * '#')
+
+
+@pytest.fixture
+def random_flow_name():
+    """
+    Creates a random flow name for remote e2e tests, which then will be used to delete the flow.
+    The name contains branch name to help us link the failed/not-deleted flow to the PR.
+    """
+    return f'{get_branch_name_for_flows()}-{random.randint(0, 10000)}'
+
+
+def get_branch_name_for_flows():
+    """
+    Returns current branch name which is lowered and shortened because of the
+    limitations on the wolf side.
+    In case of a local run, returns 'local_setup'.
+    """
+    # !IMPORTANT! if you modify this function, make sure `delete_flows.py` is adjusted.
+    if 'GITHUB_HEAD_REF' in os.environ:
+        return os.environ['GITHUB_HEAD_REF'].lower()[:15] or 'cd-flow'
+    return 'local-setup'
+
+
+def get_flow_id_from_name(flow_name):
+    """
+    Get the flow ID by its name.
+    Flow ID is constructed by name + suffix,
+    so we look for the correct ID by checking if the ID contains the name.
+    """
+    loop = get_or_create_eventloop()
+    jflows = loop.run_until_complete(CloudFlow().list_all())['flows']
+    for flow in jflows:
+        if flow['status']['phase'] != 'Deleted' and flow_name in flow['id']:
+            return flow['id']
+    return None
 
 
 @pytest.fixture(scope='session')
 def pulled_local_folder_data(tmpdir_factory):
     aws_profile = get_aws_profile()
     bucket = get_bucket(
-        uri=os.environ.get('S3_CUSTOM_MM_DATA_PATH'),
+        uri=S3_CUSTOM_MM_DATA_PATH,
         aws_access_key_id=aws_profile.aws_access_key_id,
         aws_secret_access_key=aws_profile.aws_secret_access_key,
         region_name=aws_profile.region,
     )
-    folder_prefix = '/'.join(os.environ.get('S3_CUSTOM_MM_DATA_PATH').split('/')[3:])
+    folder_prefix = '/'.join(S3_CUSTOM_MM_DATA_PATH.split('/')[3:])
     file_paths = _list_s3_file_paths(bucket, folder_prefix)
     temp_dir = str(tmpdir_factory.mktemp('local_folder_data'))
     for path in file_paths:

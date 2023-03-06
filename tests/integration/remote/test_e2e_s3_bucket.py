@@ -1,4 +1,3 @@
-import json
 import os
 from argparse import Namespace
 
@@ -10,7 +9,12 @@ from tests.integration.remote.assertions import (
 )
 
 from now.cli import cli
-from now.constants import DatasetTypes, Models
+from now.constants import (
+    DatasetTypes,
+    Models,
+    S3_CUSTOM_DATA_PATH,
+    S3_CUSTOM_MM_DATA_PATH,
+)
 from now.utils import get_aws_profile
 
 
@@ -19,8 +23,8 @@ from now.utils import get_aws_profile
 @pytest.mark.parametrize(
     'dataset_path,index_fields,filter_fields,mm_type,dataset_length',
     [
-        (os.environ.get('S3_CUSTOM_DATA_PATH'), ['.jpeg'], [], False, 2),
-        (os.environ.get('S3_CUSTOM_MM_DATA_PATH'), ['image.png'], ['title'], True, 10),
+        (S3_CUSTOM_DATA_PATH, ['.jpeg'], [], False, 2),
+        (S3_CUSTOM_MM_DATA_PATH, ['image.png'], ['title'], True, 10),
     ],
 )
 @pytest.mark.parametrize('query_fields', ['image'])
@@ -33,12 +37,13 @@ def test_backend_custom_data(
     dataset_length: int,
     query_fields: str,
     cleanup,
+    random_flow_name,
     with_hubble_login_patch,
 ):
     aws_profile = get_aws_profile()
     kwargs = {
         'now': 'start',
-        'flow_name': 'nowapi',
+        'flow_name': random_flow_name,
         'dataset_type': DatasetTypes.S3_BUCKET,
         'dataset_path': dataset_path,
         'aws_access_key_id': aws_profile.aws_access_key_id,
@@ -51,11 +56,6 @@ def test_backend_custom_data(
     }
     kwargs = Namespace(**kwargs)
     response = cli(args=kwargs)
-
-    # Dump the flow details from response host to a tmp file for post cleanup
-    flow_details = {'host': response['host_http']}
-    with open(f'{cleanup}/flow_details.json', 'w') as f:
-        json.dump(flow_details, f)
 
     assert_deployment_response(response)
 
@@ -71,4 +71,4 @@ def test_backend_custom_data(
         create_temp_link=True,
         dataset_length=dataset_length,
     )
-    assert_indexed_all_docs(flow_details['host'], kwargs=kwargs, limit=dataset_length)
+    assert_indexed_all_docs(response['host_http'], kwargs=kwargs, limit=dataset_length)

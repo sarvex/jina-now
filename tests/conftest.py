@@ -1,7 +1,9 @@
 """ Module holds reusable fixtures """
 import base64
+import json
 import os
 import random
+import time
 from collections import namedtuple
 from warnings import catch_warnings, filterwarnings
 
@@ -17,7 +19,6 @@ from urllib3.exceptions import InsecureRequestWarning, SecurityWarning
 
 from now.data_loading.elasticsearch import ElasticsearchConnector
 from now.deployment.deployment import cmd
-from now.executor.indexer.elastic.elastic_indexer import wait_until_cluster_is_up
 from now.executor.preprocessor import NOWPreprocessor
 from now.utils import get_aws_profile
 
@@ -154,6 +155,18 @@ def es_connection_params():
     return connection_str, connection_args
 
 
+@pytest.fixture(scope="function")
+def dump_user_input(request) -> None:
+    # If user_input.json exists, then remove it
+    if os.path.exists(os.path.join(os.path.expanduser('~'), 'user_input.json')):
+        os.remove(os.path.join(os.path.expanduser('~'), 'user_input.json'))
+    # Now dump the user input
+    with open(os.path.join(os.path.expanduser('~'), 'user_input.json'), 'w') as f:
+        json.dump(request.param.__dict__, f)
+    yield
+    os.remove(os.path.join(os.path.expanduser('~'), 'user_input.json'))
+
+
 @pytest.fixture(scope='session')
 def setup_service_running(es_connection_params) -> None:
     docker_compose_file = os.path.join(
@@ -162,6 +175,8 @@ def setup_service_running(es_connection_params) -> None:
     )
     cmd(f'docker-compose -f {docker_compose_file} up -d')
     hosts, _ = es_connection_params
+    os.environ['ES_HOSTS'] = hosts
+    os.environ['ES_API_KEY'] = 'TestApiKey'
     wait_until_cluster_is_up(es=Elasticsearch(hosts=hosts), hosts=hosts)
     yield
     cmd('docker-compose -f tests/resources/elastic/docker-compose.yml down')
@@ -180,6 +195,11 @@ def get_aws_info():
         aws_profile.aws_secret_access_key,
         region,
     )
+
+
+@pytest.fixture
+def random_index_name():
+    os.environ['ES_INDEX_NAME'] = f"test-index-{random.randint(0, 10000)}"
 
 
 @pytest.fixture
@@ -323,6 +343,20 @@ def setup_online_shop_db(setup_elastic_db, es_connection_params, online_shop_res
     delete_es_index(connector=es_connector, name=index_name)
 
 
-@pytest.fixture
-def random_index_name():
-    return f'test-index-{random.randint(0, 10000)}'
+def wait_until_cluster_is_up(es, hosts):
+    MAX_RETRIES = 300
+    SLEEP = 3
+    retries = 0
+    while retries < MAX_RETRIES:
+        try:
+            if es.ping():
+                break
+            else:
+                retries += 1
+                time.sleep(SLEEP)
+        except Exception:
+            print(
+                f'Elasticsearch is not running yet, are you connecting to the right hosts? {hosts}'
+            )
+    if retries >= MAX_RETRIES:
+        raise RuntimeError(f'Elasticsearch is not running after {MAX_RETRIES} retries.')

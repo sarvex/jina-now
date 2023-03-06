@@ -8,6 +8,7 @@ from now.constants import (
     ACCESS_PATHS,
     DEMO_NS,
     EXTERNAL_CLIP_HOST,
+    EXTERNAL_SBERT_HOST,
     NOW_AUTOCOMPLETE_VERSION,
     NOW_ELASTIC_INDEXER_VERSION,
     NOW_PREPROCESSOR_VERSION,
@@ -73,6 +74,19 @@ class SearchApp(JinaNOWApp):
             else 'NOWAutoCompleteExecutor2',
             'needs': 'gateway',
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
+            'jcloud': {
+                'autoscale': {
+                    'min': 0,
+                    'max': 1,
+                    'metric': 'concurrency',
+                    'target': 1,
+                },
+                'resources': {
+                    'instance': 'C1',
+                    'capacity': 'spot',
+                    'storage': {'kind': 'efs', 'size': '1M'},
+                },
+            },
         }
 
     @staticmethod
@@ -84,7 +98,13 @@ class SearchApp(JinaNOWApp):
             if not testing
             else 'NOWPreprocessor',
             'jcloud': {
-                'autoscale': {'min': 0, 'max': 5, 'metric': 'concurrency', 'target': 1}
+                'autoscale': {
+                    'min': 0,
+                    'max': 100,
+                    'metric': 'concurrency',
+                    'target': 1,
+                },
+                'resources': {'instance': 'C4', 'capacity': 'spot'},
             },
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
         }
@@ -107,16 +127,17 @@ class SearchApp(JinaNOWApp):
     def sbert_encoder_stub() -> Tuple[Dict, int]:
         return {
             'name': Models.SBERT_MODEL,
-            'needs': 'preprocessor',
             'uses': f'jinahub+docker://TransformerSentenceEncoder',
             'uses_with': {
                 'access_paths': ACCESS_PATHS,
                 'model_name': 'msmarco-distilbert-base-v3',
             },
-            'jcloud': {
-                'autoscale': {'min': 0, 'max': 5, 'metric': 'concurrency', 'target': 1}
-            },
+            'host': EXTERNAL_SBERT_HOST,
+            'port': 443,
+            'tls': True,
+            'external': True,
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
+            'needs': 'preprocessor',
         }, 768
 
     @staticmethod
@@ -124,14 +145,12 @@ class SearchApp(JinaNOWApp):
         user_input: UserInput,
         encoder2dim: Dict[str, int],
         testing=False,
-        index_name=None,
     ) -> Dict:
         """Creates indexer stub.
 
         :param user_input: user input
         :param encoder2dim: maps encoder name to its output dimension
         :param testing: use local executors if True
-        :param index_name: name of the elasticsearch index
         """
         document_mappings_list = []
 
@@ -149,6 +168,9 @@ class SearchApp(JinaNOWApp):
                     ],
                 ]
             )
+        provision_index = 'yes' if not testing else 'no'
+        provision_shards = os.getenv('PROVISION_SHARDS', '1')
+        provision_replicas = os.getenv('PROVISION_REPLICAS', '0')
 
         return {
             'name': 'indexer',
@@ -159,16 +181,16 @@ class SearchApp(JinaNOWApp):
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'uses_with': {
                 'document_mappings': document_mappings_list,
-                'index_name': 'now_index' if not index_name else index_name,
             },
             'no_reduce': True,
             'jcloud': {
-                'resources': {
-                    'memory': '8G',
-                    'cpu': 0.5,
-                    'capacity': 'on-demand',
-                    'storage': {'type': 'ebs', 'size': '10G'},
-                }
+                'labels': {
+                    'app': 'indexer',
+                    'provision-index': provision_index,
+                    'provision-shards': provision_shards,
+                    'provision-replicas': provision_replicas,
+                },
+                'resources': {'instance': 'C6', 'capacity': 'spot'},
             },
         }
 
@@ -187,28 +209,29 @@ class SearchApp(JinaNOWApp):
         ]
 
         encoder2dim = {}
-        if any(
-            Models.SBERT_MODEL in user_input.model_choices[f"{field}_model"]
-            for field in user_input.index_fields
-        ):
-            sbert_encoder, sbert_dim = self.sbert_encoder_stub()
-            encoder2dim[sbert_encoder['name']] = sbert_dim
-            flow_yaml_executors.append(sbert_encoder)
 
-        if any(
-            Models.CLIP_MODEL in user_input.model_choices[f"{field}_model"]
-            for field in user_input.index_fields
-        ):
-            clip_encoder, clip_dim = self.clip_encoder_stub()
-            encoder2dim[clip_encoder['name']] = clip_dim
-            flow_yaml_executors.append(clip_encoder)
+        def add_encoders_to_flow(models):
+            for model, encoder_stub in models:
+                if any(
+                    model in user_input.model_choices[f"{field}_model"]
+                    for field in user_input.index_fields
+                ):
+                    encoder, dim = encoder_stub()
+                    encoder2dim[encoder['name']] = dim
+                    flow_yaml_executors.append(encoder)
+
+        add_encoders_to_flow(
+            [
+                (Models.SBERT_MODEL, self.sbert_encoder_stub),
+                (Models.CLIP_MODEL, self.clip_encoder_stub),
+            ]
+        )
 
         flow_yaml_executors.append(
             self.indexer_stub(
                 user_input,
                 encoder2dim=encoder2dim,
                 testing=testing,
-                index_name=kwargs.get('index_name'),
             )
         )
 

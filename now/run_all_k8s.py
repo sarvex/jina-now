@@ -1,42 +1,24 @@
+import json
+import os.path
+
 import cowsay
 import requests
+from docarray import DocumentArray
 from rich import box
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Column, Table
 
 from now import run_backend
+from now.compare.compare_flows import compare_flows_for_queries
 from now.constants import DEMO_NS, FLOW_STATUS
-from now.deployment.deployment import cmd, list_all_wolf, status_wolf, terminate_wolf
+from now.deployment.deployment import cmd, terminate_wolf
 from now.dialog import configure_user_input
-from now.utils import maybe_prompt_user
+from now.utils import get_flow_status, maybe_prompt_user
 
 
 def stop_now(**kwargs):
-    choices = []
-    # Add all remote Flows that exists with the namespace `nowapi`
-    alive_flows = list_all_wolf(status=FLOW_STATUS)
-    for flow_details in alive_flows:
-        choices.append(flow_details['name'])
-    if len(choices) == 0:
-        cowsay.cow('nothing to stop')
-        return
-    else:
-        questions = [
-            {
-                'type': 'list',
-                'name': 'cluster',
-                'message': 'Which cluster do you want to delete?',
-                'choices': choices,
-            }
-        ]
-        cluster = maybe_prompt_user(questions, 'cluster', **kwargs)
-
-    flow = [x for x in alive_flows if x['name'] == cluster][0]
-    flow_id = flow['id']
-    _result = status_wolf(flow_id)
-    if _result is None:
-        print(f'❎ Flow not found in JCloud. Likely, it has been deleted already')
+    _result, flow_id, cluster = get_flow_status(action='delete', **kwargs)
     if _result is not None and _result['status']['phase'] == FLOW_STATUS:
         terminate_wolf(flow_id)
         from hubble import Client
@@ -97,30 +79,7 @@ def start_now(**kwargs):
 
 
 def fetch_logs_now(**kwargs):
-    choices = []
-    # Add all remote Flows that exists with the namespace `nowapi`
-    alive_flows = list_all_wolf(status=FLOW_STATUS)
-    for flow_details in alive_flows:
-        choices.append(flow_details['name'])
-    if len(choices) == 0:
-        cowsay.cow('nothing to log')
-        return
-    else:
-        questions = [
-            {
-                'type': 'list',
-                'name': 'cluster',
-                'message': 'Which cluster do you want to check logs for?',
-                'choices': choices,
-            }
-        ]
-        cluster = maybe_prompt_user(questions, 'cluster', **kwargs)
-
-    flow = [x for x in alive_flows if x['name'] == cluster][0]
-    flow_id = flow['id']
-    _result = status_wolf(flow_id)
-    if _result is None:
-        print(f'❎ Flow not found in JCloud. Likely, it has been deleted already')
+    _result, flow_id, cluster = get_flow_status(action='log', **kwargs)
 
     if _result is not None and _result['status']['phase'] == FLOW_STATUS:
         namespace = _result["spec"]["jcloud"]["namespace"]
@@ -148,3 +107,116 @@ def fetch_logs_now(**kwargs):
 
     container = "gateway" if "gateway" in pod else "executor"
     cmd(f"kubectl logs {pod} -n {namespace} -c {container}", std_output=True)
+
+
+def compare_flows(**kwargs):
+    if not 'flow_ids' in kwargs:
+        path_semantic_scores = maybe_prompt_user(
+            [
+                {
+                    'type': 'input',
+                    'name': 'path_semantic_scores',
+                    'message': 'Path to the json file mapping flow ID to a list of semantic scores configurations (optional):',
+                }
+            ],
+            'path_semantic_scores',
+            **kwargs,
+        )
+        if path_semantic_scores:
+            with open(path_semantic_scores) as fp:
+                cluster_ids_2_semantic_scores = json.load(fp)
+            flow_ids = list(cluster_ids_2_semantic_scores.keys())
+            flow_ids_http_semantic_scores = [
+                (flow_id, f'https://{flow_id}-http.wolf.jina.ai', semantic_scores)
+                for flow_id in flow_ids
+                for semantic_scores in cluster_ids_2_semantic_scores[flow_id]
+            ]
+    if 'flow_ids' in kwargs or not path_semantic_scores:
+        flow_ids = maybe_prompt_user(
+            [
+                {
+                    'type': 'input',
+                    'name': 'flow_ids',
+                    'message': 'Enter comma-separated the flow names to compare:',
+                }
+            ],
+            'flow_ids',
+            **kwargs,
+        )
+        flow_ids_http_semantic_scores = [
+            (cluster_id, f'https://{cluster_id}-http.wolf.jina.ai', [])
+            for cluster_id in flow_ids.split(',')
+        ]
+
+    dataset = maybe_prompt_user(
+        [
+            {
+                'type': 'input',
+                'name': 'dataset',
+                'message': 'Path to the DocArray with the queries in multi-modal format',
+            }
+        ],
+        'dataset',
+        **kwargs,
+    )
+    if os.path.exists(dataset):
+        print(f'Loading queries from {dataset}')
+        da = DocumentArray.load_binary(dataset)
+    else:
+        print(f'Pulling queries from {dataset}')
+        da = DocumentArray.pull(name=dataset, show_progress=True)
+    if not da[0].is_multimodal:
+        raise ValueError(
+            f'The DocArray {dataset} is not a multimodal DocumentArray.'
+            f'Please check documentation https://docarray.jina.ai/fundamentals/dataclass/construct/'
+        )
+
+    limit = maybe_prompt_user(
+        [
+            {
+                'type': 'input',
+                'name': 'limit',
+                'message': 'Enter the number of results to compare:',
+            }
+        ],
+        'limit',
+        **kwargs,
+    )
+    limit = int(limit)
+
+    disable_to_datauri = maybe_prompt_user(
+        [
+            {
+                'type': 'list',
+                'choices': [
+                    {'name': '⛔ no', 'value': False},
+                    {'name': '✅ yes', 'value': True},
+                ],
+                'name': 'disable_to_datauri',
+                'message': 'Disable loading to DataURI (makes the files smaller but also not self-contained)?',
+            }
+        ],
+        'disable_to_datauri',
+        **kwargs,
+    )
+
+    results_per_table = maybe_prompt_user(
+        [
+            {
+                'type': 'input',
+                'name': 'results_per_table',
+                'message': 'Enter the number of results shown per table (default is 20):',
+            }
+        ],
+        'results_per_table',
+        **kwargs,
+    )
+    results_per_table = int(results_per_table) if results_per_table else 20
+
+    compare_flows_for_queries(
+        da=da,
+        flow_ids_http_semantic_scores=flow_ids_http_semantic_scores,
+        limit=limit,
+        results_per_table=results_per_table,
+        disable_to_datauri=disable_to_datauri,
+    )

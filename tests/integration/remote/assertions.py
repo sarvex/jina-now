@@ -30,6 +30,7 @@ def assert_deployment_response(response):
 
 
 def assert_deployment_queries(
+    index_fields,
     kwargs,
     response,
     search_modality,
@@ -44,6 +45,11 @@ def assert_deployment_queries(
         dataset=dataset,
     )
     search_url = f'{url}/search-app/search'
+    assert_search(search_url, request_body)
+    # add semantic scores to the request body, assert search still works
+    request_body['semantic_scores'] = [
+        [request_body['query'][0]['name'], index_fields[0], 'encoderclip', 0.8]
+    ]
     assert_search(search_url, request_body)
 
     if kwargs.secured:
@@ -137,6 +143,23 @@ def assert_suggest(suggest_url, request_body):
         f"Expected suggestions to be {old_request_text[0]['value']} but got "
         f"{docs[0].tags['suggestions']}"
     )
+
+
+def assert_info_endpoints(info_url, request_body):
+    info_uris = [
+        'tags',
+        'count',
+        'field_names_to_dataclass_fields',
+        'encoder_to_dataclass_fields_mods',
+    ]
+    for uri in info_uris:
+        response = requests.post(
+            info_url + uri,
+            json=request_body,
+        )
+        assert (
+            response.status_code == 200
+        ), f"Received code {response.status_code} with text: {response.json()['message']}"
 
 
 def assert_search_custom_s3(host, mm_type, dataset_length, create_temp_link=False):

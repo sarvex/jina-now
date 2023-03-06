@@ -8,12 +8,15 @@ from now.data_loading.create_dataclass import (
     create_blob_type,
     create_dataclass,
     create_dataclass_fields_file_mappings,
+    create_local_text_type,
     create_s3_type,
 )
 from now.now_dataclasses import UserInput
 
-S3Object, s3_setter, s3_getter = create_s3_type()
+S3Object_text, s3_setter_text, s3_getter_text = create_s3_type('Text')
+S3Object_image, s3_setter_image, s3_getter_image = create_s3_type('Image')
 ImageType, image_setter, image_getter = create_blob_type('Image')
+LocalTextType, local_text_setter, local_text_getter = create_local_text_type()
 
 
 @pytest.mark.parametrize(
@@ -41,7 +44,11 @@ def test_create_dataclass_fields_file_mappings(
 
 
 @pytest.mark.parametrize(
-    "fields, fields_modalities, field_names_to_dataclass_fields, dataset_type, expected_annotations, "
+    "fields,"
+    "fields_modalities,"
+    "field_names_to_dataclass_fields,"
+    "dataset_type,"
+    "expected_annotations,"
     "expected_class_attributes",
     [
         (
@@ -49,10 +56,12 @@ def test_create_dataclass_fields_file_mappings(
             {'image.png': Image, 'description.txt': Text},
             {'image.png': 'image_0', 'description.txt': 'text_0'},
             DatasetTypes.PATH,
-            {'image_0': Image, 'text_0': Text},
+            {'image_0': ImageType, 'text_0': LocalTextType},
             {
                 'image_0': field(setter=image_setter, getter=image_getter, default=''),
-                'text_0': None,
+                'text_0': field(
+                    setter=local_text_setter, getter=local_text_getter, default=''
+                ),
             },
         ),
         (
@@ -60,10 +69,14 @@ def test_create_dataclass_fields_file_mappings(
             {'image.png': Image, 'description.txt': Text},
             {'image.png': 'image_0', 'description.txt': 'text_0'},
             DatasetTypes.S3_BUCKET,
-            {'image_0': S3Object, 'text_0': S3Object},
+            {'image_0': S3Object_image, 'text_0': S3Object_text},
             {
-                'image_0': field(setter=s3_setter, getter=s3_getter, default=''),
-                'text_0': field(setter=s3_setter, getter=s3_getter, default=''),
+                'image_0': field(
+                    setter=s3_setter_image, getter=s3_getter_image, default=''
+                ),
+                'text_0': field(
+                    setter=s3_setter_text, getter=s3_getter_text, default=''
+                ),
             },
         ),
         (
@@ -117,11 +130,8 @@ def test_create_annotations_and_class_attributes(
             ['price', 'description'],
             {'price': float, 'description': str},
             {
-                'image_0': S3Object,
-                'text_0': S3Object,
-                'filter_0': S3Object,
-                'filter_1': S3Object,
-                'json_s3': S3Object,
+                'image_0': S3Object_image,
+                'text_0': S3Object_text,
             },
         ),
     ],
