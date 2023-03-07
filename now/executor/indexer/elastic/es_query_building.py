@@ -3,7 +3,7 @@ from typing import Dict, List, Optional, Tuple, Union
 
 from docarray import Document, DocumentArray
 
-from now.utils import get_chunk_by_field_name
+from now.utils.docarray.helpers import get_chunk_by_field_name
 
 metrics_mapping = {
     'cosine': 'cosineSimilarity',

@@ -15,7 +15,10 @@ from now.executor.gateway.bff.app.v1.routers.helper import (
     field_dict_to_mm_doc,
     jina_client_post,
 )
-from now.utils import get_chunk_by_field_name, modality_string_to_docarray_typing
+from now.utils.docarray.helpers import (
+    get_chunk_by_field_name,
+    modality_string_to_docarray_typing,
+)
 
 search_examples = {
     'working_text': {

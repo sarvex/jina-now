@@ -5,7 +5,7 @@ from jina.clients import Client
 
 from now.deployment.deployment import deploy_wolf
 from now.log import time_profiler
-from now.utils import write_flow_file
+from now.utils.flow.helpers import write_flow_file
 
 
 @time_profiler

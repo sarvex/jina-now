@@ -20,7 +20,7 @@ from urllib3.exceptions import InsecureRequestWarning, SecurityWarning
 from now.data_loading.elasticsearch import ElasticsearchConnector
 from now.deployment.deployment import cmd
 from now.executor.preprocessor import NOWPreprocessor
-from now.utils import get_aws_profile
+from now.utils.authentication.helpers import get_aws_profile
 
 
 @pytest.fixture()

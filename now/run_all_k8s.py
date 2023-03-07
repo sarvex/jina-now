@@ -14,7 +14,7 @@ from now.compare.compare_flows import compare_flows_for_queries
 from now.constants import DEMO_NS, FLOW_STATUS
 from now.deployment.deployment import cmd, terminate_wolf
 from now.dialog import configure_user_input
-from now.utils import get_flow_status, maybe_prompt_user
+from now.utils.flow.helpers import get_flow_status, maybe_prompt_user
 
 
 def stop_now(**kwargs):

@@ -2,7 +2,7 @@ from __future__ import annotations, print_function, unicode_literals
 
 from docarray.typing import Image, Text, Video
 
-from now.utils import BetterEnum
+from now.utils.implementation.helpers import BetterEnum
 
 NOW_GATEWAY_VERSION = '0.0.4-fix-pandas-req-2'
 NOW_PREPROCESSOR_VERSION = '0.0.124-fix-pandas-req-2'

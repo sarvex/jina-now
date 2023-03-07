@@ -1,7 +1,8 @@
 from docarray import Document, dataclass
 from docarray.typing import Text
 
-from now.utils import get_chunk_by_field_name, get_flow_id
+from now.utils.docarray.helpers import get_chunk_by_field_name
+from now.utils.flow.helpers import get_flow_id
 
 
 @dataclass

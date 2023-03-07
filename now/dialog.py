@@ -9,19 +9,19 @@ from __future__ import annotations, print_function, unicode_literals
 import inspect
 import pathlib
 
-import now.utils
 from now.common import options
 from now.common.options import construct_app
 from now.constants import MODALITY_TO_MODELS, Apps, DialogStatus
 from now.now_dataclasses import DialogOptions, UserInput
-from now.utils import DemoAvailableException, RetryException
+from now.utils.errors.helpers import DemoAvailableException, RetryException
+from now.utils.implementation.helpers import print_headline, prompt_value
 
 cur_dir = pathlib.Path(__file__).parent.resolve()
 
 
 def configure_user_input(**kwargs) -> UserInput:
     user_input = UserInput()
-    now.utils.print_headline()
+    print_headline()
     # Create the search app.
     # TODO: refactor this when more apps are added
     user_input.app_instance = construct_app(Apps.SEARCH_APP)
@@ -92,7 +92,7 @@ def configure_option(
         option.choices = option.choices(user_input, **kwargs)
 
     while True:
-        val = now.utils.prompt_value(
+        val = prompt_value(
             **option.__dict__,
             **kwargs,
         )

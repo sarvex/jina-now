@@ -12,7 +12,7 @@ from tqdm import tqdm
 
 from now.admin.utils import get_default_request_body
 from now.executor.gateway.bff.app.v1.models.search import SearchResponseModel
-from now.utils import get_chunk_by_field_name
+from now.utils.docarray.helpers import get_chunk_by_field_name
 
 
 def compare_flows_for_queries(
