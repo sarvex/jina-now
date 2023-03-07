@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 import threading
@@ -11,7 +10,8 @@ from hubble.payment.client import PaymentClient
 from now.constants import (
     NOWGATEWAY_BASE_FEE_QUANTITY,
     NOWGATEWAY_BASE_FEE_SLEEP_INTERVAL,
-    NOWGATEWAY_FREE_CREDITS,
+    NOWGATEWAY_SEARCH_FEE_PRO_QUANTITY,
+    NOWGATEWAY_SEARCH_FEE_QUANTITY,
 )
 
 logger = logging.getLogger(__file__)
@@ -25,42 +25,24 @@ def start_base_fee_thread(user_token):
 
 
 def base_fee_thread(user_token):
-    set_free_credits_if_needed(NOWGATEWAY_FREE_CREDITS, is_initial=True)
     while True:
         sleep(NOWGATEWAY_BASE_FEE_SLEEP_INTERVAL)
         report(
             user_token=user_token,
-            quantity=NOWGATEWAY_BASE_FEE_QUANTITY,
-            use_free_credits=False,
+            quantity_basic=NOWGATEWAY_BASE_FEE_QUANTITY,
+            quantity_pro=NOWGATEWAY_BASE_FEE_QUANTITY,
         )
 
 
-def workspace():
-    return (
-        f'/data/{os.environ["K8S_NAMESPACE_NAME"]}'
-        if 'K8S_NAMESPACE_NAME' in os.environ
-        else '~/.cache/jina-now'
+def report_search_usage(user_token):
+    report(
+        user_token=user_token,
+        quantity_basic=NOWGATEWAY_SEARCH_FEE_QUANTITY,
+        quantity_pro=NOWGATEWAY_SEARCH_FEE_PRO_QUANTITY,
     )
 
 
-def credits_path():
-    return os.path.join(workspace(), 'free_credits.json')
-
-
-def get_free_credits():
-    with open(credits_path(), 'r') as f:
-        free_credits = json.load(f)['free_credits']
-    return free_credits
-
-
-def set_free_credits_if_needed(value, is_initial=False):
-    if is_initial and os.path.exists(credits_path()):
-        return
-    with open(credits_path(), 'w') as f:
-        json.dump({'free_credits': value}, f)
-
-
-def report(user_token, quantity, use_free_credits=False):
+def report(user_token, quantity_basic, quantity_pro):
     app_id = 'search'
     product_id = 'mm_query'
     try:
@@ -72,11 +54,12 @@ def report(user_token, quantity, use_free_credits=False):
             authorized_jwt = payment_client.get_authorized_jwt(user_token=user_token)[
                 'data'
             ]
-        free_credits = get_free_credits()
-        if use_free_credits and free_credits > 0:
-            set_free_credits_if_needed(free_credits - quantity)
-            return
-        if can_charge(authorized_jwt):
+        summary = get_summary(authorized_jwt)
+        if summary['internal_product_id'] == 'free-plan':
+            quantity = quantity_basic
+        else:
+            quantity = quantity_pro
+        if can_charge(summary):
             payment_client.report_usage(authorized_jwt, app_id, product_id, quantity)
         else:
             return JSONResponse(
@@ -89,11 +72,21 @@ def report(user_token, quantity, use_free_credits=False):
         print(e)
 
 
-def can_charge(authorized_jwt):
+def get_summary(authorized_jwt):
     resp = payment_client.get_summary(token=authorized_jwt, app_id='search-api')
     has_payment_method = resp['data'].get('hasPaymentMethod', False)
     remain_credits = resp['data'].get('credits', None)
-    if remain_credits is None:
-        remain_credits = 0.00001
-        logger.error(f'Failed to get payment summary: {resp}')
-    return remain_credits > 0 or has_payment_method
+    internal_product_id = resp['data'].get('internalProductId', None)
+    user_account_status = resp['data'].get('userAccountStatus', None)
+    return {
+        'has_payment_method': has_payment_method,
+        'remain_credits': remain_credits,
+        'internal_product_id': internal_product_id,
+        'user_account_status': user_account_status,
+    }
+
+
+def can_charge(summary):
+    return (summary['remain_credits'] > 0 or summary['has_payment_method']) and (
+        summary['user_account_status'] == 'active'
+    )

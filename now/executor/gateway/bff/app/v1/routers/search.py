@@ -4,7 +4,6 @@ from typing import Any, Dict, List
 from docarray import Document
 from fastapi import APIRouter, Body
 
-from now.constants import NOWGATEWAY_SEARCH_FEE_QUANTITY
 from now.data_loading.create_dataclass import create_dataclass
 from now.executor.gateway.bff.app.settings import user_input_in_bff
 from now.executor.gateway.bff.app.v1.models.search import (
@@ -16,7 +15,7 @@ from now.executor.gateway.bff.app.v1.routers.helper import (
     field_dict_to_mm_doc,
     jina_client_post,
 )
-from now.executor.gateway.hubble_report import report
+from now.executor.gateway.hubble_report import report_search_usage
 from now.utils import get_chunk_by_field_name, modality_string_to_docarray_typing
 
 search_examples = {
@@ -186,11 +185,7 @@ async def search(
         )
         matches.append(match)
     # reporting the usage at the end to make sure the request was successful
-    report(
-        user_token=data.jwt,
-        quantity=NOWGATEWAY_SEARCH_FEE_QUANTITY,
-        use_free_credits=True,
-    )
+    report_search_usage(data.jwt)
     return matches
 
 

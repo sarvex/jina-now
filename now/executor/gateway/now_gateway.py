@@ -127,11 +127,7 @@ class NOWGateway(CompositeGateway):
 
         self.setup_nginx()
         self.nginx_was_shutdown = False
-        try:
-            # TODO remove try/except and adjust local tests instead
-            start_base_fee_thread(self.user_input.jwt['token'])
-        except Exception as e:
-            print(e)
+        start_base_fee_thread(self.user_input.jwt['token'])
 
     async def shutdown(self):
         await super().shutdown()
