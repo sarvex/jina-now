@@ -45,7 +45,7 @@ def mock_download(mocker: MockerFixture, da: DocumentArray):
         da.save_binary(filename)
         return filename
 
-    mocker.patch('now.utils.download', fake_download)
+    mocker.patch('now.utils.file-handler.helpers.download', fake_download)
 
 
 @pytest.fixture(autouse=True)
