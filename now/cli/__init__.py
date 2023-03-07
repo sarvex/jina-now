@@ -16,7 +16,6 @@ cur_dir = pathlib.Path(__file__).parents[1].resolve()
 
 os.environ['JINA_CHECK_VERSION'] = 'False'
 os.environ['JCLOUD_LOGLEVEL'] = 'ERROR'
-# fix
 
 
 def _get_run_args():
@@ -48,7 +47,6 @@ def get_task(kwargs):
 
 def cli(args=None):
     """The main entrypoint of the CLI"""
-    os.environ['JINA_LOG_LEVEL'] = 'CRITICAL'
     print_version_line()
     kwargs = parse_args(args)
     task = get_task(kwargs)

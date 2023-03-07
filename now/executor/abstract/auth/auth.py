@@ -123,6 +123,8 @@ def get_auth_executor_class():
             self.api_keys = api_keys
             self._user = None
 
+            self.logger.debug("Initializing executor with args: " f"{args}" f"{kwargs}")
+
             self.user_input = UserInput()
             for attr_name, prev_value in self.user_input.__dict__.items():
                 setattr(
