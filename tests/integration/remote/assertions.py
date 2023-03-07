@@ -100,8 +100,6 @@ def get_search_request_body(
     if search_modality == 'text':
         if dataset == DemoDatasetNames.BEST_ARTWORKS:
             search_text = 'impressionism'
-        elif dataset == DemoDatasetNames.NFT_MONKEY:
-            search_text = 'laser eyes'
         else:
             search_text = 'test'
         request_body['query'] = [
