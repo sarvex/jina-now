@@ -121,7 +121,6 @@ class JinaNOWApp:
                 'resources': {
                     'instance': 'C5',
                     'capacity': 'spot',
-                    'storage': {'kind': 'ebs', 'size': '10G'},
                 },
             },
         }
