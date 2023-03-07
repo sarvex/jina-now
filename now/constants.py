@@ -4,9 +4,9 @@ from docarray.typing import Image, Text, Video
 
 from now.utils.implementation.helpers import BetterEnum
 
-NOW_GATEWAY_VERSION = '0.0.4-refactor-utils-0'
-NOW_PREPROCESSOR_VERSION = '0.0.124-refactor-utils-0'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.148-refactor-utils-0'
+NOW_GATEWAY_VERSION = '0.0.4-refactor-utils-1'
+NOW_PREPROCESSOR_VERSION = '0.0.124-refactor-utils-1'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.148-refactor-utils-1'
 NOW_AUTOCOMPLETE_VERSION = '0.0.11-fix-pandas-req-2'
 
 
