@@ -130,31 +130,30 @@ if __name__ == '__main__':
         for ds in ds_list:
             dataset_list.append(ds)
 
-    if index >= len(dataset_list):
-        print(f'Index {index} is out of range. Max index is {len(dataset_list)}')
-        exit(0)
-    to_deploy = dataset_list[index]
+    while index <= len(dataset_list):
+        to_deploy = dataset_list[index]
 
-    print(f'Deploying -> ({to_deploy}) with deployment type ``{deployment_type}``')
-    print('----------------------------------------')
+        print(f'Deploying -> ({to_deploy}) with deployment type ``{deployment_type}``')
+        print('----------------------------------------')
 
-    if deployment_type == 'partial':
-        # check if deployment is already running then return
-        client = Client(
-            host=f'grpcs://{DEMO_NS.format(to_deploy.name.split("/")[-1])}.dev.jina.ai'
-        )
-        try:
-            response = client.post('/dry_run', return_results=True)
-            print(f'Already {to_deploy.name} deployed')
-            exit(0)
-        except Exception as e:  # noqa E722
-            print('Not deployed yet')
+        if deployment_type == 'partial':
+            # check if deployment is already running then return
+            client = Client(
+                host=f'grpcs://{DEMO_NS.format(to_deploy.name.split("/")[-1])}.dev.jina.ai'
+            )
+            try:
+                response = client.post('/dry_run', return_results=True)
+                print(f'Already {to_deploy.name} deployed')
+                exit(0)
+            except Exception as e:  # noqa E722
+                print('Not deployed yet')
 
-    # Maybe the flow is still alive, if it is, then it should be terminated and re-deploy the app
-    flow = list_all_wolf(namespace=to_deploy.name.split("/")[-1])
-    if flow:
-        terminate_wolf(flow[0]['id'])
-        print(f'{flow[0]["id"]} successfully deleted!!')
-    print('Deploying -> ', to_deploy.name)
-    deploy(to_deploy)
-    print('------------------ Deployment Successful----------------------')
+        # Maybe the flow is still alive, if it is, then it should be terminated and re-deploy the app
+        flow = list_all_wolf(namespace=to_deploy.name.split("/")[-1])
+        if flow:
+            terminate_wolf(flow[0]['id'])
+            print(f'{flow[0]["id"]} successfully deleted!!')
+        print('Deploying -> ', to_deploy.name)
+        deploy(to_deploy)
+        print('------------------ Deployment Successful----------------------')
+        index += 3
