@@ -155,12 +155,16 @@ def es_connection_params():
     return connection_str, connection_args
 
 
-@pytest.fixture
-def mock_bff_user_input(request, mocker) -> None:
-    mocker.patch(
-        'now.executor.gateway.bff.app.settings.get_user_input_in_bff',
-        lambda: request.param,
-    )
+@pytest.fixture(scope="function")
+def dump_user_input(request) -> None:
+    # If user_input.json exists, then remove it
+    if os.path.exists(os.path.join(os.path.expanduser('~'), 'user_input.json')):
+        os.remove(os.path.join(os.path.expanduser('~'), 'user_input.json'))
+    # Now dump the user input
+    with open(os.path.join(os.path.expanduser('~'), 'user_input.json'), 'w') as f:
+        json.dump(request.param.__dict__, f)
+    yield
+    os.remove(os.path.join(os.path.expanduser('~'), 'user_input.json'))
 
 
 @pytest.fixture(scope='session')

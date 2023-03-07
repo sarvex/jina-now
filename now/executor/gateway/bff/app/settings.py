@@ -39,8 +39,11 @@ DEFAULT_LOGGING_CONFIG = {
 }
 
 
-def get_user_input_in_bff():
-    user_input_in_bff = UserInput()
+user_input_in_bff = UserInput()
+
+
+def init_user_input_in_bff():
+    global user_input_in_bff
     try:
         with open(os.path.join(os.path.expanduser('~'), 'user_input.json'), 'r') as f:
             user_input_dict = json.load(f)
@@ -54,4 +57,6 @@ def get_user_input_in_bff():
         print('Could not find user input file in BFF')
         print(f'used path: {os.path.join(os.path.expanduser("~"), "user_input.json")}')
         print('but this can be okay')
-    return user_input_in_bff
+
+
+init_user_input_in_bff()
