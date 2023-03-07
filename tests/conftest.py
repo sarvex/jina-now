@@ -157,9 +157,12 @@ def es_connection_params():
 
 @pytest.fixture
 def mock_bff_user_input(request, mocker) -> None:
-    mocker.patch(
-        'now.executor.gateway.bff.app.settings.get_user_input_in_bff',
-        lambda: request.param,
+    from now.executor.gateway.bff.app import settings
+
+    mocker.patch.object(
+        settings,
+        'get_user_input_in_bff',
+        return_value=request.param,
     )
 
 
