@@ -4,7 +4,6 @@ from argparse import Namespace
 from dataclasses import dataclass
 
 import boto3
-from jina import Client
 
 from now.cli import cli
 from now.common.detect_schema import set_field_names_from_docarray
@@ -100,17 +99,17 @@ def deploy(demo_ds):
     except Exception as e:  # noqa E722
         raise e
     # parse the response
-    host_target_ = response_cli.get('host')
-    if host_target_ and host_target_.startswith('grpcs://'):
-        host_target_ = host_target_.replace('grpcs://', '')
-        host_source = f'{DEMO_NS.format(demo_ds.name.split("/")[-1])}.dev.jina.ai'
-        # update the CNAME entry in the Route53 records
-        print(f'Updating CNAME record for `{host_source}` -> `{host_target_}`')
-        upsert_cname_record(host_source, host_target_)
-    else:
-        print(
-            'No host returned starting with "grpcs://". Make sure Jina NOW returns host'
-        )
+    # host_target_ = response_cli.get('host')
+    # if host_target_ and host_target_.startswith('grpcs://'):
+    #     host_target_ = host_target_.replace('grpcs://', '')
+    #     host_source = f'{DEMO_NS.format(demo_ds.name.split("/")[-1])}.dev.jina.ai'
+    #     # update the CNAME entry in the Route53 records
+    #     print(f'Updating CNAME record for `{host_source}` -> `{host_target_}`')
+    #     upsert_cname_record(host_source, host_target_)
+    # else:
+    #     print(
+    #         'No host returned starting with "grpcs://". Make sure Jina NOW returns host'
+    #     )
     return response_cli
 
 
@@ -138,17 +137,17 @@ if __name__ == '__main__':
     print(f'Deploying -> ({to_deploy}) with deployment type ``{deployment_type}``')
     print('----------------------------------------')
 
-    if deployment_type == 'partial':
-        # check if deployment is already running then return
-        client = Client(
-            host=f'grpcs://{DEMO_NS.format(to_deploy.name.split("/")[-1])}.dev.jina.ai'
-        )
-        try:
-            response = client.post('/dry_run', return_results=True)
-            print(f'Already {to_deploy.name} deployed')
-            exit(0)
-        except Exception as e:  # noqa E722
-            print('Not deployed yet')
+    # if deployment_type == 'partial':
+    #     # check if deployment is already running then return
+    #     client = Client(
+    #         host=f'grpcs://{DEMO_NS.format(to_deploy.name.split("/")[-1])}.dev.jina.ai'
+    #     )
+    #     try:
+    #         response = client.post('/dry_run', return_results=True)
+    #         print(f'Already {to_deploy.name} deployed')
+    #         exit(0)
+    #     except Exception as e:  # noqa E722
+    #         print('Not deployed yet')
 
     # Maybe the flow is still alive, if it is, then it should be terminated and re-deploy the app
     flow = list_all_wolf(namespace=to_deploy.name.split("/")[-1])
