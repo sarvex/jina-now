@@ -85,6 +85,7 @@ class NOWGateway(BasePaymentGateway):
                 f'8501 (playground)'
             )
         kwargs['runtime_args']['port'][http_idx] = 8082
+        set_free_credits_if_needed(NOWGATEWAY_FREE_CREDITS, is_initial=True)
         super().__init__(
             internal_app_id=internal_app_id,
             internal_product_id=internal_product_id,
@@ -141,7 +142,6 @@ class NOWGateway(BasePaymentGateway):
         authorized_jwt = client.get_authorized_jwt(
             user_token=self.user_input.jwt['token'], expiration_seconds=15 * 60 * 10000
         )['data']
-        set_free_credits_if_needed(NOWGATEWAY_FREE_CREDITS, is_initial=True)
         while True:
             sleep(NOWGATEWAY_BASE_FEE_SLEEP_INTERVAL)
             try:
