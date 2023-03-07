@@ -154,7 +154,6 @@ class JinaNOWApp:
             'with': {
                 'name': 'nowapi',
                 'env': {'JINA_LOG_LEVEL': 'DEBUG'},
-                'timeout_send': -1,
             },
             'jcloud': {
                 'version': jina_version,
