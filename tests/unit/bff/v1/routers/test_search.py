@@ -119,9 +119,9 @@ def get_user_input() -> UserInput:
     return user_input
 
 
-@pytest.mark.parametrize('mock_bff_user_input', [get_user_input()], indirect=True)
+@pytest.mark.parametrize('dump_user_input', [get_user_input()], indirect=True)
 def test_text_search_with_semantic_scores(
-    mock_bff_user_input,
+    dump_user_input,
     client_with_mocked_jina_client: Callable[[DocumentArray], requests.Session],
     sample_search_response_text: DocumentArray,
     base64_image_string: str,
