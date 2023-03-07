@@ -154,6 +154,7 @@ def es_connection_params():
     connection_args = {'verify_certs': False}
     return connection_str, connection_args
 
+
 @pytest.fixture(scope="function")
 def dump_user_input(request) -> None:
     # If user_input.json exists, then remove it
