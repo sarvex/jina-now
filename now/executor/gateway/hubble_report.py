@@ -25,14 +25,17 @@ def start_base_fee_thread(user_token):
 
 
 def base_fee_thread(user_token):
-    set_free_credits_if_needed(NOWGATEWAY_FREE_CREDITS, is_initial=True)
-    while True:
-        sleep(NOWGATEWAY_BASE_FEE_SLEEP_INTERVAL)
-        report(
-            user_token=user_token,
-            quantity=NOWGATEWAY_BASE_FEE_QUANTITY,
-            use_free_credits=False,
-        )
+    try:
+        set_free_credits_if_needed(NOWGATEWAY_FREE_CREDITS, is_initial=True)
+        while True:
+            sleep(NOWGATEWAY_BASE_FEE_SLEEP_INTERVAL)
+            report(
+                user_token=user_token,
+                quantity=NOWGATEWAY_BASE_FEE_QUANTITY,
+                use_free_credits=False,
+            )
+    except Exception as e:
+        print(e)
 
 
 def workspace():
