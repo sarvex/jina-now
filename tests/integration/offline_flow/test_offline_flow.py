@@ -20,10 +20,10 @@ def get_user_input():
     return user_input
 
 
-@pytest.mark.parametrize('mock_bff_user_input', [get_user_input()], indirect=True)
+@pytest.mark.parametrize('dump_user_input', [get_user_input()], indirect=True)
 @pytest.mark.asyncio
 async def test_docarray(
-    mock_bff_user_input,
+    dump_user_input,
     monkeypatch,
     setup_service_running,
     random_index_name,
