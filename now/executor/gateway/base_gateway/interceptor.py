@@ -104,6 +104,7 @@ class PaymentInterceptor(grpc.aio.ServerInterceptor):
                             'internalAppId': self._internal_app_id,
                             'internalProductId': self._internal_product_id,
                         },
+                        use_free_credits=False,
                     )
                     self._logger.info(
                         {

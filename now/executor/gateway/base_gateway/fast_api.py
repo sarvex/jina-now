@@ -11,6 +11,7 @@ from jina.serve.runtimes.gateway.http.models import (
     JinaResponseModel,
 )
 
+from now.constants import NOWGATEWAY_CREDITS_PER_SEARCH_REQUEST
 from now.executor.gateway.base_gateway.helper import current_time
 
 
@@ -115,10 +116,11 @@ def get_security_app(
                 usage_detail={
                     'token': current_user['token'],
                     'id': str(uuid.uuid4()),
-                    'credits': num_docs,
+                    'credits': num_docs * NOWGATEWAY_CREDITS_PER_SEARCH_REQUEST,
                     'internalAppId': internal_app_id,
                     'internalProductId': internal_product_id,
                 },
+                use_free_credits=True,
             )
 
             logger.info(

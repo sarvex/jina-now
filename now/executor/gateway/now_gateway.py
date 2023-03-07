@@ -17,7 +17,12 @@ from hubble.excepts import (
 from hubble.payment.client import PaymentClient
 from jina.enums import GatewayProtocolType
 
-from now.constants import NOWGATEWAY_BFF_PORT
+from now.constants import (
+    NOWGATEWAY_BASE_FEE_QUANTITY,
+    NOWGATEWAY_BASE_FEE_SLEEP_INTERVAL,
+    NOWGATEWAY_BFF_PORT,
+    NOWGATEWAY_FREE_CREDITS,
+)
 from now.deployment.deployment import cmd
 from now.executor.abstract.auth.auth import SecurityLevel, check_user
 from now.executor.gateway.base_gateway.base_payment_gateway import BasePaymentGateway
@@ -136,8 +141,9 @@ class NOWGateway(BasePaymentGateway):
         authorized_jwt = client.get_authorized_jwt(
             user_token=self.user_input.jwt['token'], expiration_seconds=15 * 60 * 10000
         )['data']
+        set_free_credits_if_needed(NOWGATEWAY_FREE_CREDITS, is_initial=True)
         while True:
-            sleep(60)
+            sleep(NOWGATEWAY_BASE_FEE_SLEEP_INTERVAL)
             try:
                 current_user = get_user_info(authorized_jwt)
                 current_user['token'] = authorized_jwt
@@ -164,7 +170,7 @@ class NOWGateway(BasePaymentGateway):
                 token=authorized_jwt,
                 app_id=self._internal_app_id,
                 product_id=self._internal_product_id,
-                credits=1,
+                credits=NOWGATEWAY_BASE_FEE_QUANTITY,
             )
             if resp['code'] != 200:
                 raise Exception('Failed to credit user')
@@ -248,9 +254,14 @@ class NOWGateway(BasePaymentGateway):
         def report_usage(
             current_user: dict,
             usage_detail: dict,
+            use_free_credits: bool = False,
         ):
             """Report usage to the backend"""
 
+            free_credits = get_free_credits()
+            if use_free_credits and free_credits > usage_detail['credits']:
+                set_free_credits_if_needed(free_credits - usage_detail['credits'])
+                return
             try:
                 usage_detail['current_user'] = current_user
                 from hubble.payment.client import PaymentClient
@@ -467,3 +478,28 @@ def get_app_summary(user: dict, payment_client):
         )
 
     return remain_credits, has_payment_method
+
+
+def workspace():
+    return (
+        f'/data/{os.environ["K8S_NAMESPACE_NAME"]}'
+        if 'K8S_NAMESPACE_NAME' in os.environ
+        else '~/.cache/jina-now'
+    )
+
+
+def credits_path():
+    return os.path.join(workspace(), 'free_credits.json')
+
+
+def get_free_credits():
+    with open(credits_path(), 'r') as f:
+        free_credits = json.load(f)['free_credits']
+    return free_credits
+
+
+def set_free_credits_if_needed(value, is_initial=False):
+    if is_initial and os.path.exists(credits_path()):
+        return
+    with open(credits_path(), 'w') as f:
+        json.dump({'free_credits': value}, f)
