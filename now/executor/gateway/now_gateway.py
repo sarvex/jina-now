@@ -85,7 +85,7 @@ class NOWGateway(BasePaymentGateway):
                 f'8501 (playground)'
             )
         kwargs['runtime_args']['port'][http_idx] = 8082
-        set_free_credits_if_needed(NOWGATEWAY_FREE_CREDITS, is_initial=True)
+
         super().__init__(
             internal_app_id=internal_app_id,
             internal_product_id=internal_product_id,
@@ -128,10 +128,13 @@ class NOWGateway(BasePaymentGateway):
 
         self.setup_nginx()
         self.nginx_was_shutdown = False
-        self.continuous_billing_thread = threading.Thread(
-            target=self.report_flow_alive_usage
-        )
-        self.continuous_billing_thread.start()
+        try:
+            self.continuous_billing_thread = threading.Thread(
+                target=self.report_flow_alive_usage
+            )
+            self.continuous_billing_thread.start()
+        except Exception as e:
+            logger.error(f'Could not start continuous billing thread: {e}')
 
     def report_flow_alive_usage(self):
         from hubble.payment.client import PaymentClient
@@ -143,6 +146,7 @@ class NOWGateway(BasePaymentGateway):
             user_token=self.user_input.jwt['token'], expiration_seconds=15 * 60 * 10000
         )['data']
         while True:
+            set_free_credits_if_needed(NOWGATEWAY_FREE_CREDITS, is_initial=True)
             sleep(NOWGATEWAY_BASE_FEE_SLEEP_INTERVAL)
             try:
                 current_user = get_user_info(authorized_jwt)
