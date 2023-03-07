@@ -115,7 +115,7 @@ def deploy(demo_ds):
 
 
 if __name__ == '__main__':
-    os.environ['JINA_AUTH_TOKEN'] = os.environ.get('WOLF_TOKEN')
+    os.environ['JINA_AUTH_TOKEN'] = os.environ.get('CUSTOM_TOKEN_TEST')
     os.environ['NOW_EXAMPLES'] = 'True'
     os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
     deployment_type = os.environ.get('DEPLOYMENT_TYPE', None)
