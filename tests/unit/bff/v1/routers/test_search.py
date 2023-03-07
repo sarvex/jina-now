@@ -111,23 +111,23 @@ def test_image_search_parse_response(
 
 def get_user_input() -> UserInput:
     user_input = UserInput()
-    user_input.index_fields = ['product_image', 'bm25_text']
+    user_input.index_fields = ['product_image', 'product_description']
     user_input.field_names_to_dataclass_fields = {
         'product_image': 'product_image',
-        'bm25_text': 'bm25_text',
+        'product_description': 'product_description',
     }
     return user_input
 
 
 @pytest.mark.parametrize('dump_user_input', [get_user_input()], indirect=True)
-def test_text_search_with_semantic_scores(
+def test_text_search_with_score_calculation(
     dump_user_input,
     client_with_mocked_jina_client: Callable[[DocumentArray], requests.Session],
     sample_search_response_text: DocumentArray,
     base64_image_string: str,
 ):
     """
-    Test that semantic_scores can be passed as parameters to the search endpoint.
+    Test that score_calculation can be passed as parameters to the search endpoint.
     """
     response = client_with_mocked_jina_client(sample_search_response_text).post(
         '/api/v1/search-app/search',
@@ -135,9 +135,9 @@ def test_text_search_with_semantic_scores(
             'query': [
                 {'name': 'text', 'value': 'this crazy text', 'modality': 'text'},
             ],
-            'semantic_scores': [
+            'score_calculation': [
                 ['text', 'product_image', 'clip', 1],
-                ['text', 'bm25_text', 'bm25', 1],
+                ['text', 'product_description', 'bm25', 1],
             ],
         },
     )
@@ -145,8 +145,8 @@ def test_text_search_with_semantic_scores(
     assert response.status_code == status.HTTP_200_OK
     results = DocumentArray.from_json(response.content)
     # the mock writes the call args into the response tags
-    assert results[0].tags['parameters']['semantic_scores']
-    assert results[0].tags['parameters']['semantic_scores'] == [
+    assert results[0].tags['parameters']['score_calculation']
+    assert results[0].tags['parameters']['score_calculation'] == [
         ['text_0', 'product_image', 'clip', 1],
-        ['text_0', 'bm25_text', 'bm25', 1],
+        ['text_0', 'product_description', 'bm25', 1],
     ]
