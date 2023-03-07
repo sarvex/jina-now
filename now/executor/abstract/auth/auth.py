@@ -30,6 +30,9 @@ def secure_request(level: int, on: str = None):
                 args[0].admin_emails,
                 args[0].api_keys,
             )
+            JinaLogger("app").debug(f"{args}")
+            if "docs" in args:
+                JinaLogger("app").debug(f"Docs provided")
             return func(*args, **kwargs)
 
         return wrapper
@@ -123,7 +126,7 @@ def get_auth_executor_class():
             self.api_keys = api_keys
             self._user = None
 
-            self.logger.debug("Initializing executor with args: " f"{args}" f"{kwargs}")
+            # self.logger.debug("Initializing executor with args: " f"{args}" f"{kwargs}")
 
             self.user_input = UserInput()
             for attr_name, prev_value in self.user_input.__dict__.items():
