@@ -38,10 +38,11 @@ DEFAULT_LOGGING_CONFIG = {
     'root': {'level': 'DEBUG', 'handlers': ['console']},
 }
 
+
 user_input_in_bff = UserInput()
 
 
-def init_user_input():
+def init_user_input_in_bff():
     global user_input_in_bff
     try:
         with open(os.path.join(os.path.expanduser('~'), 'user_input.json'), 'r') as f:
@@ -58,4 +59,4 @@ def init_user_input():
         print('but this can be okay')
 
 
-init_user_input()
+init_user_input_in_bff()
