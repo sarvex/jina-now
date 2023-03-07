@@ -120,7 +120,7 @@ if __name__ == '__main__':
     os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
     deployment_type = os.environ.get('DEPLOYMENT_TYPE', None)
     if not deployment_type:
-        deployment_type = 'partial'
+        deployment_type = 'all'
     deployment_type = deployment_type.lower()
     print(f'Deployment type: {deployment_type}')
     index = int(sys.argv[-1])
