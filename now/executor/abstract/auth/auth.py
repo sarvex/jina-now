@@ -33,7 +33,10 @@ def secure_request(level: int, on: str = None):
             )
             print("*** test logging ***")
             logger.critical(f"test critical")
-            logger.debug(f"{args}")
+            cls_instance = args[0]
+            print(f"[{cls_instance}]")
+            cls_instance.logger(f"test logging from class")
+            logger.critical(f"{args}")
             if "docs" in args:
                 logger.info(f"Docs provided")
             return func(*args, **kwargs)
