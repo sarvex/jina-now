@@ -57,9 +57,9 @@ def get_user_input() -> UserInput:
     return user_input
 
 
-@pytest.mark.parametrize('mock_bff_user_input', [get_user_input()], indirect=True)
+@pytest.mark.parametrize('dump_user_input', [get_user_input()], indirect=True)
 def test_field_names_to_dataclass_fields_response(
-    mock_bff_user_input,
+    dump_user_input,
     client_with_mocked_jina_client: Callable[[DocumentArray], requests.Session],
     sample_search_response_text: DocumentArray,
     base64_image_string: str,
