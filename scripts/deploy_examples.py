@@ -130,6 +130,8 @@ if __name__ == '__main__':
         for ds in ds_list:
             dataset_list.append(ds)
 
+    print(f'Available datasets: {[(ds, idx) for idx, ds in enumerate(dataset_list)]}')
+
     while index <= len(dataset_list):
         to_deploy = dataset_list[index]
 
@@ -156,4 +158,4 @@ if __name__ == '__main__':
         print('Deploying -> ', to_deploy.name)
         deploy(to_deploy)
         print('------------------ Deployment Successful----------------------')
-        index += 3
+        index += 5
