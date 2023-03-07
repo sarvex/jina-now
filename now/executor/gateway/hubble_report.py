@@ -75,18 +75,18 @@ def report(user_token, quantity_basic, quantity_pro):
 def get_summary(authorized_jwt):
     resp = payment_client.get_summary(token=authorized_jwt, app_id='search-api')
     has_payment_method = resp['data'].get('hasPaymentMethod', False)
-    remain_credits = resp['data'].get('credits', None)
+    credits = resp['data'].get('credits', None)
     internal_product_id = resp['data'].get('internalProductId', None)
     user_account_status = resp['data'].get('userAccountStatus', None)
     return {
         'has_payment_method': has_payment_method,
-        'remain_credits': remain_credits,
+        'credits': credits,
         'internal_product_id': internal_product_id,
         'user_account_status': user_account_status,
     }
 
 
 def can_charge(summary):
-    return (summary['remain_credits'] > 0 or summary['has_payment_method']) and (
+    return (summary['credits'] > 0 or summary['has_payment_method']) and (
         summary['user_account_status'] == 'active'
     )
