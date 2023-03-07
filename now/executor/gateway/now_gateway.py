@@ -127,7 +127,10 @@ class NOWGateway(CompositeGateway):
 
         self.setup_nginx()
         self.nginx_was_shutdown = False
-        start_base_fee_thread(self.user_input.jwt['token'])
+        try:
+            start_base_fee_thread(self.user_input.jwt['token'])
+        except Exception as e:
+            self.logger.error(f'Could not start base fee thread: {e}')
 
     async def shutdown(self):
         await super().shutdown()
