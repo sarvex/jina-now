@@ -17,7 +17,7 @@ from now.dialog import configure_user_input, maybe_prompt_user
 
 
 def stop_now(**kwargs):
-    _result, flow_id, cluster = get_flow_status(action='delete', **kwargs)
+    _result, flow_id, cluster = _get_flow_status(action='delete', **kwargs)
     if _result is not None and _result['status']['phase'] == FLOW_STATUS:
         terminate_wolf(flow_id)
         from hubble import Client
@@ -78,7 +78,7 @@ def start_now(**kwargs):
 
 
 def fetch_logs_now(**kwargs):
-    _result, flow_id, cluster = get_flow_status(action='log', **kwargs)
+    _result, flow_id, cluster = _get_flow_status(action='log', **kwargs)
 
     if _result is not None and _result['status']['phase'] == FLOW_STATUS:
         namespace = _result["spec"]["jcloud"]["namespace"]
@@ -221,7 +221,7 @@ def compare_flows(**kwargs):
     )
 
 
-def get_flow_status(action, **kwargs):
+def _get_flow_status(action, **kwargs):
     choices = []
     # Add all remote Flows that exists with the namespace `nowapi`
     alive_flows = list_all_wolf(status='Serving')
