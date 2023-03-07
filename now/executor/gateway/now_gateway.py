@@ -145,8 +145,8 @@ class NOWGateway(BasePaymentGateway):
         authorized_jwt = client.get_authorized_jwt(
             user_token=self.user_input.jwt['token'], expiration_seconds=15 * 60 * 10000
         )['data']
+        set_free_credits_if_needed(NOWGATEWAY_FREE_CREDITS, is_initial=True)
         while True:
-            set_free_credits_if_needed(NOWGATEWAY_FREE_CREDITS, is_initial=True)
             sleep(NOWGATEWAY_BASE_FEE_SLEEP_INTERVAL)
             try:
                 current_user = get_user_info(authorized_jwt)
@@ -505,5 +505,8 @@ def get_free_credits():
 def set_free_credits_if_needed(value, is_initial=False):
     if is_initial and os.path.exists(credits_path()):
         return
+
+    if not os.path.exists(workspace()):
+        os.makedirs(workspace())
     with open(credits_path(), 'w') as f:
         json.dump({'free_credits': value}, f)
