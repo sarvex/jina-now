@@ -1,3 +1,4 @@
+import glob
 import json
 import os
 from concurrent.futures import ProcessPoolExecutor
@@ -6,6 +7,7 @@ from time import sleep
 from typing import Dict, List, Tuple
 
 import pandas as pd
+import pdfkit
 import requests
 from docarray import Document, DocumentArray
 from tqdm import tqdm
@@ -82,7 +84,8 @@ def compare_flows_for_queries(
             ),
             escape=False,
         )
-    print(f'Comparison tables were saved as HTMLs under: {folder}')
+    _convert_multiple_html_to_pdf(folder)
+    print(f'Comparison tables were saved as PDF under: {folder}')
 
 
 def _evaluate_query(
@@ -150,3 +153,10 @@ def _evaluate_query(
         )
 
     return row
+
+
+def _convert_multiple_html_to_pdf(path: str):
+    """Combines multiple html files into one pdf file."""
+    html_files = glob.glob(f'{path}/*.html')
+    html_files.sort()
+    pdfkit.from_file(html_files, f'{path}/Report.pdf')
