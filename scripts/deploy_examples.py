@@ -4,13 +4,14 @@ from argparse import Namespace
 from dataclasses import dataclass
 
 import boto3
+from jcloud.flow import CloudFlow
 from jina import Client
 
 from now.cli import cli
 from now.common.detect_schema import set_field_names_from_docarray
 from now.constants import DEMO_NS, MODALITY_TO_MODELS, DatasetTypes
 from now.demo_data import AVAILABLE_DATASETS
-from now.deployment.deployment import list_all_wolf, terminate_wolf
+from now.deployment.deployment import get_or_create_eventloop, terminate_wolf
 from now.now_dataclasses import UserInput
 
 
@@ -62,6 +63,35 @@ def upsert_cname_record(source, target):
         print(e)
 
 
+def list_all_wolf(status='Serving', namespace='nowapi'):
+    flows = []
+    loop = get_or_create_eventloop()
+    jflows = loop.run_until_complete(CloudFlow().list_all(phase=status))['flows']
+    # Transform the JCloud flow response to a much simpler list of dicts
+    for flow in jflows:
+        executor_name = list(flow['status']['endpoints'].keys())[0]
+        flows.append(
+            {
+                'id': flow['id'],
+                'name': flow['status']['endpoints'][executor_name],
+                'created_at': flow['ctime'],
+                'finished_at': flow['utime'],
+            }
+        )
+    # filter by namespace - if the namespace is contained in the flow name
+    if namespace:
+        return [f for f in flows if namespace in f['id']]
+    return flows
+
+
+def delete_flow(ns, reverse=False, failed=False):
+    flow = list_all_wolf(namespace=ns)
+    flow = sorted(flow, key=lambda x: x['created_at'], reverse=reverse)
+    if failed or len(flow) > 1:
+        terminate_wolf(flow[0]['id'])
+        print(f'{flow[0]["id"]} successfully deleted!!')
+
+
 def deploy(demo_ds):
     print(f'Deploying search app with data: {demo_ds.name}')
     NAMESPACE = DEMO_NS.format(demo_ds.name.split("/")[-1])
@@ -98,8 +128,14 @@ def deploy(demo_ds):
     try:
         response_cli = cli(args=kwargs)
     except Exception as e:  # noqa E722
+        # delete flow with broken index, i.e. latest flow
+        delete_flow(ns=NAMESPACE, reverse=True, failed=True)
         raise e
-    # parse the response
+    finally:
+        # Delete the remaining old flow because either is it not reachable or it is to be replaced
+        delete_flow(ns=NAMESPACE)
+
+    # Process the response and update the CNAME record
     host_target_ = response_cli.get('host')
     if host_target_ and host_target_.startswith('grpcs://'):
         host_target_ = host_target_.replace('grpcs://', '')
@@ -120,7 +156,7 @@ if __name__ == '__main__':
     os.environ['JCLOUD_LOGLEVEL'] = 'DEBUG'
     deployment_type = os.environ.get('DEPLOYMENT_TYPE', None)
     if not deployment_type:
-        deployment_type = 'all'
+        deployment_type = 'partial'
     deployment_type = deployment_type.lower()
     print(f'Deployment type: {deployment_type}')
     index = int(sys.argv[-1])
@@ -130,9 +166,11 @@ if __name__ == '__main__':
         for ds in ds_list:
             dataset_list.append(ds)
 
-    print(f'Available datasets: {[(ds, idx) for idx, ds in enumerate(dataset_list)]}')
+    print(
+        f'Available datasets: {[(ds.name, idx) for idx, ds in enumerate(dataset_list)]}'
+    )
 
-    while index <= len(dataset_list):
+    while index < len(dataset_list):
         to_deploy = dataset_list[index]
 
         print(f'Deploying -> ({to_deploy}) with deployment type ``{deployment_type}``')
@@ -150,11 +188,6 @@ if __name__ == '__main__':
             except Exception as e:  # noqa E722
                 print('Not deployed yet')
 
-        # Maybe the flow is still alive, if it is, then it should be terminated and re-deploy the app
-        flow = list_all_wolf(namespace=to_deploy.name.split("/")[-1])
-        if flow:
-            terminate_wolf(flow[0]['id'])
-            print(f'{flow[0]["id"]} successfully deleted!!')
         print('Deploying -> ', to_deploy.name)
         deploy(to_deploy)
         print('------------------ Deployment Successful----------------------')
