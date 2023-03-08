@@ -1,5 +1,7 @@
 import random
 import sys
+import threading
+import time
 import uuid
 from copy import deepcopy
 from typing import Dict, Optional
@@ -141,7 +143,8 @@ def call_flow(
 ):
     request_size = estimate_request_size(dataset, max_request_size)
 
-    response = client.post(
+    response = call_flow_with_retry(
+        client=client,
         on=endpoint,
         request_size=request_size,
         inputs=dataset,
@@ -149,11 +152,9 @@ def call_flow(
         parameters=parameters,
         continue_on_error=True,
         prefetch=100,
-        on_done=kwargs.get('on_done', None),
         on_error=kwargs.get('on_error', None),
         on_always=kwargs.get('on_always', None),
     )
-
     if return_results:
         return response
 
@@ -167,3 +168,67 @@ def estimate_request_size(index, max_request_size):
     max_size = 50_000
     request_size = max(min(max_request_size, int(max_size / size)), 1)
     return request_size
+
+
+def call_flow_with_retry(
+    client: Client,
+    on: str,
+    request_size: int,
+    inputs: DocumentArray,
+    show_progress: bool,
+    parameters: Optional[Dict] = None,
+    continue_on_error: bool = True,
+    prefetch: int = 100,
+    on_error=None,
+    on_always=None,
+    num_retries: int = 10,
+    sleep_interval: int = 5,
+):
+    from jina.types.request import Request
+
+    on_done_lock = threading.Lock()
+    on_done_docs = deepcopy(inputs)
+
+    def on_done(r: Request):
+        nonlocal on_done_docs
+        print(f'completed {len(r.data.docs)} docs with requestid {r.header.request_id}')
+        for doc in r.data.docs:
+            with on_done_lock:
+                try:
+                    del on_done_docs[doc.id]
+                except Exception as e:
+                    print(f'Exception in on_done: {e}')
+
+    def stream_requests_until_done(docs: DocumentArray):
+        return client.post(
+            on=on,
+            inputs=docs,
+            request_size=request_size,
+            show_progress=show_progress,
+            parameters=parameters,
+            continue_on_error=continue_on_error,
+            prefetch=prefetch,
+            on_done=lambda r: on_done(r),
+            on_error=on_error,
+            on_always=on_always,
+        )
+
+    def reset_docs_before_retry():
+        nonlocal on_done_docs, inputs
+        print(f'#Number of docs to be retried: {len(on_done_docs)}')
+        print(f'Sleeping for {sleep_interval} seconds, before retrying')
+        time.sleep(sleep_interval)
+        dataset = on_done_docs
+        on_done_docs = deepcopy(dataset)
+
+    for _ in range(num_retries):
+        try:
+            response = stream_requests_until_done(inputs)
+            if len(on_done_docs) == 0:
+                print('All docs indexed successfully')
+                return response
+            else:
+                reset_docs_before_retry()
+        except Exception as e:
+            print(f'Exception while indexing: {e}')
+            reset_docs_before_retry()
