@@ -172,7 +172,8 @@ if __name__ == '__main__':
     while index < len(dataset_list):
         to_deploy = dataset_list[index]
 
-        print(f'\nDeploying -> Index {index}: ({to_deploy})')
+        print('\n----------------------------------------')
+        print(f'Deploying -> Index {index}: ({to_deploy})')
         print('----------------------------------------')
 
         if deployment_type == 'partial':
