@@ -6,7 +6,7 @@ from jina import __version__ as jina_version
 
 from now.app.base.create_jcloud_name import create_jcloud_name
 from now.app.base.preprocess import preprocess_image, preprocess_text, preprocess_video
-from now.constants import DEMO_NS, NOW_GATEWAY_VERSION
+from now.constants import DEMO_NS, GRPC_SERVER_OPTIONS, NOW_GATEWAY_VERSION
 from now.demo_data import DemoDataset
 from now.executor.name_to_id_map import name_to_id_map
 from now.now_dataclasses import DialogOptions, UserInput
@@ -117,11 +117,11 @@ class JinaNOWApp:
             'cors': True,
             'uses_with': {'user_input_dict': user_input.to_safe_dict()},
             'timeout_send': -1,
-            'grpc_server_options': {'max_concurrent_streams': 1000},
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'jcloud': {
                 'resources': {'instance': 'C5', 'capacity': 'spot'},
             },
+            **GRPC_SERVER_OPTIONS,
         }
         if 'NOW_EXAMPLES' in os.environ:
             gateway_stub['jcloud'] = {

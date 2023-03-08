@@ -9,6 +9,7 @@ from now.constants import (
     DEMO_NS,
     EXTERNAL_CLIP_HOST,
     EXTERNAL_SBERT_HOST,
+    GRPC_SERVER_OPTIONS,
     NOW_AUTOCOMPLETE_VERSION,
     NOW_ELASTIC_INDEXER_VERSION,
     NOW_PREPROCESSOR_VERSION,
@@ -87,6 +88,7 @@ class SearchApp(JinaNOWApp):
                     'storage': {'kind': 'efs', 'size': '1M'},
                 },
             },
+            **GRPC_SERVER_OPTIONS,
         }
 
     @staticmethod
@@ -107,6 +109,7 @@ class SearchApp(JinaNOWApp):
                 'resources': {'instance': 'C4', 'capacity': 'spot'},
             },
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
+            **GRPC_SERVER_OPTIONS,
         }
 
     @staticmethod
@@ -121,6 +124,7 @@ class SearchApp(JinaNOWApp):
             'uses_with': {'access_paths': ACCESS_PATHS, 'name': 'ViT-B-32::openai'},
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'needs': 'preprocessor',
+            **GRPC_SERVER_OPTIONS,
         }, 512
 
     @staticmethod
@@ -138,6 +142,7 @@ class SearchApp(JinaNOWApp):
             'external': True,
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'needs': 'preprocessor',
+            **GRPC_SERVER_OPTIONS,
         }, 768
 
     @staticmethod
@@ -192,6 +197,7 @@ class SearchApp(JinaNOWApp):
                 },
                 'resources': {'instance': 'C6', 'capacity': 'spot'},
             },
+            **GRPC_SERVER_OPTIONS,
         }
 
     def get_executor_stubs(
