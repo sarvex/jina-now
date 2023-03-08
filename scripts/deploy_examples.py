@@ -183,6 +183,7 @@ if __name__ == '__main__':
             try:
                 response = client.post('/dry_run', return_results=True)
                 print(f'\nIndex {index}: already {to_deploy.name} deployed')
+                index += 5
                 continue
             except Exception as e:  # noqa E722
                 print('Not deployed yet')
