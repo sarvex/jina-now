@@ -188,7 +188,7 @@ jobs:
           pip install --no-cache-dir ".[full,test]"
           sudo apt-get install wkhtmltopdf
           sudo apt-get install xvfb
-          sudo printf '#!/bin/bash\nxvfb-run -a --server-args="-screen 0, 1024x768x24" /usr/bin/wkhtmltopdf -q $*' > /usr/bin/wkhtmltopdf.sh
+          sudo printf '#!/bin/bash\nxvfb-run -a --server-args="-screen 0, 1024x768x24" /usr/bin/wkhtmltopdf -q $*' | sudo tee /usr/bin/wkhtmltopdf.sh
           sudo chmod a+x /usr/bin/wkhtmltopdf.sh
           sudo ln -s /usr/bin/wkhtmltopdf.sh /usr/local/bin/wkhtmltopdf
           wkhtmltopdf http://www.google.com output.pdf
