@@ -39,7 +39,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install wheel
           pip install git+https://github.com/jina-ai/now.git@fix-test-timeout
-          pip install git+https://github.com/jina-ai/jcloud.git@aiohttp-keepalive
+          pip install -U jcloud==0.2.4
       - name: Add JCloud auth token
         run: |
           mkdir -p ~/.jina
