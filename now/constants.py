@@ -4,10 +4,10 @@ from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-NOW_GATEWAY_VERSION = '0.0.5-feat-html-to-pdf-5'
-NOW_PREPROCESSOR_VERSION = '0.0.124-feat-html-to-pdf-5'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.148-refactor-feat-html-to-pdf-5'
-NOW_AUTOCOMPLETE_VERSION = '0.0.11-feat-html-to-pdf-5'
+NOW_GATEWAY_VERSION = '0.0.5-feat-html-to-pdf-6'
+NOW_PREPROCESSOR_VERSION = '0.0.124-feat-html-to-pdf-6'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.148-refactor-feat-html-to-pdf-6'
+NOW_AUTOCOMPLETE_VERSION = '0.0.11-feat-html-to-pdf-6'
 
 
 class Apps(BetterEnum):
