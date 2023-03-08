@@ -166,14 +166,13 @@ if __name__ == '__main__':
         for ds in ds_list:
             dataset_list.append(ds)
 
-    print(
-        f'Available datasets: {[(ds.name, idx) for idx, ds in enumerate(dataset_list)]}'
-    )
+    for idx, ds in enumerate(dataset_list):
+        print(f'Index {idx}: {ds.name}')
 
     while index < len(dataset_list):
         to_deploy = dataset_list[index]
 
-        print(f'Deploying -> ({to_deploy}) with deployment type ``{deployment_type}``')
+        print(f'Deploying -> \nIndex {index}: ({to_deploy})')
         print('----------------------------------------')
 
         if deployment_type == 'partial':
@@ -183,12 +182,12 @@ if __name__ == '__main__':
             )
             try:
                 response = client.post('/dry_run', return_results=True)
-                print(f'Already {to_deploy.name} deployed')
-                exit(0)
+                print(f'\nIndex {index}: already {to_deploy.name} deployed')
+                continue
             except Exception as e:  # noqa E722
                 print('Not deployed yet')
 
-        print('Deploying -> ', to_deploy.name)
+        print('Deploying -> \nIndex {index}: ', to_deploy.name)
         deploy(to_deploy)
         print('------------------ Deployment Successful----------------------')
         index += 5
