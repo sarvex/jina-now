@@ -117,6 +117,7 @@ class JinaNOWApp:
             'cors': True,
             'uses_with': {'user_input_dict': user_input.to_safe_dict()},
             'timeout_send': -1,
+            'grpc_server_options': {'max_concurrent_streams': 1000},
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'jcloud': {
                 'resources': {'instance': 'C5', 'capacity': 'spot'},
