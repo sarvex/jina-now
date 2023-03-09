@@ -34,7 +34,7 @@ def flatten_dict(d, parent_key='', sep='__'):
 
 
 def hide_string_chars(s):
-    return ''.join(['*' for _ in range(len(s) - 5)]) + s[len(s) - 4 :] if s else None
+    return ''.join(['*' for _ in range(len(s) - 4)]) + s[len(s) - 4 :] if s else None
 
 
 def to_camel_case(text):
