@@ -196,7 +196,7 @@ def call_flow_with_retry(
     from jina.types.request import Request
 
     pending_docs = deepcopy(inputs)
-    # init_inputs_len = len(inputs)
+    init_inputs_len = len(inputs)
     on_done_len = 0
     on_done_lock = threading.Lock()
 
@@ -212,7 +212,7 @@ def call_flow_with_retry(
                 try:
                     del pending_docs[doc.id]
                 except Exception as e:
-                    print_if_ci(f'Exception in on_done: {e}')
+                    print_if_ci(f'Error while removing {e}')
 
     def _on_error(r: Request):
         print_if_ci(f'Got an error while indexing requestid: {r.header.request_id}')
@@ -242,13 +242,14 @@ def call_flow_with_retry(
 
     for _ in range(num_retries):
         try:
-            return stream_requests_until_done(inputs)
-            # Note: Following code can be used to retry indexing of docs that reached on_error
-            # if len(pending_docs) == 0 or on_done_len == init_inputs_len:
-            #     print_if_ci('All docs indexed successfully')
-            #     return response
-            # else:
-            #     reset_docs_before_retry()
+            stream_requests_until_done(inputs)
+            if len(pending_docs) == 0 or on_done_len == init_inputs_len:
+                print_if_ci('All docs indexed successfully')
+                return
+            else:
+                # Retry indexing docs that reached on_error
+                reset_docs_before_retry()
         except Exception as e:
+            # Retry if there is an exception (usually network errors)
             print_if_ci(f'Exception while indexing: {e}')
             reset_docs_before_retry()
