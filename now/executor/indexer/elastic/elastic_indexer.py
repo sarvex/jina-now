@@ -192,7 +192,11 @@ class NOWElasticIndexer(Executor):
                 f'Inserted {success} documents into Elasticsearch index {self.index_name}'
             )
         self.update_tags()
-        return DocumentArray([Document(id=i) for i in docs[..., 'id']])
+
+        # Return DocumentArray with the ids of the indexed documents so that if the indexing fails for any
+        # batch then the failed batch can be indexed again using retry mechanism.
+        # Get unique ids since docs can be repeated because no_reduce = True
+        return DocumentArray([Document(id=i) for i in set(docs[..., 'id'])])
 
     @secure_request(on='/search', level=SecurityLevel.USER)
     def search(
