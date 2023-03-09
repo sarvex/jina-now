@@ -1,59 +1,18 @@
 from __future__ import annotations, print_function, unicode_literals
 
-import os
-import shutil
 import signal
 import sys
 from collections.abc import MutableMapping
 from dataclasses import dataclass
 from inspect import stack
-from typing import Any, Dict, List, Optional, TypeVar, Union
+from typing import Any, TypeVar
 
 import boto3
-import cowsay
 import docarray
 import hubble
 import yaml
 from jina.jaml import JAML
 from pyfiglet import Figlet
-
-from now.deployment.deployment import list_all_wolf, status_wolf
-from now.thirdparty.PyInquirer.prompt import prompt
-
-
-def download_file(path, r_raw):
-    with path.open("wb") as f:
-        shutil.copyfileobj(r_raw, f)
-
-
-def download(url, filename):
-    import functools
-    import pathlib
-
-    import requests
-    from tqdm.auto import tqdm
-
-    r = requests.get(url, stream=True, allow_redirects=True)
-    if r.status_code != 200:
-        r.raise_for_status()  # Will only raise for 4xx codes, so...
-        raise RuntimeError(f"Request to {url} returned status code {r.status_code}")
-    file_size = int(r.headers.get('Content-Length', 0))
-
-    path = pathlib.Path(filename).expanduser().resolve()
-    path.parent.mkdir(parents=True, exist_ok=True)
-
-    desc = "(Unknown total file size)" if file_size == 0 else ""
-    r.raw.read = functools.partial(
-        r.raw.read, decode_content=True
-    )  # Decompress if needed
-
-    if any(map(lambda x: x in os.environ, ['NOW_CI_RUN', 'NOW_EXAMPLES'])):
-        download_file(path, r.raw)
-    else:
-        with tqdm.wrapattr(r.raw, "read", total=file_size, desc=desc) as r_raw:
-            download_file(path, r_raw)
-
-    return path
 
 
 def my_handler(signum, frame, spinner):
@@ -76,25 +35,6 @@ def to_camel_case(text):
 
 
 sigmap = {signal.SIGINT: my_handler, signal.SIGTERM: my_handler}
-
-
-class EnvironmentVariables:
-    def __init__(self, envs: Dict):
-        self._env_keys_added: Dict = envs
-
-    def __enter__(self):
-        for key, val in self._env_keys_added.items():
-            os.environ[key] = str(val)
-
-    def __exit__(self, *args, **kwargs):
-        for key in self._env_keys_added.keys():
-            os.unsetenv(key)
-
-
-def write_env_file(env_file, config):
-    config_string = '\n'.join([f'{key}={value}' for key, value in config.items()])
-    with open(env_file, 'w+') as fp:
-        fp.write(config_string)
 
 
 def write_flow_file(flow_yaml_content, new_yaml_file_path):
@@ -144,38 +84,6 @@ def print_headline():
         '5GB - 8GB should be okay.'
     )
     print()
-
-
-def maybe_prompt_user(questions, attribute, **kwargs):
-    """
-    Checks the `kwargs` for the `attribute` name. If present, the value is returned directly.
-    If not, the user is prompted via the cmd-line using the `questions` argument.
-
-    :param questions: A dictionary that is passed to `PyInquirer.prompt`
-        See docs: https://github.com/CITGuru/PyInquirer#documentation
-    :param attribute: Name of the value to get. Make sure this matches the name in `kwargs`
-
-    :return: A single value of either from `kwargs` or the user cli input.
-    """
-    if kwargs and attribute in kwargs:
-        return kwargs[attribute]
-    else:
-        answer = prompt(questions)
-        return answer[attribute]
-
-
-def prompt_value(
-    name: str,
-    prompt_message: str,
-    prompt_type: str = 'input',
-    choices: Optional[List[Union[Dict, str]]] = None,
-    **kwargs: Dict,
-):
-    qs = {'name': name, 'type': prompt_type, 'message': prompt_message}
-
-    if choices is not None:
-        qs['choices'] = choices
-    return maybe_prompt_user(qs, name, **kwargs)
 
 
 def debug(msg: Any):
@@ -242,7 +150,7 @@ def get_aws_profile():
 
 
 def hide_string_chars(s):
-    return ''.join(['*' for _ in range(len(s) - 5)]) + s[len(s) - 4 :] if s else None
+    return ''.join(['*' for _ in range(len(s) - 4)]) + s[len(s) - 4 :] if s else None
 
 
 def get_chunk_by_field_name(doc, field_name):
@@ -261,35 +169,7 @@ def get_chunk_by_field_name(doc, field_name):
         )
         return doc.chunks[field_position]
     except Exception as e:
-        print(f'An error occurred: {e}')
-
-
-def get_flow_status(action, **kwargs):
-    choices = []
-    # Add all remote Flows that exists with the namespace `nowapi`
-    alive_flows = list_all_wolf(status='Serving')
-    for flow_details in alive_flows:
-        choices.append(flow_details['name'])
-    if len(choices) == 0:
-        cowsay.cow(f'nothing to {action}')
-        return
-    else:
-        questions = [
-            {
-                'type': 'list',
-                'name': 'cluster',
-                'message': f'Which cluster do you want to {action}?',
-                'choices': choices,
-            }
-        ]
-        cluster = maybe_prompt_user(questions, 'cluster', **kwargs)
-
-    flow = [x for x in alive_flows if x['name'] == cluster][0]
-    flow_id = flow['id']
-    _result = status_wolf(flow_id)
-    if _result is None:
-        print(f'❎ Flow not found in JCloud. Likely, it has been deleted already')
-    return _result, flow_id, cluster
+        raise e
 
 
 # Add a custom retry exception

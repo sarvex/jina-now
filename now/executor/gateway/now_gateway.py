@@ -15,6 +15,7 @@ from streamlit.web.server import Server as StreamlitServer
 
 from now.constants import NOWGATEWAY_BFF_PORT
 from now.deployment.deployment import cmd
+from now.executor.gateway.hubble_report import start_base_fee_thread
 from now.now_dataclasses import UserInput
 
 cur_dir = os.path.dirname(__file__)
@@ -126,6 +127,10 @@ class NOWGateway(CompositeGateway):
 
         self.setup_nginx()
         self.nginx_was_shutdown = False
+        try:
+            start_base_fee_thread(self.user_input.jwt['token'])
+        except Exception as e:
+            self.logger.error(f'Could not start base fee thread: {e}')
 
     async def shutdown(self):
         await super().shutdown()
