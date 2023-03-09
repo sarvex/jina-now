@@ -10,7 +10,7 @@ from jina import Flow
 
 from now.admin.utils import get_default_request_body
 from now.common.options import construct_app
-from now.constants import Apps, DatasetTypes, Models, S3_CUSTOM_MM_DATA_PATH
+from now.constants import S3_CUSTOM_MM_DATA_PATH, Apps, DatasetTypes, Models
 from now.data_loading.create_dataclass import create_dataclass
 from now.data_loading.data_loading import load_data
 from now.demo_data import DemoDatasetNames
@@ -45,7 +45,7 @@ def get_flow(request, random_index_name, tmpdir):
     elif isinstance(params, str):
         yield docs, user_input
     event.set()
-    sleep(1)
+    sleep(0.1)
     flow.terminate()
 
 
