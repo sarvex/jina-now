@@ -128,7 +128,7 @@ def deploy(demo_ds):
     }
     kwargs = Namespace(**kwargs)
     try:
-        cli(args=kwargs)
+        response_cli = cli(args=kwargs)
     except Exception as e:  # noqa E722
         # delete flow with broken index, i.e. latest flow
         delete_flow(ns=NAMESPACE, reverse=True, failed=True)
@@ -136,6 +136,20 @@ def deploy(demo_ds):
     finally:
         # Delete the remaining old flow because either is it not reachable or it is to be replaced
         delete_flow(ns=NAMESPACE)
+
+    # parse the response
+    host_target_ = response_cli.get('host')
+    if host_target_ and host_target_.startswith('grpcs://'):
+        host_target_ = host_target_.replace('grpcs://', '')
+        host_source = f'{DEMO_NS.format(demo_ds.name.split("/")[-1])}.dev.jina.ai'
+        # update the CNAME entry in the Route53 records
+        print(f'Updating CNAME record for `{host_source}` -> `{host_target_}`')
+        upsert_cname_record(host_source, host_target_)
+    else:
+        print(
+            'No host returned starting with "grpcs://". Make sure Jina NOW returns host'
+        )
+    return response_cli
 
 
 if __name__ == '__main__':
@@ -155,7 +169,7 @@ if __name__ == '__main__':
             dataset_list.append(ds)
 
     for idx, ds in enumerate(dataset_list):
-        print(f'Index {idx}: {ds.name}')
+        print(f'Index {idx}: {ds.name}: {DEMO_NS.format(ds.name.split("/")[-1])}')
 
     while index < len(dataset_list):
         to_deploy = dataset_list[index]
