@@ -1,3 +1,4 @@
+import os
 import random
 import sys
 import threading
@@ -154,6 +155,8 @@ def call_flow(
         prefetch=100,
         on_error=kwargs.get('on_error', None),
         on_always=kwargs.get('on_always', None),
+        num_retries=kwargs.get('num_retries', 10),
+        sleep_interval=kwargs.get('sleep_interval', 5),
     )
     if return_results:
         return response
@@ -184,20 +187,31 @@ def call_flow_with_retry(
     num_retries: int = 10,
     sleep_interval: int = 5,
 ):
+    print_if_ci = lambda msg: print(msg) if 'NOW_CI_RUN' in os.environ else None
+
+    if len(inputs) == 0:
+        print('No documents to index')
+        return
+
     from jina.types.request import Request
 
+    pending_docs = deepcopy(inputs)
     on_done_lock = threading.Lock()
-    on_done_docs = deepcopy(inputs)
+    on_done_count = 0
 
     def on_done(r: Request):
-        nonlocal on_done_docs
-        print(f'completed {len(r.data.docs)} docs with requestid {r.header.request_id}')
+        nonlocal pending_docs, on_done_count
+        on_done_count += len(r.data.docs)
+        if on_done_count != 0 and on_done_count % 100 == 0:
+            print_if_ci(
+                f'Completed indexing {on_done_count} docs. current requestid: {r.header.request_id}'
+            )
         for doc in r.data.docs:
             with on_done_lock:
                 try:
-                    del on_done_docs[doc.id]
+                    del pending_docs[doc.id]
                 except Exception as e:
-                    print(f'Exception in on_done: {e}')
+                    print_if_ci(f'Exception in on_done: {e}')
 
     def stream_requests_until_done(docs: DocumentArray):
         return client.post(
@@ -214,21 +228,22 @@ def call_flow_with_retry(
         )
 
     def reset_docs_before_retry():
-        nonlocal on_done_docs, inputs
-        print(f'#Number of docs to be retried: {len(on_done_docs)}')
-        print(f'Sleeping for {sleep_interval} seconds, before retrying')
+        nonlocal pending_docs, inputs
+        print(
+            f'Sleeping for {sleep_interval} seconds, before retrying {len(pending_docs)} docs'
+        )
         time.sleep(sleep_interval)
-        dataset = on_done_docs
-        on_done_docs = deepcopy(dataset)
+        dataset = pending_docs
+        pending_docs = deepcopy(dataset)
 
     for _ in range(num_retries):
         try:
             response = stream_requests_until_done(inputs)
-            if len(on_done_docs) == 0:
-                print('All docs indexed successfully')
+            if len(pending_docs) == 0:
+                print_if_ci('All docs indexed successfully')
                 return response
             else:
                 reset_docs_before_retry()
         except Exception as e:
-            print(f'Exception while indexing: {e}')
+            print_if_ci(f'Exception while indexing: {e}')
             reset_docs_before_retry()
