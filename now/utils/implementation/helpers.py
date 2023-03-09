@@ -2,11 +2,9 @@ import signal
 import sys
 from collections.abc import MutableMapping
 from inspect import stack
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 from pyfiglet import Figlet
-
-from now.utils.flow.helpers import maybe_prompt_user
 
 
 def debug(msg: Any):
@@ -77,17 +75,3 @@ def print_headline():
         '5GB - 8GB should be okay.'
     )
     print()
-
-
-def prompt_value(
-    name: str,
-    prompt_message: str,
-    prompt_type: str = 'input',
-    choices: Optional[List[Union[Dict, str]]] = None,
-    **kwargs: Dict,
-):
-    qs = {'name': name, 'type': prompt_type, 'message': prompt_message}
-
-    if choices is not None:
-        qs['choices'] = choices
-    return maybe_prompt_user(qs, name, **kwargs)

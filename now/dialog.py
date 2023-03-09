@@ -8,13 +8,15 @@ from __future__ import annotations, print_function, unicode_literals
 
 import inspect
 import pathlib
+from typing import Dict, List, Optional, Union
 
 from now.common import options
 from now.common.options import construct_app
 from now.constants import MODALITY_TO_MODELS, Apps, DialogStatus
 from now.now_dataclasses import DialogOptions, UserInput
+from now.thirdparty.PyInquirer.prompt import prompt
 from now.utils.errors.helpers import DemoAvailableException, RetryException
-from now.utils.implementation.helpers import print_headline, prompt_value
+from now.utils.implementation.helpers import print_headline
 
 cur_dir = pathlib.Path(__file__).parent.resolve()
 
@@ -114,3 +116,35 @@ def configure_option(
         break
 
     return DialogStatus.CONTINUE
+
+
+def prompt_value(
+    name: str,
+    prompt_message: str,
+    prompt_type: str = 'input',
+    choices: Optional[List[Union[Dict, str]]] = None,
+    **kwargs: Dict,
+):
+    qs = {'name': name, 'type': prompt_type, 'message': prompt_message}
+
+    if choices is not None:
+        qs['choices'] = choices
+    return maybe_prompt_user(qs, name, **kwargs)
+
+
+def maybe_prompt_user(questions, attribute, **kwargs):
+    """
+    Checks the `kwargs` for the `attribute` name. If present, the value is returned directly.
+    If not, the user is prompted via the cmd-line using the `questions` argument.
+
+    :param questions: A dictionary that is passed to `PyInquirer.prompt`
+        See docs: https://github.com/CITGuru/PyInquirer#documentation
+    :param attribute: Name of the value to get. Make sure this matches the name in `kwargs`
+
+    :return: A single value of either from `kwargs` or the user cli input.
+    """
+    if kwargs and attribute in kwargs:
+        return kwargs[attribute]
+    else:
+        answer = prompt(questions)
+        return answer[attribute]

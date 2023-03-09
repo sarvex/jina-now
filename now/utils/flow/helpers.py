@@ -3,7 +3,6 @@ import yaml
 from jina.jaml import JAML
 
 from now.deployment.deployment import list_all_wolf, status_wolf
-from now.thirdparty.PyInquirer.prompt import prompt
 
 
 def get_flow_status(action, **kwargs):
@@ -38,12 +37,6 @@ def get_flow_id(host):
     return host[len('https://') : -len('-http.wolf.jina.ai')]
 
 
-def write_env_file(env_file, config):
-    config_string = '\n'.join([f'{key}={value}' for key, value in config.items()])
-    with open(env_file, 'w+') as fp:
-        fp.write(config_string)
-
-
 class Dumper(yaml.Dumper):
     def increase_indent(self, flow=False, *args, **kwargs):
         return super().increase_indent(flow=flow, indentless=False)
@@ -58,21 +51,3 @@ def write_flow_file(flow_yaml_content, new_yaml_file_path):
             allow_unicode=True,
             Dumper=Dumper,
         )
-
-
-def maybe_prompt_user(questions, attribute, **kwargs):
-    """
-    Checks the `kwargs` for the `attribute` name. If present, the value is returned directly.
-    If not, the user is prompted via the cmd-line using the `questions` argument.
-
-    :param questions: A dictionary that is passed to `PyInquirer.prompt`
-        See docs: https://github.com/CITGuru/PyInquirer#documentation
-    :param attribute: Name of the value to get. Make sure this matches the name in `kwargs`
-
-    :return: A single value of either from `kwargs` or the user cli input.
-    """
-    if kwargs and attribute in kwargs:
-        return kwargs[attribute]
-    else:
-        answer = prompt(questions)
-        return answer[attribute]
