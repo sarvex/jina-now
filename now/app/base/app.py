@@ -119,7 +119,10 @@ class JinaNOWApp:
             'timeout_send': -1,
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'jcloud': {
-                'resources': {'instance': 'C5', 'capacity': 'spot'},
+                'resources': {
+                    'instance': 'C5',
+                    'capacity': 'spot',
+                },
             },
             **GRPC_SERVER_OPTIONS,
         }
