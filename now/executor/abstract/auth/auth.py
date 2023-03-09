@@ -33,8 +33,7 @@ def secure_request(level: int, on: str = None):
             cls_instance = args[0]
             cls_instance.logger.info(f"test logging from class")
             cls_instance.logger.info(f"{args}")
-            if "docs" in args:
-                cls_instance.logger.info(f"Docs provided")
+            cls_instance.logger.info(f"{kwargs}")
             return func(*args, **kwargs)
 
         return wrapper
