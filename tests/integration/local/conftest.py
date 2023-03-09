@@ -47,6 +47,7 @@ def get_flow(request, random_index_name, tmpdir):
     event.set()
     sleep(1)
     flow.terminate()
+    yield
 
 
 class FlowThread(multiprocessing.Process):
