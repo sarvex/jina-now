@@ -1,9 +1,4 @@
-import io
-import os
-import random
-import string
 import tempfile
-import urllib
 
 from jina import Document, DocumentArray
 
@@ -29,22 +24,6 @@ class NOWPreprocessor(Executor):
 
         self.app: JinaNOWApp = JinaNOWApp()
         self.max_workers = max_workers
-
-    @staticmethod
-    def _save_uri_to_tmp_file(uri, tmpdir) -> str:
-        """Saves URI to a temporary file and returns the path to that file."""
-        req = urllib.request.Request(uri, headers={'User-Agent': 'Mozilla/5.0'})
-        tmp_fn = os.path.join(
-            tmpdir,
-            ''.join([random.choice(string.ascii_lowercase) for i in range(10)])
-            + '.png',
-        )
-        with urllib.request.urlopen(req, timeout=10) as fp:
-            buffer = fp.read()
-            binary_fn = io.BytesIO(buffer)
-            with open(tmp_fn, 'wb') as f:
-                f.write(binary_fn.read())
-        return tmp_fn
 
     @secure_request(on=None, level=SecurityLevel.USER)
     def preprocess(self, docs: DocumentArray, *args, **kwargs) -> DocumentArray:
