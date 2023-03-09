@@ -45,7 +45,7 @@ def get_flow(request, random_index_name, tmpdir):
     elif isinstance(params, str):
         yield docs, user_input
     event.set()
-    sleep(0.1)
+    sleep(1)
     flow.terminate()
 
 
