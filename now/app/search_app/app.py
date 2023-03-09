@@ -78,7 +78,7 @@ class SearchApp(JinaNOWApp):
             'jcloud': {
                 'autoscale': {
                     'min': 0,
-                    'max': 1,
+                    'max': 100,
                     'metric': 'concurrency',
                     'target': 100,
                 },

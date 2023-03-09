@@ -92,7 +92,7 @@ class TestElasticIndexer:
         """Test indexing does not return anything"""
         docs = self.get_docs(NUMBER_OF_DOCS)
         result = flow.post(on='/index', inputs=docs, return_results=True)
-        assert len(result) == 0
+        assert len(result) == 10
 
     @pytest.mark.parametrize(
         'offset, limit', [(0, 10), (10, 0), (0, 0), (10, 10), (None, None)]

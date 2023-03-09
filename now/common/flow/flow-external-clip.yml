@@ -21,7 +21,7 @@ executors:
       expose: true
       autoscale:
         min: 4
-        max: 15
+        max: 100
         metric: concurrency
         target: 100
       resources:

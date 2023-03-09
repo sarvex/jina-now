@@ -167,6 +167,7 @@ class NOWElasticIndexer(Executor):
     def index(
         self,
         docs_map: Dict[str, DocumentArray] = None,  # encoder to docarray
+        parameters: Dict = {},
         docs: Optional[DocumentArray] = None,
         **kwargs,
     ) -> DocumentArray:
@@ -174,6 +175,7 @@ class NOWElasticIndexer(Executor):
         Index new `Document`s by adding them to the Elasticsearch index.
 
         :param docs_map: map of encoder to DocumentArray
+        :param parameters: dictionary of parameters
         :param docs: DocumentArray to index
         :return: empty `DocumentArray`.
         """
