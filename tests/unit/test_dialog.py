@@ -264,7 +264,6 @@ ERRORFUL_DIALOGS_WITH_CONFIGS = [
 )
 def test_raise_error_configure_input(
     mocker: MockerFixture,
-    toggle_now_ci_run_env_var,
     mocked_dialog_answers: Dict[str, str],
     cli_kwargs: Dict,
     expected_error: Exception,

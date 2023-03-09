@@ -360,10 +360,3 @@ def wait_until_cluster_is_up(es, hosts):
             )
     if retries >= MAX_RETRIES:
         raise RuntimeError(f'Elasticsearch is not running after {MAX_RETRIES} retries.')
-
-
-@pytest.fixture
-def toggle_now_ci_run_env_var(monkeypatch):
-    monkeypatch.delenv('NOW_CI_RUN')
-    yield
-    monkeypatch.setenv('NOW_CI_RUN', True)
