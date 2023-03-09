@@ -275,27 +275,78 @@ def test_raise_error_configure_input(
         configure_user_input(**cli_kwargs)
 
 
-def test_expand_options_from_parent():
-    mocked_dialog_answers = {
-        'app': Apps.SEARCH_APP,
-        'flow_name': 'testapp',
-        'dataset_type': DatasetTypes.DEMO,
-        'dataset_name': DemoDatasetNames.DEEP_FASHION,
-        'admin_name': 'team-now',
-        'index_fields': ['image'],
-        'index_field_candidates_to_modalities': {'image': Image, 'label': Text},
-        'filter_fields': [],
-        'filter_field_candidates_to_modalities': {'label': 'text'},
-        'secured': '⛔ no',
-    }
-    cli_kwargs = {'model_selection': 'image:Clip'}
+EXPAND_CONFIGS = [
+    (
+        {
+            'app': Apps.SEARCH_APP,
+            'flow_name': DEFAULT_FLOW_NAME,
+            'dataset_type': DatasetTypes.PATH,
+            'dataset_path': os.path.join(
+                os.path.dirname(__file__), '..', 'resources', 'image'
+            ),
+            'index_fields': ['.jpg'],
+            'filter_fields': [],
+            'admin_name': 'team-now',
+            'index_field_candidates_to_modalities': {'.json': Text, '.jpg': Image},
+            'filter_field_candidates_to_modalities': {'.json': 'str'},
+            '.jpg_model': ['clip'],
+            'secured': '⛔ no',
+        },
+        {'model_selection': ".jpg:clip"},  # not a valid model selection
+        ValueError,
+    ),
+    (
+        {
+            'app': Apps.SEARCH_APP,
+            'flow_name': DEFAULT_FLOW_NAME,
+            'dataset_type': DatasetTypes.PATH,
+            'dataset_path': os.path.join(
+                os.path.dirname(__file__), '..', 'resources', 'image'
+            ),
+            'index_fields': ['.jpg'],
+            'filter_fields': [],
+            'admin_name': 'team-now',
+            'index_field_candidates_to_modalities': {'.json': Text, '.jpg': Image},
+            'filter_field_candidates_to_modalities': {'.json': 'str'},
+            '.jpg_model': ['clip'],
+            'secured': '⛔ no',
+        },
+        {'model_selection': ".JPG:Clip"},  # not a valid index selection
+        ValueError,
+    ),
+    (
+        {
+            'app': Apps.SEARCH_APP,
+            'flow_name': 'testapp',
+            'dataset_type': DatasetTypes.DEMO,
+            'dataset_name': DemoDatasetNames.DEEP_FASHION,
+            'admin_name': 'team-now',
+            'index_fields': ['image'],
+            'index_field_candidates_to_modalities': {'image': Image, 'label': Text},
+            'filter_fields': [],
+            'filter_field_candidates_to_modalities': {'label': 'text'},
+            'secured': '⛔ no',
+        },
+        {'model_selection': 'image:Clip'},
+        None,
+    ),
+]
 
+
+@pytest.mark.parametrize(
+    ('mocked_dialog_answers', 'cli_kwargs', 'expected_error'),
+    EXPAND_CONFIGS,
+)
+def test_expand_options_from_parent(mocked_dialog_answers, cli_kwargs, expected_error):
     # initialize user input
     user_input = UserInput()
     user_input.__dict__.update(mocked_dialog_answers)
     user_input.__dict__.pop('app')
 
-    expand_options_from_parent(cli_kwargs, MODEL_SELECTION, user_input)
-
-    # test that the model choices are expanded in the cli arguments
-    assert cli_kwargs['image_model'] == ['encoderclip']
+    if expected_error:
+        with pytest.raises(expected_error):
+            expand_options_from_parent(cli_kwargs, MODEL_SELECTION, user_input)
+    else:
+        expand_options_from_parent(cli_kwargs, MODEL_SELECTION, user_input)
+        # test that the model choices are expanded in the cli arguments
+        assert cli_kwargs['image_model'] == ['encoderclip']
