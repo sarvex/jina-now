@@ -9,7 +9,6 @@ from hubble.excepts import AuthenticationRequiredError
 from jina import Executor, requests
 from jina.logging.logger import JinaLogger
 
-from now.log.log import logger
 from now.now_dataclasses import UserInput
 
 
@@ -32,12 +31,10 @@ def secure_request(level: int, on: str = None):
                 args[0].api_keys,
             )
             cls_instance = args[0]
-            cls_instance.logger.critical(f"test logging from class")
-            cls_instance.logger.debug(f"test logging from class")
             cls_instance.logger.info(f"test logging from class")
-            logger.critical(f"{args}")
+            cls_instance.logger.info(f"{args}")
             if "docs" in args:
-                logger.info(f"Docs provided")
+                cls_instance.logger.info(f"Docs provided")
             return func(*args, **kwargs)
 
         return wrapper
