@@ -4,9 +4,9 @@ from docarray.typing import Image, Text, Video
 
 from now.utils.implementation.helpers import BetterEnum
 
-NOW_GATEWAY_VERSION = '0.0.4-refactor-utils-5'
-NOW_PREPROCESSOR_VERSION = '0.0.124-refactor-utils-5'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.148-refactor-utils-5'
+NOW_GATEWAY_VERSION = '0.0.4-refactor-utils-4'
+NOW_PREPROCESSOR_VERSION = '0.0.124-refactor-utils-4'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.148-refactor-utils-3'
 NOW_AUTOCOMPLETE_VERSION = '0.0.12-feat-alternative-hubble-report-15'
 
 
