@@ -27,8 +27,8 @@ from now.utils.authentication.helpers import (
     get_info_hubble,
     jina_auth_login,
 )
+from now.utils.common.helpers import hide_string_chars, sigmap, to_camel_case
 from now.utils.errors.helpers import DemoAvailableException, RetryException
-from now.utils.implementation.helpers import hide_string_chars, sigmap, to_camel_case
 
 AVAILABLE_SOON = 'will be available in upcoming versions'
 aws_profile = get_aws_profile()

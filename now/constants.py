@@ -2,11 +2,11 @@ from __future__ import annotations, print_function, unicode_literals
 
 from docarray.typing import Image, Text, Video
 
-from now.utils.implementation.helpers import BetterEnum
+from now.utils.common.helpers import BetterEnum
 
-NOW_GATEWAY_VERSION = '0.0.4-refactor-utils-7'
-NOW_PREPROCESSOR_VERSION = '0.0.124-refactor-utils-7'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.148-refactor-utils-7'
+NOW_GATEWAY_VERSION = '0.0.4-refactor-utils-8'
+NOW_PREPROCESSOR_VERSION = '0.0.124-refactor-utils-8'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.148-refactor-utils-8'
 NOW_AUTOCOMPLETE_VERSION = '0.0.12-feat-alternative-hubble-report-15'
 
 

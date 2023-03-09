@@ -15,8 +15,8 @@ from now.common.options import construct_app
 from now.constants import MODALITY_TO_MODELS, Apps, DialogStatus
 from now.now_dataclasses import DialogOptions, UserInput
 from now.thirdparty.PyInquirer.prompt import prompt
+from now.utils.common.helpers import print_headline
 from now.utils.errors.helpers import DemoAvailableException, RetryException
-from now.utils.implementation.helpers import print_headline
 
 cur_dir = pathlib.Path(__file__).parent.resolve()
 

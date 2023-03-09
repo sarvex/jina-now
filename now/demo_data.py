@@ -4,7 +4,7 @@ from docarray import DocumentArray
 from docarray.typing import Image, Text, Video
 from pydantic import BaseModel
 
-from now.utils.implementation.helpers import BetterEnum
+from now.utils.common.helpers import BetterEnum
 
 
 class DemoDatasetNames(BetterEnum):

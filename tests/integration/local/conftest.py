@@ -21,7 +21,7 @@ from now.executor.gateway import NOWGateway  # noqa: F401
 from now.executor.indexer.elastic import NOWElasticIndexer  # noqa: F401
 from now.now_dataclasses import UserInput
 from now.utils.authentication.helpers import get_aws_profile
-from now.utils.flow.helpers import write_flow_file
+from now.utils.jcloud.helpers import write_flow_file
 
 BASE_URL = 'http://localhost:8081/api/v1'
 SEARCH_URL = f'{BASE_URL}/search-app/search'
