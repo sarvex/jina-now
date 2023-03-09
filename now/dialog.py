@@ -10,12 +10,13 @@ import inspect
 import pathlib
 from typing import Dict, List, Optional, Union
 
+from pyfiglet import Figlet
+
 from now.common import options
 from now.common.options import construct_app
 from now.constants import MODALITY_TO_MODELS, Apps, DialogStatus
 from now.now_dataclasses import DialogOptions, UserInput
 from now.thirdparty.PyInquirer.prompt import prompt
-from now.utils.common.helpers import print_headline
 from now.utils.errors.helpers import DemoAvailableException, RetryException
 
 cur_dir = pathlib.Path(__file__).parent.resolve()
@@ -33,6 +34,24 @@ def configure_user_input(**kwargs) -> UserInput:
             break
 
     return user_input
+
+
+def print_headline():
+    f = Figlet(font='slant')
+    print('Welcome to:')
+    print(f.renderText('Jina NOW'))
+    print('Get your search use case up and running - end to end.\n')
+    print(
+        'You can choose between image and text search. \nJina NOW trains a model, pushes it to Jina AI Cloud '
+        'and deploys a Flow and playground app in the cloud or locally. \nCheck out our demos or bring '
+        'your own data.\n'
+    )
+    print('Visit docs.jina.ai to learn more about our framework')
+    print(
+        '💡 Make sure you give enough memory to your Docker daemon. '
+        '5GB - 8GB should be okay.'
+    )
+    print()
 
 
 def configure_option(

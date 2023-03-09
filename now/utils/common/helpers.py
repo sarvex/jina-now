@@ -1,19 +1,6 @@
 import signal
 import sys
 from collections.abc import MutableMapping
-from inspect import stack
-from typing import Any
-
-from pyfiglet import Figlet
-
-
-def debug(msg: Any):
-    """
-    Prints a message along with the details of the caller, ie filename and line number.
-    """
-    msg = str(msg) if msg is not None else ''
-    frameinfo = stack()[1]
-    print(f"{frameinfo.filename}:{frameinfo.lineno}: {msg}")
 
 
 def flatten_dict(d, parent_key='', sep='__'):
@@ -57,21 +44,3 @@ class BetterEnum:
 
 
 sigmap = {signal.SIGINT: my_handler, signal.SIGTERM: my_handler}
-
-
-def print_headline():
-    f = Figlet(font='slant')
-    print('Welcome to:')
-    print(f.renderText('Jina NOW'))
-    print('Get your search use case up and running - end to end.\n')
-    print(
-        'You can choose between image and text search. \nJina NOW trains a model, pushes it to Jina AI Cloud '
-        'and deploys a Flow and playground app in the cloud or locally. \nCheck out our demos or bring '
-        'your own data.\n'
-    )
-    print('Visit docs.jina.ai to learn more about our framework')
-    print(
-        '💡 Make sure you give enough memory to your Docker daemon. '
-        '5GB - 8GB should be okay.'
-    )
-    print()
