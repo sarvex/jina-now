@@ -116,7 +116,7 @@ class JinaNOWApp:
             'monitoring': True,
             'cors': True,
             'uses_with': {'user_input_dict': user_input.to_safe_dict()},
-            'timeout_send': 1000 * 10,
+            'timeout_send': 1000 * 180,
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'jcloud': {
                 'resources': {
