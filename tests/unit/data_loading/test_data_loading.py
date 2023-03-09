@@ -39,23 +39,6 @@ def da() -> DocumentArray:
     )
 
 
-@pytest.fixture(autouse=True)
-def mock_download(mocker: MockerFixture, da: DocumentArray):
-    def fake_download(url: str, filename: str) -> str:
-        da.save_binary(filename)
-        return filename
-
-    mocker.patch('now.utils.download', fake_download)
-
-
-@pytest.fixture(autouse=True)
-def mock_pull(mocker: MockerFixture, da: DocumentArray):
-    def fake_pull(secret: str, admin_name: str) -> DocumentArray:
-        return da
-
-    mocker.patch('now.data_loading.data_loading._pull_docarray', fake_pull)
-
-
 @pytest.fixture()
 def local_da(da: DocumentArray, tmpdir: str) -> Tuple[str, DocumentArray]:
     save_path = os.path.join(tmpdir, 'da.bin')
@@ -112,13 +95,13 @@ def test_da_custom_ds(da: DocumentArray):
     user_input.dataset_type = DatasetTypes.DEMO
     user_input.dataset_name = DemoDatasetNames.DEEP_FASHION
     user_input.admin_name = 'team-now'
-    user_input.index_fields = ['description']
+    user_input.index_fields = ['image']
 
     loaded_da = load_data(user_input)
 
     assert len(loaded_da) > 0
     for doc in loaded_da:
-        assert doc.tags == {}
+        assert 'label' in doc.tags
         assert doc.chunks
 
 
