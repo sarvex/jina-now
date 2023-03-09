@@ -85,9 +85,11 @@ def list_all_wolf(status='Serving', namespace='nowapi'):
 
 
 def delete_flow(ns, reverse=False, failed=False):
-    flow = list_all_wolf(namespace=ns)
+    # append `-nowapi` to the namespace to make it unique
+    flow = list_all_wolf(namespace=ns + '-nowapi')
     flow = sorted(flow, key=lambda x: x['created_at'], reverse=reverse)
     if failed or len(flow) > 1:
+        print(f'Found {len(flow)} flows for namespace {ns}')
         terminate_wolf(flow[0]['id'])
         print(f'{flow[0]["id"]} successfully deleted!!')
 
@@ -126,7 +128,7 @@ def deploy(demo_ds):
     }
     kwargs = Namespace(**kwargs)
     try:
-        response_cli = cli(args=kwargs)
+        cli(args=kwargs)
     except Exception as e:  # noqa E722
         # delete flow with broken index, i.e. latest flow
         delete_flow(ns=NAMESPACE, reverse=True, failed=True)
@@ -134,20 +136,6 @@ def deploy(demo_ds):
     finally:
         # Delete the remaining old flow because either is it not reachable or it is to be replaced
         delete_flow(ns=NAMESPACE)
-
-    # Process the response and update the CNAME record
-    host_target_ = response_cli.get('host')
-    if host_target_ and host_target_.startswith('grpcs://'):
-        host_target_ = host_target_.replace('grpcs://', '')
-        host_source = f'{DEMO_NS.format(demo_ds.name.split("/")[-1])}.dev.jina.ai'
-        # update the CNAME entry in the Route53 records
-        print(f'Updating CNAME record for `{host_source}` -> `{host_target_}`')
-        upsert_cname_record(host_source, host_target_)
-    else:
-        print(
-            'No host returned starting with "grpcs://". Make sure Jina NOW returns host'
-        )
-    return response_cli
 
 
 if __name__ == '__main__':
