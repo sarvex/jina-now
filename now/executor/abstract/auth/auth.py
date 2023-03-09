@@ -31,11 +31,10 @@ def secure_request(level: int, on: str = None):
                 args[0].admin_emails,
                 args[0].api_keys,
             )
-            print("*** test logging ***")
-            logger.critical(f"test critical")
             cls_instance = args[0]
-            print(f"[{cls_instance}]")
-            cls_instance.logger(f"test logging from class")
+            cls_instance.logger.critical(f"test logging from class")
+            cls_instance.logger.debug(f"test logging from class")
+            cls_instance.logger.info(f"test logging from class")
             logger.critical(f"{args}")
             if "docs" in args:
                 logger.info(f"Docs provided")
