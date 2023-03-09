@@ -26,7 +26,7 @@ executors:
 #        min: 1
 #        max: 15
 #        metric: concurrency
-#        target: 1
+#        target: 100
       resources:
         instance: C6
         capacity: spot

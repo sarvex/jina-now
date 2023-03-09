@@ -20,7 +20,7 @@ executors:
     jcloud:
       expose: true
       autoscale:
-        min: 4
+        min: 1
         max: 100
         metric: concurrency
         target: 100
