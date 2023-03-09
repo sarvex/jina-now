@@ -10,9 +10,10 @@ import pytest
 from docarray.typing import Image, Text, Video
 from pytest_mock import MockerFixture
 
+from now.common.options import MODEL_SELECTION
 from now.constants import DEFAULT_FLOW_NAME, Apps, DatasetTypes
 from now.demo_data import DemoDatasetNames
-from now.dialog import configure_user_input
+from now.dialog import configure_user_input, expand_options_from_parent
 from now.now_dataclasses import UserInput
 
 index_field_CANDIDATES_TO_MODALITIES = {'text': Text, 'uri': Image}
@@ -272,3 +273,29 @@ def test_raise_error_configure_input(
     mocker.patch('now.dialog.prompt', CmdPromptMock(mocked_dialog_answers))
     with pytest.raises(expected_error):
         configure_user_input(**cli_kwargs)
+
+
+def test_expand_options_from_parent():
+    mocked_dialog_answers = {
+        'app': Apps.SEARCH_APP,
+        'flow_name': 'testapp',
+        'dataset_type': DatasetTypes.DEMO,
+        'dataset_name': DemoDatasetNames.DEEP_FASHION,
+        'admin_name': 'team-now',
+        'index_fields': ['image'],
+        'index_field_candidates_to_modalities': {'image': Image, 'label': Text},
+        'filter_fields': [],
+        'filter_field_candidates_to_modalities': {'label': 'text'},
+        'secured': '⛔ no',
+    }
+    cli_kwargs = {'model_selection': 'image:Clip'}
+
+    # initialize user input
+    user_input = UserInput()
+    user_input.__dict__.update(mocked_dialog_answers)
+    user_input.__dict__.pop('app')
+
+    expand_options_from_parent(cli_kwargs, MODEL_SELECTION, user_input)
+
+    # test that the model choices are expanded in the cli arguments
+    assert cli_kwargs['image_model'] == ['encoderclip']
