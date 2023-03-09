@@ -62,8 +62,8 @@ search_examples = {
         'value': {
             'limit': 10,
             'filters': {
-                'tags__color': {'$eq': 'blue'},
-                'tags__price': {'$lte': 100, '$gte': 50},
+                'tags__color': ['blue', 'red'],
+                'tags__price': {'lte': 100, 'gte': 50},
             },
             'query': [
                 {
@@ -133,7 +133,7 @@ async def search(
     query_filter = {}
     for key, value in data.filters.items():
         key = 'tags__' + key if not key.startswith('tags__') else key
-        query_filter[key] = {'$eq': value}
+        query_filter[key] = value
 
     docs = await jina_client_post(
         endpoint='/search',

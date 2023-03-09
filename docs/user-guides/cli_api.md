@@ -110,8 +110,12 @@ Optional parameters:
 
   - **limit**: set the number of results in the response
     - example: `5`
-  - **filters**: a dictionary of filters, with filter name as key and target as value
-    - example: `{'tags__color': {'$eq': 'blue'}, 'tags__price': {'$gt': 100}}`
+  - **filters**: a dictionary of filters, with filter name as key and target as value. The target should be a list of strings
+    in the case of categorical filters, and a dictionary with operators as keys and floats or integers as values in the case
+    of numerical filters. See the
+    [Elasticsearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/master/query-dsl-range-query.html)
+    for more information on range queries and allowed operators.
+    - example: `{'tags__color': ['blue'], 'tags__price': {'gt': 100, 'lte': 200}}`
   - **score_calculation**: list of score calculation components defining how fields should be compared and weighted. Each score calculation
         must contain 4 items, the query field and index field, the encoding model used to create representations
         for both fields, and the weight this score should have in the overall calculation, ranging between 0 and 1.
