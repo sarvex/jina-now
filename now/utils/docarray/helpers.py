@@ -17,10 +17,8 @@ def get_chunk_by_field_name(doc, field_name):
     """
     Gets a specific chunk by field name, using its position instead of getting the attribute directly.
     This solves the getattr problem when there are conflicting attributes with Document.
-
     :param doc: Document to get the chunk from.
     :param field_name: Field needed to extract the position.
-
     :return: Specific chunk by field.
     """
     try:
@@ -29,4 +27,4 @@ def get_chunk_by_field_name(doc, field_name):
         )
         return doc.chunks[field_position]
     except Exception as e:
-        print(f'An error occurred: {e}')
+        raise e
