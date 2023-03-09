@@ -42,44 +42,7 @@ def configure_option(
     if option.dynamic_func:
         if option.name in kwargs:
             # Expand dynamic options from parent option, expect a dict (supports only model_selection)
-            for user_selection in kwargs[option.name].split(","):
-                if ":" in user_selection:
-                    option_name, option_values = user_selection.split(":")
-                    kwargs[f"{option_name}_model"] = []
-                    if (
-                        not option_name
-                        in user_input.index_field_candidates_to_modalities
-                    ):
-                        raise ValueError(
-                            f"Error with --{option.name}: `{option_name}` is not an index field."
-                        )
-                    for option_value in option_values.split("+"):
-                        model_selection = [
-                            model
-                            for model in MODALITY_TO_MODELS[
-                                user_input.index_field_candidates_to_modalities[
-                                    option_name
-                                ]
-                            ]
-                            if model["name"] == option_value
-                        ]
-                        if model_selection:
-                            kwargs[f"{option_name}_model"].append(
-                                model_selection[0]["value"]
-                            )
-                        else:
-                            model_choices = [
-                                model["name"]
-                                for model in MODALITY_TO_MODELS[
-                                    user_input.index_field_candidates_to_modalities[
-                                        option_name
-                                    ]
-                                ]
-                            ]
-                            raise ValueError(
-                                f"Error with --{option.name}: `{option_value}` is not available. "
-                                f"for index field `{option_name}`. Choices are: {','. join(model_choices)}."
-                            )
+            expand_options_from_parent(kwargs, option, user_input)
 
         for result in option.dynamic_func(user_input):
             configure_option(result, user_input, **kwargs)
@@ -116,6 +79,38 @@ def configure_option(
         break
 
     return DialogStatus.CONTINUE
+
+
+def expand_options_from_parent(kwargs, option, user_input):
+    for user_selection in kwargs[option.name].split(","):
+        if ":" in user_selection:
+            option_name, option_values = user_selection.split(":")
+            kwargs[f"{option_name}_model"] = []
+            if not option_name in user_input.index_field_candidates_to_modalities:
+                raise ValueError(
+                    f"Error with --{option.name}: `{option_name}` is not an index field."
+                )
+            for option_value in option_values.split("+"):
+                model_selection = [
+                    model
+                    for model in MODALITY_TO_MODELS[
+                        user_input.index_field_candidates_to_modalities[option_name]
+                    ]
+                    if model["name"] == option_value
+                ]
+                if model_selection:
+                    kwargs[f"{option_name}_model"].append(model_selection[0]["value"])
+                else:
+                    model_choices = [
+                        model["name"]
+                        for model in MODALITY_TO_MODELS[
+                            user_input.index_field_candidates_to_modalities[option_name]
+                        ]
+                    ]
+                    raise ValueError(
+                        f"Error with --{option.name}: `{option_value}` is not available. "
+                        f"for index field `{option_name}`. Choices are: {','.join(model_choices)}."
+                    )
 
 
 def prompt_value(
