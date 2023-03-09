@@ -196,7 +196,10 @@ class NOWElasticIndexer(Executor):
         # Return DocumentArray with the ids of the indexed documents so that if the indexing fails for any
         # batch then the failed batch can be indexed again using retry mechanism.
         # Get unique ids since docs can be repeated because no_reduce = True
-        return DocumentArray([Document(id=i) for i in set(docs[..., 'id'])])
+        if docs:
+            return DocumentArray([Document(id=i) for i in set(docs[..., 'id'])])
+        else:
+            return DocumentArray()
 
     @secure_request(on='/search', level=SecurityLevel.USER)
     def search(
