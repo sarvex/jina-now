@@ -80,7 +80,7 @@ class SearchApp(JinaNOWApp):
                     'min': 0,
                     'max': 1,
                     'metric': 'concurrency',
-                    'target': 1,
+                    'target': 100,
                 },
                 'resources': {
                     'instance': 'C1',
@@ -104,7 +104,7 @@ class SearchApp(JinaNOWApp):
                     'min': 0,
                     'max': 100,
                     'metric': 'concurrency',
-                    'target': 1,
+                    'target': 100,
                 },
                 'resources': {'instance': 'C4', 'capacity': 'spot'},
             },

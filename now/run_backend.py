@@ -196,22 +196,26 @@ def call_flow_with_retry(
     from jina.types.request import Request
 
     pending_docs = deepcopy(inputs)
+    # init_inputs_len = len(inputs)
+    on_done_len = 0
     on_done_lock = threading.Lock()
-    on_done_count = 0
 
     def on_done(r: Request):
-        nonlocal pending_docs, on_done_count
-        on_done_count += len(r.data.docs)
-        if on_done_count != 0 and on_done_count % 100 == 0:
+        nonlocal pending_docs, on_done_len
+        on_done_len += len(r.data.docs)
+        if on_done_len != 0 and on_done_len % 100 == 0:
             print_if_ci(
-                f'Completed indexing {on_done_count} docs. current requestid: {r.header.request_id}'
+                f'Completed indexing {on_done_len} docs. current requestid: {r.header.request_id}'
             )
-        for doc in r.data.docs:
-            with on_done_lock:
+        with on_done_lock:
+            for doc in r.data.docs:
                 try:
                     del pending_docs[doc.id]
                 except Exception as e:
                     print_if_ci(f'Exception in on_done: {e}')
+
+    def _on_error(r: Request):
+        print_if_ci(f'Got an error while indexing requestid: {r.header.request_id}')
 
     def stream_requests_until_done(docs: DocumentArray):
         return client.post(
@@ -223,7 +227,7 @@ def call_flow_with_retry(
             continue_on_error=continue_on_error,
             prefetch=prefetch,
             on_done=lambda r: on_done(r),
-            on_error=on_error,
+            on_error=on_error if on_error else _on_error,
             on_always=on_always,
         )
 
@@ -238,12 +242,13 @@ def call_flow_with_retry(
 
     for _ in range(num_retries):
         try:
-            response = stream_requests_until_done(inputs)
-            if len(pending_docs) == 0:
-                print_if_ci('All docs indexed successfully')
-                return response
-            else:
-                reset_docs_before_retry()
+            return stream_requests_until_done(inputs)
+            # Note: Following code can be used to retry indexing of docs that reached on_error
+            # if len(pending_docs) == 0 or on_done_len == init_inputs_len:
+            #     print_if_ci('All docs indexed successfully')
+            #     return response
+            # else:
+            #     reset_docs_before_retry()
         except Exception as e:
             print_if_ci(f'Exception while indexing: {e}')
             reset_docs_before_retry()
