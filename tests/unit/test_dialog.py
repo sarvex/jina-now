@@ -208,8 +208,8 @@ def test_configure_user_input(
         expected_user_input.__dict__.pop(key, None)
 
     # mocked user input
-    mocker.patch('now.dialog.prompt', CmdPromptMock(mocked_user_answers))
-    user_input = configure_user_input(**configure_kwargs)
+    mocker.patch('now.dialog.prompt', CmdPromptMock(mocked_dialog_answers))
+    user_input = configure_user_input(**cli_kwargs)
     user_input.__dict__.update({'jwt': None, 'admin_emails': None})
     user_input.__dict__.update({'app_instance': None})
 
@@ -269,6 +269,6 @@ def test_raise_error_configure_input(
     expected_error: Exception,
 ):
     # mocked user input
-    mocker.patch('now.utils.prompt', CmdPromptMock(mocked_dialog_answers))
+    mocker.patch('now.dialog.prompt', CmdPromptMock(mocked_dialog_answers))
     with pytest.raises(expected_error):
         configure_user_input(**cli_kwargs)
