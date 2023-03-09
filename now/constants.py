@@ -4,10 +4,10 @@ from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-NOW_GATEWAY_VERSION = '0.0.6-feat-alternative-hubble-report-15'
-NOW_PREPROCESSOR_VERSION = '0.0.125-feat-alternative-hubble-report-15'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.149-feat-alternative-hubble-report-15'
-NOW_AUTOCOMPLETE_VERSION = '0.0.12-feat-alternative-hubble-report-15'
+NOW_GATEWAY_VERSION = '0.0.6-fix-test-timeout-15'
+NOW_PREPROCESSOR_VERSION = '0.0.125-fix-test-timeout-15'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.149-fix-test-timeout-15'
+NOW_AUTOCOMPLETE_VERSION = '0.0.12-fix-test-timeout-15'
 
 
 class Apps(BetterEnum):

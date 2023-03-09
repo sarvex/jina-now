@@ -192,7 +192,7 @@ class NOWElasticIndexer(Executor):
                 f'Inserted {success} documents into Elasticsearch index {self.index_name}'
             )
         self.update_tags()
-        return DocumentArray([Document(id=i) for i in docs[..., 'id']]
+        return DocumentArray([Document(id=i) for i in docs[..., 'id']])
 
     @secure_request(on='/search', level=SecurityLevel.USER)
     def search(

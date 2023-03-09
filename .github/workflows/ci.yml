@@ -8,7 +8,7 @@ on:
         required: false
         default: false
 
-#  pull_request:
+  pull_request:
 
 concurrency:
   group: ${{ github.ref }}-${{ github.workflow }}
