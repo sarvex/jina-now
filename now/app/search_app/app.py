@@ -73,7 +73,7 @@ class SearchApp(JinaNOWApp):
             if not testing
             else 'NOWAutoCompleteExecutor2',
             'needs': 'gateway',
-            'env': {'JINA_LOG_LEVEL': 'DEBUG'},
+            'env': {'JINA_LOG_LEVEL': os.environ.get('JINA_LOG_LEVEL', 'DEBUG')},
             'jcloud': {
                 'replicas': 1,
                 # 'autoscale': {
@@ -108,7 +108,7 @@ class SearchApp(JinaNOWApp):
                 # },
                 'resources': {'instance': 'C4', 'capacity': 'spot'},
             },
-            'env': {'JINA_LOG_LEVEL': 'DEBUG'},
+            'env': {'JINA_LOG_LEVEL': os.environ.get('JINA_LOG_LEVEL', 'DEBUG')},
         }
 
     @staticmethod
