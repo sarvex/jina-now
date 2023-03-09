@@ -62,7 +62,7 @@ def test_convert_fn(tmpdir):
     res = convert_fn(
         d,
         tmpdir,
-        os.environ['AWS_ACCESS_KEY-ID'],
+        os.environ['AWS_ACCESS_KEY_ID'],
         os.environ['AWS_SECRET_ACCESS_KEY'],
         'eu-west-1',
     )
