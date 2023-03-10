@@ -115,7 +115,11 @@ class JinaNOWApp:
             'port': [8081, 8085],
             'monitoring': True,
             'cors': True,
-            'uses_with': {'user_input_dict': user_input.to_safe_dict()},
+            'uses_with': {
+                'user_input_dict': user_input.to_safe_dict(),
+                'http_port': '8081',
+                'grpc_port': '8085',
+            },
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'jcloud': {
                 'resources': {
@@ -125,11 +129,13 @@ class JinaNOWApp:
             },
         }
         if 'NOW_EXAMPLES' in os.environ:
-            gateway_stub['jcloud'] = {
-                'custom_dns': [
-                    f'{DEMO_NS.format(user_input.dataset_name.split("/")[-1])}.dev.jina.ai'
-                ]
-            }
+            gateway_stub['jcloud'].update(
+                {
+                    'custom_dns': [
+                        f'{DEMO_NS.format(user_input.dataset_name.split("/")[-1])}.dev.jina.ai'
+                    ]
+                }
+            )
         return gateway_stub
 
     def get_executor_stubs(self, user_input, testing=False, **kwargs) -> Dict:
