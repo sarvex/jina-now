@@ -125,11 +125,14 @@ class JinaNOWApp:
             },
         }
         if 'NOW_EXAMPLES' in os.environ:
-            gateway_stub['jcloud'] = {
-                'custom_dns': [
-                    f'{DEMO_NS.format(user_input.dataset_name.split("/")[-1])}.dev.jina.ai'
-                ]
-            }
+            # noinspection PyTypeChecker
+            gateway_stub['jcloud'].update(
+                {
+                    'custom_dns_http': [
+                        f'{DEMO_NS.format(user_input.dataset_name.split("/")[-1])}.dev.jina.ai'
+                    ]
+                }
+            )
         return gateway_stub
 
     def get_executor_stubs(self, user_input, testing=False, **kwargs) -> Dict:
