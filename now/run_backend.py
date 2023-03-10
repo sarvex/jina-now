@@ -113,6 +113,7 @@ def trigger_scheduler(user_input, host):
         print(f'Indexing will not be scheduled. Please contact Jina AI support.')
 
 
+@time_profiler
 def index_docs(user_input, dataset, client, print_callback, **kwargs):
     """
     Index the data right away
@@ -121,54 +122,34 @@ def index_docs(user_input, dataset, client, print_callback, **kwargs):
     params = {'access_paths': ACCESS_PATHS}
     if user_input.secured:
         params['jwt'] = user_input.jwt
-    call_flow(
+    request_size = estimate_request_size(dataset, user_input.app_instance.max_request_size)
+
+    call_flow_with_retry(
         client=client,
-        dataset=dataset,
-        max_request_size=user_input.app_instance.max_request_size,
-        parameters=deepcopy(params),
-        return_results=False,
-        **kwargs,
-    )
-    print_callback('⭐ Success - your data is indexed')
-
-
-@time_profiler
-def call_flow(
-    client: Client,
-    dataset: DocumentArray,
-    max_request_size: int,
-    endpoint: str = '/index',
-    parameters: Optional[Dict] = None,
-    return_results: Optional[bool] = False,
-    **kwargs,
-):
-    request_size = estimate_request_size(dataset, max_request_size)
-
-    response = call_flow_with_retry(
-        client=client,
-        on=endpoint,
+        on='/index',
         request_size=request_size,
         inputs=dataset,
         show_progress=True,
-        parameters=parameters,
+        parameters=deepcopy(params),
         continue_on_error=True,
-        prefetch=100,
+        prefetch=request_size * 5,
         on_error=kwargs.get('on_error', None),
         on_always=kwargs.get('on_always', None),
         num_retries=kwargs.get('num_retries', 10),
         sleep_interval=kwargs.get('sleep_interval', 5),
     )
-    if return_results:
-        return response
+
+    print_callback('⭐ Success - your data is indexed')
 
 
 def estimate_request_size(index, max_request_size):
-    if len(index) > 30:
-        sample = random.sample(index, 30)
-    else:
-        sample = index
-    size = sum([sys.getsizeof(x.content) for x in sample]) / 30
-    max_size = 50_000
+    if len(index) == 0:
+        return 1
+
+    # We assume that it is homogeneous multimodal DocumentArray,
+    # therefore pick the first document to estimate the size in bytes
+    size = sys.getsizeof(index[0].content) + sum([sys.getsizeof(chunk.content) for chunk in index[0].chunks])
+    max_size = 1e6  # 1 MB
     request_size = max(min(max_request_size, int(max_size / size)), 1)
     return request_size
 
@@ -181,13 +162,13 @@ def call_flow_with_retry(
     show_progress: bool,
     parameters: Optional[Dict] = None,
     continue_on_error: bool = True,
-    prefetch: int = 100,
+    prefetch: int = 1000,
     on_error=None,
     on_always=None,
     num_retries: int = 10,
     sleep_interval: int = 5,
 ):
-    print_if_ci = lambda msg: print(msg) if 'NOW_CI_RUN' in os.environ else None
+    print_if_ci = print if 'NOW_CI_RUN' in os.environ else None
 
     if len(inputs) == 0:
         print('No documents to index')
@@ -204,7 +185,7 @@ def call_flow_with_retry(
         on_done_len += len(r.data.docs)
         if on_done_len != 0 and on_done_len % 100 == 0:
             print_if_ci(
-                f'Completed indexing {on_done_len} docs. current requestid: {r.header.request_id}'
+                f'Completed indexing {on_done_len} docs. current request id: {r.header.request_id}'
             )
         with on_done_lock:
             for doc in r.data.docs:
@@ -214,7 +195,7 @@ def call_flow_with_retry(
                     print_if_ci(f'Error while removing {e}')
 
     def _on_error(r: Request):
-        print_if_ci(f'Got an error while indexing requestid: {r.header.request_id}')
+        print_if_ci(f'Got an error while indexing request id: {r.header.request_id}')
 
     def stream_requests_until_done(docs: DocumentArray):
         return client.post(
