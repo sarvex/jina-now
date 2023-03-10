@@ -3,8 +3,7 @@ import gc
 import io
 import json
 import os
-from typing import List
-from urllib.error import HTTPError
+from typing import Dict, List, Union
 from urllib.parse import quote
 from urllib.request import urlopen
 
@@ -22,12 +21,7 @@ from tornado.httputil import parse_cookie
 
 from now.app.base.create_jcloud_name import create_jcloud_name
 from now.constants import MODALITY_TO_MODELS, NOWGATEWAY_BFF_PORT
-from now.executor.gateway.playground.src.constants import (
-    BUTTONS,
-    S3_DEMO_PATH,
-    SSO_COOKIE,
-    ds_set,
-)
+from now.executor.gateway.playground.src.constants import BUTTONS, SSO_COOKIE
 from now.executor.gateway.playground.src.search import (
     call_flow,
     get_query_params,
@@ -117,17 +111,8 @@ def deploy_streamlit(user_input: UserInput):
     if redirect_to and st.session_state.login:
         nav_to(redirect_to)
     else:
-        da_img, da_txt = load_example_queries(params.data)
-
         setup_design()
 
-        if st.session_state.filters == 'notags':
-            try:
-                tags = get_info_from_endpoint(params, endpoint='tags')
-                st.session_state.filters = tags
-            except Exception as e:
-                print("Filters couldn't be loaded from the endpoint properly.", e)
-                st.session_state.filters = 'notags'
         if not st.session_state.index_fields_dict:
             st.session_state.index_fields_dict = get_info_from_endpoint(
                 params, 'encoder_to_dataclass_fields_mods'
@@ -136,33 +121,11 @@ def deploy_streamlit(user_input: UserInput):
                 user_input.field_names_to_dataclass_fields
             )
 
-        filter_selection = {}
-        if st.session_state.filters != 'notags':
-            st.sidebar.title('Filters')
-            if not st.session_state.filters_set:
-                for tag, values in st.session_state.filters.items():
-                    values.insert(0, 'All')
-                    filter_selection[tag] = st.sidebar.selectbox(tag, values)
-                st.session_state.filters_set = True
-            else:
-                for tag, values in st.session_state.filters.items():
-                    filter_selection[tag] = st.sidebar.selectbox(tag, values)
-
-        if st.session_state.filters != 'notags' and not st.session_state.filters_set:
-            st.sidebar.title('Filters')
-            for tag, values in st.session_state.filters.items():
-                values.insert(0, 'All')
-                filter_selection[tag] = st.sidebar.selectbox(tag, values)
-        l, r = st.columns([5, 5])
-        with l:
-            st.header('Text')
-            render_mm_query(st.session_state['query'], 'text')
-        with r:
-            st.header('Image')
-            render_mm_query(st.session_state['query'], 'image')
-
+        filter_selection = apply_filters()
+        render_input_boxes()
         customize_score_calculation()
         toggle_score_breakdown()
+        # make query
         search_mapping_list = list(st.session_state['query'].values())
         if any([d['value'] for d in search_mapping_list]):
             st.session_state.matches = multimodal_search(
@@ -175,6 +138,69 @@ def deploy_streamlit(user_input: UserInput):
         render_matches()
 
         add_social_share_buttons()
+
+
+def render_input_boxes():
+    l, r = st.columns([5, 5])
+    with l:
+        st.header('Text')
+        render_mm_query(st.session_state['query'], 'text')
+    with r:
+        st.header('Image')
+        render_mm_query(st.session_state['query'], 'image')
+
+
+def process_filters(filter_selection) -> Dict[str, Union[Dict, List]]:
+    processed_filters = {}
+    for field, value in filter_selection.items():
+        if isinstance(value, str):
+            processed_filters[field] = [value]
+        elif isinstance(value, int) or isinstance(value, float):
+            processed_filters[field] = {'gte': value}
+        else:
+            raise ValueError(
+                f'Filter value {value} of type {type(value)} is not supported.'
+            )
+    return processed_filters
+
+
+def apply_filters():
+    if st.session_state.filters == 'notags':
+        try:
+            # tags = get_info_from_endpoint(params, endpoint='tags')
+            tags = {
+                'tags__price': [1, 2, 3],
+                'tags__color': [
+                    'red',
+                    'blue',
+                    'green',
+                ],
+            }
+            st.session_state.filters = tags
+        except Exception as e:
+            print("Filters couldn't be loaded from the endpoint properly.", e)
+            st.session_state.filters = 'notags'
+
+    filter_selection = {}
+    if st.session_state.filters != 'notags':
+        st.sidebar.title('Filters')
+        if not st.session_state.filters_set:
+            for tag, values in st.session_state.filters.items():
+                values.insert(0, 'All')
+                filter_selection[tag] = st.sidebar.selectbox(tag, values)
+            st.session_state.filters_set = True
+        else:
+            for tag, values in st.session_state.filters.items():
+                filter_selection[tag] = st.sidebar.selectbox(tag, values)
+    if st.session_state.filters != 'notags' and not st.session_state.filters_set:
+        st.sidebar.title('Filters')
+        for tag, values in st.session_state.filters.items():
+            values.insert(0, 'All')
+            filter_selection[tag] = st.sidebar.selectbox(tag, values)
+
+    filter_selection = process_filters(filter_selection)
+    print("FILTER SELECTION: ", filter_selection)
+    return filter_selection
 
 
 def get_info_from_endpoint(params, endpoint) -> dict:
@@ -283,18 +309,6 @@ def _do_logout():
         'https://api.hubble.jina.ai/v2/rpc/user.session.dismiss',
         headers=headers,
     )
-
-
-def load_example_queries(data):
-    da_img = None
-    da_txt = None
-    if data in ds_set:
-        try:
-            da_img = load_data(S3_DEMO_PATH + data + f'.img10.bin')
-            da_txt = load_data(S3_DEMO_PATH + data + f'.txt10.bin')
-        except HTTPError as exc:
-            print('Could not load samples for the demo dataset', exc)
-    return da_img, da_txt
 
 
 def setup_design():
