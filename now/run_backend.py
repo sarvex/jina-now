@@ -1,5 +1,4 @@
 import os
-import random
 import sys
 import threading
 import time
@@ -122,7 +121,9 @@ def index_docs(user_input, dataset, client, print_callback, **kwargs):
     params = {'access_paths': ACCESS_PATHS}
     if user_input.secured:
         params['jwt'] = user_input.jwt
-    request_size = estimate_request_size(dataset, user_input.app_instance.max_request_size)
+    request_size = estimate_request_size(
+        dataset, user_input.app_instance.max_request_size
+    )
 
     call_flow_with_retry(
         client=client,
@@ -148,7 +149,9 @@ def estimate_request_size(index, max_request_size):
 
     # We assume that it is homogeneous multimodal DocumentArray,
     # therefore pick the first document to estimate the size in bytes
-    size = sys.getsizeof(index[0].content) + sum([sys.getsizeof(chunk.content) for chunk in index[0].chunks])
+    size = sys.getsizeof(index[0].content) + sum(
+        [sys.getsizeof(chunk.content) for chunk in index[0].chunks]
+    )
     max_size = 1e6  # 1 MB
     request_size = max(min(max_request_size, int(max_size / size)), 1)
     return request_size
