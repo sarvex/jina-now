@@ -164,6 +164,9 @@ class JinaNOWApp:
                 'version': jina_version,
                 'labels': {'team': 'now'},
                 'name': create_jcloud_name(user_input.flow_name),
+                'monitor': {
+                    'traces': {'enable': True},
+                },
             },
             'gateway': self.get_gateway_stub(user_input, testing),
             'executors': self.get_executor_stubs(user_input, testing, **kwargs),
