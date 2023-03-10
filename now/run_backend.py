@@ -195,13 +195,12 @@ def call_flow_with_retry(
 
     from jina.types.request import Request
 
-    pending_docs = deepcopy(inputs)
     init_inputs_len = len(inputs)
     on_done_len = 0
     on_done_lock = threading.Lock()
 
     def on_done(r: Request):
-        nonlocal pending_docs, on_done_len
+        nonlocal inputs, on_done_len
         on_done_len += len(r.data.docs)
         if on_done_len != 0 and on_done_len % 100 == 0:
             print_if_ci(
@@ -210,7 +209,7 @@ def call_flow_with_retry(
         with on_done_lock:
             for doc in r.data.docs:
                 try:
-                    del pending_docs[doc.id]
+                    del inputs[doc.id]
                 except Exception as e:
                     print_if_ci(f'Error while removing {e}')
 
@@ -226,30 +225,27 @@ def call_flow_with_retry(
             parameters=parameters,
             continue_on_error=continue_on_error,
             prefetch=prefetch,
-            on_done=lambda r: on_done(r),
+            on_done=on_done,
             on_error=on_error if on_error else _on_error,
             on_always=on_always,
         )
 
-    def reset_docs_before_retry():
-        nonlocal pending_docs, inputs
+    def sleep_before_retry():
         print(
-            f'Sleeping for {sleep_interval} seconds, before retrying {len(pending_docs)} docs'
+            f'Sleeping for {sleep_interval} seconds, before retrying {len(inputs)} docs'
         )
         time.sleep(sleep_interval)
-        dataset = pending_docs
-        pending_docs = deepcopy(dataset)
 
     for _ in range(num_retries):
         try:
             stream_requests_until_done(inputs)
-            if len(pending_docs) == 0 or on_done_len == init_inputs_len:
+            if len(inputs) == 0 or on_done_len == init_inputs_len:
                 print_if_ci('All docs indexed successfully')
                 return
             else:
                 # Retry indexing docs that reached on_error
-                reset_docs_before_retry()
+                sleep_before_retry()
         except Exception as e:
             # Retry if there is an exception (usually network errors)
             print_if_ci(f'Exception while indexing: {e}')
-            reset_docs_before_retry()
+            sleep_before_retry()
