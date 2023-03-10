@@ -3,14 +3,18 @@ import shutil
 
 import pytest
 from docarray import Document, DocumentArray
+from docarray.typing import Image, Text
 
-from now.constants import S3_CUSTOM_MM_DATA_PATH
-from now.executor.preprocessor.executor import NOWPreprocessor
+from now.constants import S3_CUSTOM_MM_DATA_PATH, DatasetTypes
+from now.data_loading.data_loading import load_data
+from now.executor.preprocessor.executor import NOWPreprocessor, move_uri
 from now.executor.preprocessor.s3_download import (
     convert_fn,
     get_local_path,
+    maybe_download_from_s3,
     update_tags,
 )
+from now.now_dataclasses import UserInput
 
 curdir = os.path.dirname(os.path.abspath(__file__))
 
@@ -86,3 +90,52 @@ def test_get_local_path(tmpdir):
 
     path = get_local_path(tmpdir, 'test')
     assert isinstance(path, str) and path.startswith(str(tmpdir)) and path.endswith('.')
+
+
+def test_move_uri():
+    doc = Document(
+        tags={'uri': 'test_uri'},
+        chunks=[Document(chunks=[Document(), Document()])],
+    )
+    doc = move_uri(doc)
+
+    assert doc.uri == ''
+    assert doc.chunks[0].chunks[0].uri == ''
+    assert doc.chunks[0].chunks[1].uri == ''
+
+    doc_starts_with_s3 = Document(
+        tags={'uri': 's3://test_uri'},
+        chunks=[Document(), Document()],
+    )
+
+    doc_starts_with_s3 = move_uri(doc_starts_with_s3)
+
+    assert doc_starts_with_s3.uri == 's3://test_uri'
+    assert doc_starts_with_s3.chunks[0].uri == 's3://test_uri'
+    assert doc_starts_with_s3.chunks[1].uri == 's3://test_uri'
+
+
+def test_maybe_download_from_s3(tmpdir, mm_dataclass, resources_folder_path):
+
+    user_input = UserInput()
+    user_input.dataset_type = DatasetTypes.S3_BUCKET
+    user_input.dataset_path = S3_CUSTOM_MM_DATA_PATH
+    user_input.aws_access_key_id = os.environ['AWS_ACCESS_KEY_ID']
+    user_input.aws_secret_access_key = os.environ['AWS_SECRET_ACCESS_KEY']
+    user_input.aws_region_name = 'eu-west-1'
+    user_input.index_fields = ['image.png', 'test.txt']
+    user_input.index_field_candidates_to_modalities = {
+        'image.png': Image,
+        'test.txt': Text,
+    }
+    da = load_data(user_input)
+    maybe_download_from_s3(da, tmpdir, user_input, 2)
+
+    assert len(da) == 10
+    for doc in da:
+        assert doc.chunks[0].uri.startswith(str(tmpdir))
+        assert doc.chunks[0].uri.endswith('.png')
+        assert doc.chunks[1].uri.startswith(str(tmpdir))
+        assert doc.chunks[1].uri.endswith('.txt')
+        assert doc.tags
+        assert '_s3_uri_for_tags' in doc._metadata

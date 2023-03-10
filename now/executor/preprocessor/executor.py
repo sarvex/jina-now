@@ -14,6 +14,14 @@ from now.executor.preprocessor.s3_download import maybe_download_from_s3
 Executor = get_auth_executor_class()
 
 
+def move_uri(d: Document) -> Document:
+    cloud_uri = d.tags.get('uri')
+    if isinstance(cloud_uri, str) and cloud_uri.startswith('s3://'):
+        d.uri = cloud_uri
+        d.chunks[:, 'uri'] = cloud_uri
+    return d
+
+
 class NOWPreprocessor(Executor):
     """Applies preprocessing to documents for encoding, indexing and searching as defined by app.
     If necessary, downloads files for that from cloud bucket.
@@ -67,13 +75,6 @@ class NOWPreprocessor(Executor):
                 self.user_input
                 and self.user_input.dataset_type == DatasetTypes.S3_BUCKET
             ):
-
-                def move_uri(d: Document) -> Document:
-                    cloud_uri = d.tags.get('uri')
-                    if isinstance(cloud_uri, str) and cloud_uri.startswith('s3://'):
-                        d.uri = cloud_uri
-                        d.chunks[:, 'uri'] = cloud_uri
-                    return d
 
                 for d in docs:
                     for c in d.chunks:

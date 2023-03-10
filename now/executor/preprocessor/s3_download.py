@@ -18,7 +18,7 @@ def maybe_download_from_s3(
     """Downloads file to local temporary dictionary, saves S3 URI to `tags['uri']` and modifies `uri` attribute of
     document to local path in-place.
 
-    :param doc: document containing URI pointing to the location on S3 bucket
+    :param docs: documents containing URI pointing to the location on S3 bucket
     :param tmpdir: temporary directory in which files will be saved
     :param user_input: User iput which contain aws credentials
     :param max_workers: number of threads to create in the threadpool executor to make execution faster
