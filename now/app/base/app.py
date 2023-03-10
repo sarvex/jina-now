@@ -129,9 +129,10 @@ class JinaNOWApp:
             },
         }
         if 'NOW_EXAMPLES' in os.environ:
+            # noinspection PyTypeChecker
             gateway_stub['jcloud'].update(
                 {
-                    'custom_dns': [
+                    'custom_dns_http': [
                         f'{DEMO_NS.format(user_input.dataset_name.split("/")[-1])}.dev.jina.ai'
                     ]
                 }
