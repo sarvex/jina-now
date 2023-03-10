@@ -247,5 +247,5 @@ def call_flow_with_retry(
                 sleep_before_retry()
         except Exception as e:
             # Retry if there is an exception (usually network errors)
-            print_if_ci(f'Exception while indexing: {e}')
+            print(f'Exception while indexing: {e}')
             sleep_before_retry()
