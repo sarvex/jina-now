@@ -60,6 +60,7 @@ def test_da_local_path(local_da: Tuple[str, DocumentArray]):
     user_input.dataset_type = DatasetTypes.PATH
     user_input.dataset_path = path
     user_input.index_fields = ['description']
+    user_input.index_field_candidates_to_modalities = {'description': Text}
 
     loaded_da = load_data(user_input)
     assert loaded_da[0].tags == {}
