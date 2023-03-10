@@ -10,7 +10,7 @@ from jina import Flow
 
 from now.admin.utils import get_default_request_body
 from now.common.options import construct_app
-from now.constants import Apps, DatasetTypes, Models, S3_CUSTOM_MM_DATA_PATH
+from now.constants import S3_CUSTOM_MM_DATA_PATH, Apps, DatasetTypes, Models
 from now.data_loading.create_dataclass import create_dataclass
 from now.data_loading.data_loading import load_data
 from now.demo_data import DemoDatasetNames
@@ -176,7 +176,7 @@ def elastic_data(setup_online_shop_db, es_connection_params):
     user_input.app_instance = construct_app(Apps.SEARCH_APP)
     user_input.flow_name = 'nowapi-local'
     user_input.model_choices = {'title_model': [Models.CLIP_MODEL]}
-    docs = load_data(user_input=user_input, data_class=data_class)
+    docs = load_data(user_input=user_input)
     return docs, user_input
 
 
@@ -203,7 +203,7 @@ def local_folder_data(pulled_local_folder_data):
         'image.png_model': [Models.CLIP_MODEL],
     }
 
-    docs = load_data(user_input, data_class=data_class)
+    docs = load_data(user_input)
     return docs, user_input
 
 
@@ -228,5 +228,5 @@ def s3_bucket_data():
     user_input.flow_name = 'nowapi-local'
     user_input.model_choices = {'image.png_model': [Models.CLIP_MODEL]}
 
-    docs = load_data(user_input, data_class=data_class)
+    docs = load_data(user_input)
     return docs, user_input
