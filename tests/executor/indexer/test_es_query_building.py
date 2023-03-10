@@ -1,7 +1,10 @@
+import pytest
+
 from now.executor.indexer.elastic.elastic_indexer import aggregate_embeddings
 from now.executor.indexer.elastic.es_query_building import (
     build_es_queries,
     generate_score_calculation,
+    process_filter,
 )
 
 
@@ -69,3 +72,29 @@ def test_build_es_queries(es_inputs):
             },
         }
     }
+
+
+TEST_FILTERS = [
+    ({'tags__price': {'gt': 10, 'lt': 100}}, None),
+    ({'tags__price': {'gt': 10}}, None),
+    ({'tags__price': {'lte': 10}, 'tags__color': ['green', 'blue']}, None),
+    ({'tags__color': ['red', 'blue']}, None),
+    ({'tags__color': 'red'}, ValueError),
+]
+
+
+@pytest.mark.parametrize(
+    ("filters", "error"),
+    TEST_FILTERS,
+)
+def test_filter_processing(filters, error):
+    """
+    This test tests the process_filter function from es_query_building, including an errorful filter case.
+    """
+    if error:
+        with pytest.raises(error):
+            process_filter(filters)
+    else:
+        processed_filters = process_filter(filters)
+        print(processed_filters)
+        assert list(processed_filters[0].keys())[0].count("__") == 0
