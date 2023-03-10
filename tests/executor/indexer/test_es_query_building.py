@@ -96,5 +96,4 @@ def test_filter_processing(filters, error):
             process_filter(filters)
     else:
         processed_filters = process_filter(filters)
-        print(processed_filters)
         assert list(processed_filters[0].keys())[0].count("__") == 0

@@ -62,8 +62,8 @@ search_examples = {
         'value': {
             'limit': 10,
             'filters': {
-                'tags__color': ['blue', 'red'],
-                'tags__price': {'lte': 100, 'gte': 50},
+                'color': ['blue', 'red'],
+                'price': {'lte': 100, 'gte': 50},
             },
             'query': [
                 {

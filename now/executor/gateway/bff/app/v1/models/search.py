@@ -29,7 +29,7 @@ class SearchRequestModel(BaseRequestModel):
     filters: Optional[Dict[str, Union[List, Dict[str, int]]]] = Field(
         default={},
         description='dictionary with filters for search results',
-        example={'tags__color': ['blue'], 'tags__price': {'lt': 50.0}},
+        example={'color': ['blue'], 'price': {'lt': 50.0}},
     )
     query: List[Dict] = Field(
         default={},
@@ -85,7 +85,7 @@ class SearchResponseModel(BaseModel):
         ]
     ] = Field(
         description='Additional tags associated with the file.',
-        example={'tags__price': {'$lt': 50.0}},
+        example={'price': {'$lt': 50.0}},
     )
     fields: Dict[str, ModalityModel] = Field(
         default={},

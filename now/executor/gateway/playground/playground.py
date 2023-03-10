@@ -3,6 +3,7 @@ import gc
 import io
 import json
 import os
+import traceback
 from typing import List
 from urllib.parse import quote
 from urllib.request import urlopen
@@ -121,7 +122,7 @@ def deploy_streamlit(user_input: UserInput):
                 user_input.field_names_to_dataclass_fields
             )
 
-        apply_filters(params)
+        render_filters(params)
         render_input_boxes()
         customize_score_calculation()
         toggle_score_breakdown()
@@ -167,13 +168,14 @@ def process_filters():
     st.session_state.filter_selection = processed_filters
 
 
-def apply_filters(params):
+def render_filters(params):
     if not st.session_state.tags:
         try:
             tags = get_info_from_endpoint(params, endpoint='tags')
             st.session_state.tags = tags
-        except Exception as e:
-            print("Filters couldn't be loaded from the endpoint properly.", e)
+        except Exception:
+            print("Filters couldn't be loaded from the endpoint properly.")
+            traceback.format_exc()
 
     if st.session_state.tags:
         st.sidebar.title('Filters')
@@ -188,7 +190,6 @@ def apply_filters(params):
                 st.session_state.filter_selection[tag] = st.sidebar.multiselect(
                     tag, values
                 )
-            print(st.session_state.filter_selection[tag])
         st.session_state.filters_set = True
 
     process_filters()
