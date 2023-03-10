@@ -115,11 +115,7 @@ class JinaNOWApp:
             'port': [8081, 8085],
             'monitoring': True,
             'cors': True,
-            'uses_with': {
-                'user_input_dict': user_input.to_safe_dict(),
-                'http_port': '8081',
-                'grpc_port': '8085',
-            },
+            'uses_with': {'user_input_dict': user_input.to_safe_dict()},
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'jcloud': {
                 'resources': {
