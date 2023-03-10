@@ -140,3 +140,24 @@ def test_maybe_download_from_s3(tmpdir, mm_dataclass, resources_folder_path):
         assert doc.chunks[1].uri.endswith('.txt')
         assert doc.tags != {}
         assert '_s3_uri_for_tags' in doc._metadata
+
+
+@pytest.mark.parametrize(
+    'data',
+    [
+        'artworks_data',
+        'pop_lyrics_data',
+        'elastic_data',
+        'local_folder_data',
+        's3_bucket_data',
+    ],
+)
+def test_all_cases(data, request):
+
+    docs, user_input = request.getfixturevalue(data)
+
+    preprocessor = NOWPreprocessor()
+    result = preprocessor.preprocess(docs)
+
+    assert result
+    assert len(result[0].chunks) > 0 and len(result[0].chunks[0].chunks) >= 0

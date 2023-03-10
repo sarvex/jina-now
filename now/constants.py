@@ -5,7 +5,7 @@ from docarray.typing import Image, Text, Video
 from now.utils import BetterEnum
 
 NOW_GATEWAY_VERSION = '0.0.6-feat-alternative-hubble-report-15'
-NOW_PREPROCESSOR_VERSION = '0.0.125-test_coverage_preprocessor-4'
+NOW_PREPROCESSOR_VERSION = '0.0.125-test_coverage_preprocessor-5'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.149-feat-alternative-hubble-report-15'
 NOW_AUTOCOMPLETE_VERSION = '0.0.12-feat-alternative-hubble-report-15'
 
