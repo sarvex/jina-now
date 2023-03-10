@@ -3,7 +3,7 @@ import gc
 import io
 import json
 import os
-from typing import Dict, List, Union
+from typing import List
 from urllib.parse import quote
 from urllib.request import urlopen
 
@@ -121,7 +121,7 @@ def deploy_streamlit(user_input: UserInput):
                 user_input.field_names_to_dataclass_fields
             )
 
-        filter_selection = apply_filters()
+        apply_filters(params)
         render_input_boxes()
         customize_score_calculation()
         toggle_score_breakdown()
@@ -133,7 +133,7 @@ def deploy_streamlit(user_input: UserInput):
                     filter(lambda x: x['value'], search_mapping_list)
                 ),
                 jwt=st.session_state.jwt_val,
-                filter_dict=filter_selection,
+                filter_dict=st.session_state.filter_selection,
             )
         render_matches()
 
@@ -150,57 +150,48 @@ def render_input_boxes():
         render_mm_query(st.session_state['query'], 'image')
 
 
-def process_filters(filter_selection) -> Dict[str, Union[Dict, List]]:
+def process_filters():
     processed_filters = {}
-    for field, value in filter_selection.items():
-        if isinstance(value, str):
-            processed_filters[field] = [value]
-        elif isinstance(value, int) or isinstance(value, float):
-            processed_filters[field] = {'gte': value}
+    for field, values in st.session_state.filter_selection.items():
+        if isinstance(values, list) or isinstance(values, tuple):
+            if len(values) == 0:
+                continue
+            if isinstance(values[0], str):
+                processed_filters[field] = values
+            elif isinstance(values[0], int) or isinstance(values[0], float):
+                processed_filters[field] = {'gte': values[0], 'lte': values[1]}
+        elif isinstance(values, int) or isinstance(values, float):
+            processed_filters[field] = {'gte': values}
         else:
-            raise ValueError(
-                f'Filter value {value} of type {type(value)} is not supported.'
-            )
-    return processed_filters
+            raise ValueError(f'Filter values {values} are not supported.')
+    st.session_state.filter_selection = processed_filters
 
 
-def apply_filters():
-    if st.session_state.filters == 'notags':
+def apply_filters(params):
+    if not st.session_state.tags:
         try:
-            # tags = get_info_from_endpoint(params, endpoint='tags')
-            tags = {
-                'tags__price': [1, 2, 3],
-                'tags__color': [
-                    'red',
-                    'blue',
-                    'green',
-                ],
-            }
-            st.session_state.filters = tags
+            tags = get_info_from_endpoint(params, endpoint='tags')
+            st.session_state.tags = tags
         except Exception as e:
             print("Filters couldn't be loaded from the endpoint properly.", e)
-            st.session_state.filters = 'notags'
 
-    filter_selection = {}
-    if st.session_state.filters != 'notags':
+    if st.session_state.tags:
         st.sidebar.title('Filters')
-        if not st.session_state.filters_set:
-            for tag, values in st.session_state.filters.items():
-                values.insert(0, 'All')
-                filter_selection[tag] = st.sidebar.selectbox(tag, values)
-            st.session_state.filters_set = True
-        else:
-            for tag, values in st.session_state.filters.items():
-                filter_selection[tag] = st.sidebar.selectbox(tag, values)
-    if st.session_state.filters != 'notags' and not st.session_state.filters_set:
-        st.sidebar.title('Filters')
-        for tag, values in st.session_state.filters.items():
-            values.insert(0, 'All')
-            filter_selection[tag] = st.sidebar.selectbox(tag, values)
+        for tag, values in st.session_state.tags.items():
+            if isinstance(values[0], int) or isinstance(values[0], float):
+                min_val = min(values)
+                max_val = max(values)
+                st.session_state.filter_selection[tag] = st.sidebar.slider(
+                    tag, min_val, max_val, (min_val, max_val)
+                )
+            elif isinstance(values[0], str):
+                st.session_state.filter_selection[tag] = st.sidebar.multiselect(
+                    tag, values
+                )
+            print(st.session_state.filter_selection[tag])
+        st.session_state.filters_set = True
 
-    filter_selection = process_filters(filter_selection)
-    print("FILTER SELECTION: ", filter_selection)
-    return filter_selection
+    process_filters()
 
 
 def get_info_from_endpoint(params, endpoint) -> dict:
@@ -744,8 +735,11 @@ def setup_session_state():
     if 'disable_prev' not in st.session_state:
         st.session_state.disable_prev = True
 
-    if 'filters' not in st.session_state:
-        st.session_state.filters = 'notags'
+    if 'tags' not in st.session_state:
+        st.session_state.tags = {}
+
+    if 'filter_selection' not in st.session_state:
+        st.session_state.filter_selection = {}
 
     if 'filters_set' not in st.session_state:
         st.session_state.filters_set = False
