@@ -10,7 +10,6 @@ NOW_ELASTIC_INDEXER_VERSION = '0.0.149-feat-dns-for-demo-2'
 NOW_AUTOCOMPLETE_VERSION = '0.0.12-feat-dns-for-demo-2'
 
 
-
 class Apps(BetterEnum):
     SEARCH_APP = 'search_app'
 
