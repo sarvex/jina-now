@@ -171,7 +171,14 @@ class NOWGateway(CompositeGateway):
     def _add_gateway(self, gateway_cls, port, protocol='http', **kwargs):
         # ignore metrics_registry since it is not copyable
         runtime_args = self._deepcopy_with_ignore_attrs(
-            self.runtime_args, ['metrics_registry']
+            self.runtime_args,
+            [
+                'metrics_registry',
+                'tracer_provider',
+                'grpc_tracing_server_interceptors',
+                'aio_tracing_client_interceptors',
+                'tracing_client_interceptor',
+            ],
         )
         runtime_args.port = [port]
         runtime_args.protocol = [protocol]
