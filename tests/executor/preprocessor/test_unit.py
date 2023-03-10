@@ -9,7 +9,7 @@ from now.constants import S3_CUSTOM_MM_DATA_PATH, DatasetTypes
 from now.data_loading.data_loading import load_data
 from now.executor.preprocessor.executor import NOWPreprocessor, move_uri
 from now.executor.preprocessor.s3_download import (
-    convert_fn,
+    convert_s3_to_local_uri,
     get_local_path,
     maybe_download_from_s3,
     update_tags,
@@ -58,12 +58,12 @@ def test_update_tags():
         assert not isinstance(value, dict)
 
 
-def test_convert_fn(tmpdir):
+def test_convert_s3_to_local_uri(tmpdir):
     d = Document()
     d._metadata['_s3_uri_for_tags'] = f'{S3_CUSTOM_MM_DATA_PATH}folder0/manifest.json'
     d._metadata['field_name'] = 'tags__colors'
     d.uri = f'{S3_CUSTOM_MM_DATA_PATH}folder0/manifest.json'
-    res = convert_fn(
+    res = convert_s3_to_local_uri(
         d,
         tmpdir,
         os.environ['AWS_ACCESS_KEY_ID'],
@@ -103,6 +103,8 @@ def test_move_uri():
     assert doc.chunks[0].chunks[0].uri == ''
     assert doc.chunks[0].chunks[1].uri == ''
 
+
+def test_move_uri_starts_with_s3():
     doc_starts_with_s3 = Document(
         tags={'uri': 's3://test_uri'},
         chunks=[Document(), Document()],
@@ -116,7 +118,6 @@ def test_move_uri():
 
 
 def test_maybe_download_from_s3(tmpdir, mm_dataclass, resources_folder_path):
-
     user_input = UserInput()
     user_input.dataset_type = DatasetTypes.S3_BUCKET
     user_input.dataset_path = S3_CUSTOM_MM_DATA_PATH
@@ -137,5 +138,5 @@ def test_maybe_download_from_s3(tmpdir, mm_dataclass, resources_folder_path):
         assert doc.chunks[0].uri.endswith('.png')
         assert doc.chunks[1].uri.startswith(str(tmpdir))
         assert doc.chunks[1].uri.endswith('.txt')
-        assert doc.tags
+        assert doc.tags != {}
         assert '_s3_uri_for_tags' in doc._metadata

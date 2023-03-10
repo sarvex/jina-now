@@ -31,7 +31,7 @@ def maybe_download_from_s3(
         futures = []
         for c in filtered_docs:
             f = executor.submit(
-                convert_fn,
+                convert_s3_to_local_uri,
                 c,
                 tmpdir,
                 user_input.aws_access_key_id,
@@ -52,7 +52,7 @@ def maybe_download_from_s3(
             f.result()
 
 
-def convert_fn(
+def convert_s3_to_local_uri(
     d: Document, tmpdir, aws_access_key_id, aws_secret_access_key, aws_region_name
 ) -> Document:
     """Downloads files and tags from S3 bucket and updates the content uri and the tags uri to the local path"""
