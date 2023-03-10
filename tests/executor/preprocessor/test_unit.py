@@ -92,7 +92,7 @@ def test_get_local_path(tmpdir):
     assert isinstance(path, str) and path.startswith(str(tmpdir)) and path.endswith('.')
 
 
-def test_move_uri():
+def test_move_uri_not_s3():
     doc = Document(
         tags={'uri': 'test_uri'},
         chunks=[Document(chunks=[Document(), Document()])],
@@ -156,8 +156,9 @@ def test_all_cases(data, request):
 
     docs, user_input = request.getfixturevalue(data)
 
-    preprocessor = NOWPreprocessor()
+    preprocessor = NOWPreprocessor(user_input_dict=user_input.to_safe_dict())
     result = preprocessor.preprocess(docs)
 
     assert result
-    assert len(result[0].chunks) > 0 and len(result[0].chunks[0].chunks) >= 0
+    for doc in result:
+        assert len(doc.chunks) > 0 and len(doc.chunks[0].chunks) > 0
