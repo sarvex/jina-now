@@ -132,7 +132,7 @@ async def search(
 
     query_filter = {}
     for key, value in data.filters.items():
-        key = 'tags__' + key if not key.startswith('tags__') else key
+        key = 'tags__' + key
         query_filter[key] = value
 
     docs = await jina_client_post(
