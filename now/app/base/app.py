@@ -127,11 +127,13 @@ class JinaNOWApp:
             **GRPC_SERVER_OPTIONS,
         }
         if 'NOW_EXAMPLES' in os.environ:
-            gateway_stub['jcloud'] = {
-                'custom_dns': [
-                    f'{DEMO_NS.format(user_input.dataset_name.split("/")[-1])}.dev.jina.ai'
-                ]
-            }
+            gateway_stub['jcloud'].update(
+                {
+                    'custom_dns': [
+                        f'{DEMO_NS.format(user_input.dataset_name.split("/")[-1])}.dev.jina.ai'
+                    ]
+                }
+            )
         return gateway_stub
 
     def get_executor_stubs(self, user_input, testing=False, **kwargs) -> Dict:
