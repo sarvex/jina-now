@@ -57,6 +57,7 @@ def client_with_mocked_jina_client(
 ) -> Callable[[DocumentArray], requests.Session]:
     def _fixture(response: DocumentArray) -> requests.Session:
         from now.executor.gateway.bff.app.app import build_app
+        from now.executor.gateway.bff.app.settings import init_user_input_in_bff
 
         def _get_jina_streamer():
             return MockedJinaClient(response)
@@ -66,6 +67,7 @@ def client_with_mocked_jina_client(
             _get_jina_streamer,
         )
 
+        init_user_input_in_bff()
         return TestClient(build_app())
 
     return _fixture

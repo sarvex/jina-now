@@ -17,13 +17,18 @@ def get_user_input():
         'product_description': 'product_description',
         'product_image': 'product_image',
     }
+    user_input.index_field_candidates_to_modalities = {
+        'product_title': Text,
+        'product_description': Text,
+        'product_image': Image,
+    }
     return user_input
 
 
-@pytest.mark.parametrize('mock_bff_user_input', [get_user_input()], indirect=True)
+@pytest.mark.parametrize('dump_user_input', [get_user_input()], indirect=True)
 @pytest.mark.asyncio
 async def test_docarray(
-    mock_bff_user_input,
+    dump_user_input,
     monkeypatch,
     setup_service_running,
     random_index_name,
@@ -36,7 +41,9 @@ async def test_docarray(
     """
     from now.executor.gateway.bff.app.v1.routers.search import search
 
-    offline_flow = OfflineFlow(monkeypatch, user_input_dict=get_user_input().__dict__)
+    offline_flow = OfflineFlow(
+        monkeypatch, user_input_dict=get_user_input().to_safe_dict()
+    )
 
     index_result = offline_flow.post(
         '/index',
@@ -48,7 +55,7 @@ async def test_docarray(
     search_result = await search(
         SearchRequestModel(
             query=[{'name': 'text', 'value': 'girl on motorbike', 'modality': 'text'}],
-            semantic_scores=[('text', 'product_title', 'encoderclip', 1.0)],
+            score_calculation=[('text', 'product_title', 'encoderclip', 1.0)],
         )
     )
     assert search_result[0].fields['product_title'].text == 'fancy title'

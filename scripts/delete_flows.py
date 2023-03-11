@@ -1,7 +1,7 @@
 import asyncio
-import os
 
 from jcloud.flow import CloudFlow
+from tests.integration.conftest import get_branch_name_for_flows
 
 
 def create_eventloop():
@@ -19,9 +19,8 @@ def delete_ci_flows():
     and look for those who have the current branch name inside their name, and delete only those.
     """
     print('Deleting the flows that were created during this CI run')
-    branch_name = os.environ.get('GITHUB_HEAD_REF')
-    if branch_name:
-        branch_name = branch_name.lower()[:15]
+    branch_name = get_branch_name_for_flows()
+    if branch_name != 'local-setup':
         loop = create_eventloop()
         jflows = loop.run_until_complete(CloudFlow().list_all())['flows']
         for flow in jflows:

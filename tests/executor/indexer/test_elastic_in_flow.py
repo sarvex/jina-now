@@ -35,6 +35,9 @@ def flow(random_index_name, metas):
             self.indexer = NOWElasticIndexer(
                 document_mappings=DOCUMENT_MAPPINGS,
                 user_input_dict={
+                    'index_fields': ['title'],
+                    'index_field_candidates_to_modalities': {'title': 'text'},
+                    'field_names_to_dataclass_fields': {'title': 'title'},
                     'filter_fields': ['color', 'greeting'],
                 },
             )
@@ -356,11 +359,11 @@ class TestElasticIndexer:
             parameters={
                 'query_to_filter': {
                     'query_1': [
-                        {'text': {'$eq': 'parent_1'}},
+                        {'title': {'$eq': 'parent_1'}},
                         {'tags__color': {'$eq': 'red'}},
                     ],
                     'query_2': [
-                        {'text': {'$eq': 'parent_2'}},
+                        {'title': {'$eq': 'parent_2'}},
                     ],
                 }
             },
