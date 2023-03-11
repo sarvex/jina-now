@@ -21,7 +21,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: [ 3.7 ]
-        group: [ 0, 1, 2, 3, 4]
+        group: [ 0, 1, 2, 3, 4, 5, 6]
     steps:
       - uses: actions/checkout@v2
       - name: Set AWS profile
@@ -38,7 +38,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install wheel
-          pip install git+https://github.com/jina-ai/now.git@demo-datasets-release
+          pip install git+https://github.com/jina-ai/now.git@jac_release
       - name: Add JCloud auth token
         run: |
           mkdir -p ~/.jina

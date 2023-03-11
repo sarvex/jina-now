@@ -1,7 +1,6 @@
 import os
 import sys
 from argparse import Namespace
-from dataclasses import dataclass
 
 import boto3
 from jcloud.flow import CloudFlow
@@ -13,25 +12,7 @@ from now.constants import DEMO_NS, MODALITY_TO_MODELS, DatasetTypes
 from now.demo_data import AVAILABLE_DATASETS
 from now.deployment.deployment import get_or_create_eventloop, terminate_wolf
 from now.now_dataclasses import UserInput
-
-
-# TODO: Remove this once the Jina NOW version is bumped
-@dataclass
-class AWSProfile:
-    aws_access_key_id: str
-    aws_secret_access_key: str
-    region: str
-
-
-def get_aws_profile():
-    session = boto3.Session()
-    credentials = session.get_credentials()
-    aws_profile = (
-        AWSProfile(credentials.access_key, credentials.secret_key, session.region_name)
-        if credentials
-        else AWSProfile(None, None, session.region_name)
-    )
-    return aws_profile
+from now.utils import get_aws_profile
 
 
 def upsert_cname_record(source, target):
@@ -138,9 +119,9 @@ def deploy(demo_ds):
         delete_flow(ns=NAMESPACE)
 
     # parse the response
-    host_target_ = response_cli.get('host')
-    if host_target_ and host_target_.startswith('grpcs://'):
-        host_target_ = host_target_.replace('grpcs://', '')
+    host_target_ = response_cli.get('host_http')
+    if host_target_:
+        host_target_ = host_target_.replace('grpcs://', '').replace('https://', '')
         host_source = f'{DEMO_NS.format(demo_ds.name.split("/")[-1])}.dev.jina.ai'
         # update the CNAME entry in the Route53 records
         print(f'Updating CNAME record for `{host_source}` -> `{host_target_}`')
@@ -168,30 +149,25 @@ if __name__ == '__main__':
         for ds in ds_list:
             dataset_list.append(ds)
 
-    for idx, ds in enumerate(dataset_list):
-        print(f'Index {idx}: {ds.name}: {DEMO_NS.format(ds.name.split("/")[-1])}')
+    to_deploy = dataset_list[index]
 
-    while index < len(dataset_list):
-        to_deploy = dataset_list[index]
+    print('\n----------------------------------------')
+    print(f'Deploying -> Index {index}: ({to_deploy})')
+    print('----------------------------------------')
 
-        print('\n----------------------------------------')
-        print(f'Deploying -> Index {index}: ({to_deploy})')
-        print('----------------------------------------')
+    if deployment_type == 'partial':
+        # check if deployment is already running then return
+        client = Client(
+            host=f'grpcs://{DEMO_NS.format(to_deploy.name.split("/")[-1])}.dev.jina.ai'
+        )
+        try:
+            response = client.post('/dry_run', return_results=True)
+            print(f'Index {index}: already {to_deploy.name} deployed')
+            exit(0)
+        except Exception as e:  # noqa E722
+            print('Not deployed yet')
 
-        if deployment_type == 'partial':
-            # check if deployment is already running then return
-            client = Client(
-                host=f'grpcs://{DEMO_NS.format(to_deploy.name.split("/")[-1])}.dev.jina.ai'
-            )
-            try:
-                response = client.post('/dry_run', return_results=True)
-                print(f'Index {index}: already {to_deploy.name} deployed')
-                index += 5
-                continue
-            except Exception as e:  # noqa E722
-                print('Not deployed yet')
-
-        print('Deploying -> Index {index}: ', to_deploy.name)
-        deploy(to_deploy)
-        print('------------------ Deployment Successful----------------------')
-        index += 5
+    print('Deploying -> Index {index}: ', to_deploy.name)
+    deploy(to_deploy)
+    print('------------------ Deployment Successful----------------------\n')
+    print('#' * 100)
