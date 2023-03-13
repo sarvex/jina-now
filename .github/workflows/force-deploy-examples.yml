@@ -12,7 +12,6 @@ on:
         required: false
         default: PARTIAL
 
-  # pull_request:
 
 jobs:
   python-script:
@@ -52,7 +51,7 @@ jobs:
         working-directory: ./scripts
         run: python deploy_examples.py ${{ matrix.group }}
         env:
-          CUSTOM_TOKEN_TEST: ${{ secrets.CUSTOM_TOKEN_TEST }}
+          WOLF_TOKEN: ${{ secrets.WOLF_EXAMPLES_TOKEN }}
           AWS_HOSTED_ZONE_ID: ${{ secrets.AWS_HOSTED_ZONE_ID }}
           DEPLOYMENT_TYPE: ${{ github.event.inputs.deployment_type }}
           JCLOUD_LOGLEVEL: DEBUG

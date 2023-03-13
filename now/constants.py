@@ -4,10 +4,10 @@ from docarray.typing import Image, Text, Video
 
 from now.utils.common.helpers import BetterEnum
 
-NOW_GATEWAY_VERSION = '0.0.6-fix-test-timeout-32'
-NOW_PREPROCESSOR_VERSION = '0.0.125-fix-test-timeout-32'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.149-fix-test-timeout-32'
-NOW_AUTOCOMPLETE_VERSION = '0.0.12-fix-test-timeout-32'
+NOW_GATEWAY_VERSION = '0.0.6-fix-test-timeout-33'
+NOW_PREPROCESSOR_VERSION = '0.0.125-fix-test-timeout-33'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.149-fix-test-timeout-33'
+NOW_AUTOCOMPLETE_VERSION = '0.0.12-fix-test-timeout-33'
 
 
 class Apps(BetterEnum):

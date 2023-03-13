@@ -246,4 +246,4 @@ class SearchApp(JinaNOWApp):
     @property
     def max_request_size(self) -> int:
         """Max number of documents in one request"""
-        return 100
+        return 200
