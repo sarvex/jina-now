@@ -9,12 +9,17 @@ def mmdocs_with_text(mm_dataclass):
 
     return DocumentArray(
         [
-            Document(mm_dataclass(text_field='background')),
-            Document(mm_dataclass(text_field='background')),
-            Document(mm_dataclass(text_field='bang')),
-            Document(mm_dataclass(text_field='loading')),
-            Document(mm_dataclass(text_field='loading')),
-            Document(mm_dataclass(text_field='laugh')),
+            Document(mm_dataclass(text_field=text))
+            for text in [
+                'background',
+                'background',
+                'shit',
+                'loading',
+                'fuck',
+                'f*ck',
+                'laugh',
+                'fuck shit somethings',
+            ]
         ]
     )
 
