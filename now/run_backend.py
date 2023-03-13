@@ -1,6 +1,5 @@
 import os
 import sys
-import threading
 import time
 import uuid
 from copy import deepcopy
@@ -125,6 +124,7 @@ def index_docs(user_input, dataset, client, print_callback, **kwargs):
         on_error=kwargs.get('on_error', None),
         on_always=kwargs.get('on_always', None),
         sleep_interval=kwargs.get('sleep_interval', 5),
+        num_retries=kwargs.get('num_retries', 10),
     )
 
     print_callback('⭐ Success - your data is indexed')
@@ -155,8 +155,13 @@ def call_flow_with_retry(
     on_error=None,
     on_always=None,
     sleep_interval: int = 3,
+    num_retries: int = 10,
 ):
-    print_if_example = print if 'NOW_EXAMPLES' in os.environ else lambda x: None
+    print_if_example = (
+        print
+        if any(map(lambda x: x in os.environ, ['NOW_EXAMPLES', 'NOW_CI_RUN']))
+        else lambda x: None
+    )
 
     if len(inputs) == 0:
         print('No documents to index')
@@ -171,33 +176,27 @@ def call_flow_with_retry(
         total_length=init_inputs_len,
         message_on_done='Indexing completed',
     )
-    on_done_len = 0
-    on_done_lock = threading.Lock()
+    completed_req_ids = []
 
     def on_done(r: Request):
-        nonlocal inputs, on_done_len, pbar
-        on_done_len += len(r.data.docs)
+        nonlocal pbar, completed_req_ids
         if len(r.data.docs) == 0:
-            print_if_example(
-                f'No docs in response. Current request id {r.header.request_id}'
-            )
+            print_if_example('No docs in response.')
             return
 
-        pbar.update(advance=len(r.data.docs))
-        if on_done_len != 0 and on_done_len % 100 == 0:
-            print_if_example(
-                f'Completed indexing {on_done_len} docs. current request id: {r.header.request_id}'
-            )
-        with on_done_lock:
-            for doc in r.data.docs:
-                try:
-                    del inputs[doc.id]
-                except Exception as e:
-                    print_if_example(f'Error while removing {e}')
+        for doc in r.data.docs:
+            completed_req_ids.append(doc.id)  # update the completion list
+        pbar.update(advance=len(r.data.docs))  # update the progress bar
+
+        if (
+            len(completed_req_ids) // len(r.data.docs)
+        ) % 5 == 0:  # print after every 5 inserts
+            print_if_example(f'Indexed {len(completed_req_ids)} docs.')
 
     def _on_error(r: Request):
         print_if_example(
-            f'Got an error while indexing request id: {r.header.request_id}'
+            'Got an executor error while indexing. '
+            'Should trigger a retry using Jina\'s inbuilt mechanism.'
         )
 
     def stream_requests_until_done(docs: DocumentArray):
@@ -216,21 +215,27 @@ def call_flow_with_retry(
 
     def sleep_before_retry():
         print_if_example(
-            f'Sleeping for {sleep_interval} seconds, before retrying {len(inputs)} docs'
+            f'Sleeping for {sleep_interval} seconds, '
+            f'before retrying {len(inputs)} docs'
         )
         time.sleep(sleep_interval)
 
     with pbar:
-        while True:
+        for _ in num_retries:
+            # Remove the docs which are already indexed before retrying
+            for doc_id in completed_req_ids:
+                try:
+                    del inputs[doc_id]
+                except Exception as e:  # noqa
+                    print_if_example(f'Error while removing {e}')
+
+            # Index the remaining docs
             try:
                 stream_requests_until_done(inputs)
-                if len(inputs) == 0 or on_done_len == init_inputs_len:
-                    print_if_example('All docs indexed successfully')
-                    return
-                else:
-                    # Retry indexing docs that reached on_error
-                    sleep_before_retry()
+                break
             except Exception as e:
                 # Retry if there is an exception (usually network errors)
-                print_if_example(f'Exception while indexing: {e}')
+                print_if_example(
+                    f'Got a network error. Retry using our custom mechanism: {e}'
+                )
                 sleep_before_retry()
