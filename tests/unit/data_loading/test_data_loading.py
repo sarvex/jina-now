@@ -60,6 +60,7 @@ def test_da_local_path(local_da: Tuple[str, DocumentArray]):
     user_input.dataset_type = DatasetTypes.PATH
     user_input.dataset_path = path
     user_input.index_fields = ['description']
+    user_input.index_field_candidates_to_modalities = {'description': Text}
 
     loaded_da = load_data(user_input)
     assert loaded_da[0].tags == {}
@@ -78,7 +79,7 @@ def test_da_local_path_image_folder(image_resource_path: str):
     data_class, user_input.field_names_to_dataclass_fields = create_dataclass(
         user_input=user_input
     )
-    loaded_da = load_data(user_input, data_class)
+    loaded_da = load_data(user_input)
 
     assert len(loaded_da) == 2, (
         f'Expected two images, got {len(loaded_da)}.'

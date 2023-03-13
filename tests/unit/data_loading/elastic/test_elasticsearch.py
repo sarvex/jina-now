@@ -22,7 +22,7 @@ def test_elasticsearch_data_loading(setup_online_shop_db, es_connection_params):
     )
     user_input.es_host_name = connection_str
 
-    transformed_docs = load_data(user_input=user_input, data_class=data_class)
+    transformed_docs = load_data(user_input=user_input)
 
     assert len(transformed_docs) == 50
     assert isinstance(transformed_docs[0], Document)
