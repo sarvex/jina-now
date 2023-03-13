@@ -1,0 +1,79 @@
+jtype: Flow
+gateway:
+  uses: jinahub+docker://2m00g87k/0.0.4-feat-autoscale-executors-0
+  protocol:
+    - http
+    - grpc
+  port:
+    - 8081
+    - 8085
+  monitoring: true
+  cors: true
+  uses_with:
+    http_port: "8081"
+    grpc_port: "8085"
+    user_input_dict:
+      flow_name: ''
+      dataset_type: demo
+      dataset_name: team-now/best-artworks
+      dataset_url: null
+      dataset_path: null
+      aws_access_key_id: null
+      aws_secret_access_key: null
+      aws_region_name: null
+      index_fields:
+        - image
+      index_field_candidates_to_modalities:
+        image: image
+        label: text
+      filter_fields:
+        - label
+      filter_field_candidates_to_modalities:
+        label: text
+      field_names_to_dataclass_fields:
+        image: image
+      model_choices:
+        image_model:
+          - encoderclip
+      es_index_name: null
+      es_host_name: null
+      es_additional_args: null
+      cluster: null
+      secured: false
+      jwt:
+        token: 09d03da886ef2aac06e09859f8e9b789:6d5983d44350c60d6b34b0b0fd3ca09ff9cd80e3
+      admin_name: auth0-unified-d156c8551735362d
+      admin_emails:
+        - iyadh.khalfallah@jina.ai
+      user_emails: null
+      additional_user: null
+      api_key: null
+  env:
+    JINA_LOG_LEVEL: DEBUG
+  jcloud:
+    custom_dns_http:
+      - operator-test.docsqa.jina.ai
+    custom_dns_grpc:
+      - operator-test.wolf.jina.ai
+#    autoscale:
+#      min: 1
+#      max: 2
+    resources:
+      instance: C5
+      capacity: spot
+executors:
+  - name: autocomplete_executor
+    uses: jinahub+docker://w5w084h7/0.0.11-feat-autoscale-executors-0
+    needs: gateway
+    env:
+      JINA_LOG_LEVEL: DEBUG
+    jcloud:
+      autoscale:
+        min: 0
+        max: 1
+      resources:
+        instance: C1
+        capacity: spot
+        storage:
+          kind: efs
+          size: 1M
