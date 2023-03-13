@@ -39,24 +39,24 @@ def secure_request(level: int, on: str = None):
                 pprint(kwargs)
 
             if 'docs' in kwargs and kwargs['docs']:
-                cls_instance.logger.info(f"processing len({kwargs['docs']}) docs")
+                f"processing {len(kwargs['docs'])} docs"
                 if cls_instance.logger.logger.level <= LogVerbosity.DEBUG:
                     kwargs['docs'][0].summary()
 
             if 'docs_matrix' in kwargs and kwargs['docs_matrix']:
                 cls_instance.logger.info(
-                    f"processing len({kwargs['docs_matrix']}) docs_matrix"
+                    f"processing {len(kwargs['docs_matrix'])} docs_matrix"
                 )
 
             if 'docs_map' in kwargs and kwargs['docs_map']:
                 cls_instance.logger.info(
-                    f"processing len({kwargs['docs_map']}) docs_map"
+                    f"processing {len(kwargs['docs_map'])} docs_map"
                 )
 
             res = func(*args, **kwargs)
 
-            cls_instance.logger.info(f"output len({res}) docs")
-            if cls_instance.logger.logger.level <= LogVerbosity.DEBUG:
+            cls_instance.logger.info(f"output {len(res)} docs")
+            if len(res) and cls_instance.logger.logger.level <= LogVerbosity.DEBUG:
                 res[0].summary()
 
             return res
