@@ -18,23 +18,29 @@ from now.now_dataclasses import UserInput
 curdir = os.path.dirname(os.path.abspath(__file__))
 
 
-def test_text(mm_dataclass):
+def test_preprocessing(mm_dataclass, resources_folder_path):
+    uri = os.path.join(resources_folder_path, 'image/a.jpg')
     da_search = DocumentArray(
         [
             Document(
                 mm_dataclass(
-                    text_field='This is the first Sentence. This is the second Sentence.'
+                    text_field='This is the first Sentence. This is the second Sentence.',
+                    image_field=uri,
                 )
             )
         ]
     )
+
     preprocessor = NOWPreprocessor()
     res_search = preprocessor.preprocess(da_search)
     assert len(res_search) == 1
-    assert len(res_search[0].chunks) == 1
+    assert len(res_search[0].chunks) == 2
     result_strings = res_search[0].chunks[0].chunks.texts
     expected_strings = ['This is the first Sentence.', 'This is the second Sentence.']
     assert sorted(result_strings) == sorted(expected_strings)
+    assert res_search[0].chunks[1].chunks[0].modality == 'image'
+    assert res_search[0].chunks[1].chunks[0].uri == uri
+    assert res_search[0].chunks[1].chunks[0].content
 
 
 def test_update_tags():
@@ -147,7 +153,6 @@ def test_maybe_download_from_s3(tmpdir, mm_dataclass, resources_folder_path):
     ],
 )
 def test_all_cases(data, request):
-
     docs, user_input = request.getfixturevalue(data)
 
     preprocessor = NOWPreprocessor(user_input_dict=user_input.to_safe_dict())
