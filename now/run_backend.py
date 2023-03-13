@@ -77,9 +77,8 @@ def trigger_scheduler(user_input, host):
     if user_input.secured and not user_input.api_key:
         user_input.api_key = uuid.uuid4().hex
         # Also call the bff to update the api key
-        for i in range(
-            100
-        ):  # increase the probability that all replicas get the new key
+        # increase the probability that all replicas get the new key
+        for i in range(100):
             update_api_keys(user_input.api_key, host)
 
     scheduler_params = {
@@ -125,7 +124,6 @@ def index_docs(user_input, dataset, client, print_callback, **kwargs):
         prefetch=request_size * 5,
         on_error=kwargs.get('on_error', None),
         on_always=kwargs.get('on_always', None),
-        num_retries=kwargs.get('num_retries', 10),
         sleep_interval=kwargs.get('sleep_interval', 5),
     )
 
@@ -156,10 +154,9 @@ def call_flow_with_retry(
     prefetch: int = 1000,
     on_error=None,
     on_always=None,
-    num_retries: int = 10,
-    sleep_interval: int = 5,
+    sleep_interval: int = 3,
 ):
-    print_if_example = print if 'NOW_EXAMPLES' in os.environ else None
+    print_if_example = print if 'NOW_EXAMPLES' in os.environ else lambda x: None
 
     if len(inputs) == 0:
         print('No documents to index')
@@ -170,7 +167,7 @@ def call_flow_with_retry(
 
     init_inputs_len = len(inputs)
     pbar = ProgressBar(
-        description='Indexing',
+        description=f'Indexing {init_inputs_len} docs',
         total_length=init_inputs_len,
         message_on_done='Indexing completed',
     )
@@ -178,15 +175,15 @@ def call_flow_with_retry(
     on_done_lock = threading.Lock()
 
     def on_done(r: Request):
-        nonlocal inputs, on_done_len
+        nonlocal inputs, on_done_len, pbar
         on_done_len += len(r.data.docs)
         if len(r.data.docs) == 0:
             print_if_example(
-                f'No docs in response. Current requestid {r.header.request_id}'
+                f'No docs in response. Current request id {r.header.request_id}'
             )
             return
 
-        pbar.update(advance=on_done_len)
+        pbar.update(advance=len(r.data.docs))
         if on_done_len != 0 and on_done_len % 100 == 0:
             print_if_example(
                 f'Completed indexing {on_done_len} docs. current request id: {r.header.request_id}'
@@ -218,21 +215,22 @@ def call_flow_with_retry(
         )
 
     def sleep_before_retry():
-        print(
+        print_if_example(
             f'Sleeping for {sleep_interval} seconds, before retrying {len(inputs)} docs'
         )
         time.sleep(sleep_interval)
 
-    for _ in range(num_retries):
-        try:
-            stream_requests_until_done(inputs)
-            if len(inputs) == 0 or on_done_len == init_inputs_len:
-                print_if_example('All docs indexed successfully')
-                return
-            else:
-                # Retry indexing docs that reached on_error
+    with pbar:
+        while True:
+            try:
+                stream_requests_until_done(inputs)
+                if len(inputs) == 0 or on_done_len == init_inputs_len:
+                    print_if_example('All docs indexed successfully')
+                    return
+                else:
+                    # Retry indexing docs that reached on_error
+                    sleep_before_retry()
+            except Exception as e:
+                # Retry if there is an exception (usually network errors)
+                print_if_example(f'Exception while indexing: {e}')
                 sleep_before_retry()
-        except Exception as e:
-            # Retry if there is an exception (usually network errors)
-            print(f'Exception while indexing: {e}')
-            sleep_before_retry()

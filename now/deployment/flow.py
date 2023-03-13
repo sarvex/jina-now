@@ -3,7 +3,6 @@ import tempfile
 
 from jina.clients import Client
 
-from now.deployment.deployment import deploy_wolf
 from now.log import time_profiler
 from now.utils.jcloud.helpers import write_flow_file
 
@@ -21,8 +20,9 @@ def deploy_flow(
             write_flow_file(flow_yaml, flow_file)
             flow_yaml = flow_file
 
-        flow = deploy_wolf(path=flow_yaml)
-        host = flow.endpoints['gateway (grpc)']
+        # flow = deploy_wolf(path=flow_yaml)
+        # host = flow.endpoints['gateway (grpc)']
+        host = 'grpcs://nowapi-2697644f9b-grpc.wolf.jina.ai'
         client = Client(host=host)
 
         # host & port
