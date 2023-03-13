@@ -163,7 +163,7 @@ class TestElasticIndexer:
             on='/search',
             inputs=docs_query,
             return_results=True,
-            parameters={'filter': {'tags__price': {'$lt': 50.0}}},
+            parameters={'filter': {'tags__price': {'lt': 50.0}}},
         )
         assert all([m.tags['price'] < 50 for m in query_res[0].matches])
 
@@ -175,7 +175,7 @@ class TestElasticIndexer:
         assert len(listed_docs) == NUMBER_OF_DOCS
         flow.post(
             on='/delete',
-            parameters={'filter': {'tags__parent_tag': {'$eq': 'different_value'}}},
+            parameters={'filter': {'tags__parent_tag': ['different_value']}},
         )
         listed_docs = flow.post(on='/list', return_results=True)
         assert len(listed_docs) == NUMBER_OF_DOCS - 1
@@ -199,7 +199,7 @@ class TestElasticIndexer:
         )
         flow.post(
             on='/delete',
-            parameters={'filter': {'tags__color': {'$eq': 'blue'}}},
+            parameters={'filter': {'tags__color': ['blue']}},
         )
         response = flow.post(on='/tags')
         assert response[0].text == 'tags'
@@ -208,7 +208,7 @@ class TestElasticIndexer:
         assert 'blue' not in response[0].tags['tags']['color']
         flow.post(
             on='/delete',
-            parameters={'filter': {'tags__greeting': {'$eq': 'hello'}}},
+            parameters={'filter': {'tags__greeting': ['hello']}},
         )
         response = flow.post(on='/tags')
         assert 'hello' not in response[0].tags['tags']['greeting']
@@ -359,11 +359,11 @@ class TestElasticIndexer:
             parameters={
                 'query_to_filter': {
                     'query_1': [
-                        {'title': {'$eq': 'parent_1'}},
-                        {'tags__color': {'$eq': 'red'}},
+                        {'title': ['parent_1']},
+                        {'tags__color': ['red']},
                     ],
                     'query_2': [
-                        {'title': {'$eq': 'parent_2'}},
+                        {'title': ['parent_2']},
                     ],
                 }
             },
