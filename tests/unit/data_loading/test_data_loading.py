@@ -7,7 +7,6 @@ import pytest
 import requests
 from docarray import Document, DocumentArray, dataclass
 from docarray.typing import Image, Text
-from pytest_mock import MockerFixture
 
 from now.app.search_app import SearchApp
 from now.constants import DatasetTypes

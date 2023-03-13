@@ -12,7 +12,7 @@ from now.constants import S3_CUSTOM_MM_DATA_PATH
 from now.data_loading.data_loading import _list_s3_file_paths
 from now.deployment.deployment import get_or_create_eventloop, terminate_wolf
 from now.executor.preprocessor.s3_download import get_bucket
-from now.utils import get_aws_profile
+from now.utils.authentication.helpers import get_aws_profile
 
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__name__)
