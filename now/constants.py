@@ -2,10 +2,10 @@ from __future__ import annotations, print_function, unicode_literals
 
 from docarray.typing import Image, Text, Video
 
-from now.utils import BetterEnum
+from now.utils.common.helpers import BetterEnum
 
 NOW_GATEWAY_VERSION = '0.0.6-feat-multi-filter-8'
-NOW_PREPROCESSOR_VERSION = '0.0.125-feat-dns-for-demo-2'
+NOW_PREPROCESSOR_VERSION = '0.0.124-refactor-utils-10'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.149-feat-multi-filter-8'
 NOW_AUTOCOMPLETE_VERSION = '0.0.12-feat-dns-for-demo-2'
 

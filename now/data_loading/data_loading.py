@@ -14,7 +14,8 @@ from now.constants import MAX_DOCS_FOR_TESTING, DatasetTypes
 from now.data_loading.elasticsearch import ElasticsearchExtractor
 from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
-from now.utils import flatten_dict, get_chunk_by_field_name, sigmap
+from now.utils.common.helpers import flatten_dict, sigmap
+from now.utils.docarray.helpers import get_chunk_by_field_name
 
 
 def load_data(

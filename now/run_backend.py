@@ -16,7 +16,7 @@ from now.data_loading.data_loading import load_data
 from now.deployment.flow import deploy_flow
 from now.log import time_profiler
 from now.now_dataclasses import UserInput
-from now.utils import get_flow_id
+from now.utils.jcloud.helpers import get_flow_id
 
 
 @time_profiler
