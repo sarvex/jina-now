@@ -8,10 +8,8 @@ import pytest
 from jcloud.flow import CloudFlow
 from pytest_mock import MockerFixture
 
-from now.deployment.deployment import get_or_create_eventloop, terminate_wolf
-
-from now.executor.preprocessor.s3_download import get_bucket
-from now.utils.authentication.helpers import get_aws_profile
+from now.deployment.deployment import get_or_create_eventloop
+from now.run_all_k8s import stop_now
 
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__name__)
@@ -52,7 +50,7 @@ def cleanup(random_flow_name):
     try:
         flow_id = get_flow_id_from_name(random_flow_name)
         if flow_id:
-            terminate_wolf(flow_id)
+            stop_now()
         else:
             print(f'there is no flow with name {random_flow_name} to be terminated')
     except Exception as e:

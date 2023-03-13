@@ -46,27 +46,8 @@ def start_now(**kwargs):
     bff_url = f'{gateway_host_http}/api/v1/search-app/docs'
     playground_url = f'{gateway_host_http}/playground'
 
-    print()
-    my_table = Table(
-        'Attribute',
-        Column(header="Value", overflow="fold"),
-        show_header=False,
-        box=box.SIMPLE,
-        highlight=True,
-    )
-    my_table.add_row('Host (HTTPS)', gateway_host_http)
-    my_table.add_row('Host (GRPCS)', gateway_host_grpc)
-    my_table.add_row('API docs', bff_url)
-    if user_input.secured and user_input.api_key:
-        my_table.add_row('API Key', user_input.api_key)
-    my_table.add_row('Playground', playground_url)
-    console = Console()
-    console.print(
-        Panel(
-            my_table,
-            title=f':tada: Search app is NOW ready!',
-            expand=False,
-        )
+    _generate_info_table(
+        gateway_host_http, gateway_host_grpc, bff_url, playground_url, user_input
     )
     return {
         'bff': bff_url,
@@ -247,3 +228,29 @@ def _get_flow_status(action, **kwargs):
     if _result is None:
         print(f'❎ Flow not found in JCloud. Likely, it has been deleted already')
     return _result, flow_id, cluster
+
+
+def _generate_info_table(
+    gateway_host_http, gateway_host_grpc, bff_url, playground_url, user_input
+):
+    my_table = Table(
+        'Attribute',
+        Column(header="Value", overflow="fold"),
+        show_header=False,
+        box=box.SIMPLE,
+        highlight=True,
+    )
+    my_table.add_row('Host (HTTPS)', gateway_host_http)
+    my_table.add_row('Host (GRPCS)', gateway_host_grpc)
+    my_table.add_row('API docs', bff_url)
+    if user_input.secured and user_input.api_key:
+        my_table.add_row('API Key', user_input.api_key)
+    my_table.add_row('Playground', playground_url)
+    console = Console()
+    console.print(
+        Panel(
+            my_table,
+            title=f':tada: Search app is NOW ready!',
+            expand=False,
+        )
+    )
