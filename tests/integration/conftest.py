@@ -8,9 +8,8 @@ import pytest
 from jcloud.flow import CloudFlow
 from pytest_mock import MockerFixture
 
-from now.constants import S3_CUSTOM_MM_DATA_PATH
-from now.data_loading.data_loading import _list_s3_file_paths
 from now.deployment.deployment import get_or_create_eventloop, terminate_wolf
+
 from now.executor.preprocessor.s3_download import get_bucket
 from now.utils.authentication.helpers import get_aws_profile
 
@@ -102,23 +101,3 @@ def get_flow_id_from_name(flow_name):
         if flow['status']['phase'] != 'Deleted' and flow_name in flow['id']:
             return flow['id']
     return None
-
-
-@pytest.fixture(scope='session')
-def pulled_local_folder_data(tmpdir_factory):
-    aws_profile = get_aws_profile()
-    bucket = get_bucket(
-        uri=S3_CUSTOM_MM_DATA_PATH,
-        aws_access_key_id=aws_profile.aws_access_key_id,
-        aws_secret_access_key=aws_profile.aws_secret_access_key,
-        region_name=aws_profile.region,
-    )
-    folder_prefix = '/'.join(S3_CUSTOM_MM_DATA_PATH.split('/')[3:])
-    file_paths = _list_s3_file_paths(bucket, folder_prefix)
-    temp_dir = str(tmpdir_factory.mktemp('local_folder_data'))
-    for path in file_paths:
-        local_path = os.path.join(temp_dir, path)
-        if not os.path.exists(os.path.dirname(local_path)):
-            os.makedirs(os.path.dirname(local_path))
-        bucket.download_file(path, local_path)
-    return os.path.join(temp_dir, folder_prefix)
