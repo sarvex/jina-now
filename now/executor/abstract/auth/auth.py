@@ -1,12 +1,14 @@
 import json
 import os
 from functools import lru_cache
+from pprint import pprint
 from typing import Dict, List
 
 import hubble
 from docarray import DocumentArray
 from hubble.excepts import AuthenticationRequiredError
 from jina import Executor, requests
+from jina.enums import LogVerbosity
 from jina.logging.logger import JinaLogger
 
 from now.now_dataclasses import UserInput
@@ -30,11 +32,34 @@ def secure_request(level: int, on: str = None):
                 args[0].admin_emails,
                 args[0].api_keys,
             )
+
             cls_instance = args[0]
-            cls_instance.logger.info(f"test logging from class")
-            cls_instance.logger.info(f"{args}")
-            cls_instance.logger.info(f"{kwargs}")
-            return func(*args, **kwargs)
+            cls_instance.logger.info(f"responding to endpoint")
+            if cls_instance.logger.logger.level <= LogVerbosity.DEBUG:
+                pprint(kwargs)
+
+            if 'docs' in kwargs and kwargs['docs']:
+                cls_instance.logger.info(f"processing len({kwargs['docs']}) docs")
+                if cls_instance.logger.logger.level <= LogVerbosity.DEBUG:
+                    kwargs['docs'][0].summary()
+
+            if 'docs_matrix' in kwargs and kwargs['docs_matrix']:
+                cls_instance.logger.info(
+                    f"processing len({kwargs['docs_matrix']}) docs_matrix"
+                )
+
+            if 'docs_map' in kwargs and kwargs['docs_map']:
+                cls_instance.logger.info(
+                    f"processing len({kwargs['docs_map']}) docs_map"
+                )
+
+            res = func(*args, **kwargs)
+
+            cls_instance.logger.info(f"output len({res}) docs")
+            if cls_instance.logger.logger.level <= LogVerbosity.DEBUG:
+                res[0].summary()
+
+            return res
 
         return wrapper
 
