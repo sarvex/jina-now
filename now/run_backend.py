@@ -130,7 +130,6 @@ def index_docs(user_input, dataset, client, print_callback, **kwargs):
         on='/index',
         request_size=request_size,
         inputs=dataset,
-        show_progress=True,
         parameters=deepcopy(params),
         continue_on_error=True,
         prefetch=request_size * 5,
@@ -162,7 +161,6 @@ def call_flow_with_retry(
     on: str,
     request_size: int,
     inputs: DocumentArray,
-    show_progress: bool,
     parameters: Optional[Dict] = None,
     continue_on_error: bool = True,
     prefetch: int = 1000,
@@ -171,23 +169,36 @@ def call_flow_with_retry(
     num_retries: int = 10,
     sleep_interval: int = 5,
 ):
-    print_if_ci = print if 'NOW_CI_RUN' in os.environ else None
+    print_if_example = print if 'NOW_EXAMPLES' in os.environ else None
 
     if len(inputs) == 0:
         print('No documents to index')
         return
 
+    from jina.logging.profile import ProgressBar
     from jina.types.request import Request
 
     init_inputs_len = len(inputs)
+    pbar = ProgressBar(
+        description='Indexing',
+        total_length=init_inputs_len,
+        message_on_done='Indexing completed',
+    )
     on_done_len = 0
     on_done_lock = threading.Lock()
 
     def on_done(r: Request):
         nonlocal inputs, on_done_len
         on_done_len += len(r.data.docs)
+        if len(r.data.docs) == 0:
+            print_if_example(
+                f'No docs in response. Current requestid {r.header.request_id}'
+            )
+            return
+
+        pbar.update(advance=on_done_len)
         if on_done_len != 0 and on_done_len % 100 == 0:
-            print_if_ci(
+            print_if_example(
                 f'Completed indexing {on_done_len} docs. current request id: {r.header.request_id}'
             )
         with on_done_lock:
@@ -195,17 +206,19 @@ def call_flow_with_retry(
                 try:
                     del inputs[doc.id]
                 except Exception as e:
-                    print_if_ci(f'Error while removing {e}')
+                    print_if_example(f'Error while removing {e}')
 
     def _on_error(r: Request):
-        print_if_ci(f'Got an error while indexing request id: {r.header.request_id}')
+        print_if_example(
+            f'Got an error while indexing request id: {r.header.request_id}'
+        )
 
     def stream_requests_until_done(docs: DocumentArray):
         return client.post(
             on=on,
             inputs=docs,
             request_size=request_size,
-            show_progress=show_progress,
+            show_progress=False,
             parameters=parameters,
             continue_on_error=continue_on_error,
             prefetch=prefetch,
@@ -224,7 +237,7 @@ def call_flow_with_retry(
         try:
             stream_requests_until_done(inputs)
             if len(inputs) == 0 or on_done_len == init_inputs_len:
-                print_if_ci('All docs indexed successfully')
+                print_if_example('All docs indexed successfully')
                 return
             else:
                 # Retry indexing docs that reached on_error
