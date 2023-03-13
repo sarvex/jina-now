@@ -1,5 +1,4 @@
 import os
-import shutil
 
 import pytest
 from docarray import Document, DocumentArray
@@ -17,11 +16,6 @@ from now.executor.preprocessor.s3_download import (
 from now.now_dataclasses import UserInput
 
 curdir = os.path.dirname(os.path.abspath(__file__))
-
-
-def download_mock(url, destfile):
-    path = f'{curdir}/../../{url.replace("s3://", "")}'
-    shutil.copyfile(path, destfile)
 
 
 def test_text(mm_dataclass):

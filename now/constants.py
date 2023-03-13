@@ -4,9 +4,8 @@ from docarray.typing import Image, Text, Video
 
 from now.utils.common.helpers import BetterEnum
 
-
 NOW_GATEWAY_VERSION = '0.0.4-refactor-utils-10'
-NOW_PREPROCESSOR_VERSION = '0.0.125-test_coverage_preprocessor-8'
+NOW_PREPROCESSOR_VERSION = '0.0.125-test_coverage_preprocessor-9'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.148-refactor-utils-10'
 NOW_AUTOCOMPLETE_VERSION = '0.0.12-feat-dns-for-demo-2'
 
