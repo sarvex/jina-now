@@ -221,7 +221,7 @@ def call_flow_with_retry(
         time.sleep(sleep_interval)
 
     with pbar:
-        for _ in num_retries:
+        for _ in range(num_retries):
             # Remove the docs which are already indexed before retrying
             for doc_id in completed_req_ids:
                 try:
