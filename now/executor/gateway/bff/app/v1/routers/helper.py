@@ -9,7 +9,7 @@ import filetype
 from docarray import Document, DocumentArray
 from docarray.typing import Text
 from fastapi import HTTPException, status
-from jina.serve.streamer import GatewayStreamer
+from jina.serve.runtimes.gateway.streamer import GatewayStreamer
 
 from now.constants import SUPPORTED_FILE_TYPES
 
