@@ -12,7 +12,7 @@ from rich.table import Column, Table
 from now import run_backend
 from now.compare.compare_flows import compare_flows_for_queries
 from now.constants import DEMO_NS, FLOW_STATUS
-from now.deployment.deployment import cmd, terminate_wolf, status_wolf, list_all_wolf
+from now.deployment.deployment import cmd, list_all_wolf, status_wolf, terminate_wolf
 from now.dialog import configure_user_input, maybe_prompt_user
 
 

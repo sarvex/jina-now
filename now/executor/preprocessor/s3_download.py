@@ -9,7 +9,7 @@ from concurrent.futures import ThreadPoolExecutor
 import boto3
 from docarray import Document, DocumentArray
 
-from now.utils import flatten_dict
+from now.utils.common.helpers import flatten_dict
 
 
 def maybe_download_from_s3(

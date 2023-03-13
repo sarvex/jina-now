@@ -1,4 +1,3 @@
-import os
 from argparse import Namespace
 
 import pytest
@@ -10,12 +9,12 @@ from tests.integration.remote.assertions import (
 
 from now.cli import cli
 from now.constants import (
-    DatasetTypes,
-    Models,
     S3_CUSTOM_DATA_PATH,
     S3_CUSTOM_MM_DATA_PATH,
+    DatasetTypes,
+    Models,
 )
-from now.utils import get_aws_profile
+from now.utils.authentication.helpers import get_aws_profile
 
 
 @pytest.mark.remote

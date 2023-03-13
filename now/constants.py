@@ -2,12 +2,12 @@ from __future__ import annotations, print_function, unicode_literals
 
 from docarray.typing import Image, Text, Video
 
-from now.utils import BetterEnum
+from now.utils.common.helpers import BetterEnum
 
-NOW_GATEWAY_VERSION = '0.0.6-fix-test-timeout-29'
-NOW_PREPROCESSOR_VERSION = '0.0.125-fix-test-timeout-29'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.149-fix-test-timeout-29'
-NOW_AUTOCOMPLETE_VERSION = '0.0.12-fix-test-timeout-29'
+NOW_GATEWAY_VERSION = '0.0.6-fix-test-timeout-30'
+NOW_PREPROCESSOR_VERSION = '0.0.125-fix-test-timeout-30'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.149-fix-test-timeout-30'
+NOW_AUTOCOMPLETE_VERSION = '0.0.12-fix-test-timeout-30'
 
 
 class Apps(BetterEnum):
@@ -75,20 +75,20 @@ MODALITY_TO_MODELS = {
     Video: [{'name': 'Clip', 'value': Models.CLIP_MODEL}],
 }
 
-NOWGATEWAY_BFF_PORT = 8080
 
 # S3 dataset paths
 S3_CUSTOM_DATA_PATH = 's3://jina-now/test folder/end_to_end_data/'
 S3_CUSTOM_MM_DATA_PATH = 's3://jina-now/test folder/data/'
 
 
+# Gateway config
 NOWGATEWAY_FREE_CREDITS = 1000
-
 NOWGATEWAY_BASE_FEE_QUANTITY = 5 / 24
 NOWGATEWAY_SEARCH_FEE_QUANTITY = 0.3
 NOWGATEWAY_SEARCH_FEE_PRO_QUANTITY = 0.28
-
 NOWGATEWAY_BASE_FEE_SLEEP_INTERVAL = 60
+NOWGATEWAY_BFF_PORT = 8080
+
 
 # gRPC server options
 GRPC_SERVER_OPTIONS = {'grpc_server_options': {'max_concurrent_streams': 1000}}

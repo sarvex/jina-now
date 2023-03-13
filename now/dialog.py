@@ -8,22 +8,23 @@ from __future__ import annotations, print_function, unicode_literals
 
 import inspect
 import pathlib
-from typing import Optional, List, Union, Dict
+from typing import Dict, List, Optional, Union
 
-import now.utils
+from pyfiglet import Figlet
+
 from now.common import options
 from now.common.options import construct_app
 from now.constants import MODALITY_TO_MODELS, Apps, DialogStatus
 from now.now_dataclasses import DialogOptions, UserInput
 from now.thirdparty.PyInquirer.prompt import prompt
-from now.utils import DemoAvailableException, RetryException
+from now.utils.errors.helpers import DemoAvailableException, RetryException
 
 cur_dir = pathlib.Path(__file__).parent.resolve()
 
 
 def configure_user_input(**kwargs) -> UserInput:
     user_input = UserInput()
-    now.utils.print_headline()
+    print_headline()
     # Create the search app.
     # TODO: refactor this when more apps are added
     user_input.app_instance = construct_app(Apps.SEARCH_APP)
@@ -35,6 +36,24 @@ def configure_user_input(**kwargs) -> UserInput:
     return user_input
 
 
+def print_headline():
+    f = Figlet(font='slant')
+    print('Welcome to:')
+    print(f.renderText('Jina NOW'))
+    print('Get your search use case up and running - end to end.\n')
+    print(
+        'You can choose between image and text search. \nJina NOW trains a model, pushes it to Jina AI Cloud '
+        'and deploys a Flow and playground app in the cloud or locally. \nCheck out our demos or bring '
+        'your own data.\n'
+    )
+    print('Visit docs.jina.ai to learn more about our framework')
+    print(
+        '💡 Make sure you give enough memory to your Docker daemon. '
+        '5GB - 8GB should be okay.'
+    )
+    print()
+
+
 def configure_option(
     option: DialogOptions, user_input: UserInput, **kwargs
 ) -> DialogStatus:
@@ -42,44 +61,7 @@ def configure_option(
     if option.dynamic_func:
         if option.name in kwargs:
             # Expand dynamic options from parent option, expect a dict (supports only model_selection)
-            for user_selection in kwargs[option.name].split(","):
-                if ":" in user_selection:
-                    option_name, option_values = user_selection.split(":")
-                    kwargs[f"{option_name}_model"] = []
-                    if (
-                        not option_name
-                        in user_input.index_field_candidates_to_modalities
-                    ):
-                        raise ValueError(
-                            f"Error with --{option.name}: `{option_name}` is not an index field."
-                        )
-                    for option_value in option_values.split("+"):
-                        model_selection = [
-                            model
-                            for model in MODALITY_TO_MODELS[
-                                user_input.index_field_candidates_to_modalities[
-                                    option_name
-                                ]
-                            ]
-                            if model["name"] == option_value
-                        ]
-                        if model_selection:
-                            kwargs[f"{option_name}_model"].append(
-                                model_selection[0]["value"]
-                            )
-                        else:
-                            model_choices = [
-                                model["name"]
-                                for model in MODALITY_TO_MODELS[
-                                    user_input.index_field_candidates_to_modalities[
-                                        option_name
-                                    ]
-                                ]
-                            ]
-                            raise ValueError(
-                                f"Error with --{option.name}: `{option_value}` is not available. "
-                                f"for index field `{option_name}`. Choices are: {','. join(model_choices)}."
-                            )
+            expand_options_from_parent(kwargs, option, user_input)
 
         for result in option.dynamic_func(user_input):
             configure_option(result, user_input, **kwargs)
@@ -116,6 +98,38 @@ def configure_option(
         break
 
     return DialogStatus.CONTINUE
+
+
+def expand_options_from_parent(kwargs, option, user_input):
+    for user_selection in kwargs[option.name].split(","):
+        if ":" in user_selection:
+            option_name, option_values = user_selection.split(":")
+            kwargs[f"{option_name}_model"] = []
+            if not option_name in user_input.index_field_candidates_to_modalities:
+                raise ValueError(
+                    f"Error with --{option.name}: `{option_name}` is not an index field."
+                )
+            for option_value in option_values.split("+"):
+                model_selection = [
+                    model
+                    for model in MODALITY_TO_MODELS[
+                        user_input.index_field_candidates_to_modalities[option_name]
+                    ]
+                    if model["name"] == option_value
+                ]
+                if model_selection:
+                    kwargs[f"{option_name}_model"].append(model_selection[0]["value"])
+                else:
+                    model_choices = [
+                        model["name"]
+                        for model in MODALITY_TO_MODELS[
+                            user_input.index_field_candidates_to_modalities[option_name]
+                        ]
+                    ]
+                    raise ValueError(
+                        f"Error with --{option.name}: `{option_value}` is not available. "
+                        f"for index field `{option_name}`. Choices are: {','.join(model_choices)}."
+                    )
 
 
 def prompt_value(

@@ -5,7 +5,7 @@ from docarray.score import NamedScore
 from numpy import dot
 from numpy.linalg import norm
 
-from now.utils import get_chunk_by_field_name
+from now.utils.docarray.helpers import get_chunk_by_field_name
 
 
 def convert_es_to_da(
