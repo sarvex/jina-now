@@ -11,12 +11,11 @@ from jina.clients import Client
 
 from now.admin.update_api_keys import update_api_keys
 from now.app.base.app import JinaNOWApp
-from now.constants import ACCESS_PATHS, DatasetTypes, Models
-from now.data_loading.create_dataclass import create_dataclass
+from now.constants import ACCESS_PATHS
 from now.deployment.flow import deploy_flow
 from now.log import time_profiler
 from now.now_dataclasses import UserInput
-from now.utils import get_flow_id
+from now.utils.jcloud.helpers import get_flow_id
 
 
 @time_profiler
@@ -45,22 +44,13 @@ def run(
     user_input.model_choices.update({'blip2_caption_model': [Models.CLIP_MODEL]})
 
     print_callback = kwargs.get('print_callback', print)
-    if user_input.dataset_type in [DatasetTypes.DEMO, DatasetTypes.DOCARRAY]:
-        user_input.field_names_to_dataclass_fields = {
-            field: field for field in user_input.index_fields
-        }
-        data_class = None
-    else:
-        data_class, user_input.field_names_to_dataclass_fields = create_dataclass(
-            user_input=user_input
-        )
 
     dataset = DocumentArray.load_binary(
-        '/Users/joschkabraun/dev/now/blip2_uri2captions/ltf-preproc-with-caption-beam_search_02_25_2023.bin'
+        '/Users/joschkabraun/dev/now/blip2_uri2captions/ltf-preproc-with-caption-beam_search_03_06_2023.bin'
     )
     # dataset = dataset[:50]
 
-    # dataset = load_data(user_input, data_class, print_callback)
+    # dataset = load_data(user_input, print_callback)
     print_callback('Data loaded. Deploying the flow...')
 
     # Set up the app specific flow

@@ -15,7 +15,11 @@ from now.executor.gateway.bff.app.v1.routers.helper import (
     field_dict_to_mm_doc,
     jina_client_post,
 )
-from now.utils import get_chunk_by_field_name, modality_string_to_docarray_typing
+from now.executor.gateway.hubble_report import report_search_usage
+from now.utils.docarray.helpers import (
+    get_chunk_by_field_name,
+    modality_string_to_docarray_typing,
+)
 
 search_examples = {
     'working_text': {
@@ -61,8 +65,8 @@ search_examples = {
         'value': {
             'limit': 10,
             'filters': {
-                'tags__color': {'$eq': 'blue'},
-                'tags__price': {'$lte': 100, '$gte': 50},
+                'color': ['blue', 'red'],
+                'price': {'lte': 100, 'gte': 50},
             },
             'query': [
                 {
@@ -72,7 +76,7 @@ search_examples = {
                 }
             ],
             'create_temp_link': False,
-            'score_calculation': [('query_text_0', 'title', 'encoderclip', 1.0)],
+            'score_calculation': [['query_text_0', 'title', 'encoderclip', 1.0]],
         },
     },
 }
@@ -109,7 +113,6 @@ async def search(
 ):
     fields_modalities_mapping = {}
     fields_values_mapping = {}
-
     if len(data.query) == 0:
         raise ValueError('Query cannot be empty')
 
@@ -136,8 +139,8 @@ async def search(
 
     query_filter = {}
     for key, value in data.filters.items():
-        key = 'tags__' + key if not key.startswith('tags__') else key
-        query_filter[key] = {'$eq': value}
+        key = 'tags__' + key
+        query_filter[key] = value
 
     docs = await jina_client_post(
         endpoint='/search',
@@ -188,6 +191,8 @@ async def search(
             fields=results,
         )
         matches.append(match)
+    # reporting the usage at the end to make sure the request was successful
+    report_search_usage(data.jwt)
     return matches
 
 
@@ -205,7 +210,6 @@ def get_score_calculation(
     """
     score_calculation = []
     for scr_calc in data.score_calculation:
-        scr_calc = list(scr_calc)
         scr_calc[0] = field_names_to_dataclass_fields[scr_calc[0]]
         try:
             scr_calc[1] = user_input_in_bff.field_names_to_dataclass_fields[scr_calc[1]]

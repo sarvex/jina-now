@@ -2,12 +2,12 @@ from __future__ import annotations, print_function, unicode_literals
 
 from docarray.typing import Image, Text, Video
 
-from now.utils import BetterEnum
+from now.utils.common.helpers import BetterEnum
 
-NOW_GATEWAY_VERSION = '0.0.4-feat-blip2-5'
-NOW_PREPROCESSOR_VERSION = '0.0.124-feat-blip2-5'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.148-feat-blip2-5'
-NOW_AUTOCOMPLETE_VERSION = '0.0.11-feat-get-flow-emails-0'
+NOW_GATEWAY_VERSION = '0.0.6-feat-blip2-5'
+NOW_PREPROCESSOR_VERSION = '0.0.125-feat-blip2-5'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.149-feat-blip2-5'
+NOW_AUTOCOMPLETE_VERSION = '0.0.12-feat-dns-for-demo-2'
 
 
 class Apps(BetterEnum):
@@ -80,3 +80,11 @@ NOWGATEWAY_BFF_PORT = 8080
 # S3 dataset paths
 S3_CUSTOM_DATA_PATH = 's3://jina-now/test folder/end_to_end_data/'
 S3_CUSTOM_MM_DATA_PATH = 's3://jina-now/test folder/data/'
+
+NOWGATEWAY_FREE_CREDITS = 1000
+
+NOWGATEWAY_BASE_FEE_QUANTITY = 5 / 24
+NOWGATEWAY_SEARCH_FEE_QUANTITY = 0.3
+NOWGATEWAY_SEARCH_FEE_PRO_QUANTITY = 0.28
+
+NOWGATEWAY_BASE_FEE_SLEEP_INTERVAL = 60

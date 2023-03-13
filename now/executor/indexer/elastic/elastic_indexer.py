@@ -218,7 +218,7 @@ class NOWElasticIndexer(Executor):
                 - 'limit' (int): Number of matches to get per Document, default 100.
                 - 'get_score_breakdown' (bool): Wether to return the score breakdown, i.e. the scores of each
                     field+encoder combination/comparison.
-                - 'score_calculation' (List[Tuple]): list of tuples of (query_field, document_field, matching_method,
+                - 'score_calculation' (List[List]): list of tuples of (query_field, document_field, matching_method,
                     linear_weight) to show how to calculate the score. Note, that the matching_method is the name of the
                     encoder or `bm25`.
         :param docs: DocumentArray to search

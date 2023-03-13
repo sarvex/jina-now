@@ -1,9 +1,4 @@
-import io
-import os
-import random
-import string
 import tempfile
-import urllib
 
 from jina import Document, DocumentArray
 
@@ -19,6 +14,14 @@ from now.executor.preprocessor.s3_download import maybe_download_from_s3
 Executor = get_auth_executor_class()
 
 
+def move_uri(d: Document) -> Document:
+    cloud_uri = d.tags.get('uri')
+    if isinstance(cloud_uri, str) and cloud_uri.startswith('s3://'):
+        d.uri = cloud_uri
+        d.chunks[:, 'uri'] = cloud_uri
+    return d
+
+
 class NOWPreprocessor(Executor):
     """Applies preprocessing to documents for encoding, indexing and searching as defined by app.
     If necessary, downloads files for that from cloud bucket.
@@ -29,22 +32,6 @@ class NOWPreprocessor(Executor):
 
         self.app: JinaNOWApp = JinaNOWApp()
         self.max_workers = max_workers
-
-    @staticmethod
-    def _save_uri_to_tmp_file(uri, tmpdir) -> str:
-        """Saves URI to a temporary file and returns the path to that file."""
-        req = urllib.request.Request(uri, headers={'User-Agent': 'Mozilla/5.0'})
-        tmp_fn = os.path.join(
-            tmpdir,
-            ''.join([random.choice(string.ascii_lowercase) for i in range(10)])
-            + '.png',
-        )
-        with urllib.request.urlopen(req, timeout=10) as fp:
-            buffer = fp.read()
-            binary_fn = io.BytesIO(buffer)
-            with open(tmp_fn, 'wb') as f:
-                f.write(binary_fn.read())
-        return tmp_fn
 
     @secure_request(on='/', level=SecurityLevel.USER)
     def foo(self, docs: DocumentArray, *args, **kwargs) -> DocumentArray:
@@ -92,13 +79,6 @@ class NOWPreprocessor(Executor):
                 self.user_input
                 and self.user_input.dataset_type == DatasetTypes.S3_BUCKET
             ):
-
-                def move_uri(d: Document) -> Document:
-                    cloud_uri = d.tags.get('uri')
-                    if isinstance(cloud_uri, str) and cloud_uri.startswith('s3://'):
-                        d.uri = cloud_uri
-                        d.chunks[:, 'uri'] = cloud_uri
-                    return d
 
                 for d in docs:
                     for c in d.chunks:

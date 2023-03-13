@@ -26,10 +26,10 @@ class SearchRequestModel(BaseRequestModel):
     limit: int = Field(
         default=10, description='Number of matching results to return', example=10
     )
-    filters: Optional[Dict[str, str]] = Field(
+    filters: Optional[Dict[str, Union[List, Dict[str, Union[int, float]]]]] = Field(
         default={},
         description='dictionary with filters for search results',
-        example={'tags__color': {'$eq': 'blue'}},
+        example={'color': ['blue'], 'price': {'lt': 50.0}},
     )
     query: List[Dict] = Field(
         default={},
@@ -49,12 +49,12 @@ class SearchRequestModel(BaseRequestModel):
         'This is useful if the file is stored in a cloud bucket.',
         example=False,
     )
-    score_calculation: List[Tuple] = Field(
+    score_calculation: List[List] = Field(
         default=[],
-        description='List of tuples where each tuple contains a query_field, index_field, matching_method and weight.'
+        description='List of lists, where each nested list contains a query_field, index_field, matching_method and weight.'
         ' This defines how scores should be calculated for documents. The matching_method can be an encoder name or '
         'bm25. The weight is a float which is used to scale the score.',
-        example=[('query_text', 'title', 'encoderclip', 1.0)],
+        example=[['query_text', 'title', 'encoderclip', 1.0]],
     )
     get_score_breakdown: bool = Field(
         default=False,
@@ -85,7 +85,7 @@ class SearchResponseModel(BaseModel):
         ]
     ] = Field(
         description='Additional tags associated with the file.',
-        example={'tags__price': {'$lt': 50.0}},
+        example={'price': {'lt': 50.0}},
     )
     fields: Dict[str, ModalityModel] = Field(
         default={},

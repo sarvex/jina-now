@@ -3,8 +3,8 @@ import gc
 import io
 import json
 import os
+import traceback
 from typing import List
-from urllib.error import HTTPError
 from urllib.parse import quote
 from urllib.request import urlopen
 
@@ -22,12 +22,7 @@ from tornado.httputil import parse_cookie
 
 from now.app.base.create_jcloud_name import create_jcloud_name
 from now.constants import MODALITY_TO_MODELS, NOWGATEWAY_BFF_PORT
-from now.executor.gateway.playground.src.constants import (
-    BUTTONS,
-    S3_DEMO_PATH,
-    SSO_COOKIE,
-    ds_set,
-)
+from now.executor.gateway.playground.src.constants import BUTTONS, SSO_COOKIE
 from now.executor.gateway.playground.src.search import (
     call_flow,
     get_query_params,
@@ -117,17 +112,8 @@ def deploy_streamlit(user_input: UserInput):
     if redirect_to and st.session_state.login:
         nav_to(redirect_to)
     else:
-        da_img, da_txt = load_example_queries(params.data)
-
         setup_design()
 
-        if st.session_state.filters == 'notags':
-            try:
-                tags = get_info_from_endpoint(params, endpoint='tags')
-                st.session_state.filters = tags
-            except Exception as e:
-                print("Filters couldn't be loaded from the endpoint properly.", e)
-                st.session_state.filters = 'notags'
         if not st.session_state.index_fields_dict:
             st.session_state.index_fields_dict = get_info_from_endpoint(
                 params, 'encoder_to_dataclass_fields_mods'
@@ -136,33 +122,11 @@ def deploy_streamlit(user_input: UserInput):
                 user_input.field_names_to_dataclass_fields
             )
 
-        filter_selection = {}
-        if st.session_state.filters != 'notags':
-            st.sidebar.title('Filters')
-            if not st.session_state.filters_set:
-                for tag, values in st.session_state.filters.items():
-                    values.insert(0, 'All')
-                    filter_selection[tag] = st.sidebar.selectbox(tag, values)
-                st.session_state.filters_set = True
-            else:
-                for tag, values in st.session_state.filters.items():
-                    filter_selection[tag] = st.sidebar.selectbox(tag, values)
-
-        if st.session_state.filters != 'notags' and not st.session_state.filters_set:
-            st.sidebar.title('Filters')
-            for tag, values in st.session_state.filters.items():
-                values.insert(0, 'All')
-                filter_selection[tag] = st.sidebar.selectbox(tag, values)
-        l, r = st.columns([5, 5])
-        with l:
-            st.header('Text')
-            render_mm_query(st.session_state['query'], 'text')
-        with r:
-            st.header('Image')
-            render_mm_query(st.session_state['query'], 'image')
-
+        render_filters(params)
+        render_input_boxes()
         customize_score_calculation()
         toggle_score_breakdown()
+        # make query
         search_mapping_list = list(st.session_state['query'].values())
         if any([d['value'] for d in search_mapping_list]):
             st.session_state.matches = multimodal_search(
@@ -170,11 +134,65 @@ def deploy_streamlit(user_input: UserInput):
                     filter(lambda x: x['value'], search_mapping_list)
                 ),
                 jwt=st.session_state.jwt_val,
-                filter_dict=filter_selection,
+                filter_dict=st.session_state.filter_selection,
             )
         render_matches()
 
         add_social_share_buttons()
+
+
+def render_input_boxes():
+    l, r = st.columns([5, 5])
+    with l:
+        st.header('Text')
+        render_mm_query(st.session_state['query'], 'text')
+    with r:
+        st.header('Image')
+        render_mm_query(st.session_state['query'], 'image')
+
+
+def process_filters():
+    processed_filters = {}
+    for field, values in st.session_state.filter_selection.items():
+        if isinstance(values, list) or isinstance(values, tuple):
+            if len(values) == 0:
+                continue
+            if isinstance(values[0], str):
+                processed_filters[field] = values
+            elif isinstance(values[0], int) or isinstance(values[0], float):
+                processed_filters[field] = {'gte': values[0], 'lte': values[1]}
+        elif isinstance(values, int) or isinstance(values, float):
+            processed_filters[field] = {'gte': values}
+        else:
+            raise ValueError(f'Filter values {values} are not supported.')
+    st.session_state.filter_selection = processed_filters
+
+
+def render_filters(params):
+    if not st.session_state.tags:
+        try:
+            tags = get_info_from_endpoint(params, endpoint='tags')
+            st.session_state.tags = tags
+        except Exception:
+            print("Filters couldn't be loaded from the endpoint properly.")
+            traceback.format_exc()
+
+    if st.session_state.tags:
+        st.sidebar.title('Filters')
+        for tag, values in st.session_state.tags.items():
+            if isinstance(values[0], int) or isinstance(values[0], float):
+                min_val = min(values)
+                max_val = max(values)
+                st.session_state.filter_selection[tag] = st.sidebar.slider(
+                    tag, min_val, max_val, (min_val, max_val)
+                )
+            elif isinstance(values[0], str):
+                st.session_state.filter_selection[tag] = st.sidebar.multiselect(
+                    tag, values
+                )
+        st.session_state.filters_set = True
+
+    process_filters()
 
 
 def get_info_from_endpoint(params, endpoint) -> dict:
@@ -285,18 +303,6 @@ def _do_logout():
     )
 
 
-def load_example_queries(data):
-    da_img = None
-    da_txt = None
-    if data in ds_set:
-        try:
-            da_img = load_data(S3_DEMO_PATH + data + f'.img10.bin')
-            da_txt = load_data(S3_DEMO_PATH + data + f'.txt10.bin')
-        except HTTPError as exc:
-            print('Could not load samples for the demo dataset', exc)
-    return da_img, da_txt
-
-
 def setup_design():
     class UI:
         about_block = """
@@ -400,7 +406,7 @@ def customize_score_calculation():
             value=0.5,
             key='weight_' + str(i),
         )
-        st.session_state.score_calculation[f'{i}'] = (q_field, id_field, enc, w)
+        st.session_state.score_calculation[f'{i}'] = [q_field, id_field, enc, w]
 
 
 def render_mm_query(query, modality):
@@ -730,8 +736,11 @@ def setup_session_state():
     if 'disable_prev' not in st.session_state:
         st.session_state.disable_prev = True
 
-    if 'filters' not in st.session_state:
-        st.session_state.filters = 'notags'
+    if 'tags' not in st.session_state:
+        st.session_state.tags = {}
+
+    if 'filter_selection' not in st.session_state:
+        st.session_state.filter_selection = {}
 
     if 'filters_set' not in st.session_state:
         st.session_state.filters_set = False

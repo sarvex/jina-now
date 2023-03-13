@@ -46,8 +46,8 @@ def assert_deployment_queries(
     )
     search_url = f'{url}/search-app/search'
     assert_search(search_url, request_body)
-    # add semantic scores to the request body, assert search still works
-    request_body['semantic_scores'] = [
+    # add score calculation to the request body, assert search still works
+    request_body['score_calculation'] = [
         [request_body['query'][0]['name'], index_fields[0], 'encoderclip', 0.8]
     ]
     assert_search(search_url, request_body)
@@ -100,8 +100,6 @@ def get_search_request_body(
     if search_modality == 'text':
         if dataset == DemoDatasetNames.BEST_ARTWORKS:
             search_text = 'impressionism'
-        elif dataset == DemoDatasetNames.NFT_MONKEY:
-            search_text = 'laser eyes'
         else:
             search_text = 'test'
         request_body['query'] = [

@@ -13,8 +13,6 @@ fast-autocomplete==0.9.0
 Levenshtein==0.20.5
 python-Levenshtein==0.20.5
 better_profanity==0.7.0
-filetype
-streamlit==1.16.0
 extra-streamlit-components==0.1.55
 click==8.0.0
 fastapi==0.78.0
