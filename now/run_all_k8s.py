@@ -18,6 +18,8 @@ from now.dialog import configure_user_input, maybe_prompt_user
 
 def stop_now(**kwargs):
     _result, flow_id, cluster = _get_flow_status(action='delete', **kwargs)
+    print('RES: ', _result)
+    print('FLOW_ID: ', flow_id)
     if _result is not None and _result['status']['phase'] == FLOW_STATUS:
         terminate_wolf(flow_id)
         from hubble import Client
@@ -233,23 +235,23 @@ def _get_flow_status(action, **kwargs):
 def _generate_info_table(
     gateway_host_http, gateway_host_grpc, bff_url, playground_url, user_input
 ):
-    my_table = Table(
+    info_table = Table(
         'Attribute',
         Column(header="Value", overflow="fold"),
         show_header=False,
         box=box.SIMPLE,
         highlight=True,
     )
-    my_table.add_row('Host (HTTPS)', gateway_host_http)
-    my_table.add_row('Host (GRPCS)', gateway_host_grpc)
-    my_table.add_row('API docs', bff_url)
+    info_table.add_row('Host (HTTPS)', gateway_host_http)
+    info_table.add_row('Host (GRPCS)', gateway_host_grpc)
+    info_table.add_row('API docs', bff_url)
     if user_input.secured and user_input.api_key:
-        my_table.add_row('API Key', user_input.api_key)
-    my_table.add_row('Playground', playground_url)
+        info_table.add_row('API Key', user_input.api_key)
+    info_table.add_row('Playground', playground_url)
     console = Console()
     console.print(
         Panel(
-            my_table,
+            info_table,
             title=f':tada: Search app is NOW ready!',
             expand=False,
         )
