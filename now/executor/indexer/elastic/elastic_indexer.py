@@ -9,7 +9,7 @@ from docarray import Document, DocumentArray
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 
-from now.constants import DatasetTypes
+from now.constants import NOW_ELASTIC_FETCH_MAX_VALUES_PER_TAG, DatasetTypes
 from now.executor.abstract.auth import (
     SecurityLevel,
     get_auth_executor_class,
@@ -455,6 +455,9 @@ class NOWElasticIndexer(Executor):
         indexed documents. It then queries elasticsearch for an aggregation of all values
         inside this field, and updates the self.doc_id_tags dictionary with tags as keys,
         and values as values in the dictionary.
+
+        Note, this will only fetch the NOW_ELASTIC_FETCH_MAX_VALUES_PER_TAG unique values
+        per tag.
         """
         es_mapping = self.es.indices.get_mapping(index=self.index_name)
         tag_categories = (
@@ -478,7 +481,10 @@ class NOWElasticIndexer(Executor):
             ]:
                 if map['type'] == tag_type:
                     aggs['aggs'][tag] = {
-                        'terms': {'field': f'tags.{tag}{extension}', 'size': 100}
+                        'terms': {
+                            'field': f'tags.{tag}{extension}',
+                            'size': NOW_ELASTIC_FETCH_MAX_VALUES_PER_TAG,
+                        }
                     }
 
         try:
