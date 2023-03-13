@@ -26,7 +26,7 @@ def test_search_filters(get_flow, setup_service_running):
     )
     request_body = get_request_body(secured=False)
     request_body['query'] = [{'name': 'text', 'value': 'test', 'modality': 'text'}]
-    request_body['filters'] = {'color': 'Blue Color'}
+    request_body['filters'] = {'color': ['Blue Color']}
     response = requests.post(
         SEARCH_URL,
         json=request_body,

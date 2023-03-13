@@ -197,7 +197,7 @@ def test_delete_by_filter(setup_service_running, es_inputs, random_index_name):
     es_indexer.index(index_docs_map)
 
     # delete by filter
-    es_indexer.delete(parameters={'filter': {'tags__price': {'$gte': 0}}})
+    es_indexer.delete(parameters={'filter': {'tags__price': {'gte': 0}}})
 
     es = es_indexer.es
     res = es.search(index=os.getenv('ES_INDEX_NAME'), size=100, query={'match_all': {}})
@@ -284,8 +284,43 @@ def test_search_with_filter(setup_service_running, es_inputs, random_index_name)
         parameters={
             'get_score_breakdown': True,
             'score_calculation': default_score_calculation,
-            'filter': {'tags__price': {'$lte': 1}},
+            'filter': {'tags__price': {'lte': 1}},
         },
     )
     assert len(res[0].matches) == 1
+    assert res[0].matches[0].tags['price'] < 1
+
+
+def test_search_with_multiple_filters(
+    setup_service_running, es_inputs, random_index_name
+):
+    """
+    This test tests the search endpoint of the NOWElasticIndexer using multiple filters.
+    """
+    (
+        index_docs_map,
+        query_docs_map,
+        document_mappings,
+        default_score_calculation,
+        user_input,
+    ) = es_inputs
+    es_indexer = NOWElasticIndexer(
+        document_mappings=document_mappings,
+        user_input_dict=user_input.to_safe_dict(),
+    )
+    es_indexer.index(index_docs_map)
+
+    res = es_indexer.search(
+        query_docs_map,
+        parameters={
+            'get_score_breakdown': True,
+            'score_calculation': default_score_calculation,
+            'filter': {
+                'tags__color': ['red', 'blue', 'green'],
+                'tags__price': {'lte': 1, 'gte': 0.2},
+            },
+        },
+    )
+    assert len(res[0].matches) == 1
+    assert res[0].matches[0].tags['color'] in ['red', 'blue', 'green']
     assert res[0].matches[0].tags['price'] < 1
