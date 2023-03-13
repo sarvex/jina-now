@@ -15,7 +15,8 @@ from now.data_loading.create_dataclass import create_dataclass
 from now.data_loading.elasticsearch import ElasticsearchExtractor
 from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
-from now.utils import flatten_dict, get_chunk_by_field_name, sigmap
+from now.utils.common.helpers import flatten_dict, sigmap
+from now.utils.docarray.helpers import get_chunk_by_field_name
 
 
 def load_data(user_input: UserInput, print_callback=print) -> DocumentArray:

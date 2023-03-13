@@ -28,7 +28,7 @@ from now.deployment.deployment import cmd
 from now.executor.preprocessor import NOWPreprocessor
 from now.executor.preprocessor.s3_download import get_bucket
 from now.now_dataclasses import UserInput
-from now.utils import get_aws_profile
+from now.utils.authentication.helpers import get_aws_profile
 
 
 @pytest.fixture()

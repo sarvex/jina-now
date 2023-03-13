@@ -22,16 +22,13 @@ from now.constants import MODALITY_TO_MODELS, DatasetTypes
 from now.deployment.deployment import cmd
 from now.log import yaspin_extended
 from now.now_dataclasses import DialogOptions, UserInput
-from now.utils import (
-    DemoAvailableException,
-    RetryException,
+from now.utils.authentication.helpers import (
     get_aws_profile,
     get_info_hubble,
-    hide_string_chars,
     jina_auth_login,
-    sigmap,
-    to_camel_case,
 )
+from now.utils.common.helpers import hide_string_chars, sigmap, to_camel_case
+from now.utils.errors.helpers import DemoAvailableException, RetryException
 
 AVAILABLE_SOON = 'will be available in upcoming versions'
 aws_profile = get_aws_profile()

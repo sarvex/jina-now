@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, TypeVar, 
 from pydantic import BaseModel, StrictBool
 
 from now.constants import DatasetTypes
-from now.utils import docarray_typing_to_modality_string
+from now.utils.docarray.helpers import docarray_typing_to_modality_string
 
 
 class UserInput(BaseModel):
