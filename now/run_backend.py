@@ -11,7 +11,7 @@ from jina.clients import Client
 
 from now.admin.update_api_keys import update_api_keys
 from now.app.base.app import JinaNOWApp
-from now.constants import ACCESS_PATHS
+from now.constants import ACCESS_PATHS, Models
 from now.deployment.flow import deploy_flow
 from now.log import time_profiler
 from now.now_dataclasses import UserInput
