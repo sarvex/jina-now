@@ -233,12 +233,11 @@ def _extract_field_names_sub_folders(
 
 
 def get_s3_file_paths(objects):
-    file_paths = [
+    return [
         obj.key
         for obj in objects
         if not obj.key.endswith('/') and not obj.key.split('/')[-1].startswith('.')
     ]
-    return file_paths
 
 
 def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
