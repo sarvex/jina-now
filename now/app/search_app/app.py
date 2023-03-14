@@ -80,7 +80,7 @@ class SearchApp(JinaNOWApp):
                     'min': 0,
                     'max': 100,
                     'metric': 'concurrency',
-                    'target': 100,
+                    'target': 1,
                 },
                 'resources': {
                     'instance': 'C1',
@@ -104,7 +104,7 @@ class SearchApp(JinaNOWApp):
                     'min': 0,
                     'max': 100,
                     'metric': 'concurrency',
-                    'target': 100,
+                    'target': 1,
                 },
                 'resources': {'instance': 'C4', 'capacity': 'spot'},
             },
@@ -246,4 +246,4 @@ class SearchApp(JinaNOWApp):
     @property
     def max_request_size(self) -> int:
         """Max number of documents in one request"""
-        return 200
+        return 10

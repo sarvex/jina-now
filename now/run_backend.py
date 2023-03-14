@@ -1,6 +1,7 @@
 import os
 import sys
 import time
+import traceback
 import uuid
 from copy import deepcopy
 from typing import Dict, Optional
@@ -120,7 +121,7 @@ def index_docs(user_input, dataset, client, print_callback, **kwargs):
         inputs=dataset,
         parameters=deepcopy(params),
         continue_on_error=True,
-        prefetch=request_size * 5,
+        prefetch=request_size * 10,
         on_error=kwargs.get('on_error', None),
         on_always=kwargs.get('on_always', None),
         sleep_interval=kwargs.get('sleep_interval', 5),
@@ -139,7 +140,7 @@ def estimate_request_size(index, max_request_size):
     size = sys.getsizeof(index[0].content) + sum(
         [sys.getsizeof(chunk.content) for chunk in index[0].chunks]
     )
-    max_size = 1e6  # 1 MB
+    max_size = 5e5  # 0.5 MB
     request_size = max(min(max_request_size, int(max_size / size)), 1)
     return request_size
 
@@ -188,29 +189,14 @@ def call_flow_with_retry(
             completed_req_ids.append(doc.id)  # update the completion list
         pbar.update(advance=len(r.data.docs))  # update the progress bar
 
-        if (
-            len(completed_req_ids) // len(r.data.docs)
-        ) % 5 == 0:  # print after every 5 inserts
+        # print after every 5 inserts
+        if (len(completed_req_ids) // len(r.data.docs)) % 5 == 0:
             print_if_example(f'Indexed {len(completed_req_ids)} docs.')
 
     def _on_error(r: Request):
         print_if_example(
             'Got an executor error while indexing. '
             'Should trigger a retry using Jina\'s inbuilt mechanism.'
-        )
-
-    def stream_requests_until_done(docs: DocumentArray):
-        return client.post(
-            on=on,
-            inputs=docs,
-            request_size=request_size,
-            show_progress=False,
-            parameters=parameters,
-            continue_on_error=continue_on_error,
-            prefetch=prefetch,
-            on_done=on_done,
-            on_error=on_error if on_error else _on_error,
-            on_always=on_always,
         )
 
     def sleep_before_retry():
@@ -231,11 +217,21 @@ def call_flow_with_retry(
 
             # Index the remaining docs
             try:
-                stream_requests_until_done(inputs)
-                break
-            except Exception as e:
-                # Retry if there is an exception (usually network errors)
-                print_if_example(
-                    f'Got a network error. Retry using our custom mechanism: {e}'
+                client.post(
+                    on=on,
+                    inputs=inputs,
+                    request_size=request_size,
+                    show_progress=False,
+                    parameters=parameters,
+                    continue_on_error=continue_on_error,
+                    prefetch=prefetch,
+                    on_done=on_done,
+                    on_error=on_error if on_error else _on_error,
+                    on_always=on_always,
                 )
+                break
+            except Exception:  # noqa
+                # Retry if there is an exception (usually network errors)
+                print_if_example('Got a network error. Retrying...')
+                traceback.print_exc()
                 sleep_before_retry()
