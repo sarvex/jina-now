@@ -61,10 +61,10 @@ def start_now(**kwargs):
 def get_docarray(dataset):
     if os.path.exists(dataset):
         print(f'Loading queries from {dataset}')
-        da = DocumentArray.load_binary(dataset)
+        return DocumentArray.load_binary(dataset)
     else:
         print(f'Pulling queries from {dataset}')
-        da = DocumentArray.pull(name=dataset, show_progress=True)
+        return DocumentArray.pull(name=dataset, show_progress=True)
 
 
 def compare_flows(**kwargs):
