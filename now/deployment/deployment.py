@@ -1,5 +1,6 @@
 import asyncio
 import subprocess
+import traceback
 
 from jcloud.flow import CloudFlow
 
@@ -41,8 +42,9 @@ def list_all_wolf(status='Serving', namespace='nowapi'):
             flows.append(
                 {'id': flow['id'], 'name': flow['status']['endpoints'][executor_name]}
             )
-        except Exception as ex:
-            print(f'Failed to parse flow {flow["id"]}: {ex}')
+        except Exception:  # noqa
+            print(f'Failed to parse flow {flow["id"]}')
+            traceback.print_exc()
             continue
 
     # filter by namespace - if the namespace is contained in the flow name
