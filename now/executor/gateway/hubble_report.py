@@ -88,6 +88,9 @@ def report(user_token, quantity_basic, quantity_pro):
                 },
             )
     except Exception as e:
+        import traceback
+
+        traceback.print_exc()
         logger.critical(e)
 
 
