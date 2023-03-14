@@ -3,7 +3,8 @@ from argparse import Namespace
 import pytest
 
 from now.cli import cli
-from now.constants import DatasetTypes
+from now.constants import DatasetTypes, Models
+from now.demo_data import DemoDatasetNames
 
 
 @pytest.mark.parametrize(
