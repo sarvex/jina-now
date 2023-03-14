@@ -1,5 +1,4 @@
 import inspect
-import logging
 import time
 from contextlib import contextmanager
 from datetime import timedelta
@@ -7,8 +6,9 @@ from functools import wraps
 from typing import Callable
 
 from fastapi import HTTPException
+from jina.logging.logger import JinaLogger
 
-logger = logging.getLogger(__name__)
+logger = JinaLogger('bff.app')
 
 
 @contextmanager
@@ -56,6 +56,7 @@ def api_method(func: Callable):
     def surround(*args, **kwargs):
         func_name = inspect.getmodule(func).__name__ + f':{func.__name__}'
         logger.info(f'--- Calling api method {func_name} ...')
+        logger.info(f"{kwargs}")
         try:
             response = func(*args, **kwargs)
         except HTTPException as exc:
