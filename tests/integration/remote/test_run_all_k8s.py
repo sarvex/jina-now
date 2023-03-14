@@ -36,6 +36,7 @@ from now.demo_data import DemoDatasetNames
 def test_flow_logs(
     cleanup,
     random_flow_name,
+    query_fields,
     index_fields,
     filter_fields,
     model_selection,
