@@ -13,12 +13,10 @@ def mmdocs_with_text(mm_dataclass):
             for text in [
                 'background',
                 'background',
-                'shit',
+                'bang',
                 'loading',
-                'fuck',
-                'f*ck',
+                'loading',
                 'laugh',
-                'fuck shit somethings',
             ]
         ]
     )
