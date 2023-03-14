@@ -1,9 +1,37 @@
 from argparse import Namespace
 
+import pytest
+
 from now.cli import cli
 from now.constants import DatasetTypes
 
 
+@pytest.mark.parametrize(
+    'query_fields, index_fields, filter_fields, model_selection, dataset',
+    [
+        # needs to be put back once wolf can handle it
+        # (
+        #     'image',
+        #     ['image', 'label'],
+        #     [],
+        #     {
+        #         'image_model': [Models.CLIP_MODEL],
+        #         'label_model': [Models.CLIP_MODEL, Models.SBERT_MODEL],
+        #     },
+        #     DemoDatasetNames.BIRD_SPECIES,
+        # ),
+        (
+            'text',
+            ['video', 'description'],
+            [],
+            {
+                'video_model': [Models.CLIP_MODEL],
+                'description_model': [Models.CLIP_MODEL],
+            },
+            DemoDatasetNames.TUMBLR_GIFS_10K,
+        ),
+    ],
+)
 def test_flow_logs(
     cleanup,
     random_flow_name,
