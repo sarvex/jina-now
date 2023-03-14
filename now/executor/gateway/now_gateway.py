@@ -15,6 +15,7 @@ from streamlit.web.server import Server as StreamlitServer
 
 from now.constants import NOWGATEWAY_BFF_PORT
 from now.deployment.deployment import cmd
+from now.executor.gateway.hubble_report import start_base_fee_thread
 from now.now_dataclasses import UserInput
 
 cur_dir = os.path.dirname(__file__)
@@ -126,6 +127,10 @@ class NOWGateway(CompositeGateway):
 
         self.setup_nginx()
         self.nginx_was_shutdown = False
+        try:
+            start_base_fee_thread(self.user_input.jwt['token'])
+        except Exception as e:
+            self.logger.error(f'Could not start base fee thread: {e}')
 
     async def shutdown(self):
         await super().shutdown()
@@ -166,7 +171,14 @@ class NOWGateway(CompositeGateway):
     def _add_gateway(self, gateway_cls, port, protocol='http', **kwargs):
         # ignore metrics_registry since it is not copyable
         runtime_args = self._deepcopy_with_ignore_attrs(
-            self.runtime_args, ['metrics_registry']
+            self.runtime_args,
+            [
+                'metrics_registry',
+                'tracer_provider',
+                'grpc_tracing_server_interceptors',
+                'aio_tracing_client_interceptors',
+                'tracing_client_interceptor',
+            ],
         )
         runtime_args.port = [port]
         runtime_args.protocol = [protocol]

@@ -6,23 +6,44 @@ from docarray.typing import Image, Text
 from tests.integration.offline_flow.flow import OfflineFlow
 
 from now.executor.gateway.bff.app.v1.models.search import SearchRequestModel
-from now.executor.gateway.bff.app.v1.routers.search import search
 from now.now_dataclasses import UserInput
 
 
+def get_user_input():
+    user_input = UserInput()
+    user_input.index_fields = ['product_title', 'product_description', 'product_image']
+    user_input.field_names_to_dataclass_fields = {
+        'product_title': 'product_title',
+        'product_description': 'product_description',
+        'product_image': 'product_image',
+    }
+    user_input.index_field_candidates_to_modalities = {
+        'product_title': Text,
+        'product_description': Text,
+        'product_image': Image,
+    }
+    return user_input
+
+
+@pytest.mark.parametrize('dump_user_input', [get_user_input()], indirect=True)
 @pytest.mark.asyncio
 async def test_docarray(
-    monkeypatch, setup_service_running, random_index_name, multi_modal_data
+    dump_user_input,
+    monkeypatch,
+    setup_service_running,
+    random_index_name,
+    multi_modal_data,
 ):
     """
     Test all executors and bff together without creating a flow.
     The Clip Encoder is mocked because it is an external executor.
     Also, the network call for the bff is monkey patched.
     """
-    user_input = UserInput()
-    user_input.index_fields = ['product_title', 'product_description', 'product_image']
+    from now.executor.gateway.bff.app.v1.routers.search import search
 
-    offline_flow = OfflineFlow(monkeypatch, user_input_dict=user_input.__dict__)
+    offline_flow = OfflineFlow(
+        monkeypatch, user_input_dict=get_user_input().to_safe_dict()
+    )
 
     index_result = offline_flow.post(
         '/index',
@@ -34,6 +55,7 @@ async def test_docarray(
     search_result = await search(
         SearchRequestModel(
             query=[{'name': 'text', 'value': 'girl on motorbike', 'modality': 'text'}],
+            score_calculation=[('text', 'product_title', 'encoderclip', 1.0)],
         )
     )
     assert search_result[0].fields['product_title'].text == 'fancy title'

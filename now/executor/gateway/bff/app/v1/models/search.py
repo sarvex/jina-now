@@ -1,3 +1,4 @@
+from math import ceil, sqrt
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, Field
@@ -25,10 +26,10 @@ class SearchRequestModel(BaseRequestModel):
     limit: int = Field(
         default=10, description='Number of matching results to return', example=10
     )
-    filters: Optional[Dict[str, str]] = Field(
+    filters: Optional[Dict[str, Union[List, Dict[str, Union[int, float]]]]] = Field(
         default={},
         description='dictionary with filters for search results',
-        example={'tags__color': {'$eq': 'blue'}},
+        example={'color': ['blue'], 'price': {'lt': 50.0}},
     )
     query: List[Dict] = Field(
         default={},
@@ -48,11 +49,12 @@ class SearchRequestModel(BaseRequestModel):
         'This is useful if the file is stored in a cloud bucket.',
         example=False,
     )
-    semantic_scores: List[Tuple] = Field(
+    score_calculation: List[List] = Field(
         default=[],
-        description='List of tuples where each tuple contains a query_field, index_field, encoder_name and weight.'
-        ' This defines how scores should be calculated for documents.',
-        example=[('query_text', 'title', 'encoderclip', 1.0)],
+        description='List of lists, where each nested list contains a query_field, index_field, matching_method and weight.'
+        ' This defines how scores should be calculated for documents. The matching_method can be an encoder name or '
+        'bm25. The weight is a float which is used to scale the score.',
+        example=[['query_text', 'title', 'encoderclip', 1.0]],
     )
     get_score_breakdown: bool = Field(
         default=False,
@@ -83,7 +85,7 @@ class SearchResponseModel(BaseModel):
         ]
     ] = Field(
         description='Additional tags associated with the file.',
-        example={'tags__price': {'$lt': 50.0}},
+        example={'price': {'lt': 50.0}},
     )
     fields: Dict[str, ModalityModel] = Field(
         default={},
@@ -97,7 +99,7 @@ class SearchResponseModel(BaseModel):
     def __init__(
         self,
         id: str,
-        scores: Optional[Dict[str, '_NamedScore']],
+        scores: Optional[Dict[str, '_NamedScore']] = {},
         tags: Optional[
             Dict[
                 str,
@@ -107,8 +109,8 @@ class SearchResponseModel(BaseModel):
                     Dict[str, Optional[Union[str, bool, int, float]]],
                 ],
             ]
-        ],
-        fields: Dict[str, ModalityModel],
+        ] = {},
+        fields: Dict[str, ModalityModel] = {},
     ) -> None:
         super().__init__(id=id, scores=scores, fields=fields)
         self.validate_tags(tags)
@@ -126,6 +128,43 @@ class SearchResponseModel(BaseModel):
                 raise ValueError(
                     f"Invalid type '{type(item)}' of value '{item}' for key '{key}' in tags"
                 )
+
+    def to_html(self, disable_to_datauri: bool = False) -> str:
+        """Converts the SearchResponseModel to HTML. This is used to display the a single multi-modal result as HTML.
+
+        :param disable_to_datauri: If True, the image is not converted to datauri.
+        """
+        # sort dictionary by keys, to have the same order in displaying elements
+        single_fields_in_html = [
+            mm.to_html(title, disable_to_datauri)
+            for title, mm in dict(sorted(self.fields.items())).items()
+        ]
+        mm_in_html = ''.join(single_fields_in_html)
+        return mm_in_html
+
+    @classmethod
+    def responses_to_html(
+        cls, responses: List['SearchResponseModel'], disable_to_datauri: bool = False
+    ) -> str:
+        """Converts a list of SearchResponseModel to HTML. This is used to display the multi-modal results as HTML."""
+        html_list = [r.to_html(disable_to_datauri) for r in responses]
+
+        num_html = len(html_list)
+        side_length = ceil(sqrt(num_html))
+        output_html = "<div style='display: grid; grid-template-columns: repeat({0}, 1fr); grid-gap: 10px;'>".format(
+            side_length
+        )
+
+        for i in range(num_html):
+            output_html += (
+                "<div style='border: 1px solid black; padding: 5px;'>{0}</div>".format(
+                    html_list[i]
+                )
+            )
+
+        output_html += "</div>"
+
+        return output_html
 
     class Config:
         case_sensitive = False

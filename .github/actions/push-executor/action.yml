@@ -25,6 +25,7 @@ runs:
       with:
         filters: |
           has_executor_changed:
+            - now/app/base/**
             - now/executor/abstract/auth/**
             - requirements.txt
             ${{ inputs.has_changed_filter }}
@@ -43,7 +44,7 @@ runs:
     - name: Pip install jina
       if: steps.check_has_executor_changed.outputs.has_executor_changed == 'true'
       shell: bash
-      run: pip install "jina[perf]==3.13.2"
+      run: pip install "jina[perf]==3.14.2.dev18"
     - name: Check that tag isn't used already for executor
       if: steps.check_has_executor_changed.outputs.has_executor_changed == 'true'
       env:

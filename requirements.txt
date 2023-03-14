@@ -1,5 +1,5 @@
 pyfiglet==0.8.post1
-jina[perf]==3.13.2.dev34
+jina[perf]==3.14.2.dev18
 jina-hubble-sdk>=0.15.5
 pyfiglet==0.8.post1
 cowsay==4.0
@@ -10,10 +10,13 @@ docarray[common]==0.19.1
 requests==2.27.1
 pydub==0.25.1
 nltk==3.7
-jcloud==0.2.1
+jcloud==0.2.4
 python-dotenv
 boto3==1.26.43
 elasticsearch==8.4.1
 pydantic==1.9.2
 httpx==0.23.2
 av==9.1.1
+pandas==1.3.5
+streamlit==1.16.0
+filetype==1.2.0

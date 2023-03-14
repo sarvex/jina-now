@@ -8,6 +8,7 @@ from now.constants import (
     ACCESS_PATHS,
     DEMO_NS,
     EXTERNAL_CLIP_HOST,
+    EXTERNAL_SBERT_HOST,
     NOW_AUTOCOMPLETE_VERSION,
     NOW_ELASTIC_INDEXER_VERSION,
     NOW_PREPROCESSOR_VERSION,
@@ -74,8 +75,17 @@ class SearchApp(JinaNOWApp):
             'needs': 'gateway',
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'jcloud': {
-                'resources': {'instance': 'C1'},
-                'capacity': 'spot',
+                'autoscale': {
+                    'min': 0,
+                    'max': 1,
+                    'metric': 'concurrency',
+                    'target': 1,
+                },
+                'resources': {
+                    'instance': 'C1',
+                    'capacity': 'spot',
+                    'storage': {'kind': 'efs', 'size': '1M'},
+                },
             },
         }
 
@@ -94,8 +104,7 @@ class SearchApp(JinaNOWApp):
                     'metric': 'concurrency',
                     'target': 1,
                 },
-                'resources': {'instance': 'C4'},
-                'capacity': 'spot',
+                'resources': {'instance': 'C4', 'capacity': 'spot'},
             },
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
         }
@@ -118,18 +127,17 @@ class SearchApp(JinaNOWApp):
     def sbert_encoder_stub() -> Tuple[Dict, int]:
         return {
             'name': Models.SBERT_MODEL,
-            'needs': 'preprocessor',
             'uses': f'jinahub+docker://TransformerSentenceEncoder',
             'uses_with': {
                 'access_paths': ACCESS_PATHS,
                 'model_name': 'msmarco-distilbert-base-v3',
             },
-            'jcloud': {
-                'autoscale': {'min': 0, 'max': 5, 'metric': 'concurrency', 'target': 1},
-                'resources': {'instance': 'C6'},
-                'capacity': 'spot',
-            },
+            'host': EXTERNAL_SBERT_HOST,
+            'port': 443,
+            'tls': True,
+            'external': True,
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
+            'needs': 'preprocessor',
         }, 768
 
     @staticmethod
@@ -161,6 +169,8 @@ class SearchApp(JinaNOWApp):
                 ]
             )
         provision_index = 'yes' if not testing else 'no'
+        provision_shards = os.getenv('PROVISION_SHARDS', '1')
+        provision_replicas = os.getenv('PROVISION_REPLICAS', '0')
 
         return {
             'name': 'indexer',
@@ -177,9 +187,10 @@ class SearchApp(JinaNOWApp):
                 'labels': {
                     'app': 'indexer',
                     'provision-index': provision_index,
+                    'provision-shards': provision_shards,
+                    'provision-replicas': provision_replicas,
                 },
-                'resources': {'instance': 'C6'},
-                'capacity': 'spot',
+                'resources': {'instance': 'C6', 'capacity': 'spot'},
             },
         }
 

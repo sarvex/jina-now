@@ -40,16 +40,23 @@ DEFAULT_LOGGING_CONFIG = {
 
 
 user_input_in_bff = UserInput()
-try:
-    with open(os.path.join(os.path.expanduser('~'), 'user_input.json'), 'r') as f:
-        user_input_dict = json.load(f)
-    for attr_name, prev_value in user_input_in_bff.__dict__.items():
-        setattr(
-            user_input_in_bff,
-            attr_name,
-            user_input_dict.get(attr_name, prev_value),
-        )
-except FileNotFoundError:
-    print('Could not find user input file in BFF')
-    print(f'used path: {os.path.join(os.path.expanduser("~"), "user_input.json")}')
-    print('but this can be okay')
+
+
+def init_user_input_in_bff():
+    global user_input_in_bff
+    try:
+        with open(os.path.join(os.path.expanduser('~'), 'user_input.json'), 'r') as f:
+            user_input_dict = json.load(f)
+        for attr_name, prev_value in user_input_in_bff.__dict__.items():
+            setattr(
+                user_input_in_bff,
+                attr_name,
+                user_input_dict.get(attr_name, prev_value),
+            )
+    except FileNotFoundError:
+        print('Could not find user input file in BFF')
+        print(f'used path: {os.path.join(os.path.expanduser("~"), "user_input.json")}')
+        print('but this can be okay')
+
+
+init_user_input_in_bff()

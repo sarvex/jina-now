@@ -11,24 +11,32 @@ from now.common.detect_schema import (
     get_s3_bucket_and_folder_prefix,
 )
 from now.constants import MAX_DOCS_FOR_TESTING, DatasetTypes
+from now.data_loading.create_dataclass import create_dataclass
 from now.data_loading.elasticsearch import ElasticsearchExtractor
 from now.log import yaspin_extended
 from now.now_dataclasses import UserInput
-from now.utils import flatten_dict, get_chunk_by_field_name, sigmap
+from now.utils.common.helpers import flatten_dict, sigmap
+from now.utils.docarray.helpers import get_chunk_by_field_name
 
 
-def load_data(
-    user_input: UserInput, data_class=None, print_callback=print
-) -> DocumentArray:
+def load_data(user_input: UserInput, print_callback=print) -> DocumentArray:
     """Based on the user input, this function will pull the configured DocumentArray dataset ready for the preprocessing
     executor.
 
     :param user_input: The configured user object. Result from the Jina Now cli dialog.
-    :param data_class: The dataclass that should be used for the DocumentArray.
     :param print_callback: The callback function that should be used to print the status.
     :return: The loaded DocumentArray.
     """
     da = None
+    if user_input.dataset_type in [DatasetTypes.DEMO, DatasetTypes.DOCARRAY]:
+        user_input.field_names_to_dataclass_fields = {
+            field: field for field in user_input.index_fields
+        }
+        data_class = None
+    else:
+        data_class, user_input.field_names_to_dataclass_fields = create_dataclass(
+            user_input=user_input
+        )
     if user_input.dataset_type in [DatasetTypes.DOCARRAY, DatasetTypes.DEMO]:
         print_callback('⬇  Pull DocumentArray dataset')
         da = _pull_docarray(user_input.dataset_name, user_input.admin_name)

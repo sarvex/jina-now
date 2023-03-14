@@ -14,12 +14,12 @@ from now.constants import (
 )
 from now.data_loading.elasticsearch import ElasticsearchConnector
 from now.now_dataclasses import UserInput
-from now.utils import (
-    RetryException,
+from now.utils.common.helpers import flatten_dict
+from now.utils.docarray.helpers import (
     docarray_typing_to_modality_string,
-    flatten_dict,
     modality_string_to_docarray_typing,
 )
+from now.utils.errors.helpers import RetryException
 
 
 def get_field_type(field_value):

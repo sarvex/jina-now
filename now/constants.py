@@ -2,12 +2,13 @@ from __future__ import annotations, print_function, unicode_literals
 
 from docarray.typing import Image, Text, Video
 
-from now.utils import BetterEnum
+from now.utils.common.helpers import BetterEnum
+
 
 NOW_GATEWAY_VERSION = '0.0.5-refactor-remove-redundant-code-1'
-NOW_PREPROCESSOR_VERSION = '0.0.124-refactor-no-batchwise-indexing-2'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.147-feat-integrate-elastic-manager-17'
-NOW_AUTOCOMPLETE_VERSION = '0.0.11-refactor-custom-gateway-103'
+NOW_PREPROCESSOR_VERSION = '0.0.125-test_coverage_preprocessor-11'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.149-feat-multi-filter-9'
+NOW_AUTOCOMPLETE_VERSION = '0.0.12-feat-dns-for-demo-2'
 
 
 class Apps(BetterEnum):
@@ -53,6 +54,7 @@ BASE_STORAGE_URL = (
 )
 
 EXTERNAL_CLIP_HOST = 'encoderclip-pretty-javelin-3aceb7f2cd.wolf.jina.ai'
+EXTERNAL_SBERT_HOST = 'encodersbert-flow-external-sbert-5cc8f2c38e.wolf.jina.ai'
 
 DEFAULT_FLOW_NAME = 'nowapi'
 PREFETCH_NR = 10
@@ -75,3 +77,15 @@ MODALITY_TO_MODELS = {
 }
 
 NOWGATEWAY_BFF_PORT = 8080
+
+# S3 dataset paths
+S3_CUSTOM_DATA_PATH = 's3://jina-now/test folder/end_to_end_data/'
+S3_CUSTOM_MM_DATA_PATH = 's3://jina-now/test folder/data/'
+
+NOWGATEWAY_FREE_CREDITS = 1000
+
+NOWGATEWAY_BASE_FEE_QUANTITY = 5 / 24
+NOWGATEWAY_SEARCH_FEE_QUANTITY = 0.3
+NOWGATEWAY_SEARCH_FEE_PRO_QUANTITY = 0.28
+
+NOWGATEWAY_BASE_FEE_SLEEP_INTERVAL = 60

@@ -1,10 +1,11 @@
 import base64
-from typing import List
+from typing import Any, Dict, List
 
 from docarray import Document
 from fastapi import APIRouter, Body
 
 from now.data_loading.create_dataclass import create_dataclass
+from now.executor.gateway.bff.app.settings import user_input_in_bff
 from now.executor.gateway.bff.app.v1.models.search import (
     SearchRequestModel,
     SearchResponseModel,
@@ -14,15 +15,17 @@ from now.executor.gateway.bff.app.v1.routers.helper import (
     field_dict_to_mm_doc,
     jina_client_post,
 )
-from now.utils import get_chunk_by_field_name, modality_string_to_docarray_typing
+from now.executor.gateway.hubble_report import report_search_usage
+from now.utils.docarray.helpers import (
+    get_chunk_by_field_name,
+    modality_string_to_docarray_typing,
+)
 
 search_examples = {
     'working_text': {
         'summary': 'A working example: search with text',
         'description': 'A working example which can be tried out. Search with text on the best artworks dataset.',
         'value': {
-            'host': 'grpcs://now-example-best-artworks.dev.jina.ai',
-            'port': 443,
             'limit': 10,
             'query': [
                 {
@@ -39,8 +42,6 @@ search_examples = {
         'summary': 'A working example: search with text and image',
         'description': 'A working example which can be tried out. Search with text and image on the best artworks dataset.',
         'value': {
-            'host': 'grpcs://now-example-best-artworks.dev.jina.ai',
-            'port': 443,
             'limit': 10,
             'query': [
                 {
@@ -62,12 +63,10 @@ search_examples = {
         'summary': 'A dummy example',
         'description': 'A dummy example,  do not run. For parameter reference only.',
         'value': {
-            'host': 'localhost',
-            'port': 31080,
             'limit': 10,
             'filters': {
-                'tags__color': {'$eq': 'blue'},
-                'tags__price': {'$lte': 100, '$gte': 50},
+                'color': ['blue', 'red'],
+                'price': {'lte': 100, 'gte': 50},
             },
             'query': [
                 {
@@ -77,7 +76,7 @@ search_examples = {
                 }
             ],
             'create_temp_link': False,
-            'semantic_scores': [('query_text_0', 'title', 'encoderclip', 1.0)],
+            'score_calculation': [['query_text_0', 'title', 'encoderclip', 1.0]],
         },
     },
 }
@@ -87,8 +86,6 @@ suggestion_examples = {
         'summary': 'A working example: get suggestions for a text query',
         'description': 'A working example which can be tried out. Get autocomplete suggestions for a text query.',
         'value': {
-            'host': 'grpcs://now-example-best-artworks.dev.jina.ai',
-            'port': 443,
             'text': 'cute ca',
         },
     },
@@ -96,8 +93,6 @@ suggestion_examples = {
         'summary': 'A dummy example',
         'description': 'A dummy example,  do not run. For parameter reference only.',
         'value': {
-            'host': 'localhost',
-            'port': 31080,
             'jwt': {'token': '<your token>'},
             'api_key': '<your api key>',
             'text': 'cute cats',
@@ -118,7 +113,6 @@ async def search(
 ):
     fields_modalities_mapping = {}
     fields_values_mapping = {}
-
     if len(data.query) == 0:
         raise ValueError('Query cannot be empty')
 
@@ -137,10 +131,12 @@ async def search(
         modalities_dict=fields_modalities_mapping,
         field_names_to_dataclass_fields=field_names_to_dataclass_fields,
     )
+    score_calculation = get_score_calculation(data, field_names_to_dataclass_fields)
+
     query_filter = {}
     for key, value in data.filters.items():
-        key = 'tags__' + key if not key.startswith('tags__') else key
-        query_filter[key] = {'$eq': value}
+        key = 'tags__' + key
+        query_filter[key] = value
 
     docs = await jina_client_post(
         endpoint='/search',
@@ -149,9 +145,7 @@ async def search(
             'limit': data.limit,
             'filter': query_filter,
             'create_temp_link': data.create_temp_link,
-            'semantic_scores': [
-                list(semantic_score) for semantic_score in data.semantic_scores
-            ],
+            'score_calculation': score_calculation,
             'get_score_breakdown': data.get_score_breakdown,
         },
         request_model=data,
@@ -193,7 +187,34 @@ async def search(
             fields=results,
         )
         matches.append(match)
+    # reporting the usage at the end to make sure the request was successful
+    report_search_usage(data.jwt)
     return matches
+
+
+def get_score_calculation(
+    data: SearchRequestModel, field_names_to_dataclass_fields: Dict[str, str]
+) -> List[List[Any]]:
+    """
+    Extract and process the score calculation from the request model to the format expected by the indexer.
+    This includes converting the field names to the dataclass field names, for the query and for the index fields.
+
+    :param data: the request model
+    :param field_names_to_dataclass_fields: a mapping from the field names in the request model to the field names in the dataclass
+    :return: the score calculation in the format expected by the indexer. Example:
+        [['query_text', 'my_product_image', 'encoderclip', 1], ['query_text', 'my_product_text', 'bm25', 1]]
+    """
+    score_calculation = []
+    for scr_calc in data.score_calculation:
+        scr_calc[0] = field_names_to_dataclass_fields[scr_calc[0]]
+        try:
+            scr_calc[1] = user_input_in_bff.field_names_to_dataclass_fields[scr_calc[1]]
+        except KeyError:
+            raise KeyError(
+                f'Field {scr_calc[1]} not found in dataclass. Please select possible values: {user_input_in_bff.field_names_to_dataclass_fields.keys()}'
+            )
+        score_calculation.append(scr_calc)
+    return score_calculation
 
 
 @router.post(
