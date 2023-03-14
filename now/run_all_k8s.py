@@ -12,8 +12,8 @@ from rich.table import Column, Table
 
 from now import run_backend
 from now.compare.compare_flows import compare_flows_for_queries
-from now.constants import DEMO_NS, FLOW_STATUS
-from now.deployment.deployment import cmd, list_all_wolf, status_wolf, terminate_wolf
+from now.constants import DEMO_NS
+from now.deployment.deployment import list_all_wolf, status_wolf, terminate_wolf
 from now.dialog import configure_user_input, maybe_prompt_user
 
 
@@ -57,37 +57,6 @@ def start_now(**kwargs):
         'host_grpc': gateway_host_grpc,
         'secured': user_input.secured,
     }
-
-
-def fetch_logs_now(**kwargs):
-    _result, flow_id, cluster = _get_flow_status(action='log', **kwargs)
-
-    if _result is not None and _result['status']['phase'] == FLOW_STATUS:
-        namespace = _result["spec"]["jcloud"]["namespace"]
-
-    stdout, stderr = cmd(f"kubectl get pods -n {namespace}")
-
-    pods = []
-    for i, line in enumerate(stdout.decode().split("\n")):
-        if i == 0:
-            continue
-        cols = line.split()
-        if len(cols) > 0:
-            pod_name = cols[0]
-            pods.append(pod_name)
-
-    questions = [
-        {
-            'type': 'list',
-            'name': 'pod',
-            'message': 'Which pod do you want to check logs for?',
-            'choices': pods,
-        }
-    ]
-    pod = maybe_prompt_user(questions, 'pod', **kwargs)
-
-    container = "gateway" if "gateway" in pod else "executor"
-    cmd(f"kubectl logs {pod} -n {namespace} -c {container}", std_output=True)
 
 
 def compare_flows(**kwargs):
