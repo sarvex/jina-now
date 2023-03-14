@@ -4,6 +4,7 @@ import os.path
 import cowsay
 import requests
 from docarray import DocumentArray
+from hubble import Client
 from rich import box
 from rich.console import Console
 from rich.panel import Panel
@@ -17,19 +18,17 @@ from now.dialog import configure_user_input, maybe_prompt_user
 
 
 def stop_now(**kwargs):
-    _result, flow_id, cluster = _get_flow_status(action='delete', **kwargs)
-    print('RES: ', _result)
-    print('FLOW_ID: ', flow_id)
-    if _result is not None and _result['status']['phase'] == FLOW_STATUS:
-        terminate_wolf(flow_id)
-        from hubble import Client
-
-        cookies = {'st': Client().token}
-        requests.delete(
-            f'https://storefrontapi.nowrun.jina.ai/api/v1/schedule_sync/{flow_id}',
-            cookies=cookies,
-        )
-    cowsay.cow(f'remote Flow `{cluster}` removed')
+    if 'flow_id' not in kwargs:
+        _, flow_id, _ = _get_flow_status(action='delete', **kwargs)
+    else:
+        flow_id = kwargs['flow_id']
+    terminate_wolf(flow_id)
+    cookies = {'st': Client().token}
+    requests.delete(
+        f'https://storefrontapi.nowrun.jina.ai/api/v1/schedule_sync/{flow_id}',
+        cookies=cookies,
+    )
+    cowsay.cow(f'remote Flow with id`{flow_id}` removed')
 
 
 def start_now(**kwargs):
