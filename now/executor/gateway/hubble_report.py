@@ -40,15 +40,6 @@ def base_fee_thread(user_token):
             quantity_basic=NOWGATEWAY_BASE_FEE_QUANTITY,
             quantity_pro=NOWGATEWAY_BASE_FEE_QUANTITY,
         )
-        logger.info(
-            {
-                'event': 'base_fee_report',
-                'timestamp': current_time(),
-                'user_token': user_token,
-                'quantity_basic': NOWGATEWAY_BASE_FEE_QUANTITY,
-                'quantity_pro': NOWGATEWAY_BASE_FEE_QUANTITY,
-            }
-        )
 
 
 def report_search_usage(user_token):
@@ -56,15 +47,6 @@ def report_search_usage(user_token):
         user_token=user_token,
         quantity_basic=NOWGATEWAY_SEARCH_FEE_QUANTITY,
         quantity_pro=NOWGATEWAY_SEARCH_FEE_PRO_QUANTITY,
-    )
-    logger.info(
-        {
-            'event': 'search_fee_report',
-            'timestamp': current_time(),
-            'user_token': user_token,
-            'quantity_basic': NOWGATEWAY_SEARCH_FEE_QUANTITY,
-            'quantity_pro': NOWGATEWAY_SEARCH_FEE_QUANTITY,
-        }
     )
 
 
@@ -87,7 +69,23 @@ def report(user_token, quantity_basic, quantity_pro):
             quantity = quantity_pro
         if can_charge(summary):
             payment_client.report_usage(authorized_jwt, app_id, product_id, quantity)
+            logger.info(
+                {
+                    'event': 'report billing success',
+                    'timestamp': current_time(),
+                    'user_token': user_token,
+                    'quantity': quantity,
+                }
+            )
         else:
+            logger.info(
+                {
+                    'event': 'report billing failed',
+                    'timestamp': current_time(),
+                    'user_token': user_token,
+                    'quantity': quantity,
+                }
+            )
             return JSONResponse(
                 status_code=status.HTTP_403_FORBIDDEN,
                 content={
