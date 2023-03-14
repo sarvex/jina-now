@@ -69,23 +69,18 @@ def report(user_token, quantity_basic, quantity_pro):
             quantity = quantity_pro
         if can_charge(summary):
             payment_client.report_usage(authorized_jwt, app_id, product_id, quantity)
-            logger.info(
-                {
-                    'event': 'report billing success',
-                    'timestamp': current_time(),
-                    'user_token': user_token,
-                    'quantity': quantity,
-                }
-            )
+            charged_info = 'report billing success'
         else:
-            logger.info(
-                {
-                    'event': 'report billing failed',
-                    'timestamp': current_time(),
-                    'user_token': user_token,
-                    'quantity': quantity,
-                }
-            )
+            charged_info = 'report billing failed'
+        logger.info(
+            {
+                'event': charged_info,
+                'timestamp': current_time(),
+                'user_token': user_token,
+                'quantity': quantity,
+            }
+        )
+        if charged_info == 'report billing failed':
             return JSONResponse(
                 status_code=status.HTTP_403_FORBIDDEN,
                 content={
@@ -93,7 +88,7 @@ def report(user_token, quantity_basic, quantity_pro):
                 },
             )
     except Exception as e:
-        print(e)
+        logger.critical(e)
 
 
 def get_summary(authorized_jwt):
