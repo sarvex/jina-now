@@ -13,7 +13,7 @@ from starlette.routing import Mount
 import now.executor.gateway.bff.app.settings as api_settings
 from now import __version__
 from now.executor.gateway.bff.app.decorators import api_method, timed
-from now.executor.gateway.bff.app.v1.routers import admin, info, search
+from now.executor.gateway.bff.app.v1.routers.app import extras_router, search_app_router
 
 logging.config.dictConfig(api_settings.DEFAULT_LOGGING_CONFIG)
 logger = logging.getLogger('bff.app')
@@ -91,24 +91,18 @@ def build_app():
     # search app router
     search_app_mount = '/api/v1/search-app'
     search_app_app = get_app_instance()
-    search_app_app.include_router(search.router, tags=['Search App'])
+    search_app_app.include_router(search_app_router)
 
     # Admin router
     admin_mount = '/api/v1/admin'
     admin_app = get_app_instance()
-    admin_app.include_router(admin.router, tags=['admin'])
-
-    # frontend router
-    info_mount = '/api/v1/info'
-    info_app = get_app_instance()
-    info_app.include_router(info.router, tags=['info'])
+    admin_app.include_router(extras_router)
 
     # Mount them - for other modalities just add an app instance
     app = Starlette(
         routes=[
             Mount(search_app_mount, search_app_app),
             Mount(admin_mount, admin_app),
-            Mount(info_mount, info_app),
         ]
     )
     return app
