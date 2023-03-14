@@ -9,8 +9,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Column, Table
 
-from now import run_backend
-from now.compare.compare_flows import compare_flows_for_queries
+from now import compare, run_backend
 from now.constants import DEMO_NS, FLOW_STATUS
 from now.deployment import deployment
 from now.deployment.deployment import terminate_wolf
@@ -57,6 +56,15 @@ def start_now(**kwargs):
         'host_grpc': gateway_host_grpc,
         'secured': user_input.secured,
     }
+
+
+def get_docarray(dataset):
+    if os.path.exists(dataset):
+        print(f'Loading queries from {dataset}')
+        da = DocumentArray.load_binary(dataset)
+    else:
+        print(f'Pulling queries from {dataset}')
+        da = DocumentArray.pull(name=dataset, show_progress=True)
 
 
 def compare_flows(**kwargs):
@@ -109,12 +117,7 @@ def compare_flows(**kwargs):
         'dataset',
         **kwargs,
     )
-    if os.path.exists(dataset):
-        print(f'Loading queries from {dataset}')
-        da = DocumentArray.load_binary(dataset)
-    else:
-        print(f'Pulling queries from {dataset}')
-        da = DocumentArray.pull(name=dataset, show_progress=True)
+    da = get_docarray(dataset)
     if not da[0].is_multimodal:
         raise ValueError(
             f'The DocArray {dataset} is not a multimodal DocumentArray.'
@@ -163,7 +166,7 @@ def compare_flows(**kwargs):
     )
     results_per_table = int(results_per_table) if results_per_table else 20
 
-    compare_flows_for_queries(
+    compare.compare_flows.compare_flows_for_queries(
         da=da,
         flow_ids_http_score_calculation=flow_ids_http_score_calculation,
         limit=limit,
