@@ -20,6 +20,11 @@ from now.demo_data import AVAILABLE_DATASETS, DemoDataset, DemoDatasetNames
 from now.executor.name_to_id_map import name_to_id_map
 from now.now_dataclasses import UserInput
 
+JINA_LOG_LEVEL = os.environ.get("JINA_LOG_LEVEL", "DEBUG")
+AUTOCOMPLETE_LOG_LEVEL = os.environ.get("AUTOCOMPLETE_LOG_LEVEL", JINA_LOG_LEVEL)
+PREPROCESSOR_LOG_LEVEL = os.environ.get("PREPROCESSOR_LOG_LEVEL", JINA_LOG_LEVEL)
+INDEXER_LOG_LEVEL = os.environ.get("INDEXER_LOG_LEVEL", JINA_LOG_LEVEL)
+
 
 class SearchApp(JinaNOWApp):
     def __init__(self):
@@ -73,7 +78,6 @@ class SearchApp(JinaNOWApp):
             if not testing
             else 'NOWAutoCompleteExecutor2',
             'needs': 'gateway',
-            'env': {'JINA_LOG_LEVEL': os.environ.get('JINA_LOG_LEVEL', 'DEBUG')},
             'jcloud': {
                 'replicas': 1,
                 # 'autoscale': {
@@ -88,6 +92,7 @@ class SearchApp(JinaNOWApp):
                     'storage': {'kind': 'efs', 'size': '1M'},
                 },
             },
+            'env': {'JINA_LOG_LEVEL': AUTOCOMPLETE_LOG_LEVEL},
         }
 
     @staticmethod
@@ -108,7 +113,7 @@ class SearchApp(JinaNOWApp):
                 # },
                 'resources': {'instance': 'C4', 'capacity': 'spot'},
             },
-            'env': {'JINA_LOG_LEVEL': os.environ.get('JINA_LOG_LEVEL', 'DEBUG')},
+            'env': {'JINA_LOG_LEVEL': PREPROCESSOR_LOG_LEVEL},
         }
 
     @staticmethod
@@ -180,7 +185,6 @@ class SearchApp(JinaNOWApp):
             'uses': f'jinahub+docker://{name_to_id_map.get("NOWElasticIndexer")}/{NOW_ELASTIC_INDEXER_VERSION}'
             if not testing
             else 'NOWElasticIndexer',
-            'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'uses_with': {
                 'document_mappings': document_mappings_list,
             },
@@ -194,6 +198,7 @@ class SearchApp(JinaNOWApp):
                 },
                 'resources': {'instance': 'C6', 'capacity': 'spot'},
             },
+            'env': {'JINA_LOG_LEVEL': INDEXER_LOG_LEVEL},
         }
 
     def get_executor_stubs(
