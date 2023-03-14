@@ -1,5 +1,7 @@
+import datetime
 import logging
 import os
+import sys
 import threading
 from time import sleep
 
@@ -15,8 +17,14 @@ from now.constants import (
 )
 
 logger = logging.getLogger(__file__)
+logger.setLevel(logging.INFO)
+logger.addHandler(logging.StreamHandler(sys.stdout))
 payment_client = None
 authorized_jwt = None
+
+
+def current_time():
+    return datetime.datetime.utcnow().isoformat() + 'Z'
 
 
 def start_base_fee_thread(user_token):
@@ -32,6 +40,15 @@ def base_fee_thread(user_token):
             quantity_basic=NOWGATEWAY_BASE_FEE_QUANTITY,
             quantity_pro=NOWGATEWAY_BASE_FEE_QUANTITY,
         )
+        logger.info(
+            {
+                'event': 'base_fee_report',
+                'timestamp': current_time(),
+                'user_token': user_token,
+                'quantity_basic': NOWGATEWAY_BASE_FEE_QUANTITY,
+                'quantity_pro': NOWGATEWAY_BASE_FEE_QUANTITY,
+            }
+        )
 
 
 def report_search_usage(user_token):
@@ -39,6 +56,15 @@ def report_search_usage(user_token):
         user_token=user_token,
         quantity_basic=NOWGATEWAY_SEARCH_FEE_QUANTITY,
         quantity_pro=NOWGATEWAY_SEARCH_FEE_PRO_QUANTITY,
+    )
+    logger.info(
+        {
+            'event': 'search_fee_report',
+            'timestamp': current_time(),
+            'user_token': user_token,
+            'quantity_basic': NOWGATEWAY_SEARCH_FEE_QUANTITY,
+            'quantity_pro': NOWGATEWAY_SEARCH_FEE_QUANTITY,
+        }
     )
 
 
