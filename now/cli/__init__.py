@@ -56,8 +56,6 @@ def cli(args=None):
         exit(0)
     if task == 'start':
         return start_now(**kwargs)
-    elif task == 'stop':
-        stop_now(**kwargs)
     elif task == 'compare':
         compare_flows(**kwargs)
     elif task == 'survey':

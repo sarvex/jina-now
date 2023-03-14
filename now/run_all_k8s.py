@@ -1,10 +1,7 @@
 import json
 import os.path
 
-import cowsay
-import requests
 from docarray import DocumentArray
-from hubble import Client
 from rich import box
 from rich.console import Console
 from rich.panel import Panel
@@ -13,22 +10,7 @@ from rich.table import Column, Table
 from now import run_backend
 from now.compare.compare_flows import compare_flows_for_queries
 from now.constants import DEMO_NS
-from now.deployment.deployment import list_all_wolf, status_wolf, terminate_wolf
 from now.dialog import configure_user_input, maybe_prompt_user
-
-
-def stop_now(**kwargs):
-    if 'flow_id' not in kwargs:
-        _, flow_id, _ = _get_flow_status(action='delete', **kwargs)
-    else:
-        flow_id = kwargs['flow_id']
-    terminate_wolf(flow_id)
-    cookies = {'st': Client().token}
-    requests.delete(
-        f'https://storefrontapi.nowrun.jina.ai/api/v1/schedule_sync/{flow_id}',
-        cookies=cookies,
-    )
-    cowsay.cow(f'remote Flow with id`{flow_id}` removed')
 
 
 def start_now(**kwargs):
@@ -170,34 +152,6 @@ def compare_flows(**kwargs):
         results_per_table=results_per_table,
         disable_to_datauri=disable_to_datauri,
     )
-
-
-def _get_flow_status(action, **kwargs):
-    choices = []
-    # Add all remote Flows that exists with the namespace `nowapi`
-    alive_flows = list_all_wolf(status='Serving')
-    for flow_details in alive_flows:
-        choices.append(flow_details['name'])
-    if len(choices) == 0:
-        cowsay.cow(f'nothing to {action}')
-        return
-    else:
-        questions = [
-            {
-                'type': 'list',
-                'name': 'cluster',
-                'message': f'Which cluster do you want to {action}?',
-                'choices': choices,
-            }
-        ]
-        cluster = maybe_prompt_user(questions, 'cluster', **kwargs)
-
-    flow = [x for x in alive_flows if x['name'] == cluster][0]
-    flow_id = flow['id']
-    _result = status_wolf(flow_id)
-    if _result is None:
-        print(f'❎ Flow not found in JCloud. Likely, it has been deleted already')
-    return _result, flow_id, cluster
 
 
 def _generate_info_table(
