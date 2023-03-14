@@ -1,7 +1,6 @@
 import json
 import os
 from functools import lru_cache
-from pprint import pprint
 from typing import Dict, List
 
 import hubble
@@ -35,8 +34,8 @@ def secure_request(level: int, on: str = None):
 
             cls_instance = args[0]
             cls_instance.logger.info(f"responding to endpoint")
-            if cls_instance.logger.logger.level <= LogVerbosity.DEBUG:
-                pprint(kwargs)
+            if 'args' in kwargs:
+                cls_instance.logger.debug(f"args: {kwargs['args']}")
 
             if 'docs' in kwargs and kwargs['docs']:
                 f"processing {len(kwargs['docs'])} docs"
