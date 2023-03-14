@@ -62,14 +62,6 @@ def base64_image_string(resources_folder_path: str) -> str:
     return img_string
 
 
-@pytest.fixture
-def base64_image_string(resources_folder_path: str) -> str:
-    with open(os.path.join(resources_folder_path, 'image', 'a.jpg'), 'rb') as f:
-        binary = f.read()
-        img_string = base64.b64encode(binary).decode('utf-8')
-    return img_string
-
-
 @pytest.fixture(scope='session')
 def service_account_file_path() -> str:
     return os.path.join(
