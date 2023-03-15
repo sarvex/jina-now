@@ -6,10 +6,10 @@ from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-NOW_GATEWAY_VERSION = '0.0.5-test-curation-20'
-NOW_PREPROCESSOR_VERSION = '0.0.124-test-curation-20'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.149-test-curation-20'
-NOW_AUTOCOMPLETE_VERSION = '0.0.12-test-curation-20'
+NOW_GATEWAY_VERSION = '0.0.5-test-curation-21'
+NOW_PREPROCESSOR_VERSION = '0.0.124-test-curation-21'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.149-test-curation-21'
+NOW_AUTOCOMPLETE_VERSION = '0.0.12-test-curation-21'
 
 
 class Apps(BetterEnum):
