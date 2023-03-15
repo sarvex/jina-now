@@ -2,13 +2,11 @@ import asyncio
 import logging
 import os
 import subprocess
-import sys
 
 from jcloud.flow import CloudFlow
 
 logger = logging.getLogger(__file__)
 logger.setLevel(os.environ.get('JINA_LOG_LEVEL', 'INFO'))
-logger.addHandler(logging.StreamHandler(sys.stdout))
 
 
 def deploy_wolf(path: str):

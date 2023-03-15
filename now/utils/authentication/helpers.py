@@ -50,8 +50,6 @@ def get_info_hubble(user_input):
         raise ValueError(
             'M2M_TOKEN not set in the environment. Please set before running CLI'
         )
-    logger.info(f'M2M_TOKEN: {m2m_token[:10]}...{m2m_token[-10:]}')
-    logger.info(f'User token: {client.token[:10]}...{client.token[-10:]}')
     payment_client = PaymentClient(m2m_token=m2m_token)
     user_input.authorized_jwt = payment_client.get_authorized_jwt(
         user_token=client.token

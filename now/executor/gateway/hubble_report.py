@@ -1,7 +1,6 @@
 import datetime
 import logging
 import os
-import sys
 import threading
 from time import sleep
 
@@ -16,7 +15,6 @@ from now.constants import (
 
 logger = logging.getLogger(__file__)
 logger.setLevel(os.environ.get('JINA_LOG_LEVEL', 'INFO'))
-logger.addHandler(logging.StreamHandler(sys.stdout))
 authorized_jwt = None
 
 
