@@ -1,4 +1,5 @@
 import pytest
+from pytest_mock import MockFixture
 
 from now.client import Client
 from now.executor.gateway.bff.app.v1.routers import helper
@@ -36,7 +37,7 @@ async def test_send_request_not_search_endpoint():
 
 
 @pytest.mark.asyncio
-async def test_send_requests(mocker):
+async def test_send_requests(mocker: MockFixture):
     mock_async_func = mocker.AsyncMock(return_value={'status_code': 200})
     helper.jina_client_post = mock_async_func
 
