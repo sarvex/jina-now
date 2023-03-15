@@ -23,16 +23,16 @@ def current_time():
     return datetime.datetime.utcnow().isoformat() + 'Z'
 
 
-def start_base_fee_thread(user_token):
-    thread = threading.Thread(target=base_fee_thread, args=(user_token,))
+def start_base_fee_thread(authorized_jwt):
+    thread = threading.Thread(target=base_fee_thread, args=(authorized_jwt,))
     thread.start()
 
 
-def base_fee_thread(user_token):
+def base_fee_thread(authorized_jwt):
     while True:
         sleep(NOWGATEWAY_BASE_FEE_SLEEP_INTERVAL)
         report(
-            user_token=user_token,
+            authorized_jwt=authorized_jwt,
             quantity_basic=NOWGATEWAY_BASE_FEE_QUANTITY,
             quantity_pro=NOWGATEWAY_BASE_FEE_QUANTITY,
         )
@@ -46,17 +46,18 @@ def report_search_usage(user_token):
     )
 
 
-def report(user_token, quantity_basic, quantity_pro):
+def report(quantity_basic, quantity_pro, authorized_jwt=None, user_token=None):
+    if not authorized_jwt and not user_token:
+        raise Exception('Either authorized_jwt or user_token must be provided')
     app_id = 'search'
     product_id = 'mm_query'
     try:
         m2m_token = os.environ.get('M2M_TOKEN')
         if not m2m_token:
-            raise Exception('M2M_TOKEN not set in the environment')
+            logger.info('M2M_TOKEN not set in the environment')
         payment_client = PaymentClient(m2m_token=m2m_token)
-        authorized_jwt = payment_client.get_authorized_jwt(user_token=user_token)[
-            'data'
-        ]
+        if not authorized_jwt:
+            authorized_jwt = payment_client.get_authorized_jwt(user_token)['data']
         summary = get_summary(authorized_jwt, payment_client)
         logger.info(f'Payment summary: \n{summary}')
         if summary['internal_product_id'] == 'free-plan':

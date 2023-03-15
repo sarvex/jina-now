@@ -1,10 +1,12 @@
 import json
+import logging
 import os
 import shutil
 from time import sleep
 from typing import Dict, List, Tuple
 
 import streamlit.web.bootstrap
+from hubble.payment.client import PaymentClient
 from jina import Gateway
 from jina.enums import GatewayProtocolType
 from jina.serve.runtimes.gateway import CompositeGateway
@@ -127,8 +129,15 @@ class NOWGateway(CompositeGateway):
 
         self.setup_nginx()
         self.nginx_was_shutdown = False
+        m2m_token = os.environ.get('M2M_TOKEN')
+        if not m2m_token:
+            logging.info('M2M_TOKEN not set in the environment')
+        payment_client = PaymentClient(m2m_token=m2m_token)
+        authorized_jwt = payment_client.get_authorized_jwt(
+            user_token=self.user_input.jwt['token']
+        )['data']
         try:
-            start_base_fee_thread(self.user_input.jwt['token'])
+            start_base_fee_thread(authorized_jwt)
         except Exception as e:
             self.logger.error(f'Could not start base fee thread: {e}')
 
