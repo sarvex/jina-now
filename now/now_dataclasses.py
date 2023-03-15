@@ -43,7 +43,6 @@ class UserInput(BaseModel):
     es_additional_args: Optional[Dict] = None
 
     # cluster related
-    cluster: Optional[str] = None
     secured: Optional[StrictBool] = False
     jwt: Optional[Dict[str, str]] = None
     admin_name: Optional[str] = None
