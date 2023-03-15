@@ -5,8 +5,6 @@ import sys
 import threading
 from time import sleep
 
-from fastapi import status
-from fastapi.responses import JSONResponse
 from hubble.payment.client import PaymentClient
 
 from now.constants import (
@@ -17,7 +15,7 @@ from now.constants import (
 )
 
 logger = logging.getLogger(__file__)
-logger.setLevel(logging.INFO)
+logger.setLevel(os.environ.get('JINA_LOG_LEVEL', 'INFO'))
 logger.addHandler(logging.StreamHandler(sys.stdout))
 
 
@@ -60,30 +58,18 @@ def report(user_token, quantity_basic, quantity_pro):
             'data'
         ]
         summary = get_summary(authorized_jwt, payment_client)
+        logger.info(f'Payment summary: \n{summary}')
         if summary['internal_product_id'] == 'free-plan':
             quantity = quantity_basic
         else:
             quantity = quantity_pro
         if can_charge(summary):
             payment_client.report_usage(authorized_jwt, app_id, product_id, quantity)
-            charged_info = 'report billing success'
-        else:
-            charged_info = 'report billing failed'
-        logger.info(
-            {
-                'event': charged_info,
-                'timestamp': current_time(),
-                'user_token': user_token,
-                'quantity': quantity,
-            }
-        )
-        if charged_info == 'report billing failed':
-            return JSONResponse(
-                status_code=status.HTTP_403_FORBIDDEN,
-                content={
-                    'message': 'User has reached quota limit, please upgrade subscription'
-                },
+            logger.info(
+                f'`{quantity}` credits charged for {user_token} at {current_time()}'
             )
+        else:
+            logger.info(f'Could not charge {user_token}. Check payment summary')
     except Exception as e:
         import traceback
 

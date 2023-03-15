@@ -82,8 +82,8 @@ class NOWGateway(CompositeGateway):
         # need to update port ot 8082, as nginx will listen on 8081
         http_idx = kwargs['runtime_args']['protocol'].index(GatewayProtocolType.HTTP)
         http_port = kwargs['runtime_args']['port'][http_idx]
-        gprc_idx = kwargs['runtime_args']['protocol'].index(GatewayProtocolType.GRPC)
-        grpc_port = kwargs['runtime_args']['port'][gprc_idx]
+        grpc_idx = kwargs['runtime_args']['protocol'].index(GatewayProtocolType.GRPC)
+        grpc_port = kwargs['runtime_args']['port'][grpc_idx]
         if kwargs['runtime_args']['port'][http_idx] != 8081:
             raise ValueError(
                 f'Please, let http port ({http_port}) be 8081 for nginx to work'
