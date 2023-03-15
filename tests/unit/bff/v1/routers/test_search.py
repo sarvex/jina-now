@@ -112,6 +112,7 @@ def test_image_search_parse_response(
 def get_user_input() -> UserInput:
     user_input = UserInput()
     user_input.index_fields = ['product_image', 'product_description']
+    user_input.filter_fields = ['color', 'price']
     user_input.field_names_to_dataclass_fields = {
         'product_image': 'product_image',
         'product_description': 'product_description',
@@ -150,3 +151,29 @@ def test_text_search_with_score_calculation(
         ['text_0', 'product_image', 'clip', 1],
         ['text_0', 'product_description', 'bm25', 1],
     ]
+
+
+@pytest.mark.parametrize('dump_user_input', [get_user_input()], indirect=True)
+def test_text_search_with_filters(
+    dump_user_input,
+    client_with_mocked_jina_client: Callable[[DocumentArray], requests.Session],
+    sample_search_response_text: DocumentArray,
+    base64_image_string: str,
+):
+    """
+    Test that filters can be passed as parameters to the search endpoint.
+    """
+    response = client_with_mocked_jina_client(sample_search_response_text).post(
+        '/api/v1/search-app/search',
+        json={
+            'query': [
+                {'name': 'text', 'value': 'this crazy text', 'modality': 'text'},
+            ],
+            'filters': {'color': ['green', 'blue'], 'price': {'gt': 10, 'lt': 20}},
+        },
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+    results = DocumentArray.from_json(response.content)
+    # the mock writes the call args into the response tags
+    assert results[0].tags['parameters']['filter']

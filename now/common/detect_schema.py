@@ -14,12 +14,12 @@ from now.constants import (
 )
 from now.data_loading.elasticsearch import ElasticsearchConnector
 from now.now_dataclasses import UserInput
-from now.utils import (
-    RetryException,
+from now.utils.common.helpers import flatten_dict
+from now.utils.docarray.helpers import (
     docarray_typing_to_modality_string,
-    flatten_dict,
     modality_string_to_docarray_typing,
 )
+from now.utils.errors.helpers import RetryException
 
 
 def get_field_type(field_value):
@@ -232,6 +232,14 @@ def _extract_field_names_sub_folders(
     return fields_dict
 
 
+def get_s3_file_paths(objects):
+    return [
+        obj.key
+        for obj in objects
+        if not obj.key.endswith('/') and not obj.key.split('/')[-1].startswith('.')
+    ]
+
+
 def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
     """
     Get the schema from a S3 bucket
@@ -250,19 +258,12 @@ def set_field_names_from_s3_bucket(user_input: UserInput, **kwargs):
     )
     if folder_structure == 'single_folder':
         objects = list(bucket.objects.filter(Prefix=folder_prefix).limit(100))
-        file_paths = [
-            obj.key
-            for obj in objects
-            if not obj.key.endswith('/') and not obj.key.split('/')[-1].startswith('.')
-        ]
-        fields_dict = _extract_field_names_single_folder(file_paths, '/')
+        first_folder_objects = get_s3_file_paths(objects)
+        fields_dict = _extract_field_names_single_folder(first_folder_objects, '/')
     elif folder_structure == 'sub_folders':
         first_folder = '/'.join(first_file.split('/')[:-1])
-        first_folder_objects = [
-            obj.key
-            for obj in bucket.objects.filter(Prefix=first_folder)
-            if not obj.key.endswith('/') and not obj.key.split('/')[-1].startswith('.')
-        ]
+        objects = bucket.objects.filter(Prefix=first_folder)
+        first_folder_objects = get_s3_file_paths(objects)
         fields_dict = _extract_field_names_sub_folders(
             first_folder_objects, '/', bucket
         )

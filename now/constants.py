@@ -2,12 +2,12 @@ from __future__ import annotations, print_function, unicode_literals
 
 from docarray.typing import Image, Text, Video
 
-from now.utils import BetterEnum
+from now.utils.common.helpers import BetterEnum
 
-NOW_GATEWAY_VERSION = '0.0.6-feat-alternative-hubble-report-15'
-NOW_PREPROCESSOR_VERSION = '0.0.125-feat-alternative-hubble-report-15'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.149-feat-alternative-hubble-report-15'
-NOW_AUTOCOMPLETE_VERSION = '0.0.12-feat-alternative-hubble-report-15'
+NOW_GATEWAY_VERSION = '0.0.6-feat-add-blling-logging-4'
+NOW_PREPROCESSOR_VERSION = '0.0.125-test_coverage_preprocessor-11'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.149-feat-multi-filter-9'
+NOW_AUTOCOMPLETE_VERSION = '0.0.12-feat-dns-for-demo-2'
 
 
 class Apps(BetterEnum):

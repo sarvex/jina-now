@@ -13,15 +13,22 @@ import pytest
 from docarray import Document, DocumentArray, dataclass, field
 from docarray.typing import Image, Text, Video
 from elasticsearch import Elasticsearch
+from tests.integration.local.conftest import get_request_body
 from tests.unit.data_loading.elastic.example_dataset import ExampleDataset
 from tests.unit.data_loading.elastic.utils import delete_es_index
 from urllib3.exceptions import InsecureRequestWarning, SecurityWarning
 
+from now.common.options import construct_app
+from now.constants import S3_CUSTOM_MM_DATA_PATH, Apps, DatasetTypes, Models
+from now.data_loading.create_dataclass import create_dataclass
+from now.data_loading.data_loading import _list_s3_file_paths, load_data
 from now.data_loading.elasticsearch import ElasticsearchConnector
+from now.demo_data import DemoDatasetNames
 from now.deployment.deployment import cmd
 from now.executor.preprocessor import NOWPreprocessor
+from now.executor.preprocessor.s3_download import get_bucket
 from now.now_dataclasses import UserInput
-from now.utils import get_aws_profile
+from now.utils.authentication.helpers import get_aws_profile
 
 
 @pytest.fixture()
@@ -45,14 +52,6 @@ def resources_folder_path(tests_folder_path) -> str:
 @pytest.fixture()
 def tests_folder_path() -> str:
     return os.path.join(os.path.dirname(os.path.realpath(__file__)))
-
-
-@pytest.fixture
-def base64_image_string(resources_folder_path: str) -> str:
-    with open(os.path.join(resources_folder_path, 'image', 'a.jpg'), 'rb') as f:
-        binary = f.read()
-        img_string = base64.b64encode(binary).decode('utf-8')
-    return img_string
 
 
 @pytest.fixture
@@ -374,3 +373,178 @@ def wait_until_cluster_is_up(es, hosts):
             )
     if retries >= MAX_RETRIES:
         raise RuntimeError(f'Elasticsearch is not running after {MAX_RETRIES} retries.')
+
+
+@pytest.fixture(scope='session')
+def pulled_local_folder_data(tmpdir_factory):
+    aws_profile = get_aws_profile()
+    bucket = get_bucket(
+        uri=S3_CUSTOM_MM_DATA_PATH,
+        aws_access_key_id=aws_profile.aws_access_key_id,
+        aws_secret_access_key=aws_profile.aws_secret_access_key,
+        region_name=aws_profile.region,
+    )
+    folder_prefix = '/'.join(S3_CUSTOM_MM_DATA_PATH.split('/')[3:])
+    file_paths = _list_s3_file_paths(bucket, folder_prefix)
+    temp_dir = str(tmpdir_factory.mktemp('local_folder_data'))
+    for path in file_paths:
+        local_path = os.path.join(temp_dir, path)
+        if not os.path.exists(os.path.dirname(local_path)):
+            os.makedirs(os.path.dirname(local_path))
+        bucket.download_file(path, local_path)
+    return os.path.join(temp_dir, folder_prefix)
+
+
+@pytest.fixture
+def data_with_tags(mm_dataclass):
+    user_input = UserInput()
+    user_input.admin_name = 'team-now'
+    user_input.dataset_type = DatasetTypes.DOCARRAY
+    user_input.index_fields = ['text_field']
+    user_input.filter_fields = ['color']
+    user_input.index_field_candidates_to_modalities = {'text_field': Text}
+    user_input.field_names_to_dataclass_fields = {'text_field': 'text_field'}
+    user_input.app_instance = construct_app(Apps.SEARCH_APP)
+    user_input.flow_name = 'nowapi-local'
+    user_input.model_choices = {'text_field_model': [Models.CLIP_MODEL]}
+
+    docs = DocumentArray([Document(mm_dataclass(text_field='test')) for _ in range(10)])
+    for index, doc in enumerate(docs):
+        doc.tags['color'] = 'Blue Color' if index == 0 else 'Red Color'
+        doc.tags['price'] = 0.5 + index
+
+    return docs, user_input
+
+
+@pytest.fixture
+def api_key_data(mm_dataclass):
+    user_input = UserInput()
+    user_input.admin_name = 'team-now'
+    user_input.dataset_type = DatasetTypes.DOCARRAY
+    user_input.index_fields = ['text_field']
+    user_input.index_field_candidates_to_modalities = {'text_field': Text}
+    user_input.field_names_to_dataclass_fields = {'text_field': 'text_field'}
+    user_input.app_instance = construct_app(Apps.SEARCH_APP)
+    user_input.flow_name = 'nowapi-local'
+    user_input.model_choices = {'text_field_model': [Models.CLIP_MODEL]}
+    user_input.admin_emails = [
+        hubble.Client(
+            token=get_request_body(secured=True)['jwt']['token'],
+            max_retries=None,
+            jsonify=True,
+        )
+        .get_user_info()['data']
+        .get('email')
+    ]
+    user_input.secured = True
+    docs = DocumentArray([Document(mm_dataclass(text_field='test')) for _ in range(10)])
+    return docs, user_input
+
+
+@pytest.fixture
+def artworks_data():
+    user_input = UserInput()
+    user_input.admin_name = 'team-now'
+    user_input.dataset_type = DatasetTypes.DEMO
+    user_input.dataset_name = DemoDatasetNames.BEST_ARTWORKS
+    user_input.index_fields = ['image']
+    user_input.filter_fields = ['label']
+    user_input.index_field_candidates_to_modalities = {'image': Image}
+    user_input.field_names_to_dataclass_fields = {'image': 'image'}
+    user_input.app_instance = construct_app(Apps.SEARCH_APP)
+    user_input.flow_name = 'nowapi-local'
+    user_input.model_choices = {'image_model': [Models.CLIP_MODEL]}
+
+    docs = load_data(user_input)
+    return docs, user_input
+
+
+@pytest.fixture
+def pop_lyrics_data():
+    user_input = UserInput()
+    user_input.admin_name = 'team-now'
+    user_input.dataset_type = DatasetTypes.DEMO
+    user_input.dataset_name = DemoDatasetNames.POP_LYRICS
+    user_input.index_fields = ['lyrics']
+    user_input.index_field_candidates_to_modalities = {'lyrics': Text}
+    user_input.field_names_to_dataclass_fields = {'lyrics': 'lyrics'}
+    user_input.app_instance = construct_app(Apps.SEARCH_APP)
+    user_input.flow_name = 'nowapi-local'
+    user_input.model_choices = {'lyrics_model': [Models.CLIP_MODEL]}
+
+    docs = load_data(user_input)
+    return docs, user_input
+
+
+@pytest.fixture
+def elastic_data(setup_online_shop_db, es_connection_params):
+    _, index_name = setup_online_shop_db
+    connection_str, _ = es_connection_params
+    user_input = UserInput()
+    user_input.dataset_type = DatasetTypes.ELASTICSEARCH
+    user_input.es_index_name = index_name
+    user_input.index_fields = ['title']
+    user_input.filter_fields = ['product_id']
+    user_input.index_field_candidates_to_modalities = {'title': Text}
+    user_input.filter_field_candidates_to_modalities = {'product_id': 'str'}
+    data_class, user_input.field_names_to_dataclass_fields = create_dataclass(
+        user_input=user_input
+    )
+    user_input.es_host_name = connection_str
+    user_input.app_instance = construct_app(Apps.SEARCH_APP)
+    user_input.flow_name = 'nowapi-local'
+    user_input.model_choices = {'title_model': [Models.CLIP_MODEL]}
+    docs = load_data(user_input=user_input)
+    return docs, user_input
+
+
+@pytest.fixture
+def local_folder_data(pulled_local_folder_data):
+    user_input = UserInput()
+    user_input.admin_name = 'team-now'
+    user_input.dataset_type = DatasetTypes.PATH
+    user_input.dataset_path = pulled_local_folder_data
+    user_input.index_fields = ['image.png', 'test.txt']
+    user_input.filter_fields = ['title']
+    user_input.index_field_candidates_to_modalities = {
+        'image.png': Image,
+        'test.txt': Text,
+    }
+    user_input.filter_field_candidates_to_modalities = {'title': 'str'}
+    data_class, user_input.field_names_to_dataclass_fields = create_dataclass(
+        user_input=user_input
+    )
+    user_input.app_instance = construct_app(Apps.SEARCH_APP)
+    user_input.flow_name = 'nowapi-local'
+    user_input.model_choices = {
+        'test.txt_model': [Models.CLIP_MODEL],
+        'image.png_model': [Models.CLIP_MODEL],
+    }
+
+    docs = load_data(user_input)
+    return docs, user_input
+
+
+@pytest.fixture
+def s3_bucket_data():
+    aws_profile = get_aws_profile()
+    user_input = UserInput()
+    user_input.admin_name = 'team-now'
+    user_input.dataset_type = DatasetTypes.S3_BUCKET
+    user_input.dataset_path = S3_CUSTOM_MM_DATA_PATH
+    user_input.aws_access_key_id = aws_profile.aws_access_key_id
+    user_input.aws_secret_access_key = aws_profile.aws_secret_access_key
+    user_input.aws_region_name = aws_profile.region
+    user_input.index_fields = ['image.png']
+    user_input.filter_fields = ['title']
+    user_input.index_field_candidates_to_modalities = {'image.png': Image}
+    user_input.filter_field_candidates_to_modalities = {'title': 'str'}
+    data_class, user_input.field_names_to_dataclass_fields = create_dataclass(
+        user_input=user_input
+    )
+    user_input.app_instance = construct_app(Apps.SEARCH_APP)
+    user_input.flow_name = 'nowapi-local'
+    user_input.model_choices = {'image.png_model': [Models.CLIP_MODEL]}
+
+    docs = load_data(user_input)
+    return docs, user_input

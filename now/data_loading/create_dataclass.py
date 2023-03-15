@@ -6,7 +6,7 @@ from docarray.typing import Image, Text, Video
 
 from now.constants import AVAILABLE_MODALITIES_FOR_SEARCH, DatasetTypes
 from now.now_dataclasses import UserInput
-from now.utils import docarray_typing_to_modality_string
+from now.utils.docarray.helpers import docarray_typing_to_modality_string
 
 
 def update_dict_with_no_overwrite(dict1: Dict, dict2: Dict):

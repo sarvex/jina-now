@@ -26,10 +26,10 @@ class SearchRequestModel(BaseRequestModel):
     limit: int = Field(
         default=10, description='Number of matching results to return', example=10
     )
-    filters: Optional[Dict[str, str]] = Field(
+    filters: Optional[Dict[str, Union[List, Dict[str, Union[int, float]]]]] = Field(
         default={},
         description='dictionary with filters for search results',
-        example={'tags__color': {'$eq': 'blue'}},
+        example={'color': ['blue'], 'price': {'lt': 50.0}},
     )
     query: List[Dict] = Field(
         default={},
@@ -85,7 +85,7 @@ class SearchResponseModel(BaseModel):
         ]
     ] = Field(
         description='Additional tags associated with the file.',
-        example={'tags__price': {'$lt': 50.0}},
+        example={'price': {'lt': 50.0}},
     )
     fields: Dict[str, ModalityModel] = Field(
         default={},

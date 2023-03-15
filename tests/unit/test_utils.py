@@ -2,16 +2,15 @@ import os
 
 import pytest
 from docarray import Document, dataclass
-from docarray.typing import Text, Image, Video
+from docarray.typing import Image, Text, Video
 
-from now.utils import (
-    get_chunk_by_field_name,
-    get_flow_id,
-    to_camel_case,
+from now.utils.common.helpers import hide_string_chars, to_camel_case
+from now.utils.docarray.helpers import (
     docarray_typing_to_modality_string,
+    get_chunk_by_field_name,
     modality_string_to_docarray_typing,
-    hide_string_chars,
 )
+from now.utils.jcloud.helpers import get_flow_id
 
 
 @dataclass
