@@ -49,6 +49,7 @@ def report_search_usage(user_token):
 def report(quantity_basic, quantity_pro, authorized_jwt=None, user_token=None):
     if not authorized_jwt and not user_token:
         raise Exception('Either authorized_jwt or user_token must be provided')
+    logger.info(f'Charging {authorized_jwt or user_token} at {current_time()}')
     app_id = 'search'
     product_id = 'mm_query'
     try:
@@ -57,7 +58,9 @@ def report(quantity_basic, quantity_pro, authorized_jwt=None, user_token=None):
             logger.info('M2M_TOKEN not set in the environment')
         payment_client = PaymentClient(m2m_token=m2m_token)
         if not authorized_jwt:
-            authorized_jwt = payment_client.get_authorized_jwt(user_token)['data']
+            authorized_jwt = payment_client.get_authorized_jwt(user_token=user_token)[
+                'data'
+            ]
         summary = get_summary(authorized_jwt, payment_client)
         logger.info(f'Payment summary: \n{summary}')
         if summary['internal_product_id'] == 'free-plan':
@@ -67,10 +70,12 @@ def report(quantity_basic, quantity_pro, authorized_jwt=None, user_token=None):
         if can_charge(summary):
             payment_client.report_usage(authorized_jwt, app_id, product_id, quantity)
             logger.info(
-                f'`{quantity}` credits charged for {user_token} at {current_time()}'
+                f'`{quantity}` credits charged for {authorized_jwt or user_token} at {current_time()}'
             )
         else:
-            logger.info(f'Could not charge {user_token}. Check payment summary')
+            logger.info(
+                f'Could not charge {authorized_jwt or user_token}. Check payment summary'
+            )
     except Exception as e:
         import traceback
 
