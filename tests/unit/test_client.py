@@ -1,4 +1,4 @@
-from unittest.mock import AsyncMock
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -39,7 +39,7 @@ async def test_send_request_not_search_endpoint():
 
 @pytest.mark.asyncio
 async def test_send_requests(mocker):
-    mock_async_func = AsyncMock(return_value={'status_code': 200})
+    mock_async_func = MagicMock(return_value={'status_code': 200})
     helper.jina_client_post = mock_async_func
 
     client = Client(
