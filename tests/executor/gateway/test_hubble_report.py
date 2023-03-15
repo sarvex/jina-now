@@ -57,5 +57,5 @@ def test_report_usage(
         mocked_report_usage.assert_not_called()
     else:
         mocked_report_usage.assert_called_once_with(
-            'dummy_token', 'search', 'mm_query', cost
+            'dummy_token', 'search', 'free-plan', cost
         )

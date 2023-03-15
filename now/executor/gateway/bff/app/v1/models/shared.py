@@ -9,9 +9,10 @@ from pydantic import BaseModel, Field, root_validator
 
 
 class BaseRequestModel(BaseModel):
-    jwt: Dict[str, Any] = Field(
+    jwt: Optional[Dict[str, Any]] = Field(
+        default=None,
         description="Dictionary with key 'token' which maps to Jina Cloud token value."
-        "Need it for reporting usage to Jina Cloud.",
+        " To be passed when the flow is secure",
         example={'token': '<your jina cloud token>'},
     )
     api_key: Optional[str] = Field(

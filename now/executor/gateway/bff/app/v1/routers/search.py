@@ -188,7 +188,7 @@ async def search(
         )
         matches.append(match)
     # reporting the usage at the end to make sure the request was successful
-    report_search_usage(user_token=data.jwt)
+    report_search_usage(user_token=data.jwt['token'])
     return matches
 
 

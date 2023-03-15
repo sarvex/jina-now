@@ -27,6 +27,7 @@ def current_time():
 def start_base_fee_thread(user_token, jwt):
     global authorized_jwt
     authorized_jwt = jwt
+    logger.info(f'Initializing authorized_jwt: {authorized_jwt}')
     thread = threading.Thread(target=base_fee_thread, args=(user_token,))
     thread.start()
 
@@ -50,7 +51,7 @@ def report_search_usage(user_token):
 
 
 def report(user_token, quantity_basic, quantity_pro):
-    logger.info(f'Charging {user_token} at {current_time()}')
+    logger.info(f'Charging user with token {user_token} at {current_time()}')
     app_id = 'search'
     product_id = 'free-plan'
     try:
@@ -66,7 +67,7 @@ def report(user_token, quantity_basic, quantity_pro):
         else:
             jwt = authorized_jwt
         summary = get_summary(jwt, payment_client)
-        logger.info(f'Payment summary: \n{summary}')
+        logger.info(f'Credits before: {summary["credits"]}')
         if summary['internal_product_id'] == 'free-plan':
             quantity = quantity_basic
         else:
@@ -74,10 +75,13 @@ def report(user_token, quantity_basic, quantity_pro):
         if can_charge(summary):
             payment_client.report_usage(jwt, app_id, product_id, quantity)
             logger.info(
-                f'`{quantity}` credits charged for {user_token} at {current_time()}'
+                f'**** `{round(quantity, 3)}` credits charged at time: {current_time()} ****'
             )
+            summary = get_summary(jwt, payment_client)
+            logger.info(f'Credits after: {summary["credits"]}')
         else:
-            logger.info(f'Could not charge {user_token}. Check payment summary')
+            logger.info(f'**** Could not charge. Check payment summary ****')
+        logger.info(f'Payment summary: {summary}')
     except Exception as e:
         import traceback
 
