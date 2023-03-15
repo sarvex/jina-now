@@ -21,14 +21,15 @@ def test_send_request_bff(requests_mock):
     assert response.status_code == 200
 
 
-def test_send_request_not_search_endpoint():
+@pytest.mark.asyncio
+async def test_send_request_not_search_endpoint():
     with pytest.raises(NotImplementedError):
         client = Client(
             jcloud_id='jcloud_id',
             app='app',
             api_key='api_key',
         )
-        client.send_request(
+        await client.send_request(
             endpoint='not_search',
             text='text',
         )
