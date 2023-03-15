@@ -147,8 +147,8 @@ def set_compare_parser(sp):
     )
 
     parser.add_argument(
-        '--path_score_calculation',
-        help='Path to json file mapping flow IDs to a list of score calculation configurations',
+        '--path_req_params',
+        help='Path to json file mapping flow ID to key-value pairs for the search request parameters',
         type=str,
     )
 

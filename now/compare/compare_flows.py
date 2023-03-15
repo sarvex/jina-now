@@ -17,7 +17,7 @@ from now.utils.docarray.helpers import get_chunk_by_field_name
 
 def compare_flows_for_queries(
     da: DocumentArray,
-    flow_ids_http_score_calculation: List[Tuple],
+    flow_ids_http_req_params: List[Tuple],
     limit: int,
     results_per_table: int = 20,
     disable_to_datauri: bool = False,
@@ -27,8 +27,8 @@ def compare_flows_for_queries(
     the created HTML into multiple files if there are a lot of queries.
 
     :param da: DocumentArray of queries defined as multi-modal documents
-    :param flow_ids_http_score_calculation: a list consisting of tuples which are (flow ID, host of HTTP gateway,
-    score calculation)
+    :param flow_ids_http_req_params: a list consisting of tuples which are (flow ID, host of HTTP gateway,
+    request parameters); the request parameters are a dictionary to allow specifying e.g. filters or score calculation
     :param limit: the number of results to retrieve
     :param results_per_table: number of queries which should be put into the same table
     :param disable_to_datauri: if True, the images are not converted to DataURI
@@ -39,7 +39,7 @@ def compare_flows_for_queries(
     folder = str(
         os.path.abspath(
             f'compare'
-            f'-{"-".join(set([cihs[0] for cihs in flow_ids_http_score_calculation]))}'
+            f'-{"-".join(set([cihs[0] for cihs in flow_ids_http_req_params]))}'
             f'-limit_{limit}'
             f'-{now.strftime("%Y%m%d")}-{now.strftime("%H%M")}'
         )
@@ -48,12 +48,12 @@ def compare_flows_for_queries(
     rows = []
     cnt_tables = 0
     with tqdm(total=len(da)) as pbar:
-        with ProcessPoolExecutor(max_workers=min(len(da), 20)) as ex:
+        with ProcessPoolExecutor(max_workers=min(len(da), 1)) as ex:
             futures = [
                 ex.submit(
                     _evaluate_query,
                     query,
-                    flow_ids_http_score_calculation,
+                    flow_ids_http_req_params,
                     limit,
                     disable_to_datauri,
                 )
@@ -87,7 +87,7 @@ def compare_flows_for_queries(
 
 def _evaluate_query(
     query: Document,
-    flow_ids_http_score_calculation: List[Tuple],
+    flow_ids_http_req_params: List[Tuple],
     limit: int,
     disable_to_datauri: bool,
 ) -> Dict[str, str]:
@@ -95,8 +95,8 @@ def _evaluate_query(
     scores to HTML of the results.
 
     :param query: query defined as multi-modal document
-    :param flow_ids_http_score_calculation: a list consisting of tuples which are (flow ID, host of HTTP gateway,
-    score calculation)
+    :param flow_ids_http_req_params: a list consisting of tuples which are (flow ID, host of HTTP gateway,
+    request parameters); the request parameters are a dictionary to allow specifying e.g. filters or score calculation
     :param limit: the number of results to retrieve
     :param disable_to_datauri: if True, the images are not converted to DataURI
     """
@@ -127,24 +127,43 @@ def _evaluate_query(
         )
     }
 
-    for flow_name, http_host, score_calculation in flow_ids_http_score_calculation:
+    for flow_name, http_host, request_parameters in flow_ids_http_req_params:
         request_body = get_default_request_body(secured=True)
         request_body['limit'] = limit
         request_body['query'] = query_dict_search_request
         request_body['create_temp_link'] = True
-        request_body['score_calculation'] = score_calculation
+        if 'score_calculation' in request_parameters:
+            request_body['score_calculation'] = request_parameters['score_calculation']
+        if 'filters' in request_parameters:
+            print('GOT FILTERS')
+            request_body['filters'] = {}
+            for key, value in request_parameters['filters'].items():
+                if isinstance(value, str) and value.startswith('@.['):
+                    fields = value[3:-1].split(',')
+                    if len(fields) > 1:
+                        raise ValueError(
+                            f'Currently, only one field can be used for filtering. Got {fields}'
+                        )
+                    field_chunk = get_chunk_by_field_name(query, fields[0])
+                    request_body['filters'][key] = (
+                        field_chunk.uri or field_chunk.content
+                    )
+                else:
+                    request_body['filters'][key] = value
+        print(f'Querying {flow_name} with request_body: {request_body}')
         for _ in range(5):
             try:
                 response = requests.post(
                     f'{http_host}/api/v1/search-app/search', json=request_body
                 )
+                print(f'Got response: {response.content}')
                 if response.status_code == 200:
                     break
             except ConnectionError:
                 sleep(1)
                 continue
         row[
-            f'{flow_name} - {json.dumps(score_calculation)}'
+            f'{flow_name} - {json.dumps(request_parameters, sort_keys=True)}'
         ] = SearchResponseModel.responses_to_html(
             [SearchResponseModel(**r) for r in response.json()], disable_to_datauri
         )

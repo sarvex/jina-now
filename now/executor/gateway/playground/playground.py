@@ -169,7 +169,7 @@ def process_filters():
             processed_filters[field] = {'gte': values}
         elif isinstance(values, str):
             if values != '':
-                processed_filters[field] = [values]
+                processed_filters[field] = values
         else:
             raise ValueError(f'Filter values {values} are not supported.')
     st.session_state.filter_selection = processed_filters

@@ -110,27 +110,27 @@ def fetch_logs_now(**kwargs):
 
 def compare_flows(**kwargs):
     if not 'flow_ids' in kwargs:
-        path_score_calculation = maybe_prompt_user(
+        path_req_params = maybe_prompt_user(
             [
                 {
                     'type': 'input',
-                    'name': 'path_score_calculation',
-                    'message': 'Path to the json file mapping flow ID to a list of score calculation configurations (optional):',
+                    'name': 'path_req_params',
+                    'message': 'Path to json file mapping flow ID to key-value pairs for the search request parameters (optional):',
                 }
             ],
-            'path_score_calculation',
+            'path_req_params',
             **kwargs,
         )
-        if path_score_calculation:
-            with open(path_score_calculation) as fp:
-                cluster_ids_2_score_calculation = json.load(fp)
-            flow_ids = list(cluster_ids_2_score_calculation.keys())
-            flow_ids_http_score_calculation = [
-                (flow_id, f'https://{flow_id}-http.wolf.jina.ai', score_calculation)
+        if path_req_params:
+            with open(path_req_params) as fp:
+                cluster_ids_2_req_params = json.load(fp)
+            flow_ids = list(cluster_ids_2_req_params.keys())
+            flow_ids_http_req_params = [
+                (flow_id, f'https://{flow_id}-http.wolf.jina.ai', req_params)
                 for flow_id in flow_ids
-                for score_calculation in cluster_ids_2_score_calculation[flow_id]
+                for req_params in cluster_ids_2_req_params[flow_id]
             ]
-    if 'flow_ids' in kwargs or not path_score_calculation:
+    if 'flow_ids' in kwargs or not path_req_params:
         flow_ids = maybe_prompt_user(
             [
                 {
@@ -142,8 +142,8 @@ def compare_flows(**kwargs):
             'flow_ids',
             **kwargs,
         )
-        flow_ids_http_score_calculation = [
-            (cluster_id, f'https://{cluster_id}-http.wolf.jina.ai', [])
+        flow_ids_http_req_params = [
+            (cluster_id, f'https://{cluster_id}-http.wolf.jina.ai', {})
             for cluster_id in flow_ids.split(',')
         ]
 
@@ -214,7 +214,7 @@ def compare_flows(**kwargs):
 
     compare_flows_for_queries(
         da=da,
-        flow_ids_http_score_calculation=flow_ids_http_score_calculation,
+        flow_ids_http_req_params=flow_ids_http_req_params,
         limit=limit,
         results_per_table=results_per_table,
         disable_to_datauri=disable_to_datauri,

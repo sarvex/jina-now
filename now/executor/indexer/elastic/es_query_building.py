@@ -198,7 +198,7 @@ def get_pinned_query(doc: Document, query_to_curated_ids: Dict[str, list] = {}) 
 
 
 def process_filter(
-    filter: Dict[str, Union[List[str], Dict[str, float]]]
+    filter: Dict[str, Union[str, List[str], Dict[str, float]]]
 ) -> List[Dict[str, Any]]:
     es_search_filters = []
     for field, filters in filter.items():
@@ -208,9 +208,11 @@ def process_filter(
             es_search_filter['terms'] = {field: filters}
         elif isinstance(filters, dict):  # must be numerical (range with operators)
             es_search_filter['range'] = {field: filters}
+        elif isinstance(filters, str):
+            es_search_filter['match'] = {field: filters}
         else:
             raise ValueError(
-                f'Filter {field}: {filters} is not a list of terms or a dictionary of ranges'
+                f'Filter {field}: {filters} (type: {type(filters)}) is not a list of terms or a dictionary of ranges or a string to mach.'
             )
         es_search_filters.append(es_search_filter)
     return es_search_filters

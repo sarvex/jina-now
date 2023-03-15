@@ -26,10 +26,12 @@ class SearchRequestModel(BaseRequestModel):
     limit: int = Field(
         default=10, description='Number of matching results to return', example=10
     )
-    filters: Optional[Dict[str, Union[List, Dict[str, Union[int, float]]]]] = Field(
+    filters: Optional[
+        Dict[str, Union[str, List, Dict[str, Union[int, float]]]]
+    ] = Field(
         default={},
         description='dictionary with filters for search results',
-        example={'color': ['blue'], 'price': {'lt': 50.0}},
+        example={'color': ['blue'], 'price': {'lt': 50.0}, 'description': {'dog'}},
     )
     query: List[Dict] = Field(
         default={},
