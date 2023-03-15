@@ -12,14 +12,13 @@ from rich.table import Column, Table
 from now import compare, run_backend
 from now.constants import DEMO_NS, FLOW_STATUS
 from now.deployment import deployment
-from now.deployment.deployment import terminate_wolf
 from now.dialog import configure_user_input, maybe_prompt_user
 
 
 def stop_now(**kwargs):
     _result, flow_id, cluster = get_flow_status(action='delete', **kwargs)
     if _result is not None and _result['status']['phase'] == FLOW_STATUS:
-        terminate_wolf(flow_id)
+        deployment.terminate_wolf(flow_id)
         from hubble import Client
 
         cookies = {'st': Client().token}
@@ -62,9 +61,8 @@ def get_docarray(dataset):
     if os.path.exists(dataset):
         print(f'Loading queries from {dataset}')
         return DocumentArray.load_binary(dataset)
-    else:
-        print(f'Pulling queries from {dataset}')
-        return DocumentArray.pull(name=dataset, show_progress=True)
+    print(f'Pulling queries from {dataset}')
+    return DocumentArray.pull(name=dataset, show_progress=True)
 
 
 def compare_flows(**kwargs):

@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from pytest_mock import MockerFixture
 
-from now.run_all_k8s import compare_flows, get_flow_status
+from now.run_all_k8s import compare_flows, get_docarray, get_flow_status, stop_now
 
 
 @dataclass
@@ -39,3 +39,30 @@ def test_compare_flows(mocker: MockerFixture):
         'results_per_table': 20,
     }
     compare_flows(**kwargs)
+
+
+def test_stop(mocker: MockerFixture):
+    mock_response = mocker.Mock()
+    mock_response.json.return_value = {'message': 'DELETED'}
+
+    def _mock_flow_status():
+        return {'status': {'phase': 'Serving'}}, 'flow_id', 'cluster'
+
+    mocker.patch(
+        'now.run_all_k8s.get_flow_status',
+        return_value=_mock_flow_status(),
+    )
+    mocker.patch(
+        'now.deployment.deployment.terminate_wolf',
+        return_value='SUCCEEDED',
+    )
+    mocker.patch('requests.delete', return_value=mock_response)
+    stop_now()
+
+
+def test_get_docarray(mocker: MockerFixture):
+    mocker.patch(
+        'docarray.DocumentArray.pull',
+        return_value='SUCCEEDED',
+    )
+    get_docarray('test')
