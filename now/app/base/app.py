@@ -116,7 +116,10 @@ class JinaNOWApp:
             'monitoring': True,
             'cors': True,
             'uses_with': {'user_input_dict': user_input.to_safe_dict()},
-            'env': {'JINA_LOG_LEVEL': 'DEBUG'},
+            'env': {
+                'JINA_LOG_LEVEL': 'DEBUG',
+                'M2M_TOKEN': os.environ.get('M2M_TOKEN'),
+            },
             'jcloud': {
                 'resources': {
                     'instance': 'C5',
