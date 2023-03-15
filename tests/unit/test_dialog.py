@@ -211,7 +211,9 @@ def test_configure_user_input(
     # mocked user input
     mocker.patch('now.dialog.prompt', CmdPromptMock(mocked_dialog_answers))
     user_input = configure_user_input(**cli_kwargs)
-    user_input.__dict__.update({'jwt': None, 'admin_emails': None})
+    user_input.__dict__.update(
+        {'jwt': None, 'admin_emails': None, 'authorized_jwt': None}
+    )
     user_input.__dict__.update({'app_instance': None})
 
     assert user_input == expected_user_input
