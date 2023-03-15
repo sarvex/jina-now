@@ -19,8 +19,6 @@ from now.constants import (
 logger = logging.getLogger(__file__)
 logger.setLevel(logging.INFO)
 logger.addHandler(logging.StreamHandler(sys.stdout))
-payment_client = None
-authorized_jwt = None
 
 
 def current_time():
@@ -54,15 +52,14 @@ def report(user_token, quantity_basic, quantity_pro):
     app_id = 'search'
     product_id = 'mm_query'
     try:
-        global payment_client
-        global authorized_jwt
-        if payment_client is None:
-            m2m_token = os.environ['M2M_TOKEN']
-            payment_client = PaymentClient(m2m_token=m2m_token)
-            authorized_jwt = payment_client.get_authorized_jwt(user_token=user_token)[
-                'data'
-            ]
-        summary = get_summary(authorized_jwt)
+        m2m_token = os.environ.get('M2M_TOKEN')
+        if not m2m_token:
+            raise Exception('M2M_TOKEN not set in the environment')
+        payment_client = PaymentClient(m2m_token=m2m_token)
+        authorized_jwt = payment_client.get_authorized_jwt(user_token=user_token)[
+            'data'
+        ]
+        summary = get_summary(authorized_jwt, payment_client)
         if summary['internal_product_id'] == 'free-plan':
             quantity = quantity_basic
         else:
@@ -94,21 +91,22 @@ def report(user_token, quantity_basic, quantity_pro):
         logger.critical(e)
 
 
-def get_summary(authorized_jwt):
+def get_summary(authorized_jwt, payment_client):
     resp = payment_client.get_summary(token=authorized_jwt, app_id='search-api')
     has_payment_method = resp['data'].get('hasPaymentMethod', False)
-    credits = resp['data'].get('credits', None)
+    user_credits = resp['data'].get('credits', None)
     internal_product_id = resp['data'].get('internalProductId', None)
     user_account_status = resp['data'].get('userAccountStatus', None)
     return {
         'has_payment_method': has_payment_method,
-        'credits': credits,
+        'credits': user_credits,
         'internal_product_id': internal_product_id,
         'user_account_status': user_account_status,
     }
 
 
 def can_charge(summary):
-    return (summary['credits'] > 0 or summary['has_payment_method']) and (
-        summary['user_account_status'] == 'active'
-    )
+    return (
+        (summary['credits'] is not None and summary['credits'] > 0)
+        or summary['has_payment_method']
+    ) and summary['user_account_status'] == 'active'
