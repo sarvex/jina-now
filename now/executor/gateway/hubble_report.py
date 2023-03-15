@@ -79,7 +79,7 @@ def report(quantity_basic, quantity_pro, authorized_jwt=None, user_token=None):
 
 
 def get_summary(authorized_jwt, payment_client):
-    resp = payment_client.get_summary(token=authorized_jwt, app_id='search-api')
+    resp = payment_client.get_summary(token=authorized_jwt, app_id='search')
     has_payment_method = resp['data'].get('hasPaymentMethod', False)
     user_credits = resp['data'].get('credits', None)
     internal_product_id = resp['data'].get('internalProductId', None)
