@@ -1,5 +1,7 @@
+import datetime
 import logging
 import os
+import sys
 import threading
 from time import sleep
 
@@ -15,8 +17,14 @@ from now.constants import (
 )
 
 logger = logging.getLogger(__file__)
+logger.setLevel(logging.INFO)
+logger.addHandler(logging.StreamHandler(sys.stdout))
 payment_client = None
 authorized_jwt = None
+
+
+def current_time():
+    return datetime.datetime.utcnow().isoformat() + 'Z'
 
 
 def start_base_fee_thread(user_token):
@@ -61,7 +69,18 @@ def report(user_token, quantity_basic, quantity_pro):
             quantity = quantity_pro
         if can_charge(summary):
             payment_client.report_usage(authorized_jwt, app_id, product_id, quantity)
+            charged_info = 'report billing success'
         else:
+            charged_info = 'report billing failed'
+        logger.info(
+            {
+                'event': charged_info,
+                'timestamp': current_time(),
+                'user_token': user_token,
+                'quantity': quantity,
+            }
+        )
+        if charged_info == 'report billing failed':
             return JSONResponse(
                 status_code=status.HTTP_403_FORBIDDEN,
                 content={
@@ -69,7 +88,10 @@ def report(user_token, quantity_basic, quantity_pro):
                 },
             )
     except Exception as e:
-        print(e)
+        import traceback
+
+        traceback.print_exc()
+        logger.critical(e)
 
 
 def get_summary(authorized_jwt):
