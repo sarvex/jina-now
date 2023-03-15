@@ -412,9 +412,10 @@ def customize_score_calculation():
 def render_mm_query(query, modality):
     if st.button("\+", key=f'add_{modality}_field'):  # noqa: W605
         st.session_state[f"len_{modality}_choices"] += 1
-    if modality == 'text':
-        for field_number in range(st.session_state[f"len_{modality}_choices"]):
-            key = f'{modality}_{field_number}'
+
+    for field_number in range(st.session_state[f"len_{modality}_choices"]):
+        key = f'{modality}_{field_number}'
+        if modality == 'text':
             query[key] = {
                 'name': key,
                 'value': st.text_input(
@@ -425,10 +426,7 @@ def render_mm_query(query, modality):
                 ),
                 'modality': 'text',
             }
-
-    else:
-        for field_number in range(st.session_state[f"len_{modality}_choices"]):
-            key = f'{modality}_{field_number}'
+        else:
             uploaded_image = st.file_uploader(
                 label=f'image #{field_number}', key=key, on_change=clear_match
             )
