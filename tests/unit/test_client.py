@@ -39,8 +39,14 @@ async def test_send_request_not_search_endpoint():
 
 @pytest.mark.asyncio
 async def test_send_requests(mocker):
-    mock_async_func = MagicMock(return_value={'status_code': 200})
-    helper.jina_client_post = mock_async_func
+    mock_async_func = MagicMock()
+
+    async def async_mock_async_func(endpoint, text, *args, **kwargs):
+        return mock_async_func(endpoint=endpoint, text=text, *args, **kwargs)
+
+    mock_async_func.return_value = {'status_code': 200}
+
+    helper.jina_client_post = async_mock_async_func
 
     client = Client(
         jcloud_id='jcloud_id',
