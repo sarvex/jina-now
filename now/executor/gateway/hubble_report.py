@@ -17,22 +17,25 @@ from now.constants import (
 logger = logging.getLogger(__file__)
 logger.setLevel(os.environ.get('JINA_LOG_LEVEL', 'INFO'))
 logger.addHandler(logging.StreamHandler(sys.stdout))
+authorized_jwt = None
 
 
 def current_time():
     return datetime.datetime.utcnow().isoformat() + 'Z'
 
 
-def start_base_fee_thread(authorized_jwt):
-    thread = threading.Thread(target=base_fee_thread, args=(authorized_jwt,))
+def start_base_fee_thread(user_token, jwt):
+    global authorized_jwt
+    authorized_jwt = jwt
+    thread = threading.Thread(target=base_fee_thread, args=(user_token,))
     thread.start()
 
 
-def base_fee_thread(authorized_jwt):
+def base_fee_thread(user_token):
     while True:
         sleep(NOWGATEWAY_BASE_FEE_SLEEP_INTERVAL)
         report(
-            authorized_jwt=authorized_jwt,
+            user_token=user_token,
             quantity_basic=NOWGATEWAY_BASE_FEE_QUANTITY,
             quantity_pro=NOWGATEWAY_BASE_FEE_QUANTITY,
         )
@@ -46,36 +49,35 @@ def report_search_usage(user_token):
     )
 
 
-def report(quantity_basic, quantity_pro, authorized_jwt=None, user_token=None):
-    if not authorized_jwt and not user_token:
-        raise Exception('Either authorized_jwt or user_token must be provided')
-    logger.info(f'Charging {authorized_jwt or user_token} at {current_time()}')
+def report(user_token, quantity_basic, quantity_pro):
+    logger.info(f'Charging {user_token} at {current_time()}')
     app_id = 'search'
-    product_id = 'mm_query'
+    product_id = 'free-plan'
     try:
         m2m_token = os.environ.get('M2M_TOKEN')
         if not m2m_token:
             logger.info('M2M_TOKEN not set in the environment')
         payment_client = PaymentClient(m2m_token=m2m_token)
-        if not authorized_jwt:
-            authorized_jwt = payment_client.get_authorized_jwt(user_token=user_token)[
-                'data'
-            ]
-        summary = get_summary(authorized_jwt, payment_client)
+        if authorized_jwt is None:
+            logger.info(
+                f'No authorized JWT found. Getting one using token: {user_token}'
+            )
+            jwt = payment_client.get_authorized_jwt(user_token=user_token)['data']
+        else:
+            jwt = authorized_jwt
+        summary = get_summary(jwt, payment_client)
         logger.info(f'Payment summary: \n{summary}')
         if summary['internal_product_id'] == 'free-plan':
             quantity = quantity_basic
         else:
             quantity = quantity_pro
         if can_charge(summary):
-            payment_client.report_usage(authorized_jwt, app_id, product_id, quantity)
+            payment_client.report_usage(jwt, app_id, product_id, quantity)
             logger.info(
-                f'`{quantity}` credits charged for {authorized_jwt or user_token} at {current_time()}'
+                f'`{quantity}` credits charged for {user_token} at {current_time()}'
             )
         else:
-            logger.info(
-                f'Could not charge {authorized_jwt or user_token}. Check payment summary'
-            )
+            logger.info(f'Could not charge {user_token}. Check payment summary')
     except Exception as e:
         import traceback
 

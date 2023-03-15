@@ -1,7 +1,9 @@
+import os
 from dataclasses import dataclass
 
 import boto3
 import hubble
+from hubble.payment.client import PaymentClient
 
 
 @dataclass
@@ -39,4 +41,13 @@ def get_info_hubble(user_input):
         )
     user_input.jwt = {'token': client.token}
     user_input.admin_name = response['data']['name']
+    m2m_token = os.environ.get('M2M_TOKEN')
+    if not m2m_token:
+        raise ValueError(
+            'M2M_TOKEN not set in the environment. Please set before running CLI'
+        )
+    payment_client = PaymentClient(m2m_token=m2m_token)
+    user_input.authorized_jwt = payment_client.get_authorized_jwt(
+        user_token=client.token
+    )['data']
     return response['data'], client.token
