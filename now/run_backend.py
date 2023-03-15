@@ -143,13 +143,6 @@ def call_flow(
 ):
     request_size = estimate_request_size(dataset, max_request_size)
 
-    # this is a hack for the current core/ wolf issue
-    # since we get errors while indexing, we retry
-    # TODO: remove this once the issue is fixed
-    # batches = list(dataset.batch(request_size * 1000))
-    # for current_batch_nr, batch in enumerate(tqdm(batches)):
-    #     for try_nr in range(1000):
-    #         try:
     response = client.post(
         on=endpoint,
         request_size=request_size,
@@ -170,14 +163,6 @@ def call_flow(
             tot_idx=len(dataset),
             host=client.args.host,
         )
-        #     break
-        # except Exception as e:
-        #     if try_nr == 1000:
-        #         # if we tried 5 times and still failed, raise the error
-        #         raise e
-        #     print(f'batch {current_batch_nr}, try {try_nr}', e)
-        #     # sleep(5 * (try_nr + 1))  # sleep for 5, 10, 15, 20 seconds
-        #     continue
 
     if return_results and response:
         return DocumentArray.from_json(response.to_json())
