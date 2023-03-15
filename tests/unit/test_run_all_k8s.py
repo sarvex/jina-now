@@ -22,7 +22,7 @@ def test_flow_status(mocker: MockerFixture):
     _, flow_id, _ = get_flow_status(action='delete', cluster='test')
 
 
-def test_compare_flows(mocker: MockerFixture):
+def test_compare_flows_with_flow_ids(mocker: MockerFixture):
     mocker.patch(
         'now.compare.compare_flows.compare_flows_for_queries',
         return_value='PASS',
@@ -38,6 +38,30 @@ def test_compare_flows(mocker: MockerFixture):
         'disable_to_datauri': True,
         'results_per_table': 20,
     }
+    compare_flows(**kwargs)
+
+
+def test_compare_flows_no_flow_ids(mocker: MockerFixture):
+    kwargs = {
+        'path_score_calculation': 'path/to/file',
+        'dataset': 'test',
+        'limit': 1,
+        'disable_to_datauri': True,
+        'results_per_table': 20,
+    }
+    mock_json = {'test': 'test'}
+    mock_file = mocker.mock_open(read_data='test')
+
+    mocker.patch(
+        'now.compare.compare_flows.compare_flows_for_queries',
+        return_value='PASS',
+    )
+    mocker.patch(
+        'now.run_all_k8s.get_docarray',
+        return_value=[MMStructure(is_multimodal=True)],
+    )
+    mocker.patch('builtins.open', mock_file)
+    mocker.patch('json.load', return_value=mock_json)
     compare_flows(**kwargs)
 
 
