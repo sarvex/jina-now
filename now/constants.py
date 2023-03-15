@@ -1,13 +1,15 @@
 from __future__ import annotations, print_function, unicode_literals
 
+import logging
+
 from docarray.typing import Image, Text, Video
 
 from now.utils import BetterEnum
 
-NOW_GATEWAY_VERSION = '0.0.4-fix-index-bulk-error-9'
-NOW_PREPROCESSOR_VERSION = '0.0.123-test-use-setup-25'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.148-test-experiment-volume-8'
-NOW_AUTOCOMPLETE_VERSION = '0.0.11-refactor-custom-gateway-103'
+NOW_GATEWAY_VERSION = '0.0.5-test-curation-21'
+NOW_PREPROCESSOR_VERSION = '0.0.124-test-curation-21'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.149-test-curation-21'
+NOW_AUTOCOMPLETE_VERSION = '0.0.12-test-curation-21'
 
 
 class Apps(BetterEnum):
@@ -55,7 +57,7 @@ BASE_STORAGE_URL = (
 EXTERNAL_CLIP_HOST = 'encoderclip-pretty-javelin-3aceb7f2cd.wolf.jina.ai'
 
 DEFAULT_FLOW_NAME = 'nowapi'
-PREFETCH_NR = 10
+PREFETCH_NR = 1000
 NUM_FOLDERS_THRESHOLD = 100
 MAX_DOCS_FOR_TESTING = 50
 SURVEY_LINK = 'https://10sw1tcpld4.typeform.com/to/VTAyYRpR?utm_source=cli'
@@ -75,3 +77,5 @@ MODALITY_TO_MODELS = {
 }
 
 NOWGATEWAY_BFF_PORT = 8080
+
+logging.getLogger().setLevel(logging.INFO)

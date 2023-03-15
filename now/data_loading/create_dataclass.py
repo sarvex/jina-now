@@ -6,6 +6,7 @@ from docarray import Document, dataclass, field
 from docarray.typing import Image, Video
 
 from now.constants import AVAILABLE_MODALITIES_FOR_SEARCH, DatasetTypes
+from now.data_loading.data_loading import _get_modality
 from now.now_dataclasses import UserInput
 from now.utils import docarray_typing_to_modality_string
 
@@ -153,7 +154,9 @@ def create_blob_type(modality: str):
 
     def my_setter(value) -> 'Document':
         """Custom setter for the BlobObject type that loads the content from the URI"""
-        return Document(uri=value).load_uri_to_blob(timeout=10)
+        d = Document(uri=value).load_uri_to_blob(timeout=10)
+        d.modality = _get_modality(d)
+        return d
 
     def my_getter(doc: 'Document'):
         return doc.uri

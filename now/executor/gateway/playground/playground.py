@@ -781,8 +781,7 @@ def setup_session_state():
     if "len_image_choices" not in st.session_state:
         st.session_state["len_image_choices"] = 1
 
-    if "query" not in st.session_state:
-        st.session_state['query'] = dict()
+    st.session_state['query'] = dict()
 
     if 'len_semantic_scores' not in st.session_state:
         st.session_state['len_semantic_scores'] = 0

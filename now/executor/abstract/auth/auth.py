@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 from functools import lru_cache
 from typing import Dict, List
@@ -7,7 +8,6 @@ import hubble
 from docarray import DocumentArray
 from hubble.excepts import AuthenticationRequiredError
 from jina import Executor, requests
-from jina.logging.logger import JinaLogger
 
 from now.now_dataclasses import UserInput
 
@@ -15,6 +15,9 @@ from now.now_dataclasses import UserInput
 class SecurityLevel:
     ADMIN = 1
     USER = 2
+
+
+logger = logging.getLogger(__name__)
 
 
 def secure_request(level: int, on: str = None):
@@ -117,7 +120,6 @@ def get_auth_executor_class():
             :param pats: List of PATs of the allowed users with access to this flow.
             """
             super().__init__(*args, **kwargs)
-            self.logger = JinaLogger(self.__class__.__name__)
             self.admin_emails = admin_emails
             self.user_emails = user_emails
             self.api_keys = api_keys
