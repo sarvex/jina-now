@@ -1,0 +1,5 @@
+jtype: NOWGateway
+py_modules:
+  - now_gateway.py
+metas:
+  name: NOWGateway

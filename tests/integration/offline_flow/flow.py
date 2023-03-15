@@ -1,11 +1,11 @@
-import random
 from typing import Dict
 
 import numpy as np
 from docarray import DocumentArray
+from tests.unit.bff.conftest import MockJinaDataRequest
 
-from deployment.bff.app.v1.routers import helper
 from now.executor.autocomplete import NOWAutoCompleteExecutor2
+from now.executor.gateway.bff.app.v1.routers import helper
 from now.executor.indexer.elastic import NOWElasticIndexer
 from now.executor.preprocessor import NOWPreprocessor
 
@@ -30,14 +30,14 @@ class OfflineFlow:
         self.indexer = NOWElasticIndexer(
             user_input_dict=user_input_dict,
             document_mappings=document_mappings,
-            hosts='http://localhost:9200',
-            index_name=f"test-index-{random.randint(0, 10000)}",
         )
         self.mock_client(monkeypatch)
 
     def mock_client(self, monkeypatch):
         offline_client = get_client(self)
-        monkeypatch.setattr(helper, 'get_jina_client', lambda **kwargs: offline_client)
+        monkeypatch.setattr(
+            helper.GatewayStreamer, 'get_streamer', lambda **kwargs: offline_client
+        )
 
     def post(self, endpoint, inputs, parameters: Dict[str, str], *args, **kwargs):
         # call executors:
@@ -58,10 +58,9 @@ class OfflineFlow:
 
 def get_client(offline_flow):
     class Client:
-        def post(self, endpoint, inputs, parameters, *args, **kwargs):
-            # definition of executors:
-            docs = offline_flow.post(endpoint, inputs, parameters, *args, **kwargs)
-            return docs
+        async def stream_docs(self, exec_endpoint, docs, parameters, *args, **kwargs):
+            docs = offline_flow.post(exec_endpoint, docs, parameters, *args, **kwargs)
+            yield MockJinaDataRequest(docs)
 
     return Client()
 

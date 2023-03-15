@@ -10,9 +10,10 @@ import pytest
 from docarray.typing import Image, Text, Video
 from pytest_mock import MockerFixture
 
+from now.common.options import MODEL_SELECTION
 from now.constants import DEFAULT_FLOW_NAME, Apps, DatasetTypes
 from now.demo_data import DemoDatasetNames
-from now.dialog import configure_user_input
+from now.dialog import configure_user_input, expand_options_from_parent
 from now.now_dataclasses import UserInput
 
 index_field_CANDIDATES_TO_MODALITIES = {'text': Text, 'uri': Image}
@@ -60,7 +61,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'flow_name': DEFAULT_FLOW_NAME,
             'dataset_type': DatasetTypes.DEMO,
             'admin_name': 'team-now',
-            'dataset_name': DemoDatasetNames.NIH_CHEST_XRAYS,
+            'dataset_name': DemoDatasetNames.BIRD_SPECIES,
             'index_field_candidates_to_modalities': {'label': Text, 'image': Image},
             'index_fields': ['image'],
             'filter_fields': [],
@@ -80,8 +81,10 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
                 os.path.dirname(__file__), '..', 'resources', 'image'
             ),
             'index_fields': ['.jpg'],
+            'filter_fields': [],
             'admin_name': 'team-now',
             'index_field_candidates_to_modalities': {'.jpg': Image},
+            'filter_field_candidates_to_modalities': {},
             '.jpg_model': ['clip'],
             'model_choices': {'.jpg_model': ['clip']},
             'secured': '⛔ no',
@@ -110,7 +113,7 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
             'app': Apps.SEARCH_APP,
             'flow_name': 'testapp',
             'dataset_type': DatasetTypes.DEMO,
-            'dataset_name': DemoDatasetNames.RAP_LYRICS,
+            'dataset_name': DemoDatasetNames.POP_LYRICS,
             'admin_name': 'team-now',
             'index_fields': ['lyrics'],
             'index_field_candidates_to_modalities': {'lyrics': Text, 'title': Text},
@@ -161,23 +164,41 @@ MOCKED_DIALOGS_WITH_CONFIGS = [
         },
         {'flow_name': 'testthisname'},
     ),
+    (  # test dynamic dialog with model selection based on selected index fields
+        {
+            'app': Apps.SEARCH_APP,
+            'flow_name': 'testapp',
+            'dataset_type': DatasetTypes.DEMO,
+            'dataset_name': DemoDatasetNames.DEEP_FASHION,
+            'admin_name': 'team-now',
+            'index_fields': ['image'],
+            'index_field_candidates_to_modalities': {'image': Image, 'label': Text},
+            'filter_fields': [],
+            'filter_field_candidates_to_modalities': {'label': 'text'},
+            'model_choices': {'image_model': ['encoderclip']},
+            'image_model': ['encoderclip'],
+            'secured': '⛔ no',
+        },
+        {'model_selection': 'image:Clip'},
+    ),
 ]
 
 
 @pytest.mark.parametrize(
-    ('mocked_user_answers', 'configure_kwargs'),
+    ('mocked_dialog_answers', 'cli_kwargs'),
     MOCKED_DIALOGS_WITH_CONFIGS,
 )
 def test_configure_user_input(
     mocker: MockerFixture,
-    mocked_user_answers: Dict[str, str],
-    configure_kwargs: Dict,
+    mocked_dialog_answers: Dict[str, str],
+    cli_kwargs: Dict,
 ):
     # expected user input
     expected_user_input = UserInput()
-    expected_user_input.__dict__.update(mocked_user_answers)
-    expected_user_input.__dict__.update(configure_kwargs)
+    expected_user_input.__dict__.update(mocked_dialog_answers)
+    expected_user_input.__dict__.update(cli_kwargs)
     expected_user_input.__dict__.pop('app')
+    expected_user_input.__dict__.pop('model_selection', None)
     for key in [
         'label_model',
         'image_model',
@@ -188,9 +209,144 @@ def test_configure_user_input(
         expected_user_input.__dict__.pop(key, None)
 
     # mocked user input
-    mocker.patch('now.utils.prompt', CmdPromptMock(mocked_user_answers))
-    user_input = configure_user_input(**configure_kwargs)
+    mocker.patch('now.dialog.prompt', CmdPromptMock(mocked_dialog_answers))
+    user_input = configure_user_input(**cli_kwargs)
     user_input.__dict__.update({'jwt': None, 'admin_emails': None})
     user_input.__dict__.update({'app_instance': None})
 
     assert user_input == expected_user_input
+
+
+ERRORFUL_DIALOGS_WITH_CONFIGS = [
+    (
+        {
+            'app': Apps.SEARCH_APP,
+            'flow_name': DEFAULT_FLOW_NAME,
+            'dataset_type': DatasetTypes.PATH,
+            'dataset_path': os.path.join(
+                os.path.dirname(__file__), '..', 'resources', 'image'
+            ),
+            'index_fields': ['.jpg'],
+            'filter_fields': [],
+            'admin_name': 'team-now',
+            'index_field_candidates_to_modalities': {'.json': Text, '.jpg': Image},
+            'filter_field_candidates_to_modalities': {'.json': 'str'},
+            '.jpg_model': ['clip'],
+            'secured': '⛔ no',
+        },
+        {'model_selection': ".jpg:clip"},  # not a valid model selection
+        ValueError,
+    ),
+    (
+        {
+            'app': Apps.SEARCH_APP,
+            'flow_name': DEFAULT_FLOW_NAME,
+            'dataset_type': DatasetTypes.PATH,
+            'dataset_path': os.path.join(
+                os.path.dirname(__file__), '..', 'resources', 'image'
+            ),
+            'filter_fields': [],
+            'admin_name': 'team-now',
+            'index_field_candidates_to_modalities': {'.json': Text, '.jpg': Image},
+            'filter_field_candidates_to_modalities': {'.json': 'str'},
+            '.jpg_model': ['clip'],
+            'model_choices': {'.jpg_model': ['Clip']},
+            'secured': '⛔ no',
+        },
+        {'index_fields': ['.JPG']},  # not a valid index field
+        ValueError,
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    ('mocked_dialog_answers', 'cli_kwargs', 'expected_error'),
+    ERRORFUL_DIALOGS_WITH_CONFIGS,
+)
+def test_raise_error_configure_input(
+    mocker: MockerFixture,
+    mocked_dialog_answers: Dict[str, str],
+    cli_kwargs: Dict,
+    expected_error: Exception,
+):
+    # mocked user input
+    mocker.patch('now.dialog.prompt', CmdPromptMock(mocked_dialog_answers))
+    with pytest.raises(expected_error):
+        configure_user_input(**cli_kwargs)
+
+
+EXPAND_CONFIGS = [
+    (
+        {
+            'app': Apps.SEARCH_APP,
+            'flow_name': DEFAULT_FLOW_NAME,
+            'dataset_type': DatasetTypes.PATH,
+            'dataset_path': os.path.join(
+                os.path.dirname(__file__), '..', 'resources', 'image'
+            ),
+            'index_fields': ['.jpg'],
+            'filter_fields': [],
+            'admin_name': 'team-now',
+            'index_field_candidates_to_modalities': {'.json': Text, '.jpg': Image},
+            'filter_field_candidates_to_modalities': {'.json': 'str'},
+            '.jpg_model': ['clip'],
+            'secured': '⛔ no',
+        },
+        {'model_selection': ".jpg:clip"},  # not a valid model selection
+        ValueError,
+    ),
+    (
+        {
+            'app': Apps.SEARCH_APP,
+            'flow_name': DEFAULT_FLOW_NAME,
+            'dataset_type': DatasetTypes.PATH,
+            'dataset_path': os.path.join(
+                os.path.dirname(__file__), '..', 'resources', 'image'
+            ),
+            'index_fields': ['.jpg'],
+            'filter_fields': [],
+            'admin_name': 'team-now',
+            'index_field_candidates_to_modalities': {'.json': Text, '.jpg': Image},
+            'filter_field_candidates_to_modalities': {'.json': 'str'},
+            '.jpg_model': ['clip'],
+            'secured': '⛔ no',
+        },
+        {'model_selection': ".JPG:Clip"},  # not a valid index selection
+        ValueError,
+    ),
+    (
+        {
+            'app': Apps.SEARCH_APP,
+            'flow_name': 'testapp',
+            'dataset_type': DatasetTypes.DEMO,
+            'dataset_name': DemoDatasetNames.DEEP_FASHION,
+            'admin_name': 'team-now',
+            'index_fields': ['image'],
+            'index_field_candidates_to_modalities': {'image': Image, 'label': Text},
+            'filter_fields': [],
+            'filter_field_candidates_to_modalities': {'label': 'text'},
+            'secured': '⛔ no',
+        },
+        {'model_selection': 'image:Clip'},
+        None,
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    ('mocked_dialog_answers', 'cli_kwargs', 'expected_error'),
+    EXPAND_CONFIGS,
+)
+def test_expand_options_from_parent(mocked_dialog_answers, cli_kwargs, expected_error):
+    # initialize user input
+    user_input = UserInput()
+    user_input.__dict__.update(mocked_dialog_answers)
+    user_input.__dict__.pop('app')
+
+    if expected_error:
+        with pytest.raises(expected_error):
+            expand_options_from_parent(cli_kwargs, MODEL_SELECTION, user_input)
+    else:
+        expand_options_from_parent(cli_kwargs, MODEL_SELECTION, user_input)
+        # test that the model choices are expanded in the cli arguments
+        assert cli_kwargs['image_model'] == ['encoderclip']

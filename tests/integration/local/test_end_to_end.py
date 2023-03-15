@@ -1,57 +1,48 @@
 import pytest
 import requests
 from docarray.typing import Image, Text
-from tests.integration.local.conftest import SEARCH_URL, get_flow, get_request_body
-from now.constants import ACCESS_PATHS, Models
+from jina import Client
+from tests.integration.local.conftest import (  # noqa: F401
+    BASE_URL,
+    SEARCH_URL,
+    get_flow,
+    get_request_body,
+)
+
+from now.constants import ACCESS_PATHS
 
 
 @pytest.mark.parametrize(
-    'data',
+    'get_flow',
     [
         'artworks_data',
         'pop_lyrics_data',
         'elastic_data',
         'local_folder_data',
+        's3_bucket_data',
     ],
+    indirect=True,
 )
-def test_end_to_end(
-    data, start_bff, setup_service_running, random_index_name, request, tmpdir
-):
-    docs, user_input = request.getfixturevalue(data)
-    fields_for_mapping = (
-        [
-            user_input.field_names_to_dataclass_fields[field_name]
-            for field_name in user_input.index_fields
-        ]
-        if user_input.field_names_to_dataclass_fields
-        else user_input.index_fields
-    )
-    f = get_flow(
-        tmpdir=tmpdir,
-        indexer_args={
-            'index_name': random_index_name,
-            'user_input_dict': {
-                'filter_fields': user_input.filter_fields,
-            },
-            'document_mappings': [[Models.CLIP_MODEL, 512, fields_for_mapping]],
+def test_end_to_end(get_flow, setup_service_running, random_index_name):
+    docs, user_input = get_flow
+    client = Client(host='grpc://localhost:8085')
+
+    client.index(
+        docs,
+        parameters={
+            'access_paths': ACCESS_PATHS,
         },
     )
-    with f:
-        f.index(
-            docs,
-            parameters={
-                'access_paths': ACCESS_PATHS,
-            },
-        )
-        request_body = get_request_body(secured=False)
-        request_body['query'] = [{'name': 'text', 'value': 'test', 'modality': 'text'}]
-        response = requests.post(
-            SEARCH_URL,
-            json=request_body,
-        )
+
+    request_body = get_request_body(secured=False)
+    request_body['query'] = [{'name': 'text', 'value': 'test', 'modality': 'text'}]
+    response = requests.post(
+        SEARCH_URL,
+        json=request_body,
+    )
 
     assert response.status_code == 200
-    assert len(response.json()) == 10
+    assert len(response.json()) == min(len(docs), 10)
 
     for field in user_input.filter_fields:
         dataclass_field = user_input.field_names_to_dataclass_fields.get(field) or field
@@ -67,3 +58,8 @@ def test_end_to_end(
             assert response.json()[0]['fields'][dataclass_field]['text']
         elif user_input.index_field_candidates_to_modalities[field] == Image:
             assert response.json()[0]['fields'][dataclass_field]['blob'] != b''
+
+    count_url = f'{BASE_URL}/info/count'
+    request_body['limit'] = len(docs)
+    count_response = requests.post(count_url, json=request_body)
+    assert count_response.json()['number_of_docs'] == len(docs)

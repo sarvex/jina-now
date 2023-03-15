@@ -1,8 +1,8 @@
-import subprocess
+import os
 import traceback
 from collections import namedtuple
 from time import sleep
-from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 
 import boto3
 from docarray import Document, DocumentArray
@@ -22,7 +22,7 @@ from now.executor.indexer.elastic.es_converter import (
 )
 from now.executor.indexer.elastic.es_query_building import (
     build_es_queries,
-    generate_semantic_scores,
+    generate_score_calculation,
     process_filter,
 )
 
@@ -33,35 +33,31 @@ FieldEmbedding = namedtuple(
 
 Executor = get_auth_executor_class()
 
+TIMEOUT = 60
+
 
 class NOWElasticIndexer(Executor):
     """
     NOWElasticIndexer indexes Documents into an Elasticsearch instance. To do this,
     it uses helper functions from es_converter, converting documents to and from the accepted Elasticsearch
-    format. It also uses the semantic scores to combine the scores of different fields/encoders,
+    format. It also uses the score calculation to combine the scores of different fields/encoders,
     allowing multi-modal documents to be indexed and searched with multi-modal queries.
     """
 
     def __init__(
         self,
         document_mappings: List[Tuple[str, int, List[str]]],
-        dim: int = None,
         metric: str = 'cosine',
         limit: int = 10,
         max_values_per_tag: int = 10,
         es_mapping: Dict = None,
-        hosts: Union[
-            str, List[Union[str, Mapping[str, Union[str, int]]]], None
-        ] = 'http://localhost:9200',
         es_config: Optional[Dict[str, Any]] = None,
-        index_name: str = 'now-index',
         *args,
         **kwargs,
     ):
         """
         :param document_mappings: list of FieldEmbedding tuples that define which encoder
             encodes which fields, and the embedding size of the encoder.
-        :param dim: Dimensionality of vectors to index.
         :param metric: Distance metric type. Can be 'euclidean', 'inner_product', or 'cosine'
         :param limit: Number of results to get for each query document in search
         :param max_values_per_tag: Maximum number of values per tag
@@ -76,8 +72,10 @@ class NOWElasticIndexer(Executor):
         self.metric = metric
         self.limit = limit
         self.max_values_per_tag = max_values_per_tag
-        self.hosts = hosts
-        self.index_name = index_name
+        self._check_env_vars()
+        self.hosts = os.getenv('ES_HOSTS', 'http://localhost:9200')
+        self.api_key = os.getenv('ES_API_KEY', 'TestApiKey')
+        self.index_name = os.getenv('ES_INDEX_NAME', 'now-index')
         self.query_to_curated_ids = {}
         self.doc_id_tags = {}
         self.document_mappings = [FieldEmbedding(*dm) for dm in document_mappings]
@@ -87,31 +85,56 @@ class NOWElasticIndexer(Executor):
         }
         self.es_config = es_config or {'verify_certs': False}
         self.es_mapping = es_mapping or self.generate_es_mapping()
-        self.setup_elastic_server()
-        self.es = Elasticsearch(hosts=self.hosts, **self.es_config, ssl_show_warn=False)
-        wait_until_cluster_is_up(self.es, self.hosts)
-
+        self.es = Elasticsearch(
+            hosts=self.hosts,
+            api_key=self.api_key,
+            **self.es_config,
+            ssl_show_warn=False,
+        )
+        self._do_health_check()
         if not self.es.indices.exists(index=self.index_name):
             self.es.indices.create(index=self.index_name, mappings=self.es_mapping)
+        else:
+            self.es.indices.put_mapping(index=self.index_name, body=self.es_mapping)
 
-    def setup_elastic_server(self):
-        # volume is not persisted at the moment.
-        try:
-            subprocess.Popen(['./start-elastic-search-cluster.sh'])
-            self.logger.info('elastic server started')
-        except FileNotFoundError:
-            self.logger.info(
-                'Elastic started outside of docker, assume cluster started already.'
-            )
+    def _check_env_vars(self):
+        while not all(
+            var in os.environ for var in ['ES_HOSTS', 'ES_INDEX_NAME', 'ES_API_KEY']
+        ):
+            timeout_counter = 0
+            if timeout_counter < TIMEOUT:
+                timeout_counter += 5
+                self.logger.info('Environment variables not set yet. Waiting...')
+                sleep(5)
+            else:
+                self.logger.error(
+                    'Elasticsearch environment variables not set after 60 seconds. Exiting...'
+                )
+                raise Exception('Elasticsearch environment variables not set')
+
+    def _do_health_check(self):
+        """Checks that Elasticsearch is up and running with state 'yellow'. The default timeout
+        on the health check is 30 seconds."""
+        while True:
+            try:
+                self.es.cluster.health(wait_for_status='yellow')
+                break
+            except Exception:
+                self.logger.info(traceback.format_exc())
 
     def generate_es_mapping(self) -> Dict:
         """Creates Elasticsearch mapping for the defined document fields."""
         es_mapping = {
             'properties': {
                 'id': {'type': 'keyword'},
-                'bm25_text': {'type': 'text', 'analyzer': 'standard'},
             }
         }
+
+        for field in self.user_input.index_fields:
+            if self.user_input.index_field_candidates_to_modalities[field] == 'text':
+                es_mapping['properties'][
+                    f"{self.user_input.field_names_to_dataclass_fields[field]}"
+                ] = {'type': 'text', 'analyzer': 'standard'}
 
         if self.user_input.filter_fields:
             es_mapping['properties']['tags'] = {'type': 'object', 'properties': {}}
@@ -144,7 +167,6 @@ class NOWElasticIndexer(Executor):
     def index(
         self,
         docs_map: Dict[str, DocumentArray] = None,  # encoder to docarray
-        parameters: dict = {},
         docs: Optional[DocumentArray] = None,
         **kwargs,
     ) -> DocumentArray:
@@ -152,7 +174,6 @@ class NOWElasticIndexer(Executor):
         Index new `Document`s by adding them to the Elasticsearch index.
 
         :param docs_map: map of encoder to DocumentArray
-        :param parameters: dictionary with options for indexing.
         :param docs: DocumentArray to index
         :return: empty `DocumentArray`.
         """
@@ -176,14 +197,12 @@ class NOWElasticIndexer(Executor):
     @secure_request(on='/search', level=SecurityLevel.USER)
     def search(
         self,
-        docs_map: Dict[str, DocumentArray] = None,  # encoder to docarray
+        docs_map: Dict[str, DocumentArray] = None,
         parameters: dict = {},
         docs: Optional[DocumentArray] = None,
         **kwargs,
     ):
-        """Perform traditional bm25 + vector search. By convention, BM25 will search on
-        the 'bm25_text' field of the index. For now, this field contains a concatenation of
-        all text chunks of the documents.
+        """Perform traditional bm25 + vector search.
 
         Search can be performed with candidate filtering. Filters are a triplet (column,operator,value).
         More than a filter can be applied during search. Therefore, conditions for a filter are specified as a list triplets.
@@ -199,10 +218,9 @@ class NOWElasticIndexer(Executor):
                 - 'limit' (int): Number of matches to get per Document, default 100.
                 - 'get_score_breakdown' (bool): Wether to return the score breakdown, i.e. the scores of each
                     field+encoder combination/comparison.
-                - 'apply_default_bm25' (bool): Whether to apply the default bm25 scoring. Default is False. Will
-                    be ignored if 'custom_bm25_query' is specified.
-                - 'custom_bm25_query' (dict): Custom query to use for BM25. Note: this query can only be
-                    passed if also passing `es_mapping`. Otherwise, only default bm25 scoring is enabled.
+                - 'score_calculation' (List[List]): list of tuples of (query_field, document_field, matching_method,
+                    linear_weight) to show how to calculate the score. Note, that the matching_method is the name of the
+                    encoder or `bm25`.
         :param docs: DocumentArray to search
         """
         if docs_map is None:
@@ -211,20 +229,19 @@ class NOWElasticIndexer(Executor):
                 return DocumentArray()
         aggregate_embeddings(docs_map)
 
+        filter = parameters.get('filter', {})
         limit = parameters.get('limit', self.limit)
         get_score_breakdown = parameters.get('get_score_breakdown', False)
-        custom_bm25_query = parameters.get('custom_bm25_query', None)
-        apply_default_bm25 = parameters.get('apply_default_bm25', False)
-        semantic_scores = parameters.get('semantic_scores', None)
-        if not semantic_scores:
-            semantic_scores = generate_semantic_scores(docs_map, self.encoder_to_fields)
-        filter = parameters.get('filter', {})
+        score_calculation = parameters.get('score_calculation', None)
+        if not score_calculation:
+            score_calculation = generate_score_calculation(
+                docs_map, self.encoder_to_fields
+            )
+
         es_queries = build_es_queries(
             docs_map=docs_map,
-            apply_default_bm25=apply_default_bm25,
             get_score_breakdown=get_score_breakdown,
-            semantic_scores=semantic_scores,
-            custom_bm25_query=custom_bm25_query,
+            score_calculation=score_calculation,
             metric=self.metric,
             filter=filter,
             query_to_curated_ids=self.query_to_curated_ids,
@@ -241,12 +258,13 @@ class NOWElasticIndexer(Executor):
                 es_results=result,
                 get_score_breakdown=get_score_breakdown,
                 metric=self.metric,
-                semantic_scores=semantic_scores,
+                score_calculation=score_calculation,
             )
             doc.tags.pop('embeddings')
             for c in doc.chunks:
                 c.embedding = None
         results = DocumentArray(list(zip(*es_queries))[0])
+
         if (
             parameters.get('create_temp_link', False)
             and self.user_input.dataset_type == DatasetTypes.S3_BUCKET
@@ -276,7 +294,7 @@ class NOWElasticIndexer(Executor):
                 temp_url = s3_client.generate_presigned_url(
                     'get_object',
                     Params={'Bucket': bucket_name, 'Key': path_s3},
-                    ExpiresIn=300,
+                    ExpiresIn=3600,
                 )
                 d.uri = temp_url
             return d
@@ -316,6 +334,29 @@ class NOWElasticIndexer(Executor):
             return convert_es_to_da(result, get_score_breakdown=False)
         else:
             return DocumentArray()
+
+    @secure_request(on='/count', level=SecurityLevel.USER)
+    def count(self, parameters: dict = {}, **kwargs):
+        """Count all indexed documents.
+
+        Note: this implementation is naive and does not
+        consider the default maximum documents in a page returned by `Elasticsearch`.
+        Should be addressed in future with `scroll`.
+
+        :param parameters: dictionary with limit and offset
+        - offset (int): number of documents to skip
+        - limit (int): number of retrieved documents
+        """
+        limit = int(parameters.get('limit', self.limit))
+        offset = int(parameters.get('offset', 0))
+        try:
+            result = self.es.search(
+                index=self.index_name, size=limit, from_=offset, query={'match_all': {}}
+            )['hits']['hits']
+        except Exception:
+            result = []
+            self.logger.info(traceback.format_exc())
+        return DocumentArray([Document(text='count', tags={'count': len(result)})])
 
     @secure_request(on='/delete', level=SecurityLevel.USER)
     def delete(self, parameters: dict = {}, **kwargs):
@@ -430,17 +471,16 @@ class NOWElasticIndexer(Executor):
         }
         aggs = {'aggs': {}, 'size': 0}
         for tag, map in tag_categories.items():
-            if map['type'] == 'text':
-                aggs['aggs'][tag] = {
-                    'terms': {'field': f'tags.{tag}.keyword', 'size': 100}
-                }
-            elif map['type'] == 'keyword':
-                aggs['aggs'][tag] = {'terms': {'field': f'tags.{tag}', 'size': 100}}
-            elif map['type'] == 'float':
-                # aggs['aggs'][f'min_{tag}'] = {'min': {'field': f'tags.{tag}'}}
-                # aggs['aggs'][f'max_{tag}'] = {'max': {'field': f'tags.{tag}'}}
-                # aggs['aggs'][f'avg_{tag}'] = {'avg': {'field': f'tags.{tag}'}}
-                aggs['aggs'][tag] = {'terms': {'field': f'tags.{tag}', 'size': 100}}
+            for tag_type, extension in [
+                ['text', '.keyword'],
+                ['keyword', ''],
+                ['float', ''],
+            ]:
+                if map['type'] == tag_type:
+                    aggs['aggs'][tag] = {
+                        'terms': {'field': f'tags.{tag}{extension}', 'size': 100}
+                    }
+
         try:
             if not aggs['aggs']:
                 return
@@ -467,24 +507,3 @@ def aggregate_embeddings(docs_map: Dict[str, DocumentArray]):
                 if c.chunks[0].text or not c.uri:
                     c.content = c.chunks[0].content
                 c.chunks = DocumentArray()
-
-
-def wait_until_cluster_is_up(es, hosts):
-    MAX_RETRIES = 300
-    SLEEP = 1
-    retries = 0
-    while retries < MAX_RETRIES:
-        try:
-            if es.ping():
-                break
-            else:
-                retries += 1
-                sleep(SLEEP)
-        except Exception:
-            print(
-                f'Elasticsearch is not running yet, are you connecting to the right hosts? {hosts}'
-            )
-    if retries >= MAX_RETRIES:
-        raise RuntimeError(
-            f'Elasticsearch is not running after {MAX_RETRIES} retries ('
-        )

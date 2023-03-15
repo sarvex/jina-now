@@ -1,8 +1,0 @@
-streamlit==1.11.1
-extra-streamlit-components==0.1.55
-click==8.0.0
-better_profanity==0.7.0
-docarray==0.19.1
-pydantic==1.8.2
-frozendict==2.3.4
-jina==3.13.2

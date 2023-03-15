@@ -2,8 +2,11 @@ import requests
 from docarray import dataclass
 from docarray.typing import Text
 
-from deployment.bff.app.v1.models.search import SearchRequestModel
-from deployment.bff.app.v1.routers.helper import field_dict_to_mm_doc, jina_client_post
+from now.executor.gateway.bff.app.v1.models.search import SearchRequestModel
+from now.executor.gateway.bff.app.v1.routers.helper import (
+    field_dict_to_mm_doc,
+    jina_client_post,
+)
 
 
 class Client:
@@ -60,7 +63,7 @@ class Client:
             parameters={
                 'limit': app_request.limit,
                 'filter': app_request.filters,
-                'semantic_scores': app_request.semantic_scores,
+                'score_calculation': app_request.score_calculation,
             },
         )
         return response

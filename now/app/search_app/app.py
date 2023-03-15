@@ -8,6 +8,7 @@ from now.constants import (
     ACCESS_PATHS,
     DEMO_NS,
     EXTERNAL_CLIP_HOST,
+    EXTERNAL_SBERT_HOST,
     NOW_AUTOCOMPLETE_VERSION,
     NOW_ELASTIC_INDEXER_VERSION,
     NOW_PREPROCESSOR_VERSION,
@@ -58,29 +59,52 @@ class SearchApp(JinaNOWApp):
                 host=f'grpcs://{DEMO_NS.format(user_input.dataset_name.split("/")[-1])}.dev.jina.ai'
             )
             try:
-                client.post('/dry_run', timeout=2)
+                client.post('/dry_run')
             except Exception as e:  # noqa E722
                 pass
             return True
         return False
 
     @staticmethod
-    def autocomplete_stub() -> Dict:
+    def autocomplete_stub(testing=False) -> Dict:
         return {
             'name': 'autocomplete_executor',
-            'uses': f'jinahub+docker://{name_to_id_map.get("NOWAutoCompleteExecutor2")}/{NOW_AUTOCOMPLETE_VERSION}',
+            'uses': f'jinahub+docker://{name_to_id_map.get("NOWAutoCompleteExecutor2")}/{NOW_AUTOCOMPLETE_VERSION}'
+            if not testing
+            else 'NOWAutoCompleteExecutor2',
             'needs': 'gateway',
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
+            'jcloud': {
+                'autoscale': {
+                    'min': 0,
+                    'max': 1,
+                    'metric': 'concurrency',
+                    'target': 1,
+                },
+                'resources': {
+                    'instance': 'C1',
+                    'capacity': 'spot',
+                    'storage': {'kind': 'efs', 'size': '1M'},
+                },
+            },
         }
 
     @staticmethod
-    def preprocessor_stub() -> Dict:
+    def preprocessor_stub(testing=False) -> Dict:
         return {
             'name': 'preprocessor',
             'needs': 'autocomplete_executor',
-            'uses': f'jinahub+docker://{name_to_id_map.get("NOWPreprocessor")}/{NOW_PREPROCESSOR_VERSION}',
+            'uses': f'jinahub+docker://{name_to_id_map.get("NOWPreprocessor")}/{NOW_PREPROCESSOR_VERSION}'
+            if not testing
+            else 'NOWPreprocessor',
             'jcloud': {
-                'autoscale': {'min': 0, 'max': 5, 'metric': 'concurrency', 'target': 1}
+                'autoscale': {
+                    'min': 0,
+                    'max': 100,
+                    'metric': 'concurrency',
+                    'target': 1,
+                },
+                'resources': {'instance': 'C4', 'capacity': 'spot'},
             },
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
         }
@@ -103,24 +127,30 @@ class SearchApp(JinaNOWApp):
     def sbert_encoder_stub() -> Tuple[Dict, int]:
         return {
             'name': Models.SBERT_MODEL,
-            'needs': 'preprocessor',
             'uses': f'jinahub+docker://TransformerSentenceEncoder',
             'uses_with': {
                 'access_paths': ACCESS_PATHS,
                 'model_name': 'msmarco-distilbert-base-v3',
             },
-            'jcloud': {
-                'autoscale': {'min': 0, 'max': 5, 'metric': 'concurrency', 'target': 1}
-            },
+            'host': EXTERNAL_SBERT_HOST,
+            'port': 443,
+            'tls': True,
+            'external': True,
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
+            'needs': 'preprocessor',
         }, 768
 
     @staticmethod
-    def indexer_stub(user_input: UserInput, encoder2dim: Dict[str, int]) -> Dict:
+    def indexer_stub(
+        user_input: UserInput,
+        encoder2dim: Dict[str, int],
+        testing=False,
+    ) -> Dict:
         """Creates indexer stub.
 
-        :param user_input: User input
+        :param user_input: user input
         :param encoder2dim: maps encoder name to its output dimension
+        :param testing: use local executors if True
         """
         document_mappings_list = []
 
@@ -138,52 +168,71 @@ class SearchApp(JinaNOWApp):
                     ],
                 ]
             )
+        provision_index = 'yes' if not testing else 'no'
+        provision_shards = os.getenv('PROVISION_SHARDS', '1')
+        provision_replicas = os.getenv('PROVISION_REPLICAS', '0')
 
         return {
             'name': 'indexer',
             'needs': list(encoder2dim.keys()),
-            'uses': f'jinahub+docker://{name_to_id_map.get("NOWElasticIndexer")}/{NOW_ELASTIC_INDEXER_VERSION}',
+            'uses': f'jinahub+docker://{name_to_id_map.get("NOWElasticIndexer")}/{NOW_ELASTIC_INDEXER_VERSION}'
+            if not testing
+            else 'NOWElasticIndexer',
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'uses_with': {
                 'document_mappings': document_mappings_list,
             },
             'no_reduce': True,
             'jcloud': {
-                'resources': {
-                    'memory': '8G',
-                    'cpu': 0.5,
-                    'capacity': 'on-demand',
-                }
+                'labels': {
+                    'app': 'indexer',
+                    'provision-index': provision_index,
+                    'provision-shards': provision_shards,
+                    'provision-replicas': provision_replicas,
+                },
+                'resources': {'instance': 'C6', 'capacity': 'spot'},
             },
         }
 
-    def get_executor_stubs(self, dataset, user_input: UserInput) -> List[Dict]:
+    def get_executor_stubs(
+        self, user_input: UserInput, testing=False, **kwargs
+    ) -> List[Dict]:
         """Returns a dictionary of executors to be added in the flow
 
-        :param dataset: DocumentArray of the dataset
         :param user_input: user input
+        :param testing: use local executors if True
         :return: executors stubs with filled-in env vars
         """
         flow_yaml_executors = [
-            self.autocomplete_stub(),
-            self.preprocessor_stub(),
+            self.autocomplete_stub(testing),
+            self.preprocessor_stub(testing),
         ]
 
         encoder2dim = {}
-        for model, stub in [
-            [Models.SBERT_MODEL, self.sbert_encoder_stub],
-            [Models.CLIP_MODEL, self.clip_encoder_stub],
-        ]:
-            if any(
-                model in user_input.model_choices[f"{field}_model"]
-                for field in user_input.index_fields
-            ):
-                encoder, dim = stub()
-                encoder2dim[encoder['name']] = dim
-                flow_yaml_executors.append(encoder)
+
+        def add_encoders_to_flow(models):
+            for model, encoder_stub in models:
+                if any(
+                    model in user_input.model_choices[f"{field}_model"]
+                    for field in user_input.index_fields
+                ):
+                    encoder, dim = encoder_stub()
+                    encoder2dim[encoder['name']] = dim
+                    flow_yaml_executors.append(encoder)
+
+        add_encoders_to_flow(
+            [
+                (Models.SBERT_MODEL, self.sbert_encoder_stub),
+                (Models.CLIP_MODEL, self.clip_encoder_stub),
+            ]
+        )
 
         flow_yaml_executors.append(
-            self.indexer_stub(user_input, encoder2dim=encoder2dim)
+            self.indexer_stub(
+                user_input,
+                encoder2dim=encoder2dim,
+                testing=testing,
+            )
         )
 
         return flow_yaml_executors

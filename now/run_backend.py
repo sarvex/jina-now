@@ -2,23 +2,20 @@ import random
 import sys
 import uuid
 from copy import deepcopy
-from time import sleep
 from typing import Dict, Optional
 
 import requests
 from docarray import DocumentArray
 from jina.clients import Client
-from tqdm import tqdm
 
 from now.admin.update_api_keys import update_api_keys
 from now.app.base.app import JinaNOWApp
-from now.constants import ACCESS_PATHS, DatasetTypes
-from now.data_loading.create_dataclass import create_dataclass
+from now.constants import ACCESS_PATHS
 from now.data_loading.data_loading import load_data
 from now.deployment.flow import deploy_flow
 from now.log import time_profiler
 from now.now_dataclasses import UserInput
-from now.utils import add_env_variables_to_flow, get_flow_id
+from now.utils.jcloud.helpers import get_flow_id
 
 
 @time_profiler
@@ -39,30 +36,15 @@ def run(
     :return:
     """
     print_callback = kwargs.get('print_callback', print)
-    if user_input.dataset_type in [DatasetTypes.DEMO, DatasetTypes.DOCARRAY]:
-        user_input.field_names_to_dataclass_fields = {
-            field: field for field in user_input.index_fields
-        }
-        data_class = None
-    else:
-        data_class, user_input.field_names_to_dataclass_fields = create_dataclass(
-            user_input=user_input
-        )
 
-    dataset = load_data(user_input, data_class, print_callback)
+    dataset = load_data(user_input, print_callback)
     print_callback('Data loaded. Deploying the flow...')
 
-    # Set up the app specific flow and also get the environment variables and its values
-    env_dict = app_instance.setup(
-        dataset=dataset,
-        user_input=user_input,
-        data_class=data_class,
-    )
+    # Set up the app specific flow
+    app_instance.setup(user_input=user_input)
 
-    add_env_variables_to_flow(app_instance, env_dict)
-    (client, gateway_port, gateway_host_internal,) = deploy_flow(
-        flow_yaml=app_instance.flow_yaml,
-        env_dict=env_dict,
+    client, gateway_port, gateway_host_internal = deploy_flow(
+        flow_yaml=app_instance.flow_yaml
     )
 
     # TODO at the moment the scheduler is not working. So we index the data right away
@@ -122,7 +104,7 @@ def index_docs(user_input, dataset, client, print_callback, **kwargs):
     """
     Index the data right away
     """
-    print_callback(f"▶ indexing {len(dataset)} documents in batches")
+    print_callback(f"▶ indexing {len(dataset)} documents")
     params = {'access_paths': ACCESS_PATHS}
     if user_input.secured:
         params['jwt'] = user_input.jwt
@@ -149,43 +131,21 @@ def call_flow(
 ):
     request_size = estimate_request_size(dataset, max_request_size)
 
-    # this is a hack for the current core/ wolf issue
-    # since we get errors while indexing, we retry
-    # TODO: remove this once the issue is fixed
-    batches = list(dataset.batch(request_size * 100))
-    for current_batch_nr, batch in enumerate(tqdm(batches)):
-        for try_nr in range(5):
-            try:
-                response = client.post(
-                    on=endpoint,
-                    request_size=request_size,
-                    inputs=batch,
-                    show_progress=True,
-                    parameters=parameters,
-                    return_results=return_results,
-                    continue_on_error=True,
-                    on_done=kwargs.get('on_done', None),
-                    on_error=kwargs.get('on_error', None),
-                    on_always=kwargs.get('on_always', None),
-                )
-                if kwargs.get('custom_callback', None):
-                    kwargs['custom_callback'](
-                        client_resp=response,
-                        batch_idx=len(batch),
-                        tot_idx=len(dataset),
-                        host=client.args.host,
-                    )
-                break
-            except Exception as e:
-                if try_nr == 4:
-                    # if we tried 5 times and still failed, raise the error
-                    raise e
-                print(f'batch {current_batch_nr}, try {try_nr}', e)
-                sleep(5 * (try_nr + 1))  # sleep for 5, 10, 15, 20 seconds
-                continue
+    response = client.post(
+        on=endpoint,
+        request_size=request_size,
+        inputs=dataset,
+        show_progress=True,
+        parameters=parameters,
+        continue_on_error=True,
+        prefetch=100,
+        on_done=kwargs.get('on_done', None),
+        on_error=kwargs.get('on_error', None),
+        on_always=kwargs.get('on_always', None),
+    )
 
-    if return_results and response:
-        return DocumentArray.from_json(response.to_json())
+    if return_results:
+        return response
 
 
 def estimate_request_size(index, max_request_size):

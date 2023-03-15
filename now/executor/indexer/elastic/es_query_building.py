@@ -1,7 +1,9 @@
 from collections import defaultdict
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from docarray import Document, DocumentArray
+
+from now.utils.docarray.helpers import get_chunk_by_field_name
 
 metrics_mapping = {
     'cosine': 'cosineSimilarity',
@@ -9,21 +11,21 @@ metrics_mapping = {
 }
 
 
-def generate_semantic_scores(
+def generate_score_calculation(
     docs_map: Dict[str, DocumentArray],
     encoder_to_fields: Dict[str, Union[List[str], str]],
-) -> List[Tuple]:
+) -> List[List]:
     """
-    Generate semantic scores from document mappings.
+    Generate score calculation from document mappings.
 
     :param docs_map: dictionary mapping encoder to DocumentArray.
     :param encoder_to_fields: dictionary mapping encoder to fields.
-    :return: a list of semantic scores, each of which is a tuple of
+    :return: a list of score calculation, each of which is a tuple of
         (query_field, document_field, encoder, linear_weight).
-        Semantic scores would then be for example:
+        score calculation would then be for example:
         [('query_text', 'title', 'clip', 1.0)]
     """
-    semantic_scores = []
+    score_calculation = []
     for executor_name, da in docs_map.items():
         first_doc = da[0]
         field_names = first_doc._metadata['multi_modal_schema'].keys()
@@ -34,28 +36,26 @@ def generate_semantic_scores(
                 f'Documents are not encoded with same encoder as query. executor_name: {executor_name}, encoder_to_fields: {encoder_to_fields}'
             ) from e
         for field_name in field_names:
-            chunk = getattr(first_doc, field_name)
+            chunk = get_chunk_by_field_name(first_doc, field_name)
             if chunk.chunks.embeddings is None and chunk.embedding is None:
                 continue
             for document_field in document_fields:
-                semantic_scores.append(
-                    (
+                score_calculation.append(
+                    [
                         field_name,
                         document_field,
                         executor_name,
                         1,
-                    )
+                    ]
                 )
 
-    return semantic_scores
+    return score_calculation
 
 
 def build_es_queries(
     docs_map,
-    apply_default_bm25: bool,
     get_score_breakdown: bool,
-    semantic_scores: List[Tuple],
-    custom_bm25_query: Optional[dict] = None,
+    score_calculation: List[Tuple],
     metric: Optional[str] = 'cosine',
     filter: dict = {},
     query_to_curated_ids: Dict[str, list] = {},
@@ -68,14 +68,11 @@ def build_es_queries(
     their corresponding field+encoder as key.
 
     :param docs_map: dictionary mapping encoder to DocumentArray.
-    :param apply_default_bm25: whether to combine bm25 with vector search. If False,
-        will only perform vector search. If True, must supply a text
-        field for bm25 searching.
     :param get_score_breakdown: whether to return the score breakdown for matches.
         For this function, this parameter determines whether to return the embeddings
         of a query document.
-    :param semantic_scores: list of semantic scores used to calculate a score for a document.
-    :param custom_bm25_query: custom query to use for BM25.
+    :param score_calculation: list of nested lists containing (query_field, document_field, matching_method, linear_weight) which define
+        how to calculate the score. Note, that the matching_method is the name of the encoder or `bm25`.
     :param metric: metric to use for vector search.
     :param filter: dictionary of filters to apply to the search.
     :param query_to_curated_ids: dictionary mapping query text to list of curated ids.
@@ -95,9 +92,7 @@ def build_es_queries(
             if doc.id not in queries:
                 queries[doc.id] = get_default_query(
                     doc,
-                    apply_default_bm25,
-                    semantic_scores,
-                    custom_bm25_query,
+                    score_calculation,
                     filter,
                 )
                 pinned_queries[doc.id] = get_pinned_query(
@@ -105,7 +100,10 @@ def build_es_queries(
                     query_to_curated_ids,
                 )
 
-                if apply_default_bm25 or custom_bm25_query:
+                if any(
+                    _matching_method == 'bm25'
+                    for (_, _, _matching_method, _) in score_calculation
+                ):
                     sources[doc.id] = '1.0 + _score / (_score + 10.0)'
                 else:
                     sources[doc.id] = '1.0'
@@ -113,17 +111,17 @@ def build_es_queries(
             for (
                 query_field,
                 document_field,
-                encoder,
+                matching_method,
                 linear_weight,
-            ) in get_scores(executor_name, semantic_scores):
-                field_doc = getattr(doc, query_field)
+            ) in get_scores(executor_name, score_calculation):
+                field_doc = get_chunk_by_field_name(doc, query_field)
                 if get_score_breakdown:
                     docs[doc.id].tags['embeddings'][
-                        f'{query_field}-{encoder}'
+                        f'{query_field}-{matching_method}'
                     ] = field_doc.embedding
 
                 query_string = f'params.query_{query_field}_{executor_name}'
-                document_string = f'{document_field}-{encoder}'
+                document_string = f'{document_field}-{matching_method}'
 
                 sources[
                     doc.id
@@ -158,9 +156,7 @@ def build_es_queries(
 
 def get_default_query(
     doc: Document,
-    apply_default_bm25: bool,
-    semantic_scores: List[Tuple],
-    custom_bm25_query: Dict = None,
+    score_calculation: List[Tuple],
     filter: Dict = {},
 ):
     query = {
@@ -172,17 +168,17 @@ def get_default_query(
     }
 
     # build bm25 part
-    if apply_default_bm25:
-        bm25_semantic_score = next((x for x in semantic_scores if x[2] == 'bm25'))
-        if not bm25_semantic_score:
-            raise ValueError(
-                'No bm25 semantic scores found. Please specify this in the semantic_scores parameter.'
+    for (query_field, index_field, matching_method, linear_weight) in score_calculation:
+        if matching_method == 'bm25':
+            text = get_chunk_by_field_name(doc, query_field).text
+            query['bool']['should'].append(
+                {
+                    'multi_match': {
+                        'query': text,
+                        'fields': [f"{index_field}^{linear_weight}"],
+                    }
+                }
             )
-        text = getattr(doc, bm25_semantic_score[0]).text
-        multi_match = {'multi_match': {'query': text, 'fields': ['bm25_text']}}
-        query['bool']['should'].append(multi_match)
-    elif custom_bm25_query:
-        query['bool']['should'].append(custom_bm25_query)
 
     # add filter
     if filter:
@@ -201,25 +197,31 @@ def get_pinned_query(doc: Document, query_to_curated_ids: Dict[str, list] = {}) 
     return pinned_query
 
 
-def process_filter(filter) -> dict:
-    es_search_filter = {}
+def process_filter(
+    filter: Dict[str, Union[List[str], Dict[str, float]]]
+) -> List[Dict[str, Any]]:
+    es_search_filters = []
     for field, filters in filter.items():
-        for operator, filter in filters.items():
-            field = field.replace('__', '.')
-            if isinstance(filter, str):
-                es_search_filter['term'] = {field: filter}
-            elif isinstance(filter, int) or isinstance(filter, float):
-                operator = operator.replace('$', '')
-                es_search_filter['range'] = {field: {operator: filter}}
-    return es_search_filter
+        field = field.replace('__', '.', 1)
+        es_search_filter = {}
+        if isinstance(filters, list):  # must be categorical (list of terms)
+            es_search_filter['terms'] = {field: filters}
+        elif isinstance(filters, dict):  # must be numerical (range with operators)
+            es_search_filter['range'] = {field: filters}
+        else:
+            raise ValueError(
+                f'Filter {field}: {filters} is not a list of terms or a dictionary of ranges'
+            )
+        es_search_filters.append(es_search_filter)
+    return es_search_filters
 
 
-def get_scores(encoder, semantic_scores):
+def get_scores(encoder, score_calculation):
     for (
         query_field,
         document_field,
         _encoder,
         linear_weight,
-    ) in semantic_scores:
+    ) in score_calculation:
         if encoder == _encoder:
             yield query_field, document_field, _encoder, linear_weight

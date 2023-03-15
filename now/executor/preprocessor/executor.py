@@ -1,10 +1,4 @@
-import io
-import os
-import random
-import string
 import tempfile
-import urllib
-from typing import Dict
 
 from jina import Document, DocumentArray
 
@@ -20,6 +14,14 @@ from now.executor.preprocessor.s3_download import maybe_download_from_s3
 Executor = get_auth_executor_class()
 
 
+def move_uri(d: Document) -> Document:
+    cloud_uri = d.tags.get('uri')
+    if isinstance(cloud_uri, str) and cloud_uri.startswith('s3://'):
+        d.uri = cloud_uri
+        d.chunks[:, 'uri'] = cloud_uri
+    return d
+
+
 class NOWPreprocessor(Executor):
     """Applies preprocessing to documents for encoding, indexing and searching as defined by app.
     If necessary, downloads files for that from cloud bucket.
@@ -30,22 +32,6 @@ class NOWPreprocessor(Executor):
 
         self.app: JinaNOWApp = JinaNOWApp()
         self.max_workers = max_workers
-
-    @staticmethod
-    def _save_uri_to_tmp_file(uri, tmpdir) -> str:
-        """Saves URI to a temporary file and returns the path to that file."""
-        req = urllib.request.Request(uri, headers={'User-Agent': 'Mozilla/5.0'})
-        tmp_fn = os.path.join(
-            tmpdir,
-            ''.join([random.choice(string.ascii_lowercase) for i in range(10)])
-            + '.png',
-        )
-        with urllib.request.urlopen(req, timeout=10) as fp:
-            buffer = fp.read()
-            binary_fn = io.BytesIO(buffer)
-            with open(tmp_fn, 'wb') as f:
-                f.write(binary_fn.read())
-        return tmp_fn
 
     @secure_request(on=None, level=SecurityLevel.USER)
     def preprocess(self, docs: DocumentArray, *args, **kwargs) -> DocumentArray:
@@ -90,37 +76,8 @@ class NOWPreprocessor(Executor):
                 and self.user_input.dataset_type == DatasetTypes.S3_BUCKET
             ):
 
-                def move_uri(d: Document) -> Document:
-                    cloud_uri = d.tags.get('uri')
-                    if isinstance(cloud_uri, str) and cloud_uri.startswith('s3://'):
-                        d.uri = cloud_uri
-                        d.chunks[:, 'uri'] = cloud_uri
-                    return d
-
                 for d in docs:
                     for c in d.chunks:
                         # TODO please fix this hack - uri should not be in tags
                         move_uri(c)
         return docs
-
-    @secure_request(on='/get_index_fields', level=SecurityLevel.USER)
-    def get_index_fields(self, **kwargs) -> Dict:
-        index_field_candidates_to_modalities = (
-            self.user_input.index_field_candidates_to_modalities
-        )
-        index_fields = self.user_input.index_fields
-        index_fields_dict = {
-            field: modality
-            for field, modality in index_field_candidates_to_modalities.items()
-            if field in index_fields
-        }  # should be a dict of selected index_fields and their modalities.
-        return DocumentArray(
-            [
-                Document(
-                    text='index_fields',
-                    tags={
-                        'index_fields_dict': index_fields_dict,
-                    },
-                )
-            ]
-        )

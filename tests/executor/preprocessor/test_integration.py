@@ -1,17 +1,14 @@
 import os
 
-import pytest
 from docarray import Document, DocumentArray
 from jina import Flow
 
+from now.executor.gateway import NOWGateway
 from now.executor.preprocessor import NOWPreprocessor
 
 
-@pytest.mark.parametrize('endpoint', ['index', 'search'])
-def test_search_app(resources_folder_path, endpoint, tmpdir, mm_dataclass):
-
-    metas = {'workspace': str(tmpdir)}
-    text_docs = DocumentArray(
+def test_search_app(resources_folder_path, tmpdir, mm_dataclass):
+    docs = DocumentArray(
         [
             Document(mm_dataclass(text_field='test')),
             Document(
@@ -23,16 +20,23 @@ def test_search_app(resources_folder_path, endpoint, tmpdir, mm_dataclass):
             ),
         ]
     )
+    # this is needed as using http compression leads to a tensor of dtype uint8 is received as int64
+    docs[1].video_field.load_uri_to_blob(timeout=10)
 
-    with Flow().add(uses=NOWPreprocessor, uses_metas=metas) as f:
-        result = f.post(
-            on=f'/{endpoint}',
-            inputs=text_docs,
-            show_progress=True,
-        )
-        result = DocumentArray.from_json(result.to_json())
+    with Flow().config_gateway(
+        uses=NOWGateway,
+        protocol=['http', 'grpc'],
+        port=[8081, 8085],
+        env={'JINA_LOG_LEVEL': 'DEBUG'},
+    ).add(uses=NOWPreprocessor, workspace=tmpdir, env={'JINA_LOG_LEVEL': 'DEBUG'}) as f:
+        for endpoint in ['index', 'search']:
+            result = f.post(
+                on=f'/{endpoint}',
+                inputs=docs,
+                show_progress=True,
+            )
 
-    assert len(result) == 2
-    assert result[0].text == ''
-    assert result[0].chunks[0].chunks[0].text == 'test'
-    assert result[1].chunks[0].chunks[0].blob
+            assert len(result) == 2
+            assert result[0].text == ''
+            assert result[0].chunks[0].chunks[0].text == 'test'
+            assert result[1].chunks[0].chunks[0].blob

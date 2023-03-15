@@ -9,7 +9,7 @@ from concurrent.futures import ThreadPoolExecutor
 import boto3
 from docarray import Document, DocumentArray
 
-from now.utils import flatten_dict
+from now.utils.common.helpers import flatten_dict
 
 
 def maybe_download_from_s3(
@@ -18,7 +18,7 @@ def maybe_download_from_s3(
     """Downloads file to local temporary dictionary, saves S3 URI to `tags['uri']` and modifies `uri` attribute of
     document to local path in-place.
 
-    :param doc: document containing URI pointing to the location on S3 bucket
+    :param docs: documents containing URI pointing to the location on S3 bucket
     :param tmpdir: temporary directory in which files will be saved
     :param user_input: User iput which contain aws credentials
     :param max_workers: number of threads to create in the threadpool executor to make execution faster
@@ -31,7 +31,7 @@ def maybe_download_from_s3(
         futures = []
         for c in filtered_docs:
             f = executor.submit(
-                convert_fn,
+                convert_s3_to_local_uri,
                 c,
                 tmpdir,
                 user_input.aws_access_key_id,
@@ -52,7 +52,7 @@ def maybe_download_from_s3(
             f.result()
 
 
-def convert_fn(
+def convert_s3_to_local_uri(
     d: Document, tmpdir, aws_access_key_id, aws_secret_access_key, aws_region_name
 ) -> Document:
     """Downloads files and tags from S3 bucket and updates the content uri and the tags uri to the local path"""
@@ -116,16 +116,16 @@ def get_local_path(tmpdir, path_s3):
 
 
 def update_tags(d, aws_access_key_id, aws_secret_access_key, region_name):
-    if 's3_tags' in d._metadata:
+    if '_s3_uri_for_tags' in d._metadata:
         bucket = get_bucket(
-            uri=d._metadata['s3_tags']['json_path'],
+            uri=d._metadata['_s3_uri_for_tags'],
             aws_access_key_id=aws_access_key_id,
             aws_secret_access_key=aws_secret_access_key,
             region_name=region_name,
         )
         with tempfile.TemporaryDirectory() as tmpdir:
             local_file = download_from_bucket(
-                tmpdir, d._metadata['s3_tags']['json_path'], bucket
+                tmpdir, d._metadata['_s3_uri_for_tags'], bucket
             )
 
             with open(local_file, 'r') as file:

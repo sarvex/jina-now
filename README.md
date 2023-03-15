@@ -1,6 +1,6 @@
 <p align="center">
 
-<img src="https://github.com/jina-ai/now/blob/main/docs/_static/logo-light.svg?raw=true" alt="Jina NOW logo: The data structure for unstructured data" width="300px">  
+<img src="https://github.com/jina-ai/now/blob/main/docs/_static/logo-light.svg?raw=true" alt="Jina NOW logo" width="300px">  
 
 
 <br>
@@ -15,18 +15,18 @@ Tell us what you think: <a href="https://10sw1tcpld4.typeform.com/to/VTAyYRpR?ut
 
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/11627845/164569398-5ef22a41-e2e1-438a-88a5-2ac43ad9426d.gif" alt="Jina NOW logo: The data structure for unstructured data" width="600px">
+<img src="https://user-images.githubusercontent.com/11627845/164569398-5ef22a41-e2e1-438a-88a5-2ac43ad9426d.gif" alt="Jina NOW logo" width="600px">
 
 <!-- start elevator-pitch -->
 
-NOW gives the world access to neural image search with just one command.
+NOW gives the world access to multimodal neural search with just one command.
  
 - ⛅ **Cloud**: We handle deployment and maintenance.
 - 🐎 **Fast and easy**: Set up your search use case in minutes with minimal effort.
 - 🌈 **Quality**: You provide the labels, NOW fine-tunes the model.
 - ✨ **Nocode**: Non-technical people can deploy with ease.
 
-Read how [Jina NOW is production ready](https://now.jina.ai/user-guides/production/).
+Read how [Jina NOW is production ready](/user-guides/production.md).
 
 ### Install
 
@@ -54,6 +54,9 @@ jina now start
 ```
 **1.** Choose your data source. 
 
+NOW supports various formats for uploading your dataset to your search application. Please see the
+[guide to loading your data](/user-guides/input_format/) for the full details on this step.
+
 You may either choose a demo dataset hosted by NOW, or use your own custom dataset, to build an application.
 NOW can support your custom data in the form of a `DocumentArray`, as a path to a local folder, or S3 bucket.
 
@@ -69,7 +72,7 @@ NOW can support your custom data in the form of a `DocumentArray`, as a path to 
 You can choose a demo dataset to get started quickly. The demo datasets are hosted by NOW which can be easily
 used to build a search application. There is a large variety of datasets, including images, text, and audio.
 
-If you would like to use your own custom data, you can choose `DocumentArray name`. You will be asked to provide the
+If you would like to use your own custom data, you can choose `DocumentArray name` in the CLI dialog. You will be asked to provide the
 DocumentArray ID (or name) or URL of your dataset.
 
 ```commandline
@@ -94,8 +97,7 @@ NOW asks for the URI to the S3 bucket, as well as the credentials and region the
 ```
 
 A final step in loading your data is to choose the fields of your data that you would like to use for search and filter
-respectively. You can choose from the fields that are available in your data. For more information on this, see the
-[guide to loading your data](https://now.jina.ai/user-guides/input_format/).
+respectively. You can choose from the fields that are available in your dataset.
 
 
 **2.** Follow the links. After NOW finishes processing, you'll see two links:
@@ -121,7 +123,7 @@ Example of the Swagger UI.
 
 <img width="350" alt="Screenshot 2022-05-26 at 16 36 06" src="https://user-images.githubusercontent.com/11627845/170511580-230d1e41-5e14-4623-adb6-3d4b2d400dc9.png">
 
-[More information on using Jina NOW CLI and API](https://now.jina.ai/user-guides/cli_api/)
+[More information on using Jina NOW CLI and API](docs/user-guides/cli_api.md)
 
 ## Supported modalities (more coming soon)
 

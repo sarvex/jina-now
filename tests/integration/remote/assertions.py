@@ -19,39 +19,50 @@ def test_search_image(resources_folder_path: str):
 
 
 def assert_deployment_response(response):
-    assert response['bff'] == 'http://localhost:8080/api/v1/search-app/docs'
-    assert response['playground'].startswith('http://localhost/')
-    assert response['host'].startswith('grpcs://')
-    assert response['host'].endswith('.wolf.jina.ai')
+    host_grpc = response['host_grpc']
+    assert host_grpc.startswith('grpcs://')
+    assert host_grpc.endswith('.wolf.jina.ai')
+    host_http = response['host_http']
+    assert host_http.startswith('https://')
+    assert host_http.endswith('.wolf.jina.ai')
+    assert response['bff'] == f'{host_http}/api/v1/search-app/docs'
+    assert response['playground'] == f'{host_http}/playground'
 
 
 def assert_deployment_queries(
+    index_fields,
     kwargs,
     response,
     search_modality,
     dataset=None,
 ):
-    url = f'http://localhost:8080/api/v1'
-    host = response.get('host')
+    host = response.get('host_http')
+    url = f'{host}/api/v1'
     # normal case
     request_body = get_search_request_body(
         kwargs=kwargs,
-        host=host,
         search_modality=search_modality,
         dataset=dataset,
     )
     search_url = f'{url}/search-app/search'
     assert_search(search_url, request_body)
+    # add score calculation to the request body, assert search still works
+    request_body['score_calculation'] = [
+        [request_body['query'][0]['name'], index_fields[0], 'encoderclip', 0.8]
+    ]
+    assert_search(search_url, request_body)
 
     if kwargs.secured:
         # test add email
-        request_body = get_default_request_body(secured=kwargs.secured, host=host)
+        request_body = get_default_request_body(secured=kwargs.secured)
         request_body['user_emails'] = ['florian.hoenicke@jina.ai']
         response = requests.post(
             f'{url}/admin/updateUserEmails',
             json=request_body,
         )
-        assert response.status_code == 200
+        assert (
+            response.status_code == 200
+        ), f"text: {json.dumps(response.json(), indent=2)}"
 
         # add api key
         del request_body['user_emails']
@@ -67,7 +78,6 @@ def assert_deployment_queries(
         # the same search should work now
         request_body = get_search_request_body(
             kwargs=kwargs,
-            host=host,
             search_modality=search_modality,
             dataset=dataset,
         )
@@ -81,18 +91,15 @@ def assert_deployment_queries(
 
 def get_search_request_body(
     kwargs,
-    host,
     search_modality,
     dataset=None,
 ):
-    request_body = get_default_request_body(host=host, secured=kwargs.secured)
+    request_body = get_default_request_body(secured=kwargs.secured)
     request_body['limit'] = 9
     # Perform end-to-end check via bff
     if search_modality == 'text':
         if dataset == DemoDatasetNames.BEST_ARTWORKS:
             search_text = 'impressionism'
-        elif dataset == DemoDatasetNames.NFT_MONKEY:
-            search_text = 'laser eyes'
         else:
             search_text = 'test'
         request_body['query'] = [
@@ -136,16 +143,32 @@ def assert_suggest(suggest_url, request_body):
     )
 
 
-def assert_search_custom_s3(host, mm_type, create_temp_link=False):
+def assert_info_endpoints(info_url, request_body):
+    info_uris = [
+        'tags',
+        'count',
+        'field_names_to_dataclass_fields',
+        'encoder_to_dataclass_fields_mods',
+    ]
+    for uri in info_uris:
+        response = requests.post(
+            info_url + uri,
+            json=request_body,
+        )
+        assert (
+            response.status_code == 200
+        ), f"Received code {response.status_code} with text: {response.json()['message']}"
+
+
+def assert_search_custom_s3(host, mm_type, dataset_length, create_temp_link=False):
     request_body = {
         'query': [{'name': 'text', 'value': 'Hello', 'modality': 'text'}],
         'limit': 9,
-        'host': host,
         'create_temp_link': create_temp_link,
     }
 
     response = requests.post(
-        f'http://localhost:8080/api/v1/search-app/search',
+        f'{host}/api/v1/search-app/search',
         json=request_body,
     )
 
@@ -154,7 +177,7 @@ def assert_search_custom_s3(host, mm_type, create_temp_link=False):
     ), f"Received code {response.status_code} with text: {response.json()['message']}"
 
     response_json = response.json()
-    assert len(response_json) == 2
+    assert len(response_json) == 9 if dataset_length > 9 else dataset_length
     for doc in response_json:
         fields = list(doc['fields'].values())
         for field in fields:
@@ -171,3 +194,14 @@ def assert_search_custom_s3(host, mm_type, create_temp_link=False):
     if mm_type:
         for doc in response_json:
             assert len(doc['tags']) > 0
+
+
+def assert_indexed_all_docs(host, kwargs, limit: int):
+    request_body = get_default_request_body(secured=kwargs.secured)
+    request_body['limit'] = limit
+    response = requests.post(
+        f"{host}/api/v1/info/count",
+        json=request_body,
+    )
+    response_json = response.json()
+    assert response_json['number_of_docs'] == limit

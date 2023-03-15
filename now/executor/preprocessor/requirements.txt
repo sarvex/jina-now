@@ -1,2 +1,2 @@
 boto3
-jina[filelock]>=3.13.2
+jina[filelock]==3.14.2.dev18

@@ -47,11 +47,12 @@ def test_disable_telemetry(disable, mm_dataclass):
     user_input.index_fields = ['text']
     user_input.model_choices = {'text_model': ['sbert']}
     user_input.app_instance = app
-    da = DocumentArray([Document(mm_dataclass(text_field='test. test'))])
 
-    app.setup(dataset=da, user_input=user_input, data_class=None)
+    app.setup(user_input=user_input)
 
-    assert app.flow_yaml['with']['env'].get('JINA_OPTOUT_TELEMETRY') == expected_value
+    assert (
+        app.flow_yaml['gateway']['env'].get('JINA_OPTOUT_TELEMETRY') == expected_value
+    )
     for executor in app.flow_yaml['executors']:
         assert executor['env'].get('JINA_OPTOUT_TELEMETRY') == expected_value
 

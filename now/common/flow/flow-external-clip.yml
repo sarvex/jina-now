@@ -4,7 +4,7 @@ with:
   env:
     JINA_LOG_LEVEL: DEBUG
 jcloud:
-  version: '3.13.2'
+  version: '3.14.2.dev18'
   labels:
     team: now
 gateway:
@@ -12,13 +12,18 @@ gateway:
     expose: false
 executors:
   - name: encoderclip
-    uses: jinahub+docker://CLIPOnnxEncoder/0.8.1-gpu
+    uses: jinahub+docker://CLIPOnnxEncoder/0.8.1
     uses_with:
       name: ViT-B-32::openai
     env:
       JINA_LOG_LEVEL: DEBUG
     jcloud:
       expose: true
+      autoscale:
+        min: 4
+        max: 15
+        metric: concurrency
+        target: 1
       resources:
-        memory: 5G
-        gpu: '1'
+        instance: C4
+        capacity: spot
