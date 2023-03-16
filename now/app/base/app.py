@@ -107,6 +107,9 @@ class JinaNOWApp:
 
     def get_gateway_stub(self, user_input, testing=False) -> Dict:
         """Returns the stub for gateway in the flow."""
+        provision_index = 'yes'
+        provision_shards = os.getenv('PROVISION_SHARDS', '1')
+        provision_replicas = os.getenv('PROVISION_REPLICAS', '0')
         gateway_stub = {
             'uses': f'jinahub+docker://{name_to_id_map.get("NOWGateway")}/{NOW_GATEWAY_VERSION}'
             if not testing
@@ -118,6 +121,12 @@ class JinaNOWApp:
             'uses_with': {'user_input_dict': user_input.to_safe_dict()},
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'jcloud': {
+                'labels': {
+                    'app': 'indexer',
+                    'provision-index': provision_index,
+                    'provision-shards': provision_shards,
+                    'provision-replicas': provision_replicas,
+                },
                 'resources': {
                     'instance': 'C5',
                     'capacity': 'spot',
