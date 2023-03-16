@@ -1,10 +1,12 @@
 import json
 import os
+from collections import defaultdict
 from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime
-from time import sleep
+from time import sleep, time
 from typing import Dict, List, Tuple
 
+import numpy as np
 import pandas as pd
 import requests
 from docarray import Document, DocumentArray
@@ -34,7 +36,6 @@ def compare_flows_for_queries(
     :param disable_to_datauri: if True, the images are not converted to DataURI
     """
     # call flow/api/v1/search-app/search for all queries and all flow_ids_http_score_calculation
-    print(f'Comparing {len(da)} queries')
     now = datetime.now()
     folder = str(
         os.path.abspath(
@@ -46,6 +47,7 @@ def compare_flows_for_queries(
     )
     os.mkdir(folder)
     rows = []
+    latencies_total, latencies_temp = defaultdict(list), defaultdict(list)
     cnt_tables = 0
     with tqdm(total=len(da)) as pbar:
         with ProcessPoolExecutor(max_workers=min(len(da), 1)) as ex:
@@ -60,8 +62,14 @@ def compare_flows_for_queries(
                 for query in da
             ]
             for future in futures:
-                rows.append(future.result())
+                result = future.result()
+                row = result[0]
+                latency_dict = result[1]
                 pbar.update(1)
+                rows.append(row)
+                for flow_setup, latency_val in latency_dict.items():
+                    latencies_temp[flow_setup].append(latency_val)
+                    latencies_total[flow_setup].append(latency_val)
                 if len(rows) == results_per_table:
                     df = pd.DataFrame(rows)
                     df.to_html(
@@ -71,8 +79,28 @@ def compare_flows_for_queries(
                         ),
                         escape=False,
                     )
+                    with open(
+                        os.path.join(
+                            folder,
+                            f'latencies-{cnt_tables * results_per_table}-to-{(cnt_tables + 1) * results_per_table}.json',
+                        ),
+                        'w',
+                    ) as latencies_file:
+                        latencies_write = {}
+                        for flow_setup, latencies in latencies_temp.items():
+                            latencies_write[flow_setup + '-mean'] = np.mean(latencies)
+                            latencies_write[flow_setup + '-std'] = np.std(latencies)
+                        json.dump(latencies_write, latencies_file, indent=4)
+
                     cnt_tables += 1
                     rows = []
+                    latencies_temp = defaultdict(list)
+    with open(os.path.join(folder, 'latencies.json'), 'w') as latencies_file:
+        latencies_write = {}
+        for flow_setup, latencies in latencies_total.items():
+            latencies_write[flow_setup + '-mean'] = np.mean(latencies)
+            latencies_write[flow_setup + '-std'] = np.std(latencies)
+        json.dump(latencies_write, latencies_file, indent=4)
     if rows:
         df = pd.DataFrame(rows[cnt_tables : len(rows)])
         df.to_html(
@@ -90,9 +118,10 @@ def _evaluate_query(
     flow_ids_http_req_params: List[Tuple],
     limit: int,
     disable_to_datauri: bool,
-) -> Dict[str, str]:
-    """Sends the query to each flow and returns a dictionary which maps 'query' and flow names with their semantic
-    scores to HTML of the results.
+) -> Tuple[Dict[str, str], Dict[str, float]]:
+    """Sends the query to each flow and returns
+    - a dictionary which maps 'query' and flow names with their semantic scores to HTML of the results
+    - a dictionary which maps (flow name + configuration) to the latency of that query
 
     :param query: query defined as multi-modal document
     :param flow_ids_http_req_params: a list consisting of tuples which are (flow ID, host of HTTP gateway,
@@ -126,8 +155,10 @@ def _evaluate_query(
             disable_to_datauri
         )
     }
+    latency_dict = {}
 
     for flow_name, http_host, request_parameters in flow_ids_http_req_params:
+        column_name = f'{flow_name} - {json.dumps(request_parameters, sort_keys=True)}'
         request_body = get_default_request_body(secured=True)
         request_body['limit'] = limit
         request_body['query'] = query_dict_search_request
@@ -135,7 +166,6 @@ def _evaluate_query(
         if 'score_calculation' in request_parameters:
             request_body['score_calculation'] = request_parameters['score_calculation']
         if 'filters' in request_parameters:
-            print('GOT FILTERS')
             request_body['filters'] = {}
             for key, value in request_parameters['filters'].items():
                 if isinstance(value, str) and value.startswith('@.['):
@@ -150,22 +180,19 @@ def _evaluate_query(
                     )
                 else:
                     request_body['filters'][key] = value
-        print(f'Querying {flow_name} with request_body: {request_body}')
         for _ in range(5):
             try:
+                start = time()
                 response = requests.post(
                     f'{http_host}/api/v1/search-app/search', json=request_body
                 )
-                print(f'Got response: {response.content}')
                 if response.status_code == 200:
+                    latency_dict[column_name] = time() - start
                     break
             except ConnectionError:
                 sleep(1)
                 continue
-        row[
-            f'{flow_name} - {json.dumps(request_parameters, sort_keys=True)}'
-        ] = SearchResponseModel.responses_to_html(
+        row[column_name] = SearchResponseModel.responses_to_html(
             [SearchResponseModel(**r) for r in response.json()], disable_to_datauri
         )
-
-    return row
+    return row, latency_dict
