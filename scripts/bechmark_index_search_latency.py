@@ -71,7 +71,7 @@ def deploy_scenario(scenario):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--scenario', type=int, choices=['video+text', 'image'])
+    parser.add_argument('--scenario', type=str, choices=['video+text', 'image'])
     args = parser.parse_args()
 
     result = deploy_scenario(args.scenario)
