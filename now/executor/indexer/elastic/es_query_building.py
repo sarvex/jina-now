@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from docarray import Document, DocumentArray
 
+from now.constants import NOW_ELASTIC_POST_FIX_FILTERS_TEXT_SEARCH
 from now.utils.docarray.helpers import get_chunk_by_field_name
 
 metrics_mapping = {
@@ -204,12 +205,18 @@ def process_filter(
     for field, filters in filter.items():
         field = field.replace('__', '.', 1)
         es_search_filter = {}
-        if isinstance(filters, list):  # must be categorical (list of terms)
+        if isinstance(
+            filters, list
+        ):  # must be categorical (list of terms) so use keyword field
             es_search_filter['terms'] = {field: filters}
         elif isinstance(filters, dict):  # must be numerical (range with operators)
             es_search_filter['range'] = {field: filters}
-        elif isinstance(filters, str):
-            es_search_filter['match'] = {field: filters}
+        elif isinstance(
+            filters, str
+        ):  # is a text search so use standard analyzer field
+            es_search_filter['match'] = {
+                f'{field}.{NOW_ELASTIC_POST_FIX_FILTERS_TEXT_SEARCH}': filters
+            }
         else:
             raise ValueError(
                 f'Filter {field}: {filters} (type: {type(filters)}) is not a list of terms or a dictionary of ranges or a string to mach.'

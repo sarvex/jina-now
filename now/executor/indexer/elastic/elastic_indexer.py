@@ -9,7 +9,11 @@ from docarray import Document, DocumentArray
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 
-from now.constants import NOW_ELASTIC_FETCH_MAX_VALUES_PER_TAG, DatasetTypes
+from now.constants import (
+    NOW_ELASTIC_FETCH_MAX_VALUES_PER_TAG,
+    NOW_ELASTIC_POST_FIX_FILTERS_TEXT_SEARCH,
+    DatasetTypes,
+)
 from now.executor.abstract.auth import (
     SecurityLevel,
     get_auth_executor_class,
@@ -140,7 +144,10 @@ class NOWElasticIndexer(Executor):
             es_mapping['properties']['tags'] = {'type': 'object', 'properties': {}}
             for field in self.user_input.filter_fields:
                 es_mapping['properties']['tags']['properties'][field] = {
-                    'type': 'keyword'
+                    'type': 'keyword',
+                    'fields': {
+                        NOW_ELASTIC_POST_FIX_FILTERS_TEXT_SEARCH: {'type': 'text'}
+                    },
                 }
 
         for encoder, embedding_size, fields in self.document_mappings:

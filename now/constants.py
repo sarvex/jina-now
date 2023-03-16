@@ -4,9 +4,9 @@ from docarray.typing import Image, Text, Video
 
 from now.utils.common.helpers import BetterEnum
 
-NOW_GATEWAY_VERSION = '0.0.6-feat-blip2-9'
-NOW_PREPROCESSOR_VERSION = '0.0.125-feat-blip2-9'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.149-feat-blip2-9'
+NOW_GATEWAY_VERSION = '0.0.6-feat-blip2-10'
+NOW_PREPROCESSOR_VERSION = '0.0.125-feat-blip2-10'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.149-feat-blip2-10'
 NOW_AUTOCOMPLETE_VERSION = '0.0.12-feat-dns-for-demo-2'
 
 
@@ -90,3 +90,4 @@ NOWGATEWAY_SEARCH_FEE_PRO_QUANTITY = 0.28
 NOWGATEWAY_BASE_FEE_SLEEP_INTERVAL = 60
 
 NOW_ELASTIC_FETCH_MAX_VALUES_PER_TAG = 100
+NOW_ELASTIC_POST_FIX_FILTERS_TEXT_SEARCH = 'text_search'

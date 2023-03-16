@@ -39,19 +39,18 @@ def run(
     user_input.index_field_candidates_to_modalities.update({'blip2_caption': Text})
     user_input.index_fields.append('blip2_caption')
     user_input.filter_fields.append('blip2_caption')
-    user_input.filter_field_candidates_to_modalities.update({'blip2_caption': 'text'})
+    user_input.filter_field_candidates_to_modalities.update({'blip2_caption': 'str'})
     user_input.field_names_to_dataclass_fields = {
         'title': 'text_0',
         'file.gif': 'video_0',
         'blip2_caption': 'blip2_caption',
     }
     user_input.model_choices.update({'blip2_caption_model': [Models.CLIP_MODEL]})
-
-    print_callback = kwargs.get('print_callback', print)
-
     dataset = DocumentArray.load_binary(
         '/Users/joschkabraun/dev/now/blip2_uri2captions/ltf-preproc-with-caption-beam_search_03_06_2023.bin'
     )
+
+    print_callback = kwargs.get('print_callback', print)
 
     # dataset = load_data(user_input, print_callback)
     print_callback('Data loaded. Deploying the flow...')
