@@ -14,6 +14,7 @@ direct = False
 
 if direct:
     # directly requesting the jina gateway
+    print('test')
     result = Client(host=host).post(
         '/search',
         Document(chunks=Document(text='girl on motorbike')),
