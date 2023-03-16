@@ -1,8 +1,19 @@
+import json
 from concurrent.futures import ProcessPoolExecutor
 from time import time
 from typing import Dict
 
 import requests
+
+
+def _call(http_host, request_body) -> float:
+    t0 = time()
+    resp = requests.post(f'{http_host}/api/v1/search-app/search', json=request_body)
+    if resp.status_code != 200:
+        raise Exception(
+            f'Bad response code: {resp.status_code}\nContent: {resp.content}'
+        )
+    return time() - t0
 
 
 def benchmark_deployment(
@@ -22,27 +33,17 @@ def benchmark_deployment(
     if jwt:
         request_body['jwt'] = {'token': jwt}
 
-    def call():
-        t0 = time()
-        resp = requests.post(f'{http_host}/api/v1/search-app/search', json=request_body)
-        if resp.status_code != 200:
-            raise Exception(
-                f'Bad response code: {resp.status_code}\nContent: {resp.content}'
-            )
-        return time() - t0
-
     # measure latency
-    latency_calls = 10
+    latency_calls = 30
     start = time()
     for i in range(latency_calls):
-        call()
+        _call(http_host=http_host, request_body=request_body)
     latency = (time() - start) / latency_calls
     result = {'latency': latency}
-    print(f'Latency : {(time() - start) / 10}s')
 
     # measure QPS
-    num_queries = 100
-    worker = 5
+    num_queries = 250
+    worker = 10
     with ProcessPoolExecutor(max_workers=worker) as executor:
         # QPS test
         start = time()
@@ -50,15 +51,15 @@ def benchmark_deployment(
         latencies = []
 
         for i in range(num_queries):
-            future = executor.submit(call)
+            future = executor.submit(_call, http_host, request_body)
             futures.append(future)
         for future in futures:
             latencies.append(future.result())
-        print(f'QPS: {num_queries / (time() - start)}s')
+        qps = num_queries / (time() - start)
+        result['qps'] = qps
 
     latencies = sorted(latencies)
     for p in [0, 50, 75, 85, 90, 95, 99, 99.9]:
-        print(f"P{p}: {latencies[int(len(latencies) * p / 100)]}")
         result[f'p{p}'] = latencies[int(len(latencies) * p / 100)]
 
     return result
@@ -70,7 +71,8 @@ if __name__ == '__main__':
     search_text = ''
     limit = 60
 
-    host = f'https://{flow_name}-http.wolf.jina.ai'
-    benchmark_deployment(
-        http_host=host, search_text=search_text, limit=limit, api_key=api_key
+    http_host = f'https://{flow_name}-http.wolf.jina.ai'
+    result = benchmark_deployment(
+        http_host=http_host, search_text=search_text, limit=limit, api_key=api_key
     )
+    print(json.dumps(result, indent=4))
