@@ -50,13 +50,16 @@ class YaspinExtended(Yaspin):
                 self._text = text + ' ' + self._text
 
 
+TIME_PROFILER_RESULTS = {}
+
+
 def time_profiler(fun):
     @wraps(fun)
     def profiled_fun(*args, **kwargs):
-        if 'NOW_CI_RUN' in os.environ:
+        if 'NOW_CI_RUN' in os.environ or 'NOW_BENCHMARK_RUN' in os.environ:
             t0 = time.time()
         result = fun(*args, **kwargs)
-        if 'NOW_CI_RUN' in os.environ:
+        if 'NOW_CI_RUN' in os.environ or 'NOW_BENCHMARK_RUN' in os.environ:
             elapsed_time = time.time() - t0
             sec, fsec = divmod(round(100 * elapsed_time), 100)
             print(
@@ -64,6 +67,7 @@ def time_profiler(fun):
                     fun.__module__, fun.__name__, datetime.timedelta(seconds=sec), fsec
                 )
             )
+            TIME_PROFILER_RESULTS[f'{fun.__module__}:{fun.__name__}'] = elapsed_time
         return result
 
     return profiled_fun

@@ -10,7 +10,7 @@ from now.common.detect_schema import (
     get_first_file_in_folder_structure_s3,
     get_s3_bucket_and_folder_prefix,
 )
-from now.constants import MAX_DOCS_FOR_TESTING, DatasetTypes
+from now.constants import MAX_DOCS_FOR_BENCHMARKING, MAX_DOCS_FOR_TESTING, DatasetTypes
 from now.data_loading.create_dataclass import create_dataclass
 from now.data_loading.elasticsearch import ElasticsearchExtractor
 from now.log import yaspin_extended
@@ -58,6 +58,8 @@ def load_data(user_input: UserInput, print_callback=print) -> DocumentArray:
         )
     if 'NOW_CI_RUN' in os.environ:
         da = da[:MAX_DOCS_FOR_TESTING]
+    elif 'NOW_BENCHMARK_RUN' in os.environ:
+        da = da[:MAX_DOCS_FOR_BENCHMARKING]
     return da
 
 
