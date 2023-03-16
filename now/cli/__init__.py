@@ -18,13 +18,15 @@ os.environ['JCLOUD_LOGLEVEL'] = 'ERROR'
 # fix
 
 
-def _get_run_args():
+def get_run_args(parser=None):
     from now.cli.parser import get_main_parser
 
-    parser = get_main_parser()
+    if not parser:
+        parser = get_main_parser()
     if len(sys.argv) == 1:
         parser.print_help()
         exit()
+    print(parser.parse_known_args())
     args, unknown = parser.parse_known_args()
 
     # clean up the args with None values
@@ -72,7 +74,7 @@ def cli(args=None):
 
 def parse_args(args):
     if not args:
-        args = _get_run_args()
+        args = get_run_args()
     args = vars(args)  # Make it a dict from Namespace
     return args
 
