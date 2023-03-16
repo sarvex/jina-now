@@ -28,7 +28,7 @@ from now.deployment.deployment import cmd
 from now.executor.preprocessor import NOWPreprocessor
 from now.executor.preprocessor.s3_download import get_bucket
 from now.now_dataclasses import UserInput
-from now.utils.authentication.helpers import get_aws_profile
+from now.utils.authentication.helpers import get_aws_profile, get_info_hubble
 
 
 @pytest.fixture()
@@ -413,6 +413,9 @@ def data_with_tags(mm_dataclass):
         doc.tags['color'] = 'Blue Color' if index == 0 else 'Red Color'
         doc.tags['price'] = 0.5 + index
 
+    # get hubble info as well
+    get_info_hubble(user_input)
+
     return docs, user_input
 
 
@@ -438,6 +441,10 @@ def api_key_data(mm_dataclass):
     ]
     user_input.secured = True
     docs = DocumentArray([Document(mm_dataclass(text_field='test')) for _ in range(10)])
+
+    # get hubble info as well
+    get_info_hubble(user_input)
+
     return docs, user_input
 
 
@@ -455,6 +462,9 @@ def artworks_data():
     user_input.flow_name = 'nowapi-local'
     user_input.model_choices = {'image_model': [Models.CLIP_MODEL]}
 
+    # get hubble info as well
+    get_info_hubble(user_input)
+
     docs = load_data(user_input)
     return docs, user_input
 
@@ -471,6 +481,9 @@ def pop_lyrics_data():
     user_input.app_instance = construct_app(Apps.SEARCH_APP)
     user_input.flow_name = 'nowapi-local'
     user_input.model_choices = {'lyrics_model': [Models.CLIP_MODEL]}
+
+    # get hubble info as well
+    get_info_hubble(user_input)
 
     docs = load_data(user_input)
     return docs, user_input
@@ -494,6 +507,10 @@ def elastic_data(setup_online_shop_db, es_connection_params):
     user_input.app_instance = construct_app(Apps.SEARCH_APP)
     user_input.flow_name = 'nowapi-local'
     user_input.model_choices = {'title_model': [Models.CLIP_MODEL]}
+
+    # get hubble info as well
+    get_info_hubble(user_input)
+
     docs = load_data(user_input=user_input)
     return docs, user_input
 
@@ -521,6 +538,9 @@ def local_folder_data(pulled_local_folder_data):
         'image.png_model': [Models.CLIP_MODEL],
     }
 
+    # get hubble info as well
+    get_info_hubble(user_input)
+
     docs = load_data(user_input)
     return docs, user_input
 
@@ -545,6 +565,9 @@ def s3_bucket_data():
     user_input.app_instance = construct_app(Apps.SEARCH_APP)
     user_input.flow_name = 'nowapi-local'
     user_input.model_choices = {'image.png_model': [Models.CLIP_MODEL]}
+
+    # get hubble info as well
+    get_info_hubble(user_input)
 
     docs = load_data(user_input)
     return docs, user_input
