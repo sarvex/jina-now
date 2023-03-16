@@ -55,9 +55,9 @@ def report(user_token, quantity_basic, quantity_pro):
     try:
         m2m_token = os.environ.get('M2M_TOKEN')
         if not m2m_token:
-            logger.info('M2M_TOKEN not set in the environment')
-        payment_client = PaymentClient(m2m_token=m2m_token)
+            raise ValueError('M2M_TOKEN not set in the environment')
         logger.info(f'M2M_TOKEN: {m2m_token[:10]}...{m2m_token[-10:]}')
+        payment_client = PaymentClient(m2m_token=m2m_token)
         if authorized_jwt is None:
             logger.info(
                 f'No authorized JWT found. Getting one using token: {user_token}'
@@ -68,7 +68,7 @@ def report(user_token, quantity_basic, quantity_pro):
             jwt = payment_client.get_authorized_jwt(user_token=user_token)['data']
         else:
             jwt = authorized_jwt
-        logger.info(f'Authorized JWT: {authorized_jwt[:10]}...{authorized_jwt[-10:]}')
+        logger.info(f'Authorized JWT: {jwt[:10]}...{jwt[-10:]}')
         summary = get_summary(jwt, payment_client)
         logger.info(f'Credits before: {summary["credits"]}')
         if summary['internal_product_id'] == 'free-plan':
@@ -89,7 +89,8 @@ def report(user_token, quantity_basic, quantity_pro):
         import traceback
 
         traceback.print_exc()
-        logger.critical(e)
+        # Do not continue with request if payment fails
+        raise e
 
 
 def get_summary(authorized_jwt, payment_client):
