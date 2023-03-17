@@ -121,6 +121,9 @@ class JinaNOWApp:
                 'M2M_TOKEN': os.environ.get('M2M_TOKEN', ''),
             },
             'jcloud': {
+                'labels': {
+                    'app': 'gateway',
+                },
                 'resources': {
                     'instance': 'C5',
                     'capacity': 'spot',
