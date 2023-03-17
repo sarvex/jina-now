@@ -146,9 +146,9 @@ class NOWGateway(CompositeGateway):
                 sleep(5)
             else:
                 self.logger.error(
-                    'Elasticsearch environment variables not set after 60 seconds. Exiting...'
+                    'Gateway environment variables not set after 60 seconds. Exiting...'
                 )
-                raise Exception('Elasticsearch environment variables not set')
+                raise Exception('Gateway environment variables not set')
 
     async def shutdown(self):
         await super().shutdown()

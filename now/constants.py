@@ -4,7 +4,7 @@ from docarray.typing import Image, Text, Video
 
 from now.utils.common.helpers import BetterEnum
 
-NOW_GATEWAY_VERSION = '0.0.6-fix-m2m-token-25'
+NOW_GATEWAY_VERSION = '0.0.6-fix-m2m-token-26'
 NOW_PREPROCESSOR_VERSION = '0.0.125-fix-add-gateway-labels-0'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.149-fix-add-gateway-labels-0'
 NOW_AUTOCOMPLETE_VERSION = '0.0.12-fix-add-gateway-labels-0'
