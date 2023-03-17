@@ -7,6 +7,7 @@ from typing import Dict, List, Tuple
 import streamlit.web.bootstrap
 from jina import Gateway
 from jina.enums import GatewayProtocolType
+from jina.logging.logger import JinaLogger
 from jina.serve.runtimes.gateway import CompositeGateway
 from jina.serve.runtimes.gateway.http.fastapi import FastAPIBaseGateway
 from jina.serve.runtimes.gateway.http.models import JinaHealthModel
@@ -62,6 +63,10 @@ class BFFGateway(FastAPIBaseGateway):
 
         if 'logger' in kwargs:
             self.logger = kwargs['logger']
+        else:
+            self.logger = JinaLogger("NOW.BFF")
+
+        self.logger.info("init")
 
         # fix to use starlette instead of FastAPI app (throws warning that "/" is used for health checks
         application.add_route(
@@ -87,7 +92,9 @@ class NOWGateway(CompositeGateway):
         if 'logger' in kwargs:
             self.logger = kwargs['logger']
         else:
-            self.logger = kwargs['logger']
+            self.logger = JinaLogger("NOW.gateway")
+
+        self.logger.info("init")
 
         # need to update port ot 8082, as nginx will listen on 8081
         http_idx = kwargs['runtime_args']['protocol'].index(GatewayProtocolType.HTTP)
