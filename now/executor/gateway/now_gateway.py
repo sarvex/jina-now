@@ -15,6 +15,7 @@ from streamlit.web.server import Server as StreamlitServer
 
 from now.constants import NOWGATEWAY_BFF_PORT
 from now.deployment.deployment import cmd
+
 from now.executor.gateway.hubble_report import start_base_fee_thread
 from now.now_dataclasses import UserInput
 
