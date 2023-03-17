@@ -43,8 +43,8 @@ def deploy_scenario(scenario):
         }
     elif scenario == 'image':
         kwargs_scenario = {
-            'dataset_type': DatasetTypes.PATH,
-            'dataset_path': '/Users/joschkabraun/Downloads/laion400m_part_0.bin',
+            'dataset_type': DatasetTypes.DOCARRAY,
+            'dataset_name': 'team-now/laion400m_part_0',
             'index_fields': ['image'],
             'filter_fields': [],
             'image_model': [Models.CLIP_MODEL],

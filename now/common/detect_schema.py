@@ -162,7 +162,7 @@ def set_field_names_from_docarray(user_input: UserInput, **kwargs):
     dataset_name = (
         user_input.admin_name + '/' + user_input.dataset_name
         if '/' not in user_input.dataset_name
-        else user_input.dataset_name,
+        else user_input.dataset_name
     )
 
     json_data = {
@@ -180,7 +180,7 @@ def set_field_names_from_docarray(user_input: UserInput, **kwargs):
         ) = _extract_field_candidates_docarray(response)
     else:
         raise ValueError(
-            'DocumentArray does not exist or you do not have access to it. '
+            f'DocumentArray "{dataset_name}" does not exist or you do not have access to it. '
             'Make sure to add user name as a prefix. Check documentation here. '
             'https://docarray.jina.ai/fundamentals/cloud-support/data-management/'
         )
