@@ -13,6 +13,7 @@ import pytest
 from docarray import Document, DocumentArray, dataclass, field
 from docarray.typing import Image, Text, Video
 from elasticsearch import Elasticsearch
+from pytest_mock import MockerFixture
 from tests.integration.local.conftest import get_request_body
 from tests.unit.data_loading.elastic.example_dataset import ExampleDataset
 from tests.unit.data_loading.elastic.utils import delete_es_index
@@ -100,6 +101,14 @@ def user_email():
 @pytest.fixture
 def domain_user_email():
     return 'abc.def@test.ai'
+
+
+@pytest.fixture(scope='function')
+def mock_hubble_billing_report(mocker: MockerFixture) -> None:
+    mocker.patch(
+        'now.executor.gateway.hubble_report.report',
+        return_value={},
+    )
 
 
 @pytest.fixture

@@ -19,6 +19,7 @@ from now.executor.gateway.hubble_report import start_base_fee_thread
 from now.now_dataclasses import UserInput
 
 cur_dir = os.path.dirname(__file__)
+TIMEOUT = 60
 
 
 class PlaygroundGateway(Gateway):
@@ -96,6 +97,8 @@ class NOWGateway(CompositeGateway):
         kwargs['runtime_args']['port'][http_idx] = 8082
         super().__init__(**kwargs)
 
+        self._check_env_vars()
+
         self.user_input = UserInput()
         for attr_name, prev_value in self.user_input.__dict__.items():
             setattr(
@@ -133,6 +136,19 @@ class NOWGateway(CompositeGateway):
             start_base_fee_thread(self.user_input.jwt['token'])
         except Exception as e:
             self.logger.error(f'Could not start base fee thread: {e}')
+
+    def _check_env_vars(self):
+        while 'M2M_TOKEN' not in os.environ:
+            timeout_counter = 0
+            if timeout_counter < TIMEOUT:
+                timeout_counter += 5
+                self.logger.info('Environment variables not set yet. Waiting...')
+                sleep(5)
+            else:
+                self.logger.error(
+                    'Elasticsearch environment variables not set after 60 seconds. Exiting...'
+                )
+                raise Exception('Elasticsearch environment variables not set')
 
     async def shutdown(self):
         await super().shutdown()

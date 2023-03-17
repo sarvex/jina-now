@@ -40,7 +40,7 @@ def base_fee_thread(user_token):
 
 
 def report_search_usage(user_token):
-    logger.info(f'Reporting search usage at {current_time()}')
+    logger.info('** Entered report_search_usage() **')
     report(
         user_token=user_token,
         quantity_basic=NOWGATEWAY_SEARCH_FEE_QUANTITY,
@@ -49,6 +49,7 @@ def report_search_usage(user_token):
 
 
 def report(user_token, quantity_basic, quantity_pro):
+    logger.info('*******************************')
     logger.info(f'Charging user with token {user_token} at {current_time()}')
     app_id = 'search'
     product_id = 'free-plan'
@@ -84,6 +85,7 @@ def report(user_token, quantity_basic, quantity_pro):
         else:
             logger.info(f'**** Could not charge. Check payment summary ****')
         logger.info(f'Payment summary: {summary}')
+        logger.info('*******************************')
     except Exception as e:
         import traceback
 
