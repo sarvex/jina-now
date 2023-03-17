@@ -1,9 +1,9 @@
 from collections import defaultdict
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from docarray import Document, DocumentArray
 
-from now.utils import get_chunk_by_field_name
+from now.utils.docarray.helpers import get_chunk_by_field_name
 
 metrics_mapping = {
     'cosine': 'cosineSimilarity',
@@ -197,17 +197,23 @@ def get_pinned_query(doc: Document, query_to_curated_ids: Dict[str, list] = {}) 
     return pinned_query
 
 
-def process_filter(filter) -> dict:
-    es_search_filter = {}
+def process_filter(
+    filter: Dict[str, Union[List[str], Dict[str, float]]]
+) -> List[Dict[str, Any]]:
+    es_search_filters = []
     for field, filters in filter.items():
-        for operator, filter in filters.items():
-            field = field.replace('__', '.')
-            if isinstance(filter, str):
-                es_search_filter['term'] = {field: filter}
-            elif isinstance(filter, int) or isinstance(filter, float):
-                operator = operator.replace('$', '')
-                es_search_filter['range'] = {field: {operator: filter}}
-    return es_search_filter
+        field = field.replace('__', '.', 1)
+        es_search_filter = {}
+        if isinstance(filters, list):  # must be categorical (list of terms)
+            es_search_filter['terms'] = {field: filters}
+        elif isinstance(filters, dict):  # must be numerical (range with operators)
+            es_search_filter['range'] = {field: filters}
+        else:
+            raise ValueError(
+                f'Filter {field}: {filters} is not a list of terms or a dictionary of ranges'
+            )
+        es_search_filters.append(es_search_filter)
+    return es_search_filters
 
 
 def get_scores(encoder, score_calculation):

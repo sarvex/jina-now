@@ -3,10 +3,7 @@ from docarray import dataclass
 from docarray.typing import Text
 
 from now.executor.gateway.bff.app.v1.models.search import SearchRequestModel
-from now.executor.gateway.bff.app.v1.routers.helper import (
-    field_dict_to_mm_doc,
-    jina_client_post,
-)
+from now.executor.gateway.bff.app.v1.routers import helper
 
 
 class Client:
@@ -31,7 +28,7 @@ class Client:
         )
         return response
 
-    def send_request(self, endpoint: str, **kwargs):
+    async def send_request(self, endpoint: str, **kwargs):
         """
         Client to run requests against a deployed flow
         """
@@ -43,7 +40,7 @@ class Client:
             text_0: Text
 
         if 'text' in kwargs:
-            query_doc = field_dict_to_mm_doc(
+            query_doc = helper.field_dict_to_mm_doc(
                 {'text': kwargs.pop('text')},
                 data_class=DataClass,
                 modalities_dict={'text': Text},
@@ -56,10 +53,10 @@ class Client:
             api_key=self.api_key,
             **kwargs,
         )
-        response = jina_client_post(
+        response = await helper.jina_client_post(
             app_request,
             endpoint,
-            inputs=query_doc,
+            docs=query_doc,
             parameters={
                 'limit': app_request.limit,
                 'filter': app_request.filters,

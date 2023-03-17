@@ -16,7 +16,10 @@ from now.executor.gateway.bff.app.v1.routers.helper import (
     jina_client_post,
 )
 from now.executor.gateway.hubble_report import report_search_usage
-from now.utils import get_chunk_by_field_name, modality_string_to_docarray_typing
+from now.utils.docarray.helpers import (
+    get_chunk_by_field_name,
+    modality_string_to_docarray_typing,
+)
 
 search_examples = {
     'working_text': {
@@ -62,8 +65,8 @@ search_examples = {
         'value': {
             'limit': 10,
             'filters': {
-                'tags__color': {'$eq': 'blue'},
-                'tags__price': {'$lte': 100, '$gte': 50},
+                'color': ['blue', 'red'],
+                'price': {'lte': 100, 'gte': 50},
             },
             'query': [
                 {
@@ -132,8 +135,8 @@ async def search(
 
     query_filter = {}
     for key, value in data.filters.items():
-        key = 'tags__' + key if not key.startswith('tags__') else key
-        query_filter[key] = {'$eq': value}
+        key = 'tags__' + key
+        query_filter[key] = value
 
     docs = await jina_client_post(
         endpoint='/search',
