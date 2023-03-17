@@ -1,7 +1,7 @@
 import pytest
 from hubble.payment.client import PaymentClient
 
-from now.executor.gateway.hubble_report import report
+from now.executor.gateway.hubble_report import init_payment_client, report
 
 
 @pytest.mark.parametrize(
@@ -40,6 +40,7 @@ def test_report_usage(
             'status_code': 200,
         },
     )
+    init_payment_client(user_token='dummy_user_token')
     report(user_token='dummy_user_token', quantity_basic=2, quantity_pro=1)
     # assert that the mocked_report_usage was called once with the expected arguments
 

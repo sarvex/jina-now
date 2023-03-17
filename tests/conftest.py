@@ -105,10 +105,8 @@ def domain_user_email():
 
 @pytest.fixture(scope='function')
 def mock_hubble_billing_report(mocker: MockerFixture) -> None:
-    mocker.patch(
-        'now.executor.gateway.hubble_report.report',
-        return_value={},
-    )
+    mocker.patch('now.executor.gateway.hubble_report.init_payment_client')
+    mocker.patch('now.executor.gateway.hubble_report.report')
 
 
 @pytest.fixture
