@@ -12,7 +12,7 @@ from now.constants import DEMO_NS, MODALITY_TO_MODELS, DatasetTypes
 from now.demo_data import AVAILABLE_DATASETS
 from now.deployment.deployment import get_or_create_eventloop, terminate_wolf
 from now.now_dataclasses import UserInput
-from now.utils import get_aws_profile
+from now.utils.authentication.helpers import get_aws_profile
 
 
 def upsert_cname_record(source, target):
