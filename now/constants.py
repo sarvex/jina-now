@@ -7,7 +7,7 @@ from now.utils.common.helpers import BetterEnum
 NOW_GATEWAY_VERSION = '0.0.6-feat-blip2-11'
 NOW_PREPROCESSOR_VERSION = '0.0.125-feat-blip2-11'
 NOW_ELASTIC_INDEXER_VERSION = '0.0.149-feat-blip2-11'
-NOW_AUTOCOMPLETE_VERSION = '0.0.12-feat-dns-for-demo-2'
+NOW_AUTOCOMPLETE_VERSION = '0.0.12-fix-add-gateway-labels-0'
 
 
 class Apps(BetterEnum):
