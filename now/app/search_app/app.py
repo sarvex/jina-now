@@ -190,7 +190,7 @@ class SearchApp(JinaNOWApp):
                     'provision-shards': provision_shards,
                     'provision-replicas': provision_replicas,
                 },
-                'resources': {'instance': 'C5', 'capacity': 'spot'},
+                'resources': {'instance': 'C6', 'capacity': 'spot'},
             },
         }
 

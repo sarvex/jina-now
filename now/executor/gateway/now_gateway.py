@@ -96,6 +96,23 @@ class NOWGateway(CompositeGateway):
             )
         kwargs['runtime_args']['port'][http_idx] = 8082
         super().__init__(**kwargs)
+        self.storage_dir = None
+        self.authorized_jwt = None
+
+        # Hacky method since `workspace` class variable is not available in Gateway
+        try:
+            self.storage_dir = [
+                folder
+                for folder in os.listdir('/data')
+                if folder.startswith('jnamespace-')
+            ]
+            if len(self.storage_dir) == 0:
+                self.logger.info('No storage directory found')
+            else:
+                self.logger.info(f'Found storage directory: {self.storage_dir}')
+                self.storage_dir = self.storage_dir[0]
+        except Exception as e:
+            self.logger.info(f'Error while getting storage directory: {e}')
 
         self._check_env_vars()
 
@@ -132,8 +149,19 @@ class NOWGateway(CompositeGateway):
         self.setup_nginx()
         self.nginx_was_shutdown = False
 
+        if self.storage_dir:
+            if os.path.isfile(f'{self.storage_dir}/cred.json'):
+                self.logger.info('Found cred.json file. Loading from it')
+                with open(f'{self.storage_dir}/cred.json', 'r') as f:
+                    cred_data = json.load(f)
+                    self.authorized_jwt = cred_data.get('authorized_jwt', None)
+            else:
+                self.logger.info('No cred.json file found to load from')
+
         try:
-            start_base_fee_thread(self.user_input.jwt['token'])
+            start_base_fee_thread(
+                self.user_input.jwt['token'], self.authorized_jwt, self.storage_dir
+            )
         except Exception as e:
             self.logger.error(f'Could not start base fee thread: {e}')
 
