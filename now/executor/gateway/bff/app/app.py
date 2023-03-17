@@ -1,5 +1,6 @@
 # TODO bff_request_mapping_fn and bff_response_mapping_fn should be used to create all routes
 
+import os
 import sys
 
 import uvicorn
@@ -15,6 +16,7 @@ from now import __version__
 from now.executor.gateway.bff.app.decorators import api_method, timed
 from now.executor.gateway.bff.app.v1.routers import admin, info, search
 
+os.environ["JINA_LOG_LEVEL"] = 'DEBUG'
 logger = JinaLogger('bff.app')
 
 TITLE = 'Jina NOW'

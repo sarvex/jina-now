@@ -57,8 +57,11 @@ class PlaygroundGateway(Gateway):
 
 class BFFGateway(FastAPIBaseGateway):
     @property
-    def app(self):
+    def app(self, **kwargs):
         from now.executor.gateway.bff.app.app import application
+
+        if 'logger' in kwargs:
+            self.logger = kwargs['logger']
 
         # fix to use starlette instead of FastAPI app (throws warning that "/" is used for health checks
         application.add_route(
@@ -81,6 +84,11 @@ class NOWGateway(CompositeGateway):
     """
 
     def __init__(self, user_input_dict: Dict = {}, **kwargs):
+        if 'logger' in kwargs:
+            self.logger = kwargs['logger']
+        else:
+            self.logger = kwargs['logger']
+
         # need to update port ot 8082, as nginx will listen on 8081
         http_idx = kwargs['runtime_args']['protocol'].index(GatewayProtocolType.HTTP)
         http_port = kwargs['runtime_args']['port'][http_idx]
@@ -231,6 +239,7 @@ class NOWGateway(CompositeGateway):
         runtime_args.protocol = [protocol]
         gateway_kwargs = {k: v for k, v in kwargs.items() if k != 'runtime_args'}
         gateway_kwargs['runtime_args'] = dict(vars(runtime_args))
+        gateway_kwargs['logger'] = self.logger
         gateway = gateway_cls(**gateway_kwargs)
         gateway.streamer = self.streamer
         self.gateways.insert(0, gateway)
