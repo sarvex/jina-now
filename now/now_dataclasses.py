@@ -46,7 +46,6 @@ class UserInput(BaseModel):
     cluster: Optional[str] = None
     secured: Optional[StrictBool] = False
     jwt: Optional[Dict[str, str]] = None
-    authorized_jwt: Optional[str] = None
     admin_name: Optional[str] = None
     admin_emails: Optional[List[str]] = None
     user_emails: Optional[List[str]] = None
