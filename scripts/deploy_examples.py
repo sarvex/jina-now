@@ -112,11 +112,12 @@ def deploy(demo_ds):
         response_cli = cli(args=kwargs)
     except Exception as e:  # noqa E722
         # delete flow with broken index, i.e. latest flow
-        delete_flow(ns=NAMESPACE, reverse=True, failed=True)
+        # delete_flow(ns=NAMESPACE, reverse=True, failed=True)
         raise e
     finally:
         # Delete the remaining old flow because either is it not reachable or it is to be replaced
-        delete_flow(ns=NAMESPACE)
+        # delete_flow(ns=NAMESPACE)
+        pass
 
     # parse the response
     host_target_ = response_cli.get('host_http')
