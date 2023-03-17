@@ -47,7 +47,7 @@ def compare_flows_for_queries(
     )
     os.mkdir(folder)
     rows = []
-    latencies_total, latencies_temp = defaultdict(list), defaultdict(list)
+    latencies_dict = defaultdict(list)
     cnt_tables = 0
     with tqdm(total=len(da)) as pbar:
         with ProcessPoolExecutor(max_workers=min(len(da), 1)) as ex:
@@ -63,13 +63,13 @@ def compare_flows_for_queries(
             ]
             for future in futures:
                 result = future.result()
-                row = result[0]
-                latency_dict = result[1]
+                row, latency_dict = result[0], result[1]
                 pbar.update(1)
                 rows.append(row)
+
                 for flow_setup, latency_val in latency_dict.items():
-                    latencies_temp[flow_setup].append(latency_val)
-                    latencies_total[flow_setup].append(latency_val)
+                    latencies_dict[flow_setup].append(latency_val)
+
                 if len(rows) == results_per_table:
                     df = pd.DataFrame(rows)
                     df.to_html(
@@ -79,28 +79,16 @@ def compare_flows_for_queries(
                         ),
                         escape=False,
                     )
-                    with open(
-                        os.path.join(
-                            folder,
-                            f'latencies-{cnt_tables * results_per_table}-to-{(cnt_tables + 1) * results_per_table}.json',
-                        ),
-                        'w',
-                    ) as latencies_file:
-                        latencies_write = {}
-                        for flow_setup, latencies in latencies_temp.items():
-                            latencies_write[flow_setup + '-mean'] = np.mean(latencies)
-                            latencies_write[flow_setup + '-std'] = np.std(latencies)
-                        json.dump(latencies_write, latencies_file, indent=4)
-
                     cnt_tables += 1
                     rows = []
-                    latencies_temp = defaultdict(list)
+
     with open(os.path.join(folder, 'latencies.json'), 'w') as latencies_file:
         latencies_write = {}
-        for flow_setup, latencies in latencies_total.items():
+        for flow_setup, latencies in latencies_dict.items():
             latencies_write[flow_setup + '-mean'] = np.mean(latencies)
             latencies_write[flow_setup + '-std'] = np.std(latencies)
         json.dump(latencies_write, latencies_file, indent=4)
+
     if rows:
         df = pd.DataFrame(rows[cnt_tables : len(rows)])
         df.to_html(
