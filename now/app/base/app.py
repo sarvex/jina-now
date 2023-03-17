@@ -116,10 +116,7 @@ class JinaNOWApp:
             'monitoring': True,
             'cors': True,
             'uses_with': {'user_input_dict': user_input.to_safe_dict()},
-            'env': {
-                'JINA_LOG_LEVEL': 'DEBUG',
-                'M2M_TOKEN': os.environ.get('M2M_TOKEN', ''),
-            },
+            'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'jcloud': {
                 'labels': {
                     'app': 'gateway',
@@ -164,10 +161,7 @@ class JinaNOWApp:
             'jtype': 'Flow',
             'with': {
                 'name': 'nowapi',
-                'env': {
-                    'JINA_LOG_LEVEL': 'DEBUG',
-                    'M2M_TOKEN': os.environ.get('M2M_TOKEN', ''),
-                },
+                'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             },
             'jcloud': {
                 'version': jina_version,

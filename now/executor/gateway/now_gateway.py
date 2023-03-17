@@ -138,7 +138,7 @@ class NOWGateway(CompositeGateway):
             self.logger.error(f'Could not start base fee thread: {e}')
 
     def _check_env_vars(self):
-        while 'M2M_TOKEN' not in os.environ:
+        while 'M2M' not in os.environ:
             timeout_counter = 0
             if timeout_counter < TIMEOUT:
                 timeout_counter += 5

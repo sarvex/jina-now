@@ -57,9 +57,9 @@ def report(user_token, quantity_basic, quantity_pro):
         global payment_client
         global authorized_jwt
         if payment_client is None:
-            m2m_token = os.environ.get('M2M_TOKEN')
+            m2m_token = os.environ.get('M2M')
             if not m2m_token:
-                raise ValueError('M2M_TOKEN not set in the environment')
+                raise ValueError('M2M not set in the environment')
             logger.info(f'M2M_TOKEN: {m2m_token[:10]}...{m2m_token[-10:]}')
             payment_client = PaymentClient(m2m_token=m2m_token)
         if authorized_jwt is None:
