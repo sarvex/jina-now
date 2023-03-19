@@ -124,6 +124,10 @@ class JinaNOWApp:
                 'resources': {
                     'instance': 'C5',
                     'capacity': 'spot',
+                    'storage': {
+                        'kind': 'efs',
+                        'size': '1M',
+                    },  # storage to persist user tokens
                 },
             },
         }
