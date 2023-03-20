@@ -77,7 +77,7 @@ class NOWElasticIndexer(Executor):
         self.api_key = os.getenv('ES_API_KEY', 'TestApiKey')
         self.index_name = os.getenv('ES_INDEX_NAME', 'now-index')
         self.query_to_curated_ids = {}
-        self.doc_id_tags = {}
+        self.doc_filter_tags = {}
         self.document_mappings = [FieldEmbedding(*dm) for dm in document_mappings]
         self.encoder_to_fields = {
             document_mapping.encoder: document_mapping.fields
@@ -356,7 +356,7 @@ class NOWElasticIndexer(Executor):
         except Exception:
             result = []
             self.logger.info(traceback.format_exc())
-        return DocumentArray([Document(text='count', tags={'count': len(result)})])
+        return DocumentArray([Document(tags={'count': len(result)})])
 
     @secure_request(on='/delete', level=SecurityLevel.USER)
     def delete(self, parameters: dict = {}, **kwargs):
@@ -399,12 +399,12 @@ class NOWElasticIndexer(Executor):
             )
         return DocumentArray()
 
-    @secure_request(on='/tags', level=SecurityLevel.USER)
+    @secure_request(on='/filters', level=SecurityLevel.USER)
     def tags(self, **kwargs):
         """
-        Endpoint to get all tags and their possible values in the index.
+        Endpoint to get all filter fields in the indexer and their possible values.
         """
-        return DocumentArray([Document(text='tags', tags={'tags': self.doc_id_tags})])
+        return DocumentArray([Document(tags={'filters': self.filter_field_tags})])
 
     @secure_request(on='/curate', level=SecurityLevel.USER)
     def curate(self, parameters: dict = {}, **kwargs):
@@ -450,10 +450,10 @@ class NOWElasticIndexer(Executor):
     def update_tags(self):
         """
         The indexer keeps track of which tags are indexed and what their possible
-        values are, which is stored in self.doc_id_tags. This method queries the
+        values are, which is stored in self.doc_filter_tags. This method queries the
         elasticsearch index for the current es_mapping to find the current tags on all
         indexed documents. It then queries elasticsearch for an aggregation of all values
-        inside this field, and updates the self.doc_id_tags dictionary with tags as keys,
+        inside this field, and updates the self.doc_filter_tags dictionary with tags as keys,
         and values as values in the dictionary.
         """
         es_mapping = self.es.indices.get_mapping(index=self.index_name)
@@ -489,8 +489,8 @@ class NOWElasticIndexer(Executor):
             updated_tags = {}
             for tag, agg in aggregations.items():
                 updated_tags[tag] = [bucket['key'] for bucket in agg['buckets']]
-            self.doc_id_tags = updated_tags
-        except Exception:
+            self.doc_filter_tags = updated_tags
+        except Exception:  # noqa
             self.logger.info(traceback.format_exc())
 
 

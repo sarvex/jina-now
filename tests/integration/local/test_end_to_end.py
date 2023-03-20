@@ -59,7 +59,7 @@ def test_end_to_end(get_flow, setup_service_running, random_index_name):
         elif user_input.index_field_candidates_to_modalities[field] == Image:
             assert response.json()[0]['fields'][dataclass_field]['blob'] != b''
 
-    count_url = f'{BASE_URL}/info/count'
+    count_url = f'{BASE_URL}/search-app/count'
     request_body['limit'] = len(docs)
     count_response = requests.post(count_url, json=request_body)
     assert count_response.json()['number_of_docs'] == len(docs)

@@ -15,7 +15,7 @@ def test_tags_response(
     base64_image_string: str,
 ):
     response = client_with_mocked_jina_client(sample_search_response_text).post(
-        '/api/v1/info/tags',
+        '/api/v1/search-app/filters',
         json={
             'query': [
                 {'name': 'blob', 'value': base64_image_string, 'modality': 'image'},
@@ -34,7 +34,7 @@ def test_count_response(
     base64_image_string: str,
 ):
     response = client_with_mocked_jina_client(sample_search_response_text).post(
-        '/api/v1/info/count',
+        '/api/v1/search-app/count',
         json={
             'query': [
                 {'name': 'blob', 'value': base64_image_string, 'modality': 'image'},
@@ -65,7 +65,7 @@ def test_field_names_to_dataclass_fields_response(
     base64_image_string: str,
 ):
     response = client_with_mocked_jina_client(sample_search_response_text).post(
-        '/api/v1/info/field_names_to_dataclass_fields',
+        '/api/v1/search-app/field_names_to_dataclass_fields',
     )
 
     assert response.status_code == status.HTTP_200_OK
@@ -81,7 +81,7 @@ def test_encoder_to_dataclass_fields_mods_response(
     base64_image_string: str,
 ):
     response = client_with_mocked_jina_client(sample_search_response_text).post(
-        '/api/v1/info/encoder_to_dataclass_fields_mods',
+        '/api/v1/search-app/encoder_to_dataclass_fields_mods',
         json={
             'query': [
                 {'name': 'blob', 'value': base64_image_string, 'modality': 'image'},

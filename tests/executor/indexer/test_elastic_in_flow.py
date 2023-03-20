@@ -185,11 +185,10 @@ class TestElasticIndexer:
     def test_get_tags(self, metas, setup_service_running, flow):
         docs = self.get_docs(NUMBER_OF_DOCS)
         flow.post(on='/index', inputs=docs)
-        response = flow.post(on='/tags')
-        assert response[0].text == 'tags'
-        assert 'tags' in response[0].tags
-        assert 'color' in response[0].tags['tags']
-        assert sorted(response[0].tags['tags']['color']) == sorted(['red', 'blue'])
+        response = flow.post(on='/filters')
+        assert 'filters' in response[0].tags
+        assert 'color' in response[0].tags['filters']
+        assert sorted(response[0].tags['filters']['color']) == sorted(['red', 'blue'])
 
     def test_delete_tags(self, metas, setup_service_running, flow):
         docs = self.get_docs(NUMBER_OF_DOCS)
@@ -201,17 +200,16 @@ class TestElasticIndexer:
             on='/delete',
             parameters={'filter': {'tags__color': ['blue']}},
         )
-        response = flow.post(on='/tags')
-        assert response[0].text == 'tags'
-        assert 'tags' in response[0].tags
-        assert 'color' in response[0].tags['tags']
-        assert 'blue' not in response[0].tags['tags']['color']
+        response = flow.post(on='/filters')
+        assert 'filters' in response[0].tags
+        assert 'color' in response[0].tags['filters']
+        assert 'blue' not in response[0].tags['filters']['color']
         flow.post(
             on='/delete',
             parameters={'filter': {'tags__greeting': ['hello']}},
         )
-        response = flow.post(on='/tags')
-        assert 'hello' not in response[0].tags['tags']['greeting']
+        response = flow.post(on='/filters')
+        assert 'hello' not in response[0].tags['filters']['greeting']
 
     @pytest.fixture()
     def documents(self):

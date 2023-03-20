@@ -171,9 +171,9 @@ def process_filters():
 def render_filters(params):
     if not st.session_state.tags:
         try:
-            tags = get_info_from_endpoint(params, endpoint='tags')
+            tags = get_info_from_endpoint(params, endpoint='filters')
             st.session_state.tags = tags
-        except Exception:
+        except Exception:  # noqa
             print("Filters couldn't be loaded from the endpoint properly.")
             traceback.format_exc()
 
@@ -200,7 +200,7 @@ def get_info_from_endpoint(params, endpoint) -> dict:
     if params.secured:
         parameters['jwt'] = {'token': st.session_state.jwt_val['token']}
     response = call_flow(
-        f'http://localhost:{NOWGATEWAY_BFF_PORT}/api/v1/info/{endpoint}',
+        f'http://localhost:{NOWGATEWAY_BFF_PORT}/api/v1/search-app/{endpoint}',
         parameters,
         endpoint,
     )

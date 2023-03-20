@@ -54,7 +54,7 @@ def test_end_to_end(
         search_modality='text',
     )
     suggest_url = f'{response["host_http"]}/api/v1/search-app/suggestion'
-    info_url = f'{response["host_http"]}/api/v1/info/'
+    info_url = f'{response["host_http"]}/api/v1/search-app/'
     assert_info_endpoints(info_url, request_body)
     assert_suggest(suggest_url, request_body)
     assert_indexed_all_docs(

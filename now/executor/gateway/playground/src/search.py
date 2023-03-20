@@ -54,7 +54,7 @@ def call_flow(url_host, data, endpoint):
                 for metric, value in response_json['scores'].items():
                     doc.scores[metric] = NamedScore(value=value['value'])
                 docs.append(doc)
-    except Exception:
+    except Exception:  # noqa
         try:
             json_response = response.json()
 
@@ -62,7 +62,7 @@ def call_flow(url_host, data, endpoint):
                 st.session_state.error_msg = json_response['detail']
             else:
                 st.session_state.error_msg = json_response['message'].replace('"', "'")
-        except Exception:
+        except Exception:  # noqa
             st.session_state.error_msg = response.text
         return None
 
