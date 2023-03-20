@@ -65,18 +65,6 @@ def get_docarray(dataset):
     return DocumentArray.pull(name=dataset, show_progress=True)
 
 
-def validate_structure(elem):
-    if not isinstance(elem, dict):
-        return False
-    for key, value in elem.items():
-        if not isinstance(value, list):
-            return False
-        for score in value:
-            if not isinstance(score, list):
-                return False
-    return True
-
-
 def compare_flows(**kwargs):
     if not 'flow_ids' in kwargs:
         path_score_calculation = maybe_prompt_user(
@@ -93,8 +81,7 @@ def compare_flows(**kwargs):
         if path_score_calculation:
             with open(path_score_calculation) as fp:
                 cluster_ids_2_score_calculation = json.load(fp)
-            if not validate_structure(cluster_ids_2_score_calculation):
-                raise Exception('Incompatible json format')
+
             flow_ids = list(cluster_ids_2_score_calculation.keys())
             flow_ids_http_score_calculation = [
                 (flow_id, f'https://{flow_id}-http.wolf.jina.ai', score_calculation)

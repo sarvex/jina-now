@@ -1,6 +1,5 @@
-from dataclasses import dataclass
-
 import pytest
+from docarray import dataclass
 from pytest_mock import MockerFixture
 
 from now.run_all_k8s import compare_flows, get_docarray, get_flow_status, stop_now
