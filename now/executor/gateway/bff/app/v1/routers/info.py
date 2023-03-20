@@ -61,7 +61,7 @@ async def get_tags(data: BaseRequestModel) -> FiltersResponseModel:
         endpoint='/filters',
         target_executor=r'\Aindexer\Z',
     )
-    return FiltersResponseModel(filters=response[0].tags)
+    return FiltersResponseModel(filters=response[0].tags['filters'])
 
 
 @router.post(

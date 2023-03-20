@@ -400,11 +400,11 @@ class NOWElasticIndexer(Executor):
         return DocumentArray()
 
     @secure_request(on='/filters', level=SecurityLevel.USER)
-    def tags(self, **kwargs):
+    def filters(self, **kwargs):
         """
         Endpoint to get all filter fields in the indexer and their possible values.
         """
-        return DocumentArray([Document(tags={'filters': self.filter_field_tags})])
+        return DocumentArray([Document(tags={'filters': self.doc_filter_tags})])
 
     @secure_request(on='/curate', level=SecurityLevel.USER)
     def curate(self, parameters: dict = {}, **kwargs):

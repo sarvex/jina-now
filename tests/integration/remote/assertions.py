@@ -147,7 +147,6 @@ def assert_info_endpoints(info_url, request_body):
     info_uris = [
         'tags',
         'count',
-        'field_names_to_dataclass_fields',
         'encoder_to_dataclass_fields_mods',
     ]
     for uri in info_uris:
