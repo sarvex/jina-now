@@ -145,7 +145,7 @@ def assert_suggest(suggest_url, request_body):
 
 def assert_info_endpoints(info_url, request_body):
     info_uris = [
-        'tags',
+        'filters',
         'count',
         'encoder_to_dataclass_fields_mods',
     ]
