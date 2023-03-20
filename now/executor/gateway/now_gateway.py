@@ -19,6 +19,7 @@ from now.executor.gateway.hubble_report import start_base_fee_thread
 from now.now_dataclasses import UserInput
 
 cur_dir = os.path.dirname(__file__)
+TIMEOUT = 60
 
 
 class PlaygroundGateway(Gateway):
@@ -82,18 +83,38 @@ class NOWGateway(CompositeGateway):
         # need to update port ot 8082, as nginx will listen on 8081
         http_idx = kwargs['runtime_args']['protocol'].index(GatewayProtocolType.HTTP)
         http_port = kwargs['runtime_args']['port'][http_idx]
-        gprc_idx = kwargs['runtime_args']['protocol'].index(GatewayProtocolType.GRPC)
-        grpc_port = kwargs['runtime_args']['port'][gprc_idx]
+        grpc_idx = kwargs['runtime_args']['protocol'].index(GatewayProtocolType.GRPC)
+        grpc_port = kwargs['runtime_args']['port'][grpc_idx]
         if kwargs['runtime_args']['port'][http_idx] != 8081:
             raise ValueError(
                 f'Please, let http port ({http_port}) be 8081 for nginx to work'
             )
         if grpc_port in [8080, 8081, 8082, 8501]:
             raise ValueError(
-                f'Please, let grpc port ({grpc_port}) be different from 8080 (BFF), 8081 (ngix), 8082 (http) and 8501 (playground)'
+                f'Please, let grpc port ({grpc_port}) be different from 8080 (BFF), '
+                f'8081 (nginx), 8082 (http) and 8501 (playground)'
             )
         kwargs['runtime_args']['port'][http_idx] = 8082
         super().__init__(**kwargs)
+        self.storage_dir = None
+        self.authorized_jwt = None
+
+        # Hacky method since `workspace` class variable is not available in Gateway
+        try:
+            self.storage_dir = [
+                folder
+                for folder in os.listdir('/data')
+                if folder.startswith('jnamespace-')
+            ]
+            if len(self.storage_dir) == 0:
+                self.logger.info('No storage directory found')
+            else:
+                self.logger.info(f'Found storage directory: {self.storage_dir}')
+                self.storage_dir = self.storage_dir[0]
+        except Exception as e:
+            self.logger.info(f'Error while getting storage directory: {e}')
+
+        self._check_env_vars()
 
         self.user_input = UserInput()
         for attr_name, prev_value in self.user_input.__dict__.items():
@@ -127,10 +148,35 @@ class NOWGateway(CompositeGateway):
 
         self.setup_nginx()
         self.nginx_was_shutdown = False
+
+        if self.storage_dir:
+            if os.path.isfile(f'{self.storage_dir}/cred.json'):
+                self.logger.info('Found cred.json file. Loading from it')
+                with open(f'{self.storage_dir}/cred.json', 'r') as f:
+                    cred_data = json.load(f)
+                    self.authorized_jwt = cred_data.get('authorized_jwt', None)
+            else:
+                self.logger.info('No cred.json file found to load from')
+
         try:
-            start_base_fee_thread(self.user_input.jwt['token'])
+            start_base_fee_thread(
+                self.user_input.jwt['token'], self.authorized_jwt, self.storage_dir
+            )
         except Exception as e:
             self.logger.error(f'Could not start base fee thread: {e}')
+
+    def _check_env_vars(self):
+        while 'M2M' not in os.environ:
+            timeout_counter = 0
+            if timeout_counter < TIMEOUT:
+                timeout_counter += 5
+                self.logger.info('Environment variables not set yet. Waiting...')
+                sleep(5)
+            else:
+                self.logger.error(
+                    'Gateway environment variables not set after 60 seconds. Exiting...'
+                )
+                raise Exception('Gateway environment variables not set')
 
     async def shutdown(self):
         await super().shutdown()
