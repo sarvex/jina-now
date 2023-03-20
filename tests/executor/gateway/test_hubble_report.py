@@ -1,23 +1,14 @@
-import os
-
 import pytest
 from hubble.payment.client import PaymentClient
 
-from now.executor.gateway.hubble_report import report
+from now.executor.gateway.hubble_report import init_payment_client, report
 
 
 @pytest.mark.parametrize(
-    'has_payment_method, credits, user_account_status, internal_product_id, cost, num_report_usage_calls',
+    'has_payment_method, user_credits, user_account_status, internal_product_id, cost, num_report_usage_calls',
     [
         (True, 10, 'active', 'free-plan', 2, 1),  # standard case
-        (
-            False,
-            0,
-            'active',
-            'free-plan',
-            2,
-            0,
-        ),  # test no payment method and no credits
+        (False, 0, 'active', 'free-plan', 2, 0),  # test no payment no credits
         (True, 0, 'active', 'free-plan', 2, 1),  # test no credits but payment method
         (True, 10, 'inactive', 'free-plan', ..., 0),  # test inactive user
         (True, 10, 'active', 'pro-plan', 1, 1),  # test pro user
@@ -26,13 +17,12 @@ from now.executor.gateway.hubble_report import report
 def test_report_usage(
     mocker,
     has_payment_method,
-    credits,
+    user_credits,
     user_account_status,
     internal_product_id,
     cost,
     num_report_usage_calls,
 ):
-    os.environ['M2M_TOKEN'] = 'dummy_m2m_token'
     mocker.patch.object(
         PaymentClient, 'get_authorized_jwt', return_value={'data': 'dummy_token'}
     )
@@ -43,13 +33,14 @@ def test_report_usage(
         return_value={
             'data': {
                 'hasPaymentMethod': has_payment_method,
-                'credits': credits,
+                'credits': user_credits,
                 'userAccountStatus': user_account_status,
                 'internalProductId': internal_product_id,
             },
             'status_code': 200,
         },
     )
+    init_payment_client(user_token='dummy_user_token')
     report(user_token='dummy_user_token', quantity_basic=2, quantity_pro=1)
     # assert that the mocked_report_usage was called once with the expected arguments
 
@@ -57,5 +48,5 @@ def test_report_usage(
         mocked_report_usage.assert_not_called()
     else:
         mocked_report_usage.assert_called_once_with(
-            'dummy_token', 'search', 'mm_query', cost
+            'dummy_token', 'search', 'free-plan', cost
         )
