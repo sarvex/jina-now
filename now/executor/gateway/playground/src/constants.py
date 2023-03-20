@@ -28,8 +28,6 @@ ds_set = [
     'tumblr-gifs-10k',
 ]
 
-SURVEY_LINK = 'https://10sw1tcpld4.typeform.com/to/VTAyYRpR?utm_source=cli'
-
 BUTTONS = {
     'twitter': """
                 <a href="https://twitter.com/share?ref_src=twsrc%5Etfw" class="twitter-share-button"
