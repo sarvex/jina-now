@@ -25,7 +25,6 @@ def get_run_args(parser=None):
     if len(sys.argv) == 1:
         parser.print_help()
         exit()
-    print(parser.parse_known_args())
     args, unknown = parser.parse_known_args()
 
     # clean up the args with None values
