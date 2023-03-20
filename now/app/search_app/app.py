@@ -79,13 +79,12 @@ class SearchApp(JinaNOWApp):
             else 'NOWAutoCompleteExecutor2',
             'needs': 'gateway',
             'jcloud': {
-                'replicas': 1,
-                # 'autoscale': {
-                #     'min': 0,
-                #     'max': 1,
-                #     'metric': 'concurrency',
-                #     'target': 1,
-                # },
+                'autoscale': {
+                    'min': 0,
+                    'max': 1,
+                    'metric': 'concurrency',
+                    'target': 1,
+                },
                 'resources': {
                     'instance': 'C1',
                     'capacity': 'spot',
@@ -104,13 +103,12 @@ class SearchApp(JinaNOWApp):
             if not testing
             else 'NOWPreprocessor',
             'jcloud': {
-                'replicas': 1,
-                # 'autoscale': {
-                #     'min': 0,
-                #     'max': 100,
-                #     'metric': 'concurrency',
-                #     'target': 1,
-                # },
+                'autoscale': {
+                    'min': 0,
+                    'max': 100,
+                    'metric': 'concurrency',
+                    'target': 1,
+                },
                 'resources': {'instance': 'C4', 'capacity': 'spot'},
             },
             'env': {'JINA_LOG_LEVEL': PREPROCESSOR_LOG_LEVEL},
