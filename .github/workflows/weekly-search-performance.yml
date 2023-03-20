@@ -29,8 +29,9 @@ jobs:
           pip install --no-cache-dir ".[full,test]"
           pip install -r ${GITHUB_WORKSPACE}/scripts/requirements.txt
       - name: Run script
+        working-directory: ./scripts
         run: |
-          python ${GITHUB_WORKSPACE}/scripts/benchmark_index_search_latency.py --scenario ${{ matrix.scenario }}
+          python benchmark_index_search_latency.py --scenario ${{ matrix.scenario }}
         env:
           NOW_BENCHMARK_RUN: 'True'
           CUSTOM_S3_BUCKET: ${{ secrets.CUSTOM_S3_BUCKET }}
