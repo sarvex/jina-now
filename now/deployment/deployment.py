@@ -10,7 +10,6 @@ def deploy_wolf(path: str):
     # print file content from the path
     with open(path) as f:
         logger.debug(f'deploy yaml on wolf:\n{f.read()}')
-    raise Exception()
     return CloudFlow(path=path).__enter__()
 
 
