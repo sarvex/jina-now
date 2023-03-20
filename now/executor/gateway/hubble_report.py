@@ -23,15 +23,6 @@ def current_time():
     return datetime.datetime.utcnow().isoformat() + 'Z'
 
 
-def base_fee_thread(user_token):
-    while True:
-        sleep(NOWGATEWAY_BASE_FEE_SLEEP_INTERVAL)
-        report(
-            quantity_basic=NOWGATEWAY_BASE_FEE_QUANTITY,
-            quantity_pro=NOWGATEWAY_BASE_FEE_QUANTITY,
-        )
-
-
 def start_base_fee_thread(user_token, impersonation_token):
     # impersonation token is now our session token since it remains same per user over time
     logger.info('Starting base fee thread')
@@ -41,6 +32,15 @@ def start_base_fee_thread(user_token, impersonation_token):
     init_payment_client(user_token)
     thread = threading.Thread(target=base_fee_thread, args=(user_token,))
     thread.start()
+
+
+def base_fee_thread(user_token):
+    while True:
+        sleep(NOWGATEWAY_BASE_FEE_SLEEP_INTERVAL)
+        report(
+            quantity_basic=NOWGATEWAY_BASE_FEE_QUANTITY,
+            quantity_pro=NOWGATEWAY_BASE_FEE_QUANTITY,
+        )
 
 
 def report_search_usage(user_token):
@@ -68,9 +68,7 @@ def init_payment_client(user_token):
             impersonation_token = payment_client.get_authorized_jwt(
                 user_token=user_token
             )['data']
-            session_token = (
-                impersonation_token  # store it as a global variable to avoid re-auth
-            )
+            session_token = impersonation_token  # to avoid re-authenticating
     except Exception as e:
         import traceback
 
@@ -81,7 +79,8 @@ def init_payment_client(user_token):
 
 def report(quantity_basic, quantity_pro):
     logger.info(
-        f'Session Token: {session_token} \n at the time of reporting: {current_time()}'
+        f'Session Token: {session_token} \n'
+        f'at the time of reporting: {current_time()}'
     )
     app_id = 'search'
     product_id = 'free-plan'

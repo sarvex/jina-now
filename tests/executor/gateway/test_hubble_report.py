@@ -41,7 +41,7 @@ def test_report_usage(
         },
     )
     init_payment_client(user_token='dummy_user_token')
-    report(user_token='dummy_user_token', quantity_basic=2, quantity_pro=1)
+    report(quantity_basic=2, quantity_pro=1)
     # assert that the mocked_report_usage was called once with the expected arguments
 
     if num_report_usage_calls == 0:
