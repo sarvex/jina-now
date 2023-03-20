@@ -4,9 +4,9 @@ from docarray.typing import Image, Text, Video
 
 from now.utils.common.helpers import BetterEnum
 
-NOW_GATEWAY_VERSION = '0.0.6-fix-merge-info-into-search-21'
-NOW_PREPROCESSOR_VERSION = '0.0.125-fix-merge-info-into-search-21'
-NOW_ELASTIC_INDEXER_VERSION = '0.0.149-fix-m2m-token-29'
+NOW_GATEWAY_VERSION = '0.0.6-fix-merge-info-into-search-2'
+NOW_PREPROCESSOR_VERSION = '0.0.125-fix-m2m-token-29'
+NOW_ELASTIC_INDEXER_VERSION = '0.0.149-fix-merge-info-into-search-2'
 NOW_AUTOCOMPLETE_VERSION = '0.0.12-fix-m2m-token-29'
 
 
