@@ -1,11 +1,11 @@
 import datetime
 import json
-import logging
 import os
 import threading
 from time import sleep
 
 from hubble.payment.client import PaymentClient
+from jina.logging.logger import JinaLogger
 
 from now.constants import (
     NOWGATEWAY_BASE_FEE_QUANTITY,
@@ -14,8 +14,7 @@ from now.constants import (
     NOWGATEWAY_SEARCH_FEE_QUANTITY,
 )
 
-logger = logging.getLogger(__file__)
-logger.setLevel(os.environ.get('JINA_LOG_LEVEL', 'INFO'))
+logger = JinaLogger(__file__)
 payment_client = None
 authorized_jwt = None
 old_user_token = None
