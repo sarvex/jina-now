@@ -13,7 +13,7 @@ gateway:
     expose: false
 executors:
   - name: encodersbert
-    uses: jinahub+docker://TransformerSentenceEncoder/
+    uses: jinaai+docker://team-now/TransformerSentenceEncoder3:latest
     uses_with:
       access_paths: '@cc'
       model_name: msmarco-distilbert-base-v3
@@ -22,12 +22,12 @@ executors:
     jcloud:
       expose: true
 # needs to be reactivated once wolf supports it
-#      autoscale:
-#        min: 1
-#        max: 15
-#        metric: concurrency
-#        target: 1
+      autoscale:
+        min: 3
+        max: 20
+        metric: concurrency
+        target: 1
       resources:
-        instance: C6
+        instance: C2
         capacity: spot
-    replicas: 2
+    replicas: 1

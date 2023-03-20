@@ -20,3 +20,5 @@ uvicorn==0.17.6
 uvloop==0.16.0
 pydantic==1.9.2
 av==9.1.1
+requests-mock==1.10.0
+pytest-asyncio==0.20.3

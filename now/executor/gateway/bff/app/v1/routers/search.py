@@ -1,4 +1,6 @@
 import base64
+import logging
+import os
 from typing import Any, Dict, List
 
 from fastapi import APIRouter, Body
@@ -18,6 +20,9 @@ from now.utils.docarray.helpers import (
     get_chunk_by_field_name,
     modality_string_to_docarray_typing,
 )
+
+logger = logging.getLogger(__file__)
+logger.setLevel(os.environ.get('JINA_LOG_LEVEL', 'INFO'))
 
 search_examples = {
     'working_text': {
@@ -91,6 +96,7 @@ router = APIRouter()
 async def search(
     data: SearchRequestModel = Body(examples=search_examples),
 ):
+    logger.info(f'Got search request: {data}')
     fields_modalities_mapping = {}
     fields_values_mapping = {}
     if len(data.query) == 0:
@@ -158,7 +164,7 @@ async def search(
             else:
                 # We should not raise exception else it breaks the playground if a single chunk has no content
                 # irrespective of what other chunks hold. We should just log it and move on.
-                print('Result without content', doc.id, doc.tags)
+                logger.info('Result without content', doc.id, doc.tags)
                 result = {'text': ''}
             results[field_name] = result
         match = SearchResponseModel(
@@ -169,7 +175,11 @@ async def search(
         )
         matches.append(match)
     # reporting the usage at the end to make sure the request was successful
-    report_search_usage(data.jwt)
+
+    logger.info(
+        f'Reporting search usage after successful search request for user {data.jwt.get("token")}'
+    )
+    report_search_usage(user_token=data.jwt.get('token'))
     return matches
 
 

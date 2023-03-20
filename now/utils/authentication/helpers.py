@@ -1,7 +1,11 @@
+import logging
 from dataclasses import dataclass
 
 import boto3
 import hubble
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 @dataclass
