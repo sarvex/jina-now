@@ -10,11 +10,6 @@ class TestClass:
         self.example = 'test'
 
 
-class Args:
-    def __init__(self, task):
-        self.now = task
-
-
 def test_run_args(mocker: MockerFixture):
     test_input = TestClass()
     mocker.patch.object(
@@ -27,13 +22,11 @@ def test_cli_call(mocker: MockerFixture):
     mocker.patch('now.run_all_k8s.start_now', return_value='STARTED')
     mocker.patch('now.run_all_k8s.stop_now', return_value='STOPPED')
     mocker.patch('now.run_all_k8s.compare_flows', return_value='COMPARED')
-    kwargs_stop = {
-        'now': 'stop',
-    }
-    kwargs_compare = {
-        'now': "compare",
-    }
-    kwargs_stop = Namespace(**kwargs_stop)
-    kwargs_compare = Namespace(**kwargs_compare)
-    cli(args=kwargs_stop)
-    cli(args=kwargs_compare)
+
+    def _set_kwargs(task):
+        kwargs = {'now': task}
+        kwargs = Namespace(**kwargs)
+        return kwargs
+
+    cli(args=_set_kwargs('stop'))
+    cli(args=_set_kwargs('compare'))
