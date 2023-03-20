@@ -1,4 +1,3 @@
-import os
 from collections import defaultdict
 from typing import Dict, Hashable, List, TypeVar
 
@@ -69,11 +68,6 @@ def create_dataclass(
         field_names_to_dataclass_fields,
         dataset_type,
     )
-    if not "K8S_NAMESPACE_NAME" in os.environ:
-        # for blip_text this is extra
-        all_annotations['blip2_caption'] = Text
-        all_class_attributes['blip2_caption'] = field(default='')
-        field_names_to_dataclass_fields['blip2_caption'] = 'blip2_caption'
 
     mm_doc = type("MMDoc", (object,), all_class_attributes)
     setattr(mm_doc, '__annotations__', all_annotations)

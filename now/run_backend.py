@@ -6,12 +6,12 @@ from typing import Dict, Optional
 
 import requests
 from docarray import DocumentArray
-from docarray.typing import Text
 from jina.clients import Client
 
 from now.admin.update_api_keys import update_api_keys
 from now.app.base.app import JinaNOWApp
-from now.constants import ACCESS_PATHS, Models
+from now.constants import ACCESS_PATHS
+from now.data_loading.data_loading import load_data
 from now.deployment.flow import deploy_flow
 from now.log import time_profiler
 from now.now_dataclasses import UserInput
@@ -35,24 +35,9 @@ def run(
     :param kwargs: Additional arguments
     :return:
     """
-    # todo: temporary fix to dummy update the user_input
-    user_input.index_field_candidates_to_modalities.update({'blip2_caption': Text})
-    user_input.index_fields.append('blip2_caption')
-    user_input.filter_fields.append('blip2_caption')
-    user_input.filter_field_candidates_to_modalities.update({'blip2_caption': 'str'})
-    user_input.field_names_to_dataclass_fields = {
-        'title': 'text_0',
-        'file.gif': 'video_0',
-        'blip2_caption': 'blip2_caption',
-    }
-    user_input.model_choices.update({'blip2_caption_model': [Models.CLIP_MODEL]})
-    dataset = DocumentArray.load_binary(
-        '/Users/joschkabraun/dev/now/blip2_uri2captions/ltf-preproc-with-caption-beam_search_03_06_2023.bin'
-    )
-
     print_callback = kwargs.get('print_callback', print)
 
-    # dataset = load_data(user_input, print_callback)
+    dataset = load_data(user_input, print_callback)
     print_callback('Data loaded. Deploying the flow...')
 
     # Set up the app specific flow
@@ -148,7 +133,7 @@ def call_flow(
         show_progress=True,
         parameters=parameters,
         continue_on_error=True,
-        prefetch=300,
+        prefetch=100,
         on_done=kwargs.get('on_done', None),
         on_error=kwargs.get('on_error', None),
         on_always=kwargs.get('on_always', None),

@@ -116,19 +116,15 @@ async def search(
     if len(data.query) == 0:
         raise ValueError('Query cannot be empty')
 
-    print(f'query: {data.query}')
     for field in data.query:
         fields_modalities_mapping[field['name']] = modality_string_to_docarray_typing(
             field['modality']
         )
         fields_values_mapping[field['name']] = field['value']
-    print(f'fields_modalities_mapping: {fields_modalities_mapping}')
-    print(f'fields_values_mapping: {fields_values_mapping}')
     data_class, field_names_to_dataclass_fields = create_dataclass(
         fields=list(fields_modalities_mapping.keys()),
         fields_modalities=fields_modalities_mapping,
     )
-    print(f'field_names_to_dataclass_fields: {field_names_to_dataclass_fields}')
     query_doc = field_dict_to_mm_doc(
         fields_values_mapping,
         data_class=data_class,

@@ -33,11 +33,7 @@ class NOWPreprocessor(Executor):
         self.app: JinaNOWApp = JinaNOWApp()
         self.max_workers = max_workers
 
-    @secure_request(on='/', level=SecurityLevel.USER)
-    def foo(self, docs: DocumentArray, *args, **kwargs) -> DocumentArray:
-        return docs
-
-    @secure_request(on='/search', level=SecurityLevel.USER)
+    @secure_request(on=None, level=SecurityLevel.USER)
     def preprocess(self, docs: DocumentArray, *args, **kwargs) -> DocumentArray:
         """If necessary downloads data from cloud bucket. Applies preprocessing to document as defined by apps.
 
