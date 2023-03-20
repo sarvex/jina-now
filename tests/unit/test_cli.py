@@ -1,4 +1,4 @@
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 
 from pytest_mock import MockerFixture
 
@@ -27,6 +27,13 @@ def test_cli_call(mocker: MockerFixture):
     mocker.patch('now.run_all_k8s.start_now', return_value='STARTED')
     mocker.patch('now.run_all_k8s.stop_now', return_value='STOPPED')
     mocker.patch('now.run_all_k8s.compare_flows', return_value='COMPARED')
-    cli(Args('start'))
-    cli(Args('stop'))
-    cli(Args('compare'))
+    kwargs_stop = {
+        'now': 'stop',
+    }
+    kwargs_compare = {
+        'now': "compare",
+    }
+    kwargs_stop = Namespace(**kwargs_stop)
+    kwargs_compare = Namespace(**kwargs_compare)
+    cli(args=kwargs_stop)
+    cli(args=kwargs_compare)
