@@ -39,6 +39,7 @@ def test_text_search_fails_with_empty_query(client: requests.Session):
 
 
 def test_image_search_calls_flow(
+    mock_hubble_billing_report,
     client_with_mocked_jina_client: Callable[[DocumentArray], requests.Session],
     sample_search_response_text: DocumentArray,
     base64_image_string: str,
@@ -59,6 +60,7 @@ def test_image_search_calls_flow(
 
 
 def test_multimodal_search_calls_flow(
+    mock_hubble_billing_report,
     client_with_mocked_jina_client: Callable[[DocumentArray], requests.Session],
     sample_search_response_text: DocumentArray,
     base64_image_string: str,
@@ -81,6 +83,7 @@ def test_multimodal_search_calls_flow(
 
 def test_image_search_parse_response(
     client_with_mocked_jina_client: Callable[[DocumentArray], requests.Session],
+    mock_hubble_billing_report,
     sample_search_response_text: DocumentArray,
     base64_image_string: str,
 ):
@@ -122,6 +125,7 @@ def get_user_input() -> UserInput:
 
 @pytest.mark.parametrize('dump_user_input', [get_user_input()], indirect=True)
 def test_text_search_with_score_calculation(
+    mock_hubble_billing_report,
     dump_user_input,
     client_with_mocked_jina_client: Callable[[DocumentArray], requests.Session],
     sample_search_response_text: DocumentArray,
@@ -155,6 +159,7 @@ def test_text_search_with_score_calculation(
 
 @pytest.mark.parametrize('dump_user_input', [get_user_input()], indirect=True)
 def test_text_search_with_filters(
+    mock_hubble_billing_report,
     dump_user_input,
     client_with_mocked_jina_client: Callable[[DocumentArray], requests.Session],
     sample_search_response_text: DocumentArray,
