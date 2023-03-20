@@ -10,9 +10,6 @@ from pytest_mock import MockerFixture
 
 from now.deployment.deployment import get_or_create_eventloop, terminate_wolf
 
-from now.executor.preprocessor.s3_download import get_bucket
-from now.utils.authentication.helpers import get_aws_profile
-
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__name__)
 
