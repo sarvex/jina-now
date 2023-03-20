@@ -1,6 +1,4 @@
 import asyncio
-import logging
-import os
 import subprocess
 
 from jcloud.flow import CloudFlow
@@ -11,8 +9,8 @@ from now.log.log import logger
 def deploy_wolf(path: str):
     # print file content from the path
     with open(path) as f:
-        logger.debug('deploy yaml on wolf:')
-        logger.debug(f.read())
+        logger.debug(f'deploy yaml on wolf:\n{f.read()}')
+    raise Exception()
     return CloudFlow(path=path).__enter__()
 
 

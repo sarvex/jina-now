@@ -68,7 +68,6 @@ def get_app_instance():
 
     @app.on_event('startup')
     def startup():
-        print('****************** Jina NOW start ******************')
         logger.info(
             f'Jina NOW started! ' f'Listening to [::]:{api_settings.DEFAULT_PORT}'
         )

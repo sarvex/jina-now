@@ -17,7 +17,6 @@ from now.executor.gateway.bff.app.v1.routers.helper import (
     field_dict_to_mm_doc,
     jina_client_post,
 )
-
 from now.executor.gateway.hubble_report import report_search_usage
 from now.utils.docarray.helpers import (
     get_chunk_by_field_name,

@@ -56,7 +56,6 @@ def api_method(func: Callable):
     def surround(*args, **kwargs):
         func_name = inspect.getmodule(func).__name__ + f':{func.__name__}'
         logger.info(f'--- Calling api method {func_name} ...')
-        logger.info(f"{kwargs}")
         try:
             response = func(*args, **kwargs)
         except HTTPException as exc:

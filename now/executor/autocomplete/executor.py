@@ -12,7 +12,6 @@ from now.executor.abstract.auth.auth import (
     get_auth_executor_class,
     secure_request,
 )
-from now.log.log import logger
 
 Executor = get_auth_executor_class()
 
@@ -32,11 +31,6 @@ class NOWAutoCompleteExecutor2(Executor):
             with open(self.words_path, 'r') as fp:
                 self.words = json.load(fp)
                 self.auto_complete = AutoComplete(words=self.words)
-
-    def __set_name__(self, owner, name):
-        logger.debug(f"Decorating {self.fn} and using {owner}")
-        self.fn.class_name = owner.__name__
-        setattr(owner, name, self.fn)
 
     def update_save_words(self, word):
         """
