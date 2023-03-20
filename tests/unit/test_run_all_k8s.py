@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+import pytest
 from pytest_mock import MockerFixture
 
 from now.run_all_k8s import compare_flows, get_docarray, get_flow_status, stop_now
@@ -43,14 +44,12 @@ def test_compare_flows_with_flow_ids(mocker: MockerFixture):
 
 def test_compare_flows_no_flow_ids(mocker: MockerFixture):
     kwargs = {
-        'path_score_calculation': 'path/to/file',
+        'path_score_calculation': './test_correct_response.json',
         'dataset': 'test',
         'limit': 1,
         'disable_to_datauri': True,
         'results_per_table': 20,
     }
-    mock_json = {'test': 'test'}
-    mock_file = mocker.mock_open(read_data='test')
 
     mocker.patch(
         'now.compare.compare_flows.compare_flows_for_queries',
@@ -60,9 +59,11 @@ def test_compare_flows_no_flow_ids(mocker: MockerFixture):
         'now.run_all_k8s.get_docarray',
         return_value=[MMStructure(is_multimodal=True)],
     )
-    mocker.patch('builtins.open', mock_file)
-    mocker.patch('json.load', return_value=mock_json)
+
     compare_flows(**kwargs)
+    with pytest.raises(Exception):
+        kwargs['path_score_calculation'] = './test_wrong_response.json'
+        compare_flows(**kwargs)
 
 
 def test_stop(mocker: MockerFixture):
