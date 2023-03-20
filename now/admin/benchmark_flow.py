@@ -16,14 +16,15 @@ def _call(http_host, request_body) -> float:
     return time() - t0
 
 
-def benchmark_deployment(
+def benchmark_deployment_latency(
     http_host: str,
     search_text: str,
     limit: int = 9,
     api_key: str = None,
     jwt: str = None,
+    n_latency_calls: int = 30,
 ) -> Dict[str, float]:
-    """Benchmarks a deployment by measuring latency and QPS on '/search' endpoint."""
+    """Benchmarks a deployment by measuring latency on '/search' endpoint."""
     request_body = {
         'query': [{'name': 'query_text', 'modality': 'text', 'value': search_text}],
         'limit': limit,
@@ -34,28 +35,45 @@ def benchmark_deployment(
         request_body['jwt'] = {'token': jwt}
 
     # measure latency
-    latency_calls = 30
     start = time()
-    for i in range(latency_calls):
+    for i in range(n_latency_calls):
         _call(http_host=http_host, request_body=request_body)
-    latency = (time() - start) / latency_calls
-    result = {'latency': latency}
+    return (time() - start) / n_latency_calls
 
+
+def benchmark_deployment_qps(
+    http_host: str,
+    search_text: str,
+    limit: int = 9,
+    api_key: str = None,
+    jwt: str = None,
+    n_qps_calls: int = 250,
+    n_qps_workers: int = 10,
+) -> Dict[str, float]:
+    """Benchmarks a deployment by measuring QPS on '/search' endpoint."""
+    request_body = {
+        'query': [{'name': 'query_text', 'modality': 'text', 'value': search_text}],
+        'limit': limit,
+    }
+    if api_key:
+        request_body['api_key'] = api_key
+    if jwt:
+        request_body['jwt'] = {'token': jwt}
+
+    result = {}
     # measure QPS
-    num_queries = 250
-    worker = 10
-    with ProcessPoolExecutor(max_workers=worker) as executor:
+    with ProcessPoolExecutor(max_workers=n_qps_calls) as executor:
         # QPS test
         start = time()
         futures = []
         latencies = []
 
-        for i in range(num_queries):
+        for i in range(n_qps_workers):
             future = executor.submit(_call, http_host, request_body)
             futures.append(future)
         for future in futures:
             latencies.append(future.result())
-        qps = num_queries / (time() - start)
+        qps = n_qps_workers / (time() - start)
         result['qps'] = qps
 
     latencies = sorted(latencies)
@@ -72,7 +90,12 @@ if __name__ == '__main__':
     limit = 60
 
     http_host = f'https://{flow_name}-http.wolf.jina.ai'
-    result = benchmark_deployment(
+    latency = benchmark_deployment_latency(
         http_host=http_host, search_text=search_text, limit=limit, api_key=api_key
     )
-    print(json.dumps(result, indent=4))
+
+    qps_dict = benchmark_deployment_qps(
+        http_host=http_host, search_text=search_text, limit=limit, api_key=api_key
+    )
+
+    print(json.dumps({'latency': latency, **qps_dict}, indent=4))

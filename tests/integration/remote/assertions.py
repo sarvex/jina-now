@@ -204,11 +204,6 @@ def assert_indexed_all_docs(host, kwargs, limit: int):
         json=request_body,
     )
     response_json = response.json()
-    print(f'response_json: {response_json}')
-    if response_json['number_of_docs'] != limit:
-        print(f"Expected {limit} docs but got {response_json['number_of_docs']}")
-    else:
-        print(f"Found {limit} docs")
-    # assert response_json['number_of_docs'] == limit, (
-    #     f"Expected {limit} docs but got {response_json['number_of_docs']}"
-    # )
+    assert (
+        response_json['number_of_docs'] == limit
+    ), f"Expected {limit} docs but got {response_json['number_of_docs']}\nResponse: {response_json}"
