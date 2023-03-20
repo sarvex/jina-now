@@ -120,7 +120,9 @@ def _pull_docarray(dataset_name: str, admin_name: str) -> DocumentArray:
         admin_name + '/' + dataset_name if '/' not in dataset_name else dataset_name
     )
     try:
-        docs = DocumentArray.pull(name=dataset_name, show_progress=True)
+        docs = DocumentArray.pull(
+            name=dataset_name, show_progress=True, local_cache=True
+        )
         if is_multimodal(docs[0]):
             return docs
         else:

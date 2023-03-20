@@ -1,0 +1,72 @@
+name: Benchmark Search Performance
+
+on:
+  workflow_dispatch:
+
+  pull_request:
+
+jobs:
+  run_script:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+#        scenario: [ "image", "video+text" ]
+        scenario: [ "image" ]
+    env:
+      SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Install Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+      - name: Prepare environment
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install wheel
+          pip install --no-cache-dir ".[full,test]"
+          pip install -r ${GITHUB_WORKSPACE}/scripts/requirements.txt
+      - name: Run script
+        run: |
+          python ${GITHUB_WORKSPACE}/scripts/benchmark_index_search_latency.py --scenario ${{ matrix.scenario }}
+        env:
+          NOW_BENCHMARK_RUN: 'True'
+          CUSTOM_S3_BUCKET: ${{ secrets.CUSTOM_S3_BUCKET }}
+          CUSTOM_AWS_ACCESS_KEY_ID: ${{ secrets.CUSTOM_AWS_ACCESS_KEY_ID }}
+          CUSTOM_AWS_SECRET_ACCESS_KEY: ${{ secrets.CUSTOM_AWS_SECRET_ACCESS_KEY }}
+          CUSTOM_AWS_REGION: ${{ secrets.CUSTOM_AWS_REGION }}
+
+  # Clean up flows created if there are any left
+  cleanup-flows:
+    runs-on: ubuntu-latest
+    needs: [run_script]
+    if: always()
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Prepare environment
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install wheel
+          pip install --no-cache-dir ".[full,test]"
+      - name: Setup JCloud
+        run: |
+          mkdir -p ~/.jina
+          touch ~/.jina/config.json
+          echo "{\"auth_token\": \"${WOLF_TOKEN}\"}" > ~/.jina/config.json
+          cat ~/.jina/config.json
+        env:
+          WOLF_TOKEN: ${{ secrets.WOLF_TOKEN }}
+      - name: Delete Flows
+        run: |
+          python ./scripts/delete_flows.py
+        env:
+          NOW_BENCHMARK_RUN: 'True'
+      - name: Success
+        if: ${{ success() }}
+        run: echo "All Done"

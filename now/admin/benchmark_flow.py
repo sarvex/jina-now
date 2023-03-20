@@ -41,7 +41,7 @@ def benchmark_deployment_latency(
     return (time() - start) / n_latency_calls
 
 
-def benchmark_deployment_qps(
+def benchmark_deployment_qps_ps(
     http_host: str,
     search_text: str,
     limit: int = 9,
@@ -94,7 +94,7 @@ if __name__ == '__main__':
         http_host=http_host, search_text=search_text, limit=limit, api_key=api_key
     )
 
-    qps_dict = benchmark_deployment_qps(
+    qps_dict = benchmark_deployment_qps_ps(
         http_host=http_host, search_text=search_text, limit=limit, api_key=api_key
     )
 
