@@ -12,7 +12,7 @@ from now.utils.jcloud.helpers import write_flow_file
 def deploy_flow(
     flow_yaml: str,
 ):
-    """Deploy a Flow on JCloud, Kubernetes, or using Jina Orchestration"""
+    """Deploy a Flow on JCloud"""
     # TODO create tmpdir top level and pass it down
     with tempfile.TemporaryDirectory() as tmpdir:
         # hack we don't know if the flow yaml is a path or a string
@@ -24,12 +24,4 @@ def deploy_flow(
         flow = deploy_wolf(path=flow_yaml)
         host = flow.endpoints['gateway (grpc)']
         client = Client(host=host)
-
-        # host & port
-        gateway_port = None
-        gateway_host_internal = host
-    return (
-        client,
-        gateway_port,
-        gateway_host_internal,
-    )
+    return client, host
