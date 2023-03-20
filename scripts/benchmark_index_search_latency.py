@@ -6,11 +6,11 @@ from argparse import Namespace
 
 import hubble
 import pandas as pd
-from integration.conftest import get_flow_id_from_name
-from integration.remote.assertions import assert_indexed_all_docs
 from matplotlib import pyplot as plt
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
+from tests.integration.conftest import get_flow_id_from_name
+from tests.integration.remote.assertions import assert_indexed_all_docs
 
 from now.admin.benchmark_flow import (
     benchmark_deployment_latency,
