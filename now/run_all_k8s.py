@@ -9,17 +9,16 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Column, Table
 
-from now import run_backend
-from now.compare.compare_flows import compare_flows_for_queries
+from now import compare, run_backend
 from now.constants import DEMO_NS, FLOW_STATUS
-from now.deployment.deployment import list_all_wolf, status_wolf, terminate_wolf
+from now.deployment import deployment
 from now.dialog import configure_user_input, maybe_prompt_user
 
 
 def stop_now(**kwargs):
-    _result, flow_id, cluster = _get_flow_status(action='delete', **kwargs)
+    _result, flow_id, cluster = get_flow_status(action='delete', **kwargs)
     if _result is not None and _result['status']['phase'] == FLOW_STATUS:
-        terminate_wolf(flow_id)
+        deployment.terminate_wolf(flow_id)
         from hubble import Client
 
         cookies = {'st': Client().token}
@@ -46,27 +45,8 @@ def start_now(**kwargs):
     bff_url = f'{gateway_host_http}/api/v1/search-app/docs'
     playground_url = f'{gateway_host_http}/playground'
 
-    print()
-    my_table = Table(
-        'Attribute',
-        Column(header="Value", overflow="fold"),
-        show_header=False,
-        box=box.SIMPLE,
-        highlight=True,
-    )
-    my_table.add_row('Host (HTTPS)', gateway_host_http)
-    my_table.add_row('Host (GRPCS)', gateway_host_grpc)
-    my_table.add_row('API docs', bff_url)
-    if user_input.secured and user_input.api_key:
-        my_table.add_row('API Key', user_input.api_key)
-    my_table.add_row('Playground', playground_url)
-    console = Console()
-    console.print(
-        Panel(
-            my_table,
-            title=f':tada: Search app is NOW ready!',
-            expand=False,
-        )
+    _generate_info_table(
+        gateway_host_http, gateway_host_grpc, bff_url, playground_url, user_input
     )
     return {
         'bff': bff_url,
@@ -75,6 +55,14 @@ def start_now(**kwargs):
         'host_grpc': gateway_host_grpc,
         'secured': user_input.secured,
     }
+
+
+def get_docarray(dataset):
+    if os.path.exists(dataset):
+        print(f'Loading queries from {dataset}')
+        return DocumentArray.load_binary(dataset)
+    print(f'Pulling queries from {dataset}')
+    return DocumentArray.pull(name=dataset, show_progress=True)
 
 
 def compare_flows(**kwargs):
@@ -93,6 +81,7 @@ def compare_flows(**kwargs):
         if path_score_calculation:
             with open(path_score_calculation) as fp:
                 cluster_ids_2_score_calculation = json.load(fp)
+
             flow_ids = list(cluster_ids_2_score_calculation.keys())
             flow_ids_http_score_calculation = [
                 (flow_id, f'https://{flow_id}-http.wolf.jina.ai', score_calculation)
@@ -127,12 +116,7 @@ def compare_flows(**kwargs):
         'dataset',
         **kwargs,
     )
-    if os.path.exists(dataset):
-        print(f'Loading queries from {dataset}')
-        da = DocumentArray.load_binary(dataset)
-    else:
-        print(f'Pulling queries from {dataset}')
-        da = DocumentArray.pull(name=dataset, show_progress=True)
+    da = get_docarray(dataset)
     if not da[0].is_multimodal:
         raise ValueError(
             f'The DocArray {dataset} is not a multimodal DocumentArray.'
@@ -181,7 +165,7 @@ def compare_flows(**kwargs):
     )
     results_per_table = int(results_per_table) if results_per_table else 20
 
-    compare_flows_for_queries(
+    compare.compare_flows.compare_flows_for_queries(
         da=da,
         flow_ids_http_score_calculation=flow_ids_http_score_calculation,
         limit=limit,
@@ -190,10 +174,10 @@ def compare_flows(**kwargs):
     )
 
 
-def _get_flow_status(action, **kwargs):
+def get_flow_status(action, **kwargs):
     choices = []
     # Add all remote Flows that exists with the namespace `nowapi`
-    alive_flows = list_all_wolf(status='Serving')
+    alive_flows = deployment.list_all_wolf()
     for flow_details in alive_flows:
         choices.append(flow_details['name'])
     if len(choices) == 0:
@@ -212,7 +196,33 @@ def _get_flow_status(action, **kwargs):
 
     flow = [x for x in alive_flows if x['name'] == cluster][0]
     flow_id = flow['id']
-    _result = status_wolf(flow_id)
+    _result = deployment.status_wolf(flow_id)
     if _result is None:
         print(f'❎ Flow not found in JCloud. Likely, it has been deleted already')
     return _result, flow_id, cluster
+
+
+def _generate_info_table(
+    gateway_host_http, gateway_host_grpc, bff_url, playground_url, user_input
+):
+    info_table = Table(
+        'Attribute',
+        Column(header="Value", overflow="fold"),
+        show_header=False,
+        box=box.SIMPLE,
+        highlight=True,
+    )
+    info_table.add_row('Host (HTTPS)', gateway_host_http)
+    info_table.add_row('Host (GRPCS)', gateway_host_grpc)
+    info_table.add_row('API docs', bff_url)
+    if user_input.secured and user_input.api_key:
+        info_table.add_row('API Key', user_input.api_key)
+    info_table.add_row('Playground', playground_url)
+    console = Console()
+    console.print(
+        Panel(
+            info_table,
+            title=f':tada: Search app is NOW ready!',
+            expand=False,
+        )
+    )
