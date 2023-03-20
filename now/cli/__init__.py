@@ -61,16 +61,8 @@ def cli(args=None):
         return run_all_k8s.start_now(**kwargs)
     elif task == 'stop':
         run_all_k8s.stop_now(**kwargs)
-    elif task == 'logs':
-        fetch_logs_now(**kwargs)
     elif task == 'compare':
         run_all_k8s.compare_flows(**kwargs)
-    elif task == 'survey':
-        import webbrowser
-
-        webbrowser.open(SURVEY_LINK, new=0, autoraise=True)
-    else:
-        raise Exception(f'unknown task, {task}')
 
 
 def parse_args(args):
