@@ -20,8 +20,8 @@ os.environ['JCLOUD_LOGLEVEL'] = 'ERROR'
 def get_run_args():
     from now.cli.parser import get_main_parser
 
-    if not parser:
-        parser = get_main_parser()
+    parser = get_main_parser()
+
     if len(sys.argv) == 1:
         parser.print_help()
         exit()
