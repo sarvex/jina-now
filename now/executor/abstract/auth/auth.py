@@ -38,7 +38,7 @@ def secure_request(level: int, on: str = None):
                 cls_instance.logger.debug(f"args: {kwargs['args']}")
 
             if 'docs' in kwargs and kwargs['docs']:
-                f"processing {len(kwargs['docs'])} docs"
+                cls_instance.logger.info(f"processing {len(kwargs['docs'])} docs")
                 if cls_instance.logger.logger.level <= LogVerbosity.DEBUG:
                     kwargs['docs'][0].summary()
 
