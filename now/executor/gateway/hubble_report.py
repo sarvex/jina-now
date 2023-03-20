@@ -1,5 +1,4 @@
 import datetime
-import json
 import logging
 import os
 import threading
@@ -17,49 +16,37 @@ from now.constants import (
 logger = logging.getLogger(__file__)
 logger.setLevel(os.environ.get('JINA_LOG_LEVEL', 'INFO'))
 payment_client = None
-authorized_jwt = None
-old_user_token = None
+session_token = None
 
 
 def current_time():
     return datetime.datetime.utcnow().isoformat() + 'Z'
 
 
-def start_base_fee_thread(user_token, inf_token, storage_dir):
-    logger.info('Starting base fee thread')
-    global old_user_token, authorized_jwt
-    old_user_token = user_token  # incase no token is passed with search request
-    if inf_token:  # if inf_token is passed, use it mostly in case of gateway restart
-        authorized_jwt = inf_token
-    init_payment_client(user_token)
-    save_cred(storage_dir)
-    thread = threading.Thread(target=base_fee_thread, args=(user_token,))
-    thread.start()
-
-
-def save_cred(storage_dir):
-    if storage_dir:
-        with open(f'{storage_dir}/cred.json', 'w') as f:
-            json.dump({'authorized_jwt': authorized_jwt}, f)
-    else:
-        logger.info('No storage dir found. Not saving cred.json')
-
-
 def base_fee_thread(user_token):
     while True:
         sleep(NOWGATEWAY_BASE_FEE_SLEEP_INTERVAL)
         report(
-            user_token=user_token,
             quantity_basic=NOWGATEWAY_BASE_FEE_QUANTITY,
             quantity_pro=NOWGATEWAY_BASE_FEE_QUANTITY,
         )
+
+
+def start_base_fee_thread(user_token, impersonation_token):
+    # impersonation token is now our session token since it remains same per user over time
+    logger.info('Starting base fee thread')
+    global session_token
+    if not impersonation_token:
+        session_token = impersonation_token
+    init_payment_client(user_token)
+    thread = threading.Thread(target=base_fee_thread, args=(user_token,))
+    thread.start()
 
 
 def report_search_usage(user_token):
     logger.info('** Entered report_search_usage() **')
     init_payment_client(user_token)
     report(
-        user_token=user_token,
         quantity_basic=NOWGATEWAY_SEARCH_FEE_QUANTITY,
         quantity_pro=NOWGATEWAY_SEARCH_FEE_PRO_QUANTITY,
     )
@@ -67,7 +54,7 @@ def report_search_usage(user_token):
 
 def init_payment_client(user_token):
     global payment_client
-    global authorized_jwt
+    global session_token
     try:
         if payment_client is None:
             m2m_token = os.environ.get('M2M')
@@ -75,13 +62,15 @@ def init_payment_client(user_token):
                 raise ValueError('M2M not set in the environment')
             logger.info(f'M2M_TOKEN: {m2m_token[:10]}...{m2m_token[-10:]}')
             payment_client = PaymentClient(m2m_token=m2m_token)
-        if authorized_jwt is None:
-            logger.info('No authorized JWT found. Getting one...')
-            # Try with the new token provided. If not then use the old one
-            jwt = payment_client.get_authorized_jwt(
-                user_token=user_token or old_user_token
+        if session_token is None:
+            logger.info('No session token found. Getting one...')
+            # Can also get session token using the below method
+            impersonation_token = payment_client.get_authorized_jwt(
+                user_token=user_token
             )['data']
-            authorized_jwt = jwt  # store it as a global variable to avoid re-auth
+            session_token = (
+                impersonation_token  # store it as a global variable to avoid re-auth
+            )
     except Exception as e:
         import traceback
 
@@ -90,13 +79,13 @@ def init_payment_client(user_token):
         raise e
 
 
-def report(user_token, quantity_basic, quantity_pro):
-    logger.info('Time of report: {}'.format(current_time()))
+def report(quantity_basic, quantity_pro):
+    logger.info(
+        f'Session Token: {session_token} \n at the time of reporting: {current_time()}'
+    )
     app_id = 'search'
     product_id = 'free-plan'
     try:
-        logger.info(f'Charging user with token {user_token or old_user_token}')
-        logger.info(f'Authorized JWT: {authorized_jwt[:10]}...{authorized_jwt[-10:]}')
         summary = get_summary()
         logger.info(f'Credits before: {summary["credits"]}')
         if summary['internal_product_id'] == 'free-plan':
@@ -104,7 +93,7 @@ def report(user_token, quantity_basic, quantity_pro):
         else:
             quantity = quantity_pro
         if can_charge(summary):
-            payment_client.report_usage(authorized_jwt, app_id, product_id, quantity)  # type: ignore
+            payment_client.report_usage(session_token, app_id, product_id, quantity)  # type: ignore
             logger.info(f'**** `{round(quantity, 3)}` credits charged ****')
             summary = get_summary()
             logger.info(f'Credits after: {summary["credits"]}')
@@ -120,7 +109,7 @@ def report(user_token, quantity_basic, quantity_pro):
 
 
 def get_summary():
-    resp = payment_client.get_summary(token=authorized_jwt, app_id='search')  # type: ignore
+    resp = payment_client.get_summary(token=session_token, app_id='search')  # type: ignore
     has_payment_method = resp['data'].get('hasPaymentMethod', False)
     user_credits = resp['data'].get('credits', None)
     internal_product_id = resp['data'].get('internalProductId', None)

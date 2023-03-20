@@ -1,9 +1,11 @@
 import json
 import os
 import shutil
+import traceback
 from time import sleep
 from typing import Dict, List, Tuple
 
+import requests
 import streamlit.web.bootstrap
 from jina import Gateway
 from jina.enums import GatewayProtocolType
@@ -96,25 +98,9 @@ class NOWGateway(CompositeGateway):
             )
         kwargs['runtime_args']['port'][http_idx] = 8082
         super().__init__(**kwargs)
-        self.storage_dir = None
-        self.authorized_jwt = None
-
-        # Hacky method since `workspace` class variable is not available in Gateway
-        try:
-            self.storage_dir = [
-                folder
-                for folder in os.listdir('/data')
-                if folder.startswith('jnamespace-')
-            ]
-            if len(self.storage_dir) == 0:
-                self.logger.info('No storage directory found')
-            else:
-                self.logger.info(f'Found storage directory: {self.storage_dir}')
-                self.storage_dir = self.storage_dir[0]
-        except Exception as e:
-            self.logger.info(f'Error while getting storage directory: {e}')
 
         self._check_env_vars()
+        self.impersonation_token = None
 
         self.user_input = UserInput()
         for attr_name, prev_value in self.user_input.__dict__.items():
@@ -149,20 +135,26 @@ class NOWGateway(CompositeGateway):
         self.setup_nginx()
         self.nginx_was_shutdown = False
 
-        if self.storage_dir:
-            if os.path.isfile(f'{self.storage_dir}/cred.json'):
-                self.logger.info('Found cred.json file. Loading from it')
-                with open(f'{self.storage_dir}/cred.json', 'r') as f:
-                    cred_data = json.load(f)
-                    self.authorized_jwt = cred_data.get('authorized_jwt', None)
-            else:
-                self.logger.info('No cred.json file found to load from')
+        try:
+            resp = requests.post(
+                url='https://api.hubble.jina.ai/v2/rpc/user.m2m.impersonateUser',
+                json={'userId': self.user_input.user_id},
+                headers={'Authorization': f'Basic {os.environ.get("M2M", None)}'},
+            )
+            resp.raise_for_status()
+            self.impersonation_token = resp.json()['data']
+        except Exception as e:
+            # Do not raise error here, as this is not critical for the gateway to work
+            traceback.print_exc()
+            self.logger.info(f'Error while getting impersonation token: {e}')
 
         try:
             start_base_fee_thread(
-                self.user_input.jwt['token'], self.authorized_jwt, self.storage_dir
+                user_token=self.user_input.jwt['token'],
+                impersonation_token=self.impersonation_token,
             )
         except Exception as e:
+            traceback.print_exc()
             self.logger.error(f'Could not start base fee thread: {e}')
 
     def _check_env_vars(self):

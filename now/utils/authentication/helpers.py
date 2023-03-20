@@ -43,4 +43,5 @@ def get_info_hubble(user_input):
         )
     user_input.jwt = {'token': client.token}
     user_input.admin_name = response['data']['name']
+    user_input.user_id = response['data']['_id']
     return response['data'], client.token
