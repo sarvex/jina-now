@@ -53,7 +53,7 @@ jobs:
         env:
           WOLF_TOKEN: ${{ secrets.WOLF_TOKEN }}
           S3_SCHEMA_FOLDER_PATH: ${{ secrets.S3_SCHEMA_FOLDER_PATH }}
-          M2M_TOKEN: ${{ secrets.M2M_TOKEN }}
+          M2M: ${{ secrets.M2M }}
       - name: Check codecov file
         id: check_files
         uses: andstor/file-existence-action@v1

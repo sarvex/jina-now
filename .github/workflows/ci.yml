@@ -204,7 +204,7 @@ jobs:
         env:
           WOLF_TOKEN: ${{ secrets.WOLF_TOKEN }}
           S3_SCHEMA_FOLDER_PATH: ${{ secrets.S3_SCHEMA_FOLDER_PATH }}
-          M2M_TOKEN: ${{ secrets.M2M_TOKEN }}
+          M2M: ${{ secrets.M2M }}
 #      - name: Setup tmate session for debugging
 #        if: ${{ failure() || (github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled) }}
 #        uses: mxschmitt/action-tmate@v3

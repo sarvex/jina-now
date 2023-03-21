@@ -7,7 +7,7 @@ from argparse import Namespace
 from now import __version__
 from now import __version__ as version
 from now.constants import SURVEY_LINK
-from now.run_all_k8s import compare_flows, fetch_logs_now, start_now, stop_now
+from now.run_all_k8s import compare_flows, start_now, stop_now
 
 warnings.filterwarnings("ignore")
 
@@ -56,10 +56,6 @@ def cli(args=None):
         exit(0)
     if task == 'start':
         return start_now(**kwargs)
-    elif task == 'stop':
-        stop_now(**kwargs)
-    elif task == 'logs':
-        fetch_logs_now(**kwargs)
     elif task == 'compare':
         compare_flows(**kwargs)
     elif task == 'survey':
