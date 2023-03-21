@@ -55,9 +55,9 @@ def cli(args=None):
         print(__version__)
         exit(0)
     if task == 'start':
-        return run_all_k8s.start_now(**kwargs)
+        return start_now(**kwargs)
     elif task == 'compare':
-        run_all_k8s.compare_flows(**kwargs)
+        compare_flows(**kwargs)
 
 
 def parse_args(args):
