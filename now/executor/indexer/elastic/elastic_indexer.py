@@ -336,27 +336,14 @@ class NOWElasticIndexer(Executor):
             return DocumentArray()
 
     @secure_request(on='/count', level=SecurityLevel.USER)
-    def count(self, parameters: dict = {}, **kwargs):
-        """Count all indexed documents.
-
-        Note: this implementation is naive and does not
-        consider the default maximum documents in a page returned by `Elasticsearch`.
-        Should be addressed in future with `scroll`.
-
-        :param parameters: dictionary with limit and offset
-        - offset (int): number of documents to skip
-        - limit (int): number of retrieved documents
-        """
-        limit = int(parameters.get('limit', self.limit))
-        offset = int(parameters.get('offset', 0))
+    def count(self, **kwargs):
+        """Count all indexed documents."""
+        num_docs = 0
         try:
-            result = self.es.search(
-                index=self.index_name, size=limit, from_=offset, query={'match_all': {}}
-            )['hits']['hits']
+            num_docs = self.es.count(index=self.index_name)
         except Exception:
-            result = []
-            self.logger.info(traceback.format_exc())
-        return DocumentArray([Document(text='count', tags={'count': len(result)})])
+            self.logger.error(traceback.format_exc())
+        return DocumentArray([Document(text='count', tags={'count': num_docs})])
 
     @secure_request(on='/delete', level=SecurityLevel.USER)
     def delete(self, parameters: dict = {}, **kwargs):

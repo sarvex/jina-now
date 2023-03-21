@@ -69,7 +69,6 @@ def deploy_scenario(scenario):
 
     # some files are compromised in 'video+text' dataset
     request_body = get_default_request_body(secured=kwargs.secured)
-    request_body['limit'] = MAX_DOCS_FOR_BENCHMARKING
     count_response = requests.post(
         f"{response['host_http']}/api/v1/info/count",
         json=request_body,
