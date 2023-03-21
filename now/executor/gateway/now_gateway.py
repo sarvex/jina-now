@@ -5,7 +5,6 @@ import traceback
 from time import sleep
 from typing import Dict, List, Tuple
 
-import requests
 import streamlit.web.bootstrap
 from jina import Gateway
 from jina.enums import GatewayProtocolType
@@ -17,7 +16,10 @@ from streamlit.web.server import Server as StreamlitServer
 
 from now.constants import NOWGATEWAY_BFF_PORT
 from now.deployment.deployment import cmd
-from now.executor.gateway.hubble_report import start_base_fee_thread
+from now.executor.gateway.hubble_report import (
+    get_impersonation_token,
+    start_base_fee_thread,
+)
 from now.now_dataclasses import UserInput
 
 cur_dir = os.path.dirname(__file__)
@@ -99,9 +101,6 @@ class NOWGateway(CompositeGateway):
         kwargs['runtime_args']['port'][http_idx] = 8082
         super().__init__(**kwargs)
 
-        self._check_env_vars()
-        self.impersonation_token = None
-
         self.user_input = UserInput()
         for attr_name, prev_value in self.user_input.__dict__.items():
             setattr(
@@ -135,23 +134,16 @@ class NOWGateway(CompositeGateway):
         self.setup_nginx()
         self.nginx_was_shutdown = False
 
-        try:
-            resp = requests.post(
-                url='https://api.hubble.jina.ai/v2/rpc/user.m2m.impersonateUser',
-                json={'userId': self.user_input.user_id},
-                headers={'Authorization': f'Basic {os.environ.get("M2M", None)}'},
-            )
-            resp.raise_for_status()
-            self.impersonation_token = resp.json()['data']
-        except Exception as e:
-            # Do not raise error here, as this is not critical for the gateway to work
-            traceback.print_exc()
-            self.logger.info(f'Error while getting impersonation token: {e}')
+        self._check_env_vars()
+        self.impersonation_token = get_impersonation_token(
+            hubble_user_id=self.user_input.user_id
+        )
 
         try:
             start_base_fee_thread(
                 user_token=self.user_input.jwt['token'],
                 impersonation_token=self.impersonation_token,
+                hubble_user_id=self.user_input.user_id,
             )
         except Exception as e:
             traceback.print_exc()

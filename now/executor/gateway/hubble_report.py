@@ -2,8 +2,10 @@ import datetime
 import logging
 import os
 import threading
+import traceback
 from time import sleep
 
+import requests
 from hubble.payment.client import PaymentClient
 
 from now.constants import (
@@ -17,42 +19,84 @@ logger = logging.getLogger(__file__)
 logger.setLevel(os.environ.get('JINA_LOG_LEVEL', 'INFO'))
 payment_client = None
 session_token = None
+user_id = None  # Needed to get impersonation token (without expiry)
 
 
 def current_time():
     return datetime.datetime.utcnow().isoformat() + 'Z'
 
 
-def start_base_fee_thread(user_token, impersonation_token):
-    # impersonation token is now our session token since it remains same per user over time
+def start_base_fee_thread(user_token, impersonation_token, hubble_user_id):
+    # impersonation token can be session token since it remains same per user over time
+    # It can be also use to send usage report to hubble
     logger.info('Starting base fee thread')
-    global session_token
-    if not impersonation_token:
-        session_token = impersonation_token
-    init_payment_client(user_token)
-    thread = threading.Thread(target=base_fee_thread, args=(user_token,))
+    global session_token, user_id
+    # set either impersonation token (without expiry) or user token (with expiry) as session token
+    session_token = impersonation_token or user_token
+    user_id = hubble_user_id
+    thread = threading.Thread(target=base_fee_thread, args=(session_token,))
     thread.start()
 
 
-def base_fee_thread(user_token):
+def base_fee_thread(token):
     while True:
         sleep(NOWGATEWAY_BASE_FEE_SLEEP_INTERVAL)
+        init_payment_client(token)
         report(
             quantity_basic=NOWGATEWAY_BASE_FEE_QUANTITY,
             quantity_pro=NOWGATEWAY_BASE_FEE_QUANTITY,
         )
 
 
-def report_search_usage(user_token):
+def report_search_usage(token):
     logger.info('** Entered report_search_usage() **')
-    init_payment_client(user_token)
+    init_payment_client(token)
     report(
         quantity_basic=NOWGATEWAY_SEARCH_FEE_QUANTITY,
         quantity_pro=NOWGATEWAY_SEARCH_FEE_PRO_QUANTITY,
     )
 
 
-def init_payment_client(user_token):
+def is_soon_to_expire(token):
+    from hubble import Client
+
+    client = Client(token=token)
+    try:
+        token_details = client.get_raw_session().json()
+        expiry = token_details['data'].get('expireAt')
+        # Check if expiry is within 7 days then renew
+        if expiry:
+            expiry = datetime.datetime.strptime(expiry, '%Y-%m-%dT%H:%M:%S.%fZ')
+            expiring_soon = (
+                expiry - datetime.timedelta(days=7)
+            ) < datetime.datetime.utcnow()
+            logger.info(f'Is token: {token} expiring soon? {expiring_soon}')
+            return expiring_soon
+    except Exception as e:
+        logger.error(f'Error while getting user info with token {token} : {e}')
+        return True
+    return False
+
+
+def get_impersonation_token(hubble_user_id=None):
+    impersonation_token = None
+    try:
+        resp = requests.post(
+            url='https://api.hubble.jina.ai/v2/rpc/user.m2m.impersonateUser',
+            json={'userId': hubble_user_id or user_id},
+            headers={'Authorization': f'Basic {os.environ.get("M2M", None)}'},
+        )
+        resp.raise_for_status()
+        impersonation_token = resp.json()['data']
+    except Exception as e:
+        # Do not raise error here
+        traceback.print_exc()
+        logger.error(f'Error while getting impersonation token: {e}')
+
+    return impersonation_token
+
+
+def init_payment_client(token):
     global payment_client
     global session_token
     try:
@@ -62,13 +106,14 @@ def init_payment_client(user_token):
                 raise ValueError('M2M not set in the environment')
             logger.info(f'M2M_TOKEN: {m2m_token[:10]}...{m2m_token[-10:]}')
             payment_client = PaymentClient(m2m_token=m2m_token)
-        if session_token is None:
-            logger.info('No session token found. Getting one...')
-            # Can also get session token using the below method
-            impersonation_token = payment_client.get_authorized_jwt(
-                user_token=user_token
-            )['data']
-            session_token = impersonation_token  # to avoid re-authenticating
+        if session_token is None or is_soon_to_expire(session_token):
+            logger.info('No/Old session token found. Getting new one...')
+            if not token:
+                raise ValueError(
+                    'jwt not set in the request body. Can not get session token'
+                )
+            session_token = get_impersonation_token()  # to avoid re-authenticating
+            logger.info(f'New session token: {session_token}')
     except Exception as e:
         import traceback
 

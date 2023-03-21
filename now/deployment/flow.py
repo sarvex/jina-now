@@ -20,8 +20,10 @@ def deploy_flow(
             flow_file = os.path.join(tmpdir, 'flow.yml')
             write_flow_file(flow_yaml, flow_file)
             flow_yaml = flow_file
-
-        flow = deploy_wolf(path=flow_yaml)
+        try:
+            flow = deploy_wolf(path=flow_yaml)
+        except Exception as e:
+            raise e  # raise failure message for JAC
         host = flow.endpoints['gateway (grpc)']
         client = Client(host=host)
 
