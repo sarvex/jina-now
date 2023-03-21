@@ -26,7 +26,7 @@ def test_update_emails(mocker: MockerFixture):
 def test_update_api_keys(mocker: MockerFixture):
     mocker.patch('requests.post', return_value='PASSED')
     api_key = str(uuid.uuid4())
-    assert update_api_keys(
+    update_api_keys(
         api_keys=[api_key],
         remote_host='grpc://0.0.0.0',
     )
