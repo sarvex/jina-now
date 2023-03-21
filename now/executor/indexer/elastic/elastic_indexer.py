@@ -340,7 +340,7 @@ class NOWElasticIndexer(Executor):
         """Count all indexed documents."""
         num_docs = 0
         try:
-            num_docs = self.es.count(index=self.index_name)
+            num_docs = self.es.count(index=self.index_name)['count']
         except Exception:
             self.logger.error(traceback.format_exc())
         return DocumentArray([Document(text='count', tags={'count': num_docs})])
