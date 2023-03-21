@@ -63,5 +63,8 @@ def test_end_to_end(
 
     count_url = f'{BASE_URL}/info/count'
     request_body['limit'] = len(docs)
+    request_body['create_temp_link'] = True
     count_response = requests.post(count_url, json=request_body)
+    print(' ================== RES =================')
+    print(count_response)
     assert count_response.json()['number_of_docs'] == len(docs)
