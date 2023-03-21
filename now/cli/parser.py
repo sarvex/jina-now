@@ -37,25 +37,6 @@ def set_base_parser():
     return parser
 
 
-def set_help_parser(parser=None):
-    """Set the parser for the jina help lookup
-    :param parser: an optional existing parser to build upon
-    :return: the parser
-    """
-
-    if not parser:
-        from jina.parsers.base import set_base_parser
-
-        parser = set_base_parser()
-
-    parser.add_argument(
-        'query',
-        type=str,
-        help='Lookup the usage & mention of the argument name in Jina NOW',
-    )
-    return parser
-
-
 def set_start_parser(sp):
     """Add the arguments for the jina now to the parser
     :param parser: an optional existing parser to build upon

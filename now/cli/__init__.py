@@ -6,7 +6,7 @@ from argparse import Namespace
 
 from now import __version__
 from now import __version__ as version
-from now.constants import SURVEY_LINK
+from now import run_all_k8s
 from now.run_all_k8s import compare_flows, start_now, stop_now
 
 warnings.filterwarnings("ignore")
@@ -18,7 +18,7 @@ os.environ['JCLOUD_LOGLEVEL'] = 'ERROR'
 # fix
 
 
-def _get_run_args():
+def get_run_args():
     from now.cli.parser import get_main_parser
 
     parser = get_main_parser()
@@ -55,20 +55,14 @@ def cli(args=None):
         print(__version__)
         exit(0)
     if task == 'start':
-        return start_now(**kwargs)
+        return run_all_k8s.start_now(**kwargs)
     elif task == 'compare':
-        compare_flows(**kwargs)
-    elif task == 'survey':
-        import webbrowser
-
-        webbrowser.open(SURVEY_LINK, new=0, autoraise=True)
-    else:
-        raise Exception(f'unknown task, {task}')
+        run_all_k8s.compare_flows(**kwargs)
 
 
 def parse_args(args):
     if not args:
-        args = _get_run_args()
+        args = get_run_args()
     args = vars(args)  # Make it a dict from Namespace
     return args
 

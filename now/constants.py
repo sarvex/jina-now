@@ -59,7 +59,6 @@ DEFAULT_FLOW_NAME = 'nowapi'
 PREFETCH_NR = 10
 NUM_FOLDERS_THRESHOLD = 100
 MAX_DOCS_FOR_TESTING = 50
-SURVEY_LINK = 'https://10sw1tcpld4.typeform.com/to/VTAyYRpR?utm_source=cli'
 
 TAG_INDEXER_DOC_HAS_TEXT = '_indexer_doc_has_text'
 ACCESS_PATHS = '@cc'
