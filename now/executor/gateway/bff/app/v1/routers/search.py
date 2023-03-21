@@ -198,7 +198,7 @@ async def search(
     logger.info(
         f'Reporting search usage after successful search request for user {data.jwt.get("token")}'
     )
-    report_search_usage(user_token=data.jwt.get('token'))
+    report_search_usage(token=data.jwt.get('token'))
     return matches
 
 

@@ -40,7 +40,7 @@ def test_report_usage(
             'status_code': 200,
         },
     )
-    init_payment_client(user_token='dummy_user_token')
+    init_payment_client(token='dummy_user_token')
     report(quantity_basic=2, quantity_pro=1)
     # assert that the mocked_report_usage was called once with the expected arguments
 
