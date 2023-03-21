@@ -70,7 +70,7 @@ def test_compare_flows_no_flow_ids(mocker: MockerFixture):
     mock_post = mocker.patch('requests.post')
     _mock_post_response(mock_post)
     kwargs = {
-        'path_score_calculation': './test_correct_response.json',
+        'path_score_calculation': 'tests/unit/test_correct_response.json',
         'dataset': 'test',
         'limit': 1,
         'disable_to_datauri': True,
@@ -88,7 +88,7 @@ def test_compare_flows_no_flow_ids(mocker: MockerFixture):
 
     compare_flows(**kwargs)
     with pytest.raises(Exception):
-        kwargs['path_score_calculation'] = './test_wrong_response.json'
+        kwargs['path_score_calculation'] = 'tests/unit/test_wrong_response.json'
         compare_flows(**kwargs)
 
 
