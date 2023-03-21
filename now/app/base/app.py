@@ -12,7 +12,7 @@ from now.executor.name_to_id_map import name_to_id_map
 from now.now_dataclasses import DialogOptions, UserInput
 
 JINA_LOG_LEVEL = os.environ.get("JINA_LOG_LEVEL", "DEBUG")
-GATEWAY_LOG_LEVEL = os.environ.get("INDEXER_LOG_LEVEL", JINA_LOG_LEVEL)
+GATEWAY_LOG_LEVEL = os.environ.get("GATEWAY_LOG_LEVEL", JINA_LOG_LEVEL)
 
 
 class JinaNOWApp:
