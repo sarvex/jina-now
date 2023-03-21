@@ -1,5 +1,6 @@
 import pytest
-from docarray import dataclass
+from docarray import Document, DocumentArray, dataclass
+from docarray.typing import Text
 from pytest_mock import MockerFixture
 
 from now.run_all_k8s import compare_flows, get_docarray, get_flow_status, stop_now
@@ -7,7 +8,7 @@ from now.run_all_k8s import compare_flows, get_docarray, get_flow_status, stop_n
 
 @dataclass
 class MMStructure:
-    is_multimodal: bool
+    description: Text
 
 
 def test_flow_status(mocker: MockerFixture):
@@ -22,9 +23,8 @@ def test_flow_status(mocker: MockerFixture):
     _, flow_id, _ = get_flow_status(action='delete', cluster='test')
 
 
-def test_compare_flows_with_flow_ids(mocker: MockerFixture):
-    mock_post = mocker.patch('requests.post')
-    mock_post.return_value.json.return_value = [
+def _mock_post_response(mock_post):
+    mock_json_response = [
         {
             "id": "1",
             "scores": {"cosine": {"value": 2}},
@@ -48,7 +48,14 @@ def test_compare_flows_with_flow_ids(mocker: MockerFixture):
             },
         },
     ]
-    mock_post.return_value.status_code = 200
+    mock_status = 200
+    mock_post.return_value.json.return_value = mock_json_response
+    mock_post.return_value.status_code = mock_status
+
+
+def test_compare_flows_with_flow_ids(mocker: MockerFixture):
+    mock_post = mocker.patch('requests.post')
+    _mock_post_response(mock_post)
     kwargs = {
         'flow_ids': '1,2',
         'dataset': 'team-now/pop-lyrics',
@@ -60,8 +67,10 @@ def test_compare_flows_with_flow_ids(mocker: MockerFixture):
 
 
 def test_compare_flows_no_flow_ids(mocker: MockerFixture):
+    mock_post = mocker.patch('requests.post')
+    _mock_post_response(mock_post)
     kwargs = {
-        'path_score_calculation': 'tests/unit/test_correct_response.json',
+        'path_score_calculation': './test_correct_response.json',
         'dataset': 'test',
         'limit': 1,
         'disable_to_datauri': True,
@@ -74,12 +83,12 @@ def test_compare_flows_no_flow_ids(mocker: MockerFixture):
     )
     mocker.patch(
         'now.run_all_k8s.get_docarray',
-        return_value=[MMStructure(is_multimodal=True)],
+        return_value=DocumentArray([Document(MMStructure(description="test"))]),
     )
 
     compare_flows(**kwargs)
     with pytest.raises(Exception):
-        kwargs['path_score_calculation'] = 'tests/unit/test_wrong_response.json'
+        kwargs['path_score_calculation'] = './test_wrong_response.json'
         compare_flows(**kwargs)
 
 
