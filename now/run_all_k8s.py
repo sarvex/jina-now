@@ -9,7 +9,8 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Column, Table
 
-from now import compare, run_backend
+from now import run_backend
+from now.compare.compare_flows import compare_flows_for_queries
 from now.constants import DEMO_NS, FLOW_STATUS
 from now.deployment import deployment
 from now.dialog import configure_user_input, maybe_prompt_user
@@ -62,7 +63,10 @@ def get_docarray(dataset):
         print(f'Loading queries from {dataset}')
         return DocumentArray.load_binary(dataset)
     print(f'Pulling queries from {dataset}')
-    return DocumentArray.pull(name=dataset, show_progress=True)
+    da = DocumentArray.pull(name=dataset, show_progress=True)
+    if 'NOW_CI_RUN' in os.environ:
+        da = da[:5]
+    return da
 
 
 def compare_flows(**kwargs):
@@ -165,7 +169,7 @@ def compare_flows(**kwargs):
     )
     results_per_table = int(results_per_table) if results_per_table else 20
 
-    compare.compare_flows.compare_flows_for_queries(
+    compare_flows_for_queries(
         da=da,
         flow_ids_http_score_calculation=flow_ids_http_score_calculation,
         limit=limit,

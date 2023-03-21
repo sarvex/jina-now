@@ -23,17 +23,35 @@ def test_flow_status(mocker: MockerFixture):
 
 
 def test_compare_flows_with_flow_ids(mocker: MockerFixture):
-    mocker.patch(
-        'now.compare.compare_flows.compare_flows_for_queries',
-        return_value='PASS',
-    )
-    mocker.patch(
-        'now.run_all_k8s.get_docarray',
-        return_value=[MMStructure(is_multimodal=True)],
-    )
+    mock_post = mocker.patch('requests.post')
+    mock_post.return_value.json.return_value = [
+        {
+            "id": "1",
+            "scores": {"cosine": {"value": 2}},
+            "tags": {
+                "title": "Test1",
+            },
+            "fields": {
+                "text_0": {"uri": None, "text": "Test1", "blob": None},
+                "video_0": {"uri": "https://example.com", "text": None, "blob": None},
+            },
+        },
+        {
+            "id": "2",
+            "scores": {"cosine": {"value": 2}},
+            "tags": {
+                "title": "Test2",
+            },
+            "fields": {
+                "video_0": {"uri": "https://example.com", "text": None, "blob": None},
+                "text_0": {"uri": None, "text": "Test2", "blob": None},
+            },
+        },
+    ]
+    mock_post.return_value.status_code = 200
     kwargs = {
         'flow_ids': '1,2',
-        'dataset': 'test',
+        'dataset': 'team-now/pop-lyrics',
         'limit': 1,
         'disable_to_datauri': True,
         'results_per_table': 20,
