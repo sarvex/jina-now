@@ -33,7 +33,6 @@ def secure_request(level: int, on: str = None):
             )
 
             cls_instance = args[0]
-            cls_instance.logger.info(f"responding to endpoint")
             if 'args' in kwargs:
                 cls_instance.logger.debug(f"args: {kwargs['args']}")
 
