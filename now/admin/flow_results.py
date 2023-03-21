@@ -21,5 +21,10 @@ def call():
     return result[0].matches[:, 'uri']
 
 
-for uri in call():
-    print(uri)
+def main():
+    for uri in call():
+        print(uri)
+
+
+if __name__ == '__main__':
+    main()

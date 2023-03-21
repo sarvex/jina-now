@@ -26,28 +26,34 @@ def call():
 
 
 # measure latency
-start = time()
-for i in range(10):
-    call()
-print(f'Latency : {(time() - start) / 10}s')
+def measure_latency():
+    start = time()
+    for i in range(10):
+        call()
+    print(f'Latency : {(time() - start) / 10}s')
 
 
 # measure QPS
-num_queries = 100
-worker = 5
-with ProcessPoolExecutor(max_workers=worker) as executor:
-    # QPS test
-    start = time()
-    futures = []
-    latencies = []
+def measure_qps(num_queries=100, worker=5):
+    with ProcessPoolExecutor(max_workers=worker) as executor:
+        # QPS test
+        start = time()
+        futures = []
+        latencies = []
 
-    for i in range(num_queries):
-        future = executor.submit(call)
-        futures.append(future)
-    for future in futures:
-        latencies.append(future.result())
-    print(f'QPS: {num_queries / (time() - start)}s')
+        for i in range(num_queries):
+            future = executor.submit(call)
+            futures.append(future)
+        for future in futures:
+            latencies.append(future.result())
+        print(f'QPS: {num_queries / (time() - start)}s')
 
-latencies = sorted(latencies)
-for p in [0, 50, 75, 85, 90, 95, 99, 99.9]:
-    print(f"P{p}: {latencies[int(len(latencies) * p / 100)]}")
+    latencies = sorted(latencies)
+    if latencies:
+        for p in [0, 50, 75, 85, 90, 95, 99, 99.9]:
+            print(f"P{p}: {latencies[int(len(latencies) * p / 100)]}")
+
+
+if __name__ == '__main__':
+    measure_latency()
+    measure_qps()
