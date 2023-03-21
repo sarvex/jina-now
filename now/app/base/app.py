@@ -202,9 +202,10 @@ class JinaNOWApp:
         docs: DocumentArray,
     ) -> DocumentArray:
         """Loads and preprocesses every document such that it is ready for indexing."""
+        preprocessed_docs = []
         for doc in docs:
-            for chunk in doc.chunks:
-                try:
+            try:
+                for chunk in doc.chunks:
                     if chunk.modality == 'text':
                         preprocess_text(chunk)
                     elif chunk.modality == 'image':
@@ -213,12 +214,14 @@ class JinaNOWApp:
                         preprocess_video(chunk)
                     else:
                         raise ValueError(f'Unsupported modality {chunk.modality}')
-                except Exception as e:
-                    chunk.summary()
-                    if chunk.uri:
-                        print(f'Failed to preprocess URI: {chunk.uri}')
-                    print(e)
-        return docs
+                preprocessed_docs.append(doc)
+            except Exception as e:
+                doc.summary()
+                chunk.summary()
+                if chunk.uri:
+                    print(f'Failed to preprocess URI: {chunk.uri}')
+                print(e)
+        return DocumentArray(preprocessed_docs)
 
     def is_demo_available(self, user_input) -> bool:
         raise NotImplementedError()
