@@ -7,8 +7,8 @@ from now.run_all_k8s import compare_flows, get_docarray, get_flow_status, stop_n
 
 
 @dataclass
-class MMDoc:
-    description: Text
+class MMDocarray:
+    description: Text = ''
 
 
 def test_flow_status(mocker: MockerFixture):
@@ -30,7 +30,7 @@ def test_compare_flows_with_flow_ids(mocker: MockerFixture):
     )
     mocker.patch(
         'now.run_all_k8s.get_docarray',
-        return_value=DocumentArray([Document(MMDoc(description="test"))]),
+        return_value=DocumentArray([Document(MMDocarray(description="test"))]),
     )
     kwargs = {
         'flow_ids': '1,2',
@@ -57,7 +57,7 @@ def test_compare_flows_no_flow_ids(mocker: MockerFixture):
     )
     mocker.patch(
         'now.run_all_k8s.get_docarray',
-        return_value=DocumentArray([Document(MMDoc(description="test"))]),
+        return_value=DocumentArray([Document(MMDocarray(description="test"))]),
     )
 
     compare_flows(**kwargs)
