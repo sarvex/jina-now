@@ -173,7 +173,8 @@ def write_to_slack(scenario, payload_slack, file_paths):
     try:
         response = client.chat_postMessage(
             channel=channel_name,
-            text=f"*Hello* 👋 below are the benchmarking results for indexing and querying in {scenario} scenario:\n"
+            text=f"*Hello* 👋 below are the benchmarking results for indexing and querying in {scenario} scenario with"
+            f"{MAX_DOCS_FOR_BENCHMARKING} documents:\n"
             f"{json.dumps(payload_slack, indent=4)}\n"
             f"Please find the attached plot and CSVs for more details.",
         )
