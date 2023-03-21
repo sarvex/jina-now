@@ -11,8 +11,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-#        scenario: [ "image", "video+text" ]
-        scenario: [ "image" ]
+        scenario: [ "image", "video+text" ]
     env:
       SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
     steps:
@@ -37,10 +36,8 @@ jobs:
         env:
           WOLF_TOKEN: ${{ secrets.WOLF_TOKEN }}
       - name: Run script
-#        working-directory: ./scripts
         run: |
           python scripts/benchmark_index_search_latency.py --scenario ${{ matrix.scenario }}
-#          python benchmark_index_search_latency.py --scenario ${{ matrix.scenario }}
         env:
           NOW_BENCHMARK_RUN: 'True'
           CUSTOM_S3_BUCKET: ${{ secrets.CUSTOM_S3_BUCKET }}
