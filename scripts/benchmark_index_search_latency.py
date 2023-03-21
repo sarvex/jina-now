@@ -66,9 +66,11 @@ def deploy_scenario(scenario):
     kwargs = Namespace(**{**kwargs_general, **kwargs_scenario})
     response = cli(args=kwargs)
 
-    assert_indexed_all_docs(
-        response['host_http'], kwargs=kwargs, limit=MAX_DOCS_FOR_BENCHMARKING
-    )
+    # some files are compromised in 'video+text' dataset
+    if scenario != 'video+text':
+        assert_indexed_all_docs(
+            response['host_http'], kwargs=kwargs, limit=MAX_DOCS_FOR_BENCHMARKING
+        )
 
     # benchmark index time
     total_time_indexing = TIME_PROFILER_RESULTS['now.run_backend:call_flow']
