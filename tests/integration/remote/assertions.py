@@ -125,11 +125,11 @@ def assert_search(search_url, request_body, expected_status_code=200):
         assert len(response.json()) == 9
 
 
-def assert_suggest(suggest_url, request_body):
+def assert_suggest(additional_url, request_body):
     old_request_text = request_body.pop('query')
     request_body['text'] = old_request_text[0]['value']
     response = requests.post(
-        suggest_url,
+        f'{additional_url}/suggestions',
         json=request_body,
     )
     assert (
@@ -143,7 +143,7 @@ def assert_suggest(suggest_url, request_body):
     )
 
 
-def assert_info_endpoints(info_url, request_body):
+def assert_info_endpoints(additional_url, request_body):
     info_uris = [
         'filters',
         'count',
@@ -151,7 +151,7 @@ def assert_info_endpoints(info_url, request_body):
     ]
     for uri in info_uris:
         response = requests.post(
-            info_url + uri,
+            additional_url + '/' + uri,
             json=request_body,
         )
         assert (
