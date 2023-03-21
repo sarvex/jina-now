@@ -142,16 +142,10 @@ async def search(
         scores = {}
         for score_name, named_score in doc.scores.items():
             scores[score_name] = named_score.to_dict()
-        # since multimodal doc is not supported, we take the first chunk
-        if doc.chunks:
-            field_names_and_chunks = [
-                [field_name, get_chunk_by_field_name(doc, field_name)]
-                for field_name in doc._metadata['multi_modal_schema'].keys()
-            ]
-        else:
-            # TODO remove else path. It is only used to support the inmemory
-            #  indexer since that one is operating on chunks while elastic responds with root documents
-            field_names_and_chunks = [['result_field', doc]]
+        field_names_and_chunks = [
+            [field_name, get_chunk_by_field_name(doc, field_name)]
+            for field_name in doc._metadata['multi_modal_schema'].keys()
+        ]
         results = {}
         for field_name, chunk in field_names_and_chunks:
             if chunk.blob:
