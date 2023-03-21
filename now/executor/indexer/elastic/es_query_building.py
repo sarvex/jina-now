@@ -186,41 +186,9 @@ def get_default_query(
 
     # add filter
     if filter:
-        es_search_filters = process_filter(filter)
-        es_search_filters = clean_filters_if_in_query(
-            doc, score_calculation, es_search_filters
-        )
-        query['bool']['filter'] = es_search_filters
+        query['bool']['filter'] = process_filter(filter)
 
     return query
-
-
-def clean_filters_if_in_query(
-    doc: Document, score_calculation: List[Tuple], es_search_filters: Dict
-) -> Dict:
-    """Clean filters if they are already in the query. This is needed because we want to avoid that the same filter is
-    applied twice."""
-    es_search_filters_cleaned = []
-    for es_search_filter in es_search_filters:
-        if 'match' in es_search_filter:
-            filter_field = list(es_search_filter['match'].keys())[0]
-            filter_value = es_search_filter['match'][filter_field]
-            # need to clean "tags." and ".NOW_ELASTIC_POST_FIX_FILTERS_TEXT_SEARCH" from filter_field
-            filter_field = '.'.join(filter_field.split('.')[1:])
-            filter_field = filter_field[
-                : -(len(NOW_ELASTIC_POST_FIX_FILTERS_TEXT_SEARCH) + 1)
-            ]
-            # drop any filter which is already in the query
-            if not any(
-                filter_field == index_field
-                and filter_value == get_chunk_by_field_name(doc, query_field).text
-                for (query_field, index_field, matching_method, _) in score_calculation
-                if matching_method == 'bm25'
-            ):
-                es_search_filters_cleaned.append(es_search_filter)
-        else:
-            es_search_filters_cleaned.append(es_search_filter)
-    return es_search_filters_cleaned
 
 
 def get_pinned_query(doc: Document, query_to_curated_ids: Dict[str, list] = {}) -> Dict:

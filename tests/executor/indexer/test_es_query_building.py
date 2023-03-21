@@ -31,7 +31,7 @@ def test_generate_score_calculation(es_inputs):
     assert score_calculation == default_score_calculation
 
 
-def test_build_es_queries(es_inputs):
+def test_build_es_queries_default(es_inputs):
     """
     This test tests the build_es_queries function es_query_building.
     It should return a list of ES queries, with cosine comparisons between
@@ -60,6 +60,79 @@ def test_build_es_queries(es_inputs):
                         {'match_all': {}},
                         {'multi_match': {'query': 'cat', 'fields': ['title^10']}},
                     ]
+                }
+            },
+            'script': {
+                'source': "1.0 + _score / (_score + 10.0) + 1.0*cosineSimilarity(params.query_query_text_clip, 'title-clip.embedding') + 1.0*cosineSimilarity(params.query_query_text_clip, 'gif-clip.embedding')",
+                'params': {
+                    'query_query_text_clip': query_docs_map['clip'][
+                        0
+                    ].query_text.embedding,
+                },
+            },
+        }
+    }
+
+
+def test_build_es_queries_filters(es_inputs):
+    (
+        index_docs_map,
+        query_docs_map,
+        document_mappings,
+        default_score_calculation,
+        _,
+    ) = es_inputs
+    aggregate_embeddings(query_docs_map)
+
+    # test adding categorical filters
+    filters = {'tags__color': ['red', 'blue']}
+    _, es_query = build_es_queries(
+        docs_map=query_docs_map,
+        get_score_breakdown=False,
+        score_calculation=default_score_calculation,
+        filter=filters,
+    )[0]
+    assert es_query == {
+        'script_score': {
+            'query': {
+                'bool': {
+                    'should': [
+                        {'multi_match': {'query': 'cat', 'fields': ['title^10']}},
+                    ],
+                    'filter': [
+                        {'terms': {'tags.color': ['red', 'blue']}},
+                    ],
+                }
+            },
+            'script': {
+                'source': "1.0 + _score / (_score + 10.0) + 1.0*cosineSimilarity(params.query_query_text_clip, 'title-clip.embedding') + 1.0*cosineSimilarity(params.query_query_text_clip, 'gif-clip.embedding')",
+                'params': {
+                    'query_query_text_clip': query_docs_map['clip'][
+                        0
+                    ].query_text.embedding,
+                },
+            },
+        }
+    }
+
+    # test adding text filters
+    filters = {'tags__color': ['red', 'blue']}
+    _, es_query = build_es_queries(
+        docs_map=query_docs_map,
+        get_score_breakdown=False,
+        score_calculation=default_score_calculation,
+        filter=filters,
+    )[0]
+    assert es_query == {
+        'script_score': {
+            'query': {
+                'bool': {
+                    'should': [
+                        {'multi_match': {'query': 'cat', 'fields': ['title^10']}},
+                    ],
+                    'filter': [
+                        {'terms': {'tags.color': ['red', 'blue']}},
+                    ],
                 }
             },
             'script': {
