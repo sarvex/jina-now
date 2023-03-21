@@ -4,6 +4,8 @@ on:
   schedule:
     - cron: '0 9 * * 3'
 
+  pull_request:
+
 jobs:
   run_script:
     runs-on: ubuntu-latest

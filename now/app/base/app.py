@@ -208,6 +208,8 @@ class JinaNOWApp:
                         raise ValueError(f'Unsupported modality {chunk.modality}')
                 except Exception as e:
                     chunk.summary()
+                    if chunk.uri:
+                        print(f'Failed to preprocess URI: {chunk.uri}')
                     print(e)
         return docs
 

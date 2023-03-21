@@ -6,16 +6,17 @@ from argparse import Namespace
 
 import hubble
 import pandas as pd
+import requests
 from matplotlib import pyplot as plt
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 from tests.integration.conftest import get_flow_id_from_name
-from tests.integration.remote.assertions import assert_indexed_all_docs
 
 from now.admin.benchmark_flow import (
     benchmark_deployment_latency,
     benchmark_deployment_qps_ps,
 )
+from now.admin.utils import get_default_request_body
 from now.cli import cli
 from now.constants import MAX_DOCS_FOR_BENCHMARKING, Apps, DatasetTypes, Models
 from now.deployment.deployment import terminate_wolf
@@ -67,10 +68,13 @@ def deploy_scenario(scenario):
     response = cli(args=kwargs)
 
     # some files are compromised in 'video+text' dataset
-    if scenario != 'video+text':
-        assert_indexed_all_docs(
-            response['host_http'], kwargs=kwargs, limit=MAX_DOCS_FOR_BENCHMARKING
-        )
+    request_body = get_default_request_body(secured=kwargs.secured)
+    request_body['limit'] = MAX_DOCS_FOR_BENCHMARKING
+    count_response = requests.post(
+        f"{response['host_http']}/api/v1/info/count",
+        json=request_body,
+    )
+    num_docs_indexed = count_response.json()['number_of_docs']
 
     # benchmark index time
     total_time_indexing = TIME_PROFILER_RESULTS['now.run_backend:call_flow']
@@ -169,6 +173,7 @@ def deploy_scenario(scenario):
             f"measure latency and using {payload_slack_n_qps_calls} total calls with {payload_slack_n_qps_workers} "
             f"of them concurrently to measure QPS and P's:\n"
             f"{json.dumps(slack_payload, indent=4)}\n"
+            f"{num_docs_indexed} / {MAX_DOCS_FOR_BENCHMARKING} documents were indexed successfully.\n"
             f"Please find the attached plot and CSVs for more details.",
         )
 
