@@ -129,7 +129,7 @@ def assert_suggest(additional_url, request_body):
     old_request_text = request_body.pop('query')
     request_body['text'] = old_request_text[0]['value']
     response = requests.post(
-        f'{additional_url}/suggestions',
+        f'{additional_url}/suggestion',
         json=request_body,
     )
     assert (
