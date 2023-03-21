@@ -50,7 +50,7 @@ def compare_flows_for_queries(
     latencies_dict = defaultdict(list)
     cnt_tables = 0
     with tqdm(total=len(da)) as pbar:
-        with ProcessPoolExecutor(max_workers=min(len(da), 1)) as ex:
+        with ProcessPoolExecutor(max_workers=min(len(da), 20)) as ex:
             futures = [
                 ex.submit(
                     _evaluate_query,

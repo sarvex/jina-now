@@ -184,12 +184,6 @@ class SearchApp(JinaNOWApp):
             },
             'no_reduce': True,
             'jcloud': {
-                'autoscale': {
-                    'min': 0,
-                    'max': 1,
-                    'metric': 'concurrency',
-                    'target': 1,
-                },
                 'labels': {
                     'app': 'indexer',
                     'provision-index': provision_index,

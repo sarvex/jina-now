@@ -250,7 +250,6 @@ def create_docs_from_subdirectories(
 
     docs = []
     folder_files = defaultdict(list)
-
     for file in file_paths:
         path_to_last_folder = (
             '/'.join(file.split('/')[:-1])

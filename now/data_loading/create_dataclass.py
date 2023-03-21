@@ -68,7 +68,6 @@ def create_dataclass(
         field_names_to_dataclass_fields,
         dataset_type,
     )
-
     mm_doc = type("MMDoc", (object,), all_class_attributes)
     setattr(mm_doc, '__annotations__', all_annotations)
     mm_doc = dataclass(mm_doc)
