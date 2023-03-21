@@ -79,7 +79,8 @@ TEST_FILTERS = [
     ({'tags__price': {'gt': 10}}, None),
     ({'tags__price': {'lte': 10}, 'tags__color': ['green', 'blue']}, None),
     ({'tags__color': ['red', 'blue']}, None),
-    ({'tags__color': 'red'}, ValueError),
+    ({'tags__color': 'red'}, None),
+    ({'tags__color': 5}, ValueError),
 ]
 
 
