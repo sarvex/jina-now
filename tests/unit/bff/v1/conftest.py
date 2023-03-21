@@ -5,6 +5,8 @@ import pytest
 from docarray import Document, DocumentArray, dataclass
 from docarray.typing import Text
 
+from now.executor.gateway.bff.app.settings import init_user_input_in_bff
+
 
 @pytest.fixture
 def base64_image_string(resources_folder_path: str) -> str:
@@ -45,10 +47,11 @@ def sample_search_response_text() -> DocumentArray:
 
 
 @pytest.fixture
-def remove_global_bff_user_input_if_existing():
+def reset_user_input_in_bff():
     user_input_in_bff_path = os.path.join(os.path.expanduser('~'), 'user_input.json')
     if os.path.exists(user_input_in_bff_path):
         print(f'Removing {user_input_in_bff_path}...')
         os.remove(user_input_in_bff_path)
     else:
         print(f'{user_input_in_bff_path} does not exist, skipping...')
+    init_user_input_in_bff()
