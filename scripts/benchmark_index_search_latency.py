@@ -158,32 +158,27 @@ def deploy_scenario(scenario):
     fig.savefig(f'plots_{flow_name}.png', dpi=300, bbox_inches='tight')
 
     # write to slack
-    write_to_slack(
-        scenario,
-        slack_payload,
-        [f'latency_{flow_name}.csv', f'qps_{flow_name}.csv', f'plots_{flow_name}.png'],
-    )
-
-    # delete flow
-    terminate_wolf(get_flow_id_from_name(flow_name))
-
-
-def write_to_slack(scenario, payload_slack, file_paths):
     client = WebClient(token=os.getenv('SLACK_API_TOKEN'))
     channel_name = "#notifications-search-performance"
 
     try:
         response = client.chat_postMessage(
             channel=channel_name,
-            text=f"*Hello* 👋 below are the benchmarking results for indexing and querying in {scenario} scenario with"
-            f"{MAX_DOCS_FOR_BENCHMARKING} documents:\n"
-            f"{json.dumps(payload_slack, indent=4)}\n"
+            text=f"*Hello* 👋 below are the benchmarking results for indexing and querying when indexing "
+            f"{MAX_DOCS_FOR_BENCHMARKING} {scenario} documents when using {payload_slack_n_latency_calls} calls to "
+            f"measure latency and using {payload_slack_n_qps_calls} total calls with {payload_slack_n_qps_workers} "
+            f"of them concurrently to measure QPS and P's:\n"
+            f"{json.dumps(slack_payload, indent=4)}\n"
             f"Please find the attached plot and CSVs for more details.",
         )
 
         # Get the timestamp of the original message
         original_message_ts = response["ts"]
-        for file_path in file_paths:
+        for file_path in [
+            f'latency_{flow_name}.csv',
+            f'qps_{flow_name}.csv',
+            f'plots_{flow_name}.png',
+        ]:
             client.files_upload(
                 channels=channel_name,
                 file=file_path,
@@ -195,6 +190,9 @@ def write_to_slack(scenario, payload_slack, file_paths):
 
         traceback.print_exc()
         print(f"Error posting message: {e}")
+
+    # delete flow
+    terminate_wolf(get_flow_id_from_name(flow_name))
 
 
 if __name__ == '__main__':
