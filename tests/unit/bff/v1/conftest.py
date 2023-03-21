@@ -1,5 +1,6 @@
 import base64
 import os
+import shutil
 
 import pytest
 from docarray import Document, DocumentArray, dataclass
@@ -49,9 +50,15 @@ def sample_search_response_text() -> DocumentArray:
 @pytest.fixture
 def reset_user_input_in_bff():
     user_input_in_bff_path = os.path.join(os.path.expanduser('~'), 'user_input.json')
+    moved_user_input_in_bff_path = False
     if os.path.exists(user_input_in_bff_path):
-        print(f'Removing {user_input_in_bff_path}...')
-        os.remove(user_input_in_bff_path)
+        print(f'Moving {user_input_in_bff_path}...')
+        shutil.move(user_input_in_bff_path, f'{user_input_in_bff_path}.bak')
     else:
         print(f'{user_input_in_bff_path} does not exist, skipping...')
     init_user_input_in_bff()
+    yield
+    if moved_user_input_in_bff_path:
+        print(f'Moving UserInput in BFF back')
+        shutil.move(f'{user_input_in_bff_path}.bak', user_input_in_bff_path)
+        init_user_input_in_bff()
