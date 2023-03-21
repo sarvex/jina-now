@@ -76,10 +76,10 @@ def test_field_names_to_dataclass_fields_response(
 
 
 def test_encoder_to_dataclass_fields_mods_response(
-    remove_global_bff_user_input_if_existing,
     client_with_mocked_jina_client: Callable[[DocumentArray], requests.Session],
     sample_search_response_text: DocumentArray,
     base64_image_string: str,
+    remove_global_bff_user_input_if_existing,
 ):
     response = client_with_mocked_jina_client(sample_search_response_text).post(
         '/api/v1/info/encoder_to_dataclass_fields_mods',
