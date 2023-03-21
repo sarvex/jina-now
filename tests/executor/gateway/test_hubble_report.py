@@ -26,6 +26,10 @@ def test_report_usage(
     mocker.patch.object(
         PaymentClient, 'get_authorized_jwt', return_value={'data': 'dummy_token'}
     )
+    mocker.patch(
+        'now.executor.gateway.hubble_report.get_impersonation_token',
+        return_value='dummy_token',
+    )
     mocked_report_usage = mocker.patch.object(PaymentClient, 'report_usage')
     mocker.patch.object(
         PaymentClient,
@@ -40,7 +44,7 @@ def test_report_usage(
             'status_code': 200,
         },
     )
-    init_payment_client(token='dummy_user_token')
+    init_payment_client(token='dummy_token')
     report(quantity_basic=2, quantity_pro=1)
     # assert that the mocked_report_usage was called once with the expected arguments
 
