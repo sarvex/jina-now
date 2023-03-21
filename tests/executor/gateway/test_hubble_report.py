@@ -30,6 +30,10 @@ def test_report_usage(
         'now.executor.gateway.hubble_report.get_impersonation_token',
         return_value='dummy_token',
     )
+    mocker.patch(
+        'now.executor.gateway.now_gateway.get_impersonation_token',
+        return_value='dummy_token',
+    )
     mocked_report_usage = mocker.patch.object(PaymentClient, 'report_usage')
     mocker.patch.object(
         PaymentClient,
