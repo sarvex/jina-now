@@ -39,6 +39,7 @@ def test_text_search_fails_with_empty_query(client: requests.Session):
 
 
 def test_image_search_calls_flow(
+    remove_global_bff_user_input_if_existing,
     mock_hubble_billing_report,
     client_with_mocked_jina_client: Callable[[DocumentArray], requests.Session],
     sample_search_response_text: DocumentArray,
