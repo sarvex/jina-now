@@ -39,8 +39,7 @@ profanity.load_censor_words()
 
 def convert_file_to_document(query):
     data = query.read()
-    doc = Document(blob=data)
-    return doc
+    return Document(blob=data)
 
 
 @st.cache(allow_output_mutation=True, suppress_st_warning=True)
@@ -56,9 +55,7 @@ def _get_all_cookies() -> dict:
     session_info = Server.get_current()._get_session_info(session_id)
     header = session_info.ws.request.headers
     cookie_strings = [header_str for k, header_str in header.get_all() if k == 'Cookie']
-    parsed_cookies = {k: v for c in cookie_strings for k, v in parse_cookie(c).items()}
-
-    return parsed_cookies
+    return {k: v for c in cookie_strings for k, v in parse_cookie(c).items()}
 
 
 def get_cookie_value(cookie_name):
@@ -78,10 +75,9 @@ def nav_to(url):
 
 
 def toggle_score_breakdown():
-    if st.checkbox('Show score breakdown', key='scores'):
-        st.session_state.show_score_breakdown = True
-    else:
-        st.session_state.show_score_breakdown = False
+    st.session_state.show_score_breakdown = bool(
+        st.checkbox('Show score breakdown', key='scores')
+    )
 
 
 def deploy_streamlit(user_input: UserInput):
@@ -106,7 +102,7 @@ def deploy_streamlit(user_input: UserInput):
         svg = f.read()
     with mid:
         b64 = base64.b64encode(svg.encode('utf-8')).decode('utf-8')
-        html = r'<img width="250" src="data:image/svg+xml;base64,%s"/>' % b64
+        html = f'<img width="250" src="data:image/svg+xml;base64,{b64}"/>'
         st.write(html, unsafe_allow_html=True)
 
     if redirect_to and st.session_state.login:
@@ -128,7 +124,7 @@ def deploy_streamlit(user_input: UserInput):
         toggle_score_breakdown()
         # make query
         search_mapping_list = list(st.session_state['query'].values())
-        if any([d['value'] for d in search_mapping_list]):
+        if any(d['value'] for d in search_mapping_list):
             st.session_state.matches = multimodal_search(
                 query_field_values_modalities=list(
                     filter(lambda x: x['value'], search_mapping_list)
@@ -154,14 +150,14 @@ def render_input_boxes():
 def process_filters():
     processed_filters = {}
     for field, values in st.session_state.filter_selection.items():
-        if isinstance(values, list) or isinstance(values, tuple):
+        if isinstance(values, (list, tuple)):
             if len(values) == 0:
                 continue
             if isinstance(values[0], str):
                 processed_filters[field] = values
-            elif isinstance(values[0], int) or isinstance(values[0], float):
+            elif isinstance(values[0], (int, float)):
                 processed_filters[field] = {'gte': values[0], 'lte': values[1]}
-        elif isinstance(values, int) or isinstance(values, float):
+        elif isinstance(values, (int, float)):
             processed_filters[field] = {'gte': values}
         else:
             raise ValueError(f'Filter values {values} are not supported.')
@@ -180,7 +176,7 @@ def render_filters(params):
     if st.session_state.tags:
         st.sidebar.title('Filters')
         for tag, values in st.session_state.tags.items():
-            if isinstance(values[0], int) or isinstance(values[0], float):
+            if isinstance(values[0], (int, float)):
                 min_val = min(values)
                 max_val = max(values)
                 st.session_state.filter_selection[tag] = st.sidebar.slider(
@@ -238,60 +234,56 @@ def get_cookie(cookie_name):
 
 
 def render_auth_components(params):
-    if params.secured:
-        st_cookie = get_cookie(SSO_COOKIE)
-        resp_jwt = requests.get(
-            url=f'https://api.hubble.jina.ai/v2/rpc/user.identity.whoami',
-            cookies={SSO_COOKIE: st_cookie},
-        ).json()
-        redirect_to = None
-        if resp_jwt['code'] != 200:
-            redirect_to = _do_login(params)
-        else:
-            st.session_state.login = False
-            if not st.session_state.jwt_val:
-                new_resp = {'token': st_cookie, 'user': resp_jwt['data']}
-                st.session_state.jwt_val = new_resp
-            if not st.session_state.avatar_val:
-                st.session_state.avatar_val = resp_jwt['data']['avatarUrl']
-            if not st.session_state.token_val:
-                st.session_state.token_val = st_cookie
-
-        if not st.session_state.jwt_val:
-            redirect_to = _do_login(params)
-        _, logout, avatar = st.columns([0.7, 0.12, 0.12])
-        if not st.session_state.login:
-            with avatar:
-                if st.session_state.avatar_val:
-                    st.image(st.session_state.avatar_val, width=30)
-            with logout:
-                st.button('Logout', on_click=_do_logout)
-        return redirect_to
-    else:
+    if not params.secured:
         return None
+    st_cookie = get_cookie(SSO_COOKIE)
+    resp_jwt = requests.get(
+        url='https://api.hubble.jina.ai/v2/rpc/user.identity.whoami',
+        cookies={SSO_COOKIE: st_cookie},
+    ).json()
+    redirect_to = None
+    if resp_jwt['code'] != 200:
+        redirect_to = _do_login(params)
+    else:
+        st.session_state.login = False
+        if not st.session_state.jwt_val:
+            new_resp = {'token': st_cookie, 'user': resp_jwt['data']}
+            st.session_state.jwt_val = new_resp
+        if not st.session_state.avatar_val:
+            st.session_state.avatar_val = resp_jwt['data']['avatarUrl']
+        if not st.session_state.token_val:
+            st.session_state.token_val = st_cookie
+
+    if not st.session_state.jwt_val:
+        redirect_to = _do_login(params)
+    _, logout, avatar = st.columns([0.7, 0.12, 0.12])
+    if not st.session_state.login:
+        with avatar:
+            if st.session_state.avatar_val:
+                st.image(st.session_state.avatar_val, width=30)
+        with logout:
+            st.button('Logout', on_click=_do_logout)
+    return redirect_to
 
 
 def _do_login(params):
     flow_namespace = os.environ.get("K8S_NAMESPACE_NAME", "").split('-')[1]
-    jcloud_name = create_jcloud_name(params.flow_name) + '-' + flow_namespace
+    jcloud_name = f'{create_jcloud_name(params.flow_name)}-{flow_namespace}'
     host = f'https://{jcloud_name}-http.wolf.jina.ai/playground'
     redirect_uri = f'{host}/playground/'
     if 'top_k' in st.experimental_get_query_params():
         redirect_uri += f'?top_k={params.top_k}'
 
     redirect_uri = quote(redirect_uri)
-    redirect_uri = (
-        'https://api.hubble.jina.ai/v2/oidc/authorize?prompt=login&target_link_uri='
-        + redirect_uri
-    )
     st.session_state.login = True
+    redirect_uri = f'https://api.hubble.jina.ai/v2/oidc/authorize?prompt=login&target_link_uri={redirect_uri}'
     return redirect_uri
 
 
 def _do_logout():
     headers = {
         'Content-Type': 'application/json; charset=utf-8',
-        'Authorization': 'Token ' + st.session_state.token_val,
+        'Authorization': f'Token {st.session_state.token_val}',
     }
     st.session_state.jwt_val = None
     st.session_state.avatar_val = None
@@ -386,25 +378,27 @@ def customize_score_calculation():
         q_field = query_field.selectbox(
             label='query field',
             options=list(st.session_state.query.keys()),
-            key='query_field_' + str(i),
+            key=f'query_field_{str(i)}',
         )
         id_field = index_field.selectbox(
             label='index field',
-            options=list(st.session_state.field_names_to_dataclass_fields.keys()),
-            key='index_field_' + str(i),
+            options=list(
+                st.session_state.field_names_to_dataclass_fields.keys()
+            ),
+            key=f'index_field_{str(i)}',
         )
         encoder_options = get_encoder_options(q_field, id_field)
         enc = encoder.selectbox(
             label='matching method',
             options=encoder_options + ['bm25'],
-            key='encoder_' + str(i),
+            key=f'encoder_{str(i)}',
         )
         w = weight.slider(
             label='weight',
             min_value=0.0,
             max_value=1.0,
             value=0.5,
-            key='weight_' + str(i),
+            key=f'weight_{str(i)}',
         )
         st.session_state.score_calculation[f'{i}'] = [q_field, id_field, enc, w]
 
@@ -426,23 +420,21 @@ def render_mm_query(query, modality):
                 ),
                 'modality': 'text',
             }
-        else:
-            uploaded_image = st.file_uploader(
-                label=f'image #{field_number}', key=key, on_change=clear_match
-            )
-            if uploaded_image:
-                doc = convert_file_to_document(uploaded_image)
-                query_doc = doc
-                if query_doc.blob == b'':
-                    if query_doc.tensor is not None:
-                        query_doc.convert_image_tensor_to_blob()
-                    elif (query_doc.uri is not None) and query_doc.uri != '':
-                        query_doc.load_uri_to_blob(timeout=10)
-                query[key] = {
-                    'name': key,
-                    'value': base64.b64encode(query_doc.blob).decode('utf-8'),
-                    'modality': 'image',
-                }
+        elif uploaded_image := st.file_uploader(
+            label=f'image #{field_number}', key=key, on_change=clear_match
+        ):
+            doc = convert_file_to_document(uploaded_image)
+            query_doc = doc
+            if query_doc.blob == b'':
+                if query_doc.tensor is not None:
+                    query_doc.convert_image_tensor_to_blob()
+                elif (query_doc.uri is not None) and query_doc.uri != '':
+                    query_doc.load_uri_to_blob(timeout=10)
+            query[key] = {
+                'name': key,
+                'value': base64.b64encode(query_doc.blob).decode('utf-8'),
+                'modality': 'image',
+            }
     if st.session_state[f"len_{modality}_choices"] >= 1:
         st.button(
             label=f'\-',  # noqa: W605
@@ -476,17 +468,11 @@ def render_matches():
 
         if len(list_matches) > 1:
             # disable prev button or not
-            if st.session_state.page_number <= 0:
-                st.session_state.disable_prev = True
-            else:
-                st.session_state.disable_prev = False
-
+            st.session_state.disable_prev = st.session_state.page_number <= 0
             # disable next button or not
-            if st.session_state.page_number + 1 >= len(list_matches):
-                st.session_state.disable_next = True
-            else:
-                st.session_state.disable_next = False
-
+            st.session_state.disable_next = (
+                st.session_state.page_number + 1 >= len(list_matches)
+            )
             prev, _, page, _, next = st.columns([1, 4, 2, 4, 1])
             page.write(f'Page {st.session_state.page_number + 1}/{len(list_matches)}')
             next.button(
@@ -544,7 +530,7 @@ def render_score_breakdown(match, c):
     display_scores_string = "<br>".join(
         sorted(
             [
-                name + ": " + str(round(score.value, 3))
+                f"{name}: {str(round(score.value, 3))}"
                 for name, score in match.scores.items()
             ]
         )
@@ -750,7 +736,7 @@ def setup_session_state():
         st.session_state["len_image_choices"] = 1
 
     if "query" not in st.session_state:
-        st.session_state['query'] = dict()
+        st.session_state['query'] = {}
 
     if 'len_score_calculation' not in st.session_state:
         st.session_state['len_score_calculation'] = 0

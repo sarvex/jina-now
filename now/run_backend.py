@@ -75,9 +75,9 @@ def trigger_scheduler(user_input, host):
     if user_input.secured and not user_input.api_key:
         user_input.api_key = uuid.uuid4().hex
         # Also call the bff to update the api key
-        for i in range(
+        for _ in range(
             100
-        ):  # increase the probability that all replicas get the new key
+        ):
             update_api_keys(user_input.api_key, host)
 
     scheduler_params = {
@@ -97,7 +97,7 @@ def trigger_scheduler(user_input, host):
         )
     except Exception as e:
         print(f'Error while scheduling indexing: {e}')
-        print(f'Indexing will not be scheduled. Please contact Jina AI support.')
+        print('Indexing will not be scheduled. Please contact Jina AI support.')
 
 
 def index_docs(user_input, dataset, client, print_callback, **kwargs):
@@ -149,11 +149,7 @@ def call_flow(
 
 
 def estimate_request_size(index, max_request_size):
-    if len(index) > 30:
-        sample = random.sample(index, 30)
-    else:
-        sample = index
-    size = sum([sys.getsizeof(x.content) for x in sample]) / 30
+    sample = random.sample(index, 30) if len(index) > 30 else index
+    size = sum(sys.getsizeof(x.content) for x in sample) / 30
     max_size = 50_000
-    request_size = max(min(max_request_size, int(max_size / size)), 1)
-    return request_size
+    return max(min(max_request_size, int(max_size / size)), 1)

@@ -19,10 +19,7 @@ def if_mousedown(handler):
 
 # TODO probably better to use base.Condition
 def setup_validator(kwargs):
-    # this is an internal helper not meant for public consumption!
-    # note this works on a dictionary
-    validate_prompt = kwargs.pop('validate', None)
-    if validate_prompt:
+    if validate_prompt := kwargs.pop('validate', None):
         if issubclass(validate_prompt, Validator):
             kwargs['validator'] = validate_prompt()
         elif callable(validate_prompt):

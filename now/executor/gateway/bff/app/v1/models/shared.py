@@ -49,8 +49,7 @@ class ModalityModel(BaseModel):
     @property
     def content(self):
         for field_name in self.__fields_set__:
-            field_value = getattr(self, field_name)
-            if field_value:
+            if field_value := getattr(self, field_name):
                 return field_value
 
     def to_html(self, title: str = '', disable_to_datauri: bool = False) -> str:
@@ -94,9 +93,7 @@ class ModalityModel(BaseModel):
             html = f'<img src="{src}" alt="missing" style="max-width: 100px; max-height: 100px;">'
 
             if title:
-                html = (
-                    '<figure>' + html + f'<figcaption>({title})</figcaption></figure>'
-                )
+                html = f'<figure>{html}' + f'<figcaption>({title})</figcaption></figure>'
         elif self.text is not None:
             html = f'<p><b>{self.text}</b>' + (f' ({title})' if title else '') + '</p>'
         return html

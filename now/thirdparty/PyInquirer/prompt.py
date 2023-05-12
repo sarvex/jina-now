@@ -37,9 +37,8 @@ def prompt(questions, answers=None, **kwargs):
             if choices is not None and callable(choices):
                 question['choices'] = choices(answers)
 
-            _kwargs = {}
-            _kwargs.update(kwargs)
-            _kwargs.update(question)
+            _kwargs = dict(kwargs)
+            _kwargs |= question
             type_ = _kwargs.pop('type')
             name = _kwargs.pop('name')
             message = _kwargs.pop('message')
@@ -47,25 +46,21 @@ def prompt(questions, answers=None, **kwargs):
             filter = _kwargs.pop('filter', None)
 
             if when:
-                # at least a little sanity check!
-                if callable(question['when']):
-                    try:
-                        if not question['when'](answers):
-                            continue
-                    except Exception as e:
-                        raise ValueError(
-                            'Problem in \'when\' check of %s question: %s' % (name, e)
-                        )
-                else:
+                if not callable(question['when']):
                     raise ValueError(
                         '\'when\' needs to be function that ' 'accepts a dict argument'
                     )
-            if filter:
-                # at least a little sanity check!
-                if not callable(question['filter']):
+                try:
+                    if not question['when'](answers):
+                        continue
+                except Exception as e:
                     raise ValueError(
-                        '\'filter\' needs to be function that ' 'accepts an argument'
+                        'Problem in \'when\' check of %s question: %s' % (name, e)
                     )
+            if filter and not callable(question['filter']):
+                raise ValueError(
+                    '\'filter\' needs to be function that ' 'accepts an argument'
+                )
 
             if callable(question.get('default')):
                 _kwargs['default'] = question['default'](answers)

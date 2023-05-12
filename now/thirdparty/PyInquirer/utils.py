@@ -14,10 +14,9 @@ def colorize_json(data):
 
         if isinstance(data, bytes):
             data = data.decode('UTF-8')
-        colorful_json = highlight(
+        return highlight(
             data, lexers.JsonLexer(), formatters.TerminalFormatter()
         )
-        return colorful_json
     except ModuleNotFoundError:
         return data
 

@@ -141,7 +141,7 @@ async def search(
 
     query_filter = {}
     for key, value in data.filters.items():
-        key = 'tags__' + key
+        key = f'tags__{key}'
         query_filter[key] = value
 
     docs = await jina_client_post(
@@ -158,10 +158,10 @@ async def search(
     )
     matches = []
     for doc in docs[0].matches:
-        # todo: use multimodal doc in the future!
-        scores = {}
-        for score_name, named_score in doc.scores.items():
-            scores[score_name] = named_score.to_dict()
+        scores = {
+            score_name: named_score.to_dict()
+            for score_name, named_score in doc.scores.items()
+        }
         # since multimodal doc is not supported, we take the first chunk
         if doc.chunks:
             field_names_and_chunks = [

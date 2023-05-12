@@ -21,8 +21,7 @@ class HubbleAuthPatch:
 
     @staticmethod
     def get_auth_token() -> str:
-        token = os.environ.get('WOLF_TOKEN')
-        if token:
+        if token := os.environ.get('WOLF_TOKEN'):
             log.debug(f'Found token in env *** (Len={len(token)})')
             return token
         else:
@@ -47,8 +46,7 @@ def cleanup(random_flow_name):
     yield
     print('start cleanup')
     try:
-        flow_id = get_flow_id_from_name(random_flow_name)
-        if flow_id:
+        if flow_id := get_flow_id_from_name(random_flow_name):
             terminate_wolf(flow_id)
         else:
             print(f'there is no flow with name {random_flow_name} to be terminated')
@@ -94,7 +92,11 @@ def get_flow_id_from_name(flow_name):
     """
     loop = get_or_create_eventloop()
     jflows = loop.run_until_complete(CloudFlow().list_all())['flows']
-    for flow in jflows:
-        if flow['status']['phase'] != 'Deleted' and flow_name in flow['id']:
-            return flow['id']
-    return None
+    return next(
+        (
+            flow['id']
+            for flow in jflows
+            if flow['status']['phase'] != 'Deleted' and flow_name in flow['id']
+        ),
+        None,
+    )

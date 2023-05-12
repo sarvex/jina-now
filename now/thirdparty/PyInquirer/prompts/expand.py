@@ -30,17 +30,16 @@ class InquirerControl(FormattedTextControl):
 
         self.choices = []  # list (key, name, value)
 
-        for i, c in enumerate(choices):
+        for c in choices:
             if isinstance(c, Separator):
                 self.choices.append(c)
+            elif isinstance(c, str):
+                self.choices.append((key, c, c))
             else:
-                if isinstance(c, str):
-                    self.choices.append((key, c, c))
-                else:
-                    key = c.get('key')
-                    name = c.get('name')
-                    value = c.get('value', name)
-                    self.choices.append([key, name, value])
+                key = c.get('key')
+                name = c.get('name')
+                value = c.get('value', name)
+                self.choices.append([key, name, value])
 
         # append the help choice
         self.choices.append(['h', 'Help, list all options', '__HELP__'])
@@ -75,18 +74,16 @@ class InquirerControl(FormattedTextControl):
                     self.pointer_index = index
 
                 if pointed_at:
-                    tokens.append(
-                        ('class:selected', '  %s) %s' % (key, line), select_item)
-                    )
+                    tokens.append(('class:selected', f'  {key}) {line}', select_item))
                 else:
-                    tokens.append(('', '  %s) %s' % (key, line), select_item))
+                    tokens.append(('', f'  {key}) {line}', select_item))
                 tokens.append(('', '\n'))
 
         if self._help_active:
             # prepare the select choices
             for i, choice in enumerate(self.choices):
                 _append(i, choice)
-            tokens.append(('', '  Answer: %s' % self.choices[self.pointer_index][0]))
+            tokens.append(('', f'  Answer: {self.choices[self.pointer_index][0]}'))
         else:
             tokens.append(('class:pointer', '>> '))
             tokens.append(('', self.choices[self.pointer_index][1]))
@@ -100,7 +97,7 @@ class InquirerControl(FormattedTextControl):
 def question(message, **kwargs):
     # TODO extract common parts for list, checkbox, rawlist, expand
     # TODO up, down navigation
-    if not 'choices' in kwargs:
+    if 'choices' not in kwargs:
         raise PromptParameterException('choices')
 
     choices = kwargs.pop('choices', None)
@@ -115,7 +112,7 @@ def question(message, **kwargs):
         tokens = []
 
         tokens.append(('class:questionmark', qmark))
-        tokens.append(('class:question', ' %s ' % message))
+        tokens.append(('class:question', f' {message} '))
         if not ic.answered:
             tokens.append(
                 (
@@ -127,7 +124,7 @@ def question(message, **kwargs):
                 )
             )
         else:
-            tokens.append(('class:answer', ' %s' % ic.get_selected_value()))
+            tokens.append(('class:answer', f' {ic.get_selected_value()}'))
         return tokens
 
     # @Condition

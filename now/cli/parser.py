@@ -92,7 +92,7 @@ def set_start_parser(sp):
                 'help': option.description,
                 'type': str,
             }
-            _kwargs.update(option.argparse_kwargs)
+            _kwargs |= option.argparse_kwargs
             parser.add_argument(
                 f'--{option.name}',
                 **_kwargs,

@@ -51,14 +51,12 @@ class ElasticsearchExtractor:
         )
 
     def extract(self) -> DocumentArray:
-        return DocumentArray([doc for doc in self._extract_documents()])
+        return DocumentArray(list(self._extract_documents()))
 
     def _extract_documents(self):
         try:
-            next_doc = self._get_next_document()
-            while next_doc:
+            while next_doc := self._get_next_document():
                 yield next_doc
-                next_doc = self._get_next_document()
         except StopIteration:
             self._es_connector.close()
             return
@@ -75,8 +73,8 @@ class ElasticsearchExtractor:
         """
         if len(self._document_cache) == 0:
             self._document_cache = next(self._query_result)
-            if len(self._document_cache) == 0:
-                return None
+        if len(self._document_cache) == 0:
+            return None
         return self._construct_document(self._document_cache.pop())
 
     def _construct_document(self, es_document: Dict) -> Document:

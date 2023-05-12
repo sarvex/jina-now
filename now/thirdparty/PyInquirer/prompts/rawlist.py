@@ -82,7 +82,7 @@ class InquirerControl(FormattedTextControl):
 
 def question(message, **kwargs):
     # TODO extract common parts for list, checkbox, rawlist, expand
-    if not 'choices' in kwargs:
+    if 'choices' not in kwargs:
         raise PromptParameterException('choices')
     # this does not implement default, use checked...
     # TODO
@@ -103,9 +103,9 @@ def question(message, **kwargs):
         tokens = []
 
         tokens.append(('class:questionmark', qmark))
-        tokens.append(('class:question', ' %s ' % message))
+        tokens.append(('class:question', f' {message} '))
         if ic.answered:
-            tokens.append(('class:answer', ' %s' % ic.get_selected_value()))
+            tokens.append(('class:answer', f' {ic.get_selected_value()}'))
         return tokens
 
     # assemble layout

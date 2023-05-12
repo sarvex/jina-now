@@ -59,7 +59,7 @@ class ExampleDataset:
                 f'the extension "{self._filepath.suffix}"'
             )
 
-        corpus = list()
+        corpus = []
         for line in f:
             json_obj = json.loads(line)
             corpus.append(json_obj)

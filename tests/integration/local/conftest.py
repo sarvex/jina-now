@@ -18,8 +18,7 @@ SEARCH_URL = f'{BASE_URL}/search-app/search'
 
 
 def get_request_body(secured):
-    request_body = get_default_request_body(secured=secured)
-    return request_body
+    return get_default_request_body(secured=secured)
 
 
 @pytest.fixture

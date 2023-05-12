@@ -39,16 +39,15 @@ def generate_score_calculation(
             chunk = get_chunk_by_field_name(first_doc, field_name)
             if chunk.chunks.embeddings is None and chunk.embedding is None:
                 continue
-            for document_field in document_fields:
-                score_calculation.append(
-                    [
-                        field_name,
-                        document_field,
-                        executor_name,
-                        1,
-                    ]
-                )
-
+            score_calculation.extend(
+                [
+                    field_name,
+                    document_field,
+                    executor_name,
+                    1,
+                ]
+                for document_field in document_fields
+            )
     return score_calculation
 
 
@@ -192,7 +191,7 @@ def get_pinned_query(doc: Document, query_to_curated_ids: Dict[str, list] = {}) 
     pinned_query = {}
     if getattr(doc, 'query_text', None):
         query_text = doc.query_text.text
-        if query_text in query_to_curated_ids.keys():
+        if query_text in query_to_curated_ids:
             pinned_query = {'pinned': {'ids': query_to_curated_ids[query_text]}}
     return pinned_query
 

@@ -66,7 +66,7 @@ def get_docarray(dataset):
 
 
 def compare_flows(**kwargs):
-    if not 'flow_ids' in kwargs:
+    if 'flow_ids' not in kwargs:
         path_score_calculation = maybe_prompt_user(
             [
                 {
@@ -175,15 +175,9 @@ def compare_flows(**kwargs):
 
 
 def get_flow_status(action, **kwargs):
-    choices = []
     # Add all remote Flows that exists with the namespace `nowapi`
     alive_flows = deployment.list_all_wolf()
-    for flow_details in alive_flows:
-        choices.append(flow_details['name'])
-    if len(choices) == 0:
-        cowsay.cow(f'nothing to {action}')
-        return
-    else:
+    if choices := [flow_details['name'] for flow_details in alive_flows]:
         questions = [
             {
                 'type': 'list',
@@ -194,11 +188,14 @@ def get_flow_status(action, **kwargs):
         ]
         cluster = maybe_prompt_user(questions, 'cluster', **kwargs)
 
+    else:
+        cowsay.cow(f'nothing to {action}')
+        return
     flow = [x for x in alive_flows if x['name'] == cluster][0]
     flow_id = flow['id']
     _result = deployment.status_wolf(flow_id)
     if _result is None:
-        print(f'❎ Flow not found in JCloud. Likely, it has been deleted already')
+        print('❎ Flow not found in JCloud. Likely, it has been deleted already')
     return _result, flow_id, cluster
 
 
@@ -221,8 +218,6 @@ def _generate_info_table(
     console = Console()
     console.print(
         Panel(
-            info_table,
-            title=f':tada: Search app is NOW ready!',
-            expand=False,
+            info_table, title=':tada: Search app is NOW ready!', expand=False
         )
     )

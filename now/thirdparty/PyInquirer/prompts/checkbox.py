@@ -39,7 +39,7 @@ class InquirerControl(FormattedTextControl):
     def _init_choices(self, choices):
         # helper to convert from question format to internal format
         self.choices = []  # list (name, value)
-        searching_first_choice = True if self.pointer_index == 0 else False
+        searching_first_choice = self.pointer_index == 0
         for i, c in enumerate(choices):
             if isinstance(c, Separator):
                 self.choices.append(c)
@@ -91,7 +91,7 @@ class InquirerControl(FormattedTextControl):
                     tokens.append(('', '  ', select_item))
                 # 'o ' - FISHEYE
                 if choice[2]:  # disabled
-                    tokens.append(('', '- %s (%s)' % (choice[0], choice[2])))
+                    tokens.append(('', f'- {choice[0]} ({choice[2]})'))
                 else:
                     if selected:
                         tokens.append(
@@ -110,7 +110,7 @@ class InquirerControl(FormattedTextControl):
                         tokens.append(('[SetCursorPosition]', ''))
 
                     if choice[3]:  # description
-                        tokens.append(('', "%s - %s" % (line_name, choice[3])))
+                        tokens.append(('', f"{line_name} - {choice[3]}"))
                     else:
                         tokens.append(('', line_name, select_item))
                 tokens.append(('', '\n'))
@@ -138,7 +138,7 @@ def question(message, **kwargs):
     # TODO add bottom-bar (Move up and down to reveal more choices)
     # TODO extract common parts for list, checkbox, rawlist, expand
     # TODO validate
-    if not 'choices' in kwargs:
+    if 'choices' not in kwargs:
         raise PromptParameterException('choices')
     # this does not implement default, use checked...
     if 'default' in kwargs:
@@ -154,13 +154,11 @@ def question(message, **kwargs):
     style = kwargs.pop('style', default_style)
 
     pointer_index = kwargs.pop('pointer_index', 0)
-    additional_parameters = dict()
-    additional_parameters.update({"pointer_sign": kwargs.pop('pointer_sign', '\u276f')})
-    additional_parameters.update(
-        {"selected_sign": kwargs.pop('selected_sign', '\u25cf')}
-    )
-    additional_parameters.update(
-        {"unselected_sign": kwargs.pop('unselected_sign', '\u25cb')}
+    additional_parameters = {}
+    additional_parameters["pointer_sign"] = kwargs.pop('pointer_sign', '\u276f')
+    additional_parameters["selected_sign"] = kwargs.pop('selected_sign', '\u25cf')
+    additional_parameters["unselected_sign"] = kwargs.pop(
+        'unselected_sign', '\u25cb'
     )
 
     ic = InquirerControl(choices, pointer_index, **additional_parameters)
@@ -170,13 +168,13 @@ def question(message, **kwargs):
         tokens = []
 
         tokens.append(('class:questionmark', qmark))
-        tokens.append(('class:question', ' %s ' % message))
+        tokens.append(('class:question', f' {message} '))
         if ic.answered:
             nbr_selected = len(ic.selected_options)
             if nbr_selected == 0:
                 tokens.append(('class:answer', ' done'))
             elif nbr_selected == 1:
-                tokens.append(('class:Answer', ' [%s]' % ic.selected_options[0]))
+                tokens.append(('class:Answer', f' [{ic.selected_options[0]}]'))
             else:
                 tokens.append(('class:answer', ' done (%d selections)' % nbr_selected))
         else:
@@ -188,7 +186,7 @@ def question(message, **kwargs):
                 )
             )
             if not ic.answered_correctly:
-                tokens.append((Token.Error, ' Error: %s' % ic.error_message))
+                tokens.append((Token.Error, f' Error: {ic.error_message}'))
         return tokens
 
     # assemble layout

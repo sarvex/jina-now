@@ -62,9 +62,7 @@ def field_dict_to_mm_doc(
                             f'File type {file_ending} is not supported. '
                             f'Please provide a valid file type.'
                         )
-                    file_path = os.path.join(
-                        tmp_dir, field_name_data_class + '.' + file_ending
-                    )
+                    file_path = os.path.join(tmp_dir, f'{field_name_data_class}.{file_ending}')
                     with open(file_path, 'wb') as f:
                         f.write(base64_decoded)
                     field_value = file_path

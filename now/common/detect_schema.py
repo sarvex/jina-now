@@ -85,7 +85,7 @@ def get_first_file_in_folder_structure_s3(bucket, folder_prefix):
             ].key
             i += 1
     except Exception as e:
-        raise Exception(f'Empty folder, data is missing.')
+        raise Exception('Empty folder, data is missing.')
     return first_file
 
 
@@ -160,7 +160,7 @@ def set_field_names_from_docarray(user_input: UserInput, **kwargs):
     }
 
     dataset_name = (
-        user_input.admin_name + '/' + user_input.dataset_name
+        f'{user_input.admin_name}/{user_input.dataset_name}'
         if '/' not in user_input.dataset_name
         else user_input.dataset_name,
     )
@@ -196,9 +196,9 @@ def _extract_field_names_single_folder(
     :param separator: separator used in the file paths
     :return: list of file endings
     """
-    file_endings = set(
-        ['.' + path.split(separator)[-1].split('.')[-1] for path in file_paths]
-    )
+    file_endings = {
+        '.' + path.split(separator)[-1].split('.')[-1] for path in file_paths
+    }
     return {file_ending: file_ending for file_ending in file_endings}
 
 
@@ -225,7 +225,7 @@ def _extract_field_names_sub_folders(
             for el, value in data.items():
                 fields_dict[el] = value
             flattened_dict = flatten_dict(data)
-            fields_dict.update(flattened_dict)
+            fields_dict |= flattened_dict
         else:
             file_name = path.split(separator)[-1]
             fields_dict[file_name] = file_name

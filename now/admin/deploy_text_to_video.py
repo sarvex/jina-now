@@ -21,8 +21,7 @@ def deploy():
         'user_emails': [],
     }
     kwargs = Namespace(**kwargs)
-    response = cli(args=kwargs)
-    return response
+    return cli(args=kwargs)
 
 
 if __name__ == '__main__':

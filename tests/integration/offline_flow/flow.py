@@ -50,10 +50,9 @@ class OfflineFlow:
         encoded_docs = self.encoder.encode(
             preprocessed_docs, parameters, *args, **kwargs
         )
-        indexer_docs = getattr(self.indexer, endpoint.replace('/', ''))(
+        return getattr(self.indexer, endpoint.replace('/', ''))(
             {'clip': encoded_docs}, parameters, *args, **kwargs
         )
-        return indexer_docs
 
 
 def get_client(offline_flow):

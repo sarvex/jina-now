@@ -18,12 +18,13 @@ class AWSProfile:
 def get_aws_profile():
     session = boto3.Session()
     credentials = session.get_credentials()
-    aws_profile = (
-        AWSProfile(credentials.access_key, credentials.secret_key, session.region_name)
+    return (
+        AWSProfile(
+            credentials.access_key, credentials.secret_key, session.region_name
+        )
         if credentials
         else AWSProfile(None, None, session.region_name)
     )
-    return aws_profile
 
 
 @hubble.login_required

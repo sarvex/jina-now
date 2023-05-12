@@ -66,6 +66,7 @@ async def test_docarray(
 
 @pytest.fixture
 def multi_modal_data(base64_image_string):
+
     @dataclass
     class Product:
         product_title: Text
@@ -82,5 +83,4 @@ def multi_modal_data(base64_image_string):
         product_image=tensor,
         product_description='this is a product',
     )
-    da = DocumentArray(Document(product))
-    return da
+    return DocumentArray(Document(product))

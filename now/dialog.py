@@ -76,12 +76,10 @@ def configure_option(
         option.choices = option.choices(user_input, **kwargs)
 
     while True:
-        val = prompt_value(
+        if val := prompt_value(
             **option.__dict__,
             **kwargs,
-        )
-
-        if val:
+        ):
             kwargs[option.name] = val
             if hasattr(user_input, option.name):
                 setattr(user_input, option.name, val)
@@ -105,19 +103,23 @@ def expand_options_from_parent(kwargs, option, user_input):
         if ":" in user_selection:
             option_name, option_values = user_selection.split(":")
             kwargs[f"{option_name}_model"] = []
-            if not option_name in user_input.index_field_candidates_to_modalities:
+            if (
+                option_name
+                not in user_input.index_field_candidates_to_modalities
+            ):
                 raise ValueError(
                     f"Error with --{option.name}: `{option_name}` is not an index field."
                 )
             for option_value in option_values.split("+"):
-                model_selection = [
+                if model_selection := [
                     model
                     for model in MODALITY_TO_MODELS[
-                        user_input.index_field_candidates_to_modalities[option_name]
+                        user_input.index_field_candidates_to_modalities[
+                            option_name
+                        ]
                     ]
                     if model["name"] == option_value
-                ]
-                if model_selection:
+                ]:
                     kwargs[f"{option_name}_model"].append(model_selection[0]["value"])
                 else:
                     model_choices = [
@@ -159,6 +161,5 @@ def maybe_prompt_user(questions, attribute, **kwargs):
     """
     if kwargs and attribute in kwargs:
         return kwargs[attribute]
-    else:
-        answer = prompt(questions)
-        return answer[attribute]
+    answer = prompt(questions)
+    return answer[attribute]

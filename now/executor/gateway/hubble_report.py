@@ -22,7 +22,7 @@ old_user_token = None
 
 
 def current_time():
-    return datetime.datetime.utcnow().isoformat() + 'Z'
+    return f'{datetime.datetime.utcnow().isoformat()}Z'
 
 
 def start_base_fee_thread(user_token, inf_token, storage_dir):
@@ -91,7 +91,7 @@ def init_payment_client(user_token):
 
 
 def report(user_token, quantity_basic, quantity_pro):
-    logger.info('Time of report: {}'.format(current_time()))
+    logger.info(f'Time of report: {current_time()}')
     app_id = 'search'
     product_id = 'free-plan'
     try:
@@ -109,7 +109,7 @@ def report(user_token, quantity_basic, quantity_pro):
             summary = get_summary()
             logger.info(f'Credits after: {summary["credits"]}')
         else:
-            logger.info(f'**** Could not charge. Check payment summary ****')
+            logger.info('**** Could not charge. Check payment summary ****')
         logger.info(f'Payment summary: {summary}')
     except Exception as e:
         import traceback

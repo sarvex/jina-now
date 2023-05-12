@@ -48,10 +48,7 @@ def local_da(da: DocumentArray, tmpdir: str) -> Tuple[str, DocumentArray]:
 
 
 def is_da_text_equal(da_a: DocumentArray, da_b: DocumentArray):
-    for a, b in zip(da_a, da_b):
-        if a.text != b.text:
-            return False
-    return True
+    return all(a.text == b.text for a, b in zip(da_a, da_b))
 
 
 def test_da_local_path(local_da: Tuple[str, DocumentArray]):
@@ -154,8 +151,7 @@ def test_from_subfolders_s3(get_aws_info):
         'title': str,
     }
 
-    all_modalities = {}
-    all_modalities.update(user_input.index_field_candidates_to_modalities)
+    all_modalities = {} | user_input.index_field_candidates_to_modalities
     update_dict_with_no_overwrite(
         all_modalities, user_input.filter_field_candidates_to_modalities
     )

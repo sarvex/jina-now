@@ -103,15 +103,13 @@ def build_app():
     info_app = get_app_instance()
     info_app.include_router(info.router, tags=['info'])
 
-    # Mount them - for other modalities just add an app instance
-    app = Starlette(
+    return Starlette(
         routes=[
             Mount(search_app_mount, search_app_app),
             Mount(admin_mount, admin_app),
             Mount(info_mount, info_app),
         ]
     )
-    return app
 
 
 application = build_app()

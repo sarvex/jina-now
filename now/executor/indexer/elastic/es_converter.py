@@ -169,7 +169,7 @@ def calculate_score_breakdown(
     if add_bm25:
         # calculate bm25 score
         vector_total = sum(
-            [v.value for k, v in retrieved_doc.scores.items() if k != 'total']
+            v.value for k, v in retrieved_doc.scores.items() if k != 'total'
         )
         bm25_normalized = retrieved_doc.scores['total'].value - vector_total - 1
         bm25_raw = bm25_normalized * 10

@@ -98,8 +98,9 @@ class NOWElasticIndexer(Executor):
             self.es.indices.put_mapping(index=self.index_name, body=self.es_mapping)
 
     def _check_env_vars(self):
-        while not all(
-            var in os.environ for var in ['ES_HOSTS', 'ES_INDEX_NAME', 'ES_API_KEY']
+        while any(
+            var not in os.environ
+            for var in ['ES_HOSTS', 'ES_INDEX_NAME', 'ES_API_KEY']
         ):
             timeout_counter = 0
             if timeout_counter < TIMEOUT:
@@ -147,7 +148,7 @@ class NOWElasticIndexer(Executor):
             for field in fields:
                 es_mapping['properties'][f'{field}-{encoder}'] = {
                     'properties': {
-                        f'embedding': {
+                        'embedding': {
                             'type': 'dense_vector',
                             'dims': str(embedding_size),
                             'similarity': self.metric,
@@ -427,8 +428,7 @@ class NOWElasticIndexer(Executor):
             }
         }
         """
-        search_filter = parameters.get('query_to_filter', None)
-        if search_filter:
+        if search_filter := parameters.get('query_to_filter', None):
             self.update_curated_ids(search_filter)
         else:
             raise ValueError('No filter provided for curating.')
@@ -486,9 +486,10 @@ class NOWElasticIndexer(Executor):
                 return
             result = self.es.search(index=self.index_name, body=aggs)
             aggregations = result['aggregations']
-            updated_tags = {}
-            for tag, agg in aggregations.items():
-                updated_tags[tag] = [bucket['key'] for bucket in agg['buckets']]
+            updated_tags = {
+                tag: [bucket['key'] for bucket in agg['buckets']]
+                for tag, agg in aggregations.items()
+            }
             self.doc_id_tags = updated_tags
         except Exception:
             self.logger.info(traceback.format_exc())

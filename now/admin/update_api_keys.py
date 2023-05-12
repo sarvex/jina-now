@@ -11,7 +11,7 @@ def update_api_keys(api_keys, remote_host):
     if not isinstance(api_keys, list):
         api_keys = [api_keys]
 
-    url = f"https://nowrun.jina.ai/api/v1"  # remote
+    url = "https://nowrun.jina.ai/api/v1"
     # url = f'http://localhost:8080/api/v1'  # for local testing
     request_body = get_default_request_body(secured=True)
     # request_body['host'] = f'grpc://0.0.0.0'  # for local testing
@@ -25,7 +25,7 @@ def update_api_keys(api_keys, remote_host):
 
 if __name__ == '__main__':
     api_key = str(uuid.uuid4())
-    for i in range(100):  # increase the probability that all replicas get the new key
+    for _ in range(100):
         update_api_keys(
             api_keys=[api_key],
             remote_host='grpc://0.0.0.0',

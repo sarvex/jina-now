@@ -84,8 +84,7 @@ def get_bucket(uri, aws_access_key_id, aws_secret_access_key, region_name):
         aws_secret_access_key=aws_secret_access_key,
         region_name=region_name,
     )
-    bucket = session.resource('s3').Bucket(uri.split('/')[2])
-    return bucket
+    return session.resource('s3').Bucket(uri.split('/')[2])
 
 
 def download_from_bucket(tmpdir, uri, bucket):

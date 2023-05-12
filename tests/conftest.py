@@ -371,9 +371,8 @@ def wait_until_cluster_is_up(es, hosts):
         try:
             if es.ping():
                 break
-            else:
-                retries += 1
-                time.sleep(SLEEP)
+            retries += 1
+            time.sleep(SLEEP)
         except Exception:
             print(
                 f'Elasticsearch is not running yet, are you connecting to the right hosts? {hosts}'

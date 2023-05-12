@@ -60,10 +60,7 @@ def test_empty():
 def test_initialize():
     words, counts = word_list()
 
-    new_words = {}
-    for word, count in zip(words, counts):
-        new_words[word] = {'count': count}
-
+    new_words = {word: {'count': count} for word, count in zip(words, counts)}
     executor = NOWAutoCompleteExecutor2(words=new_words)
     assert len(executor.words) == 10
     assert executor.words['loading']['count'] == '39131'

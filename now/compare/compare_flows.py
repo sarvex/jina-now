@@ -38,10 +38,7 @@ def compare_flows_for_queries(
     now = datetime.now()
     folder = str(
         os.path.abspath(
-            f'compare'
-            f'-{"-".join(set([cihs[0] for cihs in flow_ids_http_score_calculation]))}'
-            f'-limit_{limit}'
-            f'-{now.strftime("%Y%m%d")}-{now.strftime("%H%M")}'
+            f'compare-{"-".join({cihs[0] for cihs in flow_ids_http_score_calculation})}-limit_{limit}-{now.strftime("%Y%m%d")}-{now.strftime("%H%M")}'
         )
     )
     os.mkdir(folder)
@@ -74,7 +71,7 @@ def compare_flows_for_queries(
                     cnt_tables += 1
                     rows = []
     if rows:
-        df = pd.DataFrame(rows[cnt_tables : len(rows)])
+        df = pd.DataFrame(rows[cnt_tables:])
         df.to_html(
             os.path.join(
                 folder,

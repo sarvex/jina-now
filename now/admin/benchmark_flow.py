@@ -27,7 +27,7 @@ def call():
 
 # measure latency
 start = time()
-for i in range(10):
+for _ in range(10):
     call()
 print(f'Latency : {(time() - start) / 10}s')
 
@@ -39,13 +39,10 @@ with ProcessPoolExecutor(max_workers=worker) as executor:
     # QPS test
     start = time()
     futures = []
-    latencies = []
-
-    for i in range(num_queries):
+    for _ in range(num_queries):
         future = executor.submit(call)
         futures.append(future)
-    for future in futures:
-        latencies.append(future.result())
+    latencies = [future.result() for future in futures]
     print(f'QPS: {num_queries / (time() - start)}s')
 
 latencies = sorted(latencies)

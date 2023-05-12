@@ -106,7 +106,7 @@ class NOWGateway(CompositeGateway):
                 for folder in os.listdir('/data')
                 if folder.startswith('jnamespace-')
             ]
-            if len(self.storage_dir) == 0:
+            if not self.storage_dir:
                 self.logger.info('No storage directory found')
             else:
                 self.logger.info(f'Found storage directory: {self.storage_dir}')

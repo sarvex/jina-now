@@ -32,14 +32,11 @@ def question(message, **kwargs):
         tokens = []
 
         tokens.append(('class:questionmark', qmark))
-        tokens.append(('class:question', ' %s ' % message))
+        tokens.append(('class:question', f' {message} '))
         if isinstance(status['answer'], bool):
             tokens.append(('class:answer', ' Yes' if status['answer'] else ' No'))
         else:
-            if default:
-                instruction = ' (Y/n)'
-            else:
-                instruction = ' (y/N)'
+            instruction = ' (Y/n)' if default else ' (y/N)'
             tokens.append(('class:instruction', instruction))
         return tokens
 

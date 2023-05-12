@@ -67,8 +67,8 @@ def _add_metadata_to_chunks(da, user_input):
     }
     for doc in da:
         for dataclass_field, meta_dict in doc._metadata['multi_modal_schema'].items():
-            field_name = dataclass_fields_to_field_names.get(dataclass_field, None)
             if 'position' in meta_dict:
+                field_name = dataclass_fields_to_field_names.get(dataclass_field, None)
                 get_chunk_by_field_name(doc, dataclass_field)._metadata[
                     'field_name'
                 ] = field_name
@@ -87,9 +87,10 @@ def _update_fields_and_metadata(
         filtered_chunk_names = []
         for field in all_fields:
             field_doc = get_chunk_by_field_name(doc, field)
-            if field not in user_input.index_fields:
-                if field_doc.blob or field_doc.tensor is not None:
-                    continue
+            if field in user_input.index_fields:
+                filtered_chunks.append(field_doc)
+                filtered_chunk_names.append(field)
+            elif not field_doc.blob and field_doc.tensor is None:
                 doc.tags.update(
                     {
                         field: field_doc.content
@@ -97,9 +98,6 @@ def _update_fields_and_metadata(
                         else field_doc.uri
                     }
                 )
-            else:
-                filtered_chunks.append(field_doc)
-                filtered_chunk_names.append(field)
         doc.chunks = filtered_chunks
         # keep only the index fields in metadata
         doc._metadata['multi_modal_schema'] = {
@@ -115,7 +113,9 @@ def _update_fields_and_metadata(
 
 def _pull_docarray(dataset_name: str, admin_name: str) -> DocumentArray:
     dataset_name = (
-        admin_name + '/' + dataset_name if '/' not in dataset_name else dataset_name
+        f'{admin_name}/{dataset_name}'
+        if '/' not in dataset_name
+        else dataset_name
     )
     try:
         docs = DocumentArray.pull(name=dataset_name, show_progress=True)
@@ -146,8 +146,7 @@ def _extract_es_data(user_input: UserInput, data_class: Type) -> DocumentArray:
         data_class=data_class,
         connection_str=user_input.es_host_name,
     )
-    extracted_docs = es_extractor.extract()
-    return extracted_docs
+    return es_extractor.extract()
 
 
 def _load_from_disk(user_input: UserInput, data_class: Type) -> DocumentArray:
@@ -175,16 +174,15 @@ def _load_from_disk(user_input: UserInput, data_class: Type) -> DocumentArray:
             exit(1)
     elif os.path.isdir(dataset_path):
         with yaspin_extended(
-            sigmap=sigmap, text="Loading data from folder", color="green"
-        ) as spinner:
+                    sigmap=sigmap, text="Loading data from folder", color="green"
+                ) as spinner:
             spinner.ok('🏭')
-            docs = from_files_local(
+            return from_files_local(
                 dataset_path,
                 user_input.index_fields,
                 user_input.field_names_to_dataclass_fields,
                 data_class,
             )
-            return docs
     else:
         raise ValueError(
             f'The provided dataset path {dataset_path} does not'
@@ -258,17 +256,17 @@ def create_docs_from_subdirectories(
         )
         folder_files[path_to_last_folder].append(file)
     for folder, files in folder_files.items():
-        kwargs = {}
         tags_loaded_local = {}
         _s3_uri_for_tags = ''
         file_info = [
             _extract_file_and_full_file_path(file, path, is_s3_dataset)
             for file in files
         ]
-        # first store index fields given as files
-        for file, file_full_path in file_info:
-            if file in fields:
-                kwargs[field_names_to_dataclass_fields[file]] = file_full_path
+        kwargs = {
+            field_names_to_dataclass_fields[file]: file_full_path
+            for file, file_full_path in file_info
+            if file in fields
+        }
         # next check json files that can also contain index fields, and carry on data
         for file, file_full_path in file_info:
             if file.endswith('.json'):
@@ -498,7 +496,7 @@ def _get_modality(document: Document):
     if mime_type_class in modalities:
         return mime_type_class
     document.summary()
-    raise ValueError(f'Unknown modality')
+    raise ValueError('Unknown modality')
 
 
 def set_modality_da(documents: DocumentArray):

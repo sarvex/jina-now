@@ -113,12 +113,15 @@ class SearchApp(JinaNOWApp):
     def clip_encoder_stub() -> Tuple[Dict, int]:
         return {
             'name': Models.CLIP_MODEL,
-            'uses': f'jinahub+docker://CLIPOnnxEncoder/0.8.1-gpu',
+            'uses': 'jinahub+docker://CLIPOnnxEncoder/0.8.1-gpu',
             'host': EXTERNAL_CLIP_HOST,
             'port': 443,
             'tls': True,
             'external': True,
-            'uses_with': {'access_paths': ACCESS_PATHS, 'name': 'ViT-B-32::openai'},
+            'uses_with': {
+                'access_paths': ACCESS_PATHS,
+                'name': 'ViT-B-32::openai',
+            },
             'env': {'JINA_LOG_LEVEL': 'DEBUG'},
             'needs': 'preprocessor',
         }, 512
@@ -127,7 +130,7 @@ class SearchApp(JinaNOWApp):
     def sbert_encoder_stub() -> Tuple[Dict, int]:
         return {
             'name': Models.SBERT_MODEL,
-            'uses': f'jinahub+docker://TransformerSentenceEncoder',
+            'uses': 'jinahub+docker://TransformerSentenceEncoder',
             'uses_with': {
                 'access_paths': ACCESS_PATHS,
                 'model_name': 'msmarco-distilbert-base-v3',
@@ -152,22 +155,20 @@ class SearchApp(JinaNOWApp):
         :param encoder2dim: maps encoder name to its output dimension
         :param testing: use local executors if True
         """
-        document_mappings_list = []
-
-        for encoder, dim in encoder2dim.items():
-            document_mappings_list.append(
+        document_mappings_list = [
+            [
+                encoder,
+                dim,
                 [
-                    encoder,
-                    dim,
-                    [
-                        user_input.field_names_to_dataclass_fields[
-                            index_field.replace('_model', '')
-                        ]
-                        for index_field, encoders in user_input.model_choices.items()
-                        if encoder in encoders
-                    ],
-                ]
-            )
+                    user_input.field_names_to_dataclass_fields[
+                        index_field.replace('_model', '')
+                    ]
+                    for index_field, encoders in user_input.model_choices.items()
+                    if encoder in encoders
+                ],
+            ]
+            for encoder, dim in encoder2dim.items()
+        ]
         provision_index = 'yes' if not testing else 'no'
         provision_shards = os.getenv('PROVISION_SHARDS', '1')
         provision_replicas = os.getenv('PROVISION_REPLICAS', '0')

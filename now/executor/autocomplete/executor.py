@@ -57,7 +57,7 @@ class NOWAutoCompleteExecutor2(Executor):
                     for word in search_words:
                         self.update_save_words(word)
                     # add bi-gram and tri-gram suggestions
-                    if len(search_words) == 2 or len(search_words) == 3:
+                    if len(search_words) in {2, 3}:
                         self.update_save_words(doc.text)
 
         self.auto_complete = AutoComplete(words=self.words)
@@ -74,5 +74,4 @@ class NOWAutoCompleteExecutor2(Executor):
         return docs
 
     def flatten_list(self, regular_list):
-        flat_list = list(itertools.chain(*regular_list))
-        return flat_list
+        return list(itertools.chain(*regular_list))

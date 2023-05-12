@@ -64,7 +64,7 @@ def test_end_to_end(
         'api_key': None,
         'additional_user': False,
     }
-    kwargs.update(model_selection)
+    kwargs |= model_selection
     kwargs = Namespace(**kwargs)
     response = cli(args=kwargs)
 

@@ -68,10 +68,7 @@ def call_flow(url_host, data, endpoint):
 
     st.session_state.error_msg = None
 
-    if endpoint in ['search', 'suggestion']:
-        return docs
-    else:
-        return response.json()
+    return docs if endpoint in ['search', 'suggestion'] else response.json()
 
 
 def multimodal_search(

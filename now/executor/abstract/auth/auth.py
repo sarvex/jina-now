@@ -45,14 +45,14 @@ def _check_user(kwargs, level, user_emails, admin_emails, api_keys):
         'api_key' not in kwargs['parameters'] and 'jwt' not in kwargs['parameters']
     ):
         raise PermissionError(
-            f'`jwt` or `api_key` needs to be part of the request parameters.'
+            '`jwt` or `api_key` needs to be part of the request parameters.'
         )
 
     if 'api_key' in kwargs['parameters']:
         if kwargs['parameters']['api_key'] in api_keys:
             return
         else:
-            raise PermissionError(f'`api_key` is invalid')
+            raise PermissionError('`api_key` is invalid')
     else:
         jwt = kwargs['parameters']['jwt']
 

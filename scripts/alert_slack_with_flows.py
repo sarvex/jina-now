@@ -24,7 +24,7 @@ dict_user_ids = defaultdict(str)
 
 headers = {"Authorization": f"Bearer {os.environ.get('SLACK_API_TOKEN')}"}
 teams = requests.get(
-    f"https://slack.com/api/conversations.list?limit=300", headers=headers
+    "https://slack.com/api/conversations.list?limit=300", headers=headers
 ).json()["channels"]
 
 dict_teams = defaultdict(str)
@@ -37,27 +37,27 @@ def get_channel_id_by_email(email):
     team_user = email.split('@')[0]
     if team_user == ' team-now-prod':
         team_user = 'team-now'
-    for search_items in dict_teams:
-        if team_user in search_items:
-            return dict_teams[search_items]
-    return ""
+    return next(
+        (
+            dict_teams[search_items]
+            for search_items in dict_teams
+            if team_user in search_items
+        ),
+        "",
+    )
 
 
 def map_user_emails(email):
-    if '@jina.ai' in email:
-        if '+' in email:
-            email_parts = email.split('@')
-            user_alias = email_parts[0].split('+')[0]
-            return user_alias + '@' + email_parts[1]
+    if '@jina.ai' in email and '+' in email:
+        email_parts = email.split('@')
+        user_alias = email_parts[0].split('+')[0]
+        return f'{user_alias}@{email_parts[1]}'
     return email
 
 
 def check_email_type(email):
     if '@jina.ai' in email:
-        if email.startswith('team'):
-            return 'team'
-        else:
-            return 'member'
+        return 'team' if email.startswith('team') else 'member'
     return 'external'
 
 
@@ -71,10 +71,7 @@ for line in lines:
             f"https://slack.com/api/users.lookupByEmail?email={map_user_emails(email)}",
             headers=headers,
         ).json()
-        if 'user' in response:
-            dict_user_ids[email] = response['user']['id']
-        else:
-            dict_user_ids[email] = ""
+        dict_user_ids[email] = response['user']['id'] if 'user' in response else ""
     elif email_type == 'team':
         dict_user_ids[email] = get_channel_id_by_email(email)
 

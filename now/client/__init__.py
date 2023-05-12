@@ -22,11 +22,10 @@ class Client:
             "api_key": self.api_key,
             **kwargs,
         }
-        response = requests.post(
+        return requests.post(
             f'https://nowrun.jina.ai/api/v1/{endpoint}',
             json=request_body,
         )
-        return response
 
     async def send_request(self, endpoint: str, **kwargs):
         """
@@ -53,7 +52,7 @@ class Client:
             api_key=self.api_key,
             **kwargs,
         )
-        response = await helper.jina_client_post(
+        return await helper.jina_client_post(
             app_request,
             endpoint,
             docs=query_doc,
@@ -63,4 +62,3 @@ class Client:
                 'score_calculation': app_request.score_calculation,
             },
         )
-        return response

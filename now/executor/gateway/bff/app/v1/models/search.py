@@ -139,8 +139,7 @@ class SearchResponseModel(BaseModel):
             mm.to_html(title, disable_to_datauri)
             for title, mm in dict(sorted(self.fields.items())).items()
         ]
-        mm_in_html = ''.join(single_fields_in_html)
-        return mm_in_html
+        return ''.join(single_fields_in_html)
 
     @classmethod
     def responses_to_html(

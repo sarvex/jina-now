@@ -20,8 +20,7 @@ def call(client, use_bff):
         import traceback
 
         traceback.print_exc()
-    dif = time() - start
-    return dif
+    return time() - start
 
 
 def benchmark_deployment(jcloud_id, api_key):
@@ -33,26 +32,23 @@ def benchmark_deployment(jcloud_id, api_key):
         api_key=api_key,
     )
 
+    num_queries = 500
     for call_point, use_bff in zip(['BFF', 'Gateway'], [True, False]):
         # Latency Test
         start = time()
-        for i in range(10):
+        for _ in range(10):
             call(client=client, use_bff=use_bff)
         print(f'Latency {call_point}: {(time() - start) / 10}s')
 
-        num_queries = 500
         worker = 30
         with ProcessPoolExecutor(max_workers=worker) as executor:
             # QPS test
             start = time()
             futures = []
-            latencies = []
-
-            for i in range(num_queries):
+            for _ in range(num_queries):
                 future = executor.submit(call, client, use_bff)
                 futures.append(future)
-            for future in futures:
-                latencies.append(future.result())
+            latencies = [future.result() for future in futures]
             print(f'QPS {call_point}: {num_queries / (time() - start)}s')
 
         latencies = sorted(latencies)

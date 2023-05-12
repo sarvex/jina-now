@@ -25,12 +25,13 @@ class AWSProfile:
 def get_aws_profile():
     session = boto3.Session()
     credentials = session.get_credentials()
-    aws_profile = (
-        AWSProfile(credentials.access_key, credentials.secret_key, session.region_name)
+    return (
+        AWSProfile(
+            credentials.access_key, credentials.secret_key, session.region_name
+        )
         if credentials
         else AWSProfile(None, None, session.region_name)
     )
-    return aws_profile
 
 
 def upsert_cname_record(source, target):
@@ -44,7 +45,7 @@ def upsert_cname_record(source, target):
         aws_client.change_resource_record_sets(
             HostedZoneId=os.environ['AWS_HOSTED_ZONE_ID'],
             ChangeBatch={
-                'Comment': 'add %s -> %s' % (source, target),
+                'Comment': f'add {source} -> {target}',
                 'Changes': [
                     {
                         'Action': 'UPSERT',
@@ -72,16 +73,13 @@ def deploy(demo_ds):
     user_input.jwt = {'token': os.environ['JINA_AUTH_TOKEN']}
     set_field_names_from_docarray(user_input)
 
-    # Get all model for each of the index fields
-    model_kwargs = {}
-    for field, modality in user_input.index_field_candidates_to_modalities.items():
-        if (
-            field == demo_ds.index_fields
-        ):  # TODO: remove this if check when __all__ is supported
-            model_kwargs[f'{field}_model'] = [
-                models['value'] for models in MODALITY_TO_MODELS[modality]
-            ]
-
+    model_kwargs = {
+        f'{field}_model': [
+            models['value'] for models in MODALITY_TO_MODELS[modality]
+        ]
+        for field, modality in user_input.index_field_candidates_to_modalities.items()
+        if (field == demo_ds.index_fields)
+    }
     kwargs = {
         'now': 'start',
         'dataset_type': DatasetTypes.DEMO,
@@ -127,9 +125,7 @@ if __name__ == '__main__':
     # get all the available demo datasets list
     dataset_list = []
     for _, ds_list in AVAILABLE_DATASETS.items():
-        for ds in ds_list:
-            dataset_list.append(ds)
-
+        dataset_list.extend(iter(ds_list))
     if index >= len(dataset_list):
         print(f'Index {index} is out of range. Max index is {len(dataset_list)}')
         exit(0)
@@ -150,9 +146,7 @@ if __name__ == '__main__':
         except Exception as e:  # noqa E722
             print('Not deployed yet')
 
-    # Maybe the flow is still alive, if it is, then it should be terminated and re-deploy the app
-    flow = list_all_wolf(namespace=to_deploy.name.split("/")[-1])
-    if flow:
+    if flow := list_all_wolf(namespace=to_deploy.name.split("/")[-1]):
         terminate_wolf(flow[0]['id'])
         print(f'{flow[0]["id"]} successfully deleted!!')
     print('Deploying -> ', to_deploy.name)

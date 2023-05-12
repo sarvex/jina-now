@@ -54,7 +54,7 @@ def api_method(func: Callable):
 
     @wraps(func)
     def surround(*args, **kwargs):
-        func_name = inspect.getmodule(func).__name__ + f':{func.__name__}'
+        func_name = f'{inspect.getmodule(func).__name__}:{func.__name__}'
         logger.info(f'--- Calling api method {func_name} ...')
         try:
             response = func(*args, **kwargs)

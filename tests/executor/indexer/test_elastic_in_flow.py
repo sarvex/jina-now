@@ -103,19 +103,16 @@ class TestElasticIndexer:
 
         parameters = {}
         if offset is not None:
-            parameters.update({'offset': offset, 'limit': limit})
+            parameters |= {'offset': offset, 'limit': limit}
 
         flow.post(on='/index', inputs=docs, parameters=parameters)
         list_res = flow.post(on='/list', parameters=parameters, return_results=True)
-        if offset is None:
-            l = NUMBER_OF_DOCS
-        else:
-            l = max(limit - offset, 0)
+        l = NUMBER_OF_DOCS if offset is None else max(limit - offset, 0)
         assert len(list_res) == l
         if l > 0:
             assert len(list_res[0].chunks) == 1
             assert isinstance(list_res[0].title, Document)
-            assert len(set([d.id for d in list_res])) == l
+            assert len({d.id for d in list_res}) == l
             assert [d.tags['parent_tag'] for d in list_res] == ['value'] * l
 
     def test_search(self, metas, setup_service_running, flow):
@@ -165,7 +162,7 @@ class TestElasticIndexer:
             return_results=True,
             parameters={'filter': {'tags__price': {'lt': 50.0}}},
         )
-        assert all([m.tags['price'] < 50 for m in query_res[0].matches])
+        assert all(m.tags['price'] < 50 for m in query_res[0].matches)
 
     def test_delete(self, metas, setup_service_running, flow):
         docs = self.get_docs(NUMBER_OF_DOCS)

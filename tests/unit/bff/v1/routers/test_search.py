@@ -11,11 +11,17 @@ from now.now_dataclasses import UserInput
 def test_text_search_fails_with_incorrect_query(client):
     with pytest.raises(ValueError):
         client.post(
-            f'/api/v1/search-app/search',
+            '/api/v1/search-app/search',
             json={
                 'data': [
                     (
-                        [{'name': 'text', 'value': 'Hello', 'modality': 'text'}],
+                        [
+                            {
+                                'name': 'text',
+                                'value': 'Hello',
+                                'modality': 'text',
+                            }
+                        ],
                         [
                             {
                                 'name': 'uri',
@@ -32,10 +38,7 @@ def test_text_search_fails_with_incorrect_query(client):
 
 def test_text_search_fails_with_empty_query(client: requests.Session):
     with pytest.raises(ValueError):
-        client.post(
-            f'/api/v1/search-app/search',
-            json={},
-        )
+        client.post('/api/v1/search-app/search', json={})
 
 
 def test_image_search_calls_flow(

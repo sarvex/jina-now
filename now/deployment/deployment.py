@@ -46,9 +46,7 @@ def list_all_wolf(status='Serving', namespace='nowapi'):
             {'id': flow['id'], 'name': flow['status']['endpoints'][executor_name]}
         )
     # filter by namespace - if the namespace is contained in the flow name
-    if namespace:
-        return [f for f in flows if namespace in f['id']]
-    return flows
+    return [f for f in flows if namespace in f['id']] if namespace else flows
 
 
 def cmd(command, std_output=False, wait=True):
@@ -66,4 +64,4 @@ def cmd(command, std_output=False, wait=True):
 
 
 def which(executable: str) -> bool:
-    return bool(cmd('which ' + executable)[0])
+    return bool(cmd(f'which {executable}')[0])

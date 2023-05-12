@@ -33,9 +33,7 @@ def download_da(dir_name, part_prefix):
     import requests as py_requests
 
     headers = {}
-    auth_token = hubble.get_token()
-
-    if auth_token:
+    if auth_token := hubble.get_token():
         headers['Authorization'] = f'token {auth_token}'
 
     url = (
@@ -50,7 +48,7 @@ def download_da(dir_name, part_prefix):
     else:
         response.raise_for_status()
 
-    local_filename = dir_name + f'/{part_prefix}.bin'
+    local_filename = f'{dir_name}/{part_prefix}.bin'
     # NOTE the stream=True parameter below
     try:
         print(local_filename, 'being downloaded')

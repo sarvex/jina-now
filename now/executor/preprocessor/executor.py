@@ -46,26 +46,21 @@ class NOWPreprocessor(Executor):
                 'https://docarray.jina.ai/datatypes/multimodal/'
             )
         with tempfile.TemporaryDirectory() as tmpdir:
-            index_fields = []
             if self.user_input:
-                for index_field in self.user_input.index_fields:
-                    index_fields.append(
-                        self.user_input.field_names_to_dataclass_fields[index_field]
-                        if index_field
-                        in self.user_input.field_names_to_dataclass_fields
-                        else index_field
+                index_fields = [
+                    self.user_input.field_names_to_dataclass_fields[index_field]
+                    if index_field
+                    in self.user_input.field_names_to_dataclass_fields
+                    else index_field
+                    for index_field in self.user_input.index_fields
+                ]
+                if self.user_input.dataset_type == DatasetTypes.S3_BUCKET:
+                    maybe_download_from_s3(
+                        docs=docs,
+                        tmpdir=tmpdir,
+                        user_input=self.user_input,
+                        max_workers=self.max_workers,
                     )
-
-            if (
-                self.user_input
-                and self.user_input.dataset_type == DatasetTypes.S3_BUCKET
-            ):
-                maybe_download_from_s3(
-                    docs=docs,
-                    tmpdir=tmpdir,
-                    user_input=self.user_input,
-                    max_workers=self.max_workers,
-                )
 
             docs = self.app.preprocess(docs)
 
