@@ -9,7 +9,7 @@ prompt_toolkit==3.0.28
 docarray[common]==0.19.1
 requests==2.31.0
 pydub==0.25.1
-nltk==3.7
+nltk==3.8.1
 jcloud==0.2.4
 python-dotenv
 boto3==1.26.43
