@@ -17,7 +17,7 @@ extra-streamlit-components==0.1.55
 click==8.0.0
 fastapi==0.78.0
 uvicorn==0.17.6
-uvloop==0.16.0
+uvloop==0.17.0
 pydantic==1.9.2
 av==9.1.1
 requests-mock==1.10.0
