@@ -5,7 +5,7 @@ pyfiglet==0.8.post1
 cowsay==4.0
 yaspin==2.1.0
 py-cpuinfo==8.0.0
-prompt_toolkit==3.0.28
+prompt_toolkit==3.0.41
 docarray[common]==0.19.1
 requests==2.31.0
 pydub==0.25.1
